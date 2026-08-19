@@ -344,57 +344,124 @@ function Bingo({ onClose }) {
 // ════════════════════════════════════════════════════════════════════════════
 
 function Checklist({ onClose }) {
-  const [guests, setGuests] = useState(10);
+  const SK = 'tendr-hp-checklist-v2';
+  const [savedItems, setSavedItems] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || 'null'); } catch { return null; } });
+  const [newItem, setNewItem] = useState({ name: '', cat: 'decor', person: '' });
 
-  const calc = (base, perPerson) => Math.ceil(base + perPerson * guests);
+  const TEMPLATES = {
+    houseparty: { label: '🏠 House Party', items: [
+      { cat:'decor', name:'Balloons' }, { cat:'decor', name:'Fairy lights / LED strips' }, { cat:'decor', name:'Streamers & banners' },
+      { cat:'food', name:'Chips & namkeen' }, { cat:'food', name:'Pizza / party food' }, { cat:'food', name:'Cake or dessert' },
+      { cat:'drinks', name:'Cold drinks & soft drinks' }, { cat:'drinks', name:'Water bottles' }, { cat:'drinks', name:'Juices' },
+      { cat:'entertainment', name:'Bluetooth speaker' }, { cat:'entertainment', name:'Party playlist ready' },
+      { cat:'logistics', name:'Disposable plates & cups' }, { cat:'logistics', name:'Napkins & cutlery' }, { cat:'logistics', name:'Garbage bags' }, { cat:'logistics', name:'Extra phone chargers' },
+    ]},
+    birthday: { label: '🎂 Birthday Party', items: [
+      { cat:'decor', name:'Birthday banner' }, { cat:'decor', name:'Number balloons' }, { cat:'decor', name:'Table centrepieces' },
+      { cat:'food', name:'Birthday cake' }, { cat:'food', name:'Finger food & snacks' },
+      { cat:'drinks', name:'Birthday-themed drinks' },
+      { cat:'entertainment', name:'Party games planned' }, { cat:'entertainment', name:'Music playlist' },
+      { cat:'logistics', name:'Candles & lighter' }, { cat:'logistics', name:'Plates, cups & napkins' }, { cat:'logistics', name:'Return gifts' },
+    ]},
+    dinner: { label: '🍽️ Dinner Party', items: [
+      { cat:'decor', name:'Table setting & centrepiece' }, { cat:'decor', name:'Candles' },
+      { cat:'food', name:'Starters / appetisers' }, { cat:'food', name:'Main course' }, { cat:'food', name:'Dessert' },
+      { cat:'drinks', name:'Wine / drinks' }, { cat:'drinks', name:'Water & juices' },
+      { cat:'logistics', name:'Proper crockery & cutlery' }, { cat:'logistics', name:'Serving dishes' }, { cat:'logistics', name:'Napkins' },
+    ]},
+    kitty: { label: '🌸 Kitty Party', items: [
+      { cat:'decor', name:'Theme decorations' }, { cat:'decor', name:'Photo booth corner' },
+      { cat:'food', name:'Snacks & chaats' }, { cat:'food', name:'Mithai / sweets' },
+      { cat:'drinks', name:'Mocktails / drinks station' },
+      { cat:'entertainment', name:'Tambola (Housie) set' }, { cat:'entertainment', name:'Return gifts' },
+      { cat:'logistics', name:'Kitty money collection' }, { cat:'logistics', name:'Prize bags' },
+    ]},
+  };
 
-  const items = [
-    { cat: "Food & Drinks", things: [
-      { name: "Chips / Namkeen packs", qty: calc(0, 0.5) + " packs" },
-      { name: "Cold drinks / Soft drinks (500ml)", qty: calc(0, 0.8) + " bottles" },
-      { name: "Water bottles (1L)", qty: calc(0, 0.5) + " bottles" },
-      { name: "Beer / Hard drinks (if applicable)", qty: "Per preference" },
-      { name: "Pizza / Party food portions", qty: calc(0, 0.7) + " portions" },
-    ]},
-    { cat: "Tableware", things: [
-      { name: "Disposable plates", qty: calc(5, 1.5) + " pieces" },
-      { name: "Cups / Glasses", qty: calc(5, 2) + " pieces" },
-      { name: "Napkins", qty: calc(10, 3) + " pieces" },
-      { name: "Forks / Spoons", qty: calc(5, 1.5) + " pieces" },
-    ]},
-    { cat: "Decoration", things: [
-      { name: "Balloons", qty: Math.ceil(guests * 3) + " balloons" },
-      { name: "Fairy lights / LED strips", qty: "2 sets" },
-      { name: "Streamers", qty: "3–4 rolls" },
-    ]},
-    { cat: "Misc", things: [
-      { name: "Garbage bags", qty: "3–4 bags" },
-      { name: "Extra phone chargers / power bank", qty: "2–3 units" },
-      { name: "Bluetooth speaker", qty: "1–2 speakers" },
-    ]},
+  const CATS = [
+    { id:'decor', label:'🎀 Decor', color:'#DB2777' },
+    { id:'food', label:'🍲 Food', color:'#f97316' },
+    { id:'drinks', label:'🥂 Drinks', color:'#06b6d4' },
+    { id:'entertainment', label:'🎮 Entertainment', color:'#7C3AED' },
+    { id:'logistics', label:'📦 Logistics', color:'#6b7280' },
   ];
+
+  const loadTemplate = (key) => {
+    const items = TEMPLATES[key].items.map((it, i) => ({ id: Date.now()+i, ...it, person: '', done: false }));
+    setSavedItems(items);
+    try { localStorage.setItem(SK, JSON.stringify(items)); } catch {}
+  };
+
+  const persist = (items) => { setSavedItems(items); try { localStorage.setItem(SK, JSON.stringify(items)); } catch {} };
+  const toggleDone = (id) => persist(savedItems.map(it => it.id === id ? { ...it, done: !it.done } : it));
+  const updatePerson = (id, person) => persist(savedItems.map(it => it.id === id ? { ...it, person } : it));
+  const addItem = () => {
+    if (!newItem.name.trim()) return;
+    persist([...(savedItems||[]), { id: Date.now(), name: newItem.name.trim(), cat: newItem.cat, person: newItem.person, done: false }]);
+    setNewItem(p => ({ ...p, name: '', person: '' }));
+  };
+
+  const done = savedItems?.filter(it=>it.done).length || 0;
+  const total = savedItems?.length || 0;
+
+  if (!savedItems) return (
+    <Modal onClose={onClose} emoji="📋" title="Party Checklist">
+      <div style={{ fontSize:13, color:'rgba(255,255,255,0.45)', marginBottom:18, textAlign:'center' }}>Pick a template to get started instantly</div>
+      {Object.entries(TEMPLATES).map(([key, tpl]) => (
+        <button key={key} onClick={() => loadTemplate(key)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', width:'100%', background:'rgba(255,255,255,0.05)', border:'1.5px solid rgba(255,255,255,0.1)', borderRadius:12, padding:'14px 18px', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:font, marginBottom:10 }}>
+          <span>{tpl.label}</span><span style={{ fontSize:12, color:'rgba(255,255,255,0.35)' }}>{tpl.items.length} items →</span>
+        </button>
+      ))}
+      <button onClick={() => persist([])} style={{ width:'100%', background:'transparent', border:'1px dashed rgba(255,255,255,0.15)', borderRadius:10, padding:'11px', color:'rgba(255,255,255,0.35)', fontSize:13, cursor:'pointer', fontFamily:font, marginTop:4 }}>Start blank →</button>
+    </Modal>
+  );
 
   return (
     <Modal onClose={onClose} emoji="📋" title="Party Checklist" wide>
-      <div style={{ marginBottom: 16 }}>
-        <label style={label}>Guest Count</label>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button onClick={() => setGuests(g => Math.max(2, g - 1))} style={{ ...btn("rgba(255,255,255,0.1)"), width: 40, padding: 0, height: 40 }}>−</button>
-          <span style={{ fontSize: 24, fontWeight: 800, color: "#fff", minWidth: 40, textAlign: "center" }}>{guests}</span>
-          <button onClick={() => setGuests(g => g + 1)} style={{ ...btn("#7C3AED"), width: 40, padding: 0, height: 40 }}>+</button>
+      <div style={{ marginBottom:14 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
+          <span style={{ fontSize:12, fontWeight:700, color:'rgba(255,255,255,0.45)' }}>Progress</span>
+          <span style={{ fontSize:12, fontWeight:700, color:'#22c55e' }}>{done} / {total} done</span>
+        </div>
+        <div style={{ height:6, borderRadius:3, background:'rgba(255,255,255,0.08)', overflow:'hidden' }}>
+          <div style={{ height:'100%', width:`${total?done/total*100:0}%`, background:'linear-gradient(90deg,#22c55e,#16a34a)', borderRadius:3, transition:'width 0.3s' }} />
         </div>
       </div>
-      {items.map(({ cat, things }) => (
-        <div key={cat} style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#A78BFA", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>{cat}</div>
-          {things.map(({ name, qty }) => (
-            <div key={name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "rgba(255,255,255,0.05)", borderRadius: 10, marginBottom: 6 }}>
-              <span style={{ color: "#fff", fontSize: 13 }}>{name}</span>
-              <span style={{ color: "#A78BFA", fontSize: 13, fontWeight: 700, flexShrink: 0, marginLeft: 8 }}>{qty}</span>
-            </div>
+
+      {CATS.map(cat => {
+        const catItems = savedItems.filter(it => it.cat === cat.id);
+        if (!catItems.length) return null;
+        return (
+          <div key={cat.id} style={{ marginBottom:16 }}>
+            <div style={{ fontSize:10.5, fontWeight:800, color:cat.color, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:7 }}>{cat.label} ({catItems.length})</div>
+            {catItems.map(it => (
+              <div key={it.id} style={{ display:'flex', alignItems:'center', gap:9, padding:'9px 12px', background: it.done?'rgba(34,197,94,0.06)':'rgba(255,255,255,0.04)', borderRadius:10, marginBottom:5, border:`1px solid ${it.done?'rgba(34,197,94,0.15)':'rgba(255,255,255,0.05)'}` }}>
+                <button onClick={() => toggleDone(it.id)} style={{ width:20, height:20, borderRadius:6, border:`2px solid ${it.done?cat.color:'rgba(255,255,255,0.2)'}`, background:it.done?cat.color+'28':'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                  {it.done && <span style={{ color:cat.color, fontSize:11, fontWeight:900 }}>✓</span>}
+                </button>
+                <span style={{ flex:1, fontSize:13.5, color:it.done?'rgba(255,255,255,0.3)':'#fff', textDecoration:it.done?'line-through':'none', fontFamily:font }}>{it.name}</span>
+                <input value={it.person} onChange={e => updatePerson(it.id, e.target.value)} placeholder="Who?" style={{ width:72, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:6, padding:'4px 8px', color:'rgba(255,255,255,0.6)', fontSize:11, fontFamily:font, outline:'none', textAlign:'center' }} />
+                <button onClick={() => persist(savedItems.filter(x=>x.id!==it.id))} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.15)', cursor:'pointer', fontSize:18, lineHeight:1, padding:'0 2px' }}>×</button>
+              </div>
+            ))}
+          </div>
+        );
+      })}
+      {savedItems.length === 0 && <div style={{ textAlign:'center', color:'rgba(255,255,255,0.25)', fontSize:13, padding:'20px 0' }}>Your checklist is empty — add items below!</div>}
+
+      <div style={{ borderTop:'1px solid rgba(255,255,255,0.08)', paddingTop:14, marginTop:4 }}>
+        <div style={{ display:'flex', gap:6, flexWrap:'wrap', marginBottom:8 }}>
+          {CATS.map(c => (
+            <button key={c.id} onClick={() => setNewItem(p=>({...p,cat:c.id}))} style={{ fontSize:10.5, padding:'4px 9px', borderRadius:100, border:`1.5px solid ${newItem.cat===c.id?c.color:'rgba(255,255,255,0.1)'}`, background:newItem.cat===c.id?c.color+'22':'transparent', color:newItem.cat===c.id?c.color:'rgba(255,255,255,0.35)', cursor:'pointer', fontFamily:font, fontWeight:700 }}>{c.label}</button>
           ))}
         </div>
-      ))}
+        <div style={{ display:'flex', gap:8 }}>
+          <input value={newItem.name} onChange={e => setNewItem(p=>({...p,name:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&addItem()} placeholder="Add item…" style={{ flex:2, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:9, padding:'9px 12px', color:'#fff', fontSize:13, fontFamily:font, outline:'none' }} />
+          <input value={newItem.person} onChange={e => setNewItem(p=>({...p,person:e.target.value}))} placeholder="Who?" style={{ flex:1, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:9, padding:'9px 10px', color:'#fff', fontSize:12, fontFamily:font, outline:'none' }} />
+          <button onClick={addItem} style={{ background:'#C47A2E', border:'none', borderRadius:9, padding:'9px 14px', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:font }}>+</button>
+        </div>
+      </div>
+      <button onClick={() => { setSavedItems(null); try { localStorage.removeItem(SK); } catch {} }} style={{ marginTop:12, width:'100%', background:'transparent', border:'1px solid rgba(255,255,255,0.08)', borderRadius:9, padding:'9px', color:'rgba(255,255,255,0.25)', fontSize:12, cursor:'pointer', fontFamily:font }}>Change template</button>
     </Modal>
   );
 }
@@ -1870,39 +1937,98 @@ function RoastBattleGame({ onClose }) {
 function GuestListModal({ onClose }) {
   const SK = 'tendr-hp-guestlist';
   const [guests, setGuests] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || '[]'); } catch { return []; } });
-  const [input, setInput] = useState('');
+  const [form, setForm] = useState({ name:'', phone:'', plusOne:false, meal:'veg', rsvp:'pending' });
+  const [showAdd, setShowAdd] = useState(false);
   const save = (g) => { setGuests(g); try { localStorage.setItem(SK, JSON.stringify(g)); } catch {} };
-  const add = () => { if (!input.trim()) return; save([...guests, { id: Date.now(), name: input.trim(), rsvp: 'pending' }]); setInput(''); };
+
+  const add = () => {
+    if (!form.name.trim()) return;
+    save([...guests, { id: Date.now(), ...form, name: form.name.trim() }]);
+    setForm({ name:'', phone:'', plusOne:false, meal:'veg', rsvp:'pending' });
+    setShowAdd(false);
+  };
   const setRsvp = (id, rsvp) => save(guests.map(g => g.id === id ? { ...g, rsvp } : g));
-  const counts = { yes: guests.filter(g => g.rsvp === 'yes').length, no: guests.filter(g => g.rsvp === 'no').length, maybe: guests.filter(g => g.rsvp === 'maybe').length, pending: guests.filter(g => g.rsvp === 'pending').length };
+  const counts = { yes: guests.filter(g=>g.rsvp==='yes').length, maybe: guests.filter(g=>g.rsvp==='maybe').length, no: guests.filter(g=>g.rsvp==='no').length, pending: guests.filter(g=>g.rsvp==='pending').length };
+  const totalAttending = guests.filter(g=>g.rsvp==='yes').reduce((s,g)=>s+(g.plusOne?2:1), 0);
+  const plusOneCount = guests.filter(g=>g.rsvp==='yes'&&g.plusOne).length;
+  const pendingWithPhone = guests.filter(g=>g.rsvp==='pending'&&g.phone);
+
+  const sendReminder = () => {
+    if (!pendingWithPhone.length) return;
+    const msg = encodeURIComponent("Hey! Just checking — are you coming to the party? Let us know! 🎉");
+    const ph = pendingWithPhone[0].phone.replace(/\D/g,'');
+    window.open(`https://wa.me/${ph.startsWith('91')&&ph.length===12?ph:'91'+ph}?text=${msg}`, '_blank');
+  };
+
   return (
     <Modal onClose={onClose} title="Guest List" emoji="👥">
-      <div style={{ display: 'flex', gap: 8, marginBottom: 18, flexWrap: 'wrap' }}>
-        {[['Coming', counts.yes, '#22c55e'], ['Maybe', counts.maybe, '#f59e0b'], ['Not Coming', counts.no, '#ef4444'], ['Pending', counts.pending, '#6b7280']].map(([label, count, color]) => (
-          <div key={label} style={{ flex: 1, minWidth: 64, textAlign: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '8px 4px', border: `1px solid ${color}30` }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color }}>{count}</div>
-            <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{label}</div>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8, marginBottom:14 }}>
+        {[['Coming',counts.yes,'#22c55e'],['Maybe',counts.maybe,'#f59e0b'],['Not Coming',counts.no,'#ef4444'],['Pending',counts.pending,'#6b7280']].map(([lbl,count,color]) => (
+          <div key={lbl} style={{ textAlign:'center', background:'rgba(255,255,255,0.04)', borderRadius:10, padding:'8px 4px', border:`1px solid ${color}30` }}>
+            <div style={{ fontSize:20, fontWeight:800, color }}>{count}</div>
+            <div style={{ fontSize:9.5, color:'rgba(255,255,255,0.35)', marginTop:2 }}>{lbl}</div>
           </div>
         ))}
       </div>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && add()} placeholder="Guest name…" style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: font, outline: 'none' }} />
-        <button onClick={add} style={{ background: '#C47A2E', border: 'none', borderRadius: 10, padding: '10px 18px', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Add</button>
-      </div>
-      {guests.length === 0 ? (
-        <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.25)', fontSize: 13, padding: '32px 0' }}>No guests yet. Add names above!</div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-          {guests.map(g => (
-            <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '9px 12px' }}>
-              <span style={{ flex: 1, fontSize: 14, color: '#fff', fontFamily: font }}>{g.name}</span>
-              {[['✓', 'yes', '#22c55e'], ['?', 'maybe', '#f59e0b'], ['✗', 'no', '#ef4444']].map(([label, val, color]) => (
-                <button key={val} onClick={() => setRsvp(g.id, g.rsvp === val ? 'pending' : val)} style={{ padding: '4px 9px', borderRadius: 100, border: `1.5px solid ${g.rsvp === val ? color : 'rgba(255,255,255,0.1)'}`, background: g.rsvp === val ? color + '22' : 'transparent', color: g.rsvp === val ? color : 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>{label}</button>
-              ))}
-              <button onClick={() => save(guests.filter(x => x.id !== g.id))} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 2px' }}>×</button>
-            </div>
-          ))}
+
+      {totalAttending > 0 && (
+        <div style={{ background:'rgba(34,197,94,0.08)', border:'1px solid rgba(34,197,94,0.2)', borderRadius:10, padding:'8px 14px', marginBottom:12, fontSize:13, color:'#22c55e', fontWeight:700 }}>
+          🎉 {totalAttending} attending{plusOneCount>0?` (incl. ${plusOneCount} +1${plusOneCount!==1?'s':''})`:''}
         </div>
+      )}
+
+      {showAdd ? (
+        <div style={{ background:'rgba(255,255,255,0.04)', borderRadius:12, padding:14, marginBottom:12, border:'1px solid rgba(255,255,255,0.1)' }}>
+          <input value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&add()} placeholder="Name *" style={{ width:'100%', boxSizing:'border-box', background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:8, padding:'9px 12px', color:'#fff', fontSize:13.5, fontFamily:font, outline:'none', marginBottom:8 }} />
+          <input value={form.phone} onChange={e=>setForm(p=>({...p,phone:e.target.value}))} placeholder="Phone (for WhatsApp)" type="tel" style={{ width:'100%', boxSizing:'border-box', background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:8, padding:'9px 12px', color:'#fff', fontSize:13.5, fontFamily:font, outline:'none', marginBottom:10 }} />
+          <div style={{ display:'flex', gap:7, flexWrap:'wrap', marginBottom:10 }}>
+            {[['🟢 Veg','veg'],['🔴 Non-Veg','nonveg'],['🟡 Jain','jain']].map(([lbl,val]) => (
+              <button key={val} onClick={()=>setForm(p=>({...p,meal:val}))} style={{ fontSize:11, padding:'5px 10px', borderRadius:100, border:`1.5px solid ${form.meal===val?'rgba(255,255,255,0.5)':'rgba(255,255,255,0.12)'}`, background:form.meal===val?'rgba(255,255,255,0.12)':'transparent', color:form.meal===val?'#fff':'rgba(255,255,255,0.4)', cursor:'pointer', fontFamily:font, fontWeight:700 }}>{lbl}</button>
+            ))}
+            <button onClick={()=>setForm(p=>({...p,plusOne:!p.plusOne}))} style={{ fontSize:11, padding:'5px 10px', borderRadius:100, border:`1.5px solid ${form.plusOne?'#f59e0b':'rgba(255,255,255,0.12)'}`, background:form.plusOne?'rgba(245,158,11,0.15)':'transparent', color:form.plusOne?'#f59e0b':'rgba(255,255,255,0.4)', cursor:'pointer', fontFamily:font, fontWeight:700 }}>+1 Guest</button>
+          </div>
+          <div style={{ display:'flex', gap:8 }}>
+            <button onClick={add} style={{ flex:1, background:'#C47A2E', border:'none', borderRadius:9, padding:'10px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>Add Guest</button>
+            <button onClick={()=>setShowAdd(false)} style={{ padding:'10px 16px', borderRadius:9, border:'1px solid rgba(255,255,255,0.15)', background:'transparent', color:'rgba(255,255,255,0.5)', cursor:'pointer', fontFamily:font, fontSize:13 }}>Cancel</button>
+          </div>
+        </div>
+      ) : (
+        <button onClick={()=>setShowAdd(true)} style={{ width:'100%', background:'rgba(196,122,46,0.12)', border:'1.5px dashed rgba(196,122,46,0.3)', borderRadius:10, padding:'11px', color:'#C47A2E', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font, marginBottom:12 }}>+ Add Guest</button>
+      )}
+
+      {guests.length === 0 ? (
+        <div style={{ textAlign:'center', color:'rgba(255,255,255,0.25)', fontSize:13, padding:'28px 0' }}>No guests yet. Add names above!</div>
+      ) : (
+        <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
+          {guests.map(g => {
+            const rsvpColor = g.rsvp==='yes'?'#22c55e':g.rsvp==='maybe'?'#f59e0b':g.rsvp==='no'?'#ef4444':'#6b7280';
+            const ph = g.phone?.replace(/\D/g,'');
+            const waPhone = ph ? (ph.startsWith('91')&&ph.length===12?ph:'91'+ph) : null;
+            return (
+              <div key={g.id} style={{ background:'rgba(255,255,255,0.04)', borderRadius:12, padding:'10px 12px', border:'1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                  <div style={{ width:32, height:32, borderRadius:'50%', background:`${rsvpColor}22`, border:`2px solid ${rsvpColor}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:800, color:rsvpColor, flexShrink:0 }}>{g.name[0]?.toUpperCase()}</div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <span style={{ fontSize:14, color:'#fff', fontFamily:font, fontWeight:600 }}>{g.name}</span>
+                    {g.plusOne && <span style={{ marginLeft:6, fontSize:10, fontWeight:700, color:'#f59e0b', background:'rgba(245,158,11,0.15)', padding:'2px 6px', borderRadius:100 }}>+1</span>}
+                    {g.phone && waPhone && <a href={`https://wa.me/${waPhone}`} target="_blank" rel="noreferrer" style={{ display:'block', fontSize:10.5, color:'#25D366', fontWeight:700, textDecoration:'none', marginTop:2 }}>📱 {g.phone}</a>}
+                  </div>
+                  {[['✓','yes','#22c55e'],['?','maybe','#f59e0b'],['✗','no','#ef4444']].map(([lbl,val,color]) => (
+                    <button key={val} onClick={()=>setRsvp(g.id,g.rsvp===val?'pending':val)} style={{ padding:'4px 9px', borderRadius:100, border:`1.5px solid ${g.rsvp===val?color:'rgba(255,255,255,0.1)'}`, background:g.rsvp===val?color+'22':'transparent', color:g.rsvp===val?color:'rgba(255,255,255,0.35)', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:font }}>{lbl}</button>
+                  ))}
+                  <button onClick={()=>save(guests.filter(x=>x.id!==g.id))} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.2)', cursor:'pointer', fontSize:18, lineHeight:1, padding:'0 2px' }}>×</button>
+                </div>
+                {g.meal && g.meal!=='veg' && <div style={{ fontSize:10.5, color:'rgba(255,255,255,0.35)', fontWeight:600, paddingLeft:40, marginTop:3 }}>{g.meal==='nonveg'?'🔴 Non-Veg':'🟡 Jain'}</div>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {pendingWithPhone.length > 0 && (
+        <button onClick={sendReminder} style={{ marginTop:14, width:'100%', padding:'11px', borderRadius:10, border:'none', background:'linear-gradient(135deg,#25D366,#128C7E)', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>
+          📩 Send Reminder to {pendingWithPhone.length} Pending Guest{pendingWithPhone.length!==1?'s':''}
+        </button>
       )}
     </Modal>
   );
@@ -1913,45 +2039,82 @@ function MenuPlannerModal({ onClose }) {
   const [items, setItems] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || '[]'); } catch { return []; } });
   const [name, setName] = useState('');
   const [cat, setCat] = useState('food');
+  const [diet, setDiet] = useState('veg');
+  const [person, setPerson] = useState('');
   const save = (it) => { setItems(it); try { localStorage.setItem(SK, JSON.stringify(it)); } catch {} };
-  const add = () => { if (!name.trim()) return; save([...items, { id: Date.now(), name: name.trim(), cat, done: false }]); setName(''); };
+  const add = () => {
+    if (!name.trim()) return;
+    save([...items, { id: Date.now(), name: name.trim(), cat, diet, person: person.trim(), status: 'pending', done: false }]);
+    setName(''); setPerson('');
+  };
   const toggle = (id) => save(items.map(it => it.id === id ? { ...it, done: !it.done } : it));
+  const setStatus = (id, status) => save(items.map(it => it.id === id ? { ...it, status } : it));
   const cats = [
-    { id: 'food', label: '🍲 Food', color: '#f97316' },
-    { id: 'drinks', label: '🥂 Drinks', color: '#06b6d4' },
-    { id: 'dessert', label: '🍰 Dessert', color: '#ec4899' },
-    { id: 'other', label: '📦 Other', color: '#8b5cf6' },
+    { id:'food', label:'🍲 Food', color:'#f97316' },
+    { id:'drinks', label:'🥂 Drinks', color:'#06b6d4' },
+    { id:'dessert', label:'🍰 Dessert', color:'#ec4899' },
+    { id:'other', label:'📦 Other', color:'#8b5cf6' },
   ];
+  const STATUS_LABELS = { pending:'Pending', ordered:'Ordered', confirmed:'Confirmed', done:'Done' };
+  const STATUS_COLORS = { pending:'#6b7280', ordered:'#f59e0b', confirmed:'#3b82f6', done:'#22c55e' };
+  const arranged = items.filter(it=>it.status!=='pending').length;
+
+  const shareMenu = () => {
+    const lines = cats.map(c => {
+      const ci = items.filter(it=>it.cat===c.id);
+      if (!ci.length) return '';
+      return `${c.label}:\n${ci.map(it=>`  • ${it.name}${it.person?' ('+it.person+')':''}${it.diet==='nonveg'?' 🔴':it.diet==='jain'?' 🟡':''}`).join('\n')}`;
+    }).filter(Boolean).join('\n\n');
+    window.open(`https://wa.me/?text=${encodeURIComponent('🍽️ Party Menu\n\n'+lines)}`, '_blank');
+  };
+
   return (
-    <Modal onClose={onClose} title="Menu Planner" emoji="🍽️">
-      <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
-        {cats.map(c => (
-          <button key={c.id} onClick={() => setCat(c.id)} style={{ fontSize: 12, padding: '5px 11px', borderRadius: 100, border: `1.5px solid ${cat === c.id ? c.color : 'rgba(255,255,255,0.1)'}`, background: cat === c.id ? c.color + '22' : 'transparent', color: cat === c.id ? c.color : 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: font, fontWeight: 700 }}>{c.label}</button>
-        ))}
+    <Modal onClose={onClose} title="Menu Planner" emoji="🍽️" wide>
+      <div style={{ display:'flex', gap:10, marginBottom:14, alignItems:'center', flexWrap:'wrap' }}>
+        {items.length>0 && <span style={{ fontSize:12, color:'rgba(255,255,255,0.4)' }}>{arranged}/{items.length} arranged</span>}
+        {items.length>0 && <button onClick={shareMenu} style={{ marginLeft:'auto', padding:'6px 12px', borderRadius:8, border:'none', background:'linear-gradient(135deg,#25D366,#128C7E)', color:'#fff', fontSize:11, fontWeight:700, cursor:'pointer', fontFamily:font }}>📤 Share Menu</button>}
       </div>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-        <input value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === 'Enter' && add()} placeholder="Add menu item…" style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: font, outline: 'none' }} />
-        <button onClick={add} style={{ background: '#C47A2E', border: 'none', borderRadius: 10, padding: '10px 18px', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Add</button>
+
+      <div style={{ background:'rgba(255,255,255,0.03)', borderRadius:12, padding:'12px', marginBottom:16, border:'1px solid rgba(255,255,255,0.07)' }}>
+        <div style={{ display:'flex', gap:6, marginBottom:8, flexWrap:'wrap', alignItems:'center' }}>
+          {cats.map(c => (
+            <button key={c.id} onClick={()=>setCat(c.id)} style={{ fontSize:11, padding:'4px 10px', borderRadius:100, border:`1.5px solid ${cat===c.id?c.color:'rgba(255,255,255,0.1)'}`, background:cat===c.id?c.color+'22':'transparent', color:cat===c.id?c.color:'rgba(255,255,255,0.4)', cursor:'pointer', fontFamily:font, fontWeight:700 }}>{c.label}</button>
+          ))}
+          <div style={{ marginLeft:'auto', display:'flex', gap:4 }}>
+            {[['🟢','veg'],['🔴','nonveg'],['🟡','jain']].map(([emoji,val]) => (
+              <button key={val} onClick={()=>setDiet(val)} style={{ fontSize:14, padding:'2px 6px', borderRadius:100, border:`1.5px solid ${diet===val?'rgba(255,255,255,0.45)':'rgba(255,255,255,0.1)'}`, background:diet===val?'rgba(255,255,255,0.1)':'transparent', cursor:'pointer' }}>{emoji}</button>
+            ))}
+          </div>
+        </div>
+        <div style={{ display:'flex', gap:8 }}>
+          <input value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&add()} placeholder="Menu item name…" style={{ flex:2, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:9, padding:'9px 12px', color:'#fff', fontSize:13, fontFamily:font, outline:'none' }} />
+          <input value={person} onChange={e=>setPerson(e.target.value)} placeholder="Who brings?" style={{ flex:1, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:9, padding:'9px 10px', color:'#fff', fontSize:12, fontFamily:font, outline:'none' }} />
+          <button onClick={add} style={{ background:'#C47A2E', border:'none', borderRadius:9, padding:'9px 14px', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:font }}>+</button>
+        </div>
       </div>
+
       {cats.map(c => {
-        const catItems = items.filter(it => it.cat === c.id);
+        const catItems = items.filter(it=>it.cat===c.id);
         if (!catItems.length) return null;
         return (
-          <div key={c.id} style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 10.5, fontWeight: 800, color: c.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 7 }}>{c.label} ({catItems.length})</div>
+          <div key={c.id} style={{ marginBottom:16 }}>
+            <div style={{ fontSize:10.5, fontWeight:800, color:c.color, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:7 }}>{c.label} ({catItems.length})</div>
             {catItems.map(it => (
-              <div key={it.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, marginBottom: 5 }}>
-                <button onClick={() => toggle(it.id)} style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${it.done ? c.color : 'rgba(255,255,255,0.2)'}`, background: it.done ? c.color + '28' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  {it.done && <span style={{ color: c.color, fontSize: 11, fontWeight: 900 }}>✓</span>}
-                </button>
-                <span style={{ flex: 1, fontSize: 14, color: it.done ? 'rgba(255,255,255,0.3)' : '#fff', textDecoration: it.done ? 'line-through' : 'none', fontFamily: font }}>{it.name}</span>
-                <button onClick={() => save(items.filter(x => x.id !== it.id))} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 2px' }}>×</button>
+              <div key={it.id} style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 12px', background:'rgba(255,255,255,0.03)', borderRadius:10, marginBottom:5, border:'1px solid rgba(255,255,255,0.05)' }}>
+                <span style={{ flex:1, fontSize:13.5, color:'#fff', fontFamily:font }}>{it.name}</span>
+                {it.diet==='nonveg' && <span style={{ fontSize:11 }}>🔴</span>}
+                {it.diet==='jain' && <span style={{ fontSize:11 }}>🟡</span>}
+                {it.person && <span style={{ fontSize:11, color:'rgba(255,255,255,0.45)', background:'rgba(255,255,255,0.06)', padding:'2px 8px', borderRadius:100, whiteSpace:'nowrap' }}>{it.person}</span>}
+                <select value={it.status} onChange={e=>setStatus(it.id,e.target.value)} style={{ background:'rgba(255,255,255,0.06)', border:`1px solid ${STATUS_COLORS[it.status]}55`, borderRadius:6, color:STATUS_COLORS[it.status], fontSize:10.5, padding:'3px 6px', fontFamily:font, outline:'none', colorScheme:'dark', cursor:'pointer' }}>
+                  {Object.entries(STATUS_LABELS).map(([val,lbl])=><option key={val} value={val}>{lbl}</option>)}
+                </select>
+                <button onClick={()=>save(items.filter(x=>x.id!==it.id))} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.2)', cursor:'pointer', fontSize:18, lineHeight:1, padding:'0 2px' }}>×</button>
               </div>
             ))}
           </div>
         );
       })}
-      {items.length === 0 && <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.25)', fontSize: 13, padding: '28px 0' }}>Pick a category and add menu items!</div>}
+      {items.length===0 && <div style={{ textAlign:'center', color:'rgba(255,255,255,0.25)', fontSize:13, padding:'28px 0' }}>Pick a category and start adding menu items!</div>}
     </Modal>
   );
 }
@@ -1961,31 +2124,127 @@ function DayTimelineModal({ onClose }) {
   const [entries, setEntries] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || '[]'); } catch { return []; } });
   const [time, setTime] = useState('');
   const [event, setEvent] = useState('');
-  const save = (e) => { setEntries(e); try { localStorage.setItem(SK, JSON.stringify(e)); } catch {} };
-  const add = () => { if (!time || !event.trim()) return; save([...entries, { id: Date.now(), time, event: event.trim(), done: false }].sort((a, b) => a.time.localeCompare(b.time))); setTime(''); setEvent(''); };
-  const toggle = (id) => save(entries.map(e => e.id === id ? { ...e, done: !e.done } : e));
+  const [now, setNow] = useState(new Date());
+  const [showTpl, setShowTpl] = useState(false);
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(t);
+  }, []);
+
+  const TEMPLATES = {
+    houseparty: [
+      { time:'18:00', event:'Setup & decoration', note:'Balloons, lights, music' },
+      { time:'19:00', event:'First guests arrive', note:'Welcome drinks ready' },
+      { time:'19:30', event:'Drinks & mingling', note:'' },
+      { time:'20:30', event:'Dinner / food served', note:'' },
+      { time:'21:30', event:'Games & activities', note:'' },
+      { time:'22:30', event:'Cake cutting', note:'Candles & lighter!' },
+      { time:'23:30', event:'Dancing / free time', note:'' },
+      { time:'01:00', event:'Wrap up', note:'Arrange cabs for guests' },
+    ],
+    birthday: [
+      { time:'17:30', event:'Venue setup', note:'Decor, balloons, photo corner' },
+      { time:'18:00', event:'Guests arrive', note:'' },
+      { time:'19:00', event:'Games & entertainment', note:'' },
+      { time:'20:00', event:'Dinner', note:'' },
+      { time:'21:00', event:'Cake ceremony', note:'Candles, song, photos' },
+      { time:'21:30', event:'Return gifts', note:'Hand out to all guests' },
+      { time:'22:30', event:'Wind down', note:'' },
+    ],
+    kitty: [
+      { time:'11:00', event:'Guests arrive', note:'Tea & light snacks' },
+      { time:'11:30', event:'Tambola / Housie round 1', note:'Prizes ready' },
+      { time:'12:30', event:'Lunch served', note:'' },
+      { time:'13:30', event:'Tambola / Housie round 2', note:'' },
+      { time:'14:30', event:'Kitty collection & winner', note:'' },
+      { time:'15:00', event:'Chai & dessert', note:'' },
+      { time:'15:30', event:'Wind down', note:'' },
+    ],
+  };
+
+  const saveEntries = (e) => { setEntries(e); try { localStorage.setItem(SK, JSON.stringify(e)); } catch {} };
+  const loadTemplate = (key) => { saveEntries(TEMPLATES[key].map((it,i)=>({id:Date.now()+i,...it,done:false}))); setShowTpl(false); };
+  const add = () => { if (!time||!event.trim()) return; saveEntries([...entries,{id:Date.now(),time,event:event.trim(),note:'',done:false}].sort((a,b)=>a.time.localeCompare(b.time))); setTime(''); setEvent(''); };
+  const toggle = (id) => saveEntries(entries.map(e=>e.id===id?{...e,done:!e.done}:e));
+
+  const nowStr = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  const currentIdx = entries.reduce((found,e,i)=>e.time<=nowStr?i:found, -1);
+  const nextEntry = entries.find(e=>e.time>nowStr);
+  let countdown = '';
+  if (nextEntry) {
+    const [nh,nm]=nextEntry.time.split(':').map(Number);
+    const diff=nh*60+nm-now.getHours()*60-now.getMinutes();
+    if (diff>0) countdown=diff>=60?`${Math.floor(diff/60)}h ${diff%60}m`:`${diff}m`;
+  }
+
+  const shareTimeline = () => {
+    const txt = entries.map(e=>`${e.time} — ${e.event}${e.note?' ('+e.note+')':''}`).join('\n');
+    window.open(`https://wa.me/?text=${encodeURIComponent('📅 Party Timeline:\n\n'+txt)}`, '_blank');
+  };
+
   return (
     <Modal onClose={onClose} title="Party Timeline" emoji="🗓️">
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-        <input type="time" value={time} onChange={e => setTime(e.target.value)} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '10px 10px', color: '#fff', fontSize: 14, fontFamily: font, outline: 'none', width: 100, colorScheme: 'dark' }} />
-        <input value={event} onChange={e => setEvent(e.target.value)} onKeyDown={e => e.key === 'Enter' && add()} placeholder="What happens?" style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: font, outline: 'none' }} />
-        <button onClick={add} disabled={!time || !event.trim()} style={{ background: time && event.trim() ? '#C47A2E' : 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 18, fontWeight: 700, cursor: 'pointer', opacity: time && event.trim() ? 1 : 0.4 }}>+</button>
+      {entries.length>0 && countdown && (
+        <div style={{ background:'rgba(196,122,46,0.1)', border:'1px solid rgba(196,122,46,0.25)', borderRadius:10, padding:'10px 14px', marginBottom:14, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <div>
+            <div style={{ fontSize:9.5, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.1em' }}>Next Up</div>
+            <div style={{ fontSize:14, fontWeight:700, color:'#CCAB4A' }}>{nextEntry.event}</div>
+          </div>
+          <div style={{ textAlign:'right' }}>
+            <div style={{ fontSize:9.5, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.1em' }}>In</div>
+            <div style={{ fontSize:20, fontWeight:900, color:'#CCAB4A' }}>{countdown}</div>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display:'flex', gap:8, marginBottom:showTpl?0:14 }}>
+        <button onClick={()=>setShowTpl(!showTpl)} style={{ padding:'8px 14px', borderRadius:9, border:'1.5px solid rgba(255,255,255,0.12)', background:'rgba(255,255,255,0.05)', color:'rgba(255,255,255,0.6)', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:font }}>
+          {showTpl?'↑ Hide':'📋 Templates'}
+        </button>
+        {entries.length>0 && <button onClick={shareTimeline} style={{ marginLeft:'auto', padding:'8px 14px', borderRadius:9, border:'none', background:'linear-gradient(135deg,#25D366,#128C7E)', color:'#fff', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:font }}>Share Timeline</button>}
       </div>
-      {entries.length === 0 ? (
-        <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.25)', fontSize: 13, padding: '28px 0' }}>Add time slots to build the day's schedule!</div>
-      ) : (
-        <div style={{ position: 'relative' }}>
-          <div style={{ position: 'absolute', left: 44, top: 0, bottom: 0, width: 2, background: 'rgba(255,255,255,0.06)', zIndex: 0 }} />
-          {entries.map(e => (
-            <div key={e.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '9px 0', position: 'relative', zIndex: 1 }}>
-              <div style={{ minWidth: 44, fontSize: 11, fontWeight: 800, color: e.done ? 'rgba(255,255,255,0.2)' : '#CCAB4A', textAlign: 'right', paddingTop: 3, flexShrink: 0 }}>{e.time}</div>
-              <button onClick={() => toggle(e.id)} style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${e.done ? '#22c55e' : 'rgba(255,255,255,0.2)'}`, background: e.done ? '#22c55e28' : '#140e08', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
-                {e.done && <span style={{ color: '#22c55e', fontSize: 9, fontWeight: 900 }}>✓</span>}
-              </button>
-              <div style={{ flex: 1, fontSize: 14, color: e.done ? 'rgba(255,255,255,0.3)' : '#fff', textDecoration: e.done ? 'line-through' : 'none', fontFamily: font, paddingTop: 1, lineHeight: 1.4 }}>{e.event}</div>
-              <button onClick={() => save(entries.filter(x => x.id !== e.id))} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.15)', cursor: 'pointer', fontSize: 18, lineHeight: 1, paddingTop: 2 }}>×</button>
-            </div>
+
+      {showTpl && (
+        <div style={{ background:'rgba(255,255,255,0.03)', borderRadius:12, padding:'12px', marginBottom:14, border:'1px solid rgba(255,255,255,0.08)' }}>
+          {[['houseparty','🏠 House Party',TEMPLATES.houseparty.length],['birthday','🎂 Birthday Party',TEMPLATES.birthday.length],['kitty','🌸 Kitty Party',TEMPLATES.kitty.length]].map(([key,lbl,count]) => (
+            <button key={key} onClick={()=>loadTemplate(key)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', width:'100%', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:10, padding:'11px 14px', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:font, marginBottom:7 }}>
+              <span>{lbl}</span><span style={{ fontSize:11, color:'rgba(255,255,255,0.35)' }}>{count} slots →</span>
+            </button>
           ))}
+        </div>
+      )}
+
+      <div style={{ display:'flex', gap:8, marginBottom:14 }}>
+        <input type="time" value={time} onChange={e=>setTime(e.target.value)} style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:9, padding:'9px 10px', color:'#fff', fontSize:13.5, fontFamily:font, outline:'none', width:100, colorScheme:'dark', flexShrink:0 }} />
+        <input value={event} onChange={e=>setEvent(e.target.value)} onKeyDown={e=>e.key==='Enter'&&add()} placeholder="What happens?" style={{ flex:1, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:9, padding:'9px 12px', color:'#fff', fontSize:13.5, fontFamily:font, outline:'none' }} />
+        <button onClick={add} disabled={!time||!event.trim()} style={{ background:time&&event.trim()?'#C47A2E':'rgba(255,255,255,0.06)', border:'none', borderRadius:9, padding:'9px 14px', color:'#fff', fontSize:18, fontWeight:700, cursor:'pointer', opacity:time&&event.trim()?1:0.4 }}>+</button>
+      </div>
+
+      {entries.length===0 ? (
+        <div style={{ textAlign:'center', color:'rgba(255,255,255,0.25)', fontSize:13, padding:'28px 0' }}>Add time slots above or load a template!</div>
+      ) : (
+        <div style={{ position:'relative' }}>
+          <div style={{ position:'absolute', left:44, top:0, bottom:0, width:2, background:'rgba(255,255,255,0.06)', zIndex:0 }} />
+          {entries.map((e,i) => {
+            const isNow = i===currentIdx && e.time<=nowStr;
+            return (
+              <div key={e.id} style={{ display:'flex', gap:10, alignItems:'flex-start', padding:'9px 0', position:'relative', zIndex:1 }}>
+                <div style={{ minWidth:44, fontSize:11, fontWeight:800, color:isNow?'#CCAB4A':e.done?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.5)', textAlign:'right', paddingTop:3, flexShrink:0 }}>{e.time}</div>
+                <button onClick={()=>toggle(e.id)} style={{ width:18, height:18, borderRadius:'50%', border:`2px solid ${e.done?'#22c55e':isNow?'#CCAB4A':'rgba(255,255,255,0.2)'}`, background:isNow?'#CCAB4A28':e.done?'#22c55e28':'#140e08', cursor:'pointer', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', marginTop:2 }}>
+                  {e.done && <span style={{ color:'#22c55e', fontSize:9, fontWeight:900 }}>✓</span>}
+                </button>
+                <div style={{ flex:1, paddingTop:1 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:6, flexWrap:'wrap' }}>
+                    <span style={{ fontSize:14, color:e.done?'rgba(255,255,255,0.3)':'#fff', textDecoration:e.done?'line-through':'none', fontFamily:font, lineHeight:1.4 }}>{e.event}</span>
+                    {isNow && <span style={{ fontSize:9, fontWeight:800, color:'#CCAB4A', background:'rgba(196,122,46,0.18)', padding:'2px 7px', borderRadius:100, textTransform:'uppercase', letterSpacing:'0.08em', flexShrink:0 }}>NOW</span>}
+                  </div>
+                  {e.note && <div style={{ fontSize:11.5, color:'rgba(255,255,255,0.35)', marginTop:2 }}>{e.note}</div>}
+                </div>
+                <button onClick={()=>saveEntries(entries.filter(x=>x.id!==e.id))} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.15)', cursor:'pointer', fontSize:18, lineHeight:1, paddingTop:2 }}>×</button>
+              </div>
+            );
+          })}
         </div>
       )}
     </Modal>
@@ -1997,23 +2256,50 @@ function VenueNotesModal({ onClose }) {
   const [data, setData] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || '{}'); } catch { return {}; } });
   const update = (key, val) => { const d = { ...data, [key]: val }; setData(d); try { localStorage.setItem(SK, JSON.stringify(d)); } catch {} };
   const fields = [
-    { key: 'address', label: '📍 Address', placeholder: '42, Sector 18, Noida, UP 201301', rows: 2 },
-    { key: 'parking', label: '🅿️ Parking', placeholder: 'Free parking in basement, enter from Gate B', rows: 2 },
-    { key: 'contact', label: '📞 Venue Contact', placeholder: '+91 98765 43210', rows: 1 },
-    { key: 'entry', label: '🚪 Entry Instructions', placeholder: 'Take lift to 5th floor, Suite 502', rows: 2 },
-    { key: 'notes', label: '📝 Notes', placeholder: 'Decor setup from 5 PM · No outside food · Parking free till 11 PM', rows: 3 },
+    { key:'address', label:'📍 Address', placeholder:'42, Sector 18, Noida, UP 201301', rows:2 },
+    { key:'parking', label:'🅿️ Parking', placeholder:'Free parking in basement, enter from Gate B', rows:2 },
+    { key:'contact', label:'📞 Venue Contact', placeholder:'+91 98765 43210', rows:1 },
+    { key:'entry', label:'🚪 Entry Instructions', placeholder:'Take lift to 5th floor, Suite 502', rows:2 },
+    { key:'notes', label:'📝 Notes', placeholder:'Decor setup from 5 PM · No outside food · Parking free till 11 PM', rows:3 },
   ];
+  const filled = fields.filter(f=>data[f.key]).length;
+
+  const openMaps = () => {
+    if (!data.address) return;
+    window.open(`https://maps.google.com/?q=${encodeURIComponent(data.address)}`, '_blank');
+  };
+  const shareWA = () => {
+    const parts = [];
+    if (data.address) parts.push(`📍 *Address:* ${data.address}`);
+    if (data.parking) parts.push(`🅿️ *Parking:* ${data.parking}`);
+    if (data.contact) parts.push(`📞 *Contact:* ${data.contact}`);
+    if (data.entry)   parts.push(`🚪 *Entry:* ${data.entry}`);
+    if (data.notes)   parts.push(`📝 *Note:* ${data.notes}`);
+    if (!parts.length) return;
+    window.open(`https://wa.me/?text=${encodeURIComponent('🎉 Venue Info\n\n'+parts.join('\n\n'))}`, '_blank');
+  };
+
   return (
     <Modal onClose={onClose} title="Venue Notes" emoji="📍">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, marginBottom:16 }}>
         {fields.map(f => (
           <div key={f.key}>
-            <div style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>{f.label}</div>
-            <textarea value={data[f.key] || ''} onChange={e => update(f.key, e.target.value)} placeholder={f.placeholder} rows={f.rows}
-              style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 13, fontFamily: font, outline: 'none', resize: 'none', boxSizing: 'border-box', lineHeight: 1.5, colorScheme: 'dark' }}
+            <div style={{ fontSize:10.5, fontWeight:700, color:'rgba(255,255,255,0.4)', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:5 }}>{f.label}</div>
+            <textarea value={data[f.key]||''} onChange={e=>update(f.key,e.target.value)} placeholder={f.placeholder} rows={f.rows}
+              style={{ width:'100%', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:10, padding:'10px 14px', color:'#fff', fontSize:13, fontFamily:font, outline:'none', resize:'none', boxSizing:'border-box', lineHeight:1.5, colorScheme:'dark' }}
             />
           </div>
         ))}
+      </div>
+      <div style={{ display:'flex', gap:8 }}>
+        {data.address && (
+          <button onClick={openMaps} style={{ flex:1, padding:'11px', borderRadius:10, border:'1.5px solid rgba(37,99,235,0.35)', background:'rgba(37,99,235,0.15)', color:'#60a5fa', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>
+            🗺️ Open in Maps
+          </button>
+        )}
+        <button onClick={shareWA} disabled={!filled} style={{ flex:1, padding:'11px', borderRadius:10, border:'none', background:filled?'linear-gradient(135deg,#25D366,#128C7E)':'rgba(255,255,255,0.05)', color:filled?'#fff':'rgba(255,255,255,0.25)', fontSize:13, fontWeight:700, cursor:filled?'pointer':'default', fontFamily:font }}>
+          📤 Share on WhatsApp
+        </button>
       </div>
     </Modal>
   );
@@ -2025,47 +2311,111 @@ function SeatingChartModal({ onClose }) {
   const [tables, setTables] = useState(() => { try { return JSON.parse(localStorage.getItem(TSK) || '[]'); } catch { return []; } });
   const [guests, setGuests] = useState(() => { try { return JSON.parse(localStorage.getItem(GSK) || '[]'); } catch { return []; } });
   const [tName, setTName] = useState('');
+  const [tCap, setTCap] = useState(8);
   const [gName, setGName] = useState('');
+  const [selected, setSelected] = useState(null);
   const saveT = (t) => { setTables(t); try { localStorage.setItem(TSK, JSON.stringify(t)); } catch {} };
   const saveG = (g) => { setGuests(g); try { localStorage.setItem(GSK, JSON.stringify(g)); } catch {} };
-  const addTable = () => { if (!tName.trim()) return; saveT([...tables, { id: Date.now(), name: tName.trim() }]); setTName(''); };
+  const addTable = () => { if (!tName.trim()) return; saveT([...tables, { id: Date.now(), name: tName.trim(), cap: tCap }]); setTName(''); };
   const addGuest = () => { if (!gName.trim()) return; saveG([...guests, { id: Date.now(), name: gName.trim(), table: null }]); setGName(''); };
-  const assign = (gId, tId) => saveG(guests.map(g => g.id === gId ? { ...g, table: tId ? Number(tId) : null } : g));
+  const assignToTable = (tId) => { if (!selected) return; saveG(guests.map(g=>g.id===selected?{...g,table:tId}:g)); setSelected(null); };
+  const removeFromTable = (gId) => saveG(guests.map(g=>g.id===gId?{...g,table:null}:g));
+  const unassigned = guests.filter(g=>!g.table);
+  const totalSeated = guests.filter(g=>g.table).length;
+
+  const shareChart = () => {
+    const lines = tables.map(t => {
+      const seated = guests.filter(g=>g.table===t.id).map(g=>g.name);
+      return `${t.name} (${seated.length}/${t.cap}):\n${seated.map(n=>'  • '+n).join('\n')||'  (empty)'}`;
+    });
+    if (unassigned.length) lines.push(`\nUnassigned (${unassigned.length}):\n${unassigned.map(g=>'  • '+g.name).join('\n')}`);
+    window.open(`https://wa.me/?text=${encodeURIComponent('🪑 Seating Chart\n\n'+lines.join('\n\n'))}`, '_blank');
+  };
+
   return (
     <Modal onClose={onClose} title="Seating Chart" emoji="🪑" wide>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      {(tables.length>0||guests.length>0) && (
+        <div style={{ display:'flex', gap:10, marginBottom:12, alignItems:'center' }}>
+          <span style={{ fontSize:12, color:'rgba(255,255,255,0.4)' }}>{totalSeated}/{guests.length} guests seated</span>
+          {guests.length>0 && <button onClick={shareChart} style={{ marginLeft:'auto', padding:'6px 12px', borderRadius:8, border:'none', background:'linear-gradient(135deg,#25D366,#128C7E)', color:'#fff', fontSize:11, fontWeight:700, cursor:'pointer', fontFamily:font }}>Share Chart</button>}
+        </div>
+      )}
+
+      {selected && (
+        <div style={{ background:'rgba(196,122,46,0.12)', border:'1px solid rgba(196,122,46,0.3)', borderRadius:10, padding:'10px 14px', marginBottom:12, fontSize:13, color:'#CCAB4A', fontWeight:700, display:'flex', alignItems:'center', gap:8 }}>
+          <span>Assigning: <strong>{guests.find(g=>g.id===selected)?.name}</strong> → tap a table</span>
+          <button onClick={()=>setSelected(null)} style={{ marginLeft:'auto', background:'none', border:'none', color:'rgba(255,255,255,0.45)', cursor:'pointer', fontSize:13, fontFamily:font }}>Cancel</button>
+        </div>
+      )}
+
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
         <div>
-          <div style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Tables</div>
-          <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
-            <input value={tName} onChange={e => setTName(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTable()} placeholder="Table name" style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '8px 10px', color: '#fff', fontSize: 13, fontFamily: font, outline: 'none' }} />
-            <button onClick={addTable} style={{ background: '#C47A2E', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: font }}>+</button>
+          <div style={{ fontSize:10.5, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:8 }}>Tables</div>
+          <div style={{ display:'flex', gap:5, marginBottom:10 }}>
+            <input value={tName} onChange={e=>setTName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addTable()} placeholder="Table name" style={{ flex:1, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:8, padding:'7px 9px', color:'#fff', fontSize:12, fontFamily:font, outline:'none' }} />
+            <input type="number" value={tCap} onChange={e=>setTCap(Math.max(1,Number(e.target.value)))} min={1} max={30} style={{ width:38, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:8, padding:'7px 5px', color:'#fff', fontSize:12, fontFamily:font, outline:'none', textAlign:'center' }} />
+            <button onClick={addTable} style={{ background:'#C47A2E', border:'none', borderRadius:8, padding:'7px 11px', color:'#fff', fontWeight:700, cursor:'pointer', fontFamily:font }}>+</button>
           </div>
-          {tables.length === 0 ? <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', textAlign: 'center', padding: 16 }}>Add tables above</div> : tables.map(t => {
-            const seated = guests.filter(g => g.table === t.id);
+          {tables.length===0 ? <div style={{ fontSize:12, color:'rgba(255,255,255,0.2)', textAlign:'center', padding:16 }}>Add tables above</div> : tables.map(t => {
+            const seated = guests.filter(g=>g.table===t.id);
+            const pct = t.cap ? seated.length/t.cap : 0;
+            const full = seated.length>=t.cap;
             return (
-              <div key={t.id} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 12px', marginBottom: 8 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#CCAB4A', marginBottom: seated.length ? 6 : 0 }}>{t.name} · {seated.length} seated</div>
-                {seated.map(g => <div key={g.id} style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', padding: '2px 0' }}>{g.name}</div>)}
-                {!seated.length && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.18)', fontStyle: 'italic' }}>Empty</div>}
+              <div key={t.id} onClick={()=>selected&&!full&&assignToTable(t.id)}
+                style={{ background:selected&&!full?'rgba(196,122,46,0.1)':'rgba(255,255,255,0.04)', borderRadius:12, padding:'10px 12px', marginBottom:8, border:`1.5px solid ${selected&&!full?'rgba(196,122,46,0.35)':full?'rgba(34,197,94,0.2)':'rgba(255,255,255,0.08)'}`, cursor:selected&&!full?'pointer':'default', transition:'all 0.15s' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:4 }}>
+                  <span style={{ fontSize:13, fontWeight:700, color:full?'#22c55e':'#CCAB4A' }}>{t.name}</span>
+                  <span style={{ fontSize:10.5, color:full?'#22c55e':'rgba(255,255,255,0.4)', fontWeight:700 }}>{seated.length}/{t.cap}</span>
+                </div>
+                <div style={{ height:3, borderRadius:2, background:'rgba(255,255,255,0.08)', overflow:'hidden', marginBottom:6 }}>
+                  <div style={{ height:'100%', width:`${Math.min(pct*100,100)}%`, background:full?'#22c55e':'#C47A2E', borderRadius:2 }} />
+                </div>
+                {seated.length>0 ? (
+                  <div style={{ display:'flex', flexWrap:'wrap', gap:4 }}>
+                    {seated.map(g => (
+                      <span key={g.id} onClick={e=>{e.stopPropagation();removeFromTable(g.id);}} title="Click to unassign" style={{ fontSize:10.5, color:'rgba(255,255,255,0.7)', background:'rgba(255,255,255,0.08)', padding:'2px 7px', borderRadius:100, cursor:'pointer' }}>{g.name} ×</span>
+                    ))}
+                  </div>
+                ) : <div style={{ fontSize:11, color:'rgba(255,255,255,0.18)', fontStyle:'italic' }}>Empty</div>}
               </div>
             );
           })}
         </div>
+
         <div>
-          <div style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Guests</div>
-          <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
-            <input value={gName} onChange={e => setGName(e.target.value)} onKeyDown={e => e.key === 'Enter' && addGuest()} placeholder="Guest name" style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '8px 10px', color: '#fff', fontSize: 13, fontFamily: font, outline: 'none' }} />
-            <button onClick={addGuest} style={{ background: '#C47A2E', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: font }}>+</button>
+          <div style={{ fontSize:10.5, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:8 }}>Guests</div>
+          <div style={{ display:'flex', gap:5, marginBottom:10 }}>
+            <input value={gName} onChange={e=>setGName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addGuest()} placeholder="Guest name" style={{ flex:1, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:8, padding:'7px 9px', color:'#fff', fontSize:12, fontFamily:font, outline:'none' }} />
+            <button onClick={addGuest} style={{ background:'#C47A2E', border:'none', borderRadius:8, padding:'7px 11px', color:'#fff', fontWeight:700, cursor:'pointer', fontFamily:font }}>+</button>
           </div>
-          {guests.length === 0 ? <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', textAlign: 'center', padding: 16 }}>Add guests above</div> : guests.map(g => (
-            <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '8px 10px', marginBottom: 6 }}>
-              <span style={{ flex: 1, fontSize: 13, color: '#fff', fontFamily: font, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.name}</span>
-              <select value={g.table || ''} onChange={e => assign(g.id, e.target.value)} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, color: '#fff', fontSize: 11, padding: '4px 5px', fontFamily: font, outline: 'none', colorScheme: 'dark', maxWidth: 90 }}>
-                <option value="">No seat</option>
-                {tables.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-              </select>
-            </div>
-          ))}
+          {unassigned.length>0 && (
+            <>
+              <div style={{ fontSize:10, fontWeight:700, color:'rgba(255,255,255,0.25)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:6 }}>Unassigned ({unassigned.length})</div>
+              {unassigned.map(g => (
+                <div key={g.id} onClick={()=>setSelected(g.id===selected?null:g.id)} style={{ display:'flex', alignItems:'center', gap:7, background:selected===g.id?'rgba(196,122,46,0.15)':'rgba(255,255,255,0.04)', borderRadius:10, padding:'8px 10px', marginBottom:5, border:`1.5px solid ${selected===g.id?'rgba(196,122,46,0.4)':'rgba(255,255,255,0.06)'}`, cursor:'pointer', transition:'all 0.15s' }}>
+                  <span style={{ flex:1, fontSize:12.5, color:selected===g.id?'#CCAB4A':'#fff', fontFamily:font }}>{g.name}</span>
+                  <span style={{ fontSize:9.5, color:selected===g.id?'#CCAB4A':'rgba(255,255,255,0.2)', fontWeight:700 }}>{selected===g.id?'→ TAP TABLE':'seat'}</span>
+                  <button onClick={e=>{e.stopPropagation();saveG(guests.filter(x=>x.id!==g.id));}} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.2)', cursor:'pointer', fontSize:16, lineHeight:1, padding:'0 2px' }}>×</button>
+                </div>
+              ))}
+            </>
+          )}
+          {guests.filter(g=>g.table).length>0 && (
+            <>
+              <div style={{ fontSize:10, fontWeight:700, color:'rgba(34,197,94,0.5)', textTransform:'uppercase', letterSpacing:'0.08em', margin:'10px 0 6px' }}>Seated ({guests.filter(g=>g.table).length})</div>
+              {guests.filter(g=>g.table).map(g => {
+                const t = tables.find(t=>t.id===g.table);
+                return (
+                  <div key={g.id} style={{ display:'flex', alignItems:'center', gap:7, background:'rgba(34,197,94,0.04)', borderRadius:10, padding:'7px 10px', marginBottom:4, border:'1px solid rgba(34,197,94,0.1)' }}>
+                    <span style={{ flex:1, fontSize:12, color:'rgba(255,255,255,0.5)', fontFamily:font }}>{g.name}</span>
+                    <span style={{ fontSize:10.5, color:'rgba(34,197,94,0.7)', fontWeight:700 }}>{t?.name}</span>
+                    <button onClick={()=>removeFromTable(g.id)} title="Unassign" style={{ background:'none', border:'none', color:'rgba(255,255,255,0.15)', cursor:'pointer', fontSize:14, lineHeight:1 }}>↩</button>
+                  </div>
+                );
+              })}
+            </>
+          )}
+          {guests.length===0 && <div style={{ fontSize:12, color:'rgba(255,255,255,0.2)', textAlign:'center', padding:16 }}>Add guests above</div>}
         </div>
       </div>
     </Modal>
