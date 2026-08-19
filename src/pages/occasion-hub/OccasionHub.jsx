@@ -2353,6 +2353,220 @@ function OccSeatingChartModal({ onClose, occasion, accent }) {
   );
 }
 
+function OccBudgetPlannerModal({ onClose, occasion, accent }) {
+  const SK = `tendr-occ-${occasion}-budget`;
+  const [data, setData] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || '{}'); } catch { return {}; } });
+  const upd = (k, v) => { const d = { ...data, [k]: v }; setData(d); try { localStorage.setItem(SK, JSON.stringify(d)); } catch {} };
+  const CATS = [
+    { id:'venue',         label:'🏠 Venue',          color:'#3b82f6' },
+    { id:'food',          label:'🍽️ Food & Drinks',  color:'#f97316' },
+    { id:'decor',         label:'🎨 Decor',           color:'#8b5cf6' },
+    { id:'entertainment', label:'🎵 Entertainment',   color:'#ec4899' },
+    { id:'other',         label:'📦 Other',           color:'#6b7280' },
+  ];
+  const total   = Number(data.total || 0);
+  const spent   = CATS.reduce((s,c) => s + Number(data[`spent_${c.id}`] || 0), 0);
+  const allocated = CATS.reduce((s,c) => s + Number(data[`alloc_${c.id}`] || 0), 0);
+  const remaining = total - spent;
+  const overBudget = total > 0 && spent > total;
+  return (
+    <Modal onClose={onClose} title="Budget Planner" emoji="💰" wide>
+      <div style={{ background:'rgba(255,255,255,0.04)', borderRadius:14, padding:14, marginBottom:16, border:'1px solid rgba(255,255,255,0.08)' }}>
+        <div style={{ fontSize:10.5, fontWeight:700, color:'rgba(255,255,255,0.4)', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:6 }}>Total Budget</div>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <span style={{ fontSize:20, color:'rgba(255,255,255,0.35)', fontWeight:700 }}>₹</span>
+          <input type="number" value={data.total||''} onChange={e=>upd('total',e.target.value)} placeholder="0" style={{ flex:1, background:'transparent', border:'none', outline:'none', fontSize:30, fontWeight:900, color:accent, fontFamily:font }} />
+        </div>
+        {total > 0 && <>
+          <div style={{ height:5, borderRadius:3, background:'rgba(255,255,255,0.08)', overflow:'hidden', margin:'12px 0 8px' }}>
+            <div style={{ height:'100%', width:`${Math.min(spent/total*100,100)}%`, background:overBudget?'#ef4444':accent, borderRadius:3, transition:'width 0.3s' }} />
+          </div>
+          <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, fontWeight:700 }}>
+            <span style={{ color:'rgba(255,255,255,0.45)' }}>Spent ₹{spent.toLocaleString('en-IN')}</span>
+            <span style={{ color:overBudget?'#ef4444':'#22c55e' }}>{overBudget?`⚠️ Over ₹${(spent-total).toLocaleString('en-IN')}`:`₹${remaining.toLocaleString('en-IN')} left`}</span>
+          </div>
+        </>}
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+        {CATS.map(c => {
+          const alloc = Number(data[`alloc_${c.id}`]||0);
+          const act   = Number(data[`spent_${c.id}`]||0);
+          const pct   = alloc > 0 ? Math.min(act/alloc*100, 100) : 0;
+          const over  = alloc > 0 && act > alloc;
+          return (
+            <div key={c.id} style={{ background:'rgba(255,255,255,0.03)', borderRadius:12, padding:'12px 14px', border:`1px solid ${c.color}22` }}>
+              <div style={{ fontSize:12, fontWeight:700, color:c.color, marginBottom:8 }}>{c.label}</div>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+                {[['Budget',`alloc_${c.id}`,'rgba(255,255,255,0.5)'],['Spent',`spent_${c.id}`,over?'#ef4444':'#fff']].map(([lbl,key,color]) => (
+                  <div key={key}>
+                    <div style={{ fontSize:9.5, fontWeight:700, color:'rgba(255,255,255,0.3)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>{lbl}</div>
+                    <div style={{ display:'flex', alignItems:'center', gap:4, background:'rgba(255,255,255,0.06)', borderRadius:8, padding:'7px 10px', border:over&&key.startsWith('spent')?'1px solid rgba(239,68,68,0.3)':'1px solid transparent' }}>
+                      <span style={{ fontSize:11, color:'rgba(255,255,255,0.3)' }}>₹</span>
+                      <input type="number" value={data[key]||''} onChange={e=>upd(key,e.target.value)} placeholder="0" style={{ background:'transparent', border:'none', outline:'none', fontSize:15, fontWeight:700, color, fontFamily:font, width:'100%' }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {alloc > 0 && <>
+                <div style={{ height:3, borderRadius:2, background:'rgba(255,255,255,0.06)', overflow:'hidden', marginTop:8 }}>
+                  <div style={{ height:'100%', width:`${pct}%`, background:over?'#ef4444':c.color, borderRadius:2 }} />
+                </div>
+                <div style={{ fontSize:10, color:over?'#ef4444':'rgba(255,255,255,0.3)', marginTop:3, textAlign:'right', fontWeight:700 }}>{over?`Over ₹${(act-alloc).toLocaleString('en-IN')}`:`₹${(alloc-act).toLocaleString('en-IN')} free`}</div>
+              </>}
+            </div>
+          );
+        })}
+      </div>
+      {allocated > 0 && total > 0 && Math.abs(allocated-total) > 1 && (
+        <div style={{ marginTop:14, padding:'10px 14px', borderRadius:10, background:allocated>total?'rgba(239,68,68,0.08)':'rgba(245,158,11,0.08)', border:`1px solid ${allocated>total?'rgba(239,68,68,0.2)':'rgba(245,158,11,0.2)'}`, fontSize:12, color:allocated>total?'#ef4444':'#f59e0b', fontWeight:700 }}>
+          {allocated>total?`⚠️ Allocations exceed budget by ₹${(allocated-total).toLocaleString('en-IN')}`:`ℹ️ ₹${(total-allocated).toLocaleString('en-IN')} unallocated`}
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+function OccVendorTrackerModal({ onClose, occasion, accent }) {
+  const SK = `tendr-occ-${occasion}-vendors`;
+  const [vendors, setVendors] = useState(() => { try { return JSON.parse(localStorage.getItem(SK)||'[]'); } catch { return []; } });
+  const [showAdd, setShowAdd] = useState(false);
+  const [form, setForm] = useState({ name:'', cat:'Caterer', contact:'', total:'', deposit:'', status:'enquired', notes:'' });
+  const CATS = ['Caterer','Decorator','Venue','DJ / Music','Photographer','Transport','Florist','Baker','MC / Host','Other'];
+  const STATUS = { enquired:{label:'Enquired',color:'#6b7280'}, quoted:{label:'Quote Received',color:'#f59e0b'}, booked:{label:'Booked',color:'#3b82f6'}, confirmed:{label:'Confirmed',color:'#22c55e'}, cancelled:{label:'Cancelled',color:'#ef4444'} };
+  const save = (v) => { setVendors(v); try { localStorage.setItem(SK,JSON.stringify(v)); } catch {} };
+  const add = () => { if (!form.name.trim()) return; save([...vendors,{id:Date.now(),...form,name:form.name.trim()}]); setForm({name:'',cat:'Caterer',contact:'',total:'',deposit:'',status:'enquired',notes:''}); setShowAdd(false); };
+  const totalCost = vendors.reduce((s,v)=>s+Number(v.total||0),0);
+  const totalPaid = vendors.reduce((s,v)=>s+Number(v.deposit||0),0);
+  const totalBal  = totalCost - totalPaid;
+  return (
+    <Modal onClose={onClose} title="Vendor Tracker" emoji="🗂️" wide>
+      {vendors.length > 0 && (
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8, marginBottom:14 }}>
+          {[['Total Cost',`₹${totalCost.toLocaleString('en-IN')}`,accent],['Paid',`₹${totalPaid.toLocaleString('en-IN')}`,'#22c55e'],['Balance Due',`₹${totalBal.toLocaleString('en-IN')}`,totalBal>0?'#f59e0b':'#22c55e']].map(([lbl,val,color])=>(
+            <div key={lbl} style={{ textAlign:'center', background:'rgba(255,255,255,0.04)', borderRadius:10, padding:'10px 6px', border:`1px solid ${color}30` }}>
+              <div style={{ fontSize:15, fontWeight:800, color }}>{val}</div>
+              <div style={{ fontSize:9.5, color:'rgba(255,255,255,0.35)', marginTop:2 }}>{lbl}</div>
+            </div>
+          ))}
+        </div>
+      )}
+      {showAdd ? (
+        <div style={{ background:'rgba(255,255,255,0.04)', borderRadius:14, padding:14, marginBottom:14, border:'1px solid rgba(255,255,255,0.1)' }}>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:8 }}>
+            <input value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} placeholder="Vendor name *" style={inp} />
+            <select value={form.cat} onChange={e=>setForm(p=>({...p,cat:e.target.value}))} style={{ ...inp, colorScheme:'dark' }}>{CATS.map(c=><option key={c} value={c}>{c}</option>)}</select>
+          </div>
+          <input value={form.contact} onChange={e=>setForm(p=>({...p,contact:e.target.value}))} placeholder="Phone / Instagram / Email" style={{ ...inp, marginBottom:8 }} />
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:8 }}>
+            {[['total','Total amount'],['deposit','Deposit paid']].map(([key,ph])=>(
+              <div key={key} style={{ position:'relative' }}>
+                <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color:'rgba(255,255,255,0.35)', fontSize:13, pointerEvents:'none' }}>₹</span>
+                <input type="number" value={form[key]} onChange={e=>setForm(p=>({...p,[key]:e.target.value}))} placeholder={ph} style={{ ...inp, paddingLeft:26 }} />
+              </div>
+            ))}
+          </div>
+          <input value={form.notes} onChange={e=>setForm(p=>({...p,notes:e.target.value}))} placeholder="Notes (optional)" style={{ ...inp, marginBottom:10 }} />
+          <div style={{ display:'flex', gap:8 }}>
+            <button onClick={add} style={{ flex:1, background:accent, border:'none', borderRadius:9, padding:'10px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>Add Vendor</button>
+            <button onClick={()=>setShowAdd(false)} style={{ padding:'10px 16px', borderRadius:9, border:'1px solid rgba(255,255,255,0.15)', background:'transparent', color:'rgba(255,255,255,0.5)', cursor:'pointer', fontFamily:font, fontSize:13 }}>Cancel</button>
+          </div>
+        </div>
+      ) : (
+        <button onClick={()=>setShowAdd(true)} style={{ width:'100%', background:`${accent}20`, border:`1.5px dashed ${accent}55`, borderRadius:10, padding:'11px', color:accent, fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font, marginBottom:14 }}>+ Add Vendor</button>
+      )}
+      {vendors.length === 0 ? (
+        <div style={{ textAlign:'center', color:'rgba(255,255,255,0.25)', fontSize:13, padding:'28px 0' }}>No vendors yet — add caterers, decorators, photographers…</div>
+      ) : (
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+          {vendors.map(v => {
+            const balance = Number(v.total||0) - Number(v.deposit||0);
+            const st = STATUS[v.status] || STATUS.enquired;
+            const ph = v.contact?.replace(/\D/g,'');
+            const isPhone = ph && ph.length >= 10;
+            return (
+              <div key={v.id} style={{ background:'rgba(255,255,255,0.04)', borderRadius:14, padding:'12px 14px', border:'1px solid rgba(255,255,255,0.07)' }}>
+                <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+                      <span style={{ fontSize:15, fontWeight:700, color:'#fff', fontFamily:font }}>{v.name}</span>
+                      <span style={{ fontSize:10, fontWeight:700, color:accent, background:`${accent}22`, padding:'2px 8px', borderRadius:100 }}>{v.cat}</span>
+                      <span style={{ fontSize:10, fontWeight:700, color:st.color, background:`${st.color}22`, padding:'2px 8px', borderRadius:100 }}>{st.label}</span>
+                    </div>
+                    {v.contact && (isPhone
+                      ? <a href={`https://wa.me/${ph.startsWith('91')&&ph.length===12?ph:'91'+ph}`} target="_blank" rel="noreferrer" style={{ fontSize:11.5, color:'#25D366', textDecoration:'none', fontWeight:700, display:'block', marginTop:3 }}>📱 {v.contact}</a>
+                      : <div style={{ fontSize:11.5, color:'rgba(255,255,255,0.4)', marginTop:3 }}>{v.contact}</div>
+                    )}
+                    {v.notes && <div style={{ fontSize:11, color:'rgba(255,255,255,0.3)', marginTop:4, fontStyle:'italic' }}>{v.notes}</div>}
+                  </div>
+                  <button onClick={()=>save(vendors.filter(x=>x.id!==v.id))} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.2)', cursor:'pointer', fontSize:18, lineHeight:1 }}>×</button>
+                </div>
+                {(v.total||v.deposit) && (
+                  <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:6, marginTop:10 }}>
+                    {[['Total',v.total,'rgba(255,255,255,0.6)'],['Paid',v.deposit,'#22c55e'],['Balance',balance,balance>0?'#f59e0b':'#22c55e']].map(([lbl,val,color])=>(
+                      <div key={lbl} style={{ textAlign:'center', background:'rgba(255,255,255,0.04)', borderRadius:8, padding:'6px 4px' }}>
+                        <div style={{ fontSize:13, fontWeight:800, color }}>₹{Number(val||0).toLocaleString('en-IN')}</div>
+                        <div style={{ fontSize:9, color:'rgba(255,255,255,0.3)', marginTop:1 }}>{lbl}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div style={{ marginTop:10, display:'flex', gap:5, flexWrap:'wrap' }}>
+                  {Object.entries(STATUS).map(([key,s])=>(
+                    <button key={key} onClick={()=>save(vendors.map(x=>x.id===v.id?{...x,status:key}:x))} style={{ fontSize:10.5, padding:'4px 10px', borderRadius:100, border:`1.5px solid ${v.status===key?s.color:'rgba(255,255,255,0.1)'}`, background:v.status===key?s.color+'22':'transparent', color:v.status===key?s.color:'rgba(255,255,255,0.35)', cursor:'pointer', fontFamily:font, fontWeight:700 }}>{s.label}</button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+function OccWABroadcastModal({ onClose, occasion, accent }) {
+  const occLabels = { birthday:'Birthday', anniversary:'Anniversary', 'baby-shower':'Baby Shower', housewarming:'Housewarming', 'get-together':'Get Together', 'kitty-party':'Kitty Party', 'naming-ceremony':'Naming Ceremony' };
+  const occLabel = occLabels[occasion] || 'Celebration';
+  const venueData = (() => { try { return JSON.parse(localStorage.getItem(`tendr-occ-${occasion}-venue`)||'{}'); } catch { return {}; } })();
+  const addr = venueData.address || '[ADD VENUE]';
+  const parking = venueData.parking ? `\n🅿️ *Parking:* ${venueData.parking}` : '';
+  const entry   = venueData.entry   ? `\n🚪 *Entry:* ${venueData.entry}`    : '';
+  const contact = venueData.contact ? `\n📞 *Contact:* ${venueData.contact}` : '';
+  const hasVenue = !!venueData.address;
+  const PHASES = [
+    { id:'savedate', label:'Save the Date', emoji:'📅',
+      template:`🎉 *Save the Date!*\n\nWe're celebrating our ${occLabel} and we'd love for you to join us!\n\n📅 *Date:* [ADD DATE]\n⏰ *Time:* [ADD TIME]\n📍 *Venue:* ${addr}\n\nMore details coming soon! 🥳` },
+    { id:'reminder', label:'1-Week Reminder', emoji:'⏰',
+      template:`Hey! 👋 Just a reminder — our ${occLabel} is *one week away*!\n\n📅 *Date:* [ADD DATE]\n⏰ *Time:* [ADD TIME]\n📍 *Venue:* ${addr}${parking}${entry}\n\nSee you there! 🎊` },
+    { id:'dayof', label:'Day-Of Directions', emoji:'📍',
+      template:`Today's the day! 🎉\n\n*${occLabel} — Here's how to get there:*\n\n📍 *Address:* ${addr}${parking}${contact}${entry}\n\nCan't wait to see you! 🥂` },
+    { id:'thankyou', label:'Thank You', emoji:'🙏',
+      template:`🙏 *Thank you so much!*\n\nWe're so grateful you were part of our ${occLabel} celebration.\n\nYour presence and wishes made it truly special.\n\nWith love ❤️` },
+  ];
+  const [phase, setPhase] = useState('savedate');
+  const [msgs, setMsgs] = useState(() => Object.fromEntries(PHASES.map(p=>[p.id, p.template])));
+  const [copied, setCopied] = useState(false);
+  const msg = msgs[phase];
+  const copyText = () => { navigator.clipboard.writeText(msg).then(()=>{ setCopied(true); setTimeout(()=>setCopied(false),1800); }).catch(()=>{}); };
+  return (
+    <Modal onClose={onClose} title="WA Broadcasts" emoji="📣" wide>
+      <div style={{ display:'flex', gap:6, marginBottom:12, flexWrap:'wrap' }}>
+        {PHASES.map(p=>(
+          <button key={p.id} onClick={()=>setPhase(p.id)} style={{ fontSize:11.5, padding:'6px 12px', borderRadius:100, border:`1.5px solid ${phase===p.id?accent:'rgba(255,255,255,0.12)'}`, background:phase===p.id?`${accent}22`:'transparent', color:phase===p.id?accent:'rgba(255,255,255,0.5)', cursor:'pointer', fontFamily:font, fontWeight:700 }}>{p.emoji} {p.label}</button>
+        ))}
+      </div>
+      {hasVenue && <div style={{ fontSize:11, color:'#22c55e', background:'rgba(34,197,94,0.08)', border:'1px solid rgba(34,197,94,0.2)', borderRadius:8, padding:'6px 12px', marginBottom:12, fontWeight:600 }}>✓ Venue address auto-filled from Venue Notes</div>}
+      <textarea value={msg} onChange={e=>setMsgs(m=>({...m,[phase]:e.target.value}))} rows={10}
+        style={{ width:'100%', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:12, padding:14, color:'#fff', fontSize:13.5, fontFamily:font, outline:'none', resize:'vertical', boxSizing:'border-box', lineHeight:1.6, colorScheme:'dark', marginBottom:12 }} />
+      <div style={{ display:'flex', gap:8 }}>
+        <button onClick={copyText} style={{ flex:1, padding:'11px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.15)', background:copied?'rgba(34,197,94,0.12)':'transparent', color:copied?'#22c55e':'rgba(255,255,255,0.7)', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font, transition:'all 0.2s' }}>{copied?'✓ Copied!':'📋 Copy'}</button>
+        <button onClick={()=>window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank')} style={{ flex:2, padding:'11px', borderRadius:10, border:'none', background:'linear-gradient(135deg,#25D366,#128C7E)', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>📤 Open in WhatsApp</button>
+      </div>
+      <div style={{ marginTop:10, fontSize:11, color:'rgba(255,255,255,0.25)', textAlign:'center' }}>Edit the message above then send — changes are not saved between sessions</div>
+    </Modal>
+  );
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // OCCASIONS CONFIG
 // ════════════════════════════════════════════════════════════════════════════
@@ -2377,6 +2591,9 @@ const OCCASIONS = {
         { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker", color: "#D97706" },
         { id: "venue",       emoji: "📍", title: "Venue Notes",            desc: "Address · parking · Maps · share",    color: "#DC2626" },
         { id: "seating",     emoji: "🪑", title: "Seating Chart",          desc: "Visual tables · tap to assign",       color: "#0891B2" },
+        { id: "budget",      emoji: "💰", title: "Budget Planner",         desc: "Set budget · track spend by category", color: "#16A34A" },
+        { id: "vendors",     emoji: "🗂️", title: "Vendor Tracker",         desc: "Caterer · DJ · deposit · balance",     color: "#F59E0B" },
+        { id: "wabroadcast", emoji: "📣", title: "WA Broadcasts",          desc: "Save the date · reminder · thank you", color: "#25D366" },
       ]},
       { id: "fun", label: "✨ Fun", subtitle: "Make it memorable", tools: [
         { id: "wishwall",      emoji: "🎂", title: "Wish Wall",          desc: "Everyone writes a wish for the birthday star", color: "#EC4899" },
@@ -2422,6 +2639,9 @@ const OCCASIONS = {
         { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker", color: "#D97706" },
         { id: "venue",       emoji: "📍", title: "Venue Notes",            desc: "Address · parking · Maps · share",    color: "#DC2626" },
         { id: "seating",     emoji: "🪑", title: "Seating Chart",          desc: "Visual tables · tap to assign",       color: "#0891B2" },
+        { id: "budget",      emoji: "💰", title: "Budget Planner",         desc: "Set budget · track spend by category", color: "#16A34A" },
+        { id: "vendors",     emoji: "🗂️", title: "Vendor Tracker",         desc: "Caterer · DJ · deposit · balance",     color: "#F59E0B" },
+        { id: "wabroadcast", emoji: "📣", title: "WA Broadcasts",          desc: "Save the date · reminder · thank you", color: "#25D366" },
       ]},
       { id: "fun", label: "❤️ Love", subtitle: "Make it unforgettable", tools: [
         { id: "lovenotes", emoji: "💌", title: "Love Notes Wall", desc: "Everyone writes a note for the couple", color: "#F59E0B" },
@@ -2457,6 +2677,9 @@ const OCCASIONS = {
         { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker", color: "#D97706" },
         { id: "venue",       emoji: "📍", title: "Venue Notes",            desc: "Address · parking · Maps · share",    color: "#DC2626" },
         { id: "seating",     emoji: "🪑", title: "Seating Chart",          desc: "Visual tables · tap to assign",       color: "#0891B2" },
+        { id: "budget",      emoji: "💰", title: "Budget Planner",         desc: "Set budget · track spend by category", color: "#16A34A" },
+        { id: "vendors",     emoji: "🗂️", title: "Vendor Tracker",         desc: "Caterer · DJ · deposit · balance",     color: "#F59E0B" },
+        { id: "wabroadcast", emoji: "📣", title: "WA Broadcasts",          desc: "Save the date · reminder · thank you", color: "#25D366" },
       ]},
       { id: "votes", label: "👶 Baby Votes", subtitle: "Fun predictions & guesses", tools: [
         { id: "babynamevote", emoji: "👶", title: "Baby Name Vote", desc: "Suggest & vote on baby names", color: "#38BDF8" },
@@ -2493,6 +2716,9 @@ const OCCASIONS = {
         { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker", color: "#D97706" },
         { id: "venue",       emoji: "📍", title: "Venue Notes",            desc: "Address · parking · Maps · share",    color: "#DC2626" },
         { id: "seating",     emoji: "🪑", title: "Seating Chart",          desc: "Visual tables · tap to assign",       color: "#0891B2" },
+        { id: "budget",      emoji: "💰", title: "Budget Planner",         desc: "Set budget · track spend by category", color: "#16A34A" },
+        { id: "vendors",     emoji: "🗂️", title: "Vendor Tracker",         desc: "Caterer · DJ · deposit · balance",     color: "#F59E0B" },
+        { id: "wabroadcast", emoji: "📣", title: "WA Broadcasts",          desc: "Save the date · reminder · thank you", color: "#25D366" },
       ]},
       { id: "fun", label: "✨ Fun", subtitle: "Show them around", tools: [
         { id: "theme", emoji: "🎨", title: "Theme Picker", desc: "Vote on the decor theme", color: "#7C3AED" },
@@ -2529,6 +2755,9 @@ const OCCASIONS = {
         { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker", color: "#D97706" },
         { id: "venue",       emoji: "📍", title: "Venue Notes",            desc: "Address · parking · Maps · share",    color: "#DC2626" },
         { id: "seating",     emoji: "🪑", title: "Seating Chart",          desc: "Visual tables · tap to assign",       color: "#0891B2" },
+        { id: "budget",      emoji: "💰", title: "Budget Planner",         desc: "Set budget · track spend by category", color: "#16A34A" },
+        { id: "vendors",     emoji: "🗂️", title: "Vendor Tracker",         desc: "Caterer · DJ · deposit · balance",     color: "#F59E0B" },
+        { id: "wabroadcast", emoji: "📣", title: "WA Broadcasts",          desc: "Save the date · reminder · thank you", color: "#25D366" },
       ]},
       { id: "fun", label: "✨ Fun", subtitle: "Theme · music · photos", tools: [
         { id: "theme", emoji: "🎨", title: "Theme Picker", desc: "Vote on tonight's vibe", color: "#7C3AED" },
@@ -2569,6 +2798,9 @@ const OCCASIONS = {
         { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker", color: "#D97706" },
         { id: "venue",       emoji: "📍", title: "Venue Notes",            desc: "Address · parking · Maps · share",    color: "#DC2626" },
         { id: "seating",     emoji: "🪑", title: "Seating Chart",          desc: "Visual tables · tap to assign",       color: "#0891B2" },
+        { id: "budget",      emoji: "💰", title: "Budget Planner",         desc: "Set budget · track spend by category", color: "#16A34A" },
+        { id: "vendors",     emoji: "🗂️", title: "Vendor Tracker",         desc: "Caterer · DJ · deposit · balance",     color: "#F59E0B" },
+        { id: "wabroadcast", emoji: "📣", title: "WA Broadcasts",          desc: "Save the date · reminder · thank you", color: "#25D366" },
       ]},
       { id: "fun", label: "✨ Fun", subtitle: "Kitty vibes only", tools: [
         { id: "theme", emoji: "🎨", title: "Theme Picker", desc: "Vote on this month's theme", color: "#7C3AED" },
@@ -2606,6 +2838,9 @@ const OCCASIONS = {
         { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker", color: "#D97706" },
         { id: "venue",       emoji: "📍", title: "Venue Notes",            desc: "Address · parking · Maps · share",    color: "#DC2626" },
         { id: "seating",     emoji: "🪑", title: "Seating Chart",          desc: "Visual tables · tap to assign",       color: "#0891B2" },
+        { id: "budget",      emoji: "💰", title: "Budget Planner",         desc: "Set budget · track spend by category", color: "#16A34A" },
+        { id: "vendors",     emoji: "🗂️", title: "Vendor Tracker",         desc: "Caterer · DJ · deposit · balance",     color: "#F59E0B" },
+        { id: "wabroadcast", emoji: "📣", title: "WA Broadcasts",          desc: "Save the date · reminder · thank you", color: "#25D366" },
       ]},
       { id: "ceremony", label: "✨ Ceremony", subtitle: "Meaningful moments", tools: [
         { id: "namesuggestions", emoji: "🌸", title: "Name Suggestions", desc: "Family suggests names with meanings", color: "#A78BFA" },
@@ -2943,7 +3178,10 @@ export default function OccasionHub({ occasion }) {
       case "menu":           return <OccMenuPlannerModal onClose={close} occasion={occasion} accent={accent} />;
       case "daytimeline":    return <OccDayTimelineModal onClose={close} occasion={occasion} accent={accent} />;
       case "venue":          return <OccVenueNotesModal onClose={close} occasion={occasion} />;
-      case "seating":        return <OccSeatingChartModal onClose={close} occasion={occasion} accent={accent} />;
+      case "seating":        return <OccSeatingChartModal  onClose={close} occasion={occasion} accent={accent} />;
+      case "budget":         return <OccBudgetPlannerModal onClose={close} occasion={occasion} accent={accent} />;
+      case "vendors":        return <OccVendorTrackerModal onClose={close} occasion={occasion} accent={accent} />;
+      case "wabroadcast":    return <OccWABroadcastModal   onClose={close} occasion={occasion} accent={accent} />;
       default: return null;
     }
   };
