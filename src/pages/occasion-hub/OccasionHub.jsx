@@ -2007,6 +2007,353 @@ function GiftTracker({ onClose, accent }) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+// MANAGE TOOL MODALS (shared across all occasions)
+// ════════════════════════════════════════════════════════════════════════════
+
+function OccGuestListModal({ onClose, occasion, accent }) {
+  const SK = `tendr-occ-${occasion}-guestlist`;
+  const [guests, setGuests] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || '[]'); } catch { return []; } });
+  const [form, setForm] = useState({ name:'', phone:'', plusOne:false, meal:'veg', rsvp:'pending' });
+  const [showAdd, setShowAdd] = useState(false);
+  const save = (g) => { setGuests(g); try { localStorage.setItem(SK, JSON.stringify(g)); } catch {} };
+  const add = () => {
+    if (!form.name.trim()) return;
+    save([...guests, { id: Date.now(), ...form, name: form.name.trim() }]);
+    setForm({ name:'', phone:'', plusOne:false, meal:'veg', rsvp:'pending' }); setShowAdd(false);
+  };
+  const setRsvp = (id, rsvp) => save(guests.map(g => g.id === id ? { ...g, rsvp } : g));
+  const counts = { yes: guests.filter(g=>g.rsvp==='yes').length, maybe: guests.filter(g=>g.rsvp==='maybe').length, no: guests.filter(g=>g.rsvp==='no').length, pending: guests.filter(g=>g.rsvp==='pending').length };
+  const totalAttending = guests.filter(g=>g.rsvp==='yes').reduce((s,g)=>s+(g.plusOne?2:1), 0);
+  const plusOneCount = guests.filter(g=>g.rsvp==='yes'&&g.plusOne).length;
+  const pendingWithPhone = guests.filter(g=>g.rsvp==='pending'&&g.phone);
+  const sendReminder = () => {
+    if (!pendingWithPhone.length) return;
+    const msg = encodeURIComponent("Hey! Just checking — are you coming? Let us know! 🎉");
+    const ph = pendingWithPhone[0].phone.replace(/\D/g,'');
+    window.open(`https://wa.me/${ph.startsWith('91')&&ph.length===12?ph:'91'+ph}?text=${msg}`, '_blank');
+  };
+  return (
+    <Modal onClose={onClose} title="Guest List" emoji="👥">
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8, marginBottom:14 }}>
+        {[['Coming',counts.yes,'#22c55e'],['Maybe',counts.maybe,'#f59e0b'],['Not Coming',counts.no,'#ef4444'],['Pending',counts.pending,'#6b7280']].map(([lbl,count,color]) => (
+          <div key={lbl} style={{ textAlign:'center', background:'rgba(255,255,255,0.04)', borderRadius:10, padding:'8px 4px', border:`1px solid ${color}30` }}>
+            <div style={{ fontSize:20, fontWeight:800, color }}>{count}</div>
+            <div style={{ fontSize:9.5, color:'rgba(255,255,255,0.35)', marginTop:2 }}>{lbl}</div>
+          </div>
+        ))}
+      </div>
+      {totalAttending > 0 && <div style={{ background:'rgba(34,197,94,0.08)', border:'1px solid rgba(34,197,94,0.2)', borderRadius:10, padding:'8px 14px', marginBottom:12, fontSize:13, color:'#22c55e', fontWeight:700 }}>🎉 {totalAttending} attending{plusOneCount>0?` (incl. ${plusOneCount} +1${plusOneCount!==1?'s':''})`:''}
+      </div>}
+      {showAdd ? (
+        <div style={{ background:'rgba(255,255,255,0.04)', borderRadius:12, padding:14, marginBottom:12, border:'1px solid rgba(255,255,255,0.1)' }}>
+          <input value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&add()} placeholder="Name *" style={{ ...inp, marginBottom:8 }} />
+          <input value={form.phone} onChange={e=>setForm(p=>({...p,phone:e.target.value}))} placeholder="Phone (for WhatsApp)" type="tel" style={{ ...inp, marginBottom:10 }} />
+          <div style={{ display:'flex', gap:7, flexWrap:'wrap', marginBottom:10 }}>
+            {[['🟢 Veg','veg'],['🔴 Non-Veg','nonveg'],['🟡 Jain','jain']].map(([lbl,val]) => (
+              <button key={val} onClick={()=>setForm(p=>({...p,meal:val}))} style={{ fontSize:11, padding:'5px 10px', borderRadius:100, border:`1.5px solid ${form.meal===val?'rgba(255,255,255,0.5)':'rgba(255,255,255,0.12)'}`, background:form.meal===val?'rgba(255,255,255,0.12)':'transparent', color:form.meal===val?'#fff':'rgba(255,255,255,0.4)', cursor:'pointer', fontFamily:font, fontWeight:700 }}>{lbl}</button>
+            ))}
+            <button onClick={()=>setForm(p=>({...p,plusOne:!p.plusOne}))} style={{ fontSize:11, padding:'5px 10px', borderRadius:100, border:`1.5px solid ${form.plusOne?accent:'rgba(255,255,255,0.12)'}`, background:form.plusOne?accent+'22':'transparent', color:form.plusOne?accent:'rgba(255,255,255,0.4)', cursor:'pointer', fontFamily:font, fontWeight:700 }}>+1 Guest</button>
+          </div>
+          <div style={{ display:'flex', gap:8 }}>
+            <button onClick={add} style={{ flex:1, background:accent, border:'none', borderRadius:9, padding:'10px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>Add Guest</button>
+            <button onClick={()=>setShowAdd(false)} style={{ padding:'10px 16px', borderRadius:9, border:'1px solid rgba(255,255,255,0.15)', background:'transparent', color:'rgba(255,255,255,0.5)', cursor:'pointer', fontFamily:font, fontSize:13 }}>Cancel</button>
+          </div>
+        </div>
+      ) : (
+        <button onClick={()=>setShowAdd(true)} style={{ width:'100%', background:`${accent}20`, border:`1.5px dashed ${accent}55`, borderRadius:10, padding:'11px', color:accent, fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font, marginBottom:12 }}>+ Add Guest</button>
+      )}
+      {guests.length === 0 ? (
+        <div style={{ textAlign:'center', color:'rgba(255,255,255,0.25)', fontSize:13, padding:'28px 0' }}>No guests yet. Add names above!</div>
+      ) : (
+        <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
+          {guests.map(g => {
+            const rsvpColor = g.rsvp==='yes'?'#22c55e':g.rsvp==='maybe'?'#f59e0b':g.rsvp==='no'?'#ef4444':'#6b7280';
+            const ph = g.phone?.replace(/\D/g,'');
+            const waPhone = ph ? (ph.startsWith('91')&&ph.length===12?ph:'91'+ph) : null;
+            return (
+              <div key={g.id} style={{ background:'rgba(255,255,255,0.04)', borderRadius:12, padding:'10px 12px', border:'1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                  <div style={{ width:32, height:32, borderRadius:'50%', background:`${rsvpColor}22`, border:`2px solid ${rsvpColor}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:800, color:rsvpColor, flexShrink:0 }}>{g.name[0]?.toUpperCase()}</div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <span style={{ fontSize:14, color:'#fff', fontFamily:font, fontWeight:600 }}>{g.name}</span>
+                    {g.plusOne && <span style={{ marginLeft:6, fontSize:10, fontWeight:700, color:accent, background:accent+'22', padding:'2px 6px', borderRadius:100 }}>+1</span>}
+                    {waPhone && <a href={`https://wa.me/${waPhone}`} target="_blank" rel="noreferrer" style={{ display:'block', fontSize:10.5, color:'#25D366', fontWeight:700, textDecoration:'none', marginTop:2 }}>📱 {g.phone}</a>}
+                  </div>
+                  {[['✓','yes','#22c55e'],['?','maybe','#f59e0b'],['✗','no','#ef4444']].map(([lbl,val,color]) => (
+                    <button key={val} onClick={()=>setRsvp(g.id,g.rsvp===val?'pending':val)} style={{ padding:'4px 9px', borderRadius:100, border:`1.5px solid ${g.rsvp===val?color:'rgba(255,255,255,0.1)'}`, background:g.rsvp===val?color+'22':'transparent', color:g.rsvp===val?color:'rgba(255,255,255,0.35)', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:font }}>{lbl}</button>
+                  ))}
+                  <button onClick={()=>save(guests.filter(x=>x.id!==g.id))} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.2)', cursor:'pointer', fontSize:18, lineHeight:1, padding:'0 2px' }}>×</button>
+                </div>
+                {g.meal && g.meal!=='veg' && <div style={{ fontSize:10.5, color:'rgba(255,255,255,0.35)', fontWeight:600, paddingLeft:40, marginTop:3 }}>{g.meal==='nonveg'?'🔴 Non-Veg':'🟡 Jain'}</div>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {pendingWithPhone.length > 0 && (
+        <button onClick={sendReminder} style={{ marginTop:14, width:'100%', padding:'11px', borderRadius:10, border:'none', background:'linear-gradient(135deg,#25D366,#128C7E)', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>
+          📩 Remind {pendingWithPhone.length} Pending Guest{pendingWithPhone.length!==1?'s':''}
+        </button>
+      )}
+    </Modal>
+  );
+}
+
+function OccMenuPlannerModal({ onClose, occasion, accent }) {
+  const SK = `tendr-occ-${occasion}-menu`;
+  const [items, setItems] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || '[]'); } catch { return []; } });
+  const [name, setName] = useState('');
+  const [cat, setCat] = useState('food');
+  const [diet, setDiet] = useState('veg');
+  const [person, setPerson] = useState('');
+  const save = (it) => { setItems(it); try { localStorage.setItem(SK, JSON.stringify(it)); } catch {} };
+  const add = () => { if (!name.trim()) return; save([...items, { id: Date.now(), name: name.trim(), cat, diet, person: person.trim(), status: 'pending' }]); setName(''); setPerson(''); };
+  const setStatus = (id, status) => save(items.map(it => it.id === id ? { ...it, status } : it));
+  const cats = [{ id:'food', label:'🍲 Food', color:'#f97316' },{ id:'drinks', label:'🥂 Drinks', color:'#06b6d4' },{ id:'dessert', label:'🍰 Dessert', color:'#ec4899' },{ id:'other', label:'📦 Other', color:'#8b5cf6' }];
+  const STATUS_LABELS = { pending:'Pending', ordered:'Ordered', confirmed:'Confirmed', done:'Done' };
+  const STATUS_COLORS = { pending:'#6b7280', ordered:'#f59e0b', confirmed:'#3b82f6', done:'#22c55e' };
+  const arranged = items.filter(it=>it.status!=='pending').length;
+  const shareMenu = () => {
+    const lines = cats.map(c => { const ci = items.filter(it=>it.cat===c.id); if (!ci.length) return ''; return `${c.label}:\n${ci.map(it=>`  • ${it.name}${it.person?' ('+it.person+')':''}${it.diet==='nonveg'?' 🔴':it.diet==='jain'?' 🟡':''}`).join('\n')}`; }).filter(Boolean).join('\n\n');
+    window.open(`https://wa.me/?text=${encodeURIComponent('🍽️ Menu Plan\n\n'+lines)}`, '_blank');
+  };
+  return (
+    <Modal onClose={onClose} title="Menu Planner" emoji="🍽️" wide>
+      <div style={{ display:'flex', gap:10, marginBottom:12, alignItems:'center', flexWrap:'wrap' }}>
+        {items.length>0 && <span style={{ fontSize:12, color:'rgba(255,255,255,0.4)' }}>{arranged}/{items.length} arranged</span>}
+        {items.length>0 && <button onClick={shareMenu} style={{ marginLeft:'auto', padding:'6px 12px', borderRadius:8, border:'none', background:'linear-gradient(135deg,#25D366,#128C7E)', color:'#fff', fontSize:11, fontWeight:700, cursor:'pointer', fontFamily:font }}>📤 Share Menu</button>}
+      </div>
+      <div style={{ background:'rgba(255,255,255,0.03)', borderRadius:12, padding:'12px', marginBottom:16, border:'1px solid rgba(255,255,255,0.07)' }}>
+        <div style={{ display:'flex', gap:6, marginBottom:8, flexWrap:'wrap', alignItems:'center' }}>
+          {cats.map(c => (<button key={c.id} onClick={()=>setCat(c.id)} style={{ fontSize:11, padding:'4px 10px', borderRadius:100, border:`1.5px solid ${cat===c.id?c.color:'rgba(255,255,255,0.1)'}`, background:cat===c.id?c.color+'22':'transparent', color:cat===c.id?c.color:'rgba(255,255,255,0.4)', cursor:'pointer', fontFamily:font, fontWeight:700 }}>{c.label}</button>))}
+          <div style={{ marginLeft:'auto', display:'flex', gap:4 }}>
+            {[['🟢','veg'],['🔴','nonveg'],['🟡','jain']].map(([emoji,val]) => (<button key={val} onClick={()=>setDiet(val)} style={{ fontSize:14, padding:'2px 6px', borderRadius:100, border:`1.5px solid ${diet===val?'rgba(255,255,255,0.45)':'rgba(255,255,255,0.1)'}`, background:diet===val?'rgba(255,255,255,0.1)':'transparent', cursor:'pointer' }}>{emoji}</button>))}
+          </div>
+        </div>
+        <div style={{ display:'flex', gap:8 }}>
+          <input value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&add()} placeholder="Menu item…" style={{ flex:2, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:9, padding:'9px 12px', color:'#fff', fontSize:13, fontFamily:font, outline:'none' }} />
+          <input value={person} onChange={e=>setPerson(e.target.value)} placeholder="Who brings?" style={{ flex:1, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:9, padding:'9px 10px', color:'#fff', fontSize:12, fontFamily:font, outline:'none' }} />
+          <button onClick={add} style={{ background:accent, border:'none', borderRadius:9, padding:'9px 14px', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:font }}>+</button>
+        </div>
+      </div>
+      {cats.map(c => { const catItems = items.filter(it=>it.cat===c.id); if (!catItems.length) return null; return (
+        <div key={c.id} style={{ marginBottom:16 }}>
+          <div style={{ fontSize:10.5, fontWeight:800, color:c.color, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:7 }}>{c.label} ({catItems.length})</div>
+          {catItems.map(it => (
+            <div key={it.id} style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 12px', background:'rgba(255,255,255,0.03)', borderRadius:10, marginBottom:5, border:'1px solid rgba(255,255,255,0.05)' }}>
+              <span style={{ flex:1, fontSize:13.5, color:'#fff', fontFamily:font }}>{it.name}</span>
+              {it.diet==='nonveg' && <span style={{ fontSize:11 }}>🔴</span>}
+              {it.diet==='jain' && <span style={{ fontSize:11 }}>🟡</span>}
+              {it.person && <span style={{ fontSize:11, color:'rgba(255,255,255,0.45)', background:'rgba(255,255,255,0.06)', padding:'2px 8px', borderRadius:100, whiteSpace:'nowrap' }}>{it.person}</span>}
+              <select value={it.status} onChange={e=>setStatus(it.id,e.target.value)} style={{ background:'rgba(255,255,255,0.06)', border:`1px solid ${STATUS_COLORS[it.status]}55`, borderRadius:6, color:STATUS_COLORS[it.status], fontSize:10.5, padding:'3px 6px', fontFamily:font, outline:'none', colorScheme:'dark', cursor:'pointer' }}>
+                {Object.entries(STATUS_LABELS).map(([val,lbl])=><option key={val} value={val}>{lbl}</option>)}
+              </select>
+              <button onClick={()=>save(items.filter(x=>x.id!==it.id))} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.2)', cursor:'pointer', fontSize:18, lineHeight:1, padding:'0 2px' }}>×</button>
+            </div>
+          ))}
+        </div>
+      ); })}
+      {items.length===0 && <div style={{ textAlign:'center', color:'rgba(255,255,255,0.25)', fontSize:13, padding:'28px 0' }}>Pick a category and add menu items!</div>}
+    </Modal>
+  );
+}
+
+function OccDayTimelineModal({ onClose, occasion, accent }) {
+  const SK = `tendr-occ-${occasion}-timeline`;
+  const [entries, setEntries] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || '[]'); } catch { return []; } });
+  const [time, setTime] = useState('');
+  const [event, setEvent] = useState('');
+  const [now, setNow] = useState(new Date());
+  useEffect(() => { const t = setInterval(() => setNow(new Date()), 30000); return () => clearInterval(t); }, []);
+  const saveEntries = (e) => { setEntries(e); try { localStorage.setItem(SK, JSON.stringify(e)); } catch {} };
+  const add = () => { if (!time||!event.trim()) return; saveEntries([...entries,{id:Date.now(),time,event:event.trim(),done:false}].sort((a,b)=>a.time.localeCompare(b.time))); setTime(''); setEvent(''); };
+  const toggle = (id) => saveEntries(entries.map(e=>e.id===id?{...e,done:!e.done}:e));
+  const nowStr = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  const currentIdx = entries.reduce((found,e,i)=>e.time<=nowStr?i:found, -1);
+  const nextEntry = entries.find(e=>e.time>nowStr);
+  let countdown = '';
+  if (nextEntry) { const [nh,nm]=nextEntry.time.split(':').map(Number); const diff=nh*60+nm-now.getHours()*60-now.getMinutes(); if (diff>0) countdown=diff>=60?`${Math.floor(diff/60)}h ${diff%60}m`:`${diff}m`; }
+  const shareTimeline = () => { const txt = entries.map(e=>`${e.time} — ${e.event}`).join('\n'); window.open(`https://wa.me/?text=${encodeURIComponent('📅 Day Plan:\n\n'+txt)}`, '_blank'); };
+  return (
+    <Modal onClose={onClose} title="Day Timeline" emoji="🗓️">
+      {entries.length>0 && countdown && (
+        <div style={{ background:`${accent}18`, border:`1px solid ${accent}40`, borderRadius:10, padding:'10px 14px', marginBottom:14, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <div><div style={{ fontSize:9.5, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.1em' }}>Next Up</div><div style={{ fontSize:14, fontWeight:700, color:accent }}>{nextEntry.event}</div></div>
+          <div style={{ textAlign:'right' }}><div style={{ fontSize:9.5, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.1em' }}>In</div><div style={{ fontSize:20, fontWeight:900, color:accent }}>{countdown}</div></div>
+        </div>
+      )}
+      <div style={{ display:'flex', gap:8, marginBottom:14 }}>
+        <input type="time" value={time} onChange={e=>setTime(e.target.value)} style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:9, padding:'9px 10px', color:'#fff', fontSize:13.5, fontFamily:font, outline:'none', width:100, colorScheme:'dark', flexShrink:0 }} />
+        <input value={event} onChange={e=>setEvent(e.target.value)} onKeyDown={e=>e.key==='Enter'&&add()} placeholder="What happens?" style={{ flex:1, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:9, padding:'9px 12px', color:'#fff', fontSize:13.5, fontFamily:font, outline:'none' }} />
+        <button onClick={add} disabled={!time||!event.trim()} style={{ background:time&&event.trim()?accent:'rgba(255,255,255,0.06)', border:'none', borderRadius:9, padding:'9px 14px', color:'#fff', fontSize:18, fontWeight:700, cursor:'pointer', opacity:time&&event.trim()?1:0.4 }}>+</button>
+      </div>
+      {entries.length>0 && <button onClick={shareTimeline} style={{ width:'100%', marginBottom:14, padding:'9px', borderRadius:9, border:'none', background:'linear-gradient(135deg,#25D366,#128C7E)', color:'#fff', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:font }}>Share Timeline on WhatsApp</button>}
+      {entries.length===0 ? (
+        <div style={{ textAlign:'center', color:'rgba(255,255,255,0.25)', fontSize:13, padding:'28px 0' }}>Add time slots to build the day's schedule!</div>
+      ) : (
+        <div style={{ position:'relative' }}>
+          <div style={{ position:'absolute', left:44, top:0, bottom:0, width:2, background:'rgba(255,255,255,0.06)', zIndex:0 }} />
+          {entries.map((e,i) => {
+            const isNow = i===currentIdx && e.time<=nowStr;
+            return (
+              <div key={e.id} style={{ display:'flex', gap:10, alignItems:'flex-start', padding:'9px 0', position:'relative', zIndex:1 }}>
+                <div style={{ minWidth:44, fontSize:11, fontWeight:800, color:isNow?accent:e.done?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.5)', textAlign:'right', paddingTop:3, flexShrink:0 }}>{e.time}</div>
+                <button onClick={()=>toggle(e.id)} style={{ width:18, height:18, borderRadius:'50%', border:`2px solid ${e.done?'#22c55e':isNow?accent:'rgba(255,255,255,0.2)'}`, background:isNow?accent+'28':e.done?'#22c55e28':'#140e08', cursor:'pointer', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', marginTop:2 }}>
+                  {e.done && <span style={{ color:'#22c55e', fontSize:9, fontWeight:900 }}>✓</span>}
+                </button>
+                <div style={{ flex:1, paddingTop:1, display:'flex', alignItems:'center', gap:6 }}>
+                  <span style={{ fontSize:14, color:e.done?'rgba(255,255,255,0.3)':'#fff', textDecoration:e.done?'line-through':'none', fontFamily:font, lineHeight:1.4 }}>{e.event}</span>
+                  {isNow && <span style={{ fontSize:9, fontWeight:800, color:accent, background:`${accent}28`, padding:'2px 7px', borderRadius:100, textTransform:'uppercase', letterSpacing:'0.08em', flexShrink:0 }}>NOW</span>}
+                </div>
+                <button onClick={()=>saveEntries(entries.filter(x=>x.id!==e.id))} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.15)', cursor:'pointer', fontSize:18, lineHeight:1, paddingTop:2 }}>×</button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+function OccVenueNotesModal({ onClose, occasion }) {
+  const SK = `tendr-occ-${occasion}-venue`;
+  const [data, setData] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || '{}'); } catch { return {}; } });
+  const update = (key, val) => { const d = { ...data, [key]: val }; setData(d); try { localStorage.setItem(SK, JSON.stringify(d)); } catch {} };
+  const fields = [
+    { key:'address', label:'📍 Address', placeholder:'42, Sector 18, Noida', rows:2 },
+    { key:'parking', label:'🅿️ Parking', placeholder:'Free parking in basement, Gate B', rows:2 },
+    { key:'contact', label:'📞 Venue Contact', placeholder:'+91 98765 43210', rows:1 },
+    { key:'entry', label:'🚪 Entry Instructions', placeholder:'Take lift to 5th floor, Suite 502', rows:2 },
+    { key:'notes', label:'📝 Notes', placeholder:'Setup from 5 PM · No outside food', rows:3 },
+  ];
+  const filled = fields.filter(f=>data[f.key]).length;
+  const openMaps = () => { if (data.address) window.open(`https://maps.google.com/?q=${encodeURIComponent(data.address)}`, '_blank'); };
+  const shareWA = () => {
+    const parts = [];
+    if (data.address) parts.push(`📍 *Address:* ${data.address}`);
+    if (data.parking) parts.push(`🅿️ *Parking:* ${data.parking}`);
+    if (data.contact) parts.push(`📞 *Contact:* ${data.contact}`);
+    if (data.entry)   parts.push(`🚪 *Entry:* ${data.entry}`);
+    if (data.notes)   parts.push(`📝 *Note:* ${data.notes}`);
+    if (!parts.length) return;
+    window.open(`https://wa.me/?text=${encodeURIComponent('🎉 Venue Info\n\n'+parts.join('\n\n'))}`, '_blank');
+  };
+  return (
+    <Modal onClose={onClose} title="Venue Notes" emoji="📍">
+      <div style={{ display:'flex', flexDirection:'column', gap:12, marginBottom:16 }}>
+        {fields.map(f => (
+          <div key={f.key}>
+            <div style={{ fontSize:10.5, fontWeight:700, color:'rgba(255,255,255,0.4)', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:5 }}>{f.label}</div>
+            <textarea value={data[f.key]||''} onChange={e=>update(f.key,e.target.value)} placeholder={f.placeholder} rows={f.rows}
+              style={{ width:'100%', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:10, padding:'10px 14px', color:'#fff', fontSize:13, fontFamily:font, outline:'none', resize:'none', boxSizing:'border-box', lineHeight:1.5, colorScheme:'dark' }} />
+          </div>
+        ))}
+      </div>
+      <div style={{ display:'flex', gap:8 }}>
+        {data.address && <button onClick={openMaps} style={{ flex:1, padding:'11px', borderRadius:10, border:'1.5px solid rgba(37,99,235,0.35)', background:'rgba(37,99,235,0.15)', color:'#60a5fa', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>🗺️ Open in Maps</button>}
+        <button onClick={shareWA} disabled={!filled} style={{ flex:1, padding:'11px', borderRadius:10, border:'none', background:filled?'linear-gradient(135deg,#25D366,#128C7E)':'rgba(255,255,255,0.05)', color:filled?'#fff':'rgba(255,255,255,0.25)', fontSize:13, fontWeight:700, cursor:filled?'pointer':'default', fontFamily:font }}>📤 Share on WhatsApp</button>
+      </div>
+    </Modal>
+  );
+}
+
+function OccSeatingChartModal({ onClose, occasion, accent }) {
+  const TSK = `tendr-occ-${occasion}-seating-tables`;
+  const GSK = `tendr-occ-${occasion}-seating-guests`;
+  const [tables, setTables] = useState(() => { try { return JSON.parse(localStorage.getItem(TSK) || '[]'); } catch { return []; } });
+  const [guests, setGuests] = useState(() => { try { return JSON.parse(localStorage.getItem(GSK) || '[]'); } catch { return []; } });
+  const [tName, setTName] = useState('');
+  const [tCap, setTCap] = useState(8);
+  const [gName, setGName] = useState('');
+  const [selected, setSelected] = useState(null);
+  const saveT = (t) => { setTables(t); try { localStorage.setItem(TSK, JSON.stringify(t)); } catch {} };
+  const saveG = (g) => { setGuests(g); try { localStorage.setItem(GSK, JSON.stringify(g)); } catch {} };
+  const addTable = () => { if (!tName.trim()) return; saveT([...tables, { id: Date.now(), name: tName.trim(), cap: tCap }]); setTName(''); };
+  const addGuest = () => { if (!gName.trim()) return; saveG([...guests, { id: Date.now(), name: gName.trim(), table: null }]); setGName(''); };
+  const assignToTable = (tId) => { if (!selected) return; saveG(guests.map(g=>g.id===selected?{...g,table:tId}:g)); setSelected(null); };
+  const removeFromTable = (gId) => saveG(guests.map(g=>g.id===gId?{...g,table:null}:g));
+  const unassigned = guests.filter(g=>!g.table);
+  const totalSeated = guests.filter(g=>g.table).length;
+  const shareChart = () => {
+    const lines = tables.map(t => { const s = guests.filter(g=>g.table===t.id).map(g=>g.name); return `${t.name} (${s.length}/${t.cap}):\n${s.map(n=>'  • '+n).join('\n')||'  (empty)'}`; });
+    window.open(`https://wa.me/?text=${encodeURIComponent('🪑 Seating Chart\n\n'+lines.join('\n\n'))}`, '_blank');
+  };
+  return (
+    <Modal onClose={onClose} title="Seating Chart" emoji="🪑" wide>
+      {(tables.length>0||guests.length>0) && (
+        <div style={{ display:'flex', gap:10, marginBottom:12, alignItems:'center' }}>
+          <span style={{ fontSize:12, color:'rgba(255,255,255,0.4)' }}>{totalSeated}/{guests.length} guests seated</span>
+          {guests.length>0 && <button onClick={shareChart} style={{ marginLeft:'auto', padding:'6px 12px', borderRadius:8, border:'none', background:'linear-gradient(135deg,#25D366,#128C7E)', color:'#fff', fontSize:11, fontWeight:700, cursor:'pointer', fontFamily:font }}>Share Chart</button>}
+        </div>
+      )}
+      {selected && (
+        <div style={{ background:`${accent}20`, border:`1px solid ${accent}50`, borderRadius:10, padding:'10px 14px', marginBottom:12, fontSize:13, color:accent, fontWeight:700, display:'flex', alignItems:'center', gap:8 }}>
+          <span>Assigning: <strong>{guests.find(g=>g.id===selected)?.name}</strong> → tap a table</span>
+          <button onClick={()=>setSelected(null)} style={{ marginLeft:'auto', background:'none', border:'none', color:'rgba(255,255,255,0.45)', cursor:'pointer', fontSize:13, fontFamily:font }}>Cancel</button>
+        </div>
+      )}
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
+        <div>
+          <div style={{ fontSize:10.5, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:8 }}>Tables</div>
+          <div style={{ display:'flex', gap:5, marginBottom:10 }}>
+            <input value={tName} onChange={e=>setTName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addTable()} placeholder="Table name" style={{ flex:1, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:8, padding:'7px 9px', color:'#fff', fontSize:12, fontFamily:font, outline:'none' }} />
+            <input type="number" value={tCap} onChange={e=>setTCap(Math.max(1,Number(e.target.value)))} min={1} max={30} style={{ width:38, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:8, padding:'7px 5px', color:'#fff', fontSize:12, fontFamily:font, outline:'none', textAlign:'center' }} />
+            <button onClick={addTable} style={{ background:accent, border:'none', borderRadius:8, padding:'7px 11px', color:'#fff', fontWeight:700, cursor:'pointer', fontFamily:font }}>+</button>
+          </div>
+          {tables.length===0 ? <div style={{ fontSize:12, color:'rgba(255,255,255,0.2)', textAlign:'center', padding:16 }}>Add tables above</div> : tables.map(t => {
+            const seated = guests.filter(g=>g.table===t.id);
+            const pct = t.cap ? seated.length/t.cap : 0;
+            const full = seated.length>=t.cap;
+            return (
+              <div key={t.id} onClick={()=>selected&&!full&&assignToTable(t.id)}
+                style={{ background:selected&&!full?`${accent}18`:'rgba(255,255,255,0.04)', borderRadius:12, padding:'10px 12px', marginBottom:8, border:`1.5px solid ${selected&&!full?accent+'55':full?'rgba(34,197,94,0.2)':'rgba(255,255,255,0.08)'}`, cursor:selected&&!full?'pointer':'default', transition:'all 0.15s' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:4 }}>
+                  <span style={{ fontSize:13, fontWeight:700, color:full?'#22c55e':accent }}>{t.name}</span>
+                  <span style={{ fontSize:10.5, color:full?'#22c55e':'rgba(255,255,255,0.4)', fontWeight:700 }}>{seated.length}/{t.cap}</span>
+                </div>
+                <div style={{ height:3, borderRadius:2, background:'rgba(255,255,255,0.08)', overflow:'hidden', marginBottom:6 }}>
+                  <div style={{ height:'100%', width:`${Math.min(pct*100,100)}%`, background:full?'#22c55e':accent, borderRadius:2 }} />
+                </div>
+                {seated.length>0 ? <div style={{ display:'flex', flexWrap:'wrap', gap:4 }}>{seated.map(g=><span key={g.id} onClick={e=>{e.stopPropagation();removeFromTable(g.id);}} style={{ fontSize:10.5, color:'rgba(255,255,255,0.7)', background:'rgba(255,255,255,0.08)', padding:'2px 7px', borderRadius:100, cursor:'pointer' }}>{g.name} ×</span>)}</div>
+                : <div style={{ fontSize:11, color:'rgba(255,255,255,0.18)', fontStyle:'italic' }}>Empty</div>}
+              </div>
+            );
+          })}
+        </div>
+        <div>
+          <div style={{ fontSize:10.5, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:8 }}>Guests</div>
+          <div style={{ display:'flex', gap:5, marginBottom:10 }}>
+            <input value={gName} onChange={e=>setGName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addGuest()} placeholder="Guest name" style={{ flex:1, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:8, padding:'7px 9px', color:'#fff', fontSize:12, fontFamily:font, outline:'none' }} />
+            <button onClick={addGuest} style={{ background:accent, border:'none', borderRadius:8, padding:'7px 11px', color:'#fff', fontWeight:700, cursor:'pointer', fontFamily:font }}>+</button>
+          </div>
+          {unassigned.length>0 && <>
+            <div style={{ fontSize:10, fontWeight:700, color:'rgba(255,255,255,0.25)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:6 }}>Unassigned ({unassigned.length})</div>
+            {unassigned.map(g => (
+              <div key={g.id} onClick={()=>setSelected(g.id===selected?null:g.id)} style={{ display:'flex', alignItems:'center', gap:7, background:selected===g.id?`${accent}20`:'rgba(255,255,255,0.04)', borderRadius:10, padding:'8px 10px', marginBottom:5, border:`1.5px solid ${selected===g.id?accent+'60':'rgba(255,255,255,0.06)'}`, cursor:'pointer', transition:'all 0.15s' }}>
+                <span style={{ flex:1, fontSize:12.5, color:selected===g.id?accent:'#fff', fontFamily:font }}>{g.name}</span>
+                <span style={{ fontSize:9.5, color:selected===g.id?accent:'rgba(255,255,255,0.2)', fontWeight:700 }}>{selected===g.id?'→ TAP TABLE':'seat'}</span>
+                <button onClick={e=>{e.stopPropagation();saveG(guests.filter(x=>x.id!==g.id));}} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.2)', cursor:'pointer', fontSize:16, lineHeight:1, padding:'0 2px' }}>×</button>
+              </div>
+            ))}
+          </>}
+          {guests.filter(g=>g.table).length>0 && <>
+            <div style={{ fontSize:10, fontWeight:700, color:'rgba(34,197,94,0.5)', textTransform:'uppercase', letterSpacing:'0.08em', margin:'10px 0 6px' }}>Seated ({guests.filter(g=>g.table).length})</div>
+            {guests.filter(g=>g.table).map(g => { const t = tables.find(t=>t.id===g.table); return (
+              <div key={g.id} style={{ display:'flex', alignItems:'center', gap:7, background:'rgba(34,197,94,0.04)', borderRadius:10, padding:'7px 10px', marginBottom:4, border:'1px solid rgba(34,197,94,0.1)' }}>
+                <span style={{ flex:1, fontSize:12, color:'rgba(255,255,255,0.5)', fontFamily:font }}>{g.name}</span>
+                <span style={{ fontSize:10.5, color:'rgba(34,197,94,0.7)', fontWeight:700 }}>{t?.name}</span>
+                <button onClick={()=>removeFromTable(g.id)} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.15)', cursor:'pointer', fontSize:14, lineHeight:1 }}>↩</button>
+              </div>
+            ); })}
+          </>}
+          {guests.length===0 && <div style={{ fontSize:12, color:'rgba(255,255,255,0.2)', textAlign:'center', padding:16 }}>Add guests above</div>}
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // OCCASIONS CONFIG
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -2025,6 +2372,11 @@ const OCCASIONS = {
         { id: "checklist",   emoji: "📋", title: "Party Checklist",        desc: "Guest count → auto buy list",       color: "#D97706" },
         { id: "bills",       emoji: "💸", title: "Bill Splitter",           desc: "Split party expenses fairly",        color: "#DC2626" },
         { id: "gifttracker", emoji: "🎁", title: "Gift Tracker",            desc: "Log gifts · track thank-yous",      color: "#16A34A" },
+        { id: "guestlist",   emoji: "👥", title: "Guest List",             desc: "Track RSVPs · phone · +1 · WhatsApp", color: "#7C3AED" },
+        { id: "menu",        emoji: "🍽️", title: "Menu Planner",           desc: "Plan food · who brings · status",     color: "#059669" },
+        { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker", color: "#D97706" },
+        { id: "venue",       emoji: "📍", title: "Venue Notes",            desc: "Address · parking · Maps · share",    color: "#DC2626" },
+        { id: "seating",     emoji: "🪑", title: "Seating Chart",          desc: "Visual tables · tap to assign",       color: "#0891B2" },
       ]},
       { id: "fun", label: "✨ Fun", subtitle: "Make it memorable", tools: [
         { id: "wishwall",      emoji: "🎂", title: "Wish Wall",          desc: "Everyone writes a wish for the birthday star", color: "#EC4899" },
@@ -2064,7 +2416,12 @@ const OCCASIONS = {
       { id: "manage", label: "💛 Celebrate", subtitle: "Plan the perfect evening", tools: [
         { id: "invite", emoji: "📨", title: "Digital Invite", desc: "Share the celebration details", color: "#2563EB" },
         { id: "bills", emoji: "💸", title: "Bill Splitter", desc: "Split the celebration costs", color: "#DC2626" },
-        { id: "countdown", emoji: "⏱️", title: "Countdown Timer", desc: "Count down to the special day", color: "#0891B2" },
+        { id: "countdown",   emoji: "⏱️", title: "Countdown Timer",         desc: "Count down to the special day",       color: "#0891B2" },
+        { id: "guestlist",   emoji: "👥", title: "Guest List",             desc: "Track RSVPs · phone · +1 · WhatsApp", color: "#7C3AED" },
+        { id: "menu",        emoji: "🍽️", title: "Menu Planner",           desc: "Plan food · who brings · status",     color: "#059669" },
+        { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker", color: "#D97706" },
+        { id: "venue",       emoji: "📍", title: "Venue Notes",            desc: "Address · parking · Maps · share",    color: "#DC2626" },
+        { id: "seating",     emoji: "🪑", title: "Seating Chart",          desc: "Visual tables · tap to assign",       color: "#0891B2" },
       ]},
       { id: "fun", label: "❤️ Love", subtitle: "Make it unforgettable", tools: [
         { id: "lovenotes", emoji: "💌", title: "Love Notes Wall", desc: "Everyone writes a note for the couple", color: "#F59E0B" },
@@ -2094,7 +2451,12 @@ const OCCASIONS = {
       { id: "manage", label: "🍼 Manage", subtitle: "Plan a beautiful shower", tools: [
         { id: "invite", emoji: "📨", title: "Digital Invite & RSVP", desc: "One link · guests RSVP", color: "#2563EB" },
         { id: "checklist", emoji: "📋", title: "Shower Checklist", desc: "Guest count → what to arrange", color: "#D97706" },
-        { id: "potluck", emoji: "🥘", title: "Potluck Planner", desc: "Everyone brings something", color: "#059669" },
+        { id: "potluck",     emoji: "🥘", title: "Potluck Planner",          desc: "Everyone brings something",           color: "#059669" },
+        { id: "guestlist",   emoji: "👥", title: "Guest List",             desc: "Track RSVPs · phone · +1 · WhatsApp", color: "#7C3AED" },
+        { id: "menu",        emoji: "🍽️", title: "Menu Planner",           desc: "Plan food · who brings · status",     color: "#059669" },
+        { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker", color: "#D97706" },
+        { id: "venue",       emoji: "📍", title: "Venue Notes",            desc: "Address · parking · Maps · share",    color: "#DC2626" },
+        { id: "seating",     emoji: "🪑", title: "Seating Chart",          desc: "Visual tables · tap to assign",       color: "#0891B2" },
       ]},
       { id: "votes", label: "👶 Baby Votes", subtitle: "Fun predictions & guesses", tools: [
         { id: "babynamevote", emoji: "👶", title: "Baby Name Vote", desc: "Suggest & vote on baby names", color: "#38BDF8" },
@@ -2125,7 +2487,12 @@ const OCCASIONS = {
         { id: "invite", emoji: "📨", title: "Digital Invite & RSVP", desc: "One link · guests RSVP", color: "#2563EB" },
         { id: "giftregistry", emoji: "🎁", title: "Gift Registry", desc: "What you need for the new home", color: "#F97316" },
         { id: "checklist", emoji: "📋", title: "Party Checklist", desc: "Guest count → what to arrange", color: "#D97706" },
-        { id: "bills", emoji: "💸", title: "Bill Splitter", desc: "Split the celebration expenses", color: "#DC2626" },
+        { id: "bills",       emoji: "💸", title: "Bill Splitter",            desc: "Split the celebration expenses",      color: "#DC2626" },
+        { id: "guestlist",   emoji: "👥", title: "Guest List",             desc: "Track RSVPs · phone · +1 · WhatsApp", color: "#7C3AED" },
+        { id: "menu",        emoji: "🍽️", title: "Menu Planner",           desc: "Plan food · who brings · status",     color: "#059669" },
+        { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker", color: "#D97706" },
+        { id: "venue",       emoji: "📍", title: "Venue Notes",            desc: "Address · parking · Maps · share",    color: "#DC2626" },
+        { id: "seating",     emoji: "🪑", title: "Seating Chart",          desc: "Visual tables · tap to assign",       color: "#0891B2" },
       ]},
       { id: "fun", label: "✨ Fun", subtitle: "Show them around", tools: [
         { id: "theme", emoji: "🎨", title: "Theme Picker", desc: "Vote on the decor theme", color: "#7C3AED" },
@@ -2156,7 +2523,12 @@ const OCCASIONS = {
         { id: "potluck", emoji: "🥘", title: "Potluck Planner", desc: "Shareable link · claim items", color: "#059669" },
         { id: "invite", emoji: "📨", title: "Digital Invite & RSVP", desc: "One link · guests RSVP", color: "#2563EB" },
         { id: "checklist", emoji: "📋", title: "Checklist", desc: "Guest count → auto buy list", color: "#D97706" },
-        { id: "bills", emoji: "💸", title: "Bill Splitter", desc: "Enter spends → who owes whom", color: "#DC2626" },
+        { id: "bills",       emoji: "💸", title: "Bill Splitter",            desc: "Enter spends → who owes whom",        color: "#DC2626" },
+        { id: "guestlist",   emoji: "👥", title: "Guest List",             desc: "Track RSVPs · phone · +1 · WhatsApp", color: "#7C3AED" },
+        { id: "menu",        emoji: "🍽️", title: "Menu Planner",           desc: "Plan food · who brings · status",     color: "#059669" },
+        { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker", color: "#D97706" },
+        { id: "venue",       emoji: "📍", title: "Venue Notes",            desc: "Address · parking · Maps · share",    color: "#DC2626" },
+        { id: "seating",     emoji: "🪑", title: "Seating Chart",          desc: "Visual tables · tap to assign",       color: "#0891B2" },
       ]},
       { id: "fun", label: "✨ Fun", subtitle: "Theme · music · photos", tools: [
         { id: "theme", emoji: "🎨", title: "Theme Picker", desc: "Vote on tonight's vibe", color: "#7C3AED" },
@@ -2191,7 +2563,12 @@ const OCCASIONS = {
         { id: "luckydraw", emoji: "🎀", title: "Lucky Draw", desc: "Pick this month's winner", color: "#E879F9" },
         { id: "kittyfund", emoji: "💰", title: "Kitty Fund Tracker", desc: "Track who's paid this month", color: "#F59E0B" },
         { id: "bills", emoji: "💸", title: "Bill Splitter", desc: "Split the party expenses", color: "#DC2626" },
-        { id: "checklist", emoji: "📋", title: "Party Checklist", desc: "Guest count → what to arrange", color: "#D97706" },
+        { id: "checklist",   emoji: "📋", title: "Party Checklist",          desc: "Guest count → what to arrange",       color: "#D97706" },
+        { id: "guestlist",   emoji: "👥", title: "Guest List",             desc: "Track RSVPs · phone · +1 · WhatsApp", color: "#7C3AED" },
+        { id: "menu",        emoji: "🍽️", title: "Menu Planner",           desc: "Plan food · who brings · status",     color: "#059669" },
+        { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker", color: "#D97706" },
+        { id: "venue",       emoji: "📍", title: "Venue Notes",            desc: "Address · parking · Maps · share",    color: "#DC2626" },
+        { id: "seating",     emoji: "🪑", title: "Seating Chart",          desc: "Visual tables · tap to assign",       color: "#0891B2" },
       ]},
       { id: "fun", label: "✨ Fun", subtitle: "Kitty vibes only", tools: [
         { id: "theme", emoji: "🎨", title: "Theme Picker", desc: "Vote on this month's theme", color: "#7C3AED" },
@@ -2223,7 +2600,12 @@ const OCCASIONS = {
       { id: "manage", label: "🌸 Manage", subtitle: "Plan the ceremony", tools: [
         { id: "invite", emoji: "📨", title: "Digital Invite & RSVP", desc: "One link · guests RSVP", color: "#2563EB" },
         { id: "checklist", emoji: "📋", title: "Ceremony Checklist", desc: "Guest count → what to arrange", color: "#D97706" },
-        { id: "bills", emoji: "💸", title: "Bill Splitter", desc: "Split the ceremony expenses", color: "#DC2626" },
+        { id: "bills",       emoji: "💸", title: "Bill Splitter",            desc: "Split the ceremony expenses",         color: "#DC2626" },
+        { id: "guestlist",   emoji: "👥", title: "Guest List",             desc: "Track RSVPs · phone · +1 · WhatsApp", color: "#7C3AED" },
+        { id: "menu",        emoji: "🍽️", title: "Menu Planner",           desc: "Plan food · who brings · status",     color: "#059669" },
+        { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker", color: "#D97706" },
+        { id: "venue",       emoji: "📍", title: "Venue Notes",            desc: "Address · parking · Maps · share",    color: "#DC2626" },
+        { id: "seating",     emoji: "🪑", title: "Seating Chart",          desc: "Visual tables · tap to assign",       color: "#0891B2" },
       ]},
       { id: "ceremony", label: "✨ Ceremony", subtitle: "Meaningful moments", tools: [
         { id: "namesuggestions", emoji: "🌸", title: "Name Suggestions", desc: "Family suggests names with meanings", color: "#A78BFA" },
@@ -2557,6 +2939,11 @@ export default function OccasionHub({ occasion }) {
       case "moodmeter":      return <MoodMeter onClose={close} accent={accent} />;
       case "secretmessage":  return <SecretMessage onClose={close} accent={accent} />;
       case "gifttracker":    return <GiftTracker onClose={close} accent={accent} />;
+      case "guestlist":      return <OccGuestListModal onClose={close} occasion={occasion} accent={accent} />;
+      case "menu":           return <OccMenuPlannerModal onClose={close} occasion={occasion} accent={accent} />;
+      case "daytimeline":    return <OccDayTimelineModal onClose={close} occasion={occasion} accent={accent} />;
+      case "venue":          return <OccVenueNotesModal onClose={close} occasion={occasion} />;
+      case "seating":        return <OccSeatingChartModal onClose={close} occasion={occasion} accent={accent} />;
       default: return null;
     }
   };
