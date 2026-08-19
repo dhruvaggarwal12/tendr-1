@@ -2890,12 +2890,13 @@ const getPolyPad = (n) => POLY_PAD[Math.min(n, 7)] || "14% 10% 14%";
 // ── Polygon vertex grid for OccasionHub ───────────────────────────────────
 function OccPolygonGrid({ tools, onOpen, accent }) {
   const containerRef = useRef(null);
-  const [size, setSize] = useState(320);
+  const [size, setSize] = useState(300);
+  const [hovId, setHovId] = useState(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
     const ro = new ResizeObserver(([entry]) => {
-      setSize(Math.min(entry.contentRect.width, 460));
+      setSize(Math.min(entry.contentRect.width, 420));
     });
     ro.observe(containerRef.current);
     return () => ro.disconnect();
@@ -2904,7 +2905,7 @@ function OccPolygonGrid({ tools, onOpen, accent }) {
   const n = tools.length;
   const cx = size / 2;
   const cy = size / 2;
-  const R  = size * 0.37;
+  const R  = size * 0.34;
 
   // n=4 → square corners (-45° start); others → top vertex (-90°)
   const startDeg = n === 4 ? -45 : -90;
@@ -2919,11 +2920,13 @@ function OccPolygonGrid({ tools, onOpen, accent }) {
     ? Array.from({ length: n / 2 }, (_, i) => [pts[i], pts[i + n / 2]])
     : pts.map(p => [{ x: cx, y: cy }, p]);
 
-  // Node size scales with container, capped for readability
-  const nW = Math.min(Math.max(80, size * 0.24), 112);
+  // Node size — smaller on mobile (container capped at 420)
+  const nW = Math.min(Math.max(64, size * 0.21), 96);
   const nH = nW * 1.22;
-  const iconSz = Math.max(18, nW * 0.28);
-  const lblSz  = Math.max(11, nW * 0.125);
+  const iconSz = Math.max(16, nW * 0.26);
+  const lblSz  = Math.max(10, nW * 0.12);
+
+  const hovTool = tools.find(t => t.id === hovId);
 
   return (
     <div ref={containerRef} style={{ width: "100%", maxWidth: 460, margin: "0 auto" }}>
@@ -2988,11 +2991,13 @@ function OccPolygonGrid({ tools, onOpen, accent }) {
                 e.currentTarget.style.transform = "scale(1.1)";
                 e.currentTarget.style.boxShadow = `0 0 22px ${accent}55`;
                 e.currentTarget.style.borderColor = `${accent}aa`;
+                setHovId(t.id);
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.transform = "";
                 e.currentTarget.style.boxShadow = "";
-                e.currentTarget.style.borderColor = `${accent}44`;
+                e.currentTarget.style.borderColor = i === 0 ? `${accent}88` : `${accent}44`;
+                setHovId(null);
               }}
             >
               <div style={{
@@ -3032,6 +3037,14 @@ function OccPolygonGrid({ tools, onOpen, accent }) {
           );
         })}
       </div>
+      {/* Hover description strip */}
+      <div style={{ minHeight: 36, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 6, transition: "opacity 0.16s", opacity: hovTool ? 1 : 0, pointerEvents: "none" }}>
+        {hovTool && (
+          <span style={{ background: `${accent}16`, border: `1px solid ${accent}28`, borderRadius: 100, padding: "5px 16px", fontSize: 11.5, color: "rgba(255,255,255,0.65)", fontFamily: font, fontWeight: 500, textAlign: "center" }}>
+            {hovTool.desc}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -3050,6 +3063,10 @@ export default function OccasionHub({ occasion }) {
   const [showSplash, setShowSplash] = useState(() => {
     try { return !localStorage.getItem(`tendr-splash-${occasion}`); } catch { return true; }
   });
+  const [showTour, setShowTour] = useState(() => {
+    try { return !localStorage.getItem("tendr-occ-tour-v1"); } catch { return false; }
+  });
+  const [tourStep, setTourStep] = useState(0);
   const [splashOut, setSplashOut]   = useState(false);
   const [activeTab, setActiveTab]   = useState(0);
   const [planData, setPlanData]     = useState(null);
@@ -3236,6 +3253,47 @@ export default function OccasionHub({ occasion }) {
           </div>
         </div>
       )}
+
+      {/* First-time tour — shown once after splash clears */}
+      {showTour && !showSplash && (() => {
+        const steps = [
+          { icon: "👆", title: "Tap any tool", body: "Each node opens a planner — guest list, budget, timeline and more." },
+          { icon: "📑", title: "Switch sections", body: "Use the tabs above to move between Manage, Fun and Games." },
+          { icon: "🎮", title: "Play together", body: "Hit Host or Join to start a live room and play games with your group." },
+        ];
+        const step = steps[tourStep];
+        const dismissTour = () => {
+          setShowTour(false);
+          try { localStorage.setItem("tendr-occ-tour-v1", "1"); } catch {}
+        };
+        return (
+          <div style={{ position: "fixed", inset: 0, zIndex: 4000, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "0 0 40px" }}>
+            <div style={{ background: "#130f08", border: `1.5px solid ${accent}35`, borderRadius: 24, padding: "28px 24px 24px", maxWidth: 360, width: "calc(100% - 32px)", animation: "rm-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+              <div style={{ textAlign: "center", marginBottom: 20 }}>
+                <div style={{ fontSize: 42, marginBottom: 12 }}>{step.icon}</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8, fontFamily: font }}>{step.title}</div>
+                <div style={{ fontSize: 13.5, color: "rgba(255,255,255,0.5)", lineHeight: 1.6, fontFamily: font }}>{step.body}</div>
+              </div>
+              {/* Step dots */}
+              <div style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 20 }}>
+                {steps.map((_, i) => (
+                  <div key={i} style={{ width: i === tourStep ? 18 : 6, height: 6, borderRadius: 3, background: i === tourStep ? accent : `${accent}35`, transition: "width 0.2s, background 0.2s" }} />
+                ))}
+              </div>
+              <div style={{ display: "flex", gap: 10 }}>
+                {tourStep < steps.length - 1 ? (
+                  <>
+                    <button onClick={dismissTour} style={{ flex: 1, padding: "11px 0", borderRadius: 12, border: "1px solid rgba(255,255,255,0.1)", background: "transparent", color: "rgba(255,255,255,0.35)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Skip</button>
+                    <button onClick={() => setTourStep(s => s + 1)} style={{ flex: 2, padding: "11px 0", borderRadius: 12, border: "none", background: accent, color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font }}>Next →</button>
+                  </>
+                ) : (
+                  <button onClick={dismissTour} style={{ flex: 1, padding: "13px 0", borderRadius: 12, border: "none", background: accent, color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font }}>Got it 🎉</button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Room setup modals */}
       {roomModal && (

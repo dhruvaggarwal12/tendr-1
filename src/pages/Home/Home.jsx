@@ -900,21 +900,21 @@ const Home = () => {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
                 {[
                   { label: "Vendors", isVendors: true, path: null,
-                    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
+                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
                   { label: "Hampers", isVendors: false, path: "/gift-hampers-cakes",
-                    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg> },
+                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg> },
                   { label: "Activities", isVendors: false, path: "/fun-activities",
-                    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
+                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
                   { label: "Stationery", isVendors: false, path: "/stationery",
-                    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> },
+                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> },
                 ].map(({ icon, label, path, isVendors }) => (
                   <button key={label}
                     onClick={() => isVendors ? setVendorStripOpen(o => !o) : navigate(path)}
-                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 7, padding: "12px 6px", background: isVendors && vendorStripOpen ? "rgba(196,122,46,0.18)" : "rgba(255,248,236,0.05)", border: `1px solid ${isVendors && vendorStripOpen ? "rgba(196,122,46,0.5)" : "rgba(255,248,236,0.08)"}`, borderRadius: 14, cursor: "pointer", fontFamily: "'Outfit',sans-serif", transition: "all 0.18s", color: isVendors && vendorStripOpen ? "#CCAB4A" : "rgba(255,248,236,0.72)" }}>
+                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "9px 4px", background: isVendors && vendorStripOpen ? "rgba(196,122,46,0.18)" : "rgba(255,248,236,0.05)", border: `1px solid ${isVendors && vendorStripOpen ? "rgba(196,122,46,0.5)" : "rgba(255,248,236,0.08)"}`, borderRadius: 12, cursor: "pointer", fontFamily: "'Outfit',sans-serif", transition: "all 0.18s", color: isVendors && vendorStripOpen ? "#CCAB4A" : "rgba(255,248,236,0.72)" }}>
                     {vendorStripOpen && isVendors
-                      ? <svg width="16" height="16" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9"/></svg>
+                      ? <svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9"/></svg>
                       : icon}
-                    <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", lineHeight: 1.2, textAlign: "center" }}>{label}</span>
+                    <span style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", lineHeight: 1.2, textAlign: "center" }}>{label}</span>
                   </button>
                 ))}
               </div>
@@ -1025,17 +1025,7 @@ const Home = () => {
               transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.34 }}
               style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 22, position: "relative", zIndex: 1, flexWrap: "wrap" }}
             >
-              {/* Star rating */}
-              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                {[1,2,3,4,5].map(i => (
-                  <svg key={i} width="11" height="11" viewBox="0 0 24 24" fill="#CCAB4A" stroke="none">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                  </svg>
-                ))}
-                <span style={{ fontSize: 11, color: "#CCAB4A", fontWeight: 700, marginLeft: 5, fontFamily: "'Outfit',sans-serif", letterSpacing: "0.02em" }}>4.9</span>
-              </div>
-              <div style={{ width: 1, height: 14, background: "rgba(204,171,74,0.2)", flexShrink: 0 }} />
-              <span style={{ fontSize: 11, color: "rgba(255,247,235,0.4)", fontFamily: "'Outfit',sans-serif", letterSpacing: "0.04em" }}>500+ verified vendors</span>
+              <span style={{ fontSize: 11, color: "rgba(255,247,235,0.4)", fontFamily: "'Outfit',sans-serif", letterSpacing: "0.04em" }}>100+ verified vendors</span>
               <div style={{ width: 1, height: 14, background: "rgba(204,171,74,0.2)", flexShrink: 0 }} />
               <span style={{ fontSize: 11, color: "rgba(255,247,235,0.4)", fontFamily: "'Outfit',sans-serif", letterSpacing: "0.04em" }}>Delhi · Noida · NCR</span>
             </motion.div>
@@ -1364,6 +1354,7 @@ const Home = () => {
                   whileHover={{ y: -5, scale: 1.02, boxShadow: "0 14px 36px rgba(28,14,4,0.22)" }}
                   onHoverStart={() => setHoveredOcc(label)}
                   onHoverEnd={() => setHoveredOcc(null)}
+                  className="occ-strip-card"
                   style={{
                     position: "relative",
                     flexShrink: 0,
@@ -1408,7 +1399,12 @@ const Home = () => {
 
           <div style={{ position: "absolute", right: 0, top: 0, bottom: 6, width: 80, background: "linear-gradient(to right, transparent, #ffffff)", pointerEvents: "none", zIndex: 1 }} />
           </div>
-          <style>{`.occ-strip::-webkit-scrollbar { display: none; }`}</style>
+          <style>{`
+            .occ-strip::-webkit-scrollbar { display: none; }
+            @media (max-width: 480px) {
+              .occ-strip-card { width: 108px !important; height: 152px !important; border-radius: 13px !important; }
+            }
+          `}</style>
         </div>
       </section>
       {/* ── END Plan by Occasion ── */}
@@ -2158,7 +2154,7 @@ const Home = () => {
             }
             .events-portfolio-grid::-webkit-scrollbar { display: none; }
             .events-portfolio-grid > div {
-              flex: 0 0 72% !important;
+              flex: 0 0 58% !important;
               scroll-snap-align: start !important;
               min-width: 0 !important;
             }
