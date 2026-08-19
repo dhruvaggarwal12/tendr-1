@@ -8,7 +8,7 @@ import {
 import { usePartyRoom } from "../../hooks/usePartyRoom";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
-const font = "'Outfit', 'Inter', sans-serif";
+const font = "'Manrope', 'Inter', sans-serif";
 
 const THEMES = ["Retro 70s", "Bollywood Night", "Neon Glow", "Black & White", "Beach Vibes", "Royale / OTT", "Masquerade", "Fairy Lights"];
 
@@ -3030,10 +3030,9 @@ export default function HousePartyHub() {
           from { opacity: 0; transform: translateY(14px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap');
         .hp-aurora-bg {
-          background: linear-gradient(125deg, #0e0a04, #160d06, #0c0903, #160d06, #0e0a04);
-          background-size: 300% 300%;
-          animation: hp-aurora 18s ease infinite;
+          background: #0C0904;
         }
         @media (max-width: 480px) {
           .hp-hero-h1 { font-size: 2rem !important; }
@@ -3047,12 +3046,12 @@ export default function HousePartyHub() {
 
       {/* ── Hero ── */}
       <div style={{ position: "relative", overflow: "hidden", padding: "28px 20px 0", textAlign: "center" }}>
-        {/* Aurora accent layer */}
+        {/* Warm glow accent */}
         <div style={{
-          position: "absolute", top: -120, left: "50%", transform: "translateX(-50%)",
-          width: 700, height: 340, borderRadius: "50%",
-          background: "radial-gradient(ellipse at 40% 60%, rgba(124,58,237,0.18) 0%, rgba(37,99,235,0.1) 40%, transparent 70%)",
-          filter: "blur(40px)",
+          position: "absolute", top: -80, right: -40,
+          width: 500, height: 280, borderRadius: "50%",
+          background: "radial-gradient(ellipse at 60% 30%, rgba(196,122,46,0.14) 0%, transparent 65%)",
+          filter: "blur(32px)",
           pointerEvents: "none",
         }} />
 
@@ -3073,12 +3072,12 @@ export default function HousePartyHub() {
         <div style={{ position: "relative", marginBottom: 14 }}>
           <span style={{
             display: "inline-flex", alignItems: "center", gap: 7,
-            background: "rgba(124,58,237,0.15)",
-            border: "1px solid rgba(124,58,237,0.35)",
+            background: "rgba(196,122,46,0.12)",
+            border: "1px solid rgba(196,122,46,0.32)",
             borderRadius: 100, padding: "5px 14px",
           }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#A78BFA", boxShadow: "0 0 6px rgba(167,139,250,0.8)" }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", letterSpacing: "0.1em", textTransform: "uppercase" }}>Party Toolkit</span>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#C47A2E", boxShadow: "0 0 6px rgba(196,122,46,0.7)" }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", letterSpacing: "0.1em", textTransform: "uppercase" }}>Party Toolkit</span>
           </span>
         </div>
 
@@ -3095,8 +3094,8 @@ export default function HousePartyHub() {
 
         {/* Room CTA */}
         {!room ? (
-          <button onClick={() => setShowRoomLobby(true)} style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 22px", borderRadius: 100, background: "linear-gradient(135deg, #7C3AED, #2563EB)", border: "none", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 20px rgba(124,58,237,0.4)", marginBottom: 28 }}>
-            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#A78BFA", boxShadow: "0 0 6px rgba(167,139,250,0.8)", flexShrink: 0 }} />
+          <button onClick={() => setShowRoomLobby(true)} style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 22px", borderRadius: 100, background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", border: "none", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 20px rgba(196,122,46,0.38)", marginBottom: 28 }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "rgba(255,255,255,0.8)", flexShrink: 0 }} />
             Host or Join a Room
           </button>
         ) : (

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { TRUTHS, DARES, NEVER_HAVE_I, WOULD_YOU_RATHER, CHARADES, HOT_TAKES, BINGO_SQUARES } from "../../data/housePartyData";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
-const font = "'Outfit', 'Inter', sans-serif";
+const font = "'Manrope', 'Inter', sans-serif";
 
 function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
@@ -72,7 +72,7 @@ function Modal({ onClose, title, emoji, children, wide }) {
   }, [onClose]);
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.78)", backdropFilter: "blur(8px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: "#12111e", borderRadius: 24, width: "100%", maxWidth: wide ? 680 : 460, maxHeight: "90dvh", overflowY: "auto", padding: "24px 20px 28px", fontFamily: font, boxShadow: "0 24px 80px rgba(0,0,0,0.7)", animation: "modal-in 0.24s cubic-bezier(0.22,1,0.36,1)" }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "#130f08", borderRadius: 24, width: "100%", maxWidth: wide ? 680 : 460, maxHeight: "90dvh", overflowY: "auto", padding: "24px 20px 28px", fontFamily: font, boxShadow: "0 24px 80px rgba(0,0,0,0.8)", animation: "modal-in 0.24s cubic-bezier(0.22,1,0.36,1)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 28 }}>{emoji}</span>
@@ -3191,22 +3191,24 @@ export default function OccasionHub({ occasion }) {
 
   // ── RENDER ────────────────────────────────────────────────────────────────
   return (
-    <div style={{ height: "100dvh", display: "flex", flexDirection: "column", fontFamily: font, background: occ.bg, backgroundSize: "300% 300%", animation: "occ-aurora 18s ease infinite", position: "relative", overflow: "hidden" }}>
+    <div style={{ height: "100dvh", display: "flex", flexDirection: "column", fontFamily: font, background: "#0C0904", position: "relative", overflow: "hidden" }}>
+      {/* Subtle per-occasion glow in top-right corner — not animated, not centered */}
+      <div style={{ position: "fixed", top: -80, right: -60, width: 420, height: 320, borderRadius: "50%", background: `radial-gradient(ellipse at 60% 30%, ${accent}1a 0%, transparent 68%)`, pointerEvents: "none", zIndex: 0 }} />
       <style>{`
-        @keyframes occ-aurora { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        @keyframes splash-pulse { 0%,100% { opacity:0.7;transform:scale(1);} 50%{opacity:1;transform:scale(1.05);} }
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap');
+        @keyframes splash-pulse { 0%,100% { opacity:0.8;transform:scale(1);} 50%{opacity:1;transform:scale(1.04);} }
         @keyframes splash-line { from{width:0} to{width:100%} }
         @keyframes card-pop { 0%{transform:scale(0.92) translateY(12px);opacity:0} 100%{transform:scale(1) translateY(0);opacity:1} }
         @keyframes modal-in { from{opacity:0;transform:scale(0.94) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
-        @keyframes tab-slide { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes tab-slide { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
         @keyframes rm-in { from{opacity:0;transform:scale(0.93)} to{opacity:1;transform:scale(1)} }
         @keyframes dot-pulse { 0%,100%{opacity:0.4;transform:scale(0.8)} 50%{opacity:1;transform:scale(1)} }
         @keyframes card-flip { 0%{transform:rotateY(90deg) scale(0.95);opacity:0.4} 100%{transform:rotateY(0deg) scale(1);opacity:1} }
         @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         .occ-tool-card:active { transform: scale(0.96) !important; transition: transform 0.08s !important; }
-        .occ-tab-btn { transition: all 0.18s; }
+        .occ-tab-btn { transition: background 0.16s, color 0.16s, box-shadow 0.16s; }
         textarea,input { font-family: ${font}; }
-        select option { background: #1a1a2e; color: #fff; }
+        select option { background: #110d07; color: #fff; }
         ::-webkit-scrollbar { display: none; }
         @media (max-width: 600px) {
           .occ-h1 { font-size: 1.5rem !important; }
@@ -3214,11 +3216,14 @@ export default function OccasionHub({ occasion }) {
           .occ-scroll-area { padding: 4px 8px calc(80px + env(safe-area-inset-bottom, 0px)) !important; }
           .occ-tab-btn { padding: 7px 4px 5px !important; min-width: 56px !important; }
         }
+        @media (prefers-reduced-motion: reduce) {
+          .occ-tab-btn { transition: none !important; }
+        }
       `}</style>
 
       {/* Splash */}
       {showSplash && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: `radial-gradient(ellipse at 30% 40%, ${accent}30 0%, #06050f 65%)`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", opacity: splashOut ? 0 : 1, transition: "opacity 0.55s cubic-bezier(0.4,0,0.2,1)", pointerEvents: splashOut ? "none" : "all" }}>
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: `radial-gradient(ellipse at 30% 40%, ${accent}28 0%, #0C0904 60%)`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", opacity: splashOut ? 0 : 1, transition: "opacity 0.55s cubic-bezier(0.4,0,0.2,1)", pointerEvents: splashOut ? "none" : "all" }}>
           <div style={{ textAlign: "center", padding: "0 32px" }}>
             <div style={{ fontSize: 72, marginBottom: 18, animation: "splash-pulse 1.8s ease-in-out infinite", filter: `drop-shadow(0 0 28px ${accent}90)` }}>{occ.emoji}</div>
             <div style={{ fontSize: "clamp(1.7rem,5vw,2.5rem)", fontWeight: 900, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1.15, marginBottom: 10 }}>
@@ -3235,7 +3240,7 @@ export default function OccasionHub({ occasion }) {
       {/* Room setup modals */}
       {roomModal && (
         <div style={{ position: "fixed", inset: 0, zIndex: 5000, background: "rgba(0,0,0,0.8)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => { setRoomModal(null); setRoomLoading(false); }}>
-          <div style={{ background: "#0f0f1c", border: `1.5px solid ${accent}44`, borderRadius: 24, padding: "28px 24px", maxWidth: 360, width: "100%", boxShadow: `0 36px 80px ${accent}20`, animation: "rm-in 0.25s cubic-bezier(0.22,1,0.36,1)" }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: "#110d07", border: `1.5px solid ${accent}44`, borderRadius: 24, padding: "28px 24px", maxWidth: 360, width: "100%", boxShadow: `0 36px 80px rgba(0,0,0,0.6)`, animation: "rm-in 0.25s cubic-bezier(0.22,1,0.36,1)" }} onClick={e => e.stopPropagation()}>
 
             {roomModal === "host-setup" && (<>
               <div style={{ textAlign: "center", marginBottom: 20 }}>
@@ -3362,27 +3367,23 @@ export default function OccasionHub({ occasion }) {
 
       {/* ── Section Tabs ── */}
       <div style={{ flexShrink: 0, maxWidth: 800, margin: "10px auto 0", padding: "0 16px", width: "100%", boxSizing: "border-box" }}>
-        <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: 3 }}>
+        <div style={{ display: "flex", gap: 3, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: 4 }}>
           {sections.map((sec, i) => {
             const active = activeTab === i;
-            const isGame = sec.id === "games";
+            const label = sec.label.replace(/^\S+\s*/, "").trim() || sec.label;
             return (
               <button key={sec.id} className="occ-tab-btn" onClick={() => setActiveTab(i)} style={{
-                flex: 1, padding: "8px 2px", border: "none",
-                background: active ? (isGame ? accent : "rgba(255,255,255,0.14)") : "transparent",
-                color: active ? "#fff" : "rgba(255,255,255,0.35)",
-                fontSize: 10, fontWeight: 800, cursor: "pointer", fontFamily: font,
+                flex: 1, padding: "8px 4px", border: "none",
+                background: active ? accent : "transparent",
+                color: active ? "#fff" : "rgba(255,255,255,0.38)",
+                fontSize: 10, fontWeight: active ? 800 : 600, cursor: "pointer", fontFamily: font,
                 textTransform: "uppercase", letterSpacing: "0.04em",
-                clipPath: i === 0
-                  ? "polygon(0% 0%, 88% 0%, 100% 50%, 88% 100%, 0% 100%)"
-                  : i === sections.length - 1
-                  ? "polygon(0% 50%, 12% 0%, 100% 0%, 100% 100%, 12% 100%)"
-                  : "polygon(0% 50%, 12% 0%, 88% 0%, 100% 50%, 88% 100%, 12% 100%)",
-                filter: active && isGame ? `drop-shadow(0 2px 8px ${accent}55)` : "none",
-                transition: "all 0.18s",
+                borderRadius: 10,
+                boxShadow: active ? `0 2px 12px ${accent}50` : "none",
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
               }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", color: active ? "#fff" : "rgba(255,255,255,0.6)", marginBottom: 1 }}>{SECTION_ICONS[sec.id] || defaultSecIcon}</div>
-                <div className="occ-tab-label" style={{ letterSpacing: "0.05em", opacity: active ? 1 : 0.7 }}>{sec.label.replace(/^\S+\s*/, "").trim() || sec.label}</div>
+                <div style={{ color: active ? "#fff" : "rgba(255,255,255,0.4)" }}>{SECTION_ICONS[sec.id] || defaultSecIcon}</div>
+                <div className="occ-tab-label" style={{ letterSpacing: "0.05em" }}>{label}</div>
               </button>
             );
           })}
