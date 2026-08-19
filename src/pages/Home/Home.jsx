@@ -897,45 +897,55 @@ const Home = () => {
 
             {/* Mobile only: 4 service shortcuts — SVG icons, editorial style */}
             <div className="hero-mobile-cats" data-tour="mob-icon-row" style={{ display: "none", marginBottom: 20, position: "relative", zIndex: 1 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
+              <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none" }}>
                 {[
                   { label: "Vendors", isVendors: true, path: null,
-                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
+                    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
                   { label: "Hampers", isVendors: false, path: "/gift-hampers-cakes",
-                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg> },
+                    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg> },
                   { label: "Activities", isVendors: false, path: "/fun-activities",
-                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
+                    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
                   { label: "Stationery", isVendors: false, path: "/stationery",
-                    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> },
+                    icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> },
                 ].map(({ icon, label, path, isVendors }) => (
                   <button key={label}
                     onClick={() => isVendors ? setVendorStripOpen(o => !o) : navigate(path)}
-                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "9px 4px", background: isVendors && vendorStripOpen ? "rgba(196,122,46,0.18)" : "rgba(255,248,236,0.05)", border: `1px solid ${isVendors && vendorStripOpen ? "rgba(196,122,46,0.5)" : "rgba(255,248,236,0.08)"}`, borderRadius: 12, cursor: "pointer", fontFamily: "'Outfit',sans-serif", transition: "all 0.18s", color: isVendors && vendorStripOpen ? "#CCAB4A" : "rgba(255,248,236,0.72)" }}>
+                    style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 6, padding: "8px 14px", flexShrink: 0, background: isVendors && vendorStripOpen ? "rgba(196,122,46,0.18)" : "rgba(255,248,236,0.05)", border: `1px solid ${isVendors && vendorStripOpen ? "rgba(196,122,46,0.5)" : "rgba(255,248,236,0.08)"}`, borderRadius: 20, cursor: "pointer", fontFamily: "'Outfit',sans-serif", transition: "all 0.18s", color: isVendors && vendorStripOpen ? "#CCAB4A" : "rgba(255,248,236,0.72)" }}>
                     {vendorStripOpen && isVendors
-                      ? <svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9"/></svg>
+                      ? <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9"/></svg>
                       : icon}
-                    <span style={{ fontSize: 9.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", lineHeight: 1.2, textAlign: "center" }}>{label}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, whiteSpace: "nowrap" }}>{label}</span>
                   </button>
                 ))}
               </div>
               {/* Vendor sub-strip — SVG icons */}
               {vendorStripOpen && (
-                <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
+                <div style={{ marginTop: 10, display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none" }}>
                   {[
                     { label: "Decorator", path: "/search?categories=Decorator",
-                      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r="3.5"/><path d="M10 10L4 20h16"/><path d="M4 20h4l4-7"/></svg> },
+                      icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r="3.5"/><path d="M10 10L4 20h16"/><path d="M4 20h4l4-7"/></svg> },
                     { label: "Caterer", path: "/search?categories=Caterer",
-                      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg> },
+                      icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg> },
                     { label: "Photo", path: "/search?categories=Photographer",
-                      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> },
+                      icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> },
                     { label: "DJ", path: "/search?categories=DJ",
-                      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 9v-7"/><path d="M15.5 12.5L21 9"/><path d="M12 15v7"/><path d="M8.5 12.5L3 9"/></svg> },
+                      icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 9v-7"/><path d="M15.5 12.5L21 9"/><path d="M12 15v7"/><path d="M8.5 12.5L3 9"/></svg> },
                   ].map(({ icon, label, path }) => (
                     <button key={label} onClick={() => { setVendorStripOpen(false); navigate(path); }}
-                      style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "10px 4px", background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 12, cursor: "pointer", fontFamily: "'Outfit',sans-serif", color: "#CCAB4A" }}>
+                      style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 6, flexShrink: 0, padding: "8px 14px", background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 20, cursor: "pointer", fontFamily: "'Outfit',sans-serif", color: "#CCAB4A" }}>
                       {icon}
-                      <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", lineHeight: 1.2 }}>{label}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: 1, whiteSpace: "nowrap" }}>{label}</span>
                     </button>
+                  ))}
+                </div>
+              )}
+              {/* Photo peek strip — real event photos from gallery */}
+              {heroPhotos.length > 0 && (
+                <div style={{ display: "flex", gap: 8, overflowX: "auto", marginTop: 14, scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
+                  {heroPhotos.slice(0, 7).map((p, i) => (
+                    <div key={i} style={{ flex: "0 0 72px", height: 54, borderRadius: 10, overflow: "hidden", flexShrink: 0, background: "#2C1A0E" }}>
+                      <img src={p.url} alt={p.label || ""} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
+                    </div>
                   ))}
                 </div>
               )}
@@ -988,6 +998,7 @@ const Home = () => {
 
             {/* CTA row — primary action dominant, seasonal events subordinate (ui-ux-pro-max: primary-action) */}
             <motion.div
+              className="home-hero-cta-wrap"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.24 }}
@@ -1230,21 +1241,26 @@ const Home = () => {
         }
         .hero-desktop-search { display: flex !important; }
         @media (max-width: 900px) {
-          .hero-split {
-            flex-direction: column !important;
-          }
+          .hero-section-wrap { height: auto !important; min-height: 100dvh !important; }
+          .hero-split { flex-direction: column !important; }
           .hero-split > div:first-child {
             flex: unset !important;
-            padding: 10px 22px 24px !important;
+            padding: 10px 22px 32px !important;
+            display: flex !important;
+            flex-direction: column !important;
           }
-          .hero-split > div:last-child {
-            display: none !important;
-          }
+          .hero-split > div:last-child { display: none !important; }
           .hero-mobile-cats {
-            display: block !important;
+            display: flex !important;
+            flex-direction: column !important;
+            order: 5 !important;
+            margin-top: 24px !important;
+            margin-bottom: 0 !important;
           }
           .hero-mobile-cats::-webkit-scrollbar { display: none; }
           .hero-desktop-search { display: none !important; }
+          .home-hero-cta-wrap { flex-wrap: nowrap !important; gap: 8px !important; }
+          .home-hero-cta { flex: 1 !important; padding: 11px 6px !important; font-size: 13px !important; text-align: center !important; justify-content: center !important; white-space: normal !important; }
         }
       `}</style>
 
