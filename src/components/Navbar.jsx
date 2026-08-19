@@ -389,16 +389,12 @@ const Navbar = ({
       {/* ── Main bar ── */}
       <div
         style={{
-          background: scrolled ? "rgba(255,252,247,0.97)" : "rgba(18,8,2,0.78)",
+          background: "rgba(255,252,247,0.97)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          borderBottom: scrolled
-            ? "1px solid rgba(196,122,46,0.16)"
-            : "1px solid rgba(255,255,255,0.07)",
-          boxShadow: scrolled
-            ? "0 2px 28px rgba(139,69,19,0.1)"
-            : "none",
-          transition: "background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease",
+          borderBottom: "1px solid rgba(196,122,46,0.16)",
+          boxShadow: scrolled ? "0 2px 28px rgba(139,69,19,0.1)" : "0 1px 0 rgba(196,122,46,0.08)",
+          transition: "box-shadow 0.35s ease",
         }}
       >
         <div
@@ -407,7 +403,7 @@ const Navbar = ({
             maxWidth: 1280,
             margin: "0 auto",
             padding: "0 40px",
-            height: scrolled ? 66 : 74,
+            height: scrolled ? 62 : 68,
             display: "flex",
             alignItems: "center",
             transition: "height 0.3s ease",
@@ -420,23 +416,17 @@ const Navbar = ({
             style={{ display: "flex", alignItems: "center", flexShrink: 0, textDecoration: "none", gap: 8 }}
           >
             <img
-              src={scrolled ? tendrLogo : tendrIcon}
+              src={tendrLogo}
               alt="Tendr"
               style={{
-                height: scrolled ? 36 : 38,
-                width: scrolled ? "auto" : 38,
-                maxWidth: scrolled ? 150 : 38,
+                height: 34,
+                width: "auto",
+                maxWidth: 150,
                 objectFit: "contain",
                 display: "block",
-                borderRadius: scrolled ? 6 : "50%",
-                transition: "height 0.3s ease, border-radius 0.3s ease",
+                borderRadius: 6,
               }}
             />
-            {!scrolled && (
-              <span style={{ fontSize: 18, fontWeight: 700, color: "#CCAB4A", fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "0.04em", lineHeight: 1 }}>
-                tendr
-              </span>
-            )}
           </a>
 
           {/* ── Desktop nav — search LEFT of Browse, then links ── */}
@@ -448,13 +438,13 @@ const Navbar = ({
           <button
             data-tour="search-bar"
             onClick={() => setSearchOverlay(true)}
-            style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 16px 9px 13px", borderRadius: 100, border: `1.5px solid ${scrolled ? "rgba(196,122,46,0.22)" : "rgba(255,255,255,0.16)"}`, background: scrolled ? "rgba(196,122,46,0.04)" : "rgba(255,255,255,0.07)", cursor: "pointer", fontFamily: font, marginRight: 10, flexShrink: 0, transition: "all 0.2s ease", minWidth: 200 }}
-            onMouseEnter={e => { e.currentTarget.style.background = scrolled ? "rgba(196,122,46,0.09)" : "rgba(255,255,255,0.13)"; e.currentTarget.style.borderColor = scrolled ? "rgba(196,122,46,0.4)" : "rgba(255,255,255,0.28)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = scrolled ? "rgba(196,122,46,0.04)" : "rgba(255,255,255,0.07)"; e.currentTarget.style.borderColor = scrolled ? "rgba(196,122,46,0.22)" : "rgba(255,255,255,0.16)"; }}
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 16px 9px 13px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.04)", cursor: "pointer", fontFamily: font, marginRight: 10, flexShrink: 0, transition: "all 0.2s ease", minWidth: 200 }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.09)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.4)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.04)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.22)"; }}
           >
-            <FaSearch size={12} style={{ color: scrolled ? "#C47A2E" : "rgba(255,247,235,0.55)", flexShrink: 0 }} />
-            <span style={{ fontSize: 13, color: scrolled ? "#A07850" : "rgba(255,247,235,0.45)", whiteSpace: "nowrap", flex: 1, letterSpacing: "0.01em" }}>Search vendors, services…</span>
-            <span style={{ fontSize: 9.5, color: scrolled ? "rgba(160,120,80,0.45)" : "rgba(255,247,235,0.22)", border: `1px solid ${scrolled ? "rgba(160,120,80,0.18)" : "rgba(255,255,255,0.12)"}`, borderRadius: 5, padding: "2px 6px", whiteSpace: "nowrap", fontFamily: "monospace", letterSpacing: "0.04em" }}>⌘K</span>
+            <FaSearch size={12} style={{ color: "#C47A2E", flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: "#A07850", whiteSpace: "nowrap", flex: 1, letterSpacing: "0.01em" }}>Search vendors, services…</span>
+            <span style={{ fontSize: 9.5, color: "rgba(160,120,80,0.45)", border: "1px solid rgba(160,120,80,0.18)", borderRadius: 5, padding: "2px 6px", whiteSpace: "nowrap", fontFamily: "monospace", letterSpacing: "0.04em" }}>⌘K</span>
           </button>
           {/* Primary nav links */}
           <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
@@ -496,13 +486,9 @@ const Navbar = ({
               >
                 <button
                   style={{
-                    background: activeDropdown === group.label
-                      ? (scrolled ? "rgba(196,122,46,0.1)" : "rgba(255,255,255,0.1)")
-                      : "transparent",
+                    background: activeDropdown === group.label ? "rgba(196,122,46,0.1)" : "transparent",
                     border: "none",
-                    color: scrolled
-                      ? (activeDropdown === group.label ? "#9A5A18" : "#1C0E04")
-                      : (activeDropdown === group.label ? "#CCAB4A" : "rgba(255,247,235,0.82)"),
+                    color: activeDropdown === group.label ? "#9A5A18" : "#1C0E04",
                     fontSize: 13.5,
                     fontWeight: 500,
                     letterSpacing: "0.01em",
@@ -524,8 +510,7 @@ const Navbar = ({
                     style={{
                       transform: activeDropdown === group.label ? "rotate(180deg)" : "rotate(0deg)",
                       transition: "transform 0.2s ease",
-                      opacity: activeDropdown === group.label ? 0.7 : (scrolled ? 0.3 : 0.45),
-                      color: scrolled ? "inherit" : "rgba(255,247,235,0.7)",
+                      opacity: activeDropdown === group.label ? 0.7 : 0.35,
                       marginTop: 1,
                     }}
                   />
@@ -615,10 +600,10 @@ const Navbar = ({
             className="mobile-search-bar"
             data-tour="mob-search"
             onClick={() => setSearchOverlay(true)}
-            style={{ flex: 1, minWidth: 0, margin: "0 10px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: scrolled ? "rgba(196,122,46,0.05)" : "rgba(255,255,255,0.09)", border: `1.5px solid ${scrolled ? "rgba(196,122,46,0.2)" : "rgba(255,255,255,0.16)"}`, borderRadius: 100, padding: "7px 12px", cursor: "pointer", transition: "background 0.3s, border-color 0.3s" }}
+            style={{ flex: 1, minWidth: 0, margin: "0 10px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "7px 12px", cursor: "pointer" }}
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={scrolled ? "#9B7450" : "rgba(255,247,235,0.5)"} strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <span style={{ fontSize: 12, fontFamily: font, color: scrolled ? "#9B7450" : "rgba(255,247,235,0.45)", whiteSpace: "nowrap" }}>Search vendors, tools...</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span style={{ fontSize: 12, fontFamily: font, color: "#9B7450", whiteSpace: "nowrap" }}>Search vendors, tools...</span>
           </button>
 
           {/* ── Right action cluster (desktop) ── */}
@@ -634,9 +619,9 @@ const Navbar = ({
                 <button
                   data-tour="profile-btn"
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  style={{ position: "relative", display: "flex", alignItems: "center", gap: 8, background: scrolled ? "rgba(139,69,19,0.06)" : "rgba(255,255,255,0.09)", border: `1.5px solid ${scrolled ? "rgba(139,69,19,0.18)" : "rgba(255,255,255,0.18)"}`, borderRadius: 100, padding: "6px 14px 6px 8px", cursor: "pointer", fontFamily: font, transition: "background 0.2s, border-color 0.2s" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = scrolled ? "rgba(139,69,19,0.12)" : "rgba(255,255,255,0.16)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = scrolled ? "rgba(139,69,19,0.06)" : "rgba(255,255,255,0.09)")}
+                  style={{ position: "relative", display: "flex", alignItems: "center", gap: 8, background: "rgba(139,69,19,0.06)", border: "1.5px solid rgba(139,69,19,0.18)", borderRadius: 100, padding: "6px 14px 6px 8px", cursor: "pointer", fontFamily: font, transition: "background 0.2s" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.12)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.06)")}
                 >
                   <div style={{ position: "relative" }}>
                     <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700 }}>
@@ -654,8 +639,8 @@ const Navbar = ({
                       </span>
                     )}
                   </div>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: scrolled ? "#3B2F2F" : "rgba(255,247,235,0.88)", maxWidth: 90, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</span>
-                  <FaChevronDown size={9} style={{ color: scrolled ? "#9B7450" : "rgba(255,247,235,0.5)", transform: showProfileMenu ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#3B2F2F", maxWidth: 90, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</span>
+                  <FaChevronDown size={9} style={{ color: "#9B7450", transform: showProfileMenu ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
                 </button>
 
                 </div>{/* end flex column */}
@@ -762,7 +747,7 @@ const Navbar = ({
             className="burger-btn-custom"
             data-tour="mob-burger"
             onClick={() => setMenuOpen(!menuOpen)}
-            style={{ background: "none", border: "none", color: "#3B2F2F", cursor: "pointer", padding: "6px 4px", display: "flex", alignItems: "center", borderRadius: 8, flexShrink: 0 }}
+            style={{ background: "none", border: "none", color: "#1C0E04", cursor: "pointer", padding: "6px 4px", display: "flex", alignItems: "center", borderRadius: 8, flexShrink: 0 }}
           >
             {menuOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
           </button>

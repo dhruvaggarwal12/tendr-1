@@ -2287,7 +2287,7 @@ function OccPolygonGrid({ tools, onOpen, accent }) {
   const n = tools.length;
   const cx = size / 2;
   const cy = size / 2;
-  const R  = size * 0.355;
+  const R  = size * 0.37;
 
   // n=4 → square corners (-45° start); others → top vertex (-90°)
   const startDeg = n === 4 ? -45 : -90;
@@ -2303,10 +2303,10 @@ function OccPolygonGrid({ tools, onOpen, accent }) {
     : pts.map(p => [{ x: cx, y: cy }, p]);
 
   // Node size scales with container, capped for readability
-  const nW = Math.min(Math.max(58, size * 0.21), 96);
-  const nH = nW * 1.16;
-  const iconSz = Math.max(15, nW * 0.26);
-  const lblSz  = Math.max(9,  nW * 0.115);
+  const nW = Math.min(Math.max(80, size * 0.24), 112);
+  const nH = nW * 1.22;
+  const iconSz = Math.max(18, nW * 0.28);
+  const lblSz  = Math.max(11, nW * 0.125);
 
   return (
     <div ref={containerRef} style={{ width: "100%", maxWidth: 460, margin: "0 auto" }}>
@@ -2379,7 +2379,7 @@ function OccPolygonGrid({ tools, onOpen, accent }) {
               }}
             >
               <div style={{
-                width: Math.max(26, nW * 0.42), height: Math.max(26, nW * 0.42),
+                width: Math.max(32, nW * 0.44), height: Math.max(32, nW * 0.44),
                 borderRadius: "50%",
                 background: `radial-gradient(circle, ${accent}35, ${accent}0d)`,
                 border: `1.5px solid ${accent}55`,
@@ -2392,13 +2392,14 @@ function OccPolygonGrid({ tools, onOpen, accent }) {
                 fontSize: lblSz,
                 fontWeight: 700,
                 color: "#fff",
-                lineHeight: 1.2,
+                lineHeight: 1.25,
                 textAlign: "center",
-                padding: "0 2px",
+                padding: "0 4px",
                 display: "-webkit-box",
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: "vertical",
                 overflow: "hidden",
+                letterSpacing: "-0.01em",
               }}>{t.title}</span>
               {i === 0 && (
                 <div style={{

@@ -413,6 +413,7 @@ const Home = () => {
   const ghCarouselRef = useRef(null);
   const [plannerOccasion, setPlannerOccasion] = useState(null);
   const [activePath, setActivePath] = useState(null);
+  const [pathsRevealed, setPathsRevealed] = useState(false);
   const [occasionFlow, setOccasionFlow] = useState(null); // null | "grid" | occasionObject
   const [occasionSearch, setOccasionSearch] = useState("");
   const [showRakhi, setShowRakhi] = useState(false);
@@ -1433,65 +1434,95 @@ const Home = () => {
         ];
         const ap = activePath !== null ? PATHS[activePath] : null;
         return (
-          <section style={{ background: "#F5EFE6", padding: "52px 28px 56px", fontFamily: "'Outfit', sans-serif" }}>
-            <div style={{ maxWidth: 1080, margin: "0 auto" }}>
+          <section style={{ background: "#F5EFE6", padding: "48px 28px 52px", fontFamily: "'Outfit', sans-serif" }}>
+            <div style={{ maxWidth: 680, margin: "0 auto" }}>
 
-              {/* Compact strip — 3 pill cards side by side, tap to expand */}
-              <div className="path-strip" style={{ display: "flex", gap: 10, marginBottom: ap ? 14 : 0, flexWrap: "wrap" }}>
-                {PATHS.map((p, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActivePath(activePath === i ? null : i)}
-                    style={{
-                      flex: "1 1 160px",
-                      textAlign: "left",
-                      cursor: "pointer",
-                      fontFamily: "'Outfit', sans-serif",
-                      background: activePath === i ? "#fff" : "rgba(255,255,255,0.52)",
-                      borderRadius: 14,
-                      padding: "14px 16px",
-                      border: `1.5px solid ${activePath === i ? "rgba(196,122,46,0.32)" : "rgba(196,122,46,0.1)"}`,
-                      borderLeft: `3px solid ${activePath === i ? "#C47A2E" : "rgba(196,122,46,0.15)"}`,
-                      boxShadow: activePath === i ? "0 4px 16px rgba(196,122,46,0.13)" : "none",
-                      transition: "all 0.2s",
-                      outline: "none",
-                    }}
-                  >
-                    <span style={{ fontSize: 10, fontWeight: 700, color: activePath === i ? "#C47A2E" : "#B8956A", textTransform: "uppercase", letterSpacing: "0.16em", display: "block", marginBottom: 5 }}>{p.tag}</span>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: activePath === i ? "#1C0E04" : "#6B4528", display: "block", fontFamily: "'Cormorant Garamond', Georgia, serif", lineHeight: 1.2, marginBottom: 3 }}>{p.title}</span>
-                    <span style={{ fontSize: 11.5, color: activePath === i ? "#7A5535" : "rgba(107,69,40,0.52)", display: "block", lineHeight: 1.4 }}>{p.hook}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Expandable panel — slides in below the strip when a path is selected */}
-              {ap && (
+              {/* Discovery gate — single button until revealed */}
+              {!pathsRevealed ? (
                 <motion.div
-                  key={activePath}
-                  initial={{ opacity: 0, y: -6 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.26, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  style={{ background: "#1C0E04", borderRadius: 18, padding: "28px 32px", position: "relative", overflow: "hidden" }}
+                  transition={{ duration: 0.32 }}
+                  style={{ textAlign: "center" }}
                 >
-                  <div aria-hidden style={{ position: "absolute", top: -60, right: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.14) 0%, transparent 70%)", pointerEvents: "none" }} />
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(196,122,46,0.7)", textTransform: "uppercase", letterSpacing: "0.2em", margin: "0 0 10px" }}>How it works</p>
-                  <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.1rem,2vw,1.4rem)", fontWeight: 600, fontStyle: "italic", color: "rgba(255,247,235,0.92)", margin: "0 0 22px", lineHeight: 1.28 }}>{ap.hook}</p>
-                  <div className="path-steps-row" style={{ display: "flex", gap: 0, marginBottom: 24 }}>
-                    {ap.steps.map(({ n, text }, i) => (
-                      <div key={n} style={{ flex: 1, paddingRight: i < 2 ? 20 : 0, borderRight: i < 2 ? "1px solid rgba(255,247,235,0.07)" : "none", paddingLeft: i > 0 ? 20 : 0 }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(196,122,46,0.6)", letterSpacing: "0.1em", display: "block", marginBottom: 8, fontFamily: "monospace" }}>{n}</span>
-                        <p style={{ fontSize: 13, color: "rgba(255,247,235,0.72)", margin: 0, lineHeight: 1.6 }}>{text}</p>
-                      </div>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "#B8956A", textTransform: "uppercase", letterSpacing: "0.18em", margin: "0 0 10px" }}>Not sure where to start?</p>
+                  <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(1.5rem,3vw,2rem)", fontWeight: 700, color: "#1C0E04", margin: "0 0 28px", lineHeight: 1.1, letterSpacing: "-0.025em" }}>
+                    Find the right way<br/>to plan your event
+                  </h2>
+                  <motion.button
+                    onClick={() => setPathsRevealed(true)}
+                    whileTap={{ scale: 0.97 }}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "#1C0E04", color: "#FFF8EC", fontSize: 14.5, fontWeight: 600, padding: "14px 28px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 20px rgba(28,14,4,0.22)", letterSpacing: "0.01em" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "#2C1A0E"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "#1C0E04"; }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Find out which path is right for you
+                  </motion.button>
+                </motion.div>
+              ) : (
+                <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28 }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "#B8956A", textTransform: "uppercase", letterSpacing: "0.18em", margin: "0 0 8px" }}>How do you want to plan?</p>
+                  <p style={{ fontSize: 15, color: "rgba(28,14,4,0.55)", margin: "0 0 20px", lineHeight: 1.5 }}>Pick the approach that fits your style.</p>
+
+                  {/* 3 cards */}
+                  <div className="path-strip" style={{ display: "flex", gap: 10, marginBottom: ap ? 14 : 0, flexWrap: "wrap" }}>
+                    {PATHS.map((p, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setActivePath(activePath === i ? null : i)}
+                        style={{
+                          flex: "1 1 160px",
+                          textAlign: "left",
+                          cursor: "pointer",
+                          fontFamily: "'Outfit', sans-serif",
+                          background: activePath === i ? "#fff" : "rgba(255,255,255,0.58)",
+                          borderRadius: 14,
+                          padding: "16px 18px",
+                          border: `1.5px solid ${activePath === i ? "rgba(196,122,46,0.32)" : "rgba(196,122,46,0.1)"}`,
+                          borderLeft: `3px solid ${activePath === i ? "#C47A2E" : "rgba(196,122,46,0.15)"}`,
+                          boxShadow: activePath === i ? "0 4px 16px rgba(196,122,46,0.13)" : "none",
+                          transition: "all 0.2s",
+                          outline: "none",
+                        }}
+                      >
+                        <span style={{ fontSize: 9.5, fontWeight: 700, color: activePath === i ? "#C47A2E" : "#B8956A", textTransform: "uppercase", letterSpacing: "0.16em", display: "block", marginBottom: 6 }}>{p.tag}</span>
+                        <span style={{ fontSize: 15, fontWeight: 700, color: activePath === i ? "#1C0E04" : "#4A2C0E", display: "block", lineHeight: 1.15, marginBottom: 4 }}>{p.title}</span>
+                        <span style={{ fontSize: 12, color: activePath === i ? "#7A5535" : "rgba(107,69,40,0.52)", display: "block", lineHeight: 1.45 }}>{p.hook}</span>
+                      </button>
                     ))}
                   </div>
-                  <button
-                    onClick={ap.action}
-                    style={{ background: "linear-gradient(135deg,#C47A2E,#D4A848)", color: "#fff", fontSize: 13.5, fontWeight: 600, padding: "11px 26px", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 18px rgba(196,122,46,0.38)", letterSpacing: "0.02em", transition: "transform 0.2s, box-shadow 0.2s" }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(196,122,46,0.5)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 18px rgba(196,122,46,0.38)"; }}
-                  >
-                    {ap.cta} →
-                  </button>
+
+                  {/* Expandable steps panel */}
+                  {ap && (
+                    <motion.div
+                      key={activePath}
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.24, ease: [0.25, 0.46, 0.45, 0.94] }}
+                      style={{ background: "#1C0E04", borderRadius: 16, padding: "24px 28px", position: "relative", overflow: "hidden" }}
+                    >
+                      <div aria-hidden style={{ position: "absolute", top: -50, right: -30, width: 160, height: 160, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.14) 0%, transparent 70%)", pointerEvents: "none" }} />
+                      <p style={{ fontSize: 10, fontWeight: 700, color: "rgba(196,122,46,0.65)", textTransform: "uppercase", letterSpacing: "0.2em", margin: "0 0 6px" }}>How it works</p>
+                      <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1rem,2vw,1.25rem)", fontWeight: 600, fontStyle: "italic", color: "rgba(255,247,235,0.9)", margin: "0 0 20px", lineHeight: 1.3 }}>{ap.hook}</p>
+                      <div className="path-steps-row" style={{ display: "flex", gap: 0, marginBottom: 22 }}>
+                        {ap.steps.map(({ n, text }, i) => (
+                          <div key={n} style={{ flex: 1, paddingRight: i < 2 ? 18 : 0, borderRight: i < 2 ? "1px solid rgba(255,247,235,0.07)" : "none", paddingLeft: i > 0 ? 18 : 0 }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(196,122,46,0.55)", letterSpacing: "0.1em", display: "block", marginBottom: 7, fontFamily: "monospace" }}>{n}</span>
+                            <p style={{ fontSize: 12.5, color: "rgba(255,247,235,0.7)", margin: 0, lineHeight: 1.6 }}>{text}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        onClick={ap.action}
+                        style={{ background: "linear-gradient(135deg,#C47A2E,#D4A848)", color: "#fff", fontSize: 13.5, fontWeight: 600, padding: "11px 26px", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 18px rgba(196,122,46,0.38)", letterSpacing: "0.02em", transition: "transform 0.2s, box-shadow 0.2s" }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(196,122,46,0.5)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 18px rgba(196,122,46,0.38)"; }}
+                      >
+                        {ap.cta} →
+                      </button>
+                    </motion.div>
+                  )}
                 </motion.div>
               )}
             </div>

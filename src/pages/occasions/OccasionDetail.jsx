@@ -662,6 +662,7 @@ export default function OccasionDetail(){
   const navigate=useNavigate();
   const [searchParams]=useSearchParams();
   const cardRef=useRef(null);
+  const planRef=useRef(null);
 
   const [planMode,setPlanMode]=useState(null);
   const [step,setStep]=useState(0);
@@ -1017,27 +1018,53 @@ export default function OccasionDetail(){
           </div>
         )}
 
-        {/* ══ STEP 2: who's coming ══ */}
+        {/* ══ STEP 2: who's coming — renders as modal overlay ══ */}
         {step===2&&(
-          <div className="os">
-            <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.3,marginBottom:6}}>Who's coming?</p>
-            <p style={{fontSize:13,color:muted,marginBottom:28,lineHeight:1.6}}>Helps us tailor entertainment and catering to your crowd.</p>
-            <div className="age-g" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
-              {AGE_GROUPS.map(ag=>{
-                const sel=ageGroups.includes(ag.id);
-                return(
-                  <button key={ag.id} onClick={()=>toggleAge(ag.id)}
-                    style={{padding:"18px 10px",borderRadius:16,border:`1.5px solid ${sel?gold:border}`,background:sel?"rgba(196,122,46,0.07)":"#fff",cursor:"pointer",textAlign:"center",transition:"all 0.18s",display:"flex",flexDirection:"column",alignItems:"center",gap:8,minHeight:44}}>
-                    <span style={{fontSize:26}}>{ag.icon}</span>
-                    <div style={{fontSize:13,fontWeight:700,color:sel?gold:ink}}>{ag.label}</div>
-                    <div style={{fontSize:10,color:muted}}>{ag.sub}</div>
-                    {sel&&<div style={{width:6,height:6,borderRadius:"50%",background:gold,marginTop:2}}/>}
-                  </button>
-                );
-              })}
+          <>
+            {/* backdrop */}
+            <div style={{position:"fixed",inset:0,background:"rgba(28,14,4,0.48)",backdropFilter:"blur(5px)",WebkitBackdropFilter:"blur(5px)",zIndex:9998}} onClick={next}/>
+            {/* modal */}
+            <div style={{
+              position:"fixed",top:"50%",left:"50%",
+              transform:"translate(-50%,-50%)",
+              zIndex:9999,
+              width:"min(360px,calc(100vw - 32px))",
+              background:"#FFF8EC",
+              borderRadius:22,
+              border:"1.5px solid rgba(196,122,46,0.2)",
+              boxShadow:"0 28px 64px rgba(28,14,4,0.2),0 8px 24px rgba(28,14,4,0.1)",
+              overflow:"hidden",
+            }}>
+              <div style={{padding:"20px 20px 0"}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+                  <p style={{fontFamily:serif,fontSize:"1.3rem",color:ink,margin:0,fontWeight:400}}>Who's coming?</p>
+                  <button onClick={next} style={{width:30,height:30,borderRadius:"50%",border:"none",background:"rgba(28,9,0,0.06)",cursor:"pointer",fontSize:15,color:"rgba(30,15,0,0.38)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>✕</button>
+                </div>
+                <p style={{fontSize:12,color:muted,margin:"0 0 16px",lineHeight:1.55}}>Helps us tailor entertainment and catering to your crowd.</p>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:ageGroups.length===0?4:12}}>
+                  {AGE_GROUPS.map(ag=>{
+                    const sel=ageGroups.includes(ag.id);
+                    return(
+                      <button key={ag.id} onClick={()=>toggleAge(ag.id)}
+                        style={{padding:"14px 8px",borderRadius:14,border:`1.5px solid ${sel?gold:border}`,background:sel?"rgba(196,122,46,0.09)":"#fff",cursor:"pointer",textAlign:"center",transition:"all 0.18s",display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+                        <span style={{fontSize:24}}>{ag.icon}</span>
+                        <div style={{fontSize:12,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{ag.label}</div>
+                        <div style={{fontSize:9.5,color:muted,lineHeight:1.2}}>{ag.sub}</div>
+                        {sel&&<div style={{width:5,height:5,borderRadius:"50%",background:gold}}/>}
+                      </button>
+                    );
+                  })}
+                </div>
+                {ageGroups.length===0&&<p style={{fontSize:11,color:"rgba(30,15,0,0.28)",textAlign:"center",margin:"0 0 12px"}}>Select all that apply — or skip</p>}
+              </div>
+              <div style={{padding:"12px 20px 20px",borderTop:"1px solid rgba(196,122,46,0.1)",display:"flex",gap:8,marginTop:4}}>
+                <button onClick={next} style={{flex:1,padding:"12px 0",borderRadius:12,border:`1.5px solid rgba(196,122,46,0.22)`,background:"transparent",color:muted,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:font}}>Skip</button>
+                <button onClick={next} style={{flex:2,padding:"12px 0",borderRadius:12,border:"none",background:ink,color:"#FFF8EC",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font}}>
+                  {ageGroups.length>0?`Confirm (${ageGroups.length} selected)`:"Continue →"}
+                </button>
+              </div>
             </div>
-            {ageGroups.length===0&&<p style={{fontSize:12,color:"rgba(30,15,0,0.28)",textAlign:"center",marginTop:18}}>Select all that apply — or skip to continue</p>}
-          </div>
+          </>
         )}
 
         {/* ══ STEP 3: theme ══ */}
@@ -1072,10 +1099,11 @@ export default function OccasionDetail(){
         {/* ══ STEP 4: services ══ */}
         {step===4&&(
           <div className="os">
-            <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.3,marginBottom:10}}>Services for your plan</p>
+            <p style={{fontFamily:serif,fontSize:"clamp(1.3rem,3vw,1.7rem)",color:ink,lineHeight:1.3,marginBottom:6}}>What do you need?</p>
+            <p style={{fontSize:12.5,color:muted,marginBottom:18,lineHeight:1.55}}>Tap to select services — we'll show the best options for each.</p>
 
             {/* context pills */}
-            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:20}}>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:18}}>
               <span style={{fontSize:11,fontWeight:600,color:muted,background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"4px 10px"}}>{guests} guests</span>
               {venueType&&<span style={{fontSize:11,fontWeight:600,color:muted,background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"4px 10px"}}>{venueType}</span>}
               {city&&<span style={{fontSize:11,fontWeight:600,color:muted,background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"4px 10px"}}>{city}</span>}
@@ -1084,116 +1112,133 @@ export default function OccasionDetail(){
               </span>}
             </div>
 
-            {/* vendor package cards */}
-            {vendors.map(v=>{
-              const isKnown=ALL_VENDORS.includes(v);
-              const pkgs=isKnown?getVendorPackages(v,{guests,venueType,theme,ageGroups}):null;
-              const chosen=vendorPackages[v];
-              const tips=isKnown?getVendorTips(v,{theme,venueType,ageGroups,cateringType}):null;
-              const isRec=recommended.has(v);
-              return(
-                <div key={v} style={{marginBottom:12,borderRadius:18,border:`1.5px solid ${chosen!==undefined?gold:border}`,background:"#fff",overflow:"hidden",transition:"border-color 0.2s"}}>
-                  {/* header */}
-                  <div style={{padding:"14px 18px 12px",background:chosen!==undefined?"rgba(196,122,46,0.04)":"#fff"}}>
-                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
-                      <span style={{fontSize:14,fontWeight:800,color:chosen!==undefined?gold:ink}}>{v}</span>
-                      <div style={{display:"flex",alignItems:"center",gap:6}}>
-                        {chosen!==undefined&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.1)",border:`1px solid rgba(196,122,46,0.22)`,borderRadius:100,padding:"2px 8px"}}>Chosen</span>}
-                        {isRec&&chosen===undefined&&<span style={{fontSize:9,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"2px 8px",letterSpacing:"0.04em"}}>For you</span>}
-                      </div>
-                    </div>
-                    {tips&&<p style={{fontSize:11.5,color:muted,margin:0,lineHeight:1.5}}>{tips.tip.replace("Tip: ","")}</p>}
-                  </div>
-
-                  {/* packages — only for known vendor types */}
-                  {pkgs&&(
-                    <div style={{borderTop:`1px solid rgba(196,122,46,0.08)`,padding:"12px 18px 14px"}}>
-                      <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.5)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:10}}>Pick a package</div>
-                      <div style={{display:"flex",flexDirection:"column",gap:7}}>
-                        {pkgs.map((pkg,pi)=>{
-                          const sel=chosen===pi;
-                          return(
-                            <button key={pkg.label} onClick={()=>setVendorPackages(vp=>({...vp,[v]:pi}))}
-                              style={{textAlign:"left",padding:"11px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.12)"}`,background:sel?"rgba(196,122,46,0.07)":"#fff",cursor:"pointer",fontFamily:font,transition:"all 0.18s"}}>
-                              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:5}}>
-                                <div style={{display:"flex",alignItems:"center",gap:8}}>
-                                  <div style={{width:16,height:16,borderRadius:"50%",border:`2px solid ${sel?gold:"rgba(196,122,46,0.22)"}`,background:sel?gold:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.18s"}}>
-                                    {sel&&<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
-                                  </div>
-                                  <span style={{fontSize:13,fontWeight:700,color:sel?gold:ink}}>{pkg.label}</span>
-                                  {pkg.popular&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.1)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:100,padding:"1px 7px"}}>Popular</span>}
-                                </div>
-                                <span style={{fontSize:11.5,fontWeight:700,color:sel?gold:"rgba(196,122,46,0.55)",flexShrink:0,marginLeft:8}}>≈{pkg.price}</span>
-                              </div>
-                              <div style={{marginLeft:24,display:"flex",flexDirection:"column",gap:2}}>
-                                {pkg.items.map((it,ii)=><div key={ii} style={{fontSize:11,color:sel?ink:muted,lineHeight:1.45}}>· {it}</div>)}
-                              </div>
-                              {sel&&pkg.note&&<div style={{marginLeft:24,marginTop:6,fontSize:11,color:gold,fontWeight:600,fontStyle:"italic"}}>{pkg.note}</div>}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* remove */}
-                  <div style={{padding:"0 18px 12px"}}>
-                    <button onClick={()=>{toggleVendor(v);setVendorPackages(vp=>{const n={...vp};delete n[v];return n;});}}
-                      style={{fontSize:11,color:"rgba(30,15,0,0.3)",background:"none",border:"none",cursor:"pointer",fontFamily:font,padding:"4px 0"}}>
-                      Remove {v}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* add more */}
-            <div style={{marginBottom:16}}>
-              <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.4)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:10}}>Add more services</div>
-              <div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:10}}>
-                {ALL_VENDORS.filter(v=>!vendors.includes(v)).map(v=>(
-                  <button key={v} onClick={()=>toggleVendor(v)} className="chip" style={{fontSize:12,padding:"6px 12px"}}>+ {v}</button>
-                ))}
-              </div>
-              <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                <input type="text" value={customVendor} onChange={e=>setCustomVendor(e.target.value)}
-                  onKeyDown={e=>{if(e.key==="Enter")addCustomVendor();}}
-                  placeholder="Add a custom service…"
-                  style={{flex:1,padding:"9px 14px",borderRadius:100,border:`1.5px solid ${border}`,background:"#fff",fontSize:12,fontFamily:font,outline:"none",minHeight:38}}/>
-                {customVendor.trim()&&<button onClick={addCustomVendor} style={{width:36,height:36,borderRadius:"50%",background:gold,border:"none",color:"#fff",cursor:"pointer",fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:300,flexShrink:0}}>+</button>}
-              </div>
+            {/* ── Service picker chips ── */}
+            <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:24}}>
+              {ALL_VENDORS.map(v=>{
+                const sel=vendors.includes(v);
+                const isRec=recommended.has(v);
+                return(
+                  <button key={v} onClick={()=>toggleVendor(v)}
+                    style={{
+                      display:"inline-flex",alignItems:"center",gap:6,
+                      padding:"9px 14px",borderRadius:100,
+                      border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.2)"}`,
+                      background:sel?`rgba(196,122,46,0.1)`:"#fff",
+                      color:sel?gold:ink,
+                      fontSize:13,fontWeight:sel?700:500,
+                      cursor:"pointer",fontFamily:font,
+                      transition:"all 0.18s",
+                      boxShadow:sel?`0 0 0 3px rgba(196,122,46,0.08)`:"none",
+                    }}>
+                    {sel
+                      ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(196,122,46,0.45)" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    }
+                    {v}
+                    {isRec&&!sel&&<span style={{fontSize:9,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"1px 6px",marginLeft:2}}>✦</span>}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* all-chosen completion banner */}
-            {allVendorsChosen&&vendors.length>0&&(
-              <div style={{background:`linear-gradient(135deg,rgba(196,122,46,0.1),rgba(212,168,72,0.05))`,border:`2px solid ${gold}`,borderRadius:20,padding:"20px 20px 16px",marginTop:4}}>
-                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
-                  <div style={{width:36,height:36,borderRadius:12,background:`linear-gradient(135deg,${gold},${goldLt})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>✦</div>
-                  <div>
-                    <div style={{fontSize:13,fontWeight:800,color:ink}}>Vendor plan complete</div>
-                    <div style={{fontSize:11,color:muted,marginTop:1}}>{mainVendors.length} services selected — send to Tendr to book</div>
-                  </div>
+            {/* custom service input */}
+            <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:24}}>
+              <input type="text" value={customVendor} onChange={e=>setCustomVendor(e.target.value)}
+                onKeyDown={e=>{if(e.key==="Enter")addCustomVendor();}}
+                placeholder="Add a custom service…"
+                style={{flex:1,padding:"9px 14px",borderRadius:100,border:`1.5px solid ${border}`,background:"#fff",fontSize:12.5,fontFamily:font,outline:"none",color:ink,minHeight:40}}/>
+              {customVendor.trim()&&<button onClick={addCustomVendor} style={{width:38,height:38,borderRadius:"50%",background:gold,border:"none",color:"#fff",cursor:"pointer",fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontWeight:300}}>+</button>}
+            </div>
+
+            {/* ── Packages for selected vendors ── */}
+            {vendors.length>0&&(
+              <div>
+                <div style={{fontSize:10,fontWeight:800,color:"rgba(196,122,46,0.5)",textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:14}}>
+                  Best options for your selection
                 </div>
-                <a href={buildBaatKaroMsg(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget})}
-                  target="_blank" rel="noopener noreferrer"
-                  style={{display:"flex",alignItems:"center",gap:10,padding:"13px 16px",borderRadius:12,background:"#25D366",textDecoration:"none",marginBottom:8}}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.942-1.42A9.959 9.959 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.952 7.952 0 01-4.065-1.112l-.29-.173-3.013.866.847-3.093-.19-.307A7.957 7.957 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>Send to Baat Karo</div>
-                    <div style={{fontSize:11,color:"rgba(255,255,255,0.82)",marginTop:1}}>We'll help you book all {mainVendors.length} vendors</div>
+                {vendors.map(v=>{
+                  const isKnown=ALL_VENDORS.includes(v);
+                  const pkgs=isKnown?getVendorPackages(v,{guests,venueType,theme,ageGroups}):null;
+                  const chosen=vendorPackages[v];
+                  const tips=isKnown?getVendorTips(v,{theme,venueType,ageGroups,cateringType}):null;
+                  return(
+                    <div key={v} style={{marginBottom:14,borderRadius:16,border:`1.5px solid ${chosen!==undefined?gold:border}`,background:"#fff",overflow:"hidden",transition:"border-color 0.2s"}}>
+                      {/* header row */}
+                      <div style={{padding:"12px 16px 10px",background:chosen!==undefined?"rgba(196,122,46,0.04)":"#fff",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:tips?3:0}}>
+                            <span style={{fontSize:14,fontWeight:800,color:chosen!==undefined?gold:ink}}>{v}</span>
+                            {chosen!==undefined&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.1)",border:`1px solid rgba(196,122,46,0.22)`,borderRadius:100,padding:"2px 7px"}}>Selected ✓</span>}
+                          </div>
+                          {tips&&<p style={{fontSize:11.5,color:muted,margin:0,lineHeight:1.45}}>{tips.tip.replace("Tip: ","")}</p>}
+                        </div>
+                        <button onClick={()=>{toggleVendor(v);setVendorPackages(vp=>{const n={...vp};delete n[v];return n;});}}
+                          style={{width:28,height:28,borderRadius:"50%",background:"rgba(28,9,0,0.05)",border:"none",cursor:"pointer",fontSize:14,color:"rgba(30,15,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:8}}>✕</button>
+                      </div>
+                      {/* packages — top 3 options */}
+                      {pkgs&&(
+                        <div style={{borderTop:`1px solid rgba(196,122,46,0.07)`,padding:"10px 14px 12px"}}>
+                          <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:2}}>
+                            {pkgs.slice(0,3).map((pkg,pi)=>{
+                              const sel=chosen===pi;
+                              return(
+                                <button key={pkg.label} onClick={()=>setVendorPackages(vp=>({...vp,[v]:pi}))}
+                                  style={{
+                                    flex:"0 0 auto",width:"31%",minWidth:100,maxWidth:140,
+                                    textAlign:"left",padding:"10px 11px",borderRadius:12,
+                                    border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.14)"}`,
+                                    background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",
+                                    cursor:"pointer",fontFamily:font,transition:"all 0.18s",
+                                    display:"flex",flexDirection:"column",gap:4,
+                                  }}>
+                                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:4}}>
+                                    <span style={{fontSize:12,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{pkg.label}</span>
+                                    {pkg.popular&&<span style={{fontSize:8,fontWeight:800,color:gold,background:"rgba(196,122,46,0.1)",borderRadius:100,padding:"1px 5px",flexShrink:0}}>Best</span>}
+                                  </div>
+                                  <span style={{fontSize:11.5,fontWeight:700,color:sel?gold:"rgba(196,122,46,0.6)"}}>{pkg.price}</span>
+                                  <div style={{display:"flex",flexDirection:"column",gap:1.5}}>
+                                    {pkg.items.slice(0,2).map((it,ii)=><div key={ii} style={{fontSize:10,color:muted,lineHeight:1.4}}>· {it}</div>)}
+                                    {pkg.items.length>2&&<div style={{fontSize:10,color:"rgba(107,69,40,0.35)"}}>+{pkg.items.length-2} more</div>}
+                                  </div>
+                                  {sel&&<div style={{width:16,height:16,borderRadius:"50%",background:gold,display:"flex",alignItems:"center",justifyContent:"center",alignSelf:"flex-end",marginTop:2}}>
+                                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                  </div>}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* completion CTA */}
+                {allVendorsChosen&&mainVendors.length>0&&(
+                  <div style={{marginTop:8,padding:"16px 18px",borderRadius:16,background:"rgba(196,122,46,0.06)",border:`1.5px solid rgba(196,122,46,0.2)`}}>
+                    <div style={{fontSize:12.5,fontWeight:700,color:ink,marginBottom:10}}>
+                      {mainVendors.length} service{mainVendors.length>1?"s":""} planned — ready to book?
+                    </div>
+                    <a href={buildBaatKaroMsg(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget})}
+                      target="_blank" rel="noopener noreferrer"
+                      style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",borderRadius:12,background:"#25D366",textDecoration:"none",marginBottom:8}}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.942-1.42A9.959 9.959 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.952 7.952 0 01-4.065-1.112l-.29-.173-3.013.866.847-3.093-.19-.307A7.957 7.957 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>Send to Baat Karo</div>
+                        <div style={{fontSize:11,color:"rgba(255,255,255,0.82)"}}>We'll book all {mainVendors.length} vendors for you</div>
+                      </div>
+                    </a>
+                    <button onClick={next} style={{width:"100%",padding:"10px 0",borderRadius:12,border:`1.5px solid rgba(196,122,46,0.25)`,background:"transparent",color:gold,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font}}>
+                      Continue — see full plan →
+                    </button>
                   </div>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </a>
-                <button onClick={next}
-                  style={{width:"100%",padding:"11px 0",borderRadius:12,border:`1.5px solid rgba(196,122,46,0.3)`,background:"transparent",color:gold,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font}}>
-                  Continue — see full plan →
-                </button>
+                )}
               </div>
             )}
 
             {/* theme hint when no vendors yet */}
             {theme&&vendors.length===0&&(
-              <div style={{background:"rgba(196,122,46,0.05)",border:`1px solid ${border}`,borderRadius:14,padding:"14px 16px",marginTop:8}}>
+              <div style={{background:"rgba(196,122,46,0.05)",border:`1px solid ${border}`,borderRadius:14,padding:"14px 16px"}}>
                 <div style={{...sLabel,marginBottom:6}}>About {theme.name}</div>
                 <p style={{fontSize:12.5,color:muted,margin:0,lineHeight:1.6}}>{theme.desc}</p>
               </div>
@@ -1237,9 +1282,18 @@ export default function OccasionDetail(){
         {step===6&&(
           <div className="os">
             <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.3,marginBottom:4}}>Your plan is ready ✦</p>
-            <p style={{fontSize:13,color:muted,marginBottom:24,lineHeight:1.6}}>Download your card, book your vendors, and tick off the list.</p>
+            <p style={{fontSize:13,color:muted,marginBottom:16,lineHeight:1.6}}>Full plan below — download it all as an image.</p>
 
-            {/* downloadable card */}
+            {/* download button — at top */}
+            <button onClick={async()=>{setDownloading(true);await downloadPlanCard(planRef.current,occasion.name);setDownloading(false);}} disabled={downloading}
+              style={{width:"100%",padding:"13px 20px",borderRadius:12,border:`1px solid rgba(196,122,46,0.25)`,background:"#fff",color:gold,fontSize:13.5,fontWeight:700,cursor:downloading?"wait":"pointer",fontFamily:font,transition:"all 0.2s",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+              {downloading?<><div style={{width:15,height:15,borderRadius:"50%",border:`2px solid rgba(196,122,46,0.2)`,borderTopColor:gold,animation:"spin 0.7s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>Generating…</>:<><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Full Plan</>}
+            </button>
+
+            {/* everything below this is captured by planRef */}
+            <div ref={planRef} style={{background:"#FDFAF5",borderRadius:20,padding:"20px",border:`1px solid rgba(196,122,46,0.1)`}}>
+
+            {/* plan overview card */}
             <div ref={cardRef} style={{background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",border:`1.5px solid rgba(196,122,46,0.2)`,borderRadius:20,overflow:"hidden",marginBottom:12}}>
               <div style={{background:`linear-gradient(135deg,${gold},${goldLt})`,padding:"18px 20px 16px",position:"relative",overflow:"hidden"}}>
                 <div aria-hidden style={{position:"absolute",top:-24,right:-24,width:90,height:90,borderRadius:"50%",border:"1.5px solid rgba(255,255,255,0.14)"}}/>
@@ -1281,12 +1335,6 @@ export default function OccasionDetail(){
                 </div>
               </div>
             </div>
-
-            {/* download button */}
-            <button onClick={async()=>{setDownloading(true);await downloadPlanCard(cardRef.current,occasion.name);setDownloading(false);}} disabled={downloading}
-              style={{width:"100%",padding:"13px 20px",borderRadius:12,border:`1px solid rgba(196,122,46,0.25)`,background:"#fff",color:gold,fontSize:13.5,fontWeight:700,cursor:downloading?"wait":"pointer",fontFamily:font,transition:"all 0.2s",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-              {downloading?<><div style={{width:15,height:15,borderRadius:"50%",border:`2px solid rgba(196,122,46,0.2)`,borderTopColor:gold,animation:"spin 0.7s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>Generating…</>:<><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Plan Card</>}
-            </button>
 
             {/* timeline */}
             {timeline&&(
@@ -1378,7 +1426,7 @@ export default function OccasionDetail(){
             </div>
 
             {/* equipment */}
-            <div style={{marginBottom:20}}>
+            <div style={{marginBottom:8}}>
               <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:12,fontFamily:font}}>What to arrange · {guests} guests</div>
               {equipment.map(({cat,items})=>(
                 <div key={cat} style={{marginBottom:12}}>
@@ -1392,6 +1440,8 @@ export default function OccasionDetail(){
                 </div>
               ))}
             </div>
+
+            </div>{/* end planRef */}
 
             {/* hub banner */}
             {hub&&(

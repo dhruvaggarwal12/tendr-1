@@ -576,6 +576,7 @@ export default function VendorDashboard() {
                   { label: 'All Bookings',     sub: 'See all Tendr platform bookings',    onClick: () => setTab('bookings') },
                   { label: 'Set Availability', sub: "Block dates you're busy",            onClick: () => setTab('avail') },
                   { label: 'Edit Profile',     sub: 'Update your portfolio & info',       onClick: () => navigate('/vendor/profile') },
+                  { label: '📖 How to Use',    sub: 'Step-by-step guide for this dashboard', onClick: () => navigate('/vendor/guide') },
                 ].map(a => (
                   <button key={a.label} onClick={a.onClick}
                     style={{ flex: '1 1 180px', padding: '13px 16px', borderRadius: 12, border: a.primary ? 'none' : '1.5px solid rgba(196,122,46,0.18)', background: a.primary ? `linear-gradient(135deg,${gold},${goldLt})` : '#FFFCF5', color: a.primary ? '#fff' : ink, textAlign: 'left', cursor: 'pointer', fontFamily: font, boxShadow: a.primary ? '0 3px 12px rgba(196,122,46,0.3)' : 'none', transition: 'all 0.15s' }}>
