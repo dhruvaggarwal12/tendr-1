@@ -175,7 +175,22 @@ function BottomNavInner() {
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
               <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(196,122,46,0.25)" }} />
             </div>
-            <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 14px" }}>Browse Vendors</p>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 12px" }}>Browse Vendors</p>
+
+            {/* Register as Vendor — top of sheet for visibility */}
+            <button
+              onClick={() => { navigate("/vendor/register"); setBrowseOpen(false); }}
+              style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.06)", cursor: "pointer", fontFamily: font, marginBottom: 12, boxShadow: "0 2px 8px rgba(196,122,46,0.08)" }}
+              onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.12)"}
+              onTouchEnd={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+              <div style={{ textAlign: "left" }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#7A4A1E" }}>Register as Vendor</div>
+                <div style={{ fontSize: 11, color: "#9B7450", marginTop: 1 }}>List your business on Tendr</div>
+              </div>
+              <span style={{ marginLeft: "auto", fontSize: 14, color: "#C47A2E" }}>→</span>
+            </button>
 
             {/* Category grid */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10, marginBottom: 10 }}>
@@ -194,19 +209,6 @@ function BottomNavInner() {
                   <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", textAlign: "left", lineHeight: 1.3 }}>{label}</span>
                 </button>
               ))}
-            </div>
-
-            {/* Secondary links row */}
-            <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-              <button
-                onClick={() => { navigate("/vendor/register"); setBrowseOpen(false); }}
-                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "13px 14px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.04)", cursor: "pointer", fontFamily: font, fontSize: 12, fontWeight: 700, color: "#7A4A1E" }}
-                onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.1)"}
-                onTouchEnd={e => e.currentTarget.style.background = "rgba(196,122,46,0.04)"}
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-                Register as Vendor
-              </button>
             </div>
 
             {/* All Vendors full-width button */}

@@ -17,19 +17,34 @@ const CATEGORIES = [
 
 const POPULAR_LOCATIONS = ["Delhi", "Noida", "Ghaziabad", "Greater Noida"];
 
-// Same popular suggestions as desktop search bar
 const POPULAR_SEARCHES = [
   { text: "Photographers in Delhi" },
   { text: "Photographer under ₹10,000" },
   { text: "Caterers in Noida" },
   { text: "Decorator in Noida" },
   { text: "DJ in Gurgaon" },
-  { text: "Wedding Stationeries",              type: "page", href: "/stationery" },
-  { text: "Fun Activities for birthday party", type: "page", href: "/fun-activities" },
-  { text: "Gift Hampers",                       type: "page", href: "/gift-hampers-cakes" },
-  { text: "Budget Allocator",                  type: "page", href: "/budget-picker" },
   { text: "Decorators under ₹30,000" },
   { text: "Photographer and caterer in Noida" },
+];
+
+const ALL_PAGES = [
+  { text: "Book an Event",          href: "/booking",            icon: "📅" },
+  { text: "Browse All Vendors",     href: "/listings",           icon: "🔍" },
+  { text: "Plan by Occasion",       href: "/occasions",          icon: "🎉" },
+  { text: "Corporate Events",       href: "/corporate",          icon: "🏢" },
+  { text: "Gift Hampers & Cakes",   href: "/gift-hampers-cakes", icon: "🎁" },
+  { text: "Fun Activities",         href: "/fun-activities",     icon: "🎭" },
+  { text: "Wedding Stationeries",   href: "/stationery",         icon: "💒" },
+  { text: "Budget Allocator",       href: "/budget-picker",      icon: "💰" },
+  { text: "Event Checklist",        href: "/checklist",          icon: "✅" },
+  { text: "Timeline Planner",       href: "/timeline-picker",    icon: "🕐" },
+  { text: "Invitation Builder",     href: "/invitation",         icon: "💌" },
+  { text: "Aftermovie Tool",        href: "/aftermovie",         icon: "🎬" },
+  { text: "Find by Style",          href: "/find-by-style",      icon: "🎨" },
+  { text: "Guide Store",            href: "/guides",             icon: "📖" },
+  { text: "Community Wall",         href: "/community",          icon: "👥" },
+  { text: "Baat Karo (WhatsApp)",   href: "/baat-karo",          icon: "💬" },
+  { text: "Register as Vendor",     href: "/vendor/register",    icon: "🤝" },
 ];
 
 const SVC_KW = { caterer:"Caterer", catering:"Caterer", food:"Caterer", decorator:"Decorator", decoration:"Decorator", decor:"Decorator", photographer:"Photographer", photography:"Photographer", photo:"Photographer", dj:"DJ", music:"DJ", entertainment:"DJ" };
@@ -38,11 +53,22 @@ const PAGE_KW = {
   budget: "/budget-picker",
   "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes",
   hampers: "/gift-hampers-cakes", cakes: "/gift-hampers-cakes",
-  // "decor finder": "/decor-finder", // disabled
   timeline: "/timeline-picker",
   invitation: "/invitation", flyer: "/invitation", invite: "/invitation",
   stationery: "/stationery", "wedding card": "/stationery",
   aftermovie: "/aftermovie", "after movie": "/aftermovie",
+  checklist: "/checklist", "event checklist": "/checklist", "to do": "/checklist",
+  "vendor register": "/vendor/register", "register vendor": "/vendor/register", "become vendor": "/vendor/register", "join as vendor": "/vendor/register", "list my business": "/vendor/register",
+  "fun activities": "/fun-activities", activities: "/fun-activities", games: "/fun-activities",
+  booking: "/booking", "book event": "/booking", "book vendor": "/booking",
+  corporate: "/corporate", "corporate event": "/corporate", conference: "/corporate",
+  "all vendors": "/listings", vendors: "/listings", listings: "/listings",
+  guides: "/guides", "guide store": "/guides", tips: "/guides",
+  community: "/community", "community wall": "/community",
+  "baat karo": "/baat-karo", "talk to us": "/baat-karo", whatsapp: "/baat-karo",
+  "find by style": "/find-by-style", style: "/find-by-style", theme: "/find-by-style",
+  occasions: "/occasions", birthday: "/occasions", anniversary: "/occasions",
+  "house party": "/occasions",
 };
 
 function parseSearch(q) {
@@ -99,10 +125,13 @@ export default function SearchOverlay({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  // Filter popular searches by query (same logic as desktop)
   const filteredSuggestions = q.trim().length > 0
     ? POPULAR_SEARCHES.filter(s => s.text.toLowerCase().includes(q.toLowerCase()))
     : POPULAR_SEARCHES.slice(0, 5);
+
+  const filteredPages = q.trim().length > 0
+    ? ALL_PAGES.filter(p => p.text.toLowerCase().includes(q.toLowerCase()))
+    : ALL_PAGES;
 
   const doSearch = (text) => {
     if (!text.trim()) return;
@@ -158,9 +187,9 @@ export default function SearchOverlay({ isOpen, onClose }) {
         style={{ flex: 1, background: "#FFFCF5", overflowY: "auto", padding: "4px 0 40px" }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Typed query — "Search X" row + filtered popular suggestions */}
         {q.trim().length > 0 ? (
           <div>
+            {/* Direct search row */}
             <button
               onMouseDown={e => e.preventDefault()}
               onClick={() => doSearch(q)}
@@ -169,37 +198,73 @@ export default function SearchOverlay({ isOpen, onClose }) {
               <span style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E" }}>{q}</span>
               <span style={{ marginLeft: "auto", fontSize: 12, color: "#9B7450" }}>Search →</span>
             </button>
-            {filteredSuggestions.map((s, i) => (
-              <button key={i}
-                onMouseDown={e => e.preventDefault()}
-                onClick={() => { if (s.href) { navigate(s.href); onClose(); } else handleSuggestionClick(s.text); }}
-                style={{ width: "100%", textAlign: "left", padding: "12px 20px", border: "none", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, borderBottom: "1px solid rgba(196,122,46,0.05)", fontFamily: font }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <span style={{ fontSize: 14, color: "#9B7450" }}>↗</span>
-                  <span style={{ fontSize: 14, color: "#3B2F2F" }}>{s.text}</span>
-                </div>
-                {s.type === "page" && <span style={{ fontSize: 10, color: "#9B7450", background: "rgba(196,122,46,0.08)", padding: "2px 7px", borderRadius: 10, flexShrink: 0 }}>Tool</span>}
-              </button>
-            ))}
-            {filteredSuggestions.length === 0 && (
-              <div style={{ padding: "12px 20px", fontSize: 13, color: "#9B7450", fontFamily: font }}>Press Search to continue</div>
+            {/* Matching pages */}
+            {filteredPages.length > 0 && (
+              <div style={{ padding: "10px 20px 0" }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>Pages</p>
+                {filteredPages.map((p, i) => (
+                  <button key={i}
+                    onMouseDown={e => e.preventDefault()}
+                    onClick={() => { navigate(p.href); onClose(); }}
+                    style={{ width: "100%", textAlign: "left", padding: "10px 0", border: "none", borderBottom: "1px solid rgba(196,122,46,0.05)", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, fontFamily: font }}>
+                    <span style={{ fontSize: 16, width: 24, textAlign: "center", flexShrink: 0 }}>{p.icon}</span>
+                    <span style={{ fontSize: 14, color: "#2C1A0E", flex: 1 }}>{p.text}</span>
+                    <span style={{ fontSize: 10, color: "#C47A2E", background: "rgba(196,122,46,0.08)", padding: "2px 7px", borderRadius: 10, flexShrink: 0 }}>Page</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {/* Matching vendor searches */}
+            {filteredSuggestions.length > 0 && (
+              <div style={{ padding: "10px 20px 0" }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>Vendors</p>
+                {filteredSuggestions.map((s, i) => (
+                  <button key={i}
+                    onMouseDown={e => e.preventDefault()}
+                    onClick={() => handleSuggestionClick(s.text)}
+                    style={{ width: "100%", textAlign: "left", padding: "10px 0", border: "none", borderBottom: "1px solid rgba(196,122,46,0.05)", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, fontFamily: font }}>
+                    <span style={{ fontSize: 14, color: "#9B7450", width: 24, textAlign: "center" }}>↗</span>
+                    <span style={{ fontSize: 14, color: "#3B2F2F" }}>{s.text}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {filteredPages.length === 0 && filteredSuggestions.length === 0 && (
+              <div style={{ padding: "12px 20px", fontSize: 13, color: "#9B7450", fontFamily: font }}>Press Search to find vendors</div>
             )}
           </div>
         ) : (
-          <div style={{ padding: "16px 20px 0" }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>Popular searches</p>
-            {POPULAR_SEARCHES.map((s, i) => (
-              <button key={i}
-                onMouseDown={e => e.preventDefault()}
-                onClick={() => { if (s.href) { navigate(s.href); onClose(); } else handleSuggestionClick(s.text); }}
-                style={{ width: "100%", textAlign: "left", padding: "11px 0", border: "none", borderBottom: "1px solid rgba(196,122,46,0.06)", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, fontFamily: font }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <span style={{ fontSize: 14, color: "#9B7450" }}>↗</span>
+          <div>
+            {/* Popular vendor searches */}
+            <div style={{ padding: "16px 20px 0" }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>Popular searches</p>
+              {POPULAR_SEARCHES.map((s, i) => (
+                <button key={i}
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={() => handleSuggestionClick(s.text)}
+                  style={{ width: "100%", textAlign: "left", padding: "11px 0", border: "none", borderBottom: "1px solid rgba(196,122,46,0.06)", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, fontFamily: font }}>
+                  <span style={{ fontSize: 14, color: "#9B7450", width: 24, textAlign: "center" }}>↗</span>
                   <span style={{ fontSize: 14, color: "#3B2F2F" }}>{s.text}</span>
-                </div>
-                {s.type === "page" && <span style={{ fontSize: 10, color: "#9B7450", background: "rgba(196,122,46,0.08)", padding: "2px 7px", borderRadius: 10, flexShrink: 0 }}>Tool</span>}
-              </button>
-            ))}
+                </button>
+              ))}
+            </div>
+            {/* All pages */}
+            <div style={{ padding: "16px 20px 0" }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>All Pages</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                {ALL_PAGES.map((p, i) => (
+                  <button key={i}
+                    onMouseDown={e => e.preventDefault()}
+                    onClick={() => { navigate(p.href); onClose(); }}
+                    style={{ textAlign: "left", padding: "10px 12px", border: "1.5px solid rgba(196,122,46,0.12)", borderRadius: 12, background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, fontFamily: font, boxShadow: "0 1px 4px rgba(196,122,46,0.06)" }}
+                    onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
+                    onTouchEnd={e => e.currentTarget.style.background = "#fff"}>
+                    <span style={{ fontSize: 18, flexShrink: 0 }}>{p.icon}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "#2C1A0E", lineHeight: 1.3 }}>{p.text}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>
