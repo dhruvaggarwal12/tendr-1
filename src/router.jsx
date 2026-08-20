@@ -160,6 +160,7 @@ const CommunityWall       = lazy(() => import("./pages/community/CommunityWall.j
 const CelebrationHub      = lazy(() => import("./pages/celebration-hub/CelebrationHub.jsx"));
 const FunActivitiesPage   = lazy(() => import("./pages/fun-activities/FunActivitiesPage.jsx"));
 const HomeWeddingPlanner  = lazy(() => import("./pages/home-wedding/HomeWeddingPlanner.jsx"));
+const MyEvent             = lazy(() => import("./pages/customer/MyEvent.jsx"));
 const VendorLanding       = lazy(() => import("./pages/vendor/VendorLanding.jsx"));
 const TopRatedVendors     = lazy(() => import("./pages/customer/TopRatedVendors.jsx"));
 const HousePartyHub       = lazy(() => import("./pages/house-party/HousePartyHub.jsx"));
@@ -202,8 +203,13 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
   },
   
-{ 
-    path: '/corporate', 
+{
+    path: '/my-event',
+    element: <MyEvent />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: '/corporate',
     element: <CorporateBooking />,
     errorElement: <ErrorPage />
   },

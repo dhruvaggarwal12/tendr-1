@@ -962,14 +962,18 @@ const EventPlanning = () => {
           </div>
 
           {/* Bottom nav */}
-          <div style={{ padding: "12px 16px 20px", background: "#fff", borderTop: "1px solid rgba(196,122,46,0.1)", display: "flex", gap: 10 }}>
+          <div style={{ padding: "12px 16px 20px", background: "#fff", borderTop: "1px solid rgba(196,122,46,0.1)", display: "flex", gap: 10, flexWrap: "wrap" }}>
             <button onClick={() => navigate("/")}
-              style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: `1.5px solid rgba(196,122,46,0.25)`, background: "#fff", color: GOLD, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
-              Back to Home
+              style={{ flex: "1 1 120px", padding: "12px 0", borderRadius: 12, border: `1.5px solid rgba(196,122,46,0.25)`, background: "#fff", color: GOLD, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
+              Home
+            </button>
+            <button onClick={() => navigate("/my-event")}
+              style={{ flex: "1 1 140px", padding: "12px 0", borderRadius: 12, border: `1.5px solid rgba(196,122,46,0.3)`, background: "#fff", color: BROWN, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
+              📋 Manage My Event
             </button>
             <button onClick={() => createdConversationId ? openConciergeChat(createdConversationId, false) : navigate("/chats")}
-              style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
-              View My Chat →
+              style={{ flex: "1 1 120px", padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
+              View Chat →
             </button>
           </div>
         </div>
