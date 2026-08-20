@@ -231,6 +231,12 @@ export const confirmSmartPlan = async (data) => {
   return response.json();
 };
 
+export const getSmartPlanById = async (id) => {
+  const response = await fetch(`${BASE_URL}/smart-plans/${id}`, { credentials: 'include' });
+  if (!response.ok) throw new Error('Plan not found');
+  return response.json();
+};
+
 export const getAdminSmartPlans = async (token) => {
   const response = await fetch(`${BASE_URL}/admin/smart-plans`, {
     headers: { Authorization: `Bearer ${token}` },

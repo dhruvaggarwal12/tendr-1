@@ -1,6 +1,34 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { useChatContext } from '../../context/ChatContext';
+import { getSmartPlanById } from '../../apis/vendorApi';
+
+// Reads the form session written by eventPlanningSlice every time a field changes
+function loadDraftFromSession() {
+  try {
+    const raw = localStorage.getItem('tendr_ep_session');
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    const fd = s.formData || {};
+    if (!fd.eventType && !fd.date && !fd.location) return null; // nothing meaningful yet
+    return {
+      _draft: true,
+      eventDetails: {
+        eventType: fd.eventType,
+        date: fd.date,
+        location: fd.location,
+        guests: fd.guests,
+        budget: fd.budget,
+        extraRequirements: fd.extraRequirements || [],
+      },
+      vendorSlots: (s.selectedVendors || []).map(cat => ({
+        category: cat, vendorName: '', estimatedCost: 0, status: 'Pending',
+      })),
+      conversationId: null,
+    };
+  } catch { return null; }
+}
 
 const font = "'Outfit', sans-serif";
 const gold = '#C47A2E';
@@ -68,10 +96,36 @@ function ic(d) {
 export default function MyEvent() {
   const navigate = useNavigate();
   const { openConciergeChat } = useChatContext();
+  const { token } = useSelector(s => s.auth);
 
-  const [plan] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('tendr_smart_plan') || 'null'); } catch { return null; }
+  const [plan, setPlan] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('tendr_smart_plan') || 'null')
+        || loadDraftFromSession();
+    } catch { return loadDraftFromSession(); }
   });
+  const isDraft = plan?._draft === true;
+
+  // Fetch live plan status from backend (if we have a real plan ID)
+  useEffect(() => {
+    if (!plan?._id) return;
+    getSmartPlanById(plan._id)
+      .then(({ plan: live }) => {
+        if (!live) return;
+        // Merge live vendorSlots statuses into the stored plan
+        const merged = {
+          ...plan,
+          vendorSlots: (plan.vendorSlots || []).map(slot => {
+            const liveSlot = (live.vendorSlots || []).find(s => s.category === slot.category);
+            return liveSlot ? { ...slot, status: liveSlot.status || slot.status } : slot;
+          }),
+          _liveStatus: live.status || plan._liveStatus,
+        };
+        setPlan(merged);
+        try { localStorage.setItem('tendr_smart_plan', JSON.stringify({ ...merged, _draft: undefined })); } catch {}
+      })
+      .catch(() => {});
+  }, [plan?._id]);
 
   const planKey = plan?.conversationId || plan?._id || 'default';
 
@@ -125,9 +179,9 @@ export default function MyEvent() {
       <div style={{ minHeight: '100dvh', background: '#FAF7F2', fontFamily: font, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center', padding: 32, maxWidth: 340 }}>
           <div style={{ fontSize: 52, marginBottom: 16 }}>📋</div>
-          <h2 style={{ fontSize: 22, fontWeight: 800, color: ink, marginBottom: 8 }}>No active event plan</h2>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: ink, marginBottom: 8 }}>No event in progress</h2>
           <p style={{ fontSize: 14, color: '#9B7450', marginBottom: 28, lineHeight: 1.6 }}>
-            Submit an event plan first — your full management dashboard appears here once it's created.
+            Start filling the event form and your planning dashboard will appear here automatically.
           </p>
           <button onClick={() => navigate('/booking')}
             style={{ padding: '13px 32px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,${gold},${goldLt})`, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font, boxShadow: '0 4px 16px rgba(196,122,46,0.3)' }}>
@@ -174,6 +228,21 @@ export default function MyEvent() {
       </div>
 
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '20px 16px 72px' }}>
+
+        {/* ── Draft banner ── */}
+        {isDraft && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'rgba(196,122,46,0.07)', border: '1.5px solid rgba(196,122,46,0.22)', borderRadius: 14, marginBottom: 16 }}>
+            <span style={{ fontSize: 20, flexShrink: 0 }}>✏️</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>Plan in progress</div>
+              <div style={{ fontSize: 11, color: '#9B7450' }}>Finish filling the form and submit to confirm vendors & unlock chat</div>
+            </div>
+            <button onClick={() => navigate('/plan-event/form')}
+              style={{ padding: '7px 14px', borderRadius: 9, border: 'none', background: `linear-gradient(135deg,${gold},${goldLt})`, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font, whiteSpace: 'nowrap', flexShrink: 0 }}>
+              Continue →
+            </button>
+          </div>
+        )}
 
         {/* ── 4 Stat Tiles ── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 16 }}>
