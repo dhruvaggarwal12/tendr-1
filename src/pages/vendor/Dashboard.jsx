@@ -64,9 +64,13 @@ const STATUSES = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
 
 const BLANK_FORM = { clientName: '', clientPhone: '', clientEmail: '', eventType: '', eventDate: '', amount: '', paidAmount: '', source: 'WhatsApp', status: 'Pending', notes: '' };
 
-function OrderModal({ initial, onSave, onClose, saving }) {
+function OrderModal({ initial, onSave, onClose, saving, existingClients = [] }) {
   const [form, setForm] = useState(initial || BLANK_FORM);
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const phoneDigits = (form.clientPhone || '').replace(/\D/g, '');
+  const matchedClient = !initial && phoneDigits.length >= 10
+    ? existingClients.find(c => c.clientPhone?.replace(/\D/g, '') === phoneDigits)
+    : null;
 
   const payStatus = form.amount && Number(form.paidAmount) >= Number(form.amount) ? 'Paid'
     : Number(form.paidAmount) > 0 ? 'Partial' : 'Pending';
@@ -120,6 +124,19 @@ function OrderModal({ initial, onSave, onClose, saving }) {
               <input style={inp()} value={form.clientPhone} onChange={e => set('clientPhone', e.target.value)} placeholder="10-digit number" type="tel" />
             </div>
           </div>
+
+          {matchedClient && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '9px 12px', borderRadius: 10, background: 'rgba(196,122,46,0.07)', border: '1.5px solid rgba(196,122,46,0.25)' }}>
+              <div>
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: ink }}>Existing client: {matchedClient.clientName}</div>
+                <div style={{ fontSize: 11, color: '#9B7450' }}>Fill their name automatically?</div>
+              </div>
+              <button onClick={() => { set('clientName', matchedClient.clientName); if (matchedClient.clientEmail) set('clientEmail', matchedClient.clientEmail); }}
+                style={{ padding: '5px 14px', borderRadius: 8, border: 'none', background: gold, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                Use
+              </button>
+            </div>
+          )}
 
           <div style={row}>
             <div style={half}>
@@ -292,6 +309,56 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus }) {
   );
 }
 
+// ── Revenue Trend Chart ───────────────────────────────────────────────────────
+function RevenueChart({ orders }) {
+  const now = new Date();
+  const months = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    return { label: d.toLocaleDateString('en-IN', { month: 'short' }), year: d.getFullYear(), month: d.getMonth(), revenue: 0, collected: 0 };
+  });
+  orders.forEach(o => {
+    const d = new Date(o.createdAt || o.eventDate);
+    if (isNaN(d)) return;
+    const m = months.find(m => m.month === d.getMonth() && m.year === d.getFullYear());
+    if (m) { m.revenue += o.amount || 0; m.collected += o.paidAmount || 0; }
+  });
+  const maxVal = Math.max(...months.map(m => m.revenue), 1);
+  return (
+    <div style={{ background: '#fff', borderRadius: 18, padding: '18px 20px', border: '1px solid rgba(196,122,46,0.12)', boxShadow: '0 2px 12px rgba(196,122,46,0.06)', marginTop: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ fontSize: 15, fontWeight: 800, color: ink }}>Revenue Trend <span style={{ fontSize: 12, fontWeight: 500, color: '#9B7450' }}>(last 6 months)</span></div>
+        <div style={{ display: 'flex', gap: 14 }}>
+          {[['#C47A2E', 'Billed'], ['#16A34A', 'Collected']].map(([c, l]) => (
+            <span key={l} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#9B7450' }}>
+              <span style={{ width: 10, height: 10, borderRadius: 3, background: c, display: 'inline-block' }} />{l}
+            </span>
+          ))}
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 110, paddingTop: 20 }}>
+        {months.map(m => {
+          const rh = Math.max(Math.round((m.revenue / maxVal) * 86), 0);
+          const ch = Math.max(Math.round((m.collected / maxVal) * 86), 0);
+          return (
+            <div key={m.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, height: '100%' }}>
+              <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', gap: 3, justifyContent: 'center', position: 'relative' }}>
+                <div style={{ width: '38%', background: '#C47A2E', borderRadius: '4px 4px 0 0', height: `${rh}%`, minHeight: m.revenue > 0 ? 3 : 0, opacity: 0.85, position: 'relative' }}>
+                  {m.revenue > 0 && <span style={{ position: 'absolute', top: -16, left: '50%', transform: 'translateX(-50%)', fontSize: 9, fontWeight: 700, color: '#C47A2E', whiteSpace: 'nowrap' }}>{m.revenue >= 1000 ? `${(m.revenue / 1000).toFixed(0)}k` : m.revenue}</span>}
+                </div>
+                <div style={{ width: '38%', background: '#16A34A', borderRadius: '4px 4px 0 0', height: `${ch}%`, minHeight: m.collected > 0 ? 3 : 0, opacity: 0.75 }} />
+              </div>
+              <div style={{ fontSize: 9.5, color: '#9B7450', fontWeight: 600, fontFamily: font }}>{m.label}</div>
+            </div>
+          );
+        })}
+      </div>
+      {months.every(m => m.revenue === 0) && (
+        <div style={{ textAlign: 'center', fontSize: 12, color: '#9B7450', marginTop: 8 }}>Add outside orders to see your revenue trend</div>
+      )}
+    </div>
+  );
+}
+
 // ── Main Dashboard ─────────────────────────────────────────────────────────────
 export default function VendorDashboard() {
   const navigate = useNavigate();
@@ -374,6 +441,28 @@ export default function VendorDashboard() {
   const visibleOutside = outsideOrders
     .filter(o => oFilter === 'all' || o.status === oFilter)
     .filter(o => !oSearch || o.clientName?.toLowerCase().includes(oSearch.toLowerCase()) || o.eventType?.toLowerCase().includes(oSearch.toLowerCase()) || o.clientPhone?.includes(oSearch));
+
+  // Pending payments (partial or fully unpaid, not cancelled)
+  const pendingPayments = outsideOrders
+    .filter(o => o.status !== 'Cancelled' && (o.amount || 0) > (o.paidAmount || 0))
+    .map(o => ({ ...o, due: (o.amount || 0) - (o.paidAmount || 0), daysSince: Math.floor((Date.now() - new Date(o.createdAt)) / 86400000) }))
+    .sort((a, b) => b.due - a.due);
+  const totalDue = pendingPayments.reduce((s, o) => s + o.due, 0);
+
+  // CSV export
+  const exportCSV = () => {
+    const headers = ['Client Name', 'Phone', 'Email', 'Event Type', 'Event Date', 'Total (₹)', 'Paid (₹)', 'Payment Status', 'Booking Status', 'Source', 'Notes', 'Created At'];
+    const rows = outsideOrders.map(o => [
+      o.clientName || '', o.clientPhone || '', o.clientEmail || '', o.eventType || '',
+      o.eventDate ? new Date(o.eventDate).toLocaleDateString('en-IN') : '',
+      o.amount || 0, o.paidAmount || 0, o.paymentStatus || '', o.status || '', o.source || '',
+      (o.notes || '').replace(/"/g, '""'),
+      o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN') : '',
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })), download: `tendr-orders-${new Date().toISOString().split('T')[0]}.csv` });
+    a.click();
+  };
 
   // ── API actions ──────────────────────────────────────────────────────────────
   const saveOrder = async (form) => {
@@ -514,6 +603,46 @@ export default function VendorDashboard() {
               <Stat label="This Month"     value={thisMonthOutside} sub={`₹${thisMonthRevenue.toLocaleString('en-IN')} revenue`} icon={dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>)} accent="rgba(59,130,246,0.1)" />
             </div>
 
+            {/* Pending Payments */}
+            {pendingPayments.length > 0 && (
+              <div style={{ background: '#fff', borderRadius: 18, padding: '18px 20px', border: '1.5px solid rgba(217,119,6,0.2)', marginBottom: 20, boxShadow: '0 2px 12px rgba(196,122,46,0.06)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: ink }}>
+                      Pending Payments
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#D97706', background: 'rgba(217,119,6,0.1)', borderRadius: 100, padding: '2px 8px', marginLeft: 8 }}>{pendingPayments.length}</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: '#9B7450', marginTop: 2 }}>₹{totalDue.toLocaleString('en-IN')} outstanding across all clients</div>
+                  </div>
+                  <button onClick={() => setTab('outside')} style={{ fontSize: 12, fontWeight: 600, color: gold, background: 'none', border: 'none', cursor: 'pointer', fontFamily: font }}>View all →</button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {pendingPayments.slice(0, 5).map(o => (
+                    <div key={o._id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: '#FFFCF5', borderRadius: 12, border: '1px solid rgba(217,119,6,0.1)' }}>
+                      <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(217,119,6,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D97706', fontWeight: 800, fontSize: 14, flexShrink: 0 }}>
+                        {o.clientName?.charAt(0)?.toUpperCase() || '?'}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.clientName}</div>
+                        <div style={{ fontSize: 11, color: '#9B7450' }}>{[o.eventType, o.daysSince >= 0 && `${o.daysSince}d ago`].filter(Boolean).join(' · ')}</div>
+                      </div>
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: '#D97706' }}>₹{o.due.toLocaleString('en-IN')}</div>
+                        <div style={{ fontSize: 10, color: '#9B7450' }}>due</div>
+                      </div>
+                      {o.clientPhone && (
+                        <a href={`https://wa.me/91${o.clientPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${o.clientName}, gentle reminder that ₹${o.due.toLocaleString('en-IN')} is pending for your ${o.eventType || 'event'}. Please arrange payment at your earliest. Thank you! 🙏`)}`}
+                          target="_blank" rel="noopener noreferrer"
+                          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 11px', borderRadius: 8, background: '#25D366', color: '#fff', fontSize: 11.5, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                          WhatsApp
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Two-column */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
               {/* Recent Tendr bookings */}
@@ -565,6 +694,9 @@ export default function VendorDashboard() {
                 )}
               </div>
             </div>
+
+            {/* Revenue Trend */}
+            <RevenueChart orders={outsideOrders} />
 
             {/* Quick actions */}
             <div style={{ background: '#fff', borderRadius: 18, padding: '18px 20px', border: '1px solid rgba(196,122,46,0.12)', marginTop: 20, boxShadow: '0 2px 12px rgba(196,122,46,0.06)' }}>
@@ -626,10 +758,18 @@ export default function VendorDashboard() {
                 <div style={{ fontSize: 20, fontWeight: 800, color: ink }}>Outside Orders</div>
                 <div style={{ fontSize: 13, color: '#9B7450' }}>Bookings from WhatsApp, Instagram, referrals & more</div>
               </div>
-              <button onClick={() => setModal('add')}
-                style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: `linear-gradient(135deg,${gold},${goldLt})`, color: '#fff', fontFamily: font, fontSize: 13.5, fontWeight: 700, cursor: 'pointer', boxShadow: '0 3px 12px rgba(196,122,46,0.35)' }}>
-                + Add Order
-              </button>
+              <div style={{ display: 'flex', gap: 10 }}>
+                {outsideOrders.length > 0 && (
+                  <button onClick={exportCSV}
+                    style={{ padding: '10px 16px', borderRadius: 10, border: '1.5px solid rgba(196,122,46,0.3)', background: '#fff', color: '#9B7450', fontFamily: font, fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {dsic(<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></>)} Export CSV
+                  </button>
+                )}
+                <button onClick={() => setModal('add')}
+                  style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: `linear-gradient(135deg,${gold},${goldLt})`, color: '#fff', fontFamily: font, fontSize: 13.5, fontWeight: 700, cursor: 'pointer', boxShadow: '0 3px 12px rgba(196,122,46,0.35)' }}>
+                  + Add Order
+                </button>
+              </div>
             </div>
 
             {/* Stats summary */}
@@ -709,6 +849,7 @@ export default function VendorDashboard() {
           onSave={saveOrder}
           onClose={() => setModal(null)}
           saving={saving}
+          existingClients={outsideOrders}
         />
       )}
     </div>

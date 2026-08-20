@@ -201,6 +201,12 @@ const EventPlanning = () => {
   const [catererMenu, setCatererMenu] = useState([]);
   const [showYouDoItBudget, setShowYouDoItBudget] = useState(false);
   const [menuLoading, setMenuLoading] = useState(false);
+  const [pickedVendors, setPickedVendors] = useState({});
+  const [browseModalCat, setBrowseModalCat] = useState(null);
+  const [browseVendorList, setBrowseVendorList] = useState([]);
+  const [browseVendorLoading, setBrowseVendorLoading] = useState(false);
+  const [ydiSubmitLoading, setYdiSubmitLoading] = useState(false);
+  const [showYdiConfirm, setShowYdiConfirm] = useState(false);
   const [liveSlots, setLiveSlots] = useState(null);
   const [invitePersonName, setInvitePersonName] = useState(() => { try { return localStorage.getItem('tendr_person_name') || ''; } catch { return ''; } });
   const [inviteVenueAddress, setInviteVenueAddress] = useState(() => { try { return localStorage.getItem('tendr_venue_address') || ''; } catch { return ''; } });
@@ -490,6 +496,64 @@ const EventPlanning = () => {
   // Persist wizard state so closing and re-opening doesn't lose answers
   useEffect(() => { try { sessionStorage.setItem("tendr_wiz_answers", JSON.stringify(wizardAnswers)); } catch {} }, [wizardAnswers]);
   useEffect(() => { try { sessionStorage.setItem("tendr_wiz_packages", JSON.stringify(selectedPackages)); } catch {} }, [selectedPackages]);
+
+  // ── You-Do-It package helpers ──────────────────────────────────────────────
+  const YDI_ICON = { Caterer: "🍽", Photographer: "📸", Decorator: "🎀", DJ: "🎵" };
+  const YDI_LABEL = { Caterer: "Catering", Photographer: "Photography", Decorator: "Decoration", DJ: "DJ & Music" };
+
+  const openBrowseModal = async (cat) => {
+    setBrowseModalCat(cat);
+    setBrowseVendorList([]);
+    setBrowseVendorLoading(true);
+    try {
+      const data = await getVendors({ serviceTypes: cat, location: formData?.location || "", date: formData?.date || "" });
+      setBrowseVendorList(Array.isArray(data) ? data : (data.vendors || []));
+    } catch {}
+    setBrowseVendorLoading(false);
+  };
+
+  const submitYouDoItPlan = async () => {
+    setYdiSubmitLoading(true);
+    setShowYdiConfirm(false);
+    try {
+      const vendorSlots = Object.entries(pickedVendors).map(([category, vendor]) => ({
+        category,
+        vendorId: vendor?._id || null,
+        vendorName: vendor?.name || vendor?.businessName || "",
+        estimatedCost: vendor?.startingPrice || vendor?.minPrice || vendor?.price || 0,
+        percentage: Math.round(100 / Math.max(1, Object.keys(pickedVendors).length)),
+        status: "Pending",
+      }));
+      const result = await confirmSmartPlan({
+        customerId: authUser?._id || null,
+        customerName: authUser?.name || "",
+        customerPhone: authUser?.phoneNumber || "",
+        eventDetails: {
+          eventType: formData?.eventType,
+          guests: Number(formData?.guests) || 0,
+          location: formData?.location,
+          date: formData?.date,
+          budget: formData?.budget,
+          extraRequirements: formData?.extraRequirements || [],
+        },
+        vendorSlots,
+        bookingType: "you-do-it",
+      });
+      const planData = {
+        ...result.plan,
+        conversationId: result.conversationId || null,
+        _savedAt: Date.now(),
+      };
+      localStorage.setItem("tendr_smart_plan", JSON.stringify(planData));
+      setConfirmedPlan(planData);
+      if (result.conversationId) setCreatedConversationId(result.conversationId);
+    } catch (e) {
+      console.error("Package request failed:", e);
+    }
+    setPlanSubmitted(true);
+    setYdiSubmitLoading(false);
+  };
+  // ──────────────────────────────────────────────────────────────────────────
 
   /** =======================
    *  SERVICE CATEGORY SCREEN (Both Flows — unified design)
@@ -1432,6 +1496,106 @@ const EventPlanning = () => {
 
     return (
       <>
+      {/* ── Inline Vendor Picker Modal ─────────────────────────────────────── */}
+      {isYouDoIt && browseModalCat && (
+        <>
+          <div onClick={() => setBrowseModalCat(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9990 }} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 9991, background: "#FFFCF5", borderRadius: 20, width: "92%", maxWidth: 480, maxHeight: "80dvh", display: "flex", flexDirection: "column", boxShadow: "0 24px 64px rgba(0,0,0,0.3)", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
+            <div style={{ padding: "16px 18px 12px", borderBottom: "1px solid rgba(196,122,46,0.12)", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 }}>{YDI_ICON[browseModalCat]} {YDI_LABEL[browseModalCat] || browseModalCat}</div>
+                  <h3 style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>Pick a vendor for your package</h3>
+                </div>
+                <button onClick={() => setBrowseModalCat(null)} style={{ width: 32, height: 32, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.2)", background: "transparent", cursor: "pointer", color: "#9B7450", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+              </div>
+            </div>
+            <div style={{ flex: 1, overflowY: "auto", padding: "4px 0" }}>
+              {browseVendorLoading ? (
+                <div style={{ padding: "40px 0", textAlign: "center", color: "#9B7450", fontSize: 13 }}>Loading vendors…</div>
+              ) : browseVendorList.length === 0 ? (
+                <div style={{ padding: "36px 18px", textAlign: "center" }}>
+                  <div style={{ fontSize: 22, marginBottom: 8 }}>😕</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", marginBottom: 4 }}>No vendors found</div>
+                  <div style={{ fontSize: 12, color: "#9B7450" }}>Try browsing all vendors on the listings page</div>
+                </div>
+              ) : browseVendorList.map((v, i) => {
+                const isPicked = pickedVendors[browseModalCat]?._id === v._id;
+                const photo = v.portfolioPhotos?.[0] || v.image || v.coverImage || "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=200&q=80";
+                const price = v.startingPrice || v.minPrice || v.price;
+                return (
+                  <div key={v._id || i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 18px", borderBottom: "1px solid rgba(196,122,46,0.06)", background: isPicked ? "rgba(21,128,61,0.04)" : "transparent" }}>
+                    <img src={photo} alt={v.name} style={{ width: 52, height: 44, objectFit: "cover", borderRadius: 10, flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name || v.businessName || "Vendor"}</div>
+                      <div style={{ display: "flex", gap: 8, marginTop: 2, flexWrap: "wrap" }}>
+                        {price && <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E" }}>₹{Number(price).toLocaleString("en-IN")}+</span>}
+                        {v.isVerified && <span style={{ fontSize: 10, fontWeight: 700, color: "#15803d" }}>✓ Verified</span>}
+                        {(v.city || v.locations?.[0]) && <span style={{ fontSize: 10, color: "#9B7450" }}>📍 {v.city || v.locations[0]}</span>}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => { setPickedVendors(p => ({ ...p, [browseModalCat]: v })); setBrowseModalCat(null); }}
+                      style={{ padding: "7px 14px", borderRadius: 9, border: "none", background: isPicked ? "#15803d" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", flexShrink: 0 }}
+                    >{isPicked ? "✓ Picked" : "Pick"}</button>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ padding: "10px 18px 14px", borderTop: "1px solid rgba(196,122,46,0.1)", textAlign: "center", flexShrink: 0 }}>
+              <button
+                onClick={() => { setBrowseModalCat(null); dispatch(setFilters({ serviceType: browseModalCat, eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 })); navigate("/listings?fromPlan=1"); }}
+                style={{ background: "none", border: "none", color: "#C47A2E", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", textDecoration: "underline" }}
+              >Browse more on the listings page →</button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── You-Do-It Confirm & Send Modal ─────────────────────────────────── */}
+      {isYouDoIt && showYdiConfirm && (
+        <>
+          <div onClick={() => setShowYdiConfirm(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 9992 }} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 9993, background: "#FFFCF5", borderRadius: 20, width: "92%", maxWidth: 440, boxShadow: "0 24px 64px rgba(0,0,0,0.3)", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
+            <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "16px 20px" }}>
+              <div style={{ fontSize: 10, fontWeight: 800, color: "rgba(204,171,74,0.7)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>Confirm Package Request</div>
+              <h3 style={{ fontSize: 16, fontWeight: 900, color: "#CCAB4A", margin: 0 }}>Send request to your vendors?</h3>
+            </div>
+            <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ background: "rgba(196,122,46,0.05)", borderRadius: 10, padding: "10px 14px", border: "1px solid rgba(196,122,46,0.12)", marginBottom: 2 }}>
+                <div style={{ fontSize: 10, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Event Details</div>
+                {[{ l: "Type", v: formData?.eventType }, { l: "Date", v: formData?.date }, { l: "Location", v: formData?.location }, { l: "Guests", v: formData?.guests && `${formData.guests} guests` }].filter(r => r.v).map(r => (
+                  <div key={r.l} style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                    <span style={{ fontSize: 12, color: "#9B7450", fontWeight: 600 }}>{r.l}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{r.v}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: 10, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 2 }}>Vendors Selected</div>
+              {Object.entries(pickedVendors).map(([cat, v]) => (
+                <div key={cat} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 10, background: "rgba(21,128,61,0.05)", border: "1px solid rgba(21,128,61,0.12)" }}>
+                  <span style={{ fontSize: 15 }}>{YDI_ICON[cat] || "🏷"}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{v.name || v.businessName}</div>
+                    <div style={{ fontSize: 10, color: "#9B7450" }}>{YDI_LABEL[cat] || cat}</div>
+                  </div>
+                  {(v.startingPrice || v.price) && <span style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E" }}>₹{Number(v.startingPrice || v.price).toLocaleString("en-IN")}+</span>}
+                </div>
+              ))}
+              <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "4px 0 0", lineHeight: 1.55 }}>Our team will coordinate with each vendor on your behalf. You'll track everything in one chat.</p>
+            </div>
+            <div style={{ padding: "0 20px 18px", display: "flex", flexDirection: "column", gap: 8 }}>
+              <button onClick={submitYouDoItPlan} disabled={ydiSubmitLoading}
+                style={{ width: "100%", padding: "13px 0", borderRadius: 12, border: "none", background: ydiSubmitLoading ? "rgba(196,122,46,0.4)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: ydiSubmitLoading ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}
+              >{ydiSubmitLoading ? "Sending…" : "Confirm & Send →"}</button>
+              <button onClick={() => setShowYdiConfirm(false)}
+                style={{ width: "100%", padding: "10px 0", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#9B7450", fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+              >Back</button>
+            </div>
+          </div>
+        </>
+      )}
+
       <div
         className="min-h-screen w-full"
         style={{ background: "#fff8f2", fontFamily: "'Outfit', sans-serif" }}
@@ -1687,6 +1851,80 @@ const EventPlanning = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ── You-Do-It Package Summary Panel ─────────────────────────────── */}
+          {isYouDoIt && selectedVendors.length > 0 && (() => {
+            const totalCats = selectedVendors.length;
+            const pickedCount = Object.keys(pickedVendors).filter(c => selectedVendors.includes(c)).length;
+            const allPicked = pickedCount === totalCats && totalCats > 0;
+            return (
+              <div className="w-full" style={{ maxWidth: 1100, marginBottom: 24 }}>
+                <div style={{ borderRadius: 18, overflow: "hidden", border: "1.5px solid rgba(196,122,46,0.2)", boxShadow: "0 4px 20px rgba(44,26,14,0.1)", fontFamily: "'Outfit', sans-serif" }}>
+                  {/* Header */}
+                  <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 800, color: "rgba(204,171,74,0.7)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 3 }}>Your Package</div>
+                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", fontWeight: 500 }}>
+                        {[formData?.eventType, formData?.date && new Date(formData.date + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }), formData?.location, formData?.guests && `${formData.guests} guests`].filter(Boolean).join(" · ")}
+                      </div>
+                    </div>
+                    <div style={{ background: allPicked ? "rgba(21,128,61,0.25)" : "rgba(204,171,74,0.15)", border: `1px solid ${allPicked ? "rgba(21,128,61,0.4)" : "rgba(204,171,74,0.3)"}`, borderRadius: 100, padding: "4px 12px", fontSize: 12, fontWeight: 800, color: allPicked ? "#4ade80" : "#CCAB4A", whiteSpace: "nowrap" }}>
+                      {pickedCount}/{totalCats} picked
+                    </div>
+                  </div>
+
+                  {/* Category rows */}
+                  <div style={{ background: "#FFFCF5" }}>
+                    {selectedVendors.map((cat, i) => {
+                      const vendor = pickedVendors[cat];
+                      const isPicked = Boolean(vendor);
+                      const photo = vendor?.portfolioPhotos?.[0] || vendor?.image || vendor?.coverImage;
+                      return (
+                        <div key={cat} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 18px", borderBottom: i < selectedVendors.length - 1 ? "1px solid rgba(196,122,46,0.08)" : "none", transition: "background 0.15s" }}>
+                          <div style={{ width: 36, height: 36, borderRadius: 10, background: isPicked ? "rgba(21,128,61,0.08)" : "rgba(196,122,46,0.07)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>
+                            {YDI_ICON[cat] || "🏷"}
+                          </div>
+                          {isPicked && photo && (
+                            <img src={photo} alt={vendor.name} style={{ width: 36, height: 36, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} />
+                          )}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 12, fontWeight: 800, color: "#2C1A0E" }}>{YDI_LABEL[cat] || cat}</div>
+                            {isPicked ? (
+                              <div style={{ fontSize: 11, color: "#16a34a", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>✓ {vendor.name || vendor.businessName}{(vendor.startingPrice || vendor.price) ? ` · ₹${Number(vendor.startingPrice || vendor.price).toLocaleString("en-IN")}+` : ""}</div>
+                            ) : (
+                              <div style={{ fontSize: 11, color: "#9B7450" }}>0/1 — No vendor picked yet</div>
+                            )}
+                          </div>
+                          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                            {isPicked && (
+                              <button onClick={() => setPickedVendors(p => { const n = { ...p }; delete n[cat]; return n; })} style={{ width: 26, height: 26, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.2)", background: "transparent", color: "#9B7450", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+                            )}
+                            <button onClick={() => openBrowseModal(cat)} style={{ padding: "5px 13px", borderRadius: 8, border: isPicked ? "1.5px solid rgba(196,122,46,0.25)" : "none", background: isPicked ? "transparent" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: isPicked ? "#C47A2E" : "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}>
+                              {isPicked ? "Change" : "Pick Vendor"}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Footer CTA */}
+                  <div style={{ background: "#FFFCF5", borderTop: "1.5px solid rgba(196,122,46,0.1)", padding: "14px 18px" }}>
+                    {pickedCount > 0 ? (
+                      <button onClick={() => setShowYdiConfirm(true)} disabled={ydiSubmitLoading}
+                        style={{ width: "100%", padding: "13px 0", borderRadius: 12, border: "none", background: ydiSubmitLoading ? "rgba(196,122,46,0.4)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: ydiSubmitLoading ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", letterSpacing: "0.01em" }}>
+                        {ydiSubmitLoading ? "Sending…" : `Send Package Request (${pickedCount} vendor${pickedCount !== 1 ? "s" : ""}) →`}
+                      </button>
+                    ) : (
+                      <div style={{ textAlign: "center", fontSize: 12, color: "#9B7450", fontWeight: 500 }}>
+                        Pick at least one vendor above to send a package request
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             );
