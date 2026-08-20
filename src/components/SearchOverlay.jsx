@@ -28,6 +28,7 @@ const POPULAR_SEARCHES = [
 ];
 
 const ALL_PAGES = [
+  { text: "Design Your Event",      href: "/design-your-event",  icon: "🎨" },
   { text: "Book an Event",          href: "/booking",            icon: "📅" },
   { text: "Browse All Vendors",     href: "/listings",           icon: "🔍" },
   { text: "Plan by Occasion",       href: "/occasions",          icon: "🎉" },
@@ -67,6 +68,7 @@ const PAGE_KW = {
   community: "/community", "community wall": "/community",
   "baat karo": "/baat-karo", "talk to us": "/baat-karo", whatsapp: "/baat-karo",
   "find by style": "/find-by-style", style: "/find-by-style", theme: "/find-by-style",
+  "design your event": "/design-your-event", "design event": "/design-your-event", "plan my event": "/design-your-event",
   occasions: "/occasions", birthday: "/occasions", anniversary: "/occasions",
   "house party": "/occasions",
 };
