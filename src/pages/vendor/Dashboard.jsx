@@ -62,23 +62,119 @@ const EVENT_TYPES = ['Birthday', '1st Birthday', 'Baby Shower', 'Anniversary', '
 const SOURCES = ['WhatsApp', 'Instagram', 'Facebook', 'Referral', 'Walk-in', 'Phone', 'Other'];
 const STATUSES = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
 
-const BLANK_FORM = { clientName: '', clientPhone: '', clientEmail: '', eventType: '', eventDate: '', amount: '', paidAmount: '', source: 'WhatsApp', status: 'Pending', notes: '' };
+const BLANK_FORM = { clientName: '', clientPhone: '', clientEmail: '', eventType: '', eventDate: '', amount: '', paidAmount: '', source: 'WhatsApp', status: 'Pending', notes: '', milestones: [], expenses: [] };
+
+const BLANK_MILESTONE = { label: 'Advance', amount: '', dueDate: '', paid: false, paidDate: '' };
+const MILESTONE_LABELS = ['Advance', '50% Pre-event', 'Final Payment', 'Custom'];
+const EXPENSE_CATS = ['Materials', 'Labour', 'Transport', 'Equipment', 'Food', 'Other'];
+
+// ── Invoice generator ──────────────────────────────────────────────────────────
+function generateInvoice(order, vendorName) {
+  const totalExpenses = (order.expenses || []).reduce((s, e) => s + (Number(e.amount) || 0), 0);
+  const totalCollected = order.milestones?.length
+    ? order.milestones.filter(m => m.paid).reduce((s, m) => s + (Number(m.amount) || 0), 0)
+    : (Number(order.paidAmount) || 0);
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Invoice — ${order.clientName}</title>
+<style>
+  body{font-family:'Outfit',Arial,sans-serif;max-width:680px;margin:40px auto;padding:0 24px;color:#2C1A0E;background:#fff}
+  .hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:20px;border-bottom:2px solid #C47A2E;margin-bottom:24px}
+  .brand{font-size:22px;font-weight:800;color:#C47A2E}
+  .brand-sub{font-size:12px;color:#9B7450;margin-top:2px}
+  .inv-meta{text-align:right;font-size:13px;color:#6B4A2A}
+  h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9B7450;margin:20px 0 8px;border-bottom:1px solid #f0e8dc;padding-bottom:4px}
+  .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f8f2ea;font-size:13px}
+  .row.bold{font-weight:700;font-size:15px;border-bottom:2px solid #C47A2E;margin-top:4px}
+  .pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+  .paid{background:#DCFCE7;color:#166534}.partial{background:#EDE9FE;color:#4C1D95}.pending{background:#FEF9C3;color:#92400E}
+  .profit-box{background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:14px 18px;margin-top:16px;display:flex;justify-content:space-between;align-items:center}
+  footer{margin-top:40px;font-size:11px;color:#c0a880;text-align:center;border-top:1px solid #f0e8dc;padding-top:16px}
+  @media print{body{margin:20px}}
+</style></head><body>
+<div class="hdr">
+  <div><div class="brand">Tendr</div><div class="brand-sub">${vendorName}</div></div>
+  <div class="inv-meta">
+    <div style="font-size:18px;font-weight:800;color:#2C1A0E">INVOICE</div>
+    <div>Date: ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</div>
+    <div style="margin-top:4px">
+      <span class="pill ${totalCollected >= Number(order.amount) ? 'paid' : totalCollected > 0 ? 'partial' : 'pending'}">${totalCollected >= Number(order.amount) ? 'PAID' : totalCollected > 0 ? 'PARTIAL' : 'PENDING'}</span>
+    </div>
+  </div>
+</div>
+
+<h3>Bill To</h3>
+<div style="font-size:14px;font-weight:700">${order.clientName}</div>
+${order.clientPhone ? `<div style="font-size:13px;color:#9B7450">📞 ${order.clientPhone}</div>` : ''}
+${order.clientEmail ? `<div style="font-size:13px;color:#9B7450">✉ ${order.clientEmail}</div>` : ''}
+
+<h3>Event Details</h3>
+<div class="row"><span>Event Type</span><span>${order.eventType || '—'}</span></div>
+${order.eventDate ? `<div class="row"><span>Event Date</span><span>${new Date(order.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</span></div>` : ''}
+${order.notes ? `<div class="row"><span>Notes</span><span style="max-width:60%;text-align:right">${order.notes}</span></div>` : ''}
+
+<h3>Payment Schedule</h3>
+${order.milestones?.length ? order.milestones.map(m => `
+<div class="row">
+  <span>${m.label}${m.dueDate ? ` <span style="font-size:11px;color:#9B7450">(due ${new Date(m.dueDate).toLocaleDateString('en-IN',{day:'numeric',month:'short'})})</span>` : ''}</span>
+  <span style="display:flex;align-items:center;gap:8px">₹${Number(m.amount).toLocaleString('en-IN')} <span class="pill ${m.paid ? 'paid' : 'pending'}">${m.paid ? '✓ Paid' : 'Pending'}</span></span>
+</div>`).join('') : `
+<div class="row"><span>Total Amount</span><span>₹${Number(order.amount||0).toLocaleString('en-IN')}</span></div>
+<div class="row"><span>Amount Paid</span><span>₹${Number(order.paidAmount||0).toLocaleString('en-IN')}</span></div>`}
+<div class="row bold"><span>Total</span><span>₹${Number(order.amount||0).toLocaleString('en-IN')}</span></div>
+<div class="row bold" style="color:#16A34A"><span>Collected</span><span>₹${totalCollected.toLocaleString('en-IN')}</span></div>
+
+${order.expenses?.length ? `
+<h3>Expenses (internal)</h3>
+${order.expenses.map(e => `<div class="row"><span>${e.category} — ${e.description||''}</span><span>₹${Number(e.amount).toLocaleString('en-IN')}</span></div>`).join('')}
+<div class="row bold"><span>Total Expenses</span><span>₹${totalExpenses.toLocaleString('en-IN')}</span></div>
+<div class="profit-box"><span style="font-weight:700;color:#166534">Net Profit on this event</span><span style="font-size:20px;font-weight:800;color:#16A34A">₹${(totalCollected - totalExpenses).toLocaleString('en-IN')}</span></div>
+` : ''}
+
+<footer>Generated by Tendr · tendr.in · Event Planning Platform · Delhi NCR</footer>
+</body></html>`;
+  const win = window.open('', '_blank');
+  if (!win) return;
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => { win.focus(); win.print(); }, 400);
+}
 
 function OrderModal({ initial, onSave, onClose, saving, existingClients = [] }) {
-  const [form, setForm] = useState(initial || BLANK_FORM);
+  const [form, setForm] = useState(() => ({ ...BLANK_FORM, ...(initial || {}), milestones: initial?.milestones || [], expenses: initial?.expenses || [] }));
+  const [modalTab, setModalTab] = useState('details');
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const phoneDigits = (form.clientPhone || '').replace(/\D/g, '');
   const matchedClient = !initial && phoneDigits.length >= 10
     ? existingClients.find(c => c.clientPhone?.replace(/\D/g, '') === phoneDigits)
     : null;
 
-  const payStatus = form.amount && Number(form.paidAmount) >= Number(form.amount) ? 'Paid'
-    : Number(form.paidAmount) > 0 ? 'Partial' : 'Pending';
+  // Auto-compute paidAmount from milestones
+  const milestonePaid = form.milestones.filter(m => m.paid).reduce((s, m) => s + (Number(m.amount) || 0), 0);
+  const milestoneTotal = form.milestones.reduce((s, m) => s + (Number(m.amount) || 0), 0);
+  const useMilestones = form.milestones.length > 0;
+  const effectivePaid = useMilestones ? milestonePaid : (Number(form.paidAmount) || 0);
+  const effectiveTotal = useMilestones ? milestoneTotal : (Number(form.amount) || 0);
+  const payStatus = effectiveTotal > 0 && effectivePaid >= effectiveTotal ? 'Paid' : effectivePaid > 0 ? 'Partial' : 'Pending';
+
+  const totalExpenses = form.expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+  const profit = effectivePaid - totalExpenses;
+
+  const addMilestone = () => set('milestones', [...form.milestones, { ...BLANK_MILESTONE, label: MILESTONE_LABELS[Math.min(form.milestones.length, 2)] }]);
+  const updateMilestone = (i, k, v) => set('milestones', form.milestones.map((m, idx) => idx === i ? { ...m, [k]: v } : m));
+  const removeMilestone = (i) => set('milestones', form.milestones.filter((_, idx) => idx !== i));
+
+  const addExpense = () => set('expenses', [...form.expenses, { category: 'Materials', description: '', amount: '' }]);
+  const updateExpense = (i, k, v) => set('expenses', form.expenses.map((e, idx) => idx === i ? { ...e, [k]: v } : e));
+  const removeExpense = (i) => set('expenses', form.expenses.filter((_, idx) => idx !== i));
 
   const inp = (style) => ({ width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid rgba(196,122,46,0.25)', fontFamily: font, fontSize: 13.5, color: ink, outline: 'none', background: '#FFFCF5', boxSizing: 'border-box', ...style });
   const lbl = { display: 'block', fontSize: 11.5, fontWeight: 700, color: '#6B3A1F', marginBottom: 4 };
   const row = { display: 'flex', gap: 12 };
   const half = { flex: 1, minWidth: 0 };
+
+  // Sync milestoneTotal → form.amount and milestonePaid → form.paidAmount for backend
+  const formToSave = useMilestones
+    ? { ...form, amount: milestoneTotal || form.amount, paidAmount: milestonePaid }
+    : form;
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(28,9,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
@@ -87,124 +183,271 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [] }) 
         onClick={e => e.stopPropagation()}>
 
         {/* Header */}
-        <div style={{ padding: '18px 22px 14px', borderBottom: '1px solid rgba(196,122,46,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-          <div>
-            <div style={{ fontSize: 17, fontWeight: 800, color: ink }}>{initial ? 'Edit Order' : 'Add Outside Order'}</div>
-            <div style={{ fontSize: 12, color: '#9B7450', marginTop: 2 }}>Log a booking received outside Tendr</div>
+        <div style={{ padding: '16px 22px 0', borderBottom: '1px solid rgba(196,122,46,0.12)', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div>
+              <div style={{ fontSize: 17, fontWeight: 800, color: ink }}>{initial ? 'Edit Order' : 'Add Outside Order'}</div>
+              <div style={{ fontSize: 12, color: '#9B7450', marginTop: 1 }}>Log a booking received outside Tendr</div>
+            </div>
+            <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(196,122,46,0.1)', border: 'none', cursor: 'pointer', fontSize: 17, color: '#9B7450', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
           </div>
-          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(196,122,46,0.1)', border: 'none', cursor: 'pointer', fontSize: 17, color: '#9B7450', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+          {/* Modal tabs */}
+          <div style={{ display: 'flex', gap: 2 }}>
+            {[['details','Details'], ['payments','Payments'], ['expenses','Expenses']].map(([key, label]) => (
+              <button key={key} onClick={() => setModalTab(key)}
+                style={{ padding: '7px 14px', border: 'none', background: 'transparent', fontFamily: font, fontSize: 12.5, fontWeight: modalTab === key ? 700 : 500, color: modalTab === key ? gold : '#9B7450', cursor: 'pointer', borderBottom: modalTab === key ? `2.5px solid ${gold}` : '2.5px solid transparent', transition: 'all 0.15s' }}>
+                {label}
+                {key === 'payments' && form.milestones.length > 0 && <span style={{ marginLeft: 5, fontSize: 11, background: 'rgba(196,122,46,0.12)', color: gold, borderRadius: 10, padding: '1px 6px' }}>{form.milestones.length}</span>}
+                {key === 'expenses' && form.expenses.length > 0 && <span style={{ marginLeft: 5, fontSize: 11, background: 'rgba(220,38,38,0.1)', color: '#DC2626', borderRadius: 10, padding: '1px 6px' }}>{form.expenses.length}</span>}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Form */}
-        <div style={{ overflowY: 'auto', padding: '16px 22px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {/* Form body */}
+        <div style={{ overflowY: 'auto', padding: '16px 22px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
 
-          {/* Source chips */}
-          <div>
-            <label style={lbl}>Where did this booking come from?</label>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {SOURCES.map(s => (
-                <button key={s} onClick={() => set('source', s)}
-                  style={{ padding: '5px 12px', borderRadius: 100, fontSize: 12.5, fontWeight: 600, fontFamily: font, cursor: 'pointer', border: '1.5px solid', transition: 'all 0.15s',
-                    borderColor: form.source === s ? gold : 'rgba(196,122,46,0.22)',
-                    background: form.source === s ? gold : 'transparent',
-                    color: form.source === s ? '#fff' : '#9B7450' }}>
-                  {SOURCE_EMOJI[s]} {s}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div style={row}>
-            <div style={half}>
-              <label style={lbl}>Client Name *</label>
-              <input style={inp()} value={form.clientName} onChange={e => set('clientName', e.target.value)} placeholder="e.g. Priya Sharma" />
-            </div>
-            <div style={half}>
-              <label style={lbl}>Phone / WhatsApp</label>
-              <input style={inp()} value={form.clientPhone} onChange={e => set('clientPhone', e.target.value)} placeholder="10-digit number" type="tel" />
-            </div>
-          </div>
-
-          {matchedClient && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '9px 12px', borderRadius: 10, background: 'rgba(196,122,46,0.07)', border: '1.5px solid rgba(196,122,46,0.25)' }}>
-              <div>
-                <div style={{ fontSize: 12.5, fontWeight: 700, color: ink }}>Existing client: {matchedClient.clientName}</div>
-                <div style={{ fontSize: 11, color: '#9B7450' }}>Fill their name automatically?</div>
+          {/* ── Details tab ── */}
+          {modalTab === 'details' && <>
+            <div>
+              <label style={lbl}>Where did this booking come from?</label>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {SOURCES.map(s => (
+                  <button key={s} onClick={() => set('source', s)}
+                    style={{ padding: '5px 12px', borderRadius: 100, fontSize: 12.5, fontWeight: 600, fontFamily: font, cursor: 'pointer', border: '1.5px solid', transition: 'all 0.15s',
+                      borderColor: form.source === s ? gold : 'rgba(196,122,46,0.22)',
+                      background: form.source === s ? gold : 'transparent',
+                      color: form.source === s ? '#fff' : '#9B7450' }}>
+                    {SOURCE_EMOJI[s]} {s}
+                  </button>
+                ))}
               </div>
-              <button onClick={() => { set('clientName', matchedClient.clientName); if (matchedClient.clientEmail) set('clientEmail', matchedClient.clientEmail); }}
-                style={{ padding: '5px 14px', borderRadius: 8, border: 'none', background: gold, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font, whiteSpace: 'nowrap', flexShrink: 0 }}>
-                Use
+            </div>
+
+            <div style={row}>
+              <div style={half}>
+                <label style={lbl}>Client Name *</label>
+                <input style={inp()} value={form.clientName} onChange={e => set('clientName', e.target.value)} placeholder="e.g. Priya Sharma" />
+              </div>
+              <div style={half}>
+                <label style={lbl}>Phone / WhatsApp</label>
+                <input style={inp()} value={form.clientPhone} onChange={e => set('clientPhone', e.target.value)} placeholder="10-digit number" type="tel" />
+              </div>
+            </div>
+
+            {matchedClient && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '9px 12px', borderRadius: 10, background: 'rgba(196,122,46,0.07)', border: '1.5px solid rgba(196,122,46,0.25)' }}>
+                <div>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: ink }}>Existing client: {matchedClient.clientName}</div>
+                  <div style={{ fontSize: 11, color: '#9B7450' }}>Fill their name automatically?</div>
+                </div>
+                <button onClick={() => { set('clientName', matchedClient.clientName); if (matchedClient.clientEmail) set('clientEmail', matchedClient.clientEmail); }}
+                  style={{ padding: '5px 14px', borderRadius: 8, border: 'none', background: gold, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  Use
+                </button>
+              </div>
+            )}
+
+            <div style={row}>
+              <div style={half}>
+                <label style={lbl}>Event Type</label>
+                <select style={inp()} value={form.eventType} onChange={e => set('eventType', e.target.value)}>
+                  <option value="">Select event</option>
+                  {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div style={half}>
+                <label style={lbl}>Event Date</label>
+                <input style={inp()} type="date" value={form.eventDate} onChange={e => set('eventDate', e.target.value)} />
+              </div>
+            </div>
+
+            {!useMilestones && (
+              <div style={row}>
+                <div style={half}>
+                  <label style={lbl}>Total Amount (₹)</label>
+                  <input style={inp()} type="number" min="0" value={form.amount} onChange={e => set('amount', e.target.value)} placeholder="0" />
+                </div>
+                <div style={half}>
+                  <label style={lbl}>Paid So Far (₹)</label>
+                  <input style={inp()} type="number" min="0" value={form.paidAmount} onChange={e => set('paidAmount', e.target.value)} placeholder="0" />
+                </div>
+              </div>
+            )}
+            {useMilestones && (
+              <div style={{ padding: '8px 12px', borderRadius: 9, background: 'rgba(196,122,46,0.06)', border: '1px solid rgba(196,122,46,0.15)', fontSize: 12.5, color: '#9B7450' }}>
+                Payment split across {form.milestones.length} milestone{form.milestones.length > 1 ? 's' : ''} · ₹{milestonePaid.toLocaleString('en-IN')} of ₹{milestoneTotal.toLocaleString('en-IN')} collected → <button onClick={() => setModalTab('payments')} style={{ background: 'none', border: 'none', color: gold, fontWeight: 700, cursor: 'pointer', fontFamily: font, padding: 0 }}>Edit →</button>
+              </div>
+            )}
+
+            {(effectiveTotal > 0) && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 9, background: 'rgba(196,122,46,0.06)', border: '1px solid rgba(196,122,46,0.15)' }}>
+                <span style={{ fontSize: 12, color: '#9B7450' }}>Payment:</span>
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: PAY_COLOR[payStatus] }}>{payStatus}</span>
+                <span style={{ fontSize: 11, color: '#9B7450' }}>(₹{effectivePaid.toLocaleString('en-IN')} / ₹{effectiveTotal.toLocaleString('en-IN')})</span>
+              </div>
+            )}
+
+            <div>
+              <label style={lbl}>Status</label>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {STATUSES.map(s => {
+                  const c = STATUS_COLOR[s];
+                  const active = form.status === s;
+                  return (
+                    <button key={s} onClick={() => set('status', s)}
+                      style={{ flex: 1, padding: '7px 4px', borderRadius: 9, fontSize: 12, fontWeight: 700, fontFamily: font, cursor: 'pointer', border: '1.5px solid', transition: 'all 0.15s',
+                        borderColor: active ? c.dot : 'rgba(196,122,46,0.15)',
+                        background: active ? c.bg : 'transparent',
+                        color: active ? c.color : '#9B7450' }}>
+                      {s}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <label style={lbl}>Notes (optional)</label>
+              <textarea style={{ ...inp(), height: 72, resize: 'vertical' }} value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Theme preference, venue, special requests…" />
+            </div>
+          </>}
+
+          {/* ── Payments tab ── */}
+          {modalTab === 'payments' && <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>Payment Milestones</div>
+              <button onClick={addMilestone}
+                style={{ padding: '6px 14px', borderRadius: 8, border: 'none', background: `linear-gradient(135deg,${gold},${goldLt})`, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>
+                + Add Milestone
               </button>
             </div>
-          )}
 
-          <div style={row}>
-            <div style={half}>
-              <label style={lbl}>Event Type</label>
-              <select style={inp()} value={form.eventType} onChange={e => set('eventType', e.target.value)}>
-                <option value="">Select event</option>
-                {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
-            <div style={half}>
-              <label style={lbl}>Event Date</label>
-              <input style={inp()} type="date" value={form.eventDate} onChange={e => set('eventDate', e.target.value)} />
-            </div>
-          </div>
+            {form.milestones.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '24px 0', color: '#9B7450', fontSize: 13 }}>
+                <div style={{ fontSize: 28, marginBottom: 8 }}>💳</div>
+                <div style={{ marginBottom: 4 }}>No milestones yet</div>
+                <div style={{ fontSize: 12 }}>Split your payment into advance, pre-event, and final installments</div>
+                <button onClick={addMilestone} style={{ marginTop: 12, padding: '7px 18px', borderRadius: 9, border: `1.5px solid ${gold}`, background: 'transparent', color: gold, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>
+                  + Add First Milestone
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {form.milestones.map((m, i) => (
+                  <div key={i} style={{ padding: '12px 14px', borderRadius: 12, border: `1.5px solid ${m.paid ? 'rgba(22,163,74,0.3)' : 'rgba(196,122,46,0.2)'}`, background: m.paid ? 'rgba(22,163,74,0.04)' : '#FFFCF5', position: 'relative' }}>
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                      <select value={m.label} onChange={e => updateMilestone(i, 'label', e.target.value)}
+                        style={{ flex: 1, ...inp(), padding: '7px 10px', fontSize: 12.5 }}>
+                        {MILESTONE_LABELS.map(l => <option key={l} value={l}>{l}</option>)}
+                      </select>
+                      <input type="number" min="0" placeholder="Amount ₹" value={m.amount} onChange={e => updateMilestone(i, 'amount', e.target.value)}
+                        style={{ width: 110, ...inp(), padding: '7px 10px', fontSize: 12.5 }} />
+                      <button onClick={() => removeMilestone(i)}
+                        style={{ width: 28, height: 32, borderRadius: 7, border: '1px solid rgba(220,38,38,0.3)', background: 'transparent', color: '#DC2626', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>×</button>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <div style={{ flex: 1, minWidth: 120 }}>
+                        <div style={{ fontSize: 10.5, color: '#9B7450', marginBottom: 3 }}>Due date</div>
+                        <input type="date" value={m.dueDate} onChange={e => updateMilestone(i, 'dueDate', e.target.value)} style={{ width: '100%', ...inp(), padding: '6px 10px', fontSize: 12 }} />
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 16 }}>
+                        <button onClick={() => updateMilestone(i, 'paid', !m.paid)}
+                          style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '7px 14px', borderRadius: 9, border: `1.5px solid ${m.paid ? '#16A34A' : 'rgba(196,122,46,0.3)'}`, background: m.paid ? 'rgba(22,163,74,0.1)' : 'transparent', color: m.paid ? '#16A34A' : '#9B7450', fontFamily: font, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s' }}>
+                          <div style={{ width: 14, height: 14, borderRadius: '50%', background: m.paid ? '#16A34A' : 'transparent', border: `2px solid ${m.paid ? '#16A34A' : '#9B7450'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {m.paid && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>}
+                          </div>
+                          {m.paid ? 'Received' : 'Mark Received'}
+                        </button>
+                        {m.paid && m.amount && (
+                          <a href={`https://wa.me/91${(form.clientPhone||'').replace(/\D/g,'')}?text=${encodeURIComponent(`Hi ${form.clientName}, thank you for the ${m.label} payment of ₹${Number(m.amount).toLocaleString('en-IN')}! 🙏`)}`}
+                            target="_blank" rel="noopener noreferrer"
+                            style={{ fontSize: 11.5, color: '#25D366', fontWeight: 700, textDecoration: 'none' }}>
+                            WhatsApp ✓
+                          </a>
+                        )}
+                        {!m.paid && m.amount && form.clientPhone && (
+                          <a href={`https://wa.me/91${(form.clientPhone||'').replace(/\D/g,'')}?text=${encodeURIComponent(`Hi ${form.clientName}, gentle reminder — ${m.label} of ₹${Number(m.amount).toLocaleString('en-IN')} is due${m.dueDate ? ` on ${new Date(m.dueDate).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}` : ''}. Please arrange at your earliest. Thank you! 🙏`)}`}
+                            target="_blank" rel="noopener noreferrer"
+                            style={{ fontSize: 11.5, color: '#D97706', fontWeight: 700, textDecoration: 'none' }}>
+                            Remind
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
 
-          <div style={row}>
-            <div style={half}>
-              <label style={lbl}>Total Amount (₹)</label>
-              <input style={inp()} type="number" min="0" value={form.amount} onChange={e => set('amount', e.target.value)} placeholder="0" />
-            </div>
-            <div style={half}>
-              <label style={lbl}>Paid So Far (₹)</label>
-              <input style={inp()} type="number" min="0" value={form.paidAmount} onChange={e => set('paidAmount', e.target.value)} placeholder="0" />
-            </div>
-          </div>
+                <div style={{ display: 'flex', gap: 16, padding: '10px 14px', borderRadius: 10, background: 'rgba(196,122,46,0.06)', border: '1px solid rgba(196,122,46,0.12)', fontSize: 13 }}>
+                  <div><span style={{ color: '#9B7450' }}>Total: </span><strong>₹{milestoneTotal.toLocaleString('en-IN')}</strong></div>
+                  <div><span style={{ color: '#9B7450' }}>Collected: </span><strong style={{ color: '#16A34A' }}>₹{milestonePaid.toLocaleString('en-IN')}</strong></div>
+                  <div><span style={{ color: '#9B7450' }}>Pending: </span><strong style={{ color: '#D97706' }}>₹{(milestoneTotal - milestonePaid).toLocaleString('en-IN')}</strong></div>
+                </div>
+              </div>
+            )}
+          </>}
 
-          {/* Payment status preview */}
-          {(form.amount || form.paidAmount) ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 9, background: 'rgba(196,122,46,0.06)', border: '1px solid rgba(196,122,46,0.15)' }}>
-              <span style={{ fontSize: 12, color: '#9B7450' }}>Payment status:</span>
-              <span style={{ fontSize: 12.5, fontWeight: 700, color: PAY_COLOR[payStatus] }}>{payStatus}</span>
-              {form.amount && form.paidAmount && Number(form.amount) > 0 && (
-                <span style={{ fontSize: 11, color: '#9B7450', marginLeft: 4 }}>
-                  (₹{Number(form.paidAmount).toLocaleString('en-IN')} / ₹{Number(form.amount).toLocaleString('en-IN')})
-                </span>
-              )}
+          {/* ── Expenses tab ── */}
+          {modalTab === 'expenses' && <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>Event Expenses</div>
+              <button onClick={addExpense}
+                style={{ padding: '6px 14px', borderRadius: 8, border: 'none', background: '#DC2626', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>
+                + Add Expense
+              </button>
             </div>
-          ) : null}
 
-          <div>
-            <label style={lbl}>Status</label>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {STATUSES.map(s => {
-                const c = STATUS_COLOR[s];
-                const active = form.status === s;
-                return (
-                  <button key={s} onClick={() => set('status', s)}
-                    style={{ flex: 1, padding: '7px 4px', borderRadius: 9, fontSize: 12, fontWeight: 700, fontFamily: font, cursor: 'pointer', border: '1.5px solid', transition: 'all 0.15s',
-                      borderColor: active ? c.dot : 'rgba(196,122,46,0.15)',
-                      background: active ? c.bg : 'transparent',
-                      color: active ? c.color : '#9B7450' }}>
-                    {s}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+            {form.expenses.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '24px 0', color: '#9B7450', fontSize: 13 }}>
+                <div style={{ fontSize: 28, marginBottom: 8 }}>📦</div>
+                <div style={{ marginBottom: 4 }}>No expenses yet</div>
+                <div style={{ fontSize: 12 }}>Track materials, labour, transport and other costs to see your actual profit</div>
+                <button onClick={addExpense} style={{ marginTop: 12, padding: '7px 18px', borderRadius: 9, border: '1.5px solid #DC2626', background: 'transparent', color: '#DC2626', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>
+                  + Add First Expense
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {form.expenses.map((e, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <select value={e.category} onChange={ev => updateExpense(i, 'category', ev.target.value)}
+                      style={{ width: 110, ...inp(), padding: '7px 8px', fontSize: 12, flexShrink: 0 }}>
+                      {EXPENSE_CATS.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <input value={e.description} onChange={ev => updateExpense(i, 'description', ev.target.value)}
+                      placeholder="Description" style={{ flex: 1, ...inp(), padding: '7px 10px', fontSize: 12.5 }} />
+                    <input type="number" min="0" value={e.amount} onChange={ev => updateExpense(i, 'amount', ev.target.value)}
+                      placeholder="₹" style={{ width: 90, ...inp(), padding: '7px 8px', fontSize: 12.5, flexShrink: 0 }} />
+                    <button onClick={() => removeExpense(i)}
+                      style={{ width: 28, height: 32, borderRadius: 7, border: '1px solid rgba(220,38,38,0.3)', background: 'transparent', color: '#DC2626', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>×</button>
+                  </div>
+                ))}
 
-          <div>
-            <label style={lbl}>Notes (optional)</label>
-            <textarea style={{ ...inp(), height: 72, resize: 'vertical' }} value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Theme preference, venue, special requests…" />
-          </div>
+                <div style={{ display: 'flex', gap: 12, padding: '12px 14px', borderRadius: 12, background: profit >= 0 ? 'rgba(22,163,74,0.06)' : 'rgba(220,38,38,0.06)', border: `1.5px solid ${profit >= 0 ? 'rgba(22,163,74,0.2)' : 'rgba(220,38,38,0.2)'}`, marginTop: 4 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 11, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Revenue</div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: ink }}>₹{effectivePaid.toLocaleString('en-IN')}</div>
+                  </div>
+                  <div style={{ fontSize: 20, color: '#9B7450', alignSelf: 'center' }}>−</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 11, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Expenses</div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: '#DC2626' }}>₹{totalExpenses.toLocaleString('en-IN')}</div>
+                  </div>
+                  <div style={{ fontSize: 20, color: '#9B7450', alignSelf: 'center' }}>=</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 11, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Net Profit</div>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: profit >= 0 ? '#16A34A' : '#DC2626' }}>₹{profit.toLocaleString('en-IN')}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>}
         </div>
 
         {/* Footer */}
         <div style={{ padding: '12px 22px 18px', borderTop: '1px solid rgba(196,122,46,0.1)', display: 'flex', gap: 10, flexShrink: 0 }}>
           <button onClick={onClose} style={{ flex: 1, padding: '11px', borderRadius: 10, border: '1.5px solid rgba(196,122,46,0.25)', background: 'transparent', color: '#9B7450', fontFamily: font, fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-          <button onClick={() => onSave(form)} disabled={saving || !form.clientName.trim()}
+          <button onClick={() => onSave(formToSave)} disabled={saving || !form.clientName.trim()}
             style={{ flex: 2, padding: '11px', borderRadius: 10, border: 'none', background: `linear-gradient(135deg,${gold},${goldLt})`, color: '#fff', fontFamily: font, fontSize: 13.5, fontWeight: 800, cursor: saving || !form.clientName.trim() ? 'default' : 'pointer', opacity: saving || !form.clientName.trim() ? 0.6 : 1, boxShadow: '0 3px 12px rgba(196,122,46,0.35)' }}>
             {saving ? 'Saving…' : initial ? 'Save Changes' : '+ Add Order'}
           </button>
@@ -239,9 +482,10 @@ function BookingCard({ b }) {
 }
 
 // ── Outside order card ─────────────────────────────────────────────────────────
-function OutsideOrderCard({ order, onEdit, onDelete, onStatus }) {
+function OutsideOrderCard({ order, onEdit, onDelete, onStatus, vendorName }) {
   const sc = STATUS_COLOR[order.status] || STATUS_COLOR.Pending;
   const [menuOpen, setMenuOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const menuRef = useRef(null);
   useEffect(() => {
     const h = (e) => { if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false); };
@@ -249,62 +493,162 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus }) {
     return () => document.removeEventListener('mousedown', h);
   }, []);
 
+  const milestones = order.milestones || [];
+  const expenses = order.expenses || [];
+  const milestonePaid = milestones.filter(m => m.paid).reduce((s, m) => s + (Number(m.amount) || 0), 0);
+  const milestoneTotal = milestones.reduce((s, m) => s + (Number(m.amount) || 0), 0);
+  const useMilestones = milestones.length > 0;
+  const effectivePaid = useMilestones ? milestonePaid : (Number(order.paidAmount) || 0);
+  const effectiveTotal = useMilestones ? milestoneTotal : (Number(order.amount) || 0);
+  const totalExpenses = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+  const cardProfit = effectivePaid - totalExpenses;
+  const hasDetails = milestones.length > 0 || expenses.length > 0;
+
   return (
-    <div style={{ background: '#fff', borderRadius: 14, padding: '14px 16px', border: '1px solid rgba(196,122,46,0.12)' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-        {/* Source badge */}
-        <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(196,122,46,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9B7450', flexShrink: 0 }}>
-          {SOURCE_ICON[order.source] || dsic(<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>)}
-        </div>
-
-        {/* Info */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <span style={{ fontWeight: 700, color: ink, fontSize: 14 }}>{order.clientName}</span>
-            <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 100, background: sc.bg, color: sc.color }}>{order.status}</span>
-            <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 100, background: 'rgba(196,122,46,0.08)', color: '#9B7450' }}>{order.source}</span>
+    <div style={{ background: '#fff', borderRadius: 14, border: '1px solid rgba(196,122,46,0.12)', overflow: 'hidden' }}>
+      <div style={{ padding: '14px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          {/* Source badge */}
+          <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(196,122,46,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9B7450', flexShrink: 0 }}>
+            {SOURCE_ICON[order.source] || dsic(<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>)}
           </div>
-          <div style={{ fontSize: 12, color: '#9B7450', marginTop: 3, display: 'flex', flexWrap: 'wrap', gap: '2px 12px' }}>
-            {order.clientPhone && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.29 6.29l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></>)}{order.clientPhone}</span>}
-            {order.eventType   && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>)}{order.eventType}</span>}
-            {order.eventDate   && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>)}{new Date(order.eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>}
-          </div>
-          {order.notes && <div style={{ fontSize: 12, color: '#9B7450', marginTop: 4, fontStyle: 'italic' }}>"{order.notes}"</div>}
-        </div>
 
-        {/* Amount + menu */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
-          {order.amount > 0 && (
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontWeight: 800, color: ink, fontSize: 15 }}>₹{order.amount.toLocaleString('en-IN')}</div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: PAY_COLOR[order.paymentStatus] || '#9B7450' }}>{order.paymentStatus}</div>
-              {order.paymentStatus === 'Partial' && (
-                <div style={{ fontSize: 10, color: '#9B7450' }}>₹{(order.paidAmount || 0).toLocaleString('en-IN')} paid</div>
-              )}
+          {/* Info */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{ fontWeight: 700, color: ink, fontSize: 14 }}>{order.clientName}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 100, background: sc.bg, color: sc.color }}>{order.status}</span>
+              <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 100, background: 'rgba(196,122,46,0.08)', color: '#9B7450' }}>{order.source}</span>
             </div>
-          )}
-          {/* Kebab menu */}
-          <div ref={menuRef} style={{ position: 'relative' }}>
-            <button onClick={() => setMenuOpen(m => !m)}
-              style={{ width: 28, height: 28, borderRadius: 7, border: '1px solid rgba(196,122,46,0.2)', background: 'transparent', cursor: 'pointer', fontSize: 16, color: '#9B7450', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⋮</button>
-            {menuOpen && (
-              <div style={{ position: 'absolute', top: 32, right: 0, background: '#fff', borderRadius: 12, boxShadow: '0 8px 28px rgba(0,0,0,0.14)', border: '1px solid rgba(196,122,46,0.15)', zIndex: 50, minWidth: 160, padding: '6px 0', fontFamily: font }}>
-                <button onClick={() => { onEdit(order); setMenuOpen(false); }}
-                  style={{ width: '100%', padding: '8px 16px', border: 'none', background: 'none', textAlign: 'left', fontSize: 13, fontWeight: 600, color: ink, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
-                {STATUSES.filter(s => s !== order.status).map(s => (
-                  <button key={s} onClick={() => { onStatus(order._id, s); setMenuOpen(false); }}
-                    style={{ width: '100%', padding: '8px 16px', border: 'none', background: 'none', textAlign: 'left', fontSize: 13, fontWeight: 600, color: STATUS_COLOR[s].color, cursor: 'pointer' }}>
-                    → Mark {s}
-                  </button>
-                ))}
-                <div style={{ borderTop: '1px solid rgba(196,122,46,0.1)', margin: '4px 0' }} />
-                <button onClick={() => { onDelete(order._id); setMenuOpen(false); }}
-                  style={{ width: '100%', padding: '8px 16px', border: 'none', background: 'none', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#DC2626', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Delete</button>
+            <div style={{ fontSize: 12, color: '#9B7450', marginTop: 3, display: 'flex', flexWrap: 'wrap', gap: '2px 12px' }}>
+              {order.clientPhone && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.29 6.29l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></>)}{order.clientPhone}</span>}
+              {order.eventType   && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>)}{order.eventType}</span>}
+              {order.eventDate   && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>)}{new Date(order.eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>}
+            </div>
+            {order.notes && <div style={{ fontSize: 12, color: '#9B7450', marginTop: 4, fontStyle: 'italic' }}>"{order.notes}"</div>}
+          </div>
+
+          {/* Amount + menu */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
+            {effectiveTotal > 0 && (
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontWeight: 800, color: ink, fontSize: 15 }}>₹{effectiveTotal.toLocaleString('en-IN')}</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: effectivePaid >= effectiveTotal ? '#16A34A' : effectivePaid > 0 ? '#D97706' : '#9B7450' }}>
+                  {effectivePaid >= effectiveTotal ? 'Paid' : effectivePaid > 0 ? 'Partial' : 'Pending'}
+                </div>
+                {effectivePaid > 0 && effectivePaid < effectiveTotal && (
+                  <div style={{ fontSize: 10, color: '#9B7450' }}>₹{effectivePaid.toLocaleString('en-IN')} paid</div>
+                )}
               </div>
             )}
+            {/* Kebab menu */}
+            <div ref={menuRef} style={{ position: 'relative' }}>
+              <button onClick={() => setMenuOpen(m => !m)}
+                style={{ width: 28, height: 28, borderRadius: 7, border: '1px solid rgba(196,122,46,0.2)', background: 'transparent', cursor: 'pointer', fontSize: 16, color: '#9B7450', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⋮</button>
+              {menuOpen && (
+                <div style={{ position: 'absolute', top: 32, right: 0, background: '#fff', borderRadius: 12, boxShadow: '0 8px 28px rgba(0,0,0,0.14)', border: '1px solid rgba(196,122,46,0.15)', zIndex: 50, minWidth: 160, padding: '6px 0', fontFamily: font }}>
+                  <button onClick={() => { onEdit(order); setMenuOpen(false); }}
+                    style={{ width: '100%', padding: '8px 16px', border: 'none', background: 'none', textAlign: 'left', fontSize: 13, fontWeight: 600, color: ink, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
+                  {STATUSES.filter(s => s !== order.status).map(s => (
+                    <button key={s} onClick={() => { onStatus(order._id, s); setMenuOpen(false); }}
+                      style={{ width: '100%', padding: '8px 16px', border: 'none', background: 'none', textAlign: 'left', fontSize: 13, fontWeight: 600, color: STATUS_COLOR[s].color, cursor: 'pointer' }}>
+                      → Mark {s}
+                    </button>
+                  ))}
+                  <div style={{ borderTop: '1px solid rgba(196,122,46,0.1)', margin: '4px 0' }} />
+                  <button onClick={() => { generateInvoice(order, vendorName || ''); setMenuOpen(false); }}
+                    style={{ width: '100%', padding: '8px 16px', border: 'none', background: 'none', textAlign: 'left', fontSize: 13, fontWeight: 600, color: gold, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    Invoice
+                  </button>
+                  <button onClick={() => { onDelete(order._id); setMenuOpen(false); }}
+                    style={{ width: '100%', padding: '8px 16px', border: 'none', background: 'none', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#DC2626', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Delete</button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Expand toggle */}
+        {hasDetails && (
+          <button onClick={() => setExpanded(e => !e)}
+            style={{ marginTop: 10, width: '100%', padding: '6px', borderRadius: 8, border: '1px dashed rgba(196,122,46,0.25)', background: 'transparent', color: '#9B7450', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: font, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+            {expanded ? '▲ Hide details' : `▼ Show ${milestones.length > 0 ? `${milestones.length} payment${milestones.length > 1 ? 's' : ''}` : ''}${milestones.length > 0 && expenses.length > 0 ? ' · ' : ''}${expenses.length > 0 ? `${expenses.length} expense${expenses.length > 1 ? 's' : ''}` : ''}`}
+          </button>
+        )}
       </div>
+
+      {/* Expanded panel */}
+      {expanded && hasDetails && (
+        <div style={{ borderTop: '1px solid rgba(196,122,46,0.1)', padding: '14px 16px', background: 'rgba(255,252,245,0.6)', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* Milestones */}
+          {milestones.length > 0 && (
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Payment Schedule</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {milestones.map((m, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 10px', borderRadius: 9, background: m.paid ? 'rgba(22,163,74,0.06)' : '#fff', border: `1px solid ${m.paid ? 'rgba(22,163,74,0.2)' : 'rgba(196,122,46,0.12)'}` }}>
+                    <div style={{ width: 16, height: 16, borderRadius: '50%', background: m.paid ? '#16A34A' : 'transparent', border: `2px solid ${m.paid ? '#16A34A' : '#D97706'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {m.paid && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>}
+                    </div>
+                    <span style={{ flex: 1, fontSize: 12.5, fontWeight: 600, color: ink }}>{m.label}</span>
+                    {m.dueDate && <span style={{ fontSize: 11, color: '#9B7450' }}>{new Date(m.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>}
+                    <span style={{ fontSize: 13, fontWeight: 700, color: m.paid ? '#16A34A' : ink }}>₹{Number(m.amount || 0).toLocaleString('en-IN')}</span>
+                    <span style={{ fontSize: 10.5, fontWeight: 700, padding: '2px 7px', borderRadius: 100, background: m.paid ? 'rgba(22,163,74,0.1)' : 'rgba(217,119,6,0.1)', color: m.paid ? '#16A34A' : '#D97706' }}>{m.paid ? 'Received' : 'Pending'}</span>
+                  </div>
+                ))}
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 10px', fontSize: 12, color: '#9B7450' }}>
+                  <span>Total ₹{milestoneTotal.toLocaleString('en-IN')}</span>
+                  <span style={{ color: '#16A34A', fontWeight: 700 }}>₹{milestonePaid.toLocaleString('en-IN')} collected</span>
+                  {milestoneTotal > milestonePaid && <span style={{ color: '#D97706', fontWeight: 700 }}>₹{(milestoneTotal - milestonePaid).toLocaleString('en-IN')} pending</span>}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Expenses */}
+          {expenses.length > 0 && (
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Expenses</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {expenses.map((e, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 10px', borderRadius: 8, background: '#fff', border: '1px solid rgba(220,38,38,0.1)' }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 7px', borderRadius: 100, background: 'rgba(220,38,38,0.08)', color: '#DC2626' }}>{e.category}</span>
+                    <span style={{ flex: 1, fontSize: 12.5, color: ink }}>{e.description || '—'}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#DC2626' }}>₹{Number(e.amount || 0).toLocaleString('en-IN')}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Profit summary */}
+          {(expenses.length > 0 || milestones.length > 0) && (
+            <div style={{ display: 'flex', gap: 10, padding: '10px 14px', borderRadius: 12, background: cardProfit >= 0 ? 'rgba(22,163,74,0.07)' : 'rgba(220,38,38,0.07)', border: `1.5px solid ${cardProfit >= 0 ? 'rgba(22,163,74,0.25)' : 'rgba(220,38,38,0.25)'}` }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Collected</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#16A34A' }}>₹{effectivePaid.toLocaleString('en-IN')}</div>
+              </div>
+              {expenses.length > 0 && <>
+                <div style={{ fontSize: 18, color: '#9B7450', alignSelf: 'center' }}>−</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 10, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Expenses</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: '#DC2626' }}>₹{totalExpenses.toLocaleString('en-IN')}</div>
+                </div>
+                <div style={{ fontSize: 18, color: '#9B7450', alignSelf: 'center' }}>=</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 10, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Net Profit</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: cardProfit >= 0 ? '#16A34A' : '#DC2626' }}>₹{cardProfit.toLocaleString('en-IN')}</div>
+                </div>
+              </>}
+              <button onClick={() => generateInvoice(order, vendorName || '')}
+                style={{ alignSelf: 'center', padding: '7px 14px', borderRadius: 9, border: `1.5px solid ${gold}`, background: 'transparent', color: gold, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                Invoice ↗
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -688,7 +1032,7 @@ export default function VendorDashboard() {
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {outsideOrders.slice(0, 4).map(o => (
-                      <OutsideOrderCard key={o._id} order={o} onEdit={setModal} onDelete={deleteOrder} onStatus={setOrderStatus} />
+                      <OutsideOrderCard key={o._id} order={o} onEdit={setModal} onDelete={deleteOrder} onStatus={setOrderStatus} vendorName={vendorName} />
                     ))}
                   </div>
                 )}
@@ -812,7 +1156,7 @@ export default function VendorDashboard() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {visibleOutside.map(o => (
-                  <OutsideOrderCard key={o._id} order={o} onEdit={setModal} onDelete={deleteOrder} onStatus={setOrderStatus} />
+                  <OutsideOrderCard key={o._id} order={o} onEdit={setModal} onDelete={deleteOrder} onStatus={setOrderStatus} vendorName={vendorName} />
                 ))}
               </div>
             )}
