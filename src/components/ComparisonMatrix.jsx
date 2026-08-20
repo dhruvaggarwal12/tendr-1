@@ -101,10 +101,8 @@ function Badge({ label, color = green }) {
 }
 
 /* ── Mobile card ─────────────────────────────────────────────────────────── */
-function MobileCard({ v, isTendrsPick, isBestPrice, isBestRating, openVendorChat }) {
+function MobileCard({ v, isTendrsPick, isBestPrice, openVendorChat }) {
   const photo     = getPhoto(v);
-  const rating    = getRating(v);
-  const reviews   = getReviews(v);
   const price     = getPrice(v);
   const verified  = getVerified(v);
   const loc       = getLocation(v);
@@ -146,14 +144,6 @@ function MobileCard({ v, isTendrsPick, isBestPrice, isBestRating, openVendorChat
           {loc && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.75)" }}>📍 {loc}</div>}
         </div>
       </div>
-
-      {/* Rating */}
-      {rating != null && (
-        <div style={{ padding: "10px 12px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Stars rating={rating} reviews={reviews} size={13} />
-          {isBestRating && <Badge label="Top Rated" color="#F59E0B" />}
-        </div>
-      )}
 
       {/* Price */}
       <div style={{ margin: "10px 12px 0", padding: "10px 14px", borderRadius: 12, textAlign: "center", background: isBestPrice ? "rgba(21,128,61,0.07)" : "rgba(201,168,76,0.06)", border: `1.5px solid ${isBestPrice ? "rgba(21,128,61,0.3)" : "rgba(201,168,76,0.18)"}` }}>
@@ -275,11 +265,9 @@ const ComparisonMatrix = ({ vendors = [] }) => {
   const portfolios  = vendors.map(getPortfolio);
 
   const bestPriceIdx   = winnerIndex(prices,    "low");
-  const bestRatingIdx  = winnerIndex(ratings,   "high");
   const bestExpIdx     = winnerIndex(exps,      "high");
   const bestEventsIdx  = winnerIndex(evts,      "high");
   const bestPortIdx    = winnerIndex(portfolios,"high");
-  const bestReviewIdx  = winnerIndex(reviewCounts, "high");
   const tendersPickIdx = calcTendersPickIdx(vendors);
   const pickVendor     = tendersPickIdx != null ? vendors[tendersPickIdx] : null;
 
@@ -301,8 +289,7 @@ const ComparisonMatrix = ({ vendors = [] }) => {
               <MobileCard
                 v={v}
                 isTendrsPick={i === tendersPickIdx}
-                isBestPrice={i === bestPriceIdx  && getPrice(v) != null}
-                isBestRating={i === bestRatingIdx && getRating(v) != null}
+                isBestPrice={i === bestPriceIdx && getPrice(v) != null}
                 openVendorChat={openVendorChat}
               />
             </div>
@@ -336,11 +323,8 @@ const ComparisonMatrix = ({ vendors = [] }) => {
               <th style={{ background: "#FDFAF5", borderBottom: "2px solid rgba(201,168,76,0.15)" }} />
               {vendors.map((v, i) => {
                 const photo       = getPhoto(v);
-                const rating      = getRating(v);
-                const reviews     = getReviews(v);
                 const price       = getPrice(v);
-                const isBestPrice = i === bestPriceIdx  && price  != null;
-                const isBestRat   = i === bestRatingIdx && rating != null;
+                const isBestPrice = i === bestPriceIdx && price != null;
                 const isPick      = i === tendersPickIdx;
                 const verified    = getVerified(v);
 
@@ -361,15 +345,6 @@ const ComparisonMatrix = ({ vendors = [] }) => {
                         <div style={{ position: "absolute", bottom: 8, left: 10 }}>
                           <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", lineHeight: 1.2, textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>{getName(v)}</div>
                         </div>
-                      </div>
-
-                      {/* Rating under photo */}
-                      <div style={{ padding: "10px 14px 4px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, minHeight: 32 }}>
-                        {rating != null
-                          ? <Stars rating={rating} reviews={reviews} size={13} />
-                          : <span style={{ fontSize: 12, color: "#ccc" }}>No ratings yet</span>
-                        }
-                        {isBestRat && <Badge label="Top Rated" color="#F59E0B" />}
                       </div>
 
                       {/* Price */}
@@ -395,8 +370,6 @@ const ComparisonMatrix = ({ vendors = [] }) => {
             <StatRow icon="⏱"  label="Experience" values={exps.map(e  => e  != null ? `${e} yrs`    : null)} winIdx={bestExpIdx}    tendersPickIdx={tendersPickIdx} />
             {/* Events done */}
             <StatRow icon="🎉" label="Events Done" values={evts.map(e  => e  != null ? `${e}+`       : null)} winIdx={bestEventsIdx} tendersPickIdx={tendersPickIdx} />
-            {/* Reviews */}
-            <StatRow icon="💬" label="Reviews"     values={reviewCounts.map(r => r != null ? `${r} reviews` : null)} winIdx={bestReviewIdx} tendersPickIdx={tendersPickIdx} />
             {/* Team */}
             <StatRow icon="👥" label="Team Size"   values={teams.map(t => t  != null ? `${t} people` : null)} winIdx={null}          tendersPickIdx={tendersPickIdx} />
             {/* Portfolio */}
