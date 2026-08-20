@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setMultipleFormData, setBookingType } from "../../redux/eventPlanningSlice";
 import { getOccasionById } from "../../data/occasions";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
@@ -726,6 +728,7 @@ function Progress({step,withTheme}){
 export default function OccasionDetail(){
   const {slug}=useParams();
   const navigate=useNavigate();
+  const dispatch=useDispatch();
   const [searchParams]=useSearchParams();
   const cardRef=useRef(null);
   const planRef=useRef(null);
@@ -775,6 +778,19 @@ export default function OccasionDetail(){
       }));
     }
   },[planMode,step,guests,date,budget,city,venueType,ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,checked]);
+
+  /* Sync to main eventPlanning session so the Navbar plan icon activates */
+  useEffect(()=>{
+    if(!occasion||step<1) return;
+    dispatch(setBookingType('you-do-it'));
+    dispatch(setMultipleFormData({
+      eventType: occasion.name || '',
+      ...(date   ? { date }           : {}),
+      ...(guests ? { guests: String(guests) } : {}),
+      ...(city   ? { location: city } : {}),
+      ...(budget ? { budget: String(budget) } : {}),
+    }));
+  },[occasion?.name, date, guests, city, budget, step]);
 
   function restorePlan(s){
     setPlanMode(s.planMode);setStep(s.step);setGuests(s.guests||20);

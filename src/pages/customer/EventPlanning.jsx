@@ -545,6 +545,7 @@ const EventPlanning = () => {
         _savedAt: Date.now(),
       };
       localStorage.setItem("tendr_smart_plan", JSON.stringify(planData));
+      window.dispatchEvent(new CustomEvent('tendr:plan-confirmed'));
       setConfirmedPlan(planData);
       if (result.conversationId) setCreatedConversationId(result.conversationId);
     } catch (e) {
@@ -612,6 +613,7 @@ const EventPlanning = () => {
         const expiresAt = eventDate ? new Date(eventDate).getTime() + 86400000 : Date.now() + 7 * 86400000;
         const planData = { ...result.plan, conversationId: result.conversationId || null, _savedAt: Date.now(), __expiresAt: expiresAt };
         localStorage.setItem("tendr_smart_plan", JSON.stringify(planData));
+        window.dispatchEvent(new CustomEvent('tendr:plan-confirmed'));
         try { const t = localStorage.getItem("tendr_token") || localStorage.getItem("jwt"); if (t) import("../../utils/progressSync").then(m => m.scheduleSyncToServer(t)); } catch {}
         setConfirmedPlan(planData);
         if (result.conversationId) setCreatedConversationId(result.conversationId);

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const F = "'Outfit', sans-serif";
 const GOLD = '#C47A2E';
@@ -129,13 +130,27 @@ export function PlanIconButton() {
   const [plan, setPlan] = useState(null);
   const navigate = useNavigate();
 
+  // Watch Redux formData so the icon activates instantly when user fills any field
+  // (same-tab updates — localStorage 'storage' event only fires cross-tab)
+  const reduxFormData = useSelector(s => s.eventPlanning?.formData);
+
   const refresh = useCallback(() => { setPlan(loadPlan()); }, []);
+
+  // Re-evaluate plan whenever Redux formData changes (covers Flow 1 & Flow 3 same-tab)
+  useEffect(() => {
+    refresh();
+  }, [reduxFormData?.eventType, reduxFormData?.date, reduxFormData?.location, refresh]);
 
   useEffect(() => {
     refresh();
-    // re-check whenever localStorage changes (other tab, or after dismiss)
+    // Cross-tab: tendr_smart_plan written in another tab, or after page reload
     window.addEventListener('storage', refresh);
-    return () => window.removeEventListener('storage', refresh);
+    // Same-tab: custom event dispatched when tendr_smart_plan is written
+    window.addEventListener('tendr:plan-confirmed', refresh);
+    return () => {
+      window.removeEventListener('storage', refresh);
+      window.removeEventListener('tendr:plan-confirmed', refresh);
+    };
   }, [refresh]);
 
   if (!plan) return null;
