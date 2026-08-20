@@ -48,6 +48,9 @@ const TOOL_ICONS = {
   luckydraw:      occic(<><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></>),
   kittyfund:      occic(<><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></>),
   namesuggestions: occic(<><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></>),
+  awardsceremony: occic(<><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></>),
+  runofshow:      occic(<><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></>),
+  appreciationwall: occic(<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>),
 };
 
 const SECTION_ICONS = {
@@ -2567,6 +2570,142 @@ function OccWABroadcastModal({ onClose, occasion, accent }) {
   );
 }
 
+// ── Awards Ceremony (office-party specific) ───────────────────────────────
+function AwardsCeremony({ onClose, accent }) {
+  const [awards, setAwards] = useState([]);
+  const [newCat, setNewCat] = useState("");
+  const [newWinner, setNewWinner] = useState("");
+  const [phase, setPhase] = useState("setup");
+  const [current, setCurrent] = useState(0);
+  const [revealed, setRevealed] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const add = () => {
+    if (!newCat.trim() || !newWinner.trim()) return;
+    setAwards(a => [...a, { cat: newCat.trim(), winner: newWinner.trim() }]);
+    setNewCat(""); setNewWinner("");
+  };
+  const next = () => {
+    if (!revealed) { setRevealed(true); return; }
+    if (current < awards.length - 1) { setCurrent(c => c + 1); setRevealed(false); }
+    else setDone(true);
+  };
+
+  if (phase === "setup") return (
+    <Modal onClose={onClose} emoji="🏆" title="Awards Ceremony" wide>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 14 }}>Add award categories and winners. Reveal them live one by one.</p>
+      <label style={lbl}>Award Name</label>
+      <input value={newCat} onChange={e => setNewCat(e.target.value)} placeholder="e.g. Best Team Player" style={{ ...inp, marginBottom: 8 }} />
+      <label style={lbl}>Winner</label>
+      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+        <input value={newWinner} onChange={e => setNewWinner(e.target.value)} placeholder="Winner's name" style={{ ...inp, flex: 1 }} onKeyDown={e => e.key === "Enter" && add()} />
+        <button onClick={add} style={{ ...mkBtn(accent), width: "auto", padding: "10px 16px" }}>+</button>
+      </div>
+      {awards.length === 0 && <p style={{ textAlign: "center", color: "rgba(255,255,255,0.25)", fontSize: 13, marginBottom: 8 }}>No awards yet — add some above!</p>}
+      {awards.map((a, i) => (
+        <div key={i} style={{ ...crd, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div style={{ fontWeight: 700, color: "#fff", fontSize: 14 }}>🏆 {a.cat}</div>
+            <div style={{ fontSize: 12, color: accent, marginTop: 2 }}>{a.winner}</div>
+          </div>
+          <span onClick={() => setAwards(aa => aa.filter((_, j) => j !== i))} style={{ cursor: "pointer", opacity: 0.4, fontSize: 16, padding: 4 }}>✕</span>
+        </div>
+      ))}
+      {awards.length >= 1 && (
+        <button onClick={() => setPhase("ceremony")} style={{ ...mkBtn(accent), marginTop: 12 }}>
+          🎬 Start Ceremony — {awards.length} award{awards.length > 1 ? "s" : ""}
+        </button>
+      )}
+    </Modal>
+  );
+
+  if (done) return (
+    <Modal onClose={onClose} emoji="🎉" title="All Awards Presented!">
+      <div style={{ textAlign: "center", padding: "20px 0" }}>
+        <div style={{ fontSize: 60, marginBottom: 12 }}>🎉</div>
+        <div style={{ fontSize: 20, fontWeight: 900, color: "#fff", marginBottom: 6 }}>Congratulations to all winners!</div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", marginBottom: 24, lineHeight: 1.6 }}>
+          {awards.map(a => `${a.cat}: ${a.winner}`).join("  ·  ")}
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={() => { setPhase("setup"); setDone(false); setCurrent(0); setRevealed(false); }} style={{ ...mkBtn("rgba(255,255,255,0.08)"), flex: 1 }}>Edit & Rerun</button>
+          <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent("🏆 *Tonight's Award Winners*\n\n" + awards.map(a => `• ${a.cat}: *${a.winner}*`).join("\n") + "\n\nCongratulations to everyone! 🎉")}`, "_blank")} style={{ ...mkBtn("#25D366"), flex: 1 }}>📤 Share on WhatsApp</button>
+        </div>
+      </div>
+    </Modal>
+  );
+
+  const award = awards[current];
+  return (
+    <Modal onClose={onClose} emoji="🏆" title={`Award ${current + 1} of ${awards.length}`}>
+      <div style={{ textAlign: "center", padding: "10px 0 20px" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 18 }}>
+          {award.cat}
+        </div>
+        {!revealed ? (
+          <>
+            <div style={{ fontSize: 56, marginBottom: 16, animation: "dot-pulse 1.2s ease-in-out infinite" }}>🥁</div>
+            <div style={{ fontSize: 15, color: "rgba(255,255,255,0.4)", marginBottom: 28 }}>And the award goes to…</div>
+          </>
+        ) : (
+          <>
+            <div style={{ fontSize: 36, fontWeight: 900, color: "#fff", marginBottom: 8, animation: "rm-in 0.38s cubic-bezier(0.22,1,0.36,1)", letterSpacing: "-0.02em" }}>
+              {award.winner}
+            </div>
+            <div style={{ fontSize: 13, color: accent, marginBottom: 6, fontWeight: 700 }}>🏆 {award.cat}</div>
+            <div style={{ fontSize: 22, marginBottom: 24 }}>🎊</div>
+          </>
+        )}
+        <button onClick={next} style={mkBtn(accent)}>
+          {!revealed ? "✨ Reveal Winner" : current < awards.length - 1 ? "Next Award →" : "🎉 Finish Ceremony"}
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
+// ── Run of Show (office-party specific) ──────────────────────────────────
+function RunOfShow({ onClose, accent }) {
+  const [items, setItems] = useState([]);
+  const [newItem, setNewItem] = useState("");
+  const [newTime, setNewTime] = useState("");
+  const [done, setDone] = useState({});
+  const add = () => {
+    if (!newItem.trim()) return;
+    setItems(i => [...i, { label: newItem.trim(), time: newTime.trim() }]);
+    setNewItem(""); setNewTime("");
+  };
+  const toggle = (i) => setDone(d => ({ ...d, [i]: !d[i] }));
+  const doneCount = Object.values(done).filter(Boolean).length;
+  return (
+    <Modal onClose={onClose} emoji="📋" title="Run of Show" wide>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 14 }}>Add event segments with times. Tick them off live during the event.</p>
+      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+        <input value={newTime} onChange={e => setNewTime(e.target.value)} placeholder="7:30 PM" style={{ ...inp, width: 90, flexShrink: 0 }} />
+        <input value={newItem} onChange={e => setNewItem(e.target.value)} placeholder="Segment (e.g. Welcome speech)" style={{ ...inp, flex: 1 }} onKeyDown={e => e.key === "Enter" && add()} />
+        <button onClick={add} style={{ ...mkBtn(accent), width: "auto", padding: "10px 14px" }}>+</button>
+      </div>
+      {items.length === 0 && <p style={{ textAlign: "center", color: "rgba(255,255,255,0.25)", fontSize: 13 }}>No segments yet. Add your event flow above.</p>}
+      {items.length > 0 && (
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", textAlign: "right", marginBottom: 8 }}>{doneCount}/{items.length} done</div>
+      )}
+      {items.map((it, i) => (
+        <div key={i} onClick={() => toggle(i)} style={{ ...crd, display: "flex", alignItems: "center", gap: 12, cursor: "pointer", opacity: done[i] ? 0.5 : 1, transition: "opacity 0.2s" }}>
+          <div style={{ width: 20, height: 20, borderRadius: "50%", border: `2px solid ${done[i] ? "#22c55e" : "rgba(255,255,255,0.3)"}`, background: done[i] ? "#22c55e" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            {done[i] && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>}
+          </div>
+          {it.time && <span style={{ fontSize: 12, fontWeight: 700, color: accent, minWidth: 48, flexShrink: 0 }}>{it.time}</span>}
+          <span style={{ flex: 1, fontSize: 14, color: "#fff", textDecoration: done[i] ? "line-through" : "none" }}>{it.label}</span>
+          <span onClick={e => { e.stopPropagation(); setItems(ii => ii.filter((_, j) => j !== i)); }} style={{ opacity: 0.3, cursor: "pointer", fontSize: 14, padding: "0 4px" }}>✕</span>
+        </div>
+      ))}
+      {items.length > 0 && (
+        <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent("📋 *Event Run of Show*\n\n" + items.map(it => `${it.time ? it.time + "  " : ""}${it.label}`).join("\n"))}`, "_blank")} style={{ ...mkBtn("#25D366"), marginTop: 8 }}>📤 Share with Team</button>
+      )}
+    </Modal>
+  );
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // OCCASIONS CONFIG
 // ════════════════════════════════════════════════════════════════════════════
@@ -2820,6 +2959,56 @@ const OCCASIONS = {
       ]},
     ],
   },
+  "office-party": {
+    name: "Office Party Hub",
+    emoji: "🏢",
+    accent: "#3B82F6",
+    bg: "linear-gradient(125deg, #030c1a, #04102a, #020810, #030c1a)",
+    eyebrow: "Corporate Party Toolkit",
+    tagline: "Make your team night one they'll actually talk about on Monday",
+    themes: ["Corporate Glam", "Bollywood Night", "Garden Soirée", "Neon Disco Nights", "Understated Modern", "Retro 90s", "Black & Gold", "Tropical Vibes"],
+    sections: [
+      { id: "manage", label: "⚙️ Plan", subtitle: "Organise every detail", tools: [
+        { id: "invite",       emoji: "📨", title: "Digital Invite & RSVP", desc: "One link · employees RSVP instantly",     color: "#2563EB" },
+        { id: "checklist",    emoji: "📋", title: "Party Checklist",        desc: "Guest count → auto buy list",            color: "#D97706" },
+        { id: "bills",        emoji: "💸", title: "Bill Splitter",          desc: "Split party expenses by department",     color: "#DC2626" },
+        { id: "guestlist",    emoji: "👥", title: "Guest List",             desc: "Track RSVPs · phone · department",       color: "#7C3AED" },
+        { id: "menu",         emoji: "🍽️", title: "Menu Planner",          desc: "Plan food · dietary prefs · status",     color: "#059669" },
+        { id: "daytimeline",  emoji: "🗓️", title: "Day Timeline",          desc: "Schedule the evening · live tracker",    color: "#D97706" },
+        { id: "venue",        emoji: "📍", title: "Venue Notes",           desc: "Address · parking · Maps · share",       color: "#DC2626" },
+        { id: "seating",      emoji: "🪑", title: "Seating Chart",         desc: "Visual tables · tap to assign seats",    color: "#0891B2" },
+        { id: "budget",       emoji: "💰", title: "Budget Planner",        desc: "Set budget · track by category",         color: "#16A34A" },
+        { id: "vendors",      emoji: "🗂️", title: "Vendor Tracker",        desc: "Caterer · AV · DJ · deposit · balance", color: "#F59E0B" },
+        { id: "wabroadcast",  emoji: "📣", title: "WA Broadcasts",         desc: "Save the date · reminder · thank you",  color: "#25D366" },
+      ]},
+      { id: "ceremony", label: "🏆 Awards", subtitle: "Recognition & ceremony", tools: [
+        { id: "awardsceremony", emoji: "🏆", title: "Awards Ceremony",    desc: "Add winners · reveal live one by one",   color: "#F59E0B" },
+        { id: "runofshow",      emoji: "📋", title: "Run of Show",        desc: "Live event flow — tick off segments",    color: "#3B82F6" },
+        { id: "appreciationwall", emoji: "💌", title: "Appreciation Wall", desc: "Colleagues share shoutouts & kudos",    color: "#EC4899" },
+        { id: "countdown",      emoji: "⏱️", title: "Countdown Timer",    desc: "Count down to the party or award time", color: "#0891B2" },
+      ]},
+      { id: "fun", label: "✨ Fun", subtitle: "Theme · music · memories", tools: [
+        { id: "theme",         emoji: "🎨", title: "Theme Picker",        desc: "Vote on tonight's party theme",          color: "#7C3AED" },
+        { id: "playlist",      emoji: "🎵", title: "Playlist Builder",    desc: "Everyone adds their song · upvote",      color: "#059669" },
+        { id: "photowall",     emoji: "📸", title: "Shared Photo Wall",   desc: "Everyone uploads their photos",          color: "#DB2777" },
+        { id: "moodmeter",     emoji: "🌡️", title: "Mood Meter",         desc: "Live party vibe tracker",                color: "#10B981" },
+        { id: "secretmessage", emoji: "💌", title: "Secret Messages",    desc: "Anonymous appreciation notes for anyone", color: "#F59E0B" },
+      ]},
+      { id: "games", label: "🎮 Games", subtitle: "Team games that actually work", tools: [
+        { id: "mostlikelyto",  emoji: "🏆", title: "Most Likely To",      desc: "Office edition — who's most likely to…", color: "#F59E0B" },
+        { id: "t2l",           emoji: "🤥", title: "Two Truths One Lie",  desc: "Find the lie — great icebreaker",        color: "#8B5CF6" },
+        { id: "rapidfire",     emoji: "⚡", title: "Rapid Fire",          desc: "Quick choices — 30 seconds on the clock", color: "#EF4444" },
+        { id: "wouldyou",      emoji: "🤷", title: "Would You Rather",    desc: "Team-friendly dilemmas — defend it",     color: "#7C3AED" },
+        { id: "hottakes",      emoji: "🌶️", title: "Hot Takes",          desc: "Office opinions — agree or disagree",    color: "#DC2626" },
+        { id: "bingo",         emoji: "🎱", title: "Office Party Bingo",  desc: "5×5 corporate party scenario bingo",     color: "#0891B2" },
+        { id: "charades",      emoji: "🎭", title: "Dumb Charades",       desc: "Bollywood · Web Shows · Office Memes",   color: "#D97706" },
+      ]},
+      { id: "other", label: "🏆 After", subtitle: "Wrap up the night", tools: [
+        { id: "reportcard", emoji: "🏆", title: "Party Report Card", desc: "Rate the night · get a grade", color: "#FBBF24" },
+      ]},
+    ],
+  },
+
   "naming-ceremony": {
     name: "Naming Ceremony Hub",
     emoji: "🌸",
@@ -2859,6 +3048,14 @@ const OCCASIONS = {
     ],
   },
 };
+
+const OFFICE_BINGO = [
+  "CEO gives a speech", "Someone leaves early", "Team wins award", "Free food runs out", "DJ plays Bollywood",
+  "Group selfie chaos", "HR makes announcement", "Someone tears up", "Tech setup fails", "Award winner absent",
+  "Mic drops mid-speech", "Everyone checks phone", "Epic dance floor moment", "Office crush dances", "Dessert table mobbed",
+  "Lucky draw winner absent", "Manager does karaoke", "Best dressed drama", "Toast to the company", "New joiner steals show",
+  "Last-minute venue issue", "Playlist gets hijacked", "Two depts argue (friendly)", "After-party plans made", "Someone mentions Q3",
+];
 
 const BIRTHDAY_BINGO = [
   "Someone cries", "Late gift", "Phone dies", "Cake drama", "Extra guests", "Too many photos", "Forgot candles", "DJ request denied",
@@ -3171,7 +3368,10 @@ export default function OccasionHub({ occasion }) {
       case "hottakes":       return <HotTakes onClose={close} accent={accent} />;
       case "spin":           return <SpinBottle onClose={close} accent={accent} />;
       case "charades":       return <Charades onClose={close} accent={accent} />;
-      case "bingo":          return <Bingo onClose={close} accent={accent} squares={occasion === "birthday" ? BIRTHDAY_BINGO : undefined} />;
+      case "bingo":          return <Bingo onClose={close} accent={accent} squares={occasion === "birthday" ? BIRTHDAY_BINGO : occasion === "office-party" ? OFFICE_BINGO : undefined} />;
+      case "awardsceremony": return <AwardsCeremony onClose={close} accent={accent} />;
+      case "runofshow":      return <RunOfShow onClose={close} accent={accent} />;
+      case "appreciationwall": return <WishWall onClose={close} accent={accent} placeholder="Share a shoutout or appreciation for a colleague…" />;
       case "wishwall":       return <WishWall onClose={close} accent={accent} />;
       case "birthdayquiz":   return <BirthdayQuiz onClose={close} accent={accent} />;
       case "lovenotes":      return <LoveNotes onClose={close} accent={accent} />;

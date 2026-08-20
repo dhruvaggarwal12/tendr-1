@@ -542,6 +542,7 @@ const router = createBrowserRouter([
   { path: '/get-together-hub', element: <OccasionHub occasion="get-together" />, errorElement: <ErrorPage /> },
   { path: '/kitty-party-hub', element: <OccasionHub occasion="kitty-party" />, errorElement: <ErrorPage /> },
   { path: '/naming-ceremony-hub', element: <OccasionHub occasion="naming-ceremony" />, errorElement: <ErrorPage /> },
+  { path: '/office-party-hub', element: <OccasionHub occasion="office-party" />, errorElement: <ErrorPage /> },
 
 
   { path: '/top-rated/:category', element: <TopRatedVendors />, errorElement: <ErrorPage /> },

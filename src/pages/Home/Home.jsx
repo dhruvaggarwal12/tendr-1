@@ -59,6 +59,7 @@ const HUB_ROUTES = {
   "housewarming":    "/housewarming-hub",
   "get-together":    "/get-together-hub",
   "naming-ceremony": "/naming-ceremony-hub",
+  "office-party":    "/office-party-hub",
 };
 
 const HERO_FEATURES = [

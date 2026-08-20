@@ -19,6 +19,7 @@ const border= "rgba(196,122,46,0.2)";
 const HUB_ROUTES = {
   "birthday-party":"\/birthday-hub","first-birthday":"\/birthday-hub",
   "anniversary":"\/anniversary-hub","baby-shower":"\/baby-shower-hub",
+  "office-party":"\/office-party-hub",
   "gender-reveal":"\/baby-shower-hub","newborn-welcome":"\/baby-shower-hub",
   "housewarming":"\/housewarming-hub","get-together":"\/get-together-hub",
   "naming-ceremony":"\/naming-ceremony-hub",

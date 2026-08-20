@@ -45,6 +45,7 @@ const HUB_ROUTES = {
   'Get-together':      '/get-together-hub',
   'Kitty Party':       '/kitty-party-hub',
   'Naming Ceremony':   '/naming-ceremony-hub',
+  'Office Party':      '/office-party-hub',
   'House Party':       '/house-party',
   'Party':             '/house-party',
 };
