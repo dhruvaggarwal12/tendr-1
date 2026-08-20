@@ -417,6 +417,7 @@ const Home = () => {
   const [occasionFlow, setOccasionFlow] = useState(null); // null | "grid" | occasionObject
   const [occasionSearch, setOccasionSearch] = useState("");
   const [showRakhi, setShowRakhi] = useState(false);
+  const [planBannerKey, setPlanBannerKey] = useState(0);
   const [hoveredOcc, setHoveredOcc] = useState(null);
   const [occModal, setOccModal] = useState(null);
   const [searchParams] = useSearchParams();
@@ -1877,7 +1878,83 @@ const Home = () => {
 
       {false && <JourneyFlow />}
 
+      {/* ── Continue Planning Banner ── */}
+      {/* planBannerKey forces re-eval after dismiss */}
+      {(() => {
+        void planBannerKey;
+        let activePlan = null;
+        try {
+          const raw = localStorage.getItem('tendr_smart_plan');
+          if (raw) { activePlan = JSON.parse(raw); }
+          else {
+            const sess = localStorage.getItem('tendr_ep_session');
+            if (sess) {
+              const s = JSON.parse(sess);
+              const fd = s.formData || {};
+              if (fd.eventType || fd.date || fd.location) {
+                activePlan = { _draft: true, eventDetails: { eventType: fd.eventType, date: fd.date, location: fd.location, guests: fd.guests } };
+              }
+            }
+          }
+        } catch {}
+        if (!activePlan) return null;
 
+        const isDraft = activePlan._draft === true;
+        const eventType = activePlan.eventDetails?.eventType || activePlan.eventType || '';
+        const eventDate = activePlan.eventDetails?.date || activePlan.date || '';
+        const daysLeft = eventDate ? Math.ceil((new Date(eventDate) - Date.now()) / 86400000) : null;
+        const F = "'Outfit', sans-serif";
+        const GOLD = "#C47A2E";
+        const INK = "#2C1A0E";
+
+        return (
+          <div style={{ background: "#FFFCF5", borderBottom: "1px solid rgba(196,122,46,0.14)", padding: "14px 20px" }}>
+            <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: isDraft ? "rgba(196,122,46,0.1)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span style={{ fontSize: 20 }}>{isDraft ? "✏️" : "📋"}</span>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: INK, fontFamily: F, lineHeight: 1.3 }}>
+                  {isDraft ? "You're in the middle of planning" : `Your ${eventType} plan is active`}
+                </div>
+                <div style={{ fontSize: 12, color: "#9B7450", fontFamily: F, marginTop: 2 }}>
+                  {isDraft
+                    ? "Finish filling the form to confirm vendors & unlock chat"
+                    : daysLeft !== null && daysLeft > 0
+                      ? `${daysLeft} day${daysLeft !== 1 ? "s" : ""} to go${eventType ? ` · ${eventType}` : ""}`
+                      : eventType || "Track vendor statuses, tasks & payments"
+                  }
+                </div>
+              </div>
+              {daysLeft !== null && daysLeft > 0 && !isDraft && (
+                <div style={{ background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.22)", borderRadius: 20, padding: "4px 12px", fontSize: 12, fontWeight: 700, color: GOLD, fontFamily: F, flexShrink: 0 }}>
+                  {daysLeft}d left
+                </div>
+              )}
+              <button
+                onClick={() => navigate(isDraft ? "/plan-event/form" : "/my-event")}
+                style={{ padding: "9px 18px", borderRadius: 10, background: GOLD, color: "#fff", fontSize: 12.5, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: F, flexShrink: 0, boxShadow: "0 3px 12px rgba(196,122,46,0.28)" }}
+              >
+                {isDraft ? "Continue →" : "View My Event →"}
+              </button>
+              <button
+                onClick={() => {
+                  try {
+                    localStorage.removeItem('tendr_smart_plan');
+                    localStorage.removeItem('tendr_ep_session');
+                  } catch {}
+                  setPlanBannerKey(k => k + 1);
+                }}
+                style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(44,26,14,0.07)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "#9B7450", fontSize: 14 }}
+                title="Dismiss"
+                aria-label="Dismiss banner"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Wedding Stationeries Section ── */}
       {(() => {
