@@ -8,6 +8,19 @@ const goldLt = '#CCAB4A';
 const ink = '#2C1A0E';
 const cream = '#FFFCF5';
 
+const HUB_ROUTES = {
+  'Birthday':          '/birthday-hub',
+  '1st Birthday':      '/birthday-hub',
+  'Anniversary':       '/anniversary-hub',
+  'Baby Shower':       '/baby-shower-hub',
+  'Housewarming':      '/housewarming-hub',
+  'Get-together':      '/get-together-hub',
+  'Kitty Party':       '/kitty-party-hub',
+  'Naming Ceremony':   '/naming-ceremony-hub',
+  'House Party':       '/house-party',
+  'Party':             '/house-party',
+};
+
 const CAT_ICON = {
   Caterer: '🍽', Photographer: '📸', Decorator: '🎀', DJ: '🎵',
   Venue: '🏛', AV: '🎤', Entertainment: '🎭', Transport: '🚌', Gifts: '🎁',
@@ -371,6 +384,28 @@ export default function MyEvent() {
             </div>
           )}
         </div>
+
+        {/* ── Party Hub link ── */}
+        {(() => {
+          const hubPath = HUB_ROUTES[eventDetails.eventType] || '/house-party';
+          const hubLabel = HUB_ROUTES[eventDetails.eventType]
+            ? `${eventDetails.eventType} Hub`
+            : 'Party Hub';
+          return (
+            <div onClick={() => navigate(hubPath)}
+              style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px', background: '#fff', borderRadius: 16, border: '1.5px solid rgba(196,122,46,0.15)', marginBottom: 12, cursor: 'pointer', boxShadow: '0 2px 8px rgba(196,122,46,0.06)', transition: 'box-shadow 0.15s' }}
+              role="button">
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: `linear-gradient(135deg,${gold},${goldLt})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flexShrink: 0 }}>
+                🎉
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: ink }}>{hubLabel}</div>
+                <div style={{ fontSize: 12, color: '#9B7450', marginTop: 1 }}>Checklists, guest tools, ideas & more for your event</div>
+              </div>
+              <div style={{ color: '#9B7450', fontSize: 18, flexShrink: 0 }}>→</div>
+            </div>
+          );
+        })()}
 
         {/* ── CTAs ── */}
         <div style={{ display: 'flex', gap: 10 }}>
