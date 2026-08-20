@@ -48,6 +48,7 @@ const ALL_VENDORS = [
   "Decorator","Caterer","DJ","Photographer","Videographer",
   "Florist","Entertainer","Photo Booth","Live Band","Emcee / Host",
   "Lighting Setup","Sound System","Makeup Artist","Balloon Artist","Cake Artist",
+  "AV Setup",
 ];
 
 /* catering service styles — shown inside the Caterer tip card */
@@ -84,6 +85,11 @@ function getEquipment(id, guests) {
     "farewell":[{cat:"Décor",items:[{name:"Memory photo wall",qty:"1"},{name:"Farewell banner",qty:"1"}]},{cat:"Keepsakes",items:[{name:"Memory scrapbook",qty:"1"}]}],
     "retirement":[{cat:"Décor",items:[{name:"Retirement banner",qty:"1"},{name:"Career memory wall",qty:"1"}]}],
     "newborn-welcome":[{cat:"Décor",items:[{name:"Flower arch",qty:"1"},{name:"Welcome balloons",qty:`${Math.ceil(g/4)}`}]}],
+    "office-party":[
+      {cat:"AV & Presentation",items:[{name:"Projector + screen / LED display",qty:"1"},{name:"Wireless lapel mic (CEO/speaker)",qty:"2"},{name:"Handheld wireless mic (emcee)",qty:"1"},{name:"Click presenter / slide remote",qty:"1"},{name:"HDMI + USB-C adapters",qty:"3–4"}]},
+      {cat:"Stage & Awards",items:[{name:"Podium / lectern",qty:"1"},{name:"Award table with drape",qty:"1"},{name:"Step-and-repeat branded backdrop",qty:"1"},{name:"Spotlights on stage",qty:"2"}]},
+      {cat:"Décor",items:[{name:"Balloon arch or clusters",qty:`${Math.ceil(g/30)} sets`},{name:"Table centrepieces",qty:`${t}`},{name:"Fairy lights / ambient lighting",qty:"3–4 sets"}]},
+    ],
   };
   return [...common,...(extra[id]||[])];
 }
@@ -109,11 +115,15 @@ function getRecommended(occasion, theme, ageGroups, venueType) {
   if(theme) {
     const t=(theme.tags||[]).join(" ").toLowerCase();
     if(t.includes("floral")||t.includes("garden")||t.includes("nature")) recs.add("Florist");
-    if(t.includes("neon")||t.includes("glow")||t.includes("teen")) recs.add("DJ");
-    if(t.includes("bollywood")||t.includes("indian")) recs.add("Emcee / Host");
+    if(t.includes("neon")||t.includes("glow")||t.includes("teen")||t.includes("dance")||t.includes("fun")) recs.add("DJ");
+    if(t.includes("bollywood")||t.includes("indian")||t.includes("colourful")) recs.add("Emcee / Host");
     if(t.includes("gold")||t.includes("elegant")||t.includes("glam")) recs.add("Lighting Setup");
     if(t.includes("photo")||t.includes("memories")||t.includes("red-carpet")) recs.add("Photo Booth");
+    if(t.includes("corporate")||t.includes("professional")||t.includes("modern")||t.includes("minimal")) {
+      recs.add("AV Setup"); recs.add("Photo Booth");
+    }
   }
+  if(occasion.id==="office-party") { recs.add("AV Setup"); recs.add("Emcee / Host"); }
   if(venue.includes("garden")||venue.includes("outdoor")||venue.includes("farmhouse")||venue.includes("rooftop")) {
     recs.add("Lighting Setup");
   }
@@ -330,11 +340,50 @@ function getVendorTips(type, {theme, venueType, ageGroups, cateringType, budget,
     };
   }
 
+  if(type==="Emcee / Host") {
+    const isCorp=tags.includes("corporate")||tags.includes("professional")||tags.includes("modern")||tags.includes("minimal");
+    const items=isCorp
+      ? ["Awards ceremony script with winner names and citations","Company milestone acknowledgements for the year","Trivia / quiz round between departments","Transition between dinner, entertainment and awards","Bilingual hosting (Hindi + English)","Coordinate with AV team for slide cues"]
+      : ["Opening + welcome","Introduce the occasion and key guests","Host games and activities","Coordinate cake-cutting or key moment","Thank-you and closing","Bilingual hosting if needed"];
+    return {
+      heading:"Brief your emcee on",
+      items:items.slice(0,6),
+      tip:isCorp
+        ?"Tip: Send the emcee a run-of-show document with timings, award winner names (marked confidential), and any sensitive topics to avoid — a good corporate host needs the full picture."
+        :"Tip: Brief the host on guest demographics, any inside jokes and the flow order — a well-briefed emcee makes the event feel effortless.",
+    };
+  }
+
   if(type==="Photo Booth") {
+    const isCorp=tags.includes("corporate")||tags.includes("professional")||tags.includes("minimal");
     return {
       heading:"What to set up",
-      items:["Printed or digital instant photos","Props box (hats, signs, glasses)","Themed backdrop matching décor","GIF/video booth option","Unlimited prints for guests"],
-      tip:"Tip: Place the photo booth near the entrance or bar area — it gets used more. Confirm if props are included in the quote.",
+      items:[
+        isCorp?"Branded backdrop with company logo + name":"Themed backdrop matching décor",
+        "Printed or digital instant photos","Props box (hats, signs, glasses)",
+        "GIF/video booth option","Unlimited sessions for guests",
+        isCorp?"Digital album shared with HR for internal comms":"QR share to phone",
+      ],
+      tip:isCorp
+        ?"Tip: Ask for a custom overlay with the company name and event date on every photo — great for internal social media."
+        :"Tip: Place the photo booth near the entrance or bar area — it gets used more. Confirm if props are included in the quote.",
+    };
+  }
+
+  if(type==="AV Setup") {
+    const isCorp=tags.includes("corporate")||tags.includes("professional")||tags.includes("minimal")||tags.includes("modern");
+    return {
+      heading:"What to confirm with your AV vendor",
+      items:[
+        "Projector + screen OR LED display (confirm hall size first)",
+        `${isCorp?"2 lapel mics (CEO + speaker) + 1 handheld for emcee":"Mics for speeches, awards and emcee"}`,
+        "HDMI and USB-C adaptors for all presenter laptops",
+        "Click presenter / wireless slide remote",
+        "On-site technician for the full event duration",
+        isCorp?"Live streaming setup if remote employees will join":"Backup speaker/mic in case of failure",
+        "Walk-through / tech rehearsal 1 hour before guests arrive",
+      ],
+      tip:`Tip: Share the hall dimensions, ceiling height, and laptop model upfront — screen size and cable needs depend on these. ${isCorp?"For award ceremonies, ask them to pre-load the presentation so there's zero delay.":""}`,
     };
   }
 
@@ -464,17 +513,20 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
       note:"Concert-quality performance"},
   ];
 
-  if(type==="Emcee / Host") return [
-    {label:"Essential",price:"₹8K–13K",
-      items:["3-hour hosting","Standard script","Mic + basic AV support"],
-      note:"Smooth event flow"},
-    {label:"Standard",price:"₹18K–28K",popular:true,
-      items:["Full event hosting","Custom script & games","Guest engagement activities","Bilingual (Hindi + English)"],
-      note:"Energetic host — vibe stays up"},
-    {label:"Premium",price:"₹35K+",
-      items:["Celebrity-style host","Full script coordination","Custom games & trivia","Pre-event rehearsal"],
-      note:"Professional show-runner experience"},
-  ];
+  if(type==="Emcee / Host") {
+    const isCorp=tags.includes("corporate")||tags.includes("professional")||tags.includes("modern")||tags.includes("minimal");
+    return [
+      {label:"Essential",price:"₹8K–13K",
+        items:["3-hour hosting","Standard script","Mic + basic AV support"],
+        note:"Smooth event flow"},
+      {label:"Standard",price:"₹18K–28K",popular:true,
+        items:["Full event hosting",isCorp?"Corporate awards ceremony script":"Custom script & games","Guest engagement activities","Bilingual (Hindi + English)"],
+        note:isCorp?"Keeps the corporate evening moving with polish":"Energetic host — vibe stays up"},
+      {label:"Premium",price:"₹35K+",
+        items:[isCorp?"Seasoned corporate host (MNC experience)":"Celebrity-style host","Full script coordination",isCorp?"Awards + trivia + live games":"Custom games & trivia","Pre-event rehearsal + run-of-show doc"],
+        note:isCorp?"Professional MC who handles awards and crowd equally well":"Professional show-runner experience"},
+    ];
+  }
 
   if(type==="Lighting Setup") return [
     {label:"Essential",price:outdoor?"₹8K–14K":"₹5K–9K",
@@ -534,6 +586,18 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
     {label:"Premium",price:"₹12K–25K",
       items:["Luxury custom cake","Hand-painted or sugar flowers","Multi-flavour tiers","Cake cutting service"],
       note:"Bespoke luxury cake piece"},
+  ];
+
+  if(type==="AV Setup") return [
+    {label:"Essential",price:"₹8K–14K",
+      items:["Projector + 8ft screen","2 wireless mics","Basic sound system","HDMI cables"],
+      note:"Clear audio and visuals for speeches"},
+    {label:"Standard",price:"₹18K–28K",popular:true,
+      items:["LED display or 12ft screen","4 wireless mics (lapel + handheld)","Mixing board","Click presenter","On-site technician"],
+      note:"Full AV for awards + presentations — most popular"},
+    {label:"Premium",price:"₹35K+",
+      items:["Dual LED screens","6+ mics + in-ear monitors","Live streaming to remote guests","Custom presentation loading + rehearsal","Dedicated AV engineer full event"],
+      note:"Broadcast-quality setup — nothing goes wrong"},
   ];
 
   return [
