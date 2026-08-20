@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaBars, FaTimes, FaChevronDown, FaWhatsapp, FaSearch, FaInstagram, FaFacebookF } from "react-icons/fa";
+import { PlanIconButton } from "./PlanSummaryModal";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../redux/authSlice";
@@ -732,6 +733,9 @@ const Navbar = ({
                 onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
               >Sign In</a>
             )}
+            {/* My Event / Plan icon — desktop only */}
+            <PlanIconButton />
+
             {/* WhatsApp — always rightmost, with clear gap */}
             <a
               href="https://wa.me/919211668427"
@@ -745,6 +749,11 @@ const Navbar = ({
             </a>
           </div>{/* end inner right cluster */}
           </div>{/* end right action cluster desktop-nav */}
+
+          {/* My Event icon — mobile only (shown outside desktop-nav class) */}
+          <div className="mobile-plan-btn">
+            <PlanIconButton />
+          </div>
 
           {/* Burger (mobile) */}
           <button
@@ -936,12 +945,14 @@ const Navbar = ({
           .desktop-nav { display: flex !important; }
           .desktop-search { display: block !important; }
           .mobile-search-bar { display: none !important; }
+          .mobile-plan-btn { display: none !important; }
         }
         @media (max-width: 767px) {
           .desktop-nav { display: none !important; }
           .desktop-search { display: none !important; }
           .burger-btn-custom { display: none !important; }
           .mobile-search-bar { display: flex !important; }
+          .mobile-plan-btn { display: flex !important; align-items: center; }
           .nav-announcement { display: none !important; }
           .navbar-main-bar img { height: 28px !important; }
           .navbar-main-bar { padding: 0 12px !important; height: 60px !important; }
