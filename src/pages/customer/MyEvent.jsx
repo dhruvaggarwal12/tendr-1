@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { useChatContext } from '../../context/ChatContext';
+import { useChatOverlay } from '../../context/ChatContext';
 import { getSmartPlanById } from '../../apis/vendorApi';
 
 // Reads the form session written by eventPlanningSlice every time a field changes
@@ -95,7 +95,7 @@ function ic(d) {
 
 export default function MyEvent() {
   const navigate = useNavigate();
-  const { openConciergeChat } = useChatContext();
+  const { openConciergeChat } = useChatOverlay();
   const { token } = useSelector(s => s.auth);
 
   const [plan, setPlan] = useState(() => {
