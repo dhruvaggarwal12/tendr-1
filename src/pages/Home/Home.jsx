@@ -30,6 +30,7 @@ import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
 import { useSelector } from "react-redux";
 import { FUN_ACTIVITIES } from "../../data/funActivitiesData";
 import { OCCASIONS } from "../../data/occasions";
+import { PARTY_PLACES } from "../../data/partyPlaces";
 
 const FunActivitiesLazy = React.lazy(() => import("../../components/FunActivitiesSection"));
 
@@ -131,12 +132,8 @@ function TipsByTendrSection() {
   const font = "'Outfit', sans-serif";
   const preview = GUIDES.slice(0, 3);
   return (
-    <section style={{ background: "#1C0E04", padding: "72px 24px 80px", fontFamily: font, position: "relative", overflow: "hidden" }}>
-      {/* Ambient gold glow blobs */}
-      <div style={{ position: "absolute", top: -80, right: -80, width: 360, height: 360, borderRadius: "50%", background: "radial-gradient(circle, rgba(204,171,74,0.07) 0%, transparent 70%)", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", bottom: -60, left: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
-
-      <div style={{ maxWidth: 1060, margin: "0 auto", position: "relative" }}>
+    <section style={{ background: "#FAF7F2", padding: "72px 24px 80px", fontFamily: font }}>
+      <div style={{ maxWidth: 1060, margin: "0 auto" }}>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -146,28 +143,28 @@ function TipsByTendrSection() {
           style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 36, flexWrap: "wrap", gap: 16 }}
         >
           <div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(204,171,74,0.1)", border: "1px solid rgba(204,171,74,0.22)", borderRadius: 100, padding: "5px 14px", marginBottom: 14 }}>
-              <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.14em" }}>Tips by Tendr</span>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 14px", marginBottom: 14 }}>
+              <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em" }}>Tips by Tendr</span>
             </div>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#FFF8EC", letterSpacing: "0.01em", lineHeight: 1.15, margin: "0 0 8px" }}>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#1C0E04", letterSpacing: "0.01em", lineHeight: 1.15, margin: "0 0 8px" }}>
               Free Event Planning Guides
             </h2>
-            <p style={{ fontSize: 15, color: "rgba(255,247,235,0.5)", margin: 0, lineHeight: 1.65, maxWidth: 480 }}>
+            <p style={{ fontSize: 15, color: "#9B7450", margin: 0, lineHeight: 1.65, maxWidth: 480 }}>
               Practical guides for budgeting, decorating, and planning any event. Unlock with a WhatsApp number.
             </p>
           </div>
           <button
             onClick={() => navigate("/guides")}
-            style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid rgba(204,171,74,0.28)", background: "transparent", color: "#CCAB4A", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0, transition: "all 0.2s" }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(204,171,74,0.1)"; e.currentTarget.style.borderColor = "rgba(204,171,74,0.5)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(204,171,74,0.28)"; }}
+            style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0, transition: "all 0.2s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.5)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
           >
             View All Guides →
           </button>
         </motion.div>
 
-        {/* Guide cards */}
+        {/* Guide cards — editorial book-spine style */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
           {preview.map((guide, gi) => (
             <motion.div
@@ -177,20 +174,18 @@ function TipsByTendrSection() {
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.45, delay: gi * 0.07, ease: [0.25, 0.46, 0.45, 0.94] }}
               onClick={() => navigate(`/guides/${guide.slug}`)}
-              style={{ background: "rgba(255,247,235,0.04)", border: "1px solid rgba(204,171,74,0.1)", borderRadius: 18, padding: "24px 22px 20px", cursor: "pointer", position: "relative", overflow: "hidden" }}
-              whileHover={{ y: -4, transition: { type: "spring", stiffness: 340, damping: 26 } }}
+              style={{ background: "#fff", border: "1px solid rgba(196,122,46,0.12)", borderLeft: "3px solid #C47A2E", borderRadius: 14, padding: "22px 22px 18px", cursor: "pointer", boxShadow: "0 2px 16px rgba(139,69,19,0.05)" }}
+              whileHover={{ y: -4, boxShadow: "0 10px 32px rgba(139,69,19,0.1)", transition: { type: "spring", stiffness: 340, damping: 26 } }}
             >
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)", opacity: 0.6 }} />
-              {/* Category pill in place of emoji */}
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.12)", borderRadius: 100, padding: "4px 12px", marginBottom: 14 }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#CCAB4A", display: "inline-block", flexShrink: 0 }} />
-                <span style={{ fontSize: 10, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em" }}>{guide.tags[0]}</span>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.07)", borderRadius: 100, padding: "4px 12px", marginBottom: 14 }}>
+                <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#C47A2E", display: "inline-block", flexShrink: 0 }} />
+                <span style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em" }}>{guide.tags[0]}</span>
               </div>
-              <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 20, fontWeight: 500, color: "#FFF8EC", margin: "0 0 6px", lineHeight: 1.25, letterSpacing: "0.01em" }}>{guide.title}</h3>
-              <p style={{ fontSize: 13, color: "rgba(255,247,235,0.45)", margin: "0 0 18px", lineHeight: 1.6 }}>{guide.subtitle}</p>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 11.5, color: "rgba(255,247,235,0.3)" }}>{guide.readTime} · {guide.pages}pp</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#C47A2E" }}>Free →</span>
+              <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 21, fontWeight: 500, color: "#1C0E04", margin: "0 0 6px", lineHeight: 1.25, letterSpacing: "0.01em" }}>{guide.title}</h3>
+              <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 18px", lineHeight: 1.6 }}>{guide.subtitle}</p>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid rgba(196,122,46,0.08)", paddingTop: 14 }}>
+                <span style={{ fontSize: 11.5, color: "#B89070" }}>{guide.readTime} · {guide.pages}pp</span>
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: "#C47A2E" }}>Free →</span>
               </div>
             </motion.div>
           ))}
@@ -203,16 +198,16 @@ function TipsByTendrSection() {
           viewport={{ once: true, amount: 0.4 }}
           transition={{ duration: 0.45, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
           onClick={() => navigate("/community")}
-          style={{ marginTop: 20, padding: "18px 24px", borderRadius: 16, border: "1px solid rgba(196,122,46,0.15)", background: "rgba(196,122,46,0.04)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}
-          whileHover={{ borderColor: "rgba(196,122,46,0.35)", transition: { duration: 0.2 } }}
+          style={{ marginTop: 20, padding: "18px 24px", borderRadius: 14, border: "1px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, boxShadow: "0 1px 8px rgba(139,69,19,0.04)" }}
+          whileHover={{ borderColor: "rgba(196,122,46,0.35)", boxShadow: "0 4px 20px rgba(139,69,19,0.08)", transition: { duration: 0.2 } }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.16)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <svg width={17} height={17} viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </div>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: "#FFF8EC" }}>Community Wall</div>
-              <div style={{ fontSize: 12.5, color: "rgba(255,247,235,0.4)", marginTop: 2 }}>See real events shared by customers — photos, setups, and ideas.</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "#1C0E04" }}>Community Wall</div>
+              <div style={{ fontSize: 12.5, color: "#9B7450", marginTop: 2 }}>See real events shared by customers — photos, setups, and ideas.</div>
             </div>
           </div>
           <span style={{ fontSize: 13, fontWeight: 600, color: "#C47A2E" }}>Explore →</span>
@@ -2135,96 +2130,91 @@ const Home = () => {
       </section>
 
 
-      {/* ── Puja Kits Section ── */}
-      <section style={{ background: "#120800", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
-        {/* Ambient glow */}
-        <div style={{ position: "absolute", top: -80, right: -80, width: 500, height: 400, borderRadius: "50%", background: "radial-gradient(ellipse, rgba(196,122,46,0.09) 0%, transparent 68%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: -40, left: -60, width: 360, height: 280, borderRadius: "50%", background: "radial-gradient(ellipse, rgba(196,122,46,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
-
-        <div style={{ maxWidth: 1060, margin: "0 auto", position: "relative" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 56, alignItems: "center" }}>
-
-            {/* Left: copy */}
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-            >
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(204,171,74,0.1)", border: "1px solid rgba(204,171,74,0.22)", borderRadius: 100, padding: "5px 14px", marginBottom: 20 }}>
-                <span style={{ fontSize: 12 }}>🪔</span>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.14em" }}>New — Puja Kits</span>
+      {/* ── Party Places ── */}
+      <section style={{ background: "#FFFCF5", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ maxWidth: 1060, margin: "0 auto" }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+            style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 36, flexWrap: "wrap", gap: 16 }}
+          >
+            <div>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 14px", marginBottom: 14 }}>
+                <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em" }}>Party Places</span>
               </div>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem, 3.2vw, 2.6rem)", fontWeight: 400, color: "#FFF8EC", margin: "0 0 14px", lineHeight: 1.15, letterSpacing: "-0.01em" }}>
-                Puja, Planned<br />by Tendr.
+              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#1C0E04", letterSpacing: "0.01em", lineHeight: 1.15, margin: "0 0 8px" }}>
+                Private venues for your next celebration
               </h2>
-              <p style={{ fontSize: 15, color: "rgba(255,247,235,0.5)", lineHeight: 1.75, margin: "0 0 10px", maxWidth: 400 }}>
-                Choose your Puja. Tell us your requirements.<br />We'll prepare everything you need, packed and ready.
+              <p style={{ fontSize: 15, color: "#9B7450", margin: 0, lineHeight: 1.65, maxWidth: 480 }}>
+                Villas, farmhouses, terraces, and venue halls across Delhi NCR — bookable with your Tendr vendors included.
               </p>
-              <p style={{ fontSize: 13, color: "rgba(255,247,235,0.33)", lineHeight: 1.6, margin: "0 0 28px", maxWidth: 380 }}>
-                Occasion-specific kits · Exact quantities · Organized Tendr box · Open → Follow → Celebrate
-              </p>
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <motion.button
-                  whileHover={{ y: -2, boxShadow: "0 12px 36px rgba(196,122,46,0.5)" }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => navigate("/puja-kits")}
-                  style={{ padding: "12px 26px", borderRadius: 12, background: "linear-gradient(135deg, #C47A2E, #D4A848)", color: "#fff", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 20px rgba(196,122,46,0.4)", transition: "all 0.2s" }}
-                >
-                  Explore Puja Kits →
-                </motion.button>
-                <motion.button
-                  whileHover={{ borderColor: "rgba(196,122,46,0.65)", background: "rgba(196,122,46,0.08)" }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => navigate("/puja-kits")}
-                  style={{ padding: "12px 22px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.35)", background: "transparent", color: "rgba(255,247,235,0.75)", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "all 0.2s" }}
-                >
-                  Upload Pandit's List
-                </motion.button>
-              </div>
-            </motion.div>
-
-            {/* Right: steps + kit types preview */}
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.5, delay: 0.12, ease: [0.25, 0.46, 0.45, 0.94] }}
-              style={{ display: "flex", flexDirection: "column", gap: 12 }}
+            </div>
+            <button
+              onClick={() => navigate("/party-places")}
+              style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", flexShrink: 0, transition: "all 0.2s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.5)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
             >
-              {/* How it works mini */}
-              {[
-                { n: "1", title: "Choose Your Puja", sub: "Select from 25+ pujas and festivals" },
-                { n: "2", title: "Set Your Requirements", sub: "Guest count, date and delivery location" },
-                { n: "3", title: "Get Your Kit", sub: "Packed in labeled sections, ready to use" },
-              ].map((step, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "14px 16px", borderRadius: 14, background: "rgba(255,247,235,0.03)", border: "1px solid rgba(196,122,46,0.1)" }}>
-                  <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(196,122,46,0.12)", border: "1px solid rgba(196,122,46,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 12, fontWeight: 800, color: "#C47A2E", fontFamily: "'Outfit', sans-serif" }}>{step.n}</div>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: "#FFF8EC", marginBottom: 3, fontFamily: "'Outfit', sans-serif" }}>{step.title}</div>
-                    <div style={{ fontSize: 12, color: "rgba(255,247,235,0.4)", fontFamily: "'Outfit', sans-serif" }}>{step.sub}</div>
+              Browse All Venues →
+            </button>
+          </motion.div>
+
+          {/* Venue cards grid */}
+          <motion.div
+            className="party-places-grid"
+            initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }}
+            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.07 } } }}
+            style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 18 }}
+          >
+            {PARTY_PLACES.slice(0, 4).map((place) => (
+              <motion.div
+                key={place.id}
+                variants={{ hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 280, damping: 26 } } }}
+                onClick={() => navigate(`/party-places/${place.id}`)}
+                style={{ borderRadius: 16, overflow: "hidden", background: "#fff", border: "1px solid rgba(196,122,46,0.1)", cursor: "pointer", boxShadow: "0 2px 14px rgba(139,69,19,0.06)" }}
+                whileHover={{ y: -5, boxShadow: "0 10px 32px rgba(139,69,19,0.12)", transition: { type: "spring", stiffness: 340, damping: 26 } }}
+              >
+                <div style={{ position: "relative", paddingBottom: "67%", overflow: "hidden" }}>
+                  <img
+                    src={place.coverPhoto}
+                    alt={place.name}
+                    loading="lazy"
+                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.04)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
+                  />
+                  <div style={{ position: "absolute", top: 10, left: 10, background: "rgba(28,14,4,0.72)", backdropFilter: "blur(6px)", borderRadius: 100, padding: "3px 10px" }}>
+                    <span style={{ fontSize: 10.5, fontWeight: 700, color: "#fff", textTransform: "capitalize" }}>{place.type}</span>
+                  </div>
+                  {place.rating >= 4.8 && (
+                    <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(196,122,46,0.9)", borderRadius: 100, padding: "3px 9px", display: "flex", alignItems: "center", gap: 4 }}>
+                      <span style={{ fontSize: 9, color: "#fff" }}>★</span>
+                      <span style={{ fontSize: 10.5, fontWeight: 700, color: "#fff" }}>{place.rating}</span>
+                    </div>
+                  )}
+                </div>
+                <div style={{ padding: "14px 16px 16px" }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#1C0E04", marginBottom: 3, lineHeight: 1.3 }}>{place.name}</div>
+                  <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 10 }}>{place.location} · up to {place.maxGuests} guests</div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "#C47A2E" }}>from ₹{place.roomPrice.toLocaleString("en-IN")}</div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", background: "rgba(196,122,46,0.07)", borderRadius: 100, padding: "3px 9px" }}>{place.bhk || place.area?.split(" ")[0]}</div>
                   </div>
                 </div>
-              ))}
-
-              {/* Kit types mini preview */}
-              <div style={{ marginTop: 4, padding: "16px 16px", borderRadius: 14, border: "1px solid rgba(196,122,46,0.18)", background: "rgba(196,122,46,0.04)" }}>
-                <div style={{ fontSize: 10, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 12, fontFamily: "'Outfit', sans-serif" }}>Kit Options</div>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {[
-                    { name: "Essential Kit", price: "from ₹799" },
-                    { name: "Complete Kit ★", price: "from ₹1,099" },
-                    { name: "Pandit's Kit", price: "Custom" },
-                  ].map(k => (
-                    <div key={k.name} style={{ padding: "8px 12px", borderRadius: 10, background: "rgba(255,247,235,0.05)", border: "1px solid rgba(255,247,235,0.08)" }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: "#FFF8EC", marginBottom: 2, fontFamily: "'Outfit', sans-serif" }}>{k.name}</div>
-                      <div style={{ fontSize: 11, color: "#C47A2E", fontFamily: "'Outfit', sans-serif" }}>{k.price}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          </div>
+              </motion.div>
+            ))}
+          </motion.div>
+          <style>{`
+            @media (max-width: 900px) { .party-places-grid { grid-template-columns: repeat(2, 1fr) !important; } }
+            @media (max-width: 520px) {
+              .party-places-grid { display: flex !important; overflow-x: auto !important; scroll-snap-type: x mandatory !important; gap: 14px !important; padding-bottom: 12px !important; margin: 0 -24px !important; padding-left: 24px !important; scrollbar-width: none; }
+              .party-places-grid::-webkit-scrollbar { display: none; }
+              .party-places-grid > div { flex: 0 0 75% !important; scroll-snap-align: start !important; }
+            }
+          `}</style>
         </div>
       </section>
 
@@ -2233,10 +2223,7 @@ const Home = () => {
 
       {/* Become a Partner Section */}
       <section style={{ background: "#1C0E04", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
-        {/* Background texture */}
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle, rgba(204,171,74,0.06) 1px, transparent 1px)", backgroundSize: "28px 28px", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", top: "-10%", right: "-8%", width: 480, height: 480, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,122,46,0.12),transparent 65%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: "-5%", left: "-6%", width: 360, height: 360, borderRadius: "50%", background: "radial-gradient(circle,rgba(204,171,74,0.07),transparent 65%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", top: 0, right: 0, width: 360, height: 360, background: "radial-gradient(ellipse at 80% 20%, rgba(196,122,46,0.09) 0%, transparent 60%)", pointerEvents: "none" }} />
 
         <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative" }}>
 
@@ -2333,13 +2320,14 @@ const Home = () => {
               variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 240, damping: 26 } } }}
               style={{ display: "flex", flexDirection: "column", gap: 16 }}
             >
-              {/* Mock profile card — "this is how you appear on Tendr" */}
+              {/* Mock profile card */}
               <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 20, overflow: "hidden" }}>
-                <div style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.18),rgba(204,171,74,0.1))", padding: "10px 14px 8px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "rgba(255,255,255,0.15)" }} />
-                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "rgba(255,255,255,0.1)" }} />
-                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
-                  <span style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", marginLeft: 6, letterSpacing: "0.04em" }}>tendr.in/vendor/your-profile</span>
+                <div style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.2),rgba(204,171,74,0.12))", padding: "12px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,247,235,0.55)", letterSpacing: "0.06em" }}>YOUR TENDR PROFILE</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#16A34A", display: "inline-block" }} />
+                    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>Active</span>
+                  </div>
                 </div>
                 <div style={{ padding: "20px 20px 22px" }}>
                   <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 16 }}>
@@ -2356,11 +2344,15 @@ const Home = () => {
                       </div>
                     </div>
                   </div>
-                  {/* Photo strip placeholder */}
+                  {/* Portfolio strip */}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6, marginBottom: 16 }}>
-                    {["#3D2510","#2C1A0E","#4A2810"].map((bg, i) => (
-                      <div key={i} style={{ height: 58, borderRadius: 10, background: bg, border: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="rgba(204,171,74,0.3)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    {[
+                      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=200&h=100&fit=crop&q=70",
+                      "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=200&h=100&fit=crop&q=70",
+                      "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=200&h=100&fit=crop&q=70",
+                    ].map((src, i) => (
+                      <div key={i} style={{ height: 58, borderRadius: 10, overflow: "hidden" }}>
+                        <img src={src} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }} />
                       </div>
                     ))}
                   </div>
