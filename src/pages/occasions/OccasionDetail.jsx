@@ -632,6 +632,32 @@ function buildBaatKaroMsg(occasion, {guests, date, city, venueType, theme, vendo
   return `https://wa.me/919211668427?text=${encodeURIComponent(parts)}`;
 }
 
+/* ── build plain-text plan for in-app chat ── */
+function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors, vendorPackages, budget, ageGroups=[]}) {
+  const vLines = vendors.filter(v => ALL_VENDORS.includes(v)).map(v => {
+    const pi = vendorPackages[v];
+    if (pi === undefined) return `• ${v} — no package selected`;
+    const pkg = getVendorPackages(v, {guests, venueType, theme, ageGroups})[pi];
+    if (!pkg) return `• ${v}`;
+    const itemsList = pkg.items.map(it => `    - ${it}`).join("\n");
+    return `• ${v} — ${pkg.label} (${pkg.price})\n${itemsList}\n    "${pkg.note}"`;
+  });
+  const customLines = vendors.filter(v => !ALL_VENDORS.includes(v)).map(v => `• ${v}`);
+  const allLines = [...vLines, ...customLines].join("\n\n");
+  const dateStr = date ? new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"}) : "";
+  return [
+    `Hi Tendr Team! Here's my ${occasion.name} plan — please help me book:`,
+    "",
+    `👥 Guests: ${guests}`,
+    dateStr ? `📅 Date: ${dateStr}` : null,
+    (city||venueType) ? `📍 ${[city,venueType].filter(Boolean).join(" · ")}` : null,
+    theme ? `🎨 Theme: ${theme.name}` : null,
+    budget ? `💰 Budget: ₹${Number(budget).toLocaleString("en-IN")}` : null,
+    allLines ? `\nServices needed:\n\n${allLines}` : null,
+    "\nCan you help me book these?",
+  ].filter(x => x !== null).join("\n");
+}
+
 /* ── timeline ── */
 function buildTimeline(dateStr, vendors) {
   if(!dateStr) return null;
@@ -1444,11 +1470,22 @@ export default function OccasionDetail(){
             <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.3,marginBottom:4}}>Your plan is ready ✦</p>
             <p style={{fontSize:13,color:muted,marginBottom:16,lineHeight:1.6}}>Full plan below — download as a PDF to save or share.</p>
 
-            {/* download button — at top */}
-            <button onClick={async()=>{setDownloading(true);await downloadPlanCard(planRef.current,occasion.name);setDownloading(false);}} disabled={downloading}
-              style={{width:"100%",padding:"13px 20px",borderRadius:12,border:`1px solid rgba(196,122,46,0.25)`,background:"#fff",color:gold,fontSize:13.5,fontWeight:700,cursor:downloading?"wait":"pointer",fontFamily:font,transition:"all 0.2s",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-              {downloading?<><div style={{width:15,height:15,borderRadius:"50%",border:`2px solid rgba(196,122,46,0.2)`,borderTopColor:gold,animation:"spin 0.7s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>Generating PDF…</>:<><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Plan (PDF)</>}
-            </button>
+            {/* download + send buttons */}
+            <div style={{display:"flex",gap:10,marginBottom:20}}>
+              <button onClick={async()=>{setDownloading(true);await downloadPlanCard(planRef.current,occasion.name);setDownloading(false);}} disabled={downloading}
+                style={{flex:1,padding:"13px 16px",borderRadius:12,border:`1px solid rgba(196,122,46,0.25)`,background:"#fff",color:gold,fontSize:13,fontWeight:700,cursor:downloading?"wait":"pointer",fontFamily:font,transition:"all 0.2s",display:"flex",alignItems:"center",justifyContent:"center",gap:7}}>
+                {downloading?<><div style={{width:14,height:14,borderRadius:"50%",border:`2px solid rgba(196,122,46,0.2)`,borderTopColor:gold,animation:"spin 0.7s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>Generating…</>:<><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download PDF</>}
+              </button>
+              <button
+                onClick={()=>{
+                  const msg=buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups});
+                  document.dispatchEvent(new CustomEvent("tendr:open-chat-with-plan",{detail:{message:msg}}));
+                }}
+                style={{flex:1,padding:"13px 16px",borderRadius:12,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font,display:"flex",alignItems:"center",justifyContent:"center",gap:7}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Send to Chat
+              </button>
+            </div>
 
             {/* everything below this is captured by planRef */}
             <div ref={planRef} style={{background:"#FDFAF5",borderRadius:20,padding:"20px",border:`1px solid rgba(196,122,46,0.1)`}}>

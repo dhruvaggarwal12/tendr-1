@@ -95,11 +95,11 @@ function getFAQAnswer(text) {
 
 // conversationId + vendorName → vendor chat mode (join existing approved conversation)
 // no props (default) → support chat mode
-export default function MiniChatWidget({ onClose, conversationId: existingConvoId, vendorName }) {
+export default function MiniChatWidget({ onClose, conversationId: existingConvoId, vendorName, prefillMessage }) {
   const isVendorChat = !!existingConvoId;
   const { user, token: authToken } = useSelector((s) => s.auth);
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(prefillMessage || "");
   const [conversationId, setConversationId] = useState(existingConvoId || null);
   const [connectError, setConnectError] = useState(false);
   const [retryTick, setRetryTick] = useState(0);

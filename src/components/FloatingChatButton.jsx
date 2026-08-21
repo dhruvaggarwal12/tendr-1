@@ -63,6 +63,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const [activeCompare, setActiveCompare] = useState([]);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [showMiniChat, setShowMiniChat] = useState(false);
+  const [miniChatPrefill, setMiniChatPrefill] = useState("");
   const [showActiveChats, setShowActiveChats] = useState(false);
   const [chatTabFilter, setChatTabFilter] = useState("All");
   const [vendorChats, setVendorChats] = useState([]);
@@ -175,6 +176,17 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
     document.addEventListener("tendr:open-active-chats", handler);
     return () => document.removeEventListener("tendr:open-active-chats", handler);
   }, [fetchVendorChats]);
+
+  // Open support chat pre-filled with a plan summary (dispatched from OccasionDetail)
+  useEffect(() => {
+    const handler = (e) => {
+      setMiniChatPrefill(e.detail?.message || "");
+      setShowMiniChat(true);
+      setOpen(false);
+    };
+    document.addEventListener("tendr:open-chat-with-plan", handler);
+    return () => document.removeEventListener("tendr:open-chat-with-plan", handler);
+  }, []);
 
   // Re-fetch chats when a new vendor conversation is created
   useEffect(() => {
@@ -298,7 +310,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           </div>
         </>
       )}
-      {showMiniChat && <MiniChatWidget onClose={() => setShowMiniChat(false)} />}
+      {showMiniChat && <MiniChatWidget onClose={() => { setShowMiniChat(false); setMiniChatPrefill(""); }} prefillMessage={miniChatPrefill} />}
 
       {isCompareModalOpen && (
         <CompareModal

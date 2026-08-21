@@ -251,7 +251,7 @@ export async function generateInvoicePDF({ eventSummary, orderId, paymentId, use
 }
 
 // ── Event Details PDF ────────────────────────────────────────────────────────
-export async function generateEventDetailsPDF({ eventSummary, confirmedVendors = [], pinnedMessages = {}, userName, orderId, vendorPricing = {} }) {
+export async function generateEventDetailsPDF({ eventSummary, confirmedVendors = [], pinnedMessages = {}, pinnedPhotos = [], userName, orderId, vendorPricing = {}, vendorPhotos = {} }) {
   await _assetsReady;
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const date = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
@@ -271,7 +271,30 @@ export async function generateEventDetailsPDF({ eventSummary, confirmedVendors =
     }
   };
 
-  // Hero greeting box — no emoji (Helvetica cannot render them)
+  // Pre-fetch all vendor photos as base64
+  const vendorPhotoB64 = {};
+  await Promise.all(
+    Object.entries(vendorPhotos).map(async ([id, url]) => {
+      if (!url) return;
+      try {
+        const b64 = await _b64(url);
+        if (b64) vendorPhotoB64[id] = b64;
+      } catch {}
+    })
+  );
+
+  // Pre-fetch pinned photos
+  const pinnedPhotoB64 = [];
+  await Promise.all(
+    (pinnedPhotos || []).slice(0, 9).map(async (p) => {
+      try {
+        const b64 = await _b64(typeof p === "string" ? p : p.url);
+        if (b64) pinnedPhotoB64.push({ b64, vendor: p.vendor || "" });
+      } catch {}
+    })
+  );
+
+  // Hero greeting box
   doc.setFillColor(255, 252, 247);
   doc.setDrawColor(196, 122, 46);
   doc.setLineWidth(0.4);
@@ -302,78 +325,93 @@ export async function generateEventDetailsPDF({ eventSummary, confirmedVendors =
   }
   y += 5;
 
-  // Confirmed vendors
+  // Confirmed vendors — with photo thumbnail if available
   if (confirmedVendors.length > 0) {
-    checkPageBreak(confirmedVendors.length * 8 + 20);
+    const rowH = 18;
+    checkPageBreak(confirmedVendors.length * rowH + 20);
     y = sectionTitle(doc, "Confirmed Vendors", y);
 
     confirmedVendors.forEach((v, i) => {
-      checkPageBreak(10);
-      doc.setFillColor(i % 2 === 0 ? 255 : 253, i % 2 === 0 ? 252 : 249, i % 2 === 0 ? 247 : 240);
-      doc.roundedRect(14, y - 4, 182, 9, 2, 2, "F");
+      checkPageBreak(rowH + 2);
+      const bg = i % 2 === 0 ? [255, 252, 247] : [253, 249, 240];
+      doc.setFillColor(...bg);
+      doc.roundedRect(14, y - 4, 182, rowH, 2, 2, "F");
 
-      doc.setFillColor(196, 122, 46);
-      doc.circle(22, y + 0.5, 3.5, "F");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(8);
-      doc.setTextColor(255, 255, 255);
-      doc.text((v.name?.[0] || "V").toUpperCase(), 22, y + 1.2, { align: "center" });
+      const photoB64 = vendorPhotoB64[String(v._id)] || null;
+      const thumbW = 14, thumbH = 14;
+      const thumbX = 16;
 
+      if (photoB64) {
+        try {
+          doc.addImage(photoB64, "JPEG", thumbX, y - 2, thumbW, thumbH);
+        } catch {
+          doc.setFillColor(196, 122, 46);
+          doc.roundedRect(thumbX, y - 2, thumbW, thumbH, 2, 2, "F");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(7);
+          doc.setTextColor(255, 255, 255);
+          doc.text((v.name?.[0] || "V").toUpperCase(), thumbX + thumbW / 2, y + 5, { align: "center" });
+        }
+      } else {
+        doc.setFillColor(196, 122, 46);
+        doc.roundedRect(thumbX, y - 2, thumbW, thumbH, 2, 2, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(7);
+        doc.setTextColor(255, 255, 255);
+        doc.text((v.name?.[0] || "V").toUpperCase(), thumbX + thumbW / 2, y + 5, { align: "center" });
+      }
+
+      const textX = thumbX + thumbW + 4;
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9.5);
       doc.setTextColor(44, 26, 14);
-      doc.text(sanitize(v.name), 29, y + 1);
+      doc.text(sanitize(v.name), textX, y + 2);
 
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.5);
+      doc.setFontSize(8);
       doc.setTextColor(92, 58, 26);
-      doc.text(sanitize(v.serviceType), 29, y + 5);
+      doc.text(sanitize(v.serviceType), textX, y + 7);
 
-      // "Confirmed" badge — no checkmark emoji
+      // Price beside service type if available
+      const price = vendorPricing[v.name];
+      if (price) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8.5);
+        doc.setTextColor(196, 122, 46);
+        doc.text(`Rs. ${Number(price).toLocaleString("en-IN")}`, textX, y + 12);
+      }
+
+      // "Confirmed" badge
       doc.setFillColor(240, 253, 244);
-      doc.roundedRect(168, y - 2, 24, 7, 2, 2, "F");
+      doc.roundedRect(168, y - 1, 24, 7, 2, 2, "F");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(7.5);
       doc.setTextColor(21, 128, 61);
-      doc.text("Confirmed", 180, y + 2.5, { align: "center" });
+      doc.text("Confirmed", 180, y + 3.8, { align: "center" });
 
-      y += 11;
+      y += rowH + 2;
     });
     y += 4;
   }
 
-  // Pricing per vendor
+  // Total pricing bar (summary)
   const pricingEntries = Object.entries(vendorPricing || {}).filter(([, v]) => v);
   if (pricingEntries.length > 0) {
-    checkPageBreak(pricingEntries.length * 8 + 20);
-    y = sectionTitle(doc, "Vendor Pricing", y);
-    let totalPrice = 0;
-    pricingEntries.forEach(([name, price], i) => {
-      checkPageBreak(10);
-      if (i % 2 === 0) { doc.setFillColor(255, 252, 247); doc.rect(14, y - 3.5, 182, 7, "F"); }
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(44, 26, 14);
-      doc.text(sanitize(name), 18, y);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(196, 122, 46);
-      doc.text(`Rs. ${Number(price).toLocaleString("en-IN")}`, 196, y, { align: "right" });
-      totalPrice += Number(price) || 0;
-      y += 7;
-    });
+    const totalPrice = pricingEntries.reduce((s, [, p]) => s + (Number(p) || 0), 0);
+    checkPageBreak(14);
     doc.setFillColor(44, 26, 14);
-    doc.roundedRect(14, y, 182, 10, 2, 2, "F");
+    doc.roundedRect(14, y, 182, 12, 2, 2, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.setTextColor(204, 171, 74);
-    doc.text("Total Estimated Cost", 18, y + 6.5);
+    doc.text("Total Estimated Vendor Cost", 20, y + 8);
     doc.setFontSize(10);
     doc.setTextColor(255, 255, 255);
-    doc.text(`Rs. ${totalPrice.toLocaleString("en-IN")}`, 192, y + 6.5, { align: "right" });
-    y += 16;
+    doc.text(`Rs. ${totalPrice.toLocaleString("en-IN")}`, 192, y + 8, { align: "right" });
+    y += 18;
   }
 
-  // Pinned messages — no emoji in section title
+  // Pinned messages
   const vendorsWithPins = confirmedVendors.filter(v => (pinnedMessages[v._id || v.name] || []).length > 0);
   if (vendorsWithPins.length > 0) {
     checkPageBreak(20);
@@ -404,6 +442,29 @@ export async function generateEventDetailsPDF({ eventSummary, confirmedVendors =
       });
       y += 3;
     });
+  }
+
+  // Pinned photos grid (up to 9)
+  if (pinnedPhotoB64.length > 0) {
+    checkPageBreak(30);
+    y = sectionTitle(doc, "Pinned Photos", y);
+
+    const imgW = 56, imgH = 42, cols = 3, gap = 5;
+    pinnedPhotoB64.forEach((p, i) => {
+      const col = i % cols;
+      const imgX = 14 + col * (imgW + gap);
+      if (col === 0 && i > 0) { y += imgH + gap + 6; checkPageBreak(imgH + 12); }
+      try {
+        doc.addImage(p.b64, "JPEG", imgX, y, imgW, imgH);
+      } catch {}
+      if (p.vendor) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(6.5);
+        doc.setTextColor(155, 116, 80);
+        doc.text(sanitize(p.vendor), imgX + imgW / 2, y + imgH + 3.5, { align: "center" });
+      }
+    });
+    y += imgH + 12;
   }
 
   // What happens next

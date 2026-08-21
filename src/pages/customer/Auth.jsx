@@ -60,7 +60,7 @@ const Auth = () => {
   const [isSignup, setIsSignup] = useState(isSignupPath);
   const [localLoading, setLocalLoading] = useState(false);
   const [localError, setLocalError] = useState("");
-  const [formData, setFormData] = useState({ name: "", email: "", password: "", phoneNumber: "", location: "", companyName: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", password: "", phoneNumber: "", location: "", companyName: "", gstNumber: "", businessName: "", serviceType: "" });
   const [accountType, setAccountType] = useState("personal");
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -98,6 +98,12 @@ const Auth = () => {
     if (accountType === "company" && !formData.companyName.trim()) {
       setLocalError("Company name is required"); return;
     }
+    if (accountType === "vendor" && !formData.businessName.trim()) {
+      setLocalError("Business name is required"); return;
+    }
+    if (accountType === "vendor" && !formData.serviceType) {
+      setLocalError("Please select your service category"); return;
+    }
     setLocalLoading(true);
     setLocalError("");
     try {
@@ -113,6 +119,9 @@ const Auth = () => {
           password: formData.password,
           accountType,
           companyName: accountType === "company" ? formData.companyName.trim() : "",
+          gstNumber:   accountType === "company" ? formData.gstNumber.trim() : "",
+          businessName: accountType === "vendor" ? formData.businessName.trim() : "",
+          serviceType:  accountType === "vendor" ? formData.serviceType : "",
         }),
         credentials: "include",
       });
@@ -128,6 +137,7 @@ const Auth = () => {
       // Store token + user in Redux (same as login)
       dispatch({ type: "auth/login/fulfilled", payload: data });
       if (data.consumer?.isAdmin) { navigate("/AdminDashboard"); return; }
+      if (accountType === "vendor") { navigate("/vendor/register"); return; }
       // Extend discovery session TTL to event date on signup
       try {
         const raw = JSON.parse(localStorage.getItem("tendr:session:discovery") || "null");
@@ -369,11 +379,12 @@ const Auth = () => {
 
               {/* Account type toggle */}
               <div>
-                <label style={labelStyle}>Account Type</label>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <label style={labelStyle}>I am signing up as</label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
                   {[
                     { value: "personal", icon: "👤", label: "Personal" },
-                    { value: "company", icon: "🏢", label: "For Company" },
+                    { value: "company", icon: "🏢", label: "Company" },
+                    { value: "vendor",  icon: "🎪", label: "Vendor" },
                   ].map(({ value, icon, label }) => (
                     <button
                       key={value}
@@ -381,31 +392,31 @@ const Auth = () => {
                       onClick={() => setAccountType(value)}
                       disabled={isBusy}
                       style={{
-                        padding: "10px 12px",
+                        padding: "10px 8px",
                         borderRadius: 12,
                         border: accountType === value ? "2px solid #C47A2E" : "1.5px solid rgba(139,69,19,0.22)",
                         background: accountType === value ? "rgba(196,122,46,0.08)" : "#fff",
                         color: accountType === value ? "#C47A2E" : "#7A5535",
                         fontFamily: font,
-                        fontSize: 13,
+                        fontSize: 12.5,
                         fontWeight: accountType === value ? 700 : 500,
                         cursor: isBusy ? "not-allowed" : "pointer",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        gap: 6,
+                        gap: 5,
                         transition: "all 0.15s",
                       }}
                     >
-                      <span style={{ fontSize: 16 }}>{icon}</span>
+                      <span style={{ fontSize: 15 }}>{icon}</span>
                       {label}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Company name — only shown when company is selected */}
-              {accountType === "company" && (
+              {/* Company fields */}
+              {accountType === "company" && (<>
                 <div>
                   <label style={labelStyle}>Company / Organisation Name <span style={{ color: "#C0392B" }}>*</span></label>
                   <input
@@ -414,6 +425,57 @@ const Auth = () => {
                     style={{ ...inputStyle, borderColor: focused === "companyName" ? "#C47A2E" : "rgba(139,69,19,0.22)" }}
                     placeholder="Enter your company name" disabled={isBusy} required
                   />
+                </div>
+                <div>
+                  <label style={labelStyle}>GST Number <span style={{ color: "#9B7450", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional)</span></label>
+                  <input
+                    type="text" name="gstNumber" value={formData.gstNumber} onChange={handleChange}
+                    onFocus={() => setFocused("gstNumber")} onBlur={() => setFocused("")}
+                    style={{ ...inputStyle, borderColor: focused === "gstNumber" ? "#C47A2E" : "rgba(139,69,19,0.22)", textTransform: "uppercase" }}
+                    placeholder="e.g. 07AABCU9603R1ZP" disabled={isBusy} maxLength={15}
+                  />
+                </div>
+              </>)}
+
+              {/* Vendor fields */}
+              {accountType === "vendor" && (
+                <div style={{ background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 14, padding: "16px 14px", display: "flex", flexDirection: "column", gap: 14 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+                    <span style={{ fontSize: 16 }}>🎪</span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>Vendor Account</div>
+                      <div style={{ fontSize: 11.5, color: "#9B7450", marginTop: 1 }}>After signup you'll complete your full vendor profile &amp; listing.</div>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Business / Brand Name <span style={{ color: "#C0392B" }}>*</span></label>
+                    <input
+                      type="text" name="businessName" value={formData.businessName} onChange={handleChange}
+                      onFocus={() => setFocused("businessName")} onBlur={() => setFocused("")}
+                      style={{ ...inputStyle, borderColor: focused === "businessName" ? "#C47A2E" : "rgba(139,69,19,0.22)" }}
+                      placeholder="Your business or brand name" disabled={isBusy}
+                    />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Service Category <span style={{ color: "#C0392B" }}>*</span></label>
+                    <select name="serviceType" value={formData.serviceType} onChange={handleChange}
+                      onFocus={() => setFocused("serviceType")} onBlur={() => setFocused("")}
+                      style={{ ...inputStyle, borderColor: focused === "serviceType" ? "#C47A2E" : "rgba(139,69,19,0.22)", cursor: "pointer" }}
+                      disabled={isBusy}>
+                      <option value="">Select your service type</option>
+                      <option value="Decorator">Decorator / Event Stylist</option>
+                      <option value="Caterer">Caterer / Food Service</option>
+                      <option value="Photographer">Photographer / Videographer</option>
+                      <option value="DJ">DJ / Music &amp; Entertainment</option>
+                      <option value="Florist">Florist</option>
+                      <option value="Emcee / Host">Emcee / Host</option>
+                      <option value="AV Setup">AV &amp; Tech Setup</option>
+                      <option value="Venue">Venue / Banquet Hall</option>
+                      <option value="Baker">Baker / Cake Studio</option>
+                      <option value="Transportation">Transportation</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
                 </div>
               )}
 

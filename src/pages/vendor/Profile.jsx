@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import logo from "../../assets/logos/tendr-logo-secondary.png";
 
@@ -17,11 +17,12 @@ const SERVICE_TYPE_LABELS = {
 
 export default function VendorProfile() {
   const navigate   = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, token } = useSelector((s) => s.auth);
   const vendorId   = user?._id || user?.id;
   const fileRef    = useRef();
 
-  const [tab, setTab]       = useState("info");
+  const [tab, setTab]       = useState(() => searchParams.get('tab') || "info");
   const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
   const [uploading, setUploading] = useState(false);

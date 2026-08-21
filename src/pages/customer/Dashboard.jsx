@@ -211,6 +211,7 @@ export default function CustomerDashboard() {
   const [addingEvent, setAddingEvent]             = useState(false);
   const [newEvent, setNewEvent]                   = useState({ occasion:'', personName:'', date:'', guestCount:'', roughBudget:'' });
   const [showPastVendors, setShowPastVendors]     = useState(null); // stores the ev object when open
+  const [bookNowOpen, setBookNowOpen]             = useState(null); // ev._id of open dropdown
   const [vendorQuickView, setVendorQuickView]     = useState(null); // full vendor object
   const [vendorQvLoading, setVendorQvLoading]     = useState(false);
 
@@ -265,7 +266,12 @@ export default function CustomerDashboard() {
     setVendorQvLoading(false);
   };
 
-  const OCCASION_OPTIONS = ['Birthday','Anniversary','Baby Shower','House Party','Housewarming','Get Together','Kitty Party','Naming Ceremony','Farewell','College Fest','Office Party','Diwali','Holi','Raksha Bandhan','Other'];
+  const OCCASION_OPTIONS = [
+    'Birthday','Anniversary','Baby Shower','House Party','Housewarming','Get Together','Kitty Party','Naming Ceremony','Farewell','College Fest',
+    'Office Party','Annual Day / Annual Party','Team Outing','Product Launch','Awards Night','Client Party / Client Dinner',
+    'New Year Party','Team Building Event','Town Hall','Office Farewell',
+    'Diwali','Holi','Raksha Bandhan','Other',
+  ];
 
   // ── End Planned Events state ──────────────────────────────────────────────
 
@@ -566,6 +572,7 @@ export default function CustomerDashboard() {
         </div>
 
         {/* ── My Upcoming Events ─────────────────────────────────────────────── */}
+        {bookNowOpen && <div style={{ position:"fixed", inset:0, zIndex:40 }} onClick={() => setBookNowOpen(null)} />}
         <div style={{ background:"#FFFCF5", borderRadius:16, border:"1.5px solid rgba(196,122,46,0.15)", boxShadow:"0 2px 12px rgba(139,69,19,0.07)", padding:"18px 20px", marginBottom:20 }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14, flexWrap:"wrap", gap:8 }}>
             <div>
@@ -637,21 +644,46 @@ export default function CustomerDashboard() {
 
                     {/* Action buttons — only for future events */}
                     {!past && (
-                      <div style={{ display:"flex", flexDirection:"column", gap:6, marginTop:10 }}>
-                        {/* Past Vendors */}
+                      <div style={{ position:"relative", marginTop:10 }}>
                         <button
-                          onClick={() => hasPastVendors ? setShowPastVendors(ev) : null}
-                          disabled={!hasPastVendors}
-                          style={{ width:"100%", padding:"8px 12px", borderRadius:8, border:"1.5px solid rgba(196,122,46,0.3)", background: hasPastVendors ? "#fff" : "rgba(196,122,46,0.04)", color: hasPastVendors ? "#C47A2E" : "#C4A882", fontFamily:font, fontSize:12, fontWeight:700, cursor: hasPastVendors ? "pointer" : "default", textAlign:"left", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                          <span>🔁 Past Vendors</span>
-                          {!hasPastVendors && <span style={{ fontSize:10, fontWeight:500 }}>No past vendors yet</span>}
+                          onClick={() => setBookNowOpen(open => open === ev._id ? null : ev._id)}
+                          style={{ width:"100%", padding:"9px 14px", borderRadius:9, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontFamily:font, fontSize:13, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                          <span>Book Now</span>
+                          <span style={{ fontSize:10, opacity:0.8 }}>{bookNowOpen===ev._id?"▲":"▼"}</span>
                         </button>
-                        {/* Plan Full Event */}
-                        <button
-                          onClick={() => navigate("/?occasion=" + encodeURIComponent(ev.occasion))}
-                          style={{ width:"100%", padding:"8px 12px", borderRadius:8, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontFamily:font, fontSize:12, fontWeight:600, cursor:"pointer", textAlign:"left" }}>
-                          🎯 Plan Full Event →
-                        </button>
+                        {bookNowOpen === ev._id && (
+                          <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, right:0, background:"#fff", borderRadius:12, boxShadow:"0 8px 28px rgba(44,26,14,0.18)", border:"1.5px solid rgba(196,122,46,0.18)", zIndex:50, overflow:"hidden" }}
+                            onClick={e => e.stopPropagation()}>
+                            <button
+                              onClick={() => { setBookNowOpen(null); if (hasPastVendors) setShowPastVendors(ev); }}
+                              disabled={!hasPastVendors}
+                              style={{ width:"100%", padding:"11px 14px", border:"none", background:"none", textAlign:"left", fontFamily:font, fontSize:13, fontWeight:600, color:hasPastVendors?"#2C1A0E":"#C4A882", cursor:hasPastVendors?"pointer":"default", display:"flex", alignItems:"center", gap:10, borderBottom:"1px solid rgba(196,122,46,0.1)" }}>
+                              <span style={{ fontSize:16 }}>🔁</span>
+                              <div>
+                                <div>Book Past Vendors</div>
+                                {!hasPastVendors && <div style={{ fontSize:11, color:"#9B7450", fontWeight:400 }}>No past vendors yet</div>}
+                              </div>
+                            </button>
+                            <button
+                              onClick={() => { setBookNowOpen(null); navigate("/occasions"); }}
+                              style={{ width:"100%", padding:"11px 14px", border:"none", background:"none", textAlign:"left", fontFamily:font, fontSize:13, fontWeight:600, color:"#2C1A0E", cursor:"pointer", display:"flex", alignItems:"center", gap:10, borderBottom:"1px solid rgba(196,122,46,0.1)" }}>
+                              <span style={{ fontSize:16 }}>🔍</span>
+                              <div>
+                                <div>Book Vendors</div>
+                                <div style={{ fontSize:11, color:"#9B7450", fontWeight:400 }}>Browse all vendors</div>
+                              </div>
+                            </button>
+                            <button
+                              onClick={() => { setBookNowOpen(null); navigate("/?occasion=" + encodeURIComponent(ev.occasion)); }}
+                              style={{ width:"100%", padding:"11px 14px", border:"none", background:"none", textAlign:"left", fontFamily:font, fontSize:13, fontWeight:600, color:"#2C1A0E", cursor:"pointer", display:"flex", alignItems:"center", gap:10 }}>
+                              <span style={{ fontSize:16 }}>✨</span>
+                              <div>
+                                <div>Plan from Scratch</div>
+                                <div style={{ fontSize:11, color:"#9B7450", fontWeight:400 }}>Start fresh with AI planning</div>
+                              </div>
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1553,23 +1585,71 @@ export default function CustomerDashboard() {
                     return (
                       <div style={{ marginTop: 14, borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 14 }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Your Documents</div>
-                        <div className="plan-card-actions" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-                          {(() => { const pdfUserName = user?.accountType === 'company' && user?.companyName ? `${user.name} — ${user.companyName}` : user?.name; return (<>
-                          <button disabled={pdfGenerating} onClick={() => { setPdfGenerating(true); try { generateInvoicePDF({ eventSummary, confirmedVendors, amount: plan.totalAmount || plan.amount, orderId: plan.orderId, paymentId: plan.paymentId, userName: pdfUserName, serviceAmounts }); } finally { setPdfGenerating(false); } }}
-                            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "#FFFCF5", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
-                            <span style={{ fontSize: 18 }}>🧾</span>Invoice
-                          </button>
-                          <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { const stored = JSON.parse(localStorage.getItem("tendr_dayof") || "{}"); await generateTimelinePDF({ slots: stored.slots || [], eventSummary, userName: pdfUserName }); } finally { setPdfGenerating(false); } }}
-                            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "#FFFCF5", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
-                            <span style={{ fontSize: 18 }}>🗓</span>Timeline
-                          </button>
-                          {!plan.isBaatKaro && (
-                          <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { await generateInvitationPDF({ eventSummary, confirmedVendors, userName: pdfUserName, eventTime: plan.eventTime || "", personName: plan.personName || "", venueAddress: plan.venueAddress || "" }); } finally { setPdfGenerating(false); } }}
-                            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
-                            <span style={{ fontSize: 18 }}>📬</span>Invitation
-                          </button>
-                          )}
-                          </>); })()}
+                        <div className="plan-card-actions" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                          {(() => {
+                            const pdfUserName = user?.accountType === 'company' && user?.companyName ? `${user.name} — ${user.companyName}` : user?.name;
+
+                            // Build pinned messages dict keyed by vendorId/vendorName for the PDF
+                            const planConvos = conversations.filter(c =>
+                              c.customerId?._id?.toString() === plan.customerId?.toString() ||
+                              c.customerId?.toString() === plan.customerId?.toString()
+                            );
+                            const pinnedMsgDict = {};
+                            planConvos.forEach(c => {
+                              const msgs = (c.pinnedMessages || []).map(m => typeof m === "string" ? m : m.content || m.text).filter(Boolean);
+                              if (msgs.length) {
+                                if (c.vendorId?._id) pinnedMsgDict[c.vendorId._id.toString()] = msgs;
+                                if (c.vendorName)    pinnedMsgDict[c.vendorName] = msgs;
+                              }
+                            });
+
+                            // Collect pinned photos from chat conversations
+                            const pinnedPhotosList = planConvos.flatMap(c =>
+                              (c.pinnedMessages || [])
+                                .filter(m => typeof m === "object" && (m.type === "image" || m.imageUrl || m.mediaUrl))
+                                .map(m => ({ url: m.imageUrl || m.mediaUrl || m.url, vendor: c.vendorName || "" }))
+                            ).filter(p => p.url);
+
+                            // Vendor portfolio photo URLs keyed by vendorId
+                            const vendorPhotoUrls = Object.fromEntries(
+                              finEntries
+                                .filter(([, v]) => typeof v === "object" && v._id)
+                                .map(([, v]) => [
+                                  String(v._id),
+                                  (v.portfolioPhotos?.[0]) || v.image || null,
+                                ])
+                                .filter(([, url]) => url)
+                            );
+
+                            // Vendor pricing dict keyed by vendor name
+                            const vendorPricingDict = Object.fromEntries(
+                              finEntries
+                                .filter(([, v]) => typeof v === "object")
+                                .map(([, v]) => [v.name || "", v.price || v.startingPrice || 0])
+                                .filter(([, p]) => p)
+                            );
+
+                            return (<>
+                            <button disabled={pdfGenerating} onClick={() => { setPdfGenerating(true); try { generateInvoicePDF({ eventSummary, confirmedVendors, amount: plan.totalAmount || plan.amount, orderId: plan.orderId, paymentId: plan.paymentId, userName: pdfUserName, serviceAmounts }); } finally { setPdfGenerating(false); } }}
+                              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "#FFFCF5", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
+                              <span style={{ fontSize: 18 }}>🧾</span>Invoice
+                            </button>
+                            <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { const stored = JSON.parse(localStorage.getItem("tendr_dayof") || "{}"); await generateTimelinePDF({ slots: stored.slots || [], eventSummary, userName: pdfUserName }); } finally { setPdfGenerating(false); } }}
+                              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "#FFFCF5", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
+                              <span style={{ fontSize: 18 }}>🗓</span>Timeline
+                            </button>
+                            {!plan.isBaatKaro && (
+                            <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { await generateInvitationPDF({ eventSummary, confirmedVendors, userName: pdfUserName, eventTime: plan.eventTime || "", personName: plan.personName || "", venueAddress: plan.venueAddress || "" }); } finally { setPdfGenerating(false); } }}
+                              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "#FFFCF5", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
+                              <span style={{ fontSize: 18 }}>📬</span>Invitation
+                            </button>
+                            )}
+                            <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { await generateEventDetailsPDF({ eventSummary, confirmedVendors, pinnedMessages: pinnedMsgDict, pinnedPhotos: pinnedPhotosList, vendorPhotos: vendorPhotoUrls, vendorPricing: vendorPricingDict, userName: pdfUserName, orderId: plan.orderId }); } finally { setPdfGenerating(false); } }}
+                              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#2C1A0E,#5a3a1a)", color: "#CCAB4A", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
+                              <span style={{ fontSize: 18 }}>📋</span>{pdfGenerating ? "..." : "Event Details"}
+                            </button>
+                            </>);
+                          })()}
                         </div>
                       </div>
                     );

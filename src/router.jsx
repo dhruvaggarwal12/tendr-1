@@ -170,6 +170,8 @@ const PhotoWallPage       = lazy(() => import("./pages/house-party/PhotoWallPage
 const OccasionHub         = lazy(() => import("./pages/occasion-hub/OccasionHub.jsx"));
 const PujaKits            = lazy(() => import("./pages/puja-kits/PujaKits.jsx"));
 const PartyRoomPage       = lazy(() => import("./pages/party-room/PartyRoomPage.jsx"));
+const PartyPlacesPage     = lazy(() => import("./pages/party-places/PartyPlacesPage.jsx"));
+const PartyPlaceProfile   = lazy(() => import("./pages/party-places/PartyPlaceProfile.jsx"));
 
 
 import LaunchLivePage from "./pages/LaunchLivePage";
@@ -545,6 +547,8 @@ const router = createBrowserRouter([
   { path: '/office-party-hub', element: <OccasionHub occasion="office-party" />, errorElement: <ErrorPage /> },
 
 
+  { path: '/party-places',      element: <PartyPlacesPage />,   errorElement: <ErrorPage /> },
+  { path: '/party-places/:id', element: <PartyPlaceProfile />, errorElement: <ErrorPage /> },
   { path: '/top-rated/:category', element: <TopRatedVendors />, errorElement: <ErrorPage /> },
 
 
