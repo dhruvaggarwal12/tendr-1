@@ -1771,42 +1771,51 @@ export default function OccasionDetail(){
               </div>
             </div>
 
-            {/* theme cards */}
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {/* theme cards — 2-col image grid */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
               {(occasion.decorThemes||[]).map((t,i)=>{
                 const sel=theme?.name===t.name;
                 const tc=themeColor(t.tags);
                 const te=themeEmoji(t.tags);
+                const isLast=i===(occasion.decorThemes||[]).length-1;
+                const isOdd=(occasion.decorThemes||[]).length%2===1;
                 return(
                   <button key={i} onClick={()=>setTheme(sel?null:t)}
-                    style={{padding:0,borderRadius:18,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.04)":"#fff",cursor:"pointer",textAlign:"left",transition:"all 0.2s",overflow:"hidden",boxShadow:sel?"0 4px 16px rgba(196,122,46,0.14)":"0 1px 4px rgba(0,0,0,0.04)"}}
-                    onMouseEnter={e=>{if(!sel){e.currentTarget.style.borderColor="rgba(196,122,46,0.35)";e.currentTarget.style.boxShadow="0 4px 14px rgba(196,122,46,0.1)";}}}
-                    onMouseLeave={e=>{if(!sel){e.currentTarget.style.borderColor="rgba(196,122,46,0.14)";e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";}}}
+                    style={{padding:0,borderRadius:16,border:`2px solid ${sel?gold:"rgba(196,122,46,0.13)"}`,background:"#fff",cursor:"pointer",textAlign:"left",transition:"all 0.18s",overflow:"hidden",boxShadow:sel?"0 4px 20px rgba(196,122,46,0.22)":"0 1px 5px rgba(0,0,0,0.06)",gridColumn:(isOdd&&isLast)?"1 / -1":"auto"}}
                   >
-                    <div style={{display:"flex",gap:0}}>
-                      {/* colour + emoji strip */}
-                      <div style={{width:68,flexShrink:0,background:`linear-gradient(160deg,${tc}55,${tc}22)`,display:"flex",alignItems:"center",justifyContent:"center",minHeight:80,position:"relative",overflow:"hidden"}}>
-                        <div style={{position:"absolute",inset:0,background:`${tc}18`}}/>
-                        <span style={{fontSize:28,position:"relative",zIndex:1,filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.1))"}}>{te}</span>
-                        {sel&&(
-                          <div style={{position:"absolute",top:7,right:7,width:18,height:18,borderRadius:"50%",background:gold,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                          </div>
-                        )}
+                    {/* photo / gradient fallback */}
+                    <div style={{position:"relative",height:isOdd&&isLast?160:140,overflow:"hidden",background:`linear-gradient(160deg,${tc}66,${tc}28)`}}>
+                      {t.photo&&(
+                        <img src={t.photo} alt={t.name}
+                          style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}
+                          onError={e=>{e.currentTarget.style.display="none";}}
+                        />
+                      )}
+                      {!t.photo&&(
+                        <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                          <span style={{fontSize:isOdd&&isLast?44:36,filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.12))"}}>{te}</span>
+                        </div>
+                      )}
+                      {/* bottom gradient for text legibility */}
+                      <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.62) 0%,transparent 55%)"}}/>
+                      {/* theme name on photo */}
+                      <div style={{position:"absolute",bottom:10,left:10,right:32}}>
+                        <span style={{fontSize:12,fontWeight:800,color:"#fff",lineHeight:1.25,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{t.name}</span>
                       </div>
-                      {/* text */}
-                      <div style={{flex:1,padding:"14px 16px 14px 14px",display:"flex",flexDirection:"column",justifyContent:"center",gap:4}}>
-                        <div style={{display:"flex",alignItems:"center",gap:7}}>
-                          <span style={{fontSize:13.5,fontWeight:800,color:sel?gold:ink,lineHeight:1.2}}>{t.name}</span>
-                          {sel&&<span style={{fontSize:9,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"2px 8px",flexShrink:0}}>Selected</span>}
+                      {/* selected check */}
+                      {sel&&(
+                        <div style={{position:"absolute",top:8,right:8,width:22,height:22,borderRadius:"50%",background:gold,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,0.2)"}}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                         </div>
-                        <div style={{fontSize:12,color:muted,lineHeight:1.55}}>{t.desc}</div>
-                        {/* colour dots */}
-                        <div style={{display:"flex",gap:4,marginTop:2}}>
-                          {(t.tags||[]).slice(0,3).map(tag=>(
-                            <span key={tag} style={{fontSize:9.5,fontWeight:600,color:"rgba(30,15,0,0.4)",background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"2px 8px"}}>{tag}</span>
-                          ))}
-                        </div>
+                      )}
+                    </div>
+                    {/* desc + tags */}
+                    <div style={{padding:"9px 11px 11px"}}>
+                      <div style={{fontSize:11,color:muted,lineHeight:1.5,marginBottom:6}}>{t.desc}</div>
+                      <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
+                        {(t.tags||[]).slice(0,2).map(tag=>(
+                          <span key={tag} style={{fontSize:9,fontWeight:600,color:"rgba(30,15,0,0.38)",background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"2px 7px"}}>{tag}</span>
+                        ))}
                       </div>
                     </div>
                   </button>
