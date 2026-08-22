@@ -132,7 +132,7 @@ function TipsByTendrSection() {
   const font = "'Outfit', sans-serif";
   const preview = GUIDES.slice(0, 3);
   return (
-    <section style={{ background: "#FAF7F2", padding: "72px 24px 80px", fontFamily: font }}>
+    <section style={{ background: "#FAF7F2", padding: "48px 24px 52px", fontFamily: font }}>
       <div style={{ maxWidth: 1060, margin: "0 auto" }}>
         {/* Header */}
         <motion.div
@@ -140,7 +140,7 @@ function TipsByTendrSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-          style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 36, flexWrap: "wrap", gap: 16 }}
+          style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 16 }}
         >
           <div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 14px", marginBottom: 14 }}>
@@ -174,16 +174,15 @@ function TipsByTendrSection() {
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.45, delay: gi * 0.07, ease: [0.25, 0.46, 0.45, 0.94] }}
               onClick={() => navigate(`/guides/${guide.slug}`)}
-              style={{ background: "#fff", border: "1px solid rgba(196,122,46,0.12)", borderLeft: "3px solid #C47A2E", borderRadius: 14, padding: "22px 22px 18px", cursor: "pointer", boxShadow: "0 2px 16px rgba(139,69,19,0.05)" }}
+              style={{ background: "#fff", border: "1px solid rgba(196,122,46,0.12)", borderLeft: "3px solid #C47A2E", borderRadius: 14, padding: "18px 20px 14px", cursor: "pointer", boxShadow: "0 2px 16px rgba(139,69,19,0.05)" }}
               whileHover={{ y: -4, boxShadow: "0 10px 32px rgba(139,69,19,0.1)", transition: { type: "spring", stiffness: 340, damping: 26 } }}
             >
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.07)", borderRadius: 100, padding: "4px 12px", marginBottom: 14 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.07)", borderRadius: 100, padding: "3px 10px", marginBottom: 10 }}>
                 <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#C47A2E", display: "inline-block", flexShrink: 0 }} />
                 <span style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em" }}>{guide.tags[0]}</span>
               </div>
-              <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 21, fontWeight: 500, color: "#1C0E04", margin: "0 0 6px", lineHeight: 1.25, letterSpacing: "0.01em" }}>{guide.title}</h3>
-              <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 18px", lineHeight: 1.6 }}>{guide.subtitle}</p>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid rgba(196,122,46,0.08)", paddingTop: 14 }}>
+              <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 20, fontWeight: 500, color: "#1C0E04", margin: "0 0 12px", lineHeight: 1.25, letterSpacing: "0.01em" }}>{guide.title}</h3>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid rgba(196,122,46,0.08)", paddingTop: 12 }}>
                 <span style={{ fontSize: 11.5, color: "#B89070" }}>{guide.readTime} · {guide.pages}pp</span>
                 <span style={{ fontSize: 12.5, fontWeight: 700, color: "#C47A2E" }}>Free →</span>
               </div>
@@ -198,7 +197,7 @@ function TipsByTendrSection() {
           viewport={{ once: true, amount: 0.4 }}
           transition={{ duration: 0.45, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
           onClick={() => navigate("/community")}
-          style={{ marginTop: 20, padding: "18px 24px", borderRadius: 14, border: "1px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, boxShadow: "0 1px 8px rgba(139,69,19,0.04)" }}
+          style={{ marginTop: 16, padding: "14px 20px", borderRadius: 14, border: "1px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, boxShadow: "0 1px 8px rgba(139,69,19,0.04)" }}
           whileHover={{ borderColor: "rgba(196,122,46,0.35)", boxShadow: "0 4px 20px rgba(139,69,19,0.08)", transition: { duration: 0.2 } }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -2131,14 +2130,14 @@ const Home = () => {
 
 
       {/* ── Party Places ── */}
-      <section style={{ background: "#FFFCF5", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif" }}>
+      <section style={{ background: "#FFFCF5", padding: "48px 24px 56px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1060, margin: "0 auto" }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-            style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 36, flexWrap: "wrap", gap: 16 }}
+            style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 16 }}
           >
             <div>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 14px", marginBottom: 14 }}>
@@ -2177,7 +2176,7 @@ const Home = () => {
                 style={{ borderRadius: 16, overflow: "hidden", background: "#fff", border: "1px solid rgba(196,122,46,0.1)", cursor: "pointer", boxShadow: "0 2px 14px rgba(139,69,19,0.06)" }}
                 whileHover={{ y: -5, boxShadow: "0 10px 32px rgba(139,69,19,0.12)", transition: { type: "spring", stiffness: 340, damping: 26 } }}
               >
-                <div style={{ position: "relative", paddingBottom: "67%", overflow: "hidden" }}>
+                <div style={{ position: "relative", paddingBottom: "58%", overflow: "hidden" }}>
                   <img
                     src={place.coverPhoto}
                     alt={place.name}
@@ -2222,82 +2221,79 @@ const Home = () => {
       <TipsByTendrSection />
 
       {/* Become a Partner Section */}
-      <section style={{ background: "#1C0E04", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", top: 0, right: 0, width: 360, height: 360, background: "radial-gradient(ellipse at 80% 20%, rgba(196,122,46,0.09) 0%, transparent 60%)", pointerEvents: "none" }} />
-
+      <section style={{ background: "#1C0E04", padding: "56px 24px 64px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative" }}>
 
-          {/* Section header — centred on mobile, left on desktop */}
+          {/* Section header row: eyebrow + h2 left, pills right */}
           <motion.div
             initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-            style={{ marginBottom: 52, maxWidth: 640 }}
+            style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, marginBottom: 36, flexWrap: "wrap" }}
           >
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(204,171,74,0.1)", border: "1px solid rgba(204,171,74,0.22)", borderRadius: 100, padding: "5px 14px", marginBottom: 18 }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#CCAB4A", display: "inline-block", animation: "tendrPing 2s ease-out infinite" }} />
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", letterSpacing: "0.08em", textTransform: "uppercase" }}>For Vendors &amp; Artists</span>
+            <div style={{ flex: "1 1 360px" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(204,171,74,0.1)", border: "1px solid rgba(204,171,74,0.22)", borderRadius: 100, padding: "4px 13px", marginBottom: 14 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#CCAB4A", display: "inline-block", animation: "tendrPing 2s ease-out infinite" }} />
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", letterSpacing: "0.08em", textTransform: "uppercase" }}>For Vendors &amp; Artists</span>
+              </div>
+              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.9rem, 3.6vw, 2.8rem)", fontWeight: 300, color: "#fff", lineHeight: 1.1, margin: "0 0 10px", letterSpacing: "0.01em" }}>
+                Your next booking is{" "}
+                <em style={{ fontStyle: "italic", fontWeight: 600, background: "linear-gradient(135deg, #C47A2E 0%, #D4A848 50%, #CCAB4A 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                  already looking for you.
+                </em>
+              </h2>
+              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.65, margin: 0 }}>
+                Real customers. Real dates. No ads or middlemen.
+              </p>
             </div>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.1rem, 4vw, 3.2rem)", fontWeight: 300, color: "#fff", lineHeight: 1.1, margin: "0 0 18px", letterSpacing: "0.01em" }}>
-              Your next booking is<br />
-              <em style={{ fontStyle: "italic", fontWeight: 600, background: "linear-gradient(135deg, #C47A2E 0%, #D4A848 50%, #CCAB4A 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                already looking for you.
-              </em>
-            </h2>
-            <p style={{ fontSize: 15, color: "rgba(255,255,255,0.58)", lineHeight: 1.72, margin: 0, maxWidth: 520 }}>
-              Tendr puts your profile in front of real customers — people with a date, a budget, and an event to plan. No ads. No middlemen. Just bookings.
-            </p>
+            {/* Vendor type pills — right of header */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 7, alignItems: "flex-start", maxWidth: 340, paddingTop: 4 }}>
+              {[
+                { icon: "🎧", label: "DJ" }, { icon: "🎙️", label: "Emcee" },
+                { icon: "📷", label: "Photographer" }, { icon: "🌸", label: "Decorator" },
+                { icon: "🍽️", label: "Caterer" }, { icon: "🎸", label: "Band" },
+                { icon: "🎬", label: "Videographer" }, { icon: "📽️", label: "AV Setup" },
+              ].map(t => (
+                <span key={t.label} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 600, color: "rgba(255,247,235,0.7)", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 100, padding: "4px 11px" }}>
+                  {t.icon} {t.label}
+                </span>
+              ))}
+            </div>
           </motion.div>
 
-          {/* Two-column: left features + right visual card */}
+          {/* Two-column: left benefits+CTA / right profile card */}
           <motion.div
             className="partner-grid"
             initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }}
             variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
-            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 56, alignItems: "start" }}
+            style={{ display: "grid", gridTemplateColumns: "55% 1fr", gap: 48, alignItems: "start" }}
           >
 
-            {/* Left — benefits + who it's for + CTA */}
+            {/* Left — 2×2 benefit grid + CTA */}
             <motion.div variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 240, damping: 26 } } }}>
-
-              {/* Who is it for — vendor type pills */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 32 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 28 }}>
                 {[
-                  { emoji: "🎧", label: "DJ" }, { emoji: "🎙️", label: "Anchor / Emcee" },
-                  { emoji: "📷", label: "Photographer" }, { emoji: "🌸", label: "Decorator" },
-                  { emoji: "🍽️", label: "Caterer" }, { emoji: "🎸", label: "Band / Singer" },
-                  { emoji: "🎬", label: "Videographer" }, { emoji: "📽️", label: "AV Setup" },
-                ].map(t => (
-                  <span key={t.label} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: "rgba(255,247,235,0.75)", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 100, padding: "5px 12px" }}>
-                    <span style={{ fontSize: 13 }}>{t.emoji}</span> {t.label}
-                  </span>
-                ))}
-              </div>
-
-              {/* Benefit list */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 20, marginBottom: 36 }}>
-                {[
-                  { icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>, title: "Customers come to you", body: "We surface your profile to people actively searching for your service in Delhi NCR — zero cold calling needed." },
-                  { icon: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>, title: "Verified badge builds trust", body: "Our review process gives you a Tendr-verified badge. Customers book verified vendors 4× faster." },
-                  { icon: <><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>, title: "Free forever · You keep everything", body: "No monthly fee. No commission cut on your bookings. Tendr earns from the platform, not from you." },
-                  { icon: <><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2z"/></>, title: "Chat directly before committing", body: "Discuss requirements, negotiate, and confirm — all in the Tendr chat before anything is signed." },
+                  { icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>, title: "Customers find you", stat: "Zero cold calling" },
+                  { icon: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>, title: "Verified badge", stat: "4× faster bookings" },
+                  { icon: <><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>, title: "Always free", stat: "0% commission" },
+                  { icon: <><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>, title: "Chat before booking", stat: "Direct with customer" },
                 ].map((b, i) => (
-                  <div key={i} style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
-                    <div style={{ width: 38, height: 38, borderRadius: 11, background: "rgba(196,122,46,0.12)", border: "1px solid rgba(196,122,46,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <svg width={17} height={17} viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">{b.icon}</svg>
+                  <div key={i} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: "16px 16px 14px", display: "flex", gap: 12, alignItems: "flex-start" }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(196,122,46,0.12)", border: "1px solid rgba(196,122,46,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">{b.icon}</svg>
                     </div>
                     <div>
-                      <div style={{ fontSize: 14.5, fontWeight: 700, color: "#FFF8EC", marginBottom: 3 }}>{b.title}</div>
-                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>{b.body}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#FFF8EC", lineHeight: 1.3 }}>{b.title}</div>
+                      <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.42)", marginTop: 2 }}>{b.stat}</div>
                     </div>
                   </div>
                 ))}
               </div>
 
               {/* CTA */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
                 <button
                   onClick={() => navigate("/vendor/register")}
-                  style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", border: "none", borderRadius: 12, padding: "14px 30px", fontSize: 15, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 6px 24px rgba(196,122,46,0.4)", transition: "transform 0.2s, box-shadow 0.2s" }}
+                  style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", border: "none", borderRadius: 12, padding: "13px 28px", fontSize: 14.5, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 6px 24px rgba(196,122,46,0.4)", transition: "transform 0.2s, box-shadow 0.2s" }}
                   onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(196,122,46,0.55)"; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(196,122,46,0.4)"; }}
                 >
@@ -2305,98 +2301,74 @@ const Home = () => {
                 </button>
                 <button
                   onClick={() => navigate("/vendor/login")}
-                  style={{ background: "transparent", color: "rgba(255,247,235,0.7)", border: "1.5px solid rgba(255,255,255,0.12)", borderRadius: 12, padding: "13px 22px", fontSize: 14, fontWeight: 600, fontFamily: "'Outfit', sans-serif", cursor: "pointer", transition: "all 0.2s" }}
+                  style={{ background: "transparent", color: "rgba(255,247,235,0.7)", border: "1.5px solid rgba(255,255,255,0.12)", borderRadius: 12, padding: "12px 20px", fontSize: 13.5, fontWeight: 600, fontFamily: "'Outfit', sans-serif", cursor: "pointer", transition: "all 0.2s" }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.5)"; e.currentTarget.style.color = "#CCAB4A"; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = "rgba(255,247,235,0.7)"; }}
                 >
                   Already a vendor? Log in
                 </button>
               </div>
-              <div style={{ marginTop: 14, fontSize: 12, color: "rgba(255,255,255,0.28)", letterSpacing: "0.03em" }}>No credit card · No setup fee · No commission</div>
+              <div style={{ marginTop: 12, fontSize: 11.5, color: "rgba(255,255,255,0.26)", letterSpacing: "0.03em" }}>No credit card · No setup fee · No commission</div>
             </motion.div>
 
-            {/* Right — mock vendor profile card + how it works */}
+            {/* Right — mock vendor profile card + compact stat row */}
             <motion.div
               variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 240, damping: 26 } } }}
-              style={{ display: "flex", flexDirection: "column", gap: 16 }}
+              style={{ display: "flex", flexDirection: "column", gap: 12 }}
             >
-              {/* Mock profile card */}
-              <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 20, overflow: "hidden" }}>
-                <div style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.2),rgba(204,171,74,0.12))", padding: "12px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,247,235,0.55)", letterSpacing: "0.06em" }}>YOUR TENDR PROFILE</span>
+              <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 18, overflow: "hidden" }}>
+                <div style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.2),rgba(204,171,74,0.12))", padding: "10px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: "rgba(255,247,235,0.5)", letterSpacing: "0.06em" }}>YOUR TENDR PROFILE</span>
                   <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#16A34A", display: "inline-block" }} />
-                    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>Active</span>
+                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#16A34A", display: "inline-block" }} />
+                    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.38)" }}>Active</span>
                   </div>
                 </div>
-                <div style={{ padding: "20px 20px 22px" }}>
-                  <div style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: 16 }}>
-                    <div style={{ width: 52, height: 52, borderRadius: 14, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>🎧</div>
+                <div style={{ padding: "16px 18px 18px" }}>
+                  <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 14 }}>
+                    <div style={{ width: 46, height: 46, borderRadius: 13, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>🎧</div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-                        <span style={{ fontSize: 15, fontWeight: 800, color: "#FFF8EC" }}>Your Name Here</span>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: "#CCAB4A", background: "rgba(204,171,74,0.15)", border: "1px solid rgba(204,171,74,0.3)", borderRadius: 100, padding: "2px 8px" }}>✓ Verified</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 2 }}>
+                        <span style={{ fontSize: 14, fontWeight: 800, color: "#FFF8EC" }}>Your Name Here</span>
+                        <span style={{ fontSize: 9.5, fontWeight: 700, color: "#CCAB4A", background: "rgba(204,171,74,0.15)", border: "1px solid rgba(204,171,74,0.3)", borderRadius: 100, padding: "2px 7px" }}>✓ Verified</span>
                       </div>
-                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 6 }}>DJ · Delhi NCR</div>
-                      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                        {[1,2,3,4,5].map(s => <span key={s} style={{ color: "#CCAB4A", fontSize: 11 }}>★</span>)}
-                        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginLeft: 2 }}>4.9 · 28 reviews</span>
+                      <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", marginBottom: 5 }}>DJ · Delhi NCR</div>
+                      <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+                        {[1,2,3,4,5].map(s => <span key={s} style={{ color: "#CCAB4A", fontSize: 10.5 }}>★</span>)}
+                        <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.38)", marginLeft: 2 }}>4.9 · 28 reviews</span>
                       </div>
                     </div>
                   </div>
-                  {/* Portfolio strip */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6, marginBottom: 16 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 5, marginBottom: 14 }}>
                     {[
                       "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=200&h=100&fit=crop&q=70",
                       "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=200&h=100&fit=crop&q=70",
                       "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=200&h=100&fit=crop&q=70",
                     ].map((src, i) => (
-                      <div key={i} style={{ height: 58, borderRadius: 10, overflow: "hidden" }}>
+                      <div key={i} style={{ height: 52, borderRadius: 9, overflow: "hidden" }}>
                         <img src={src} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }} />
                       </div>
                     ))}
                   </div>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <div style={{ flex: 1, padding: "9px 14px", borderRadius: 9, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", textAlign: "center", fontSize: 12.5, fontWeight: 700, color: "#fff" }}>Book Now</div>
-                    <div style={{ width: 40, height: 38, borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <div style={{ display: "flex", gap: 7 }}>
+                    <div style={{ flex: 1, padding: "8px 12px", borderRadius: 9, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", textAlign: "center", fontSize: 12, fontWeight: 700, color: "#fff" }}>Book Now</div>
+                    <div style={{ width: 36, height: 34, borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* 3-step how it works — compact */}
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px 20px" }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(204,171,74,0.6)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 16 }}>How it works</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                  {[
-                    { num: "1", icon: <><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>, title: "Create your free profile", sub: "Name, service type, location, photos. Under 3 minutes." },
-                    { num: "2", icon: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>, title: "Get verified in 24 hours", sub: "Our team reviews and approves your listing." },
-                    { num: "3", icon: <><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>, title: "Start receiving bookings", sub: "Customers find you, chat, and confirm directly." },
-                  ].map((s, i) => (
-                    <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start", paddingBottom: i < 2 ? 14 : 0, marginBottom: i < 2 ? 14 : 0, borderBottom: i < 2 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
-                      <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(196,122,46,0.15)", border: "1px solid rgba(196,122,46,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">{s.icon}</svg>
-                      </div>
-                      <div>
-                        <div style={{ fontSize: 13.5, fontWeight: 700, color: "#FFF8EC", marginBottom: 2 }}>{s.title}</div>
-                        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.42)", lineHeight: 1.5 }}>{s.sub}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               {/* Mini stat row */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
                 {[
                   { val: "100+", label: "Verified Vendors" },
-                  { val: "Free", label: "Always. No fees." },
-                  { val: "24h", label: "Approval time" },
+                  { val: "Free", label: "Always" },
+                  { val: "24h", label: "Approval" },
                 ].map(s => (
-                  <div key={s.val} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "14px 12px", textAlign: "center" }}>
-                    <div style={{ fontSize: 18, fontWeight: 800, color: "#CCAB4A", marginBottom: 3 }}>{s.val}</div>
-                    <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.38)", fontWeight: 500, lineHeight: 1.4 }}>{s.label}</div>
+                  <div key={s.val} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 11, padding: "11px 10px", textAlign: "center" }}>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: "#CCAB4A", marginBottom: 2 }}>{s.val}</div>
+                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.36)", fontWeight: 500 }}>{s.label}</div>
                   </div>
                 ))}
               </div>
@@ -2407,7 +2379,7 @@ const Home = () => {
 
         <style>{`
           @media (max-width: 768px) {
-            .partner-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+            .partner-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
           }
         `}</style>
       </section>
