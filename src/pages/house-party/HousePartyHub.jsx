@@ -8,7 +8,7 @@ import {
 import { usePartyRoom } from "../../hooks/usePartyRoom";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
-const font = "'Manrope', 'Inter', sans-serif";
+const font = "'Syne', sans-serif";
 
 const THEMES = ["Retro 70s", "Bollywood Night", "Neon Glow", "Black & White", "Beach Vibes", "Royale / OTT", "Masquerade", "Fairy Lights"];
 
@@ -86,7 +86,7 @@ function Modal({ onClose, title, emoji, children, wide }) {
 
 // ── styled inputs ─────────────────────────────────────────────────────────────
 const inp = { width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.07)", color: "#fff", fontSize: 14, fontFamily: font, boxSizing: "border-box", outline: "none", minWidth: 0 };
-const btn = (color = "#7C3AED") => ({ padding: "12px 20px", borderRadius: 12, border: "none", background: color, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, width: "100%" });
+const btn = (color = "#C47A2E") => ({ padding: "12px 20px", borderRadius: 9, border: "none", background: color, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, width: "100%" });
 const label = { fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.55)", marginBottom: 5, display: "block", textTransform: "uppercase", letterSpacing: "0.06em" };
 const card = { background: "rgba(255,255,255,0.06)", borderRadius: 14, padding: "14px 16px", marginBottom: 10, color: "#fff", fontSize: 14 };
 
@@ -115,7 +115,7 @@ function TruthOrDare({ onClose }) {
             <div style={{ fontSize: 17, color: "#fff", lineHeight: 1.5 }}>{card}</div>
           </div>
           <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={next} style={{ ...btn("#7C3AED"), flex: 1 }}>Next Card</button>
+            <button onClick={next} style={{ ...btn("#C47A2E"), flex: 1 }}>Next Card</button>
             <button onClick={() => { setMode(null); setCardState(null); }} style={{ ...btn("rgba(255,255,255,0.1)"), flex: 1 }}>Switch</button>
           </div>
         </div>
@@ -141,7 +141,7 @@ function NeverHaveI({ onClose }) {
           <p style={{ color: "rgba(255,255,255,0.6)", marginBottom: 16, fontSize: 14 }}>Add at least 2 players to track scores, or just play without tracking.</p>
           <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
             <input value={newPlayer} onChange={e => setNewPlayer(e.target.value)} onKeyDown={e => e.key === "Enter" && addPlayer()} placeholder="Player name" style={{ ...inp, flex: 1 }} />
-            <button onClick={addPlayer} style={{ ...btn("#7C3AED"), width: "auto", padding: "10px 16px" }}>Add</button>
+            <button onClick={addPlayer} style={{ ...btn("#C47A2E"), width: "auto", padding: "10px 16px" }}>Add</button>
           </div>
           {players.map(p => <div key={p} style={{ ...card, display: "flex", justifyContent: "space-between" }}>{p} <span onClick={() => setPlayers(pl => pl.filter(x => x !== p))} style={{ cursor: "pointer", opacity: 0.5 }}>✕</span></div>)}
           <button onClick={next} style={{ ...btn("#059669"), marginTop: 8 }}>Play without scores →</button>
@@ -179,13 +179,13 @@ function WouldYouRather({ onClose }) {
     <Modal onClose={onClose} emoji="🤷" title="Would You Rather">
       <div style={{ marginBottom: 16 }}>
         {["a", "b"].map(side => (
-          <button key={side} onClick={() => setPick(side)} style={{ display: "block", width: "100%", marginBottom: 10, padding: "20px 16px", borderRadius: 14, border: `2px solid ${pick === side ? "#7C3AED" : "rgba(255,255,255,0.15)"}`, background: pick === side ? "rgba(124,58,237,0.25)" : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 15, fontFamily: font, cursor: "pointer", textAlign: "left", lineHeight: 1.4 }}>
+          <button key={side} onClick={() => setPick(side)} style={{ display: "block", width: "100%", marginBottom: 10, padding: "20px 16px", borderRadius: 14, border: `2px solid ${pick === side ? "#C47A2E" : "rgba(255,255,255,0.15)"}`, background: pick === side ? "rgba(196,122,46,0.25)" : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 15, fontFamily: font, cursor: "pointer", textAlign: "left", lineHeight: 1.4 }}>
             {side === "a" ? "👈 " : "👉 "}{pair[side]}
           </button>
         ))}
       </div>
-      {pick && <div style={{ textAlign: "center", color: "#A78BFA", fontSize: 14, marginBottom: 14 }}>You chose {pick === "a" ? `"${pair.a}"` : `"${pair.b}"`} — defend your answer!</div>}
-      <button onClick={next} style={btn("#7C3AED")}>Next Question</button>
+      {pick && <div style={{ textAlign: "center", color: "#CCAB4A", fontSize: 14, marginBottom: 14 }}>You chose {pick === "a" ? `"${pair.a}"` : `"${pair.b}"`} — defend your answer!</div>}
+      <button onClick={next} style={btn("#C47A2E")}>Next Question</button>
     </Modal>
   );
 }
@@ -207,7 +207,7 @@ function HotTakes({ onClose }) {
         <button onClick={() => setAgreed(false)} style={{ ...btn(agreed === false ? "#DC2626" : "rgba(255,255,255,0.08)"), flex: 1 }}>❌ Disagree</button>
       </div>
       {agreed !== null && <div style={{ textAlign: "center", color: agreed ? "#34D399" : "#F87171", fontSize: 14, marginBottom: 12 }}>Debate time! Go.</div>}
-      <button onClick={next} style={btn("#7C3AED")}>Next Take</button>
+      <button onClick={next} style={btn("#C47A2E")}>Next Take</button>
     </Modal>
   );
 }
@@ -236,25 +236,25 @@ function SpinBottle({ onClose }) {
     <Modal onClose={onClose} emoji="🍾" title="Spin the Bottle / Random Picker">
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
         <input value={newP} onChange={e => setNewP(e.target.value)} onKeyDown={e => e.key === "Enter" && addP()} placeholder="Add a name" style={{ ...inp, flex: 1 }} />
-        <button onClick={addP} style={{ ...btn("#7C3AED"), width: "auto", padding: "10px 16px" }}>Add</button>
+        <button onClick={addP} style={{ ...btn("#C47A2E"), width: "auto", padding: "10px 16px" }}>Add</button>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
         {players.map(p => (
-          <span key={p} style={{ background: "rgba(124,58,237,0.2)", border: "1px solid rgba(124,58,237,0.4)", color: "#C4B5FD", padding: "5px 12px", borderRadius: 20, fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>
+          <span key={p} style={{ background: "rgba(196,122,46,0.2)", border: "1px solid rgba(196,122,46,0.4)", color: "#E5C97A", padding: "5px 12px", borderRadius: 20, fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>
             {p} <span onClick={() => setPlayers(pl => pl.filter(x => x !== p))} style={{ cursor: "pointer", opacity: 0.6 }}>✕</span>
           </span>
         ))}
       </div>
       <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
         <div style={{ position: "relative", width: 180, height: 180 }}>
-          <div style={{ width: 180, height: 180, borderRadius: "50%", border: "4px solid rgba(124,58,237,0.5)", background: "rgba(124,58,237,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ width: 4, height: 80, background: "linear-gradient(to top, #7C3AED, #C4B5FD)", borderRadius: 4, transformOrigin: "50% 100%", transform: `rotate(${angle}deg)`, transition: spinning ? "transform 3s cubic-bezier(0.17,0.67,0.12,0.99)" : "none", position: "absolute", bottom: "50%", left: "calc(50% - 2px)" }} />
-            <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#7C3AED", zIndex: 2, position: "relative" }} />
+          <div style={{ width: 180, height: 180, borderRadius: "50%", border: "4px solid rgba(196,122,46,0.5)", background: "rgba(196,122,46,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 4, height: 80, background: "linear-gradient(to top, #C47A2E, #E5C97A)", borderRadius: 4, transformOrigin: "50% 100%", transform: `rotate(${angle}deg)`, transition: spinning ? "transform 3s cubic-bezier(0.17,0.67,0.12,0.99)" : "none", position: "absolute", bottom: "50%", left: "calc(50% - 2px)" }} />
+            <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#C47A2E", zIndex: 2, position: "relative" }} />
           </div>
         </div>
       </div>
-      {result && !spinning && <div style={{ textAlign: "center", fontSize: 22, fontWeight: 800, color: "#C4B5FD", marginBottom: 16 }}>🎯 {result}!</div>}
-      <button onClick={spin} disabled={players.length < 2 || spinning} style={{ ...btn("#7C3AED"), opacity: players.length < 2 ? 0.5 : 1 }}>
+      {result && !spinning && <div style={{ textAlign: "center", fontSize: 22, fontWeight: 800, color: "#E5C97A", marginBottom: 16 }}>🎯 {result}!</div>}
+      <button onClick={spin} disabled={players.length < 2 || spinning} style={{ ...btn("#C47A2E"), opacity: players.length < 2 ? 0.5 : 1 }}>
         {spinning ? "Spinning…" : players.length < 2 ? "Add at least 2 names" : "SPIN!"}
       </button>
     </Modal>
@@ -282,7 +282,7 @@ function Charades({ onClose }) {
     <Modal onClose={onClose} emoji="🎭" title="Dumb Charades">
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {Object.entries(cats).map(([k, v]) => (
-          <button key={k} onClick={() => pick(k)} style={{ ...btn("rgba(124,58,237,0.3)"), border: "1.5px solid rgba(124,58,237,0.5)", textAlign: "left", padding: "14px 16px", fontSize: 15 }}>{v}</button>
+          <button key={k} onClick={() => pick(k)} style={{ ...btn("rgba(196,122,46,0.3)"), border: "1.5px solid rgba(196,122,46,0.5)", textAlign: "left", padding: "14px 16px", fontSize: 15 }}>{v}</button>
         ))}
       </div>
     </Modal>
@@ -291,13 +291,13 @@ function Charades({ onClose }) {
   return (
     <Modal onClose={onClose} emoji="🎭" title="Dumb Charades">
       <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: 13, color: "#A78BFA", marginBottom: 16 }}>{cats[cat]}</div>
-        <div style={{ background: "rgba(124,58,237,0.15)", border: "2px solid rgba(124,58,237,0.4)", borderRadius: 20, padding: "32px 20px", marginBottom: 16 }}>
+        <div style={{ fontSize: 13, color: "#CCAB4A", marginBottom: 16 }}>{cats[cat]}</div>
+        <div style={{ background: "rgba(196,122,46,0.15)", border: "2px solid rgba(196,122,46,0.4)", borderRadius: 20, padding: "32px 20px", marginBottom: 16 }}>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#fff" }}>{word}</div>
         </div>
         <div style={{ fontSize: 36, fontWeight: 800, color: timer > 10 ? "#34D399" : "#F87171", marginBottom: 16 }}>{timer}s</div>
         <div style={{ display: "flex", gap: 10 }}>
-          <button onClick={next} style={{ ...btn("#7C3AED"), flex: 1 }}>Next Word</button>
+          <button onClick={next} style={{ ...btn("#C47A2E"), flex: 1 }}>Next Word</button>
           <button onClick={() => { setCat(null); setWord(null); setTimer(null); }} style={{ ...btn("rgba(255,255,255,0.1)"), flex: 1 }}>Change Category</button>
         </div>
       </div>
@@ -329,7 +329,7 @@ function Bingo({ onClose }) {
       {bingo && <div style={{ textAlign: "center", fontSize: 22, fontWeight: 800, color: "#FBBF24", marginBottom: 16, animation: "pulse 0.5s ease" }}>🎉 BINGO! You got it!</div>}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 5, marginBottom: 16 }}>
         {card.map((sq, i) => (
-          <div key={i} onClick={() => toggle(i)} style={{ aspectRatio: "1", background: marked[i] ? "rgba(124,58,237,0.5)" : "rgba(255,255,255,0.06)", border: `1.5px solid ${marked[i] ? "#7C3AED" : "rgba(255,255,255,0.12)"}`, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: 4, cursor: i === 12 ? "default" : "pointer", transition: "all 0.15s" }}>
+          <div key={i} onClick={() => toggle(i)} style={{ aspectRatio: "1", background: marked[i] ? "rgba(196,122,46,0.5)" : "rgba(255,255,255,0.06)", border: `1.5px solid ${marked[i] ? "#C47A2E" : "rgba(255,255,255,0.12)"}`, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: 4, cursor: i === 12 ? "default" : "pointer", transition: "all 0.15s" }}>
             <span style={{ fontSize: 11, color: marked[i] ? "#fff" : "rgba(255,255,255,0.7)", textAlign: "center", lineHeight: 1.2 }}>{sq.text}</span>
           </div>
         ))}
@@ -382,7 +382,7 @@ function Checklist({ onClose }) {
     { id:'decor', label:'🎀 Decor', color:'#DB2777' },
     { id:'food', label:'🍲 Food', color:'#f97316' },
     { id:'drinks', label:'🥂 Drinks', color:'#06b6d4' },
-    { id:'entertainment', label:'🎮 Entertainment', color:'#7C3AED' },
+    { id:'entertainment', label:'🎮 Entertainment', color:'#C47A2E' },
     { id:'logistics', label:'📦 Logistics', color:'#6b7280' },
   ];
 
@@ -466,7 +466,7 @@ function Checklist({ onClose }) {
   );
 }
 
-const BS_COLORS = ["#7C3AED","#DC2626","#059669","#D97706","#2563EB","#DB2777","#0891B2","#65A30D","#9333EA","#B45309"];
+const BS_COLORS = ["#C47A2E","#DC2626","#059669","#D97706","#2563EB","#DB2777","#0891B2","#65A30D","#9333EA","#B45309"];
 const BS_CATS = [
   { id:"food",     emoji:"🍕", label:"Food"      },
   { id:"drinks",   emoji:"🍺", label:"Drinks"    },
@@ -532,7 +532,7 @@ function BillSplitter({ onClose }) {
 
   const deleteExpense = (id) => setExpenses(prev => prev.filter(e => e.id !== id));
 
-  const colorOf = (name) => people.find(p => p.name === name)?.color || "#7C3AED";
+  const colorOf = (name) => people.find(p => p.name === name)?.color || "#C47A2E";
   const catOf   = (id)   => BS_CATS.find(c => c.id === id) || BS_CATS[BS_CATS.length - 1];
 
   const calcBalances = () => {
@@ -568,7 +568,7 @@ function BillSplitter({ onClose }) {
   const grandTotal  = expenses.reduce((s, e) => s + e.amount, 0);
 
   const tabBtn = (id, label) => (
-    <button onClick={() => setTab(id)} style={{ flex: 1, padding: "9px 4px", borderRadius: 10, border: "none", background: tab === id ? "#7C3AED" : "rgba(255,255,255,0.07)", color: tab === id ? "#fff" : "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, letterSpacing: "0.03em" }}>{label}</button>
+    <button onClick={() => setTab(id)} style={{ flex: 1, padding: "9px 4px", borderRadius: 10, border: "none", background: tab === id ? "#C47A2E" : "rgba(255,255,255,0.07)", color: tab === id ? "#fff" : "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, letterSpacing: "0.03em" }}>{label}</button>
   );
 
   const Avatar = ({ name, size = 30 }) => (
@@ -598,7 +598,7 @@ function BillSplitter({ onClose }) {
             style={{ ...inp, width: 120, padding: "6px 10px", fontSize: 13 }}
           />
           {newName.trim() && (
-            <button onClick={addPerson} style={{ ...btn("#7C3AED"), width: "auto", padding: "7px 14px", fontSize: 13 }}>Add</button>
+            <button onClick={addPerson} style={{ ...btn("#C47A2E"), width: "auto", padding: "7px 14px", fontSize: 13 }}>Add</button>
           )}
         </div>
       </div>
@@ -642,7 +642,7 @@ function BillSplitter({ onClose }) {
                   </div>
                 </div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  <div style={{ fontWeight: 800, color: "#A78BFA", fontSize: 15 }}>₹{exp.amount.toLocaleString()}</div>
+                  <div style={{ fontWeight: 800, color: "#CCAB4A", fontSize: 15 }}>₹{exp.amount.toLocaleString()}</div>
                   <button onClick={() => deleteExpense(exp.id)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", cursor: "pointer", fontSize: 12, padding: 0, marginTop: 2 }}>Delete</button>
                 </div>
               </div>
@@ -651,13 +651,13 @@ function BillSplitter({ onClose }) {
 
           {/* ── Add Expense Form ── */}
           {showForm && people.length >= 2 ? (
-            <div style={{ background: "rgba(124,58,237,0.1)", border: "1.5px solid rgba(124,58,237,0.3)", borderRadius: 16, padding: "16px", marginTop: 8 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#C4B5FD", marginBottom: 12 }}>New Expense</div>
+            <div style={{ background: "rgba(196,122,46,0.1)", border: "1.5px solid rgba(196,122,46,0.3)", borderRadius: 16, padding: "16px", marginTop: 8 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#E5C97A", marginBottom: 12 }}>New Expense</div>
 
               {/* Category */}
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
                 {BS_CATS.map(c => (
-                  <button key={c.id} onClick={() => setFCat(c.id)} style={{ padding: "5px 10px", borderRadius: 20, border: `1.5px solid ${fCat === c.id ? "#7C3AED" : "rgba(255,255,255,0.12)"}`, background: fCat === c.id ? "rgba(124,58,237,0.3)" : "transparent", color: fCat === c.id ? "#fff" : "rgba(255,255,255,0.5)", fontSize: 12, cursor: "pointer", fontFamily: font }}>
+                  <button key={c.id} onClick={() => setFCat(c.id)} style={{ padding: "5px 10px", borderRadius: 20, border: `1.5px solid ${fCat === c.id ? "#C47A2E" : "rgba(255,255,255,0.12)"}`, background: fCat === c.id ? "rgba(196,122,46,0.3)" : "transparent", color: fCat === c.id ? "#fff" : "rgba(255,255,255,0.5)", fontSize: 12, cursor: "pointer", fontFamily: font }}>
                     {c.emoji} {c.label}
                   </button>
                 ))}
@@ -697,7 +697,7 @@ function BillSplitter({ onClose }) {
                 <label style={label}>Split type</label>
                 <div style={{ display: "flex", gap: 6 }}>
                   {[["equal","Equally"],["amount","By amount"],["percent","By %"]].map(([id, lbl]) => (
-                    <button key={id} onClick={() => setFSplitType(id)} style={{ flex: 1, padding: "7px 4px", borderRadius: 9, border: "none", background: fSplitType === id ? "#7C3AED" : "rgba(255,255,255,0.08)", color: fSplitType === id ? "#fff" : "rgba(255,255,255,0.5)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>{lbl}</button>
+                    <button key={id} onClick={() => setFSplitType(id)} style={{ flex: 1, padding: "7px 4px", borderRadius: 9, border: "none", background: fSplitType === id ? "#C47A2E" : "rgba(255,255,255,0.08)", color: fSplitType === id ? "#fff" : "rgba(255,255,255,0.5)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>{lbl}</button>
                   ))}
                 </div>
                 {fSplitType !== "equal" && fSplitAmong.length > 0 && (
@@ -715,13 +715,13 @@ function BillSplitter({ onClose }) {
 
               <div style={{ display: "flex", gap: 8 }}>
                 <button onClick={() => setShowForm(false)} style={{ ...btn("rgba(255,255,255,0.08)"), flex: 0.5 }}>Cancel</button>
-                <button onClick={addExpense} style={{ ...btn("#7C3AED"), flex: 1 }}>Add Expense</button>
+                <button onClick={addExpense} style={{ ...btn("#C47A2E"), flex: 1 }}>Add Expense</button>
               </div>
             </div>
           ) : (
             <button
               onClick={people.length < 2 ? undefined : openForm}
-              style={{ ...btn(people.length < 2 ? "rgba(255,255,255,0.05)" : "#7C3AED"), marginTop: 8, opacity: people.length < 2 ? 0.5 : 1 }}
+              style={{ ...btn(people.length < 2 ? "rgba(255,255,255,0.05)" : "#C47A2E"), marginTop: 8, opacity: people.length < 2 ? 0.5 : 1 }}
             >
               {people.length < 2 ? "Add at least 2 people first" : "+ Add Expense"}
             </button>
@@ -814,14 +814,14 @@ function ThemePicker({ onClose }) {
     <Modal onClose={onClose} emoji="🎨" title="Theme Picker">
       <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>Everyone votes. Pass the phone around!</p>
       {THEMES.map(t => (
-        <div key={t} onClick={() => vote(t)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${myVote === t ? "#7C3AED" : "rgba(255,255,255,0.1)"}`, background: myVote === t ? "rgba(124,58,237,0.2)" : "rgba(255,255,255,0.04)", marginBottom: 8, cursor: "pointer" }}>
+        <div key={t} onClick={() => vote(t)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${myVote === t ? "#C47A2E" : "rgba(255,255,255,0.1)"}`, background: myVote === t ? "rgba(196,122,46,0.2)" : "rgba(255,255,255,0.04)", marginBottom: 8, cursor: "pointer" }}>
           <div style={{ flex: 1 }}>
             <div style={{ color: "#fff", fontSize: 14 }}>{t}</div>
             <div style={{ height: 4, background: "rgba(255,255,255,0.1)", borderRadius: 4, marginTop: 6, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${maxVotes ? ((votes[t] || 0) / maxVotes) * 100 : 0}%`, background: "#7C3AED", borderRadius: 4, transition: "width 0.3s" }} />
+              <div style={{ height: "100%", width: `${maxVotes ? ((votes[t] || 0) / maxVotes) * 100 : 0}%`, background: "#C47A2E", borderRadius: 4, transition: "width 0.3s" }} />
             </div>
           </div>
-          <span style={{ fontSize: 18, fontWeight: 800, color: "#A78BFA", minWidth: 28, textAlign: "right" }}>{votes[t] || 0}</span>
+          <span style={{ fontSize: 18, fontWeight: 800, color: "#CCAB4A", minWidth: 28, textAlign: "right" }}>{votes[t] || 0}</span>
         </div>
       ))}
       {maxVotes > 0 && <div style={{ textAlign: "center", marginTop: 12, fontSize: 14, color: "#FBBF24" }}>🏆 Leading: {Object.entries(votes).sort(([,a],[,b]) => b-a)[0]?.[0]}</div>}
@@ -853,7 +853,7 @@ function Countdown({ onClose }) {
     <Modal onClose={onClose} emoji="⏱️" title="Countdown Timer">
       <label style={label}>Party Start Date & Time</label>
       <input type="datetime-local" value={target} onChange={e => setTarget(e.target.value)} style={{ ...inp, marginBottom: 12 }} />
-      <button onClick={start} style={{ ...btn("#7C3AED"), marginBottom: 20 }}>Start Countdown</button>
+      <button onClick={start} style={{ ...btn("#C47A2E"), marginBottom: 20 }}>Start Countdown</button>
       {timeLeft && (
         <div style={{ textAlign: "center", fontSize: typeof timeLeft === "string" && timeLeft.includes("🎉") ? 26 : 40, fontWeight: 800, color: "#FBBF24" }}>
           {timeLeft}
@@ -885,7 +885,7 @@ function PlaylistBuilder({ onClose }) {
       <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 14 }}>Everyone adds 2 songs. Build tonight's playlist together.</p>
       <input value={newSong} onChange={e => setNewSong(e.target.value)} placeholder="Song name" style={{ ...inp, marginBottom: 8 }} />
       <input value={newArtist} onChange={e => setNewArtist(e.target.value)} placeholder="Artist (optional)" style={{ ...inp, marginBottom: 10 }} onKeyDown={e => e.key === "Enter" && add()} />
-      <button onClick={add} style={{ ...btn("#7C3AED"), marginBottom: 16 }}>Add Song</button>
+      <button onClick={add} style={{ ...btn("#C47A2E"), marginBottom: 16 }}>Add Song</button>
       {songs.map((s, i) => (
         <div key={i} style={{ ...card, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
@@ -925,20 +925,20 @@ function PartyReportCard({ onClose }) {
               <div style={{ fontSize: 13, color: "#fff", marginBottom: 8 }}>{emoji} {label}</div>
               <div style={{ display: "flex", gap: 6 }}>
                 {[1, 2, 3, 4, 5].map(n => (
-                  <button key={n} onClick={() => setRatings(r => ({ ...r, [key]: n }))} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: `1.5px solid ${ratings[key] >= n ? "#7C3AED" : "rgba(255,255,255,0.15)"}`, background: ratings[key] >= n ? "rgba(124,58,237,0.35)" : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 16, cursor: "pointer" }}>
+                  <button key={n} onClick={() => setRatings(r => ({ ...r, [key]: n }))} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: `1.5px solid ${ratings[key] >= n ? "#C47A2E" : "rgba(255,255,255,0.15)"}`, background: ratings[key] >= n ? "rgba(196,122,46,0.35)" : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 16, cursor: "pointer" }}>
                     {n <= ratings[key] ? "⭐" : "☆"}
                   </button>
                 ))}
               </div>
             </div>
           ))}
-          <button onClick={() => setDone(true)} disabled={Object.values(ratings).some(r => r === 0)} style={{ ...btn("#7C3AED"), opacity: Object.values(ratings).some(r => r === 0) ? 0.5 : 1 }}>Generate Report Card</button>
+          <button onClick={() => setDone(true)} disabled={Object.values(ratings).some(r => r === 0)} style={{ ...btn("#C47A2E"), opacity: Object.values(ratings).some(r => r === 0) ? 0.5 : 1 }}>Generate Report Card</button>
         </>
       ) : (
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 80, fontWeight: 900, color: grade === "S+" ? "#FBBF24" : grade === "A" ? "#34D399" : "#A78BFA" }}>{grade}</div>
+          <div style={{ fontSize: 80, fontWeight: 900, color: grade === "S+" ? "#FBBF24" : grade === "A" ? "#34D399" : "#CCAB4A" }}>{grade}</div>
           <div style={{ fontSize: 22, fontWeight: 700, color: "#fff", marginBottom: 8 }}>{verdict}</div>
-          <div style={{ fontSize: 15, color: "#A78BFA", marginBottom: 20 }}>{avg} / 5.0</div>
+          <div style={{ fontSize: 15, color: "#CCAB4A", marginBottom: 20 }}>{avg} / 5.0</div>
           {cats.map(({ key, label, emoji }) => (
             <div key={key} style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", marginBottom: 6, background: "rgba(255,255,255,0.05)", borderRadius: 10 }}>
               <span style={{ color: "#fff", fontSize: 13 }}>{emoji} {label}</span>
@@ -987,8 +987,8 @@ function MostLikelyTo({ onClose }) {
       <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>
         Everyone points at the person they think fits — most fingers = winner.
       </p>
-      <div style={{ background: "rgba(124,58,237,0.15)", border: "1.5px solid rgba(124,58,237,0.35)", borderRadius: 16, padding: "28px 20px", textAlign: "center", marginBottom: 20 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#A78BFA", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.1em" }}>🎲 MOST LIKELY TO…</div>
+      <div style={{ background: "rgba(196,122,46,0.15)", border: "1.5px solid rgba(196,122,46,0.35)", borderRadius: 16, padding: "28px 20px", textAlign: "center", marginBottom: 20 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#CCAB4A", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.1em" }}>🎲 MOST LIKELY TO…</div>
         <div style={{ fontSize: 17, color: "#fff", lineHeight: 1.55 }}>{MOST_LIKELY_TO[idx]}</div>
       </div>
       {voted && (
@@ -997,7 +997,7 @@ function MostLikelyTo({ onClose }) {
         </div>
       )}
       <div style={{ display: "flex", gap: 10 }}>
-        <button onClick={() => setVoted(true)} style={{ ...btn("rgba(124,58,237,0.4)"), flex: 1 }}>👆 Point!</button>
+        <button onClick={() => setVoted(true)} style={{ ...btn("rgba(196,122,46,0.4)"), flex: 1 }}>👆 Point!</button>
         <button onClick={next} style={{ ...btn("rgba(255,255,255,0.1)"), flex: 1 }}>Next →</button>
       </div>
     </Modal>
@@ -1045,7 +1045,7 @@ function ShareableTool({ onClose, emoji, title, description, path, fields }) {
               <input value={data[f.key] || ""} onChange={e => setData(d => ({ ...d, [f.key]: e.target.value }))} placeholder={f.placeholder} style={inp} />
             </div>
           ))}
-          <button onClick={create} disabled={loading || !fields.every(f => !f.required || data[f.key]?.trim())} style={{ ...btn("#7C3AED"), marginTop: 8, opacity: loading ? 0.7 : 1 }}>
+          <button onClick={create} disabled={loading || !fields.every(f => !f.required || data[f.key]?.trim())} style={{ ...btn("#C47A2E"), marginTop: 8, opacity: loading ? 0.7 : 1 }}>
             {loading ? "Creating…" : `Create ${title}`}
           </button>
         </>
@@ -1053,10 +1053,10 @@ function ShareableTool({ onClose, emoji, title, description, path, fields }) {
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
           <div style={{ color: "#34D399", fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Link created!</div>
-          <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 12, padding: "12px 14px", wordBreak: "break-all", fontSize: 13, color: "#A78BFA", marginBottom: 16 }}>{link}</div>
+          <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 12, padding: "12px 14px", wordBreak: "break-all", fontSize: 13, color: "#CCAB4A", marginBottom: 16 }}>{link}</div>
           <div style={{ display: "flex", gap: 10 }}>
             <button onClick={() => copyLink(link)} style={{ ...btn("rgba(255,255,255,0.1)"), flex: 1 }}>📋 Copy Link</button>
-            <button onClick={() => navigate(link.replace(window.location.origin, ""))} style={{ ...btn("#7C3AED"), flex: 1 }}>Open →</button>
+            <button onClick={() => navigate(link.replace(window.location.origin, ""))} style={{ ...btn("#C47A2E"), flex: 1 }}>Open →</button>
           </div>
         </div>
       )}
@@ -1065,6 +1065,28 @@ function ShareableTool({ onClose, emoji, title, description, path, fields }) {
 }
 
 // ── Polygon Layout (triangle for 3, square for 4, pentagon for 5 … octagon for 8) ──
+function ToolGrid({ tools, onOpen }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 8 }}>
+      {tools.map(t => (
+        <button
+          key={t.id}
+          onClick={() => onOpen(t.id)}
+          style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '14px 14px 13px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 11, cursor: 'pointer', fontFamily: font, textAlign: 'left', WebkitTapHighlightColor: 'transparent', transition: 'background 0.15s, border-color 0.15s', boxSizing: 'border-box', width: '100%' }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.borderColor = `${t.color}44`; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; }}
+          onTouchStart={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; }}
+          onTouchEnd={e => { setTimeout(() => { if (e.currentTarget) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }, 150); }}
+        >
+          <div style={{ color: t.color, marginBottom: 9, lineHeight: 1 }}>{TOOL_ICONS[t.id] || hpic(<circle cx="12" cy="12" r="9"/>)}</div>
+          <div style={{ fontSize: 12.5, fontWeight: 700, color: '#fff', lineHeight: 1.25, marginBottom: 4 }}>{t.title}</div>
+          <div style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.35)', lineHeight: 1.4 }}>{t.desc}</div>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function PolygonGrid({ tools, onOpen }) {
   const containerRef = useRef(null);
   const [size, setSize] = useState(340);
@@ -1079,9 +1101,8 @@ function PolygonGrid({ tools, onOpen }) {
   const n = tools.length;
   const cx = size / 2;
   const cy = size / 2;
-  const R = size * 0.355;
-  // Larger nodes for fewer items, smaller for more
-  const nW = Math.max(64, Math.min(size * 0.26, 64 + (8 - n) * 4));
+  const R = size * 0.41;
+  const nW = Math.max(60, Math.min(size * 0.24, 60 + (8 - n) * 4));
   const nH = nW * 1.12;
 
   const pts = tools.map((_, i) => {
@@ -1089,13 +1110,12 @@ function PolygonGrid({ tools, onOpen }) {
     return { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) };
   });
 
-  // Even N → diameters (opposite vertices); Odd N → spokes from center
   const innerLines = n % 2 === 0
     ? Array.from({ length: n / 2 }, (_, i) => [pts[i], pts[i + n / 2]])
     : pts.map(p => [{ x: cx, y: cy }, p]);
 
   return (
-    <div ref={containerRef} style={{ width: '100%', position: 'relative', paddingBottom: '100%', maxWidth: 460, margin: '0 auto' }}>
+    <div ref={containerRef} style={{ width: '100%', position: 'relative', paddingBottom: '115%', maxWidth: 500, margin: '0 auto' }}>
       <div style={{ position: 'absolute', inset: 0 }}>
         <svg
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'visible' }}
@@ -1111,37 +1131,18 @@ function PolygonGrid({ tools, onOpen }) {
               <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
             </filter>
           </defs>
-
-          {/* Inner lines — diameters (even) or spokes (odd) */}
           {innerLines.map(([a, b], i) => (
-            <line key={`il${i}`}
-              x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-              stroke="rgba(167,139,250,0.14)" strokeWidth="1"
-            />
+            <line key={`il${i}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="rgba(196,122,46,0.14)" strokeWidth="1" />
           ))}
-
-          {/* Outer polygon edges */}
           {Array.from({ length: n }, (_, i) => (
-            <line key={`e${i}`}
-              x1={pts[i].x} y1={pts[i].y}
-              x2={pts[(i + 1) % n].x} y2={pts[(i + 1) % n].y}
-              stroke="rgba(196,122,46,0.35)" strokeWidth="1.6"
-              filter="url(#pg-glow-sm)"
-            />
+            <line key={`e${i}`} x1={pts[i].x} y1={pts[i].y} x2={pts[(i + 1) % n].x} y2={pts[(i + 1) % n].y} stroke="rgba(196,122,46,0.35)" strokeWidth="1.6" filter="url(#pg-glow-sm)" />
           ))}
-
-          {/* Vertex dots */}
           {pts.map((p, i) => (
-            <circle key={`v${i}`} cx={p.x} cy={p.y} r={3.5}
-              fill="rgba(196,122,46,0.7)" filter="url(#pg-glow-sm)" />
+            <circle key={`v${i}`} cx={p.x} cy={p.y} r={3.5} fill="rgba(196,122,46,0.7)" filter="url(#pg-glow-sm)" />
           ))}
-
-          {/* Center dot */}
-          <circle cx={cx} cy={cy} r={5}
-            fill="rgba(196,122,46,0.55)" filter="url(#pg-glow)" />
+          <circle cx={cx} cy={cy} r={5} fill="rgba(196,122,46,0.55)" filter="url(#pg-glow)" />
         </svg>
 
-        {/* Tool nodes */}
         {tools.map((t, i) => {
           const p = pts[i];
           return (
@@ -1150,49 +1151,21 @@ function PolygonGrid({ tools, onOpen }) {
               onClick={() => onOpen(t.id)}
               style={{
                 position: 'absolute',
-                width: nW,
-                height: nH,
-                left: p.x - nW / 2,
-                top: p.y - nH / 2,
+                width: nW, height: nH,
+                left: p.x - nW / 2, top: p.y - nH / 2,
                 background: `radial-gradient(circle at 50% 30%, ${t.color}2a, rgba(14,10,4,0.92))`,
                 border: `1.5px solid ${t.color}55`,
-                borderRadius: 14,
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 5,
-                padding: '6px 4px',
-                fontFamily: font,
+                borderRadius: 14, cursor: 'pointer',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 5,
+                padding: '6px 4px', fontFamily: font,
                 transition: 'transform 0.18s, box-shadow 0.18s, border-color 0.18s',
-                boxSizing: 'border-box',
-                WebkitTapHighlightColor: 'transparent',
+                boxSizing: 'border-box', WebkitTapHighlightColor: 'transparent',
               }}
-              onMouseEnter={e => {
-                e.currentTarget.style.transform = 'scale(1.1)';
-                e.currentTarget.style.boxShadow = `0 0 24px ${t.color}55`;
-                e.currentTarget.style.borderColor = `${t.color}bb`;
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.borderColor = `${t.color}55`;
-              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.boxShadow = `0 0 24px ${t.color}55`; e.currentTarget.style.borderColor = `${t.color}bb`; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = `${t.color}55`; }}
             >
-              <span style={{ color: t.color, display: "flex", lineHeight: 1 }}>{TOOL_ICONS[t.id] || hpic(<circle cx="12" cy="12" r="9"/>, Math.max(18, nW * 0.27))}</span>
-              <span style={{
-                fontSize: Math.max(11, nW * 0.12),
-                fontWeight: 700,
-                color: '#fff',
-                textAlign: 'center',
-                lineHeight: 1.2,
-                padding: '0 3px',
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}>{t.title}</span>
+              <span style={{ color: t.color, display: 'flex', lineHeight: 1 }}>{TOOL_ICONS[t.id] || hpic(<circle cx="12" cy="12" r="9"/>, Math.max(18, nW * 0.27))}</span>
+              <span style={{ fontSize: Math.max(10, nW * 0.12), fontWeight: 700, color: '#fff', textAlign: 'center', lineHeight: 1.2, padding: '0 3px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{t.title}</span>
               <div style={{ width: '44%', height: 2, background: t.color, borderRadius: 4, opacity: 0.72 }} />
             </button>
           );
@@ -1212,7 +1185,7 @@ const TOOLS = [
   { id: "invite", section: "manage", emoji: "📨", title: "Digital Invite & RSVP", desc: "One link · guests RSVP · live count", color: "#2563EB" },
   { id: "checklist", section: "manage", emoji: "📋", title: "Party Checklist", desc: "Enter guest count → auto buy list", color: "#D97706" },
   { id: "bills",        section: "manage", emoji: "💸", title: "Bill Splitter",    desc: "Enter spends → who owes whom",              color: "#DC2626" },
-  { id: "guestlist",   section: "manage", emoji: "👥", title: "Guest List",      desc: "Track RSVPs · who's confirmed",              color: "#7C3AED" },
+  { id: "guestlist",   section: "manage", emoji: "👥", title: "Guest List",      desc: "Track RSVPs · who's confirmed",              color: "#C47A2E" },
   { id: "menu",        section: "manage", emoji: "🍽️", title: "Menu Planner",    desc: "Plan food · drinks · who brings what",        color: "#059669" },
   { id: "seating",     section: "manage", emoji: "🪑", title: "Seating Chart",   desc: "Assign seats · manage tables",                color: "#0891B2" },
   { id: "daytimeline", section: "manage", emoji: "🗓️", title: "Party Timeline",  desc: "Schedule the day · minute by minute",         color: "#D97706" },
@@ -1221,26 +1194,26 @@ const TOOLS = [
   { id: "vendors",     section: "manage", emoji: "🗂️", title: "Vendor Tracker",  desc: "Caterer · DJ · deposit · balance due",        color: "#F59E0B" },
   { id: "wabroadcast", section: "manage", emoji: "📣", title: "WA Broadcasts",   desc: "Save the date · reminder · thank you",        color: "#25D366" },
   // Fun
-  { id: "theme", section: "fun", emoji: "🎨", title: "Theme Picker", desc: "Vote as a group on party theme", color: "#7C3AED" },
+  { id: "theme", section: "fun", emoji: "🎨", title: "Theme Picker", desc: "Vote as a group on party theme", color: "#C47A2E" },
   { id: "photowall", section: "fun", emoji: "📸", title: "Photo Wall", desc: "Shared album · everyone uploads", color: "#DB2777" },
   { id: "countdown", section: "fun", emoji: "⏱️", title: "Countdown Timer", desc: "Visual countdown to party time", color: "#0891B2" },
   { id: "playlist", section: "fun", emoji: "🎵", title: "Playlist Builder", desc: "Everyone adds 2 songs", color: "#059669" },
   { id: "wishwall", section: "fun", emoji: "⭐", title: "Wish Wall", desc: "Everyone adds wishes · react together", color: "#F59E0B", live: true },
   { id: "moodmeter", section: "fun", emoji: "💫", title: "Mood Meter", desc: "Check the room's collective vibe", color: "#EC4899", live: true },
-  { id: "secretmsg", section: "fun", emoji: "🤫", title: "Secret Messages", desc: "Anonymous notes for anyone in the room", color: "#6366F1", live: true },
+  { id: "secretmsg", section: "fun", emoji: "🤫", title: "Secret Messages", desc: "Anonymous notes for anyone in the room", color: "#1A7A8A", live: true },
   { id: "lovenotes", section: "fun", emoji: "💌", title: "Love Notes Wall", desc: "Leave sweet notes for your crew", color: "#F43F5E", live: true },
   // Games
   { id: "truthordare", section: "games", emoji: "🎯", title: "Truth or Dare", desc: "Indian youth decks — 25 truths + 25 dares", color: "#DC2626" },
   { id: "neverhavei", section: "games", emoji: "🙅", title: "Never Have I Ever", desc: "30 statements · score tracker", color: "#059669" },
-  { id: "wouldyou", section: "games", emoji: "🤷", title: "Would You Rather", desc: "20 spicy choices — defend your answer", color: "#7C3AED" },
+  { id: "wouldyou", section: "games", emoji: "🤷", title: "Would You Rather", desc: "20 spicy choices — defend your answer", color: "#C47A2E" },
   { id: "hottakes", section: "games", emoji: "🌶️", title: "Hot Takes", desc: "25 hot takes · agree or disagree", color: "#DC2626" },
   { id: "spin", section: "games", emoji: "🍾", title: "Spin the Bottle", desc: "Add names → random picker with spinner", color: "#2563EB" },
   { id: "charades", section: "games", emoji: "🎭", title: "Dumb Charades", desc: "Bollywood · Web Shows · Celebs · Memes", color: "#D97706" },
   { id: "bingo", section: "games", emoji: "🎱", title: "Party Bingo", desc: "5×5 party scenario bingo cards", color: "#0891B2" },
-  { id: "mostlikelyto",  section: "games", emoji: "🎲", title: "Most Likely To",      desc: "Point at whoever fits — most fingers wins",      color: "#A855F7" },
-  { id: "twotruthslie", section: "games", emoji: "🤥", title: "Two Truths One Lie",  desc: "Spot the lie · everyone submits · vote as a group", color: "#6366F1" },
+  { id: "mostlikelyto",  section: "games", emoji: "🎲", title: "Most Likely To",      desc: "Point at whoever fits — most fingers wins",      color: "#D4631A" },
+  { id: "twotruthslie", section: "games", emoji: "🤥", title: "Two Truths One Lie",  desc: "Spot the lie · everyone submits · vote as a group", color: "#1A7A8A" },
   { id: "hotseat",      section: "games", emoji: "🔥", title: "Hot Seat",            desc: "One player · rapid-fire questions · 60 seconds",    color: "#F43F5E" },
-  { id: "darewheel",    section: "games", emoji: "🎡", title: "Dare Wheel",          desc: "Spin the wheel · land on someone · get a dare",     color: "#8B5CF6" },
+  { id: "darewheel",    section: "games", emoji: "🎡", title: "Dare Wheel",          desc: "Spin the wheel · land on someone · get a dare",     color: "#C85A2A" },
   { id: "wordwolf",     section: "games", emoji: "🐺", title: "Word Wolf",           desc: "One imposter gets a different word · find them",    color: "#10B981" },
   { id: "categoryblitz",section: "games", emoji: "⚡", title: "Category Blitz",      desc: "Name items in a category · go around · fail = out", color: "#F59E0B" },
   { id: "roastbattle",  section: "games", emoji: "🎤", title: "Roast Battle",        desc: "Two players · 30 sec each · audience votes",        color: "#EF4444" },
@@ -1330,9 +1303,9 @@ function TwoTruthsLieGame({ onClose }) {
               </div>
             ))}
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginBottom: 10 }}>Mark which statement is the LIE before adding ↑</div>
-            <button onClick={addPlayer} disabled={!nameInput.trim() || stmts.some(s => !s.trim()) || lieIdx === null} style={{ width: '100%', background: nameInput.trim() && stmts.every(s => s.trim()) && lieIdx !== null ? '#6366F1' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 10, padding: '11px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>+ Add Player</button>
+            <button onClick={addPlayer} disabled={!nameInput.trim() || stmts.some(s => !s.trim()) || lieIdx === null} style={{ width: '100%', background: nameInput.trim() && stmts.every(s => s.trim()) && lieIdx !== null ? '#1A7A8A' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 10, padding: '11px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>+ Add Player</button>
           </div>
-          <button onClick={startVoting} disabled={players.length < 2} style={{ width: '100%', background: players.length >= 2 ? 'linear-gradient(135deg,#6366F1,#8B5CF6)' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: players.length >= 2 ? 'pointer' : 'not-allowed', fontFamily: font }}>
+          <button onClick={startVoting} disabled={players.length < 2} style={{ width: '100%', background: players.length >= 2 ? 'linear-gradient(135deg,#1A7A8A,#C85A2A)' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: players.length >= 2 ? 'pointer' : 'not-allowed', fontFamily: font }}>
             {players.length < 2 ? `Add ${2 - players.length} more player${players.length === 1 ? '' : 's'} to start` : `Start Game (${players.length} players) →`}
           </button>
         </>
@@ -1341,7 +1314,7 @@ function TwoTruthsLieGame({ onClose }) {
       {phase === 'vote' && cur && (
         <>
           <div style={{ textAlign: 'center', marginBottom: 20 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#6366F1', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 4 }}>Player {currentIdx + 1} of {players.length}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#1A7A8A', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 4 }}>Player {currentIdx + 1} of {players.length}</div>
             <div style={{ fontSize: 24, fontWeight: 900, color: '#fff', fontFamily: font }}>{cur.name}'s statements</div>
             <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>Which one is the LIE?</div>
           </div>
@@ -1362,7 +1335,7 @@ function TwoTruthsLieGame({ onClose }) {
               ))}
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={submitVote} disabled={!voterInput.trim() || votingFor === null} style={{ flex: 1, background: voterInput.trim() && votingFor !== null ? '#6366F1' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 10, padding: '11px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Submit Vote</button>
+              <button onClick={submitVote} disabled={!voterInput.trim() || votingFor === null} style={{ flex: 1, background: voterInput.trim() && votingFor !== null ? '#1A7A8A' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 10, padding: '11px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Submit Vote</button>
               <button onClick={reveal} disabled={Object.keys(votes).length === 0} style={{ flex: 1, background: Object.keys(votes).length > 0 ? '#F43F5E' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 10, padding: '11px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Reveal ({Object.keys(votes).length} voted)</button>
             </div>
           </div>
@@ -1391,7 +1364,7 @@ function TwoTruthsLieGame({ onClose }) {
               );
             })}
           </div>
-          <button onClick={next} style={{ width: '100%', background: 'linear-gradient(135deg,#6366F1,#8B5CF6)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>
+          <button onClick={next} style={{ width: '100%', background: 'linear-gradient(135deg,#1A7A8A,#C85A2A)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>
             {currentIdx + 1 >= players.length ? 'See Final Scores →' : `Next Player: ${players[currentIdx + 1]?.name} →`}
           </button>
         </>
@@ -1404,10 +1377,10 @@ function TwoTruthsLieGame({ onClose }) {
             <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', fontFamily: font, marginTop: 8 }}>Final Scores</div>
           </div>
           {Object.entries(scores).sort(([, a], [, b]) => b - a).map(([name, score], i) => (
-            <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: i === 0 ? 'linear-gradient(90deg,#6366F120,rgba(255,255,255,0.03))' : 'rgba(255,255,255,0.04)', borderRadius: 12, marginBottom: 8, border: i === 0 ? '1px solid #6366F140' : '1px solid rgba(255,255,255,0.07)' }}>
+            <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: i === 0 ? 'linear-gradient(90deg,#1A7A8A20,rgba(255,255,255,0.03))' : 'rgba(255,255,255,0.04)', borderRadius: 12, marginBottom: 8, border: i === 0 ? '1px solid #1A7A8A40' : '1px solid rgba(255,255,255,0.07)' }}>
               <span style={{ fontSize: 18, minWidth: 28 }}>{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}</span>
               <span style={{ flex: 1, fontSize: 15, color: '#fff', fontFamily: font, fontWeight: 700 }}>{name}</span>
-              <span style={{ fontSize: 20, fontWeight: 900, color: i === 0 ? '#6366F1' : '#fff', fontFamily: font }}>{score}</span>
+              <span style={{ fontSize: 20, fontWeight: 900, color: i === 0 ? '#1A7A8A' : '#fff', fontFamily: font }}>{score}</span>
             </div>
           ))}
           {Object.keys(scores).length === 0 && <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 14, padding: 20 }}>No one guessed correctly. You're all expert liars! 🤥</div>}
@@ -1542,7 +1515,7 @@ function DareWheelGame({ onClose }) {
   };
 
   const n = players.length;
-  const colors = ['#F43F5E', '#F97316', '#EAB308', '#22c55e', '#06b6d4', '#8B5CF6', '#EC4899', '#14b8a6'];
+  const colors = ['#F43F5E', '#F97316', '#EAB308', '#22c55e', '#06b6d4', '#C85A2A', '#EC4899', '#14b8a6'];
   const size = 220;
   const cx = size / 2, cy = size / 2, r = size / 2 - 4;
 
@@ -1553,7 +1526,7 @@ function DareWheelGame({ onClose }) {
           <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 20, lineHeight: 1.6 }}>Add at least 2 players. Spin the wheel — whoever it lands on gets a dare.</div>
           <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
             <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && addPlayer()} placeholder="Player name" style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: font, outline: 'none' }} />
-            <button onClick={addPlayer} style={{ background: '#8B5CF6', border: 'none', borderRadius: 10, padding: '10px 18px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Add</button>
+            <button onClick={addPlayer} style={{ background: '#C85A2A', border: 'none', borderRadius: 10, padding: '10px 18px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Add</button>
           </div>
           {players.map(p => (
             <div key={p} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, marginBottom: 6 }}>
@@ -1587,10 +1560,10 @@ function DareWheelGame({ onClose }) {
             </svg>
             <div style={{ position: 'absolute', top: -4, left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderTop: '18px solid #fff', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }} />
           </div>
-          <button onClick={spin} disabled={spinning} style={{ width: '100%', marginBottom: 16, background: spinning ? 'rgba(255,255,255,0.06)' : 'linear-gradient(135deg,#8B5CF6,#6366F1)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: spinning ? 'not-allowed' : 'pointer', fontFamily: font }}>{spinning ? 'Spinning…' : '🎡 Spin the Wheel'}</button>
+          <button onClick={spin} disabled={spinning} style={{ width: '100%', marginBottom: 16, background: spinning ? 'rgba(255,255,255,0.06)' : 'linear-gradient(135deg,#C85A2A,#1A7A8A)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: spinning ? 'not-allowed' : 'pointer', fontFamily: font }}>{spinning ? 'Spinning…' : '🎡 Spin the Wheel'}</button>
           {landed && dare && (
-            <div style={{ background: '#8B5CF618', border: '1.5px solid #8B5CF655', borderRadius: 14, padding: '16px' }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#8B5CF6', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>🎯 {landed} gets a dare</div>
+            <div style={{ background: '#C85A2A18', border: '1.5px solid #C85A2A55', borderRadius: 14, padding: '16px' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#C85A2A', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>🎯 {landed} gets a dare</div>
               <div style={{ fontSize: 14, color: '#fff', fontFamily: font, lineHeight: 1.6 }}>{dare}</div>
             </div>
           )}
@@ -1691,7 +1664,7 @@ function WordWolfGame({ onClose }) {
           <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: '14px', marginBottom: 20 }}>
             {players.map(p => <div key={p} style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>👤 {p}</div>)}
           </div>
-          <button onClick={() => setPhase('vote')} style={{ width: '100%', background: 'linear-gradient(135deg,#F43F5E,#8B5CF6)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>Vote for the Wolf →</button>
+          <button onClick={() => setPhase('vote')} style={{ width: '100%', background: 'linear-gradient(135deg,#F43F5E,#C85A2A)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>Vote for the Wolf →</button>
         </>
       )}
       {phase === 'vote' && (
@@ -1709,7 +1682,7 @@ function WordWolfGame({ onClose }) {
             </div>
             <button onClick={submitVote} disabled={!voterName.trim() || !votingFor} style={{ width: '100%', background: voterName.trim() && votingFor ? '#F43F5E' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 10, padding: '11px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Submit Vote</button>
           </div>
-          <button onClick={() => setPhase('reveal')} style={{ width: '100%', background: 'linear-gradient(135deg,#F43F5E,#8B5CF6)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>Reveal the Wolf →</button>
+          <button onClick={() => setPhase('reveal')} style={{ width: '100%', background: 'linear-gradient(135deg,#F43F5E,#C85A2A)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>Reveal the Wolf →</button>
         </>
       )}
       {phase === 'reveal' && (
@@ -1874,11 +1847,11 @@ function RoastBattleGame({ onClose }) {
           </div>
           {[0, 1].map(i => (
             <div key={i} style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: i === 0 ? '#F43F5E' : '#8B5CF6', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>Player {i + 1}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: i === 0 ? '#F43F5E' : '#C85A2A', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>Player {i + 1}</div>
               <input value={players[i]} onChange={e => { const p = [...players]; p[i] = e.target.value; setPlayers(p); }} placeholder={`Player ${i + 1} name`} style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: `1.5px solid ${i === 0 ? 'rgba(244,63,94,0.3)' : 'rgba(139,92,246,0.3)'}`, borderRadius: 10, padding: '12px 14px', color: '#fff', fontSize: 15, fontFamily: font, outline: 'none', boxSizing: 'border-box', fontWeight: 700 }} />
             </div>
           ))}
-          <button onClick={start} disabled={!players[0].trim() || !players[1].trim()} style={{ width: '100%', marginTop: 8, background: players.every(p => p.trim()) ? 'linear-gradient(135deg,#F43F5E,#8B5CF6)' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 12, padding: '15px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>
+          <button onClick={start} disabled={!players[0].trim() || !players[1].trim()} style={{ width: '100%', marginTop: 8, background: players.every(p => p.trim()) ? 'linear-gradient(135deg,#F43F5E,#C85A2A)' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 12, padding: '15px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>
             Let the Roast Begin 🎤
           </button>
         </>
@@ -1887,7 +1860,7 @@ function RoastBattleGame({ onClose }) {
         <>
           <div style={{ textAlign: 'center', marginBottom: 16 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 4 }}>Round {round} of 3</div>
-            <div style={{ fontSize: 20, fontWeight: 900, color: roasterIdx === 0 ? '#F43F5E' : '#8B5CF6', fontFamily: font }}>{players[roasterIdx]}'s turn to roast</div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: roasterIdx === 0 ? '#F43F5E' : '#C85A2A', fontFamily: font }}>{players[roasterIdx]}'s turn to roast</div>
             <div style={{ fontSize: 36, fontWeight: 900, color: timerColor, fontFamily: font, marginTop: 6 }}>{timer}s</div>
           </div>
           <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: '20px 18px', marginBottom: 20, minHeight: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1904,8 +1877,8 @@ function RoastBattleGame({ onClose }) {
           </div>
           <div style={{ display: 'flex', gap: 12 }}>
             {[0, 1].map(i => (
-              <button key={i} onClick={() => vote(i)} style={{ flex: 1, padding: '20px 0', background: i === 0 ? '#F43F5E22' : '#8B5CF622', border: `2px solid ${i === 0 ? '#F43F5E66' : '#8B5CF666'}`, borderRadius: 16, cursor: 'pointer', fontFamily: font }}>
-                <div style={{ fontSize: 22, fontWeight: 900, color: i === 0 ? '#F43F5E' : '#8B5CF6' }}>{players[i]}</div>
+              <button key={i} onClick={() => vote(i)} style={{ flex: 1, padding: '20px 0', background: i === 0 ? '#F43F5E22' : '#C85A2A22', border: `2px solid ${i === 0 ? '#F43F5E66' : '#C85A2A66'}`, borderRadius: 16, cursor: 'pointer', fontFamily: font }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: i === 0 ? '#F43F5E' : '#C85A2A' }}>{players[i]}</div>
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>{scores[i]} point{scores[i] !== 1 ? 's' : ''}</div>
               </button>
             ))}
@@ -1922,13 +1895,13 @@ function RoastBattleGame({ onClose }) {
           </div>
           <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
             {[0, 1].map(i => (
-              <div key={i} style={{ flex: 1, textAlign: 'center', background: i === 0 ? '#F43F5E18' : '#8B5CF618', border: `1.5px solid ${i === 0 ? '#F43F5E40' : '#8B5CF640'}`, borderRadius: 14, padding: '20px 0' }}>
-                <div style={{ fontSize: 36, fontWeight: 900, color: i === 0 ? '#F43F5E' : '#8B5CF6' }}>{scores[i]}</div>
+              <div key={i} style={{ flex: 1, textAlign: 'center', background: i === 0 ? '#F43F5E18' : '#C85A2A18', border: `1.5px solid ${i === 0 ? '#F43F5E40' : '#C85A2A40'}`, borderRadius: 14, padding: '20px 0' }}>
+                <div style={{ fontSize: 36, fontWeight: 900, color: i === 0 ? '#F43F5E' : '#C85A2A' }}>{scores[i]}</div>
                 <div style={{ fontSize: 14, color: '#fff', fontFamily: font, fontWeight: 700, marginTop: 4 }}>{players[i]}</div>
               </div>
             ))}
           </div>
-          <button onClick={() => { setPhase('setup'); setPlayers(['', '']); }} style={{ width: '100%', background: 'linear-gradient(135deg,#F43F5E,#8B5CF6)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>New Battle 🎤</button>
+          <button onClick={() => { setPhase('setup'); setPlayers(['', '']); }} style={{ width: '100%', background: 'linear-gradient(135deg,#F43F5E,#C85A2A)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>New Battle 🎤</button>
         </>
       )}
     </Modal>
@@ -2682,7 +2655,7 @@ function MoodMeter({ onClose, room, myName, gameState, sendAction }) {
     { mood: "😄", label: "Happy",   color: "#22C55E" },
     { mood: "😎", label: "Chill",   color: "#3B82F6" },
     { mood: "🤔", label: "Unsure",  color: "#F59E0B" },
-    { mood: "😴", label: "Sleepy",  color: "#8B5CF6" },
+    { mood: "😴", label: "Sleepy",  color: "#C85A2A" },
   ];
   const myMood = moods[myName];
   const set = (mood, lbl) => sendAction?.('set-mood', { mood, label: lbl });
@@ -2733,7 +2706,7 @@ function SecretMessages({ onClose, room, myName, players, gameState, sendAction 
         <label style={label}>Send to</label>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {["everyone", ...(players || [])].map(p => (
-            <button key={p} onClick={() => setTo(p)} style={{ padding: "5px 12px", borderRadius: 100, border: `1.5px solid ${to === p ? "#6366F1" : "rgba(255,255,255,0.12)"}`, background: to === p ? "rgba(99,102,241,0.25)" : "transparent", color: to === p ? "#fff" : "rgba(255,255,255,0.45)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+            <button key={p} onClick={() => setTo(p)} style={{ padding: "5px 12px", borderRadius: 100, border: `1.5px solid ${to === p ? "#1A7A8A" : "rgba(255,255,255,0.12)"}`, background: to === p ? "rgba(99,102,241,0.25)" : "transparent", color: to === p ? "#fff" : "rgba(255,255,255,0.45)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
               {p === "everyone" ? "🌐 Everyone" : p}
             </button>
           ))}
@@ -2741,7 +2714,7 @@ function SecretMessages({ onClose, room, myName, players, gameState, sendAction 
       </div>
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Your secret message…" style={{ ...inp, flex: 1 }} />
-        <button onClick={send} style={{ ...btn("#6366F1"), width: "auto", padding: "10px 16px" }}>Send</button>
+        <button onClick={send} style={{ ...btn("#1A7A8A"), width: "auto", padding: "10px 16px" }}>Send</button>
       </div>
       {msgs.length === 0 ? (
         <div style={{ textAlign: "center", padding: "24px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>No messages yet 🤫</div>
@@ -2802,7 +2775,7 @@ function RoomLobbyModal({ onClose, onCreate, onJoin, error }) {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const tabBtn = (id, lbl) => (
-    <button onClick={() => setTab(id)} style={{ flex: 1, padding: "9px 4px", borderRadius: 10, border: "none", background: tab === id ? "#7C3AED" : "rgba(255,255,255,0.07)", color: tab === id ? "#fff" : "rgba(255,255,255,0.5)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>{lbl}</button>
+    <button onClick={() => setTab(id)} style={{ flex: 1, padding: "9px 4px", borderRadius: 10, border: "none", background: tab === id ? "#C47A2E" : "rgba(255,255,255,0.07)", color: tab === id ? "#fff" : "rgba(255,255,255,0.5)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>{lbl}</button>
   );
   const handleCreate = async () => {
     if (!name.trim()) return;
@@ -2827,7 +2800,7 @@ function RoomLobbyModal({ onClose, onCreate, onJoin, error }) {
         <>
           <div style={{ marginBottom: 10 }}><label style={label}>Your Name</label><input value={name} onChange={e => setName(e.target.value)} placeholder="What should we call you?" style={inp} /></div>
           <div style={{ marginBottom: 16 }}><label style={label}>Party Name (optional)</label><input value={partyName} onChange={e => setPartyName(e.target.value)} placeholder="Saturday Night Out" style={inp} /></div>
-          <button onClick={handleCreate} disabled={!name.trim() || loading} style={{ ...btn("#7C3AED"), opacity: !name.trim() || loading ? 0.5 : 1 }}>{loading ? "Creating…" : "🎉 Create Room"}</button>
+          <button onClick={handleCreate} disabled={!name.trim() || loading} style={{ ...btn("#C47A2E"), opacity: !name.trim() || loading ? 0.5 : 1 }}>{loading ? "Creating…" : "🎉 Create Room"}</button>
           <p style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 10, textAlign: "center" }}>You can host up to 5 rooms per day. Share the code with friends to join.</p>
         </>
       ) : (
@@ -2850,13 +2823,13 @@ function RoomBanner({ room, players, isHost, myName, onClose, onLeave }) {
     setTimeout(() => setCopied(false), 2000);
   };
   return (
-    <div style={{ margin: "0 16px 16px", background: "rgba(124,58,237,0.12)", border: "1.5px solid rgba(124,58,237,0.35)", borderRadius: 16, padding: "14px 16px", fontFamily: font }}>
+    <div style={{ margin: "0 16px 16px", background: "rgba(196,122,46,0.12)", border: "1.5px solid rgba(196,122,46,0.35)", borderRadius: 16, padding: "14px 16px", fontFamily: font }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 2 }}>Live Room · {room.partyName}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 2 }}>Live Room · {room.partyName}</div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 20, fontWeight: 900, color: "#fff", letterSpacing: "0.12em" }}>{room.code}</span>
-            <button onClick={copyCode} style={{ background: "rgba(255,255,255,0.1)", border: "none", borderRadius: 6, padding: "4px 10px", color: copied ? "#34D399" : "#A78BFA", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+            <button onClick={copyCode} style={{ background: "rgba(255,255,255,0.1)", border: "none", borderRadius: 6, padding: "4px 10px", color: copied ? "#34D399" : "#CCAB4A", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
               {copied ? "✓ Copied" : "Copy"}
             </button>
           </div>
@@ -2869,8 +2842,8 @@ function RoomBanner({ room, players, isHost, myName, onClose, onLeave }) {
       </div>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
         {players.map(p => (
-          <div key={p} style={{ display: "flex", alignItems: "center", gap: 5, background: p === myName ? "rgba(124,58,237,0.35)" : "rgba(255,255,255,0.08)", borderRadius: 100, padding: "3px 10px 3px 4px" }}>
-            <div style={{ width: 20, height: 20, borderRadius: "50%", background: p === room.hostName ? "#FBBF24" : "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "#fff" }}>{p[0]?.toUpperCase()}</div>
+          <div key={p} style={{ display: "flex", alignItems: "center", gap: 5, background: p === myName ? "rgba(196,122,46,0.35)" : "rgba(255,255,255,0.08)", borderRadius: 100, padding: "3px 10px 3px 4px" }}>
+            <div style={{ width: 20, height: 20, borderRadius: "50%", background: p === room.hostName ? "#FBBF24" : "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "#fff" }}>{p[0]?.toUpperCase()}</div>
             <span style={{ fontSize: 12, color: "#fff", fontWeight: p === myName ? 700 : 400 }}>{p}{p === room.hostName ? " 👑" : ""}</span>
           </div>
         ))}
@@ -2887,7 +2860,7 @@ const EFFECT_CONFIGS = {
   "wish":        { emoji: "⭐", text: "Wish Added!", color: "#FCD34D" },
   "love":        { emoji: "💌", text: "Love Sent!", color: "#FDA4AF" },
   "done":        { emoji: "✅", text: "Done!", color: "#34D399" },
-  "spin":        { emoji: "🍾", text: "Spin!", color: "#A78BFA" },
+  "spin":        { emoji: "🍾", text: "Spin!", color: "#CCAB4A" },
   default:       { emoji: "🎉", text: "Let's go!", color: "#FBBF24" },
 };
 
@@ -2908,8 +2881,6 @@ function EffectFlash({ effect }) {
 
 export default function HousePartyHub() {
   const [open, setOpen]               = useState(null);
-  const [hoveredTool, setHoveredTool] = useState(null);
-  const [glare, setGlare]             = useState({});
   const [showRoomLobby, setShowRoomLobby] = useState(false);
   const navigate = useNavigate();
 
@@ -2926,22 +2897,6 @@ export default function HousePartyHub() {
       if (isHost) sendAction('next', {}).catch?.(() => {});
     }
     setOpen(id);
-  };
-
-  const handleCardMouseMove = (e, id) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setGlare(prev => ({
-      ...prev,
-      [id]: {
-        x: ((e.clientX - rect.left) / rect.width) * 100,
-        y: ((e.clientY - rect.top) / rect.height) * 100,
-      },
-    }));
-  };
-
-  const handleCardMouseLeave = (id) => {
-    setHoveredTool(null);
-    setGlare(prev => { const n = { ...prev }; delete n[id]; return n; });
   };
 
   const close = () => setOpen(null);
@@ -3019,83 +2974,45 @@ export default function HousePartyHub() {
   };
 
   return (
-    <div className="hp-aurora-bg" style={{ minHeight: "100dvh", fontFamily: font }}>
+    <div style={{ minHeight: "100dvh", fontFamily: font, background: "#0C0904" }}>
       <style>{`
-        @keyframes hp-aurora {
-          0%   { background-position: 0% 50%; }
-          50%  { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        @keyframes hp-tool-in {
-          from { opacity: 0; transform: translateY(14px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap');
-        .hp-aurora-bg {
-          background: #0C0904;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&display=swap');
         @media (max-width: 480px) {
-          .hp-hero-h1 { font-size: 2rem !important; }
-          .hp-grid    { grid-template-columns: 1fr 1fr !important; }
+          .hp-grid { grid-template-columns: 1fr 1fr !important; }
         }
         @media (prefers-reduced-motion: reduce) {
-          .hp-aurora-bg { animation: none; }
-          [data-hp-card] { transition: none !important; }
+          * { transition: none !important; }
         }
       `}</style>
 
       {/* ── Hero ── */}
-      <div style={{ position: "relative", overflow: "hidden", padding: "28px 20px 0", textAlign: "center" }}>
-        {/* Warm glow accent */}
-        <div style={{
-          position: "absolute", top: -80, right: -40,
-          width: 500, height: 280, borderRadius: "50%",
-          background: "radial-gradient(ellipse at 60% 30%, rgba(196,122,46,0.14) 0%, transparent 65%)",
-          filter: "blur(32px)",
-          pointerEvents: "none",
-        }} />
-
-        {/* back */}
+      <div style={{ padding: "28px 20px 0", textAlign: "center" }}>
         <button onClick={() => navigate(-1)} style={{
-          position: "relative",
-          background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)",
-          color: "rgba(255,255,255,0.7)", padding: "7px 16px",
+          background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
+          color: "rgba(255,255,255,0.6)", padding: "7px 16px",
           borderRadius: 100, cursor: "pointer", fontSize: 12,
           fontFamily: font, fontWeight: 600, marginBottom: 28,
-          transition: "background 0.15s",
-        }}
-        onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.12)"}
-        onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.07)"}
-        >← Back</button>
+        }}>← Back</button>
 
-        {/* eyebrow pill */}
-        <div style={{ position: "relative", marginBottom: 14 }}>
-          <span style={{
-            display: "inline-flex", alignItems: "center", gap: 7,
-            background: "rgba(196,122,46,0.12)",
-            border: "1px solid rgba(196,122,46,0.32)",
-            borderRadius: 100, padding: "5px 14px",
-          }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#C47A2E", boxShadow: "0 0 6px rgba(196,122,46,0.7)" }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", letterSpacing: "0.1em", textTransform: "uppercase" }}>Party Toolkit</span>
-          </span>
-        </div>
+        <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", letterSpacing: "0.22em", textTransform: "uppercase", margin: "0 0 14px" }}>Party Toolkit</p>
 
-        <h1 className="hp-hero-h1" style={{
-          position: "relative",
-          fontSize: "clamp(2.2rem,5vw,3rem)", fontWeight: 900,
-          color: "#fff", margin: "0 0 8px", letterSpacing: "-0.025em", lineHeight: 1.1,
+        <h1 style={{
+          fontSize: "clamp(2rem,5vw,2.7rem)", fontWeight: 700,
+          color: "#fff", margin: "0 0 10px", lineHeight: 1.1,
         }}>House Party Hub</h1>
         <p style={{
-          position: "relative",
-          fontSize: 14, color: "rgba(255,255,255,0.45)",
-          margin: "0 0 20px", lineHeight: 1.55,
+          fontSize: 14, color: "rgba(255,255,255,0.4)",
+          margin: "0 0 22px", lineHeight: 1.5, maxWidth: 320, marginLeft: "auto", marginRight: "auto",
         }}>The app everyone opens during the party</p>
 
-        {/* Room CTA */}
         {!room ? (
-          <button onClick={() => setShowRoomLobby(true)} style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 22px", borderRadius: 100, background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", border: "none", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 20px rgba(196,122,46,0.38)", marginBottom: 28 }}>
-            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "rgba(255,255,255,0.8)", flexShrink: 0 }} />
+          <button
+            onClick={() => setShowRoomLobby(true)}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 22px", borderRadius: 8, background: "transparent", border: "1px solid rgba(196,122,46,0.5)", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, marginBottom: 28, letterSpacing: "0.02em" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+          >
+            {hpic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>, 15)}
             Host or Join a Room
           </button>
         ) : (
@@ -3114,90 +3031,32 @@ export default function HousePartyHub() {
 
       {/* ── Sections ── */}
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 16px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
-        {SECTIONS.map((sec, si) => {
-          const tools = TOOLS.filter(t => t.section === sec.id);
+        {SECTIONS.map((sec) => {
+          const sectionTools = TOOLS.filter(t => t.section === sec.id);
           return (
             <div key={sec.id} style={{ marginBottom: 36 }}>
-              {/* Section header */}
-              <div style={{
-                display: "flex", alignItems: "center", gap: 10, marginBottom: 14,
-                paddingBottom: 10,
-                borderBottom: "1px solid rgba(255,255,255,0.06)",
-              }}>
-                <span style={{ color: "rgba(196,122,46,0.8)", display: "flex" }}>{SECTION_SVGS[sec.id] || SECTION_SVGS.other}</span>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", letterSpacing: "-0.01em" }}>{sec.label}</div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 1 }}>{sec.subtitle}</div>
-                </div>
+              <div style={{ marginBottom: 12 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.18em", margin: "0 0 2px" }}>{sec.label}</p>
+                <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.28)", margin: 0 }}>{sec.subtitle}</p>
               </div>
-
-              {/* Polygon web (triangle/square/pentagon/…/octagon) or plain grid for 1-2 */}
-              {tools.length >= 3 ? (
-                <PolygonGrid tools={tools} onOpen={openTool} />
-              ) : (
-                <div className="hp-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
-                  {tools.map((t, ti) => {
-                    const isHovered = hoveredTool === t.id;
-                    const g = glare[t.id];
-                    const cardBg = g
-                      ? `radial-gradient(circle at ${g.x}% ${g.y}%, ${t.color}33 0%, rgba(255,255,255,0.06) 55%), rgba(255,255,255,0.04)`
-                      : "rgba(255,255,255,0.04)";
-                    return (
-                      <div
-                        key={t.id}
-                        data-hp-card
-                        onClick={() => openTool(t.id)}
-                        onMouseEnter={() => setHoveredTool(t.id)}
-                        onMouseMove={(e) => handleCardMouseMove(e, t.id)}
-                        onMouseLeave={() => handleCardMouseLeave(t.id)}
-                        style={{
-                          background: cardBg,
-                          border: `1.5px solid ${isHovered ? t.color + "55" : "rgba(255,255,255,0.07)"}`,
-                          borderRadius: 16,
-                          padding: "18px 15px 15px",
-                          cursor: "pointer",
-                          transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s",
-                          transform: isHovered ? "translateY(-3px) scale(1.01)" : "none",
-                          boxShadow: isHovered ? `0 10px 32px ${t.color}28` : "none",
-                          animation: `hp-tool-in 0.4s ease both`,
-                          animationDelay: `${(si * tools.length + ti) * 0.04}s`,
-                          willChange: "background",
-                        }}
-                      >
-                        <div style={{ color: t.color, marginBottom: 10, lineHeight: 1 }}>{TOOL_ICONS[t.id] || hpic(<circle cx="12" cy="12" r="9"/>)}</div>
-                        <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff", marginBottom: 5, lineHeight: 1.3 }}>{t.title}</div>
-                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", lineHeight: 1.4 }}>{t.desc}</div>
-                        <div style={{ width: 20, height: 2.5, background: t.color, borderRadius: 4, marginTop: 12, opacity: isHovered ? 1 : 0.55, transition: "opacity 0.18s" }} />
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              {sectionTools.length >= 3
+                ? <PolygonGrid tools={sectionTools} onOpen={openTool} />
+                : <ToolGrid tools={sectionTools} onOpen={openTool} />
+              }
             </div>
           );
         })}
       </div>
 
       {/* Play Together CTA */}
-      <div style={{ padding: "32px 20px 48px", display: "flex", justifyContent: "center" }}>
+      <div style={{ padding: "20px 20px 52px", display: "flex", justifyContent: "center" }}>
         <button
           onClick={() => navigate("/play")}
-          style={{
-            display: "flex", alignItems: "center", gap: 12,
-            padding: "16px 32px", borderRadius: 100,
-            background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",
-            border: "none", cursor: "pointer",
-            fontFamily: font, fontSize: 16, fontWeight: 800, color: "#fff",
-            boxShadow: "0 8px 32px rgba(196,122,46,0.45)",
-            transition: "transform 0.15s, box-shadow 0.15s",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(196,122,46,0.6)"; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 8px 32px rgba(196,122,46,0.45)"; }}
+          style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "12px 28px", borderRadius: 8, background: "transparent", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.55)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "border-color 0.15s, color 0.15s" }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.4)"; e.currentTarget.style.color = "#CCAB4A"; }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = "rgba(255,255,255,0.55)"; }}
         >
-          <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
+          {hpic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>, 16)}
           Play Together
         </button>
       </div>

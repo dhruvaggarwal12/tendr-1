@@ -1579,12 +1579,13 @@ export default function VendorDashboard() {
 
   // ── Render ───────────────────────────────────────────────────────────────────
   const NAV_ITEMS = [
-    { key: 'home',      label: 'Home',                      icon: dsic(<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>) },
-    { key: 'work',      label: isArtist ? `My ${terms}` : 'My Work', icon: dsic(<><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>) },
-    { key: 'earnings',  label: 'Earnings',                  icon: dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>) },
-    { key: 'inventory', label: typeConfig.invLabel,                  icon: dsic(<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>) },
-    { key: 'profile',   label: 'My Page',                   icon: dsic(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>) },
-    { key: 'calendar',  label: 'Avail.',                    icon: dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>) },
+    { key: 'home',        label: 'Home',                      icon: dsic(<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>) },
+    { key: 'work',        label: isArtist ? `My ${terms}` : 'My Work', icon: dsic(<><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>) },
+    { key: 'earnings',    label: 'Earnings',                  icon: dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>) },
+    { key: 'performance', label: 'Stats',                     icon: dsic(<><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>) },
+    { key: 'inventory',   label: typeConfig.invLabel,         icon: dsic(<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>) },
+    { key: 'profile',     label: 'My Page',                   icon: dsic(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>) },
+    { key: 'calendar',    label: 'Avail.',                    icon: dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>) },
   ];
   const sideW = 220;
 
@@ -2413,6 +2414,166 @@ export default function VendorDashboard() {
                     </div>
                   </div>
                 )}
+              </div>
+            );
+          })()}
+
+          {/* ── PERFORMANCE STATS ── */}
+          {tab === 'performance' && (() => {
+            const totalGigs      = allGigs.length;
+            const completedGigs  = allGigs.filter(g => g.status === 'Completed').length;
+            const tendrCount     = bookings.length;
+            const outsideCount   = outsideOrders.length;
+            const avgGigValue    = outsideCount > 0 ? Math.round(outsideRevenue / outsideCount) : 0;
+            const collectionRate = outsideRevenue > 0 ? Math.round((outsideCollected / outsideRevenue) * 100) : 0;
+            const repeatClients  = clientList.filter(c => c.gigs.length > 1).length;
+            const repeatRate     = clientList.length > 0 ? Math.round((repeatClients / clientList.length) * 100) : 0;
+            const totalExpenses  = outsideOrders.reduce((s,o) => s + (o.expenses||[]).reduce((ss,e) => ss+(Number(e.amount)||0), 0), 0);
+            const netProfit      = outsideCollected - totalExpenses;
+
+            // Last 12 months across all gigs
+            const now = new Date();
+            const last12 = Array.from({length: 12}, (_, i) => {
+              const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
+              const lbl = d.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
+              const cnt = allGigs.filter(g => {
+                if (!g.eventDate) return false;
+                const gd = new Date(g.eventDate);
+                return gd.getFullYear() === d.getFullYear() && gd.getMonth() === d.getMonth();
+              }).length;
+              return { label: lbl, count: cnt };
+            });
+            const chartMax  = Math.max(...last12.map(m => m.count), 1);
+            const bestMonth = [...last12].sort((a,b) => b.count - a.count)[0];
+
+            const ink2  = '#2C1A0E';
+            const gold  = '#C47A2E';
+            const card  = { background:'#fff', border:'1px solid rgba(44,26,14,0.08)', borderRadius:12, padding:'18px 20px' };
+            const sh    = (txt) => <div style={{ fontSize:11, fontWeight:700, color:gold, textTransform:'uppercase', letterSpacing:'0.12em', marginBottom:14 }}>{txt}</div>;
+
+            return (
+              <div style={{ padding:'0 0 40px' }}>
+                <div style={{ marginBottom:22 }}>
+                  <h2 style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:'1.55rem', fontWeight:600, color:ink2, margin:'0 0 4px' }}>Performance</h2>
+                  <p style={{ fontSize:12.5, color:'#9B7450', margin:0 }}>Your business at a glance — from all gigs and client data.</p>
+                </div>
+
+                {/* KPI row */}
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(145px,1fr))', gap:11, marginBottom:14 }}>
+                  <Stat label="Total Gigs"      value={totalGigs}    sub={`${completedGigs} completed`}                                                             icon={dsic(<><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></>)}                                                                                               accent="rgba(196,122,46,0.08)" />
+                  <Stat label="Avg Gig Value"   value={avgGigValue>=1000?`₹${(avgGigValue/1000).toFixed(1)}k`:`₹${avgGigValue}`} sub="outside bookings"           icon={dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>)}                                                   accent="rgba(22,163,74,0.07)" />
+                  <Stat label="Collection Rate" value={`${collectionRate}%`} sub={`₹${(outsideRevenue-outsideCollected).toLocaleString('en-IN')} pending`}          icon={dsic(<><polyline points="20 6 9 17 4 12"/></>)}                                                                                                             accent={collectionRate>=80?'rgba(22,163,74,0.08)':'rgba(217,119,6,0.08)'} />
+                  <Stat label="Net Profit"      value={netProfit>=1000?`₹${(netProfit/1000).toFixed(1)}k`:`₹${Math.max(netProfit,0)}`} sub={`after ₹${(totalExpenses/1000).toFixed(1)}k expenses`} icon={dsic(<><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></>)}                                                                             accent="rgba(196,122,46,0.08)" />
+                  <Stat label="Repeat Clients"  value={`${repeatRate}%`}    sub={`${repeatClients} of ${clientList.length} clients`}                                icon={dsic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>)} accent="rgba(124,58,237,0.07)" />
+                </div>
+
+                {/* Sources + Event types */}
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:11, marginBottom:11 }}>
+                  <div style={card}>
+                    {sh('Booking Sources')}
+                    {[
+                      { label:'Via Tendr', count:tendrCount, color:gold },
+                      { label:'Outside',   count:outsideCount, color:'#7C3AED' },
+                    ].map(({ label, count, color }) => (
+                      <div key={label} style={{ marginBottom:14 }}>
+                        <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+                          <span style={{ fontSize:12, fontWeight:600, color:ink2 }}>{label}</span>
+                          <span style={{ fontSize:12, fontWeight:700, color:ink2 }}>{count} gig{count!==1?'s':''}</span>
+                        </div>
+                        <div style={{ height:6, background:'rgba(44,26,14,0.07)', borderRadius:100, overflow:'hidden' }}>
+                          <div style={{ height:'100%', width:totalGigs>0?`${(count/totalGigs)*100}%`:'0%', background:color, borderRadius:100, transition:'width 0.5s ease' }} />
+                        </div>
+                      </div>
+                    ))}
+                    {totalGigs===0 && <p style={{ fontSize:12, color:'#9B7450', marginTop:4 }}>No gigs recorded yet.</p>}
+                  </div>
+
+                  <div style={card}>
+                    {sh('Event Types')}
+                    {topEventTypes.length===0
+                      ? <p style={{ fontSize:12, color:'#9B7450', margin:0 }}>No outside orders yet.</p>
+                      : <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                          {topEventTypes.map(([type, count]) => (
+                            <div key={type}>
+                              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+                                <span style={{ fontSize:12, fontWeight:500, color:ink2 }}>{type}</span>
+                                <span style={{ fontSize:11, fontWeight:700, color:'#9B7450' }}>{count} · {evtTypeTotal>0?Math.round((count/evtTypeTotal)*100):0}%</span>
+                              </div>
+                              <div style={{ height:5, background:'rgba(44,26,14,0.07)', borderRadius:100, overflow:'hidden' }}>
+                                <div style={{ height:'100%', width:evtTypeTotal>0?`${(count/evtTypeTotal)*100}%`:'0%', background:gold, borderRadius:100 }} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                    }
+                  </div>
+                </div>
+
+                {/* Monthly bar chart */}
+                <div style={{ ...card, marginBottom:11 }}>
+                  {sh('Monthly Activity — Last 12 Months')}
+                  {bestMonth&&bestMonth.count>0&&(
+                    <p style={{ fontSize:11.5, color:'#9B7450', margin:'0 0 14px' }}>
+                      Best month: <strong style={{ color:ink2 }}>{bestMonth.label}</strong> ({bestMonth.count} gig{bestMonth.count!==1?'s':''})
+                    </p>
+                  )}
+                  {totalGigs===0
+                    ? <p style={{ fontSize:12, color:'#9B7450', margin:0 }}>No gig data yet.</p>
+                    : <div style={{ display:'flex', alignItems:'flex-end', gap:5, height:88 }}>
+                        {last12.map((m,i) => (
+                          <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', height:'100%', justifyContent:'flex-end' }}>
+                            <div
+                              title={`${m.label}: ${m.count} gig${m.count!==1?'s':''}`}
+                              style={{ width:'100%', minHeight:m.count>0?4:2, height:`${m.count>0?Math.max((m.count/chartMax)*100,6):2}%`, background:m.count>0?gold:'rgba(44,26,14,0.07)', borderRadius:'3px 3px 0 0', transition:'height 0.4s ease' }}
+                            />
+                            <span style={{ fontSize:8.5, color:'#9B7450', whiteSpace:'nowrap', display:'block', marginTop:5, transform:'rotate(-40deg)', transformOrigin:'top center' }}>{m.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                  }
+                </div>
+
+                {/* Top clients */}
+                {clientList.length>0 && (
+                  <div style={{ ...card, marginBottom:11 }}>
+                    {sh('Top Clients')}
+                    {clientList.slice(0,5).map((c,i) => (
+                      <div key={i} style={{ display:'flex', alignItems:'center', gap:11, padding:'11px 0', borderBottom:i<Math.min(clientList.length,5)-1?'1px solid rgba(44,26,14,0.06)':'none' }}>
+                        <div style={{ width:32, height:32, borderRadius:'50%', background:`rgba(196,122,46,${0.12+i*0.04})`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                          <span style={{ fontSize:12, fontWeight:700, color:gold }}>{(c.clientName||'?').charAt(0).toUpperCase()}</span>
+                        </div>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontSize:13, fontWeight:600, color:ink2, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{c.clientName||'Unknown'}</div>
+                          <div style={{ fontSize:11, color:'#9B7450' }}>{c.gigs.length} gig{c.gigs.length!==1?'s':''} · {c.lastEventType||'—'}</div>
+                        </div>
+                        <div style={{ textAlign:'right', flexShrink:0 }}>
+                          <div style={{ fontSize:13, fontWeight:700, color:ink2 }}>₹{c.totalSpent.toLocaleString('en-IN')}</div>
+                          <div style={{ fontSize:10, fontWeight:600, color:c.totalPaid===c.totalSpent?'#16A34A':'#D97706' }}>
+                            {c.totalPaid===c.totalSpent?'Fully paid':`₹${c.totalPaid.toLocaleString('en-IN')} paid`}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Placeholder cards for backend-needed metrics */}
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:11 }}>
+                  {[
+                    { label:'Profile Views',       icon:dsic(<><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>),            desc:'How many people viewed your Tendr profile' },
+                    { label:'Enquiries Received',  icon:dsic(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>),                       desc:'Total leads from your Tendr listing' },
+                  ].map(({ label, icon, desc }) => (
+                    <div key={label} style={{ ...card, opacity:0.6 }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
+                        <div style={{ width:28, height:28, borderRadius:7, background:'rgba(44,26,14,0.06)', display:'flex', alignItems:'center', justifyContent:'center' }}>{icon}</div>
+                        <span style={{ fontSize:11, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.1em' }}>{label}</span>
+                      </div>
+                      <div style={{ fontSize:22, fontWeight:800, color:'rgba(44,26,14,0.2)', marginBottom:4 }}>—</div>
+                      <div style={{ fontSize:11, color:'#9B7450' }}>{desc}</div>
+                      <div style={{ marginTop:8, fontSize:10, fontWeight:700, color:gold, background:'rgba(196,122,46,0.08)', borderRadius:5, padding:'3px 8px', display:'inline-block' }}>Coming soon</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             );
           })()}
