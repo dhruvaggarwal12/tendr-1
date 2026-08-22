@@ -2496,21 +2496,26 @@ export default function VendorDashboard() {
                     { label:'Listed on Tendr', included:true },
                     { label:'Public profile page', included:true },
                     { label:'Customer enquiries via chat', included:true },
-                    { label:'Full booking dashboard', included:isPro, lockMsg:'₹399/mo' },
-                    { label:'Invoice & quote generation', included:isPro, lockMsg:'₹399/mo' },
-                    { label:'Earnings & P&L tracking', included:isPro, lockMsg:'₹399/mo' },
-                    { label:'Equipment / inventory tracker', included:isPro, lockMsg:'₹399/mo' },
-                    { label:'Promoted placement on search', included:isPro, lockMsg:'₹399/mo' },
+                    { label:'All bookings in one place — Tendr + outside', included:isPro, lockMsg:'₹399/mo' },
+                    { label:'Invoice & quote PDF generation', included:isPro, lockMsg:'₹399/mo' },
+                    { label:'Profit per booking & P&L tracking', included:isPro, lockMsg:'₹399/mo' },
+                    { label:`${isArtist?'Equipment':'Inventory'} tracker`, included:isPro, lockMsg:'₹399/mo' },
+                    { label:'Promoted placement in search', included:isPro, lockMsg:'₹399/mo' },
                   ];
                   return (
                     <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:`1.5px solid ${isPro?'rgba(22,163,74,0.2)':'rgba(196,122,46,0.18)'}`, marginBottom:20 }}>
                       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:12 }}>
                         <div>
                           <div style={{ fontSize:14, fontWeight:800, color:ink }}>My Plan</div>
-                          <div style={{ fontSize:11, color:'#9B7450', marginTop:1 }}>Current subscription</div>
+                          <div style={{ fontSize:11, color:'#9B7450', marginTop:1 }}>Tendr Business Dashboard</div>
                         </div>
                         <span style={{ padding:'4px 13px', borderRadius:100, background:isPro?'rgba(22,163,74,0.1)':'rgba(196,122,46,0.1)', color:isPro?'#16A34A':gold, fontSize:12, fontWeight:700 }}>{isPro ? 'Pro ✓' : 'Free'}</span>
                       </div>
+                      {!isPro && (
+                        <div style={{ fontSize:12, color:'#6B3A1F', lineHeight:1.55, marginBottom:14, padding:'10px 12px', background:'rgba(196,122,46,0.05)', borderRadius:9, border:'1px solid rgba(196,122,46,0.12)' }}>
+                          Whether the booking comes from Tendr, WhatsApp, Instagram or a referral — run your entire event business from one place.
+                        </div>
+                      )}
                       <div style={{ display:'flex', flexDirection:'column', gap:7, marginBottom:isPro?0:14 }}>
                         {FREE_FEATURES.map(f => (
                           <div key={f.label} style={{ display:'flex', alignItems:'center', gap:8 }}>
@@ -2527,7 +2532,7 @@ export default function VendorDashboard() {
                       </div>
                       {!isPro && (
                         <button style={{ marginTop:2, width:'100%', padding:'12px', borderRadius:11, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:14, fontWeight:800, cursor:'pointer', boxShadow:'0 3px 14px rgba(196,122,46,0.3)' }}>
-                          Upgrade to Pro — ₹399/month
+                          Run your event business on Tendr — ₹399/mo
                         </button>
                       )}
                       {!isPro && <div style={{ textAlign:'center', fontSize:11, color:'#9B7450', marginTop:6 }}>Cancel anytime · No hidden fees · Instant activation</div>}
