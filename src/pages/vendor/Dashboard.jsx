@@ -868,7 +868,7 @@ function BookingCard({ b }) {
 }
 
 // ── Outside order card ─────────────────────────────────────────────────────────
-function OutsideOrderCard({ order, onEdit, onDelete, onStatus, onRequestPayment, vendorName }) {
+function OutsideOrderCard({ order, onEdit, onDelete, onStatus, onRequestPayment, vendorName, profileUrl }) {
   const sc = STATUS_COLOR[order.status] || STATUS_COLOR.Pending;
   const [menuOpen, setMenuOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -958,6 +958,14 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus, onRequestPayment,
                       </button>
                     ) : null;
                   })()}
+                  {order.status === 'Completed' && order.clientPhone && profileUrl && (
+                    <a href={`https://wa.me/91${order.clientPhone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hi ${order.clientName||'there'}, thank you for having me at your ${order.eventType||'event'}! 🎉 If you enjoyed the experience, a quick review on my Tendr profile would mean a lot 🙏\n\n${profileUrl}`)}`}
+                      target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}
+                      style={{ width:'100%', padding:'8px 16px', border:'none', background:'none', textAlign:'left', fontSize:13, fontWeight:600, color:'#128C7E', cursor:'pointer', display:'flex', alignItems:'center', gap:6, textDecoration:'none' }}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      Request Review
+                    </a>
+                  )}
                   <button onClick={() => { onDelete(order._id); setMenuOpen(false); }}
                     style={{ width: '100%', padding: '8px 16px', border: 'none', background: 'none', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#DC2626', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Delete</button>
                 </div>
@@ -972,6 +980,16 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus, onRequestPayment,
             style={{ marginTop: 10, width: '100%', padding: '6px', borderRadius: 8, border: '1px dashed rgba(196,122,46,0.25)', background: 'transparent', color: '#9B7450', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: font, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
             {expanded ? '▲ Hide details' : `▼ Show ${milestones.length > 0 ? `${milestones.length} payment${milestones.length > 1 ? 's' : ''}` : ''}${milestones.length > 0 && expenses.length > 0 ? ' · ' : ''}${expenses.length > 0 ? `${expenses.length} expense${expenses.length > 1 ? 's' : ''}` : ''}`}
           </button>
+        )}
+
+        {/* Request Review — shown only for completed orders with a phone number */}
+        {order.status === 'Completed' && order.clientPhone && profileUrl && (
+          <a href={`https://wa.me/91${order.clientPhone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hi ${order.clientName||'there'}, thank you for having me at your ${order.eventType||'event'}! 🎉 If you enjoyed the experience, a quick review on my Tendr profile would mean a lot to me 🙏\n\n${profileUrl}`)}`}
+            target="_blank" rel="noopener noreferrer"
+            style={{ marginTop:10, display:'flex', alignItems:'center', justifyContent:'center', gap:6, padding:'9px', borderRadius:9, background:'rgba(37,211,102,0.07)', border:'1.5px solid rgba(37,211,102,0.22)', color:'#128C7E', fontSize:12.5, fontWeight:700, textDecoration:'none', fontFamily:font }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Request a Review via WhatsApp
+          </a>
         )}
       </div>
 
@@ -2040,7 +2058,7 @@ export default function VendorDashboard() {
                     <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
                       {visibleOutside.map(o => (
                         <div key={o._id} style={{ outline:gigConflicts.has(o._id)?'2px solid #DC2626':'none', borderRadius:14 }}>
-                          <OutsideOrderCard order={o} onEdit={setModal} onDelete={deleteOrder} onStatus={setOrderStatus} onRequestPayment={setPayReqModal} vendorName={vendorName} />
+                          <OutsideOrderCard order={o} onEdit={setModal} onDelete={deleteOrder} onStatus={setOrderStatus} onRequestPayment={setPayReqModal} vendorName={vendorName} profileUrl={`${window.location.origin}/vendor/${vendorId}`} />
                         </div>
                       ))}
                     </div>
