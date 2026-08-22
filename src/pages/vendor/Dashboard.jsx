@@ -1501,6 +1501,21 @@ export default function VendorDashboard() {
   });
   const heatMax = Math.max(...heatMap.map(m=>m.count), 1);
 
+  // Client history — derived from outside orders, grouped by phone
+  const clientMap = {};
+  outsideOrders.forEach(o => {
+    const key = (o.clientPhone||'').replace(/\D/g,'') || (o.clientName||'').toLowerCase().trim() || 'unknown';
+    if (!clientMap[key]) clientMap[key] = { clientName:o.clientName, clientPhone:o.clientPhone, gigs:[], totalSpent:0, totalPaid:0, lastEventDate:null, lastEventType:'' };
+    clientMap[key].gigs.push(o);
+    clientMap[key].totalSpent += (o.amount||0);
+    clientMap[key].totalPaid  += (o.paidAmount||0);
+    if (o.eventDate && (!clientMap[key].lastEventDate || o.eventDate > clientMap[key].lastEventDate)) {
+      clientMap[key].lastEventDate = o.eventDate;
+      clientMap[key].lastEventType = o.eventType;
+    }
+  });
+  const clientList = Object.values(clientMap).sort((a,b) => b.totalSpent - a.totalSpent);
+
   // CSV export
   const exportCSV = () => {
     const headers = ['Client Name', 'Phone', 'Email', 'Event Type', 'Event Date', 'Total (₹)', 'Paid (₹)', 'Payment Status', 'Booking Status', 'Source', 'Notes', 'Created At'];
@@ -1859,6 +1874,7 @@ export default function VendorDashboard() {
                   ['outside',`Outside`,outsideCount>0?outsideCount:''],
                   ['calendar','Calendar',''],
                   ['quotes','Quotes',quotes.length>0?quotes.length:''],
+                  ['clients','Clients',clientList.length>0?clientList.length:''],
                 ].map(([key,label,badge]) => (
                   <button key={key} onClick={() => { setWorkSubTab(key); setOSearch(''); setOFilter('all'); }}
                     style={{ padding:'8px 16px', border:'none', background:'transparent', fontFamily:font, fontSize:13, fontWeight:workSubTab===key?700:500, color:workSubTab===key?gold:'#9B7450', cursor:'pointer', borderBottom:workSubTab===key?`2.5px solid ${gold}`:'2.5px solid transparent', marginBottom:-2, transition:'all 0.15s', display:'flex', alignItems:'center', gap:5, whiteSpace:'nowrap', flexShrink:0 }}>
@@ -2020,6 +2036,17 @@ export default function VendorDashboard() {
                                 style={{ padding:'5px 12px', borderRadius:8, border:'1.5px solid rgba(196,122,46,0.2)', background:'transparent', color:'#9B7450', fontFamily:font, fontSize:12, fontWeight:600, cursor:'pointer' }}>
                                 Edit
                               </button>
+                              {q.status !== 'Declined' && (
+                                <button onClick={() => {
+                                  const sub = (q.items||[]).reduce((s,i) => s+(Number(i.qty)||1)*(Number(i.rate)||0), 0);
+                                  const total = sub - (Number(q.discount)||0);
+                                  setWorkSubTab('outside');
+                                  setModal({ clientName:q.clientName||'', clientPhone:q.clientPhone||'', eventType:q.eventType||'', eventDate:q.eventDate||'', amount:total, paidAmount:'', notes:q.notes||'', source:'Quote', status:'Confirmed' });
+                                }}
+                                  style={{ padding:'5px 12px', borderRadius:8, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:12, fontWeight:700, cursor:'pointer' }}>
+                                  Convert to Booking
+                                </button>
+                              )}
                               <button onClick={() => { if (window.confirm('Delete this quote?')) deleteQuote(q.id); }}
                                 style={{ padding:'5px 10px', borderRadius:8, border:'1.5px solid rgba(220,38,38,0.2)', background:'transparent', color:'#DC2626', fontFamily:font, fontSize:12, fontWeight:600, cursor:'pointer' }}>
                                 ×
@@ -2116,6 +2143,118 @@ export default function VendorDashboard() {
                   )}
                 </div>
               )}
+              {/* ── CLIENTS VIEW ── */}
+              {workSubTab === 'clients' && (
+                <div>
+                  {clientList.length === 0 ? (
+                    <div style={{ background:'#fff', borderRadius:18, padding:'48px 24px', textAlign:'center', border:'1.5px dashed rgba(196,122,46,0.18)' }}>
+                      <div style={{ fontSize:40, marginBottom:12 }}>👥</div>
+                      <div style={{ fontSize:15, fontWeight:700, color:ink, marginBottom:8 }}>No clients yet</div>
+                      <div style={{ fontSize:13, color:'#9B7450', maxWidth:300, margin:'0 auto 18px' }}>Log outside bookings and your client history will build up automatically.</div>
+                      <button onClick={() => { setWorkSubTab('outside'); setModal('add'); }}
+                        style={{ padding:'11px 24px', borderRadius:10, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:13.5, fontWeight:700, cursor:'pointer' }}>
+                        + Log First {term}
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                      {/* Summary strip */}
+                      <div style={{ display:'flex', gap:16, padding:'14px 18px', borderRadius:14, background:'#fff', border:'1px solid rgba(196,122,46,0.1)', flexWrap:'wrap', marginBottom:4 }}>
+                        <div><div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em' }}>Clients</div><div style={{ fontSize:18, fontWeight:800, color:ink }}>{clientList.length}</div></div>
+                        <div><div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em' }}>Total Revenue</div><div style={{ fontSize:18, fontWeight:800, color:ink }}>₹{clientList.reduce((s,c)=>s+c.totalSpent,0).toLocaleString('en-IN')}</div></div>
+                        <div><div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em' }}>Repeat Clients</div><div style={{ fontSize:18, fontWeight:800, color:gold }}>{clientList.filter(c=>c.gigs.length>1).length}</div></div>
+                      </div>
+
+                      {clientList.map((c, i) => {
+                        const due = c.totalSpent - c.totalPaid;
+                        const phoneDigits = (c.clientPhone||'').replace(/\D/g,'');
+                        return (
+                          <div key={i} style={{ background:'#fff', borderRadius:14, padding:'14px 16px', border:'1px solid rgba(196,122,46,0.12)' }}>
+                            <div style={{ display:'flex', alignItems:'flex-start', gap:12 }}>
+                              {/* Avatar */}
+                              <div style={{ width:44, height:44, borderRadius:12, background:`linear-gradient(135deg,rgba(196,122,46,0.12),rgba(196,122,46,0.06))`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, border:`1.5px solid rgba(196,122,46,0.15)` }}>
+                                <span style={{ fontSize:18, fontWeight:800, color:gold }}>{(c.clientName||'?').charAt(0).toUpperCase()}</span>
+                              </div>
+
+                              {/* Info */}
+                              <div style={{ flex:1, minWidth:0 }}>
+                                <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+                                  <span style={{ fontSize:14, fontWeight:800, color:ink }}>{c.clientName}</span>
+                                  {c.gigs.length > 1 && (
+                                    <span style={{ fontSize:9.5, fontWeight:700, background:'rgba(196,122,46,0.1)', color:gold, borderRadius:100, padding:'2px 7px' }}>
+                                      {c.gigs.length}× repeat
+                                    </span>
+                                  )}
+                                </div>
+                                {c.clientPhone && (
+                                  <div style={{ fontSize:12, color:'#9B7450', marginTop:2 }}>{c.clientPhone}</div>
+                                )}
+                                <div style={{ display:'flex', gap:12, marginTop:6, flexWrap:'wrap' }}>
+                                  <div>
+                                    <div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.07em' }}>{c.gigs.length} {c.gigs.length===1?term:terms}</div>
+                                    <div style={{ fontSize:14, fontWeight:800, color:ink }}>₹{c.totalSpent.toLocaleString('en-IN')}</div>
+                                  </div>
+                                  {due > 0 && (
+                                    <div>
+                                      <div style={{ fontSize:10, fontWeight:700, color:'#D97706', textTransform:'uppercase', letterSpacing:'0.07em' }}>Pending</div>
+                                      <div style={{ fontSize:14, fontWeight:800, color:'#D97706' }}>₹{due.toLocaleString('en-IN')}</div>
+                                    </div>
+                                  )}
+                                  {c.lastEventDate && (
+                                    <div>
+                                      <div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.07em' }}>Last Event</div>
+                                      <div style={{ fontSize:12, fontWeight:600, color:ink }}>{c.lastEventType||'Event'} · {new Date(c.lastEventDate).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Action row */}
+                            {phoneDigits && (
+                              <div style={{ display:'flex', gap:6, marginTop:12 }}>
+                                <a href={`tel:${c.clientPhone}`}
+                                  style={{ flex:1, padding:'7px', borderRadius:9, border:'1.5px solid rgba(196,122,46,0.2)', background:'transparent', color:'#9B7450', fontFamily:font, fontSize:12, fontWeight:700, textDecoration:'none', textAlign:'center' }}>
+                                  📞 Call
+                                </a>
+                                <a href={`https://wa.me/91${phoneDigits}`} target="_blank" rel="noopener noreferrer"
+                                  style={{ flex:1, padding:'7px', borderRadius:9, border:'none', background:'#25D366', color:'#fff', fontFamily:font, fontSize:12, fontWeight:700, textDecoration:'none', textAlign:'center' }}>
+                                  WhatsApp
+                                </a>
+                                {due > 0 && (
+                                  <a href={`https://wa.me/91${phoneDigits}?text=${encodeURIComponent(`Hi ${c.clientName}, just a gentle reminder — ₹${due.toLocaleString('en-IN')} is pending from your last event. Please let me know when it's convenient. 🙏 — ${vendorName}`)}`}
+                                    target="_blank" rel="noopener noreferrer"
+                                    style={{ flex:1.5, padding:'7px', borderRadius:9, border:'none', background:'rgba(217,119,6,0.1)', color:'#D97706', fontFamily:font, fontSize:12, fontWeight:700, textDecoration:'none', textAlign:'center' }}>
+                                    Remind Payment
+                                  </a>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Gig history */}
+                            <div style={{ marginTop:10, borderTop:'1px solid rgba(196,122,46,0.08)', paddingTop:10, display:'flex', flexDirection:'column', gap:4 }}>
+                              {c.gigs.slice(0,3).map((g,gi) => (
+                                <div key={g._id||gi} style={{ display:'flex', alignItems:'center', gap:8 }}>
+                                  <div style={{ width:6, height:6, borderRadius:'50%', background:g.status==='Completed'?'#16A34A':g.status==='Cancelled'?'#DC2626':'#D97706', flexShrink:0 }} />
+                                  <div style={{ flex:1, fontSize:11.5, color:'#9B7450' }}>
+                                    {[g.eventType, g.eventDate&&new Date(g.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})].filter(Boolean).join(' · ')}
+                                  </div>
+                                  <div style={{ fontSize:11.5, fontWeight:700, color:ink }}>₹{(g.amount||0).toLocaleString('en-IN')}</div>
+                                  <button onClick={() => setModal(g)} style={{ fontSize:10.5, fontWeight:600, color:gold, background:'none', border:'none', cursor:'pointer', fontFamily:font, padding:0 }}>View →</button>
+                                </div>
+                              ))}
+                              {c.gigs.length > 3 && (
+                                <div style={{ fontSize:11, color:'#9B7450', paddingLeft:14 }}>+{c.gigs.length-3} more {c.gigs.length-3===1?term:terms}</div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
             </div>
           )}
 
