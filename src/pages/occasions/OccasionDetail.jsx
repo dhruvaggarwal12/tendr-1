@@ -66,6 +66,366 @@ const CATERING_STYLES = [
 
 const CAKE_OPTS = ["Single Tier","Multi-Tier","Cupcake Tower","Jar Cakes","Themed Cake","No Cake","Custom"];
 
+/* ── cuisine / menu builder data ── */
+const CUISINES = [
+  { id:"north-indian",  label:"North Indian",   icon:"🍛" },
+  { id:"south-indian",  label:"South Indian",   icon:"🍚" },
+  { id:"chinese",       label:"Chinese",        icon:"🥢" },
+  { id:"continental",   label:"Continental",    icon:"🥗" },
+  { id:"mughlai",       label:"Mughlai",        icon:"🍖" },
+  { id:"street-food",   label:"Street Food",    icon:"🌮" },
+  { id:"mixed",         label:"Mix of Everything", icon:"🎉" },
+  { id:"desserts-only", label:"Desserts Only",  icon:"🍰" },
+];
+
+const MENU_ITEMS = {
+  "north-indian":  { Starters:["Paneer Tikka","Hara Bhara Kabab","Aloo Tikki","Dahi Puri","Samosa","Chicken Tikka","Seekh Kabab","Veg Spring Rolls"], Mains:["Dal Makhani","Paneer Butter Masala","Chole","Rajma","Aloo Gobi","Butter Chicken","Mutton Curry","Fish Curry","Mix Veg"], Breads:["Tandoori Roti","Butter Naan","Garlic Naan","Paratha","Kulcha","Puri"], Rice:["Steamed Rice","Jeera Rice","Veg Biryani","Chicken Biryani","Mutton Biryani","Pulao"], Desserts:["Gulab Jamun","Kheer","Gajar Ka Halwa","Ras Malai","Kulfi","Ice Cream","Jalebi","Ladoo"], Beverages:["Lassi (sweet)","Lassi (salted)","Chaas","Nimbu Pani","Rose Sharbat","Mango Panna"] },
+  "south-indian":  { Starters:["Masala Dosa","Vada","Idli","Uttapam","Mysore Bonda","Medu Vada"], Mains:["Sambar","Rasam","Avial","Kootu","Chettinad Chicken","Fish Curry (Malabar)","Egg Curry"], Breads:["Appam","Idiappam","Poori","Parotta"], Rice:["Plain Rice","Lemon Rice","Tamarind Rice","Coconut Rice","Curd Rice","Biryani (Hyderabadi)"], Desserts:["Payasam","Mysore Pak","Sweet Pongal","Banana Halwa","Paal Paniyaram"], Beverages:["Filter Coffee","Tender Coconut","Buttermilk","Panakam"] },
+  "chinese":       { Starters:["Veg Manchurian","Chicken Manchurian","Chilli Paneer","Chilli Chicken","Crispy Corn","Spring Rolls","Veg Momos","Chicken Momos"], Mains:["Veg Hakka Noodles","Chicken Hakka Noodles","Schezwan Noodles","Kung Pao Chicken","Sweet & Sour Veg","Fried Rice"], Breads:["Garlic Bread","Steamed Buns"], Rice:["Veg Fried Rice","Egg Fried Rice","Chicken Fried Rice","Schezwan Fried Rice"], Desserts:["Banana Fritters","Honey Noodles","Date Pancake","Ice Cream"], Beverages:["Lychee Mocktail","Green Tea","Lemonade","Virgin Mojito"] },
+  "continental":   { Starters:["Bruschetta","Cream of Mushroom Soup","Garden Salad","Caesar Salad","Stuffed Mushrooms","Garlic Bread"], Mains:["Pasta Arrabiata","Pasta Alfredo","Grilled Chicken","Grilled Fish","Pizza (assorted)","Baked Vegetables"], Breads:["Dinner Rolls","Garlic Bread","Focaccia","Ciabatta"], Rice:["Herb Rice","Spanish Rice","Risotto"], Desserts:["Chocolate Mousse","Tiramisu","Cheesecake","Panna Cotta","Brownie with Ice Cream"], Beverages:["Lemonade","Iced Tea","Virgin Sangria","Mocktail of the Day"] },
+  "mughlai":       { Starters:["Galouti Kabab","Kakori Kabab","Chicken Seekh","Boti Kabab","Shami Kabab","Malai Tikka"], Mains:["Mutton Rogan Josh","Chicken Korma","Nihari","Keema Matar","Paneer Shahi Kofta","Dal Bukhara"], Breads:["Sheermal","Warqi Paratha","Rumali Roti","Naan","Tandoori Roti"], Rice:["Mutton Biryani","Chicken Biryani","Zafrani Pulao","Yakhni Pulao"], Desserts:["Shahi Tukda","Phirni","Sewai Kheer","Halwa"], Beverages:["Rose Sharbat","Thandai","Kesar Milk","Kala Khatta"] },
+  "street-food":   { Starters:["Pani Puri","Dahi Puri","Bhel Puri","Sev Puri","Aloo Tikki Chaat","Raj Kachori"], Mains:["Pav Bhaji","Chole Bhature","Frankie / Kathi Roll","Vada Pav","Corn Chaat","Dahi Vada"], Breads:["Pav","Kulcha","Rumali Roti"], Rice:["Masala Khichdi","Veg Pulao"], Desserts:["Kulfi on Stick","Jalebi","Rabri","Malpua","Meetha Pani with Gol Gappe"], Beverages:["Aam Panna","Jaljeera","Sugarcane Juice","Nimbu Soda","Lassi"] },
+  "mixed":         { Starters:["Paneer Tikka","Chicken Tikka","Spring Rolls","Bruschetta","Dahi Puri","Momos"], Mains:["Dal Makhani","Butter Chicken","Pasta","Stir Fry Veg","Chole","Fish Curry"], Breads:["Naan","Garlic Bread","Roti","Paratha"], Rice:["Jeera Rice","Veg Biryani","Chicken Biryani","Fried Rice"], Desserts:["Gulab Jamun","Ice Cream","Brownie","Kheer","Cake Slices"], Beverages:["Lemonade","Lassi","Iced Tea","Nimbu Pani"] },
+  "desserts-only": { Starters:[], Mains:[], Breads:[], Rice:[], Desserts:["Gulab Jamun","Jalebi","Kheer","Ras Malai","Gajar Ka Halwa","Brownie","Tiramisu","Cheesecake","Kulfi","Ice Cream (3 flavours)","Malpua","Rabri","Chocolate Fondue","Cake Pops","Mini Cupcakes"], Beverages:["Hot Chocolate","Milkshakes (3 flavours)","Rose Milk","Cold Coffee"] },
+};
+const MENU_CATEGORIES = ["Starters","Mains","Breads","Rice","Desserts","Beverages"];
+
+/* ── bookable entertainment master list (6 categories) ── */
+const ALL_ACTIVITIES = {
+  anchors: [
+    { id:"anchor-bilingual",  name:"Bilingual Anchor",         icon:"🎙️", desc:"Hindi + English MC who keeps the energy high all evening — introductions, transitions, crowd work",  price:"₹6K–15K",  tags:["adult","all"], occasions:["birthday-party","anniversary","get-together","office-party","naming-ceremony","housewarming","first-birthday"] },
+    { id:"anchor-corporate",  name:"Corporate Emcee",          icon:"🏆", desc:"Professional anchor for awards nights, annual parties, product launches — polished and on-brand",     price:"₹12K–28K", tags:["adult"],       occasions:["office-party"] },
+    { id:"anchor-kids",       name:"Kids' Party Host",         icon:"🎉", desc:"High-energy host who manages games, leads activities, and keeps little ones fully entertained",        price:"₹5K–12K",  tags:["kids"],        occasions:["birthday-party","first-birthday","baby-shower","gender-reveal"] },
+    { id:"anchor-celeb",      name:"Celebrity Anchor",         icon:"⭐", desc:"TV/YouTube personality as your event host — wow factor for milestone birthdays and big celebrations", price:"₹30K–80K", tags:["adult"],       occasions:["birthday-party","anniversary","office-party"] },
+  ],
+  bands: [
+    { id:"band-bollywood",    name:"Bollywood Live Band",      icon:"🎺", desc:"3–6 piece band playing Hindi film hits all evening — classic songs + latest chartbusters",           price:"₹15K–40K", tags:["adult","all"], occasions:["birthday-party","anniversary","get-together","housewarming","office-party"] },
+    { id:"band-sufi",         name:"Sufi / Ghazal Ensemble",  icon:"🪘", desc:"Soulful sufi qawwali or ghazal set — perfect for anniversaries and intimate celebrations",            price:"₹12K–30K", tags:["adult"],       occasions:["anniversary","housewarming","get-together","naming-ceremony"] },
+    { id:"band-jazz",         name:"Jazz / Lounge Band",       icon:"🎷", desc:"Smooth jazz or lounge music for sophisticated events — dinner background or full set",                price:"₹12K–28K", tags:["adult"],       occasions:["anniversary","office-party","get-together"] },
+    { id:"band-folk",         name:"Folk / Bhangra Troupe",   icon:"🥁", desc:"High-energy folk music and dance — bhangra, giddha, rajasthani folk — non-stop energy on the floor", price:"₹15K–35K", tags:["adult","all"], occasions:["birthday-party","housewarming","get-together","naming-ceremony"] },
+    { id:"band-rock",         name:"Rock / Pop Cover Band",   icon:"🎸", desc:"Covers of popular English and Hindi rock/pop hits — great for corporate parties and young crowds",    price:"₹18K–45K", tags:["adult"],       occasions:["birthday-party","office-party","get-together"] },
+    { id:"band-classical",    name:"Classical Instrumental",  icon:"🎻", desc:"Sitar, tabla, flute or violin ensemble — elegant background music for formal celebrations",            price:"₹10K–22K", tags:["adult"],       occasions:["anniversary","housewarming","naming-ceremony"] },
+  ],
+  stalls: [
+    { id:"chaat-stall",       name:"Chaat Stall",              icon:"🌮", desc:"Live pani puri, bhel & dahi puri counter — always the longest queue at any event",                   price:"₹4K–8K",   tags:["food","all"],  occasions:["birthday-party","get-together","housewarming","office-party","anniversary","naming-ceremony"] },
+    { id:"mocktail-bar",      name:"Mocktail Bar",             icon:"🍹", desc:"Live mixologist making fresh mocktails, lemonades and shakes",                                       price:"₹5K–10K",  tags:["food","adult"],occasions:["birthday-party","anniversary","get-together","office-party","housewarming"] },
+    { id:"ice-cream-cart",    name:"Ice Cream / Kulfi Cart",   icon:"🍦", desc:"Scoops, sundaes and kulfi on a vintage-styled cart — guests love it",                               price:"₹4K–8K",   tags:["food","kids"], occasions:["birthday-party","first-birthday","baby-shower","get-together","anniversary"] },
+    { id:"candy-floss",       name:"Candy Floss Cart",         icon:"🍭", desc:"Pink & blue spun sugar — kids go absolutely wild, parents love the photos",                          price:"₹3K–6K",   tags:["food","kids"], occasions:["birthday-party","first-birthday","gender-reveal","baby-shower"] },
+    { id:"chocolate-fountain",name:"Chocolate Fountain",       icon:"🍫", desc:"Flowing melted chocolate for dipping fruits, marshmallows and cookies",                             price:"₹4K–8K",   tags:["food","sweet"],occasions:["birthday-party","anniversary","baby-shower","get-together"] },
+    { id:"turkish-icecream",  name:"Turkish Ice Cream Stall",  icon:"🍦", desc:"The entertaining stretchy ice cream with the classic trolling tricks — total crowd pleaser",         price:"₹3.5K–7K", tags:["food","kids"], occasions:["birthday-party","first-birthday","get-together","office-party"] },
+    { id:"waffle-stall",      name:"Waffle & Crepe Stall",     icon:"🧇", desc:"Made-to-order waffles with sweet + savoury toppings — always a hit",                               price:"₹4K–7K",   tags:["food","sweet"],occasions:["birthday-party","anniversary","get-together"] },
+    { id:"mehendi-stall",     name:"Mehendi Artist",           icon:"✍️", desc:"Intricate henna designs — guests carry a beautiful piece of the event home",                        price:"₹3K–7K",   tags:["craft","adult"],occasions:["baby-shower","anniversary","birthday-party","housewarming","naming-ceremony"] },
+    { id:"face-painting",     name:"Face Painting Stall",      icon:"🎨", desc:"Fun designs for kids and brave adults — always a queue, always hilarious photos",                   price:"₹3K–6K",   tags:["craft","kids"],occasions:["birthday-party","first-birthday","get-together","baby-shower"] },
+    { id:"popcorn-cart",      name:"Popcorn Cart",             icon:"🍿", desc:"Flavoured popcorn in cute themed bags guests can munch through the event",                          price:"₹3K–5K",   tags:["food","kids"], occasions:["birthday-party","get-together","office-party","first-birthday"] },
+    { id:"pan-counter",       name:"Pan Counter",              icon:"🌿", desc:"Meetha pan, fire pan, gulkand — the perfect finish to every great Indian event",                    price:"₹2K–4K",   tags:["food","adult"],occasions:["birthday-party","anniversary","get-together","housewarming","naming-ceremony"] },
+    { id:"tattoo-stall",      name:"Temporary Tattoo Stall",   icon:"🖊️", desc:"Glitter & henna-style temporary tattoos — surprisingly popular with all ages",                     price:"₹2.5K–5K", tags:["craft","kids"],occasions:["birthday-party","get-together","office-party","first-birthday"] },
+  ],
+  performers: [
+    { id:"magician",          name:"Magician",                 icon:"🎩", desc:"Close-up card tricks + stage magic — genuinely stuns every age group",                              price:"₹5K–12K",  tags:["all"],         occasions:["birthday-party","first-birthday","get-together","housewarming","office-party"] },
+    { id:"caricature",        name:"Caricature Artist",        icon:"🖼️", desc:"Hilarious take-home portraits — guests queue up and the art is always spot-on",                    price:"₹4K–9K",   tags:["adult"],       occasions:["birthday-party","get-together","office-party","anniversary"] },
+    { id:"standup",           name:"Stand-Up Comedian",        icon:"🎤", desc:"Corporate-clean comedy set tailored to the crowd — gets the whole room going",                      price:"₹8K–20K",  tags:["adult"],       occasions:["birthday-party","office-party","get-together"] },
+    { id:"bollywood-dancer",  name:"Bollywood Dance Show",     icon:"💃", desc:"High-energy Bollywood group performance — 20-30 min set that energises the floor",                 price:"₹8K–18K",  tags:["adult"],       occasions:["birthday-party","get-together","anniversary","office-party"] },
+    { id:"classical-dancer",  name:"Classical Dance Performance",icon:"🕺",desc:"Kathak, Bharatanatyam or Odissi solo — elegant cultural performance for formal events",            price:"₹8K–20K",  tags:["adult"],       occasions:["anniversary","housewarming","naming-ceremony","get-together"] },
+    { id:"bhangra-troupe",    name:"Bhangra / Folk Troupe",   icon:"🥳", desc:"High-decibel bhangra or giddha group performance — gets everyone on their feet",                   price:"₹10K–25K", tags:["all"],         occasions:["birthday-party","get-together","housewarming","office-party"] },
+    { id:"mimicry",           name:"Mimicry Artist",           icon:"🎭", desc:"Spot-on celebrity voice impressions + comedy — unique and always gets massive laughs",               price:"₹5K–15K",  tags:["adult"],       occasions:["birthday-party","get-together","office-party"] },
+    { id:"fire-led",          name:"Fire / LED Light Show",    icon:"🔥", desc:"Fire juggling or LED poi light show — jaw-dropping 15-min performance for big events",              price:"₹8K–20K",  tags:["adult"],       occasions:["birthday-party","get-together","anniversary","office-party"] },
+    { id:"mentalist",         name:"Mentalist",                icon:"🧠", desc:"Mind-reading + psychological illusions — the most unique act you can book",                         price:"₹10K–22K", tags:["adult"],       occasions:["birthday-party","office-party","get-together"] },
+    { id:"puppet-show",       name:"Puppet Show",              icon:"🎪", desc:"Interactive storytelling puppet show for little ones — keeps toddlers & kids mesmerised",           price:"₹4K–8K",   tags:["kids"],        occasions:["first-birthday","birthday-party","baby-shower","gender-reveal"] },
+    { id:"balloon-artist",    name:"Balloon Twisting Artist",  icon:"🎈", desc:"Makes balloon animals, swords, hats, flowers on the spot — kids follow them everywhere",            price:"₹3K–6K",   tags:["kids"],        occasions:["birthday-party","first-birthday","baby-shower","get-together"] },
+    { id:"clown",             name:"Clown / Party Joker",      icon:"🤡", desc:"Classic slapstick — balloon animals, gags, physical comedy that kids lose their minds over",        price:"₹3K–7K",   tags:["kids"],        occasions:["birthday-party","first-birthday"] },
+  ],
+  shows: [
+    { id:"laser-show",        name:"Laser Light Show",         icon:"✨", desc:"Aerial laser beams choreographed to music — stunning visual spectacle for large events",             price:"₹20K–60K", tags:["adult"],       occasions:["birthday-party","anniversary","office-party","get-together"] },
+    { id:"drone-show",        name:"Drone Light Show",         icon:"🚁", desc:"Drone swarm forming shapes, names, messages in the sky — the most talked-about event moment of 2025",price:"₹80K+",   tags:["adult"],       occasions:["birthday-party","anniversary","office-party"] },
+    { id:"fireworks",         name:"Fireworks / Sparklers",    icon:"🎆", desc:"Indoor sparklers or outdoor fireworks burst — the classic grand finale",                            price:"₹8K–30K",  tags:["all"],         occasions:["birthday-party","anniversary","get-together","housewarming","naming-ceremony"] },
+    { id:"projection-mapping",name:"Projection Mapping Show",  icon:"🎬", desc:"Video art projected onto walls or objects — immersive visual storytelling",                         price:"₹25K–70K", tags:["adult"],       occasions:["birthday-party","anniversary","office-party"] },
+    { id:"photo-booth-pro",   name:"Pro Photo Booth (360°)",   icon:"📸", desc:"360-degree video booth — slow-mo clips guests share instantly on social media",                     price:"₹8K–18K",  tags:["all"],         occasions:["birthday-party","anniversary","get-together","office-party","first-birthday"] },
+    { id:"magic-show",        name:"Grand Magic Show",         icon:"🎩", desc:"45-min stage magic show with big illusions, levitation, disappearing acts — full audience show",    price:"₹15K–35K", tags:["all"],         occasions:["birthday-party","first-birthday","get-together","office-party"] },
+  ],
+  games: [
+    { id:"tambola",           name:"Tambola / Housie",         icon:"🎱", desc:"Classic housie with prizes — works for every age, every occasion, every crowd",                    price:"₹500–2K",  tags:["all"],         occasions:["birthday-party","anniversary","get-together","housewarming","office-party","naming-ceremony"] },
+    { id:"karaoke",           name:"Karaoke Corner",           icon:"🎤", desc:"Wireless mic + lyrics screen — guaranteed chaos, laughs, and viral moments",                       price:"₹3K–6K",   tags:["adult"],       occasions:["birthday-party","get-together","office-party","anniversary"] },
+    { id:"antakshari",        name:"Antakshari",               icon:"🎵", desc:"Classic Hindi song game with teams — nostalgia, friendly competition, non-stop laughs",             price:"Free",     tags:["all"],         occasions:["anniversary","get-together","housewarming","birthday-party","naming-ceremony"] },
+    { id:"dumb-charades",     name:"Dumb Charades",            icon:"🙅", desc:"Bollywood movie acting game — teams, time pressure, maximum hilarity",                             price:"Free",     tags:["all"],         occasions:["birthday-party","get-together","anniversary","office-party"] },
+    { id:"quiz",              name:"Pub Quiz / Team Trivia",   icon:"❓", desc:"Custom questions about the guest of honour + general rounds — hosted or DIY",                      price:"₹2K–5K",   tags:["adult"],       occasions:["birthday-party","office-party","get-together"] },
+    { id:"treasure-hunt",     name:"Treasure Hunt",            icon:"🗺️", desc:"Clues hidden around the venue — teams race against time to find the prize",                       price:"Free",     tags:["all"],         occasions:["birthday-party","first-birthday","get-together","office-party"] },
+    { id:"couple-games",      name:"Couple Games",             icon:"💑", desc:"Newlywed game, shoe game, predictions — perfectly curated for anniversaries",                      price:"Free",     tags:["adult"],       occasions:["anniversary","baby-shower","gender-reveal"] },
+    { id:"baby-games",        name:"Baby Shower Game Pack",    icon:"👶", desc:"Bingo, price guessing, baby food tasting — 5-in-1 game kit for the whole group",                  price:"₹500–1.5K",tags:["adult"],       occasions:["baby-shower","newborn-welcome","gender-reveal"] },
+    { id:"craft-station",     name:"Craft / Activity Station", icon:"🎨", desc:"Onesie painting, canvas art, greeting card making — interactive and creative for guests",           price:"₹3K–6K",   tags:["adult","kids"],occasions:["baby-shower","first-birthday","birthday-party","gender-reveal"] },
+    { id:"diy-photo-booth",   name:"DIY Photo Booth",          icon:"📸", desc:"Props basket + backdrop — guests take their own fun shots with instant digital share",             price:"₹2K–5K",   tags:["all"],         occasions:["birthday-party","baby-shower","gender-reveal","get-together","office-party"] },
+  ],
+};
+
+const ACTIVITY_TYPES = [
+  { key:"anchors",    label:"Anchor / Emcee", icon:"🎙️", singular:"Anchor" },
+  { key:"bands",      label:"Live Bands",     icon:"🎺",  singular:"Band" },
+  { key:"stalls",     label:"Stalls",         icon:"🛒",  singular:"Stall" },
+  { key:"performers", label:"Performers",     icon:"🎪",  singular:"Performer" },
+  { key:"shows",      label:"Special Shows",  icon:"✨",  singular:"Show" },
+  { key:"games",      label:"Activities & Games", icon:"🎲", singular:"Activity" },
+];
+
+const ALL_ACTIVITY_ITEMS = Object.values(ALL_ACTIVITIES).flat();
+
+/* ── score + filter activities for this occasion ── */
+function getActivitySuggestions(occasion, {ageGroups=[], theme=null}) {
+  const id  = occasion?.id||"";
+  const hasKids = (ageGroups||[]).includes("Kids")||(ageGroups||[]).includes("Toddlers");
+  const tags = (theme?.tags||[]).join(" ").toLowerCase();
+  const result = {};
+  for(const {key} of ACTIVITY_TYPES) {
+    const items = (ALL_ACTIVITIES[key]||[]).map(a => {
+      let score = 0;
+      if(a.occasions.includes(id)) score += 4;
+      if(hasKids && a.tags.includes("kids")) score += 2;
+      if(!hasKids && a.tags.includes("kids") && !a.tags.some(t=>["all","food","adult","craft"].includes(t))) score -= 2;
+      if((ageGroups||[]).includes("Seniors") && a.tags.includes("adult")) score += 1;
+      if(tags.includes("bollywood") && (a.id==="bollywood-dancer"||a.id==="antakshari"||a.id==="band-bollywood")) score += 2;
+      if(tags.includes("neon") && (a.id==="laser-show"||a.id==="fire-led"||a.id==="projection-mapping")) score += 2;
+      if(tags.includes("sufi")||tags.includes("ghazal")) { if(a.id==="band-sufi") score += 3; }
+      if(id==="office-party" && a.id==="anchor-corporate") score += 3;
+      if((id==="baby-shower"||id==="first-birthday") && a.id==="anchor-kids") score += 3;
+      return {...a, score};
+    }).sort((a,b)=>b.score-a.score).slice(0,4);
+    result[key] = items;
+  }
+  return result;
+}
+
+/* ── event itinerary builder ── */
+function buildItinerary(occasion, {guests=20, vendors=[], selectedActivities=[], venueType="", ageGroups=[]}) {
+  const id        = occasion?.id||"";
+  const hasKids   = (ageGroups||[]).includes("Kids")||(ageGroups||[]).includes("Toddlers");
+  const hasCaterer= vendors.includes("Caterer");
+  const hasDJ     = vendors.includes("DJ");
+  const hasBand   = vendors.includes("Live Band") || selectedActivities.some(a=>a.startsWith("band-"));
+  const hasPhotog = vendors.includes("Photographer")||vendors.includes("Videographer");
+  const hasDecor  = vendors.includes("Decorator");
+  const hasAnchor = vendors.includes("Emcee / Host")||selectedActivities.some(a=>a.startsWith("anchor"));
+  const hasEntertainment = selectedActivities.length>0;
+
+  const slots = [];
+  const add = (time, title, desc, type="normal") => slots.push({time, title, desc, type});
+
+  const isOffice  = id==="office-party";
+  const isAnniv   = id==="anniversary";
+  const isHouse   = id==="housewarming";
+  const isBirthday= id==="birthday-party"||id==="first-birthday";
+  const isBabyEvt = ["baby-shower","newborn-welcome","gender-reveal","naming-ceremony"].includes(id);
+
+  if(isOffice) {
+    add("6:30 PM","Venue Setup & Sound Check","Decorator, AV team and caterer finalize setup — 1 hr before guests","setup");
+    add("7:00 PM","Doors Open — Team Arrives","Welcome desk with name badges, background music, welcome mocktail served");
+    add("7:15 PM","Networking & Mingling","Starters served, team members mingle freely — no formal agenda yet");
+    if(hasAnchor) add("7:45 PM","Opening Address & Welcome","Anchor introduces the evening — MD/Director gives year-in-review address","highlight");
+    else add("7:45 PM","Welcome by Leadership","Opening speech by management, team acknowledgements");
+    if(hasCaterer) add("8:15 PM","Dinner Buffet Opens","Full buffet service begins — team seated or mingling");
+    if(selectedActivities.some(a=>["quiz","dumb-charades","tambola","karaoke","treasure-hunt"].includes(a))) add("8:30 PM","Team Game / Activity Round",hasAnchor?"Anchor leads the team activity — trivia, dumb charades or team challenge":"Team activity begins — trivia, dumb charades or challenge","fun");
+    if(selectedActivities.some(a=>["standup","mimicry","mentalist","magic-show"].includes(a))) add("9:00 PM","Live Entertainment Set","Performer takes the stage — comedy, magic or live act","fun");
+    add("9:30 PM","🏆 Awards & Recognition Ceremony","Category winners announced, trophies / mementos presented on stage","highlight");
+    if(hasDJ||hasBand||selectedActivities.some(a=>a.startsWith("band-"))) add("10:15 PM","Dance Floor Opens","DJ / Band kicks in — high energy floor, everyone joins");
+    add("11:00 PM","Desserts & Group Photo","Dessert station opens, all-team group photo, event wraps up");
+    add("11:30 PM","Farewell","Event concludes — team disperses");
+  } else if(isAnniv) {
+    add("6:30 PM","Venue Setup Finalized","Decorator ensures candles lit, flowers fresh, music cued","setup");
+    add("7:00 PM","Guests Arrive","Welcome drinks served — soft background music playing");
+    if(hasPhotog) add("7:15 PM","Candid Arrival Shots","Photographer captures guests arriving and mingling");
+    add("7:30 PM","💍 Couple's Grand Entry","Couple enters to their chosen song — first golden moment of the evening","highlight");
+    if(hasCaterer) add("7:45 PM","Dinner / Starters Served","Starters served at tables or buffet opens");
+    if(hasAnchor) add("8:00 PM","Anchor Sets the Tone","Anchor welcomes everyone and guides the evening flow");
+    add("8:15 PM","Speeches & Memory Sharing","Family and friends share favourite memories — toasts raised","highlight");
+    if(selectedActivities.includes("couple-games")) add("8:30 PM","Couple Games","Shoe game, predictions, audience participation — hilarious & heartwarming","fun");
+    if(selectedActivities.some(a=>a.startsWith("band-"))||hasBand) add("8:30 PM","Live Music Set","Band plays romantic hits — background music during dinner","fun");
+    add("9:00 PM","🎂 Anniversary Cake Cutting","Cake cutting with family gathered — beautiful captured moment","highlight");
+    if(hasDJ||hasBand) add("9:30 PM","Dance Floor Opens","Couple's first dance, then open floor for all guests","fun");
+    else if(selectedActivities.some(a=>["antakshari","karaoke","tambola"].includes(a))) add("9:30 PM","Group Activity","Antakshari / tambola / karaoke — everyone joins in","fun");
+    if(selectedActivities.some(a=>["laser-show","fireworks","drone-show"].includes(a))) add("10:15 PM","Special Show","Grand finale performance — laser / fireworks / drone show","highlight");
+    add("10:30 PM","Desserts & Group Photos","Dessert table opens, family group photo, guests depart");
+  } else if(isBabyEvt&&id==="baby-shower") {
+    add("11:00 AM","Venue Setup","Decorator finalizes pastel setup, caterer prepares high tea","setup");
+    add("11:30 AM","Guests Arrive","Welcome tea, snacks served — guests settle and mingle");
+    add("12:00 PM","Baby Shower Games Begin","Host leads the group — bingo, prediction cards, price guessing","fun");
+    if(selectedActivities.includes("craft-station")) add("12:30 PM","Onesie / Craft Station","Guests decorate a onesie or make a craft gift for the baby","fun");
+    if(hasCaterer) add("1:00 PM","Lunch / High Tea Served","Full food service — guests eat and chat");
+    add("1:45 PM","Gift Opening Ceremony","Mom-to-be opens all gifts, guests cheer and react — lots of photos","highlight");
+    add("2:15 PM","🎂 Cake Cutting","Baby shower cake cut — theme moment","highlight");
+    if(hasPhotog) add("2:30 PM","Group Photo Session","Full group with mom-to-be, individual portraits");
+    add("3:00 PM","Return Gifts & Farewell","Guests receive return gifts and the event wraps up warmly");
+  } else if(isBabyEvt&&id==="gender-reveal") {
+    add("11:00 AM","Setup & Team Prep","Reveal prop prepared, décor finalized — only 1 person knows the secret!","setup");
+    add("11:30 AM","Guests Arrive","Welcome drinks + team pink vs team blue accessories at the door");
+    add("12:00 PM","Ice Breaker Games","Pregnancy trivia, name guessing, team activities — suspense builds","fun");
+    if(hasCaterer) add("12:30 PM","Finger Foods & Snacks Served","Light bites while anticipation builds");
+    add("1:00 PM","🎀 THE BIG REVEAL!","Balloon burst / cake cut / smoke bomb — THE moment everyone's waiting for!","highlight");
+    if(hasPhotog) add("1:10 PM","Reveal Photo Session","Confetti, reactions, family portraits — capture everything in the next 20 minutes");
+    if(hasCaterer) add("1:30 PM","Celebration Lunch","Full meal to celebrate the news");
+    add("2:30 PM","Cake Cutting & Farewell","Gender reveal cake cut, return gifts distributed, event ends");
+  } else if(id==="first-birthday") {
+    add("10:30 AM","Setup","Decorator and caterer finalize — balloon arch, kids setup all ready","setup");
+    add("11:00 AM","Guests Arrive","Welcome drinks for adults, juice for kids — little ones start playing");
+    if(hasPhotog) add("11:15 AM","Candid Play Shots","Photographer captures the birthday baby and guests arriving");
+    if(selectedActivities.some(a=>["magician","clown","puppet-show","balloon-artist","anchor-kids"].includes(a))) add("11:30 AM","Kids Entertainment Show","Magician / clown / puppet show — little guests completely hooked","fun");
+    if(hasCaterer) add("12:00 PM","Lunch / Kids Menu Opens","Kids meal + adult buffet begins");
+    add("12:45 PM","🎂 Smash Cake Moment","Birthday baby gets their own smash cake — this is THE photo moment","highlight");
+    add("1:00 PM","Main Cake Cutting","Everyone gathers, Happy Birthday sung, family cake cut together","highlight");
+    if(hasPhotog) add("1:15 PM","Group & Portrait Photos","Family portraits, full group shot, baby solo shots");
+    add("2:00 PM","Return Gifts & Farewell","Kids receive return gifts, parents collect belongings, event ends");
+  } else if(isHouse) {
+    add("9:30 AM","Puja Setup","Priest sets up, flowers and diyas arranged, family prepares","setup");
+    add("10:00 AM","Griha Pravesh Puja","Priest conducts housewarming ceremony — family blessings, sacred rituals","highlight");
+    add("11:00 AM","First Entry — Grihapravesh","Family / couple enters the new home with aarti and milk boil","highlight");
+    add("11:30 AM","House Tour & Blessings Round","Guests tour the home, elders bless each room");
+    if(hasCaterer) add("12:30 PM","Lunch Served","Traditional housewarming meal — guests seated");
+    add("1:30 PM","Gifts & Community Blessings","Gifts placed in the home, informal gifting and blessings");
+    if(selectedActivities.some(a=>["tambola","antakshari","dumb-charades"].includes(a))) add("2:30 PM","Post-lunch Fun","Tambola / antakshari — keeping the celebration alive after lunch","fun");
+    add("4:00 PM","Evening Chai & Mithai","Tea, sweets served, guests enjoy the new home space");
+    add("5:30 PM","Farewell","Event wraps up — guests depart with blessings");
+  } else {
+    // Default: birthday-party, get-together
+    const startHour = guests>50 ? 19 : 19;
+    add("5:30 PM","Venue & Setup Complete","All décor, stalls and setup ready before guests arrive","setup");
+    add("6:00 PM","Doors Open — Guests Arrive",hasPhotog?"Photographer captures arrivals — candid entry shots":"Welcome drinks served, guests arrive and settle in");
+    if(selectedActivities.some(a=>["chaat-stall","mocktail-bar","turkish-icecream","candy-floss","popcorn-cart"].includes(a))) add("6:15 PM","Stalls Open","Food and fun stalls begin — guests explore and enjoy","fun");
+    if(selectedActivities.some(a=>["mehendi-stall","face-painting","tattoo-stall","caricature"].includes(a))) add("6:30 PM","Activity Stalls Running","Mehendi / face painting / caricature stalls running — queues forming","fun");
+    if(hasCaterer) add("7:00 PM","Starters Served","Starter round begins — waiters serve / live counter opens");
+    if(hasAnchor) add("7:30 PM","Anchor Kicks Off","Anchor welcomes guests, sets the mood, introductions made");
+    if(selectedActivities.some(a=>["tambola","quiz","dumb-charades","treasure-hunt","karaoke"].includes(a))) add("7:45 PM","Games & Group Activity","Main activity session — high energy, everyone participates","fun");
+    if(selectedActivities.some(a=>["magician","standup","bollywood-dancer","mimicry","fire-led","magic-show","laser-show","bhangra-troupe"].includes(a))) add("8:00 PM","Live Performance / Show","Performer / show takes centre stage — the wow moment of the evening","highlight");
+    if(hasCaterer) add("8:30 PM","Main Course Opens","Dinner buffet begins — full service");
+    add("9:00 PM","🎂 Cake Cutting","Everyone gathers for the birthday moment — candles lit, song sung","highlight");
+    if(hasDJ||hasBand||selectedActivities.some(a=>a.startsWith("band-"))) add("9:30 PM","Dance Floor Opens / Live Music","DJ set / band takes the stage — everyone on the floor","fun");
+    if(selectedActivities.some(a=>["fireworks","drone-show","laser-show","photo-booth-pro"].includes(a))) add("10:30 PM","Grand Finale Moment","Special show or 360° photo moment — perfect send-off","highlight");
+    add("10:45 PM","Desserts & Group Photo","Dessert station opens, big group photo, event begins to wind down");
+    add("11:00 PM","Farewell","Guests receive return gifts and head home — event concludes");
+  }
+
+  return slots.filter(s=>s.type!=="setup");
+}
+
+/* ── decorator items builder data ── */
+const DECOR_ITEMS = {
+  "Backdrop & Wall":    ["Backdrop wall (printed/fabric)","Balloon wall","Flower wall","Neon sign (custom name)","Photo frame wall","Sequin backdrop","Fairy light curtain","Tulle backdrop"],
+  "Balloons":           ["Balloon arch at entry","Balloon arch at backdrop","Table centrepiece balloons","Ceiling balloons","Foil number / letter balloons","Chrome / metallic balloons","Balloon bouquets (per table)","Organic balloon installation"],
+  "Flowers":            ["Floral arch at entrance","Table floral centrepieces","Flower wall panel","Flower petals on pathway","Marigold garlands","Flower ceiling hanging","Loose flower bunches"],
+  "Lighting":           ["String lights overhead","Fairy light curtain","Uplighting on walls","Spotlights on key areas","Neon LED signs","RGB colour wash","Warm Edison bulbs","Lanterns along pathway","Candle clusters"],
+  "Table & Seating":    ["Table runner","Centrepieces per table","Candle holders","Charger plates","Napkin folds / rings","Menu cards per seat","Chair bows or sashes"],
+  "Entry & Walkway":    ["Welcome signboard / easel","Entrance arch","Pathway decor (petals / lanterns)","Name or message board","Ribbon / floral gate"],
+  "Photo Corner":       ["Photo booth setup","Props box","Selfie corner backdrop","Polaroid station","Memory jar station"],
+  "Theme Items":        ["Character cutouts / standees","Themed banners","Custom bunting","Themed table covers","Personalized name boards"],
+};
+const DECOR_CATEGORIES = Object.keys(DECOR_ITEMS);
+
+/* ── 3 personalised catering style options ── */
+function getCateringOptions(occasion, {guests=20, venueType="", ageGroups=[], budget=0}) {
+  const id     = occasion?.id||"";
+  const venue  = venueType.toLowerCase();
+  const ages   = ageGroups;
+  const b      = Number(budget)||0;
+  const hasKids= ages.includes("Kids")||ages.includes("Toddlers");
+  const isBig  = guests>50;
+  const isFormal= venue.includes("banquet")||venue.includes("hall");
+  const isOutdoor= venue.includes("garden")||venue.includes("outdoor")||venue.includes("rooftop")||venue.includes("farmhouse");
+  const ph = b>0 ? Math.round(b*0.3/guests) : null;
+  const fmt = n => `≈₹${n.toLocaleString("en-IN")}/head`;
+
+  /* occasion-specific overrides */
+  const isOffice    = id==="office-party";
+  const isAnniv     = id==="anniversary";
+  const isBabyEvent = id==="baby-shower"||id==="newborn-welcome"||id==="gender-reveal"||id==="naming-ceremony"||id==="first-birthday";
+  const isHouse     = id==="housewarming";
+
+  if(isOffice) return [
+    { style:"Corporate Buffet", tagline:"Professional, clean — works for all teams", priceHint: ph?fmt(ph):"₹450–650/head", icon:"🍽️", dishes:["Sandwiches & wraps station","Salad bar","1 veg + 1 non-veg main","Dal + rice","Dessert corner"] },
+    { style:"Buffet + Live Counters", tagline:"Popular for office dos — interactive and fun", priceHint: ph?fmt(Math.round(ph*1.2)):"₹600–800/head", icon:"🧑‍🍳", popular:true, dishes:["Waiter-served starters","Live pasta / pizza counter","2 mains","Mocktail bar","Dessert table"] },
+    { style:"Full Service Dinner", tagline:"Awards night or annual party — premium feel", priceHint: ph?fmt(Math.round(ph*1.6)):"₹800–1,200/head", icon:"✨", dishes:["Welcome drink + starters","Plated main course","Live dessert station","Custom menu cards","Dedicated service staff"] },
+  ];
+
+  if(isAnniv) return [
+    { style:"Intimate Dinner Setup", tagline:"Romantic plating, courses served at the table", priceHint: ph?fmt(ph):"₹550–750/head", icon:"🍽️", dishes:["Welcome champagne mocktail","Soup + salad","Plated main with 2 sides","Candle-lit dessert presentation"] },
+    { style:"Buffet + Live Counter", tagline:"Great for a larger anniversary with family & friends", priceHint: ph?fmt(Math.round(ph*1.1)):"₹600–800/head", icon:"🧑‍🍳", popular:true, dishes:["Starter round by waiter","3 mains + live pasta/chaat counter","Salad bar","Dessert table with couple's cake"] },
+    { style:"Full Waiter Service", tagline:"Formal, sophisticated — a true celebration dinner", priceHint: ph?fmt(Math.round(ph*1.5)):"₹800–1,200/head", icon:"✨", dishes:["Multi-course plated meal","4+ mains with accompaniments","Custom anniversary cake served","Personalised menu cards"] },
+  ];
+
+  if(isBabyEvent) return [
+    { style:"Light Snacks & High Tea", tagline:"Ideal for daytime baby events — easy, elegant", priceHint: ph?fmt(Math.round(ph*0.7)):"₹300–450/head", icon:"☕", dishes:["Sandwiches & wraps","Mini pastries & biscuits","Juice / mocktail bar","Fruit platter","Cake station"] },
+    { style:"Buffet with Kids Corner", tagline:"Feeds all ages — most popular for baby events", priceHint: ph?fmt(ph):"₹450–650/head", icon:"🍽️", popular:true, dishes:["1 veg + 1 non-veg main","Dal + rice + roti","Kids corner: mini pizza & fries","Dessert table","Juice station (no aerated drinks)"] },
+    { style:"Finger Food & Live Counters", tagline:"Fun and casual — great if guests will be standing", priceHint: ph?fmt(Math.round(ph*1.1)):"₹450–650/head", icon:"🧆", dishes:["Live chaat counter","Mini sandwiches & sliders","Healthy fruit skewers","Cake + dessert table","Mocktails"] },
+  ];
+
+  if(isHouse) return [
+    { style:"Traditional Thali", tagline:"Warm, homely, auspicious — perfect for housewarming", priceHint: ph?fmt(ph):"₹350–500/head", icon:"🍛", dishes:["Puja prasad (halwa/puri)","Full North/South Indian thali","Dal + rice + roti","Sweet mithai plate","Aam panna / chaas"] },
+    { style:"Buffet with Live Starters", tagline:"Traditional + a touch of fun — crowd pleaser", priceHint: ph?fmt(Math.round(ph*1.2)):"₹500–700/head", icon:"🧑‍🍳", popular:true, dishes:["Live chaat / samosa counter","Thali-style mains","Dessert platter","Fresh juices + mocktails"] },
+    { style:"Full Buffet & Service", tagline:"If you want to go all out for the housewarming", priceHint: ph?fmt(Math.round(ph*1.5)):"₹700–1,000/head", icon:"✨", dishes:["Welcome sherbet + starters","4 mains + dal + rice + breads","Live dessert counter","Service staff throughout"] },
+  ];
+
+  /* default (birthday-party, get-together, etc.) */
+  return [
+    {
+      style: isOutdoor ? "Finger Food & Live Counters" : "Simple Buffet",
+      tagline: isOutdoor ? "Great for outdoor, casual events" : "Self-serve, easy for any size",
+      priceHint: ph ? fmt(Math.round(ph*0.75)) : (isOutdoor?"₹350–500/head":"₹300–450/head"),
+      icon:"🍽️",
+      dishes: isOutdoor
+        ? ["Live chaat counter","Mini sandwiches & sliders","Grilled section",hasKids?"Kids snack corner":"Mocktail bar"]
+        : ["2 mains (veg + non-veg)","Dal + rice + roti","Starters section",hasKids?"Kids corner":"Basic dessert"],
+    },
+    {
+      style: (isFormal||isBig) ? "Buffet + Waiter Service" : "Buffet + Live Counter",
+      tagline: (isFormal||isBig) ? "Most popular for halls & big events" : "Fun, interactive — guests love it",
+      priceHint: ph?fmt(ph):"₹500–700/head", icon:"🧑‍🍳", popular:true,
+      dishes: (isFormal||isBig)
+        ? ["Waiter-served starters","3 mains + live counter",hasKids?"Kids corner":"Salad bar","Dessert table"]
+        : ["Live chaat / pav bhaji counter","2–3 mains",hasKids?"Kids corner":"Salad bar","Dessert station"],
+    },
+    {
+      style:"Full Waiter Service",
+      tagline:"Elegant, course-by-course dining",
+      priceHint: ph?fmt(Math.round(ph*1.5)):"₹750–1,200/head",
+      icon:"✨",
+      dishes:["Welcome drink + amuse-bouche","Plated starters","4+ mains with sides","Curated dessert table","Custom menu cards"],
+    },
+  ];
+}
+
+/* ── 3 personalised decorator style options (occasion-aware) ── */
+function getDecorOptions(occasion, {guests=20, venueType="", theme=null, ageGroups=[]}) {
+  const id     = occasion?.id||"";
+  const venue  = venueType.toLowerCase();
+  const tags   = (theme?.tags||[]).join(" ").toLowerCase();
+  const outdoor= venue.includes("garden")||venue.includes("outdoor")||venue.includes("farmhouse")||venue.includes("rooftop");
+  const hasKids= (ageGroups||[]).includes("Kids")||(ageGroups||[]).includes("Toddlers");
+  const isBaby = ["baby-shower","newborn-welcome","first-birthday","naming-ceremony","gender-reveal"].includes(id);
+  const isAnniv= id==="anniversary";
+  const isOffice=id==="office-party";
+  const isHouse= id==="housewarming";
+
+  if(isBaby) return [
+    { style:"Soft & Sweet",       tagline:"Pastel setup — gentle, airy, baby-perfect",       priceHint:outdoor?"₹8K–14K":"₹5K–9K",   icon:"🍼", items:["Pastel balloon clusters at entry","Soft backdrop with baby motifs","Table centrepieces","Cradle / highchair decor"] },
+    { style:"Full Baby Setup",    tagline:"Full venue coverage — most popular for baby events",priceHint:outdoor?"₹18K–32K":"₹12K–22K",icon:"🎀",popular:true, items:["Balloon arch at entry","Themed backdrop + name board","All table décor",id==="gender-reveal"?"Pink & Blue reveal corner":"Dedicated cake/gift table area"] },
+    { style:"Premium Baby Event", tagline:"Every corner styled, photo-ready throughout",      priceHint:outdoor?"₹40K+":"₹28K+",       icon:"✨", items:["Custom floral installation","Balloon ceiling or canopy","Personalised name / age banner","Photo corner with full props","Cake table centrepiece"] },
+  ];
+  if(isAnniv) return [
+    { style:"Romantic Essentials",tagline:"Intimate candle-lit setup — couple-focused",       priceHint:outdoor?"₹10K–18K":"₹7K–14K", icon:"🕯️",items:["Fairy light backdrop","Rose & candle centrepieces","Couple photo timeline wall","Welcome garland at entry"] },
+    { style:"Full Celebration",   tagline:"Guests + couple — full venue dressed beautifully", priceHint:outdoor?"₹22K–40K":"₹15K–28K",icon:"💍",popular:true,items:["Floral arch at entry","Backdrop + couple photos","All table décor (candles + flowers)",outdoor?"String lights overhead":"Balloon ceiling or draping"] },
+    { style:"Grand Anniversary",  tagline:"Golden or silver jubilee — nothing held back",     priceHint:outdoor?"₹55K+":"₹38K+",       icon:"👑", items:["Floral wall or floral arch installation","Custom milestone backdrop (25/50 years)","Lighting setup included","Photo corner + memory wall","Floating candles or lantern arrangement"] },
+  ];
+  if(isOffice) return [
+    { style:"Corporate Clean",    tagline:"Professional branded setup — minimal & sharp",     priceHint:"₹8K–15K",  icon:"🏢", items:["Company branding backdrop","Branded table signage","Clean floral centrepieces","Award / recognition display area"] },
+    { style:"Corporate Festive",  tagline:"Professional + a warm festive feel",              priceHint:"₹18K–32K", icon:"🎊",popular:true,items:["Branded backdrop + balloon columns","Themed table décor","Recognition board / award wall","Photo corner with company branding"] },
+    { style:"Premium Office Event",tagline:"Awards night or big team party — full setup",    priceHint:"₹35K+",    icon:"✨", items:["Full venue branding","Stage décor for awards ceremony","LED lighting + ambience","Photo wall + step & repeat backdrop","Custom table naming"] },
+  ];
+  if(isHouse) return [
+    { style:"Auspicious & Warm",  tagline:"Traditional feel — flowers, diyas, warm tones",  priceHint:outdoor?"₹8K–15K":"₹5K–10K",  icon:"🪔", items:["Marigold garlands at entry","Diya clusters on tables","Traditional flower centrepieces","Welcome rangoli at door"] },
+    { style:"Full House Décor",   tagline:"Entire home / venue dressed — most popular",      priceHint:outdoor?"₹18K–32K":"₹12K–22K",icon:"🏠",popular:true,items:["Flower arch at main entrance","Table centrepieces for all areas","Living room focal point (arch or wall)",outdoor?"String lights in garden":"Fairy light interior setup"] },
+    { style:"Grand Housewarming", tagline:"Statement event — every room styled",             priceHint:outdoor?"₹40K+":"₹28K+",       icon:"✨", items:["Full venue transformation","Outdoor lighting setup","Custom welcome board","Flower wall installation","Puja area decorated separately"] },
+  ];
+  return [
+    { style:"Simple & Sweet",   tagline:"Looks great, stays within budget", priceHint:outdoor?"₹8K–15K":"₹5K–10K",   icon:"🎈", items:["Balloon clusters at entry","Simple backdrop wall","Table centrepieces",tags.includes("floral")?"Floral accents":"Colour-matched props"] },
+    { style:"Full Venue Setup", tagline:"Covers the whole venue — most popular", priceHint:outdoor?"₹20K–38K":"₹14K–26K",icon:"🎨",popular:true,items:[outdoor?"String lights overhead":"Balloon ceiling","Themed backdrop + arch","All table décor",hasKids?"Character balloons & props":tags.includes("floral")?"Fresh floral centrepieces":"Premium centrepieces"] },
+    { style:"Showstopper",      tagline:"Every corner transformed, fully custom", priceHint:outdoor?"₹50K+":"₹35K+",     icon:"👑", items:[tags.includes("neon")?"Custom neon sign":tags.includes("floral")?"Floor-to-ceiling floral wall":"Full venue transformation","Themed entry arch","Custom backdrop + photo corner","Lighting setup included"] },
+  ];
+}
+
 /* ── equipment calculator ── */
 function getEquipment(id, guests) {
   const g=guests, t=Math.ceil(g/6);
@@ -107,6 +467,29 @@ function themeColor(tags=[]) {
   if(t.includes("gold")||t.includes("elegant")||t.includes("glam")) return "#D4A848";
   if(t.includes("minimal")||t.includes("white")||t.includes("modern")) return "#A09080";
   return "#C47A2E";
+}
+
+function themeEmoji(tags=[]) {
+  const t=tags.join(" ").toLowerCase();
+  if(t.includes("bollywood")||t.includes("indian")||t.includes("dance")) return "💃";
+  if(t.includes("neon")||t.includes("glow")||t.includes("rave")) return "🌈";
+  if(t.includes("floral")||t.includes("garden")||t.includes("flower")) return "🌸";
+  if(t.includes("pastel")||t.includes("pink")||t.includes("baby")) return "🩷";
+  if(t.includes("gold")||t.includes("glam")||t.includes("royal")) return "👑";
+  if(t.includes("elegant")||t.includes("luxury")||t.includes("red-carpet")) return "✨";
+  if(t.includes("jungle")||t.includes("safari")||t.includes("animal")) return "🦁";
+  if(t.includes("nature")||t.includes("green")||t.includes("earth")) return "🌿";
+  if(t.includes("stars")||t.includes("dreamy")||t.includes("navy")||t.includes("night")) return "⭐";
+  if(t.includes("minimal")||t.includes("modern")||t.includes("white")||t.includes("clean")) return "🤍";
+  if(t.includes("red")||t.includes("romantic")||t.includes("valentine")) return "🌹";
+  if(t.includes("brown")||t.includes("bear")||t.includes("cute")||t.includes("teddy")) return "🧸";
+  if(t.includes("clouds")||t.includes("sky")||t.includes("blue")) return "☁️";
+  if(t.includes("entrance")||t.includes("arch")) return "🌺";
+  if(t.includes("personal")||t.includes("footprint")) return "💝";
+  if(t.includes("sufi")||t.includes("ghazal")||t.includes("classical")) return "🎵";
+  if(t.includes("retro")||t.includes("vintage")) return "📷";
+  if(t.includes("dark")||t.includes("black")||t.includes("gothic")) return "🖤";
+  return "🎨";
 }
 
 /* ── vendor recommendations based on theme + age groups + venue ── */
@@ -609,14 +992,18 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
 }
 
 /* ── build WhatsApp Baat Karo message ── */
-function buildBaatKaroMsg(occasion, {guests, date, city, venueType, theme, vendors, vendorPackages, budget}) {
+function buildBaatKaroMsg(occasion, {guests, date, city, venueType, theme, vendors, vendorPackages, budget, selectedActivities=[]}) {
   const pkgNames=["Essential","Standard","Premium"];
   const vLines=vendors.filter(v=>ALL_VENDORS.includes(v)).map(v=>{
     const pi=vendorPackages[v];
-    return `• ${v}${pi!==undefined?` — ${pkgNames[pi]}`:""}`;
+    if(pi==="custom") return `• ${v} — Custom`;
+    return `• ${v}${typeof pi==="number"?` — ${pkgNames[pi]}`:""}`;
   });
   const customLines=vendors.filter(v=>!ALL_VENDORS.includes(v)).map(v=>`• ${v}`);
   const allLines=[...vLines,...customLines].join("\n");
+  const actLines=selectedActivities.length
+    ? selectedActivities.map(id=>{const a=ALL_ACTIVITY_ITEMS.find(x=>x.id===id);return a?`• ${a.name}`:`• ${id}`;}).join("\n")
+    : null;
   const dateStr=date?new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"}):"";
   const parts=[
     `Hi Tendr! I've planned a ${occasion.name} and need help booking.`,
@@ -627,16 +1014,29 @@ function buildBaatKaroMsg(occasion, {guests, date, city, venueType, theme, vendo
     theme?`🎨 Theme: ${theme.name}`:null,
     budget?`💰 Budget: ₹${Number(budget).toLocaleString("en-IN")}`:null,
     allLines?`\n*Services I need:*\n${allLines}`:null,
+    actLines?`\n*Fun activities:*\n${actLines}`:null,
     "\nCan you help me book these?",
   ].filter(x=>x!==null).join("\n");
   return `https://wa.me/919211668427?text=${encodeURIComponent(parts)}`;
 }
 
 /* ── build plain-text plan for in-app chat ── */
-function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors, vendorPackages, budget, ageGroups=[]}) {
+function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors, vendorPackages, budget, ageGroups=[], selectedActivities=[], customCatering={}, customDecor={}}) {
   const vLines = vendors.filter(v => ALL_VENDORS.includes(v)).map(v => {
     const pi = vendorPackages[v];
     if (pi === undefined) return `• ${v} — no package selected`;
+    if (pi === "custom") {
+      if (v === "Caterer") {
+        const cui = CUISINES.find(c=>c.id===customCatering.cuisine)?.label||"";
+        const dishes = Object.entries(customCatering.dishes||{}).filter(([,arr])=>arr.length).map(([cat,arr])=>`    ${cat}: ${arr.join(", ")}`).join("\n");
+        return `• Caterer — Custom menu${cui?` (${cui})`:""}${dishes?"\n"+dishes:""}`;
+      }
+      if (v === "Decorator") {
+        const items = Object.entries(customDecor).filter(([,arr])=>arr.length).map(([cat,arr])=>`    ${cat}: ${arr.join(", ")}`).join("\n");
+        return `• Decorator — Custom setup${items?"\n"+items:""}`;
+      }
+      return `• ${v} — Custom`;
+    }
     const pkg = getVendorPackages(v, {guests, venueType, theme, ageGroups})[pi];
     if (!pkg) return `• ${v}`;
     const itemsList = pkg.items.map(it => `    - ${it}`).join("\n");
@@ -644,6 +1044,12 @@ function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors,
   });
   const customLines = vendors.filter(v => !ALL_VENDORS.includes(v)).map(v => `• ${v}`);
   const allLines = [...vLines, ...customLines].join("\n\n");
+  const actLines = selectedActivities.length
+    ? "\nFun activities:\n"+selectedActivities.map(id=>{
+        const a=ALL_ACTIVITY_ITEMS.find(x=>x.id===id);
+        return a?`• ${a.name} (${a.price})`:`• ${id}`;
+      }).join("\n")
+    : null;
   const dateStr = date ? new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"}) : "";
   return [
     `Hi Tendr Team! Here's my ${occasion.name} plan — please help me book:`,
@@ -654,6 +1060,7 @@ function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors,
     theme ? `🎨 Theme: ${theme.name}` : null,
     budget ? `💰 Budget: ₹${Number(budget).toLocaleString("en-IN")}` : null,
     allLines ? `\nServices needed:\n\n${allLines}` : null,
+    actLines,
     "\nCan you help me book these?",
   ].filter(x => x !== null).join("\n");
 }
@@ -797,8 +1204,8 @@ const css=`
 
 /* ── Progress bar ── */
 function Progress({step,withTheme}){
-  const labels=withTheme?["Details","Guests","Theme","Services","Gifts","Plan"]:["Details","Guests","Services","Gifts","Plan"];
-  const cur=withTheme?step:(step<=2?step:step>=4?step-1:step);
+  const labels=withTheme?["Details","Theme","Services","Fun","Gifts","Plan"]:["Details","Services","Fun","Gifts","Plan"];
+  const cur=withTheme?step:(step<=1?step:step-1);
   return(
     <div style={{padding:"0 20px 0"}}>
       <div style={{display:"flex",gap:3,marginBottom:8}}>
@@ -846,6 +1253,19 @@ export default function OccasionDetail(){
   const [savedPlan,setSavedPlan]=useState(null);
   const dateInputRef=useRef(null);
 
+  /* catering builder */
+  const [showCateringBuilder,setShowCateringBuilder]=useState(false);
+  const [cateringBuilderStep,setCateringBuilderStep]=useState("cuisine"); // "cuisine" | "dishes"
+  const [customCatering,setCustomCatering]=useState({cuisine:"",dishes:{}}); // {cuisine, dishes:{Starters:[],…}}
+
+  /* decor builder */
+  const [showDecorBuilder,setShowDecorBuilder]=useState(false);
+  const [customDecor,setCustomDecor]=useState({}); // {category:[items]}
+
+  /* fun activities */
+  const [selectedActivities,setSelectedActivities]=useState([]); // array of activity ids
+  const toggleActivity=id=>setSelectedActivities(a=>a.includes(id)?a.filter(x=>x!==id):[...a,id]);
+
   const PLAN_KEY=`tendr-plan-${slug}`;
 
   /* load saved plan on mount */
@@ -865,6 +1285,7 @@ export default function OccasionDetail(){
       localStorage.setItem(PLAN_KEY,JSON.stringify({
         planMode,step,guests,date,budget,city,venueType,
         ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,checked,
+        selectedActivities,customCatering,customDecor,
         savedAt:new Date().toISOString(),
       }));
     }
@@ -891,7 +1312,11 @@ export default function OccasionDetail(){
     setVendorPackages(s.vendorPackages||{});
     setCateringType(s.cateringType||"");setCakeType(s.cakeType||"");
     setInviteType(s.inviteType||"");setGifts(s.gifts||[]);
-    setChecked(s.checked||{});setSavedPlan(null);
+    setChecked(s.checked||{});
+    setSelectedActivities(s.selectedActivities||[]);
+    if(s.customCatering) setCustomCatering(s.customCatering);
+    if(s.customDecor) setCustomDecor(s.customDecor);
+    setSavedPlan(null);
   }
 
   const occasion=getOccasionById(slug);
@@ -917,27 +1342,28 @@ export default function OccasionDetail(){
 
   const smartVendors=getSmartVendors(occasion,theme,ageGroups,venueType,budget);
   const mainVendors=vendors.filter(v=>ALL_VENDORS.includes(v));
-  const allVendorsChosen=mainVendors.length>0&&mainVendors.every(v=>vendorPackages[v]!==undefined);
+  const allVendorsChosen=mainVendors.length>0&&mainVendors.every(v=>vendorPackages[v]!==undefined&&vendorPackages[v]!==null);
   // per-vendor budget allocation (used for package tier highlighting)
   const perVendorBudget=budget&&mainVendors.length?Math.round(Number(budget)/mainVendors.length):null;
 
   /* navigation */
   const next=()=>{
-    if(step===1){setStep(2);return;}
-    if(step===2){
-      const toStep=withTheme?3:4;
+    if(step===1){
+      const toStep=withTheme?2:3;
       setStep(toStep);
-      if(toStep===4&&vendors.length===0) setVendors(smartVendors);
+      if(!withTheme&&vendors.length===0)setVendors(smartVendors);
       return;
     }
-    if(step===3){setStep(4);if(vendors.length===0)setVendors(smartVendors);return;}
+    if(step===2){setStep(3);if(vendors.length===0)setVendors(smartVendors);return;}
+    if(step===3){setStep(4);return;}
     setStep(s=>Math.min(s+1,6));
   };
   const back=()=>{
     if(step===0){navigate(-1);return;}
     if(step===1){setStep(0);return;}
     if(step===2){setStep(1);return;}
-    if(step===4&&!withTheme){setStep(2);return;}
+    if(step===3&&withTheme){setStep(2);return;}
+    if(step===3&&!withTheme){setStep(1);return;}
     setStep(s=>s-1);
   };
   const canNext=()=>{
@@ -1169,7 +1595,7 @@ export default function OccasionDetail(){
               </div>
 
               {/* budget */}
-              <div>
+              <div style={{paddingBottom:28,borderBottom:`1px solid rgba(196,122,46,0.08)`,marginBottom:28}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
                   <div style={{fontSize:12,color:muted,fontWeight:500,fontFamily:font,letterSpacing:"0.02em"}}>what's your budget?</div>
                   <span style={{fontSize:10,color:muted,fontWeight:500}}>optional</span>
@@ -1186,90 +1612,105 @@ export default function OccasionDetail(){
                 </div>
               </div>
 
-            </div>
-          </div>
-        )}
-
-        {/* ══ STEP 2: who's coming — renders as modal overlay ══ */}
-        {step===2&&(
-          <>
-            {/* backdrop */}
-            <div style={{position:"fixed",inset:0,background:"rgba(28,14,4,0.48)",backdropFilter:"blur(5px)",WebkitBackdropFilter:"blur(5px)",zIndex:9998}} onClick={next}/>
-            {/* modal */}
-            <div style={{
-              position:"fixed",top:"50%",left:"50%",
-              transform:"translate(-50%,-50%)",
-              zIndex:9999,
-              width:"min(360px,calc(100vw - 32px))",
-              background:"#FFF8EC",
-              borderRadius:22,
-              border:"1.5px solid rgba(196,122,46,0.2)",
-              boxShadow:"0 28px 64px rgba(28,14,4,0.2),0 8px 24px rgba(28,14,4,0.1)",
-              overflow:"hidden",
-            }}>
-              <div style={{padding:"20px 20px 0"}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
-                  <p style={{fontFamily:serif,fontSize:"1.3rem",color:ink,margin:0,fontWeight:400}}>Who's coming?</p>
-                  <button onClick={next} style={{width:30,height:30,borderRadius:"50%",border:"none",background:"rgba(28,9,0,0.06)",cursor:"pointer",fontSize:15,color:"rgba(30,15,0,0.38)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>✕</button>
-                </div>
-                <p style={{fontSize:12,color:muted,margin:"0 0 16px",lineHeight:1.55}}>Helps us tailor entertainment and catering to your crowd.</p>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:ageGroups.length===0?4:12}}>
+              {/* who's coming — age groups (inline, last field) */}
+              <div>
+                <div style={{fontSize:12,color:muted,fontWeight:500,marginBottom:10,fontFamily:font,letterSpacing:"0.02em"}}>who's coming?</div>
+                <p style={{fontSize:11.5,color:muted,margin:"0 0 14px",lineHeight:1.5}}>Helps us tailor catering, entertainment and activities to your crowd.</p>
+                <div className="age-g" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
                   {AGE_GROUPS.map(ag=>{
                     const sel=ageGroups.includes(ag.id);
                     return(
                       <button key={ag.id} onClick={()=>toggleAge(ag.id)}
-                        style={{padding:"14px 8px",borderRadius:14,border:`1.5px solid ${sel?gold:border}`,background:sel?"rgba(196,122,46,0.09)":"#fff",cursor:"pointer",textAlign:"center",transition:"all 0.18s",display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-                        <span style={{fontSize:24}}>{ag.icon}</span>
-                        <div style={{fontSize:12,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{ag.label}</div>
+                        style={{padding:"14px 8px",borderRadius:14,border:`1.5px solid ${sel?gold:border}`,background:sel?"rgba(196,122,46,0.09)":"#fff",cursor:"pointer",textAlign:"center",transition:"all 0.18s",display:"flex",flexDirection:"column",alignItems:"center",gap:6,minHeight:44}}>
+                        <span style={{fontSize:22}}>{ag.icon}</span>
+                        <div style={{fontSize:11.5,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{ag.label}</div>
                         <div style={{fontSize:9.5,color:muted,lineHeight:1.2}}>{ag.sub}</div>
                         {sel&&<div style={{width:5,height:5,borderRadius:"50%",background:gold}}/>}
                       </button>
                     );
                   })}
                 </div>
-                {ageGroups.length===0&&<p style={{fontSize:11,color:"rgba(30,15,0,0.28)",textAlign:"center",margin:"0 0 12px"}}>Select all that apply — or skip</p>}
+                {ageGroups.length===0&&<p style={{fontSize:11,color:"rgba(30,15,0,0.28)",textAlign:"center",marginTop:10}}>Select all that apply — or skip</p>}
               </div>
-              <div style={{padding:"12px 20px 20px",borderTop:"1px solid rgba(196,122,46,0.1)",display:"flex",gap:8,marginTop:4}}>
-                <button onClick={next} style={{flex:1,padding:"12px 0",borderRadius:12,border:`1.5px solid rgba(196,122,46,0.22)`,background:"transparent",color:muted,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:font}}>Skip</button>
-                <button onClick={next} style={{flex:2,padding:"12px 0",borderRadius:12,border:"none",background:ink,color:"#FFF8EC",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font}}>
-                  {ageGroups.length>0?`Confirm (${ageGroups.length} selected)`:"Continue →"}
-                </button>
-              </div>
+
             </div>
-          </>
+          </div>
         )}
 
-        {/* ══ STEP 3: theme ══ */}
-        {step===3&&withTheme&&(
+        {/* ══ STEP 2: theme ══ */}
+        {step===2&&withTheme&&(
           <div className="os">
-            <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.3,marginBottom:6}}>Pick your vibe</p>
-            <p style={{fontSize:13,color:muted,marginBottom:24,lineHeight:1.6}}>Sets the look for everything — décor advice, vendor tips and gift suggestions will match.</p>
+            {/* heading */}
+            <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.25,marginBottom:6}}>How should it look?</p>
+            <p style={{fontSize:13,color:muted,marginBottom:16,lineHeight:1.6}}>Choose a decoration style for your event. This is optional — but it helps us suggest the right décor, colours, gifts and vendor tips.</p>
+
+            {/* what this does — plain explainer */}
+            <div style={{display:"flex",gap:10,padding:"12px 14px",borderRadius:12,background:"rgba(196,122,46,0.05)",border:"1px solid rgba(196,122,46,0.12)",marginBottom:20,alignItems:"flex-start"}}>
+              <span style={{fontSize:18,flexShrink:0,lineHeight:1.3}}>🎨</span>
+              <div>
+                <div style={{fontSize:12,fontWeight:700,color:ink,marginBottom:3}}>What does this mean?</div>
+                <div style={{fontSize:11.5,color:muted,lineHeight:1.55}}>Think of it as the overall look of your decorations — the colours, style and feel. Once you pick one, everything we suggest (décor, gifts, vendor tips) will match that look.</div>
+              </div>
+            </div>
+
+            {/* theme cards */}
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               {(occasion.decorThemes||[]).map((t,i)=>{
                 const sel=theme?.name===t.name;
                 const tc=themeColor(t.tags);
+                const te=themeEmoji(t.tags);
                 return(
                   <button key={i} onClick={()=>setTheme(sel?null:t)}
-                    style={{padding:"16px 18px",borderRadius:16,border:`1.5px solid ${sel?gold:border}`,background:sel?"rgba(196,122,46,0.06)":"#fff",cursor:"pointer",textAlign:"left",transition:"all 0.2s",display:"flex",alignItems:"center",gap:14,minHeight:44}}
-                    onMouseEnter={e=>{if(!sel){e.currentTarget.style.borderColor="rgba(196,122,46,0.32)";e.currentTarget.style.transform="translateY(-1px)";}}}
-                    onMouseLeave={e=>{if(!sel){e.currentTarget.style.borderColor=border;e.currentTarget.style.transform="translateY(0)";}}}
+                    style={{padding:0,borderRadius:18,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.04)":"#fff",cursor:"pointer",textAlign:"left",transition:"all 0.2s",overflow:"hidden",boxShadow:sel?"0 4px 16px rgba(196,122,46,0.14)":"0 1px 4px rgba(0,0,0,0.04)"}}
+                    onMouseEnter={e=>{if(!sel){e.currentTarget.style.borderColor="rgba(196,122,46,0.35)";e.currentTarget.style.boxShadow="0 4px 14px rgba(196,122,46,0.1)";}}}
+                    onMouseLeave={e=>{if(!sel){e.currentTarget.style.borderColor="rgba(196,122,46,0.14)";e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,0.04)";}}}
                   >
-                    <div style={{width:32,height:32,borderRadius:9,background:tc,flexShrink:0,boxShadow:`0 2px 8px ${tc}60`}}/>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:14,fontWeight:700,color:sel?gold:ink}}>{t.name}</div>
-                      <div style={{fontSize:11,color:muted,marginTop:2}}>{(t.tags||[]).join(" · ")}</div>
+                    <div style={{display:"flex",gap:0}}>
+                      {/* colour + emoji strip */}
+                      <div style={{width:68,flexShrink:0,background:`linear-gradient(160deg,${tc}55,${tc}22)`,display:"flex",alignItems:"center",justifyContent:"center",minHeight:80,position:"relative",overflow:"hidden"}}>
+                        <div style={{position:"absolute",inset:0,background:`${tc}18`}}/>
+                        <span style={{fontSize:28,position:"relative",zIndex:1,filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.1))"}}>{te}</span>
+                        {sel&&(
+                          <div style={{position:"absolute",top:7,right:7,width:18,height:18,borderRadius:"50%",background:gold,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          </div>
+                        )}
+                      </div>
+                      {/* text */}
+                      <div style={{flex:1,padding:"14px 16px 14px 14px",display:"flex",flexDirection:"column",justifyContent:"center",gap:4}}>
+                        <div style={{display:"flex",alignItems:"center",gap:7}}>
+                          <span style={{fontSize:13.5,fontWeight:800,color:sel?gold:ink,lineHeight:1.2}}>{t.name}</span>
+                          {sel&&<span style={{fontSize:9,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"2px 8px",flexShrink:0}}>Selected</span>}
+                        </div>
+                        <div style={{fontSize:12,color:muted,lineHeight:1.55}}>{t.desc}</div>
+                        {/* colour dots */}
+                        <div style={{display:"flex",gap:4,marginTop:2}}>
+                          {(t.tags||[]).slice(0,3).map(tag=>(
+                            <span key={tag} style={{fontSize:9.5,fontWeight:600,color:"rgba(30,15,0,0.4)",background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"2px 8px"}}>{tag}</span>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                    {sel&&<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
                   </button>
                 );
               })}
             </div>
-            {!theme&&<p style={{fontSize:12,color:"rgba(30,15,0,0.28)",textAlign:"center",marginTop:14}}>Tap to select — or skip to continue without a theme</p>}
+            {!theme&&<p style={{fontSize:12,color:"rgba(30,15,0,0.28)",textAlign:"center",marginTop:16}}>Tap any style to select — or press "Skip" to continue without one</p>}
+            {theme&&(
+              <div style={{marginTop:16,padding:"12px 16px",borderRadius:12,background:`rgba(196,122,46,0.06)`,border:`1px solid rgba(196,122,46,0.18)`,display:"flex",alignItems:"center",gap:10}}>
+                <span style={{fontSize:16}}>{themeEmoji(theme.tags)}</span>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:12,fontWeight:700,color:gold}}>"{theme.name}" selected</div>
+                  <div style={{fontSize:11,color:muted,marginTop:1}}>Décor, gifts and tips will all match this look</div>
+                </div>
+                <button onClick={()=>setTheme(null)} style={{fontSize:11,color:muted,background:"none",border:"none",cursor:"pointer",padding:"4px 8px",fontFamily:font}}>Clear</button>
+              </div>
+            )}
           </div>
         )}
 
-        {/* ══ STEP 4: services ══ */}
-        {step===4&&(
+        {/* ══ STEP 3: services ══ */}
+        {step===3&&(
           <div className="os">
             <p style={{fontFamily:serif,fontSize:"clamp(1.3rem,3vw,1.7rem)",color:ink,lineHeight:1.3,marginBottom:6}}>What do you need?</p>
             <p style={{fontSize:12.5,color:muted,marginBottom:18,lineHeight:1.55}}>Tap to select services — we'll show the best options for each.</p>
@@ -1335,6 +1776,231 @@ export default function OccasionDetail(){
                   const pkgs=isKnown?getVendorPackages(v,{guests,venueType,theme,ageGroups}):null;
                   const chosen=vendorPackages[v];
                   const tips=isKnown?getVendorTips(v,{theme,venueType,ageGroups,cateringType,budget,guests}):null;
+
+                  /* ── Caterer card with 3 style options + menu builder ── */
+                  if(v==="Caterer"){
+                    const cOpts=getCateringOptions(occasion,{guests,venueType,ageGroups,budget});
+                    const isCustom=chosen==="custom";
+                    const hasCustomDishes=Object.values(customCatering.dishes).some(arr=>arr.length>0);
+                    return(
+                      <div key={v} style={{marginBottom:14,borderRadius:16,border:`1.5px solid ${chosen!==undefined?gold:border}`,background:"#fff",overflow:"hidden",transition:"border-color 0.2s"}}>
+                        {/* header */}
+                        <div style={{padding:"12px 16px 10px",background:chosen!==undefined?"rgba(196,122,46,0.04)":"#fff",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+                              <span style={{fontSize:14,fontWeight:800,color:chosen!==undefined?gold:ink}}>Caterer</span>
+                              {chosen!==undefined&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.1)",border:`1px solid rgba(196,122,46,0.22)`,borderRadius:100,padding:"2px 7px"}}>Selected ✓</span>}
+                            </div>
+                            {tips&&<p style={{fontSize:11.5,color:muted,margin:0,lineHeight:1.45}}>{tips.tip.replace("Tip: ","")}</p>}
+                          </div>
+                          <button onClick={()=>{toggleVendor("Caterer");setVendorPackages(vp=>{const n={...vp};delete n["Caterer"];return n;});setShowCateringBuilder(false);}}
+                            style={{width:28,height:28,borderRadius:"50%",background:"rgba(28,9,0,0.05)",border:"none",cursor:"pointer",fontSize:14,color:"rgba(30,15,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:8}}>✕</button>
+                        </div>
+
+                        {/* 3 style options */}
+                        <div style={{borderTop:`1px solid rgba(196,122,46,0.07)`,padding:"10px 14px 0"}}>
+                          <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:8}}>Choose your catering style</div>
+                          <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:2}}>
+                            {cOpts.map((opt,oi)=>{
+                              const sel=chosen===oi;
+                              return(
+                                <button key={oi} onClick={()=>{setVendorPackages(vp=>({...vp,Caterer:oi}));setShowCateringBuilder(false);}}
+                                  style={{flex:"0 0 auto",width:"31%",minWidth:108,maxWidth:145,textAlign:"left",padding:"10px 11px",borderRadius:12,border:`1.5px solid ${sel?gold:opt.popular?"rgba(34,197,94,0.3)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:4}}>
+                                  <div style={{display:"flex",alignItems:"center",gap:4,justifyContent:"space-between",flexWrap:"wrap"}}>
+                                    <span style={{fontSize:16}}>{opt.icon}</span>
+                                    {opt.popular&&!sel&&<span style={{fontSize:7.5,fontWeight:800,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"1px 5px"}}>Best</span>}
+                                    {sel&&<span style={{fontSize:7.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"1px 5px"}}>✓</span>}
+                                  </div>
+                                  <div style={{fontSize:11.5,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{opt.style}</div>
+                                  <div style={{fontSize:10,fontWeight:700,color:"rgba(196,122,46,0.65)"}}>{opt.priceHint}</div>
+                                  <div style={{display:"flex",flexDirection:"column",gap:2}}>
+                                    {opt.dishes.slice(0,2).map((d,di)=><div key={di} style={{fontSize:10,color:muted,lineHeight:1.4}}>· {d}</div>)}
+                                    {opt.dishes.length>2&&<div style={{fontSize:10,color:"rgba(107,69,40,0.3)"}}>+{opt.dishes.length-2} more</div>}
+                                  </div>
+                                  {sel&&<button onClick={e=>{e.stopPropagation();setShowCateringBuilder(b=>!b);setCateringBuilderStep("cuisine");}}
+                                    style={{marginTop:4,fontSize:10,fontWeight:700,color:gold,background:"rgba(196,122,46,0.08)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:8,padding:"4px 8px",cursor:"pointer",fontFamily:font,textAlign:"center"}}>
+                                    ✏️ Edit dishes
+                                  </button>}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Fix your menu yourself option */}
+                        <div style={{padding:"10px 14px 12px"}}>
+                          <button onClick={()=>{setVendorPackages(vp=>({...vp,Caterer:"custom"}));setCateringBuilderStep("cuisine");setShowCateringBuilder(true);}}
+                            style={{width:"100%",padding:"10px 14px",borderRadius:11,border:`1.5px dashed ${isCustom?gold:"rgba(196,122,46,0.3)"}`,background:isCustom?"rgba(196,122,46,0.05)":"transparent",color:isCustom?gold:muted,fontSize:12.5,fontWeight:700,cursor:"pointer",fontFamily:font,display:"flex",alignItems:"center",gap:8,transition:"all 0.18s"}}>
+                            <span style={{fontSize:16}}>📋</span>
+                            <span style={{flex:1,textAlign:"left"}}>Fix your menu yourself</span>
+                            {isCustom&&hasCustomDishes&&<span style={{fontSize:10,fontWeight:600,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"2px 8px"}}>{Object.values(customCatering.dishes).flat().length} dishes picked</span>}
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                          </button>
+                        </div>
+
+                        {/* Menu Builder panel */}
+                        {showCateringBuilder&&(chosen==="custom"||typeof chosen==="number")&&(
+                          <div style={{borderTop:`1px solid rgba(196,122,46,0.1)`,background:"#FFFDF8",padding:"14px 14px 16px"}}>
+                            {cateringBuilderStep==="cuisine"&&(
+                              <>
+                                <div style={{fontSize:11,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Pick your cuisine</div>
+                                <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:7}}>
+                                  {CUISINES.map(c=>{
+                                    const sel=customCatering.cuisine===c.id;
+                                    return(
+                                      <button key={c.id} onClick={()=>{setCustomCatering(prev=>({...prev,cuisine:c.id,dishes:{}}));setCateringBuilderStep("dishes");}}
+                                        style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:10,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.15)"}`,background:sel?"rgba(196,122,46,0.07)":"#fff",cursor:"pointer",fontFamily:font,transition:"all 0.15s",minHeight:44}}>
+                                        <span style={{fontSize:18}}>{c.icon}</span>
+                                        <span style={{fontSize:12.5,fontWeight:sel?700:500,color:sel?gold:ink,textAlign:"left",lineHeight:1.3}}>{c.label}</span>
+                                        {sel&&<svg style={{marginLeft:"auto",flexShrink:0}} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </>
+                            )}
+                            {cateringBuilderStep==="dishes"&&customCatering.cuisine&&(()=>{
+                              const menuData=MENU_ITEMS[customCatering.cuisine]||{};
+                              const totalPicked=Object.values(customCatering.dishes).flat().length;
+                              return(
+                                <>
+                                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+                                    <div style={{fontSize:11,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em"}}>
+                                      {CUISINES.find(c=>c.id===customCatering.cuisine)?.label} menu
+                                    </div>
+                                    <button onClick={()=>setCateringBuilderStep("cuisine")} style={{fontSize:11,fontWeight:600,color:muted,background:"transparent",border:"none",cursor:"pointer",fontFamily:font,padding:0,textDecoration:"underline"}}>Change cuisine</button>
+                                  </div>
+                                  {MENU_CATEGORIES.filter(cat=>(menuData[cat]||[]).length>0).map(cat=>{
+                                    const items=menuData[cat]||[];
+                                    const picked=customCatering.dishes[cat]||[];
+                                    return(
+                                      <div key={cat} style={{marginBottom:12}}>
+                                        <div style={{fontSize:11,fontWeight:700,color:ink,marginBottom:7,display:"flex",alignItems:"center",gap:6}}>
+                                          {cat}
+                                          {picked.length>0&&<span style={{fontSize:9,fontWeight:800,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"1px 6px"}}>{picked.length} picked</span>}
+                                        </div>
+                                        <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                                          {items.map(item=>{
+                                            const isSel=picked.includes(item);
+                                            return(
+                                              <button key={item}
+                                                onClick={()=>setCustomCatering(prev=>({...prev,dishes:{...prev.dishes,[cat]:isSel?picked.filter(x=>x!==item):[...picked,item]}}))}
+                                                style={{padding:"6px 12px",borderRadius:100,border:`1.5px solid ${isSel?gold:"rgba(196,122,46,0.18)"}`,background:isSel?"rgba(196,122,46,0.1)":"#fff",color:isSel?gold:ink,fontSize:12,fontWeight:isSel?700:400,cursor:"pointer",fontFamily:font,transition:"all 0.15s",minHeight:32}}>
+                                                {item}
+                                              </button>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                  {totalPicked>0&&<div style={{marginTop:8,fontSize:11.5,fontWeight:600,color:"#16a34a"}}>{totalPicked} dish{totalPicked!==1?"es":""} selected — looks great!</div>}
+                                </>
+                              );
+                            })()}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  /* ── Decorator card with 3 style options + decor builder ── */
+                  if(v==="Decorator"){
+                    const dOpts=getDecorOptions(occasion,{guests,venueType,theme,ageGroups});
+                    const isCustom=chosen==="custom";
+                    const totalDecorItems=Object.values(customDecor).flat().length;
+                    return(
+                      <div key={v} style={{marginBottom:14,borderRadius:16,border:`1.5px solid ${chosen!==undefined?gold:border}`,background:"#fff",overflow:"hidden",transition:"border-color 0.2s"}}>
+                        {/* header */}
+                        <div style={{padding:"12px 16px 10px",background:chosen!==undefined?"rgba(196,122,46,0.04)":"#fff",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+                              <span style={{fontSize:14,fontWeight:800,color:chosen!==undefined?gold:ink}}>Decorator</span>
+                              {chosen!==undefined&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.1)",border:`1px solid rgba(196,122,46,0.22)`,borderRadius:100,padding:"2px 7px"}}>Selected ✓</span>}
+                            </div>
+                            {tips&&<p style={{fontSize:11.5,color:muted,margin:0,lineHeight:1.45}}>{tips.tip.replace("Tip: ","")}</p>}
+                          </div>
+                          <button onClick={()=>{toggleVendor("Decorator");setVendorPackages(vp=>{const n={...vp};delete n["Decorator"];return n;});setShowDecorBuilder(false);}}
+                            style={{width:28,height:28,borderRadius:"50%",background:"rgba(28,9,0,0.05)",border:"none",cursor:"pointer",fontSize:14,color:"rgba(30,15,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:8}}>✕</button>
+                        </div>
+
+                        {/* 3 style options */}
+                        <div style={{borderTop:`1px solid rgba(196,122,46,0.07)`,padding:"10px 14px 0"}}>
+                          <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:8}}>Choose your decor style</div>
+                          <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:2}}>
+                            {dOpts.map((opt,oi)=>{
+                              const sel=chosen===oi;
+                              return(
+                                <button key={oi} onClick={()=>{setVendorPackages(vp=>({...vp,Decorator:oi}));setShowDecorBuilder(false);}}
+                                  style={{flex:"0 0 auto",width:"31%",minWidth:108,maxWidth:145,textAlign:"left",padding:"10px 11px",borderRadius:12,border:`1.5px solid ${sel?gold:opt.popular?"rgba(34,197,94,0.3)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:4}}>
+                                  <div style={{display:"flex",alignItems:"center",gap:4,justifyContent:"space-between",flexWrap:"wrap"}}>
+                                    <span style={{fontSize:16}}>{opt.icon}</span>
+                                    {opt.popular&&!sel&&<span style={{fontSize:7.5,fontWeight:800,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"1px 5px"}}>Best</span>}
+                                    {sel&&<span style={{fontSize:7.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"1px 5px"}}>✓</span>}
+                                  </div>
+                                  <div style={{fontSize:11.5,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{opt.style}</div>
+                                  <div style={{fontSize:10,fontWeight:700,color:"rgba(196,122,46,0.65)"}}>{opt.priceHint}</div>
+                                  <div style={{display:"flex",flexDirection:"column",gap:2}}>
+                                    {opt.items.slice(0,2).map((it,ii)=><div key={ii} style={{fontSize:10,color:muted,lineHeight:1.4}}>· {it}</div>)}
+                                    {opt.items.length>2&&<div style={{fontSize:10,color:"rgba(107,69,40,0.3)"}}>+{opt.items.length-2} more</div>}
+                                  </div>
+                                  {sel&&<button onClick={e=>{e.stopPropagation();setShowDecorBuilder(b=>!b);}}
+                                    style={{marginTop:4,fontSize:10,fontWeight:700,color:gold,background:"rgba(196,122,46,0.08)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:8,padding:"4px 8px",cursor:"pointer",fontFamily:font,textAlign:"center"}}>
+                                    ✏️ Edit items
+                                  </button>}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Fix the things required option */}
+                        <div style={{padding:"10px 14px 12px"}}>
+                          <button onClick={()=>{setVendorPackages(vp=>({...vp,Decorator:"custom"}));setShowDecorBuilder(true);}}
+                            style={{width:"100%",padding:"10px 14px",borderRadius:11,border:`1.5px dashed ${isCustom?gold:"rgba(196,122,46,0.3)"}`,background:isCustom?"rgba(196,122,46,0.05)":"transparent",color:isCustom?gold:muted,fontSize:12.5,fontWeight:700,cursor:"pointer",fontFamily:font,display:"flex",alignItems:"center",gap:8,transition:"all 0.18s"}}>
+                            <span style={{fontSize:16}}>🎨</span>
+                            <span style={{flex:1,textAlign:"left"}}>Fix the items yourself</span>
+                            {isCustom&&totalDecorItems>0&&<span style={{fontSize:10,fontWeight:600,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"2px 8px"}}>{totalDecorItems} items picked</span>}
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                          </button>
+                        </div>
+
+                        {/* Decor Builder panel */}
+                        {showDecorBuilder&&(chosen==="custom"||typeof chosen==="number")&&(
+                          <div style={{borderTop:`1px solid rgba(196,122,46,0.1)`,background:"#FFFDF8",padding:"14px 14px 16px"}}>
+                            <div style={{fontSize:11,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:12}}>Pick what you need</div>
+                            {DECOR_CATEGORIES.map(cat=>{
+                              const items=DECOR_ITEMS[cat]||[];
+                              const picked=(customDecor[cat]||[]);
+                              return(
+                                <div key={cat} style={{marginBottom:14}}>
+                                  <div style={{fontSize:11,fontWeight:700,color:ink,marginBottom:7,display:"flex",alignItems:"center",gap:6}}>
+                                    {cat}
+                                    {picked.length>0&&<span style={{fontSize:9,fontWeight:800,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"1px 6px"}}>{picked.length} picked</span>}
+                                  </div>
+                                  <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                                    {items.map(item=>{
+                                      const isSel=picked.includes(item);
+                                      return(
+                                        <button key={item}
+                                          onClick={()=>setCustomDecor(prev=>({...prev,[cat]:isSel?picked.filter(x=>x!==item):[...picked,item]}))}
+                                          style={{padding:"6px 12px",borderRadius:100,border:`1.5px solid ${isSel?gold:"rgba(196,122,46,0.18)"}`,background:isSel?"rgba(196,122,46,0.1)":"#fff",color:isSel?gold:ink,fontSize:12,fontWeight:isSel?700:400,cursor:"pointer",fontFamily:font,transition:"all 0.15s",minHeight:32}}>
+                                          {item}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            {totalDecorItems>0&&<div style={{marginTop:4,fontSize:11.5,fontWeight:600,color:"#16a34a"}}>{totalDecorItems} item{totalDecorItems!==1?"s":""} selected</div>}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  /* ── all other vendors (unchanged) ── */
                   return(
                     <div key={v} style={{marginBottom:14,borderRadius:16,border:`1.5px solid ${chosen!==undefined?gold:border}`,background:"#fff",overflow:"hidden",transition:"border-color 0.2s"}}>
                       {/* header row */}
@@ -1349,26 +2015,17 @@ export default function OccasionDetail(){
                         <button onClick={()=>{toggleVendor(v);setVendorPackages(vp=>{const n={...vp};delete n[v];return n;});}}
                           style={{width:28,height:28,borderRadius:"50%",background:"rgba(28,9,0,0.05)",border:"none",cursor:"pointer",fontSize:14,color:"rgba(30,15,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:8}}>✕</button>
                       </div>
-                      {/* packages — top 3 options */}
+                      {/* packages */}
                       {pkgs&&(
                         <div style={{borderTop:`1px solid rgba(196,122,46,0.07)`,padding:"10px 14px 12px"}}>
                           <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:2}}>
                             {pkgs.slice(0,3).map((pkg,pi)=>{
                               const sel=chosen===pi;
                               const cost=approxCost(pkg.price,guests);
-                              const budgetFit=perVendorBudget&&cost
-                                ?(cost<=perVendorBudget*1.25?"fits":cost<=perVendorBudget*2?"stretch":"over")
-                                :null;
+                              const budgetFit=perVendorBudget&&cost?(cost<=perVendorBudget*1.25?"fits":cost<=perVendorBudget*2?"stretch":"over"):null;
                               return(
                                 <button key={pkg.label} onClick={()=>setVendorPackages(vp=>({...vp,[v]:pi}))}
-                                  style={{
-                                    flex:"0 0 auto",width:"31%",minWidth:100,maxWidth:140,
-                                    textAlign:"left",padding:"10px 11px",borderRadius:12,
-                                    border:`1.5px solid ${sel?gold:budgetFit==="fits"?"rgba(34,197,94,0.35)":"rgba(196,122,46,0.14)"}`,
-                                    background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",
-                                    cursor:"pointer",fontFamily:font,transition:"all 0.18s",
-                                    display:"flex",flexDirection:"column",gap:4,
-                                  }}>
+                                  style={{flex:"0 0 auto",width:"31%",minWidth:100,maxWidth:140,textAlign:"left",padding:"10px 11px",borderRadius:12,border:`1.5px solid ${sel?gold:budgetFit==="fits"?"rgba(34,197,94,0.35)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:4}}>
                                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:4,flexWrap:"wrap"}}>
                                     <span style={{fontSize:12,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{pkg.label}</span>
                                     {budgetFit==="fits"&&!sel&&<span style={{fontSize:7.5,fontWeight:800,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"1px 5px",flexShrink:0}}>✓ Budget</span>}
@@ -1420,6 +2077,66 @@ export default function OccasionDetail(){
                 <p style={{fontSize:12.5,color:muted,margin:0,lineHeight:1.6}}>{theme.desc}</p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ══ STEP 4: entertainment & activities ══ */}
+        {step===4&&(
+          <div className="os">
+            <p style={{fontFamily:serif,fontSize:"clamp(1.3rem,3vw,1.7rem)",color:ink,lineHeight:1.3,marginBottom:6}}>Add entertainment</p>
+            <p style={{fontSize:12.5,color:muted,marginBottom:18,lineHeight:1.55}}>Anchors, bands, stalls, performers, special shows & games — all bookable through Tendr. Pick what you'd love.</p>
+            {(()=>{
+              const actSuggestions=getActivitySuggestions(occasion,{ageGroups,theme});
+              const totalSelected=selectedActivities.length;
+              return(
+                <div>
+                  {totalSelected>0&&(
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,padding:"10px 14px",borderRadius:12,background:"rgba(196,122,46,0.06)",border:`1px solid rgba(196,122,46,0.18)`}}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      <span style={{fontSize:12,fontWeight:700,color:gold}}>{totalSelected} item{totalSelected!==1?"s":""} added to your plan</span>
+                    </div>
+                  )}
+                  {ACTIVITY_TYPES.map(({key,label,singular,icon:typeIcon})=>{
+                    const items=actSuggestions[key]||[];
+                    if(!items.length) return null;
+                    return(
+                      <div key={key} style={{marginBottom:20}}>
+                        <div style={{fontSize:10,fontWeight:800,color:"rgba(196,122,46,0.55)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>
+                          <span style={{fontSize:14}}>{typeIcon}</span>{label}
+                        </div>
+                        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                          {items.map(a=>{
+                            const sel=selectedActivities.includes(a.id);
+                            return(
+                              <button key={a.id} onClick={()=>toggleActivity(a.id)}
+                                style={{display:"flex",alignItems:"center",gap:12,padding:"13px 14px",borderRadius:14,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.15)"}`,background:sel?"rgba(196,122,46,0.06)":"#fff",cursor:"pointer",fontFamily:font,transition:"all 0.18s",textAlign:"left",minHeight:44}}
+                                onMouseEnter={e=>{if(!sel){e.currentTarget.style.borderColor="rgba(196,122,46,0.32)";e.currentTarget.style.background="#FFFBF4";}}}
+                                onMouseLeave={e=>{if(!sel){e.currentTarget.style.borderColor="rgba(196,122,46,0.15)";e.currentTarget.style.background="#fff";}}}>
+                                <div style={{width:42,height:42,borderRadius:12,background:sel?"rgba(196,122,46,0.12)":"rgba(196,122,46,0.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:21,flexShrink:0}}>
+                                  {a.icon}
+                                </div>
+                                <div style={{flex:1,minWidth:0}}>
+                                  <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:2}}>
+                                    <span style={{fontSize:13,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{a.name}</span>
+                                    <span style={{fontSize:9,fontWeight:700,color:sel?"#fff":muted,background:sel?gold:"rgba(28,9,0,0.07)",borderRadius:100,padding:"1px 7px",flexShrink:0,textTransform:"uppercase",letterSpacing:"0.06em"}}>{singular}</span>
+                                  </div>
+                                  <div style={{fontSize:11.5,color:muted,lineHeight:1.4,marginBottom:3}}>{a.desc}</div>
+                                  <div style={{fontSize:11,fontWeight:700,color:gold}}>{a.price}</div>
+                                </div>
+                                <div style={{width:22,height:22,borderRadius:"50%",border:`2px solid ${sel?gold:"rgba(196,122,46,0.2)"}`,background:sel?gold:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.18s"}}>
+                                  {sel&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {totalSelected===0&&<p style={{fontSize:12,color:"rgba(30,15,0,0.28)",textAlign:"center",marginTop:8}}>Tap any item to add it — or skip to continue</p>}
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -1478,7 +2195,7 @@ export default function OccasionDetail(){
               </button>
               <button
                 onClick={()=>{
-                  const msg=buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups});
+                  const msg=buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customCatering,customDecor});
                   document.dispatchEvent(new CustomEvent("tendr:open-chat-with-plan",{detail:{message:msg}}));
                 }}
                 style={{flex:1,padding:"13px 16px",borderRadius:12,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font,display:"flex",alignItems:"center",justifyContent:"center",gap:7}}>
@@ -1524,7 +2241,9 @@ export default function OccasionDetail(){
                     <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                       {catVendors.map(v=>{
                         const pkgIdx=vendorPackages[v];
-                        const pkgLabel=pkgIdx!==undefined&&ALL_VENDORS.includes(v)
+                        const pkgLabel=pkgIdx==="custom"
+                          ?"Custom"
+                          :typeof pkgIdx==="number"&&ALL_VENDORS.includes(v)
                           ?getVendorPackages(v,{guests,venueType,theme,ageGroups})[pkgIdx]?.label
                           :null;
                         return(
@@ -1544,7 +2263,41 @@ export default function OccasionDetail(){
               </div>
             </div>
 
-            {/* timeline */}
+            {/* event itinerary — hero of the plan */}
+            {(()=>{
+              const itinerary=buildItinerary(occasion,{guests,vendors,selectedActivities,venueType,ageGroups});
+              if(!itinerary.length) return null;
+              return(
+                <div style={{marginBottom:20}}>
+                  <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:12,fontFamily:font}}>Your event itinerary</div>
+                  <div style={{background:"#fff",borderRadius:14,border:`1px solid ${border}`,overflow:"hidden"}}>
+                    {itinerary.map((slot,i)=>{
+                      const isHighlight=slot.type==="highlight";
+                      const isFun=slot.type==="fun";
+                      const isLast=i===itinerary.length-1;
+                      return(
+                        <div key={i} style={{display:"flex",gap:0,position:"relative"}}>
+                          <div style={{width:72,flexShrink:0,padding:"12px 10px 12px 14px",display:"flex",flexDirection:"column",alignItems:"flex-end",justifyContent:"flex-start",paddingTop:14}}>
+                            <span style={{fontSize:10.5,fontWeight:700,color:isHighlight?gold:muted,lineHeight:1.2,textAlign:"right",letterSpacing:"-0.01em"}}>{slot.time}</span>
+                          </div>
+                          <div style={{width:24,flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",position:"relative"}}>
+                            <div style={{width:10,height:10,borderRadius:"50%",background:isHighlight?gold:isFun?"#7C3AED":"rgba(196,122,46,0.3)",border:`2px solid ${isHighlight?gold:isFun?"#7C3AED":"rgba(196,122,46,0.15)"}`,marginTop:16,flexShrink:0,zIndex:1}}/>
+                            {!isLast&&<div style={{width:2,flex:1,background:"rgba(196,122,46,0.08)",marginTop:2}}/>}
+                          </div>
+                          <div style={{flex:1,padding:"12px 14px 12px 8px",borderBottom:isLast?"none":`1px solid rgba(196,122,46,0.06)`}}>
+                            <div style={{fontSize:12.5,fontWeight:isHighlight?800:700,color:isHighlight?gold:ink,lineHeight:1.3,marginBottom:slot.desc?3:0}}>{slot.title}</div>
+                            {slot.desc&&<div style={{fontSize:11.5,color:muted,lineHeight:1.45}}>{slot.desc}</div>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div style={{fontSize:11,color:muted,marginTop:8,textAlign:"center",lineHeight:1.4}}>Timings are approximate — adjust as needed for your event</div>
+                </div>
+              );
+            })()}
+
+            {/* timeline — booking countdown */}
             {timeline&&(
               <div style={{marginBottom:24}}>
                 <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:16,fontFamily:font}}>Your timeline · {timeline.days} days to go</div>
@@ -1580,7 +2333,7 @@ export default function OccasionDetail(){
             )}
 
             {/* WhatsApp CTA — includes all selected vendors + packages */}
-            <a href={buildBaatKaroMsg(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget})}
+            <a href={buildBaatKaroMsg(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,selectedActivities})}
               target="_blank" rel="noopener noreferrer"
               style={{display:"flex",alignItems:"center",gap:12,padding:"14px 18px",borderRadius:14,background:"#25D366",marginBottom:20,textDecoration:"none",transition:"opacity 0.18s"}}
               onMouseEnter={e=>{e.currentTarget.style.opacity="0.88";}} onMouseLeave={e=>{e.currentTarget.style.opacity="1";}}>
@@ -1591,6 +2344,28 @@ export default function OccasionDetail(){
               </div>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </a>
+
+            {/* fun activities in plan */}
+            {selectedActivities.length>0&&(
+              <div style={{marginBottom:20}}>
+                <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:12,fontFamily:font}}>Entertainment & Activities booked</div>
+                {selectedActivities.map(id=>{
+                  const a=ALL_ACTIVITY_ITEMS.find(x=>x.id===id);
+                  if(!a) return null;
+                  const typeEntry=ACTIVITY_TYPES.find(t=>ALL_ACTIVITIES[t.key]?.some(x=>x.id===id));
+                  const typeLabel=typeEntry?.singular||"Activity";
+                  return(
+                    <div key={id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:10,background:"#fff",border:`1px solid ${border}`,marginBottom:6}}>
+                      <span style={{fontSize:18,flexShrink:0}}>{a.icon}</span>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:12.5,fontWeight:700,color:ink}}>{a.name}</div>
+                        <div style={{fontSize:10.5,color:muted}}>{a.price} · {typeLabel}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* gifts */}
             {gifts.length>0&&(
@@ -1674,15 +2449,15 @@ export default function OccasionDetail(){
             {step>0&&<button onClick={back} style={btnGhost}>← Back</button>}
             {step<6&&(
               <button onClick={next} disabled={!canNext()} style={btnPrimary}>
-                {step===1&&(!date?"Set a date first →":"Next — Who's coming? →")}
-                {step===2&&"Next →"}
-                {step===3&&(theme?`Use "${theme.name}" →`:"Skip — no theme →")}
-                {step===4&&(vendors.length>0?allVendorsChosen?"Skip to Gifts →":"Choose packages above →":"Skip →")}
+                {step===1&&(!date?"Set a date first →":"Next →")}
+                {step===2&&(theme?`Use "${theme.name}" →`:"Skip — no theme →")}
+                {step===3&&(vendors.length>0?allVendorsChosen?"Next — Add Entertainment →":"Choose packages above →":"Skip →")}
+                {step===4&&(selectedActivities.length>0?`Next — Pick Gifts →`:"Skip — pick gifts →")}
                 {step===5&&(gifts.length>0?"See my plan →":"Skip — see plan →")}
               </button>
             )}
             {step===6&&(
-              <button onClick={()=>window.open(buildBaatKaroMsg(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget}),"_blank","noopener")} style={btnPrimary}>
+              <button onClick={()=>window.open(buildBaatKaroMsg(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,selectedActivities}),"_blank","noopener")} style={btnPrimary}>
                 Send to Baat Karo ↗
               </button>
             )}
