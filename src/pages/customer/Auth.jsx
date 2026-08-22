@@ -62,6 +62,7 @@ const Auth = () => {
   const [localError, setLocalError] = useState("");
   const [formData, setFormData] = useState({ name: "", email: "", password: "", phoneNumber: "", location: "", companyName: "", gstNumber: "", businessName: "", serviceType: "" });
   const [accountType, setAccountType] = useState("personal");
+  const [signupStep, setSignupStep] = useState("role"); // "role" | "form"
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState("");
@@ -78,6 +79,7 @@ const Auth = () => {
     navigate(isSignup ? "/login" : "/signup");
     setPasswordError("");
     setShowPassword(false);
+    setSignupStep("role");
     setLocalError("");
   };
 
@@ -138,6 +140,7 @@ const Auth = () => {
       dispatch({ type: "auth/login/fulfilled", payload: data });
       if (data.consumer?.isAdmin) { navigate("/AdminDashboard"); return; }
       if (accountType === "vendor") { navigate("/vendor/register"); return; }
+      if (accountType === "company") { navigate("/dashboard"); return; }
       // Extend discovery session TTL to event date on signup
       try {
         const raw = JSON.parse(localStorage.getItem("tendr:session:discovery") || "null");
@@ -334,10 +337,10 @@ const Auth = () => {
           {/* Title */}
           <div style={{ textAlign: "center", marginBottom: 28 }}>
             <h2 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px", letterSpacing: "-0.01em" }}>
-              {isSignup ? "Create your account" : "Welcome back"}
+              {isSignup && signupStep === "role" ? "Who are you?" : isSignup ? "Create your account" : "Welcome back"}
             </h2>
             <p style={{ fontSize: 13.5, color: "#9B7450", margin: 0 }}>
-              {isSignup ? "Join Tendr and start planning your event" : "Sign in to continue planning your event"}
+              {isSignup && signupStep === "role" ? "Tell us how you'll use Tendr so we can set up the right experience" : isSignup ? "Join Tendr and start planning your event" : "Sign in to continue planning your event"}
             </p>
           </div>
 
@@ -374,45 +377,107 @@ const Auth = () => {
             );
           })()}
 
-          {isSignup ? (
+          {isSignup && signupStep === "role" ? (
+            /* ── Step 1: Role selection ── */
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 4px", textAlign: "center", fontFamily: font }}>
+                Select how you'll be using Tendr
+              </p>
+              {[
+                {
+                  value: "personal",
+                  icon: (
+                    <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  ),
+                  label: "Personal",
+                  sub: "Planning a wedding, birthday, or private party",
+                },
+                {
+                  value: "company",
+                  icon: (
+                    <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                    </svg>
+                  ),
+                  label: "Professional / Corporate",
+                  sub: "Booking events for your company or organisation",
+                },
+                {
+                  value: "vendor",
+                  icon: (
+                    <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                  ),
+                  label: "Vendor / Service Provider",
+                  sub: "DJ, photographer, caterer, decorator, or other event professional",
+                },
+              ].map(({ value, icon, label, sub }) => {
+                const active = accountType === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setAccountType(value)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 14, textAlign: "left",
+                      padding: "14px 16px", borderRadius: 14, width: "100%", cursor: "pointer",
+                      border: active ? "2px solid #C47A2E" : "1.5px solid rgba(139,69,19,0.18)",
+                      background: active ? "rgba(196,122,46,0.06)" : "#fff",
+                      transition: "all 0.15s", fontFamily: font,
+                    }}
+                  >
+                    <div style={{
+                      width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                      background: active ? "rgba(196,122,46,0.12)" : "rgba(139,69,19,0.05)",
+                      border: active ? "1.5px solid rgba(196,122,46,0.3)" : "1px solid rgba(139,69,19,0.1)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      color: active ? "#C47A2E" : "#9B7450",
+                    }}>
+                      {icon}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: active ? "#C47A2E" : "#2C1A0E", marginBottom: 2 }}>{label}</div>
+                      <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.4 }}>{sub}</div>
+                    </div>
+                    <div style={{
+                      width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
+                      border: active ? "none" : "1.5px solid rgba(139,69,19,0.22)",
+                      background: active ? "#C47A2E" : "transparent",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      {active && <svg width={10} height={10} viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                    </div>
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => setSignupStep("form")}
+                style={{
+                  marginTop: 4, width: "100%", padding: "13px",
+                  background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",
+                  color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: font,
+                  border: "none", borderRadius: 12, cursor: "pointer",
+                  boxShadow: "0 4px 14px rgba(196,122,46,0.35)", transition: "all 0.2s",
+                }}
+              >
+                Continue as {accountType === "vendor" ? "Vendor" : accountType === "company" ? "Professional" : "Personal"} →
+              </button>
+            </div>
+          ) : isSignup ? (
             <form onSubmit={handleSignupSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
-              {/* Account type toggle */}
-              <div>
-                <label style={labelStyle}>I am signing up as</label>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-                  {[
-                    { value: "personal", icon: "👤", label: "Personal" },
-                    { value: "company", icon: "🏢", label: "Company" },
-                    { value: "vendor",  icon: "🎪", label: "Vendor" },
-                  ].map(({ value, icon, label }) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => setAccountType(value)}
-                      disabled={isBusy}
-                      style={{
-                        padding: "10px 8px",
-                        borderRadius: 12,
-                        border: accountType === value ? "2px solid #C47A2E" : "1.5px solid rgba(139,69,19,0.22)",
-                        background: accountType === value ? "rgba(196,122,46,0.08)" : "#fff",
-                        color: accountType === value ? "#C47A2E" : "#7A5535",
-                        fontFamily: font,
-                        fontSize: 12.5,
-                        fontWeight: accountType === value ? 700 : 500,
-                        cursor: isBusy ? "not-allowed" : "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 5,
-                        transition: "all 0.15s",
-                      }}
-                    >
-                      <span style={{ fontSize: 15 }}>{icon}</span>
-                      {label}
-                    </button>
-                  ))}
-                </div>
+              {/* Role pill + back */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 12px", background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 10 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E" }}>
+                  {accountType === "vendor" ? "🎤 Vendor account" : accountType === "company" ? "🏢 Professional / Corporate" : "👤 Personal account"}
+                </span>
+                <button type="button" onClick={() => setSignupStep("role")} style={{ background: "none", border: "none", fontSize: 12, color: "#9B7450", cursor: "pointer", fontFamily: font, fontWeight: 600, padding: 0 }}>
+                  Change
+                </button>
               </div>
 
               {/* Company fields */}
@@ -439,14 +504,8 @@ const Auth = () => {
 
               {/* Vendor fields */}
               {accountType === "vendor" && (
-                <div style={{ background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 14, padding: "16px 14px", display: "flex", flexDirection: "column", gap: 14 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-                    <span style={{ fontSize: 16 }}>🎪</span>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>Vendor Account</div>
-                      <div style={{ fontSize: 11.5, color: "#9B7450", marginTop: 1 }}>After signup you'll complete your full vendor profile &amp; listing.</div>
-                    </div>
-                  </div>
+                <div style={{ background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 14, padding: "14px 14px", display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div style={{ fontSize: 12, color: "#9B7450" }}>After signup you'll complete your full listing profile.</div>
                   <div>
                     <label style={labelStyle}>Business / Brand Name <span style={{ color: "#C0392B" }}>*</span></label>
                     <input
