@@ -17,7 +17,7 @@ const savePlaces= (ids) => localStorage.setItem(SAVED_KEY, JSON.stringify(ids));
 
 const fmt = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
 
-const SVC_ICONS = { Decoration: "🎀", Catering: "🍽️", Photography: "📸", DJ: "🎵" };
+const SVC_ICONS = {};
 
 function Stars({ rating, size = 12 }) {
   return (
@@ -95,7 +95,7 @@ export default function PartyPlacesPage() {
           <div style={{ fontSize: 11, fontWeight: 700, color: goldLt, textTransform: "uppercase", letterSpacing: "0.16em", marginBottom: 14 }}>
             Tendr Party Places
           </div>
-          <h1 style={{ fontSize: "clamp(2rem,5vw,3.2rem)", fontWeight: 900, color: "#fff", margin: "0 0 12px", lineHeight: 1.1, letterSpacing: "-0.02em" }}>
+          <h1 style={{ fontSize: "clamp(2rem,5vw,3.2rem)", fontWeight: 700, color: "#fff", margin: "0 0 12px", lineHeight: 1.1, letterSpacing: "-0.015em" }}>
             Party places.<br />Fully arranged.
           </h1>
           <p style={{ fontSize: "clamp(13px,2vw,15px)", color: "rgba(255,255,255,0.62)", margin: "0 0 32px", lineHeight: 1.6, maxWidth: 520 }}>
@@ -129,18 +129,13 @@ export default function PartyPlacesPage() {
         </div>
       </div>
 
-      {/* ── Why Tendr USP strip ── */}
-      <div style={{ background: "#fff", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
-        <div style={{ maxWidth: 960, margin: "0 auto", padding: "14px 28px", display: "flex", gap: 32, justifyContent: "center", flexWrap: "wrap" }}>
-          {[
-            { icon: "🎀", text: "Decor arranged" },
-            { icon: "🍽️", text: "Catering on-site" },
-            { icon: "🎵", text: "DJ & sound" },
-            { icon: "📸", text: "Photography" },
-            { icon: "💬", text: "Book via WhatsApp" },
-          ].map(({ icon, text }) => (
-            <div key={text} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12.5, color: "#5a3a1a", fontWeight: 600, whiteSpace: "nowrap" }}>
-              <span style={{ fontSize: 16 }}>{icon}</span> {text}
+      {/* ── USP strip ── */}
+      <div style={{ background: "#fff", borderBottom: "1px solid rgba(196,122,46,0.08)" }}>
+        <div style={{ maxWidth: 960, margin: "0 auto", padding: "13px 28px", display: "flex", gap: 0, justifyContent: "center", flexWrap: "wrap" }}>
+          {["Decor arranged", "Catering on-site", "DJ & sound", "Photography", "Book via WhatsApp"].map((text, i, arr) => (
+            <div key={text} style={{ display: "flex", alignItems: "center", gap: 0, whiteSpace: "nowrap" }}>
+              <span style={{ fontSize: 12, color: "#7A5535", fontWeight: 600, padding: "0 20px" }}>{text}</span>
+              {i < arr.length - 1 && <span style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(196,122,46,0.3)", display: "inline-block", flexShrink: 0 }} />}
             </div>
           ))}
         </div>
@@ -218,8 +213,8 @@ export default function PartyPlacesPage() {
                     <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 45%, transparent 100%)" }} />
 
                     {/* Services badge */}
-                    <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(28,9,0,0.7)", backdropFilter: "blur(6px)", color: "#fff", borderRadius: 100, padding: "4px 10px", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", gap: 5 }}>
-                      <span>🎉</span> {svcCount} services included
+                    <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(28,9,0,0.68)", backdropFilter: "blur(6px)", color: "#CCAB4A", borderRadius: 100, padding: "4px 11px", fontSize: 10.5, fontWeight: 700 }}>
+                      {svcCount} services included
                     </div>
 
                     {/* Save heart */}
@@ -249,19 +244,20 @@ export default function PartyPlacesPage() {
                       {place.location}
                     </div>
 
-                    {/* Service icons */}
-                    <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
+                    {/* Service pills */}
+                    <div style={{ display: "flex", gap: 5, marginBottom: 10, flexWrap: "wrap" }}>
                       {Object.keys(place.packages || {}).map(svc => (
-                        <span key={svc} style={{ fontSize: 11, color: "#5a3a1a", background: "rgba(196,122,46,0.08)", borderRadius: 100, padding: "3px 9px", fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>
-                          {SVC_ICONS[svc]} {svc}
+                        <span key={svc} style={{ fontSize: 10.5, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 100, padding: "3px 9px", fontWeight: 600 }}>
+                          {svc}
                         </span>
                       ))}
                     </div>
 
                     {/* Capacity + price row */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span style={{ fontSize: 11.5, color: "#7A5535", fontWeight: 600 }}>
-                        👥 {place.minGuests}–{place.maxGuests} guests
+                      <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11.5, color: "#7A5535", fontWeight: 600 }}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        {place.minGuests}–{place.maxGuests} guests
                       </span>
                       <div style={{ textAlign: "right" }}>
                         <span style={{ fontSize: 11, color: "#9B7450" }}>from </span>

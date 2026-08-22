@@ -267,51 +267,31 @@ export function FunActivityCard({ activity, onQuickView, onBook, onAddToCart }) 
   const isMobile = window.innerWidth < 768;
   return (
     <div onClick={() => onQuickView(activity)}
-      style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(44,26,14,0.07)", overflow: "hidden", boxShadow: "0 2px 12px rgba(44,26,14,0.06)", transition: "all 0.2s", display: "flex", flexDirection: "column", minWidth: isMobile ? 150 : 210, flex: "0 0 auto", cursor: "pointer" }}
-      onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.16)"; e.currentTarget.style.transform = "translateY(-3px)"; }}
-      onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 12px rgba(44,26,14,0.06)"; e.currentTarget.style.transform = "translateY(0)"; }}>
+      style={{ borderRadius: 11, overflow: "hidden", position: "relative", cursor: "pointer", aspectRatio: "3/4", transition: "transform 0.22s ease", minWidth: isMobile ? 138 : 175, flex: "0 0 auto" }}
+      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; }}
+      onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; }}>
 
-      {/* Image header */}
-      <div style={{ position: "relative", height: isMobile ? 120 : 160, overflow: "hidden", flexShrink: 0 }}>
-        <img
-          src={activity.image}
-          alt={activity.name}
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-        />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 60%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", top: 8, right: 8 }}>
-          <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: isMobile ? 10 : 12, fontWeight: 900, padding: isMobile ? "3px 8px" : "4px 10px", borderRadius: "100px 100px 100px 4px", fontFamily: F }}>
-            ₹{activity.price.toLocaleString("en-IN")}
-          </div>
-          <div style={{ fontSize: 8, color: GOLD, fontWeight: 800, letterSpacing: "0.1em", textAlign: "center", marginTop: 2, fontFamily: F }}>
-            {activity.perUnit ? activity.unitLabel.toUpperCase() : "FIXED"}
-          </div>
-        </div>
+      <img src={activity.image} alt={activity.name} loading="lazy"
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,14,4,0.92) 0%, rgba(28,14,4,0.28) 52%, transparent 100%)" }} />
+
+      {/* Price badge */}
+      <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(28,14,4,0.62)", backdropFilter: "blur(6px)", borderRadius: 5, padding: "3px 8px" }}>
+        <span style={{ fontSize: isMobile ? 10 : 10.5, fontWeight: 700, color: "#CCAB4A", fontFamily: F }}>₹{activity.price.toLocaleString("en-IN")}</span>
       </div>
 
-      <div style={{ padding: isMobile ? "8px 10px 10px" : "12px 14px 14px", flex: 1, display: "flex", flexDirection: "column" }}>
-        <h3 style={{ fontSize: isMobile ? 11 : 14, fontWeight: 800, color: BROWN, margin: `0 0 ${isMobile ? 3 : 5}px`, fontFamily: F }}>{activity.name}</h3>
+      {/* Cart button */}
+      <button
+        onClick={e => { e.stopPropagation(); onAddToCart(activity); }}
+        style={{ position: "absolute", top: 10, left: 10, background: "rgba(28,14,4,0.62)", backdropFilter: "blur(6px)", borderRadius: 5, padding: "3px 8px", border: "1px solid rgba(196,122,46,0.38)", cursor: "pointer", fontFamily: F }}
+      >
+        <span style={{ fontSize: 9.5, fontWeight: 700, color: "#CCAB4A" }}>+ Cart</span>
+      </button>
 
-        <div style={{ display: "flex", gap: 4, marginBottom: isMobile ? 5 : 7, flexWrap: "wrap" }}>
-          {activity.tags?.[0] && (
-            <span style={{ fontSize: 9, color: GOLD, background: "rgba(196,122,46,0.1)", padding: "2px 7px", borderRadius: 100, fontFamily: F, fontWeight: 700, textTransform: "capitalize" }}>{activity.tags[0]}</span>
-          )}
-          <span style={{ fontSize: 9, color: "#9B7450", background: "#F9F5F0", padding: "2px 6px", borderRadius: 100, fontFamily: F }}>⏱ {activity.duration}</span>
-          <span style={{ fontSize: 9, color: "#9B7450", background: "#F9F5F0", padding: "2px 6px", borderRadius: 100, fontFamily: F }}>👥 {activity.guests}</span>
-        </div>
-
-        <div style={{ display: "flex", gap: 6, marginTop: "auto" }}>
-          <button
-            onClick={e => { e.stopPropagation(); onQuickView(activity); }}
-            style={{ flex: 1, padding: isMobile ? "7px 0" : "9px 0", borderRadius: 9, border: `1.5px solid ${GOLD}40`, background: "#fff", color: GOLD, fontSize: isMobile ? 10 : 11, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
-            View Details
-          </button>
-          <button
-            onClick={e => { e.stopPropagation(); onAddToCart(activity); }}
-            style={{ flex: 1, padding: isMobile ? "7px 0" : "9px 0", borderRadius: 9, border: "none", background: `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: "#fff", fontSize: isMobile ? 10 : 11, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
-            + Cart
-          </button>
-        </div>
+      {/* Bottom text */}
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: isMobile ? "10px 10px 12px" : "13px 13px 15px" }}>
+        <div style={{ fontSize: isMobile ? 11.5 : 12.5, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 3, fontFamily: F }}>{activity.name}</div>
+        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", lineHeight: 1.4, fontFamily: F }}>{activity.duration} · {activity.guests}</div>
       </div>
     </div>
   );
@@ -577,7 +557,7 @@ export default function FunActivitiesSection({ heading, subheading, activities =
         )}
 
         {grid ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(175px,1fr))", gap: 14 }}>
             {activities.map(a => (
               <FunActivityCard key={a.id} activity={a} onQuickView={setQuickView} onBook={setBooking} onAddToCart={handleAddToCart} />
             ))}

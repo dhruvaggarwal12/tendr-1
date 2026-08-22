@@ -46,56 +46,47 @@ export default function FunActivitiesPage() {
         }
       `}</style>
 
-      {/* Dot-grid hero */}
-      <div className="fa-hero fa-dot-bg" style={{
+      {/* Editorial hero */}
+      <div className="fa-hero" style={{
         position: "relative",
+        background: "#1C0E04",
         borderBottom: "1.5px solid rgba(196,122,46,0.12)",
-        padding: "84px 24px 68px",
+        padding: "72px 24px 60px",
         textAlign: "center",
         overflow: "hidden",
       }}>
-        {/* Radial vignette so dots recede from centre */}
-        <div style={{
-          position: "absolute", inset: 0, pointerEvents: "none",
-          background: "radial-gradient(ellipse 58% 68% at 50% 50%, rgba(255,252,245,0.94) 0%, rgba(255,252,245,0.55) 60%, transparent 100%)",
-        }} />
+        <div aria-hidden style={{ position: "absolute", top: -80, right: -80, width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.15) 0%, transparent 70%)", pointerEvents: "none" }} />
+        <div aria-hidden style={{ position: "absolute", bottom: -60, left: -60, width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(204,171,74,0.09) 0%, transparent 70%)", pointerEvents: "none" }} />
 
         <div style={{ position: "relative", maxWidth: 620, margin: "0 auto" }}>
-          <span className="fa-in-0" style={{
-            display: "inline-block",
-            fontSize: 10, fontWeight: 800, color: "#C47A2E",
-            letterSpacing: "0.22em", textTransform: "uppercase",
-            background: "rgba(196,122,46,0.08)",
-            border: "1px solid rgba(196,122,46,0.22)",
-            padding: "5px 14px", borderRadius: 100, marginBottom: 20,
-          }}>Add Magic to Any Event</span>
+          <p className="fa-in-0" style={{
+            fontSize: 10, fontWeight: 700, color: "#CCAB4A",
+            letterSpacing: "0.28em", textTransform: "uppercase",
+            margin: "0 0 20px",
+          }}>Live Entertainment</p>
 
           <h1 className="fa-in-1" style={{
-            fontFamily: FD, fontSize: "clamp(2.8rem,6vw,4.8rem)",
-            fontWeight: 300, color: "#2C1A0E",
-            margin: "0 0 20px", lineHeight: 1.05,
+            fontFamily: FD, fontSize: "clamp(2.6rem,6vw,4.4rem)",
+            fontWeight: 300, color: "#FFF8EC",
+            margin: "0 0 20px", lineHeight: 1.08,
           }}>
             Fun <em style={{ color: "#C47A2E", fontStyle: "italic" }}>Activities</em>
           </h1>
 
           <p className="fa-in-2" style={{
-            fontSize: 15, color: "#7A5535",
-            margin: "0 auto 32px", lineHeight: 1.65, maxWidth: 420,
+            fontSize: 15, color: "rgba(255,248,236,0.62)",
+            margin: "0 auto 36px", lineHeight: 1.72, maxWidth: 420,
           }}>
             Fixed-price entertainment add-ons for your event — confirmed within 2 hours across all NCR locations.
           </p>
 
-          <div className="fa-in-3" style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+          <div className="fa-in-3" style={{ display: "flex", gap: 20, flexWrap: "wrap", justifyContent: "center" }}>
             {TRUST.map(({ icon, label }) => (
               <span key={label} style={{
+                fontSize: 12, fontWeight: 600, color: "rgba(255,248,236,0.55)",
                 display: "inline-flex", alignItems: "center", gap: 6,
-                fontSize: 12, fontWeight: 600, color: "#7A4A1E",
-                background: "rgba(255,252,245,0.82)",
-                border: "1px solid rgba(196,122,46,0.22)",
-                padding: "7px 14px", borderRadius: 100,
-                backdropFilter: "blur(6px)",
               }}>
-                <span style={{ color: "#C47A2E", fontWeight: 800 }}>{icon}</span> {label}
+                <span style={{ color: "#CCAB4A" }}>{icon}</span> {label}
               </span>
             ))}
           </div>

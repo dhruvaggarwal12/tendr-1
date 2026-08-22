@@ -302,13 +302,9 @@ const GiftHampersCakes = () => {
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
           {/* Section header */}
-          <div style={{ textAlign: "center", marginBottom: 36 }}>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:12, marginBottom:12 }}>
-              <div style={{ height:1, width:36, background:"linear-gradient(90deg, transparent, rgba(196,122,46,0.5))" }} />
-              <span style={{ fontSize:10, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.18em", fontFamily:font }}>For reference</span>
-              <div style={{ height:1, width:36, background:"linear-gradient(90deg, rgba(196,122,46,0.5), transparent)" }} />
-            </div>
-            <h2 style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:"clamp(1.6rem,3.5vw,2.2rem)", fontWeight:400, color:"#2C1A0E", margin:"0 0 8px", letterSpacing:"-0.01em" }}>Sample Gift Hamper Photos</h2>
+          <div style={{ marginBottom: 32 }}>
+            <p style={{ fontSize:10, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.24em", margin:"0 0 12px", fontFamily:font }}>Browse samples</p>
+            <h2 style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:"clamp(1.6rem,3.5vw,2.1rem)", fontWeight:400, color:"#2C1A0E", margin:"0 0 8px", letterSpacing:"-0.01em" }}>Gift Hamper Collection</h2>
             <p style={{ fontSize:13, color:"#9B7450", margin:0, fontFamily:font }}>Tap any photo to preview · select favourites · share with our team</p>
           </div>
 
