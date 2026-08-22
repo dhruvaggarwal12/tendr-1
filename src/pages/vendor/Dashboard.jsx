@@ -2044,7 +2044,7 @@ export default function VendorDashboard() {
                                   setModal({ clientName:q.clientName||'', clientPhone:q.clientPhone||'', eventType:q.eventType||'', eventDate:q.eventDate||'', amount:total, paidAmount:'', notes:q.notes||'', source:'Quote', status:'Confirmed' });
                                 }}
                                   style={{ padding:'5px 12px', borderRadius:8, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:12, fontWeight:700, cursor:'pointer' }}>
-                                  Convert to Booking
+                                  Log Direct Gig →
                                 </button>
                               )}
                               <button onClick={() => { if (window.confirm('Delete this quote?')) deleteQuote(q.id); }}
