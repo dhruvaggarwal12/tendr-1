@@ -2036,17 +2036,6 @@ export default function VendorDashboard() {
                                 style={{ padding:'5px 12px', borderRadius:8, border:'1.5px solid rgba(196,122,46,0.2)', background:'transparent', color:'#9B7450', fontFamily:font, fontSize:12, fontWeight:600, cursor:'pointer' }}>
                                 Edit
                               </button>
-                              {q.status !== 'Declined' && (
-                                <button onClick={() => {
-                                  const sub = (q.items||[]).reduce((s,i) => s+(Number(i.qty)||1)*(Number(i.rate)||0), 0);
-                                  const total = sub - (Number(q.discount)||0);
-                                  setWorkSubTab('outside');
-                                  setModal({ clientName:q.clientName||'', clientPhone:q.clientPhone||'', eventType:q.eventType||'', eventDate:q.eventDate||'', amount:total, paidAmount:'', notes:q.notes||'', source:'Quote', status:'Confirmed' });
-                                }}
-                                  style={{ padding:'5px 12px', borderRadius:8, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:12, fontWeight:700, cursor:'pointer' }}>
-                                  Log Direct Gig →
-                                </button>
-                              )}
                               <button onClick={() => { if (window.confirm('Delete this quote?')) deleteQuote(q.id); }}
                                 style={{ padding:'5px 10px', borderRadius:8, border:'1.5px solid rgba(220,38,38,0.2)', background:'transparent', color:'#DC2626', fontFamily:font, fontSize:12, fontWeight:600, cursor:'pointer' }}>
                                 ×
