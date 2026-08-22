@@ -62,7 +62,14 @@ const EVENT_TYPES = ['Birthday', '1st Birthday', 'Baby Shower', 'Anniversary', '
 const SOURCES = ['WhatsApp', 'Instagram', 'Facebook', 'Referral', 'Walk-in', 'Phone', 'Other'];
 const STATUSES = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
 
-const BLANK_FORM = { clientName: '', clientPhone: '', clientEmail: '', eventType: '', eventDate: '', startTime: '', endTime: '', equipment: [], amount: '', paidAmount: '', source: 'WhatsApp', status: 'Pending', notes: '', milestones: [], expenses: [] };
+const BLANK_FORM = { clientName: '', clientPhone: '', clientEmail: '', eventType: '', eventDate: '', startTime: '', endTime: '', equipment: [], amount: '', paidAmount: '', source: 'WhatsApp', status: 'Pending', notes: '', milestones: [], expenses: [], reminders: [] };
+const REMINDER_PRESETS = [
+  { label: 'Day of event', days: 0 },
+  { label: '1 day before', days: 1 },
+  { label: '3 days before', days: 3 },
+  { label: '1 week before', days: 7 },
+  { label: '2 weeks before', days: 14 },
+];
 const ENTERTAINMENT_TYPES = ['DJ', 'Emcee/Host', 'Anchor', 'AV Setup', 'Band', 'Singer', 'Musician', 'Performer', 'Stand-up Comedian', 'Magician'];
 
 // Per-type dashboard config
@@ -398,7 +405,7 @@ ${quote.notes?`<h3>Notes</h3><div style="font-size:13px;color:#6B4A2A;line-heigh
 }
 
 function OrderModal({ initial, onSave, onClose, saving, existingClients = [], serviceType = '' }) {
-  const [form, setForm] = useState(() => ({ ...BLANK_FORM, ...(initial || {}), milestones: initial?.milestones || [], expenses: initial?.expenses || [], equipment: initial?.equipment || [] }));
+  const [form, setForm] = useState(() => ({ ...BLANK_FORM, ...(initial || {}), milestones: initial?.milestones || [], expenses: initial?.expenses || [], equipment: initial?.equipment || [], reminders: initial?.reminders || [] }));
   const isEntertainment = ENTERTAINMENT_TYPES.includes(serviceType);
   const [modalTab, setModalTab] = useState('details');
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
@@ -457,12 +464,13 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
           </div>
           {/* Modal tabs */}
           <div style={{ display: 'flex', gap: 2 }}>
-            {[['details','Details'], ['payments','Payments'], ['expenses','Expenses']].map(([key, label]) => (
+            {[['details','Details'], ['payments','Payments'], ['expenses','Expenses'], ['reminders','Reminders']].map(([key, label]) => (
               <button key={key} onClick={() => setModalTab(key)}
-                style={{ padding: '7px 14px', border: 'none', background: 'transparent', fontFamily: font, fontSize: 12.5, fontWeight: modalTab === key ? 700 : 500, color: modalTab === key ? gold : '#9B7450', cursor: 'pointer', borderBottom: modalTab === key ? `2.5px solid ${gold}` : '2.5px solid transparent', transition: 'all 0.15s' }}>
+                style={{ padding: '7px 14px', border: 'none', background: 'transparent', fontFamily: font, fontSize: 12.5, fontWeight: modalTab === key ? 700 : 500, color: modalTab === key ? gold : '#9B7450', cursor: 'pointer', borderBottom: modalTab === key ? `2.5px solid ${gold}` : '2.5px solid transparent', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
                 {label}
                 {key === 'payments' && form.milestones.length > 0 && <span style={{ marginLeft: 5, fontSize: 11, background: 'rgba(196,122,46,0.12)', color: gold, borderRadius: 10, padding: '1px 6px' }}>{form.milestones.length}</span>}
                 {key === 'expenses' && form.expenses.length > 0 && <span style={{ marginLeft: 5, fontSize: 11, background: 'rgba(220,38,38,0.1)', color: '#DC2626', borderRadius: 10, padding: '1px 6px' }}>{form.expenses.length}</span>}
+                {key === 'reminders' && (form.reminders||[]).length > 0 && <span style={{ marginLeft: 5, fontSize: 11, background: 'rgba(59,130,246,0.12)', color: '#2563EB', borderRadius: 10, padding: '1px 6px' }}>{(form.reminders||[]).length}</span>}
               </button>
             ))}
           </div>
@@ -744,6 +752,98 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
                   </div>
                 </div>
               </div>
+            )}
+          </>}
+
+          {/* ── Reminders tab ── */}
+          {modalTab === 'reminders' && <>
+            <div style={{ fontSize: 13, color: '#9B7450', marginBottom: 6, lineHeight: 1.5 }}>
+              Choose when you want to be reminded about this {isEntertainment ? 'gig' : 'booking'}. Reminders appear on your dashboard home screen.
+            </div>
+
+            {!form.eventDate && (
+              <div style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(217,119,6,0.07)', border: '1.5px solid rgba(217,119,6,0.2)', fontSize: 12.5, color: '#92400E' }}>
+                Set an event date in the Details tab first — reminders are calculated from the event date.
+              </div>
+            )}
+
+            {form.eventDate && (
+              <>
+                {/* Preset options */}
+                <div>
+                  <div style={{ fontSize: 11.5, fontWeight: 700, color: '#6B3A1F', marginBottom: 8 }}>Quick options</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {REMINDER_PRESETS.map(preset => {
+                      const reminderDate = new Date(form.eventDate);
+                      reminderDate.setDate(reminderDate.getDate() - preset.days);
+                      const alreadySet = (form.reminders||[]).some(r => r.days === preset.days);
+                      const isPast = reminderDate < new Date() && preset.days > 0;
+                      return (
+                        <button key={preset.days} onClick={() => {
+                          const current = form.reminders || [];
+                          if (alreadySet) {
+                            set('reminders', current.filter(r => r.days !== preset.days));
+                          } else if (!isPast) {
+                            set('reminders', [...current, { days: preset.days, label: preset.label, reminderDate: reminderDate.toISOString().split('T')[0] }]);
+                          }
+                        }}
+                          disabled={isPast && !alreadySet}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 14px', borderRadius: 11, border: `1.5px solid ${alreadySet ? '#2563EB' : 'rgba(196,122,46,0.2)'}`, background: alreadySet ? 'rgba(59,130,246,0.07)' : '#FFFCF5', cursor: isPast && !alreadySet ? 'default' : 'pointer', opacity: isPast && !alreadySet ? 0.45 : 1, fontFamily: font, transition: 'all 0.15s' }}>
+                          <div style={{ textAlign: 'left' }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: alreadySet ? '#2563EB' : ink }}>{preset.label}</div>
+                            <div style={{ fontSize: 11, color: '#9B7450', marginTop: 2 }}>
+                              {isPast ? 'Date already passed' : reminderDate.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}
+                            </div>
+                          </div>
+                          <div style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${alreadySet ? '#2563EB' : 'rgba(196,122,46,0.3)'}`, background: alreadySet ? '#2563EB' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            {alreadySet && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Custom days input */}
+                <div style={{ paddingTop: 14, borderTop: '1px solid rgba(196,122,46,0.1)' }}>
+                  <div style={{ fontSize: 11.5, fontWeight: 700, color: '#6B3A1F', marginBottom: 8 }}>Custom reminder</div>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <input type="number" min="0" max="365" id="customReminderDays" placeholder="e.g. 10"
+                      style={{ width: 90, padding: '9px 12px', borderRadius: 9, border: '1.5px solid rgba(196,122,46,0.25)', fontFamily: font, fontSize: 13.5, color: ink, outline: 'none', background: '#FFFCF5', boxSizing: 'border-box' }} />
+                    <span style={{ fontSize: 13, color: '#9B7450' }}>days before the event</span>
+                    <button onClick={() => {
+                      const input = document.getElementById('customReminderDays');
+                      const d = parseInt(input?.value, 10);
+                      if (isNaN(d) || d < 0) return;
+                      const reminderDate = new Date(form.eventDate);
+                      reminderDate.setDate(reminderDate.getDate() - d);
+                      const alreadySet = (form.reminders||[]).some(r => r.days === d);
+                      if (!alreadySet) {
+                        set('reminders', [...(form.reminders||[]), { days: d, label: `${d === 0 ? 'Day of event' : `${d} day${d===1?'':'s'} before`}`, reminderDate: reminderDate.toISOString().split('T')[0] }]);
+                        if (input) input.value = '';
+                      }
+                    }} style={{ padding: '9px 16px', borderRadius: 9, border: 'none', background: `linear-gradient(135deg,${gold},${goldLt})`, color: '#fff', fontFamily: font, fontSize: 13, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
+                      Add
+                    </button>
+                  </div>
+                </div>
+
+                {/* Active reminders summary */}
+                {(form.reminders||[]).length > 0 && (
+                  <div style={{ marginTop: 4, padding: '10px 14px', borderRadius: 11, background: 'rgba(59,130,246,0.06)', border: '1.5px solid rgba(59,130,246,0.15)' }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 700, color: '#2563EB', marginBottom: 8 }}>{(form.reminders||[]).length} reminder{(form.reminders||[]).length===1?'':'s'} set</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      {[...(form.reminders||[])].sort((a,b) => b.days-a.days).map((r, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12.5, color: ink }}>
+                          <span>🔔 {r.label} — {new Date(r.reminderDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+                          <button onClick={() => set('reminders', (form.reminders||[]).filter((_,idx) => idx !== i))}
+                            style={{ background: 'none', border: 'none', color: '#9B7450', cursor: 'pointer', fontSize: 15, padding: '0 4px', lineHeight: 1 }}>×</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </>}
         </div>
@@ -1196,7 +1296,7 @@ export default function VendorDashboard() {
   const removeMediaLink = (id) => saveMedia(mediaLinks.filter(m => m.id !== id));
 
   // Work tab sub-tab
-  const [workSubTab, setWorkSubTab] = useState('orders'); // 'orders' | 'calendar' | 'quotes'
+  const [workSubTab, setWorkSubTab] = useState('tendr'); // 'tendr' | 'outside' | 'calendar' | 'quotes'
 
   // Calendar month navigation
   const [calMonth, setCalMonth] = useState(() => new Date().getMonth());
@@ -1289,6 +1389,12 @@ export default function VendorDashboard() {
   const visibleOutside = outsideOrders
     .filter(o => oFilter === 'all' || oFilter === 'outside' || oFilter === 'tendr' ? true : o.status === oFilter)
     .filter(o => !oSearch || o.clientName?.toLowerCase().includes(oSearch.toLowerCase()) || o.eventType?.toLowerCase().includes(oSearch.toLowerCase()) || o.clientPhone?.includes(oSearch));
+
+  // Reminders firing today or overdue (not yet completed/cancelled)
+  const reminderCheckDate = new Date().toISOString().split('T')[0];
+  const activeReminders = outsideOrders
+    .filter(o => o.status !== 'Cancelled' && o.status !== 'Completed' && (o.reminders||[]).length > 0)
+    .flatMap(o => (o.reminders||[]).filter(r => r.reminderDate && r.reminderDate <= reminderCheckDate).map(r => ({ ...r, order: o })));
 
   // Pending payments (partial or fully unpaid, not cancelled)
   const pendingPayments = outsideOrders
@@ -1520,7 +1626,7 @@ export default function VendorDashboard() {
             <div style={{ fontSize:15, fontWeight:800, color:ink }}>{NAV_ITEMS.find(n=>n.key===tab)?.label}</div>
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            {tab==='work' && workSubTab==='orders'   && <button onClick={() => setModal('add')}    style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>+ Add {term}</button>}
+            {tab==='work' && (workSubTab==='tendr'||workSubTab==='outside') && <button onClick={() => setModal('add')}    style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>+ Add {term}</button>}
             {tab==='work' && workSubTab==='quotes'   && <button onClick={() => { setEditQuote(null); setQuoteModal(true); }}    style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>+ New Quote</button>}
             {tab==='inventory' && <button onClick={() => setInvModal(true)}  style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>+ Add Item</button>}
             {tab==='profile'   && <button onClick={() => { navigator.clipboard?.writeText(`${window.location.origin}/vendor/${vendorId}`).then(() => showToast('Profile link copied!')); }}
@@ -1549,15 +1655,15 @@ export default function VendorDashboard() {
           {/* ── HOME ── */}
           {tab === 'home' && (
             <>
-              {/* Greeting */}
-              <div style={{ marginBottom:16 }}>
+              {/* Greeting + this-month snapshot */}
+              <div style={{ marginBottom:18 }}>
                 <div style={{ fontSize:isMobile?20:24, fontWeight:800, color:ink }}>
                   {new Date().getHours()<12?'Good morning':new Date().getHours()<17?'Good afternoon':'Good evening'}, {vendorName.split(' ')[0]}
                 </div>
                 <div style={{ fontSize:13, color:'#9B7450', marginTop:3 }}>
-                  {todaysGigs.length>0
-                    ? `${todaysGigs.length} event${todaysGigs.length===1?'':'s'} on the books today.`
-                    : 'Calendar is clear today — no events scheduled.'}
+                  {thisMonthOutside>0
+                    ? `${thisMonthOutside} ${thisMonthOutside===1?term.toLowerCase():terms.toLowerCase()} this month · ₹${thisMonthRevenue.toLocaleString('en-IN')} logged`
+                    : `No ${terms.toLowerCase()} logged yet this month`}
                 </div>
               </div>
 
@@ -1570,6 +1676,41 @@ export default function VendorDashboard() {
                     <div style={{ fontSize:12, color:'#9B7450', marginTop:2 }}>Share this achievement on your social media or WhatsApp status.</div>
                   </div>
                   <button onClick={() => dismissMilestone(currentMilestone)} style={{ width:26, height:26, borderRadius:'50%', border:'none', background:'rgba(196,122,46,0.12)', color:'#9B7450', cursor:'pointer', fontSize:15, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:font }}>×</button>
+                </div>
+              )}
+
+              {/* Reminders alert */}
+              {activeReminders.length > 0 && (
+                <div style={{ background:'rgba(37,99,235,0.05)', border:'1.5px solid rgba(37,99,235,0.18)', borderRadius:14, padding:'12px 16px', marginBottom:16 }}>
+                  <div style={{ fontSize:13, fontWeight:800, color:'#1D4ED8', marginBottom:8 }}>🔔 {activeReminders.length} reminder{activeReminders.length===1?'':'s'} for you</div>
+                  <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                    {activeReminders.slice(0,4).map((r,i) => (
+                      <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:10, padding:'8px 12px', background:'rgba(37,99,235,0.05)', borderRadius:10 }}>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontSize:12.5, fontWeight:700, color:'#1D4ED8', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{r.order.clientName} · {r.order.eventType||'Event'}</div>
+                          <div style={{ fontSize:11, color:'#9B7450', marginTop:2 }}>{r.label} — {r.order.eventDate ? new Date(r.order.eventDate).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'}) : ''}</div>
+                        </div>
+                        {r.order.clientPhone && (
+                          <a href={`https://wa.me/91${r.order.clientPhone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hi ${r.order.clientName}, just a reminder about your ${r.order.eventType||'event'}${r.order.eventDate?' on '+new Date(r.order.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'short'}):''} 🎉`)}`}
+                            target="_blank" rel="noopener noreferrer"
+                            style={{ padding:'5px 10px', borderRadius:8, background:'#25D366', color:'#fff', fontSize:11, fontWeight:700, textDecoration:'none', flexShrink:0 }}>WA</a>
+                        )}
+                        <button onClick={() => setTab('work')} style={{ padding:'5px 10px', borderRadius:8, border:'1.5px solid rgba(37,99,235,0.25)', background:'transparent', color:'#2563EB', fontSize:11, fontWeight:700, cursor:'pointer', fontFamily:font, flexShrink:0 }}>View</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Conflict alert (artist) */}
+              {isArtist && gigConflicts.size>0 && (
+                <div style={{ background:'rgba(220,38,38,0.05)', border:'1.5px solid rgba(220,38,38,0.18)', borderRadius:14, padding:'12px 16px', marginBottom:16, display:'flex', gap:10, alignItems:'flex-start' }}>
+                  <span style={{ color:'#DC2626', flexShrink:0 }}>{dsic(<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>)}</span>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:'#DC2626', marginBottom:2 }}>Time slot conflict</div>
+                    <div style={{ fontSize:12, color:'#9B7450' }}>{gigConflicts.size} gig{gigConflicts.size!==1?'s':''} overlap on the same date and time.</div>
+                  </div>
+                  <button onClick={() => setTab('work')} style={{ fontSize:12, fontWeight:700, color:'#DC2626', background:'none', border:'none', cursor:'pointer', fontFamily:font, flexShrink:0, padding:0 }}>View →</button>
                 </div>
               )}
 
@@ -1608,75 +1749,57 @@ export default function VendorDashboard() {
                   </div>
                 </div>
               ) : (
-                <div style={{ background:'rgba(196,122,46,0.05)', borderRadius:16, padding:'16px 20px', marginBottom:18, border:'1.5px dashed rgba(196,122,46,0.18)', display:'flex', alignItems:'center', justifyContent:'space-between', gap:14 }}>
+                <button onClick={() => setModal('add')} style={{ width:'100%', background:`linear-gradient(135deg,${gold},${goldLt})`, borderRadius:18, padding:'20px 22px', marginBottom:18, border:'none', cursor:'pointer', fontFamily:font, textAlign:'left', boxShadow:'0 4px 18px rgba(196,122,46,0.28)', display:'flex', alignItems:'center', gap:16 }}>
+                  <div style={{ width:48, height:48, borderRadius:14, background:'rgba(255,255,255,0.18)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, flexShrink:0 }}>+</div>
                   <div>
-                    <div style={{ fontSize:13, fontWeight:700, color:ink }}>No upcoming {terms.toLowerCase()} on the calendar</div>
-                    <div style={{ fontSize:12, color:'#9B7450', marginTop:2 }}>Log your next booking or block unavailable dates</div>
+                    <div style={{ fontSize:16, fontWeight:800, color:'#fff', marginBottom:2 }}>Log a {term.toLowerCase()}</div>
+                    <div style={{ fontSize:12.5, color:'rgba(255,255,255,0.78)' }}>Tap to track a booking from WhatsApp, referral or walk-in</div>
                   </div>
-                  <button onClick={() => setModal('add')} style={{ padding:'9px 18px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:12.5, fontWeight:700, cursor:'pointer', flexShrink:0 }}>
-                    + Log {term}
-                  </button>
-                </div>
+                </button>
               )}
 
-              {/* Season awareness nudge */}
-              <div style={{ padding:'12px 16px', borderRadius:13, background:SEASON_INFO.bg, border:`1.5px solid ${SEASON_INFO.border}`, marginBottom:18, display:'flex', alignItems:'flex-start', gap:10 }}>
-                <div style={{ width:8, height:8, borderRadius:'50%', background:SEASON_INFO.dot, marginTop:4, flexShrink:0 }} />
-                <div>
-                  <div style={{ fontSize:12.5, fontWeight:700, color:ink }}>{SEASON_INFO.text}</div>
-                  <div style={{ fontSize:11.5, color:'#9B7450', marginTop:2 }}>{SEASON_INFO.sub}</div>
-                </div>
-              </div>
-
-              {/* Today's events */}
-              {todaysGigs.length > 0 && (
-                <div style={{ background:`linear-gradient(135deg,rgba(196,122,46,0.07),rgba(204,171,74,0.04))`, borderRadius:18, padding:'16px 18px', border:'1.5px solid rgba(196,122,46,0.18)', marginBottom:20 }}>
-                  <div style={{ fontSize:11, fontWeight:700, color:gold, textTransform:'uppercase', letterSpacing:'0.12em', marginBottom:10 }}>Today</div>
-                  {todaysGigs.map((g,i) => (
-                    <div key={g._id||i} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 14px', background:'#fff', borderRadius:12, border:'1px solid rgba(196,122,46,0.1)', marginBottom:i<todaysGigs.length-1?8:0 }}>
-                      <div style={{ width:36, height:36, borderRadius:10, background:g._src==='tendr'?`linear-gradient(135deg,${gold},${goldLt})`:'rgba(124,58,237,0.1)', display:'flex', alignItems:'center', justifyContent:'center', color:g._src==='tendr'?'#fff':'#7C3AED', fontWeight:800, fontSize:14, flexShrink:0 }}>
-                        {(g.customerName||g.clientName||'?').charAt(0).toUpperCase()}
+              {/* Pending payments — shown only when money is owed */}
+              {pendingPayments.length>0 && (
+                <div style={{ background:'#fff', borderRadius:18, padding:'16px 20px', border:'1.5px solid rgba(217,119,6,0.2)', marginBottom:18 }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+                    <div>
+                      <div style={{ fontSize:14, fontWeight:800, color:ink }}>
+                        Collect payment
+                        <span style={{ fontSize:11, fontWeight:700, color:'#D97706', background:'rgba(217,119,6,0.1)', borderRadius:100, padding:'2px 7px', marginLeft:6 }}>{pendingPayments.length}</span>
                       </div>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontSize:13.5, fontWeight:700, color:ink }}>{g.customerName||g.clientName}</div>
-                        <div style={{ fontSize:11.5, color:'#9B7450', display:'flex', gap:6, flexWrap:'wrap', marginTop:1 }}>
-                          {g.eventType && <span>{g.eventType}</span>}
-                          {g.startTime && <span>{g.startTime}{g.endTime?`–${g.endTime}`:''}</span>}
-                          <span style={{ padding:'1px 6px', borderRadius:100, background:g._src==='tendr'?'rgba(196,122,46,0.1)':'rgba(124,58,237,0.1)', color:g._src==='tendr'?gold:'#7C3AED', fontWeight:600, fontSize:10 }}>{g._src==='tendr'?'Tendr':'Outside'}</span>
-                        </div>
-                      </div>
-                      {g.amount>0 && <div style={{ fontWeight:800, color:ink, fontSize:14, flexShrink:0 }}>₹{Number(g.amount).toLocaleString('en-IN')}</div>}
+                      <div style={{ fontSize:12, color:'#9B7450', marginTop:1 }}>₹{totalDue.toLocaleString('en-IN')} outstanding</div>
                     </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Conflict alert (artist) */}
-              {isArtist && gigConflicts.size>0 && (
-                <div style={{ background:'rgba(220,38,38,0.05)', border:'1.5px solid rgba(220,38,38,0.18)', borderRadius:14, padding:'12px 16px', marginBottom:18, display:'flex', gap:10, alignItems:'flex-start' }}>
-                  <span style={{ color:'#DC2626', flexShrink:0 }}>{dsic(<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>)}</span>
-                  <div>
-                    <div style={{ fontSize:13, fontWeight:700, color:'#DC2626', marginBottom:2 }}>Time slot conflict</div>
-                    <div style={{ fontSize:12, color:'#9B7450' }}>{gigConflicts.size} gig{gigConflicts.size!==1?'s':''} overlap on the same date and time.</div>
-                    <button onClick={() => setTab('work')} style={{ marginTop:5, fontSize:12, fontWeight:700, color:'#DC2626', background:'none', border:'none', cursor:'pointer', fontFamily:font, padding:0 }}>View Gigs →</button>
+                    <button onClick={() => setTab('work')} style={{ fontSize:12, fontWeight:700, color:gold, background:'none', border:'none', cursor:'pointer', fontFamily:font }}>All →</button>
+                  </div>
+                  <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
+                    {pendingPayments.slice(0,3).map(o => (
+                      <div key={o._id} style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 12px', background:'#FFFCF5', borderRadius:10, border:'1px solid rgba(217,119,6,0.1)' }}>
+                        <div style={{ width:32, height:32, borderRadius:'50%', background:'rgba(217,119,6,0.1)', display:'flex', alignItems:'center', justifyContent:'center', color:'#D97706', fontWeight:800, fontSize:13, flexShrink:0 }}>{o.clientName?.charAt(0)?.toUpperCase()||'?'}</div>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontSize:13, fontWeight:700, color:ink, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{o.clientName}</div>
+                          <div style={{ fontSize:11, color:'#9B7450' }}>{o.eventType||''}</div>
+                        </div>
+                        <div style={{ fontSize:14, fontWeight:800, color:'#D97706', flexShrink:0 }}>₹{o.due.toLocaleString('en-IN')}</div>
+                        {o.clientPhone && (
+                          <a href={`https://wa.me/91${o.clientPhone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hi ${o.clientName}, gentle reminder that ₹${o.due.toLocaleString('en-IN')} is pending for your ${o.eventType||'event'}. Please arrange payment. Thank you! 🙏`)}`}
+                            target="_blank" rel="noopener noreferrer"
+                            style={{ padding:'6px 11px', borderRadius:8, background:'#25D366', color:'#fff', fontSize:11, fontWeight:700, textDecoration:'none', flexShrink:0 }}>WA</a>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
 
-              {/* Stats */}
-              <div style={{ display:'flex', gap:12, marginBottom:20, flexWrap:'wrap' }}>
-                <Stat label="Tendr Bookings"      value={tendrCount}   sub="via platform" icon={dsic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>)} />
-                <Stat label={`Outside ${terms}`}  value={outsideCount} sub={`${pendingCount} pending`} icon={dsic(<><path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>)} accent="rgba(124,58,237,0.1)" />
-                <Stat label="Revenue"             value={outsideRevenue>=1000?`₹${(outsideRevenue/1000).toFixed(0)}k`:`₹${outsideRevenue}`} sub={`₹${outsideCollected.toLocaleString('en-IN')} collected`} icon={dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>)} accent="rgba(22,163,74,0.1)" />
-                <Stat label="This Month"          value={thisMonthOutside} sub={`₹${thisMonthRevenue.toLocaleString('en-IN')}`} icon={dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>)} accent="rgba(59,130,246,0.1)" />
-              </div>
-
-              {/* This week */}
+              {/* Upcoming — next 5 events */}
               {upcomingWeek.length>0 && (
-                <div style={{ background:'#fff', borderRadius:18, padding:'16px 20px', border:'1px solid rgba(196,122,46,0.12)', marginBottom:20 }}>
-                  <div style={{ fontSize:14, fontWeight:800, color:ink, marginBottom:12 }}>This Week</div>
+                <div style={{ background:'#fff', borderRadius:18, padding:'16px 20px', border:'1px solid rgba(196,122,46,0.12)', marginBottom:18 }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+                    <div style={{ fontSize:14, fontWeight:800, color:ink }}>Coming up</div>
+                    <button onClick={() => setTab('work')} style={{ fontSize:12, fontWeight:700, color:gold, background:'none', border:'none', cursor:'pointer', fontFamily:font }}>All {terms.toLowerCase()} →</button>
+                  </div>
                   <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                    {upcomingWeek.slice(0,6).map((g,i) => (
+                    {upcomingWeek.slice(0,5).map((g,i) => (
                       <div key={g._id||i} style={{ display:'flex', alignItems:'center', gap:12 }}>
                         <div style={{ width:40, height:40, borderRadius:10, background:'rgba(196,122,46,0.06)', border:'1px solid rgba(196,122,46,0.12)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                           <div style={{ fontSize:14, fontWeight:800, color:gold, lineHeight:1 }}>{new Date(g.eventDate).getDate()}</div>
@@ -1696,98 +1819,32 @@ export default function VendorDashboard() {
                 </div>
               )}
 
-              {/* Event type breakdown */}
-              {topEventTypes.length > 0 && (
-                <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.12)', marginBottom:20 }}>
-                  <div style={{ fontSize:14, fontWeight:800, color:ink, marginBottom:14 }}>Your Event Mix</div>
-                  <div style={{ display:'flex', gap:20, alignItems:'center' }}>
-                    {/* Simple SVG donut */}
-                    {(() => {
-                      const r=44, cx=52, cy=52, sw=18, C=2*Math.PI*r;
-                      const DCOLORS=['#C47A2E','#7C3AED','#16A34A','#2563EB','#EC4899'];
-                      let cum=0;
-                      return (
-                        <svg width="104" height="104" viewBox="0 0 104 104" style={{flexShrink:0}}>
-                          {topEventTypes.map(([,count],i) => {
-                            const pct=count/evtTypeTotal;
-                            const dashLen=pct*C;
-                            const offset=C/4-cum*C;
-                            cum+=pct;
-                            return <circle key={i} cx={cx} cy={cy} r={r} fill="none" stroke={DCOLORS[i%5]} strokeWidth={sw} strokeDasharray={`${dashLen} ${C}`} strokeDashoffset={offset} />;
-                          })}
-                          <text x={cx} y={cy-4} textAnchor="middle" style={{fontSize:20,fontWeight:800,fill:ink,fontFamily:font}}>{evtTypeTotal}</text>
-                          <text x={cx} y={cy+13} textAnchor="middle" style={{fontSize:9,fill:'#9B7450',fontFamily:font}}>events logged</text>
-                        </svg>
-                      );
-                    })()}
-                    <div style={{flex:1, display:'flex', flexDirection:'column', gap:8}}>
-                      {topEventTypes.map(([type,count],i) => {
-                        const DCOLORS=['#C47A2E','#7C3AED','#16A34A','#2563EB','#EC4899'];
-                        const pct=Math.round((count/evtTypeTotal)*100);
-                        return (
-                          <div key={type} style={{display:'flex',alignItems:'center',gap:8}}>
-                            <div style={{width:10,height:10,borderRadius:3,background:DCOLORS[i%5],flexShrink:0}}/>
-                            <span style={{fontSize:12.5,color:ink,flex:1}}>{type}</span>
-                            <span style={{fontSize:12,fontWeight:700,color:'#9B7450',fontVariantNumeric:'tabular-nums'}}>{count} · {pct}%</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
+              {/* Empty state — nothing logged yet */}
+              {outsideOrders.length===0 && bookings.length===0 && !nextEvent && (
+                <div style={{ textAlign:'center', padding:'32px 20px', background:'#fff', borderRadius:18, border:'1.5px dashed rgba(196,122,46,0.18)' }}>
+                  <div style={{ fontSize:36, marginBottom:10 }}>📋</div>
+                  <div style={{ fontSize:14, fontWeight:700, color:ink, marginBottom:4 }}>No bookings yet</div>
+                  <div style={{ fontSize:13, color:'#9B7450', marginBottom:16, lineHeight:1.55 }}>Start by logging a booking — WhatsApp, referral, direct — it all goes here.</div>
+                  <button onClick={() => setModal('add')} style={{ padding:'11px 24px', borderRadius:10, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:13.5, fontWeight:700, cursor:'pointer' }}>
+                    + Log your first {term.toLowerCase()}
+                  </button>
                 </div>
               )}
 
-              {/* Pending payments */}
-              {pendingPayments.length>0 && (
-                <div style={{ background:'#fff', borderRadius:18, padding:'16px 20px', border:'1.5px solid rgba(217,119,6,0.16)', marginBottom:20 }}>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-                    <div>
-                      <div style={{ fontSize:14, fontWeight:800, color:ink }}>Pending Payments <span style={{ fontSize:11, fontWeight:700, color:'#D97706', background:'rgba(217,119,6,0.1)', borderRadius:100, padding:'2px 7px', marginLeft:6 }}>{pendingPayments.length}</span></div>
-                      <div style={{ fontSize:12, color:'#9B7450', marginTop:1 }}>₹{totalDue.toLocaleString('en-IN')} outstanding</div>
-                    </div>
-                    <button onClick={() => setTab('work')} style={{ fontSize:12, fontWeight:700, color:gold, background:'none', border:'none', cursor:'pointer', fontFamily:font }}>View →</button>
-                  </div>
-                  <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
-                    {pendingPayments.slice(0,4).map(o => (
-                      <div key={o._id} style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 12px', background:'#FFFCF5', borderRadius:10, border:'1px solid rgba(217,119,6,0.1)' }}>
-                        <div style={{ width:30, height:30, borderRadius:'50%', background:'rgba(217,119,6,0.1)', display:'flex', alignItems:'center', justifyContent:'center', color:'#D97706', fontWeight:800, fontSize:13, flexShrink:0 }}>{o.clientName?.charAt(0)?.toUpperCase()||'?'}</div>
-                        <div style={{ flex:1, minWidth:0 }}>
-                          <div style={{ fontSize:12.5, fontWeight:700, color:ink, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{o.clientName}</div>
-                          <div style={{ fontSize:11, color:'#9B7450' }}>{o.eventType||''}</div>
-                        </div>
-                        <div style={{ fontSize:13, fontWeight:800, color:'#D97706', flexShrink:0 }}>₹{o.due.toLocaleString('en-IN')}</div>
-                        {o.clientPhone && (
-                          <a href={`https://wa.me/91${o.clientPhone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hi ${o.clientName}, gentle reminder that ₹${o.due.toLocaleString('en-IN')} is pending for your ${o.eventType||'event'}. Please arrange payment. Thank you! 🙏`)}`}
-                            target="_blank" rel="noopener noreferrer"
-                            style={{ padding:'5px 10px', borderRadius:7, background:'#25D366', color:'#fff', fontSize:11, fontWeight:700, textDecoration:'none', flexShrink:0 }}>WA</a>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+              {/* Share profile card */}
+              <div style={{ marginTop:16, padding:'14px 18px', borderRadius:16, background:'rgba(196,122,46,0.05)', border:'1.5px solid rgba(196,122,46,0.14)', display:'flex', alignItems:'center', gap:14 }}>
+                <div style={{ fontSize:26, flexShrink:0 }}>🔗</div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:ink }}>Share your profile</div>
+                  <div style={{ fontSize:11.5, color:'#9B7450', marginTop:2, lineHeight:1.45 }}>Send to clients directly — they can book through Tendr or contact you straight.</div>
                 </div>
-              )}
-
-              <RevenueChart orders={outsideOrders} />
-
-              {/* Quick actions */}
-              <div style={{ background:'#fff', borderRadius:18, padding:'16px 20px', border:'1px solid rgba(196,122,46,0.12)', marginTop:20 }}>
-                <div style={{ fontSize:14, fontWeight:800, color:ink, marginBottom:12 }}>Quick actions</div>
-                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))', gap:10 }}>
-                  {[
-                    { label:`+ Log ${term}`,            sub:`Track a booking from WhatsApp or referral`, onClick:() => setModal('add'), primary:true },
-                    { label:'Share Profile',           sub:'Send your page to potential clients',       onClick:() => setTab('profile') },
-                    { label:'Client Messages',         sub:'Tendr enquiries and chats',               onClick:() => navigate('/vendor/chats') },
-                    { label:'Block Dates',             sub:'Mark unavailable before clients ask',      onClick:() => setTab('calendar') },
-                    { label:'Edit Profile',            sub:'Portfolio, bio, rates & media',            onClick:() => navigate('/vendor/profile') },
-                    { label:`My ${typeConfig.invLabel}`, sub:`Track & manage your ${isArtist?'equipment':'inventory'}`, onClick:() => setTab('inventory') },
-                  ].map(a => (
-                    <button key={a.label} onClick={a.onClick}
-                      style={{ padding:'12px 14px', borderRadius:12, border:a.primary?'none':'1.5px solid rgba(196,122,46,0.15)', background:a.primary?`linear-gradient(135deg,${gold},${goldLt})`:'#FFFCF5', color:a.primary?'#fff':ink, textAlign:'left', cursor:'pointer', fontFamily:font, boxShadow:a.primary?'0 3px 12px rgba(196,122,46,0.28)':'none', transition:'all 0.15s' }}>
-                      <div style={{ fontSize:13.5, fontWeight:700, marginBottom:2 }}>{a.label}</div>
-                      <div style={{ fontSize:11, opacity:0.7 }}>{a.sub}</div>
-                    </button>
-                  ))}
-                </div>
+                <button onClick={() => {
+                  const url = `${window.location.origin}/vendor/${vendorId}`;
+                  if (navigator.share) { navigator.share({ title: vendorName, text: `Check out ${vendorName} on Tendr`, url }).catch(() => {}); }
+                  else { navigator.clipboard?.writeText(url).then(() => showToast('Profile link copied!')); }
+                }} style={{ padding:'8px 14px', borderRadius:9, border:`1.5px solid ${gold}`, background:'transparent', color:gold, fontFamily:font, fontSize:12.5, fontWeight:700, cursor:'pointer', flexShrink:0 }}>
+                  Share
+                </button>
               </div>
             </>
           )}
@@ -1796,10 +1853,15 @@ export default function VendorDashboard() {
           {tab === 'work' && (
             <div>
               {/* Main sub-tab row */}
-              <div style={{ display:'flex', gap:2, marginBottom:16, borderBottom:'2px solid rgba(196,122,46,0.1)' }}>
-                {[['orders',`${terms}`,''],['calendar','Calendar',''],['quotes','Quotes',quotes.length>0?quotes.length:'']].map(([key,label,badge]) => (
-                  <button key={key} onClick={() => setWorkSubTab(key)}
-                    style={{ padding:'8px 16px', border:'none', background:'transparent', fontFamily:font, fontSize:13, fontWeight:workSubTab===key?700:500, color:workSubTab===key?gold:'#9B7450', cursor:'pointer', borderBottom:workSubTab===key?`2.5px solid ${gold}`:'2.5px solid transparent', marginBottom:-2, transition:'all 0.15s', display:'flex', alignItems:'center', gap:5 }}>
+              <div style={{ display:'flex', gap:2, marginBottom:16, borderBottom:'2px solid rgba(196,122,46,0.1)', overflowX:'auto' }}>
+                {[
+                  ['tendr','Tendr',tendrCount>0?tendrCount:''],
+                  ['outside',`Outside`,outsideCount>0?outsideCount:''],
+                  ['calendar','Calendar',''],
+                  ['quotes','Quotes',quotes.length>0?quotes.length:''],
+                ].map(([key,label,badge]) => (
+                  <button key={key} onClick={() => { setWorkSubTab(key); setOSearch(''); setOFilter('all'); }}
+                    style={{ padding:'8px 16px', border:'none', background:'transparent', fontFamily:font, fontSize:13, fontWeight:workSubTab===key?700:500, color:workSubTab===key?gold:'#9B7450', cursor:'pointer', borderBottom:workSubTab===key?`2.5px solid ${gold}`:'2.5px solid transparent', marginBottom:-2, transition:'all 0.15s', display:'flex', alignItems:'center', gap:5, whiteSpace:'nowrap', flexShrink:0 }}>
                     {label}
                     {badge ? <span style={{ fontSize:10.5, fontWeight:700, background:'rgba(196,122,46,0.12)', color:gold, borderRadius:10, padding:'1px 6px' }}>{badge}</span> : null}
                   </button>
@@ -1971,63 +2033,27 @@ export default function VendorDashboard() {
                 </div>
               )}
 
-              {/* ── ORDERS VIEW ── */}
-              {workSubTab === 'orders' && <div>
-              {/* Source tabs */}
-              <div style={{ display:'flex', gap:2, marginBottom:16, borderBottom:'1px solid rgba(196,122,46,0.1)' }}>
-                {[['all',`All ${terms}`,tendrCount+outsideCount],['tendr',`Tendr`,tendrCount],['outside',`Outside`,outsideCount]].map(([key,label,count]) => {
-                  const active = oFilter===key||(key==='all'&&oFilter==='all');
-                  return (
-                    <button key={key} onClick={() => setOFilter(key)}
-                      style={{ padding:'8px 14px', border:'none', background:'transparent', fontFamily:font, fontSize:12.5, fontWeight:active?700:500, color:active?gold:'#9B7450', cursor:'pointer', borderBottom:active?`2.5px solid ${gold}`:'2.5px solid transparent', transition:'all 0.15s', whiteSpace:'nowrap' }}>
-                      {label} {count>0&&<span style={{ opacity:0.6, fontSize:11 }}>({count})</span>}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Status pills */}
-              {(oFilter==='all'||oFilter==='outside') && (
-                <div style={{ display:'flex', gap:8, marginBottom:14, flexWrap:'wrap' }}>
-                  {['all','Pending','Confirmed','Completed','Cancelled'].map(s => {
-                    const n = s==='all' ? outsideOrders.length : outsideOrders.filter(o=>o.status===s).length;
-                    if (s!=='all' && n===0) return null;
-                    const active = oFilter===s||(s==='all'&&oFilter==='all')||( oFilter==='outside'&&s==='all');
-                    return (
-                      <button key={s} onClick={() => setOFilter(s==='all'?'all':s)}
-                        style={{ padding:'5px 13px', borderRadius:100, fontSize:12, fontWeight:700, fontFamily:font, cursor:'pointer', border:'1.5px solid', borderColor:active?gold:'rgba(196,122,46,0.2)', background:active?gold:'#fff', color:active?'#fff':'#9B7450', transition:'all 0.15s' }}>
-                        {s==='all'?'All':s} ({n})
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Conflict banner */}
-              {isArtist && gigConflicts.size>0 && (
-                <div style={{ padding:'10px 14px', borderRadius:12, background:'rgba(220,38,38,0.05)', border:'1.5px solid rgba(220,38,38,0.18)', marginBottom:14, display:'flex', alignItems:'center', gap:10 }}>
-                  <span style={{ color:'#DC2626' }}>{dsic(<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>)}</span>
-                  <span style={{ fontSize:12.5, color:'#DC2626', fontWeight:600 }}>{gigConflicts.size} gig time conflict{gigConflicts.size!==1?'s':''} — orders with red border overlap</span>
-                </div>
-              )}
-
-              {/* Search */}
-              <div style={{ marginBottom:14 }}>
-                <input value={oSearch} onChange={e => setOSearch(e.target.value)} placeholder="Search by name, event type, or phone…"
-                  style={{ width:'100%', maxWidth:380, padding:'9px 14px', borderRadius:10, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13.5, color:ink, outline:'none', background:'#fff', boxSizing:'border-box' }} />
-              </div>
-
-              {/* Tendr bookings */}
-              {(oFilter==='all'||oFilter==='tendr') && (
-                <div style={{ marginBottom:22 }}>
-                  <div style={{ fontSize:11, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:10 }}>Tendr Platform</div>
-                  <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:8 }}>
-                    <button onClick={() => navigate('/vendor/bookings')} style={{ fontSize:12, fontWeight:600, color:gold, background:'none', border:'none', cursor:'pointer', fontFamily:font }}>Full bookings page →</button>
+              {/* ── TENDR BOOKINGS ── */}
+              {workSubTab === 'tendr' && (
+                <div>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+                    <div style={{ fontSize:12, color:'#9B7450' }}>Bookings sent to you through the Tendr platform</div>
+                    <button onClick={() => navigate('/vendor/bookings')} style={{ fontSize:12, fontWeight:700, color:gold, background:'none', border:'none', cursor:'pointer', fontFamily:font, flexShrink:0 }}>Full page →</button>
                   </div>
+                  {isArtist && gigConflicts.size>0 && (
+                    <div style={{ padding:'10px 14px', borderRadius:12, background:'rgba(220,38,38,0.05)', border:'1.5px solid rgba(220,38,38,0.18)', marginBottom:12, display:'flex', alignItems:'center', gap:10 }}>
+                      <span style={{ color:'#DC2626' }}>{dsic(<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>)}</span>
+                      <span style={{ fontSize:12.5, color:'#DC2626', fontWeight:600 }}>{gigConflicts.size} time conflict{gigConflicts.size!==1?'s':''} detected</span>
+                    </div>
+                  )}
+                  <input value={oSearch} onChange={e => setOSearch(e.target.value)} placeholder="Search by name or event type…"
+                    style={{ width:'100%', maxWidth:380, padding:'9px 14px', borderRadius:10, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13, color:ink, outline:'none', background:'#fff', boxSizing:'border-box', marginBottom:14 }} />
                   {loading ? <div style={{ textAlign:'center', padding:'24px', color:'#9B7450' }}>Loading…</div>
                   : bookings.length===0 ? (
-                    <div style={{ textAlign:'center', padding:'28px', background:'#fff', borderRadius:16, border:'1px solid rgba(196,122,46,0.1)', color:'#9B7450', fontSize:13 }}>
-                      No Tendr bookings yet — keep your profile active to attract clients.
+                    <div style={{ textAlign:'center', padding:'36px 24px', background:'#fff', borderRadius:16, border:'1.5px dashed rgba(196,122,46,0.18)' }}>
+                      <div style={{ fontSize:36, marginBottom:10 }}>🔍</div>
+                      <div style={{ fontSize:14, fontWeight:700, color:ink, marginBottom:6 }}>No Tendr bookings yet</div>
+                      <div style={{ fontSize:13, color:'#9B7450', maxWidth:280, margin:'0 auto' }}>Keep your profile active and updated — clients browsing Tendr will find and book you here.</div>
                     </div>
                   ) : (
                     <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
@@ -2037,20 +2063,38 @@ export default function VendorDashboard() {
                 </div>
               )}
 
-              {/* Outside orders */}
-              {(oFilter!=='tendr') && (
+              {/* ── OUTSIDE BOOKINGS ── */}
+              {workSubTab === 'outside' && (
                 <div>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-                    <div style={{ fontSize:11, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.1em' }}>Outside {terms}</div>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+                    <div style={{ fontSize:12, color:'#9B7450' }}>Direct bookings — WhatsApp, referrals, walk-ins</div>
                     {outsideOrders.length>0 && <button onClick={exportCSV} style={{ padding:'5px 12px', borderRadius:8, border:'1.5px solid rgba(196,122,46,0.2)', background:'#fff', color:'#9B7450', fontFamily:font, fontSize:12, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', gap:5 }}>{dsic(<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></>)} CSV</button>}
                   </div>
+                  {/* Status pills */}
+                  {outsideOrders.length>0 && (
+                    <div style={{ display:'flex', gap:8, marginBottom:12, flexWrap:'wrap' }}>
+                      {['all','Pending','Confirmed','Completed','Cancelled'].map(s => {
+                        const n = s==='all' ? outsideOrders.length : outsideOrders.filter(o=>o.status===s).length;
+                        if (s!=='all' && n===0) return null;
+                        const active = oFilter===s||(s==='all'&&(oFilter==='all'||oFilter==='outside'));
+                        return (
+                          <button key={s} onClick={() => setOFilter(s==='all'?'outside':s)}
+                            style={{ padding:'5px 13px', borderRadius:100, fontSize:12, fontWeight:700, fontFamily:font, cursor:'pointer', border:'1.5px solid', borderColor:active?gold:'rgba(196,122,46,0.2)', background:active?gold:'#fff', color:active?'#fff':'#9B7450', transition:'all 0.15s' }}>
+                            {s==='all'?'All':s} ({n})
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <input value={oSearch} onChange={e => setOSearch(e.target.value)} placeholder="Search by name, event type, or phone…"
+                    style={{ width:'100%', maxWidth:380, padding:'9px 14px', borderRadius:10, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13, color:ink, outline:'none', background:'#fff', boxSizing:'border-box', marginBottom:14 }} />
                   {outsideLoading ? <div style={{ textAlign:'center', padding:'24px', color:'#9B7450' }}>Loading…</div>
                   : visibleOutside.length===0 ? (
-                    <div style={{ background:'#fff', borderRadius:16, padding:'40px 24px', textAlign:'center', border:'1px solid rgba(196,122,46,0.1)' }}>
+                    <div style={{ background:'#fff', borderRadius:16, padding:'40px 24px', textAlign:'center', border:'1.5px dashed rgba(196,122,46,0.18)' }}>
                       <div style={{ fontSize:36, marginBottom:10 }}>📋</div>
                       <div style={{ fontSize:15, fontWeight:700, color:ink, marginBottom:6 }}>{outsideOrders.length===0?`No outside ${terms.toLowerCase()} yet`:`No ${terms.toLowerCase()} match`}</div>
                       {outsideOrders.length===0 && <>
-                        <div style={{ fontSize:13, color:'#9B7450', marginBottom:14 }}>Log bookings from WhatsApp, Instagram, referrals, or walk-ins to track your full revenue.</div>
+                        <div style={{ fontSize:13, color:'#9B7450', marginBottom:16, maxWidth:300, margin:'0 auto 16px' }}>Log bookings from WhatsApp, Instagram, referrals, or walk-ins to track your full revenue here.</div>
                         <button onClick={() => setModal('add')} style={{ padding:'10px 22px', borderRadius:10, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:13.5, fontWeight:700, cursor:'pointer' }}>+ Log Your First {term}</button>
                       </>}
                     </div>
@@ -2072,7 +2116,6 @@ export default function VendorDashboard() {
                   )}
                 </div>
               )}
-            </div>} {/* end orders sub-tab */}
             </div>
           )}
 

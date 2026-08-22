@@ -992,7 +992,7 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
 }
 
 /* ── build WhatsApp Baat Karo message ── */
-function buildBaatKaroMsg(occasion, {guests, date, city, venueType, theme, vendors, vendorPackages, budget, selectedActivities=[]}) {
+function buildBaatKaroMsg(occasion, {guests, date, city, venueType, theme, vendors, vendorPackages, budget, selectedActivities=[], customActivities=[]}) {
   const pkgNames=["Essential","Standard","Premium"];
   const vLines=vendors.filter(v=>ALL_VENDORS.includes(v)).map(v=>{
     const pi=vendorPackages[v];
@@ -1001,9 +1001,11 @@ function buildBaatKaroMsg(occasion, {guests, date, city, venueType, theme, vendo
   });
   const customLines=vendors.filter(v=>!ALL_VENDORS.includes(v)).map(v=>`• ${v}`);
   const allLines=[...vLines,...customLines].join("\n");
-  const actLines=selectedActivities.length
-    ? selectedActivities.map(id=>{const a=ALL_ACTIVITY_ITEMS.find(x=>x.id===id);return a?`• ${a.name}`:`• ${id}`;}).join("\n")
-    : null;
+  const allActItems=[
+    ...selectedActivities.map(id=>{const a=ALL_ACTIVITY_ITEMS.find(x=>x.id===id);return a?`• ${a.name}`:`• ${id}`;}),
+    ...(customActivities||[]).map(a=>`• ${a} (custom)`),
+  ];
+  const actLines=allActItems.length?allActItems.join("\n"):null;
   const dateStr=date?new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"}):"";
   const parts=[
     `Hi Tendr! I've planned a ${occasion.name} and need help booking.`,
@@ -1021,7 +1023,7 @@ function buildBaatKaroMsg(occasion, {guests, date, city, venueType, theme, vendo
 }
 
 /* ── build plain-text plan for in-app chat ── */
-function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors, vendorPackages, budget, ageGroups=[], selectedActivities=[], customCatering={}, customDecor={}}) {
+function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors, vendorPackages, budget, ageGroups=[], selectedActivities=[], customActivities=[], customCatering={}, customDecor={}}) {
   const vLines = vendors.filter(v => ALL_VENDORS.includes(v)).map(v => {
     const pi = vendorPackages[v];
     if (pi === undefined) return `• ${v} — no package selected`;
@@ -1044,11 +1046,12 @@ function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors,
   });
   const customLines = vendors.filter(v => !ALL_VENDORS.includes(v)).map(v => `• ${v}`);
   const allLines = [...vLines, ...customLines].join("\n\n");
-  const actLines = selectedActivities.length
-    ? "\nFun activities:\n"+selectedActivities.map(id=>{
-        const a=ALL_ACTIVITY_ITEMS.find(x=>x.id===id);
-        return a?`• ${a.name} (${a.price})`:`• ${id}`;
-      }).join("\n")
+  const allActItemsText=[
+    ...selectedActivities.map(id=>{const a=ALL_ACTIVITY_ITEMS.find(x=>x.id===id);return a?`• ${a.name} (${a.price})`:`• ${id}`;}),
+    ...(customActivities||[]).map(a=>`• ${a}`),
+  ];
+  const actLines = allActItemsText.length
+    ? "\nFun activities:\n"+allActItemsText.join("\n")
     : null;
   const dateStr = date ? new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"}) : "";
   return [
@@ -1266,6 +1269,24 @@ export default function OccasionDetail(){
   const [selectedActivities,setSelectedActivities]=useState([]); // array of activity ids
   const toggleActivity=id=>setSelectedActivities(a=>a.includes(id)?a.filter(x=>x!==id):[...a,id]);
 
+  /* custom activities (free-text) */
+  const [customActivities,setCustomActivities]=useState([]);
+  const [customActivityInput,setCustomActivityInput]=useState("");
+  const [showCustomActivityInput,setShowCustomActivityInput]=useState(false);
+  const addCustomActivity=()=>{
+    const t=customActivityInput.trim();
+    if(!t)return;
+    setCustomActivities(a=>[...a,t]);
+    setCustomActivityInput("");
+  };
+
+  /* custom occasion name + description */
+  const [customEventName,setCustomEventName]=useState("");
+  const [customEventDesc,setCustomEventDesc]=useState("");
+
+  /* custom vendor input visibility */
+  const [showCustomVendorInput,setShowCustomVendorInput]=useState(false);
+
   const PLAN_KEY=`tendr-plan-${slug}`;
 
   /* load saved plan on mount */
@@ -1285,7 +1306,7 @@ export default function OccasionDetail(){
       localStorage.setItem(PLAN_KEY,JSON.stringify({
         planMode,step,guests,date,budget,city,venueType,
         ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,checked,
-        selectedActivities,customCatering,customDecor,
+        selectedActivities,customCatering,customDecor,customActivities,customEventName,customEventDesc,
         savedAt:new Date().toISOString(),
       }));
     }
@@ -1316,11 +1337,50 @@ export default function OccasionDetail(){
     setSelectedActivities(s.selectedActivities||[]);
     if(s.customCatering) setCustomCatering(s.customCatering);
     if(s.customDecor) setCustomDecor(s.customDecor);
+    if(s.customActivities) setCustomActivities(s.customActivities);
+    if(s.customEventName) setCustomEventName(s.customEventName);
+    if(s.customEventDesc) setCustomEventDesc(s.customEventDesc);
     setSavedPlan(null);
   }
 
-  const occasion=getOccasionById(slug);
-  if(!occasion){navigate("/");return null;}
+  const isCustomOccasion = slug === 'custom';
+  const rawOccasion = getOccasionById(slug);
+
+  // Build smart vendor recs from free-text description
+  const getCustomRecommended=(desc="")=>{
+    const d=desc.toLowerCase();
+    const r=[];
+    if(d.includes("food")||d.includes("cater")||d.includes("dinner")||d.includes("lunch")||d.includes("snack")) r.push("Caterer");
+    if(d.includes("decor")||d.includes("balloon")||d.includes("flower")||d.includes("theme")) r.push("Decorator");
+    if(d.includes("photo")) r.push("Photographer");
+    if(d.includes("video")||d.includes("film")||d.includes("reel")) r.push("Videographer");
+    if(d.includes("dj")||d.includes("music")||d.includes("dance")) r.push("DJ");
+    if(d.includes("anchor")||d.includes("host")||d.includes("emcee")||d.includes("mc")||d.includes("ceremony")||d.includes("farewell")||d.includes("convocation")) r.push("Emcee / Host");
+    if(d.includes("av")||d.includes("sound")||d.includes("screen")||d.includes("projector")||d.includes("stage")||d.includes("led")||d.includes("convocation")||d.includes("conference")||d.includes("seminar")) r.push("AV Setup");
+    if(d.includes("cake")||d.includes("dessert")) r.push("Cake");
+    if(d.includes("gift")||d.includes("hamper")) r.push("Gift Hamper");
+    if(d.includes("magic")||d.includes("comedian")||d.includes("entertain")||d.includes("perform")) r.push("Magician / Entertainer");
+    if(d.includes("photo booth")||d.includes("selfie")) r.push("Photo Booth");
+    return r.length ? [...new Set(r)] : ["Decorator","Caterer","Photographer"];
+  };
+
+  const occasion = isCustomOccasion ? {
+    id:"custom",
+    name: customEventName||"My Event",
+    localName:"",
+    icon:"✨",
+    tagline:"Your event, your way",
+    coverImage:"https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80",
+    vendorCategories: getCustomRecommended(customEventDesc),
+    checklist:[
+      "Set your event date","Confirm guest headcount","Book key vendors",
+      "Confirm venue and logistics","Send out invites","Arrange transport if needed",
+    ],
+    giftIdeas:[],decorThemes:[],activities:[],
+    budgetMin:5000,budgetMax:500000,typicalGuests:"10–500",
+  } : rawOccasion;
+
+  if(!occasion){navigate("/occasions");return null;}
 
   const hub=HUB_ROUTES[slug];
   const equipment=getEquipment(slug,guests);
@@ -1417,8 +1477,66 @@ export default function OccasionDetail(){
       {/* content */}
       <div style={{flex:1,overflowY:"auto",padding:"28px 20px 140px",maxWidth:680,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
 
+        {/* ══ STEP 0: CUSTOM OCCASION — name & describe ══ */}
+        {step===0&&isCustomOccasion&&(
+          <div className="os">
+            <div style={{textAlign:"center",marginBottom:20}}>
+              <div style={{fontSize:52,lineHeight:1,marginBottom:12}}>✨</div>
+              <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,4vw,1.8rem)",color:ink,margin:"0 0 8px",lineHeight:1.2}}>Plan your own event</p>
+              <p style={{fontSize:13,color:muted,margin:0,lineHeight:1.55,maxWidth:320,marginLeft:"auto",marginRight:"auto"}}>Tell us what you're celebrating and we'll help you build it out.</p>
+            </div>
+
+            <div style={{marginBottom:18}}>
+              <label style={{display:"block",fontSize:12,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:6}}>What's the occasion?</label>
+              <input
+                type="text"
+                value={customEventName}
+                onChange={e=>setCustomEventName(e.target.value)}
+                onKeyDown={e=>{if(e.key==="Enter"&&customEventName.trim()){setPlanMode("without");setStep(1);}}}
+                placeholder="e.g. Convocation, Team Outing, Store Launch, Farewell…"
+                autoFocus
+                style={{width:"100%",boxSizing:"border-box",padding:"13px 16px",borderRadius:12,border:`1.5px solid ${customEventName.trim()?"rgba(196,122,46,0.4)":"rgba(196,122,46,0.2)"}`,fontSize:15,fontFamily:font,outline:"none",color:ink,background:"#fff",transition:"border-color 0.2s"}}
+              />
+            </div>
+
+            <div style={{marginBottom:24}}>
+              <label style={{display:"block",fontSize:12,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:6}}>Describe it briefly <span style={{fontWeight:400,textTransform:"none",letterSpacing:0}}>(optional — helps us suggest the right vendors)</span></label>
+              <textarea
+                value={customEventDesc}
+                onChange={e=>setCustomEventDesc(e.target.value)}
+                placeholder="e.g. College farewell for 200 students, outdoor venue, need stage setup and catering"
+                rows={3}
+                style={{width:"100%",boxSizing:"border-box",padding:"12px 16px",borderRadius:12,border:"1.5px solid rgba(196,122,46,0.2)",fontSize:13.5,fontFamily:font,outline:"none",color:ink,background:"#fff",resize:"vertical",lineHeight:1.5}}
+              />
+            </div>
+
+            {/* Smart vendor preview from description */}
+            {customEventDesc.trim().length>8&&(()=>{
+              const recs=getCustomRecommended(customEventDesc);
+              return recs.length>0?(
+                <div style={{marginBottom:22,padding:"12px 14px",borderRadius:12,background:"rgba(196,122,46,0.05)",border:"1px solid rgba(196,122,46,0.14)"}}>
+                  <div style={{fontSize:10,fontWeight:800,color:"rgba(196,122,46,0.6)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:8}}>Vendors we'll suggest</div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                    {recs.map(v=>(
+                      <span key={v} style={{fontSize:11.5,fontWeight:600,color:gold,background:"rgba(196,122,46,0.08)",border:"1px solid rgba(196,122,46,0.2)",borderRadius:100,padding:"3px 10px"}}>{v}</span>
+                    ))}
+                  </div>
+                  <p style={{fontSize:11,color:muted,margin:"8px 0 0",lineHeight:1.4}}>You can add or remove any of these in the next step.</p>
+                </div>
+              ):null;
+            })()}
+
+            <button
+              onClick={()=>{if(!customEventName.trim())return;setPlanMode("without");setStep(1);}}
+              disabled={!customEventName.trim()}
+              style={{width:"100%",padding:"14px",borderRadius:14,background:customEventName.trim()?gold:"rgba(196,122,46,0.25)",color:"#fff",fontFamily:font,fontWeight:800,fontSize:15,border:"none",cursor:customEventName.trim()?"pointer":"not-allowed",transition:"background 0.2s"}}>
+              Start planning →
+            </button>
+          </div>
+        )}
+
         {/* ══ STEP 0: mode choice ══ */}
-        {step===0&&(
+        {step===0&&!isCustomOccasion&&(
           <div className="os" style={{paddingBottom:0}}>
             {/* Occasion hero — photo backdrop */}
             <div style={{position:"relative",borderRadius:24,overflow:"hidden",marginBottom:24,height:180}}>
@@ -1728,7 +1846,7 @@ export default function OccasionDetail(){
             </div>
 
             {/* ── Service picker chips ── */}
-            <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:24}}>
+            <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:16}}>
               {ALL_VENDORS.map(v=>{
                 const sel=vendors.includes(v);
                 const isRec=recommended.has(v);
@@ -1754,16 +1872,39 @@ export default function OccasionDetail(){
                   </button>
                 );
               })}
+              {/* + Other chip */}
+              <button onClick={()=>setShowCustomVendorInput(v=>!v)}
+                style={{display:"inline-flex",alignItems:"center",gap:6,padding:"9px 14px",borderRadius:100,border:`1.5px dashed ${showCustomVendorInput?"rgba(196,122,46,0.5)":"rgba(196,122,46,0.28)"}`,background:showCustomVendorInput?"rgba(196,122,46,0.06)":"#fff",color:"rgba(196,122,46,0.7)",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s"}}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Other
+              </button>
             </div>
 
-            {/* custom service input */}
-            <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:24}}>
-              <input type="text" value={customVendor} onChange={e=>setCustomVendor(e.target.value)}
-                onKeyDown={e=>{if(e.key==="Enter")addCustomVendor();}}
-                placeholder="Add a custom service…"
-                style={{flex:1,padding:"9px 14px",borderRadius:100,border:`1.5px solid ${border}`,background:"#fff",fontSize:12.5,fontFamily:font,outline:"none",color:ink,minHeight:40}}/>
-              {customVendor.trim()&&<button onClick={addCustomVendor} style={{width:38,height:38,borderRadius:"50%",background:gold,border:"none",color:"#fff",cursor:"pointer",fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontWeight:300}}>+</button>}
-            </div>
+            {/* custom service input — revealed when + Other is tapped */}
+            {showCustomVendorInput&&(
+              <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:20,padding:"12px 14px",borderRadius:14,background:"rgba(196,122,46,0.04)",border:"1.5px solid rgba(196,122,46,0.16)"}}>
+                <input type="text" value={customVendor} onChange={e=>setCustomVendor(e.target.value)}
+                  onKeyDown={e=>{if(e.key==="Enter")addCustomVendor();}}
+                  placeholder="e.g. Live Streaming, Gown Rental, Security…"
+                  autoFocus
+                  style={{flex:1,padding:"9px 14px",borderRadius:100,border:`1.5px solid rgba(196,122,46,0.25)`,background:"#fff",fontSize:13,fontFamily:font,outline:"none",color:ink}}/>
+                <button onClick={addCustomVendor} disabled={!customVendor.trim()}
+                  style={{flexShrink:0,padding:"9px 16px",borderRadius:100,background:customVendor.trim()?gold:"rgba(196,122,46,0.2)",color:"#fff",fontFamily:font,fontWeight:700,fontSize:13,border:"none",cursor:customVendor.trim()?"pointer":"default",transition:"background 0.2s"}}>
+                  Add
+                </button>
+              </div>
+            )}
+            {/* show already-added custom vendors as removable chips */}
+            {vendors.filter(v=>!ALL_VENDORS.includes(v)).length>0&&(
+              <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:16}}>
+                {vendors.filter(v=>!ALL_VENDORS.includes(v)).map(v=>(
+                  <span key={v} style={{display:"inline-flex",alignItems:"center",gap:6,padding:"7px 12px",borderRadius:100,background:"rgba(196,122,46,0.1)",border:"1.5px solid rgba(196,122,46,0.25)",color:gold,fontSize:12.5,fontWeight:700,fontFamily:font}}>
+                    {v}
+                    <button onClick={()=>toggleVendor(v)} style={{background:"none",border:"none",cursor:"pointer",color:"rgba(196,122,46,0.6)",fontSize:13,padding:0,lineHeight:1,display:"flex",alignItems:"center"}}>✕</button>
+                  </span>
+                ))}
+              </div>
+            )}
 
             {/* ── Packages for selected vendors ── */}
             {vendors.length>0&&(
@@ -2134,6 +2275,49 @@ export default function OccasionDetail(){
                     );
                   })}
                   {totalSelected===0&&<p style={{fontSize:12,color:"rgba(30,15,0,0.28)",textAlign:"center",marginTop:8}}>Tap any item to add it — or skip to continue</p>}
+
+                  {/* ── Custom activity input ── */}
+                  <div style={{marginTop:20,paddingTop:20,borderTop:"1px solid rgba(196,122,46,0.1)"}}>
+                    <div style={{fontSize:10,fontWeight:800,color:"rgba(196,122,46,0.55)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:10}}>Something else in mind?</div>
+
+                    {customActivities.length>0&&(
+                      <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
+                        {customActivities.map((act,i)=>(
+                          <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",borderRadius:12,border:`1.5px solid ${gold}`,background:"rgba(196,122,46,0.06)"}}>
+                            <div style={{width:36,height:36,borderRadius:10,background:"rgba(196,122,46,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>✦</div>
+                            <span style={{flex:1,fontSize:13,fontWeight:700,color:gold}}>{act}</span>
+                            <button onClick={()=>setCustomActivities(a=>a.filter((_,j)=>j!==i))} style={{background:"none",border:"none",cursor:"pointer",color:"rgba(196,122,46,0.5)",fontSize:16,padding:0,lineHeight:1}}>✕</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {showCustomActivityInput?(
+                      <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                        <input
+                          type="text"
+                          value={customActivityInput}
+                          onChange={e=>setCustomActivityInput(e.target.value)}
+                          onKeyDown={e=>{if(e.key==="Enter"){addCustomActivity();}if(e.key==="Escape")setShowCustomActivityInput(false);}}
+                          placeholder="e.g. Live streaming, Gown rental, Air hockey…"
+                          autoFocus
+                          style={{flex:1,padding:"11px 14px",borderRadius:100,border:"1.5px solid rgba(196,122,46,0.3)",background:"#fff",fontSize:13,fontFamily:font,outline:"none",color:ink}}
+                        />
+                        <button onClick={addCustomActivity} disabled={!customActivityInput.trim()}
+                          style={{flexShrink:0,padding:"11px 18px",borderRadius:100,background:customActivityInput.trim()?gold:"rgba(196,122,46,0.2)",color:"#fff",fontFamily:font,fontWeight:700,fontSize:13,border:"none",cursor:customActivityInput.trim()?"pointer":"default",transition:"background 0.2s"}}>
+                          Add
+                        </button>
+                      </div>
+                    ):(
+                      <button onClick={()=>setShowCustomActivityInput(true)}
+                        style={{display:"inline-flex",alignItems:"center",gap:7,padding:"10px 18px",borderRadius:100,border:"1.5px dashed rgba(196,122,46,0.35)",background:"#fff",color:"rgba(196,122,46,0.75)",fontFamily:font,fontWeight:600,fontSize:13,cursor:"pointer",transition:"all 0.18s"}}
+                        onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(196,122,46,0.55)";e.currentTarget.style.background="rgba(196,122,46,0.04)";}}
+                        onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(196,122,46,0.35)";e.currentTarget.style.background="#fff";}}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add something else
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })()}
@@ -2195,7 +2379,7 @@ export default function OccasionDetail(){
               </button>
               <button
                 onClick={()=>{
-                  const msg=buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customCatering,customDecor});
+                  const msg=buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,customCatering,customDecor});
                   document.dispatchEvent(new CustomEvent("tendr:open-chat-with-plan",{detail:{message:msg}}));
                 }}
                 style={{flex:1,padding:"13px 16px",borderRadius:12,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font,display:"flex",alignItems:"center",justifyContent:"center",gap:7}}>
@@ -2333,7 +2517,7 @@ export default function OccasionDetail(){
             )}
 
             {/* WhatsApp CTA — includes all selected vendors + packages */}
-            <a href={buildBaatKaroMsg(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,selectedActivities})}
+            <a href={buildBaatKaroMsg(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,selectedActivities,customActivities})}
               target="_blank" rel="noopener noreferrer"
               style={{display:"flex",alignItems:"center",gap:12,padding:"14px 18px",borderRadius:14,background:"#25D366",marginBottom:20,textDecoration:"none",transition:"opacity 0.18s"}}
               onMouseEnter={e=>{e.currentTarget.style.opacity="0.88";}} onMouseLeave={e=>{e.currentTarget.style.opacity="1";}}>
@@ -2346,9 +2530,9 @@ export default function OccasionDetail(){
             </a>
 
             {/* fun activities in plan */}
-            {selectedActivities.length>0&&(
+            {(selectedActivities.length>0||customActivities.length>0)&&(
               <div style={{marginBottom:20}}>
-                <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:12,fontFamily:font}}>Entertainment & Activities booked</div>
+                <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:12,fontFamily:font}}>Entertainment & Activities</div>
                 {selectedActivities.map(id=>{
                   const a=ALL_ACTIVITY_ITEMS.find(x=>x.id===id);
                   if(!a) return null;
@@ -2364,6 +2548,15 @@ export default function OccasionDetail(){
                     </div>
                   );
                 })}
+                {customActivities.map((act,i)=>(
+                  <div key={`custom-${i}`} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:10,background:"#fff",border:`1px solid ${border}`,marginBottom:6}}>
+                    <span style={{fontSize:18,flexShrink:0}}>✦</span>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:12.5,fontWeight:700,color:ink}}>{act}</div>
+                      <div style={{fontSize:10.5,color:muted}}>Custom · Added by you</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -2457,7 +2650,7 @@ export default function OccasionDetail(){
               </button>
             )}
             {step===6&&(
-              <button onClick={()=>window.open(buildBaatKaroMsg(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,selectedActivities}),"_blank","noopener")} style={btnPrimary}>
+              <button onClick={()=>window.open(buildBaatKaroMsg(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,selectedActivities,customActivities}),"_blank","noopener")} style={btnPrimary}>
                 Send to Baat Karo ↗
               </button>
             )}

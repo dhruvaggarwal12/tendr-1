@@ -123,6 +123,35 @@ export default function OccasionsPage() {
                 </div>
               </button>
             ))}
+
+            {/* Plan your own event card — always shown */}
+            {!search.trim() && (
+              <button
+                onClick={() => navigate("/occasions/custom")}
+                style={{
+                  background: "linear-gradient(135deg,rgba(196,122,46,0.07) 0%,rgba(196,122,46,0.03) 100%)",
+                  borderRadius: 16,
+                  border: "1.5px dashed rgba(196,122,46,0.35)",
+                  overflow: "hidden",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  boxShadow: "none",
+                  transition: "transform 0.18s, box-shadow 0.18s, border-color 0.18s",
+                  fontFamily: font,
+                  padding: 0,
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(139,69,19,0.10)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.6)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.35)"; }}
+              >
+                <div className="occ-pg-cover" style={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", position: "relative" }}>
+                  <span style={{ fontSize: 44 }}>✨</span>
+                </div>
+                <div className="occ-pg-info" style={{ padding: "10px 13px 12px" }}>
+                  <div className="occ-pg-name" style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E", lineHeight: 1.25 }}>Your occasion not here?</div>
+                  <div style={{ fontSize: 10, color: "#9B7450", fontWeight: 500, marginTop: 3, lineHeight: 1.4 }}>Tell us about it — we'll help you plan it</div>
+                </div>
+              </button>
+            )}
           </div>
           </>
         )}
