@@ -458,22 +458,22 @@ const Navbar = ({
                       background: "transparent",
                       color: "#1C0E04",
                       fontSize: 14,
-                      fontWeight: 800,
-                      letterSpacing: "0.015em",
+                      fontWeight: 600,
+                      letterSpacing: "0.01em",
                       padding: "7px 12px",
-                      borderRadius: 8,
+                      borderRadius: 0,
                       border: "none",
+                      borderBottom: "2px solid transparent",
                       display: "flex",
                       alignItems: "center",
                       textDecoration: "none",
-                      transition: "color 0.15s, background 0.15s, text-shadow 0.15s",
+                      transition: "color 0.15s, border-color 0.15s",
                       fontFamily: font,
                       whiteSpace: "nowrap",
                       lineHeight: 1,
-                      textShadow: "1px 1px 0 rgba(255,255,255,0.7), -1px -1px 0 rgba(28,14,4,0.08)",
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.color = "#A0621C"; e.currentTarget.style.background = "rgba(196,122,46,0.08)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.color = "#2C1A0E"; e.currentTarget.style.background = "transparent"; }}
+                    onMouseEnter={e => { e.currentTarget.style.color = "#C47A2E"; e.currentTarget.style.borderBottomColor = "rgba(196,122,46,0.45)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = "#1C0E04"; e.currentTarget.style.borderBottomColor = "transparent"; }}
                   >
                     {group.label}
                   </a>
@@ -488,25 +488,23 @@ const Navbar = ({
               >
                 <button
                   style={{
-                    background: activeDropdown === group.label ? "rgba(196,122,46,0.12)" : "transparent",
+                    background: "transparent",
                     border: "none",
-                    color: activeDropdown === group.label ? "#7A3A08" : "#1C0E04",
-                    fontSize: 13.5,
-                    fontWeight: 800,
+                    borderBottom: activeDropdown === group.label ? "2px solid #C47A2E" : "2px solid transparent",
+                    color: activeDropdown === group.label ? "#C47A2E" : "#1C0E04",
+                    fontSize: 14,
+                    fontWeight: 600,
                     letterSpacing: "0.01em",
                     padding: "7px 11px",
-                    borderRadius: 8,
+                    borderRadius: 0,
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     gap: 4,
-                    transition: "color 0.2s, background 0.2s, text-shadow 0.2s",
+                    transition: "color 0.18s, border-color 0.18s",
                     fontFamily: font,
                     whiteSpace: "nowrap",
                     lineHeight: 1,
-                    textShadow: activeDropdown === group.label
-                      ? "1px 1px 0 rgba(196,122,46,0.25), 2px 2px 0 rgba(196,122,46,0.1)"
-                      : "1px 1px 0 rgba(255,255,255,0.7), -1px -1px 0 rgba(28,14,4,0.08)",
                   }}
                 >
                   {group.label}

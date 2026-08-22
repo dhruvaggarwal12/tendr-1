@@ -1688,30 +1688,25 @@ const Home = () => {
                 className="fa-carousel-card"
                 onClick={() => setFaModal(act)}
                 style={{
-                  flexShrink:0, width:200, background:"#fff",
-                  borderRadius:18, border:"1.5px solid rgba(196,122,46,0.15)",
-                  boxShadow:"0 4px 16px rgba(196,122,46,0.1)",
-                  display:"flex", flexDirection:"column", alignItems:"stretch",
-                  cursor:"pointer", transition:"transform 0.2s, box-shadow 0.2s",
+                  flexShrink:0, width:175,
+                  borderRadius:11, overflow:"hidden",
+                  position:"relative", cursor:"pointer",
+                  aspectRatio:"3/4",
+                  transition:"transform 0.22s ease",
                   fontFamily:"'Outfit',sans-serif",
-                  overflow:"hidden",
                 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(196,122,46,0.2)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.1)"; }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; }}
               >
-                {/* Photo header */}
-                <div className="fa-card-img" style={{ position:"relative", height:130, flexShrink:0 }}>
-                  <img src={act.image} alt={act.name} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
-                  <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 60%)", pointerEvents:"none" }} />
-                  <div style={{ position:"absolute", top:8, right:8, background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:10, fontWeight:600, padding:"3px 9px", borderRadius:"100px 100px 100px 4px", fontFamily:"'Outfit',sans-serif" }}>
-                    ₹{act.price.toLocaleString()}{act.perUnit ? <span style={{ fontSize:11, fontWeight:500 }}> /{act.unitLabel}</span> : ""}
-                  </div>
+                <img src={act.image} alt={act.name} loading="lazy"
+                  style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
+                <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(28,14,4,0.9) 0%, rgba(28,14,4,0.28) 52%, transparent 100%)" }} />
+                <div style={{ position:"absolute", top:10, right:10, background:"rgba(28,14,4,0.62)", backdropFilter:"blur(6px)", borderRadius:5, padding:"3px 8px" }}>
+                  <span style={{ fontSize:10.5, fontWeight:700, color:"#CCAB4A" }}>₹{act.price.toLocaleString()}</span>
                 </div>
-                {/* Text body */}
-                <div className="fa-card-body" style={{ padding:"12px 14px 14px", display:"flex", flexDirection:"column", gap:6, flex:1 }}>
-                  <h4 className="fa-card-name" style={{ fontSize:13, fontWeight:600, color:"#2C1A0E", margin:0, lineHeight:1.3 }}>{act.name}</h4>
-                  <p className="fa-card-desc" style={{ fontSize:11, color:"#9B7450", margin:0, lineHeight:1.5, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden", flex:1 }}>{act.desc}</p>
-                  <span className="fa-card-cta" style={{ fontSize:11, fontWeight:500, color:"#C47A2E", background:"rgba(196,122,46,0.08)", borderRadius:100, padding:"3px 10px", textAlign:"center" }}>View Details →</span>
+                <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"13px 13px 15px" }}>
+                  <div className="fa-card-name" style={{ fontSize:12.5, fontWeight:700, color:"#fff", lineHeight:1.3, marginBottom:3 }}>{act.name}</div>
+                  <div className="fa-card-desc" style={{ fontSize:10.5, color:"rgba(255,255,255,0.6)", lineHeight:1.4 }}>{act.desc.slice(0,44)}{act.desc.length>44?"…":""}</div>
                 </div>
               </div>
             ))}
@@ -1719,86 +1714,64 @@ const Home = () => {
           <style>{`
             .fa-carousel-track::-webkit-scrollbar { display:none; }
             @media (max-width: 640px) {
-              .fa-carousel-card { width: 148px !important; }
-              .fa-card-img { height: 108px !important; }
-              .fa-card-body { padding: 10px 12px 12px !important; gap: 5px !important; }
-              .fa-card-name { font-size: 12px !important; }
+              .fa-carousel-card { width: 138px !important; }
+              .fa-card-name { font-size: 11.5px !important; }
               .fa-card-desc { font-size: 10px !important; }
-              .fa-card-cta { font-size: 10px !important; padding: 2px 8px !important; }
             }
           `}</style>
         </div>
       </section>
 
       {/* ── Gift Hampers ── */}
-      <section style={{ background: "#ffffff", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
-        <div style={{ maxWidth: 1060, margin: "0 auto", position: "relative" }}>
+      <section style={{ background: "#fff", padding: "64px 24px 72px", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ maxWidth: 1060, margin: "0 auto" }}>
           <motion.div
             className="gh-band"
-            style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 48, alignItems: "center" }}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center" }}
+            initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-
-            {/* Left: stacked images + text inline */}
-            <div style={{ display: "flex", alignItems: "center", gap: 36, flexWrap: "wrap" }}>
-              {/* Staggered thumbnails */}
-              <div style={{ display: "flex", alignItems: "flex-end", flexShrink: 0, position: "relative", height: 100 }}>
-                {[
-                  { src: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=300&q=80", h: 80 },
-                  { src: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=300&q=80", h: 100 },
-                  { src: "https://images.unsplash.com/photo-1512909006721-3d6018887383?w=300&q=80", h: 80 },
-                ].map(({ src, h }, i) => (
-                  <div key={i} style={{ width: 82, height: h, borderRadius: 14, overflow: "hidden", border: "2.5px solid #ffffff", flexShrink: 0, marginLeft: i > 0 ? -18 : 0, position: "relative", zIndex: i === 1 ? 2 : 1, boxShadow: "0 6px 20px rgba(28,14,4,0.14)", transition: "transform 0.2s" }}>
-                    <img src={src} alt="hamper" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                  </div>
-                ))}
+            {/* Left: single editorial image */}
+            <div style={{ position: "relative" }}>
+              <div style={{ borderRadius: 14, overflow: "hidden", aspectRatio: "4/3" }}>
+                <img
+                  src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=700&q=80"
+                  alt="Curated gift hamper"
+                  loading="lazy"
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                />
               </div>
-
-              {/* Text block */}
-              <div>
-                <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.22em", margin: "0 0 10px" }}>Gift Hampers</p>
-                <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem,2.8vw,2.1rem)", fontWeight: 600, color: "#1C0E04", margin: "0 0 10px", lineHeight: 1.15, letterSpacing: "-0.01em" }}>
-                  The perfect gift,<br />delivered.
-                </p>
-                <p style={{ fontSize: 14, color: "#7A5535", margin: "0 0 18px", lineHeight: 1.6, maxWidth: 320 }}>
-                  Curated hampers for birthdays, anniversaries &amp; corporates — delivered across Delhi NCR.
-                </p>
-                <div style={{ display: "flex", gap: 16 }}>
-                  {["Birthday Specials", "Corporate Gifts", "Festival Hampers"].map((tag, i) => (
-                    <span key={i} style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", background: "rgba(196,122,46,0.08)", borderRadius: 100, padding: "4px 12px" }}>{tag}</span>
-                  ))}
-                </div>
+              <div style={{ position: "absolute", bottom: 16, left: 16, background: "rgba(28,14,4,0.8)", backdropFilter: "blur(8px)", borderRadius: 7, padding: "6px 13px" }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: "#CCAB4A", letterSpacing: "0.04em" }}>Free delivery · Delhi NCR</span>
               </div>
             </div>
 
-            {/* Right: CTAs */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, flexShrink: 0 }}>
-              <motion.button
-                onClick={() => navigate("/gift-hampers-cakes")}
-                style={{ background: "linear-gradient(135deg,#C47A2E,#D4A848)", color: "#fff", fontSize: 14.5, fontWeight: 700, padding: "14px 30px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", boxShadow: "0 6px 22px rgba(196,122,46,0.38)" }}
-                whileHover={{ scale: 1.03, boxShadow: "0 12px 32px rgba(196,122,46,0.5)" }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ type: "spring", stiffness: 380, damping: 24 }}
-              >
-                Browse Hampers →
-              </motion.button>
-              <motion.button
-                onClick={() => navigate("/hamper-builder")}
-                style={{ background: "transparent", color: "#C47A2E", fontSize: 13.5, fontWeight: 700, padding: "11px 24px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.38)", cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap" }}
-                whileHover={{ background: "rgba(196,122,46,0.06)" }}
-                whileTap={{ scale: 0.97 }}
-              >
-                🧺 Build Your Own
-              </motion.button>
+            {/* Right: copy */}
+            <div>
+              <p style={{ fontSize: 10.5, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.28em", margin: "0 0 20px" }}>Gift Hampers</p>
+              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.9rem,3vw,2.7rem)", fontWeight: 500, color: "#1C0E04", margin: "0 0 18px", lineHeight: 1.1, letterSpacing: "-0.01em" }}>
+                The perfect gift,<br />delivered.
+              </h2>
+              <p style={{ fontSize: 15, color: "#7A5535", margin: "0 0 32px", lineHeight: 1.72, maxWidth: 380 }}>
+                Curated hampers for birthdays, anniversaries and corporate celebrations — delivered across Delhi NCR.
+              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
+                <motion.button
+                  onClick={() => navigate("/gift-hampers-cakes")}
+                  style={{ background: "linear-gradient(135deg,#C47A2E,#D4A848)", color: "#fff", fontSize: 14, fontWeight: 700, padding: "13px 26px", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 18px rgba(196,122,46,0.32)" }}
+                  whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 24 }}
+                >Browse Hampers →</motion.button>
+                <button onClick={() => navigate("/hamper-builder")}
+                  style={{ background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, padding: 0, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", textDecoration: "underline", textDecorationColor: "rgba(155,116,80,0.4)", textUnderlineOffset: "3px" }}>
+                  Build your own
+                </button>
+              </div>
             </div>
           </motion.div>
         </div>
-        <style>{`
-          @media (max-width: 760px) { .gh-band { grid-template-columns: 1fr !important; gap: 24px !important; } }
-        `}</style>
+        <style>{`@media (max-width: 680px) { .gh-band { grid-template-columns: 1fr !important; gap: 28px !important; } }`}</style>
       </section>
 
       {/* ── Trust bar ── */}
@@ -2140,10 +2113,7 @@ const Home = () => {
             style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 16 }}
           >
             <div>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 14px", marginBottom: 14 }}>
-                <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em" }}>Party Places</span>
-              </div>
+              <p style={{ fontSize: 10.5, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.26em", margin: "0 0 14px" }}>Party Places</p>
               <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#1C0E04", letterSpacing: "0.01em", lineHeight: 1.15, margin: "0 0 8px" }}>
                 Private venues for your next celebration
               </h2>
@@ -2161,57 +2131,77 @@ const Home = () => {
             </button>
           </motion.div>
 
-          {/* Venue cards grid */}
+          {/* Venue cards — asymmetric bento: 1 featured tall + 2 compact */}
           <motion.div
             className="party-places-grid"
             initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }}
-            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.07 } } }}
-            style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 18 }}
+            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "auto auto", gap: 14 }}
           >
-            {PARTY_PLACES.slice(0, 4).map((place) => (
+            {/* Featured card — spans both rows */}
+            <motion.div
+              className="pp-featured"
+              variants={{ hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 280, damping: 26 } } }}
+              onClick={() => navigate(`/party-places/${PARTY_PLACES[0].id}`)}
+              style={{ gridRow: "span 2", borderRadius: 13, overflow: "hidden", cursor: "pointer", position: "relative", minHeight: 360 }}
+              whileHover={{ scale: 1.012, transition: { type: "spring", stiffness: 340, damping: 28 } }}
+            >
+              <img src={PARTY_PLACES[0].coverPhoto} alt={PARTY_PLACES[0].name} loading="lazy"
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", position: "absolute", inset: 0 }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,14,4,0.78) 0%, transparent 52%)" }} />
+              <div style={{ position: "absolute", top: 14, left: 14, background: "rgba(28,14,4,0.62)", backdropFilter: "blur(6px)", borderRadius: 100, padding: "3px 11px" }}>
+                <span style={{ fontSize: 10.5, fontWeight: 700, color: "#fff", textTransform: "capitalize" }}>{PARTY_PLACES[0].type}</span>
+              </div>
+              {PARTY_PLACES[0].rating >= 4.8 && (
+                <div style={{ position: "absolute", top: 14, right: 14, background: "rgba(196,122,46,0.88)", borderRadius: 100, padding: "3px 9px", display: "flex", alignItems: "center", gap: 4 }}>
+                  <span style={{ fontSize: 9, color: "#fff" }}>★</span>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: "#fff" }}>{PARTY_PLACES[0].rating}</span>
+                </div>
+              )}
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px 20px 22px" }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 4, lineHeight: 1.3 }}>{PARTY_PLACES[0].name}</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", marginBottom: 10 }}>{PARTY_PLACES[0].location} · up to {PARTY_PLACES[0].maxGuests} guests</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#CCAB4A" }}>from ₹{PARTY_PLACES[0].roomPrice.toLocaleString("en-IN")}</div>
+              </div>
+            </motion.div>
+
+            {/* Two compact cards stacked on right */}
+            {PARTY_PLACES.slice(1, 3).map((place) => (
               <motion.div
                 key={place.id}
                 variants={{ hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 280, damping: 26 } } }}
                 onClick={() => navigate(`/party-places/${place.id}`)}
-                style={{ borderRadius: 16, overflow: "hidden", background: "#fff", border: "1px solid rgba(196,122,46,0.1)", cursor: "pointer", boxShadow: "0 2px 14px rgba(139,69,19,0.06)" }}
-                whileHover={{ y: -5, boxShadow: "0 10px 32px rgba(139,69,19,0.12)", transition: { type: "spring", stiffness: 340, damping: 26 } }}
+                style={{ borderRadius: 13, overflow: "hidden", background: "#fff", cursor: "pointer", boxShadow: "0 2px 10px rgba(139,69,19,0.07)" }}
+                whileHover={{ y: -3, transition: { type: "spring", stiffness: 340, damping: 26 } }}
               >
-                <div style={{ position: "relative", paddingBottom: "58%", overflow: "hidden" }}>
-                  <img
-                    src={place.coverPhoto}
-                    alt={place.name}
-                    loading="lazy"
-                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.04)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
-                  />
-                  <div style={{ position: "absolute", top: 10, left: 10, background: "rgba(28,14,4,0.72)", backdropFilter: "blur(6px)", borderRadius: 100, padding: "3px 10px" }}>
-                    <span style={{ fontSize: 10.5, fontWeight: 700, color: "#fff", textTransform: "capitalize" }}>{place.type}</span>
+                <div style={{ position: "relative", paddingBottom: "54%" }}>
+                  <img src={place.coverPhoto} alt={place.name} loading="lazy"
+                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+                  <div style={{ position: "absolute", top: 10, left: 10, background: "rgba(28,14,4,0.62)", backdropFilter: "blur(6px)", borderRadius: 100, padding: "3px 10px" }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#fff", textTransform: "capitalize" }}>{place.type}</span>
                   </div>
                   {place.rating >= 4.8 && (
-                    <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(196,122,46,0.9)", borderRadius: 100, padding: "3px 9px", display: "flex", alignItems: "center", gap: 4 }}>
+                    <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(196,122,46,0.88)", borderRadius: 100, padding: "3px 8px", display: "flex", alignItems: "center", gap: 3 }}>
                       <span style={{ fontSize: 9, color: "#fff" }}>★</span>
-                      <span style={{ fontSize: 10.5, fontWeight: 700, color: "#fff" }}>{place.rating}</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>{place.rating}</span>
                     </div>
                   )}
                 </div>
-                <div style={{ padding: "14px 16px 16px" }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#1C0E04", marginBottom: 3, lineHeight: 1.3 }}>{place.name}</div>
-                  <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 10 }}>{place.location} · up to {place.maxGuests} guests</div>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "#C47A2E" }}>from ₹{place.roomPrice.toLocaleString("en-IN")}</div>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", background: "rgba(196,122,46,0.07)", borderRadius: 100, padding: "3px 9px" }}>{place.bhk || place.area?.split(" ")[0]}</div>
-                  </div>
+                <div style={{ padding: "12px 14px 14px" }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, color: "#1C0E04", marginBottom: 3, lineHeight: 1.3 }}>{place.name}</div>
+                  <div style={{ fontSize: 11.5, color: "#9B7450", marginBottom: 8 }}>{place.location} · up to {place.maxGuests} guests</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E" }}>from ₹{place.roomPrice.toLocaleString("en-IN")}</div>
                 </div>
               </motion.div>
             ))}
           </motion.div>
           <style>{`
-            @media (max-width: 900px) { .party-places-grid { grid-template-columns: repeat(2, 1fr) !important; } }
-            @media (max-width: 520px) {
-              .party-places-grid { display: flex !important; overflow-x: auto !important; scroll-snap-type: x mandatory !important; gap: 14px !important; padding-bottom: 12px !important; margin: 0 -24px !important; padding-left: 24px !important; scrollbar-width: none; }
+            .pp-featured { min-height: 360px !important; }
+            @media (max-width: 640px) {
+              .party-places-grid { display: flex !important; overflow-x: auto !important; scroll-snap-type: x mandatory !important; gap: 14px !important; padding-bottom: 12px !important; margin: 0 -24px !important; padding-left: 24px !important; scrollbar-width: none; grid-template-rows: unset !important; }
               .party-places-grid::-webkit-scrollbar { display: none; }
-              .party-places-grid > div { flex: 0 0 75% !important; scroll-snap-align: start !important; }
+              .pp-featured { grid-row: unset !important; flex: 0 0 75% !important; scroll-snap-align: start !important; min-height: 260px !important; }
+              .party-places-grid > div:not(.pp-featured) { flex: 0 0 65% !important; scroll-snap-align: start !important; }
             }
           `}</style>
         </div>
