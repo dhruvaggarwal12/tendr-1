@@ -1633,99 +1633,96 @@ const Home = () => {
       </section>
 
       {/* ── Live Entertainment Add-ons ── */}
-      <section style={{ background:"#0C0600", padding:"72px 24px 68px", fontFamily:"'Outfit', sans-serif" }}>
-        <div style={{ maxWidth:1100, margin:"0 auto" }}>
+      <section style={{ background:"#0C0600", padding:"64px 0 0", fontFamily:"'Outfit', sans-serif", overflow:"hidden" }}>
+        <style>{`
+          .fa-masonry { display:grid; grid-template-columns:2fr 1.15fr 1.15fr; grid-template-rows:300px 200px; gap:6px; }
+          .fa-feat { grid-row:1/3; }
+          .fa-card-lift { transition:filter 0.22s ease; cursor:pointer; }
+          .fa-card-lift:hover { filter:brightness(1.12); }
+          @media(max-width:768px){
+            .fa-masonry { grid-template-columns:1fr 1fr; grid-template-rows:220px 160px 160px; }
+            .fa-feat { grid-column:1/3; grid-row:1/2; }
+          }
+          @media(max-width:480px){
+            .fa-masonry { grid-template-columns:1fr 1fr; grid-template-rows:180px 130px 130px; gap:4px; }
+          }
+        `}</style>
 
-          {/* Editorial split header */}
-          <motion.div
-            className="fa-header-grid"
-            style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"24px 64px", alignItems:"end", marginBottom:36 }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-          >
-            <div>
-              <div style={{ display:"flex", alignItems:"center", gap:9, margin:"0 0 16px" }}>
-                <div style={{ width:24, height:1.5, background:"#C47A2E", flexShrink:0 }} />
-                <span style={{ fontSize:13, fontWeight:500, color:"#C47A2E" }}>Live Entertainment</span>
-              </div>
-              <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:"clamp(2rem,3.8vw,2.9rem)", fontWeight:300, color:"#FFF8EC", margin:0, letterSpacing:"0.01em", lineHeight:1.08 }}>
-                Add some magic<br />to your event.
-              </h2>
+        {/* Header */}
+        <motion.div
+          style={{ maxWidth:1100, margin:"0 auto", padding:"0 24px 40px", display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}
+          initial={{ opacity:0, y:18 }} whileInView={{ opacity:1, y:0 }}
+          viewport={{ once:true, amount:0.3 }} transition={{ duration:0.48 }}
+        >
+          <div>
+            <div style={{ display:"flex", alignItems:"center", gap:9, marginBottom:18 }}>
+              <div style={{ width:24, height:1.5, background:"#C47A2E", flexShrink:0 }} />
+              <span style={{ fontSize:13, fontWeight:500, color:"#C47A2E" }}>Live Entertainment</span>
             </div>
-            <div style={{ display:"flex", flexDirection:"column", gap:16, paddingBottom:"0.2em" }}>
-              <p style={{ fontSize:14.5, color:"rgba(255,240,210,0.52)", margin:0, lineHeight:1.72 }}>
-                Fixed-price entertainment — magic shows, game zones, live counters and more. Confirmed within 2 hours.
-              </p>
-              <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                <button onClick={() => scrollFaCarousel(-1)}
-                  style={{ width:36, height:36, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.3)", background:"rgba(196,122,46,0.06)", color:"#C47A2E", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s" }}
-                  onMouseEnter={e=>{e.currentTarget.style.background="#C47A2E";e.currentTarget.style.color="#fff";}}
-                  onMouseLeave={e=>{e.currentTarget.style.background="rgba(196,122,46,0.06)";e.currentTarget.style.color="#C47A2E";}}>
-                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                </button>
-                <button onClick={() => scrollFaCarousel(1)}
-                  style={{ width:36, height:36, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.3)", background:"rgba(196,122,46,0.06)", color:"#C47A2E", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s" }}
-                  onMouseEnter={e=>{e.currentTarget.style.background="#C47A2E";e.currentTarget.style.color="#fff";}}
-                  onMouseLeave={e=>{e.currentTarget.style.background="rgba(196,122,46,0.06)";e.currentTarget.style.color="#C47A2E";}}>
-                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
-                <button onClick={() => navigate("/fun-activities")}
-                  style={{ background:"none", border:"1.5px solid rgba(196,122,46,0.32)", color:"#C47A2E", fontSize:13, fontWeight:600, padding:"9px 22px", borderRadius:8, cursor:"pointer", fontFamily:"'Outfit',sans-serif", letterSpacing:"0.04em", transition:"all 0.22s" }}
-                  onMouseEnter={e=>{e.currentTarget.style.background="#C47A2E";e.currentTarget.style.color="#fff";e.currentTarget.style.borderColor="#C47A2E";}}
-                  onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.color="#C47A2E";e.currentTarget.style.borderColor="rgba(196,122,46,0.32)";}}>
-                  View all →
-                </button>
-              </div>
+            <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:"clamp(2.6rem,4.5vw,4rem)", fontWeight:300, color:"#FFF8EC", margin:0, lineHeight:1.0 }}>
+              Add some <em style={{ color:"#C47A2E", fontStyle:"italic" }}>magic</em><br />to your event.
+            </h2>
+          </div>
+          <div style={{ textAlign:"right", flexShrink:0, maxWidth:230, paddingBottom:6 }}>
+            <p style={{ fontSize:13, color:"rgba(255,240,210,0.42)", margin:"0 0 14px", lineHeight:1.7 }}>
+              Fixed-price add-ons confirmed<br />within 2 hours across NCR.
+            </p>
+            <button onClick={() => navigate("/fun-activities")}
+              style={{ background:"none", border:"none", color:"#C47A2E", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"'Outfit',sans-serif", padding:0, letterSpacing:"0.03em" }}>
+              View all activities →
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Masonry grid — bleeds to section edge */}
+        <motion.div
+          className="fa-masonry"
+          style={{ maxWidth:1100, margin:"0 auto", padding:"0 24px 72px" }}
+          initial="hidden" whileInView="visible"
+          viewport={{ once:true, amount:0.15 }}
+          variants={{ hidden:{}, visible:{ transition:{ staggerChildren:0.07 } } }}
+        >
+          {/* Featured card — spans both rows */}
+          <motion.div
+            className="fa-feat fa-card-lift"
+            onClick={() => setFaModal(FUN_ACTIVITIES[0])}
+            variants={{ hidden:{opacity:0,scale:0.97}, visible:{opacity:1,scale:1,transition:{duration:0.45}} }}
+            style={{ borderRadius:12, overflow:"hidden", position:"relative" }}
+          >
+            <img src={FUN_ACTIVITIES[0].image} alt={FUN_ACTIVITIES[0].name} loading="lazy"
+              style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
+            <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(4,2,0,0.92) 0%, rgba(4,2,0,0.08) 55%, transparent 100%)" }} />
+            <div style={{ position:"absolute", top:18, left:18 }}>
+              <span style={{ fontSize:9.5, fontWeight:700, color:"#CCAB4A", letterSpacing:"0.12em", background:"rgba(8,4,0,0.65)", padding:"3px 10px", borderRadius:100 }}>FEATURED</span>
+            </div>
+            <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"24px 22px" }}>
+              <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:24, fontWeight:400, color:"#FFF8EC", lineHeight:1.2, marginBottom:7 }}>{FUN_ACTIVITIES[0].name}</div>
+              <div style={{ fontSize:12, color:"rgba(255,240,210,0.5)", lineHeight:1.55, marginBottom:14 }}>{FUN_ACTIVITIES[0].desc.slice(0,72)}{FUN_ACTIVITIES[0].desc.length>72?"…":""}</div>
+              <div style={{ fontSize:15, fontWeight:700, color:"#CCAB4A", fontVariantNumeric:"tabular-nums" }}>₹{FUN_ACTIVITIES[0].price.toLocaleString()}</div>
             </div>
           </motion.div>
-          <style>{`.fa-header-grid { } @media (max-width: 720px) { .fa-header-grid { grid-template-columns: 1fr !important; gap: 16px !important; } }`}</style>
 
-          {/* Arrow-navigated cards */}
-          <div
-            ref={faCarouselRef}
-            className="fa-carousel-track"
-            style={{ display:"flex", gap:16, overflowX:"auto", scrollbarWidth:"none", msOverflowStyle:"none", paddingBottom:8 }}
-          >
-            {FUN_ACTIVITIES.map((act) => (
-              <div
-                key={act.id}
-                className="fa-carousel-card"
-                onClick={() => setFaModal(act)}
-                style={{
-                  flexShrink:0, width:175,
-                  borderRadius:11, overflow:"hidden",
-                  position:"relative", cursor:"pointer",
-                  aspectRatio:"3/4",
-                  transition:"transform 0.22s ease",
-                  fontFamily:"'Outfit',sans-serif",
-                }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; }}
-              >
-                <img src={act.image} alt={act.name} loading="lazy"
-                  style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
-                <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(28,14,4,0.9) 0%, rgba(28,14,4,0.28) 52%, transparent 100%)" }} />
-                <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"13px 13px 15px" }}>
-                  <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", gap:6, marginBottom:3 }}>
-                    <div className="fa-card-name" style={{ fontSize:12.5, fontWeight:700, color:"#fff", lineHeight:1.3 }}>{act.name}</div>
-                    <span style={{ fontSize:11, fontWeight:700, color:"#CCAB4A", flexShrink:0, fontVariantNumeric:"tabular-nums" }}>₹{act.price.toLocaleString()}</span>
-                  </div>
-                  <div className="fa-card-desc" style={{ fontSize:10.5, color:"rgba(255,255,255,0.6)", lineHeight:1.4 }}>{act.desc.slice(0,44)}{act.desc.length>44?"…":""}</div>
+          {/* Supporting 4 cards */}
+          {FUN_ACTIVITIES.slice(1, 5).map((act) => (
+            <motion.div
+              key={act.id}
+              className="fa-card-lift"
+              onClick={() => setFaModal(act)}
+              variants={{ hidden:{opacity:0,y:14}, visible:{opacity:1,y:0,transition:{duration:0.4}} }}
+              style={{ borderRadius:10, overflow:"hidden", position:"relative" }}
+            >
+              <img src={act.image} alt={act.name} loading="lazy"
+                style={{ width:"100%", height:"100%", objectFit:"cover", display:"block", position:"absolute", inset:0 }} />
+              <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(4,2,0,0.88) 0%, transparent 52%)" }} />
+              <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"11px 13px 13px" }}>
+                <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", gap:4 }}>
+                  <span style={{ fontSize:12.5, fontWeight:700, color:"#FFF8EC", lineHeight:1.25 }}>{act.name}</span>
+                  <span style={{ fontSize:11, fontWeight:700, color:"#CCAB4A", flexShrink:0, fontVariantNumeric:"tabular-nums" }}>₹{act.price.toLocaleString()}</span>
                 </div>
               </div>
-            ))}
-          </div>
-          <style>{`
-            .fa-carousel-track::-webkit-scrollbar { display:none; }
-            @media (max-width: 640px) {
-              .fa-carousel-card { width: 138px !important; }
-              .fa-card-name { font-size: 11.5px !important; }
-              .fa-card-desc { font-size: 10px !important; }
-            }
-          `}</style>
-        </div>
+            </motion.div>
+          ))}
+        </motion.div>
       </section>
 
       {/* ── Gift Hampers ── */}
