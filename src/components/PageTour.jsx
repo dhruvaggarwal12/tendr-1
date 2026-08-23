@@ -16,7 +16,8 @@ export const resetAllPageTours = () => {
   } catch {}
 };
 
-const font = "'Outfit', sans-serif";
+const font      = "'Outfit', sans-serif";
+const serifFont = "'Cormorant Garamond', Georgia, serif";
 
 function TourTooltip({ index, step, closeProps, primaryProps, tooltipProps, size }) {
   const progress = ((index + 1) / size) * 100;
@@ -25,81 +26,46 @@ function TourTooltip({ index, step, closeProps, primaryProps, tooltipProps, size
     <div
       {...tooltipProps}
       style={{
-        background: "linear-gradient(150deg, #1E0E03 0%, #110700 100%)",
-        border: "1px solid rgba(196,122,46,0.22)",
-        borderRadius: 15,
-        maxWidth: 295,
-        width: 295,
-        boxShadow: "0 28px 64px rgba(0,0,0,0.7), inset 0 1px 0 rgba(196,122,46,0.1)",
+        background: "#0E0700",
+        border: "1px solid rgba(196,122,46,0.15)",
+        borderRadius: 10,
+        maxWidth: 288,
+        width: 288,
+        boxShadow: "0 24px 56px rgba(0,0,0,0.72)",
         fontFamily: font,
         overflow: "hidden",
       }}
     >
-      {/* Progress bar */}
-      <div style={{ height: 2.5, background: "rgba(196,122,46,0.1)" }}>
-        <div style={{
-          height: "100%",
-          width: `${progress}%`,
-          background: "#C47A2E",
-          transition: "width 0.35s cubic-bezier(.4,0,.2,1)",
-        }} />
+      {/* Progress bar — thin, no gradient */}
+      <div style={{ height: 2, background: "rgba(196,122,46,0.08)" }}>
+        <div style={{ height: "100%", width: `${progress}%`, background: "#C47A2E", transition: "width 0.4s ease" }} />
       </div>
 
-      <div style={{ padding: "18px 20px 16px" }}>
-        {/* Counter + dots row */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 13 }}>
-          <span style={{ fontSize: 9.5, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.18em" }}>
-            {index + 1} of {size}
-          </span>
-          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-            {Array.from({ length: size }).map((_, i) => (
-              <div key={i} style={{
-                width: i === index ? 14 : 4,
-                height: 4,
-                borderRadius: 100,
-                background: i < index ? "rgba(196,122,46,0.45)" : i === index ? "#C47A2E" : "rgba(255,255,255,0.1)",
-                transition: "all 0.25s",
-              }} />
-            ))}
-          </div>
+      <div style={{ padding: "16px 18px 15px" }}>
+        {/* Step counter — minimal, no uppercase */}
+        <div style={{ fontSize: 10, fontWeight: 400, color: "rgba(196,122,46,0.45)", marginBottom: 11, letterSpacing: "0.04em" }}>
+          {index + 1} / {size}
         </div>
 
-        {/* Title */}
+        {/* Title — serif, light weight */}
         {step.title && (
-          <div style={{ fontSize: 15.5, fontWeight: 700, color: "#FFF8EC", marginBottom: 8, lineHeight: 1.28 }}>
+          <div style={{ fontFamily: serifFont, fontSize: 19, fontWeight: 400, color: "#FFF8EC", marginBottom: 8, lineHeight: 1.2 }}>
             {step.title}
           </div>
         )}
 
         {/* Content */}
-        <div style={{ fontSize: 12.5, color: "rgba(255,240,215,0.52)", lineHeight: 1.68, marginBottom: 18 }}>
+        <div style={{ fontSize: 12, color: "rgba(255,238,208,0.48)", lineHeight: 1.7, marginBottom: 16 }}>
           {step.content}
         </div>
 
         {/* Actions */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <button
-            {...closeProps}
-            style={{ background: "none", border: "none", fontSize: 11.5, color: "rgba(255,240,215,0.22)", cursor: "pointer", padding: 0, fontFamily: font, fontWeight: 600 }}
-          >
-            Skip tour
+          <button {...closeProps} style={{ background: "none", border: "none", fontSize: 11, color: "rgba(255,238,208,0.18)", cursor: "pointer", padding: 0, fontFamily: font }}>
+            skip
           </button>
-          <button
-            {...primaryProps}
-            style={{
-              padding: "8px 20px",
-              borderRadius: 8,
-              border: "none",
-              background: "#C47A2E",
-              color: "#fff",
-              fontSize: 12.5,
-              fontWeight: 700,
-              cursor: "pointer",
-              fontFamily: font,
-              letterSpacing: "0.01em",
-            }}
-          >
-            {index === size - 1 ? "Got it" : "Next →"}
+          <button {...primaryProps} style={{ padding: "7px 19px", borderRadius: 6, border: "none", background: "#C47A2E", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+            {index === size - 1 ? "Done" : "Continue"}
           </button>
         </div>
       </div>

@@ -740,90 +740,90 @@ const Home = () => {
     {
       target: "body",
       placement: "center",
-      title: "Welcome to Tendr 🎉",
-      content: "Vendors, gifts, tools — everything for your celebration in one place.",
+      title: "Welcome to Tendr",
+      content: "Book vendors, order gift hampers and plan your event — everything for Delhi NCR celebrations in one place.",
     },
     {
       target: '[data-tour="mob-search"]',
       placement: "bottom",
-      title: "Search Vendors",
-      content: 'Try "decorator in Noida" or "caterer under ₹30K" — Tendr finds the match.',
+      title: "Search naturally",
+      content: 'Type "decorator in Noida" or "caterer under ₹30K for 100 guests" and Tendr finds the right match.',
     },
     {
       target: '[data-tour="mob-icon-row"]',
       placement: "bottom",
-      title: "Quick Access",
-      content: "Jump to Vendors, Gifts, Activities or Stationeries in one tap.",
+      title: "Gifts & activities",
+      content: "Browse curated gift hampers for delivery, fun add-ons like photo booths and magicians, and wedding stationeries.",
     },
     {
       target: '[data-tour="mob-nav-products"]',
       placement: "top",
-      title: "Planning Tools",
-      content: "Budget Allocator, Timeline Builder and Decor Finder — all free.",
+      title: "Free planning tools",
+      content: "Budget Allocator splits your spend across vendors. Timeline Builder creates a day-of schedule. Both free.",
     },
     {
       target: '[data-tour="mob-nav-plan"]',
       placement: "top",
-      title: "Plan Your Event",
-      content: "Pick vendors yourself or let Smart Plan auto-build the lineup.",
+      title: "Plan your event",
+      content: "Choose vendors one by one, or let Smart Plan pick the best combination within your total budget.",
     },
     isSignedIn ? {
       target: '[data-tour="mob-nav-profile"]',
       placement: "top",
-      title: "Your Bookings",
-      content: "Confirmed events and downloadable documents live here.",
+      title: "Your bookings",
+      content: "Confirmed events, vendor details and downloadable documents are all here.",
     } : {
       target: '[data-tour="mob-nav-profile"]',
       placement: "top",
-      title: "Sign In to Book",
-      content: "Sign in to confirm bookings and access your dashboard.",
+      title: "Sign in to book",
+      content: "Sign in to confirm bookings — your events and documents will be waiting.",
     },
   ] : [
     {
       target: "body",
       placement: "center",
-      title: "Welcome to Tendr 🎉",
-      content: "Vendors, gifts, tools — everything for your celebration in one place.",
+      title: "Welcome to Tendr",
+      content: "Book vendors, order gift hampers and plan your event — everything for Delhi NCR celebrations in one place.",
     },
     {
       target: '[data-tour="search-bar"]',
       placement: "bottom",
-      title: "Smart Search",
-      content: 'Try "decorator under ₹20K in Noida" — finds by type, budget & city.',
+      title: "Search naturally",
+      content: 'Try "decorator under ₹20K in Noida" — Tendr reads vendor type, budget and city in one phrase.',
     },
     {
       target: '[data-tour="nav-browse"]',
       placement: "bottom",
-      title: "Browse Vendors",
-      content: "Decorators, Caterers, Photographers, DJs & more — filter by location and budget.",
+      title: "Browse vendors",
+      content: "Decorators, Caterers, Photographers, DJs — filter by area, date, guest count and budget.",
     },
     {
       target: '[data-tour="nav-products"]',
       placement: "bottom",
-      title: "Gifts & Activities",
-      content: "Curated gift hampers, wedding stationeries and fun activities for your event.",
+      title: "Gifts & activities",
+      content: "Curated gift hampers delivered across NCR, fun entertainment add-ons and custom wedding stationeries.",
     },
     {
       target: '[data-tour="nav-booking"]',
       placement: "bottom",
-      title: "Plan Your Event",
-      content: "Pick vendors yourself or use Smart Plan to auto-select within your budget.",
+      title: "Plan your event",
+      content: "Pick vendors yourself or use Smart Plan to auto-select Decorator, Caterer, Photographer and DJ within your budget.",
     },
     {
       target: '[data-tour="nav-tools"]',
       placement: "bottom",
-      title: "Tools",
-      content: "Budget Allocator, Decor Finder, Timeline Builder and Party Places.",
+      title: "Planning tools",
+      content: "Budget Allocator, Timeline Builder, Guest List, Decor Finder — all free.",
     },
     isSignedIn ? {
       target: '[data-tour="profile-btn"]',
       placement: "bottom",
-      title: "Your Bookings",
-      content: "Confirmed events, vendor details and documents all in one dashboard.",
+      title: "Your bookings",
+      content: "Confirmed events, vendor details and downloadable documents — all in your dashboard.",
     } : {
       target: '[data-tour="signin-btn"]',
       placement: "bottom",
-      title: "Sign In to Book",
+      title: "Sign in to book",
       content: "Sign in to confirm bookings — your events and documents will be waiting.",
     },
   ];
@@ -1633,7 +1633,7 @@ const Home = () => {
       </section>
 
       {/* ── Live Entertainment Add-ons ── */}
-      <section style={{ background:"#F5EEE3", padding:"72px 24px 68px", fontFamily:"'Outfit', sans-serif" }}>
+      <section style={{ background:"#0C0600", padding:"72px 24px 68px", fontFamily:"'Outfit', sans-serif" }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
 
           {/* Editorial split header */}
@@ -1650,31 +1650,31 @@ const Home = () => {
                 <div style={{ width:24, height:1.5, background:"#C47A2E", flexShrink:0 }} />
                 <span style={{ fontSize:13, fontWeight:500, color:"#C47A2E" }}>Live Entertainment</span>
               </div>
-              <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:"clamp(2rem,3.8vw,2.9rem)", fontWeight:300, color:"#1C0E04", margin:0, letterSpacing:"0.01em", lineHeight:1.08 }}>
+              <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:"clamp(2rem,3.8vw,2.9rem)", fontWeight:300, color:"#FFF8EC", margin:0, letterSpacing:"0.01em", lineHeight:1.08 }}>
                 Add some magic<br />to your event.
               </h2>
             </div>
             <div style={{ display:"flex", flexDirection:"column", gap:16, paddingBottom:"0.2em" }}>
-              <p style={{ fontSize:14.5, color:"#7A5535", margin:0, lineHeight:1.72 }}>
+              <p style={{ fontSize:14.5, color:"rgba(255,240,210,0.52)", margin:0, lineHeight:1.72 }}>
                 Fixed-price entertainment — magic shows, game zones, live counters and more. Confirmed within 2 hours.
               </p>
               <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                 <button onClick={() => scrollFaCarousel(-1)}
-                  style={{ width:36, height:36, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.28)", background:"transparent", color:"#C47A2E", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s" }}
+                  style={{ width:36, height:36, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.3)", background:"rgba(196,122,46,0.06)", color:"#C47A2E", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s" }}
                   onMouseEnter={e=>{e.currentTarget.style.background="#C47A2E";e.currentTarget.style.color="#fff";}}
-                  onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="#C47A2E";}}>
+                  onMouseLeave={e=>{e.currentTarget.style.background="rgba(196,122,46,0.06)";e.currentTarget.style.color="#C47A2E";}}>
                   <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                 </button>
                 <button onClick={() => scrollFaCarousel(1)}
-                  style={{ width:36, height:36, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.28)", background:"transparent", color:"#C47A2E", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s" }}
+                  style={{ width:36, height:36, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.3)", background:"rgba(196,122,46,0.06)", color:"#C47A2E", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s" }}
                   onMouseEnter={e=>{e.currentTarget.style.background="#C47A2E";e.currentTarget.style.color="#fff";}}
-                  onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="#C47A2E";}}>
+                  onMouseLeave={e=>{e.currentTarget.style.background="rgba(196,122,46,0.06)";e.currentTarget.style.color="#C47A2E";}}>
                   <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                 </button>
                 <button onClick={() => navigate("/fun-activities")}
-                  style={{ background:"none", border:"1.5px solid rgba(196,122,46,0.38)", color:"#C47A2E", fontSize:13, fontWeight:600, padding:"9px 22px", borderRadius:8, cursor:"pointer", fontFamily:"'Outfit',sans-serif", letterSpacing:"0.04em", transition:"all 0.22s" }}
+                  style={{ background:"none", border:"1.5px solid rgba(196,122,46,0.32)", color:"#C47A2E", fontSize:13, fontWeight:600, padding:"9px 22px", borderRadius:8, cursor:"pointer", fontFamily:"'Outfit',sans-serif", letterSpacing:"0.04em", transition:"all 0.22s" }}
                   onMouseEnter={e=>{e.currentTarget.style.background="#C47A2E";e.currentTarget.style.color="#fff";e.currentTarget.style.borderColor="#C47A2E";}}
-                  onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.color="#C47A2E";e.currentTarget.style.borderColor="rgba(196,122,46,0.38)";}}>
+                  onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.color="#C47A2E";e.currentTarget.style.borderColor="rgba(196,122,46,0.32)";}}>
                   View all →
                 </button>
               </div>
@@ -1738,18 +1738,26 @@ const Home = () => {
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            {/* Left: single editorial image */}
-            <div style={{ position: "relative" }}>
-              <div style={{ borderRadius: 14, overflow: "hidden", aspectRatio: "4/3" }}>
+            {/* Left: two-image collage */}
+            <div style={{ display: "grid", gridTemplateRows: "1fr auto", gap: 10, height: "100%" }}>
+              <div style={{ position: "relative", borderRadius: 12, overflow: "hidden", minHeight: 220 }}>
                 <img
-                  src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=700&q=80"
+                  src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=700&q=80"
                   alt="Curated gift hamper"
+                  loading="lazy"
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", position: "absolute", inset: 0 }}
+                />
+                <div style={{ position: "absolute", bottom: 14, left: 14, background: "rgba(12,6,0,0.78)", backdropFilter: "blur(8px)", borderRadius: 6, padding: "5px 12px" }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "#CCAB4A", letterSpacing: "0.04em" }}>Free delivery · Delhi NCR</span>
+                </div>
+              </div>
+              <div style={{ borderRadius: 10, overflow: "hidden", height: 90 }}>
+                <img
+                  src="https://images.unsplash.com/photo-1607082349566-187342175e2f?w=700&q=80"
+                  alt="Gift hamper assortment"
                   loading="lazy"
                   style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                 />
-              </div>
-              <div style={{ position: "absolute", bottom: 16, left: 16, background: "rgba(28,14,4,0.8)", backdropFilter: "blur(8px)", borderRadius: 7, padding: "6px 13px" }}>
-                <span style={{ fontSize: 11, fontWeight: 600, color: "#CCAB4A", letterSpacing: "0.04em" }}>Free delivery · Delhi NCR</span>
               </div>
             </div>
 
