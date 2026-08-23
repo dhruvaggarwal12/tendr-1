@@ -231,7 +231,10 @@ function FaqSection() {
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           style={{ textAlign: "center", marginBottom: 44 }}
         >
-          <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.22em", margin: "0 0 14px" }}>Got Questions?</p>
+          <div style={{ display:"flex", alignItems:"center", gap:9, margin:"0 0 14px" }}>
+            <div style={{ width:24, height:1.5, background:"#C47A2E", flexShrink:0 }} />
+            <span style={{ fontSize:13, fontWeight:500, color:"#C47A2E" }}>Got Questions?</span>
+          </div>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.8rem)", fontWeight: 400, color: "#1C0E04", letterSpacing: "-0.01em", margin: "0 0 12px", lineHeight: 1.1 }}>
             Frequently Asked Questions
           </h2>
@@ -1643,7 +1646,10 @@ const Home = () => {
             transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             <div>
-              <p style={{ fontSize:10, fontWeight:700, letterSpacing:"0.28em", textTransform:"uppercase", color:"#C47A2E", margin:"0 0 18px" }}>Live Entertainment</p>
+              <div style={{ display:"flex", alignItems:"center", gap:9, margin:"0 0 16px" }}>
+                <div style={{ width:24, height:1.5, background:"#C47A2E", flexShrink:0 }} />
+                <span style={{ fontSize:13, fontWeight:500, color:"#C47A2E" }}>Live Entertainment</span>
+              </div>
               <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:"clamp(2rem,3.8vw,2.9rem)", fontWeight:300, color:"#1C0E04", margin:0, letterSpacing:"0.01em", lineHeight:1.08 }}>
                 Add some magic<br />to your event.
               </h2>
@@ -1701,11 +1707,11 @@ const Home = () => {
                 <img src={act.image} alt={act.name} loading="lazy"
                   style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
                 <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(28,14,4,0.9) 0%, rgba(28,14,4,0.28) 52%, transparent 100%)" }} />
-                <div style={{ position:"absolute", top:10, right:10, background:"rgba(28,14,4,0.62)", backdropFilter:"blur(6px)", borderRadius:5, padding:"3px 8px" }}>
-                  <span style={{ fontSize:10.5, fontWeight:700, color:"#CCAB4A" }}>₹{act.price.toLocaleString()}</span>
-                </div>
                 <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"13px 13px 15px" }}>
-                  <div className="fa-card-name" style={{ fontSize:12.5, fontWeight:700, color:"#fff", lineHeight:1.3, marginBottom:3 }}>{act.name}</div>
+                  <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", gap:6, marginBottom:3 }}>
+                    <div className="fa-card-name" style={{ fontSize:12.5, fontWeight:700, color:"#fff", lineHeight:1.3 }}>{act.name}</div>
+                    <span style={{ fontSize:11, fontWeight:700, color:"#CCAB4A", flexShrink:0, fontVariantNumeric:"tabular-nums" }}>₹{act.price.toLocaleString()}</span>
+                  </div>
                   <div className="fa-card-desc" style={{ fontSize:10.5, color:"rgba(255,255,255,0.6)", lineHeight:1.4 }}>{act.desc.slice(0,44)}{act.desc.length>44?"…":""}</div>
                 </div>
               </div>
@@ -1749,7 +1755,10 @@ const Home = () => {
 
             {/* Right: copy */}
             <div>
-              <p style={{ fontSize: 10.5, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.28em", margin: "0 0 20px" }}>Gift Hampers</p>
+              <div style={{ display:"flex", alignItems:"center", gap:9, margin:"0 0 18px" }}>
+                <div style={{ width:24, height:1.5, background:"#C47A2E", flexShrink:0 }} />
+                <span style={{ fontSize:13, fontWeight:500, color:"#C47A2E" }}>Gift Hampers</span>
+              </div>
               <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.9rem,3vw,2.7rem)", fontWeight: 500, color: "#1C0E04", margin: "0 0 18px", lineHeight: 1.1, letterSpacing: "-0.01em" }}>
                 The perfect gift,<br />delivered.
               </h2>
@@ -1757,12 +1766,10 @@ const Home = () => {
                 Curated hampers for birthdays, anniversaries and corporate celebrations — delivered across Delhi NCR.
               </p>
               <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
-                <motion.button
+                <button
                   onClick={() => navigate("/gift-hampers-cakes")}
-                  style={{ background: "linear-gradient(135deg,#C47A2E,#D4A848)", color: "#fff", fontSize: 14, fontWeight: 700, padding: "13px 26px", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 18px rgba(196,122,46,0.32)" }}
-                  whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                  transition={{ type: "spring", stiffness: 380, damping: 24 }}
-                >Browse Hampers →</motion.button>
+                  style={{ background: "#C47A2E", color: "#fff", fontSize: 14, fontWeight: 600, padding: "12px 26px", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}
+                >Browse Hampers →</button>
                 <button onClick={() => navigate("/hamper-builder")}
                   style={{ background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, padding: 0, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", textDecoration: "underline", textDecorationColor: "rgba(155,116,80,0.4)", textUnderlineOffset: "3px" }}>
                   Build your own
@@ -1917,7 +1924,10 @@ const Home = () => {
                   <span style={{ color: "#CCAB4A", fontSize: 12, letterSpacing: "0.2em" }}>✦ ✦ ✦</span>
                   <div style={{ flex: 1, maxWidth: 100, height: 1, background: "linear-gradient(90deg,rgba(204,171,74,0.5),transparent)" }} />
                 </div>
-                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.26em", textTransform: "uppercase", color: "#CCAB4A", margin: "0 0 16px" }}>Crafted with Love · Delhi NCR</p>
+                <div style={{ display:"flex", alignItems:"center", gap:9, margin:"0 0 16px" }}>
+                  <div style={{ width:24, height:1.5, background:"#CCAB4A", flexShrink:0 }} />
+                  <span style={{ fontSize:13, fontWeight:500, color:"#CCAB4A" }}>Crafted with Love · Delhi NCR</span>
+                </div>
                 <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,4vw,3.2rem)", fontWeight: 300, color: "#FFF8EC", margin: "0 0 12px", letterSpacing: "0.02em", fontStyle: "italic", lineHeight: 1.05 }}>
                   Wedding Stationeries
                 </h2>
@@ -2006,7 +2016,10 @@ const Home = () => {
           {/* Editorial split header */}
           <div className="portfolio-header-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px 72px", alignItems: "end", marginBottom: 52 }}>
             <div>
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.28em", textTransform: "uppercase", color: "#C47A2E", margin: "0 0 18px" }}>From the field</p>
+              <div style={{ display:"flex", alignItems:"center", gap:9, margin:"0 0 16px" }}>
+                <div style={{ width:24, height:1.5, background:"#C47A2E", flexShrink:0 }} />
+                <span style={{ fontSize:13, fontWeight:500, color:"#C47A2E" }}>From the field</span>
+              </div>
               <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 300, color: "#1C0E04", letterSpacing: "0.01em", margin: 0, lineHeight: 1.06 }}>
                 Real work.<br />Real vendors.
               </h2>
@@ -2113,7 +2126,10 @@ const Home = () => {
             style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 16 }}
           >
             <div>
-              <p style={{ fontSize: 10.5, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.26em", margin: "0 0 14px" }}>Party Places</p>
+              <div style={{ display:"flex", alignItems:"center", gap:9, margin:"0 0 14px" }}>
+                <div style={{ width:24, height:1.5, background:"#C47A2E", flexShrink:0 }} />
+                <span style={{ fontSize:13, fontWeight:500, color:"#C47A2E" }}>Party Places</span>
+              </div>
               <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#1C0E04", letterSpacing: "0.01em", lineHeight: 1.15, margin: "0 0 8px" }}>
                 Private venues for your next celebration
               </h2>

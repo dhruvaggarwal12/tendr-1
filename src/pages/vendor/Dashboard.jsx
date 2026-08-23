@@ -1241,6 +1241,72 @@ function RevenueChart({ orders }) {
 }
 
 // ── Main Dashboard ─────────────────────────────────────────────────────────────
+// ── Translations ───────────────────────────────────────────────────────────────
+const T = {
+  en: {
+    navHome:'Home', navWork:'My Work', navGigs:'My Gigs', navShows:'My Shows',
+    navEarnings:'Earnings', navStats:'Stats', navPage:'My Page', navAvail:'Avail.',
+    navChats:'Chats', navEditProfile:'Edit Profile', navSignOut:'Sign Out',
+    addGig:'Add Gig', addShow:'Add Show', newQuote:'+ New Quote', addItem:'+ Add Item', copyLink:'Copy Link',
+    greetMorning:'Good morning', greetAfternoon:'Good afternoon', greetEvening:'Good evening',
+    noGigsMonth:'No {t} logged yet this month',
+    gigsMonth:'{n} {t} this month · ₹{a} logged',
+    milestone:'events served — a real milestone!',
+    milestoneShare:'Share this achievement on your social media or WhatsApp status.',
+    reminders:'reminder', remindersFor:'for you',
+    conflictTitle:'Time slot conflict', conflictMsg:'gig{s} overlap on the same date and time.',
+    callClient:'Call Client', viewDetails:'View Details →', logGig:'Log a',
+    logGigSub:'Tap to track a booking from WhatsApp, referral or walk-in',
+    collectPayment:'Collect payment', viewAll:'View all', sendReminder:'Send reminder',
+    view:'View', balance:'Balance',
+    pending:'Pending', confirmed:'Confirmed', completed:'Completed', cancelled:'Cancelled',
+    paid:'Paid', partial:'Partial',
+    tendrGigs:'Tendr Gigs', outsideGigs:'Outside Gigs', quotes:'Quotes',
+    allF:'All', searchPlaceholder:'Search by name or event…',
+    totalRevenue:'Total Revenue', collected:'Collected', outstanding:'Outstanding',
+    statsTitle:'Performance Stats', totalGigsL:'Total Gigs', completedGigsL:'Completed',
+    avgGigValue:'Avg. Gig Value', collectionRate:'Collection Rate',
+    repeatClients:'Repeat Clients', netProfit:'Net Profit',
+    bookingSources:'Booking Sources', eventTypes:'Event Types', monthlyActivity:'Monthly Activity',
+    topClients:'Top Clients', comingSoon:'Coming soon',
+    quickTips:'Quick Tips', today:'Today', happeningToday:'HAPPENING TODAY', tomorrowLabel:'TOMORROW',
+    profileLinkCopied:'Profile link copied!',
+    langToggle:'हिंदी',
+    gigConflict:'gig',
+  },
+  hi: {
+    navHome:'होम', navWork:'मेरे काम', navGigs:'मेरे गिग', navShows:'मेरे शो',
+    navEarnings:'कमाई', navStats:'आंकड़े', navPage:'मेरा पेज', navAvail:'उपलब्धता',
+    navChats:'चैट', navEditProfile:'प्रोफ़ाइल बदलें', navSignOut:'साइन आउट',
+    addGig:'गिग जोड़ें', addShow:'शो जोड़ें', newQuote:'+ नया कोटेशन', addItem:'+ आइटम जोड़ें', copyLink:'लिंक कॉपी करें',
+    greetMorning:'सुप्रभात', greetAfternoon:'नमस्कार', greetEvening:'शुभ संध्या',
+    noGigsMonth:'इस महीने कोई {t} दर्ज नहीं',
+    gigsMonth:'इस महीने {n} {t} · ₹{a} दर्ज',
+    milestone:'इवेंट पूरे — एक बड़ी उपलब्धि!',
+    milestoneShare:'इस उपलब्धि को सोशल मीडिया या WhatsApp स्टेटस पर शेयर करें।',
+    reminders:'रिमाइंडर', remindersFor:'आपके लिए',
+    conflictTitle:'टाइम स्लॉट टकराव', conflictMsg:'गिग एक ही तारीख और समय पर हैं।',
+    callClient:'क्लाइंट को कॉल करें', viewDetails:'विवरण देखें →', logGig:'दर्ज करें',
+    logGigSub:'WhatsApp, रेफरल या वॉक-इन बुकिंग ट्रैक करें',
+    collectPayment:'पेमेंट लें', viewAll:'सब देखें', sendReminder:'रिमाइंडर भेजें',
+    view:'देखें', balance:'बकाया',
+    pending:'पेंडिंग', confirmed:'कन्फर्म', completed:'पूरा', cancelled:'रद्द',
+    paid:'पेड', partial:'आंशिक',
+    tendrGigs:'Tendr गिग', outsideGigs:'बाहरी गिग', quotes:'कोटेशन',
+    allF:'सभी', searchPlaceholder:'नाम या इवेंट से खोजें…',
+    totalRevenue:'कुल कमाई', collected:'वसूल', outstanding:'बकाया',
+    statsTitle:'परफॉर्मेंस आंकड़े', totalGigsL:'कुल गिग', completedGigsL:'पूरे',
+    avgGigValue:'औसत गिग मूल्य', collectionRate:'वसूली दर',
+    repeatClients:'दोबारा क्लाइंट', netProfit:'शुद्ध मुनाफा',
+    bookingSources:'बुकिंग के स्रोत', eventTypes:'इवेंट प्रकार', monthlyActivity:'मासिक गतिविधि',
+    topClients:'शीर्ष क्लाइंट', comingSoon:'जल्द आ रहा है',
+    quickTips:'जरूरी सुझाव', today:'आज', happeningToday:'आज हो रहा है', tomorrowLabel:'कल',
+    profileLinkCopied:'प्रोफ़ाइल लिंक कॉपी हो गया!',
+    langToggle:'English',
+    gigConflict:'गिग',
+  },
+};
+
 export default function VendorDashboard() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -1255,6 +1321,11 @@ export default function VendorDashboard() {
   const [tab, setTab] = useState('overview');
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
+
+  // Language
+  const [lang, setLang] = useState(() => { try { return localStorage.getItem('tendr_dash_lang') || 'en'; } catch { return 'en'; } });
+  const t = (key) => T[lang]?.[key] ?? T.en[key] ?? key;
+  const toggleLang = () => { const nl = lang === 'en' ? 'hi' : 'en'; setLang(nl); try { localStorage.setItem('tendr_dash_lang', nl); } catch {} };
 
   // Data
   const [bookings, setBookings]       = useState([]);
@@ -1579,13 +1650,13 @@ export default function VendorDashboard() {
 
   // ── Render ───────────────────────────────────────────────────────────────────
   const NAV_ITEMS = [
-    { key: 'home',        label: 'Home',                      icon: dsic(<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>) },
-    { key: 'work',        label: isArtist ? `My ${terms}` : 'My Work', icon: dsic(<><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>) },
-    { key: 'earnings',    label: 'Earnings',                  icon: dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>) },
-    { key: 'performance', label: 'Stats',                     icon: dsic(<><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>) },
-    { key: 'inventory',   label: typeConfig.invLabel,         icon: dsic(<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>) },
-    { key: 'profile',     label: 'My Page',                   icon: dsic(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>) },
-    { key: 'calendar',    label: 'Avail.',                    icon: dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>) },
+    { key: 'home',        label: t('navHome'),                                        icon: dsic(<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>) },
+    { key: 'work',        label: isArtist ? t(terms==='Shows'?'navShows':'navGigs') : t('navWork'), icon: dsic(<><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>) },
+    { key: 'earnings',    label: t('navEarnings'),                                    icon: dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>) },
+    { key: 'performance', label: t('navStats'),                                       icon: dsic(<><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>) },
+    { key: 'inventory',   label: typeConfig.invLabel,                                 icon: dsic(<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>) },
+    { key: 'profile',     label: t('navPage'),                                        icon: dsic(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>) },
+    { key: 'calendar',    label: t('navAvail'),                                       icon: dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>) },
   ];
   const sideW = 220;
 
@@ -1619,14 +1690,18 @@ export default function VendorDashboard() {
             })}
           </nav>
           <div style={{ padding:'8px 10px 16px', borderTop:'1px solid rgba(196,122,46,0.08)' }}>
+            <button onClick={toggleLang} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'1px solid rgba(196,122,46,0.22)', background:'rgba(196,122,46,0.06)', color:gold, cursor:'pointer', fontFamily:font, fontSize:12.5, fontWeight:700, display:'flex', alignItems:'center', gap:10, marginBottom:6, letterSpacing:'0.01em' }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              {t('langToggle')}
+            </button>
             <button onClick={() => navigate('/vendor/chats')} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'none', background:'transparent', color:'#9B7450', cursor:'pointer', fontFamily:font, fontSize:13, display:'flex', alignItems:'center', gap:10, marginBottom:1 }}>
-              {dsic(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>)} Chats
+              {dsic(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>)} {t('navChats')}
             </button>
             <button onClick={() => navigate('/vendor/profile')} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'none', background:'transparent', color:'#9B7450', cursor:'pointer', fontFamily:font, fontSize:13, display:'flex', alignItems:'center', gap:10, marginBottom:1 }}>
-              {dsic(<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>)} Edit Profile
+              {dsic(<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>)} {t('navEditProfile')}
             </button>
             <button onClick={() => dispatch(logout()).then(() => navigate('/'))} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'none', background:'transparent', color:'#DC2626', cursor:'pointer', fontFamily:font, fontSize:13, display:'flex', alignItems:'center', gap:10 }}>
-              {dsic(<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>)} Sign Out
+              {dsic(<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>)} {t('navSignOut')}
             </button>
           </div>
         </div>
@@ -1642,11 +1717,16 @@ export default function VendorDashboard() {
             <div style={{ fontSize:15, fontWeight:800, color:ink }}>{NAV_ITEMS.find(n=>n.key===tab)?.label}</div>
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            {tab==='work' && (workSubTab==='tendr'||workSubTab==='outside') && <button onClick={() => setModal('add')}    style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>+ Add {term}</button>}
-            {tab==='work' && workSubTab==='quotes'   && <button onClick={() => { setEditQuote(null); setQuoteModal(true); }}    style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>+ New Quote</button>}
-            {tab==='inventory' && <button onClick={() => setInvModal(true)}  style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>+ Add Item</button>}
-            {tab==='profile'   && <button onClick={() => { navigator.clipboard?.writeText(`${window.location.origin}/vendor/${vendorId}`).then(() => showToast('Profile link copied!')); }}
-              style={{ padding:'7px 14px', borderRadius:9, border:`1.5px solid ${gold}`, background:'transparent', color:gold, fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>Copy Link</button>}
+            {isMobile && (
+              <button onClick={toggleLang} style={{ padding:'5px 10px', borderRadius:8, border:'1px solid rgba(196,122,46,0.22)', background:'transparent', color:gold, fontSize:11.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>
+                {t('langToggle')}
+              </button>
+            )}
+            {tab==='work' && (workSubTab==='tendr'||workSubTab==='outside') && <button onClick={() => setModal('add')}    style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>+ {terms==='Shows'?t('addShow'):t('addGig')}</button>}
+            {tab==='work' && workSubTab==='quotes'   && <button onClick={() => { setEditQuote(null); setQuoteModal(true); }}    style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>{t('newQuote')}</button>}
+            {tab==='inventory' && <button onClick={() => setInvModal(true)}  style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>{t('addItem')}</button>}
+            {tab==='profile'   && <button onClick={() => { navigator.clipboard?.writeText(`${window.location.origin}/vendor/${vendorId}`).then(() => showToast(t('profileLinkCopied'))); }}
+              style={{ padding:'7px 14px', borderRadius:9, border:`1.5px solid ${gold}`, background:'transparent', color:gold, fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>{t('copyLink')}</button>}
             <div ref={profileRef} style={{ position:'relative' }}>
               <button onClick={() => setProfileOpen(p => !p)} style={{ width:34, height:34, borderRadius:'50%', background:`linear-gradient(135deg,${gold},${goldLt})`, border:'none', color:'#fff', fontWeight:800, fontSize:14, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>{initial}</button>
               {profileOpen && (
@@ -1655,10 +1735,11 @@ export default function VendorDashboard() {
                     <div style={{ fontSize:13, fontWeight:700, color:ink }}>{vendorName}</div>
                     {serviceType && <div style={{ fontSize:11, color:gold, fontWeight:600 }}>{serviceType}</div>}
                   </div>
-                  <button onClick={() => { navigate('/vendor/profile'); setProfileOpen(false); }} style={{ width:'100%', padding:'9px 16px', border:'none', background:'none', textAlign:'left', fontSize:13, fontWeight:600, color:ink, cursor:'pointer', fontFamily:font }}>Edit Profile</button>
-                  <button onClick={() => { navigate('/vendor/chats'); setProfileOpen(false); }} style={{ width:'100%', padding:'9px 16px', border:'none', background:'none', textAlign:'left', fontSize:13, fontWeight:600, color:ink, cursor:'pointer', fontFamily:font }}>Chats</button>
+                  <button onClick={toggleLang} style={{ width:'100%', padding:'9px 16px', border:'none', background:'rgba(196,122,46,0.05)', textAlign:'left', fontSize:13, fontWeight:700, color:gold, cursor:'pointer', fontFamily:font }}>{t('langToggle')}</button>
+                  <button onClick={() => { navigate('/vendor/profile'); setProfileOpen(false); }} style={{ width:'100%', padding:'9px 16px', border:'none', background:'none', textAlign:'left', fontSize:13, fontWeight:600, color:ink, cursor:'pointer', fontFamily:font }}>{t('navEditProfile')}</button>
+                  <button onClick={() => { navigate('/vendor/chats'); setProfileOpen(false); }} style={{ width:'100%', padding:'9px 16px', border:'none', background:'none', textAlign:'left', fontSize:13, fontWeight:600, color:ink, cursor:'pointer', fontFamily:font }}>{t('navChats')}</button>
                   <div style={{ borderTop:'1px solid rgba(196,122,46,0.1)', margin:'4px 0' }} />
-                  <button onClick={() => dispatch(logout()).then(() => navigate('/'))} style={{ width:'100%', padding:'9px 16px', border:'none', background:'none', textAlign:'left', fontSize:13, fontWeight:600, color:'#DC2626', cursor:'pointer', fontFamily:font }}>Sign Out</button>
+                  <button onClick={() => dispatch(logout()).then(() => navigate('/'))} style={{ width:'100%', padding:'9px 16px', border:'none', background:'none', textAlign:'left', fontSize:13, fontWeight:600, color:'#DC2626', cursor:'pointer', fontFamily:font }}>{t('navSignOut')}</button>
                 </div>
               )}
             </div>
@@ -1674,12 +1755,12 @@ export default function VendorDashboard() {
               {/* Greeting + this-month snapshot */}
               <div style={{ marginBottom:18 }}>
                 <div style={{ fontSize:isMobile?20:24, fontWeight:800, color:ink }}>
-                  {new Date().getHours()<12?'Good morning':new Date().getHours()<17?'Good afternoon':'Good evening'}, {vendorName.split(' ')[0]}
+                  {new Date().getHours()<12?t('greetMorning'):new Date().getHours()<17?t('greetAfternoon'):t('greetEvening')}, {vendorName.split(' ')[0]}
                 </div>
                 <div style={{ fontSize:13, color:'#9B7450', marginTop:3 }}>
                   {thisMonthOutside>0
-                    ? `${thisMonthOutside} ${thisMonthOutside===1?term.toLowerCase():terms.toLowerCase()} this month · ₹${thisMonthRevenue.toLocaleString('en-IN')} logged`
-                    : `No ${terms.toLowerCase()} logged yet this month`}
+                    ? t('gigsMonth').replace('{n}',thisMonthOutside).replace('{t}',thisMonthOutside===1?term.toLowerCase():terms.toLowerCase()).replace('{a}',thisMonthRevenue.toLocaleString('en-IN'))
+                    : t('noGigsMonth').replace('{t}',terms.toLowerCase())}
                 </div>
               </div>
 
@@ -1688,8 +1769,8 @@ export default function VendorDashboard() {
                 <div style={{ background:'linear-gradient(135deg,rgba(204,171,74,0.13),rgba(196,122,46,0.07))', borderRadius:16, padding:'14px 18px', marginBottom:16, border:'1.5px solid rgba(196,122,46,0.22)', display:'flex', alignItems:'center', gap:14 }}>
                   <div style={{ fontSize:34, flexShrink:0 }}>🎉</div>
                   <div style={{ flex:1 }}>
-                    <div style={{ fontSize:14, fontWeight:800, color:ink }}>{currentMilestone}+ events served — a real milestone!</div>
-                    <div style={{ fontSize:12, color:'#9B7450', marginTop:2 }}>Share this achievement on your social media or WhatsApp status.</div>
+                    <div style={{ fontSize:14, fontWeight:800, color:ink }}>{currentMilestone}+ {t('milestone')}</div>
+                    <div style={{ fontSize:12, color:'#9B7450', marginTop:2 }}>{t('milestoneShare')}</div>
                   </div>
                   <button onClick={() => dismissMilestone(currentMilestone)} style={{ width:26, height:26, borderRadius:'50%', border:'none', background:'rgba(196,122,46,0.12)', color:'#9B7450', cursor:'pointer', fontSize:15, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', fontFamily:font }}>×</button>
                 </div>
@@ -1698,7 +1779,7 @@ export default function VendorDashboard() {
               {/* Reminders alert */}
               {activeReminders.length > 0 && (
                 <div style={{ background:'rgba(37,99,235,0.05)', border:'1.5px solid rgba(37,99,235,0.18)', borderRadius:14, padding:'12px 16px', marginBottom:16 }}>
-                  <div style={{ fontSize:13, fontWeight:800, color:'#1D4ED8', marginBottom:8 }}>🔔 {activeReminders.length} reminder{activeReminders.length===1?'':'s'} for you</div>
+                  <div style={{ fontSize:13, fontWeight:800, color:'#1D4ED8', marginBottom:8 }}>🔔 {activeReminders.length} {t('reminders')}{lang==='en'&&activeReminders.length!==1?'s':''} {t('remindersFor')}</div>
                   <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
                     {activeReminders.slice(0,4).map((r,i) => (
                       <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:10, padding:'8px 12px', background:'rgba(37,99,235,0.05)', borderRadius:10 }}>
@@ -1723,8 +1804,8 @@ export default function VendorDashboard() {
                 <div style={{ background:'rgba(220,38,38,0.05)', border:'1.5px solid rgba(220,38,38,0.18)', borderRadius:14, padding:'12px 16px', marginBottom:16, display:'flex', gap:10, alignItems:'flex-start' }}>
                   <span style={{ color:'#DC2626', flexShrink:0 }}>{dsic(<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>)}</span>
                   <div style={{ flex:1 }}>
-                    <div style={{ fontSize:13, fontWeight:700, color:'#DC2626', marginBottom:2 }}>Time slot conflict</div>
-                    <div style={{ fontSize:12, color:'#9B7450' }}>{gigConflicts.size} gig{gigConflicts.size!==1?'s':''} overlap on the same date and time.</div>
+                    <div style={{ fontSize:13, fontWeight:700, color:'#DC2626', marginBottom:2 }}>{t('conflictTitle')}</div>
+                    <div style={{ fontSize:12, color:'#9B7450' }}>{gigConflicts.size} {lang==='en'?`gig${gigConflicts.size!==1?'s':''} overlap on the same date and time.`:t('conflictMsg')}</div>
                   </div>
                   <button onClick={() => setTab('work')} style={{ fontSize:12, fontWeight:700, color:'#DC2626', background:'none', border:'none', cursor:'pointer', fontFamily:font, flexShrink:0, padding:0 }}>View →</button>
                 </div>
@@ -1748,7 +1829,7 @@ export default function VendorDashboard() {
                     {(nextEvent.clientPhone||nextEvent.customerPhone) && (
                       <a href={`tel:${nextEvent.clientPhone||nextEvent.customerPhone}`}
                         style={{ padding:'8px 16px', borderRadius:10, background:'rgba(255,255,255,0.13)', color:'#fff', fontSize:12.5, fontWeight:700, textDecoration:'none', flexShrink:0 }}>
-                        Call Client
+                        {t('callClient')}
                       </a>
                     )}
                     {(nextEvent.clientPhone||nextEvent.customerPhone) && (
@@ -1760,7 +1841,7 @@ export default function VendorDashboard() {
                     )}
                     <button onClick={() => setTab('work')}
                       style={{ padding:'8px 16px', borderRadius:10, background:'rgba(255,255,255,0.07)', color:'rgba(255,255,255,0.65)', fontSize:12.5, fontWeight:600, border:'none', cursor:'pointer', fontFamily:font, flexShrink:0 }}>
-                      View Details →
+                      {t('viewDetails')}
                     </button>
                   </div>
                 </div>
@@ -1768,8 +1849,8 @@ export default function VendorDashboard() {
                 <button onClick={() => setModal('add')} style={{ width:'100%', background:`linear-gradient(135deg,${gold},${goldLt})`, borderRadius:18, padding:'20px 22px', marginBottom:18, border:'none', cursor:'pointer', fontFamily:font, textAlign:'left', boxShadow:'0 4px 18px rgba(196,122,46,0.28)', display:'flex', alignItems:'center', gap:16 }}>
                   <div style={{ width:48, height:48, borderRadius:14, background:'rgba(255,255,255,0.18)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, flexShrink:0 }}>+</div>
                   <div>
-                    <div style={{ fontSize:16, fontWeight:800, color:'#fff', marginBottom:2 }}>Log a {term.toLowerCase()}</div>
-                    <div style={{ fontSize:12.5, color:'rgba(255,255,255,0.78)' }}>Tap to track a booking from WhatsApp, referral or walk-in</div>
+                    <div style={{ fontSize:16, fontWeight:800, color:'#fff', marginBottom:2 }}>{t('logGig')} {lang==='en'?term.toLowerCase():''}</div>
+                    <div style={{ fontSize:12.5, color:'rgba(255,255,255,0.78)' }}>{t('logGigSub')}</div>
                   </div>
                 </button>
               )}
@@ -1780,7 +1861,7 @@ export default function VendorDashboard() {
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
                     <div>
                       <div style={{ fontSize:14, fontWeight:800, color:ink }}>
-                        Collect payment
+                        {t('collectPayment')}
                         <span style={{ fontSize:11, fontWeight:700, color:'#D97706', background:'rgba(217,119,6,0.1)', borderRadius:100, padding:'2px 7px', marginLeft:6 }}>{pendingPayments.length}</span>
                       </div>
                       <div style={{ fontSize:12, color:'#9B7450', marginTop:1 }}>₹{totalDue.toLocaleString('en-IN')} outstanding</div>
@@ -1871,11 +1952,11 @@ export default function VendorDashboard() {
               {/* Main sub-tab row */}
               <div style={{ display:'flex', gap:2, marginBottom:16, borderBottom:'2px solid rgba(196,122,46,0.1)', overflowX:'auto' }}>
                 {[
-                  ['tendr','Tendr',tendrCount>0?tendrCount:''],
-                  ['outside',`Outside`,outsideCount>0?outsideCount:''],
-                  ['calendar','Calendar',''],
-                  ['quotes','Quotes',quotes.length>0?quotes.length:''],
-                  ['clients','Clients',clientList.length>0?clientList.length:''],
+                  ['tendr',   lang==='hi'?'Tendr':'Tendr',                                      tendrCount>0?tendrCount:''],
+                  ['outside', lang==='hi'?'बाहरी':'Outside',                                   outsideCount>0?outsideCount:''],
+                  ['calendar',lang==='hi'?'कैलेंडर':'Calendar',                                ''],
+                  ['quotes',  lang==='hi'?'कोटेशन':'Quotes',                                   quotes.length>0?quotes.length:''],
+                  ['clients', lang==='hi'?'क्लाइंट':'Clients',                                 clientList.length>0?clientList.length:''],
                 ].map(([key,label,badge]) => (
                   <button key={key} onClick={() => { setWorkSubTab(key); setOSearch(''); setOFilter('all'); }}
                     style={{ padding:'8px 16px', border:'none', background:'transparent', fontFamily:font, fontSize:13, fontWeight:workSubTab===key?700:500, color:workSubTab===key?gold:'#9B7450', cursor:'pointer', borderBottom:workSubTab===key?`2.5px solid ${gold}`:'2.5px solid transparent', marginBottom:-2, transition:'all 0.15s', display:'flex', alignItems:'center', gap:5, whiteSpace:'nowrap', flexShrink:0 }}>
@@ -2449,28 +2530,28 @@ export default function VendorDashboard() {
             const ink2  = '#2C1A0E';
             const gold  = '#C47A2E';
             const card  = { background:'#fff', border:'1px solid rgba(44,26,14,0.08)', borderRadius:12, padding:'18px 20px' };
-            const sh    = (txt) => <div style={{ fontSize:11, fontWeight:700, color:gold, textTransform:'uppercase', letterSpacing:'0.12em', marginBottom:14 }}>{txt}</div>;
+            const sh    = (key, fallback) => <div style={{ fontSize:11, fontWeight:700, color:gold, textTransform:'uppercase', letterSpacing:'0.12em', marginBottom:14 }}>{T[lang]?.[key] || fallback || key}</div>;
 
             return (
               <div style={{ padding:'0 0 40px' }}>
                 <div style={{ marginBottom:22 }}>
-                  <h2 style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:'1.55rem', fontWeight:600, color:ink2, margin:'0 0 4px' }}>Performance</h2>
-                  <p style={{ fontSize:12.5, color:'#9B7450', margin:0 }}>Your business at a glance — from all gigs and client data.</p>
+                  <h2 style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:'1.55rem', fontWeight:600, color:ink2, margin:'0 0 4px' }}>{t('statsTitle')}</h2>
+                  <p style={{ fontSize:12.5, color:'#9B7450', margin:0 }}>{lang==='hi'?'आपके सभी गिग और क्लाइंट डेटा की झलक।':'Your business at a glance — from all gigs and client data.'}</p>
                 </div>
 
                 {/* KPI row */}
                 <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(145px,1fr))', gap:11, marginBottom:14 }}>
-                  <Stat label="Total Gigs"      value={totalGigs}    sub={`${completedGigs} completed`}                                                             icon={dsic(<><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></>)}                                                                                               accent="rgba(196,122,46,0.08)" />
-                  <Stat label="Avg Gig Value"   value={avgGigValue>=1000?`₹${(avgGigValue/1000).toFixed(1)}k`:`₹${avgGigValue}`} sub="outside bookings"           icon={dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>)}                                                   accent="rgba(22,163,74,0.07)" />
-                  <Stat label="Collection Rate" value={`${collectionRate}%`} sub={`₹${(outsideRevenue-outsideCollected).toLocaleString('en-IN')} pending`}          icon={dsic(<><polyline points="20 6 9 17 4 12"/></>)}                                                                                                             accent={collectionRate>=80?'rgba(22,163,74,0.08)':'rgba(217,119,6,0.08)'} />
-                  <Stat label="Net Profit"      value={netProfit>=1000?`₹${(netProfit/1000).toFixed(1)}k`:`₹${Math.max(netProfit,0)}`} sub={`after ₹${(totalExpenses/1000).toFixed(1)}k expenses`} icon={dsic(<><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></>)}                                                                             accent="rgba(196,122,46,0.08)" />
-                  <Stat label="Repeat Clients"  value={`${repeatRate}%`}    sub={`${repeatClients} of ${clientList.length} clients`}                                icon={dsic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>)} accent="rgba(124,58,237,0.07)" />
+                  <Stat label={t('totalGigsL')}      value={totalGigs}    sub={`${completedGigs} ${t('completedGigsL').toLowerCase()}`}                                                             icon={dsic(<><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></>)}                                                                                               accent="rgba(196,122,46,0.08)" />
+                  <Stat label={t('avgGigValue')}   value={avgGigValue>=1000?`₹${(avgGigValue/1000).toFixed(1)}k`:`₹${avgGigValue}`} sub={lang==='hi'?'बाहरी बुकिंग':'outside bookings'}           icon={dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>)}                                                   accent="rgba(22,163,74,0.07)" />
+                  <Stat label={t('collectionRate')} value={`${collectionRate}%`} sub={`₹${(outsideRevenue-outsideCollected).toLocaleString('en-IN')} ${t('outstanding').toLowerCase()}`}          icon={dsic(<><polyline points="20 6 9 17 4 12"/></>)}                                                                                                             accent={collectionRate>=80?'rgba(22,163,74,0.08)':'rgba(217,119,6,0.08)'} />
+                  <Stat label={t('netProfit')}      value={netProfit>=1000?`₹${(netProfit/1000).toFixed(1)}k`:`₹${Math.max(netProfit,0)}`} sub={lang==='hi'?`₹${(totalExpenses/1000).toFixed(1)}k खर्च के बाद`:`after ₹${(totalExpenses/1000).toFixed(1)}k expenses`} icon={dsic(<><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></>)}                                                                             accent="rgba(196,122,46,0.08)" />
+                  <Stat label={t('repeatClients')}  value={`${repeatRate}%`}    sub={lang==='hi'?`${repeatClients} में से ${clientList.length} क्लाइंट`:`${repeatClients} of ${clientList.length} clients`}                                icon={dsic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>)} accent="rgba(124,58,237,0.07)" />
                 </div>
 
                 {/* Sources + Event types */}
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:11, marginBottom:11 }}>
                   <div style={card}>
-                    {sh('Booking Sources')}
+                    {sh('bookingSources')}
                     {[
                       { label:'Via Tendr', count:tendrCount, color:gold },
                       { label:'Outside',   count:outsideCount, color:'#7C3AED' },
@@ -2489,7 +2570,7 @@ export default function VendorDashboard() {
                   </div>
 
                   <div style={card}>
-                    {sh('Event Types')}
+                    {sh('eventTypes')}
                     {topEventTypes.length===0
                       ? <p style={{ fontSize:12, color:'#9B7450', margin:0 }}>No outside orders yet.</p>
                       : <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
@@ -2511,7 +2592,7 @@ export default function VendorDashboard() {
 
                 {/* Monthly bar chart */}
                 <div style={{ ...card, marginBottom:11 }}>
-                  {sh('Monthly Activity — Last 12 Months')}
+                  {sh('monthlyActivity')}
                   {bestMonth&&bestMonth.count>0&&(
                     <p style={{ fontSize:11.5, color:'#9B7450', margin:'0 0 14px' }}>
                       Best month: <strong style={{ color:ink2 }}>{bestMonth.label}</strong> ({bestMonth.count} gig{bestMonth.count!==1?'s':''})
@@ -2536,7 +2617,7 @@ export default function VendorDashboard() {
                 {/* Top clients */}
                 {clientList.length>0 && (
                   <div style={{ ...card, marginBottom:11 }}>
-                    {sh('Top Clients')}
+                    {sh('topClients')}
                     {clientList.slice(0,5).map((c,i) => (
                       <div key={i} style={{ display:'flex', alignItems:'center', gap:11, padding:'11px 0', borderBottom:i<Math.min(clientList.length,5)-1?'1px solid rgba(44,26,14,0.06)':'none' }}>
                         <div style={{ width:32, height:32, borderRadius:'50%', background:`rgba(196,122,46,${0.12+i*0.04})`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
@@ -2570,7 +2651,7 @@ export default function VendorDashboard() {
                       </div>
                       <div style={{ fontSize:22, fontWeight:800, color:'rgba(44,26,14,0.2)', marginBottom:4 }}>—</div>
                       <div style={{ fontSize:11, color:'#9B7450' }}>{desc}</div>
-                      <div style={{ marginTop:8, fontSize:10, fontWeight:700, color:gold, background:'rgba(196,122,46,0.08)', borderRadius:5, padding:'3px 8px', display:'inline-block' }}>Coming soon</div>
+                      <div style={{ marginTop:8, fontSize:10, fontWeight:700, color:gold, background:'rgba(196,122,46,0.08)', borderRadius:5, padding:'3px 8px', display:'inline-block' }}>{t('comingSoon')}</div>
                     </div>
                   ))}
                 </div>
