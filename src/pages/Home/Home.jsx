@@ -740,80 +740,80 @@ const Home = () => {
     {
       target: "body",
       placement: "center",
-      title: "Plan your celebration",
-      content: "Tendr connects you with decorators, caterers, DJs, photographers and more across Delhi NCR — all in one place.",
+      title: "Welcome to Tendr",
+      content: "Your one-stop shop for celebrations in Delhi NCR — book vendors, order gift hampers, add live entertainment, and plan every detail of your event.",
     },
     {
-      target: '[data-tour="mob-nav-plan"]',
+      target: '[data-tour="hero-ctas"]',
+      placement: "bottom",
+      title: "Two ways to start",
+      content: "'Book Vendors' takes you straight to our vendor directory. 'Plan an Occasion' opens a guided flow — pick your date, occasion type and budget.",
+    },
+    {
+      target: '[data-tour="occasion-strip"]',
       placement: "top",
-      title: "Plan an occasion",
-      content: "Start here. Pick what you're celebrating, set your date and guest count — Tendr builds your vendor lineup and tracks everything.",
+      title: "Pick your celebration",
+      content: "Scroll through Birthday, Anniversary, Baby Shower, House Party and more. Each card opens a dedicated hub with vendor ideas and packages.",
     },
     {
-      target: '[data-tour="mob-search"]',
-      placement: "bottom",
-      title: "Find vendors",
-      content: 'Describe what you need — "decorator under ₹12K in Rohini" or "DJ for 80 guests" — and we\'ll shortlist the right matches.',
+      target: '[data-tour="efc-section"]',
+      placement: "top",
+      title: "Everything in one place",
+      content: "Event timeline, budget calculator, wedding stationeries, gift hampers, planning guides — all on Tendr, all free to explore.",
     },
     {
-      target: "body",
-      placement: "center",
-      title: "Book in minutes",
-      content: "Tap Book Now on any vendor. They get your event details and confirm within a few hours — no back-and-forth calls needed.",
-    },
-    {
-      target: '[data-tour="mob-icon-row"]',
-      placement: "bottom",
-      title: "Gifts & extras",
-      content: "Order curated gift hampers for delivery, add a photo booth or magician, and browse wedding stationeries.",
+      target: '[data-tour="fun-activities-section"]',
+      placement: "top",
+      title: "Live entertainment",
+      content: "Add a magic show, game coordinator, dhol player or photo booth to any event. Fixed prices, confirmed within 2 hours across NCR.",
     },
     isSignedIn ? {
       target: '[data-tour="mob-nav-profile"]',
       placement: "top",
       title: "Your events",
-      content: "All your confirmed bookings, vendor contacts and downloadable documents are here.",
+      content: "Confirmed bookings, vendor contacts and downloadable documents — all in your account.",
     } : {
       target: '[data-tour="mob-nav-profile"]',
       placement: "top",
       title: "Sign in to save",
-      content: "Sign in to confirm bookings — your events and vendor documents will be waiting whenever you need them.",
+      content: "Sign in to confirm bookings and access your event documents anytime.",
     },
   ] : [
     {
       target: "body",
       placement: "center",
-      title: "Plan your celebration",
-      content: "Tendr connects you with decorators, caterers, DJs, photographers and more across Delhi NCR — birthday, anniversary, corporate event or wedding.",
+      title: "Welcome to Tendr",
+      content: "Everything for your celebration in Delhi NCR — book verified vendors, order gift hampers, add live entertainment and plan every detail from one place.",
     },
     {
-      target: '[data-tour="nav-booking"]',
+      target: '[data-tour="hero-ctas"]',
       placement: "bottom",
-      title: "Plan an occasion",
-      content: "Start here. Choose what you're celebrating, set a date and budget — Tendr maps out your vendors and lets you track the whole event in one place.",
+      title: "Two ways to start",
+      content: "'Book Vendors' takes you straight to our vendor directory. 'Plan an Occasion' opens a guided flow — set your date, type and budget and Tendr finds the right vendors.",
     },
     {
-      target: '[data-tour="nav-browse"]',
+      target: '[data-tour="occasion-strip"]',
       placement: "bottom",
-      title: "Browse vendors",
-      content: "100+ verified decorators, caterers, DJs and photographers. Filter by area, date, guest count and price range.",
+      title: "Pick your celebration",
+      content: "Birthday, Anniversary, Baby Shower, House Party and more. Each card opens a dedicated hub with curated vendor ideas, packages and inspiration.",
     },
     {
-      target: '[data-tour="search-bar"]',
-      placement: "bottom",
-      title: "Search by description",
-      content: 'Try "photographer under ₹20K in Gurgaon for 60 guests" — Tendr reads vendor type, budget and area in one phrase.',
+      target: '[data-tour="efc-section"]',
+      placement: "top",
+      title: "The full toolkit",
+      content: "Event timeline, budget allocator, wedding stationeries, gift hampers and planning guides. Tap any tile to go straight there.",
     },
     {
-      target: '[data-tour="nav-browse"]',
-      placement: "bottom",
-      title: "Book a vendor",
-      content: "Found the right one? Tap Book Now. The vendor gets your event details and confirms within hours — no calls, no chasing.",
+      target: '[data-tour="fun-activities-section"]',
+      placement: "top",
+      title: "Live entertainment",
+      content: "Magic shows, game coordinators, dhol players and more — fixed prices, confirmed within 2 hours. Add them to any event in seconds.",
     },
     {
-      target: '[data-tour="nav-tools"]',
-      placement: "bottom",
-      title: "Free planning tools",
-      content: "Budget Allocator, Timeline Builder, Guest List, Decor Finder — all free, no account needed.",
+      target: '[data-tour="gift-hampers-section"]',
+      placement: "top",
+      title: "Gift hampers delivered",
+      content: "Curated hampers for birthdays, anniversaries and corporate events. Free delivery across Delhi NCR — or build your own from scratch.",
     },
     isSignedIn ? {
       target: '[data-tour="profile-btn"]',
@@ -824,7 +824,7 @@ const Home = () => {
       target: '[data-tour="signin-btn"]',
       placement: "bottom",
       title: "Sign in to save",
-      content: "Sign in to confirm bookings — your events and vendor documents will be waiting whenever you need them.",
+      content: "Sign in to confirm bookings and access your event documents anytime.",
     },
   ];
 
@@ -948,6 +948,7 @@ const Home = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.24 }}
               style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", position: "relative", zIndex: 1 }}
+              data-tour="hero-ctas"
             >
               {/* Primary CTA */}
               <button
@@ -1252,7 +1253,7 @@ const Home = () => {
       </motion.section>
 
       {/* ── Plan by Occasion ── */}
-      <section id="plan-by-occasion" style={{ background: "#ffffff", padding: "72px 28px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+      <section id="plan-by-occasion" data-tour="occasion-strip" style={{ background: "#ffffff", padding: "72px 28px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
 
         <div style={{ maxWidth: 1120, margin: "0 auto", position: "relative" }}>
 
@@ -1523,7 +1524,7 @@ const Home = () => {
       })()}
 
       {/* ── Everything for your celebration ── */}
-      <section style={{ background: "#ffffff", padding: "72px 28px 80px", fontFamily: "'Outfit', sans-serif" }}>
+      <section data-tour="efc-section" style={{ background: "#ffffff", padding: "72px 28px 80px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1080, margin: "0 auto" }}>
 
           {/* Header */}
@@ -1633,7 +1634,7 @@ const Home = () => {
       </section>
 
       {/* ── Live Entertainment Add-ons ── */}
-      <section style={{ background:"#0C0600", padding:"64px 0 0", fontFamily:"'Outfit', sans-serif", overflow:"hidden" }}>
+      <section data-tour="fun-activities-section" style={{ background:"#0C0600", padding:"64px 0 0", fontFamily:"'Outfit', sans-serif", overflow:"hidden" }}>
         <style>{`
           .fa-masonry { display:grid; grid-template-columns:2fr 1.15fr 1.15fr; grid-template-rows:220px 150px; gap:6px; }
           .fa-feat { grid-row:1/3; }
@@ -1726,7 +1727,7 @@ const Home = () => {
       </section>
 
       {/* ── Gift Hampers ── */}
-      <section style={{ background: "#fff", padding: "64px 24px 72px", fontFamily: "'Outfit', sans-serif" }}>
+      <section data-tour="gift-hampers-section" style={{ background: "#fff", padding: "64px 24px 72px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1060, margin: "0 auto" }}>
           <motion.div
             className="gh-band"
