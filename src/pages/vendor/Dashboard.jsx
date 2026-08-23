@@ -62,7 +62,9 @@ const EVENT_TYPES = ['Birthday', '1st Birthday', 'Baby Shower', 'Anniversary', '
 const SOURCES = ['WhatsApp', 'Instagram', 'Facebook', 'Referral', 'Walk-in', 'Phone', 'Other'];
 const STATUSES = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
 
-const BLANK_FORM = { clientName: '', clientPhone: '', clientEmail: '', eventType: '', eventDate: '', startTime: '', endTime: '', equipment: [], amount: '', paidAmount: '', source: 'WhatsApp', status: 'Pending', notes: '', milestones: [], expenses: [], reminders: [] };
+const BLANK_FORM = { clientName: '', clientPhone: '', clientEmail: '', eventType: '', eventDate: '', startTime: '', endTime: '', equipment: [], amount: '', paidAmount: '', source: 'WhatsApp', status: 'Pending', notes: '', milestones: [], expenses: [], reminders: [], crew: [], travel: { mode: '', departureTime: '', venueAddress: '', hotelNeeded: false, hotelName: '', notes: '' } };
+const CREW_ROLES = ['Vocalist', 'Guitarist', 'Drummer', 'Bassist', 'Keyboardist', 'Violinist', 'Sound Engineer', 'Lighting Tech', 'Photographer', 'Assistant', 'Driver', 'Other'];
+const TRAVEL_MODES = ['Own Car', 'Cab / Taxi', 'Auto', 'Bus', 'Train', 'Flight', 'Client Arranged'];
 const REMINDER_PRESETS = [
   { label: 'Day of event', days: 0 },
   { label: '1 day before', days: 1 },
@@ -405,7 +407,7 @@ ${quote.notes?`<h3>Notes</h3><div style="font-size:13px;color:#6B4A2A;line-heigh
 }
 
 function OrderModal({ initial, onSave, onClose, saving, existingClients = [], serviceType = '' }) {
-  const [form, setForm] = useState(() => ({ ...BLANK_FORM, ...(initial || {}), milestones: initial?.milestones || [], expenses: initial?.expenses || [], equipment: initial?.equipment || [], reminders: initial?.reminders || [] }));
+  const [form, setForm] = useState(() => ({ ...BLANK_FORM, ...(initial || {}), milestones: initial?.milestones || [], expenses: initial?.expenses || [], equipment: initial?.equipment || [], reminders: initial?.reminders || [], crew: initial?.crew || [], travel: { ...BLANK_FORM.travel, ...(initial?.travel || {}) } }));
   const isEntertainment = ENTERTAINMENT_TYPES.includes(serviceType);
   const [modalTab, setModalTab] = useState('details');
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
@@ -437,6 +439,11 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
   const updateEquipItem = (i, v) => set('equipment', (form.equipment || []).map((it, idx) => idx === i ? v : it));
   const removeEquipItem = (i)   => set('equipment', (form.equipment || []).filter((_, idx) => idx !== i));
 
+  const addCrewMember    = () => set('crew', [...(form.crew || []), { name: '', role: 'Assistant' }]);
+  const updateCrew       = (i, k, v) => set('crew', (form.crew || []).map((c, idx) => idx === i ? { ...c, [k]: v } : c));
+  const removeCrew       = (i) => set('crew', (form.crew || []).filter((_, idx) => idx !== i));
+  const setTravel        = (k, v) => set('travel', { ...(form.travel || {}), [k]: v });
+
   const inp = (style) => ({ width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid rgba(196,122,46,0.25)', fontFamily: font, fontSize: 13.5, color: ink, outline: 'none', background: '#FFFCF5', boxSizing: 'border-box', ...style });
   const lbl = { display: 'block', fontSize: 11.5, fontWeight: 700, color: '#6B3A1F', marginBottom: 4 };
   const row = { display: 'flex', gap: 12 };
@@ -444,8 +451,8 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
 
   // Sync milestoneTotal → form.amount and milestonePaid → form.paidAmount for backend
   const formToSave = useMilestones
-    ? { ...form, amount: milestoneTotal || form.amount, paidAmount: milestonePaid }
-    : form;
+    ? { ...form, amount: milestoneTotal || form.amount, paidAmount: milestonePaid, crew: form.crew || [], travel: form.travel || {} }
+    : { ...form, crew: form.crew || [], travel: form.travel || {} };
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(28,9,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
@@ -463,13 +470,14 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
             <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(196,122,46,0.1)', border: 'none', cursor: 'pointer', fontSize: 17, color: '#9B7450', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
           </div>
           {/* Modal tabs */}
-          <div style={{ display: 'flex', gap: 2 }}>
-            {[['details','Details'], ['payments','Payments'], ['expenses','Expenses'], ['reminders','Reminders']].map(([key, label]) => (
+          <div style={{ display: 'flex', gap: 2, overflowX: 'auto' }}>
+            {[['details','Details'], ['payments','Payments'], ['expenses','Expenses'], ['crew','Crew'], ['travel','Travel'], ['reminders','Reminders']].map(([key, label]) => (
               <button key={key} onClick={() => setModalTab(key)}
-                style={{ padding: '7px 14px', border: 'none', background: 'transparent', fontFamily: font, fontSize: 12.5, fontWeight: modalTab === key ? 700 : 500, color: modalTab === key ? gold : '#9B7450', cursor: 'pointer', borderBottom: modalTab === key ? `2.5px solid ${gold}` : '2.5px solid transparent', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
+                style={{ padding: '7px 12px', border: 'none', background: 'transparent', fontFamily: font, fontSize: 12, fontWeight: modalTab === key ? 700 : 500, color: modalTab === key ? gold : '#9B7450', cursor: 'pointer', borderBottom: modalTab === key ? `2.5px solid ${gold}` : '2.5px solid transparent', transition: 'all 0.15s', whiteSpace: 'nowrap', flexShrink: 0 }}>
                 {label}
                 {key === 'payments' && form.milestones.length > 0 && <span style={{ marginLeft: 5, fontSize: 11, background: 'rgba(196,122,46,0.12)', color: gold, borderRadius: 10, padding: '1px 6px' }}>{form.milestones.length}</span>}
                 {key === 'expenses' && form.expenses.length > 0 && <span style={{ marginLeft: 5, fontSize: 11, background: 'rgba(220,38,38,0.1)', color: '#DC2626', borderRadius: 10, padding: '1px 6px' }}>{form.expenses.length}</span>}
+                {key === 'crew' && (form.crew||[]).length > 0 && <span style={{ marginLeft: 5, fontSize: 11, background: 'rgba(124,58,237,0.1)', color: '#7C3AED', borderRadius: 10, padding: '1px 6px' }}>{(form.crew||[]).length}</span>}
                 {key === 'reminders' && (form.reminders||[]).length > 0 && <span style={{ marginLeft: 5, fontSize: 11, background: 'rgba(59,130,246,0.12)', color: '#2563EB', borderRadius: 10, padding: '1px 6px' }}>{(form.reminders||[]).length}</span>}
               </button>
             ))}
@@ -755,6 +763,119 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
             )}
           </>}
 
+          {/* ── Crew tab ── */}
+          {modalTab === 'crew' && <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>Crew for this Gig</div>
+                <div style={{ fontSize: 11.5, color: '#9B7450', marginTop: 2 }}>Who's coming with you — band members, techs, assistants</div>
+              </div>
+              <button onClick={addCrewMember}
+                style={{ padding: '6px 14px', borderRadius: 8, border: 'none', background: '#7C3AED', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font, flexShrink: 0 }}>
+                + Add
+              </button>
+            </div>
+
+            {(form.crew || []).length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '28px 0', color: '#9B7450', fontSize: 13 }}>
+                <div style={{ fontSize: 28, marginBottom: 8 }}>👥</div>
+                <div style={{ fontWeight: 600, marginBottom: 4 }}>No crew added yet</div>
+                <div style={{ fontSize: 12 }}>Add band members, sound engineers, assistants or technicians coming to this gig</div>
+                <button onClick={addCrewMember} style={{ marginTop: 12, padding: '7px 18px', borderRadius: 9, border: '1.5px solid #7C3AED', background: 'transparent', color: '#7C3AED', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>
+                  + Add First Member
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {(form.crew || []).map((c, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '10px 12px', borderRadius: 11, background: 'rgba(124,58,237,0.04)', border: '1px solid rgba(124,58,237,0.15)' }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(124,58,237,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>
+                      {c.name ? c.name[0].toUpperCase() : '?'}
+                    </div>
+                    <input value={c.name} onChange={e => updateCrew(i, 'name', e.target.value)}
+                      placeholder="Name" style={{ flex: 1, ...inp(), padding: '7px 10px', fontSize: 12.5 }} />
+                    <select value={c.role} onChange={e => updateCrew(i, 'role', e.target.value)}
+                      style={{ width: 130, ...inp(), padding: '7px 8px', fontSize: 12, flexShrink: 0 }}>
+                      {CREW_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                    <button onClick={() => removeCrew(i)}
+                      style={{ width: 28, height: 32, borderRadius: 7, border: '1px solid rgba(220,38,38,0.3)', background: 'transparent', color: '#DC2626', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>×</button>
+                  </div>
+                ))}
+                <div style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(124,58,237,0.05)', border: '1px solid rgba(124,58,237,0.12)', fontSize: 12.5, color: '#7C3AED', fontWeight: 600 }}>
+                  {(form.crew || []).length} member{(form.crew || []).length !== 1 ? 's' : ''} on this gig
+                </div>
+              </div>
+            )}
+          </>}
+
+          {/* ── Travel tab ── */}
+          {modalTab === 'travel' && (() => {
+            const tr = form.travel || {};
+            return <>
+              <div style={{ fontSize: 13, fontWeight: 700, color: ink, marginBottom: 2 }}>Travel for this Gig</div>
+              <div style={{ fontSize: 12, color: '#9B7450', marginBottom: 14 }}>Track how you're getting there, departure time and stay details</div>
+
+              <div>
+                <label style={lbl}>Venue / Location</label>
+                <input style={inp()} value={tr.venueAddress || ''} onChange={e => setTravel('venueAddress', e.target.value)}
+                  placeholder="e.g. Taj Hotel, Aerocity, Delhi" />
+              </div>
+
+              <div>
+                <label style={lbl}>Travel Mode</label>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {TRAVEL_MODES.map(m => (
+                    <button key={m} onClick={() => setTravel('mode', m)}
+                      style={{ padding: '5px 12px', borderRadius: 100, fontSize: 12, fontWeight: 600, fontFamily: font, cursor: 'pointer', border: '1.5px solid', transition: 'all 0.14s',
+                        borderColor: tr.mode === m ? '#0891B2' : 'rgba(196,122,46,0.22)',
+                        background: tr.mode === m ? '#0891B2' : 'transparent',
+                        color: tr.mode === m ? '#fff' : '#9B7450' }}>
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={lbl}>Departure Time</label>
+                  <input type="time" style={inp()} value={tr.departureTime || ''} onChange={e => setTravel('departureTime', e.target.value)} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={lbl}>Distance (approx)</label>
+                  <input style={inp()} value={tr.distance || ''} onChange={e => setTravel('distance', e.target.value)}
+                    placeholder="e.g. 45 km" />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 11, background: tr.hotelNeeded ? 'rgba(8,145,178,0.06)' : 'rgba(196,122,46,0.04)', border: `1.5px solid ${tr.hotelNeeded ? 'rgba(8,145,178,0.25)' : 'rgba(196,122,46,0.15)'}` }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>Hotel / Stay needed?</div>
+                  <div style={{ fontSize: 11.5, color: '#9B7450', marginTop: 1 }}>Out-of-city or late-night gig</div>
+                </div>
+                <button onClick={() => setTravel('hotelNeeded', !tr.hotelNeeded)}
+                  style={{ width: 44, height: 24, borderRadius: 12, border: 'none', background: tr.hotelNeeded ? '#0891B2' : 'rgba(196,122,46,0.2)', cursor: 'pointer', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+                  <div style={{ position: 'absolute', top: 3, left: tr.hotelNeeded ? 23 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.18)' }} />
+                </button>
+              </div>
+
+              {tr.hotelNeeded && (
+                <div>
+                  <label style={lbl}>Hotel Name / Address</label>
+                  <input style={inp()} value={tr.hotelName || ''} onChange={e => setTravel('hotelName', e.target.value)}
+                    placeholder="e.g. Lemon Tree, Gurugram" />
+                </div>
+              )}
+
+              <div>
+                <label style={lbl}>Travel Notes</label>
+                <textarea style={{ ...inp(), height: 66, resize: 'vertical' }} value={tr.notes || ''} onChange={e => setTravel('notes', e.target.value)}
+                  placeholder="Parking instructions, who's driving, client to arrange pickup…" />
+              </div>
+            </>;
+          })()}
+
           {/* ── Reminders tab ── */}
           {modalTab === 'reminders' && <>
             <div style={{ fontSize: 13, color: '#9B7450', marginBottom: 6, lineHeight: 1.5 }}>
@@ -988,8 +1109,11 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus, onRequestPayment,
   const effectiveTotal = useMilestones ? milestoneTotal : (Number(order.amount) || 0);
   const totalExpenses = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
   const cardProfit = effectivePaid - totalExpenses;
+  const crew = order.crew || [];
+  const travel = order.travel || {};
+  const hasTravelInfo = !!(travel.venueAddress || travel.mode || travel.departureTime);
   const hasPerformanceDetails = !!(order.startTime || order.endTime || (order.equipment?.filter(Boolean).length > 0));
-  const hasDetails = milestones.length > 0 || expenses.length > 0 || hasPerformanceDetails;
+  const hasDetails = milestones.length > 0 || expenses.length > 0 || hasPerformanceDetails || crew.length > 0 || hasTravelInfo;
 
   return (
     <div style={{ background: '#fff', borderRadius: 14, border: '1px solid rgba(196,122,46,0.12)', overflow: 'hidden' }}>
@@ -1078,7 +1202,7 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus, onRequestPayment,
         {hasDetails && (
           <button onClick={() => setExpanded(e => !e)}
             style={{ marginTop: 10, width: '100%', padding: '6px', borderRadius: 8, border: '1px dashed rgba(196,122,46,0.25)', background: 'transparent', color: '#9B7450', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: font, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-            {expanded ? '▲ Hide details' : `▼ Show ${milestones.length > 0 ? `${milestones.length} payment${milestones.length > 1 ? 's' : ''}` : ''}${milestones.length > 0 && expenses.length > 0 ? ' · ' : ''}${expenses.length > 0 ? `${expenses.length} expense${expenses.length > 1 ? 's' : ''}` : ''}`}
+            {expanded ? '▲ Hide details' : `▼ Show ${[milestones.length > 0 && `${milestones.length} payment${milestones.length > 1 ? 's' : ''}`, expenses.length > 0 && `${expenses.length} expense${expenses.length > 1 ? 's' : ''}`, crew.length > 0 && `${crew.length} crew`, hasTravelInfo && 'travel'].filter(Boolean).join(' · ') || 'details'}`}
           </button>
         )}
 
@@ -1156,6 +1280,43 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus, onRequestPayment,
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Crew */}
+          {crew.length > 0 && (
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Crew ({crew.length})</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {crew.map((c, i) => (
+                  <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, padding: '4px 10px', borderRadius: 100, background: 'rgba(124,58,237,0.08)', color: '#7C3AED', fontWeight: 600 }}>
+                    <span style={{ width: 18, height: 18, borderRadius: '50%', background: '#7C3AED', color: '#fff', fontSize: 10, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{c.name?.[0]?.toUpperCase() || '?'}</span>
+                    {c.name || 'Member'} {c.role ? `· ${c.role}` : ''}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Travel */}
+          {hasTravelInfo && (
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Travel</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {travel.venueAddress && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, color: ink }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    {travel.venueAddress}
+                  </div>
+                )}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {travel.mode && <span style={{ fontSize: 12, padding: '3px 9px', borderRadius: 100, background: 'rgba(8,145,178,0.08)', color: '#0891B2', fontWeight: 600 }}>{travel.mode}</span>}
+                  {travel.departureTime && <span style={{ fontSize: 12, padding: '3px 9px', borderRadius: 100, background: 'rgba(196,122,46,0.08)', color: gold, fontWeight: 600 }}>Depart {travel.departureTime}</span>}
+                  {travel.distance && <span style={{ fontSize: 12, padding: '3px 9px', borderRadius: 100, background: 'rgba(22,163,74,0.08)', color: '#16A34A', fontWeight: 600 }}>{travel.distance}</span>}
+                  {travel.hotelNeeded && <span style={{ fontSize: 12, padding: '3px 9px', borderRadius: 100, background: 'rgba(124,58,237,0.08)', color: '#7C3AED', fontWeight: 600 }}>🏨 {travel.hotelName || 'Hotel needed'}</span>}
+                </div>
+                {travel.notes && <div style={{ fontSize: 12, color: '#9B7450', fontStyle: 'italic', paddingLeft: 2 }}>"{travel.notes}"</div>}
+              </div>
             </div>
           )}
 
