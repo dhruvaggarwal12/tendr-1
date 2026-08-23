@@ -20,52 +20,131 @@ const font      = "'Outfit', sans-serif";
 const serifFont = "'Cormorant Garamond', Georgia, serif";
 
 function TourTooltip({ index, step, closeProps, primaryProps, tooltipProps, size }) {
-  const progress = ((index + 1) / size) * 100;
+  const dots = Array.from({ length: size });
+  const isLast = index === size - 1;
 
   return (
     <div
       {...tooltipProps}
       style={{
-        background: "#0E0700",
-        border: "1px solid rgba(196,122,46,0.15)",
-        borderRadius: 10,
-        maxWidth: 288,
+        background: "#FFFCF5",
+        borderRadius: 11,
         width: 288,
-        boxShadow: "0 24px 56px rgba(0,0,0,0.72)",
+        maxWidth: 288,
+        boxShadow: "0 10px 48px rgba(44,26,14,0.13), 0 2px 8px rgba(44,26,14,0.06)",
         fontFamily: font,
         overflow: "hidden",
+        borderLeft: "3.5px solid #C47A2E",
+        position: "relative",
       }}
     >
-      {/* Progress bar — thin, no gradient */}
-      <div style={{ height: 2, background: "rgba(196,122,46,0.08)" }}>
-        <div style={{ height: "100%", width: `${progress}%`, background: "#C47A2E", transition: "width 0.4s ease" }} />
-      </div>
-
-      <div style={{ padding: "16px 18px 15px" }}>
-        {/* Step counter — minimal, no uppercase */}
-        <div style={{ fontSize: 10, fontWeight: 400, color: "rgba(196,122,46,0.45)", marginBottom: 11, letterSpacing: "0.04em" }}>
-          {index + 1} / {size}
+      <div style={{ padding: "18px 18px 16px", position: "relative" }}>
+        {/* Ghost step number — very faint, editorial background texture */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            bottom: 10,
+            right: 14,
+            fontFamily: serifFont,
+            fontSize: 72,
+            fontWeight: 700,
+            lineHeight: 1,
+            color: "rgba(196,122,46,0.07)",
+            userSelect: "none",
+            pointerEvents: "none",
+            letterSpacing: "-0.04em",
+          }}
+        >
+          {String(index + 1).padStart(2, "0")}
         </div>
 
-        {/* Title — serif, light weight */}
+        {/* Close × */}
+        <button
+          {...closeProps}
+          style={{
+            position: "absolute",
+            top: 12,
+            right: 14,
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: "rgba(44,26,14,0.22)",
+            fontSize: 20,
+            lineHeight: 1,
+            padding: "0 2px",
+            fontFamily: font,
+            fontWeight: 300,
+          }}
+        >
+          ×
+        </button>
+
+        {/* Title */}
         {step.title && (
-          <div style={{ fontFamily: serifFont, fontSize: 19, fontWeight: 400, color: "#FFF8EC", marginBottom: 8, lineHeight: 1.2 }}>
+          <div
+            style={{
+              fontFamily: serifFont,
+              fontSize: 21,
+              fontWeight: 400,
+              lineHeight: 1.22,
+              color: "#2C1A0E",
+              marginBottom: 9,
+              paddingRight: 26,
+              textWrap: "balance",
+            }}
+          >
             {step.title}
           </div>
         )}
 
         {/* Content */}
-        <div style={{ fontSize: 12, color: "rgba(255,238,208,0.48)", lineHeight: 1.7, marginBottom: 16 }}>
+        <div
+          style={{
+            fontSize: 13,
+            lineHeight: 1.72,
+            color: "rgba(44,26,14,0.58)",
+            marginBottom: 16,
+          }}
+        >
           {step.content}
         </div>
 
-        {/* Actions */}
+        {/* Footer: dots + action */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <button {...closeProps} style={{ background: "none", border: "none", fontSize: 11, color: "rgba(255,238,208,0.18)", cursor: "pointer", padding: 0, fontFamily: font }}>
-            skip
-          </button>
-          <button {...primaryProps} style={{ padding: "7px 19px", borderRadius: 6, border: "none", background: "#C47A2E", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-            {index === size - 1 ? "Done" : "Continue"}
+          {/* Expanding pill dots */}
+          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+            {dots.map((_, i) => (
+              <div
+                key={i}
+                style={{
+                  height: 4,
+                  width: i === index ? 16 : 4,
+                  borderRadius: 100,
+                  background: i === index ? "#C47A2E" : "rgba(44,26,14,0.14)",
+                  transition: "width 0.25s ease, background 0.25s ease",
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Next / Done */}
+          <button
+            {...primaryProps}
+            style={{
+              padding: "7px 17px",
+              borderRadius: 7,
+              border: "1.5px solid #C47A2E",
+              background: isLast ? "#C47A2E" : "transparent",
+              color: isLast ? "#FFFCF5" : "#C47A2E",
+              fontSize: 12.5,
+              fontWeight: 600,
+              cursor: "pointer",
+              fontFamily: font,
+              letterSpacing: "0.01em",
+            }}
+          >
+            {isLast ? "Done" : "Next →"}
           </button>
         </div>
       </div>
@@ -130,9 +209,9 @@ export default function PageTour({ pageKey, steps, condition = true, onDone }) {
         disableScrolling={false}
         spotlightClicks={false}
         styles={{
-          options: { zIndex: 10000, primaryColor: "#C47A2E", arrowColor: "#1E0E03" },
-          overlay: { backgroundColor: "rgba(14,6,0,0.55)" },
-          spotlight: { borderRadius: 14, boxShadow: "0 0 0 2px rgba(200,155,60,0.35)" },
+          options: { zIndex: 10000, primaryColor: "#C47A2E", arrowColor: "#FFFCF5" },
+          overlay: { backgroundColor: "rgba(44,26,14,0.45)" },
+          spotlight: { borderRadius: 12, boxShadow: "0 0 0 2px rgba(196,122,46,0.28)" },
         }}
       />
     </>
