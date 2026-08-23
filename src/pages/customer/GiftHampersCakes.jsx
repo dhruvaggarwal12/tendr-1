@@ -176,8 +176,8 @@ const GiftHampersCakes = () => {
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
       <SEO
-        title="Gift Hampers — Tendr"
-        description="Curated gift hampers for every celebration. Browse samples and talk to our team for custom orders."
+        title="Curated Gift Hampers — Browse & Order | Tendr"
+        description="Explore curated gift hampers for birthdays, anniversaries and corporate celebrations. Browse samples and place your order through Tendr. Delivered across Delhi NCR."
         path="/gift-hampers-cakes"
       />
       <HamburgerNav title="Gift Hampers" showBack />

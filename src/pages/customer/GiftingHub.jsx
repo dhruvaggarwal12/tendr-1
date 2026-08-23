@@ -724,8 +724,8 @@ export default function GiftingHub() {
   return (
     <div style={{ minHeight: "100dvh", background: CREAM, fontFamily: font }}>
       <SEO
-        title="Gift Hampers — Tendr"
-        description="Curated gift hampers for every occasion. AI-powered suggestions, browse collections, or build your own. Local vendors, real products."
+        title="Build Your Own Gift Hamper — Tendr"
+        description="Create a personalised gift hamper for any occasion. Browse curated collections or build your own with local Delhi NCR vendors. Birthdays, anniversaries, corporate gifts and more."
         path="/gifting"
       />
       <HamburgerNav />
