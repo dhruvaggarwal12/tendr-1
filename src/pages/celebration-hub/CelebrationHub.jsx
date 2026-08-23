@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import SEO from "../../components/SEO";
 import HamburgerNav from "../../components/HamburgerNav";
 import { POSTS, POLLS, IDEAS, CATEGORY_COLORS } from "../../data/celebrationHubData";
 
@@ -435,6 +436,7 @@ export default function CelebrationHub() {
 
   return (
     <div style={{ minHeight: "100vh", background: CREAM, fontFamily: font }}>
+      <SEO title="Celebration Hub — Tendr" description="Ideas, polls and inspiration for planning birthdays, anniversaries, house parties and more. Join the Tendr celebration community." path="/celebration-hub" />
       <HamburgerNav active="Home" />
 
       {/* Toast */}

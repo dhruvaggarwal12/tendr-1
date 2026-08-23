@@ -326,7 +326,7 @@ const VendorList = () => {
       <SEO
         title={vendorListTitle(serviceType, locationType)}
         description={vendorListDescription(serviceType, locationType)}
-        path={serviceType || locationType ? `/listings?service=${serviceType || ""}&city=${locationType || ""}` : "/listings"}
+        path="/listings"
         city={locationType || null}
         noIndex={false}
         breadcrumbs={[{ name: "Home", path: "/" }, { name: serviceType ? `${serviceType}s` : "All Vendors", path: "/listings" }]}

@@ -1,4 +1,5 @@
 import React from "react";
+import SEO from "../../components/SEO";
 import HamburgerNav from "../../components/HamburgerNav";
 import FunActivitiesSection from "../../components/FunActivitiesSection";
 
@@ -7,6 +8,7 @@ const F = "'Outfit', sans-serif";
 export default function FunActivitiesPage() {
   return (
     <div style={{ minHeight:"100vh", background:"#F8F4EF", fontFamily:F }}>
+      <SEO title="Fun Activities for Events — Tendr" description="Book photo booths, games, live entertainment, and fun activities for birthdays, house parties and corporate events across Delhi NCR." path="/fun-activities" />
       <HamburgerNav />
 
       {/* Hero */}

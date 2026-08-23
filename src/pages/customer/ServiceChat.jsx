@@ -190,7 +190,7 @@ export default function ServiceChat({ serviceType }) {
 
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(160deg, #FFF8F2 0%, #F5E6CC 100%)", fontFamily: font }}>
-      <SEO title={cfg.seoTitle} description={cfg.seoDesc} path={cfg.seoPath} />
+      <SEO title={cfg.seoTitle} description={cfg.seoDesc} path={cfg.seoPath} noIndex />
       <HamburgerNav />
 
       <div style={{ maxWidth: 640, margin: "0 auto", padding: "48px 20px 80px" }}>

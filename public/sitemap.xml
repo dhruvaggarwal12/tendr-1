@@ -106,6 +106,15 @@
   <url><loc>https://tendr.co.in/dj-in-greater-noida-under-50000</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
   <url><loc>https://tendr.co.in/dj-in-greater-noida-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
 
+  <!-- Core category pages -->
+  <url><loc>https://tendr.co.in/gifting</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/gift-hampers-cakes</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/rakhi-hampers</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/fun-activities</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/stationery</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/celebration-hub</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://tendr.co.in/listings</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+
   <!-- ── SEO city landing pages — Gift Hampers / Fun Activities / Stationery  -->
   <url><loc>https://tendr.co.in/gift-hamper-in-delhi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://tendr.co.in/gift-hamper-in-noida</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
