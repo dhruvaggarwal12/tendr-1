@@ -1635,16 +1635,16 @@ const Home = () => {
       {/* ── Live Entertainment Add-ons ── */}
       <section style={{ background:"#0C0600", padding:"64px 0 0", fontFamily:"'Outfit', sans-serif", overflow:"hidden" }}>
         <style>{`
-          .fa-masonry { display:grid; grid-template-columns:2fr 1.15fr 1.15fr; grid-template-rows:300px 200px; gap:6px; }
+          .fa-masonry { display:grid; grid-template-columns:2fr 1.15fr 1.15fr; grid-template-rows:220px 150px; gap:6px; }
           .fa-feat { grid-row:1/3; }
           .fa-card-lift { transition:filter 0.22s ease; cursor:pointer; }
           .fa-card-lift:hover { filter:brightness(1.12); }
           @media(max-width:768px){
-            .fa-masonry { grid-template-columns:1fr 1fr; grid-template-rows:220px 160px 160px; }
+            .fa-masonry { grid-template-columns:1fr 1fr; grid-template-rows:180px 130px 130px; }
             .fa-feat { grid-column:1/3; grid-row:1/2; }
           }
           @media(max-width:480px){
-            .fa-masonry { grid-template-columns:1fr 1fr; grid-template-rows:180px 130px 130px; gap:4px; }
+            .fa-masonry { grid-template-columns:1fr 1fr; grid-template-rows:150px 110px 110px; gap:4px; }
           }
         `}</style>
 
