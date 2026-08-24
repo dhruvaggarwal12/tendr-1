@@ -2225,156 +2225,201 @@ const Home = () => {
       <TipsByTendrSection />
 
       {/* Become a Partner Section */}
-      <section style={{ background: "#1C0E04", padding: "56px 24px 64px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+      <section style={{ background: "#130900", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+        {/* Ambient glow */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(ellipse at 70% 0%,rgba(196,122,46,0.13),transparent 55%), radial-gradient(ellipse at 5% 90%,rgba(204,171,74,0.07),transparent 50%)", pointerEvents: "none" }} />
         <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative" }}>
 
-          {/* Section header row: eyebrow + h2 left, pills right */}
+          {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-            style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, marginBottom: 36, flexWrap: "wrap" }}
+            style={{ marginBottom: 52 }}
           >
-            <div style={{ flex: "1 1 360px" }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(204,171,74,0.1)", border: "1px solid rgba(204,171,74,0.22)", borderRadius: 100, padding: "4px 13px", marginBottom: 14 }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#CCAB4A", display: "inline-block", animation: "tendrPing 2s ease-out infinite" }} />
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", letterSpacing: "0.08em", textTransform: "uppercase" }}>For Vendors &amp; Artists</span>
-              </div>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.9rem, 3.6vw, 2.8rem)", fontWeight: 300, color: "#fff", lineHeight: 1.1, margin: "0 0 10px", letterSpacing: "0.01em" }}>
-                Your next booking is{" "}
-                <em style={{ fontStyle: "italic", fontWeight: 600, background: "linear-gradient(135deg, #C47A2E 0%, #D4A848 50%, #CCAB4A 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                  already looking for you.
-                </em>
-              </h2>
-              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.65, margin: 0 }}>
-                Real customers. Real dates. No ads or middlemen.
-              </p>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(204,171,74,0.09)", border: "1px solid rgba(204,171,74,0.22)", borderRadius: 100, padding: "5px 14px", marginBottom: 18 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#CCAB4A", display: "inline-block", animation: "tendrPing 2s ease-out infinite" }} />
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", letterSpacing: "0.1em", textTransform: "uppercase" }}>For Vendors &amp; Artists</span>
             </div>
-            {/* Vendor type pills — right of header */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 7, alignItems: "flex-start", maxWidth: 340, paddingTop: 4 }}>
-              {[
-                { icon: "🎧", label: "DJ" }, { icon: "🎙️", label: "Emcee" },
-                { icon: "📷", label: "Photographer" }, { icon: "🌸", label: "Decorator" },
-                { icon: "🍽️", label: "Caterer" }, { icon: "🎸", label: "Band" },
-                { icon: "🎬", label: "Videographer" }, { icon: "📽️", label: "AV Setup" },
-              ].map(t => (
-                <span key={t.label} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 600, color: "rgba(255,247,235,0.7)", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 100, padding: "4px 11px" }}>
-                  {t.icon} {t.label}
-                </span>
-              ))}
+            <div className="partner-header" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "end", gap: 40 }}>
+              <div>
+                <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.1rem, 3.8vw, 3.1rem)", fontWeight: 300, color: "#fff", lineHeight: 1.08, margin: "0 0 12px", letterSpacing: "0.01em" }}>
+                  Your next booking is{" "}
+                  <em style={{ fontStyle: "italic", fontWeight: 600, background: "linear-gradient(135deg,#C47A2E 0%,#D4A848 50%,#CCAB4A 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    already looking for you.
+                  </em>
+                </h2>
+                <p style={{ fontSize: 15, color: "rgba(255,255,255,0.45)", lineHeight: 1.65, margin: 0, maxWidth: 380 }}>
+                  Real customers. Real dates. No ads or middlemen — just direct bookings.
+                </p>
+              </div>
+              {/* Vendor type pills */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 7, justifyContent: "flex-end" }}>
+                {[
+                  { path: <><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>, label: "DJ" },
+                  { path: <><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></>, label: "Emcee" },
+                  { path: <><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></>, label: "Photographer" },
+                  { path: <><path d="M12 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10"/><path d="M8 3.06A10 10 0 0 0 8 21"/><path d="M16 3.05a10 10 0 0 1 0 17.9"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20"/></>, label: "Decorator" },
+                  { path: <><path d="M3 11l19-9-9 19-2-8-8-2z"/></>, label: "Caterer" },
+                  { path: <><path d="M9 18V5l12-2v13"/><polyline points="9 9 21 7"/></>, label: "Band" },
+                  { path: <><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></>, label: "Videographer" },
+                  { path: <><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></>, label: "AV Setup" },
+                ].map(t => (
+                  <span key={t.label} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 600, color: "rgba(255,247,235,0.6)", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 100, padding: "5px 12px", letterSpacing: "0.01em" }}>
+                    <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">{t.path}</svg>
+                    {t.label}
+                  </span>
+                ))}
+              </div>
             </div>
           </motion.div>
 
           {/* Two-column: left benefits+CTA / right profile card */}
           <motion.div
             className="partner-grid"
-            initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }}
-            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
-            style={{ display: "grid", gridTemplateColumns: "55% 1fr", gap: 48, alignItems: "start" }}
+            initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }}
+            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
+            style={{ display: "grid", gridTemplateColumns: "1fr 400px", gap: 64, alignItems: "start" }}
           >
 
-            {/* Left — 2×2 benefit grid + CTA */}
-            <motion.div variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 240, damping: 26 } } }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 28 }}>
-                {[
-                  { icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>, title: "Customers find you", stat: "Zero cold calling" },
-                  { icon: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>, title: "Verified badge", stat: "4× faster bookings" },
-                  { icon: <><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>, title: "Always free", stat: "0% commission" },
-                  { icon: <><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>, title: "Chat before booking", stat: "Direct with customer" },
-                ].map((b, i) => (
-                  <div key={i} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: "16px 16px 14px", display: "flex", gap: 12, alignItems: "flex-start" }}>
-                    <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(196,122,46,0.12)", border: "1px solid rgba(196,122,46,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">{b.icon}</svg>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#FFF8EC", lineHeight: 1.3 }}>{b.title}</div>
-                      <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.42)", marginTop: 2 }}>{b.stat}</div>
-                    </div>
+            {/* Left — benefit list + CTA */}
+            <motion.div variants={{ hidden: { opacity: 0, x: -24 }, visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 220, damping: 28 } } }}>
+              {[
+                { num: "01", stat: "4×", title: "More bookings with a verified badge", sub: "Verified vendors receive 4 times more confirmed bookings than unverified listings.", icon: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></> },
+                { num: "02", stat: "₹0", title: "Commission — ever", sub: "No percentage taken from your earnings. What you quote is what you keep.", icon: <><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></> },
+                { num: "03", stat: "24h", title: "Approval — then you're live", sub: "Submit your details, get approved in one business day, start receiving requests.", icon: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></> },
+                { num: "04", stat: "Direct", title: "Chat with every customer", sub: "No gatekeeping. Discuss requirements, negotiate, and close the booking yourself.", icon: <><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></> },
+              ].map((b, i, arr) => (
+                <div key={b.num} style={{ display: "flex", gap: 20, padding: "22px 0", borderBottom: i < arr.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
+                  <div style={{ fontSize: 10.5, fontWeight: 800, color: "rgba(196,122,46,0.5)", letterSpacing: "0.08em", paddingTop: 3, flexShrink: 0, width: 20, fontVariantNumeric: "tabular-nums" }}>{b.num}</div>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.18)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">{b.icon}</svg>
                   </div>
-                ))}
-              </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 4 }}>
+                      <span style={{ fontFamily: "'Cormorant Garamond',Georgia,serif", fontSize: "clamp(1.5rem,2.5vw,1.9rem)", fontWeight: 600, color: "#CCAB4A", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{b.stat}</span>
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: "#FFF8EC", lineHeight: 1.3 }}>{b.title}</span>
+                    </div>
+                    <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.38)", lineHeight: 1.6 }}>{b.sub}</div>
+                  </div>
+                </div>
+              ))}
 
               {/* CTA */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+              <div style={{ marginTop: 36, display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
                 <button
                   onClick={() => navigate("/vendor/register")}
-                  style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", border: "none", borderRadius: 12, padding: "13px 28px", fontSize: 14.5, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 6px 24px rgba(196,122,46,0.4)", transition: "transform 0.2s, box-shadow 0.2s" }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(196,122,46,0.55)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(196,122,46,0.4)"; }}
+                  style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", border: "none", borderRadius: 12, padding: "14px 32px", fontSize: 15, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 8px 28px rgba(196,122,46,0.42)", transition: "transform 0.18s,box-shadow 0.18s", minHeight: 44 }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 14px 40px rgba(196,122,46,0.58)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.42)"; }}
                 >
                   List Your Service Free →
                 </button>
                 <button
                   onClick={() => navigate("/vendor/login")}
-                  style={{ background: "transparent", color: "rgba(255,247,235,0.7)", border: "1.5px solid rgba(255,255,255,0.12)", borderRadius: 12, padding: "12px 20px", fontSize: 13.5, fontWeight: 600, fontFamily: "'Outfit', sans-serif", cursor: "pointer", transition: "all 0.2s" }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.5)"; e.currentTarget.style.color = "#CCAB4A"; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; e.currentTarget.style.color = "rgba(255,247,235,0.7)"; }}
+                  style={{ background: "none", color: "rgba(255,247,235,0.55)", border: "none", fontSize: 13.5, fontWeight: 600, fontFamily: "'Outfit',sans-serif", cursor: "pointer", padding: "14px 4px", minHeight: 44, transition: "color 0.15s", textDecoration: "underline", textDecorationColor: "rgba(255,247,235,0.15)", textUnderlineOffset: 4 }}
+                  onMouseEnter={e => e.currentTarget.style.color = "#CCAB4A"}
+                  onMouseLeave={e => e.currentTarget.style.color = "rgba(255,247,235,0.55)"}
                 >
                   Already a vendor? Log in
                 </button>
               </div>
-              <div style={{ marginTop: 12, fontSize: 11.5, color: "rgba(255,255,255,0.26)", letterSpacing: "0.03em" }}>No credit card · No setup fee · No commission</div>
+              <div style={{ marginTop: 10, fontSize: 11.5, color: "rgba(255,255,255,0.22)", letterSpacing: "0.03em" }}>
+                Join 100+ verified vendors · No credit card · No setup fee
+              </div>
             </motion.div>
 
-            {/* Right — mock vendor profile card + compact stat row */}
+            {/* Right — mock vendor profile card */}
             <motion.div
-              variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 240, damping: 26 } } }}
-              style={{ display: "flex", flexDirection: "column", gap: 12 }}
+              variants={{ hidden: { opacity: 0, x: 24 }, visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 220, damping: 28 } } }}
+              style={{ display: "flex", flexDirection: "column", gap: 10 }}
             >
-              <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 18, overflow: "hidden" }}>
-                <div style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.2),rgba(204,171,74,0.12))", padding: "10px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: "rgba(255,247,235,0.5)", letterSpacing: "0.06em" }}>YOUR TENDR PROFILE</span>
+              {/* Profile card */}
+              <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 20, overflow: "hidden", position: "relative" }}>
+                {/* "New request" live badge */}
+                <div style={{ position: "absolute", top: 12, right: 12, zIndex: 2, background: "#16A34A", color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 100, padding: "4px 10px", display: "flex", alignItems: "center", gap: 5, letterSpacing: "0.04em", boxShadow: "0 2px 10px rgba(22,163,74,0.4)" }}>
+                  <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#fff", display: "inline-block", animation: "tendrPing 1.8s ease-out infinite" }} />
+                  2 new requests
+                </div>
+
+                {/* Card top bar */}
+                <div style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.18),rgba(204,171,74,0.1))", padding: "11px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,247,235,0.45)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Your Tendr Profile</span>
                   <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#16A34A", display: "inline-block" }} />
-                    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.38)" }}>Active</span>
+                    <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#16A34A", display: "inline-block" }} />
+                    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)" }}>Active</span>
                   </div>
                 </div>
-                <div style={{ padding: "16px 18px 18px" }}>
+
+                <div style={{ padding: "16px 18px 20px" }}>
+                  {/* Profile info */}
                   <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 14 }}>
-                    <div style={{ width: 46, height: 46, borderRadius: 13, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>🎧</div>
+                    <div style={{ width: 48, height: 48, borderRadius: 14, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                    </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 2 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
                         <span style={{ fontSize: 14, fontWeight: 800, color: "#FFF8EC" }}>Your Name Here</span>
-                        <span style={{ fontSize: 9.5, fontWeight: 700, color: "#CCAB4A", background: "rgba(204,171,74,0.15)", border: "1px solid rgba(204,171,74,0.3)", borderRadius: 100, padding: "2px 7px" }}>✓ Verified</span>
+                        <span style={{ fontSize: 9, fontWeight: 800, color: "#CCAB4A", background: "rgba(204,171,74,0.14)", border: "1px solid rgba(204,171,74,0.28)", borderRadius: 100, padding: "2px 7px" }}>✓ Verified</span>
                       </div>
-                      <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", marginBottom: 5 }}>DJ · Delhi NCR</div>
-                      <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-                        {[1,2,3,4,5].map(s => <span key={s} style={{ color: "#CCAB4A", fontSize: 10.5 }}>★</span>)}
-                        <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.38)", marginLeft: 2 }}>4.9 · 28 reviews</span>
+                      <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.4)", marginBottom: 5 }}>DJ · Delhi NCR</div>
+                      <div style={{ display: "flex", gap: 3, alignItems: "center" }}>
+                        {[1,2,3,4,5].map(s => <span key={s} style={{ color: "#CCAB4A", fontSize: 10 }}>★</span>)}
+                        <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.32)", marginLeft: 3 }}>4.9 · 28 reviews</span>
                       </div>
                     </div>
                   </div>
+
+                  {/* This-week activity strip */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
+                    <div style={{ background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.14)", borderRadius: 10, padding: "10px 12px" }}>
+                      <div style={{ fontSize: 20, fontWeight: 800, color: "#CCAB4A", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>24</div>
+                      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.38)", marginTop: 3, lineHeight: 1.3 }}>Profile views this week</div>
+                    </div>
+                    <div style={{ background: "rgba(22,163,74,0.07)", border: "1px solid rgba(22,163,74,0.15)", borderRadius: 10, padding: "10px 12px" }}>
+                      <div style={{ fontSize: 20, fontWeight: 800, color: "#4ADE80", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>3</div>
+                      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.38)", marginTop: 3, lineHeight: 1.3 }}>Booking requests</div>
+                    </div>
+                  </div>
+
+                  {/* Photo grid */}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 5, marginBottom: 14 }}>
                     {[
                       "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=200&h=100&fit=crop&q=70",
                       "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=200&h=100&fit=crop&q=70",
                       "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=200&h=100&fit=crop&q=70",
                     ].map((src, i) => (
-                      <div key={i} style={{ height: 52, borderRadius: 9, overflow: "hidden" }}>
-                        <img src={src} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }} />
+                      <div key={i} style={{ height: 54, borderRadius: 8, overflow: "hidden" }}>
+                        <img src={src} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.82 }} />
                       </div>
                     ))}
                   </div>
+
+                  {/* Book Now */}
                   <div style={{ display: "flex", gap: 7 }}>
-                    <div style={{ flex: 1, padding: "8px 12px", borderRadius: 9, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", textAlign: "center", fontSize: 12, fontWeight: 700, color: "#fff" }}>Book Now</div>
-                    <div style={{ width: 36, height: 34, borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div style={{ flex: 1, padding: "10px 12px", borderRadius: 9, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", textAlign: "center", fontSize: 12.5, fontWeight: 800, color: "#fff", letterSpacing: "0.02em" }}>Book Now</div>
+                    <div style={{ width: 38, height: 38, borderRadius: 9, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Mini stat row */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-                {[
-                  { val: "100+", label: "Verified Vendors" },
-                  { val: "Free", label: "Always" },
-                  { val: "24h", label: "Approval" },
-                ].map(s => (
-                  <div key={s.val} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 11, padding: "11px 10px", textAlign: "center" }}>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: "#CCAB4A", marginBottom: 2 }}>{s.val}</div>
-                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.36)", fontWeight: 500 }}>{s.label}</div>
-                  </div>
-                ))}
+              {/* Earnings callout */}
+              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.32)", marginBottom: 3, letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: 600 }}>Avg. monthly earnings</div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: "#CCAB4A", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>₹32,000</div>
+                </div>
+                <div style={{ width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.07)" }} />
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "#FFF8EC", lineHeight: 1 }}>100+</div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.32)", marginTop: 3, fontWeight: 500 }}>Vendors live</div>
+                </div>
+                <div style={{ width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.07)" }} />
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "#FFF8EC", lineHeight: 1 }}>24h</div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.32)", marginTop: 3, fontWeight: 500 }}>Approval</div>
+                </div>
               </div>
             </motion.div>
 
@@ -2382,8 +2427,10 @@ const Home = () => {
         </div>
 
         <style>{`
-          @media (max-width: 768px) {
-            .partner-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+          @media (max-width: 860px) {
+            .partner-grid { grid-template-columns: 1fr !important; gap: 36px !important; }
+            .partner-header { grid-template-columns: 1fr !important; gap: 20px !important; }
+            .partner-header > div:last-child { justify-content: flex-start !important; }
           }
         `}</style>
       </section>
