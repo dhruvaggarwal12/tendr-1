@@ -279,13 +279,17 @@ const BLANK_MILESTONE = { label: 'Advance', amount: '', dueDate: '', paid: false
 const MILESTONE_LABELS = ['Advance', '50% Pre-event', 'Final Payment', 'Custom'];
 const EXPENSE_CATS = ['Materials', 'Labour', 'Transport', 'Equipment', 'Food', 'Other'];
 
+function escapeHtml(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+}
+
 // ── Invoice generator ──────────────────────────────────────────────────────────
 function generateInvoice(order, vendorName) {
   const totalExpenses = (order.expenses || []).reduce((s, e) => s + (Number(e.amount) || 0), 0);
   const totalCollected = order.milestones?.length
     ? order.milestones.filter(m => m.paid).reduce((s, m) => s + (Number(m.amount) || 0), 0)
     : (Number(order.paidAmount) || 0);
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Invoice — ${order.clientName}</title>
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Invoice — ${escapeHtml(order.clientName)}</title>
 <style>
   body{font-family:'Outfit',Arial,sans-serif;max-width:680px;margin:40px auto;padding:0 24px;color:#2C1A0E;background:#fff}
   .hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:20px;border-bottom:2px solid #C47A2E;margin-bottom:24px}
@@ -302,7 +306,7 @@ function generateInvoice(order, vendorName) {
   @media print{body{margin:20px}}
 </style></head><body>
 <div class="hdr">
-  <div><div class="brand">Tendr</div><div class="brand-sub">${vendorName}</div></div>
+  <div><div class="brand">Tendr</div><div class="brand-sub">${escapeHtml(vendorName)}</div></div>
   <div class="inv-meta">
     <div style="font-size:18px;font-weight:800;color:#2C1A0E">INVOICE</div>
     <div>Date: ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</div>
@@ -313,21 +317,21 @@ function generateInvoice(order, vendorName) {
 </div>
 
 <h3>Bill To</h3>
-<div style="font-size:14px;font-weight:700">${order.clientName}</div>
-${order.clientPhone ? `<div style="font-size:13px;color:#9B7450">📞 ${order.clientPhone}</div>` : ''}
-${order.clientEmail ? `<div style="font-size:13px;color:#9B7450">✉ ${order.clientEmail}</div>` : ''}
+<div style="font-size:14px;font-weight:700">${escapeHtml(order.clientName)}</div>
+${order.clientPhone ? `<div style="font-size:13px;color:#9B7450">📞 ${escapeHtml(order.clientPhone)}</div>` : ''}
+${order.clientEmail ? `<div style="font-size:13px;color:#9B7450">✉ ${escapeHtml(order.clientEmail)}</div>` : ''}
 
 <h3>Event Details</h3>
-<div class="row"><span>Event Type</span><span>${order.eventType || '—'}</span></div>
+<div class="row"><span>Event Type</span><span>${escapeHtml(order.eventType || '—')}</span></div>
 ${order.eventDate ? `<div class="row"><span>Event Date</span><span>${new Date(order.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</span></div>` : ''}
 ${order.startTime ? `<div class="row"><span>Performance Time</span><span>${order.startTime}${order.endTime ? ` – ${order.endTime}` : ''}</span></div>` : ''}
-${order.equipment?.length ? `<div class="row"><span>Equipment</span><span style="max-width:60%;text-align:right">${order.equipment.filter(Boolean).join(', ')}</span></div>` : ''}
-${order.notes ? `<div class="row"><span>Notes</span><span style="max-width:60%;text-align:right">${order.notes}</span></div>` : ''}
+${order.equipment?.length ? `<div class="row"><span>Equipment</span><span style="max-width:60%;text-align:right">${order.equipment.filter(Boolean).map(escapeHtml).join(', ')}</span></div>` : ''}
+${order.notes ? `<div class="row"><span>Notes</span><span style="max-width:60%;text-align:right">${escapeHtml(order.notes)}</span></div>` : ''}
 
 <h3>Payment Schedule</h3>
 ${order.milestones?.length ? order.milestones.map(m => `
 <div class="row">
-  <span>${m.label}${m.dueDate ? ` <span style="font-size:11px;color:#9B7450">(due ${new Date(m.dueDate).toLocaleDateString('en-IN',{day:'numeric',month:'short'})})</span>` : ''}</span>
+  <span>${escapeHtml(m.label)}${m.dueDate ? ` <span style="font-size:11px;color:#9B7450">(due ${new Date(m.dueDate).toLocaleDateString('en-IN',{day:'numeric',month:'short'})})</span>` : ''}</span>
   <span style="display:flex;align-items:center;gap:8px">₹${Number(m.amount).toLocaleString('en-IN')} <span class="pill ${m.paid ? 'paid' : 'pending'}">${m.paid ? '✓ Paid' : 'Pending'}</span></span>
 </div>`).join('') : `
 <div class="row"><span>Total Amount</span><span>₹${Number(order.amount||0).toLocaleString('en-IN')}</span></div>
@@ -337,7 +341,7 @@ ${order.milestones?.length ? order.milestones.map(m => `
 
 ${order.expenses?.length ? `
 <h3>Expenses (internal)</h3>
-${order.expenses.map(e => `<div class="row"><span>${e.category} — ${e.description||''}</span><span>₹${Number(e.amount).toLocaleString('en-IN')}</span></div>`).join('')}
+${order.expenses.map(e => `<div class="row"><span>${escapeHtml(e.category)} — ${escapeHtml(e.description||'')}</span><span>₹${Number(e.amount).toLocaleString('en-IN')}</span></div>`).join('')}
 <div class="row bold"><span>Total Expenses</span><span>₹${totalExpenses.toLocaleString('en-IN')}</span></div>
 <div class="profit-box"><span style="font-weight:700;color:#166534">Net Profit on this event</span><span style="font-size:20px;font-weight:800;color:#16A34A">₹${(totalCollected - totalExpenses).toLocaleString('en-IN')}</span></div>
 ` : ''}
@@ -358,7 +362,7 @@ function generateQuote(quote, vendorName) {
   const discount = Number(quote.discount) || 0;
   const total = subtotal - discount;
   const validUntil = new Date(); validUntil.setDate(validUntil.getDate() + 7);
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Quote — ${quote.clientName}</title>
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Quote — ${escapeHtml(quote.clientName)}</title>
 <style>
   body{font-family:'Outfit',Arial,sans-serif;max-width:680px;margin:40px auto;padding:0 24px;color:#2C1A0E;background:#fff}
   .hdr{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:20px;border-bottom:2px solid #C47A2E;margin-bottom:24px}
@@ -375,7 +379,7 @@ function generateQuote(quote, vendorName) {
   @media print{body{margin:20px}}
 </style></head><body>
 <div class="hdr">
-  <div><div class="brand">Tendr</div><div class="brand-sub">${vendorName}</div></div>
+  <div><div class="brand">Tendr</div><div class="brand-sub">${escapeHtml(vendorName)}</div></div>
   <div class="inv-meta">
     <div style="font-size:18px;font-weight:800;color:#2C1A0E">ESTIMATE</div>
     <div>Date: ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</div>
@@ -383,12 +387,12 @@ function generateQuote(quote, vendorName) {
   </div>
 </div>
 <h3>Prepared For</h3>
-<div style="font-size:14px;font-weight:700">${quote.clientName}</div>
-${quote.clientPhone ? `<div style="font-size:13px;color:#9B7450">📞 ${quote.clientPhone}</div>` : ''}
-${(quote.eventType||quote.eventDate) ? `<h3>Event Details</h3>${quote.eventType?`<div class="row"><span>Event Type</span><span>${quote.eventType}</span></div>`:''}${quote.eventDate?`<div class="row"><span>Event Date</span><span>${new Date(quote.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</span></div>`:''}` : ''}
+<div style="font-size:14px;font-weight:700">${escapeHtml(quote.clientName)}</div>
+${quote.clientPhone ? `<div style="font-size:13px;color:#9B7450">📞 ${escapeHtml(quote.clientPhone)}</div>` : ''}
+${(quote.eventType||quote.eventDate) ? `<h3>Event Details</h3>${quote.eventType?`<div class="row"><span>Event Type</span><span>${escapeHtml(quote.eventType)}</span></div>`:''}${quote.eventDate?`<div class="row"><span>Event Date</span><span>${new Date(quote.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</span></div>`:''}` : ''}
 <h3>Services & Pricing</h3>
 <table><thead><tr><th>Description</th><th style="text-align:center;width:60px">Qty</th><th style="text-align:right;width:100px">Rate (₹)</th><th style="text-align:right;width:110px">Amount (₹)</th></tr></thead><tbody>
-${items.map(i=>`<tr><td>${i.desc||'—'}</td><td style="text-align:center">${Number(i.qty)||1}</td><td style="text-align:right">${(Number(i.rate)||0).toLocaleString('en-IN')}</td><td style="text-align:right;font-weight:700">${((Number(i.qty)||1)*(Number(i.rate)||0)).toLocaleString('en-IN')}</td></tr>`).join('')}
+${items.map(i=>`<tr><td>${escapeHtml(i.desc||'—')}</td><td style="text-align:center">${Number(i.qty)||1}</td><td style="text-align:right">${(Number(i.rate)||0).toLocaleString('en-IN')}</td><td style="text-align:right;font-weight:700">${((Number(i.qty)||1)*(Number(i.rate)||0)).toLocaleString('en-IN')}</td></tr>`).join('')}
 </tbody></table>
 <div class="total-box">
   <div class="row"><span>Subtotal</span><span>₹${subtotal.toLocaleString('en-IN')}</span></div>
@@ -396,7 +400,7 @@ ${items.map(i=>`<tr><td>${i.desc||'—'}</td><td style="text-align:center">${Num
   <div class="row bold"><span>Total Estimate</span><span style="color:#C47A2E">₹${total.toLocaleString('en-IN')}</span></div>
 </div>
 <div style="font-size:12px;color:#9B7450;text-align:right;margin-top:6px">Valid until: ${validUntil.toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</div>
-${quote.notes?`<h3>Notes</h3><div style="font-size:13px;color:#6B4A2A;line-height:1.6">${quote.notes}</div>`:''}
+${quote.notes?`<h3>Notes</h3><div style="font-size:13px;color:#6B4A2A;line-height:1.6">${escapeHtml(quote.notes)}</div>`:''}
 <footer>This is an estimate only · Final pricing may vary · Generated by Tendr · tendr.in</footer>
 </body></html>`;
   const win = window.open('', '_blank');

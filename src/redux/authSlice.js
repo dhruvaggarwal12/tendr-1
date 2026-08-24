@@ -100,6 +100,9 @@ const authSlice = createSlice({
       .addCase(signup.fulfilled, (state, action) => {
         state.loading = false;
         state.verificationId = action.payload.verificationId;
+        // userData (including password) is kept in memory only for the OTP resend flow.
+        // It is never written to localStorage and is cleared in verifyOtpAction.fulfilled.
+        // TODO(backend): remove password requirement from /resend-otp so we can drop it here.
         state.userData = action.payload.userData;
       })
       .addCase(signup.rejected, (state, action) => {

@@ -61,13 +61,13 @@ export const handleApiError = (error, context = '') => {
 };
 
 export const showErrorToast = (errorInfo) => {
-  // Create a toast notification for errors
   const toast = document.createElement('div');
   toast.className = `
     fixed top-4 right-4 z-50 max-w-sm w-full bg-red-50 border border-red-200 rounded-lg shadow-lg p-4
     transform transition-all duration-300 translate-x-full
   `;
-  
+
+  // Build with DOM APIs so title/message are always treated as text, never HTML
   toast.innerHTML = `
     <div class="flex items-start">
       <div class="flex-shrink-0">
@@ -76,11 +76,11 @@ export const showErrorToast = (errorInfo) => {
         </svg>
       </div>
       <div class="ml-3 flex-1">
-        <h3 class="text-sm font-medium text-red-800">${errorInfo.title}</h3>
-        <p class="mt-1 text-sm text-red-700">${errorInfo.message}</p>
+        <h3 class="text-sm font-medium text-red-800"></h3>
+        <p class="mt-1 text-sm text-red-700"></p>
       </div>
       <div class="ml-4 flex-shrink-0 flex">
-        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="text-red-400 hover:text-red-600">
+        <button class="text-red-400 hover:text-red-600">
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
           </svg>
@@ -88,6 +88,9 @@ export const showErrorToast = (errorInfo) => {
       </div>
     </div>
   `;
+  toast.querySelector('h3').textContent = errorInfo.title;
+  toast.querySelector('p').textContent  = errorInfo.message;
+  toast.querySelector('button').addEventListener('click', () => toast.remove());
 
   document.body.appendChild(toast);
   
