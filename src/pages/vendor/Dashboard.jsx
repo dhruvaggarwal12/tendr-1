@@ -1093,11 +1093,37 @@ function BookingCard({ b }) {
 }
 
 // ── Outside order card ─────────────────────────────────────────────────────────
-function OutsideOrderCard({ order, onEdit, onDelete, onStatus, onRequestPayment, vendorName, profileUrl }) {
+function OutsideOrderCard({ order, onEdit, onDelete, onStatus, onRequestPayment, vendorName, profileUrl, token: authToken }) {
   const sc = STATUS_COLOR[order.status] || STATUS_COLOR.Pending;
   const [menuOpen, setMenuOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [contractModal, setContractModal] = useState(false);
+  const [contractTerms, setContractTerms] = useState(order.contract?.terms || '');
+  const [contractSaving, setContractSaving] = useState(false);
+  const [contractCopied, setContractCopied] = useState(false);
+  const [reviewCopied, setReviewCopied] = useState(false);
   const menuRef = useRef(null);
+
+  const saveContractTerms = async () => {
+    setContractSaving(true);
+    try {
+      await fetch(`${BASE}/vendors/outside-orders/${order._id}/contract`, {
+        method: 'PATCH', headers: authHeaders(authToken), body: JSON.stringify({ terms: contractTerms }),
+      });
+      setContractModal(false);
+    } catch {}
+    setContractSaving(false);
+  };
+
+  const copyContractLink = () => {
+    navigator.clipboard?.writeText(`${window.location.origin}/contract/${order.contract?.token}`);
+    setContractCopied(true); setTimeout(() => setContractCopied(false), 2000);
+  };
+
+  const copyReviewLink = () => {
+    navigator.clipboard?.writeText(`${window.location.origin}/rate/${order.reviewToken}`);
+    setReviewCopied(true); setTimeout(() => setReviewCopied(false), 2000);
+  };
   useEffect(() => {
     const h = (e) => { if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false); };
     document.addEventListener('mousedown', h);
@@ -1140,6 +1166,19 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus, onRequestPayment,
               {order.eventType   && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>)}{order.eventType}</span>}
               {order.eventDate   && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>)}{new Date(order.eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>}
             </div>
+            {/* Contract signed badge */}
+            {order.contract?.terms && (
+              <div style={{ marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: order.contract.signedByClient ? '#16A34A' : '#D97706', background: order.contract.signedByClient ? 'rgba(22,163,74,0.08)' : 'rgba(217,119,6,0.08)', padding: '2px 8px', borderRadius: 100 }}>
+                {order.contract.signedByClient ? '✅ Contract Signed' : '📋 Contract Pending'}
+              </div>
+            )}
+            {/* Client star rating */}
+            {order.clientRating > 0 && (
+              <div style={{ marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11 }}>
+                {'★'.repeat(order.clientRating)}{'☆'.repeat(5 - order.clientRating)}
+                <span style={{ color: '#9B7450', fontWeight: 600 }}>from client</span>
+              </div>
+            )}
             {order.notes && <div style={{ fontSize: 12, color: '#9B7450', marginTop: 4, fontStyle: 'italic' }}>"{order.notes}"</div>}
           </div>
 
@@ -1153,6 +1192,11 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus, onRequestPayment,
                 </div>
                 {effectivePaid > 0 && effectivePaid < effectiveTotal && (
                   <div style={{ fontSize: 10, color: '#9B7450' }}>₹{effectivePaid.toLocaleString('en-IN')} paid</div>
+                )}
+                {totalExpenses > 0 && (
+                  <div style={{ fontSize: 10, fontWeight: 700, color: cardProfit >= 0 ? '#16A34A' : '#DC2626', marginTop: 2 }}>
+                    Net ₹{Math.abs(cardProfit).toLocaleString('en-IN')}{cardProfit < 0 ? ' loss' : ' profit'}
+                  </div>
                 )}
               </div>
             )}
@@ -1186,13 +1230,25 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus, onRequestPayment,
                       </button>
                     ) : null;
                   })()}
-                  {order.status === 'Completed' && order.clientPhone && profileUrl && (
-                    <a href={`https://wa.me/91${order.clientPhone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hi ${order.clientName||'there'}, thank you for having me at your ${order.eventType||'event'}! 🎉 If you enjoyed the experience, a quick review on my Tendr profile would mean a lot 🙏\n\n${profileUrl}`)}`}
-                      target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}
-                      style={{ width:'100%', padding:'8px 16px', border:'none', background:'none', textAlign:'left', fontSize:13, fontWeight:600, color:'#128C7E', cursor:'pointer', display:'flex', alignItems:'center', gap:6, textDecoration:'none' }}>
+                  <div style={{ borderTop: '1px solid rgba(196,122,46,0.1)', margin: '4px 0' }} />
+                  <button onClick={() => { setContractModal(true); setMenuOpen(false); }}
+                    style={{ width:'100%', padding:'8px 16px', border:'none', background:'none', textAlign:'left', fontSize:13, fontWeight:600, color:'#7C3AED', cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    {order.contract?.terms ? 'Edit Contract' : 'Create Contract'}
+                  </button>
+                  {order.contract?.terms && (
+                    <button onClick={() => { copyContractLink(); setMenuOpen(false); }}
+                      style={{ width:'100%', padding:'8px 16px', border:'none', background:'none', textAlign:'left', fontSize:13, fontWeight:600, color:'#7C3AED', cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                      {contractCopied ? '✓ Link Copied!' : 'Share Contract Link'}
+                    </button>
+                  )}
+                  {order.status === 'Completed' && order.reviewToken && (
+                    <button onClick={() => { copyReviewLink(); setMenuOpen(false); }}
+                      style={{ width:'100%', padding:'8px 16px', border:'none', background:'none', textAlign:'left', fontSize:13, fontWeight:600, color:'#128C7E', cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                      Request Review
-                    </a>
+                      {reviewCopied ? '✓ Copied!' : 'Copy Review Link'}
+                    </button>
                   )}
                   <button onClick={() => { onDelete(order._id); setMenuOpen(false); }}
                     style={{ width: '100%', padding: '8px 16px', border: 'none', background: 'none', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#DC2626', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Delete</button>
@@ -1210,13 +1266,13 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus, onRequestPayment,
           </button>
         )}
 
-        {/* Request Review — shown only for completed orders with a phone number */}
-        {order.status === 'Completed' && order.clientPhone && profileUrl && (
-          <a href={`https://wa.me/91${order.clientPhone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hi ${order.clientName||'there'}, thank you for having me at your ${order.eventType||'event'}! 🎉 If you enjoyed the experience, a quick review on my Tendr profile would mean a lot to me 🙏\n\n${profileUrl}`)}`}
+        {/* Request Review — shown for completed orders with a phone + reviewToken */}
+        {order.status === 'Completed' && order.clientPhone && order.reviewToken && (
+          <a href={`https://wa.me/91${order.clientPhone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hi ${order.clientName||'there'}, thank you for having me at your ${order.eventType||'event'}! 🎉 A quick review would mean a lot to me 🙏\n\n${window.location.origin}/rate/${order.reviewToken}`)}`}
             target="_blank" rel="noopener noreferrer"
             style={{ marginTop:10, display:'flex', alignItems:'center', justifyContent:'center', gap:6, padding:'9px', borderRadius:9, background:'rgba(37,211,102,0.07)', border:'1.5px solid rgba(37,211,102,0.22)', color:'#128C7E', fontSize:12.5, fontWeight:700, textDecoration:'none', fontFamily:font }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            Request a Review via WhatsApp
+            {order.clientRating ? `★${order.clientRating} — Request another review` : 'Request a Review via WhatsApp'}
           </a>
         )}
       </div>
@@ -1351,6 +1407,42 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus, onRequestPayment,
           )}
         </div>
       )}
+
+      {/* Contract modal */}
+      {contractModal && (
+        <div onClick={() => setContractModal(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.45)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:16 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background:'#fff', borderRadius:20, width:'100%', maxWidth:480, padding:'24px 20px', boxShadow:'0 20px 60px rgba(0,0,0,0.2)', fontFamily:font }}>
+            <div style={{ fontSize:16, fontWeight:800, color:ink, marginBottom:4 }}>
+              {order.contract?.terms ? 'Edit Contract Terms' : 'Create Contract'}
+            </div>
+            <div style={{ fontSize:12, color:'#9B7450', marginBottom:16 }}>
+              {order.clientName} · {order.eventType || 'Event'}
+              {order.contract?.signedByClient && <span style={{ marginLeft:8, color:'#16A34A', fontWeight:700 }}>✅ Signed</span>}
+            </div>
+            <textarea
+              value={contractTerms}
+              onChange={e => setContractTerms(e.target.value)}
+              placeholder={`e.g.\n• 50% advance required to confirm booking\n• Artist to arrive 30 min before event\n• Cancellation within 48 hrs forfeits advance\n• Sound system to be arranged by client`}
+              rows={8}
+              style={{ width:'100%', padding:'12px 14px', borderRadius:12, border:'1.5px solid rgba(196,122,46,0.25)', fontFamily:font, fontSize:13.5, color:ink, outline:'none', background:'#FFFCF5', resize:'vertical', boxSizing:'border-box', lineHeight:1.6 }}
+            />
+            <div style={{ display:'flex', gap:10, marginTop:14, flexWrap:'wrap' }}>
+              {order.contract?.terms && (
+                <button onClick={copyContractLink} style={{ flex:1, padding:'11px', borderRadius:11, border:`1.5px solid #7C3AED`, background:'rgba(124,58,237,0.05)', color:'#7C3AED', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>
+                  {contractCopied ? '✓ Copied!' : '🔗 Copy Client Link'}
+                </button>
+              )}
+              <button onClick={saveContractTerms} disabled={contractSaving}
+                style={{ flex:1, padding:'11px', borderRadius:11, border:'none', background:contractSaving ? 'rgba(196,122,46,0.4)' : `linear-gradient(135deg,${gold},#CCAB4A)`, color:'#fff', fontSize:13, fontWeight:700, cursor: contractSaving ? 'wait' : 'pointer', fontFamily:font }}>
+                {contractSaving ? 'Saving…' : 'Save & Close'}
+              </button>
+            </div>
+            <div style={{ marginTop:12, fontSize:11.5, color:'#9B7450', lineHeight:1.6 }}>
+              After saving, share the contract link with your client via WhatsApp. They can read the terms and tap "I Agree" to confirm.
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1412,7 +1504,8 @@ const T = {
     navHome:'Home', navWork:'My Work', navGigs:'My Gigs', navShows:'My Shows',
     navEarnings:'Earnings', navStats:'Stats', navPage:'My Page', navAvail:'Avail.',
     navChats:'Chats', navEditProfile:'Edit Profile', navSignOut:'Sign Out',
-    addGig:'Add Gig', addShow:'Add Show', newQuote:'+ New Quote', addItem:'+ Add Item', copyLink:'Copy Link',
+    addGig:'Add Gig', addShow:'Add Show', newQuote:'+ New Quote', addItem:'+ Add Item', copyLink:'Copy Link', copyDirectLink:'Copy Direct Link', directLinkCopied:'Direct link copied!',
+    navClients:'Clients', crmTitle:'My Clients', crmEmpty:'No clients yet — your outside bookings will appear here.', crmRepeat:'Repeat', crmTotal:'Total', crmPaid:'Paid', crmPending:'Pending', crmLastEvent:'Last event', crmBookings:'bookings',
     greetMorning:'Good morning', greetAfternoon:'Good afternoon', greetEvening:'Good evening',
     noGigsMonth:'No {t} logged yet this month',
     gigsMonth:'{n} {t} this month · ₹{a} logged',
@@ -1443,7 +1536,8 @@ const T = {
     navHome:'होम', navWork:'मेरे काम', navGigs:'मेरे गिग', navShows:'मेरे शो',
     navEarnings:'कमाई', navStats:'आंकड़े', navPage:'मेरा पेज', navAvail:'उपलब्धता',
     navChats:'चैट', navEditProfile:'प्रोफ़ाइल बदलें', navSignOut:'साइन आउट',
-    addGig:'गिग जोड़ें', addShow:'शो जोड़ें', newQuote:'+ नया कोटेशन', addItem:'+ आइटम जोड़ें', copyLink:'लिंक कॉपी करें',
+    addGig:'गिग जोड़ें', addShow:'शो जोड़ें', newQuote:'+ नया कोटेशन', addItem:'+ आइटम जोड़ें', copyLink:'लिंक कॉपी करें', copyDirectLink:'डायरेक्ट लिंक कॉपी करें', directLinkCopied:'डायरेक्ट लिंक कॉपी हो गया!',
+    navClients:'क्लाइंट', crmTitle:'मेरे क्लाइंट', crmEmpty:'अभी कोई क्लाइंट नहीं — आपकी बाहरी बुकिंग यहाँ दिखेगी।', crmRepeat:'दोबारा', crmTotal:'कुल', crmPaid:'जमा', crmPending:'बाकी', crmLastEvent:'आखिरी इवेंट', crmBookings:'बुकिंग',
     greetMorning:'सुप्रभात', greetAfternoon:'नमस्कार', greetEvening:'शुभ संध्या',
     noGigsMonth:'इस महीने कोई {t} दर्ज नहीं',
     gigsMonth:'इस महीने {n} {t} · ₹{a} दर्ज',
@@ -1510,8 +1604,8 @@ export default function VendorDashboard() {
 
   // Mobile detection
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
-  // Inventory (localStorage per vendor)
-  const [inventory, setInventory] = useState(() => { try { return JSON.parse(localStorage.getItem(`tendr_inv_${vendorId||'v'}`)||'[]'); } catch { return []; } });
+  // Inventory (backend-persisted)
+  const [inventory, setInventory] = useState([]);
   const [invModal, setInvModal]   = useState(false);
   const [invForm, setInvForm]     = useState({ name:'', qty:'1', unit:'', category:'', condition:'Good', notes:'' });
 
@@ -1558,30 +1652,56 @@ export default function VendorDashboard() {
   const [calYear, setCalYear]   = useState(() => new Date().getFullYear());
 
   // Payment request modal (UPI)
-  const UPIKEY = `tendr_upi_${vendorId||'v'}`;
-  const [vendorUPI, setVendorUPI] = useState(() => { try { return localStorage.getItem(UPIKEY)||''; } catch { return ''; } });
+  const [vendorUPI, setVendorUPI] = useState('');
   const [payReqModal, setPayReqModal] = useState(null); // null | { order, pendingAmt }
-  const saveUPI = (upi) => { setVendorUPI(upi); try { localStorage.setItem(UPIKEY, upi); } catch {} };
+  const saveUPI = async (upi) => {
+    setVendorUPI(upi);
+    try {
+      await fetch(`${BASE}/vendors/me/upi`, { method: 'PATCH', headers: authHeaders(token), body: JSON.stringify({ upiId: upi }) });
+    } catch {}
+  };
 
-  // Quotes (localStorage)
-  const QUOTES_KEY = `tendr_quotes_${vendorId||'v'}`;
-  const [quotes, setQuotes] = useState(() => { try { return JSON.parse(localStorage.getItem(`tendr_quotes_${vendorId||'v'}`)||'[]'); } catch { return []; } });
+  // Client CRM (backend-aggregated from OutsideOrders)
+  const [crmClients, setCrmClients] = useState([]);
+  const [crmLoading, setCrmLoading] = useState(false);
+
+  // Quotes (backend-persisted)
+  const [quotes, setQuotes] = useState([]);
   const [quoteModal, setQuoteModal] = useState(false);
   const [editQuote, setEditQuote] = useState(null);
-  const saveQuotes = (arr) => { setQuotes(arr); try { localStorage.setItem(QUOTES_KEY, JSON.stringify(arr)); } catch {} };
-  const addOrUpdateQuote = (form) => {
-    if (editQuote) {
-      saveQuotes(quotes.map(q => q.id === editQuote.id ? { ...q, ...form } : q));
-      showToast('Quote updated!');
-    } else {
-      saveQuotes([{ ...form, id: Date.now().toString(), createdAt: new Date().toISOString() }, ...quotes]);
-      showToast('Quote saved!');
-    }
+  const addOrUpdateQuote = async (form) => {
+    try {
+      const id = editQuote ? editQuote.id : Date.now().toString();
+      const payload = { ...form, id, createdAt: editQuote?.createdAt || new Date().toISOString() };
+      if (editQuote) {
+        const r = await fetch(`${BASE}/vendors/me/quotes/${id}`, { method: 'PATCH', headers: authHeaders(token), body: JSON.stringify(form) });
+        const d = await r.json();
+        if (r.ok) { setQuotes(d.quotes); showToast('Quote updated!'); }
+        else showToast(d.error || 'Failed', false);
+      } else {
+        const r = await fetch(`${BASE}/vendors/me/quotes`, { method: 'POST', headers: authHeaders(token), body: JSON.stringify(payload) });
+        const d = await r.json();
+        if (r.ok) { setQuotes(d.quotes); showToast('Quote saved!'); }
+        else showToast(d.error || 'Failed', false);
+      }
+    } catch { showToast('Failed to save quote', false); }
     setQuoteModal(false);
     setEditQuote(null);
   };
-  const deleteQuote = (id) => saveQuotes(quotes.filter(q => q.id !== id));
-  const updateQuoteStatus = (id, status) => saveQuotes(quotes.map(q => q.id === id ? {...q, status} : q));
+  const deleteQuote = async (id) => {
+    try {
+      const r = await fetch(`${BASE}/vendors/me/quotes/${id}`, { method: 'DELETE', headers: authHeaders(token) });
+      const d = await r.json();
+      if (r.ok) setQuotes(d.quotes);
+    } catch {}
+  };
+  const updateQuoteStatus = async (id, status) => {
+    try {
+      const r = await fetch(`${BASE}/vendors/me/quotes/${id}`, { method: 'PATCH', headers: authHeaders(token), body: JSON.stringify({ status }) });
+      const d = await r.json();
+      if (r.ok) setQuotes(d.quotes);
+    } catch {}
+  };
 
   // Milestone tracking (localStorage)
   const MILESTONE_KEY = `tendr_milestone_${vendorId||'v'}`;
@@ -1621,6 +1741,28 @@ export default function VendorDashboard() {
   };
 
   useEffect(() => { loadOutside(); }, [token]); // eslint-disable-line
+
+  // Load inventory, quotes, and UPI from backend on login
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${BASE}/vendors/me/inventory`, { headers: authHeaders(token) })
+      .then(r => r.ok ? r.json() : null).then(d => { if (d) setInventory(d.inventory || []); }).catch(() => {});
+    fetch(`${BASE}/vendors/me/quotes`, { headers: authHeaders(token) })
+      .then(r => r.ok ? r.json() : null).then(d => { if (d) setQuotes(d.quotes || []); }).catch(() => {});
+    fetch(`${BASE}/vendors/me/dashboard`, { headers: authHeaders(token) })
+      .then(r => r.ok ? r.json() : null).then(d => { if (d?.vendor?.upiId) setVendorUPI(d.vendor.upiId); }).catch(() => {});
+  }, [token]); // eslint-disable-line
+
+  // Lazy-load CRM clients when the tab is first opened
+  useEffect(() => {
+    if (tab !== 'clients' || !token || crmClients.length > 0) return;
+    setCrmLoading(true);
+    fetch(`${BASE}/vendors/me/clients`, { headers: authHeaders(token) })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setCrmClients(d.clients || []); })
+      .catch(() => {})
+      .finally(() => setCrmLoading(false));
+  }, [tab, token]); // eslint-disable-line
 
   useEffect(() => {
     const h = () => setIsMobile(window.innerWidth < 768);
@@ -1665,12 +1807,31 @@ export default function VendorDashboard() {
   const term          = typeConfig.term;
   const terms         = typeConfig.terms;
 
-  // Inventory helpers
-  const INV_KEY = `tendr_inv_${vendorId||'v'}`;
-  const saveInv = (items) => { setInventory(items); try { localStorage.setItem(INV_KEY, JSON.stringify(items)); } catch {} };
-  const addInvItem    = () => { if (!invForm.name.trim()) return; saveInv([...inventory, { ...invForm, qty: Number(invForm.qty)||1, id: Date.now().toString() }]); setInvForm({ name:'', qty:'1', unit:'', category:'', condition:'Good', notes:'' }); setInvModal(false); };
-  const removeInvItem = (id) => saveInv(inventory.filter(i => i.id !== id));
-  const updateInvCond = (id, condition) => saveInv(inventory.map(i => i.id === id ? {...i, condition} : i));
+  // Inventory helpers (backend-persisted)
+  const addInvItem = async () => {
+    if (!invForm.name.trim()) return;
+    try {
+      const payload = { ...invForm, qty: Number(invForm.qty)||1, id: Date.now().toString() };
+      const r = await fetch(`${BASE}/vendors/me/inventory`, { method: 'POST', headers: authHeaders(token), body: JSON.stringify(payload) });
+      const d = await r.json();
+      if (r.ok) { setInventory(d.inventory); setInvForm({ name:'', qty:'1', unit:'', category:'', condition:'Good', notes:'' }); setInvModal(false); }
+      else showToast(d.error || 'Failed to add item', false);
+    } catch { showToast('Failed to add item', false); }
+  };
+  const removeInvItem = async (id) => {
+    try {
+      const r = await fetch(`${BASE}/vendors/me/inventory/${id}`, { method: 'DELETE', headers: authHeaders(token) });
+      const d = await r.json();
+      if (r.ok) setInventory(d.inventory);
+    } catch {}
+  };
+  const updateInvCond = async (id, condition) => {
+    try {
+      const r = await fetch(`${BASE}/vendors/me/inventory/${id}`, { method: 'PATCH', headers: authHeaders(token), body: JSON.stringify({ condition }) });
+      const d = await r.json();
+      if (r.ok) setInventory(d.inventory);
+    } catch {}
+  };
 
   // Fetch photo count + media links when My Page tab is active
   useEffect(() => {
@@ -1844,6 +2005,7 @@ export default function VendorDashboard() {
     { key: 'performance', label: t('navStats'),                                       icon: dsic(<><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>) },
     { key: 'inventory',   label: typeConfig.invLabel,                                 icon: dsic(<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>) },
     { key: 'profile',     label: t('navPage'),                                        icon: dsic(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>) },
+    { key: 'clients',     label: t('navClients'),                                     icon: dsic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>) },
     { key: 'calendar',    label: t('navAvail'),                                       icon: dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>) },
   ];
   const sideW = 220;
@@ -1915,6 +2077,8 @@ export default function VendorDashboard() {
             {tab==='inventory' && <button onClick={() => setInvModal(true)}  style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>{t('addItem')}</button>}
             {tab==='profile'   && <button onClick={() => { navigator.clipboard?.writeText(`${window.location.origin}/vendor/${vendorId}`).then(() => showToast(t('profileLinkCopied'))); }}
               style={{ padding:'7px 14px', borderRadius:9, border:`1.5px solid ${gold}`, background:'transparent', color:gold, fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>{t('copyLink')}</button>}
+            {tab==='profile'   && <button onClick={() => { navigator.clipboard?.writeText(`${window.location.origin}/vendor/${vendorId}?src=direct`).then(() => showToast(t('directLinkCopied'))); }}
+              style={{ padding:'7px 14px', borderRadius:9, border:`1.5px solid ${gold}`, background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>{t('copyDirectLink')}</button>}
             <div ref={profileRef} style={{ position:'relative' }}>
               <button onClick={() => setProfileOpen(p => !p)} style={{ width:34, height:34, borderRadius:'50%', background:`linear-gradient(135deg,${gold},${goldLt})`, border:'none', color:'#fff', fontWeight:800, fontSize:14, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>{initial}</button>
               {profileOpen && (
@@ -2388,7 +2552,7 @@ export default function VendorDashboard() {
                     <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
                       {visibleOutside.map(o => (
                         <div key={o._id} style={{ outline:gigConflicts.has(o._id)?'2px solid #DC2626':'none', borderRadius:14 }}>
-                          <OutsideOrderCard order={o} onEdit={setModal} onDelete={deleteOrder} onStatus={setOrderStatus} onRequestPayment={setPayReqModal} vendorName={vendorName} profileUrl={`${window.location.origin}/vendor/${vendorId}`} />
+                          <OutsideOrderCard order={o} onEdit={setModal} onDelete={deleteOrder} onStatus={setOrderStatus} onRequestPayment={setPayReqModal} vendorName={vendorName} profileUrl={`${window.location.origin}/vendor/${vendorId}`} token={token} />
                         </div>
                       ))}
                     </div>
@@ -2851,8 +3015,33 @@ export default function VendorDashboard() {
           {tab === 'inventory' && (() => {
             const grouped = INV_CATS.reduce((acc,cat) => { acc[cat]=inventory.filter(i=>i.category===cat); return acc; }, {});
             const uncategorized = inventory.filter(i => !i.category||!INV_CATS.includes(i.category));
+            const needsService = inventory.filter(i => i.condition === 'Needs Service');
+            const outOfOrder   = inventory.filter(i => i.condition === 'Out of Order');
             return (
               <div>
+                {/* Condition alert banner */}
+                {(outOfOrder.length > 0 || needsService.length > 0) && (
+                  <div style={{ marginBottom:16, borderRadius:14, overflow:'hidden' }}>
+                    {outOfOrder.length > 0 && (
+                      <div style={{ background:'rgba(220,38,38,0.07)', border:'1.5px solid rgba(220,38,38,0.25)', borderRadius:12, padding:'10px 14px', marginBottom:8, display:'flex', alignItems:'flex-start', gap:10 }}>
+                        <span style={{ fontSize:16, flexShrink:0 }}>🔴</span>
+                        <div>
+                          <div style={{ fontSize:13, fontWeight:700, color:'#DC2626', marginBottom:2 }}>Out of Order — needs repair before next gig</div>
+                          <div style={{ fontSize:12, color:'#991B1B' }}>{outOfOrder.map(i => i.name).join(' · ')}</div>
+                        </div>
+                      </div>
+                    )}
+                    {needsService.length > 0 && (
+                      <div style={{ background:'rgba(217,119,6,0.07)', border:'1.5px solid rgba(217,119,6,0.25)', borderRadius:12, padding:'10px 14px', display:'flex', alignItems:'flex-start', gap:10 }}>
+                        <span style={{ fontSize:16, flexShrink:0 }}>🟡</span>
+                        <div>
+                          <div style={{ fontSize:13, fontWeight:700, color:'#D97706', marginBottom:2 }}>Needs Service — schedule maintenance soon</div>
+                          <div style={{ fontSize:12, color:'#92400E' }}>{needsService.map(i => i.name).join(' · ')}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div style={{ display:'flex', gap:12, marginBottom:20, flexWrap:'wrap' }}>
                   <Stat label={`Total ${typeConfig.invLabel}`} value={inventory.length} sub="in stock" icon={dsic(<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>)} />
                   <Stat label="Need Service" value={inventory.filter(i=>i.condition==='Needs Service').length} sub="check soon" icon={dsic(<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>)} accent="rgba(217,119,6,0.1)" />
@@ -3148,6 +3337,92 @@ export default function VendorDashboard() {
                   <div style={{ fontSize:12, color:'#9B7450', marginBottom:12 }}>Customers who book you through Tendr can leave reviews visible on your profile.</div>
                   <a href={profileUrl} target="_blank" rel="noopener noreferrer" style={{ display:'inline-block', padding:'9px 16px', borderRadius:10, border:`1.5px solid ${gold}`, color:gold, fontFamily:font, fontSize:13, fontWeight:700, textDecoration:'none' }}>View Public Profile →</a>
                 </div>
+              </div>
+            );
+          })()}
+
+          {/* ── CLIENT CRM ── */}
+          {tab === 'clients' && (() => {
+            const fmtAmt = n => n > 0 ? `₹${n.toLocaleString('en-IN')}` : '₹0';
+            const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '—';
+            const pending = (c) => Math.max(0, (c.totalAmount||0) - (c.paidAmount||0));
+            return (
+              <div>
+                <div style={{ fontSize:13, color:'#9B7450', marginBottom:16 }}>
+                  {crmClients.length > 0
+                    ? `${crmClients.length} client${crmClients.length!==1?'s':''} · ${crmClients.reduce((s,c)=>s+(c.bookingCount||0),0)} total bookings`
+                    : t('crmEmpty')}
+                </div>
+
+                {crmLoading && (
+                  <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                    {[1,2,3].map(i => (
+                      <div key={i} style={{ height:96, borderRadius:16, background:'linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)', backgroundSize:'200% 100%', animation:'shimmer 1.4s infinite' }} />
+                    ))}
+                  </div>
+                )}
+
+                {!crmLoading && crmClients.length === 0 && (
+                  <div style={{ textAlign:'center', padding:'48px 24px', background:'#fff', borderRadius:18, border:'1px solid rgba(196,122,46,0.1)' }}>
+                    <div style={{ fontSize:36, marginBottom:10 }}>👥</div>
+                    <div style={{ fontSize:15, fontWeight:700, color:ink, marginBottom:6 }}>No clients yet</div>
+                    <div style={{ fontSize:13, color:'#9B7450' }}>Log your first outside booking — your clients will appear here automatically.</div>
+                  </div>
+                )}
+
+                {!crmLoading && crmClients.length > 0 && (
+                  <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                    {crmClients.map((c, i) => {
+                      const initial = (c.clientName || '?').charAt(0).toUpperCase();
+                      const isRepeat = (c.bookingCount || 0) > 1;
+                      const pend = pending(c);
+                      const types = (c.eventTypes || []).filter(Boolean).slice(0, 3).join(', ');
+                      return (
+                        <div key={i} style={{ background:'#fff', borderRadius:16, border:'1px solid rgba(196,122,46,0.12)', padding:'14px 16px', display:'flex', gap:14, alignItems:'flex-start' }}>
+                          {/* Avatar */}
+                          <div style={{ width:44, height:44, borderRadius:'50%', background:`linear-gradient(135deg,${gold},${goldLt})`, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:18, flexShrink:0 }}>{initial}</div>
+                          {/* Info */}
+                          <div style={{ flex:1, minWidth:0 }}>
+                            <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap', marginBottom:2 }}>
+                              <span style={{ fontSize:14.5, fontWeight:800, color:ink }}>{c.clientName || 'Unknown'}</span>
+                              {isRepeat && <span style={{ fontSize:10, fontWeight:700, color:gold, background:'rgba(196,122,46,0.1)', borderRadius:6, padding:'2px 7px' }}>{t('crmRepeat')}</span>}
+                              <span style={{ fontSize:11, color:'#9B7450', marginLeft:'auto' }}>{c.bookingCount} {t('crmBookings')}</span>
+                            </div>
+                            {types && <div style={{ fontSize:12, color:'#9B7450', marginBottom:6 }}>{types}</div>}
+                            <div style={{ display:'flex', gap:16, flexWrap:'wrap' }}>
+                              <div>
+                                <div style={{ fontSize:10, color:'#BDA282', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.04em' }}>{t('crmTotal')}</div>
+                                <div style={{ fontSize:14, fontWeight:700, color:ink }}>{fmtAmt(c.totalAmount)}</div>
+                              </div>
+                              <div>
+                                <div style={{ fontSize:10, color:'#BDA282', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.04em' }}>{t('crmPaid')}</div>
+                                <div style={{ fontSize:14, fontWeight:700, color:'#16A34A' }}>{fmtAmt(c.paidAmount)}</div>
+                              </div>
+                              {pend > 0 && (
+                                <div>
+                                  <div style={{ fontSize:10, color:'#BDA282', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.04em' }}>{t('crmPending')}</div>
+                                  <div style={{ fontSize:14, fontWeight:700, color:'#DC2626' }}>{fmtAmt(pend)}</div>
+                                </div>
+                              )}
+                              <div>
+                                <div style={{ fontSize:10, color:'#BDA282', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.04em' }}>{t('crmLastEvent')}</div>
+                                <div style={{ fontSize:12, fontWeight:600, color:'#6B3A1F' }}>{fmtDate(c.lastEventDate)}</div>
+                              </div>
+                            </div>
+                          </div>
+                          {/* WhatsApp quick action */}
+                          {c.clientPhone && (
+                            <a href={`https://wa.me/91${c.clientPhone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hi ${c.clientName || 'there'}, following up from Tendr!`)}`}
+                              target="_blank" rel="noopener noreferrer"
+                              style={{ flexShrink:0, padding:'7px 10px', borderRadius:9, background:'#25D366', color:'#fff', fontSize:11, fontWeight:700, textDecoration:'none', display:'flex', alignItems:'center', gap:4 }}>
+                              WA
+                            </a>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })()}

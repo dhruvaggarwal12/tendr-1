@@ -146,6 +146,8 @@ const PaymentFailedPage   = lazy(() => import('./pages/booking/PaymentFailedPage
 const BookingConfirmation = lazy(() => import('./pages/booking/BookingConfirmation'));
 const ReviewForm          = lazy(() => import('./pages/review/ReviewForm'));
 const FeedbackForm        = lazy(() => import('./pages/review/FeedbackForm'));
+const ContractPage        = lazy(() => import('./pages/vendor/ContractPage'));
+const RatePage            = lazy(() => import('./pages/vendor/RatePage'));
 const GuidesStore         = lazy(() => import('./pages/guides/GuidesStore'));
 const GuidePreview        = lazy(() => import('./pages/guides/GuidePreview'));
 const GuideReader         = lazy(() => import('./pages/guides/GuideReader'));
@@ -403,6 +405,14 @@ const router = createBrowserRouter([
       path: "/review",
       element: <ReviewForm />,
       errorElement: <ErrorPage />,
+    },
+    {
+      path: "/contract/:token",
+      element: <ContractPage />,
+    },
+    {
+      path: "/rate/:token",
+      element: <RatePage />,
     },
     {
       path: "/feedback",

@@ -900,10 +900,16 @@ export default function VendorChatModal() {
       if (isConcierge) {
         socketRef.current?.emit("open_conversation", { chatType: "concierge" });
       } else if (vendor?._id && vendor._id !== "concierge") {
+        const directVendorId = (() => { try { return sessionStorage.getItem('tendr_direct_vendor_id'); } catch { return null; } })();
+        const sourceType = directVendorId === String(vendor._id) ? 'vendor-direct' : 'marketplace';
+        if (sourceType === 'vendor-direct') {
+          try { sessionStorage.removeItem('tendr_direct_vendor_id'); } catch {}
+        }
         socketRef.current?.emit("open_conversation", {
           chatType: "VENDOR",
           vendorId: vendor._id,
           eventDetails: { ...reduxFormData, ...answers },
+          sourceType,
         });
       }
     };

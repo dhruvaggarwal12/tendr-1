@@ -99,6 +99,16 @@ const VendorDetailsPage = () => {
   const { id } = useParams();
   const location = useLocation();
 
+  // Detect vendor-direct link (?src=direct) — store flag so the chat modal can tag
+  // the resulting conversation as commission-free. Cleared on page unload so it
+  // only applies to the booking initiated from this specific visit.
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('src') === 'direct' && id) {
+      sessionStorage.setItem('tendr_direct_vendor_id', id);
+    }
+  }, [id, location.search]);
+
   // If navigated from listings
   const vendorFromState = location.state?.vendor;
   // Only show compare button when navigated from normal booking flow
