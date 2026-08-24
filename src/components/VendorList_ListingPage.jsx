@@ -293,14 +293,14 @@ const VendorList_ListingPage = ({
                     }}
                     style={{
                       animationDelay: `${Math.min(index, 8) * 55}ms`,
-                      background: "#FFFCF5", borderRadius: 20,
-                      border: "1.5px solid rgba(0,0,0,0.07)",
-                      boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-                      overflow: "hidden", transition: "transform 0.2s, box-shadow 0.2s",
+                      background: "#FFFCF5", borderRadius: 16,
+                      border: "1.5px solid rgba(196,122,46,0.13)",
+                      boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
+                      overflow: "hidden", transition: "transform 0.22s, box-shadow 0.22s, border-color 0.22s",
                       fontFamily: font, cursor: "pointer",
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 32px rgba(139,69,19,0.12)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(139,69,19,0.07)"; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(139,69,19,0.1)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.28)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.13)"; }}
                   >
                     {/* Image — full bleed */}
                     <div className="vendor-card-img" style={{ height: 260, overflow: "hidden", position: "relative" }}>
@@ -313,7 +313,7 @@ const VendorList_ListingPage = ({
                                 src={cardPhoto}
                                 alt={vendor.name}
                                 style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }}
-                                onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.06)")}
+                                onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.04)")}
                                 onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
                                 onError={(e) => { e.currentTarget.style.display = "none"; }}
                                 loading="lazy"
@@ -335,9 +335,9 @@ const VendorList_ListingPage = ({
                           ⭐ Top Rated
                         </div>
                       )}
-                      {/* Verified badge — always shown */}
-                      <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(196,122,46,0.88)", backdropFilter: "blur(6px)", color: "#fff", borderRadius: 100, padding: "4px 10px", fontSize: 10.5, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
-                        ✓ Verified
+                      {/* Location badge */}
+                      <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(20,10,4,0.58)", backdropFilter: "blur(8px)", color: "rgba(255,248,236,0.9)", borderRadius: 100, padding: "4px 10px", fontSize: 10, fontWeight: 600, display: "flex", alignItems: "center", gap: 4, border: "1px solid rgba(255,255,255,0.1)" }}>
+                        📍 {vendor.locations?.[0] || vendor.city || "Delhi NCR"}
                       </div>
                       {/* Mobile-only full-bleed text overlay */}
                       <div className="vendor-card-mobile-overlay" style={{
@@ -386,15 +386,30 @@ const VendorList_ListingPage = ({
                         {/* Location */}
                         {(vendor.locations?.length > 0 || vendor.city) && (
                           <div style={{ fontSize: 11, color: "#9B7450", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            📍 {vendor.locations?.length > 0 ? vendor.locations.slice(0,3).join(", ") : vendor.city}
-                            {vendor.locations?.length > 3 && ` +${vendor.locations.length - 3}`}
+                            {vendor.locations?.length > 0 ? vendor.locations.slice(0,3).join(" · ") : vendor.city}
+                            {vendor.locations?.length > 3 && ` +${vendor.locations.length - 3} more`}
+                          </div>
+                        )}
+                        {/* Rating + review count */}
+                        {rating > 0 && (
+                          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                            <span style={{ color: "#C47A2E", fontSize: 11 }}>{"★".repeat(Math.min(5, Math.round(rating)))}{"☆".repeat(Math.max(0, 5 - Math.round(rating)))}</span>
+                            <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E" }}>{Number(rating).toFixed(1)}</span>
+                            {(vendor.reviewCount > 0 || vendor.totalReviews > 0) && (
+                              <span style={{ fontSize: 11, color: "#9B7450" }}>({(vendor.reviewCount || vendor.totalReviews).toLocaleString("en-IN")} reviews)</span>
+                            )}
                           </div>
                         )}
                         {/* Price */}
-                        <div style={{ display: "flex", gap: 10, fontSize: 11.5, color: "#9B7450", flexWrap: "wrap", alignItems: "center" }}>
+                        <div style={{ display: "flex", gap: 8, fontSize: 11.5, flexWrap: "wrap", alignItems: "center" }}>
                           <span style={{ color: "#5a3a1a", fontWeight: 700 }}>
-                            {(vendor.price > 0 || vendor.startingPrice > 0) ? `Starting from ₹${Number(vendor.price || vendor.startingPrice).toLocaleString("en-IN")}` : "Starting price : Price based on request"}
+                            {(vendor.price > 0 || vendor.startingPrice > 0)
+                              ? `Starting at ₹${Number(vendor.price || vendor.startingPrice).toLocaleString("en-IN")} / event`
+                              : "Price on request"}
                           </span>
+                          {vendor.isTopRated && (
+                            <span style={{ fontSize: 10, fontWeight: 700, color: "#15803d", background: "rgba(21,128,61,0.09)", padding: "2px 8px", borderRadius: 20, border: "1px solid rgba(21,128,61,0.16)", flexShrink: 0 }}>Available</span>
+                          )}
                         </div>
                       </div>
 
@@ -402,9 +417,11 @@ const VendorList_ListingPage = ({
                       <div style={{ display: "flex", gap: 7, marginTop: 2 }}>
                         <button
                           onClick={(e) => { e.stopPropagation(); setQuickViewVendor(vendor); }}
-                          style={{ flex: 1, padding: "9px 6px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}
+                          style={{ flex: 1, padding: "9px 6px", borderRadius: 9, border: "1.5px solid #C47A2E", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, fontFamily: font, cursor: "pointer", transition: "all 0.18s" }}
+                          onMouseEnter={(e) => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#C47A2E"; }}
                         >
-                          Quick View
+                          View Profile
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); onToggleCompare?.(vendor); }}

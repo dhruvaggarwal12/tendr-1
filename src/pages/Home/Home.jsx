@@ -1937,7 +1937,7 @@ const Home = () => {
                 <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,4vw,3.2rem)", fontWeight: 300, color: "#FFF8EC", margin: "0 0 12px", letterSpacing: "0.02em", fontStyle: "italic", lineHeight: 1.05 }}>
                   Wedding Stationeries
                 </h2>
-                <p style={{ fontSize: 14, color: "rgba(255,248,236,0.5)", margin: "0 auto 24px", maxWidth: 400, lineHeight: 1.65 }}>
+                <p style={{ fontSize: 14, color: "rgba(255,248,236,0.72)", margin: "0 auto 24px", maxWidth: 400, lineHeight: 1.65 }}>
                   Fully personalised for your wedding — invitations, itineraries, thank you cards and more.
                 </p>
                 <button
@@ -1978,9 +1978,9 @@ const Home = () => {
 
                     {/* Content bottom */}
                     <div style={{ position: "relative", zIndex: 2, padding: "0 20px 22px" }}>
-                      <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", marginBottom: 5 }}>{cat.sub}</div>
+                      <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.62)", marginBottom: 5 }}>{cat.sub}</div>
                       <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 23, fontWeight: 400, color: "#fff", lineHeight: 1.15, marginBottom: 7 }}>{cat.label}</div>
-                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginBottom: 12 }}>{cat.desc}</div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.68)", lineHeight: 1.4, marginBottom: 12 }}>{cat.desc}</div>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                         <div style={{ fontSize: 13, fontWeight: 600, color: "#CCAB4A" }}>{cat.from}</div>
                         <div style={{ fontSize: 10, fontWeight: 500, color: "rgba(255,255,255,0.55)", letterSpacing: "0.06em" }}>EXPLORE →</div>

@@ -286,51 +286,42 @@ const Navbar = ({
         { id: "Caterer",      label: "Caterer",      href: "/search?categories=Caterer" },
         { id: "Photographer", label: "Photographer", href: "/search?categories=Photographer" },
         { id: "DJ",           label: "DJ",           href: "/search?categories=DJ" },
+        { id: "Band",         label: "Band",         href: "/search?categories=Band" },
+        { id: "Emcee",        label: "Emcee / Host", href: "/search?categories=Emcee" },
       ],
       sideItems: [
+        { label: "Top Rated Vendors",  href: "/search?sort=topRated" },
         { label: "Register as Vendor", href: "/vendor/register" },
       ],
     },
     {
       label: "Our Products",
       items: [
-        { label: "Gift Hampers", href: "/gift-hampers-cakes" },
+        { label: "Gift Hampers",        href: "/gift-hampers-cakes" },
         { label: "Stationery by Tendr", href: "/stationery" },
-        { label: "Fun Activities",       href: "/fun-activities" },
+        { label: "Fun Activities",      href: "/fun-activities" },
       ],
     },
     {
-      label: "Tools",
+      label: "Plan",
+      items: [
+        { label: "You Do It",           href: "/booking" },
+        { label: "Smart Planner",       href: "/booking" },
+        { label: "Baat Karo",           href: "/baat-karo" },
+        { label: "🎉 Plan by Occasion", onClick: () => { navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 120); } },
+      ],
+    },
+    {
+      label: "More",
       items: [
         { label: "Plan My Event",      href: "/plan" },
-        { label: "Timeline",           href: "/timeline-picker" },
+        { label: "Planning Timeline",  href: "/timeline-picker" },
         { label: "Budget Allocator",   href: "/budget-picker" },
-        { label: "Equipment Planner",  href: "/equipment-list" },
-        { label: "Invitation Builder", href: "/invitation-builder" },
         { label: "Find by Style",      href: "/find-by-style" },
-      ],
-    },
-    {
-      label: "Tips by Tendr",
-      items: [
-        { label: "Community",   href: "/community" },
-        { label: "Guide Store", href: "/guides" },
-      ],
-    },
-    {
-      label: "Booking",
-      items: [
-        { label: "You Do It",          href: "/booking" },
-        { label: "Smart Planner",      href: "/booking" },
-        { label: "Baat Karo",          href: "/baat-karo" },
-        { label: "Plan by Occasion", onClick: () => { navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 120); } },
-      ],
-    },
-    {
-      label: "Company",
-      items: [
-        { label: "About Us",   href: "/about-us" },
-        { label: "Contact Us", href: "/contact-us" },
+        { label: "Community",          href: "/community" },
+        { label: "Guide Store",        href: "/guides" },
+        { label: "About Us",           href: "/about-us" },
+        { label: "Contact Us",         href: "/contact-us" },
       ],
     },
   ];
@@ -481,7 +472,7 @@ const Navbar = ({
               ) : (
               <div
                 key={group.label}
-                data-tour={group.label === "Browse" ? "nav-browse" : group.label === "Our Products" ? "nav-products" : group.label === "Booking" ? "nav-booking" : group.label === "Tools" ? "nav-tools" : group.label === "Tips by Tendr" ? "nav-tips" : group.label === "Community" ? "nav-community" : group.label === "Company" ? "nav-company" : undefined}
+                data-tour={group.label === "Browse" ? "nav-browse" : group.label === "Our Products" ? "nav-products" : group.label === "Plan" ? "nav-booking" : group.label === "More" ? "nav-more" : undefined}
                 style={{ position: "relative" }}
                 onMouseEnter={() => setActiveDropdown(group.label)}
                 onMouseLeave={() => setActiveDropdown(null)}
@@ -726,10 +717,16 @@ const Navbar = ({
                 )}
               </div>
             ) : (
-              <a href="/login" data-tour="signin-btn" style={{ fontSize: 15, fontWeight: 700, color: "#fff", padding: "10px 22px", borderRadius: 9, textDecoration: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", boxShadow: "0 3px 12px rgba(196,122,46,0.35)", transition: "opacity 0.2s", whiteSpace: "nowrap" }}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
-                onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-              >Sign In</a>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <a href="/vendor/register" style={{ fontSize: 13, fontWeight: 600, color: "#C47A2E", padding: "9px 16px", borderRadius: 9, textDecoration: "none", border: "1.5px solid rgba(196,122,46,0.32)", background: "transparent", transition: "all 0.18s", whiteSpace: "nowrap", fontFamily: font }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "#C47A2E"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.32)"; }}
+                >List Your Service</a>
+                <a href="/login" data-tour="signin-btn" style={{ fontSize: 13, fontWeight: 700, color: "#fff", padding: "9px 20px", borderRadius: 9, textDecoration: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", boxShadow: "0 3px 12px rgba(196,122,46,0.3)", transition: "opacity 0.2s", whiteSpace: "nowrap", fontFamily: font }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                >Sign In</a>
+              </div>
             )}
             {/* My Event / Plan icon — desktop only */}
             <PlanIconButton />
