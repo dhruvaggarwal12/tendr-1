@@ -312,13 +312,6 @@ const Navbar = ({
       ],
     },
     {
-      label: "Tips by Tendr",
-      items: [
-        { label: "Community",   href: "/community" },
-        { label: "Guide Store", href: "/guides" },
-      ],
-    },
-    {
       label: "Booking",
       items: [
         { label: "You Do It",           href: "/booking" },
