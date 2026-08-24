@@ -1234,8 +1234,11 @@ export default function OccasionDetail(){
   const cardRef=useRef(null);
   const planRef=useRef(null);
 
-  const [planMode,setPlanMode]=useState(null);
-  const [step,setStep]=useState(0);
+  // Initialise from URL so ?planMode=with skips straight to step 1 without a flash of step 0
+  const _initPm = searchParams.get("planMode");
+  const _validPm = (_initPm==="with"||_initPm==="without") ? _initPm : null;
+  const [planMode,setPlanMode]=useState(_validPm);
+  const [step,setStep]=useState(_validPm ? 1 : 0);
   const [guests,setGuests]=useState(20);
   const [date,setDate]=useState("");
   const [budget,setBudget]=useState("");
@@ -1295,9 +1298,6 @@ export default function OccasionDetail(){
       const saved=JSON.parse(localStorage.getItem(PLAN_KEY)||"null");
       if(saved&&saved.step>0) setSavedPlan(saved);
     }catch{}
-    /* honour ?planMode= from home modal */
-    const pm=searchParams.get("planMode");
-    if(pm==="with"||pm==="without"){setPlanMode(pm);setStep(1);}
   },[slug]);
 
   /* save on any change */
