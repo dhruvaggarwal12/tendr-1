@@ -406,6 +406,8 @@ const Home = () => {
   const occRef = useRef(null);
   const [htwStep, setHtwStep] = useState(0);
   const [faModal, setFaModal] = useState(null);
+  const [faCarouselActive, setFaCarouselActive] = useState(0);
+  const faTouchStartX = useRef(null);
   const [vendorStripOpen, setVendorStripOpen] = useState(false);
   const [ghProducts, setGhProducts] = useState([]);
   const ghCarouselRef = useRef(null);
@@ -1612,20 +1614,20 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ── Live Entertainment Add-ons ── */}
+      {/* ── Live Entertainment Add-ons — coverflow carousel ── */}
       <section data-tour="fun-activities-section" style={{ background:"#0C0600", padding:"48px 0 52px", fontFamily:"'Outfit', sans-serif", overflow:"hidden" }}>
         <style>{`
-          .fa-strip { display:flex; gap:8px; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; padding:0 24px 4px; }
-          .fa-strip::-webkit-scrollbar { display:none; }
-          .fa-strip-card { flex:0 0 168px; height:210px; border-radius:10px; overflow:hidden; position:relative; scroll-snap-align:start; cursor:pointer; transition:transform 0.2s; }
-          .fa-strip-card:hover { transform:translateY(-3px); }
-          @media(max-width:600px){
-            .fa-strip-card { flex:0 0 138px; height:172px; }
+          .fa-cov-outer { overflow:hidden; position:relative; height:340px; }
+          .fa-cov-track { display:flex; gap:16px; align-items:center; height:100%; will-change:transform; }
+          .fa-cov-card { flex-shrink:0; width:250px; height:320px; border-radius:14px; overflow:hidden; position:relative; cursor:pointer; }
+          @media(max-width:640px){
+            .fa-cov-outer { height:272px; }
+            .fa-cov-card { width:198px; height:254px; }
           }
         `}</style>
 
-        {/* Header row */}
-        <div style={{ maxWidth:1100, margin:"0 auto", padding:"0 24px 24px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+        {/* Header */}
+        <div style={{ maxWidth:1100, margin:"0 auto", padding:"0 24px 28px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
           <div>
             <div style={{ fontSize:11, fontWeight:700, color:"rgba(196,122,46,0.65)", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:6 }}>Add-ons</div>
             <h2 style={{ fontSize:"clamp(1.5rem,2.8vw,2.1rem)", fontWeight:800, color:"#FFF8EC", margin:0, letterSpacing:"-0.02em", lineHeight:1.1 }}>
@@ -1638,45 +1640,105 @@ const Home = () => {
           </button>
         </div>
 
-        {/* Horizontal strip */}
-        <motion.div
-          className="fa-strip"
-          initial="hidden" whileInView="visible"
-          viewport={{ once:true, amount:0.1 }}
-          variants={{ hidden:{}, visible:{ transition:{ staggerChildren:0.06 } } }}
-        >
-          {FUN_ACTIVITIES.slice(0, 8).map((act, i) => (
-            <motion.div
-              key={act.id}
-              className="fa-strip-card"
-              onClick={() => setFaModal(act)}
-              variants={{ hidden:{opacity:0,x:20}, visible:{opacity:1,x:0,transition:{duration:0.35}} }}
-            >
-              <img src={act.image} alt={act.name} loading="lazy"
-                style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
-              <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(4,2,0,0.9) 0%,rgba(4,2,0,0.15) 55%,transparent 100%)" }} />
-              {i === 0 && (
-                <div style={{ position:"absolute", top:10, left:10, background:"#C47A2E", borderRadius:4, padding:"2px 8px" }}>
-                  <span style={{ fontSize:9, fontWeight:800, color:"#fff", letterSpacing:"0.1em" }}>POPULAR</span>
+        {/* Coverflow carousel */}
+        {(() => {
+          const acts = FUN_ACTIVITIES.slice(0, 8);
+          const mob = typeof window !== "undefined" && window.innerWidth < 640;
+          const CW = mob ? 198 : 250; // card width px
+          const GAP = mob ? 10 : 16;  // flex gap px
+          const step = CW + GAP;
+          // translateX so active card center sits at 50% of container
+          const trackX = `calc(50% - ${faCarouselActive * step + CW / 2}px)`;
+
+          const handlePrev = () => setFaCarouselActive(c => Math.max(c - 1, 0));
+          const handleNext = () => setFaCarouselActive(c => Math.min(c + 1, acts.length - 1));
+
+          return (
+            <>
+              <div
+                className="fa-cov-outer"
+                onTouchStart={e => { faTouchStartX.current = e.touches[0].clientX; }}
+                onTouchEnd={e => {
+                  const dx = e.changedTouches[0].clientX - (faTouchStartX.current ?? 0);
+                  if (Math.abs(dx) > 40) dx < 0 ? handleNext() : handlePrev();
+                }}
+              >
+                <div
+                  className="fa-cov-track"
+                  style={{ transform:`translateX(${trackX})`, transition:"transform 0.42s cubic-bezier(0.25,0.46,0.45,0.94)" }}
+                >
+                  {acts.map((act, i) => {
+                    const off = Math.abs(i - faCarouselActive);
+                    const scale   = [1, 0.80, 0.63, 0.50][Math.min(off, 3)];
+                    const opacity = [1, 0.72, 0.42, 0.18][Math.min(off, 3)];
+                    const isC = off === 0;
+                    return (
+                      <div
+                        key={act.id}
+                        className="fa-cov-card"
+                        onClick={() => isC ? setFaModal(act) : setFaCarouselActive(i)}
+                        style={{
+                          transform: `scale(${scale})`,
+                          opacity,
+                          transition: "transform 0.42s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.35s, box-shadow 0.35s",
+                          boxShadow: isC ? "0 24px 64px rgba(0,0,0,0.78), 0 0 0 1.5px rgba(196,122,46,0.28)" : "0 6px 20px rgba(0,0,0,0.45)",
+                          zIndex: 10 - off,
+                          position: "relative",
+                        }}
+                      >
+                        <img src={act.image} alt={act.name} loading="lazy"
+                          style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
+                        <div style={{ position:"absolute", inset:0, background: isC
+                          ? "linear-gradient(to top, rgba(4,2,0,0.95) 0%, rgba(4,2,0,0.12) 52%, transparent 100%)"
+                          : "linear-gradient(to top, rgba(4,2,0,0.82) 0%, rgba(4,2,0,0.45) 60%, rgba(4,2,0,0.22) 100%)"
+                        }} />
+                        {isC && (
+                          <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"18px 16px" }}>
+                            <div style={{ fontSize:15, fontWeight:800, color:"#FFF8EC", marginBottom:4, lineHeight:1.2 }}>{act.name}</div>
+                            <div style={{ fontSize:13, fontWeight:700, color:"#CCAB4A", marginBottom:10, fontVariantNumeric:"tabular-nums" }}>from ₹{act.price.toLocaleString()}</div>
+                            <span style={{ display:"inline-block", background:"#C47A2E", color:"#fff", fontSize:11, fontWeight:800, padding:"7px 16px", borderRadius:7, letterSpacing:"0.05em" }}>BOOK NOW</span>
+                          </div>
+                        )}
+                        {!isC && (
+                          <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"12px 13px" }}>
+                            <div style={{ fontSize:12.5, fontWeight:700, color:"rgba(255,248,236,0.9)", lineHeight:1.3 }}>{act.name}</div>
+                            <div style={{ fontSize:11, fontWeight:600, color:"rgba(204,171,74,0.75)", marginTop:2, fontVariantNumeric:"tabular-nums" }}>₹{act.price.toLocaleString()}</div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              )}
-              <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"12px 13px" }}>
-                <div style={{ fontSize:13, fontWeight:700, color:"#FFF8EC", lineHeight:1.25, marginBottom:4 }}>{act.name}</div>
-                <div style={{ fontSize:11.5, fontWeight:600, color:"#CCAB4A", fontVariantNumeric:"tabular-nums" }}>from ₹{act.price.toLocaleString()}</div>
               </div>
-            </motion.div>
-          ))}
-          {/* See all tile */}
-          <motion.div
-            variants={{ hidden:{opacity:0,x:20}, visible:{opacity:1,x:0,transition:{duration:0.35}} }}
-            onClick={() => navigate("/fun-activities")}
-            style={{ flex:"0 0 120px", height:210, borderRadius:10, border:"1px solid rgba(196,122,46,0.2)", background:"rgba(196,122,46,0.05)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", cursor:"pointer", gap:8, scrollSnapAlign:"start", transition:"background 0.18s" }}
-            className="fa-strip-card"
-          >
-            <div style={{ width:36, height:36, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.4)", display:"flex", alignItems:"center", justifyContent:"center", color:"#CCAB4A", fontSize:18 }}>→</div>
-            <span style={{ fontSize:12, fontWeight:700, color:"rgba(255,240,210,0.6)", textAlign:"center", lineHeight:1.3 }}>View all<br/>activities</span>
-          </motion.div>
-        </motion.div>
+
+              {/* Controls */}
+              <div style={{ display:"flex", justifyContent:"center", alignItems:"center", gap:14, marginTop:18, padding:"0 24px" }}>
+                <button
+                  onClick={handlePrev}
+                  disabled={faCarouselActive === 0}
+                  aria-label="Previous"
+                  style={{ width:34, height:34, borderRadius:"50%", border:"1px solid rgba(196,122,46,0.3)", background:"rgba(196,122,46,0.08)", color:"#CCAB4A", fontSize:15, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", opacity: faCarouselActive === 0 ? 0.3 : 1, transition:"opacity 0.2s", fontFamily:"inherit" }}
+                >←</button>
+                <div style={{ display:"flex", gap:5, alignItems:"center" }}>
+                  {acts.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setFaCarouselActive(i)}
+                      aria-label={`Go to ${i + 1}`}
+                      style={{ width: i === faCarouselActive ? 22 : 6, height:6, borderRadius:3, border:"none", background: i === faCarouselActive ? "#C47A2E" : "rgba(255,240,210,0.2)", cursor:"pointer", padding:0, transition:"all 0.3s cubic-bezier(0.25,0.46,0.45,0.94)" }}
+                    />
+                  ))}
+                </div>
+                <button
+                  onClick={handleNext}
+                  disabled={faCarouselActive === acts.length - 1}
+                  aria-label="Next"
+                  style={{ width:34, height:34, borderRadius:"50%", border:"1px solid rgba(196,122,46,0.3)", background:"rgba(196,122,46,0.08)", color:"#CCAB4A", fontSize:15, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", opacity: faCarouselActive === acts.length - 1 ? 0.3 : 1, transition:"opacity 0.2s", fontFamily:"inherit" }}
+                >→</button>
+              </div>
+            </>
+          );
+        })()}
       </section>
 
       {/* ── Gift Hampers ── */}
