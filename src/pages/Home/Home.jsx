@@ -746,10 +746,10 @@ const Home = () => {
       content: "Book verified vendors and plan every detail of your event in Delhi NCR — from one place.",
     },
     {
-      target: '[data-tour="hero-ctas"]',
-      placement: "bottom",
+      target: "body",
+      placement: "center",
       title: "Start here",
-      content: "'Book Vendors' goes straight to the vendor directory. 'Plan an Occasion' opens a guided flow — pick your occasion, date and budget.",
+      content: "Use 'Book Vendors' to browse the vendor directory, or hit 'Plan an Occasion' for a step-by-step flow — pick your occasion, date and budget.",
     },
     {
       target: '[data-tour="mob-nav-profile"]',
@@ -765,11 +765,10 @@ const Home = () => {
       content: "Book verified vendors and plan every detail of your celebration in Delhi NCR — from one place.",
     },
     {
-      target: '[data-tour="hero-ctas"]',
-      placement: "bottom",
-      disableScrolling: true,
+      target: "body",
+      placement: "center",
       title: "Start here",
-      content: "'Book Vendors' goes straight to the vendor directory. 'Plan an Occasion' opens a step-by-step flow — set your date, occasion type and budget.",
+      content: "Use 'Book Vendors' to browse the vendor directory, or hit 'Plan an Occasion' for a step-by-step flow — pick your occasion, date and budget.",
     },
     {
       target: '[data-tour="nav-browse"]',
@@ -1743,9 +1742,13 @@ const Home = () => {
       </section>
 
       {/* ── Gift Hampers ── */}
-      <section data-tour="gift-hampers-section" style={{ position: "relative", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif", overflow: "hidden", background: "#120800" }}>
+      <section data-tour="gift-hampers-section" style={{ position: "relative", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
+        {/* Background image */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "url('https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=1600&auto=format&q=70')", backgroundSize: "cover", backgroundPosition: "center" }} />
+        {/* Dark overlay */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(12,5,0,0.91) 0%,rgba(18,8,2,0.84) 55%,rgba(10,4,0,0.93) 100%)" }} />
         {/* Gold shimmer blobs */}
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(ellipse at 20% 50%,rgba(196,122,46,0.13),transparent 55%), radial-gradient(ellipse at 80% 30%,rgba(204,171,74,0.09),transparent 50%), radial-gradient(ellipse at 60% 80%,rgba(196,122,46,0.07),transparent 45%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 20% 40%,rgba(196,122,46,0.09),transparent 45%), radial-gradient(circle at 80% 65%,rgba(204,171,74,0.07),transparent 40%)", pointerEvents: "none" }} />
         <div style={{ maxWidth: 680, margin: "0 auto", position: "relative" }}>
           <motion.div
             initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }}
