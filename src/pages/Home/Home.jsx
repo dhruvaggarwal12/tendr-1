@@ -741,89 +741,66 @@ const Home = () => {
       target: "body",
       placement: "center",
       title: "Welcome to Tendr",
-      content: "Your one-stop shop for celebrations in Delhi NCR — book vendors, order gift hampers, add live entertainment, and plan every detail of your event.",
+      content: "Book verified vendors and plan every detail of your event in Delhi NCR — from one place.",
     },
     {
       target: '[data-tour="hero-ctas"]',
       placement: "bottom",
-      title: "Two ways to start",
-      content: "'Book Vendors' takes you straight to our vendor directory. 'Plan an Occasion' opens a guided flow — pick your date, occasion type and budget.",
+      title: "Start here",
+      content: "'Book Vendors' goes straight to the vendor directory. 'Plan an Occasion' opens a guided flow — pick your occasion, date and budget.",
     },
     {
-      target: '[data-tour="occasion-strip"]',
-      placement: "top",
-      title: "Pick your celebration",
-      content: "Scroll through Birthday, Anniversary, Baby Shower, House Party and more. Each card opens a dedicated hub with vendor ideas and packages.",
-    },
-    {
-      target: '[data-tour="efc-section"]',
-      placement: "top",
-      title: "Everything in one place",
-      content: "Event timeline, budget calculator, wedding stationeries, gift hampers, planning guides — all on Tendr, all free to explore.",
-    },
-    {
-      target: '[data-tour="fun-activities-section"]',
-      placement: "top",
-      title: "Live entertainment",
-      content: "Add a magic show, game coordinator, dhol player or photo booth to any event. Fixed prices, confirmed within 2 hours across NCR.",
-    },
-    isSignedIn ? {
       target: '[data-tour="mob-nav-profile"]',
       placement: "top",
-      title: "Your events",
-      content: "Confirmed bookings, vendor contacts and downloadable documents — all in your account.",
-    } : {
-      target: '[data-tour="mob-nav-profile"]',
-      placement: "top",
-      title: "Sign in to save",
-      content: "Sign in to confirm bookings and access your event documents anytime.",
+      title: isSignedIn ? "Your bookings" : "Sign in to save",
+      content: isSignedIn ? "View confirmed bookings and event documents from your account." : "Sign in to save vendors, confirm bookings and access your documents anytime.",
     },
   ] : [
     {
       target: "body",
       placement: "center",
       title: "Welcome to Tendr",
-      content: "Everything for your celebration in Delhi NCR — book verified vendors, order gift hampers, add live entertainment and plan every detail from one place.",
+      content: "Book verified vendors and plan every detail of your celebration in Delhi NCR — from one place.",
     },
     {
       target: '[data-tour="hero-ctas"]',
       placement: "bottom",
-      title: "Two ways to start",
-      content: "'Book Vendors' takes you straight to our vendor directory. 'Plan an Occasion' opens a guided flow — set your date, type and budget and Tendr finds the right vendors.",
+      title: "Start here",
+      content: "'Book Vendors' goes straight to the vendor directory. 'Plan an Occasion' opens a step-by-step flow — set your date, occasion type and budget.",
     },
     {
-      target: '[data-tour="occasion-strip"]',
+      target: '[data-tour="nav-browse"]',
       placement: "bottom",
-      title: "Pick your celebration",
-      content: "Birthday, Anniversary, Baby Shower, House Party and more. Each card opens a dedicated hub with curated vendor ideas, packages and inspiration.",
+      title: "Browse vendors",
+      content: "Decorators, caterers, photographers, DJs, bands and emcees — all in one place. Sort by ratings or location.",
     },
     {
-      target: '[data-tour="efc-section"]',
-      placement: "top",
-      title: "The full toolkit",
-      content: "Event timeline, budget allocator, wedding stationeries, gift hampers and planning guides. Tap any tile to go straight there.",
+      target: '[data-tour="nav-products"]',
+      placement: "bottom",
+      title: "Our products",
+      content: "Gift hampers, stationery, fun activities and party essentials — order directly through Tendr.",
     },
     {
-      target: '[data-tour="fun-activities-section"]',
-      placement: "top",
-      title: "Live entertainment",
-      content: "Magic shows, game coordinators, dhol players and more — fixed prices, confirmed within 2 hours. Add them to any event in seconds.",
+      target: '[data-tour="nav-booking"]',
+      placement: "bottom",
+      title: "Plan your event",
+      content: "Use our guided planner, smart occasion planner, or chat with our team on Baat Karo. You can also explore occasions by type.",
     },
     {
-      target: '[data-tour="gift-hampers-section"]',
-      placement: "top",
-      title: "Gift hampers delivered",
-      content: "Curated hampers for birthdays, anniversaries and corporate events. Free delivery across Delhi NCR — or build your own from scratch.",
+      target: '[data-tour="nav-more"]',
+      placement: "bottom",
+      title: "Everything else",
+      content: "Planning tools (timeline, budget, style finder), the Tendr community, our guide store, and company pages — all under More.",
     },
     isSignedIn ? {
       target: '[data-tour="profile-btn"]',
       placement: "bottom",
-      title: "Your events",
-      content: "Confirmed bookings, vendor contacts and downloadable documents — all in your account.",
+      title: "Your account",
+      content: "Confirmed bookings, vendor contacts and downloadable documents — all here.",
     } : {
       target: '[data-tour="signin-btn"]',
       placement: "bottom",
-      title: "Sign in to save",
+      title: "Sign in",
       content: "Sign in to confirm bookings and access your event documents anytime.",
     },
   ];
@@ -1634,157 +1611,164 @@ const Home = () => {
       </section>
 
       {/* ── Live Entertainment Add-ons ── */}
-      <section data-tour="fun-activities-section" style={{ background:"#0C0600", padding:"64px 0 0", fontFamily:"'Outfit', sans-serif", overflow:"hidden" }}>
+      <section data-tour="fun-activities-section" style={{ background:"#0C0600", padding:"48px 0 52px", fontFamily:"'Outfit', sans-serif", overflow:"hidden" }}>
         <style>{`
-          .fa-masonry { display:grid; grid-template-columns:2fr 1.15fr 1.15fr; grid-template-rows:220px 150px; gap:6px; }
-          .fa-feat { grid-row:1/3; }
-          .fa-card-lift { transition:filter 0.22s ease; cursor:pointer; }
-          .fa-card-lift:hover { filter:brightness(1.12); }
-          @media(max-width:768px){
-            .fa-masonry { grid-template-columns:1fr 1fr; grid-template-rows:180px 130px 130px; }
-            .fa-feat { grid-column:1/3; grid-row:1/2; }
-          }
-          @media(max-width:480px){
-            .fa-masonry { grid-template-columns:1fr 1fr; grid-template-rows:150px 110px 110px; gap:4px; }
+          .fa-strip { display:flex; gap:10px; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; padding:0 24px 4px; }
+          .fa-strip::-webkit-scrollbar { display:none; }
+          .fa-strip-card { flex:0 0 200px; height:240px; border-radius:11px; overflow:hidden; position:relative; scroll-snap-align:start; cursor:pointer; transition:transform 0.2s; }
+          .fa-strip-card:hover { transform:translateY(-3px); }
+          @media(max-width:600px){
+            .fa-strip-card { flex:0 0 160px; height:200px; }
           }
         `}</style>
 
-        {/* Header */}
-        <motion.div
-          style={{ maxWidth:1100, margin:"0 auto", padding:"0 24px 40px", display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}
-          initial={{ opacity:0, y:18 }} whileInView={{ opacity:1, y:0 }}
-          viewport={{ once:true, amount:0.3 }} transition={{ duration:0.48 }}
-        >
+        {/* Header row */}
+        <div style={{ maxWidth:1100, margin:"0 auto", padding:"0 24px 24px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
           <div>
-            <div style={{ display:"flex", alignItems:"center", gap:9, marginBottom:18 }}>
-              <div style={{ width:24, height:1.5, background:"#C47A2E", flexShrink:0 }} />
-              <span style={{ fontSize:13, fontWeight:500, color:"#C47A2E" }}>Live Entertainment</span>
-            </div>
-            <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:"clamp(2.6rem,4.5vw,4rem)", fontWeight:300, color:"#FFF8EC", margin:0, lineHeight:1.0 }}>
-              Add some <em style={{ color:"#C47A2E", fontStyle:"italic" }}>magic</em><br />to your event.
+            <div style={{ fontSize:11, fontWeight:700, color:"rgba(196,122,46,0.65)", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:6 }}>Add-ons</div>
+            <h2 style={{ fontSize:"clamp(1.5rem,2.8vw,2.1rem)", fontWeight:800, color:"#FFF8EC", margin:0, letterSpacing:"-0.02em", lineHeight:1.1 }}>
+              Live Entertainment
             </h2>
           </div>
-          <div style={{ textAlign:"right", flexShrink:0, maxWidth:230, paddingBottom:6 }}>
-            <p style={{ fontSize:13, color:"rgba(255,240,210,0.42)", margin:"0 0 14px", lineHeight:1.7 }}>
-              Fixed-price add-ons confirmed<br />within 2 hours across NCR.
-            </p>
-            <button onClick={() => navigate("/fun-activities")}
-              style={{ background:"none", border:"none", color:"#C47A2E", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"'Outfit',sans-serif", padding:0, letterSpacing:"0.03em" }}>
-              View all activities →
-            </button>
-          </div>
-        </motion.div>
+          <button onClick={() => navigate("/fun-activities")}
+            style={{ background:"rgba(196,122,46,0.1)", border:"1px solid rgba(196,122,46,0.22)", color:"#CCAB4A", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"'Outfit',sans-serif", padding:"8px 16px", borderRadius:8, letterSpacing:"0.02em", whiteSpace:"nowrap", flexShrink:0 }}>
+            See all →
+          </button>
+        </div>
 
-        {/* Masonry grid — bleeds to section edge */}
+        {/* Horizontal strip */}
         <motion.div
-          className="fa-masonry"
-          style={{ maxWidth:1100, margin:"0 auto", padding:"0 24px 72px" }}
+          className="fa-strip"
           initial="hidden" whileInView="visible"
-          viewport={{ once:true, amount:0.15 }}
-          variants={{ hidden:{}, visible:{ transition:{ staggerChildren:0.07 } } }}
+          viewport={{ once:true, amount:0.1 }}
+          variants={{ hidden:{}, visible:{ transition:{ staggerChildren:0.06 } } }}
         >
-          {/* Featured card — spans both rows */}
-          <motion.div
-            className="fa-feat fa-card-lift"
-            onClick={() => setFaModal(FUN_ACTIVITIES[0])}
-            variants={{ hidden:{opacity:0,scale:0.97}, visible:{opacity:1,scale:1,transition:{duration:0.45}} }}
-            style={{ borderRadius:12, overflow:"hidden", position:"relative" }}
-          >
-            <img src={FUN_ACTIVITIES[0].image} alt={FUN_ACTIVITIES[0].name} loading="lazy"
-              style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
-            <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(4,2,0,0.92) 0%, rgba(4,2,0,0.08) 55%, transparent 100%)" }} />
-            <div style={{ position:"absolute", top:18, left:18 }}>
-              <span style={{ fontSize:9.5, fontWeight:700, color:"#CCAB4A", letterSpacing:"0.12em", background:"rgba(8,4,0,0.65)", padding:"3px 10px", borderRadius:100 }}>FEATURED</span>
-            </div>
-            <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"24px 22px" }}>
-              <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:24, fontWeight:400, color:"#FFF8EC", lineHeight:1.2, marginBottom:7 }}>{FUN_ACTIVITIES[0].name}</div>
-              <div style={{ fontSize:12, color:"rgba(255,240,210,0.5)", lineHeight:1.55, marginBottom:14 }}>{FUN_ACTIVITIES[0].desc.slice(0,72)}{FUN_ACTIVITIES[0].desc.length>72?"…":""}</div>
-              <div style={{ fontSize:15, fontWeight:700, color:"#CCAB4A", fontVariantNumeric:"tabular-nums" }}>₹{FUN_ACTIVITIES[0].price.toLocaleString()}</div>
-            </div>
-          </motion.div>
-
-          {/* Supporting 4 cards */}
-          {FUN_ACTIVITIES.slice(1, 5).map((act) => (
+          {FUN_ACTIVITIES.slice(0, 8).map((act, i) => (
             <motion.div
               key={act.id}
-              className="fa-card-lift"
+              className="fa-strip-card"
               onClick={() => setFaModal(act)}
-              variants={{ hidden:{opacity:0,y:14}, visible:{opacity:1,y:0,transition:{duration:0.4}} }}
-              style={{ borderRadius:10, overflow:"hidden", position:"relative" }}
+              variants={{ hidden:{opacity:0,x:20}, visible:{opacity:1,x:0,transition:{duration:0.35}} }}
             >
               <img src={act.image} alt={act.name} loading="lazy"
-                style={{ width:"100%", height:"100%", objectFit:"cover", display:"block", position:"absolute", inset:0 }} />
-              <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(4,2,0,0.88) 0%, transparent 52%)" }} />
-              <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"11px 13px 13px" }}>
-                <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", gap:4 }}>
-                  <span style={{ fontSize:12.5, fontWeight:700, color:"#FFF8EC", lineHeight:1.25 }}>{act.name}</span>
-                  <span style={{ fontSize:11, fontWeight:700, color:"#CCAB4A", flexShrink:0, fontVariantNumeric:"tabular-nums" }}>₹{act.price.toLocaleString()}</span>
+                style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
+              <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(4,2,0,0.9) 0%,rgba(4,2,0,0.15) 55%,transparent 100%)" }} />
+              {i === 0 && (
+                <div style={{ position:"absolute", top:10, left:10, background:"#C47A2E", borderRadius:4, padding:"2px 8px" }}>
+                  <span style={{ fontSize:9, fontWeight:800, color:"#fff", letterSpacing:"0.1em" }}>POPULAR</span>
                 </div>
+              )}
+              <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"12px 13px" }}>
+                <div style={{ fontSize:13, fontWeight:700, color:"#FFF8EC", lineHeight:1.25, marginBottom:4 }}>{act.name}</div>
+                <div style={{ fontSize:11.5, fontWeight:600, color:"#CCAB4A", fontVariantNumeric:"tabular-nums" }}>from ₹{act.price.toLocaleString()}</div>
               </div>
             </motion.div>
           ))}
+          {/* See all tile */}
+          <motion.div
+            variants={{ hidden:{opacity:0,x:20}, visible:{opacity:1,x:0,transition:{duration:0.35}} }}
+            onClick={() => navigate("/fun-activities")}
+            style={{ flex:"0 0 140px", height:240, borderRadius:11, border:"1px solid rgba(196,122,46,0.2)", background:"rgba(196,122,46,0.05)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", cursor:"pointer", gap:8, scrollSnapAlign:"start", transition:"background 0.18s" }}
+            className="fa-strip-card"
+          >
+            <div style={{ width:36, height:36, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.4)", display:"flex", alignItems:"center", justifyContent:"center", color:"#CCAB4A", fontSize:18 }}>→</div>
+            <span style={{ fontSize:12, fontWeight:700, color:"rgba(255,240,210,0.6)", textAlign:"center", lineHeight:1.3 }}>View all<br/>activities</span>
+          </motion.div>
         </motion.div>
       </section>
 
       {/* ── Gift Hampers ── */}
-      <section data-tour="gift-hampers-section" style={{ background: "#fff", padding: "64px 24px 72px", fontFamily: "'Outfit', sans-serif" }}>
+      <section data-tour="gift-hampers-section" style={{ background: "#FFFCF5", padding: "48px 24px 56px", fontFamily: "'Outfit', sans-serif" }}>
+        <style>{`
+          .gh-strip { display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; margin:0 -24px; padding:0 24px 4px; }
+          .gh-strip::-webkit-scrollbar { display:none; }
+          .gh-tile { flex:0 0 200px; border-radius:12px; overflow:hidden; cursor:pointer; background:#fff; border:1.5px solid rgba(196,122,46,0.1); scroll-snap-align:start; transition:border-color 0.18s, box-shadow 0.18s; }
+          .gh-tile:hover { border-color:rgba(196,122,46,0.3); box-shadow:0 6px 20px rgba(139,69,19,0.09); }
+          @media(max-width:600px){ .gh-tile { flex:0 0 160px; } }
+        `}</style>
         <div style={{ maxWidth: 1060, margin: "0 auto" }}>
+          {/* Header */}
           <motion.div
-            className="gh-band"
-            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center" }}
-            initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+            style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:22 }}
+            initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.42 }}
           >
-            {/* Left: two-image collage */}
-            <div style={{ display: "grid", gridTemplateRows: "1fr auto", gap: 10, height: "100%" }}>
-              <div style={{ position: "relative", borderRadius: 12, overflow: "hidden", minHeight: 220 }}>
-                <img
-                  src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=700&q=80"
-                  alt="Curated gift hamper"
-                  loading="lazy"
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", position: "absolute", inset: 0 }}
-                />
-                <div style={{ position: "absolute", bottom: 14, left: 14, background: "rgba(12,6,0,0.78)", backdropFilter: "blur(8px)", borderRadius: 6, padding: "5px 12px" }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: "#CCAB4A", letterSpacing: "0.04em" }}>Free delivery · Delhi NCR</span>
-                </div>
-              </div>
-              <div style={{ borderRadius: 10, overflow: "hidden", height: 90 }}>
-                <img
-                  src="https://images.unsplash.com/photo-1607082349566-187342175e2f?w=700&q=80"
-                  alt="Gift hamper assortment"
-                  loading="lazy"
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                />
-              </div>
-            </div>
-
-            {/* Right: copy */}
             <div>
-              <div style={{ display:"flex", alignItems:"center", gap:9, margin:"0 0 18px" }}>
-                <div style={{ width:24, height:1.5, background:"#C47A2E", flexShrink:0 }} />
-                <span style={{ fontSize:13, fontWeight:500, color:"#C47A2E" }}>Gift Hampers</span>
-              </div>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.9rem,3vw,2.7rem)", fontWeight: 500, color: "#1C0E04", margin: "0 0 18px", lineHeight: 1.1, letterSpacing: "-0.01em" }}>
-                The perfect gift,<br />delivered.
+              <div style={{ fontSize:11, fontWeight:700, color:"rgba(196,122,46,0.65)", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:6 }}>Free delivery · Delhi NCR</div>
+              <h2 style={{ fontSize:"clamp(1.4rem,2.5vw,2rem)", fontWeight:800, color:"#1C0E04", margin:0, letterSpacing:"-0.02em", lineHeight:1.1 }}>
+                Gift Hampers
               </h2>
-              <p style={{ fontSize: 15, color: "#7A5535", margin: "0 0 32px", lineHeight: 1.72, maxWidth: 380 }}>
-                Curated hampers for birthdays, anniversaries and corporate celebrations — delivered across Delhi NCR.
-              </p>
-              <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
-                <button
-                  onClick={() => navigate("/gift-hampers-cakes")}
-                  style={{ background: "#C47A2E", color: "#fff", fontSize: 14, fontWeight: 600, padding: "12px 26px", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}
-                >Browse Hampers →</button>
-                <button onClick={() => navigate("/hamper-builder")}
-                  style={{ background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, padding: 0, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", textDecoration: "underline", textDecorationColor: "rgba(155,116,80,0.4)", textUnderlineOffset: "3px" }}>
-                  Build your own
-                </button>
-              </div>
+            </div>
+            <div style={{ display:"flex", gap:10, flexShrink:0 }}>
+              <button onClick={() => navigate("/hamper-builder")}
+                style={{ background:"transparent", border:"1.5px solid rgba(196,122,46,0.28)", color:"#C47A2E", fontSize:12, fontWeight:700, padding:"8px 14px", borderRadius:8, cursor:"pointer", fontFamily:"'Outfit',sans-serif", whiteSpace:"nowrap" }}>
+                Build your own
+              </button>
+              <button onClick={() => navigate("/gift-hampers-cakes")}
+                style={{ background:"#C47A2E", border:"none", color:"#fff", fontSize:12, fontWeight:700, padding:"8px 16px", borderRadius:8, cursor:"pointer", fontFamily:"'Outfit',sans-serif", whiteSpace:"nowrap" }}>
+                Browse all →
+              </button>
             </div>
           </motion.div>
+
+          {/* Occasion chips */}
+          <div style={{ display:"flex", gap:8, marginBottom:18, flexWrap:"wrap" }}>
+            {["Birthday","Anniversary","Corporate","Baby Shower","Thank You"].map(tag => (
+              <button key={tag} onClick={() => navigate(`/gift-hampers-cakes?occasion=${encodeURIComponent(tag)}`)}
+                style={{ padding:"5px 14px", borderRadius:100, border:"1.5px solid rgba(196,122,46,0.2)", background:"transparent", color:"#7A5535", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"'Outfit',sans-serif", transition:"all 0.15s" }}
+                onMouseEnter={e => { e.currentTarget.style.background="#C47A2E"; e.currentTarget.style.color="#fff"; e.currentTarget.style.borderColor="#C47A2E"; }}
+                onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color="#7A5535"; e.currentTarget.style.borderColor="rgba(196,122,46,0.2)"; }}
+              >{tag}</button>
+            ))}
+          </div>
+
+          {/* Hamper strip */}
+          <motion.div
+            className="gh-strip"
+            initial="hidden" whileInView="visible"
+            viewport={{ once:true, amount:0.1 }}
+            variants={{ hidden:{}, visible:{ transition:{ staggerChildren:0.06 } } }}
+          >
+            {[
+              { label:"Birthday Box", emoji:"🎂", from:"₹999", tag:"Bestseller" },
+              { label:"Anniversary Set", emoji:"💛", from:"₹1,499", tag:null },
+              { label:"Corporate Gift", emoji:"🏆", from:"₹1,799", tag:"Bulk discounts" },
+              { label:"Baby Welcome", emoji:"🍼", from:"₹1,299", tag:null },
+              { label:"Festive Hamper", emoji:"🪔", from:"₹1,199", tag:null },
+              { label:"Thank You Box", emoji:"🌸", from:"₹799", tag:null },
+            ].map((h, i) => (
+              <motion.div
+                key={h.label}
+                className="gh-tile"
+                onClick={() => navigate("/gift-hampers-cakes")}
+                variants={{ hidden:{opacity:0,x:18}, visible:{opacity:1,x:0,transition:{duration:0.32}} }}
+              >
+                <div style={{ height:130, background:`hsl(${30+i*12},${55-i*4}%,${88-i*3}%)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:44, position:"relative" }}>
+                  {h.emoji}
+                  {h.tag && (
+                    <div style={{ position:"absolute", top:8, left:8, background:"#C47A2E", borderRadius:4, padding:"2px 8px" }}>
+                      <span style={{ fontSize:9, fontWeight:800, color:"#fff", letterSpacing:"0.06em" }}>{h.tag.toUpperCase()}</span>
+                    </div>
+                  )}
+                </div>
+                <div style={{ padding:"10px 12px 13px" }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:"#1C0E04", marginBottom:3, lineHeight:1.3 }}>{h.label}</div>
+                  <div style={{ fontSize:12, color:"#C47A2E", fontWeight:600 }}>from {h.from}</div>
+                </div>
+              </motion.div>
+            ))}
+            {/* Build your own tile */}
+            <motion.div
+              className="gh-tile"
+              onClick={() => navigate("/hamper-builder")}
+              variants={{ hidden:{opacity:0,x:18}, visible:{opacity:1,x:0,transition:{duration:0.32}} }}
+              style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:8, border:"1.5px dashed rgba(196,122,46,0.25)", background:"rgba(196,122,46,0.03)" }}
+            >
+              <div style={{ fontSize:28 }}>✨</div>
+              <div style={{ fontSize:12, fontWeight:700, color:"#9B7450", textAlign:"center", lineHeight:1.4 }}>Build<br/>your own</div>
+            </motion.div>
+          </motion.div>
         </div>
-        <style>{`@media (max-width: 680px) { .gh-band { grid-template-columns: 1fr !important; gap: 28px !important; } }`}</style>
       </section>
 
       {/* ── Trust bar ── */}
@@ -2122,7 +2106,7 @@ const Home = () => {
 
 
       {/* ── Party Places ── */}
-      <section style={{ background: "#FFFCF5", padding: "48px 24px 56px", fontFamily: "'Outfit', sans-serif" }}>
+      <section style={{ background: "#FFFCF5", padding: "32px 24px 40px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1060, margin: "0 auto" }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -2165,7 +2149,7 @@ const Home = () => {
               className="pp-featured"
               variants={{ hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 280, damping: 26 } } }}
               onClick={() => navigate(`/party-places/${PARTY_PLACES[0].id}`)}
-              style={{ gridRow: "span 2", borderRadius: 13, overflow: "hidden", cursor: "pointer", position: "relative", minHeight: 360 }}
+              style={{ gridRow: "span 2", borderRadius: 13, overflow: "hidden", cursor: "pointer", position: "relative", minHeight: 250 }}
               whileHover={{ scale: 1.012, transition: { type: "spring", stiffness: 340, damping: 28 } }}
             >
               <img src={PARTY_PLACES[0].coverPhoto} alt={PARTY_PLACES[0].name} loading="lazy"
@@ -2196,7 +2180,7 @@ const Home = () => {
                 style={{ borderRadius: 13, overflow: "hidden", background: "#fff", cursor: "pointer", boxShadow: "0 2px 10px rgba(139,69,19,0.07)" }}
                 whileHover={{ y: -3, transition: { type: "spring", stiffness: 340, damping: 26 } }}
               >
-                <div style={{ position: "relative", paddingBottom: "54%" }}>
+                <div style={{ position: "relative", paddingBottom: "42%" }}>
                   <img src={place.coverPhoto} alt={place.name} loading="lazy"
                     style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
                   <div style={{ position: "absolute", top: 10, left: 10, background: "rgba(28,14,4,0.62)", backdropFilter: "blur(6px)", borderRadius: 100, padding: "3px 10px" }}>
@@ -2218,7 +2202,7 @@ const Home = () => {
             ))}
           </motion.div>
           <style>{`
-            .pp-featured { min-height: 360px !important; }
+            .pp-featured { min-height: 250px !important; }
             @media (max-width: 640px) {
               .party-places-grid { display: flex !important; overflow-x: auto !important; scroll-snap-type: x mandatory !important; gap: 14px !important; padding-bottom: 12px !important; margin: 0 -24px !important; padding-left: 24px !important; scrollbar-width: none; grid-template-rows: unset !important; }
               .party-places-grid::-webkit-scrollbar { display: none; }
