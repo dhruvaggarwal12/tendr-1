@@ -303,7 +303,23 @@ const Navbar = ({
       ],
     },
     {
-      label: "Plan",
+      label: "Tools",
+      items: [
+        { label: "Plan My Event",      href: "/plan" },
+        { label: "Planning Timeline",  href: "/timeline-picker" },
+        { label: "Budget Allocator",   href: "/budget-picker" },
+        { label: "Find by Style",      href: "/find-by-style" },
+      ],
+    },
+    {
+      label: "Tips by Tendr",
+      items: [
+        { label: "Community",   href: "/community" },
+        { label: "Guide Store", href: "/guides" },
+      ],
+    },
+    {
+      label: "Booking",
       items: [
         { label: "You Do It",           href: "/booking" },
         { label: "Smart Planner",       href: "/booking" },
@@ -312,16 +328,10 @@ const Navbar = ({
       ],
     },
     {
-      label: "More",
+      label: "Company",
       items: [
-        { label: "Plan My Event",      href: "/plan" },
-        { label: "Planning Timeline",  href: "/timeline-picker" },
-        { label: "Budget Allocator",   href: "/budget-picker" },
-        { label: "Find by Style",      href: "/find-by-style" },
-        { label: "Community",          href: "/community" },
-        { label: "Guide Store",        href: "/guides" },
-        { label: "About Us",           href: "/about-us" },
-        { label: "Contact Us",         href: "/contact-us" },
+        { label: "About Us",   href: "/about-us" },
+        { label: "Contact Us", href: "/contact-us" },
       ],
     },
   ];
@@ -472,7 +482,7 @@ const Navbar = ({
               ) : (
               <div
                 key={group.label}
-                data-tour={group.label === "Browse" ? "nav-browse" : group.label === "Our Products" ? "nav-products" : group.label === "Plan" ? "nav-booking" : group.label === "More" ? "nav-more" : undefined}
+                data-tour={group.label === "Browse" ? "nav-browse" : group.label === "Our Products" ? "nav-products" : group.label === "Booking" ? "nav-booking" : group.label === "Tools" ? "nav-tools" : undefined}
                 style={{ position: "relative" }}
                 onMouseEnter={() => setActiveDropdown(group.label)}
                 onMouseLeave={() => setActiveDropdown(null)}

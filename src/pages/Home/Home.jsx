@@ -1166,15 +1166,17 @@ const Home = () => {
         @media (max-width: 900px) {
           .hero-mobile-photo-bg { display: block !important; }
           .hero-mobile-photo-overlay { display: block !important; }
-          .hero-section-wrap { height: auto !important; min-height: 100dvh !important; position: relative !important; }
+          .hero-section-wrap { height: auto !important; min-height: 100svh !important; position: relative !important; }
           .hero-split { flex-direction: column !important; }
           .hero-split > div:first-child {
             flex: 1 !important;
-            padding: 28px 24px 40px !important;
+            padding: 36px 24px 52px !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: center !important;
           }
+          .home-hero-h1 { font-size: clamp(2.1rem, 7.5vw, 2.8rem) !important; }
+          .home-hero-para { font-size: 14px !important; }
           .hero-split > div:last-child { display: none !important; }
           .hero-mobile-cats {
             display: flex !important;
@@ -1613,12 +1615,12 @@ const Home = () => {
       {/* ── Live Entertainment Add-ons ── */}
       <section data-tour="fun-activities-section" style={{ background:"#0C0600", padding:"48px 0 52px", fontFamily:"'Outfit', sans-serif", overflow:"hidden" }}>
         <style>{`
-          .fa-strip { display:flex; gap:10px; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; padding:0 24px 4px; }
+          .fa-strip { display:flex; gap:8px; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; padding:0 24px 4px; }
           .fa-strip::-webkit-scrollbar { display:none; }
-          .fa-strip-card { flex:0 0 200px; height:240px; border-radius:11px; overflow:hidden; position:relative; scroll-snap-align:start; cursor:pointer; transition:transform 0.2s; }
+          .fa-strip-card { flex:0 0 168px; height:210px; border-radius:10px; overflow:hidden; position:relative; scroll-snap-align:start; cursor:pointer; transition:transform 0.2s; }
           .fa-strip-card:hover { transform:translateY(-3px); }
           @media(max-width:600px){
-            .fa-strip-card { flex:0 0 160px; height:200px; }
+            .fa-strip-card { flex:0 0 138px; height:172px; }
           }
         `}</style>
 
@@ -1668,7 +1670,7 @@ const Home = () => {
           <motion.div
             variants={{ hidden:{opacity:0,x:20}, visible:{opacity:1,x:0,transition:{duration:0.35}} }}
             onClick={() => navigate("/fun-activities")}
-            style={{ flex:"0 0 140px", height:240, borderRadius:11, border:"1px solid rgba(196,122,46,0.2)", background:"rgba(196,122,46,0.05)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", cursor:"pointer", gap:8, scrollSnapAlign:"start", transition:"background 0.18s" }}
+            style={{ flex:"0 0 120px", height:210, borderRadius:10, border:"1px solid rgba(196,122,46,0.2)", background:"rgba(196,122,46,0.05)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", cursor:"pointer", gap:8, scrollSnapAlign:"start", transition:"background 0.18s" }}
             className="fa-strip-card"
           >
             <div style={{ width:36, height:36, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.4)", display:"flex", alignItems:"center", justifyContent:"center", color:"#CCAB4A", fontSize:18 }}>→</div>
@@ -1680,11 +1682,11 @@ const Home = () => {
       {/* ── Gift Hampers ── */}
       <section data-tour="gift-hampers-section" style={{ background: "#FFFCF5", padding: "48px 24px 56px", fontFamily: "'Outfit', sans-serif" }}>
         <style>{`
-          .gh-strip { display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; margin:0 -24px; padding:0 24px 4px; }
+          .gh-strip { display:flex; gap:8px; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; margin:0 -24px; padding:0 24px 4px; }
           .gh-strip::-webkit-scrollbar { display:none; }
-          .gh-tile { flex:0 0 200px; border-radius:12px; overflow:hidden; cursor:pointer; background:#fff; border:1.5px solid rgba(196,122,46,0.1); scroll-snap-align:start; transition:border-color 0.18s, box-shadow 0.18s; }
+          .gh-tile { flex:0 0 160px; border-radius:10px; overflow:hidden; cursor:pointer; background:#fff; border:1.5px solid rgba(196,122,46,0.1); scroll-snap-align:start; transition:border-color 0.18s, box-shadow 0.18s; }
           .gh-tile:hover { border-color:rgba(196,122,46,0.3); box-shadow:0 6px 20px rgba(139,69,19,0.09); }
-          @media(max-width:600px){ .gh-tile { flex:0 0 160px; } }
+          @media(max-width:600px){ .gh-tile { flex:0 0 136px; } }
         `}</style>
         <div style={{ maxWidth: 1060, margin: "0 auto" }}>
           {/* Header */}
@@ -1743,7 +1745,7 @@ const Home = () => {
                 onClick={() => navigate("/gift-hampers-cakes")}
                 variants={{ hidden:{opacity:0,x:18}, visible:{opacity:1,x:0,transition:{duration:0.32}} }}
               >
-                <div style={{ height:130, background:`hsl(${30+i*12},${55-i*4}%,${88-i*3}%)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:44, position:"relative" }}>
+                <div style={{ height:100, background:`hsl(${30+i*12},${55-i*4}%,${88-i*3}%)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:36, position:"relative" }}>
                   {h.emoji}
                   {h.tag && (
                     <div style={{ position:"absolute", top:8, left:8, background:"#C47A2E", borderRadius:4, padding:"2px 8px" }}>
