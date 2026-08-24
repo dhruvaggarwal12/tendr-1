@@ -767,6 +767,7 @@ const Home = () => {
     {
       target: '[data-tour="hero-ctas"]',
       placement: "bottom",
+      disableScrolling: true,
       title: "Start here",
       content: "'Book Vendors' goes straight to the vendor directory. 'Plan an Occasion' opens a step-by-step flow — set your date, occasion type and budget.",
     },
@@ -783,16 +784,16 @@ const Home = () => {
       content: "Gift hampers, stationery, fun activities and party essentials — order directly through Tendr.",
     },
     {
+      target: '[data-tour="nav-tools"]',
+      placement: "bottom",
+      title: "Planning tools",
+      content: "Event timeline, budget allocator, style finder and more — free tools to organise every detail of your celebration.",
+    },
+    {
       target: '[data-tour="nav-booking"]',
       placement: "bottom",
       title: "Plan your event",
       content: "Use our guided planner, smart occasion planner, or chat with our team on Baat Karo. You can also explore occasions by type.",
-    },
-    {
-      target: '[data-tour="nav-more"]',
-      placement: "bottom",
-      title: "Everything else",
-      content: "Planning tools (timeline, budget, style finder), the Tendr community, our guide store, and company pages — all under More.",
     },
     isSignedIn ? {
       target: '[data-tour="profile-btn"]',
@@ -1742,64 +1743,37 @@ const Home = () => {
       </section>
 
       {/* ── Gift Hampers ── */}
-      <section data-tour="gift-hampers-section" style={{ background: "#fff", padding: "64px 24px 72px", fontFamily: "'Outfit', sans-serif" }}>
-        <div style={{ maxWidth: 1060, margin: "0 auto" }}>
+      <section data-tour="gift-hampers-section" style={{ position: "relative", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif", overflow: "hidden", background: "#120800" }}>
+        {/* Gold shimmer blobs */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(ellipse at 20% 50%,rgba(196,122,46,0.13),transparent 55%), radial-gradient(ellipse at 80% 30%,rgba(204,171,74,0.09),transparent 50%), radial-gradient(ellipse at 60% 80%,rgba(196,122,46,0.07),transparent 45%)", pointerEvents: "none" }} />
+        <div style={{ maxWidth: 680, margin: "0 auto", position: "relative" }}>
           <motion.div
-            className="gh-band"
-            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center" }}
-            initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            {/* Left: two-image collage */}
-            <div style={{ display: "grid", gridTemplateRows: "1fr auto", gap: 10, height: "100%" }}>
-              <div style={{ position: "relative", borderRadius: 12, overflow: "hidden", minHeight: 220 }}>
-                <img
-                  src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=700&q=80"
-                  alt="Curated gift hamper"
-                  loading="lazy"
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", position: "absolute", inset: 0 }}
-                />
-                <div style={{ position: "absolute", bottom: 14, left: 14, background: "rgba(12,6,0,0.78)", backdropFilter: "blur(8px)", borderRadius: 6, padding: "5px 12px" }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: "#CCAB4A", letterSpacing: "0.04em" }}>Free delivery · Delhi NCR</span>
-                </div>
-              </div>
-              <div style={{ borderRadius: 10, overflow: "hidden", height: 90 }}>
-                <img
-                  src="https://images.unsplash.com/photo-1607082349566-187342175e2f?w=700&q=80"
-                  alt="Gift hamper assortment"
-                  loading="lazy"
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                />
-              </div>
+            <div style={{ display:"flex", alignItems:"center", gap:10, margin:"0 0 20px" }}>
+              <div style={{ width:28, height:1.5, background:"#C47A2E", flexShrink:0 }} />
+              <span style={{ fontSize:12, fontWeight:700, color:"#C47A2E", letterSpacing:"0.12em", textTransform:"uppercase" }}>Gift Hampers</span>
             </div>
-
-            {/* Right: copy */}
-            <div>
-              <div style={{ display:"flex", alignItems:"center", gap:9, margin:"0 0 18px" }}>
-                <div style={{ width:24, height:1.5, background:"#C47A2E", flexShrink:0 }} />
-                <span style={{ fontSize:13, fontWeight:500, color:"#C47A2E" }}>Gift Hampers</span>
-              </div>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.9rem,3vw,2.7rem)", fontWeight: 500, color: "#1C0E04", margin: "0 0 18px", lineHeight: 1.1, letterSpacing: "-0.01em" }}>
-                The perfect gift,<br />delivered.
-              </h2>
-              <p style={{ fontSize: 15, color: "#7A5535", margin: "0 0 32px", lineHeight: 1.72, maxWidth: 380 }}>
-                Curated hampers for birthdays, anniversaries and corporate celebrations — delivered across Delhi NCR.
-              </p>
-              <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
-                <button
-                  onClick={() => navigate("/gift-hampers-cakes")}
-                  style={{ background: "#C47A2E", color: "#fff", fontSize: 14, fontWeight: 600, padding: "12px 26px", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}
-                >Browse Hampers →</button>
-                <button onClick={() => navigate("/hamper-builder")}
-                  style={{ background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, padding: 0, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", textDecoration: "underline", textDecorationColor: "rgba(155,116,80,0.4)", textUnderlineOffset: "3px" }}>
-                  Build your own
-                </button>
-              </div>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.2rem,4vw,3.4rem)", fontWeight: 500, color: "#F5ECD8", margin: "0 0 20px", lineHeight: 1.08, letterSpacing: "-0.01em" }}>
+              The perfect gift,<br />delivered.
+            </h2>
+            <p style={{ fontSize: 16, color: "rgba(245,236,216,0.62)", margin: "0 0 38px", lineHeight: 1.75, maxWidth: 480 }}>
+              Curated hampers for birthdays, anniversaries and corporate celebrations — delivered fresh across Delhi NCR.
+            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
+              <button
+                onClick={() => navigate("/gift-hampers-cakes")}
+                style={{ background: "#C47A2E", color: "#fff", fontSize: 14, fontWeight: 600, padding: "13px 28px", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", letterSpacing: "0.01em" }}
+              >Browse Hampers →</button>
+              <button onClick={() => navigate("/hamper-builder")}
+                style={{ background: "transparent", color: "rgba(204,171,74,0.75)", fontSize: 13, fontWeight: 600, padding: 0, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", textDecoration: "underline", textDecorationColor: "rgba(204,171,74,0.3)", textUnderlineOffset: "4px" }}>
+                Build your own
+              </button>
             </div>
           </motion.div>
         </div>
-        <style>{`@media (max-width: 680px) { .gh-band { grid-template-columns: 1fr !important; gap: 28px !important; } }`}</style>
       </section>
 
       {/* ── Trust bar ── */}
@@ -2529,11 +2503,7 @@ const Home = () => {
                       onClick={() => {
                         setOccasionFlow(null);
                         const hub = HUB_ROUTES[o.id];
-                        if (hub) {
-                          setOccModal({ label: o.name, slug: o.id, hub, photo: o.coverImage, step: 1 });
-                        } else {
-                          navigate(`/occasions/${o.id}`);
-                        }
+                        setOccModal({ label: o.name, slug: o.id, hub: hub || null, photo: o.coverImage, step: hub ? 1 : 2 });
                       }}
                       style={{ background: "rgba(255,247,235,0.04)", border: "1.5px solid rgba(196,122,46,0.12)", borderRadius: 14, overflow: "hidden", cursor: "pointer", textAlign: "left", padding: 0, fontFamily: f, transition: "all 0.18s" }}
                       onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.45)"; e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
@@ -2581,7 +2551,7 @@ const Home = () => {
                 {occModal.photo&&<img src={occModal.photo} alt={occModal.label} style={{width:"100%",height:"100%",objectFit:"cover"}}/>}
                 <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(8,4,0,0.82) 0%,rgba(8,4,0,0.3) 60%,transparent 100%)"}}/>
                 <div style={{position:"absolute",bottom:16,left:20,right:20}}>
-                  {step===2&&(
+                  {step===2&&occModal.hub&&(
                     <button onClick={()=>setOccModal(m=>({...m,step:1}))} style={{background:"rgba(255,255,255,0.12)",border:"none",color:"rgba(255,255,255,0.7)",fontSize:11,fontWeight:600,borderRadius:100,padding:"4px 12px",cursor:"pointer",fontFamily:f,marginBottom:8,display:"block"}}>← Back</button>
                   )}
                   <p style={{fontSize:10,color:"rgba(255,255,255,0.55)",fontWeight:700,letterSpacing:"0.14em",textTransform:"uppercase",margin:"0 0 2px",fontFamily:f}}>{step===1?"Choose":"How to plan"}</p>
@@ -2593,7 +2563,7 @@ const Home = () => {
                 {step===1&&(
                   <div style={{display:"flex",flexDirection:"column",gap:9}}>
                     {/* Party Hub */}
-                    <button
+                    {occModal.hub&&(<button
                       onClick={()=>{setOccModal(null);navigate(occModal.hub);}}
                       style={{display:"flex",alignItems:"center",gap:14,padding:"15px 16px",borderRadius:16,border:"none",background:"#1C0900",cursor:"pointer",textAlign:"left",fontFamily:f,transition:"opacity 0.14s"}}
                       onMouseEnter={e=>e.currentTarget.style.opacity="0.88"}
@@ -2605,7 +2575,7 @@ const Home = () => {
                         <div style={{fontSize:11.5,color:"rgba(255,255,255,0.5)",lineHeight:1.4}}>Games, tools & activities</div>
                       </div>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                    </button>
+                    </button>)}
                     {/* Plan the Party */}
                     <button
                       onClick={()=>setOccModal(m=>({...m,step:2}))}
