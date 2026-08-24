@@ -77,10 +77,11 @@ const PaymentProcessingPage = () => {
             });
           }
         } catch {
-          // If verification call fails, still treat as success (admin can verify manually)
-          setStatus("success");
-          navigate("/booking/payment-success", {
-            state: { ...state, paymentId: response.razorpay_payment_id, orderId },
+          // Network error during verification — go to failed so user knows to contact support
+          // (admin can manually verify payment against Razorpay dashboard)
+          setStatus("failed");
+          navigate("/booking/payment-failed", {
+            state: { ...state, orderId, verificationError: true },
           });
         }
       },
