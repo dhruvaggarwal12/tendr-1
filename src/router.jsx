@@ -3,6 +3,7 @@ import { lazy, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import MobileBottomNav from "./components/MobileBottomNav";
+import UpcomingEventNudge from "./components/UpcomingEventNudge";
 import { fetchEventData } from "./redux/eventPlanningSlice";
 import { syncProgressOnLogin } from "./utils/progressSync";
 
@@ -77,6 +78,7 @@ function RootLayout() {
       <PWAInstallPrompt />
       <MobileBottomNav />
       <PageTransition />
+      <UpcomingEventNudge />
     </>
   );
 }

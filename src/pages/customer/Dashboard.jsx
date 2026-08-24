@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { selectCartItems, selectCartTotal } from "../../redux/giftHamperCartSlice";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -274,6 +274,13 @@ export default function CustomerDashboard() {
   ];
 
   // ── End Planned Events state ──────────────────────────────────────────────
+
+  const upcomingEventsRef = useRef(null);
+  useEffect(() => {
+    if (location.state?.scrollTo === 'upcoming-events' && upcomingEventsRef.current) {
+      setTimeout(() => upcomingEventsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 400);
+    }
+  }, [location.state]);
 
   const [activeTab, setActiveTab] = useState(() => {
     const tab = new URLSearchParams(location.search).get("tab");
@@ -573,7 +580,7 @@ export default function CustomerDashboard() {
 
         {/* ── My Upcoming Events ─────────────────────────────────────────────── */}
         {bookNowOpen && <div style={{ position:"fixed", inset:0, zIndex:40 }} onClick={() => setBookNowOpen(null)} />}
-        <div style={{ background:"#FFFCF5", borderRadius:16, border:"1.5px solid rgba(196,122,46,0.15)", boxShadow:"0 2px 12px rgba(139,69,19,0.07)", padding:"18px 20px", marginBottom:20 }}>
+        <div ref={upcomingEventsRef} style={{ background:"#FFFCF5", borderRadius:16, border:"1.5px solid rgba(196,122,46,0.15)", boxShadow:"0 2px 12px rgba(139,69,19,0.07)", padding:"18px 20px", marginBottom:20 }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14, flexWrap:"wrap", gap:8 }}>
             <div>
               <div style={{ fontSize:13, fontWeight:800, color:"#2C1A0E", letterSpacing:"-0.01em" }}>My Upcoming Events</div>
