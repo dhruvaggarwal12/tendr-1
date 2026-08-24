@@ -1515,21 +1515,40 @@ export default function VendorDashboard() {
   const [invModal, setInvModal]   = useState(false);
   const [invForm, setInvForm]     = useState({ name:'', qty:'1', unit:'', category:'', condition:'Good', notes:'' });
 
-  // Media links (video/demo links) — stored in localStorage
-  const MEDIA_KEY = `tendr_media_${vendorId||'v'}`;
-  const [mediaLinks, setMediaLinks] = useState(() => { try { return JSON.parse(localStorage.getItem(`tendr_media_${vendorId||'v'}`)||'[]'); } catch { return []; } });
+  // Media links (video/demo links) — persisted in backend
+  const [mediaLinks, setMediaLinks] = useState([]);
   const [mediaModal, setMediaModal] = useState(false);
   const [mediaForm, setMediaForm]   = useState({ title:'', url:'' });
+  const [mediaLoading, setMediaLoading] = useState(false);
   const [photoCount, setPhotoCount] = useState(null); // null = not loaded yet
 
-  const saveMedia = (items) => { setMediaLinks(items); try { localStorage.setItem(MEDIA_KEY, JSON.stringify(items)); } catch {} };
-  const addMediaLink = () => {
-    if (!mediaForm.url.trim()) return;
-    saveMedia([...mediaLinks, { ...mediaForm, id: Date.now().toString() }]);
-    setMediaForm({ title:'', url:'' });
-    setMediaModal(false);
+  const addMediaLink = async () => {
+    if (!mediaForm.url.trim() || mediaLoading) return;
+    setMediaLoading(true);
+    try {
+      const newLink = { id: Date.now().toString(), title: mediaForm.title, url: mediaForm.url.trim() };
+      const r = await fetch(`${BASE}/vendors/me/media-links`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify(newLink),
+      });
+      const data = await r.json();
+      if (r.ok) { setMediaLinks(data.mediaLinks); setMediaForm({ title:'', url:'' }); setMediaModal(false); }
+    } catch {}
+    setMediaLoading(false);
   };
-  const removeMediaLink = (id) => saveMedia(mediaLinks.filter(m => m.id !== id));
+  const removeMediaLink = async (id) => {
+    try {
+      const r = await fetch(`${BASE}/vendors/me/media-links/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await r.json();
+      if (r.ok) setMediaLinks(data.mediaLinks);
+    } catch {}
+  };
 
   // Work tab sub-tab
   const [workSubTab, setWorkSubTab] = useState('tendr'); // 'tendr' | 'outside' | 'calendar' | 'quotes'
@@ -1653,12 +1672,16 @@ export default function VendorDashboard() {
   const removeInvItem = (id) => saveInv(inventory.filter(i => i.id !== id));
   const updateInvCond = (id, condition) => saveInv(inventory.map(i => i.id === id ? {...i, condition} : i));
 
-  // Fetch portfolio photo count when My Page tab is active
+  // Fetch photo count + media links when My Page tab is active
   useEffect(() => {
     if (tab !== 'profile' || !vendorId || photoCount !== null) return;
     fetch(`${BASE}/vendors/${vendorId}`, { credentials: 'include', headers: token ? { Authorization: `Bearer ${token}` } : {} })
       .then(r => r.ok ? r.json() : null)
-      .then(v => { if (v) setPhotoCount((v.portfolioPhotos||[]).length); })
+      .then(v => {
+        if (!v) return;
+        setPhotoCount((v.portfolioPhotos||[]).length);
+        if (v.mediaLinks) setMediaLinks(v.mediaLinks);
+      })
       .catch(() => {});
   }, [tab, vendorId, token, photoCount]);
 
@@ -3202,9 +3225,9 @@ export default function VendorDashboard() {
                   autoFocus
                 />
               </div>
-              <button onClick={addMediaLink} disabled={!mediaForm.url.trim()}
-                style={{ padding:'12px', borderRadius:12, border:'none', background:mediaForm.url.trim()?`linear-gradient(135deg,${gold},${goldLt})`:'rgba(196,122,46,0.2)', color:'#fff', fontFamily:font, fontSize:14, fontWeight:800, cursor:mediaForm.url.trim()?'pointer':'default', boxShadow:mediaForm.url.trim()?'0 3px 12px rgba(196,122,46,0.35)':'none' }}>
-                Add Link
+              <button onClick={addMediaLink} disabled={!mediaForm.url.trim() || mediaLoading}
+                style={{ padding:'12px', borderRadius:12, border:'none', background:(mediaForm.url.trim()&&!mediaLoading)?`linear-gradient(135deg,${gold},${goldLt})`:'rgba(196,122,46,0.2)', color:'#fff', fontFamily:font, fontSize:14, fontWeight:800, cursor:(mediaForm.url.trim()&&!mediaLoading)?'pointer':'default', boxShadow:(mediaForm.url.trim()&&!mediaLoading)?'0 3px 12px rgba(196,122,46,0.35)':'none' }}>
+                {mediaLoading ? 'Saving…' : 'Add Link'}
               </button>
             </div>
           </div>
