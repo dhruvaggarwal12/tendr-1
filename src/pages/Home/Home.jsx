@@ -369,204 +369,252 @@ const GALLERY_FALLBACKS = {
   "Corporate Events":  "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&h=400&q=80",
 };
 
-// ── Website intro overlay ──────────────────────────────────────────────────
-const INTRO_SLIDES = [
-  {
-    title: "Your occasion,\nour obsession.",
-    sub: "Delhi NCR's premium event planning platform — photographers, caterers, decorators and more, all in one place.",
-    cta: "Continue",
-  },
-  {
-    title: "200+ verified\nvendors, one tap away.",
-    sub: "Browse, compare and book the best talent for birthdays, anniversaries, corporate events and everything between.",
-    cta: "Continue",
-  },
-  {
-    title: "Ready to plan\nsomething unforgettable?",
-    sub: "500+ events planned across Delhi NCR. Your perfect day starts here.",
-    cta: "Enter Tendr →",
-    final: true,
-  },
+// ── Website intro overlay (light theme — covers all website sections) ────────
+const INTRO_OCCASIONS = [
+  "🎂 Birthday","💕 Anniversary","🏢 Corporate","🏠 Housewarming",
+  "👶 Baby Shower","🎓 Graduation","🎉 Get-Together","🎁 Gift Hamper",
 ];
-
-const INTRO_CATEG = [
+const INTRO_CATEGORIES = [
   { emoji: "📸", label: "Photography" },
-  { emoji: "🌸", label: "Decor" },
+  { emoji: "🌸", label: "Decor & Florals" },
   { emoji: "🍽️", label: "Catering" },
   { emoji: "🎵", label: "DJ & Music" },
   { emoji: "🎁", label: "Gift Hampers" },
-  { emoji: "🎪", label: "Activities" },
+  { emoji: "🎪", label: "Fun Activities" },
 ];
+const INTRO_TOTAL = 4;
+const IB = "#FEFAF4";          // intro background
+const IT = "#1A0D03";          // intro text
+const IM = "rgba(26,13,3,0.48)"; // intro muted
+const IG = "#C47A2E";          // gold
+const IGL = "#CCAB4A";         // gold light
+const IC = "rgba(196,122,46,0.06)"; // card bg
+const IB2 = "rgba(196,122,46,0.15)"; // card border
+const IDF = "'DM Serif Display', Georgia, serif";
 
 function WebsiteIntro({ onDone }) {
   const [slide, setSlide] = React.useState(0);
   const [dir, setDir] = React.useState(1);
+  const introNav = useNavigate();
 
-  const next = () => {
-    if (slide === INTRO_SLIDES.length - 1) { onDone(); return; }
-    setDir(1);
-    setSlide(s => s + 1);
+  const dismiss = (path) => { onDone(); if (path) introNav(path); };
+  const goNext = () => { if (slide < INTRO_TOTAL - 1) { setDir(1); setSlide(s => s + 1); } };
+  const goPrev = () => { if (slide > 0) { setDir(-1); setSlide(s => s - 1); } };
+  const goTo   = (i) => { setDir(i > slide ? 1 : -1); setSlide(i); };
+
+  const sv = {
+    enter: (d) => ({ x: d > 0 ? "100%" : "-45%", opacity: 0 }),
+    center: { x: 0, opacity: 1, transition: { duration: 0.38, ease: [0.4, 0, 0.2, 1] } },
+    exit:  (d) => ({ x: d > 0 ? "-18%" : "100%", opacity: 0, transition: { duration: 0.28, ease: [0.4, 0, 0.2, 1] } }),
   };
 
-  const goTo = (i) => { setDir(i > slide ? 1 : -1); setSlide(i); };
-
-  const variants = {
-    enter: (d) => ({ x: d > 0 ? "100%" : "-60%", opacity: 0 }),
-    center: { x: 0, opacity: 1, transition: { duration: 0.42, ease: [0.4, 0, 0.2, 1] } },
-    exit:  (d) => ({ x: d > 0 ? "-18%" : "100%", opacity: 0, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] } }),
-  };
-
-  const illustrations = [
-    // Slide 0 — giant T lettermark + TENDR wordmark
-    <div key="s0" style={{ position: "relative", width: "100%", height: 180, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{
-        fontFamily: "'DM Serif Display', Georgia, serif",
-        fontSize: "clamp(7rem,20vw,11rem)", fontWeight: 400, lineHeight: 1,
-        background: "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.07))",
-        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-        userSelect: "none", letterSpacing: "-0.02em", position: "absolute",
-      }}>T</div>
-      <div style={{
-        position: "relative", zIndex: 2,
-        fontFamily: "'DM Serif Display', Georgia, serif",
-        fontSize: "clamp(2rem,5vw,3rem)", fontWeight: 400,
-        letterSpacing: "0.15em",
-        background: "linear-gradient(135deg,#C47A2E,#CCAB4A)",
-        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-      }}>TENDR</div>
-    </div>,
-
-    // Slide 1 — category grid
-    <div key="s1" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, maxWidth: 320, margin: "0 auto" }}>
-      {INTRO_CATEG.map(({ emoji, label }) => (
-        <div key={label} style={{
-          display: "flex", flexDirection: "column", alignItems: "center", gap: 7,
-          padding: "14px 8px",
-          background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.15)",
-          borderRadius: 14,
-        }}>
-          <span style={{ fontSize: 24 }}>{emoji}</span>
-          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,248,236,0.5)" }}>{label}</span>
-        </div>
-      ))}
-    </div>,
-
-    // Slide 2 — stats
-    <div key="s2" style={{ textAlign: "center", width: "100%" }}>
-      <div style={{
-        fontFamily: "'DM Serif Display', Georgia, serif",
-        fontSize: "clamp(4rem,12vw,7rem)", fontWeight: 400,
-        background: "linear-gradient(135deg,#C47A2E,#CCAB4A,#D4B86A)",
-        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-        lineHeight: 1, letterSpacing: "-0.02em",
-      }}>500+</div>
-      <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "rgba(196,122,46,0.6)", marginTop: 6, marginBottom: 24 }}>Events Planned</div>
-      <div style={{ display: "flex", justifyContent: "center", gap: "clamp(20px,5vw,48px)" }}>
-        {[["200+","Vendors"],["4.8","Rating"],["4","Cities"]].map(([num,lab]) => (
-          <div key={lab} style={{ textAlign: "center" }}>
-            <div style={{ fontSize: "clamp(1.4rem,4vw,2rem)", fontWeight: 900, color: "#FFF8EC", letterSpacing: "-0.02em", lineHeight: 1 }}>{num}</div>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(196,122,46,0.55)", marginTop: 4 }}>{lab}</div>
+  const slideContent = [
+    /* ── 0: Brand & stats ── */
+    <div key="s0" style={{ display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", padding:"40px 28px 24px", gap:0 }}>
+      <div style={{ fontFamily:IDF, fontSize:"clamp(2.6rem,6vw,4rem)", fontWeight:400, letterSpacing:"0.14em",
+        background:`linear-gradient(135deg,${IG},${IGL})`,
+        WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", marginBottom:6 }}>
+        TENDR
+      </div>
+      <div style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.22em",
+        color:"rgba(196,122,46,0.6)", marginBottom:32 }}>
+        Delhi NCR's Event Planning Platform
+      </div>
+      <h2 style={{ fontFamily:IDF, fontSize:"clamp(2.2rem,5.5vw,3.8rem)", fontWeight:400,
+        color:IT, lineHeight:1.08, letterSpacing:"-0.01em", marginBottom:16, maxWidth:520 }}>
+        Your occasion,<br/>our obsession.
+      </h2>
+      <p style={{ fontSize:"clamp(14px,1.9vw,16px)", color:IM, lineHeight:1.72, maxWidth:440, marginBottom:36 }}>
+        Browse verified vendors, plan every detail, order gift hampers — everything for any celebration, in one place.
+      </p>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8, width:"100%", maxWidth:500,
+        borderTop:`1px solid ${IB2}`, paddingTop:24 }}>
+        {[["500+","Events Planned"],["200+","Verified Vendors"],["4.8★","Avg Rating"],["4","Cities Served"]].map(([n,l])=>(
+          <div key={l} style={{ textAlign:"center" }}>
+            <div style={{ fontSize:"clamp(1.2rem,2.8vw,1.8rem)", fontWeight:900, color:IT, letterSpacing:"-0.02em", lineHeight:1 }}>{n}</div>
+            <div style={{ fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:"rgba(196,122,46,0.6)", marginTop:5, lineHeight:1.3 }}>{l}</div>
           </div>
         ))}
       </div>
+    </div>,
+
+    /* ── 1: Browse vendors ── */
+    <div key="s1" style={{ display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", padding:"40px 28px 24px" }}>
+      <div style={{ display:"inline-block", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.2em",
+        color:IG, background:IC, border:`1px solid ${IB2}`, borderRadius:100, padding:"5px 16px", marginBottom:18 }}>
+        Browse &amp; Book
+      </div>
+      <h2 style={{ fontFamily:IDF, fontSize:"clamp(2rem,5vw,3.2rem)", fontWeight:400,
+        color:IT, lineHeight:1.1, letterSpacing:"-0.01em", marginBottom:10, maxWidth:500 }}>
+        200+ verified vendors,<br/>one search away.
+      </h2>
+      <p style={{ fontSize:"clamp(13px,1.8vw,15px)", color:IM, lineHeight:1.72, maxWidth:420, marginBottom:28 }}>
+        Compare full portfolios, read verified reviews and confirm pricing — before you commit to anything.
+      </p>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, width:"100%", maxWidth:440 }}>
+        {INTRO_CATEGORIES.map(({emoji,label})=>(
+          <div key={label} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:8,
+            padding:"16px 8px", background:IC, border:`1px solid ${IB2}`, borderRadius:14,
+            boxShadow:"0 2px 10px rgba(196,122,46,0.05)" }}>
+            <span style={{ fontSize:26 }}>{emoji}</span>
+            <span style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:IM }}>{label}</span>
+          </div>
+        ))}
+      </div>
+    </div>,
+
+    /* ── 2: Occasions & tools ── */
+    <div key="s2" style={{ display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", padding:"40px 28px 24px" }}>
+      <div style={{ display:"inline-block", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.2em",
+        color:IG, background:IC, border:`1px solid ${IB2}`, borderRadius:100, padding:"5px 16px", marginBottom:18 }}>
+        Plan Your Event
+      </div>
+      <h2 style={{ fontFamily:IDF, fontSize:"clamp(2rem,5vw,3.2rem)", fontWeight:400,
+        color:IT, lineHeight:1.1, letterSpacing:"-0.01em", marginBottom:10, maxWidth:500 }}>
+        Every celebration,<br/>beautifully covered.
+      </h2>
+      <p style={{ fontSize:"clamp(13px,1.8vw,15px)", color:IM, lineHeight:1.72, maxWidth:420, marginBottom:22 }}>
+        From intimate birthday setups to large corporate galas — plus free planning tools for every detail.
+      </p>
+      <div style={{ display:"flex", flexWrap:"wrap", gap:8, justifyContent:"center", marginBottom:22, maxWidth:500 }}>
+        {INTRO_OCCASIONS.map(occ=>(
+          <div key={occ} style={{ padding:"7px 15px", borderRadius:100, fontSize:13, fontWeight:500,
+            background:IC, border:`1px solid ${IB2}`, color:IT }}>
+            {occ}
+          </div>
+        ))}
+      </div>
+      <div style={{ borderTop:`1px solid ${IB2}`, paddingTop:18, display:"flex", flexWrap:"wrap", gap:7, justifyContent:"center", maxWidth:480 }}>
+        {["Budget Allocator","Timeline Builder","Stationery by Tendr","Gift Hampers"].map(t=>(
+          <span key={t} style={{ fontSize:11, fontWeight:700, color:IG,
+            background:"rgba(196,122,46,0.07)", border:`1px solid rgba(196,122,46,0.14)`,
+            borderRadius:7, padding:"5px 11px" }}>{t}</span>
+        ))}
+      </div>
+    </div>,
+
+    /* ── 3: Enter ── */
+    <div key="s3" style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+      textAlign:"center", padding:"32px 28px 32px", minHeight:"100%" }}>
+      <div style={{ width:64, height:64, borderRadius:"50%", background:`rgba(196,122,46,0.1)`,
+        border:`1.5px solid ${IB2}`, display:"flex", alignItems:"center", justifyContent:"center",
+        fontSize:28, marginBottom:22 }}>🎉</div>
+      <h2 style={{ fontFamily:IDF, fontSize:"clamp(2.2rem,5.5vw,3.6rem)", fontWeight:400,
+        color:IT, lineHeight:1.08, letterSpacing:"-0.01em", marginBottom:12 }}>
+        You're in the<br/>right place.
+      </h2>
+      <p style={{ fontSize:"clamp(13px,1.8vw,15px)", color:IM, lineHeight:1.7, maxWidth:380, marginBottom:28 }}>
+        Discover vendors, plan your event and celebrate — free to browse, no commitment required.
+      </p>
+      <div style={{ display:"flex", gap:20, marginBottom:32, flexWrap:"wrap", justifyContent:"center" }}>
+        {["Free to browse","Verified vendors","Secure payments"].map(t=>(
+          <div key={t} style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, color:IT, fontWeight:500 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={IG} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            {t}
+          </div>
+        ))}
+      </div>
+      <div style={{ display:"flex", flexDirection:"column", gap:10, width:"100%", maxWidth:360 }}>
+        <motion.button whileTap={{ scale:0.975 }} onClick={() => dismiss("/listings")}
+          style={{ height:52, background:`linear-gradient(135deg,${IG},${IGL})`, border:"none",
+            borderRadius:16, color:"#0A0500", fontWeight:700, fontSize:15, fontFamily:"inherit", cursor:"pointer" }}>
+          Browse Vendors →
+        </motion.button>
+        <motion.button whileTap={{ scale:0.975 }} onClick={() => dismiss("/booking")}
+          style={{ height:52, background:"transparent", border:`1.5px solid ${IB2}`,
+            borderRadius:16, color:IG, fontWeight:700, fontSize:15, fontFamily:"inherit", cursor:"pointer" }}>
+          Plan an Event
+        </motion.button>
+      </div>
+      <button onClick={goPrev}
+        style={{ marginTop:20, background:"none", border:"none", cursor:"pointer",
+          fontSize:12, color:IM, fontFamily:"inherit", display:"flex", alignItems:"center", gap:5 }}>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Back
+      </button>
     </div>,
   ];
 
   return (
     <motion.div
       initial={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.38 } }}
-      style={{
-        position: "fixed", inset: 0, zIndex: 9999,
-        background: "#070400",
-        display: "flex", flexDirection: "column",
-        overflow: "hidden",
-        fontFamily: "'Outfit', sans-serif",
-      }}
+      exit={{ opacity: 0, transition: { duration: 0.4 } }}
+      style={{ position:"fixed", inset:0, zIndex:9999, background:IB,
+        display:"flex", flexDirection:"column", overflow:"hidden", fontFamily:"'Outfit',sans-serif" }}
     >
-      {/* Skip */}
-      <motion.button
-        whileTap={{ scale: 0.96 }}
-        onClick={onDone}
-        style={{
-          position: "absolute", top: 20, right: 20, zIndex: 10,
-          background: "rgba(255,248,236,0.07)", border: "1px solid rgba(255,248,236,0.1)",
-          borderRadius: 100, padding: "7px 18px",
-          fontSize: 12, fontWeight: 600, color: "rgba(255,248,236,0.45)",
-          letterSpacing: "0.06em", cursor: "pointer", fontFamily: "inherit",
-          minHeight: 44, display: "flex", alignItems: "center",
-        }}
-      >
-        Skip
-      </motion.button>
+      {/* Gold progress bar */}
+      <div style={{ height:3, background:"rgba(196,122,46,0.1)", flexShrink:0 }}>
+        <motion.div
+          animate={{ width:`${((slide + 1) / INTRO_TOTAL) * 100}%` }}
+          transition={{ duration:0.38, ease:[0.4,0,0.2,1] }}
+          style={{ height:"100%", background:IG, borderRadius:"0 2px 2px 0" }}
+        />
+      </div>
 
-      {/* Slides */}
-      <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+      {/* Header: logo + counter + close */}
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
+        padding:"14px 20px 0", flexShrink:0 }}>
+        <div style={{ fontFamily:IDF, fontSize:17, color:IT, letterSpacing:"0.07em" }}>TENDR</div>
+        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+          <span style={{ fontSize:11, fontWeight:600, color:"rgba(26,13,3,0.3)", letterSpacing:"0.08em" }}>
+            {slide + 1} of {INTRO_TOTAL}
+          </span>
+          <motion.button whileTap={{ scale:0.95 }} onClick={() => dismiss(null)}
+            style={{ width:36, height:36, borderRadius:"50%", minHeight:44,
+              background:"rgba(26,13,3,0.06)", border:"1px solid rgba(26,13,3,0.1)",
+              display:"flex", alignItems:"center", justifyContent:"center",
+              cursor:"pointer", fontSize:18, color:"rgba(26,13,3,0.38)", fontFamily:"inherit" }}>
+            ×
+          </motion.button>
+        </div>
+      </div>
+
+      {/* Slide area */}
+      <div style={{ flex:1, position:"relative", overflow:"hidden" }}>
         <AnimatePresence initial={false} custom={dir}>
-          <motion.div
-            key={slide}
-            custom={dir}
-            variants={variants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            style={{
-              position: "absolute", inset: 0,
-              display: "flex", flexDirection: "column",
-              alignItems: "center", justifyContent: "center",
-              padding: "80px 32px 0",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ width: "100%", maxWidth: 480, marginBottom: 36 }}>
-              {illustrations[slide]}
-            </div>
-            <h2 style={{
-              fontFamily: "'DM Serif Display', Georgia, serif",
-              fontSize: "clamp(1.9rem,4.5vw,3rem)", fontWeight: 400,
-              color: "#FFF8EC", lineHeight: 1.12,
-              letterSpacing: "-0.01em", marginBottom: 14,
-              maxWidth: 520, whiteSpace: "pre-line",
-            }}>
-              {INTRO_SLIDES[slide].title}
-            </h2>
-            <p style={{
-              fontSize: "clamp(14px,2vw,16px)",
-              color: "rgba(255,248,236,0.52)", lineHeight: 1.72, maxWidth: 440,
-            }}>
-              {INTRO_SLIDES[slide].sub}
-            </p>
+          <motion.div key={slide} custom={dir} variants={sv}
+            initial="enter" animate="center" exit="exit"
+            style={{ position:"absolute", inset:0, overflowY:"auto" }}>
+            {slideContent[slide]}
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Bottom controls */}
-      <div style={{ padding: "0 32px 48px", display: "flex", flexDirection: "column", alignItems: "center", gap: 20, flexShrink: 0 }}>
-        <div style={{ display: "flex", gap: 7, alignItems: "center" }}>
-          {INTRO_SLIDES.map((_, i) => (
-            <motion.div
-              key={i}
-              animate={{ width: i === slide ? 28 : 7, background: i === slide ? "#C47A2E" : "rgba(255,248,236,0.18)" }}
-              transition={{ duration: 0.25 }}
-              style={{ height: 7, borderRadius: 100, cursor: "pointer" }}
-              onClick={() => goTo(i)}
-            />
-          ))}
+      {/* Bottom nav — only on slides 0–2 */}
+      {slide < INTRO_TOTAL - 1 && (
+        <div style={{ padding:"12px 24px 36px", display:"flex", alignItems:"center",
+          gap:12, flexShrink:0, borderTop:`1px solid ${IB2}` }}>
+          {slide > 0 ? (
+            <motion.button whileTap={{ scale:0.95 }} onClick={goPrev}
+              style={{ width:44, height:44, borderRadius:"50%",
+                background:"rgba(26,13,3,0.05)", border:"1px solid rgba(26,13,3,0.1)",
+                display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", flexShrink:0 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(26,13,3,0.45)" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </motion.button>
+          ) : <div style={{ width:44 }}/>}
+
+          <div style={{ flex:1, display:"flex", justifyContent:"center", gap:7, alignItems:"center" }}>
+            {Array.from({ length: INTRO_TOTAL }).map((_,i) => (
+              <motion.div key={i}
+                animate={{ width: i === slide ? 24 : 7, background: i === slide ? IG : "rgba(26,13,3,0.14)" }}
+                transition={{ duration:0.25 }}
+                style={{ height:7, borderRadius:100, cursor:"pointer" }}
+                onClick={() => goTo(i)}
+              />
+            ))}
+          </div>
+
+          <motion.button whileTap={{ scale:0.975 }} onClick={goNext}
+            style={{ height:44, padding:"0 24px",
+              background:`linear-gradient(135deg,${IG},${IGL})`,
+              border:"none", borderRadius:12, color:"#0A0500",
+              fontWeight:700, fontSize:14, fontFamily:"inherit", cursor:"pointer", flexShrink:0 }}>
+            Continue
+          </motion.button>
         </div>
-        <motion.button
-          whileTap={{ scale: 0.975 }}
-          onClick={next}
-          style={{
-            width: "100%", maxWidth: 420, height: 52,
-            background: "linear-gradient(135deg,#C47A2E,#CCAB4A)",
-            border: "none", borderRadius: 16,
-            color: "#0A0500", fontWeight: 700, fontSize: 15,
-            fontFamily: "inherit", cursor: "pointer", letterSpacing: "0.02em",
-          }}
-        >
-          {INTRO_SLIDES[slide].cta}
-        </motion.button>
-      </div>
+      )}
     </motion.div>
   );
 }
