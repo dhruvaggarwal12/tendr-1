@@ -46,6 +46,13 @@ const GiftHampersCakes = () => {
   const [similarSheetOpen, setSimilarSheetOpen] = useState(false);
   const [heroIdx, setHeroIdx] = useState(0);
   const [quizOpen, setQuizOpen] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [cartItems, setCartItems] = useState({}); // productId → qty
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [checkoutForm, setCheckoutForm] = useState({ name:'', phone:'', address:'', city:'Delhi', pincode:'' });
+  const [placing, setPlacing] = useState(false);
+  const [orderDone, setOrderDone] = useState(false);
+  const [productCatFilter, setProductCatFilter] = useState('All');
 
   const filteredSamples = samples.filter(s => {
     if (selectedCategories.length > 0) {
@@ -90,6 +97,10 @@ const GiftHampersCakes = () => {
       .then(r => r.json())
       .then(d => { setSamples(d.samples || []); setLoading(false); })
       .catch(() => setLoading(false));
+    fetch(`${BASE_URL}/gift-hampers/products`)
+      .then(r => r.json())
+      .then(d => setProducts(d.products || []))
+      .catch(() => {});
   }, []);
 
   const heroPhotos = samples.length > 0 ? samples : GH_HERO_FALLBACK;
@@ -174,6 +185,37 @@ const GiftHampersCakes = () => {
       }
     } catch (e) { console.error("GiftHampersCakes chat failed:", e); }
   };
+
+  // ── Cart helpers ──────────────────────────────────────────────────────────
+  const cartCount = Object.values(cartItems).reduce((s, q) => s + q, 0);
+  const cartTotal = Object.entries(cartItems).reduce((s, [id, qty]) => {
+    const p = products.find(p => p._id === id);
+    return s + (p ? p.pricePerUnit * qty : 0);
+  }, 0);
+
+  const setQty = (id, delta) => setCartItems(prev => {
+    const next = { ...prev, [id]: Math.max(0, (prev[id] || 0) + delta) };
+    if (next[id] === 0) delete next[id];
+    return next;
+  });
+
+  const placeOrder = async () => {
+    if (!checkoutForm.name || !checkoutForm.phone || !checkoutForm.address) return;
+    setPlacing(true);
+    try {
+      const items = Object.entries(cartItems).map(([productId, quantity]) => ({ productId, quantity }));
+      const r = await fetch(`${BASE_URL}/gift-hampers/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ items, customerName: checkoutForm.name, customerPhone: checkoutForm.phone, deliveryAddress: checkoutForm.address, city: checkoutForm.city, pincode: checkoutForm.pincode }),
+      });
+      if (r.ok) { setOrderDone(true); setCartItems({}); }
+    } catch {}
+    setPlacing(false);
+  };
+
+  const productCategories = ['All', ...new Set(products.map(p => p.category).filter(Boolean))];
+  const visibleProducts = productCatFilter === 'All' ? products : products.filter(p => p.category === productCatFilter);
 
   return (
     <div style={{ minHeight: "100vh", background: "#FAF7F2", fontFamily: font }}>
@@ -306,6 +348,140 @@ const GiftHampersCakes = () => {
           </div>
         </div>
       </div>
+
+      {/* ── Shop: Orderable Products ── */}
+      {products.length > 0 && (
+        <div style={{ background:"#fff", borderBottom:"1px solid rgba(196,122,46,0.1)", padding:"48px 24px" }}>
+          <div style={{ maxWidth:1100, margin:"0 auto" }}>
+            <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", flexWrap:"wrap", gap:12, marginBottom:28 }}>
+              <div>
+                <p style={{ fontSize:10, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.24em", margin:"0 0 8px", fontFamily:font }}>Order Now</p>
+                <h2 style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:"clamp(1.5rem,3vw,2rem)", fontWeight:400, color:"#2C1A0E", margin:0 }}>Shop Gift Hampers</h2>
+              </div>
+              {cartCount > 0 && (
+                <button onClick={() => setCheckoutOpen(true)}
+                  style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 22px", borderRadius:100, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:13.5, fontWeight:700, cursor:"pointer", fontFamily:font, boxShadow:"0 4px 16px rgba(196,122,46,0.35)" }}>
+                  🛒 {cartCount} item{cartCount>1?'s':''} · ₹{cartTotal.toLocaleString('en-IN')} →
+                </button>
+              )}
+            </div>
+
+            {/* Category filter pills */}
+            {productCategories.length > 2 && (
+              <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:22 }}>
+                {productCategories.map(c => (
+                  <button key={c} onClick={() => setProductCatFilter(c)}
+                    style={{ padding:"6px 16px", borderRadius:100, border:`1.5px solid ${productCatFilter===c?"#C47A2E":"rgba(196,122,46,0.2)"}`, background:productCatFilter===c?"rgba(196,122,46,0.08)":"#fff", color:productCatFilter===c?"#C47A2E":"#9B7450", fontSize:12.5, fontWeight:700, cursor:"pointer", fontFamily:font }}>
+                    {c}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Product grid */}
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))", gap:16 }}>
+              {visibleProducts.map(p => {
+                const qty = cartItems[p._id] || 0;
+                const img = p.images?.[0] || p.imageUrl;
+                const hasDiscount = p.originalPrice && p.originalPrice > p.pricePerUnit;
+                return (
+                  <div key={p._id} style={{ background:"#FFFCF5", borderRadius:16, border:"1px solid rgba(196,122,46,0.12)", overflow:"hidden", display:"flex", flexDirection:"column", boxShadow:"0 2px 10px rgba(196,122,46,0.06)" }}>
+                    {/* Image */}
+                    <div style={{ height:180, background:"rgba(196,122,46,0.05)", position:"relative", overflow:"hidden" }}>
+                      {img ? (
+                        <img src={img} alt={p.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} loading="lazy" />
+                      ) : (
+                        <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:48 }}>🎁</div>
+                      )}
+                      {hasDiscount && (
+                        <div style={{ position:"absolute", top:8, left:8, background:"#DC2626", color:"#fff", fontSize:10, fontWeight:800, padding:"3px 8px", borderRadius:100 }}>
+                          {Math.round((1 - p.pricePerUnit/p.originalPrice)*100)}% OFF
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div style={{ padding:"12px 14px", flex:1, display:"flex", flexDirection:"column", gap:6 }}>
+                      <div style={{ fontSize:13.5, fontWeight:700, color:"#2C1A0E", lineHeight:1.3 }}>{p.name}</div>
+                      {p.category && <div style={{ fontSize:11, color:"#9B7450", fontWeight:600 }}>{p.category}</div>}
+                      <div style={{ display:"flex", alignItems:"center", gap:7, marginTop:2 }}>
+                        <span style={{ fontSize:16, fontWeight:800, color:"#C47A2E" }}>₹{p.pricePerUnit.toLocaleString('en-IN')}</span>
+                        {hasDiscount && <span style={{ fontSize:12, color:"#9B7450", textDecoration:"line-through" }}>₹{p.originalPrice.toLocaleString('en-IN')}</span>}
+                      </div>
+                      {p.minOrderQuantity > 1 && <div style={{ fontSize:10.5, color:"#9B7450" }}>Min. order: {p.minOrderQuantity}</div>}
+                    </div>
+
+                    {/* Add to cart */}
+                    <div style={{ padding:"0 14px 14px" }}>
+                      {qty === 0 ? (
+                        <button onClick={() => setQty(p._id, Math.max(1, p.minOrderQuantity || 1))}
+                          style={{ width:"100%", padding:"9px", borderRadius:10, border:"1.5px solid #C47A2E", background:"transparent", color:"#C47A2E", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:font }}>
+                          Add to Cart
+                        </button>
+                      ) : (
+                        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:6 }}>
+                          <button onClick={() => setQty(p._id, -1)} style={{ width:34, height:34, borderRadius:9, border:"1.5px solid rgba(196,122,46,0.3)", background:"#fff", color:"#C47A2E", fontSize:18, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>−</button>
+                          <span style={{ fontSize:15, fontWeight:800, color:"#2C1A0E", minWidth:24, textAlign:"center" }}>{qty}</span>
+                          <button onClick={() => setQty(p._id, 1)} style={{ width:34, height:34, borderRadius:9, border:"none", background:"#C47A2E", color:"#fff", fontSize:18, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>+</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Checkout modal ── */}
+      {checkoutOpen && (
+        <div onClick={() => { if (!placing) setCheckoutOpen(false); }} style={{ position:"fixed", inset:0, background:"rgba(44,26,14,0.55)", zIndex:9200, display:"flex", alignItems:"center", justifyContent:"center", padding:16, backdropFilter:"blur(3px)" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background:"#FFFCF5", borderRadius:24, width:"100%", maxWidth:440, maxHeight:"90vh", overflowY:"auto", padding:"24px 22px", fontFamily:font, boxShadow:"0 24px 80px rgba(44,26,14,0.22)" }}>
+            {orderDone ? (
+              <div style={{ textAlign:"center", padding:"24px 0" }}>
+                <div style={{ fontSize:52, marginBottom:12 }}>🎁</div>
+                <div style={{ fontSize:20, fontWeight:800, color:"#2C1A0E", marginBottom:8 }}>Order Placed!</div>
+                <div style={{ fontSize:13, color:"#9B7450", lineHeight:1.7 }}>We'll confirm your order on WhatsApp and coordinate delivery across Delhi NCR.</div>
+                <button onClick={() => { setCheckoutOpen(false); setOrderDone(false); }} style={{ marginTop:20, padding:"12px 32px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:font }}>Done</button>
+              </div>
+            ) : (
+              <>
+                <div style={{ fontSize:17, fontWeight:800, color:"#2C1A0E", marginBottom:4 }}>Checkout</div>
+                <div style={{ fontSize:12, color:"#9B7450", marginBottom:20 }}>₹{cartTotal.toLocaleString('en-IN')} · {cartCount} item{cartCount>1?'s':''}</div>
+
+                {/* Order summary */}
+                <div style={{ background:"rgba(196,122,46,0.05)", borderRadius:12, padding:"12px 14px", marginBottom:20 }}>
+                  {Object.entries(cartItems).map(([id, qty]) => {
+                    const p = products.find(p => p._id === id);
+                    if (!p) return null;
+                    return (
+                      <div key={id} style={{ display:"flex", justifyContent:"space-between", fontSize:12.5, color:"#2C1A0E", fontWeight:600, marginBottom:5 }}>
+                        <span>{p.name} ×{qty}</span>
+                        <span style={{ color:"#C47A2E" }}>₹{(p.pricePerUnit*qty).toLocaleString('en-IN')}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {[['name','Your Name *','text'],['phone','WhatsApp Number *','tel'],['address','Delivery Address *','text'],['city','City *','text'],['pincode','Pincode','text']].map(([field, label, type]) => (
+                  <div key={field} style={{ marginBottom:12 }}>
+                    <div style={{ fontSize:11, fontWeight:700, color:"#9B7450", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:5 }}>{label}</div>
+                    <input type={type} value={checkoutForm[field]} onChange={e => setCheckoutForm(f => ({ ...f, [field]: e.target.value }))}
+                      style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:"1.5px solid rgba(196,122,46,0.2)", fontFamily:font, fontSize:13.5, color:"#2C1A0E", outline:"none", background:"#fff", boxSizing:"border-box" }} />
+                  </div>
+                ))}
+
+                <button onClick={placeOrder} disabled={placing || !checkoutForm.name || !checkoutForm.phone || !checkoutForm.address}
+                  style={{ width:"100%", marginTop:8, padding:"14px", borderRadius:12, border:"none", background:(!checkoutForm.name||!checkoutForm.phone||!checkoutForm.address||placing)?"rgba(196,122,46,0.4)":"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:15, fontWeight:800, cursor:(!checkoutForm.name||!checkoutForm.phone||!checkoutForm.address||placing)?"default":"pointer", fontFamily:font }}>
+                  {placing ? "Placing Order…" : `Place Order · ₹${cartTotal.toLocaleString('en-IN')}`}
+                </button>
+                <div style={{ fontSize:11, color:"#9B7450", textAlign:"center", marginTop:10 }}>We'll confirm on WhatsApp before dispatching</div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── Sample Photos ── */}
       <div id="gh-grid" className="gh-photos-grid" style={{ background: "#FAF7F2", padding: "52px 24px", paddingBottom: selectedPhotos.length > 0 ? "120px" : "52px", transition: "padding-bottom 0.3s" }}>
