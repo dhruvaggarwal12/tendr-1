@@ -11,7 +11,7 @@ import PlatformFlow from "../../components/PlatformFlow";
 import OccasionPlanner from "../../components/OccasionPlanner";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import Footer from "../../components/Footer";
-import { easeIn, motion } from "framer-motion";
+import { AnimatePresence, easeIn, motion } from "framer-motion";
 import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import corpo from "../../assets/ui/corpo.jpg";
@@ -369,6 +369,208 @@ const GALLERY_FALLBACKS = {
   "Corporate Events":  "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&h=400&q=80",
 };
 
+// ── Website intro overlay ──────────────────────────────────────────────────
+const INTRO_SLIDES = [
+  {
+    title: "Your occasion,\nour obsession.",
+    sub: "Delhi NCR's premium event planning platform — photographers, caterers, decorators and more, all in one place.",
+    cta: "Continue",
+  },
+  {
+    title: "200+ verified\nvendors, one tap away.",
+    sub: "Browse, compare and book the best talent for birthdays, anniversaries, corporate events and everything between.",
+    cta: "Continue",
+  },
+  {
+    title: "Ready to plan\nsomething unforgettable?",
+    sub: "500+ events planned across Delhi NCR. Your perfect day starts here.",
+    cta: "Enter Tendr →",
+    final: true,
+  },
+];
+
+const INTRO_CATEG = [
+  { emoji: "📸", label: "Photography" },
+  { emoji: "🌸", label: "Decor" },
+  { emoji: "🍽️", label: "Catering" },
+  { emoji: "🎵", label: "DJ & Music" },
+  { emoji: "🎁", label: "Gift Hampers" },
+  { emoji: "🎪", label: "Activities" },
+];
+
+function WebsiteIntro({ onDone }) {
+  const [slide, setSlide] = React.useState(0);
+  const [dir, setDir] = React.useState(1);
+
+  const next = () => {
+    if (slide === INTRO_SLIDES.length - 1) { onDone(); return; }
+    setDir(1);
+    setSlide(s => s + 1);
+  };
+
+  const goTo = (i) => { setDir(i > slide ? 1 : -1); setSlide(i); };
+
+  const variants = {
+    enter: (d) => ({ x: d > 0 ? "100%" : "-60%", opacity: 0 }),
+    center: { x: 0, opacity: 1, transition: { duration: 0.42, ease: [0.4, 0, 0.2, 1] } },
+    exit:  (d) => ({ x: d > 0 ? "-18%" : "100%", opacity: 0, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] } }),
+  };
+
+  const illustrations = [
+    // Slide 0 — giant T lettermark + TENDR wordmark
+    <div key="s0" style={{ position: "relative", width: "100%", height: 180, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{
+        fontFamily: "'DM Serif Display', Georgia, serif",
+        fontSize: "clamp(7rem,20vw,11rem)", fontWeight: 400, lineHeight: 1,
+        background: "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.07))",
+        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+        userSelect: "none", letterSpacing: "-0.02em", position: "absolute",
+      }}>T</div>
+      <div style={{
+        position: "relative", zIndex: 2,
+        fontFamily: "'DM Serif Display', Georgia, serif",
+        fontSize: "clamp(2rem,5vw,3rem)", fontWeight: 400,
+        letterSpacing: "0.15em",
+        background: "linear-gradient(135deg,#C47A2E,#CCAB4A)",
+        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+      }}>TENDR</div>
+    </div>,
+
+    // Slide 1 — category grid
+    <div key="s1" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, maxWidth: 320, margin: "0 auto" }}>
+      {INTRO_CATEG.map(({ emoji, label }) => (
+        <div key={label} style={{
+          display: "flex", flexDirection: "column", alignItems: "center", gap: 7,
+          padding: "14px 8px",
+          background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.15)",
+          borderRadius: 14,
+        }}>
+          <span style={{ fontSize: 24 }}>{emoji}</span>
+          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,248,236,0.5)" }}>{label}</span>
+        </div>
+      ))}
+    </div>,
+
+    // Slide 2 — stats
+    <div key="s2" style={{ textAlign: "center", width: "100%" }}>
+      <div style={{
+        fontFamily: "'DM Serif Display', Georgia, serif",
+        fontSize: "clamp(4rem,12vw,7rem)", fontWeight: 400,
+        background: "linear-gradient(135deg,#C47A2E,#CCAB4A,#D4B86A)",
+        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+        lineHeight: 1, letterSpacing: "-0.02em",
+      }}>500+</div>
+      <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "rgba(196,122,46,0.6)", marginTop: 6, marginBottom: 24 }}>Events Planned</div>
+      <div style={{ display: "flex", justifyContent: "center", gap: "clamp(20px,5vw,48px)" }}>
+        {[["200+","Vendors"],["4.8","Rating"],["4","Cities"]].map(([num,lab]) => (
+          <div key={lab} style={{ textAlign: "center" }}>
+            <div style={{ fontSize: "clamp(1.4rem,4vw,2rem)", fontWeight: 900, color: "#FFF8EC", letterSpacing: "-0.02em", lineHeight: 1 }}>{num}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(196,122,46,0.55)", marginTop: 4 }}>{lab}</div>
+          </div>
+        ))}
+      </div>
+    </div>,
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 1 }}
+      exit={{ opacity: 0, transition: { duration: 0.38 } }}
+      style={{
+        position: "fixed", inset: 0, zIndex: 9999,
+        background: "#070400",
+        display: "flex", flexDirection: "column",
+        overflow: "hidden",
+        fontFamily: "'Outfit', sans-serif",
+      }}
+    >
+      {/* Skip */}
+      <motion.button
+        whileTap={{ scale: 0.96 }}
+        onClick={onDone}
+        style={{
+          position: "absolute", top: 20, right: 20, zIndex: 10,
+          background: "rgba(255,248,236,0.07)", border: "1px solid rgba(255,248,236,0.1)",
+          borderRadius: 100, padding: "7px 18px",
+          fontSize: 12, fontWeight: 600, color: "rgba(255,248,236,0.45)",
+          letterSpacing: "0.06em", cursor: "pointer", fontFamily: "inherit",
+          minHeight: 44, display: "flex", alignItems: "center",
+        }}
+      >
+        Skip
+      </motion.button>
+
+      {/* Slides */}
+      <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+        <AnimatePresence initial={false} custom={dir}>
+          <motion.div
+            key={slide}
+            custom={dir}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            style={{
+              position: "absolute", inset: 0,
+              display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center",
+              padding: "80px 32px 0",
+              textAlign: "center",
+            }}
+          >
+            <div style={{ width: "100%", maxWidth: 480, marginBottom: 36 }}>
+              {illustrations[slide]}
+            </div>
+            <h2 style={{
+              fontFamily: "'DM Serif Display', Georgia, serif",
+              fontSize: "clamp(1.9rem,4.5vw,3rem)", fontWeight: 400,
+              color: "#FFF8EC", lineHeight: 1.12,
+              letterSpacing: "-0.01em", marginBottom: 14,
+              maxWidth: 520, whiteSpace: "pre-line",
+            }}>
+              {INTRO_SLIDES[slide].title}
+            </h2>
+            <p style={{
+              fontSize: "clamp(14px,2vw,16px)",
+              color: "rgba(255,248,236,0.52)", lineHeight: 1.72, maxWidth: 440,
+            }}>
+              {INTRO_SLIDES[slide].sub}
+            </p>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Bottom controls */}
+      <div style={{ padding: "0 32px 48px", display: "flex", flexDirection: "column", alignItems: "center", gap: 20, flexShrink: 0 }}>
+        <div style={{ display: "flex", gap: 7, alignItems: "center" }}>
+          {INTRO_SLIDES.map((_, i) => (
+            <motion.div
+              key={i}
+              animate={{ width: i === slide ? 28 : 7, background: i === slide ? "#C47A2E" : "rgba(255,248,236,0.18)" }}
+              transition={{ duration: 0.25 }}
+              style={{ height: 7, borderRadius: 100, cursor: "pointer" }}
+              onClick={() => goTo(i)}
+            />
+          ))}
+        </div>
+        <motion.button
+          whileTap={{ scale: 0.975 }}
+          onClick={next}
+          style={{
+            width: "100%", maxWidth: 420, height: 52,
+            background: "linear-gradient(135deg,#C47A2E,#CCAB4A)",
+            border: "none", borderRadius: 16,
+            color: "#0A0500", fontWeight: 700, fontSize: 15,
+            fontFamily: "inherit", cursor: "pointer", letterSpacing: "0.02em",
+          }}
+        >
+          {INTRO_SLIDES[slide].cta}
+        </motion.button>
+      </div>
+    </motion.div>
+  );
+}
+
 const Home = () => {
   const navigate = useNavigate();
   const bookingType = useSelector((s) => s.eventPlanning.bookingType);
@@ -442,6 +644,9 @@ const Home = () => {
   const [showRakhi, setShowRakhi] = useState(false);
   const [hoveredOcc, setHoveredOcc] = useState(null);
   const [occModal, setOccModal] = useState(null);
+  const [showIntro, setShowIntro] = useState(() => {
+    try { return !localStorage.getItem("tendr_intro_seen"); } catch { return false; }
+  });
   const [searchParams] = useSearchParams();
   useEffect(() => {
     const occ = searchParams.get("occasion");
@@ -832,6 +1037,19 @@ const Home = () => {
 
   return (
     <div className="App">
+      {/* Website intro — shown on first visit, stored in localStorage */}
+      <AnimatePresence>
+        {showIntro && (
+          <WebsiteIntro
+            key="intro"
+            onDone={() => {
+              try { localStorage.setItem("tendr_intro_seen", "1"); } catch {}
+              setShowIntro(false);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       <PageTour pageKey="home" steps={HOME_TOUR_STEPS} onDone={() => window.dispatchEvent(new CustomEvent("tendr:show-signin"))} />
       <SEO title="Tendr — Celebration & Event Planning Platform in Delhi NCR" description="Plan birthdays, anniversaries, balloon decorations, surprise parties, baby showers, house parties and corporate events across Delhi, Noida, Gurgaon, Ghaziabad and Greater Noida. Compare 100+ verified vendors and book instantly." path="/" />
       {/* Speed dial (floating) */}
