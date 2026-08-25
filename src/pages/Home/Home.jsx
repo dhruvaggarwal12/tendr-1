@@ -369,167 +369,199 @@ const GALLERY_FALLBACKS = {
   "Corporate Events":  "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&h=400&q=80",
 };
 
-// ── Website intro overlay (light theme — covers all website sections) ────────
-const INTRO_OCCASIONS = [
-  "🎂 Birthday","💕 Anniversary","🏢 Corporate","🏠 Housewarming",
-  "👶 Baby Shower","🎓 Graduation","🎉 Get-Together","🎁 Gift Hamper",
-];
-const INTRO_CATEGORIES = [
+// ── Website intro overlay (mobile-only, light theme) ─────────────────────────
+const INTRO_CAT = [
   { emoji: "📸", label: "Photography" },
-  { emoji: "🌸", label: "Decor & Florals" },
+  { emoji: "🌸", label: "Decor" },
   { emoji: "🍽️", label: "Catering" },
   { emoji: "🎵", label: "DJ & Music" },
   { emoji: "🎁", label: "Gift Hampers" },
-  { emoji: "🎪", label: "Fun Activities" },
+  { emoji: "🎪", label: "Activities" },
 ];
+const INTRO_OCC = ["🎂 Birthday","💕 Anniversary","🏢 Corporate","🏠 Housewarming","🎓 Graduation","🎉 Get-Together"];
 const INTRO_TOTAL = 4;
-const IB = "#FEFAF4";          // intro background
-const IT = "#1A0D03";          // intro text
-const IM = "rgba(26,13,3,0.48)"; // intro muted
-const IG = "#C47A2E";          // gold
-const IGL = "#CCAB4A";         // gold light
-const IC = "rgba(196,122,46,0.06)"; // card bg
-const IB2 = "rgba(196,122,46,0.15)"; // card border
+const IB  = "#FFFDF9";
+const IT  = "#1A0D03";
+const IM  = "rgba(26,13,3,0.42)";
+const IG  = "#C47A2E";
+const IGL = "#CCAB4A";
+const IC  = "rgba(196,122,46,0.06)";
+const IB2 = "rgba(196,122,46,0.14)";
 const IDF = "'DM Serif Display', Georgia, serif";
 
 function WebsiteIntro({ onDone }) {
   const [slide, setSlide] = React.useState(0);
   const [dir, setDir] = React.useState(1);
-  const introNav = useNavigate();
 
-  const dismiss = (path) => { onDone(); if (path) introNav(path); };
+  const dismiss = () => onDone();
   const goNext = () => { if (slide < INTRO_TOTAL - 1) { setDir(1); setSlide(s => s + 1); } };
   const goPrev = () => { if (slide > 0) { setDir(-1); setSlide(s => s - 1); } };
   const goTo   = (i) => { setDir(i > slide ? 1 : -1); setSlide(i); };
 
   const sv = {
-    enter: (d) => ({ x: d > 0 ? "100%" : "-45%", opacity: 0 }),
-    center: { x: 0, opacity: 1, transition: { duration: 0.38, ease: [0.4, 0, 0.2, 1] } },
-    exit:  (d) => ({ x: d > 0 ? "-18%" : "100%", opacity: 0, transition: { duration: 0.28, ease: [0.4, 0, 0.2, 1] } }),
+    enter: (d) => ({ x: d > 0 ? "100%" : "-60%", opacity: 0 }),
+    center: { x: 0, opacity: 1, transition: { duration: 0.34, ease: [0.4, 0, 0.2, 1] } },
+    exit:  (d) => ({ x: d > 0 ? "-20%" : "100%", opacity: 0, transition: { duration: 0.22, ease: [0.4, 0, 0.2, 1] } }),
   };
 
-  const slideContent = [
-    /* ── 0: Brand & stats ── */
-    <div key="s0" style={{ display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", padding:"40px 28px 24px", gap:0 }}>
-      <div style={{ fontFamily:IDF, fontSize:"clamp(2.6rem,6vw,4rem)", fontWeight:400, letterSpacing:"0.14em",
-        background:`linear-gradient(135deg,${IG},${IGL})`,
-        WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", marginBottom:6 }}>
-        TENDR
-      </div>
-      <div style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.22em",
-        color:"rgba(196,122,46,0.6)", marginBottom:32 }}>
-        Delhi NCR's Event Planning Platform
-      </div>
-      <h2 style={{ fontFamily:IDF, fontSize:"clamp(2.2rem,5.5vw,3.8rem)", fontWeight:400,
-        color:IT, lineHeight:1.08, letterSpacing:"-0.01em", marginBottom:16, maxWidth:520 }}>
+  const slides = [
+    /* ── 0: Brand ── */
+    <div key="s0" style={{ display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", padding:"28px 24px 0" }}>
+      {/* Decorative rings */}
+      <motion.div initial={{ scale:0.75, opacity:0 }} animate={{ scale:1, opacity:1 }}
+        transition={{ duration:0.52, ease:[0.34,1.56,0.64,1] }}
+        style={{ position:"relative", width:160, height:160, marginBottom:20, flexShrink:0 }}>
+        {[160,118,76].map((s,i)=>(
+          <div key={i} style={{ position:"absolute", top:"50%", left:"50%",
+            transform:"translate(-50%,-50%)", width:s, height:s, borderRadius:"50%",
+            border:`1px solid rgba(196,122,46,${0.09+i*0.09})`,
+            background: i===2 ? "rgba(196,122,46,0.07)" : "transparent" }}/>
+        ))}
+        <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-52%)",
+          fontFamily:IDF, fontSize:42, fontWeight:400, letterSpacing:"0.06em",
+          background:`linear-gradient(135deg,${IG},${IGL})`,
+          WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>T</div>
+      </motion.div>
+
+      <motion.h2 initial={{ y:18, opacity:0 }} animate={{ y:0, opacity:1 }}
+        transition={{ delay:0.14, duration:0.38 }}
+        style={{ fontFamily:IDF, fontSize:"2.5rem", fontWeight:400,
+          color:IT, lineHeight:1.08, margin:"0 0 10px" }}>
         Your occasion,<br/>our obsession.
-      </h2>
-      <p style={{ fontSize:"clamp(14px,1.9vw,16px)", color:IM, lineHeight:1.72, maxWidth:440, marginBottom:36 }}>
-        Browse verified vendors, plan every detail, order gift hampers — everything for any celebration, in one place.
-      </p>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8, width:"100%", maxWidth:500,
-        borderTop:`1px solid ${IB2}`, paddingTop:24 }}>
-        {[["500+","Events Planned"],["200+","Verified Vendors"],["4.8★","Avg Rating"],["4","Cities Served"]].map(([n,l])=>(
-          <div key={l} style={{ textAlign:"center" }}>
-            <div style={{ fontSize:"clamp(1.2rem,2.8vw,1.8rem)", fontWeight:900, color:IT, letterSpacing:"-0.02em", lineHeight:1 }}>{n}</div>
-            <div style={{ fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:"rgba(196,122,46,0.6)", marginTop:5, lineHeight:1.3 }}>{l}</div>
+      </motion.h2>
+      <motion.p initial={{ y:12, opacity:0 }} animate={{ y:0, opacity:1 }}
+        transition={{ delay:0.2, duration:0.36 }}
+        style={{ fontSize:14, color:IM, margin:"0 0 28px", lineHeight:1.6 }}>
+        Delhi NCR's top event planning platform.
+      </motion.p>
+
+      {/* Stats strip */}
+      <motion.div initial={{ y:12, opacity:0 }} animate={{ y:0, opacity:1 }}
+        transition={{ delay:0.28, duration:0.36 }}
+        style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", width:"100%",
+          borderRadius:14, overflow:"hidden", border:`1px solid ${IB2}` }}>
+        {[["100+","Vendors"],["<2hr","Response"],["5+ yrs","Avg. Exp."]].map(([n,l],i)=>(
+          <div key={i} style={{ textAlign:"center", padding:"14px 6px",
+            borderRight: i<2 ? `1px solid ${IB2}` : "none",
+            background: i===1 ? "rgba(196,122,46,0.04)" : "transparent" }}>
+            <div style={{ fontSize:"1.6rem", fontWeight:900, color:IT, letterSpacing:"-0.02em", lineHeight:1 }}>{n}</div>
+            <div style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:"rgba(196,122,46,0.6)", marginTop:4 }}>{l}</div>
           </div>
+        ))}
+      </motion.div>
+    </div>,
+
+    /* ── 1: Vendors ── */
+    <div key="s1" style={{ display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", padding:"28px 24px 0" }}>
+      <motion.div initial={{ y:14, opacity:0 }} animate={{ y:0, opacity:1 }} transition={{ duration:0.34 }}>
+        <div style={{ display:"inline-block", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.18em",
+          color:IG, background:IC, border:`1px solid ${IB2}`, borderRadius:100, padding:"4px 14px", marginBottom:14 }}>
+          Browse &amp; Book
+        </div>
+        <h2 style={{ fontFamily:IDF, fontSize:"2.2rem", fontWeight:400, color:IT, lineHeight:1.1, margin:"0 0 8px" }}>
+          Find your vendors.
+        </h2>
+        <p style={{ fontSize:14, color:IM, margin:"0 0 22px", lineHeight:1.6 }}>
+          100+ pros across 6 categories.
+        </p>
+      </motion.div>
+
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:9, width:"100%" }}>
+        {INTRO_CAT.map(({emoji,label},i)=>(
+          <motion.div key={label}
+            initial={{ y:22, opacity:0, scale:0.93 }} animate={{ y:0, opacity:1, scale:1 }}
+            transition={{ delay:0.08 + i*0.07, duration:0.36, ease:[0.34,1.2,0.64,1] }}
+            style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:6,
+              padding:"14px 4px", background:IC, border:`1px solid ${IB2}`, borderRadius:12 }}>
+            <span style={{ fontSize:28 }}>{emoji}</span>
+            <span style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.08em", color:IM, lineHeight:1.3 }}>{label}</span>
+          </motion.div>
         ))}
       </div>
     </div>,
 
-    /* ── 1: Browse vendors ── */
-    <div key="s1" style={{ display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", padding:"40px 28px 24px" }}>
-      <div style={{ display:"inline-block", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.2em",
-        color:IG, background:IC, border:`1px solid ${IB2}`, borderRadius:100, padding:"5px 16px", marginBottom:18 }}>
-        Browse &amp; Book
-      </div>
-      <h2 style={{ fontFamily:IDF, fontSize:"clamp(2rem,5vw,3.2rem)", fontWeight:400,
-        color:IT, lineHeight:1.1, letterSpacing:"-0.01em", marginBottom:10, maxWidth:500 }}>
-        200+ verified vendors,<br/>one search away.
-      </h2>
-      <p style={{ fontSize:"clamp(13px,1.8vw,15px)", color:IM, lineHeight:1.72, maxWidth:420, marginBottom:28 }}>
-        Compare full portfolios, read verified reviews and confirm pricing — before you commit to anything.
-      </p>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, width:"100%", maxWidth:440 }}>
-        {INTRO_CATEGORIES.map(({emoji,label})=>(
-          <div key={label} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:8,
-            padding:"16px 8px", background:IC, border:`1px solid ${IB2}`, borderRadius:14,
-            boxShadow:"0 2px 10px rgba(196,122,46,0.05)" }}>
-            <span style={{ fontSize:26 }}>{emoji}</span>
-            <span style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:IM }}>{label}</span>
-          </div>
-        ))}
-      </div>
-    </div>,
+    /* ── 2: Occasions ── */
+    <div key="s2" style={{ display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", padding:"28px 24px 0" }}>
+      <motion.div initial={{ y:14, opacity:0 }} animate={{ y:0, opacity:1 }} transition={{ duration:0.34 }}>
+        <div style={{ display:"inline-block", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.18em",
+          color:IG, background:IC, border:`1px solid ${IB2}`, borderRadius:100, padding:"4px 14px", marginBottom:14 }}>
+          Any Occasion
+        </div>
+        <h2 style={{ fontFamily:IDF, fontSize:"2.2rem", fontWeight:400, color:IT, lineHeight:1.1, margin:"0 0 8px" }}>
+          Every celebration,<br/>covered.
+        </h2>
+        <p style={{ fontSize:14, color:IM, margin:"0 0 22px", lineHeight:1.6 }}>
+          Birthdays to corporate events.
+        </p>
+      </motion.div>
 
-    /* ── 2: Occasions & tools ── */
-    <div key="s2" style={{ display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", padding:"40px 28px 24px" }}>
-      <div style={{ display:"inline-block", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.2em",
-        color:IG, background:IC, border:`1px solid ${IB2}`, borderRadius:100, padding:"5px 16px", marginBottom:18 }}>
-        Plan Your Event
-      </div>
-      <h2 style={{ fontFamily:IDF, fontSize:"clamp(2rem,5vw,3.2rem)", fontWeight:400,
-        color:IT, lineHeight:1.1, letterSpacing:"-0.01em", marginBottom:10, maxWidth:500 }}>
-        Every celebration,<br/>beautifully covered.
-      </h2>
-      <p style={{ fontSize:"clamp(13px,1.8vw,15px)", color:IM, lineHeight:1.72, maxWidth:420, marginBottom:22 }}>
-        From intimate birthday setups to large corporate galas — plus free planning tools for every detail.
-      </p>
-      <div style={{ display:"flex", flexWrap:"wrap", gap:8, justifyContent:"center", marginBottom:22, maxWidth:500 }}>
-        {INTRO_OCCASIONS.map(occ=>(
-          <div key={occ} style={{ padding:"7px 15px", borderRadius:100, fontSize:13, fontWeight:500,
-            background:IC, border:`1px solid ${IB2}`, color:IT }}>
+      <div style={{ display:"flex", flexWrap:"wrap", gap:9, justifyContent:"center", marginBottom:20 }}>
+        {INTRO_OCC.map((occ,i)=>(
+          <motion.div key={occ}
+            initial={{ scale:0.78, opacity:0 }} animate={{ scale:1, opacity:1 }}
+            transition={{ delay:0.08 + i*0.07, duration:0.32, ease:[0.34,1.2,0.64,1] }}
+            style={{ padding:"8px 16px", borderRadius:100, fontSize:13.5, fontWeight:500,
+              background:IC, border:`1px solid ${IB2}`, color:IT }}>
             {occ}
-          </div>
+          </motion.div>
         ))}
       </div>
-      <div style={{ borderTop:`1px solid ${IB2}`, paddingTop:18, display:"flex", flexWrap:"wrap", gap:7, justifyContent:"center", maxWidth:480 }}>
-        {["Budget Allocator","Timeline Builder","Stationery by Tendr","Gift Hampers"].map(t=>(
+
+      <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.55 }}
+        style={{ borderTop:`1px solid ${IB2}`, paddingTop:14, display:"flex",
+          flexWrap:"wrap", gap:7, justifyContent:"center", width:"100%" }}>
+        {["Budget Tools","Timeline","Stationery","Gift Hampers"].map(t=>(
           <span key={t} style={{ fontSize:11, fontWeight:700, color:IG,
-            background:"rgba(196,122,46,0.07)", border:`1px solid rgba(196,122,46,0.14)`,
-            borderRadius:7, padding:"5px 11px" }}>{t}</span>
+            background:"rgba(196,122,46,0.07)", border:`1px solid rgba(196,122,46,0.13)`,
+            borderRadius:7, padding:"4px 10px" }}>{t}</span>
         ))}
-      </div>
+      </motion.div>
     </div>,
 
-    /* ── 3: Enter ── */
-    <div key="s3" style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
-      textAlign:"center", padding:"32px 28px 32px", minHeight:"100%" }}>
-      <div style={{ width:64, height:64, borderRadius:"50%", background:`rgba(196,122,46,0.1)`,
-        border:`1.5px solid ${IB2}`, display:"flex", alignItems:"center", justifyContent:"center",
-        fontSize:28, marginBottom:22 }}>🎉</div>
-      <h2 style={{ fontFamily:IDF, fontSize:"clamp(2.2rem,5.5vw,3.6rem)", fontWeight:400,
-        color:IT, lineHeight:1.08, letterSpacing:"-0.01em", marginBottom:12 }}>
-        You're in the<br/>right place.
-      </h2>
-      <p style={{ fontSize:"clamp(13px,1.8vw,15px)", color:IM, lineHeight:1.7, maxWidth:380, marginBottom:28 }}>
-        Discover vendors, plan your event and celebrate — free to browse, no commitment required.
-      </p>
-      <div style={{ display:"flex", gap:20, marginBottom:32, flexWrap:"wrap", justifyContent:"center" }}>
-        {["Free to browse","Verified vendors","Secure payments"].map(t=>(
-          <div key={t} style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, color:IT, fontWeight:500 }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={IG} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    /* ── 3: CTA ── */
+    <div key="s3" style={{ display:"flex", flexDirection:"column", alignItems:"center",
+      justifyContent:"center", textAlign:"center", padding:"28px 28px", minHeight:"100%" }}>
+      <motion.div initial={{ scale:0.65, opacity:0 }} animate={{ scale:1, opacity:1 }}
+        transition={{ duration:0.52, ease:[0.34,1.56,0.64,1] }}
+        style={{ width:76, height:76, borderRadius:"50%",
+          background:"rgba(196,122,46,0.09)", border:`1.5px solid ${IB2}`,
+          boxShadow:`0 0 0 14px rgba(196,122,46,0.04)`,
+          display:"flex", alignItems:"center", justifyContent:"center",
+          fontSize:34, marginBottom:22 }}>
+        🎉
+      </motion.div>
+
+      <motion.h2 initial={{ y:16, opacity:0 }} animate={{ y:0, opacity:1 }}
+        transition={{ delay:0.14, duration:0.38 }}
+        style={{ fontFamily:IDF, fontSize:"2.4rem", fontWeight:400,
+          color:IT, lineHeight:1.1, margin:"0 0 22px" }}>
+        Ready to celebrate?
+      </motion.h2>
+
+      <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.24 }}
+        style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:28, alignItems:"flex-start" }}>
+        {["100+ verified vendors","Free to browse","Secure payments"].map(t=>(
+          <div key={t} style={{ display:"flex", alignItems:"center", gap:8, fontSize:14, color:IT, fontWeight:500 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={IG} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
             {t}
           </div>
         ))}
-      </div>
-      <div style={{ display:"flex", flexDirection:"column", gap:10, width:"100%", maxWidth:360 }}>
-        <motion.button whileTap={{ scale:0.975 }} onClick={() => dismiss("/listings")}
-          style={{ height:52, background:`linear-gradient(135deg,${IG},${IGL})`, border:"none",
-            borderRadius:16, color:"#0A0500", fontWeight:700, fontSize:15, fontFamily:"inherit", cursor:"pointer" }}>
-          Browse Vendors →
-        </motion.button>
-        <motion.button whileTap={{ scale:0.975 }} onClick={() => dismiss("/booking")}
-          style={{ height:52, background:"transparent", border:`1.5px solid ${IB2}`,
-            borderRadius:16, color:IG, fontWeight:700, fontSize:15, fontFamily:"inherit", cursor:"pointer" }}>
-          Plan an Event
-        </motion.button>
-      </div>
+      </motion.div>
+
+      <motion.button initial={{ y:16, opacity:0 }} animate={{ y:0, opacity:1 }}
+        transition={{ delay:0.32, duration:0.38 }}
+        whileTap={{ scale:0.975 }} onClick={dismiss}
+        style={{ width:"100%", maxWidth:320, height:56,
+          background:`linear-gradient(135deg,${IG},${IGL})`, border:"none",
+          borderRadius:18, color:"#0A0500", fontWeight:700, fontSize:17,
+          fontFamily:"inherit", cursor:"pointer" }}>
+        Let's Plan
+      </motion.button>
+
       <button onClick={goPrev}
-        style={{ marginTop:20, background:"none", border:"none", cursor:"pointer",
+        style={{ marginTop:16, background:"none", border:"none", cursor:"pointer",
           fontSize:12, color:IM, fontFamily:"inherit", display:"flex", alignItems:"center", gap:5 }}>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
         Back
@@ -540,7 +572,7 @@ function WebsiteIntro({ onDone }) {
   return (
     <motion.div
       initial={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.4 } }}
+      exit={{ opacity: 0, transition: { duration: 0.38 } }}
       style={{ position:"fixed", inset:0, zIndex:9999, background:IB,
         display:"flex", flexDirection:"column", overflow:"hidden", fontFamily:"'Outfit',sans-serif" }}
     >
@@ -548,69 +580,71 @@ function WebsiteIntro({ onDone }) {
       <div style={{ height:3, background:"rgba(196,122,46,0.1)", flexShrink:0 }}>
         <motion.div
           animate={{ width:`${((slide + 1) / INTRO_TOTAL) * 100}%` }}
-          transition={{ duration:0.38, ease:[0.4,0,0.2,1] }}
+          transition={{ duration:0.36, ease:[0.4,0,0.2,1] }}
           style={{ height:"100%", background:IG, borderRadius:"0 2px 2px 0" }}
         />
       </div>
 
-      {/* Header: logo + counter + close */}
+      {/* Header */}
       <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
-        padding:"14px 20px 0", flexShrink:0 }}>
-        <div style={{ fontFamily:IDF, fontSize:17, color:IT, letterSpacing:"0.07em" }}>TENDR</div>
-        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-          <span style={{ fontSize:11, fontWeight:600, color:"rgba(26,13,3,0.3)", letterSpacing:"0.08em" }}>
-            {slide + 1} of {INTRO_TOTAL}
+        padding:"12px 18px 0", flexShrink:0 }}>
+        <div style={{ fontFamily:IDF, fontSize:16, color:IT, letterSpacing:"0.07em" }}>TENDR</div>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <span style={{ fontSize:11, fontWeight:600, color:"rgba(26,13,3,0.28)", letterSpacing:"0.08em" }}>
+            {slide + 1} / {INTRO_TOTAL}
           </span>
-          <motion.button whileTap={{ scale:0.95 }} onClick={() => dismiss(null)}
-            style={{ width:36, height:36, borderRadius:"50%", minHeight:44,
+          <motion.button whileTap={{ scale:0.92 }} onClick={dismiss}
+            style={{ width:34, height:34, minWidth:44, minHeight:44, borderRadius:"50%",
               background:"rgba(26,13,3,0.06)", border:"1px solid rgba(26,13,3,0.1)",
               display:"flex", alignItems:"center", justifyContent:"center",
-              cursor:"pointer", fontSize:18, color:"rgba(26,13,3,0.38)", fontFamily:"inherit" }}>
+              cursor:"pointer", fontSize:17, color:"rgba(26,13,3,0.35)", fontFamily:"inherit" }}>
             ×
           </motion.button>
         </div>
       </div>
 
-      {/* Slide area */}
+      {/* Slides */}
       <div style={{ flex:1, position:"relative", overflow:"hidden" }}>
         <AnimatePresence initial={false} custom={dir}>
           <motion.div key={slide} custom={dir} variants={sv}
             initial="enter" animate="center" exit="exit"
             style={{ position:"absolute", inset:0, overflowY:"auto" }}>
-            {slideContent[slide]}
+            {slides[slide]}
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Bottom nav — only on slides 0–2 */}
+      {/* Bottom nav — slides 0–2 */}
       {slide < INTRO_TOTAL - 1 && (
-        <div style={{ padding:"12px 24px 36px", display:"flex", alignItems:"center",
-          gap:12, flexShrink:0, borderTop:`1px solid ${IB2}` }}>
+        <div style={{ padding:"10px 20px 30px", display:"flex", alignItems:"center",
+          gap:12, flexShrink:0, borderTop:`1px solid rgba(196,122,46,0.1)` }}>
           {slide > 0 ? (
-            <motion.button whileTap={{ scale:0.95 }} onClick={goPrev}
-              style={{ width:44, height:44, borderRadius:"50%",
+            <motion.button whileTap={{ scale:0.93 }} onClick={goPrev}
+              style={{ width:42, height:42, borderRadius:"50%",
                 background:"rgba(26,13,3,0.05)", border:"1px solid rgba(26,13,3,0.1)",
-                display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", flexShrink:0 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(26,13,3,0.45)" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+                display:"flex", alignItems:"center", justifyContent:"center",
+                cursor:"pointer", flexShrink:0 }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(26,13,3,0.4)" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
             </motion.button>
-          ) : <div style={{ width:44 }}/>}
+          ) : <div style={{ width:42 }}/>}
 
-          <div style={{ flex:1, display:"flex", justifyContent:"center", gap:7, alignItems:"center" }}>
+          <div style={{ flex:1, display:"flex", justifyContent:"center", gap:6, alignItems:"center" }}>
             {Array.from({ length: INTRO_TOTAL }).map((_,i) => (
               <motion.div key={i}
-                animate={{ width: i === slide ? 24 : 7, background: i === slide ? IG : "rgba(26,13,3,0.14)" }}
-                transition={{ duration:0.25 }}
-                style={{ height:7, borderRadius:100, cursor:"pointer" }}
+                animate={{ width: i === slide ? 22 : 6, background: i === slide ? IG : "rgba(26,13,3,0.13)" }}
+                transition={{ duration:0.2 }}
+                style={{ height:6, borderRadius:100, cursor:"pointer" }}
                 onClick={() => goTo(i)}
               />
             ))}
           </div>
 
           <motion.button whileTap={{ scale:0.975 }} onClick={goNext}
-            style={{ height:44, padding:"0 24px",
+            style={{ height:42, padding:"0 22px",
               background:`linear-gradient(135deg,${IG},${IGL})`,
-              border:"none", borderRadius:12, color:"#0A0500",
-              fontWeight:700, fontSize:14, fontFamily:"inherit", cursor:"pointer", flexShrink:0 }}>
+              border:"none", borderRadius:11, color:"#0A0500",
+              fontWeight:700, fontSize:13.5, fontFamily:"inherit",
+              cursor:"pointer", flexShrink:0 }}>
             Continue
           </motion.button>
         </div>
@@ -693,7 +727,7 @@ const Home = () => {
   const [hoveredOcc, setHoveredOcc] = useState(null);
   const [occModal, setOccModal] = useState(null);
   const [showIntro, setShowIntro] = useState(() => {
-    try { return !localStorage.getItem("tendr_intro_seen") && window.innerWidth > 768; } catch { return false; }
+    try { return !localStorage.getItem("tendr_intro_seen") && window.innerWidth <= 768; } catch { return false; }
   });
   const [searchParams] = useSearchParams();
   useEffect(() => {
@@ -1428,55 +1462,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ── Bold Stats — editorial pattern from 21st.dev/uilayout.contact/stats-bold ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
-        transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
-        style={{ background: "#0D0800", padding: "52px 28px 56px", fontFamily: "'Outfit', sans-serif" }}
-      >
-        <div style={{ maxWidth: 1120, margin: "0 auto" }}>
-          {/* Hero metric row — one dominant number as focal anchor */}
-          <div style={{ display: "flex", alignItems: "baseline", gap: "clamp(16px,3vw,40px)", paddingBottom: 40, borderBottom: "1px solid rgba(196,122,46,0.16)", flexWrap: "wrap" }}>
-            <span style={{
-              fontSize: "clamp(4.5rem,11vw,8.5rem)", fontWeight: 900,
-              letterSpacing: "-0.04em", lineHeight: 0.95,
-              background: "linear-gradient(135deg,#C47A2E 0%,#CCAB4A 55%,#D4A848 100%)",
-              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-              flexShrink: 0,
-            }}>500+</span>
-            <div style={{ maxWidth: 300 }}>
-              <h3 style={{ fontSize: "clamp(15px,2vw,18px)", fontWeight: 700, color: "#FFF8EC", margin: "0 0 8px", lineHeight: 1.3 }}>
-                Events planned across Delhi NCR
-              </h3>
-              <p style={{ fontSize: 13, color: "rgba(255,248,236,0.48)", lineHeight: 1.65, margin: 0 }}>
-                Birthdays, anniversaries, house parties and corporate events — all booked through Tendr.
-              </p>
-            </div>
-          </div>
-          {/* Secondary stats row — 21st.dev pattern: huge num + all-caps tracking-widest label */}
-          <div style={{ display: "flex", gap: 0, paddingTop: 40, flexWrap: "wrap" }}>
-            {[
-              { num: "100+",    label: "Verified Vendors" },
-              { num: "4 Cities", label: "Delhi · Noida · GN · Gzb" },
-              { num: "4.8",     label: "Average Rating" },
-            ].map(({ num, label }, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.4 }}
-                transition={{ duration: 0.4, delay: i * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
-                style={{ flex: "1 0 120px", paddingRight: 24 }}
-              >
-                <p style={{ fontSize: "clamp(2rem,4.5vw,3.2rem)", fontWeight: 900, letterSpacing: "-0.035em", color: "#FFF8EC", margin: "0 0 8px", lineHeight: 1 }}>{num}</p>
-                <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(196,122,46,0.65)", margin: 0 }}>{label}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </motion.div>
 
       {/* ── Mobile photo strip — Editorial Image Hero pattern (felipemenezes098/hero-05) ── */}
       {/* Shows below hero on mobile, hidden on desktop */}
@@ -2453,7 +2438,7 @@ const Home = () => {
 
 
       {/* ── Party Places ── */}
-      <section style={{ background: "#FFFCF5", padding: "32px 24px 40px", fontFamily: "'Outfit', sans-serif" }}>
+      <section style={{ background: "#FFFCF5", padding: "22px 24px 28px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1060, margin: "0 auto" }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -2496,7 +2481,7 @@ const Home = () => {
               className="pp-featured"
               variants={{ hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 280, damping: 26 } } }}
               onClick={() => navigate(`/party-places/${PARTY_PLACES[0].id}`)}
-              style={{ gridRow: "span 2", borderRadius: 13, overflow: "hidden", cursor: "pointer", position: "relative", minHeight: 250 }}
+              style={{ gridRow: "span 2", borderRadius: 13, overflow: "hidden", cursor: "pointer", position: "relative", minHeight: 200 }}
               whileHover={{ scale: 1.012, transition: { type: "spring", stiffness: 340, damping: 28 } }}
             >
               <img src={PARTY_PLACES[0].coverPhoto} alt={PARTY_PLACES[0].name} loading="lazy"
@@ -2527,7 +2512,7 @@ const Home = () => {
                 style={{ borderRadius: 13, overflow: "hidden", background: "#fff", cursor: "pointer", boxShadow: "0 2px 10px rgba(139,69,19,0.07)" }}
                 whileHover={{ y: -3, transition: { type: "spring", stiffness: 340, damping: 26 } }}
               >
-                <div style={{ position: "relative", paddingBottom: "42%" }}>
+                <div style={{ position: "relative", paddingBottom: "36%" }}>
                   <img src={place.coverPhoto} alt={place.name} loading="lazy"
                     style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
                   <div style={{ position: "absolute", top: 10, left: 10, background: "rgba(28,14,4,0.62)", backdropFilter: "blur(6px)", borderRadius: 100, padding: "3px 10px" }}>
@@ -2549,7 +2534,7 @@ const Home = () => {
             ))}
           </motion.div>
           <style>{`
-            .pp-featured { min-height: 250px !important; }
+            .pp-featured { min-height: 200px !important; }
             @media (max-width: 640px) {
               .party-places-grid { display: flex !important; overflow-x: auto !important; scroll-snap-type: x mandatory !important; gap: 14px !important; padding-bottom: 12px !important; margin: 0 -24px !important; padding-left: 24px !important; scrollbar-width: none; grid-template-rows: unset !important; }
               .party-places-grid::-webkit-scrollbar { display: none; }
