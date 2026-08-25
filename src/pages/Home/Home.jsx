@@ -693,7 +693,7 @@ const Home = () => {
   const [hoveredOcc, setHoveredOcc] = useState(null);
   const [occModal, setOccModal] = useState(null);
   const [showIntro, setShowIntro] = useState(() => {
-    try { return !localStorage.getItem("tendr_intro_seen"); } catch { return false; }
+    try { return !localStorage.getItem("tendr_intro_seen") && window.innerWidth <= 768; } catch { return false; }
   });
   const [searchParams] = useSearchParams();
   useEffect(() => {
