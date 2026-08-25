@@ -5,6 +5,7 @@ import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 import Footer from "../../components/Footer";
 import { useChatOverlay } from "../../context/ChatContext";
+import GiftQuiz from "../../components/GiftQuiz";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -44,6 +45,7 @@ const GiftHampersCakes = () => {
   const [similarTo, setSimilarTo] = useState(null);
   const [similarSheetOpen, setSimilarSheetOpen] = useState(false);
   const [heroIdx, setHeroIdx] = useState(0);
+  const [quizOpen, setQuizOpen] = useState(false);
 
   const filteredSamples = samples.filter(s => {
     if (selectedCategories.length > 0) {
@@ -261,6 +263,14 @@ const GiftHampersCakes = () => {
 
             <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
               <button
+                onClick={() => setQuizOpen(true)}
+                style={{ display:"inline-flex", alignItems:"center", gap:9, background:"rgba(196,122,46,0.12)", color:"#CCAB4A", fontSize:15, fontWeight:700, padding:"14px 28px", borderRadius:100, border:"1.5px solid rgba(196,122,46,0.35)", cursor:"pointer", fontFamily:font, letterSpacing:"0.02em", backdropFilter:"blur(4px)", transition:"background 0.2s" }}
+                onMouseEnter={e => e.currentTarget.style.background="rgba(196,122,46,0.2)"}
+                onMouseLeave={e => e.currentTarget.style.background="rgba(196,122,46,0.12)"}
+              >
+                🎁 Find Your Perfect Gift
+              </button>
+              <button
                 className="gh-cta-btn"
                 onClick={goToChat}
                 style={{ display:"inline-flex", alignItems:"center", gap:9, background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:15, fontWeight:700, padding:"14px 30px", borderRadius:100, border:"none", cursor:"pointer", fontFamily:font, boxShadow:"0 8px 28px rgba(196,122,46,0.42)", letterSpacing:"0.02em", transition:"box-shadow 0.2s, transform 0.2s" }}
@@ -298,7 +308,7 @@ const GiftHampersCakes = () => {
       </div>
 
       {/* ── Sample Photos ── */}
-      <div className="gh-photos-grid" style={{ background: "#FAF7F2", padding: "52px 24px", paddingBottom: selectedPhotos.length > 0 ? "120px" : "52px", transition: "padding-bottom 0.3s" }}>
+      <div id="gh-grid" className="gh-photos-grid" style={{ background: "#FAF7F2", padding: "52px 24px", paddingBottom: selectedPhotos.length > 0 ? "120px" : "52px", transition: "padding-bottom 0.3s" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
           {/* Section header */}
@@ -661,6 +671,19 @@ const GiftHampersCakes = () => {
       )}
 
       <Footer />
+
+      {/* Gift Finder Quiz */}
+      {quizOpen && (
+        <GiftQuiz
+          samples={samples}
+          onSelect={(sample) => {
+            // Add matched sample to selected and scroll to grid
+            setSelectedPhotos(prev => prev.some(p => p._id === sample._id) ? prev : [...prev, sample]);
+            document.getElementById('gh-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }}
+          onClose={() => setQuizOpen(false)}
+        />
+      )}
     </div>
   );
 };
