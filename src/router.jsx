@@ -150,6 +150,7 @@ const ReviewForm          = lazy(() => import('./pages/review/ReviewForm'));
 const FeedbackForm        = lazy(() => import('./pages/review/FeedbackForm'));
 const ContractPage        = lazy(() => import('./pages/vendor/ContractPage'));
 const RatePage            = lazy(() => import('./pages/vendor/RatePage'));
+const VendorLinktree      = lazy(() => import('./pages/vendor/LinktreePage'));
 const GuidesStore         = lazy(() => import('./pages/guides/GuidesStore'));
 const GuidePreview        = lazy(() => import('./pages/guides/GuidePreview'));
 const GuideReader         = lazy(() => import('./pages/guides/GuideReader'));
@@ -415,6 +416,10 @@ const router = createBrowserRouter([
     {
       path: "/rate/:token",
       element: <RatePage />,
+    },
+    {
+      path: "/links/:vendorId",
+      element: <VendorLinktree />,
     },
     {
       path: "/feedback",
