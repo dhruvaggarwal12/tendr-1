@@ -852,8 +852,9 @@ const GiftHampersCakes = () => {
       {quizOpen && (
         <GiftQuiz
           samples={samples}
+          occasions={availableEventTypes}
+          categories={availableGiftTypes}
           onSelect={(sample) => {
-            // Add matched sample to selected and scroll to grid
             setSelectedPhotos(prev => prev.some(p => p._id === sample._id) ? prev : [...prev, sample]);
             document.getElementById('gh-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }}
