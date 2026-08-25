@@ -10,6 +10,9 @@ const INK   = "#1C0E04";
 const CREAM = "#FFF8EC";
 const fmt   = (n) => `₹${n.toLocaleString("en-IN")}`;
 
+const CHIP_BG = { coffee:"#FEF3C7", tea:"#DCFCE7", chocolate:"#FEE2E2", skincare:"#FCE7F3", candles:"#EDE9FE", wellness:"#DBEAFE", books:"#FEF9E7", stationery:"#F5F3FF", home:"#FEFCE8", plants:"#D1FAE5", snacks:"#FFF3E0", packaging:"#F1F5F9" };
+const CHIP_AC = { coffee:"#D97706", tea:"#16A34A", chocolate:"#DC2626", skincare:"#DB2777", candles:"#7C3AED", wellness:"#2563EB", books:"#92400E", stationery:"#5B21B6", home:"#CA8A04", plants:"#059669", snacks:"#B45309", packaging:"#64748B" };
+
 // ── BASES ──────────────────────────────────────────────────────────────────────
 const BASES = [
   {
@@ -272,15 +275,11 @@ function FillStep({ base, placedItems, activeCategory, setActiveCategory, addIte
     ? CATALOG_ITEMS.filter(i => i.cat !== "packaging")
     : CATALOG_ITEMS.filter(i => i.cat === activeCategory);
 
-  // Deterministic scatter positions for basket chips (avoids layout thrashing)
+  // Grid positions for 46px product cards (3-col grid, % relative to drop zone)
   const chipPos = useCallback((idx) => {
-    const colCount = 3;
-    const col = idx % colCount;
-    const row = Math.floor(idx / colCount);
-    return {
-      left: `${6 + col * 31}%`,
-      top:  `${8 + row * 38}%`,
-    };
+    const col = idx % 3;
+    const row = Math.floor(idx / 3);
+    return { left: `${2 + col * 33}%`, top: `${2 + row * 51}%` };
   }, []);
 
   return (
@@ -325,10 +324,10 @@ function FillStep({ base, placedItems, activeCategory, setActiveCategory, addIte
       <div style={{
         flexShrink: 0, background: base.palette.bg,
         display: "flex", alignItems: "flex-start", justifyContent: "center",
-        paddingTop: 14, paddingBottom: 14, position: "relative", minHeight: 220,
+        paddingTop: 14, paddingBottom: 14, position: "relative", minHeight: 268,
       }}>
         {/* SVG + draggable zone layered */}
-        <div style={{ position: "relative", width: 200, height: 200 }}>
+        <div style={{ position: "relative", width: 240, height: 240 }}>
           <Svg color={base.palette.body} rimColor={base.palette.rimBg} />
 
           {/* Drop zone (inner basket area) */}
@@ -353,50 +352,65 @@ function FillStep({ base, placedItems, activeCategory, setActiveCategory, addIte
               </div>
             )}
 
-            {/* Draggable item chips */}
+            {/* Draggable product cards */}
             <AnimatePresence>
               {placedItems.slice(0, 9).map((item, idx) => {
                 const pos = chipPos(idx);
+                const bg  = CHIP_BG[item.cat]  || "#FEF3C7";
+                const ac  = CHIP_AC[item.cat]  || "#D97706";
                 return (
                   <motion.div
                     key={item.key}
                     drag
                     dragConstraints={basketRef}
-                    dragElastic={0.05}
-                    whileDrag={{ scale: 1.1, cursor: "grabbing" }}
-                    initial={{ scale: 0, opacity: 0, y: 20 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0, opacity: 0, transition: { duration: 0.18 } }}
-                    transition={{ type: "spring", stiffness: 420, damping: 26 }}
+                    dragElastic={0.04}
+                    whileDrag={{ scale: 1.14, zIndex: 20, cursor: "grabbing" }}
+                    initial={{ scale: 0, opacity: 0, y: 14, rotate: -10 }}
+                    animate={{ scale: 1, opacity: 1, y: 0, rotate: 0 }}
+                    exit={{ scale: 0, opacity: 0, transition: { duration: 0.15 } }}
+                    transition={{ type: "spring", stiffness: 460, damping: 22 }}
                     style={{
                       position: "absolute",
                       left: pos.left, top: pos.top,
-                      display: "inline-flex", alignItems: "center", gap: 3,
-                      background: "#fff",
-                      border: "1.5px solid rgba(196,122,46,0.3)",
-                      borderRadius: 100, padding: "3px 7px 3px 5px",
-                      boxShadow: "0 2px 8px rgba(28,14,4,0.12)",
+                      width: 46, height: 52,
+                      display: "flex", flexDirection: "column",
+                      alignItems: "center", justifyContent: "center",
+                      background: bg,
+                      border: `1.5px solid ${ac}44`,
+                      borderRadius: 9,
+                      boxShadow: `0 3px 10px rgba(28,14,4,0.13), 0 1px 3px ${ac}22`,
                       cursor: "grab", userSelect: "none",
                       touchAction: "none", zIndex: 2,
-                      maxWidth: "90%",
+                      gap: 2, padding: "4px 2px 3px",
+                      overflow: "hidden",
                     }}
                   >
-                    <span style={{ fontSize: 11 }}>{item.emoji}</span>
-                    <span style={{
-                      fontSize: 9, fontWeight: 700, color: INK, fontFamily: FONT,
-                      maxWidth: 48, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                    }}>
-                      {item.name.split(" ").slice(0, 2).join(" ")}
-                    </span>
+                    {/* × remove button — inside card top-right */}
                     <button
                       onClick={e => { e.stopPropagation(); removeItem(item.key); }}
                       onPointerDown={e => e.stopPropagation()}
                       style={{
-                        background: "none", border: "none", cursor: "pointer",
-                        padding: "0 0 0 1px", color: "rgba(28,14,4,0.35)",
-                        fontSize: 10, lineHeight: 1, flexShrink: 0,
+                        position: "absolute", top: 2, right: 2,
+                        width: 13, height: 13,
+                        background: "rgba(255,255,255,0.88)", border: "none",
+                        borderRadius: "50%", cursor: "pointer",
+                        color: ac, fontSize: 9, fontWeight: 900,
+                        lineHeight: 1, display: "flex", alignItems: "center",
+                        justifyContent: "center", padding: 0, flexShrink: 0,
                       }}
                     >×</button>
+                    {/* Product emoji — large, centered */}
+                    <span style={{ fontSize: 22, lineHeight: 1 }}>{item.emoji}</span>
+                    {/* Product name */}
+                    <span style={{
+                      fontSize: 7.5, fontWeight: 700, color: ac,
+                      fontFamily: FONT, width: "100%", textAlign: "center",
+                      lineHeight: 1.15, padding: "0 3px",
+                      overflow: "hidden", display: "-webkit-box",
+                      WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                    }}>
+                      {item.name.split(" ").slice(0, 2).join(" ")}
+                    </span>
                   </motion.div>
                 );
               })}

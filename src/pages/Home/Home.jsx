@@ -132,7 +132,7 @@ function TipsByTendrSection() {
   const font = "'Outfit', sans-serif";
   const preview = GUIDES.slice(0, 3);
   return (
-    <section style={{ background: "#FAF7F2", padding: "48px 24px 52px", fontFamily: font }}>
+    <section style={{ background: "#0E0700", padding: "56px 24px 60px", fontFamily: font }}>
       <div style={{ maxWidth: 1060, margin: "0 auto" }}>
         {/* Header */}
         <motion.div
@@ -143,22 +143,22 @@ function TipsByTendrSection() {
           style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 16 }}
         >
           <div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 14px", marginBottom: 14 }}>
-              <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em" }}>Tips by Tendr</span>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.15)", border: "1px solid rgba(196,122,46,0.35)", borderRadius: 100, padding: "5px 14px", marginBottom: 14 }}>
+              <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.14em" }}>Tips by Tendr</span>
             </div>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#1C0E04", letterSpacing: "0.01em", lineHeight: 1.15, margin: "0 0 8px" }}>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.8rem)", fontWeight: 800, color: "#FFF8EC", letterSpacing: "-0.01em", lineHeight: 1.1, margin: "0 0 8px" }}>
               Free Event Planning Guides
             </h2>
-            <p style={{ fontSize: 15, color: "#9B7450", margin: 0, lineHeight: 1.65, maxWidth: 480 }}>
+            <p style={{ fontSize: 15, color: "rgba(255,248,236,0.58)", margin: 0, lineHeight: 1.65, maxWidth: 480 }}>
               Practical guides for budgeting, decorating, and planning any event. Unlock with a WhatsApp number.
             </p>
           </div>
           <button
             onClick={() => navigate("/guides")}
-            style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0, transition: "all 0.2s" }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.5)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
+            style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid rgba(204,171,74,0.38)", background: "transparent", color: "#CCAB4A", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0, transition: "all 0.2s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.12)"; e.currentTarget.style.borderColor = "rgba(204,171,74,0.65)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(204,171,74,0.38)"; }}
           >
             View All Guides →
           </button>
@@ -174,17 +174,17 @@ function TipsByTendrSection() {
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.45, delay: gi * 0.07, ease: [0.25, 0.46, 0.45, 0.94] }}
               onClick={() => navigate(`/guides/${guide.slug}`)}
-              style={{ background: "#fff", border: "1px solid rgba(196,122,46,0.12)", borderLeft: "3px solid #C47A2E", borderRadius: 14, padding: "18px 20px 14px", cursor: "pointer", boxShadow: "0 2px 16px rgba(139,69,19,0.05)" }}
-              whileHover={{ y: -4, boxShadow: "0 10px 32px rgba(139,69,19,0.1)", transition: { type: "spring", stiffness: 340, damping: 26 } }}
+              style={{ background: "#1A0F05", border: "1px solid rgba(196,122,46,0.18)", borderLeft: "3px solid #C47A2E", borderRadius: 14, padding: "18px 20px 14px", cursor: "pointer", boxShadow: "0 2px 16px rgba(0,0,0,0.3)" }}
+              whileHover={{ y: -4, boxShadow: "0 10px 32px rgba(196,122,46,0.18)", transition: { type: "spring", stiffness: 340, damping: 26 } }}
             >
               <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.07)", borderRadius: 100, padding: "3px 10px", marginBottom: 10 }}>
                 <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#C47A2E", display: "inline-block", flexShrink: 0 }} />
                 <span style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em" }}>{guide.tags[0]}</span>
               </div>
-              <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 20, fontWeight: 500, color: "#1C0E04", margin: "0 0 12px", lineHeight: 1.25, letterSpacing: "0.01em" }}>{guide.title}</h3>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid rgba(196,122,46,0.08)", paddingTop: 12 }}>
-                <span style={{ fontSize: 11.5, color: "#B89070" }}>{guide.readTime} · {guide.pages}pp</span>
-                <span style={{ fontSize: 12.5, fontWeight: 700, color: "#C47A2E" }}>Free →</span>
+              <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 20, fontWeight: 700, color: "#FFF8EC", margin: "0 0 12px", lineHeight: 1.25, letterSpacing: "0.01em" }}>{guide.title}</h3>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid rgba(196,122,46,0.12)", paddingTop: 12 }}>
+                <span style={{ fontSize: 11.5, color: "rgba(204,171,74,0.6)" }}>{guide.readTime} · {guide.pages}pp</span>
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: "#CCAB4A" }}>Free →</span>
               </div>
             </motion.div>
           ))}
@@ -197,19 +197,19 @@ function TipsByTendrSection() {
           viewport={{ once: true, amount: 0.4 }}
           transition={{ duration: 0.45, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
           onClick={() => navigate("/community")}
-          style={{ marginTop: 16, padding: "14px 20px", borderRadius: 14, border: "1px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, boxShadow: "0 1px 8px rgba(139,69,19,0.04)" }}
-          whileHover={{ borderColor: "rgba(196,122,46,0.35)", boxShadow: "0 4px 20px rgba(139,69,19,0.08)", transition: { duration: 0.2 } }}
+          style={{ marginTop: 16, padding: "14px 20px", borderRadius: 14, border: "1px solid rgba(196,122,46,0.2)", background: "#1A0F05", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, boxShadow: "0 1px 8px rgba(0,0,0,0.3)" }}
+          whileHover={{ borderColor: "rgba(196,122,46,0.45)", boxShadow: "0 4px 20px rgba(196,122,46,0.15)", transition: { duration: 0.2 } }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.16)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <svg width={17} height={17} viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(196,122,46,0.12)", border: "1px solid rgba(196,122,46,0.28)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <svg width={17} height={17} viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </div>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: "#1C0E04" }}>Community Wall</div>
-              <div style={{ fontSize: 12.5, color: "#9B7450", marginTop: 2 }}>See real events shared by customers — photos, setups, and ideas.</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "#FFF8EC" }}>Community Wall</div>
+              <div style={{ fontSize: 12.5, color: "rgba(255,248,236,0.5)", marginTop: 2 }}>See real events shared by customers — photos, setups, and ideas.</div>
             </div>
           </div>
-          <span style={{ fontSize: 13, fontWeight: 600, color: "#C47A2E" }}>Explore →</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "#CCAB4A" }}>Explore →</span>
         </motion.div>
       </div>
     </section>
@@ -220,7 +220,7 @@ function FaqSection() {
   const [open, setOpen] = React.useState(null);
   const navigate = useNavigate();
   return (
-    <section style={{ background: "#FAF7F2", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif" }}>
+    <section style={{ background: "#070400", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif" }}>
       <div style={{ maxWidth: 760, margin: "0 auto" }}>
 
         {/* Heading */}
@@ -231,14 +231,15 @@ function FaqSection() {
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
           style={{ textAlign: "center", marginBottom: 44 }}
         >
-          <div style={{ display:"flex", alignItems:"center", gap:9, margin:"0 0 14px" }}>
-            <div style={{ width:24, height:1.5, background:"#C47A2E", flexShrink:0 }} />
-            <span style={{ fontSize:13, fontWeight:500, color:"#C47A2E" }}>Got Questions?</span>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:9, margin:"0 0 14px" }}>
+            <div style={{ width:24, height:1.5, background:"#CCAB4A", flexShrink:0 }} />
+            <span style={{ fontSize:13, fontWeight:500, color:"#CCAB4A" }}>Got Questions?</span>
+            <div style={{ width:24, height:1.5, background:"#CCAB4A", flexShrink:0 }} />
           </div>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.8rem)", fontWeight: 400, color: "#1C0E04", letterSpacing: "-0.01em", margin: "0 0 12px", lineHeight: 1.1 }}>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.8rem)", fontWeight: 800, color: "#FFF8EC", letterSpacing: "-0.02em", margin: "0 0 12px", lineHeight: 1.1 }}>
             Frequently Asked Questions
           </h2>
-          <p style={{ fontSize: 14.5, color: "#7A5535", maxWidth: 420, margin: "0 auto", lineHeight: 1.65 }}>
+          <p style={{ fontSize: 14.5, color: "rgba(255,248,236,0.52)", maxWidth: 420, margin: "0 auto", lineHeight: 1.65 }}>
             Everything you need to know before you start planning.
           </p>
         </motion.div>
@@ -256,15 +257,15 @@ function FaqSection() {
               key={i}
               variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 26 } } }}
               style={{
-                borderTop: i === 0 ? "1px solid rgba(196,122,46,0.18)" : "none",
-                borderBottom: "1px solid rgba(196,122,46,0.18)",
+                borderTop: i === 0 ? "1px solid rgba(196,122,46,0.14)" : "none",
+                borderBottom: "1px solid rgba(196,122,46,0.14)",
               }}
             >
               <button
                 onClick={() => setOpen(open === i ? null : i)}
                 style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 4px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "left", gap: 20 }}
               >
-                <span style={{ fontSize: 14.5, fontWeight: open === i ? 600 : 500, color: open === i ? "#1C0E04" : "#3B2410", lineHeight: 1.45, transition: "color 0.18s" }}>{q}</span>
+                <span style={{ fontSize: 14.5, fontWeight: open === i ? 600 : 500, color: open === i ? "#FFF8EC" : "rgba(255,248,236,0.8)", lineHeight: 1.45, transition: "color 0.18s" }}>{q}</span>
                 <div style={{
                   width: 26, height: 26, borderRadius: "50%", flexShrink: 0,
                   border: `1.5px solid ${open === i ? "#C47A2E" : "rgba(196,122,46,0.3)"}`,
@@ -281,7 +282,7 @@ function FaqSection() {
                 </div>
               </button>
               <div style={{ maxHeight: open === i ? 400 : 0, overflow: "hidden", transition: "max-height 0.4s cubic-bezier(0.4,0,0.2,1)" }}>
-                <p style={{ margin: "0 0 20px 0", fontSize: 14, color: "#6B4A2A", lineHeight: 1.78 }}>{a}</p>
+                <p style={{ margin: "0 0 20px 0", fontSize: 14, color: "rgba(255,248,236,0.6)", lineHeight: 1.78 }}>{a}</p>
               </div>
             </motion.div>
           ))}
@@ -293,10 +294,10 @@ function FaqSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.45, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-          style={{ textAlign: "center", marginTop: 44, padding: "28px 32px", background: "#fff", borderRadius: 18, border: "1px solid rgba(196,122,46,0.14)", boxShadow: "0 2px 16px rgba(139,69,19,0.06)" }}
+          style={{ textAlign: "center", marginTop: 44, padding: "28px 32px", background: "#140B03", borderRadius: 18, border: "1px solid rgba(196,122,46,0.2)", boxShadow: "0 2px 16px rgba(0,0,0,0.3)" }}
         >
-          <p style={{ fontSize: 16, fontWeight: 700, color: "#1C0E04", margin: "0 0 5px", fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "0.01em" }}>Still have questions?</p>
-          <p style={{ fontSize: 13.5, color: "#9B7450", margin: "0 0 18px", lineHeight: 1.6 }}>Our team is happy to help you plan your perfect event.</p>
+          <p style={{ fontSize: 16, fontWeight: 700, color: "#FFF8EC", margin: "0 0 5px", fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "0.01em" }}>Still have questions?</p>
+          <p style={{ fontSize: 13.5, color: "rgba(255,248,236,0.52)", margin: "0 0 18px", lineHeight: 1.6 }}>Our team is happy to help you plan your perfect event.</p>
           <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
             <motion.a
               href="https://wa.me/919211668427"
@@ -897,7 +898,7 @@ const Home = () => {
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.08 }}
-                style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.85rem, 3vw, 2.72rem)", fontWeight: 300, lineHeight: 1.08, color: "#FFF8EC", marginBottom: 14, letterSpacing: "-0.02em", position: "relative", zIndex: 1, textShadow: "0 2px 16px rgba(0,0,0,0.55)" }}
+                style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.3rem, 3.8vw, 3.6rem)", fontWeight: 800, lineHeight: 1.04, color: "#FFF8EC", marginBottom: 16, letterSpacing: "-0.03em", position: "relative", zIndex: 1, textShadow: "0 4px 24px rgba(0,0,0,0.65)" }}
               >
                 Everything your<br />event needs.&nbsp;
                 <span style={{ position: "relative", display: "inline-block" }}>
@@ -1138,6 +1139,23 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* ── Stats strip ── */}
+      <div style={{ background: "#C47A2E", padding: "0 24px", fontFamily: "'Outfit', sans-serif", display: "flex", justifyContent: "center" }}>
+        <div style={{ maxWidth: 1120, width: "100%", display: "flex", alignItems: "stretch", flexWrap: "wrap" }}>
+          {[
+            { num: "100+", label: "Verified Vendors" },
+            { num: "500+", label: "Events Planned" },
+            { num: "4 Cities", label: "Delhi · Noida · GN · Gzb" },
+            { num: "4.8★", label: "Average Rating" },
+          ].map(({ num, label }, i) => (
+            <div key={i} style={{ flex: "1 0 140px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "18px 12px", borderRight: i < 3 ? "1px solid rgba(255,255,255,0.22)" : "none" }}>
+              <span style={{ fontSize: "clamp(1.3rem,2.4vw,1.8rem)", fontWeight: 900, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1 }}>{num}</span>
+              <span style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.78)", marginTop: 4, textAlign: "center", letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* ── Mobile photo strip — Editorial Image Hero pattern (felipemenezes098/hero-05) ── */}
       {/* Shows below hero on mobile, hidden on desktop */}
