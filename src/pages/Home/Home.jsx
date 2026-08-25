@@ -244,46 +244,68 @@ function FaqSection() {
           </p>
         </motion.div>
 
-        {/* FAQ items — spring accordion */}
+        {/* FAQ items — framer-motion height anim + chat-bubble answers, pattern from 21st.dev/anshuman008/faq-chat-accordion */}
         <motion.div
           style={{ display: "flex", flexDirection: "column" }}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.1 }}
-          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.05 } } }}
+          viewport={{ once: true, amount: 0.08 }}
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.045 } } }}
         >
           {FAQS.map(({ q, a }, i) => (
             <motion.div
               key={i}
-              variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 26 } } }}
+              variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 320, damping: 28 } } }}
               style={{
                 borderTop: i === 0 ? "1px solid rgba(196,122,46,0.14)" : "none",
                 borderBottom: "1px solid rgba(196,122,46,0.14)",
               }}
             >
-              <button
+              {/* Trigger — ui-ux-pro-max: touch-target ≥44px, scale-feedback on press */}
+              <motion.button
                 onClick={() => setOpen(open === i ? null : i)}
-                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 4px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "left", gap: 20 }}
+                whileTap={{ scale: 0.985 }}
+                transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                style={{ width: "100%", minHeight: 44, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 4px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "left", gap: 20 }}
               >
-                <span style={{ fontSize: 14.5, fontWeight: open === i ? 600 : 500, color: open === i ? "#FFF8EC" : "rgba(255,248,236,0.8)", lineHeight: 1.45, transition: "color 0.18s" }}>{q}</span>
-                <div style={{
-                  width: 26, height: 26, borderRadius: "50%", flexShrink: 0,
-                  border: `1.5px solid ${open === i ? "#C47A2E" : "rgba(196,122,46,0.3)"}`,
-                  background: open === i ? "linear-gradient(135deg,#C47A2E,#D4A848)" : "transparent",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  transition: "all 0.22s ease",
-                }}>
-                  <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke={open === i ? "#fff" : "#C47A2E"} strokeWidth={2.5} strokeLinecap="round">
-                    {open === i
-                      ? <line x1="5" y1="12" x2="19" y2="12" />
-                      : <><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></>
-                    }
+                <span style={{ fontSize: 14.5, fontWeight: open === i ? 600 : 500, color: open === i ? "#FFF8EC" : "rgba(255,248,236,0.78)", lineHeight: 1.45, transition: "color 0.18s" }}>{q}</span>
+                {/* +/− icon — clean SVG, no circle (ui-ux-pro-max: no decorative-only shapes) */}
+                <motion.span
+                  animate={{ rotate: open === i ? 45 : 0 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 26 }}
+                  style={{ flexShrink: 0, color: "#C47A2E", display: "flex", alignItems: "center" }}
+                >
+                  <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
                   </svg>
-                </div>
-              </button>
-              <div style={{ maxHeight: open === i ? 400 : 0, overflow: "hidden", transition: "max-height 0.4s cubic-bezier(0.4,0,0.2,1)" }}>
-                <p style={{ margin: "0 0 20px 0", fontSize: 14, color: "rgba(255,248,236,0.6)", lineHeight: 1.78 }}>{a}</p>
-              </div>
+                </motion.span>
+              </motion.button>
+              {/* Answer — framer-motion height:"auto", chat-bubble style (21st.dev pattern) */}
+              <AnimatePresence initial={false}>
+                {open === i && (
+                  <motion.div
+                    key="answer"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <div style={{ paddingBottom: 20, paddingLeft: 0 }}>
+                      <p style={{
+                        display: "inline-block", margin: 0,
+                        padding: "12px 18px",
+                        background: "rgba(196,122,46,0.1)",
+                        border: "1px solid rgba(196,122,46,0.18)",
+                        borderRadius: "4px 14px 14px 14px",
+                        fontSize: 14, color: "rgba(255,248,236,0.68)", lineHeight: 1.75,
+                        maxWidth: "92%",
+                      }}>{a}</p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           ))}
         </motion.div>
@@ -1140,22 +1162,55 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ── Stats strip ── */}
-      <div style={{ background: "#C47A2E", padding: "0 24px", fontFamily: "'Outfit', sans-serif", display: "flex", justifyContent: "center" }}>
-        <div style={{ maxWidth: 1120, width: "100%", display: "flex", alignItems: "stretch", flexWrap: "wrap" }}>
-          {[
-            { num: "100+", label: "Verified Vendors" },
-            { num: "500+", label: "Events Planned" },
-            { num: "4 Cities", label: "Delhi · Noida · GN · Gzb" },
-            { num: "4.8★", label: "Average Rating" },
-          ].map(({ num, label }, i) => (
-            <div key={i} style={{ flex: "1 0 140px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "18px 12px", borderRight: i < 3 ? "1px solid rgba(255,255,255,0.22)" : "none" }}>
-              <span style={{ fontSize: "clamp(1.3rem,2.4vw,1.8rem)", fontWeight: 900, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1 }}>{num}</span>
-              <span style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.78)", marginTop: 4, textAlign: "center", letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</span>
+      {/* ── Bold Stats — editorial pattern from 21st.dev/uilayout.contact/stats-bold ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+        style={{ background: "#0D0800", padding: "52px 28px 56px", fontFamily: "'Outfit', sans-serif" }}
+      >
+        <div style={{ maxWidth: 1120, margin: "0 auto" }}>
+          {/* Hero metric row — one dominant number as focal anchor */}
+          <div style={{ display: "flex", alignItems: "baseline", gap: "clamp(16px,3vw,40px)", paddingBottom: 40, borderBottom: "1px solid rgba(196,122,46,0.16)", flexWrap: "wrap" }}>
+            <span style={{
+              fontSize: "clamp(4.5rem,11vw,8.5rem)", fontWeight: 900,
+              letterSpacing: "-0.04em", lineHeight: 0.95,
+              background: "linear-gradient(135deg,#C47A2E 0%,#CCAB4A 55%,#D4A848 100%)",
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+              flexShrink: 0,
+            }}>500+</span>
+            <div style={{ maxWidth: 300 }}>
+              <h3 style={{ fontSize: "clamp(15px,2vw,18px)", fontWeight: 700, color: "#FFF8EC", margin: "0 0 8px", lineHeight: 1.3 }}>
+                Events planned across Delhi NCR
+              </h3>
+              <p style={{ fontSize: 13, color: "rgba(255,248,236,0.48)", lineHeight: 1.65, margin: 0 }}>
+                Birthdays, anniversaries, house parties and corporate events — all booked through Tendr.
+              </p>
             </div>
-          ))}
+          </div>
+          {/* Secondary stats row — 21st.dev pattern: huge num + all-caps tracking-widest label */}
+          <div style={{ display: "flex", gap: 0, paddingTop: 40, flexWrap: "wrap" }}>
+            {[
+              { num: "100+",    label: "Verified Vendors" },
+              { num: "4 Cities", label: "Delhi · Noida · GN · Gzb" },
+              { num: "4.8",     label: "Average Rating" },
+            ].map(({ num, label }, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.4 }}
+                transition={{ duration: 0.4, delay: i * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
+                style={{ flex: "1 0 120px", paddingRight: 24 }}
+              >
+                <p style={{ fontSize: "clamp(2rem,4.5vw,3.2rem)", fontWeight: 900, letterSpacing: "-0.035em", color: "#FFF8EC", margin: "0 0 8px", lineHeight: 1 }}>{num}</p>
+                <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(196,122,46,0.65)", margin: 0 }}>{label}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* ── Mobile photo strip — Editorial Image Hero pattern (felipemenezes098/hero-05) ── */}
       {/* Shows below hero on mobile, hidden on desktop */}
