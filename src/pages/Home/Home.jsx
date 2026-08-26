@@ -405,94 +405,85 @@ function WebsiteIntro({ onDone }) {
   };
 
   const slides = [
-    /* ── 0: Photo backdrop — real image, text at bottom ── */
+    /* ── 0: Photo backdrop — real image, clean text at bottom ── */
     <div key="s0" style={{ position:"relative", display:"flex", flexDirection:"column", justifyContent:"flex-end", height:"100%" }}>
       <img src={heroBirthday} alt="" aria-hidden
         style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", objectPosition:"center top" }}/>
       <div style={{ position:"absolute", inset:0,
-        background:"linear-gradient(to top, rgba(4,1,0,0.92) 0%, rgba(4,1,0,0.55) 45%, rgba(4,1,0,0.3) 100%)" }}/>
+        background:"linear-gradient(to top, rgba(4,1,0,0.86) 0%, rgba(4,1,0,0.42) 50%, rgba(4,1,0,0.15) 100%)" }}/>
       <motion.div initial={{ y:20, opacity:0 }} animate={{ y:0, opacity:1 }}
-        transition={{ duration:0.42, ease:[0.25,0.46,0.45,0.94] }}
-        style={{ position:"relative", zIndex:1, padding:"0 22px 22px" }}>
-        <div style={{ fontSize:9.5, fontWeight:500, textTransform:"uppercase", letterSpacing:"0.22em",
-          color:"rgba(196,122,46,0.9)", marginBottom:12 }}>
+        transition={{ duration:0.44, ease:[0.25,0.46,0.45,0.94] }}
+        style={{ position:"relative", zIndex:1, padding:"0 24px 28px" }}>
+        <div style={{ fontSize:9, fontWeight:400, textTransform:"uppercase", letterSpacing:"0.26em",
+          color:"rgba(196,122,46,0.75)", marginBottom:14 }}>
           Delhi NCR's Event Platform
         </div>
-        <h2 style={{ fontFamily:IDF, fontSize:"2.1rem", fontWeight:400,
-          color:"#FFF8EC", lineHeight:1.1, margin:"0 0 18px", letterSpacing:"-0.01em" }}>
+        <h2 style={{ fontFamily:IDF, fontSize:"2.3rem", fontWeight:400,
+          color:"#FFF8EC", lineHeight:1.06, margin:"0 0 16px", letterSpacing:"-0.01em" }}>
           Your occasion,<br/>our obsession.
         </h2>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)",
-          borderRadius:12, overflow:"hidden", border:"1px solid rgba(255,255,255,0.1)" }}>
-          {[["100+","Vendors"],["<2hr","Response"],["5000+","Events Exp."]].map(([n,l],i)=>(
-            <div key={i} style={{ textAlign:"center", padding:"12px 4px",
-              borderRight: i<2 ? "1px solid rgba(255,255,255,0.08)" : "none",
-              background:"rgba(255,255,255,0.06)", backdropFilter:"blur(8px)" }}>
-              <div style={{ fontSize:"1.35rem", fontWeight:500, color:"#FFF8EC", letterSpacing:"-0.02em", lineHeight:1 }}>{n}</div>
-              <div style={{ fontSize:9, fontWeight:400, textTransform:"uppercase", letterSpacing:"0.1em", color:"rgba(196,122,46,0.8)", marginTop:3 }}>{l}</div>
-            </div>
-          ))}
-        </div>
+        <p style={{ fontSize:11.5, fontWeight:400, color:"rgba(255,248,236,0.45)",
+          margin:0, letterSpacing:"0.05em" }}>
+          100+ vendors &nbsp;·&nbsp; 5,000+ events &nbsp;·&nbsp; &lt;2hr response
+        </p>
       </motion.div>
     </div>,
 
-    /* ── 1: Vendors — large number + category list ── */
-    <div key="s1" style={{ display:"flex", flexDirection:"column", padding:"22px 22px 0" }}>
-      <motion.div initial={{ y:14, opacity:0 }} animate={{ y:0, opacity:1 }} transition={{ duration:0.32 }}>
-        <div style={{ fontSize:9.5, fontWeight:500, textTransform:"uppercase", letterSpacing:"0.2em",
-          color:IG, marginBottom:10 }}>Browse &amp; Book</div>
-        <div style={{ fontFamily:IDF, fontSize:"4.2rem", fontWeight:400, color:IT,
-          lineHeight:0.95, letterSpacing:"-0.03em", margin:"0 0 4px" }}>100+</div>
-        <div style={{ fontSize:13, color:IM, margin:"0 0 20px" }}>verified vendors in Delhi NCR</div>
+    /* ── 1: Vendors — editorial list ── */
+    <div key="s1" style={{ display:"flex", flexDirection:"column", padding:"28px 24px 0" }}>
+      <motion.div initial={{ y:14, opacity:0 }} animate={{ y:0, opacity:1 }} transition={{ duration:0.34 }}>
+        <div style={{ fontFamily:IDF, fontSize:"2.8rem", fontWeight:400, color:IT,
+          lineHeight:1, letterSpacing:"-0.02em", margin:"0 0 6px" }}>100+ vendors</div>
+        <div style={{ fontSize:12.5, color:IM, margin:"0 0 24px", fontWeight:400, letterSpacing:"0.01em" }}>
+          Verified &amp; reviewed across Delhi NCR
+        </div>
       </motion.div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1px",
-        background:IB2, borderRadius:12, overflow:"hidden", border:`1px solid ${IB2}` }}>
+      <div style={{ borderTop:`1px solid ${IB2}` }}>
         {INTRO_CAT.map(({emoji,label},i)=>(
           <motion.div key={label}
-            initial={{ opacity:0 }} animate={{ opacity:1 }}
-            transition={{ delay:0.1 + i*0.06, duration:0.28 }}
-            style={{ display:"flex", alignItems:"center", gap:10, padding:"13px 14px",
-              background:IB, fontSize:13.5, fontWeight:400, color:IT }}>
-            <span style={{ fontSize:22, lineHeight:1 }}>{emoji}</span>
-            {label}
+            initial={{ opacity:0, x:-8 }} animate={{ opacity:1, x:0 }}
+            transition={{ delay:0.06 + i*0.07, duration:0.28 }}
+            style={{ display:"flex", alignItems:"center", gap:14, padding:"13px 0",
+              borderBottom:`1px solid ${IB2}` }}>
+            <span style={{ fontSize:17, lineHeight:1, opacity:0.85 }}>{emoji}</span>
+            <span style={{ fontSize:14, fontWeight:400, color:IT, letterSpacing:"0.01em" }}>{label}</span>
+            <svg style={{ marginLeft:"auto", opacity:0.22 }} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={IT} strokeWidth="1.8" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
           </motion.div>
         ))}
       </div>
     </div>,
 
     /* ── 2: Occasions ── */
-    <div key="s2" style={{ display:"flex", flexDirection:"column", padding:"22px 22px 0" }}>
-      <motion.div initial={{ y:14, opacity:0 }} animate={{ y:0, opacity:1 }} transition={{ duration:0.32 }}>
-        <div style={{ fontSize:9.5, fontWeight:500, textTransform:"uppercase", letterSpacing:"0.2em",
-          color:IG, marginBottom:10 }}>Any Occasion</div>
-        <h2 style={{ fontFamily:IDF, fontSize:"2rem", fontWeight:400, color:IT,
-          lineHeight:1.1, margin:"0 0 6px" }}>Every celebration,<br/>covered.</h2>
-        <p style={{ fontSize:13, color:IM, margin:"0 0 18px" }}>Birthdays to corporate events.</p>
+    <div key="s2" style={{ display:"flex", flexDirection:"column", padding:"28px 24px 0" }}>
+      <motion.div initial={{ y:14, opacity:0 }} animate={{ y:0, opacity:1 }} transition={{ duration:0.34 }}>
+        <h2 style={{ fontFamily:IDF, fontSize:"2.4rem", fontWeight:400, color:IT,
+          lineHeight:1.06, margin:"0 0 8px", letterSpacing:"-0.01em" }}>Every celebration,<br/>covered.</h2>
+        <p style={{ fontSize:12.5, color:IM, margin:"0 0 22px", fontWeight:400, letterSpacing:"0.01em" }}>Birthdays to corporate events — all in one place.</p>
       </motion.div>
-      <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:18 }}>
+      <div style={{ display:"flex", flexDirection:"column", gap:0, borderTop:`1px solid ${IB2}` }}>
         {INTRO_OCC.map((occ,i)=>(
           <motion.div key={occ}
-            initial={{ scale:0.8, opacity:0 }} animate={{ scale:1, opacity:1 }}
-            transition={{ delay:0.08+i*0.07, duration:0.28, ease:[0.34,1.2,0.64,1] }}
-            style={{ padding:"7px 14px", borderRadius:100, fontSize:13, fontWeight:400,
-              background:IC, border:`1px solid ${IB2}`, color:IT }}>
+            initial={{ opacity:0, x:-8 }} animate={{ opacity:1, x:0 }}
+            transition={{ delay:0.06+i*0.06, duration:0.26 }}
+            style={{ fontSize:14, fontWeight:400, color:IT, letterSpacing:"0.01em",
+              padding:"11px 0", borderBottom:`1px solid ${IB2}` }}>
             {occ}
           </motion.div>
         ))}
       </div>
-      <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.52 }}
-        style={{ borderTop:`1px solid ${IB2}`, paddingTop:14, display:"flex", flexWrap:"wrap", gap:7 }}>
+      <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.5 }}
+        style={{ paddingTop:16, display:"flex", flexWrap:"wrap", gap:7 }}>
         {["Budget Tools","Timeline","Stationery","Gift Hampers"].map(t=>(
-          <span key={t} style={{ fontSize:11, fontWeight:500, color:IG,
-            background:"rgba(196,122,46,0.07)", border:`1px solid rgba(196,122,46,0.13)`,
-            borderRadius:7, padding:"4px 10px" }}>{t}</span>
+          <span key={t} style={{ fontSize:10.5, fontWeight:400, color:IG,
+            background:"rgba(196,122,46,0.06)", border:`1px solid rgba(196,122,46,0.14)`,
+            borderRadius:6, padding:"4px 10px", letterSpacing:"0.03em" }}>{t}</span>
         ))}
       </motion.div>
     </div>,
 
     /* ── 3: CTA ── */
     <div key="s3" style={{ display:"flex", flexDirection:"column", alignItems:"center",
-      justifyContent:"center", textAlign:"center", padding:"24px 24px", height:"100%" }}>
+      justifyContent:"center", textAlign:"center", padding:"24px 24px", paddingBottom:"calc(env(safe-area-inset-bottom, 12px) + 24px)", height:"100%" }}>
       <motion.div initial={{ scale:0.7, opacity:0 }} animate={{ scale:1, opacity:1 }}
         transition={{ duration:0.48, ease:[0.34,1.56,0.64,1] }}
         style={{ fontSize:44, marginBottom:16, lineHeight:1 }}>🎉</motion.div>
@@ -577,7 +568,7 @@ function WebsiteIntro({ onDone }) {
 
       {/* Bottom nav — slides 0–2 */}
       {slide < INTRO_TOTAL - 1 && (
-        <div style={{ padding:"10px 20px 30px", display:"flex", alignItems:"center",
+        <div style={{ padding:"10px 20px", paddingBottom:"calc(env(safe-area-inset-bottom, 12px) + 18px)", display:"flex", alignItems:"center",
           gap:12, flexShrink:0, borderTop:`1px solid rgba(196,122,46,0.1)` }}>
           {slide > 0 ? (
             <motion.button whileTap={{ scale:0.93 }} onClick={goPrev}
@@ -1142,7 +1133,7 @@ const Home = () => {
         <div
           className="hero-mobile-photo-overlay"
           aria-hidden
-          style={{ display: "none", position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(8,4,0,0.68) 0%, rgba(8,4,0,0.38) 38%, rgba(8,4,0,0.62) 100%)", zIndex: 1 }}
+          style={{ display: "none", position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(8,4,0,0.62) 0%, rgba(8,4,0,0.28) 42%, rgba(8,4,0,0.22) 100%)", zIndex: 1 }}
         />
         <div
           style={{

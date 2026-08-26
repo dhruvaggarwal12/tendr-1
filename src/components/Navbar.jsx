@@ -352,7 +352,7 @@ const Navbar = ({
     color: "#1C0E04",
     textDecoration: "none",
     fontSize: 14,
-    fontWeight: 600,
+    fontWeight: 500,
     letterSpacing: "0.01em",
     lineHeight: 1.45,
     transition: "background 0.15s",
@@ -452,7 +452,7 @@ const Navbar = ({
                       background: "transparent",
                       color: "#1C0E04",
                       fontSize: 14,
-                      fontWeight: 600,
+                      fontWeight: 500,
                       letterSpacing: "0.01em",
                       padding: "7px 12px",
                       borderRadius: 0,
@@ -487,7 +487,7 @@ const Navbar = ({
                     borderBottom: activeDropdown === group.label ? "2px solid #C47A2E" : "2px solid transparent",
                     color: activeDropdown === group.label ? "#C47A2E" : "#1C0E04",
                     fontSize: 14,
-                    fontWeight: 600,
+                    fontWeight: 500,
                     letterSpacing: "0.01em",
                     padding: "7px 11px",
                     borderRadius: 0,
@@ -721,7 +721,7 @@ const Navbar = ({
               </div>
             ) : (
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <a href="/vendor/register" style={{ fontSize: 13, fontWeight: 600, color: "#C47A2E", padding: "9px 16px", borderRadius: 9, textDecoration: "none", border: "1.5px solid rgba(196,122,46,0.32)", background: "transparent", transition: "all 0.18s", whiteSpace: "nowrap", fontFamily: font }}
+                <a href="/vendor/register" style={{ fontSize: 13, fontWeight: 500, color: "#C47A2E", padding: "9px 16px", borderRadius: 9, textDecoration: "none", border: "1.5px solid rgba(196,122,46,0.32)", background: "transparent", transition: "all 0.18s", whiteSpace: "nowrap", fontFamily: font }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "#C47A2E"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.32)"; }}
                 >List Your Service</a>
