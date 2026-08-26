@@ -414,7 +414,7 @@ function WebsiteIntro({ onDone }) {
       <motion.div initial={{ y:20, opacity:0 }} animate={{ y:0, opacity:1 }}
         transition={{ duration:0.42, ease:[0.25,0.46,0.45,0.94] }}
         style={{ position:"relative", zIndex:1, padding:"0 22px 22px" }}>
-        <div style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.22em",
+        <div style={{ fontSize:9.5, fontWeight:500, textTransform:"uppercase", letterSpacing:"0.22em",
           color:"rgba(196,122,46,0.9)", marginBottom:12 }}>
           Delhi NCR's Event Platform
         </div>
@@ -428,8 +428,8 @@ function WebsiteIntro({ onDone }) {
             <div key={i} style={{ textAlign:"center", padding:"12px 4px",
               borderRight: i<2 ? "1px solid rgba(255,255,255,0.08)" : "none",
               background:"rgba(255,255,255,0.06)", backdropFilter:"blur(8px)" }}>
-              <div style={{ fontSize:"1.35rem", fontWeight:900, color:"#FFF8EC", letterSpacing:"-0.02em", lineHeight:1 }}>{n}</div>
-              <div style={{ fontSize:9, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:"rgba(196,122,46,0.8)", marginTop:3 }}>{l}</div>
+              <div style={{ fontSize:"1.35rem", fontWeight:500, color:"#FFF8EC", letterSpacing:"-0.02em", lineHeight:1 }}>{n}</div>
+              <div style={{ fontSize:9, fontWeight:400, textTransform:"uppercase", letterSpacing:"0.1em", color:"rgba(196,122,46,0.8)", marginTop:3 }}>{l}</div>
             </div>
           ))}
         </div>
@@ -439,7 +439,7 @@ function WebsiteIntro({ onDone }) {
     /* ── 1: Vendors — large number + category list ── */
     <div key="s1" style={{ display:"flex", flexDirection:"column", padding:"22px 22px 0" }}>
       <motion.div initial={{ y:14, opacity:0 }} animate={{ y:0, opacity:1 }} transition={{ duration:0.32 }}>
-        <div style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.2em",
+        <div style={{ fontSize:9.5, fontWeight:500, textTransform:"uppercase", letterSpacing:"0.2em",
           color:IG, marginBottom:10 }}>Browse &amp; Book</div>
         <div style={{ fontFamily:IDF, fontSize:"4.2rem", fontWeight:400, color:IT,
           lineHeight:0.95, letterSpacing:"-0.03em", margin:"0 0 4px" }}>100+</div>
@@ -452,7 +452,7 @@ function WebsiteIntro({ onDone }) {
             initial={{ opacity:0 }} animate={{ opacity:1 }}
             transition={{ delay:0.1 + i*0.06, duration:0.28 }}
             style={{ display:"flex", alignItems:"center", gap:10, padding:"13px 14px",
-              background:IB, fontSize:13.5, fontWeight:500, color:IT }}>
+              background:IB, fontSize:13.5, fontWeight:400, color:IT }}>
             <span style={{ fontSize:22, lineHeight:1 }}>{emoji}</span>
             {label}
           </motion.div>
@@ -463,7 +463,7 @@ function WebsiteIntro({ onDone }) {
     /* ── 2: Occasions ── */
     <div key="s2" style={{ display:"flex", flexDirection:"column", padding:"22px 22px 0" }}>
       <motion.div initial={{ y:14, opacity:0 }} animate={{ y:0, opacity:1 }} transition={{ duration:0.32 }}>
-        <div style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.2em",
+        <div style={{ fontSize:9.5, fontWeight:500, textTransform:"uppercase", letterSpacing:"0.2em",
           color:IG, marginBottom:10 }}>Any Occasion</div>
         <h2 style={{ fontFamily:IDF, fontSize:"2rem", fontWeight:400, color:IT,
           lineHeight:1.1, margin:"0 0 6px" }}>Every celebration,<br/>covered.</h2>
@@ -474,7 +474,7 @@ function WebsiteIntro({ onDone }) {
           <motion.div key={occ}
             initial={{ scale:0.8, opacity:0 }} animate={{ scale:1, opacity:1 }}
             transition={{ delay:0.08+i*0.07, duration:0.28, ease:[0.34,1.2,0.64,1] }}
-            style={{ padding:"7px 14px", borderRadius:100, fontSize:13, fontWeight:500,
+            style={{ padding:"7px 14px", borderRadius:100, fontSize:13, fontWeight:400,
               background:IC, border:`1px solid ${IB2}`, color:IT }}>
             {occ}
           </motion.div>
@@ -483,7 +483,7 @@ function WebsiteIntro({ onDone }) {
       <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.52 }}
         style={{ borderTop:`1px solid ${IB2}`, paddingTop:14, display:"flex", flexWrap:"wrap", gap:7 }}>
         {["Budget Tools","Timeline","Stationery","Gift Hampers"].map(t=>(
-          <span key={t} style={{ fontSize:11, fontWeight:700, color:IG,
+          <span key={t} style={{ fontSize:11, fontWeight:500, color:IG,
             background:"rgba(196,122,46,0.07)", border:`1px solid rgba(196,122,46,0.13)`,
             borderRadius:7, padding:"4px 10px" }}>{t}</span>
         ))}
@@ -505,7 +505,7 @@ function WebsiteIntro({ onDone }) {
       <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.22 }}
         style={{ display:"flex", flexDirection:"column", gap:9, marginBottom:24, alignSelf:"flex-start", paddingLeft:4 }}>
         {["100+ verified vendors","Free to browse","Secure payments"].map(t=>(
-          <div key={t} style={{ display:"flex", alignItems:"center", gap:8, fontSize:13.5, color:IT, fontWeight:500 }}>
+          <div key={t} style={{ display:"flex", alignItems:"center", gap:8, fontSize:13.5, color:IT, fontWeight:400 }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={IG} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
@@ -2293,11 +2293,11 @@ const Home = () => {
       })()}
 
       {/* Events Portfolio Gallery */}
-      <section style={{ background: "#F8F5F0", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>
+      <section style={{ background: "#F8F5F0", padding: "56px 24px 60px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
           {/* Editorial split header */}
-          <div className="portfolio-header-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px 72px", alignItems: "end", marginBottom: 52 }}>
+          <div className="portfolio-header-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px 72px", alignItems: "end", marginBottom: 36 }}>
             <div>
               <div style={{ display:"flex", alignItems:"center", gap:9, margin:"0 0 16px" }}>
                 <div style={{ width:24, height:1.5, background:"#C47A2E", flexShrink:0 }} />
@@ -2340,8 +2340,8 @@ const Home = () => {
                 onMouseEnter={e => { e.currentTarget.querySelector(".portfolio-tile-overlay").style.opacity = "1"; e.currentTarget.querySelector(".portfolio-tile-img").style.transform = "scale(1.04)"; }}
                 onMouseLeave={e => { e.currentTarget.querySelector(".portfolio-tile-overlay").style.opacity = "0"; e.currentTarget.querySelector(".portfolio-tile-img").style.transform = "scale(1)"; }}
               >
-                {/* Photo — tall 4:5 aspect */}
-                <div className="portfolio-img-wrap" style={{ aspectRatio: "4/5", overflow: "hidden" }}>
+                {/* Photo — 3:4 aspect */}
+                <div className="portfolio-img-wrap" style={{ aspectRatio: "3/4", overflow: "hidden" }}>
                   <img key={img} src={img} alt={title} className="portfolio-tile-img"
                     style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", animation: "glimpseFade 0.6s ease", transition: "transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94)" }} />
                 </div>
@@ -2391,7 +2391,7 @@ const Home = () => {
               scroll-snap-align: start !important;
               min-width: 0 !important;
             }
-            .portfolio-img-wrap { aspect-ratio: 3/4 !important; }
+            .portfolio-img-wrap { aspect-ratio: 4/5 !important; }
           }
           @keyframes glimpseFade { from { opacity: 0.4; } to { opacity: 1; } }
         `}</style>
