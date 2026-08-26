@@ -1258,6 +1258,7 @@ export default function OccasionDetail(){
   const [downloading,setDownloading]=useState(false);
   const [savedPlan,setSavedPlan]=useState(null);
   const dateInputRef=useRef(null);
+  const contentRef=useRef(null);
 
   /* catering builder */
   const [showCateringBuilder,setShowCateringBuilder]=useState(false);
@@ -1289,6 +1290,16 @@ export default function OccasionDetail(){
 
   /* custom vendor input visibility */
   const [showCustomVendorInput,setShowCustomVendorInput]=useState(false);
+
+  /* which vendor's package panel is open */
+  const [expandedVendor,setExpandedVendor]=useState(null);
+
+  /* activity category expansion */
+  const [expandedActivityType,setExpandedActivityType]=useState(null);
+
+  /* builder free-text inputs per category */
+  const [decorOtherInputs,setDecorOtherInputs]=useState({});
+  const [cateringOtherInputs,setCateringOtherInputs]=useState({});
 
   const PLAN_KEY=`tendr-plan-${slug}`;
 
@@ -1365,6 +1376,11 @@ export default function OccasionDetail(){
     }));
   },[occasion?.name, date, guests, city, budget, step]);
 
+  /* scroll content to top whenever step changes */
+  useEffect(()=>{
+    if(contentRef.current) contentRef.current.scrollTop=0;
+  },[step]);
+
   function restorePlan(s){
     setPlanMode(s.planMode);setStep(s.step);setGuests(s.guests||20);
     setDate(s.date||"");setBudget(s.budget||"");setCity(s.city||"");
@@ -1414,10 +1430,9 @@ export default function OccasionDetail(){
     if(step===1){
       const toStep=withTheme?2:3;
       setStep(toStep);
-      if(!withTheme&&vendors.length===0)setVendors(smartVendors);
       return;
     }
-    if(step===2){setStep(3);if(vendors.length===0)setVendors(smartVendors);return;}
+    if(step===2){setStep(3);return;}
     if(step===3){setStep(4);return;}
     setStep(s=>Math.min(s+1,6));
   };
@@ -1478,7 +1493,7 @@ export default function OccasionDetail(){
       </div>
 
       {/* content */}
-      <div style={{flex:1,overflowY:"auto",padding:"28px 20px 140px",maxWidth:680,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
+      <div ref={contentRef} style={{flex:1,overflowY:"auto",padding:"28px 20px 140px",maxWidth:680,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
 
         {/* ══ STEP 0: CUSTOM OCCASION — name & describe ══ */}
         {step===0&&isCustomOccasion&&(
@@ -1918,11 +1933,11 @@ export default function OccasionDetail(){
               </div>
             )}
 
-            {/* ── Packages for selected vendors ── */}
+            {/* ── Packages for selected vendors (collapse by default, expand on tap) ── */}
             {vendors.length>0&&(
               <div>
-                <div style={{fontSize:10,fontWeight:800,color:"rgba(196,122,46,0.5)",textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:14}}>
-                  Best options for your selection
+                <div style={{fontSize:11,fontWeight:700,color:muted,letterSpacing:"0.04em",marginBottom:12,textTransform:"uppercase",fontSize:10}}>
+                  Tap a service to set your options
                 </div>
                 {vendors.map(v=>{
                   const isKnown=ALL_VENDORS.includes(v);
@@ -1935,22 +1950,27 @@ export default function OccasionDetail(){
                     const cOpts=getCateringOptions(occasion,{guests,venueType,ageGroups,budget});
                     const isCustom=chosen==="custom";
                     const hasCustomDishes=Object.values(customCatering.dishes).some(arr=>arr.length>0);
+                    const isOpen=expandedVendor==="Caterer";
+                    const chosenLabel=chosen==="custom"?(hasCustomDishes?`Custom · ${Object.values(customCatering.dishes).flat().length} dishes`:"Custom menu"):typeof chosen==="number"?cOpts[chosen]?.style:null;
                     return(
-                      <div key={v} style={{marginBottom:14,borderRadius:16,border:`1.5px solid ${chosen!==undefined?gold:border}`,background:"#fff",overflow:"hidden",transition:"border-color 0.2s"}}>
-                        {/* header */}
-                        <div style={{padding:"12px 16px 10px",background:chosen!==undefined?"rgba(196,122,46,0.04)":"#fff",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                      <div key={v} style={{marginBottom:10,borderRadius:14,border:`1.5px solid ${chosen!==undefined?gold:isOpen?"rgba(196,122,46,0.4)":border}`,background:"#fff",overflow:"hidden",transition:"border-color 0.2s"}}>
+                        {/* header — clickable to expand */}
+                        <div onClick={()=>setExpandedVendor(ev=>ev==="Caterer"?null:"Caterer")}
+                          style={{padding:"12px 14px",background:chosen!==undefined?"rgba(196,122,46,0.04)":"#fff",display:"flex",alignItems:"center",cursor:"pointer",gap:10}}>
                           <div style={{flex:1,minWidth:0}}>
-                            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
-                              <span style={{fontSize:14,fontWeight:800,color:chosen!==undefined?gold:ink}}>Caterer</span>
-                              {chosen!==undefined&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.1)",border:`1px solid rgba(196,122,46,0.22)`,borderRadius:100,padding:"2px 7px"}}>Selected ✓</span>}
+                            <div style={{display:"flex",alignItems:"center",gap:7}}>
+                              <span style={{fontSize:13,fontWeight:700,color:chosen!==undefined?gold:ink}}>Caterer</span>
+                              {chosenLabel&&<span style={{fontSize:9,fontWeight:700,color:gold,background:"rgba(196,122,46,0.1)",borderRadius:6,padding:"1px 7px"}}>{chosenLabel}</span>}
+                              {!chosenLabel&&<span style={{fontSize:9,color:muted}}>Tap to choose style</span>}
                             </div>
-                            {tips&&<p style={{fontSize:11.5,color:muted,margin:0,lineHeight:1.45}}>{tips.tip.replace("Tip: ","")}</p>}
                           </div>
-                          <button onClick={()=>{toggleVendor("Caterer");setVendorPackages(vp=>{const n={...vp};delete n["Caterer"];return n;});setShowCateringBuilder(false);}}
-                            style={{width:28,height:28,borderRadius:"50%",background:"rgba(28,9,0,0.05)",border:"none",cursor:"pointer",fontSize:14,color:"rgba(30,15,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:8}}>✕</button>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={muted} strokeWidth="2.5" strokeLinecap="round" style={{transform:isOpen?"rotate(180deg)":"none",transition:"transform 0.2s",flexShrink:0}}><polyline points="6 9 12 15 18 9"/></svg>
+                          <button onClick={e=>{e.stopPropagation();toggleVendor("Caterer");setVendorPackages(vp=>{const n={...vp};delete n["Caterer"];return n;});setShowCateringBuilder(false);setExpandedVendor(null);}}
+                            style={{width:26,height:26,borderRadius:"50%",background:"rgba(28,9,0,0.05)",border:"none",cursor:"pointer",fontSize:14,color:"rgba(30,15,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>×</button>
                         </div>
 
-                        {/* 3 style options */}
+                        {/* Options panel — only when expanded */}
+                        {isOpen&&(<>
                         <div style={{borderTop:`1px solid rgba(196,122,46,0.07)`,padding:"10px 14px 0"}}>
                           <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:8}}>Choose your catering style</div>
                           <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:2}}>
@@ -2021,16 +2041,21 @@ export default function OccasionDetail(){
                                     <div style={{fontSize:11,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em"}}>
                                       {CUISINES.find(c=>c.id===customCatering.cuisine)?.label} menu
                                     </div>
-                                    <button onClick={()=>setCateringBuilderStep("cuisine")} style={{fontSize:11,fontWeight:600,color:muted,background:"transparent",border:"none",cursor:"pointer",fontFamily:font,padding:0,textDecoration:"underline"}}>Change cuisine</button>
+                                    <div style={{display:"flex",gap:10,alignItems:"center"}}>
+                                      {totalPicked>0&&<button onClick={()=>setCustomCatering(prev=>({...prev,dishes:{}}))} style={{fontSize:11,fontWeight:600,color:"rgba(196,122,46,0.6)",background:"none",border:"none",cursor:"pointer",fontFamily:font,padding:0,textDecoration:"underline"}}>Clear all</button>}
+                                      <button onClick={()=>setCateringBuilderStep("cuisine")} style={{fontSize:11,fontWeight:600,color:muted,background:"transparent",border:"none",cursor:"pointer",fontFamily:font,padding:0,textDecoration:"underline"}}>Change cuisine</button>
+                                    </div>
                                   </div>
                                   {MENU_CATEGORIES.filter(cat=>(menuData[cat]||[]).length>0).map(cat=>{
                                     const items=menuData[cat]||[];
                                     const picked=customCatering.dishes[cat]||[];
+                                    const otherVal=cateringOtherInputs[cat]||"";
                                     return(
                                       <div key={cat} style={{marginBottom:12}}>
                                         <div style={{fontSize:11,fontWeight:700,color:ink,marginBottom:7,display:"flex",alignItems:"center",gap:6}}>
                                           {cat}
                                           {picked.length>0&&<span style={{fontSize:9,fontWeight:800,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"1px 6px"}}>{picked.length} picked</span>}
+                                          {picked.length>0&&<button onClick={()=>setCustomCatering(prev=>({...prev,dishes:{...prev.dishes,[cat]:[]}}))} style={{fontSize:9,fontWeight:600,color:muted,background:"none",border:"none",cursor:"pointer",fontFamily:font,padding:"0 4px",marginLeft:"auto",textDecoration:"underline"}}>Clear</button>}
                                         </div>
                                         <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                                           {items.map(item=>{
@@ -2043,6 +2068,16 @@ export default function OccasionDetail(){
                                               </button>
                                             );
                                           })}
+                                          {/* Other input */}
+                                          <div style={{display:"flex",gap:4,alignItems:"center"}}>
+                                            <input type="text" value={otherVal}
+                                              onChange={e=>setCateringOtherInputs(prev=>({...prev,[cat]:e.target.value}))}
+                                              onKeyDown={e=>{if(e.key==="Enter"&&otherVal.trim()){setCustomCatering(prev=>({...prev,dishes:{...prev.dishes,[cat]:[...(prev.dishes[cat]||[]),otherVal.trim()]}}));setCateringOtherInputs(prev=>({...prev,[cat]:""}));}}}
+                                              placeholder="Other…"
+                                              style={{padding:"5px 10px",borderRadius:100,border:"1.5px dashed rgba(196,122,46,0.28)",background:"transparent",fontSize:12,fontFamily:font,outline:"none",color:ink,width:90,minHeight:32}}/>
+                                            {otherVal.trim()&&<button onClick={()=>{setCustomCatering(prev=>({...prev,dishes:{...prev.dishes,[cat]:[...(prev.dishes[cat]||[]),otherVal.trim()]}}));setCateringOtherInputs(prev=>({...prev,[cat]:""}));}}
+                                              style={{padding:"5px 10px",borderRadius:100,background:gold,color:"#fff",fontFamily:font,fontWeight:700,fontSize:12,border:"none",cursor:"pointer"}}>+</button>}
+                                          </div>
                                         </div>
                                       </div>
                                     );
@@ -2053,6 +2088,7 @@ export default function OccasionDetail(){
                             })()}
                           </div>
                         )}
+                        </>)}
                       </div>
                     );
                   }
@@ -2062,22 +2098,28 @@ export default function OccasionDetail(){
                     const dOpts=getDecorOptions(occasion,{guests,venueType,theme,ageGroups});
                     const isCustom=chosen==="custom";
                     const totalDecorItems=Object.values(customDecor).flat().length;
+                    const isOpen=expandedVendor==="Decorator";
+                    const dPkgs=dOpts;
+                    const chosenLabel=chosen==="custom"?(totalDecorItems?`Custom · ${totalDecorItems} items`:"Custom"):typeof chosen==="number"?dOpts[chosen]?.style:null;
                     return(
-                      <div key={v} style={{marginBottom:14,borderRadius:16,border:`1.5px solid ${chosen!==undefined?gold:border}`,background:"#fff",overflow:"hidden",transition:"border-color 0.2s"}}>
-                        {/* header */}
-                        <div style={{padding:"12px 16px 10px",background:chosen!==undefined?"rgba(196,122,46,0.04)":"#fff",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                      <div key={v} style={{marginBottom:10,borderRadius:14,border:`1.5px solid ${chosen!==undefined?gold:isOpen?"rgba(196,122,46,0.4)":border}`,background:"#fff",overflow:"hidden",transition:"border-color 0.2s"}}>
+                        {/* header — clickable */}
+                        <div onClick={()=>setExpandedVendor(ev=>ev==="Decorator"?null:"Decorator")}
+                          style={{padding:"12px 14px",background:chosen!==undefined?"rgba(196,122,46,0.04)":"#fff",display:"flex",alignItems:"center",cursor:"pointer",gap:10}}>
                           <div style={{flex:1,minWidth:0}}>
-                            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
-                              <span style={{fontSize:14,fontWeight:800,color:chosen!==undefined?gold:ink}}>Decorator</span>
-                              {chosen!==undefined&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.1)",border:`1px solid rgba(196,122,46,0.22)`,borderRadius:100,padding:"2px 7px"}}>Selected ✓</span>}
+                            <div style={{display:"flex",alignItems:"center",gap:7}}>
+                              <span style={{fontSize:13,fontWeight:700,color:chosen!==undefined?gold:ink}}>Decorator</span>
+                              {chosenLabel&&<span style={{fontSize:9,fontWeight:700,color:gold,background:"rgba(196,122,46,0.1)",borderRadius:6,padding:"1px 7px"}}>{chosenLabel}</span>}
+                              {!chosenLabel&&<span style={{fontSize:9,color:muted}}>Tap to choose style</span>}
                             </div>
-                            {tips&&<p style={{fontSize:11.5,color:muted,margin:0,lineHeight:1.45}}>{tips.tip.replace("Tip: ","")}</p>}
                           </div>
-                          <button onClick={()=>{toggleVendor("Decorator");setVendorPackages(vp=>{const n={...vp};delete n["Decorator"];return n;});setShowDecorBuilder(false);}}
-                            style={{width:28,height:28,borderRadius:"50%",background:"rgba(28,9,0,0.05)",border:"none",cursor:"pointer",fontSize:14,color:"rgba(30,15,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:8}}>✕</button>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={muted} strokeWidth="2.5" strokeLinecap="round" style={{transform:isOpen?"rotate(180deg)":"none",transition:"transform 0.2s",flexShrink:0}}><polyline points="6 9 12 15 18 9"/></svg>
+                          <button onClick={e=>{e.stopPropagation();toggleVendor("Decorator");setVendorPackages(vp=>{const n={...vp};delete n["Decorator"];return n;});setShowDecorBuilder(false);setExpandedVendor(null);}}
+                            style={{width:26,height:26,borderRadius:"50%",background:"rgba(28,9,0,0.05)",border:"none",cursor:"pointer",fontSize:14,color:"rgba(30,15,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>×</button>
                         </div>
 
-                        {/* 3 style options */}
+                        {/* Options panel — only when expanded */}
+                        {isOpen&&(<>
                         <div style={{borderTop:`1px solid rgba(196,122,46,0.07)`,padding:"10px 14px 0"}}>
                           <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:8}}>Choose your decor style</div>
                           <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:2}}>
@@ -2121,15 +2163,20 @@ export default function OccasionDetail(){
                         {/* Decor Builder panel */}
                         {showDecorBuilder&&(chosen==="custom"||typeof chosen==="number")&&(
                           <div style={{borderTop:`1px solid rgba(196,122,46,0.1)`,background:"#FFFDF8",padding:"14px 14px 16px"}}>
-                            <div style={{fontSize:11,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:12}}>Pick what you need</div>
+                            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+                              <div style={{fontSize:11,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em"}}>Pick what you need</div>
+                              {totalDecorItems>0&&<button onClick={()=>setCustomDecor({})} style={{fontSize:11,fontWeight:600,color:"rgba(196,122,46,0.6)",background:"none",border:"none",cursor:"pointer",fontFamily:font,padding:0,textDecoration:"underline"}}>Clear all</button>}
+                            </div>
                             {DECOR_CATEGORIES.map(cat=>{
                               const items=DECOR_ITEMS[cat]||[];
                               const picked=(customDecor[cat]||[]);
+                              const otherVal=decorOtherInputs[cat]||"";
                               return(
                                 <div key={cat} style={{marginBottom:14}}>
                                   <div style={{fontSize:11,fontWeight:700,color:ink,marginBottom:7,display:"flex",alignItems:"center",gap:6}}>
                                     {cat}
                                     {picked.length>0&&<span style={{fontSize:9,fontWeight:800,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"1px 6px"}}>{picked.length} picked</span>}
+                                    {picked.length>0&&<button onClick={()=>setCustomDecor(prev=>({...prev,[cat]:[]}))} style={{fontSize:9,fontWeight:600,color:muted,background:"none",border:"none",cursor:"pointer",fontFamily:font,padding:"0 4px",marginLeft:"auto",textDecoration:"underline"}}>Clear</button>}
                                   </div>
                                   <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                                     {items.map(item=>{
@@ -2142,6 +2189,16 @@ export default function OccasionDetail(){
                                         </button>
                                       );
                                     })}
+                                    {/* Other input */}
+                                    <div style={{display:"flex",gap:4,alignItems:"center"}}>
+                                      <input type="text" value={otherVal}
+                                        onChange={e=>setDecorOtherInputs(prev=>({...prev,[cat]:e.target.value}))}
+                                        onKeyDown={e=>{if(e.key==="Enter"&&otherVal.trim()){setCustomDecor(prev=>({...prev,[cat]:[...(prev[cat]||[]),otherVal.trim()]}));setDecorOtherInputs(prev=>({...prev,[cat]:""}));}}}
+                                        placeholder="Other…"
+                                        style={{padding:"5px 10px",borderRadius:100,border:"1.5px dashed rgba(196,122,46,0.28)",background:"transparent",fontSize:12,fontFamily:font,outline:"none",color:ink,width:90,minHeight:32}}/>
+                                      {otherVal.trim()&&<button onClick={()=>{setCustomDecor(prev=>({...prev,[cat]:[...(prev[cat]||[]),otherVal.trim()]}));setDecorOtherInputs(prev=>({...prev,[cat]:""}));}}
+                                        style={{padding:"5px 10px",borderRadius:100,background:gold,color:"#fff",fontFamily:font,fontWeight:700,fontSize:12,border:"none",cursor:"pointer"}}>+</button>}
+                                    </div>
                                   </div>
                                 </div>
                               );
@@ -2149,27 +2206,32 @@ export default function OccasionDetail(){
                             {totalDecorItems>0&&<div style={{marginTop:4,fontSize:11.5,fontWeight:600,color:"#16a34a"}}>{totalDecorItems} item{totalDecorItems!==1?"s":""} selected</div>}
                           </div>
                         )}
+                        </>)}
                       </div>
                     );
                   }
 
-                  /* ── all other vendors (unchanged) ── */
+                  /* ── all other vendors — click-to-expand ── */
+                  const isOpen=expandedVendor===v;
+                  const chosenPkgLabel=typeof chosen==="number"&&pkgs?pkgs[chosen]?.label:null;
                   return(
-                    <div key={v} style={{marginBottom:14,borderRadius:16,border:`1.5px solid ${chosen!==undefined?gold:border}`,background:"#fff",overflow:"hidden",transition:"border-color 0.2s"}}>
-                      {/* header row */}
-                      <div style={{padding:"12px 16px 10px",background:chosen!==undefined?"rgba(196,122,46,0.04)":"#fff",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                    <div key={v} style={{marginBottom:10,borderRadius:14,border:`1.5px solid ${chosen!==undefined?gold:isOpen?"rgba(196,122,46,0.4)":border}`,background:"#fff",overflow:"hidden",transition:"border-color 0.2s"}}>
+                      {/* header row — clickable */}
+                      <div onClick={()=>setExpandedVendor(ev=>ev===v?null:v)}
+                        style={{padding:"12px 14px",background:chosen!==undefined?"rgba(196,122,46,0.04)":"#fff",display:"flex",alignItems:"center",cursor:"pointer",gap:10}}>
                         <div style={{flex:1,minWidth:0}}>
-                          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:tips?3:0}}>
-                            <span style={{fontSize:14,fontWeight:800,color:chosen!==undefined?gold:ink}}>{v}</span>
-                            {chosen!==undefined&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.1)",border:`1px solid rgba(196,122,46,0.22)`,borderRadius:100,padding:"2px 7px"}}>Selected ✓</span>}
+                          <div style={{display:"flex",alignItems:"center",gap:7}}>
+                            <span style={{fontSize:13,fontWeight:700,color:chosen!==undefined?gold:ink}}>{v}</span>
+                            {chosenPkgLabel&&<span style={{fontSize:9,fontWeight:700,color:gold,background:"rgba(196,122,46,0.1)",borderRadius:6,padding:"1px 7px"}}>{chosenPkgLabel}</span>}
+                            {chosen===undefined&&<span style={{fontSize:9,color:muted}}>Tap to choose package</span>}
                           </div>
-                          {tips&&<p style={{fontSize:11.5,color:muted,margin:0,lineHeight:1.45}}>{tips.tip.replace("Tip: ","")}</p>}
                         </div>
-                        <button onClick={()=>{toggleVendor(v);setVendorPackages(vp=>{const n={...vp};delete n[v];return n;});}}
-                          style={{width:28,height:28,borderRadius:"50%",background:"rgba(28,9,0,0.05)",border:"none",cursor:"pointer",fontSize:14,color:"rgba(30,15,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:8}}>✕</button>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={muted} strokeWidth="2.5" strokeLinecap="round" style={{transform:isOpen?"rotate(180deg)":"none",transition:"transform 0.2s",flexShrink:0}}><polyline points="6 9 12 15 18 9"/></svg>
+                        <button onClick={e=>{e.stopPropagation();toggleVendor(v);setVendorPackages(vp=>{const n={...vp};delete n[v];return n;});setExpandedVendor(null);}}
+                          style={{width:26,height:26,borderRadius:"50%",background:"rgba(28,9,0,0.05)",border:"none",cursor:"pointer",fontSize:14,color:"rgba(30,15,0,0.35)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>×</button>
                       </div>
-                      {/* packages */}
-                      {pkgs&&(
+                      {/* packages — only when expanded */}
+                      {isOpen&&pkgs&&(
                         <div style={{borderTop:`1px solid rgba(196,122,46,0.07)`,padding:"10px 14px 12px"}}>
                           <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:2}}>
                             {pkgs.slice(0,3).map((pkg,pi)=>{
@@ -2177,7 +2239,7 @@ export default function OccasionDetail(){
                               const cost=approxCost(pkg.price,guests);
                               const budgetFit=perVendorBudget&&cost?(cost<=perVendorBudget*1.25?"fits":cost<=perVendorBudget*2?"stretch":"over"):null;
                               return(
-                                <button key={pkg.label} onClick={()=>setVendorPackages(vp=>({...vp,[v]:pi}))}
+                                <button key={pkg.label} onClick={()=>{setVendorPackages(vp=>({...vp,[v]:pi}));setExpandedVendor(null);}}
                                   style={{flex:"0 0 auto",width:"31%",minWidth:100,maxWidth:140,textAlign:"left",padding:"10px 11px",borderRadius:12,border:`1.5px solid ${sel?gold:budgetFit==="fits"?"rgba(34,197,94,0.35)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:4}}>
                                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:4,flexWrap:"wrap"}}>
                                     <span style={{fontSize:12,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{pkg.label}</span>
@@ -2202,22 +2264,12 @@ export default function OccasionDetail(){
                   );
                 })}
 
-                {/* completion CTA — gifts next */}
-                {allVendorsChosen&&mainVendors.length>0&&(
-                  <div style={{marginTop:8,padding:"16px 18px",borderRadius:16,background:"rgba(196,122,46,0.06)",border:`1.5px solid rgba(196,122,46,0.2)`}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      <span style={{fontSize:12.5,fontWeight:700,color:ink}}>{mainVendors.length} service{mainVendors.length>1?"s":""} selected</span>
-                    </div>
-                    <p style={{fontSize:11.5,color:muted,margin:"0 0 12px",lineHeight:1.5}}>Want to add gifts to your celebration plan?</p>
-                    <button onClick={next}
-                      style={{width:"100%",padding:"12px 0",borderRadius:12,background:`linear-gradient(135deg,${gold},${goldLt})`,border:"none",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font,marginBottom:8,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                      <span>🎁</span> Pick Gifts →
-                    </button>
-                    <button onClick={()=>setStep(6)}
-                      style={{width:"100%",padding:"10px 0",borderRadius:12,border:`1.5px solid rgba(196,122,46,0.25)`,background:"transparent",color:gold,fontSize:12.5,fontWeight:600,cursor:"pointer",fontFamily:font}}>
-                      Skip — see my plan →
-                    </button>
+                {/* selection count pill */}
+                {mainVendors.length>0&&(
+                  <div style={{marginTop:8,padding:"10px 16px",borderRadius:12,background:"rgba(196,122,46,0.06)",border:`1px solid rgba(196,122,46,0.15)`,display:"flex",alignItems:"center",gap:8}}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span style={{fontSize:12,fontWeight:700,color:gold}}>{mainVendors.length} service{mainVendors.length>1?"s":""} selected</span>
+                    <span style={{fontSize:11,color:muted,marginLeft:"auto"}}>Tap next to continue →</span>
                   </div>
                 )}
               </div>
@@ -2237,47 +2289,78 @@ export default function OccasionDetail(){
         {step===4&&(
           <div className="os">
             <p style={{fontFamily:serif,fontSize:"clamp(1.3rem,3vw,1.7rem)",color:ink,lineHeight:1.3,marginBottom:6}}>Add entertainment</p>
-            <p style={{fontSize:12.5,color:muted,marginBottom:18,lineHeight:1.55}}>Anchors, bands, stalls, performers, special shows & games — all bookable through Tendr. Pick what you'd love.</p>
+            <p style={{fontSize:12.5,color:muted,marginBottom:20,lineHeight:1.55}}>Pick a category to see what's available — all bookable through Tendr.</p>
             {(()=>{
               const actSuggestions=getActivitySuggestions(occasion,{ageGroups,theme});
-              const totalSelected=selectedActivities.length;
+              const totalSelected=selectedActivities.length+customActivities.length;
               return(
                 <div>
                   {totalSelected>0&&(
-                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,padding:"10px 14px",borderRadius:12,background:"rgba(196,122,46,0.06)",border:`1px solid rgba(196,122,46,0.18)`}}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      <span style={{fontSize:12,fontWeight:700,color:gold}}>{totalSelected} item{totalSelected!==1?"s":""} added to your plan</span>
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,padding:"10px 14px",borderRadius:10,background:"rgba(196,122,46,0.06)",border:`1px solid rgba(196,122,46,0.15)`}}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      <span style={{fontSize:12,fontWeight:700,color:gold}}>{totalSelected} item{totalSelected!==1?"s":""} added</span>
                     </div>
                   )}
-                  {ACTIVITY_TYPES.map(({key,label,singular,icon:typeIcon})=>{
+
+                  {/* Category cards — 2 per row */}
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+                    {ACTIVITY_TYPES.map(({key,label,icon:typeIcon})=>{
+                      const items=actSuggestions[key]||[];
+                      if(!items.length) return null;
+                      const selCount=items.filter(a=>selectedActivities.includes(a.id)).length;
+                      const isOpen=expandedActivityType===key;
+                      return(
+                        <button key={key} onClick={()=>setExpandedActivityType(isOpen?null:key)}
+                          style={{
+                            padding:"16px 14px",borderRadius:14,textAlign:"left",cursor:"pointer",
+                            border:`1.5px solid ${isOpen?gold:selCount>0?"rgba(196,122,46,0.4)":"rgba(196,122,46,0.14)"}`,
+                            background:isOpen?"rgba(196,122,46,0.07)":selCount>0?"rgba(196,122,46,0.04)":"#fff",
+                            fontFamily:font,transition:"all 0.18s",position:"relative",
+                          }}>
+                          <div style={{fontSize:24,marginBottom:8,lineHeight:1}}>{typeIcon}</div>
+                          <div style={{fontSize:12.5,fontWeight:700,color:isOpen?gold:ink,lineHeight:1.3,marginBottom:2}}>{label}</div>
+                          <div style={{fontSize:10.5,color:muted}}>{items.length} options</div>
+                          {selCount>0&&(
+                            <div style={{position:"absolute",top:10,right:10,width:20,height:20,borderRadius:"50%",background:gold,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                              <span style={{fontSize:10,fontWeight:800,color:"#fff"}}>{selCount}</span>
+                            </div>
+                          )}
+                          {isOpen&&(
+                            <div style={{position:"absolute",bottom:10,right:10}}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><polyline points="18 15 12 9 6 15"/></svg>
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Expanded items for selected category */}
+                  {expandedActivityType&&(()=>{
+                    const {key,label,singular}=ACTIVITY_TYPES.find(t=>t.key===expandedActivityType)||{};
                     const items=actSuggestions[key]||[];
-                    if(!items.length) return null;
                     return(
-                      <div key={key} style={{marginBottom:20}}>
-                        <div style={{fontSize:10,fontWeight:800,color:"rgba(196,122,46,0.55)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>
-                          <span style={{fontSize:14}}>{typeIcon}</span>{label}
+                      <div style={{marginBottom:20,borderRadius:16,border:`1.5px solid ${gold}`,background:"#fff",overflow:"hidden"}}>
+                        <div style={{padding:"12px 16px 10px",borderBottom:"1px solid rgba(196,122,46,0.1)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                          <span style={{fontSize:13,fontWeight:800,color:gold}}>{label}</span>
+                          <button onClick={()=>setExpandedActivityType(null)} style={{background:"none",border:"none",cursor:"pointer",color:muted,fontSize:18,lineHeight:1,padding:"0 0 0 8px"}}>×</button>
                         </div>
-                        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                        <div style={{padding:"12px 14px",display:"flex",flexDirection:"column",gap:8}}>
                           {items.map(a=>{
                             const sel=selectedActivities.includes(a.id);
                             return(
                               <button key={a.id} onClick={()=>toggleActivity(a.id)}
-                                style={{display:"flex",alignItems:"center",gap:12,padding:"13px 14px",borderRadius:14,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.15)"}`,background:sel?"rgba(196,122,46,0.06)":"#fff",cursor:"pointer",fontFamily:font,transition:"all 0.18s",textAlign:"left",minHeight:44}}
-                                onMouseEnter={e=>{if(!sel){e.currentTarget.style.borderColor="rgba(196,122,46,0.32)";e.currentTarget.style.background="#FFFBF4";}}}
-                                onMouseLeave={e=>{if(!sel){e.currentTarget.style.borderColor="rgba(196,122,46,0.15)";e.currentTarget.style.background="#fff";}}}>
-                                <div style={{width:42,height:42,borderRadius:12,background:sel?"rgba(196,122,46,0.12)":"rgba(196,122,46,0.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:21,flexShrink:0}}>
+                                style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.06)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.16s",textAlign:"left"}}>
+                                <div style={{width:38,height:38,borderRadius:10,background:sel?"rgba(196,122,46,0.12)":"rgba(196,122,46,0.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,flexShrink:0}}>
                                   {a.icon}
                                 </div>
                                 <div style={{flex:1,minWidth:0}}>
-                                  <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:2}}>
-                                    <span style={{fontSize:13,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{a.name}</span>
-                                    <span style={{fontSize:9,fontWeight:700,color:sel?"#fff":muted,background:sel?gold:"rgba(28,9,0,0.07)",borderRadius:100,padding:"1px 7px",flexShrink:0,textTransform:"uppercase",letterSpacing:"0.06em"}}>{singular}</span>
-                                  </div>
-                                  <div style={{fontSize:11.5,color:muted,lineHeight:1.4,marginBottom:3}}>{a.desc}</div>
+                                  <div style={{fontSize:13,fontWeight:700,color:sel?gold:ink,lineHeight:1.25,marginBottom:2}}>{a.name}</div>
+                                  <div style={{fontSize:11,color:muted,lineHeight:1.4,marginBottom:2}}>{a.desc}</div>
                                   <div style={{fontSize:11,fontWeight:700,color:gold}}>{a.price}</div>
                                 </div>
-                                <div style={{width:22,height:22,borderRadius:"50%",border:`2px solid ${sel?gold:"rgba(196,122,46,0.2)"}`,background:sel?gold:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.18s"}}>
-                                  {sel&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                                <div style={{width:20,height:20,borderRadius:"50%",border:`2px solid ${sel?gold:"rgba(196,122,46,0.2)"}`,background:sel?gold:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.16s"}}>
+                                  {sel&&<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
                                 </div>
                               </button>
                             );
@@ -2285,20 +2368,18 @@ export default function OccasionDetail(){
                         </div>
                       </div>
                     );
-                  })}
-                  {totalSelected===0&&<p style={{fontSize:12,color:"rgba(30,15,0,0.28)",textAlign:"center",marginTop:8}}>Tap any item to add it — or skip to continue</p>}
+                  })()}
 
-                  {/* ── Custom activity input ── */}
-                  <div style={{marginTop:20,paddingTop:20,borderTop:"1px solid rgba(196,122,46,0.1)"}}>
-                    <div style={{fontSize:10,fontWeight:800,color:"rgba(196,122,46,0.55)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:10}}>Something else in mind?</div>
+                  {/* Custom activity */}
+                  <div style={{paddingTop:16,borderTop:"1px solid rgba(196,122,46,0.08)"}}>
+                    <div style={{fontSize:11,fontWeight:700,color:muted,letterSpacing:"0.06em",marginBottom:10,textTransform:"uppercase"}}>Something else in mind?</div>
 
                     {customActivities.length>0&&(
-                      <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
+                      <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:10}}>
                         {customActivities.map((act,i)=>(
-                          <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",borderRadius:12,border:`1.5px solid ${gold}`,background:"rgba(196,122,46,0.06)"}}>
-                            <div style={{width:36,height:36,borderRadius:10,background:"rgba(196,122,46,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>✦</div>
-                            <span style={{flex:1,fontSize:13,fontWeight:700,color:gold}}>{act}</span>
-                            <button onClick={()=>setCustomActivities(a=>a.filter((_,j)=>j!==i))} style={{background:"none",border:"none",cursor:"pointer",color:"rgba(196,122,46,0.5)",fontSize:16,padding:0,lineHeight:1}}>✕</button>
+                          <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:10,border:`1px solid ${gold}`,background:"rgba(196,122,46,0.05)"}}>
+                            <span style={{flex:1,fontSize:13,fontWeight:600,color:ink}}>{act}</span>
+                            <button onClick={()=>setCustomActivities(a=>a.filter((_,j)=>j!==i))} style={{background:"none",border:"none",cursor:"pointer",color:"rgba(196,122,46,0.5)",fontSize:15,padding:0,lineHeight:1}}>×</button>
                           </div>
                         ))}
                       </div>
@@ -2306,27 +2387,21 @@ export default function OccasionDetail(){
 
                     {showCustomActivityInput?(
                       <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                        <input
-                          type="text"
-                          value={customActivityInput}
-                          onChange={e=>setCustomActivityInput(e.target.value)}
-                          onKeyDown={e=>{if(e.key==="Enter"){addCustomActivity();}if(e.key==="Escape")setShowCustomActivityInput(false);}}
-                          placeholder="e.g. Live streaming, Gown rental, Air hockey…"
+                        <input type="text" value={customActivityInput} onChange={e=>setCustomActivityInput(e.target.value)}
+                          onKeyDown={e=>{if(e.key==="Enter")addCustomActivity();if(e.key==="Escape")setShowCustomActivityInput(false);}}
+                          placeholder="e.g. Live streaming, Air hockey, Magic show…"
                           autoFocus
-                          style={{flex:1,padding:"11px 14px",borderRadius:100,border:"1.5px solid rgba(196,122,46,0.3)",background:"#fff",fontSize:13,fontFamily:font,outline:"none",color:ink}}
-                        />
+                          style={{flex:1,padding:"10px 14px",borderRadius:10,border:"1.5px solid rgba(196,122,46,0.3)",background:"#fff",fontSize:13,fontFamily:font,outline:"none",color:ink}}/>
                         <button onClick={addCustomActivity} disabled={!customActivityInput.trim()}
-                          style={{flexShrink:0,padding:"11px 18px",borderRadius:100,background:customActivityInput.trim()?gold:"rgba(196,122,46,0.2)",color:"#fff",fontFamily:font,fontWeight:700,fontSize:13,border:"none",cursor:customActivityInput.trim()?"pointer":"default",transition:"background 0.2s"}}>
+                          style={{flexShrink:0,padding:"10px 18px",borderRadius:10,background:customActivityInput.trim()?gold:"rgba(196,122,46,0.2)",color:"#fff",fontFamily:font,fontWeight:700,fontSize:13,border:"none",cursor:customActivityInput.trim()?"pointer":"default",transition:"background 0.2s"}}>
                           Add
                         </button>
                       </div>
                     ):(
                       <button onClick={()=>setShowCustomActivityInput(true)}
-                        style={{display:"inline-flex",alignItems:"center",gap:7,padding:"10px 18px",borderRadius:100,border:"1.5px dashed rgba(196,122,46,0.35)",background:"#fff",color:"rgba(196,122,46,0.75)",fontFamily:font,fontWeight:600,fontSize:13,cursor:"pointer",transition:"all 0.18s"}}
-                        onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(196,122,46,0.55)";e.currentTarget.style.background="rgba(196,122,46,0.04)";}}
-                        onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(196,122,46,0.35)";e.currentTarget.style.background="#fff";}}>
+                        style={{display:"inline-flex",alignItems:"center",gap:7,padding:"9px 16px",borderRadius:10,border:"1.5px dashed rgba(196,122,46,0.3)",background:"transparent",color:muted,fontFamily:font,fontWeight:600,fontSize:13,cursor:"pointer",transition:"all 0.18s"}}>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        Add something else
+                        Add custom entertainment
                       </button>
                     )}
                   </div>
@@ -2434,18 +2509,29 @@ export default function OccasionDetail(){
                 {catVendors.length>0&&(
                   <div style={{marginBottom:10}}>
                     <div style={{fontSize:9,fontWeight:700,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>Services planned</div>
-                    <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                    <div style={{display:"flex",flexDirection:"column",gap:5}}>
                       {catVendors.map(v=>{
                         const pkgIdx=vendorPackages[v];
-                        const pkgLabel=pkgIdx==="custom"
-                          ?"Custom"
-                          :typeof pkgIdx==="number"&&ALL_VENDORS.includes(v)
-                          ?getVendorPackages(v,{guests,venueType,theme,ageGroups})[pkgIdx]?.label
-                          :null;
+                        const pkgs=ALL_VENDORS.includes(v)?getVendorPackages(v,{guests,venueType,theme,ageGroups}):null;
+                        const pkgLabel=pkgIdx==="custom"?"Custom":typeof pkgIdx==="number"&&pkgs?pkgs[pkgIdx]?.label:null;
+                        const pkgPrice=pkgIdx==="custom"?null:typeof pkgIdx==="number"&&pkgs?pkgs[pkgIdx]?.price:null;
+                        const pkgItems=pkgIdx==="custom"
+                          ?(v==="Decorator"?Object.values(customDecor).flat().slice(0,3):v==="Caterer"?Object.values(customCatering.dishes).flat().slice(0,3):[])
+                          :typeof pkgIdx==="number"&&pkgs?pkgs[pkgIdx]?.items?.slice(0,2):[];
                         return(
-                          <div key={v} style={{display:"flex",flexDirection:"column",background:"rgba(196,122,46,0.08)",border:"1px solid rgba(196,122,46,0.16)",borderRadius:10,padding:"5px 10px",minWidth:80}}>
-                            <span style={{fontSize:10.5,fontWeight:700,color:gold,lineHeight:1.3}}>{v}</span>
-                            {pkgLabel&&<span style={{fontSize:9,fontWeight:600,color:muted,marginTop:1}}>{pkgLabel}</span>}
+                          <div key={v} style={{display:"flex",alignItems:"flex-start",gap:10,background:"rgba(196,122,46,0.06)",border:"1px solid rgba(196,122,46,0.13)",borderRadius:10,padding:"8px 11px"}}>
+                            <div style={{flex:1,minWidth:0}}>
+                              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:pkgItems?.length?3:0}}>
+                                <span style={{fontSize:11,fontWeight:700,color:gold}}>{v}</span>
+                                {pkgLabel&&<span style={{fontSize:9,fontWeight:700,color:muted,background:"rgba(28,9,0,0.06)",borderRadius:6,padding:"1px 6px"}}>{pkgLabel}</span>}
+                              </div>
+                              {pkgItems&&pkgItems.length>0&&(
+                                <div style={{display:"flex",flexWrap:"wrap",gap:3}}>
+                                  {pkgItems.map((it,ii)=><span key={ii} style={{fontSize:9,color:muted}}>· {it}</span>)}
+                                </div>
+                              )}
+                            </div>
+                            {pkgPrice&&<span style={{fontSize:9.5,fontWeight:700,color:gold,flexShrink:0}}>{pkgPrice}</span>}
                           </div>
                         );
                       })}
@@ -2527,19 +2613,6 @@ export default function OccasionDetail(){
                 ))}
               </div>
             )}
-
-            {/* WhatsApp CTA — includes all selected vendors + packages */}
-            <a href={buildBaatKaroMsg(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,selectedActivities,customActivities})}
-              target="_blank" rel="noopener noreferrer"
-              style={{display:"flex",alignItems:"center",gap:12,padding:"14px 18px",borderRadius:14,background:"#25D366",marginBottom:20,textDecoration:"none",transition:"opacity 0.18s"}}
-              onMouseEnter={e=>{e.currentTarget.style.opacity="0.88";}} onMouseLeave={e=>{e.currentTarget.style.opacity="1";}}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.942-1.42A9.959 9.959 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.952 7.952 0 01-4.065-1.112l-.29-.173-3.013.866.847-3.093-.19-.307A7.957 7.957 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg>
-              <div style={{flex:1}}>
-                <div style={{fontSize:14,fontWeight:700,color:"#fff",lineHeight:1.2}}>Baat Karo — Book via Tendr</div>
-                <div style={{fontSize:11.5,color:"rgba(255,255,255,0.82)",marginTop:2}}>{vendors.length>0?`${vendors.length} vendors ready — share plan & we'll book`:"Chat on WhatsApp — we'll help you plan"}</div>
-              </div>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
 
             {/* fun activities in plan */}
             {(selectedActivities.length>0||customActivities.length>0)&&(
