@@ -41,10 +41,14 @@ window.fetch = async (...args) => {
   return res;
 };
 
+const app = (
+  <Provider store={store}>
+    <App />
+  </Provider>
+);
+
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-    <Provider store={store}>
-      <App />
-    </Provider>
-  </GoogleOAuthProvider>
+  GOOGLE_CLIENT_ID
+    ? <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>{app}</GoogleOAuthProvider>
+    : app
 )
