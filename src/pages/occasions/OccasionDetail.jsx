@@ -1292,57 +1292,8 @@ export default function OccasionDetail(){
 
   const PLAN_KEY=`tendr-plan-${slug}`;
 
-  /* load saved plan on mount */
-  useEffect(()=>{
-    try{
-      const saved=JSON.parse(localStorage.getItem(PLAN_KEY)||"null");
-      if(saved&&saved.step>0) setSavedPlan(saved);
-    }catch{}
-  },[slug]);
-
-  /* save on any change */
-  useEffect(()=>{
-    if(step>0){
-      localStorage.setItem(PLAN_KEY,JSON.stringify({
-        planMode,step,guests,date,budget,city,venueType,
-        ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,checked,
-        selectedActivities,customCatering,customDecor,customActivities,customEventName,customEventDesc,
-        savedAt:new Date().toISOString(),
-      }));
-    }
-  },[planMode,step,guests,date,budget,city,venueType,ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,checked]);
-
-  /* Sync to main eventPlanning session so the Navbar plan icon activates */
-  useEffect(()=>{
-    if(!occasion||step<1) return;
-    dispatch(setBookingType('you-do-it'));
-    dispatch(setMultipleFormData({
-      eventType: occasion.name || '',
-      ...(date   ? { date }           : {}),
-      ...(guests ? { guests: String(guests) } : {}),
-      ...(city   ? { location: city } : {}),
-      ...(budget ? { budget: String(budget) } : {}),
-    }));
-  },[occasion?.name, date, guests, city, budget, step]);
-
-  function restorePlan(s){
-    setPlanMode(s.planMode);setStep(s.step);setGuests(s.guests||20);
-    setDate(s.date||"");setBudget(s.budget||"");setCity(s.city||"");
-    setVenueType(s.venueType||"");setAgeGroups(s.ageGroups||[]);
-    setTheme(s.theme||null);setVendors(s.vendors||[]);
-    setVendorPackages(s.vendorPackages||{});
-    setCateringType(s.cateringType||"");setCakeType(s.cakeType||"");
-    setInviteType(s.inviteType||"");setGifts(s.gifts||[]);
-    setChecked(s.checked||{});
-    setSelectedActivities(s.selectedActivities||[]);
-    if(s.customCatering) setCustomCatering(s.customCatering);
-    if(s.customDecor) setCustomDecor(s.customDecor);
-    if(s.customActivities) setCustomActivities(s.customActivities);
-    if(s.customEventName) setCustomEventName(s.customEventName);
-    if(s.customEventDesc) setCustomEventDesc(s.customEventDesc);
-    setSavedPlan(null);
-  }
-
+  /* Derive occasion early — must be before any useEffect that references it,
+     so the production bundle (where esbuild merges const blocks) doesn't hit TDZ */
   const isCustomOccasion = slug === 'custom';
   const rawOccasion = getOccasionById(slug);
 
@@ -1379,6 +1330,58 @@ export default function OccasionDetail(){
     giftIdeas:[],decorThemes:[],activities:[],
     budgetMin:5000,budgetMax:500000,typicalGuests:"10–500",
   } : rawOccasion;
+
+  /* load saved plan on mount */
+  useEffect(()=>{
+    try{
+      const saved=JSON.parse(localStorage.getItem(PLAN_KEY)||"null");
+      if(saved&&saved.step>0) setSavedPlan(saved);
+    }catch{}
+  },[slug]);
+
+  /* save on any change */
+  useEffect(()=>{
+    if(step>0){
+      localStorage.setItem(PLAN_KEY,JSON.stringify({
+        planMode,step,guests,date,budget,city,venueType,
+        ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,checked,
+        selectedActivities,customCatering,customDecor,customActivities,customEventName,customEventDesc,
+        savedAt:new Date().toISOString(),
+      }));
+    }
+  },[planMode,step,guests,date,budget,city,venueType,ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,checked]);
+
+  /* Sync to main eventPlanning session so the Navbar plan icon activates.
+     Placed after `occasion` is declared to avoid TDZ in the production bundle. */
+  useEffect(()=>{
+    if(!occasion||step<1) return;
+    dispatch(setBookingType('you-do-it'));
+    dispatch(setMultipleFormData({
+      eventType: occasion.name || '',
+      ...(date   ? { date }           : {}),
+      ...(guests ? { guests: String(guests) } : {}),
+      ...(city   ? { location: city } : {}),
+      ...(budget ? { budget: String(budget) } : {}),
+    }));
+  },[occasion?.name, date, guests, city, budget, step]);
+
+  function restorePlan(s){
+    setPlanMode(s.planMode);setStep(s.step);setGuests(s.guests||20);
+    setDate(s.date||"");setBudget(s.budget||"");setCity(s.city||"");
+    setVenueType(s.venueType||"");setAgeGroups(s.ageGroups||[]);
+    setTheme(s.theme||null);setVendors(s.vendors||[]);
+    setVendorPackages(s.vendorPackages||{});
+    setCateringType(s.cateringType||"");setCakeType(s.cakeType||"");
+    setInviteType(s.inviteType||"");setGifts(s.gifts||[]);
+    setChecked(s.checked||{});
+    setSelectedActivities(s.selectedActivities||[]);
+    if(s.customCatering) setCustomCatering(s.customCatering);
+    if(s.customDecor) setCustomDecor(s.customDecor);
+    if(s.customActivities) setCustomActivities(s.customActivities);
+    if(s.customEventName) setCustomEventName(s.customEventName);
+    if(s.customEventDesc) setCustomEventDesc(s.customEventDesc);
+    setSavedPlan(null);
+  }
 
   if(!occasion){navigate("/occasions");return null;}
 
