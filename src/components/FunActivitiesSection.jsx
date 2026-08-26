@@ -267,7 +267,7 @@ export function FunActivityCard({ activity, onQuickView, onBook, onAddToCart }) 
   const isMobile = window.innerWidth < 768;
   return (
     <div onClick={() => onQuickView(activity)}
-      style={{ borderRadius: 11, overflow: "hidden", position: "relative", cursor: "pointer", aspectRatio: "3/4", transition: "transform 0.22s ease", minWidth: isMobile ? 138 : 175, flex: "0 0 auto" }}
+      style={{ borderRadius: 11, overflow: "hidden", position: "relative", cursor: "pointer", aspectRatio: "3/4", transition: "transform 0.22s ease", minWidth: isMobile ? 114 : 160, flex: "0 0 auto" }}
       onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; }}
       onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; }}>
 
@@ -289,8 +289,8 @@ export function FunActivityCard({ activity, onQuickView, onBook, onAddToCart }) 
       </button>
 
       {/* Bottom text */}
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: isMobile ? "10px 10px 12px" : "13px 13px 15px" }}>
-        <div style={{ fontSize: isMobile ? 11.5 : 12.5, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 3, fontFamily: F }}>{activity.name}</div>
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: isMobile ? "8px 8px 10px" : "13px 13px 15px" }}>
+        <div style={{ fontSize: isMobile ? 10.5 : 12.5, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 3, fontFamily: F }}>{activity.name}</div>
         <div style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", lineHeight: 1.4, fontFamily: F }}>{activity.duration} · {activity.guests}</div>
       </div>
     </div>

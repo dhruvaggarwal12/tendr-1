@@ -81,10 +81,10 @@ export default function OccasionsPage() {
           <style>{`
             .occ-pg-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:14px; }
             @media(max-width:560px){
-              .occ-pg-grid { grid-template-columns:repeat(2,1fr)!important; gap:10px!important; }
-              .occ-pg-cover { height:88px!important; }
-              .occ-pg-info  { padding:8px 10px 10px!important; }
-              .occ-pg-name  { font-size:12px!important; }
+              .occ-pg-grid { grid-template-columns:repeat(2,1fr)!important; gap:7px!important; }
+              .occ-pg-cover { height:70px!important; }
+              .occ-pg-info  { padding:6px 8px 8px!important; }
+              .occ-pg-name  { font-size:11px!important; }
             }
           `}</style>
           <div className="occ-pg-grid">

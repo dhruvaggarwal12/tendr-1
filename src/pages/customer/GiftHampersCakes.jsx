@@ -263,6 +263,9 @@ const GiftHampersCakes = () => {
           .gh-island { min-width: unset !important; left: 16px !important; right: 16px !important; transform: none !important; border-radius: 20px !important; bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important; }
           .gh-island { animation-name: ghIslandInMobile !important; }
           .gh-photos-grid { padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px)) !important; }
+          .gh-card-grid { grid-template-columns: repeat(2,1fr) !important; gap: 8px !important; }
+          .gh-card { border-radius: 12px !important; }
+          .gh-card-info { padding: 7px 9px 9px !important; font-size: 11px !important; }
         }
         .gh-hero-split { display: flex; align-items: stretch; min-height: 420px; }
         .gh-hero-carousel-col { flex: 0 0 42%; position: relative; overflow: hidden; }
@@ -574,7 +577,7 @@ const GiftHampersCakes = () => {
 
           {/* ── Grid ── */}
           {loading ? (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 16 }}>
+            <div className="gh-card-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 16 }}>
               {[0,1,2,3,4,5].map(i => (
                 <div key={i} style={{ borderRadius: 16, overflow: "hidden", background: "#fff", border: "1px solid rgba(196,122,46,0.1)" }}>
                   <div style={{ aspectRatio: "4/3", background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "ghShimmer 1.4s infinite" }} />
@@ -597,7 +600,7 @@ const GiftHampersCakes = () => {
               </p>
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 16 }}>
+            <div className="gh-card-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 16 }}>
               {filteredSamples.map((s, idx) => {
                 const isSelected = selectedPhotos.some(p => p._id === s._id);
                 return (
