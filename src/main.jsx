@@ -6,6 +6,9 @@ import store from './store.js'
 import { setupGlobalErrorHandling } from './utils/errorHandler.js'
 import './utils/inactivityCleanup.js'  // must run before store.js so slices see cleared localStorage
 import './index.css'
+import { GoogleOAuthProvider } from '@react-oauth/google'
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
 // Setup global error handling
 setupGlobalErrorHandling();
@@ -39,7 +42,9 @@ window.fetch = async (...args) => {
 };
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <Provider store={store}>
-    <App />
-  </Provider>
+  <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+    <Provider store={store}>
+      <App />
+    </Provider>
+  </GoogleOAuthProvider>
 )

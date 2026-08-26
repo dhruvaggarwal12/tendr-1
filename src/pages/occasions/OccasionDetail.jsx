@@ -1678,7 +1678,7 @@ export default function OccasionDetail(){
                     {date&&<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
                   </div>
                   <input ref={dateInputRef} type="date" value={date} onChange={e=>setDate(e.target.value)}
-                    style={{position:"absolute",inset:0,opacity:0,cursor:"pointer",width:"100%",height:"100%",pointerEvents:"none"}}/>
+                    style={{position:"absolute",inset:0,opacity:0,cursor:"pointer",width:"100%",height:"100%"}}/>
                 </div>
               </div>
 
@@ -2653,7 +2653,7 @@ export default function OccasionDetail(){
               <button onClick={next} disabled={!canNext()} style={btnPrimary}>
                 {step===1&&(!date?"Set a date first →":"Next →")}
                 {step===2&&(theme?`Use "${theme.name}" →`:"Skip — no theme →")}
-                {step===3&&(vendors.length>0?allVendorsChosen?"Next — Add Entertainment →":"Choose packages above →":"Skip →")}
+                {step===3&&(vendors.length>0?"Next — Add Entertainment →":"Skip →")}
                 {step===4&&(selectedActivities.length>0?`Next — Pick Gifts →`:"Skip — pick gifts →")}
                 {step===5&&(gifts.length>0?"See my plan →":"Skip — see plan →")}
               </button>

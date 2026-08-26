@@ -4,6 +4,7 @@ import { clearError, login } from "../redux/authSlice";
 import { fetchEventData } from "../redux/eventPlanningSlice";
 import { syncProgressOnLogin } from "../utils/progressSync";
 import logo from "../assets/logos/tendr-logo-secondary.png";
+import { useGoogleLogin } from "@react-oauth/google";
 
 const font = "'Outfit', sans-serif";
 const GOLD = "#C47A2E";
@@ -55,6 +56,8 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
   const [localLoading, setLocalLoading]   = useState(false);
   const [localError, setLocalError]       = useState("");
   const [slowMsg, setSlowMsg]             = useState(false);
+  const [googlePhoneStep, setGooglePhoneStep] = useState(null); // { pendingToken }
+  const [googlePhone, setGooglePhone]         = useState("");
 
   const isBusy = loading || localLoading;
 
@@ -65,8 +68,67 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
     setLocalError("");
     setPasswordError("");
     setShowPassword(false);
+    setGooglePhoneStep(null);
+    setGooglePhone("");
     dispatch(clearError());
   }, [open, defaultMode, dispatch]);
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setLocalLoading(true);
+      setLocalError("");
+      try {
+        const res = await fetch(`${BASE_URL}/auth/google`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ accessToken: tokenResponse.access_token }),
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Google sign-in failed");
+        if (data.needsPhone) {
+          setGooglePhoneStep({ pendingToken: data.pendingToken });
+          return;
+        }
+        dispatch({ type: "auth/login/fulfilled", payload: data });
+        if (data?.token) { dispatch(fetchEventData(data.token)); syncProgressOnLogin(data.token); }
+        onSuccess?.();
+        onClose?.();
+      } catch (err) {
+        setLocalError(err.message || "Google sign-in failed.");
+      } finally {
+        setLocalLoading(false);
+      }
+    },
+    onError: () => setLocalError("Google sign-in was cancelled or failed."),
+  });
+
+  const handleGoogleComplete = async () => {
+    if (!googlePhone || !/^[6-9]\d{9}$/.test(googlePhone)) {
+      setLocalError("Enter a valid 10-digit Indian mobile number"); return;
+    }
+    setLocalLoading(true);
+    setLocalError("");
+    try {
+      const res = await fetch(`${BASE_URL}/auth/google/complete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pendingToken: googlePhoneStep.pendingToken, phoneNumber: googlePhone }),
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to complete sign-up");
+      dispatch({ type: "auth/login/fulfilled", payload: data });
+      if (data?.token) { dispatch(fetchEventData(data.token)); syncProgressOnLogin(data.token); }
+      window.dispatchEvent(new CustomEvent("tendr:show-pwa-prompt", { detail: { source: "signup" } }));
+      onSuccess?.();
+      onClose?.();
+    } catch (err) {
+      setLocalError(err.message || "Failed to complete sign-up.");
+    } finally {
+      setLocalLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!isBusy) { setSlowMsg(false); return; }
@@ -185,8 +247,8 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
             <img src={logo} alt="Tendr" style={{ height: 30, display: "inline-block" }} />
           </div>
 
-          {/* Tabs */}
-          <div style={{ display: "flex", background: "rgba(44,26,14,0.05)", borderRadius: 12, padding: 3, marginBottom: 22, gap: 3 }}>
+          {/* Tabs — hidden during Google phone step */}
+          <div style={{ display: googlePhoneStep ? "none" : "flex", background: "rgba(44,26,14,0.05)", borderRadius: 12, padding: 3, marginBottom: 22, gap: 3 }}>
             {["login", "signup"].map(mode => (
               <button
                 key={mode}
@@ -204,62 +266,107 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
             ))}
           </div>
 
+          {/* ── Google phone step ── */}
+          {googlePhoneStep && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <p style={{ fontSize: 13.5, color: BROWN, textAlign: "center", lineHeight: 1.55, margin: 0 }}>
+                One last step — enter your mobile number to complete your account.
+              </p>
+              {localError && (
+                <div style={{ background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.18)", borderRadius: 10, padding: "10px 13px", fontSize: 13, color: "#C0392B", textAlign: "center" }}>
+                  {localError}
+                </div>
+              )}
+              <div>
+                <label style={labelStyle}>Mobile Number</label>
+                <input type="tel" value={googlePhone}
+                  onChange={e => { setGooglePhone(e.target.value.replace(/\D/g, "").slice(0, 10)); setLocalError(""); }}
+                  onFocus={() => setFocused("googlePhone")} onBlur={() => setFocused("")}
+                  style={{ ...inputStyle, borderColor: focused === "googlePhone" ? GOLD : "rgba(139,69,19,0.22)" }}
+                  placeholder="10-digit number" maxLength={10} disabled={isBusy} autoFocus />
+              </div>
+              <button type="button" onClick={handleGoogleComplete} disabled={isBusy}
+                style={{ width: "100%", padding: "12px", background: isBusy ? "#e5e7eb" : `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: isBusy ? "#9ca3af" : "#fff", fontSize: 14, fontWeight: 700, fontFamily: font, border: "none", borderRadius: 11, cursor: isBusy ? "not-allowed" : "pointer", boxShadow: !isBusy ? "0 4px 14px rgba(196,122,46,0.35)" : "none" }}>
+                {isBusy ? "Creating account…" : "Complete Sign Up"}
+              </button>
+              <button type="button" onClick={() => { setGooglePhoneStep(null); setGooglePhone(""); setLocalError(""); }}
+                style={{ background: "none", border: "none", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, textAlign: "center", padding: "4px 0" }}>
+                ← Back
+              </button>
+            </div>
+          )}
+
           {/* Slow server */}
-          {isBusy && slowMsg && (
+          {!googlePhoneStep && isBusy && slowMsg && (
             <div style={{ background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 10, padding: "9px 12px", marginBottom: 16, fontSize: 12.5, color: "#92400e", textAlign: "center" }}>
               ⏳ Server is waking up — usually under 30 seconds…
             </div>
           )}
 
-          {/* Error */}
-          {errorMsg && (
-            <div style={{ background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.18)", borderRadius: 10, padding: "10px 13px", marginBottom: 16, fontSize: 13, color: "#C0392B", textAlign: "center" }}>
-              {errorMsg}
-              {errorMsg.includes("already exists") && (
-                <div style={{ marginTop: 6 }}>
-                  <button onClick={() => { setIsSignup(false); setLocalError(""); }} style={{ background: "none", border: "none", color: GOLD, fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: font, textDecoration: "underline" }}>Sign in instead →</button>
-                </div>
-              )}
-              {errorMsg.includes("No account") && (
-                <div style={{ marginTop: 6 }}>
-                  <button onClick={() => { setIsSignup(true); setLocalError(""); }} style={{ background: "none", border: "none", color: GOLD, fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: font, textDecoration: "underline" }}>Sign up instead →</button>
-                </div>
-              )}
-            </div>
-          )}
+          {/* Error + forms — hidden during google phone step */}
+          {!googlePhoneStep && (<>
+            {errorMsg && (
+              <div style={{ background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.18)", borderRadius: 10, padding: "10px 13px", marginBottom: 16, fontSize: 13, color: "#C0392B", textAlign: "center" }}>
+                {errorMsg}
+                {errorMsg.includes("already exists") && (
+                  <div style={{ marginTop: 6 }}>
+                    <button onClick={() => { setIsSignup(false); setLocalError(""); }} style={{ background: "none", border: "none", color: GOLD, fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: font, textDecoration: "underline" }}>Sign in instead →</button>
+                  </div>
+                )}
+                {errorMsg.includes("No account") && (
+                  <div style={{ marginTop: 6 }}>
+                    <button onClick={() => { setIsSignup(true); setLocalError(""); }} style={{ background: "none", border: "none", color: GOLD, fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: font, textDecoration: "underline" }}>Sign up instead →</button>
+                  </div>
+                )}
+              </div>
+            )}
 
-          {/* ── Login form ── */}
-          {!isSignup && (
-            <form onSubmit={handleLoginSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <div>
-                <label style={labelStyle}>Phone Number</label>
-                <input type="tel" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange}
-                  onFocus={() => setFocused("phoneNumber")} onBlur={() => setFocused("")}
-                  style={{ ...inputStyle, borderColor: focused === "phoneNumber" ? GOLD : "rgba(139,69,19,0.22)" }}
-                  placeholder="+91 98765 43210" disabled={isBusy} required />
-              </div>
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
-                  <label style={{ ...labelStyle, marginBottom: 0 }}>Password</label>
+            {/* Google button */}
+            <button type="button" onClick={() => googleLogin()} disabled={isBusy}
+              style={{ width: "100%", padding: "11px 14px", marginBottom: 14, background: "#fff", border: "1.5px solid rgba(139,69,19,0.22)", borderRadius: 11, cursor: isBusy ? "not-allowed" : "pointer", fontFamily: font, fontSize: 14, fontWeight: 600, color: BROWN, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+              <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+              Continue with Google
+            </button>
+
+            {/* Divider */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+              <div style={{ flex: 1, height: 1, background: "rgba(139,69,19,0.12)" }} />
+              <span style={{ fontSize: 11.5, color: "#9B7450", fontWeight: 600 }}>or</span>
+              <div style={{ flex: 1, height: 1, background: "rgba(139,69,19,0.12)" }} />
+            </div>
+
+            {/* ── Login form ── */}
+            {!isSignup && (
+              <form onSubmit={handleLoginSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <div>
+                  <label style={labelStyle}>Phone Number</label>
+                  <input type="tel" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange}
+                    onFocus={() => setFocused("phoneNumber")} onBlur={() => setFocused("")}
+                    style={{ ...inputStyle, borderColor: focused === "phoneNumber" ? GOLD : "rgba(139,69,19,0.22)" }}
+                    placeholder="+91 98765 43210" disabled={isBusy} required />
                 </div>
-                <div style={{ position: "relative" }}>
-                  <input type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange}
-                    onFocus={() => setFocused("password")} onBlur={() => setFocused("")}
-                    style={{ ...inputStyle, paddingRight: 40, borderColor: passwordError ? "#C0392B" : focused === "password" ? GOLD : "rgba(139,69,19,0.22)" }}
-                    placeholder="Enter your password" disabled={isBusy} required />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}
-                    style={{ position: "absolute", right: 11, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#9B7450", display: "flex", padding: 0 }}>
-                    <EyeIcon open={showPassword} />
-                  </button>
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
+                    <label style={{ ...labelStyle, marginBottom: 0 }}>Password</label>
+                  </div>
+                  <div style={{ position: "relative" }}>
+                    <input type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange}
+                      onFocus={() => setFocused("password")} onBlur={() => setFocused("")}
+                      style={{ ...inputStyle, paddingRight: 40, borderColor: passwordError ? "#C0392B" : focused === "password" ? GOLD : "rgba(139,69,19,0.22)" }}
+                      placeholder="Enter your password" disabled={isBusy} required />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}
+                      style={{ position: "absolute", right: 11, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#9B7450", display: "flex", padding: 0 }}>
+                      <EyeIcon open={showPassword} />
+                    </button>
+                  </div>
+                  {passwordError && <p style={{ fontSize: 11.5, color: "#C0392B", margin: "4px 0 0", fontFamily: font }}>{passwordError}</p>}
                 </div>
-                {passwordError && <p style={{ fontSize: 11.5, color: "#C0392B", margin: "4px 0 0", fontFamily: font }}>{passwordError}</p>}
-              </div>
-              <button type="submit" disabled={isBusy || !!passwordError}
-                style={{ width: "100%", padding: "12px", marginTop: 2, background: isBusy || passwordError ? "#e5e7eb" : `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: isBusy || passwordError ? "#9ca3af" : "#fff", fontSize: 14, fontWeight: 700, fontFamily: font, border: "none", borderRadius: 11, cursor: isBusy || passwordError ? "not-allowed" : "pointer", boxShadow: !isBusy && !passwordError ? "0 4px 14px rgba(196,122,46,0.35)" : "none" }}>
-                {isBusy ? "Signing in…" : "Sign In"}
-              </button>
-            </form>
-          )}
+                <button type="submit" disabled={isBusy || !!passwordError}
+                  style={{ width: "100%", padding: "12px", marginTop: 2, background: isBusy || passwordError ? "#e5e7eb" : `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: isBusy || passwordError ? "#9ca3af" : "#fff", fontSize: 14, fontWeight: 700, fontFamily: font, border: "none", borderRadius: 11, cursor: isBusy || passwordError ? "not-allowed" : "pointer", boxShadow: !isBusy && !passwordError ? "0 4px 14px rgba(196,122,46,0.35)" : "none" }}>
+                  {isBusy ? "Signing in…" : "Sign In"}
+                </button>
+              </form>
+            )}
 
           {/* ── Signup form ── */}
           {isSignup && (
@@ -318,8 +425,9 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
               </button>
             </form>
           )}
+          </>)}
 
-          {showSkip && (
+          {showSkip && !googlePhoneStep && (
             <button
               type="button"
               onClick={() => { if (!isBusy) onClose?.(); }}
@@ -328,9 +436,11 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
               Skip for now
             </button>
           )}
-          <p style={{ marginTop: 12, fontSize: 12, color: "#9B7450", textAlign: "center" }}>
-            Serving Delhi · Noida · Greater Noida · Ghaziabad
-          </p>
+          {!googlePhoneStep && (
+            <p style={{ marginTop: 12, fontSize: 12, color: "#9B7450", textAlign: "center" }}>
+              Serving Delhi · Noida · Greater Noida · Ghaziabad
+            </p>
+          )}
         </div>
       </div>
     </>

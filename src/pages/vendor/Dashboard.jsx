@@ -1710,6 +1710,23 @@ export default function VendorDashboard() {
   const [lastMilestone, setLastMilestone] = useState(() => { try { return Number(localStorage.getItem(MILESTONE_KEY)||0); } catch { return 0; } });
   const dismissMilestone = (m) => { setLastMilestone(m); try { localStorage.setItem(MILESTONE_KEY, String(m)); } catch {} };
 
+  // 7-day free trial timer — starts on first sign-in, per vendor
+  const TRIAL_KEY = `tendr_trial_${vendorId||'v'}`;
+  const [trialStart] = useState(() => {
+    try {
+      const stored = localStorage.getItem(TRIAL_KEY);
+      if (stored) return Number(stored);
+      const now = Date.now();
+      localStorage.setItem(TRIAL_KEY, String(now));
+      return now;
+    } catch { return Date.now(); }
+  });
+  const trialMsElapsed = Date.now() - trialStart;
+  const trialDaysLeft = Math.max(0, 7 - Math.floor(trialMsElapsed / 86400000));
+  const trialHoursLeft = Math.max(0, Math.ceil((7 * 86400000 - trialMsElapsed) / 3600000));
+  const trialExpired = trialDaysLeft <= 0 && trialMsElapsed >= 7 * 86400000;
+  const trialUrgent = !trialExpired && trialDaysLeft <= 1;
+
   const showToast = (msg, ok = true) => {
     setToast({ msg, ok });
     setTimeout(() => setToast(null), 3500);
@@ -2101,6 +2118,25 @@ export default function VendorDashboard() {
             </div>
           </div>
         </div>
+
+        {/* Trial countdown banner */}
+        {!trialExpired && (
+          <div style={{ background: trialUrgent ? 'rgba(220,38,38,0.08)' : 'rgba(196,122,46,0.07)', borderBottom: `1px solid ${trialUrgent ? 'rgba(220,38,38,0.2)' : 'rgba(196,122,46,0.15)'}`, padding:'8px 18px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexShrink:0 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+              <span style={{ fontSize:16 }}>{trialUrgent ? '⚠️' : '⏳'}</span>
+              <div>
+                <span style={{ fontSize:12.5, fontWeight:700, color: trialUrgent ? '#DC2626' : ink }}>
+                  {trialDaysLeft > 0 ? `${trialDaysLeft} day${trialDaysLeft !== 1 ? 's' : ''} left in your free trial` : `${trialHoursLeft} hour${trialHoursLeft !== 1 ? 's' : ''} left in your free trial`}
+                </span>
+                <span style={{ fontSize:11.5, color:'#9B7450', marginLeft:8, display: isMobile ? 'none' : 'inline' }}>Upgrade to keep full access to your dashboard</span>
+              </div>
+            </div>
+            <a href="https://wa.me/919211668427?text=I%20want%20to%20upgrade%20my%20Tendr%20vendor%20plan" target="_blank" rel="noopener noreferrer"
+              style={{ padding:'6px 14px', borderRadius:8, background: trialUrgent ? '#DC2626' : `linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12, fontWeight:700, textDecoration:'none', whiteSpace:'nowrap', flexShrink:0, fontFamily:font }}>
+              Upgrade Now
+            </a>
+          </div>
+        )}
 
         {/* Page body */}
         <div style={{ flex:1, padding:isMobile?'16px 14px 88px':'24px 28px 48px' }}>
@@ -3647,6 +3683,26 @@ export default function VendorDashboard() {
                   </button>
                 </>);
               })()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Trial Expired: Uncancellable Upgrade Popup ── */}
+      {trialExpired && (
+        <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(10,5,0,0.82)', backdropFilter:'blur(6px)', WebkitBackdropFilter:'blur(6px)', display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+          <div style={{ background:'#fff', borderRadius:24, padding: isMobile ? '32px 24px 28px' : '40px 44px 36px', maxWidth:440, width:'100%', boxShadow:'0 24px 80px rgba(0,0,0,0.5)', textAlign:'center', fontFamily:font }}>
+            <div style={{ width:72, height:72, borderRadius:'50%', background:`linear-gradient(135deg,${gold},${goldLt})`, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 20px', fontSize:32, boxShadow:`0 8px 28px rgba(196,122,46,0.35)` }}>⭐</div>
+            <h2 style={{ fontSize: isMobile ? 22 : 26, fontWeight:800, color:ink, margin:'0 0 10px', lineHeight:1.2 }}>Your free trial has ended</h2>
+            <p style={{ fontSize:14, color:'#9B7450', margin:'0 0 24px', lineHeight:1.65 }}>
+              Upgrade your plan to continue using the Tendr vendor dashboard — manage bookings, track earnings, and grow your business.
+            </p>
+            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              <a href="https://wa.me/919211668427?text=I%20want%20to%20upgrade%20my%20Tendr%20vendor%20plan" target="_blank" rel="noopener noreferrer"
+                style={{ display:'block', padding:'16px 28px', borderRadius:14, background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:16, fontWeight:800, textDecoration:'none', boxShadow:`0 6px 24px rgba(196,122,46,0.4)`, letterSpacing:'0.01em' }}>
+                Pay Now &amp; Upgrade ↗
+              </a>
+              <p style={{ fontSize:11, color:'rgba(155,116,80,0.7)', margin:0 }}>Talk to us on WhatsApp — we'll set you up instantly</p>
             </div>
           </div>
         </div>

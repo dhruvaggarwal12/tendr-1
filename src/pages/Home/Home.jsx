@@ -1470,44 +1470,6 @@ const Home = () => {
         }
       `}</style>
 
-      {/* ── Rakhi Hampers Banner ── */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, amount: 0.5 }}
-        transition={{ duration: 0.45 }}
-        style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 60%,#3A200C 100%)", padding: "36px 24px", position: "relative", overflow: "hidden" }}
-      >
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 5% 50%, rgba(204,171,74,0.07), transparent 40%), radial-gradient(circle at 95% 50%, rgba(196,122,46,0.06), transparent 40%)", pointerEvents: "none" }} />
-        <div style={{ maxWidth: 1120, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, flexWrap: "wrap", position: "relative" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-            {/* SVG thread/ribbon icon */}
-            <div style={{ width: 52, height: 52, borderRadius: 14, background: "rgba(204,171,74,0.12)", border: "1px solid rgba(204,171,74,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
-                <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
-                <line x1="9" y1="9" x2="9.01" y2="9"/>
-                <line x1="15" y1="9" x2="15.01" y2="9"/>
-              </svg>
-            </div>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.16em", marginBottom: 4 }}>Raksha Bandhan Special</div>
-              <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.4rem,2.8vw,2rem)", fontWeight: 300, color: "#fff", lineHeight: 1.15 }}>
-                Rakhi Hampers, curated for your loved ones
-              </div>
-            </div>
-          </div>
-          <motion.button
-            onClick={() => navigate("/rakhi-hampers")}
-            style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, padding: "13px 28px", borderRadius: 10, border: "none", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0, fontFamily: "'Outfit', sans-serif" }}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ type: "spring", stiffness: 400, damping: 24 }}
-          >
-            Explore Now →
-          </motion.button>
-        </div>
-      </motion.section>
 
       {/* ── Plan by Occasion ── */}
       <section id="plan-by-occasion" data-tour="occasion-strip" style={{ background: "#ffffff", padding: "72px 28px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
