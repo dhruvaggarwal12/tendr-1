@@ -1987,8 +1987,7 @@ export default function OccasionDetail(){
                                   <div style={{fontSize:11.5,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{opt.style}</div>
                                   <div style={{fontSize:10,fontWeight:700,color:"rgba(196,122,46,0.65)"}}>{opt.priceHint}</div>
                                   <div style={{display:"flex",flexDirection:"column",gap:2}}>
-                                    {opt.dishes.slice(0,2).map((d,di)=><div key={di} style={{fontSize:10,color:muted,lineHeight:1.4}}>· {d}</div>)}
-                                    {opt.dishes.length>2&&<div style={{fontSize:10,color:"rgba(107,69,40,0.3)"}}>+{opt.dishes.length-2} more</div>}
+                                    {opt.dishes.map((d,di)=><div key={di} style={{fontSize:10,color:muted,lineHeight:1.4}}>· {d}</div>)}
                                   </div>
                                   {sel&&<button onClick={e=>{e.stopPropagation();setShowCateringBuilder(b=>!b);setCateringBuilderStep("cuisine");}}
                                     style={{marginTop:4,fontSize:10,fontWeight:700,color:gold,background:"rgba(196,122,46,0.08)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:8,padding:"4px 8px",cursor:"pointer",fontFamily:font,textAlign:"center"}}>
@@ -2136,8 +2135,7 @@ export default function OccasionDetail(){
                                   <div style={{fontSize:11.5,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{opt.style}</div>
                                   <div style={{fontSize:10,fontWeight:700,color:"rgba(196,122,46,0.65)"}}>{opt.priceHint}</div>
                                   <div style={{display:"flex",flexDirection:"column",gap:2}}>
-                                    {opt.items.slice(0,2).map((it,ii)=><div key={ii} style={{fontSize:10,color:muted,lineHeight:1.4}}>· {it}</div>)}
-                                    {opt.items.length>2&&<div style={{fontSize:10,color:"rgba(107,69,40,0.3)"}}>+{opt.items.length-2} more</div>}
+                                    {opt.items.map((it,ii)=><div key={ii} style={{fontSize:10,color:muted,lineHeight:1.4}}>· {it}</div>)}
                                   </div>
                                   {sel&&<button onClick={e=>{e.stopPropagation();setShowDecorBuilder(b=>!b);}}
                                     style={{marginTop:4,fontSize:10,fontWeight:700,color:gold,background:"rgba(196,122,46,0.08)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:8,padding:"4px 8px",cursor:"pointer",fontFamily:font,textAlign:"center"}}>
