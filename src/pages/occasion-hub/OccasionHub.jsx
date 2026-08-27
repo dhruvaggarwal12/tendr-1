@@ -3131,32 +3131,26 @@ function OccPolygonGrid({ tools, onOpen, accent }) {
         {/* Web SVG */}
         <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", overflow: "visible" }}
           viewBox={`0 0 ${size} ${size}`}>
-          <defs>
-            <filter id="occ-glow" x="-80%" y="-80%" width="260%" height="260%">
-              <feGaussianBlur stdDeviation="3" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-          </defs>
-          {/* Inner lines */}
+            {/* Inner lines */}
           {innerLines.map(([a, b], i) => (
             <line key={`il${i}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-              stroke={`${accent}20`} strokeWidth="1" />
+              stroke="rgba(255,255,255,0.06)" strokeWidth="0.75" />
           ))}
           {/* Outer polygon edges */}
           {Array.from({ length: n }, (_, i) => (
             <line key={`e${i}`}
               x1={pts[i].x} y1={pts[i].y}
               x2={pts[(i + 1) % n].x} y2={pts[(i + 1) % n].y}
-              stroke={`${accent}55`} strokeWidth="1.5" filter="url(#occ-glow)" />
+              stroke={`${accent}45`} strokeWidth="1" />
           ))}
           {/* Vertex dots */}
           {pts.map((p, i) => (
-            <circle key={`v${i}`} cx={p.x} cy={p.y} r={3.5}
-              fill={`${accent}88`} filter="url(#occ-glow)" />
+            <circle key={`v${i}`} cx={p.x} cy={p.y} r={2.5}
+              fill={accent} opacity="0.55" />
           ))}
-          {/* Center dot */}
-          <circle cx={cx} cy={cy} r={4.5}
-            fill={`${accent}66`} filter="url(#occ-glow)" />
+          {/* Center ring */}
+          <circle cx={cx} cy={cy} r={5}
+            fill="none" stroke={accent} strokeWidth="1.5" opacity="0.40" />
         </svg>
 
         {/* Tool nodes */}
@@ -3168,10 +3162,8 @@ function OccPolygonGrid({ tools, onOpen, accent }) {
                 position: "absolute",
                 width: nW, height: nH,
                 left: p.x - nW / 2, top: p.y - nH / 2,
-                background: i === 0
-                  ? `radial-gradient(circle at 50% 30%, ${accent}38, rgba(12,9,3,0.88))`
-                  : `radial-gradient(circle at 50% 30%, ${accent}22, rgba(12,9,3,0.92))`,
-                border: i === 0 ? `1.5px solid ${accent}88` : `1.5px solid ${accent}44`,
+                background: "rgba(14,11,6,0.93)",
+                border: i === 0 ? `1px solid ${accent}55` : `1px solid rgba(255,255,255,0.10)`,
                 borderRadius: 14,
                 cursor: "pointer",
                 display: "flex", flexDirection: "column",
@@ -3185,26 +3177,19 @@ function OccPolygonGrid({ tools, onOpen, accent }) {
                 animation: `card-pop 0.45s cubic-bezier(0.22,1,0.36,1) ${i * 0.07}s both`,
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.transform = "scale(1.1)";
-                e.currentTarget.style.boxShadow = `0 0 22px ${accent}55`;
-                e.currentTarget.style.borderColor = `${accent}aa`;
+                e.currentTarget.style.transform = "scale(1.06)";
+                e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+                e.currentTarget.style.borderColor = i === 0 ? `${accent}88` : "rgba(255,255,255,0.22)";
                 setHovId(t.id);
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.transform = "";
-                e.currentTarget.style.boxShadow = "";
-                e.currentTarget.style.borderColor = i === 0 ? `${accent}88` : `${accent}44`;
+                e.currentTarget.style.background = "rgba(14,11,6,0.93)";
+                e.currentTarget.style.borderColor = i === 0 ? `${accent}55` : "rgba(255,255,255,0.10)";
                 setHovId(null);
               }}
             >
-              <div style={{
-                width: Math.max(32, nW * 0.44), height: Math.max(32, nW * 0.44),
-                borderRadius: "50%",
-                background: `radial-gradient(circle, ${accent}35, ${accent}0d)`,
-                border: `1.5px solid ${accent}55`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: accent, flexShrink: 0,
-              }}>
+              <div style={{ color: accent, flexShrink: 0, opacity: 0.88 }}>
                 {TOOL_ICONS[t.id] || occic(<><circle cx="12" cy="12" r="10"/></>, iconSz)}
               </div>
               <span style={{
@@ -3637,7 +3622,7 @@ export default function OccasionHub({ occasion }) {
                 fontSize: 10, fontWeight: active ? 800 : 600, cursor: "pointer", fontFamily: font,
                 textTransform: "uppercase", letterSpacing: "0.04em",
                 borderRadius: 10,
-                boxShadow: active ? `0 2px 12px ${accent}50` : "none",
+                boxShadow: "none",
                 display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
               }}>
                 <div style={{ color: active ? "#fff" : "rgba(255,255,255,0.4)" }}>{SECTION_ICONS[sec.id] || defaultSecIcon}</div>
@@ -3649,11 +3634,11 @@ export default function OccasionHub({ occasion }) {
       </div>
 
       {/* ── Tool grid — polygon vertex layout ── */}
-      <div className="occ-scroll-area" style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "8px 12px 32px", maxWidth: 800, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
+      <div className="occ-scroll-area" style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px 12px 32px", maxWidth: 800, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
 
         {/* Section subtitle */}
         <div style={{ width: "100%", marginBottom: 8, animation: "tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.12em" }}>{currentSection?.subtitle}</div>
+          <div style={{ fontSize: 11.5, fontWeight: 600, color: "rgba(255,255,255,0.42)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{currentSection?.subtitle}</div>
         </div>
 
         {currentSection?.tools.length >= 3 ? (
