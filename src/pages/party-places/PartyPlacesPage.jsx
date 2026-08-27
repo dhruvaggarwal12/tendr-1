@@ -86,7 +86,7 @@ export default function PartyPlacesPage() {
       `}</style>
 
       {/* ── Hero ── */}
-      <div style={{ background: `linear-gradient(160deg, ${ink} 0%, #3D1C08 55%, #5A2D0C 100%)`, padding: "52px 28px 56px", position: "relative", overflow: "hidden" }}>
+      <div style={{ background: `linear-gradient(160deg, ${ink} 0%, #3D1C08 55%, #5A2D0C 100%)`, padding: "28px 20px 32px", position: "relative", overflow: "hidden" }}>
         {/* Ambient circles */}
         <div style={{ position: "absolute", top: -60, right: -60, width: 300, height: 300, borderRadius: "50%", background: `radial-gradient(circle, rgba(196,122,46,0.18) 0%, transparent 70%)`, pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: -80, left: -40, width: 240, height: 240, borderRadius: "50%", background: `radial-gradient(circle, rgba(204,171,74,0.12) 0%, transparent 70%)`, pointerEvents: "none" }} />
@@ -129,17 +129,6 @@ export default function PartyPlacesPage() {
         </div>
       </div>
 
-      {/* ── USP strip ── */}
-      <div style={{ background: "#fff", borderBottom: "1px solid rgba(196,122,46,0.08)" }}>
-        <div style={{ maxWidth: 960, margin: "0 auto", padding: "13px 28px", display: "flex", gap: 0, justifyContent: "center", flexWrap: "wrap" }}>
-          {["Decor arranged", "Catering on-site", "DJ & sound", "Photography", "Book via WhatsApp"].map((text, i, arr) => (
-            <div key={text} style={{ display: "flex", alignItems: "center", gap: 0, whiteSpace: "nowrap" }}>
-              <span style={{ fontSize: 12, color: "#7A5535", fontWeight: 600, padding: "0 20px" }}>{text}</span>
-              {i < arr.length - 1 && <span style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(196,122,46,0.3)", display: "inline-block", flexShrink: 0 }} />}
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* ── Filters ── */}
       <div style={{ background: "#fff", borderBottom: "1px solid rgba(196,122,46,0.08)", position: "sticky", top: 0, zIndex: 100 }}>
@@ -208,7 +197,7 @@ export default function PartyPlacesPage() {
                   onMouseLeave={() => setHoveredCard(null)}>
 
                   {/* Photo */}
-                  <div className="pp-card-photo" style={{ position: "relative", height: 220, overflow: "hidden", background: "#e8ddd0" }}>
+                  <div className="pp-card-photo" style={{ position: "relative", height: 160, overflow: "hidden", background: "#e8ddd0" }}>
                     <img src={place.coverPhoto} alt={place.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
                     <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 45%, transparent 100%)" }} />
 
@@ -237,7 +226,7 @@ export default function PartyPlacesPage() {
                   </div>
 
                   {/* Card body */}
-                  <div style={{ padding: "14px 16px 16px" }}>
+                  <div style={{ padding: "11px 13px 13px" }}>
                     <div style={{ fontSize: 15, fontWeight: 800, color: ink, marginBottom: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{place.name}</div>
                     <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 10, display: "flex", alignItems: "center", gap: 4 }}>
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -265,14 +254,6 @@ export default function PartyPlacesPage() {
                       </div>
                     </div>
 
-                    {/* Occasion tags */}
-                    {place.occasionTags?.length > 0 && (
-                      <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(196,122,46,0.08)", display: "flex", gap: 5, flexWrap: "wrap" }}>
-                        {place.occasionTags.slice(0, 3).map(tag => (
-                          <span key={tag} style={{ fontSize: 10.5, color: "#7A5535", background: "rgba(28,9,0,0.04)", borderRadius: 100, padding: "2px 8px", fontWeight: 600 }}>{tag}</span>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </div>
               );

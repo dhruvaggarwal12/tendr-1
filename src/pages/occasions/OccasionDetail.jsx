@@ -2246,10 +2246,8 @@ export default function OccasionDetail(){
                                     {budgetFit==="fits"&&!sel&&<span style={{fontSize:7.5,fontWeight:800,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"1px 5px",flexShrink:0}}>✓ Budget</span>}
                                     {pkg.popular&&budgetFit!=="fits"&&<span style={{fontSize:8,fontWeight:800,color:gold,background:"rgba(196,122,46,0.1)",borderRadius:100,padding:"1px 5px",flexShrink:0}}>Best</span>}
                                   </div>
-                                  <span style={{fontSize:11.5,fontWeight:700,color:sel?gold:"rgba(196,122,46,0.6)"}}>{pkg.price}</span>
                                   <div style={{display:"flex",flexDirection:"column",gap:1.5}}>
-                                    {pkg.items.slice(0,2).map((it,ii)=><div key={ii} style={{fontSize:10,color:muted,lineHeight:1.4}}>· {it}</div>)}
-                                    {pkg.items.length>2&&<div style={{fontSize:10,color:"rgba(107,69,40,0.35)"}}>+{pkg.items.length-2} more</div>}
+                                    {pkg.items.map((it,ii)=><div key={ii} style={{fontSize:10,color:muted,lineHeight:1.4}}>· {it}</div>)}
                                   </div>
                                   {sel&&<div style={{width:16,height:16,borderRadius:"50%",background:gold,display:"flex",alignItems:"center",justifyContent:"center",alignSelf:"flex-end",marginTop:2}}>
                                     <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -2357,7 +2355,6 @@ export default function OccasionDetail(){
                                 <div style={{flex:1,minWidth:0}}>
                                   <div style={{fontSize:13,fontWeight:700,color:sel?gold:ink,lineHeight:1.25,marginBottom:2}}>{a.name}</div>
                                   <div style={{fontSize:11,color:muted,lineHeight:1.4,marginBottom:2}}>{a.desc}</div>
-                                  <div style={{fontSize:11,fontWeight:700,color:gold}}>{a.price}</div>
                                 </div>
                                 <div style={{width:20,height:20,borderRadius:"50%",border:`2px solid ${sel?gold:"rgba(196,122,46,0.2)"}`,background:sel?gold:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.16s"}}>
                                   {sel&&<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
@@ -2517,7 +2514,7 @@ export default function OccasionDetail(){
                         const pkgPrice=pkgIdx==="custom"?null:typeof pkgIdx==="number"&&pkgs?pkgs[pkgIdx]?.price:null;
                         const pkgItems=pkgIdx==="custom"
                           ?(v==="Decorator"?Object.values(customDecor).flat().slice(0,3):v==="Caterer"?Object.values(customCatering.dishes).flat().slice(0,3):[])
-                          :typeof pkgIdx==="number"&&pkgs?pkgs[pkgIdx]?.items?.slice(0,2):[];
+                          :typeof pkgIdx==="number"&&pkgs?pkgs[pkgIdx]?.items||[]:[];
                         return(
                           <div key={v} style={{display:"flex",alignItems:"flex-start",gap:10,background:"rgba(196,122,46,0.06)",border:"1px solid rgba(196,122,46,0.13)",borderRadius:10,padding:"8px 11px"}}>
                             <div style={{flex:1,minWidth:0}}>
@@ -2628,7 +2625,7 @@ export default function OccasionDetail(){
                       <span style={{fontSize:18,flexShrink:0}}>{a.icon}</span>
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{fontSize:12.5,fontWeight:700,color:ink}}>{a.name}</div>
-                        <div style={{fontSize:10.5,color:muted}}>{a.price} · {typeLabel}</div>
+                        <div style={{fontSize:10.5,color:muted}}>{typeLabel}</div>
                       </div>
                     </div>
                   );

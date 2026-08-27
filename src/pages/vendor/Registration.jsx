@@ -175,14 +175,14 @@ export default function VendorRegistration() {
               <button
                 key={c.key}
                 onClick={() => { setCategory(c.key); setStep(2); }}
-                style={{ padding: "28px 20px", borderRadius: 20, border: `2px solid ${c.border}`, background: c.color, cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s" }}
+                style={{ padding: "18px 16px", borderRadius: 16, border: `1.5px solid ${c.border}`, background: c.color, cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s" }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = `0 12px 32px ${c.border}`; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = ""; }}
               >
-                <div style={{ fontSize: 38, marginBottom: 12 }}>{c.emoji}</div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: ink, marginBottom: 6 }}>{c.title}</div>
-                <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.6 }}>{c.sub}</div>
-                <div style={{ marginTop: 16, fontSize: 12.5, fontWeight: 700, color: c.accent }}>I'm this →</div>
+                <div style={{ fontSize: 26, marginBottom: 8 }}>{c.emoji}</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: ink, marginBottom: 4 }}>{c.title}</div>
+                <div style={{ fontSize: 11, color: "#9B7450", lineHeight: 1.55 }}>{c.sub}</div>
+                <div style={{ marginTop: 12, fontSize: 11.5, fontWeight: 700, color: c.accent }}>I'm this →</div>
               </button>
             ))}
           </div>
@@ -215,19 +215,19 @@ export default function VendorRegistration() {
             <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>Pick your service type — your profile and dashboard will be tailored for you.</p>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(180px,1fr))", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(148px,1fr))", gap: 8 }}>
             {types.map(t => (
               <button
                 key={t.value}
                 onClick={() => { setForm(f => ({ ...f, serviceType: t.value })); setStep(3); }}
-                style={{ padding: "18px 16px", borderRadius: 16, border: `1.5px solid rgba(196,122,46,0.18)`, background: "#FFFCF5", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", display: "flex", gap: 12, alignItems: "flex-start" }}
+                style={{ padding: "12px 12px", borderRadius: 12, border: `1.5px solid rgba(196,122,46,0.18)`, background: "#FFFCF5", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", display: "flex", gap: 10, alignItems: "flex-start" }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.18)"; e.currentTarget.style.background = "#FFFCF5"; e.currentTarget.style.transform = ""; }}
               >
-                <span style={{ fontSize: 26, flexShrink: 0 }}>{t.emoji}</span>
+                <span style={{ fontSize: 20, flexShrink: 0 }}>{t.emoji}</span>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: ink, marginBottom: 3 }}>{t.label}</div>
-                  <div style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.5 }}>{t.sub}</div>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: ink, marginBottom: 2 }}>{t.label}</div>
+                  <div style={{ fontSize: 10.5, color: "#9B7450", lineHeight: 1.45 }}>{t.sub}</div>
                 </div>
               </button>
             ))}
@@ -257,7 +257,7 @@ export default function VendorRegistration() {
 
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 28 }}>
-          {tc && <div style={{ fontSize: 40, marginBottom: 10 }}>{tc.emoji}</div>}
+          {tc && <div style={{ fontSize: 28, marginBottom: 8 }}>{tc.emoji}</div>}
           <h1 style={{ fontSize: "clamp(1.5rem,3.5vw,2rem)", fontWeight: 900, color: ink, margin: "0 0 6px" }}>
             {form.serviceType || "Your Details"}
           </h1>
@@ -265,7 +265,7 @@ export default function VendorRegistration() {
         </div>
 
         {/* Form card */}
-        <div style={{ background: "#FFFCF5", borderRadius: 24, padding: "32px 28px", boxShadow: "0 8px 40px rgba(139,69,19,0.1)", border: "1px solid rgba(196,122,46,0.1)" }}>
+        <div style={{ background: "#FFFCF5", borderRadius: 20, padding: "22px 20px", boxShadow: "0 4px 24px rgba(139,69,19,0.08)", border: "1px solid rgba(196,122,46,0.1)" }}>
           {apiError && (
             <div style={{ background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 10, padding: "11px 16px", fontSize: 13, color: "#c0392b", marginBottom: 20 }}>{apiError}</div>
           )}
