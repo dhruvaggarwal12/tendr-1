@@ -1193,11 +1193,11 @@ function timeAgo(iso) {
 
 /* ── inline CSS ── */
 const css=`
-  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-  .os{animation:fadeUp 0.28s cubic-bezier(0.22,1,0.36,1);}
-  .chip{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:100px;border:1.5px solid rgba(196,122,46,0.22);background:rgba(196,122,46,0.03);color:${ink};font-size:13px;font-weight:500;cursor:pointer;transition:all 0.16s;font-family:${font};white-space:nowrap;position:relative;}
-  .chip:hover{border-color:rgba(196,122,46,0.5);background:rgba(196,122,46,0.07);color:${gold};}
-  .chip.sel{border-color:${gold};background:rgba(196,122,46,0.12);color:${gold};font-weight:700;box-shadow:0 0 0 3px rgba(196,122,46,0.08);}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .os{animation:fadeUp 0.24s cubic-bezier(0.22,1,0.36,1);}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:10px;border:1.5px solid rgba(196,122,46,0.22);background:rgba(196,122,46,0.03);color:${ink};font-size:14px;font-weight:500;cursor:pointer;transition:all 0.14s;font-family:${font};white-space:nowrap;position:relative;}
+  .chip:hover{border-color:rgba(196,122,46,0.45);background:rgba(196,122,46,0.06);}
+  .chip.sel{border-color:${gold};background:rgba(196,122,46,0.10);color:${gold};font-weight:600;}
   input[type="date"]::-webkit-calendar-picker-indicator{opacity:0.45;cursor:pointer;filter:invert(60%) sepia(60%) saturate(400%) hue-rotate(5deg);}
   ::-webkit-scrollbar{display:none;}
   @media(min-width:600px){.g2{grid-template-columns:repeat(2,1fr)!important;}}
@@ -1218,7 +1218,7 @@ function Progress({step,withTheme}){
       </div>
       <div style={{display:"flex",gap:0,overflow:"hidden"}}>
         {labels.map((l,i)=>(
-          <div key={l} style={{flex:1,fontSize:9,fontWeight:i+1===cur?700:400,color:i+1===cur?gold:"rgba(196,122,46,0.35)",fontFamily:font,textAlign:"center",textTransform:"uppercase",letterSpacing:"0.06em",transition:"all 0.3s",paddingBottom:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{l}</div>
+          <div key={l} style={{flex:1,fontSize:10.5,fontWeight:i+1===cur?700:400,color:i+1===cur?gold:"rgba(196,122,46,0.40)",fontFamily:font,textAlign:"center",textTransform:"uppercase",letterSpacing:"0.05em",transition:"all 0.3s",paddingBottom:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{l}</div>
         ))}
       </div>
     </div>
@@ -1460,10 +1460,10 @@ export default function OccasionDetail(){
   };
 
   /* styles */
-  const btnPrimary={flex:1,padding:"15px 20px",borderRadius:14,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:font,boxShadow:"0 4px 18px rgba(196,122,46,0.26)",transition:"all 0.2s",letterSpacing:"0.01em",opacity:canNext()?1:0.45};
-  const btnGhost={padding:"13px 18px",borderRadius:14,border:`1.5px solid rgba(196,122,46,0.22)`,background:"transparent",color:gold,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.2s",whiteSpace:"nowrap"};
-  const sLabel={fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:12,fontFamily:font};
-  const fieldCard={background:"#fff",borderRadius:18,padding:"20px 22px",border:`1.5px solid ${border}`,marginBottom:12,transition:"border-color 0.2s"};
+  const btnPrimary={flex:1,padding:"15px 20px",borderRadius:10,border:"none",background:gold,color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:font,boxShadow:"0 2px 10px rgba(196,122,46,0.28)",transition:"all 0.18s",letterSpacing:"0.01em",opacity:canNext()?1:0.4};
+  const btnGhost={padding:"13px 18px",borderRadius:10,border:`1.5px solid rgba(196,122,46,0.28)`,background:"transparent",color:gold,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s",whiteSpace:"nowrap"};
+  const sLabel={fontSize:12,fontWeight:600,color:"rgba(28,9,0,0.45)",textTransform:"uppercase",letterSpacing:"0.10em",marginBottom:14,fontFamily:font};
+  const fieldCard={background:"#fff",borderRadius:12,padding:"22px 22px",border:`1px solid rgba(196,122,46,0.18)`,marginBottom:14,transition:"border-color 0.2s"};
 
   /* fully personalized gift sort — theme + age groups + budget */
   const sortedGifts=(occasion.giftIdeas||[]).map(g=>({
@@ -1484,8 +1484,8 @@ export default function OccasionDetail(){
           </button>
           <span style={{fontSize:22}}>{occasion.icon}</span>
           <div style={{flex:1,minWidth:0}}>
-            <div style={{fontSize:14,fontWeight:800,color:ink,letterSpacing:"-0.01em"}}>{occasion.name}</div>
-            {occasion.localName&&<div style={{fontSize:10,color:gold,fontWeight:600}}>{occasion.localName}</div>}
+            <div style={{fontSize:15,fontWeight:700,color:ink,letterSpacing:"-0.01em"}}>{occasion.name}</div>
+            {occasion.localName&&<div style={{fontSize:11,color:gold,fontWeight:600}}>{occasion.localName}</div>}
           </div>
           {hub&&<button onClick={()=>navigate(hub)} style={{fontSize:11,fontWeight:700,color:"#7C3AED",background:"rgba(124,58,237,0.07)",border:"1px solid rgba(124,58,237,0.18)",borderRadius:8,padding:"6px 11px",cursor:"pointer",fontFamily:font,flexShrink:0}}>🛠️ Tools</button>}
         </div>
@@ -1585,31 +1585,28 @@ export default function OccasionDetail(){
               </div>
             )}
 
-            <p style={{fontSize:11,fontWeight:700,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",margin:"0 0 6px",fontFamily:font}}>How would you like to plan?</p>
-            <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,4vw,1.7rem)",color:ink,lineHeight:1.2,margin:"0 0 20px",letterSpacing:"-0.01em",fontWeight:400}}>Choose your approach</p>
+            <p style={{fontSize:12,fontWeight:600,color:"rgba(28,9,0,0.45)",textTransform:"uppercase",letterSpacing:"0.08em",margin:"0 0 8px",fontFamily:font}}>How would you like to plan?</p>
+            <p style={{fontFamily:serif,fontSize:"clamp(1.5rem,4vw,1.9rem)",color:ink,lineHeight:1.2,margin:"0 0 22px",letterSpacing:"-0.02em",fontWeight:400}}>Choose your approach</p>
 
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               {/* ── With Theme ── */}
               <button onClick={()=>{setPlanMode("with");setStep(1);}}
-                style={{padding:"22px 20px",borderRadius:20,textAlign:"left",cursor:"pointer",border:"none",
-                  background:`linear-gradient(135deg, rgba(196,122,46,0.11) 0%, rgba(196,122,46,0.04) 100%)`,
-                  fontFamily:font,position:"relative",overflow:"hidden",transition:"transform 0.18s,box-shadow 0.18s",
-                  boxShadow:"0 2px 12px rgba(196,122,46,0.08)"}}
-                onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 24px rgba(196,122,46,0.18)";}}
-                onMouseLeave={e=>{e.currentTarget.style.transform="none";e.currentTarget.style.boxShadow="0 2px 12px rgba(196,122,46,0.08)";}}>
-                {/* decorative circle */}
-                <div style={{position:"absolute",right:-30,top:-30,width:120,height:120,borderRadius:"50%",background:"rgba(196,122,46,0.08)",pointerEvents:"none"}}/>
-                <div style={{display:"flex",alignItems:"flex-start",gap:14,position:"relative"}}>
-                  <div style={{width:50,height:50,borderRadius:16,background:`linear-gradient(135deg,${gold},${goldLt})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0,boxShadow:`0 6px 16px rgba(196,122,46,0.3)`}}>🎨</div>
+                style={{padding:"22px 20px",borderRadius:12,textAlign:"left",cursor:"pointer",border:`1.5px solid rgba(196,122,46,0.28)`,
+                  background:"rgba(196,122,46,0.04)",
+                  fontFamily:font,transition:"border-color 0.16s,background 0.16s"}}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(196,122,46,0.55)";e.currentTarget.style.background="rgba(196,122,46,0.07)";}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(196,122,46,0.28)";e.currentTarget.style.background="rgba(196,122,46,0.04)";}}>
+                <div style={{display:"flex",alignItems:"flex-start",gap:14}}>
+                  <div style={{width:44,height:44,borderRadius:10,background:gold,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>🎨</div>
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:4}}>
-                      <div style={{fontFamily:serif,fontSize:17,fontWeight:500,color:ink}}>Plan with a Theme</div>
-                      <span style={{fontSize:9,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"2px 7px",letterSpacing:"0.06em",textTransform:"uppercase",flexShrink:0}}>Best</span>
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:5}}>
+                      <div style={{fontFamily:serif,fontSize:18,fontWeight:500,color:ink}}>Plan with a Theme</div>
+                      <span style={{fontSize:10,fontWeight:700,color:"#fff",background:gold,borderRadius:4,padding:"2px 7px",letterSpacing:"0.04em",textTransform:"uppercase",flexShrink:0}}>Recommended</span>
                     </div>
-                    <p style={{fontSize:12.5,color:muted,margin:"0 0 12px",lineHeight:1.6}}>Pick a look — we'll customise vendors, décor, gifts and the full plan around it.</p>
-                    <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                    <p style={{fontSize:14,color:muted,margin:"0 0 12px",lineHeight:1.55}}>Pick a look — we'll customise vendors, décor, gifts and the full plan around it.</p>
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                       {["Theme picker","Tailored vendors","Full blueprint"].map(t=>(
-                        <span key={t} style={{fontSize:10,fontWeight:600,color:gold,background:"rgba(196,122,46,0.09)",border:"1px solid rgba(196,122,46,0.16)",borderRadius:100,padding:"3px 9px"}}>{t}</span>
+                        <span key={t} style={{fontSize:11,fontWeight:600,color:gold,background:"rgba(196,122,46,0.08)",border:"1px solid rgba(196,122,46,0.18)",borderRadius:6,padding:"3px 9px"}}>{t}</span>
                       ))}
                     </div>
                   </div>
@@ -1619,21 +1616,19 @@ export default function OccasionDetail(){
 
               {/* ── Jump straight in ── */}
               <button onClick={()=>{setPlanMode("without");setStep(1);}}
-                style={{padding:"22px 20px",borderRadius:20,textAlign:"left",cursor:"pointer",
-                  border:`1.5px solid rgba(28,9,0,0.08)`,background:"#fff",
-                  fontFamily:font,position:"relative",overflow:"hidden",transition:"transform 0.18s,box-shadow 0.18s",
-                  boxShadow:"0 2px 8px rgba(28,9,0,0.04)"}}
-                onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 24px rgba(28,9,0,0.08)";e.currentTarget.style.borderColor="rgba(196,122,46,0.25)";}}
-                onMouseLeave={e=>{e.currentTarget.style.transform="none";e.currentTarget.style.boxShadow="0 2px 8px rgba(28,9,0,0.04)";e.currentTarget.style.borderColor="rgba(28,9,0,0.08)";}}>
-                <div style={{position:"absolute",right:-30,top:-30,width:120,height:120,borderRadius:"50%",background:"rgba(28,9,0,0.02)",pointerEvents:"none"}}/>
-                <div style={{display:"flex",alignItems:"flex-start",gap:14,position:"relative"}}>
-                  <div style={{width:50,height:50,borderRadius:16,background:"rgba(28,9,0,0.05)",border:"1.5px solid rgba(28,9,0,0.07)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>⚡</div>
+                style={{padding:"22px 20px",borderRadius:12,textAlign:"left",cursor:"pointer",
+                  border:`1px solid rgba(28,9,0,0.10)`,background:"#fff",
+                  fontFamily:font,transition:"border-color 0.16s"}}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(196,122,46,0.30)";}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(28,9,0,0.10)";}}>
+                <div style={{display:"flex",alignItems:"flex-start",gap:14}}>
+                  <div style={{width:44,height:44,borderRadius:10,background:"rgba(28,9,0,0.05)",border:"1px solid rgba(28,9,0,0.08)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>⚡</div>
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontFamily:serif,fontSize:17,fontWeight:500,color:ink,marginBottom:4}}>Jump straight in</div>
-                    <p style={{fontSize:12.5,color:muted,margin:"0 0 12px",lineHeight:1.6}}>Skip the theme — go straight to vendors, timeline and budget.</p>
-                    <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                    <div style={{fontFamily:serif,fontSize:18,fontWeight:500,color:ink,marginBottom:5}}>Jump straight in</div>
+                    <p style={{fontSize:14,color:muted,margin:"0 0 12px",lineHeight:1.55}}>Skip the theme — go straight to vendors, timeline and budget.</p>
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                       {["Faster","Direct to vendors"].map(t=>(
-                        <span key={t} style={{fontSize:10,fontWeight:600,color:"rgba(28,9,0,0.38)",background:"rgba(28,9,0,0.04)",border:"1px solid rgba(28,9,0,0.08)",borderRadius:100,padding:"3px 9px"}}>{t}</span>
+                        <span key={t} style={{fontSize:11,fontWeight:600,color:"rgba(28,9,0,0.42)",background:"rgba(28,9,0,0.04)",border:"1px solid rgba(28,9,0,0.08)",borderRadius:6,padding:"3px 9px"}}>{t}</span>
                       ))}
                     </div>
                   </div>
@@ -1649,9 +1644,9 @@ export default function OccasionDetail(){
           <div className="os">
             {/* heading */}
             <div style={{marginBottom:36}}>
-              <div style={{fontSize:11,fontWeight:700,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:10,fontFamily:font}}>Tell us about your celebration</div>
-              <div style={{fontFamily:serif,fontSize:"clamp(1.6rem,4vw,2.2rem)",color:ink,lineHeight:1.2,letterSpacing:"-0.01em"}}>
-                {occasion.name} <span style={{fontSize:"0.75em"}}>{occasion.icon}</span>
+              <div style={{fontSize:12,fontWeight:600,color:"rgba(28,9,0,0.42)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8,fontFamily:font}}>Tell us about your celebration</div>
+              <div style={{fontFamily:serif,fontSize:"clamp(1.7rem,4.5vw,2.4rem)",color:ink,lineHeight:1.15,letterSpacing:"-0.02em",fontWeight:400}}>
+                {occasion.name} <span style={{fontSize:"0.7em"}}>{occasion.icon}</span>
               </div>
             </div>
 
@@ -1660,7 +1655,7 @@ export default function OccasionDetail(){
 
               {/* for N guests */}
               <div style={{paddingBottom:28,borderBottom:`1px solid rgba(196,122,46,0.08)`,marginBottom:28}}>
-                <div style={{fontSize:12,color:muted,fontWeight:500,marginBottom:10,fontFamily:font,letterSpacing:"0.02em"}}>for how many guests?</div>
+                <div style={{fontSize:14,color:muted,fontWeight:500,marginBottom:12,fontFamily:font,letterSpacing:"0.01em"}}>for how many guests?</div>
                 <div style={{display:"flex",alignItems:"center",gap:0}}>
                   <button onClick={()=>setGuests(g=>Math.max(5,g-5))}
                     style={{width:44,height:52,borderRadius:"12px 0 0 12px",border:`1.5px solid rgba(196,122,46,0.2)`,borderRight:"none",background:"#F8F4EF",color:gold,fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontWeight:300,transition:"background 0.15s"}}
@@ -1696,13 +1691,14 @@ export default function OccasionDetail(){
                     {date&&<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
                   </div>
                   <input ref={dateInputRef} type="date" value={date} onChange={e=>setDate(e.target.value)}
+                    min={new Date().toISOString().split("T")[0]}
                     style={{position:"absolute",inset:0,opacity:0,cursor:"pointer",width:"100%",height:"100%"}}/>
                 </div>
               </div>
 
               {/* at [venue] */}
               <div style={{paddingBottom:28,borderBottom:`1px solid rgba(196,122,46,0.08)`,marginBottom:28}}>
-                <div style={{fontSize:12,color:muted,fontWeight:500,marginBottom:10,fontFamily:font,letterSpacing:"0.02em"}}>at what kind of venue?</div>
+                <div style={{fontSize:14,color:muted,fontWeight:500,marginBottom:12,fontFamily:font,letterSpacing:"0.01em"}}>at what kind of venue?</div>
                 <div className="venue-g" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8}}>
                   {VENUE_TYPES.map(v=>{
                     const sel=venueType===v.id;
@@ -1720,7 +1716,7 @@ export default function OccasionDetail(){
 
               {/* in [city] */}
               <div style={{paddingBottom:28,borderBottom:`1px solid rgba(196,122,46,0.08)`,marginBottom:28}}>
-                <div style={{fontSize:12,color:muted,fontWeight:500,marginBottom:10,fontFamily:font,letterSpacing:"0.02em"}}>in which city?</div>
+                <div style={{fontSize:14,color:muted,fontWeight:500,marginBottom:12,fontFamily:font,letterSpacing:"0.01em"}}>in which city?</div>
                 <div style={{position:"relative"}}>
                   <svg style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)"}} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={city?gold:muted} strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                   <input type="text" value={city} onChange={e=>setCity(e.target.value)}
@@ -1750,7 +1746,7 @@ export default function OccasionDetail(){
 
               {/* who's coming — age groups (inline, last field) */}
               <div>
-                <div style={{fontSize:12,color:muted,fontWeight:500,marginBottom:10,fontFamily:font,letterSpacing:"0.02em"}}>who's coming?</div>
+                <div style={{fontSize:14,color:muted,fontWeight:500,marginBottom:12,fontFamily:font,letterSpacing:"0.01em"}}>who's coming?</div>
                 <p style={{fontSize:11.5,color:muted,margin:"0 0 14px",lineHeight:1.5}}>Helps us tailor catering, entertainment and activities to your crowd.</p>
                 <div className="age-g" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
                   {AGE_GROUPS.map(ag=>{

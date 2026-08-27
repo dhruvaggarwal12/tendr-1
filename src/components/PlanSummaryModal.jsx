@@ -19,7 +19,7 @@ const CAT_ICON = {
   Venue: '🏛', AV: '🎤', Entertainment: '🎭', Transport: '🚌', Gifts: '🎁',
 };
 
-function loadPlan() {
+export function loadPlan() {
   try {
     const raw = localStorage.getItem('tendr_smart_plan');
     if (raw) return JSON.parse(raw);

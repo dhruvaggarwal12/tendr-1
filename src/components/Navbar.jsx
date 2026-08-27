@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaBars, FaTimes, FaChevronDown, FaWhatsapp, FaSearch, FaInstagram, FaFacebookF } from "react-icons/fa";
-import { PlanIconButton } from "./PlanSummaryModal";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../redux/authSlice";
@@ -290,8 +289,7 @@ const Navbar = ({
         { id: "Emcee",        label: "Emcee / Host", href: "/search?categories=Emcee" },
       ],
       sideItems: [
-        { label: "Top Rated Vendors",  href: "/search?sort=topRated" },
-        { label: "Register as Vendor", href: "/vendor/register" },
+        { label: "Top Rated Vendors", href: "/search?sort=topRated" },
       ],
     },
     {
@@ -305,7 +303,6 @@ const Navbar = ({
     {
       label: "Tools",
       items: [
-        { label: "Plan My Event",      href: "/plan" },
         { label: "Planning Timeline",  href: "/timeline-picker" },
         { label: "Budget Allocator",   href: "/budget-picker" },
         { label: "Find by Style",      href: "/find-by-style" },
@@ -317,7 +314,7 @@ const Navbar = ({
         { label: "You Do It",           href: "/booking" },
         { label: "Smart Planner",       href: "/booking" },
         { label: "Baat Karo",           href: "/baat-karo" },
-        { label: "🎉 Plan by Occasion", onClick: () => { navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 120); } },
+        { label: "Plan by Occasion", onClick: () => { navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 120); } },
       ],
     },
     {
@@ -721,9 +718,9 @@ const Navbar = ({
               </div>
             ) : (
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <a href="/vendor/register" style={{ fontSize: 13, fontWeight: 500, color: "#C47A2E", padding: "9px 16px", borderRadius: 9, textDecoration: "none", border: "1.5px solid rgba(196,122,46,0.32)", background: "transparent", transition: "all 0.18s", whiteSpace: "nowrap", fontFamily: font }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "#C47A2E"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.32)"; }}
+                <a href="/vendor/register" style={{ fontSize: 13, fontWeight: 600, color: "#7A4A1E", padding: "9px 16px", borderRadius: 9, textDecoration: "none", border: "1.5px solid rgba(196,122,46,0.45)", background: "linear-gradient(135deg,rgba(255,244,224,0.95),rgba(255,237,195,0.9))", transition: "all 0.18s", whiteSpace: "nowrap", fontFamily: font, boxShadow: "0 1px 4px rgba(196,122,46,0.12)" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "linear-gradient(135deg,rgba(255,234,190,0.98),rgba(255,220,155,0.95))"; e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.boxShadow = "0 3px 10px rgba(196,122,46,0.22)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "linear-gradient(135deg,rgba(255,244,224,0.95),rgba(255,237,195,0.9))"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.45)"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(196,122,46,0.12)"; }}
                 >List Your Service</a>
                 <a href="/login" data-tour="signin-btn" style={{ fontSize: 13, fontWeight: 700, color: "#fff", padding: "9px 20px", borderRadius: 9, textDecoration: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", boxShadow: "0 3px 12px rgba(196,122,46,0.3)", transition: "opacity 0.2s", whiteSpace: "nowrap", fontFamily: font }}
                   onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
@@ -731,9 +728,6 @@ const Navbar = ({
                 >Sign In</a>
               </div>
             )}
-            {/* My Event / Plan icon — desktop only */}
-            <PlanIconButton />
-
             {/* WhatsApp — always rightmost, with clear gap */}
             <a
               href="https://wa.me/919211668427"
@@ -747,11 +741,6 @@ const Navbar = ({
             </a>
           </div>{/* end inner right cluster */}
           </div>{/* end right action cluster desktop-nav */}
-
-          {/* My Event icon — mobile only (shown outside desktop-nav class) */}
-          <div className="mobile-plan-btn">
-            <PlanIconButton />
-          </div>
 
           {/* Burger (mobile) */}
           <button

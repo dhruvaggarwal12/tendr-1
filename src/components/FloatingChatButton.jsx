@@ -11,6 +11,7 @@ import { FunCartDrawer } from "./FunActivitiesSection";
 import { GiftCartDrawer } from "./GiftCartDrawer";
 import { useChatOverlay } from "../context/ChatContext";
 import { useStationeryCart } from "../context/StationeryCartContext";
+import { loadPlan } from "./PlanSummaryModal";
 import GlobalStationeryCartDrawer from "./GlobalStationeryCartDrawer";
 import { selectCartCount as selectGhCartCount, selectCartItems as selectGhCartItems, selectGhConfirmed, setGhConfirmed, clearCart as clearGhCart, selectGhDeliveryForm } from "../redux/giftHamperCartSlice";
 import { selectStConfirmed, selectStForm, selectStCartSnapshot, selectStCustomizations, clearStBooking } from "../redux/stationeryBookingSlice";
@@ -65,6 +66,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const [showMiniChat, setShowMiniChat] = useState(false);
   const [miniChatPrefill, setMiniChatPrefill] = useState("");
   const [showActiveChats, setShowActiveChats] = useState(false);
+  const [planChip, setPlanChip] = useState(() => loadPlan());
+  const [planChipDismissed, setPlanChipDismissed] = useState(false);
   const [chatTabFilter, setChatTabFilter] = useState("All");
   const [vendorChats, setVendorChats] = useState([]);
   const [rejectedPanel, setRejectedPanel] = useState(null); // { convo, vendors, serviceType, eventDetails } | null
@@ -123,6 +126,14 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
     }
     prevCompareCountRef.current = compareSelected.length;
   }, [compareSelected.length]);
+
+  // Refresh plan chip when plan is confirmed/updated
+  useEffect(() => {
+    const refresh = () => setPlanChip(loadPlan());
+    window.addEventListener("tendr:plan-confirmed", refresh);
+    window.addEventListener("storage", refresh);
+    return () => { window.removeEventListener("tendr:plan-confirmed", refresh); window.removeEventListener("storage", refresh); };
+  }, []);
 
   // Hide FAB + chat when any drawer (WS cart, quick view) is open
   useEffect(() => {
@@ -1161,6 +1172,43 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
               </div>
             </div>
           </>
+        );
+      })()}
+
+      {/* Plan mini-chip — above View Chats when a plan exists */}
+      {planChip && !planChipDismissed && (() => {
+        const eventType = planChip.eventDetails?.eventType || planChip.eventType || "My Event";
+        const eventDate = planChip.eventDetails?.date || planChip.date || "";
+        const daysLeft = eventDate ? Math.ceil((new Date(eventDate) - Date.now()) / 86400000) : null;
+        const isDraft = planChip._draft === true;
+        return (
+          <div style={{
+            position: "fixed", bottom: 84, right: 20, zIndex: 901,
+            background: "#FFFCF5",
+            borderRadius: 14,
+            boxShadow: "0 6px 24px rgba(196,122,46,0.2)",
+            border: "1.5px solid rgba(196,122,46,0.22)",
+            padding: "10px 12px",
+            minWidth: 200, maxWidth: 260,
+            fontFamily: font,
+            animation: "chatPop 0.2s cubic-bezier(0.4,0,0.2,1)",
+          }}>
+            <button
+              onClick={() => setPlanChipDismissed(true)}
+              style={{ position: "absolute", top: 6, right: 8, background: "none", border: "none", fontSize: 13, color: "#bbb", cursor: "pointer", lineHeight: 1, padding: 2 }}>✕</button>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>
+              {isDraft ? "Draft Plan" : "My Event"}
+            </div>
+            <div style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E", marginBottom: 2, paddingRight: 16 }}>{eventType}</div>
+            {daysLeft !== null && (
+              <div style={{ fontSize: 11.5, color: "#9B7450", marginBottom: 8 }}>
+                {daysLeft > 0 ? `${daysLeft} days to go` : daysLeft === 0 ? "Today!" : "Event passed"}
+              </div>
+            )}
+            <a href="/plan" style={{ display: "block", textAlign: "center", padding: "7px 10px", borderRadius: 9, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", fontFamily: font }}>
+              View Plan →
+            </a>
+          </div>
         );
       })()}
 
