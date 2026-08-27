@@ -1470,6 +1470,67 @@ const Home = () => {
         }
       `}</style>
 
+      {/* ── Browse by Category ── */}
+      <section style={{ background: "#FFFCF5", padding: "28px 24px 32px", fontFamily: "'Outfit', sans-serif", borderBottom: "1px solid rgba(28,14,4,0.07)" }}>
+        <div style={{ maxWidth: 1120, margin: "0 auto" }}>
+          <div className="cat-strip" style={{ display: "flex", gap: 10, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", paddingBottom: 4 }}>
+            {[
+              {
+                label: "Caterer", type: "Caterer",
+                icon: <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11l1.5-1.5A4 4 0 0 1 12 8a4 4 0 0 1 7.5 1.5L21 11"/><path d="M3 11h18"/><path d="M5 11v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8"/><path d="M12 11V8"/></svg>,
+              },
+              {
+                label: "Decorator", type: "Decorator",
+                icon: <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10"/><path d="M17 3c0 3-2.5 4.5-2.5 4.5S12 6 12 3a2.5 2.5 0 0 1 5 0z"/><path d="M21 7c0 2-1.5 3-1.5 3S18 9 18 7a1.5 1.5 0 0 1 3 0z"/></svg>,
+              },
+              {
+                label: "DJ", type: "DJ",
+                icon: <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8" opacity="0.4"/><path d="M8.5 2.5A10 10 0 0 1 21.5 15.5"/><path d="M2.5 8.5A10 10 0 0 0 15.5 21.5"/></svg>,
+              },
+              {
+                label: "Photographer", type: "Photographer",
+                icon: <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>,
+              },
+              {
+                label: "Baker", type: "Baker",
+                icon: <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2 1 2 1"/><line x1="2" y1="21" x2="22" y2="21"/><line x1="7" y1="8" x2="7" y2="11"/><line x1="12" y1="6" x2="12" y2="11"/><line x1="17" y1="8" x2="17" y2="11"/></svg>,
+              },
+              {
+                label: "Venue", type: "Venue",
+                icon: <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+              },
+            ].map(({ label, type, icon }) => (
+              <button
+                key={label}
+                onClick={() => navigate(`/listings?serviceType=${encodeURIComponent(type)}`)}
+                style={{
+                  flexShrink: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "16px 20px",
+                  borderRadius: 14,
+                  border: "1.5px solid rgba(28,14,4,0.09)",
+                  background: "#fff",
+                  cursor: "pointer",
+                  minWidth: 90,
+                  flex: "1 1 0",
+                  fontFamily: "'Outfit', sans-serif",
+                  transition: "all 0.18s",
+                  color: "#4A2C1A",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.5)"; e.currentTarget.style.background = "#FFFDF8"; e.currentTarget.style.color = "#C47A2E"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.09)"; e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#4A2C1A"; }}
+              >
+                <div style={{ opacity: 0.75 }}>{icon}</div>
+                <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.01em", whiteSpace: "nowrap" }}>{label}</span>
+              </button>
+            ))}
+          </div>
+          <style>{`.cat-strip::-webkit-scrollbar{display:none}`}</style>
+        </div>
+      </section>
 
       {/* ── Plan by Occasion ── */}
       <section id="plan-by-occasion" data-tour="occasion-strip" style={{ background: "#ffffff", padding: "72px 28px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
