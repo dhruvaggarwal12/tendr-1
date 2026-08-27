@@ -1414,6 +1414,67 @@ const Home = () => {
         </div>
       </section>
 
+      {/* ── Browse by Category ── */}
+      <section style={{ background: "#FFFCF5", padding: "20px 24px", fontFamily: "'Outfit', sans-serif", borderBottom: "1px solid rgba(28,14,4,0.07)" }}>
+        <div style={{ maxWidth: 1120, margin: "0 auto" }}>
+          <div className="cat-strip" style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none" }}>
+            {[
+              {
+                label: "Caterer", type: "Caterer",
+                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11l1.5-1.5A4 4 0 0 1 12 8a4 4 0 0 1 7.5 1.5L21 11"/><path d="M3 11h18"/><path d="M5 11v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8"/><path d="M12 11V8"/></svg>,
+              },
+              {
+                label: "Decorator", type: "Decorator",
+                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10"/><path d="M17 3c0 3-2.5 4.5-2.5 4.5S12 6 12 3a2.5 2.5 0 0 1 5 0z"/><path d="M21 7c0 2-1.5 3-1.5 3S18 9 18 7a1.5 1.5 0 0 1 3 0z"/></svg>,
+              },
+              {
+                label: "Photographer", type: "Photographer",
+                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>,
+              },
+              {
+                label: "DJ", type: "DJ",
+                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8" opacity="0.4"/><path d="M8.5 2.5A10 10 0 0 1 21.5 15.5"/><path d="M2.5 8.5A10 10 0 0 0 15.5 21.5"/></svg>,
+              },
+              {
+                label: "Gift Hampers", type: null, href: "/gift-hampers-cakes",
+                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12v10H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>,
+              },
+              {
+                label: "Stationery", type: null, href: "/stationery",
+                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
+              },
+            ].map(({ label, type, href, icon }) => (
+              <button
+                key={label}
+                onClick={() => href ? navigate(href) : navigate(`/listings?serviceType=${encodeURIComponent(type)}`)}
+                style={{
+                  flexShrink: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "10px 14px",
+                  borderRadius: 12,
+                  border: "1.5px solid rgba(28,14,4,0.09)",
+                  background: "#fff",
+                  cursor: "pointer",
+                  minWidth: 76,
+                  flex: "1 1 0",
+                  fontFamily: "'Outfit', sans-serif",
+                  transition: "all 0.18s",
+                  color: "#4A2C1A",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.5)"; e.currentTarget.style.background = "#FFFDF8"; e.currentTarget.style.color = "#C47A2E"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.09)"; e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#4A2C1A"; }}
+              >
+                <div style={{ opacity: 0.72 }}>{icon}</div>
+                <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.01em", whiteSpace: "nowrap" }}>{label}</span>
+              </button>
+            ))}
+          </div>
+          <style>{`.cat-strip::-webkit-scrollbar{display:none}`}</style>
+        </div>
+      </section>
 
       {/* ── Mobile photo strip — Editorial Image Hero pattern (felipemenezes098/hero-05) ── */}
       {/* Shows below hero on mobile, hidden on desktop */}
@@ -1469,68 +1530,6 @@ const Home = () => {
           .home-hero-cta { flex: 1 !important; padding: 11px 6px !important; font-size: 13px !important; text-align: center !important; justify-content: center !important; white-space: normal !important; }
         }
       `}</style>
-
-      {/* ── Browse by Category ── */}
-      <section style={{ background: "#FFFCF5", padding: "28px 24px 32px", fontFamily: "'Outfit', sans-serif", borderBottom: "1px solid rgba(28,14,4,0.07)" }}>
-        <div style={{ maxWidth: 1120, margin: "0 auto" }}>
-          <div className="cat-strip" style={{ display: "flex", gap: 10, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", paddingBottom: 4 }}>
-            {[
-              {
-                label: "Caterer", type: "Caterer",
-                icon: <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11l1.5-1.5A4 4 0 0 1 12 8a4 4 0 0 1 7.5 1.5L21 11"/><path d="M3 11h18"/><path d="M5 11v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8"/><path d="M12 11V8"/></svg>,
-              },
-              {
-                label: "Decorator", type: "Decorator",
-                icon: <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10"/><path d="M17 3c0 3-2.5 4.5-2.5 4.5S12 6 12 3a2.5 2.5 0 0 1 5 0z"/><path d="M21 7c0 2-1.5 3-1.5 3S18 9 18 7a1.5 1.5 0 0 1 3 0z"/></svg>,
-              },
-              {
-                label: "DJ", type: "DJ",
-                icon: <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8" opacity="0.4"/><path d="M8.5 2.5A10 10 0 0 1 21.5 15.5"/><path d="M2.5 8.5A10 10 0 0 0 15.5 21.5"/></svg>,
-              },
-              {
-                label: "Photographer", type: "Photographer",
-                icon: <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>,
-              },
-              {
-                label: "Gift Hampers", type: null, href: "/gift-hampers-cakes",
-                icon: <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12v10H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>,
-              },
-              {
-                label: "Stationery", type: null, href: "/stationery",
-                icon: <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
-              },
-            ].map(({ label, type, href, icon }) => (
-              <button
-                key={label}
-                onClick={() => href ? navigate(href) : navigate(`/listings?serviceType=${encodeURIComponent(type)}`)}
-                style={{
-                  flexShrink: 0,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "16px 20px",
-                  borderRadius: 14,
-                  border: "1.5px solid rgba(28,14,4,0.09)",
-                  background: "#fff",
-                  cursor: "pointer",
-                  minWidth: 90,
-                  flex: "1 1 0",
-                  fontFamily: "'Outfit', sans-serif",
-                  transition: "all 0.18s",
-                  color: "#4A2C1A",
-                }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.5)"; e.currentTarget.style.background = "#FFFDF8"; e.currentTarget.style.color = "#C47A2E"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.09)"; e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#4A2C1A"; }}
-              >
-                <div style={{ opacity: 0.75 }}>{icon}</div>
-                <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.01em", whiteSpace: "nowrap" }}>{label}</span>
-              </button>
-            ))}
-          </div>
-          <style>{`.cat-strip::-webkit-scrollbar{display:none}`}</style>
-        </div>
-      </section>
 
       {/* ── Plan by Occasion ── */}
       <section id="plan-by-occasion" data-tour="occasion-strip" style={{ background: "#ffffff", padding: "72px 28px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
