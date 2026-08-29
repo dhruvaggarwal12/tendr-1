@@ -168,6 +168,7 @@ const FunActivitiesPage   = lazy(() => import("./pages/fun-activities/FunActivit
 const HomeWeddingPlanner  = lazy(() => import("./pages/home-wedding/HomeWeddingPlanner.jsx"));
 const MyEvent             = lazy(() => import("./pages/customer/MyEvent.jsx"));
 const VendorLanding       = lazy(() => import("./pages/vendor/VendorLanding.jsx"));
+const ForVendors          = lazy(() => import("./pages/vendor/ForVendors.jsx"));
 const TopRatedVendors     = lazy(() => import("./pages/customer/TopRatedVendors.jsx"));
 const HousePartyHub       = lazy(() => import("./pages/house-party/HousePartyHub.jsx"));
 const PotluckJoin         = lazy(() => import("./pages/house-party/PotluckJoin.jsx"));
@@ -566,6 +567,9 @@ const router = createBrowserRouter([
   { path: '/party-places/:id', element: <PartyPlaceProfile />, errorElement: <ErrorPage /> },
   { path: '/top-rated/:category', element: <TopRatedVendors />, errorElement: <ErrorPage /> },
 
+
+  // ── Vendor landing (for-vendors info + dashboard tour) ─────────────────
+  { path: '/for-vendors', element: <ForVendors />, errorElement: <ErrorPage /> },
 
   // ── Programmatic vendor SEO landing pages (/decorator-in-delhi, etc.) ───
   { path: '/:slug', element: <VendorLanding />, errorElement: <ErrorPage /> },

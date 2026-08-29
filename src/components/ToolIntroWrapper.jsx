@@ -63,7 +63,8 @@ export default function ToolIntroWrapper({ toolId, icon, title, tagline, descrip
         <div style={{ width: 80 }} />
       </div>
 
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "44px 24px 80px" }}>
+      <style>{`@media(max-width:768px){.ti-outer{padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))!important}}`}</style>
+      <div className="ti-outer" style={{ maxWidth: 900, margin: "0 auto", padding: "44px 24px 80px" }}>
 
         <style>{`
           @keyframes ti-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }

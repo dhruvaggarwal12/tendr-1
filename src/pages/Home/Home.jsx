@@ -2517,220 +2517,38 @@ const Home = () => {
       {/* ── Tips by Tendr ── */}
       <TipsByTendrSection />
 
-      {/* Become a Partner Section */}
-      <section className="partner-section" style={{ background: "#F9F6F1", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
-        {/* Subtle dot texture */}
-        <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(196,122,46,0.065) 1px, transparent 1px)", backgroundSize: "28px 28px", pointerEvents: "none" }} />
-        <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative" }}>
-
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-            style={{ marginBottom: 52 }}
-          >
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.07)", border: "1.5px solid rgba(196,122,46,0.22)", borderRadius: 100, padding: "5px 14px", marginBottom: 18 }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", letterSpacing: "0.1em", textTransform: "uppercase" }}>For Vendors &amp; Artists</span>
-            </div>
-            <div className="partner-header" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "end", gap: 40 }}>
-              <div>
-                <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.1rem, 3.8vw, 3.1rem)", fontWeight: 500, color: "#1C0E04", lineHeight: 1.1, margin: "0 0 12px" }}>
-                  Your next booking is{" "}
-                  <em style={{ fontStyle: "italic", color: "#C47A2E" }}>
-                    already looking for you.
-                  </em>
-                </h2>
-                <p style={{ fontSize: 15, color: "#7A5535", lineHeight: 1.65, margin: 0, maxWidth: 380 }}>
-                  Real customers. Real dates. No ads or middlemen — just direct bookings.
-                </p>
-              </div>
-              {/* Vendor type pills */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 7, justifyContent: "flex-end" }}>
-                {[
-                  { path: <><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>, label: "DJ" },
-                  { path: <><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></>, label: "Emcee" },
-                  { path: <><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></>, label: "Photographer" },
-                  { path: <><path d="M12 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10"/><path d="M8 3.06A10 10 0 0 0 8 21"/><path d="M16 3.05a10 10 0 0 1 0 17.9"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20"/></>, label: "Decorator" },
-                  { path: <><path d="M3 11l19-9-9 19-2-8-8-2z"/></>, label: "Caterer" },
-                  { path: <><path d="M9 18V5l12-2v13"/><polyline points="9 9 21 7"/></>, label: "Band" },
-                  { path: <><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></>, label: "Videographer" },
-                  { path: <><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></>, label: "AV Setup" },
-                ].map(t => (
-                  <span key={t.label} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 600, color: "#7A5535", background: "#fff", border: "1.5px solid rgba(28,14,4,0.1)", borderRadius: 100, padding: "5px 12px" }}>
-                    <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">{t.path}</svg>
-                    {t.label}
-                  </span>
+      {/* Become a Partner Section — compact strip */}
+      <section style={{ background: "#F9F6F1", padding: "36px 24px", fontFamily: "'Outfit', sans-serif" }}>
+          {/* Compact vendor join strip */}
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 16 }}>
+            {/* Left: text + pills */}
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+                {["DJ", "Emcee", "Photographer", "Decorator", "Caterer", "Band", "Videographer", "AV Setup", "Florist", "Anchor"].map(t => (
+                  <span key={t} style={{ fontSize: 11, fontWeight: 600, color: "#7A5535", background: "#fff", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 100, padding: "3px 10px" }}>{t}</span>
                 ))}
               </div>
+              <p style={{ margin: 0, fontSize: 13, color: "#7A5535", lineHeight: 1.5 }}>
+                In the event industry? You can join Tendr as a vendor, partner, or collaborator — any way you like.
+              </p>
             </div>
-          </motion.div>
-
-          {/* Two-column: left benefits+CTA / right profile card */}
-          <motion.div
-            className="partner-grid"
-            initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }}
-            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
-            style={{ display: "grid", gridTemplateColumns: "1fr 400px", gap: 64, alignItems: "start" }}
-          >
-
-            {/* Left — benefit list + CTA */}
-            <motion.div variants={{ hidden: { opacity: 0, x: -24 }, visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 220, damping: 28 } } }}>
-              {[
-                { num: "01", stat: "4×", title: "More bookings with a verified badge", sub: "Verified vendors receive 4 times more confirmed bookings than unverified listings.", icon: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></> },
-                { num: "02", stat: "₹0", title: "Commission — ever", sub: "No percentage taken from your earnings. What you quote is what you keep.", icon: <><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></> },
-                { num: "03", stat: "24h", title: "Approval — then you're live", sub: "Submit your details, get approved in one business day, start receiving requests.", icon: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></> },
-                { num: "04", stat: "Direct", title: "Chat with every customer", sub: "No gatekeeping. Discuss requirements, negotiate, and close the booking yourself.", icon: <><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></> },
-              ].map((b, i, arr) => (
-                <div key={b.num} className="partner-benefit" style={{ display: "flex", gap: 20, padding: "22px 0", borderBottom: i < arr.length - 1 ? "1px solid rgba(28,14,4,0.08)" : "none" }}>
-                  <div style={{ fontSize: 10.5, fontWeight: 800, color: "rgba(196,122,46,0.45)", letterSpacing: "0.08em", paddingTop: 3, flexShrink: 0, width: 20, fontVariantNumeric: "tabular-nums" }}>{b.num}</div>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
-                    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">{b.icon}</svg>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 4 }}>
-                      <span style={{ fontFamily: "'Cormorant Garamond',Georgia,serif", fontSize: "clamp(1.5rem,2.5vw,1.9rem)", fontWeight: 600, color: "#C47A2E", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{b.stat}</span>
-                      <span style={{ fontSize: 13.5, fontWeight: 700, color: "#1C0E04", lineHeight: 1.3 }}>{b.title}</span>
-                    </div>
-                    <div style={{ fontSize: 12.5, color: "#7A5535", lineHeight: 1.6 }}>{b.sub}</div>
-                  </div>
-                </div>
-              ))}
-
-              {/* CTA */}
-              <div style={{ marginTop: 36, display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
-                <button
-                  onClick={() => navigate("/vendor/register")}
-                  style={{ background: "#C47A2E", color: "#fff", border: "none", borderRadius: 12, padding: "14px 32px", fontSize: 15, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 4px 18px rgba(196,122,46,0.32)", transition: "transform 0.18s,box-shadow 0.18s", minHeight: 44 }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 10px 32px rgba(196,122,46,0.44)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 18px rgba(196,122,46,0.32)"; }}
-                >
-                  List Your Service Free →
-                </button>
-                <button
-                  onClick={() => navigate("/vendor/login")}
-                  style={{ background: "none", color: "#7A5535", border: "none", fontSize: 13.5, fontWeight: 600, fontFamily: "'Outfit',sans-serif", cursor: "pointer", padding: "14px 4px", minHeight: 44, transition: "color 0.15s", textDecoration: "underline", textDecorationColor: "rgba(122,85,53,0.3)", textUnderlineOffset: 4 }}
-                  onMouseEnter={e => e.currentTarget.style.color = "#C47A2E"}
-                  onMouseLeave={e => e.currentTarget.style.color = "#7A5535"}
-                >
-                  Already a vendor? Log in
-                </button>
-              </div>
-              <div style={{ marginTop: 10, fontSize: 11.5, color: "rgba(28,14,4,0.35)", letterSpacing: "0.03em" }}>
-                Join 100+ verified vendors · No credit card · No setup fee
-              </div>
-            </motion.div>
-
-            {/* Right — mock vendor profile card */}
-            <motion.div
-              className="partner-card-col"
-              variants={{ hidden: { opacity: 0, x: 24 }, visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 220, damping: 28 } } }}
-              style={{ display: "flex", flexDirection: "column", gap: 10 }}
-            >
-              {/* Profile card */}
-              <div style={{ background: "#fff", border: "1px solid rgba(28,14,4,0.09)", borderRadius: 20, overflow: "hidden", position: "relative", boxShadow: "0 4px 28px rgba(28,14,4,0.08), 0 1px 4px rgba(28,14,4,0.04)" }}>
-                {/* "New request" live badge */}
-                <div style={{ position: "absolute", top: 12, right: 12, zIndex: 2, background: "#16A34A", color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 100, padding: "4px 10px", display: "flex", alignItems: "center", gap: 5, letterSpacing: "0.04em" }}>
-                  <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#fff", display: "inline-block", animation: "tendrPing 1.8s ease-out infinite" }} />
-                  2 new requests
-                </div>
-
-                {/* Card top bar */}
-                <div style={{ background: "#F9F6F1", padding: "11px 16px", borderBottom: "1px solid rgba(28,14,4,0.07)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", letterSpacing: "0.1em", textTransform: "uppercase" }}>Your Tendr Profile</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#16A34A", display: "inline-block" }} />
-                    <span style={{ fontSize: 10, color: "#9B7450", fontWeight: 500 }}>Active</span>
-                  </div>
-                </div>
-
-                <div style={{ padding: "16px 18px 20px" }}>
-                  {/* Profile info */}
-                  <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 14 }}>
-                    <div style={{ width: 48, height: 48, borderRadius: 14, background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
-                        <span style={{ fontSize: 14, fontWeight: 800, color: "#1C0E04" }}>Your Name Here</span>
-                        <span style={{ fontSize: 9, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.09)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "2px 7px" }}>✓ Verified</span>
-                      </div>
-                      <div style={{ fontSize: 11.5, color: "#9B7450", marginBottom: 5 }}>DJ · Delhi NCR</div>
-                      <div style={{ display: "flex", gap: 3, alignItems: "center" }}>
-                        {[1,2,3,4,5].map(s => <span key={s} style={{ color: "#C47A2E", fontSize: 10 }}>★</span>)}
-                        <span style={{ fontSize: 10.5, color: "#9B7450", marginLeft: 3 }}>4.9 · 28 reviews</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* This-week activity strip */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
-                    <div style={{ background: "#F9F6F1", border: "1px solid rgba(28,14,4,0.07)", borderRadius: 10, padding: "10px 12px" }}>
-                      <div style={{ fontSize: 20, fontWeight: 800, color: "#C47A2E", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>24</div>
-                      <div style={{ fontSize: 10, color: "#9B7450", marginTop: 3, lineHeight: 1.3 }}>Profile views this week</div>
-                    </div>
-                    <div style={{ background: "#F0FDF4", border: "1px solid rgba(22,163,74,0.18)", borderRadius: 10, padding: "10px 12px" }}>
-                      <div style={{ fontSize: 20, fontWeight: 800, color: "#166534", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>3</div>
-                      <div style={{ fontSize: 10, color: "#9B7450", marginTop: 3, lineHeight: 1.3 }}>Booking requests</div>
-                    </div>
-                  </div>
-
-                  {/* Photo grid */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 5, marginBottom: 14 }}>
-                    {[
-                      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=200&h=100&fit=crop&q=70",
-                      "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=200&h=100&fit=crop&q=70",
-                      "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=200&h=100&fit=crop&q=70",
-                    ].map((src, i) => (
-                      <div key={i} style={{ height: 54, borderRadius: 8, overflow: "hidden" }}>
-                        <img src={src} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Book Now */}
-                  <div style={{ display: "flex", gap: 7 }}>
-                    <div style={{ flex: 1, padding: "10px 12px", borderRadius: 9, background: "#C47A2E", textAlign: "center", fontSize: 12.5, fontWeight: 800, color: "#fff", letterSpacing: "0.02em" }}>Book Now</div>
-                    <div style={{ width: 38, height: 38, borderRadius: 9, border: "1px solid rgba(28,14,4,0.1)", background: "#F9F6F1", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="rgba(28,14,4,0.35)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Earnings callout */}
-              <div style={{ background: "#fff", border: "1px solid rgba(28,14,4,0.08)", borderRadius: 14, padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, boxShadow: "0 1px 6px rgba(28,14,4,0.04)" }}>
-                <div>
-                  <div style={{ fontSize: 10, color: "#9B7450", marginBottom: 3, letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: 600 }}>Avg. monthly earnings</div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: "#C47A2E", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>₹32,000</div>
-                </div>
-                <div style={{ width: 1, alignSelf: "stretch", background: "rgba(28,14,4,0.08)" }} />
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: "#1C0E04", lineHeight: 1 }}>100+</div>
-                  <div style={{ fontSize: 10, color: "#9B7450", marginTop: 3, fontWeight: 500 }}>Vendors live</div>
-                </div>
-                <div style={{ width: 1, alignSelf: "stretch", background: "rgba(28,14,4,0.08)" }} />
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: "#1C0E04", lineHeight: 1 }}>24h</div>
-                  <div style={{ fontSize: 10, color: "#9B7450", marginTop: 3, fontWeight: 500 }}>Approval</div>
-                </div>
-              </div>
-            </motion.div>
-
-          </motion.div>
+            {/* Right: CTA */}
+            <div style={{ display: "flex", gap: 10, flexShrink: 0, flexWrap: "wrap" }}>
+              <button
+                onClick={() => navigate("/for-vendors")}
+                style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(196,122,46,0.3)", minHeight: 40 }}
+              >
+                Join Tendr →
+              </button>
+              <button
+                onClick={() => navigate("/vendor/login")}
+                style={{ padding: "10px 16px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.28)", background: "transparent", color: "#7A5535", fontSize: 13, fontWeight: 600, fontFamily: "'Outfit',sans-serif", cursor: "pointer", minHeight: 40 }}
+              >
+                Log in
+              </button>
+            </div>
+          </div>
         </div>
-
-        <style>{`
-          @media (max-width: 860px) {
-            .partner-section { padding: 44px 18px 52px !important; }
-            .partner-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
-            .partner-header { grid-template-columns: 1fr !important; gap: 12px !important; }
-            .partner-header > div:last-child { display: none !important; }
-            .partner-card-col { display: none !important; }
-            .partner-benefit { padding: 14px 0 !important; }
-            .partner-benefit:last-of-type { border-bottom: none !important; }
-          }
-        `}</style>
       </section>
 
       {/* ── FAQ ── */}
