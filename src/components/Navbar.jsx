@@ -278,14 +278,6 @@ const Navbar = ({
 
   const NAV_ITEMS = [
     {
-      label: "Our Products",
-      items: [
-        { label: "Gift Hampers",        href: "/gift-hampers-cakes" },
-        { label: "Stationery by Tendr", href: "/stationery" },
-        { label: "Fun Activities",      href: "/fun-activities" },
-      ],
-    },
-    {
       label: "Tools",
       items: [
         { label: "Planning Timeline",  href: "/timeline-picker" },
@@ -457,7 +449,7 @@ const Navbar = ({
               ) : (
               <div
                 key={group.label}
-                data-tour={group.label === "Browse" ? "nav-browse" : group.label === "Our Products" ? "nav-products" : group.label === "Booking" ? "nav-booking" : group.label === "Tools" ? "nav-tools" : undefined}
+                data-tour={group.label === "Browse" ? "nav-browse" : group.label === "Booking" ? "nav-booking" : group.label === "Tools" ? "nav-tools" : undefined}
                 style={{ position: "relative" }}
                 onMouseEnter={() => setActiveDropdown(group.label)}
                 onMouseLeave={() => setActiveDropdown(null)}

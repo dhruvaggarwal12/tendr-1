@@ -675,7 +675,6 @@ const Home = () => {
   const [pathsRevealed, setPathsRevealed] = useState(false);
   const [occasionFlow, setOccasionFlow] = useState(null); // null | "grid" | occasionObject
   const [occasionSearch, setOccasionSearch] = useState("");
-  const [showRakhi, setShowRakhi] = useState(false);
   const [hoveredOcc, setHoveredOcc] = useState(null);
   const [occModal, setOccModal] = useState(null);
   const [showIntro, setShowIntro] = useState(() => {
@@ -720,7 +719,7 @@ const Home = () => {
   // Build hero slideshow from gallery photos + gift hamper samples
   const heroPhotos = (() => {
     const allPhotos = Object.values(galleryByCategory).flat().filter(p => p.imageUrl);
-    return [...allPhotos.map(p => ({ url: p.imageUrl, label: p.category })), ...ghSamplePhotos];
+    return allPhotos.map(p => ({ url: p.imageUrl, label: p.category }));
   })();
 
   const heroNext = () => goToSlide((heroIndex + 1) % heroPhotos.length);
@@ -1419,15 +1418,17 @@ const Home = () => {
         <div style={{ maxWidth: 1120, margin: "0 auto" }}>
           <div className="cat-strip" style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none" }}>
             {[
-              { label: "Caterer",      type: "Caterer",      href: null, photo: "https://images.unsplash.com/photo-1555244162-803834f70033?w=300&q=75" },
-              { label: "Decorator",    type: "Decorator",    href: null, photo: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=300&q=75" },
-              { label: "Photographer", type: "Photographer", href: null, photo: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=300&q=75" },
-              { label: "DJ",           type: "DJ",           href: null, photo: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=300&q=75" },
-              { label: "Gift Hampers", type: null,           href: "/gift-hampers-cakes", photo: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=300&q=75" },
-              { label: "Stationery",   type: null,           href: "/stationery", photo: "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=300&q=75" },
+              { label: "Caterer",        type: "Caterer",      href: null,                  photo: "https://images.unsplash.com/photo-1555244162-803834f70033?w=400&q=75" },
+              { label: "Decorator",      type: "Decorator",    href: null,                  photo: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&q=75" },
+              { label: "Photographer",   type: "Photographer", href: null,                  photo: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&q=75" },
+              { label: "DJ",             type: "DJ",           href: null,                  photo: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&q=75" },
+              { label: "Gift Hampers",   type: null,           href: "/gift-hampers-cakes", photo: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=400&q=75" },
+              { label: "Stationery",     type: null,           href: "/stationery",         photo: "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=400&q=75" },
+              { label: "Fun Activities", type: null,           href: "/fun-activities",     photo: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=400&q=75" },
             ].map(({ label, type, href, photo }) => (
               <button
                 key={label}
+                className="cat-tile"
                 onClick={() => href ? navigate(href) : navigate(`/listings?serviceType=${encodeURIComponent(type)}`)}
                 style={{
                   flexShrink: 0,
@@ -1436,9 +1437,8 @@ const Home = () => {
                   borderRadius: 12,
                   border: "none",
                   cursor: "pointer",
-                  minWidth: 88,
+                  minWidth: 80,
                   flex: "1 1 0",
-                  height: 80,
                   padding: 0,
                   fontFamily: "'Outfit', sans-serif",
                   transition: "transform 0.18s, box-shadow 0.18s",
@@ -1449,11 +1449,20 @@ const Home = () => {
               >
                 <img src={photo} alt={label} loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(8,3,0,0.72) 0%, rgba(8,3,0,0.18) 55%, transparent 100%)" }} />
-                <span style={{ position: "absolute", bottom: 8, left: 0, right: 0, textAlign: "center", fontSize: 11.5, fontWeight: 700, color: "#fff", letterSpacing: "0.02em", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>{label}</span>
+                <span className="cat-tile-label" style={{ position: "absolute", bottom: 8, left: 0, right: 0, textAlign: "center", fontWeight: 700, color: "#fff", letterSpacing: "0.02em", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>{label}</span>
               </button>
             ))}
           </div>
-          <style>{`.cat-strip::-webkit-scrollbar{display:none}`}</style>
+          <style>{`
+            .cat-strip::-webkit-scrollbar{display:none}
+            /* Tile dimensions: mobile 80×80px, desktop 112×108px */
+            .cat-tile { height: 80px; }
+            .cat-tile-label { font-size: 11px; }
+            @media (min-width: 900px) {
+              .cat-tile { height: 108px; min-width: 112px !important; border-radius: 14px !important; }
+              .cat-tile-label { font-size: 12.5px; bottom: 10px !important; }
+            }
+          `}</style>
         </div>
       </section>
 
