@@ -11,6 +11,7 @@ import PlatformFlow from "../../components/PlatformFlow";
 import OccasionPlanner from "../../components/OccasionPlanner";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import Footer from "../../components/Footer";
+import ChatNudge from "../../components/ChatNudge";
 import { AnimatePresence, easeIn, motion } from "framer-motion";
 import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
@@ -2732,6 +2733,8 @@ const Home = () => {
 
       {/* Footer */}
       <Footer />
+
+      <ChatNudge />
 
       {/* ── Fun Activity detail modal ── */}
       {faModal && (
