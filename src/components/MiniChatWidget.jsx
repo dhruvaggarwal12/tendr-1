@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { io } from "socket.io-client";
+import router from "../router";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -311,25 +312,35 @@ export default function MiniChatWidget({ onClose, conversationId: existingConvoI
       )}
 
       {/* Input */}
-      <div style={{ padding: "10px 12px", borderTop: "1px solid rgba(196,122,46,0.1)", display: "flex", gap: 8, alignItems: "center" }}>
-        <label style={{ cursor: chatReady ? "pointer" : "not-allowed", width: 32, height: 32, borderRadius: "50%", background: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0, opacity: chatReady ? 1 : 0.5 }}>
-          📎
-          <input type="file" accept="image/*" style={{ display: "none" }} onChange={handleImage} disabled={!chatReady} />
-        </label>
-        <input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && sendMessage(input)}
-          placeholder={!user?._id ? "Sign in to chat" : connectError ? "Connection failed — tap Retry" : !chatReady ? "Connecting…" : "Type a message..."}
-          disabled={!chatReady}
-          style={{ flex: 1, padding: "9px 13px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: font, outline: "none", background: chatReady ? "#fff" : "#f9f9f9" }}
-        />
-        <button
-          onClick={() => sendMessage(input)}
-          disabled={!input.trim() || !chatReady}
-          style={{ width: 34, height: 34, borderRadius: "50%", border: "none", background: input.trim() && chatReady ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: "#fff", cursor: input.trim() && chatReady ? "pointer" : "not-allowed", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          ➤
-        </button>
+      <div style={{ padding: "10px 12px", borderTop: "1px solid rgba(196,122,46,0.1)", display: "flex", flexDirection: "column", gap: 8 }}>
+        {!user?._id && (
+          <button
+            onClick={() => router.navigate("/login")}
+            style={{ width: "100%", padding: "10px 0", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.3)" }}
+          >
+            Sign In to Chat
+          </button>
+        )}
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <label style={{ cursor: chatReady ? "pointer" : "not-allowed", width: 32, height: 32, borderRadius: "50%", background: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0, opacity: chatReady ? 1 : 0.5 }}>
+            📎
+            <input type="file" accept="image/*" style={{ display: "none" }} onChange={handleImage} disabled={!chatReady} />
+          </label>
+          <input
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && sendMessage(input)}
+            placeholder={!user?._id ? "Sign in to chat" : connectError ? "Connection failed — tap Retry" : !chatReady ? "Connecting…" : "Type a message..."}
+            disabled={!chatReady}
+            style={{ flex: 1, padding: "9px 13px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: font, outline: "none", background: chatReady ? "#fff" : "#f9f9f9" }}
+          />
+          <button
+            onClick={() => sendMessage(input)}
+            disabled={!input.trim() || !chatReady}
+            style={{ width: 34, height: 34, borderRadius: "50%", border: "none", background: input.trim() && chatReady ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: "#fff", cursor: input.trim() && chatReady ? "pointer" : "not-allowed", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            ➤
+          </button>
+        </div>
       </div>
     </div>
   );
