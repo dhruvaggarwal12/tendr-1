@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useChatOverlay } from "../context/ChatContext";
 
 const SESSION_KEY = "tendr_nudge_dismissed";
@@ -23,7 +23,18 @@ export default function ChatNudge() {
   const [mounted, setMounted]   = useState(false);
   const [visible, setVisible]   = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { openTendrTeamChat } = useChatOverlay();
+
+  const handleHelpMePlan = () => {
+    dismiss();
+    if (location.pathname === "/") {
+      document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      navigate("/");
+      setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 350);
+    }
+  };
 
   useEffect(() => {
     try { if (sessionStorage.getItem(SESSION_KEY)) return; } catch {}
@@ -130,8 +141,8 @@ export default function ChatNudge() {
           <div style={{ padding: "10px 14px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
             {/* Row 1 — primary actions */}
             <div style={{ display: "flex", gap: 7 }}>
-              <button style={filled} onClick={() => go("/listings")}>Show me vendors</button>
-              <button style={filled} onClick={() => go("/booking")}>Help me plan</button>
+              <button style={filled} onClick={() => go("/booking")}>Show me vendors</button>
+              <button style={filled} onClick={handleHelpMePlan}>Help me plan</button>
             </div>
             {/* Row 2 — secondary actions */}
             <div style={{ display: "flex", gap: 7 }}>

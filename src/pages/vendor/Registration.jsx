@@ -2,67 +2,138 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
-const font = "'Outfit', sans-serif";
-const gold = "#C47A2E";
-const goldLt = "#CCAB4A";
-const ink = "#2C1A0E";
+const font  = "'Outfit', sans-serif";
+const gold  = "#C47A2E";
+const ink   = "#1C0E04";
+const muted = "#7A5535";
 
-// ── Type catalogue ─────────────────────────────────────────────────────────
 const ARTIST_TYPES = [
-  { value: "DJ",               emoji: "🎧", label: "DJ",              sub: "Open format, commercial, wedding" },
-  { value: "Anchor",           emoji: "🎙️", label: "Anchor / Emcee", sub: "Wedding, corporate, award nights" },
-  { value: "Emcee/Host",       emoji: "🎤", label: "Emcee / Host",   sub: "Stage hosting & live shows" },
-  { value: "Band",             emoji: "🎸", label: "Band",            sub: "Live music — Bollywood, jazz, rock" },
-  { value: "Singer",           emoji: "🎵", label: "Singer",          sub: "Solo vocalist, all genres" },
-  { value: "Musician",         emoji: "🎻", label: "Musician",        sub: "Instrumentalist — piano, tabla, violin…" },
-  { value: "Performer",        emoji: "🎭", label: "Performer",       sub: "Dance, acrobatics, specialty act" },
-  { value: "Stand-up Comedian",emoji: "😄", label: "Stand-up Comedian", sub: "Corporate & private shows" },
-  { value: "Magician",         emoji: "🪄", label: "Magician",        sub: "Close-up & stage magic" },
-  { value: "AV Setup",         emoji: "📽️", label: "AV Setup",       sub: "Projector, LED wall, live streaming" },
+  { value: "DJ",               label: "DJ",               sub: "Open format, commercial, wedding" },
+  { value: "Anchor",           label: "Anchor / Emcee",   sub: "Wedding, corporate, award nights" },
+  { value: "Emcee/Host",       label: "Emcee / Host",     sub: "Stage hosting & live shows" },
+  { value: "Band",             label: "Band",             sub: "Live music — Bollywood, jazz, rock" },
+  { value: "Singer",           label: "Singer",           sub: "Solo vocalist, all genres" },
+  { value: "Musician",         label: "Musician",         sub: "Instrumentalist — piano, tabla, violin" },
+  { value: "Performer",        label: "Performer",        sub: "Dance, acrobatics, specialty act" },
+  { value: "Stand-up Comedian",label: "Stand-up Comedian",sub: "Corporate & private shows" },
+  { value: "Magician",         label: "Magician",         sub: "Close-up & stage magic" },
+  { value: "AV Setup",         label: "AV Setup",         sub: "Projector, LED wall, live streaming" },
 ];
 
 const VENDOR_TYPES = [
-  { value: "Decorator",        emoji: "🌸", label: "Decorator",       sub: "Floral, balloon, draping, lighting" },
-  { value: "Caterer",          emoji: "🍽️", label: "Caterer",         sub: "Food service, live counters, buffet" },
-  { value: "Photographer",     emoji: "📷", label: "Photographer",    sub: "Candid, traditional, pre-wedding" },
-  { value: "Videographer",     emoji: "🎬", label: "Videographer",    sub: "Cinematic, reels, drone coverage" },
-  { value: "Makeup Artist",    emoji: "💄", label: "Makeup Artist",   sub: "Bridal, party, editorial looks" },
-  { value: "Tent & Furniture", emoji: "⛺", label: "Tent & Furniture", sub: "Shamiyana, chairs, stage, tables" },
-  { value: "Gift & Favours",   emoji: "🎁", label: "Gift & Favours",  sub: "Return gifts, hampers, packaging" },
-  { value: "Transportation",   emoji: "🚗", label: "Transportation",  sub: "Wedding cars, buses, logistics" },
-  { value: "Security",         emoji: "🛡️", label: "Security",       sub: "Event security & crowd management" },
-  { value: "Other",            emoji: "💼", label: "Other",           sub: "Describe your service below" },
+  { value: "Decorator",        label: "Decorator",        sub: "Floral, balloon, draping, lighting" },
+  { value: "Caterer",          label: "Caterer",          sub: "Food service, live counters, buffet" },
+  { value: "Photographer",     label: "Photographer",     sub: "Candid, traditional, pre-wedding" },
+  { value: "Videographer",     label: "Videographer",     sub: "Cinematic, reels, drone coverage" },
+  { value: "Makeup Artist",    label: "Makeup Artist",    sub: "Bridal, party, editorial looks" },
+  { value: "Tent & Furniture", label: "Tent & Furniture", sub: "Shamiyana, chairs, stage, tables" },
+  { value: "Gift & Favours",   label: "Gift & Favours",   sub: "Return gifts, hampers, packaging" },
+  { value: "Transportation",   label: "Transportation",   sub: "Wedding cars, buses, logistics" },
+  { value: "Security",         label: "Security",         sub: "Event security & crowd management" },
+  { value: "Other",            label: "Other",            sub: "Describe your service below" },
 ];
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-const inp = (focus, err) => ({
-  width: "100%", padding: "13px 16px", borderRadius: 12, fontSize: 15, fontFamily: font,
-  color: ink, background: "#fff", outline: "none", boxSizing: "border-box",
-  border: `1.5px solid ${err ? "#c0392b" : focus ? gold : "rgba(196,122,46,0.3)"}`,
-  transition: "border-color 0.18s",
-});
-const lbl = { display: "block", fontSize: 13, fontWeight: 600, color: "#6B3A1F", marginBottom: 6, fontFamily: font };
-const err = { fontSize: 12, color: "#c0392b", marginTop: 4, fontFamily: font };
+const TRUST = [
+  { n: "0%", label: "Commission", sub: "We never take a cut from your bookings" },
+  { n: "Free", label: "To list", sub: "No monthly fees, no hidden charges" },
+  { n: "24 hrs", label: "Review time", sub: "Our team reviews every application fast" },
+];
 
-function Field({ label, required, error, children }) {
+function StepBar({ step }) {
+  const steps = ["Category", "Specialty", "Details"];
   return (
-    <div>
-      <label style={lbl}>{label} {required ? <span style={{ color: gold }}>*</span> : <span style={{ color: "#aaa", fontWeight: 400 }}>(optional)</span>}</label>
-      {children}
-      {error && <p style={err}>{error}</p>}
+    <div style={{ display: "flex", alignItems: "center", gap: 0, marginBottom: 36 }}>
+      {steps.map((label, i) => {
+        const s = i + 1;
+        const done   = step > s;
+        const active = step === s;
+        return (
+          <React.Fragment key={s}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: "50%",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 13, fontWeight: 700, fontFamily: font,
+                background: done ? gold : active ? "#fff" : "#f3ede6",
+                color: done ? "#fff" : active ? gold : "#B8956A",
+                border: active ? `2px solid ${gold}` : done ? `2px solid ${gold}` : "2px solid #E5D5C0",
+                transition: "all 0.25s",
+              }}>
+                {done ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> : s}
+              </div>
+              <span style={{ fontSize: 10.5, fontWeight: active ? 700 : 500, color: active ? gold : done ? gold : "#B8956A", fontFamily: font, letterSpacing: "0.02em" }}>{label}</span>
+            </div>
+            {i < steps.length - 1 && (
+              <div style={{ flex: 1, height: 2, background: step > s ? gold : "#E5D5C0", margin: "0 6px", marginBottom: 20, borderRadius: 2, transition: "background 0.3s" }} />
+            )}
+          </React.Fragment>
+        );
+      })}
     </div>
   );
 }
 
-// ── Component ──────────────────────────────────────────────────────────────
+function Shell({ children, step, narrow = true }) {
+  return (
+    <div style={{ minHeight: "100vh", background: "#F9F6F1", fontFamily: font }}>
+      <style>{`
+        @media (min-width: 900px) {
+          .reg-wrap { display: grid !important; grid-template-columns: 320px 1fr !important; min-height: 100vh !important; }
+          .reg-side  { display: flex !important; }
+          .reg-main  { padding: 64px 64px !important; }
+        }
+      `}</style>
+
+      <div className="reg-wrap" style={{ display: "block" }}>
+
+        {/* ── Left brand panel (desktop only) ── */}
+        <div className="reg-side" style={{
+          display: "none",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          background: "#1C0E04",
+          padding: "52px 36px",
+        }}>
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "#F5ECD8", letterSpacing: "-0.01em", marginBottom: 8 }}>tendr</div>
+            <div style={{ width: 32, height: 2, background: gold, borderRadius: 2, marginBottom: 32 }} />
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.6rem,2.5vw,2.2rem)", fontWeight: 500, color: "#F5ECD8", lineHeight: 1.2, margin: "0 0 16px", fontStyle: "italic" }}>
+              Get discovered by thousands of event planners in Delhi NCR.
+            </h2>
+            <p style={{ fontSize: 14, color: "rgba(245,236,216,0.55)", lineHeight: 1.7, margin: 0 }}>
+              Join Tendr's verified vendor network — real clients, real bookings, zero commission.
+            </p>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            {TRUST.map(t => (
+              <div key={t.n} style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+                <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 22, fontWeight: 400, color: gold, flexShrink: 0, lineHeight: 1 }}>{t.n}</div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#F5ECD8", marginBottom: 2 }}>{t.label}</div>
+                  <div style={{ fontSize: 12, color: "rgba(245,236,216,0.45)", lineHeight: 1.5 }}>{t.sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Right content ── */}
+        <div className="reg-main" style={{ padding: "36px 20px 60px", maxWidth: narrow ? 540 : "100%", margin: narrow ? "0 auto" : 0 }}>
+          <StepBar step={step} />
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function VendorRegistration() {
   const navigate = useNavigate();
-
-  // step 1 = pick category (artist/vendor), step 2 = pick specific type, step 3 = fill form
-  const [step, setStep]     = useState(1);
-  const [category, setCategory] = useState(""); // "artist" | "vendor"
-  const [form, setForm]     = useState({ name: "", phoneNumber: "", whatsappNumber: "", email: "", address: "", serviceType: "" });
-  const [errors, setErrors] = useState({});
+  const [step, setStep]       = useState(1);
+  const [category, setCategory] = useState("");
+  const [form, setForm]       = useState({ name: "", phoneNumber: "", whatsappNumber: "", email: "", address: "", serviceType: "" });
+  const [errors, setErrors]   = useState({});
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [apiError, setApiError]   = useState("");
@@ -77,13 +148,13 @@ export default function VendorRegistration() {
 
   const validate = () => {
     const e = {};
-    if (!form.name.trim())         e.name = "Name is required";
-    if (!form.phoneNumber.trim())  e.phoneNumber = "Phone number is required";
+    if (!form.name.trim())            e.name = "Name is required";
+    if (!form.phoneNumber.trim())     e.phoneNumber = "Phone number is required";
     else if (!/^[6-9]\d{9}$/.test(form.phoneNumber)) e.phoneNumber = "Enter a valid 10-digit number";
-    if (!form.whatsappNumber.trim()) e.whatsappNumber = "WhatsApp number is required";
+    if (!form.whatsappNumber.trim())  e.whatsappNumber = "WhatsApp number is required";
     else if (!/^[6-9]\d{9}$/.test(form.whatsappNumber)) e.whatsappNumber = "Enter a valid 10-digit number";
-    if (!form.address.trim())      e.address = "Address is required";
-    if (!form.serviceType)         e.serviceType = "Please select your service type";
+    if (!form.address.trim())         e.address = "Area / city is required";
+    if (!form.serviceType)            e.serviceType = "Please select your service type";
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Enter a valid email";
     return e;
   };
@@ -119,215 +190,226 @@ export default function VendorRegistration() {
     }
   };
 
-  // ── Success screen ────────────────────────────────────────────────────────
+  const inputStyle = (field) => ({
+    width: "100%", padding: "13px 16px", borderRadius: 10, fontSize: 15, fontFamily: font,
+    color: ink, background: "#fff", outline: "none", boxSizing: "border-box",
+    border: `1.5px solid ${errors[field] ? "#c0392b" : focused === field ? gold : "rgba(28,14,4,0.14)"}`,
+    transition: "border-color 0.18s",
+  });
+
+  // ── Success ──────────────────────────────────────────────────────────────────
   if (submitted) {
-    const tc = [...ARTIST_TYPES, ...VENDOR_TYPES].find(t => t.value === form.serviceType);
     return (
-      <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FFF8F2,#F5E6CC)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: font }}>
-        <div style={{ background: "#FFFCF5", borderRadius: 24, padding: "52px 36px", maxWidth: 480, width: "100%", textAlign: "center", boxShadow: "0 8px 40px rgba(139,69,19,0.1)" }}>
-          <div style={{ fontSize: 52, marginBottom: 16 }}>{tc?.emoji || "✓"}</div>
-          <h2 style={{ fontSize: 24, fontWeight: 800, color: ink, margin: "0 0 10px" }}>Application Submitted!</h2>
-          <div style={{ display: "inline-block", padding: "4px 14px", borderRadius: 100, background: "rgba(196,122,46,0.1)", color: gold, fontSize: 12, fontWeight: 700, marginBottom: 16 }}>{form.serviceType}</div>
-          <p style={{ fontSize: 15, color: "#9B7450", margin: "0 0 28px", lineHeight: 1.65 }}>
-            Thank you, {form.name.split(" ")[0]}! Our team will review your details and reach you on WhatsApp within 24–48 hours.
+      <div style={{ minHeight: "100vh", background: "#F9F6F1", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: font }}>
+        <div style={{ background: "#fff", borderRadius: 20, padding: "48px 36px", maxWidth: 440, width: "100%", textAlign: "center", border: "1px solid rgba(28,14,4,0.07)", boxShadow: "0 4px 24px rgba(28,14,4,0.07)" }}>
+          <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(196,122,46,0.1)", border: `2px solid rgba(196,122,46,0.3)`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: ink, margin: "0 0 10px" }}>Application Submitted</h2>
+          <p style={{ fontSize: 14, color: muted, margin: "0 0 28px", lineHeight: 1.65 }}>
+            Thank you, <strong>{form.name.split(" ")[0]}</strong>. Our team will review your details and reach you on WhatsApp within 24–48 hours.
           </p>
-          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <button onClick={() => navigate("/vendor/status")} style={{ background: "transparent", color: gold, border: `1.5px solid rgba(196,122,46,0.4)`, borderRadius: 12, padding: "11px 24px", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer" }}>Check Status</button>
-            <button onClick={() => navigate("/")} style={{ background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", borderRadius: 12, padding: "11px 24px", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer" }}>Back to Home</button>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+            <button onClick={() => navigate("/vendor/status")} style={{ background: "#fff", color: gold, border: `1.5px solid rgba(196,122,46,0.4)`, borderRadius: 10, padding: "11px 24px", fontSize: 14, fontWeight: 600, fontFamily: font, cursor: "pointer" }}>Check Status</button>
+            <button onClick={() => navigate("/")} style={{ background: gold, color: "#fff", border: "none", borderRadius: 10, padding: "11px 24px", fontSize: 14, fontWeight: 600, fontFamily: font, cursor: "pointer" }}>Back to Home</button>
           </div>
         </div>
       </div>
     );
   }
 
-  // ── Step 1: Artist or Vendor? ─────────────────────────────────────────────
+  // ── Step 1: Artist or Vendor ──────────────────────────────────────────────────
   if (step === 1) {
     return (
-      <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FFF8F2,#F5E6CC)", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px", fontFamily: font }}>
-        <div style={{ width: "100%", maxWidth: 560 }}>
-          <div style={{ textAlign: "center", marginBottom: 36 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 10 }}>Partner with Tendr</p>
-            <h1 style={{ fontSize: "clamp(1.8rem,4vw,2.4rem)", fontWeight: 900, color: ink, letterSpacing: "-0.02em", margin: "0 0 10px", lineHeight: 1.15 }}>How do you earn?</h1>
-            <p style={{ fontSize: 15, color: "#9B7450", margin: 0 }}>Pick the type that best describes what you do — your dashboard will be set up for you.</p>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-            {[
-              {
-                key: "artist",
-                emoji: "🎤",
-                title: "Individual Artist",
-                sub: "DJ · Anchor · Singer · Band · Emcee · Musician · Performer · Comedian · Magician · AV",
-                color: "rgba(124,58,237,0.07)",
-                border: "rgba(124,58,237,0.18)",
-                accent: "#7C3AED",
-              },
-              {
-                key: "vendor",
-                emoji: "🏢",
-                title: "Business / Vendor",
-                sub: "Decorator · Caterer · Photographer · Videographer · Makeup · Tent · Gifts · Transport",
-                color: "rgba(196,122,46,0.07)",
-                border: "rgba(196,122,46,0.22)",
-                accent: gold,
-              },
-            ].map(c => (
-              <button
-                key={c.key}
-                onClick={() => { setCategory(c.key); setStep(2); }}
-                style={{ padding: "18px 16px", borderRadius: 16, border: `1.5px solid ${c.border}`, background: c.color, cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s" }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = `0 12px 32px ${c.border}`; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = ""; }}
-              >
-                <div style={{ fontSize: 26, marginBottom: 8 }}>{c.emoji}</div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: ink, marginBottom: 4 }}>{c.title}</div>
-                <div style={{ fontSize: 11, color: "#9B7450", lineHeight: 1.55 }}>{c.sub}</div>
-                <div style={{ marginTop: 12, fontSize: 11.5, fontWeight: 700, color: c.accent }}>I'm this →</div>
-              </button>
-            ))}
-          </div>
-
-          <p style={{ textAlign: "center", fontSize: 13, color: "#9B7450", marginTop: 24 }}>
-            Already listed?{" "}
-            <span onClick={() => navigate("/login")} style={{ color: gold, fontWeight: 600, cursor: "pointer" }}>Sign in</span>
-          </p>
+      <Shell step={1}>
+        <div style={{ marginBottom: 28 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 8 }}>Partner with Tendr</p>
+          <h1 style={{ fontSize: "clamp(1.6rem,3.5vw,2.2rem)", fontWeight: 800, color: ink, letterSpacing: "-0.02em", margin: "0 0 8px", lineHeight: 1.2 }}>How do you earn?</h1>
+          <p style={{ fontSize: 14, color: muted, margin: 0 }}>Pick the type that best describes what you do.</p>
         </div>
-      </div>
-    );
-  }
 
-  // ── Step 2: Pick specific type ────────────────────────────────────────────
-  if (step === 2) {
-    const types = category === "artist" ? ARTIST_TYPES : VENDOR_TYPES;
-    return (
-      <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FFF8F2,#F5E6CC)", padding: "40px 24px 60px", fontFamily: font }}>
-        <div style={{ maxWidth: 680, margin: "0 auto" }}>
-          {/* Back */}
-          <button onClick={() => setStep(1)} style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 28, padding: 0 }}>
-            ← Back
-          </button>
-
-          <div style={{ textAlign: "center", marginBottom: 32 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 8 }}>
-              {category === "artist" ? "Individual Artist" : "Business / Vendor"}
-            </p>
-            <h1 style={{ fontSize: "clamp(1.6rem,3.5vw,2.2rem)", fontWeight: 900, color: ink, margin: "0 0 8px" }}>What's your specialty?</h1>
-            <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>Pick your service type — your profile and dashboard will be tailored for you.</p>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(148px,1fr))", gap: 8 }}>
-            {types.map(t => (
-              <button
-                key={t.value}
-                onClick={() => { setForm(f => ({ ...f, serviceType: t.value })); setStep(3); }}
-                style={{ padding: "12px 12px", borderRadius: 12, border: `1.5px solid rgba(196,122,46,0.18)`, background: "#FFFCF5", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", display: "flex", gap: 10, alignItems: "flex-start" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.18)"; e.currentTarget.style.background = "#FFFCF5"; e.currentTarget.style.transform = ""; }}
-              >
-                <span style={{ fontSize: 20, flexShrink: 0 }}>{t.emoji}</span>
-                <div>
-                  <div style={{ fontSize: 12.5, fontWeight: 700, color: ink, marginBottom: 2 }}>{t.label}</div>
-                  <div style={{ fontSize: 10.5, color: "#9B7450", lineHeight: 1.45 }}>{t.sub}</div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Step 3: Details form ──────────────────────────────────────────────────
-  const tc = [...ARTIST_TYPES, ...VENDOR_TYPES].find(t => t.value === form.serviceType);
-  return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(160deg,#FFF8F2,#F5E6CC)", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px", fontFamily: font }}>
-      <div style={{ width: "100%", maxWidth: 540 }}>
-
-        {/* Back */}
-        <button onClick={() => setStep(2)} style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
-          ← Back
-        </button>
-
-        {/* Progress dots */}
-        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 28 }}>
-          {[1, 2, 3].map(s => (
-            <div key={s} style={{ width: s === 3 ? 24 : 8, height: 8, borderRadius: 100, background: s === 3 ? `linear-gradient(90deg,${gold},${goldLt})` : "rgba(196,122,46,0.2)", transition: "all 0.3s" }} />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          {[
+            {
+              key: "artist",
+              title: "Individual Artist",
+              sub: "DJ · Anchor · Singer · Band · Emcee · Musician · Performer · Comedian · Magician · AV",
+              icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
+            },
+            {
+              key: "vendor",
+              title: "Business / Vendor",
+              sub: "Decorator · Caterer · Photographer · Videographer · Makeup · Tent · Gifts · Transport",
+              icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+            },
+          ].map(c => (
+            <button
+              key={c.key}
+              onClick={() => { setCategory(c.key); setStep(2); }}
+              style={{ padding: "22px 18px", borderRadius: 14, border: "1.5px solid rgba(28,14,4,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)" }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = `0 6px 24px rgba(196,122,46,0.14)`; e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.1)"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; e.currentTarget.style.transform = ""; }}
+            >
+              <div style={{ marginBottom: 14 }}>{c.icon}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: ink, marginBottom: 6 }}>{c.title}</div>
+              <div style={{ fontSize: 11.5, color: muted, lineHeight: 1.55 }}>{c.sub}</div>
+              <div style={{ marginTop: 14, fontSize: 12, fontWeight: 600, color: gold }}>I'm this →</div>
+            </button>
           ))}
         </div>
 
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
-          {tc && <div style={{ fontSize: 28, marginBottom: 8 }}>{tc.emoji}</div>}
-          <h1 style={{ fontSize: "clamp(1.5rem,3.5vw,2rem)", fontWeight: 900, color: ink, margin: "0 0 6px" }}>
-            {form.serviceType || "Your Details"}
-          </h1>
-          <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>Almost done — fill in your contact details and we'll be in touch soon.</p>
-        </div>
-
-        {/* Form card */}
-        <div style={{ background: "#FFFCF5", borderRadius: 20, padding: "22px 20px", boxShadow: "0 4px 24px rgba(139,69,19,0.08)", border: "1px solid rgba(196,122,46,0.1)" }}>
-          {apiError && (
-            <div style={{ background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 10, padding: "11px 16px", fontSize: 13, color: "#c0392b", marginBottom: 20 }}>{apiError}</div>
-          )}
-
-          <form onSubmit={handleSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-
-            <Field label="Full Name" required error={errors.name}>
-              <input name="name" type="text" placeholder="e.g. Rahul Sharma" value={form.name} onChange={handleChange}
-                onFocus={() => setFocused("name")} onBlur={() => setFocused("")}
-                style={inp(focused === "name", errors.name)} />
-            </Field>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-              <Field label="Phone Number" required error={errors.phoneNumber}>
-                <input name="phoneNumber" type="tel" placeholder="10-digit number" value={form.phoneNumber} onChange={handleChange}
-                  onFocus={() => setFocused("phoneNumber")} onBlur={() => setFocused("")} maxLength={10}
-                  style={inp(focused === "phoneNumber", errors.phoneNumber)} />
-              </Field>
-              <Field label="WhatsApp Number" required error={errors.whatsappNumber}>
-                <input name="whatsappNumber" type="tel" placeholder="10-digit number" value={form.whatsappNumber} onChange={handleChange}
-                  onFocus={() => setFocused("whatsappNumber")} onBlur={() => setFocused("")} maxLength={10}
-                  style={inp(focused === "whatsappNumber", errors.whatsappNumber)} />
-              </Field>
-            </div>
-
-            <Field label="Email Address" error={errors.email}>
-              <input name="email" type="email" placeholder="e.g. rahul@example.com" value={form.email} onChange={handleChange}
-                onFocus={() => setFocused("email")} onBlur={() => setFocused("")}
-                style={inp(focused === "email", errors.email)} />
-            </Field>
-
-            <Field label="City / Area you serve" required error={errors.address}>
-              <textarea name="address" placeholder="e.g. South Delhi, Noida, Gurgaon" value={form.address} onChange={handleChange}
-                onFocus={() => setFocused("address")} onBlur={() => setFocused("")} rows={2}
-                style={{ ...inp(focused === "address", errors.address), resize: "vertical" }} />
-            </Field>
-
-            {/* Selected type chip */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderRadius: 12, background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.18)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontSize: 22 }}>{tc?.emoji}</span>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>{form.serviceType}</div>
-                  <div style={{ fontSize: 11, color: "#9B7450" }}>Your service type</div>
-                </div>
-              </div>
-              <button type="button" onClick={() => setStep(2)} style={{ fontSize: 12, fontWeight: 600, color: gold, background: "none", border: "none", cursor: "pointer", fontFamily: font }}>Change</button>
-            </div>
-
-            <button type="submit" disabled={loading}
-              style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: loading ? "#e5e7eb" : `linear-gradient(135deg,${gold},${goldLt})`, color: loading ? "#9ca3af" : "#fff", fontSize: 16, fontWeight: 700, fontFamily: font, cursor: loading ? "not-allowed" : "pointer", boxShadow: loading ? "none" : "0 4px 14px rgba(196,122,46,0.35)", transition: "all 0.2s", marginTop: 4 }}>
-              {loading ? "Submitting…" : "Submit Application →"}
-            </button>
-          </form>
-        </div>
-
-        <p style={{ textAlign: "center", fontSize: 12, color: "#9B7450", marginTop: 16 }}>Free to register · No monthly fee · No commission on bookings</p>
-        <p style={{ textAlign: "center", fontSize: 13, color: "#9B7450", marginTop: 8 }}>
-          Already a partner?{" "}
+        <p style={{ textAlign: "center", fontSize: 13, color: muted, marginTop: 24 }}>
+          Already listed?{" "}
           <span onClick={() => navigate("/login")} style={{ color: gold, fontWeight: 600, cursor: "pointer" }}>Sign in</span>
         </p>
+
+        {/* Mobile trust signals */}
+        <div style={{ marginTop: 36, paddingTop: 24, borderTop: "1px solid rgba(28,14,4,0.07)" }}>
+          <div style={{ display: "flex", justifyContent: "space-around", gap: 8 }}>
+            {TRUST.map(t => (
+              <div key={t.n} style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 18, fontWeight: 700, color: gold, marginBottom: 2 }}>{t.n}</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: ink }}>{t.label}</div>
+                <div style={{ fontSize: 10, color: muted, lineHeight: 1.4 }}>{t.sub}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Shell>
+    );
+  }
+
+  // ── Step 2: Pick specific type ────────────────────────────────────────────────
+  if (step === 2) {
+    const types = category === "artist" ? ARTIST_TYPES : VENDOR_TYPES;
+    return (
+      <Shell step={2} narrow={false}>
+        <button onClick={() => setStep(1)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
+          ← Back
+        </button>
+
+        <div style={{ marginBottom: 28 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 8 }}>
+            {category === "artist" ? "Individual Artist" : "Business / Vendor"}
+          </p>
+          <h1 style={{ fontSize: "clamp(1.5rem,3vw,2rem)", fontWeight: 800, color: ink, margin: "0 0 6px" }}>What's your specialty?</h1>
+          <p style={{ fontSize: 14, color: muted, margin: 0 }}>Choose your service type — your profile will be tailored for you.</p>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
+          {types.map(t => (
+            <button
+              key={t.value}
+              onClick={() => { setForm(f => ({ ...f, serviceType: t.value })); setStep(3); }}
+              style={{ padding: "14px 14px", borderRadius: 12, border: "1.5px solid rgba(28,14,4,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 3px rgba(28,14,4,0.04)" }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.background = "rgba(196,122,46,0.03)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.12)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.1)"; e.currentTarget.style.background = "#fff"; e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 1px 3px rgba(28,14,4,0.04)"; }}
+            >
+              <div style={{ fontSize: 13, fontWeight: 700, color: ink, marginBottom: 3 }}>{t.label}</div>
+              <div style={{ fontSize: 11, color: muted, lineHeight: 1.45 }}>{t.sub}</div>
+            </button>
+          ))}
+        </div>
+      </Shell>
+    );
+  }
+
+  // ── Step 3: Details form ──────────────────────────────────────────────────────
+  const tc = [...ARTIST_TYPES, ...VENDOR_TYPES].find(t => t.value === form.serviceType);
+  return (
+    <Shell step={3}>
+      <button onClick={() => setStep(2)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 20, padding: 0 }}>
+        ← Back
+      </button>
+
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: "clamp(1.4rem,3vw,1.8rem)", fontWeight: 800, color: ink, margin: "0 0 4px" }}>
+          {form.serviceType}
+        </h1>
+        <p style={{ fontSize: 14, color: muted, margin: 0 }}>Fill in your contact details — we'll reach you on WhatsApp.</p>
       </div>
-    </div>
+
+      <div style={{ background: "#fff", borderRadius: 16, padding: "24px 22px", border: "1px solid rgba(28,14,4,0.07)", boxShadow: "0 2px 12px rgba(28,14,4,0.05)" }}>
+        {apiError && (
+          <div style={{ background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 10, padding: "11px 16px", fontSize: 13, color: "#c0392b", marginBottom: 20 }}>{apiError}</div>
+        )}
+
+        <form onSubmit={handleSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+
+          <div>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#6B3A1F", marginBottom: 6, fontFamily: font }}>
+              Full Name <span style={{ color: gold }}>*</span>
+            </label>
+            <input name="name" type="text" placeholder="e.g. Rahul Sharma" value={form.name} onChange={handleChange}
+              onFocus={() => setFocused("name")} onBlur={() => setFocused("")}
+              style={inputStyle("name")} />
+            {errors.name && <p style={{ fontSize: 12, color: "#c0392b", marginTop: 4, fontFamily: font }}>{errors.name}</p>}
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#6B3A1F", marginBottom: 6, fontFamily: font }}>
+                Phone <span style={{ color: gold }}>*</span>
+              </label>
+              <input name="phoneNumber" type="tel" placeholder="10-digit number" value={form.phoneNumber} onChange={handleChange}
+                onFocus={() => setFocused("phoneNumber")} onBlur={() => setFocused("")} maxLength={10}
+                style={inputStyle("phoneNumber")} />
+              {errors.phoneNumber && <p style={{ fontSize: 12, color: "#c0392b", marginTop: 4, fontFamily: font }}>{errors.phoneNumber}</p>}
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#6B3A1F", marginBottom: 6, fontFamily: font }}>
+                WhatsApp <span style={{ color: gold }}>*</span>
+              </label>
+              <input name="whatsappNumber" type="tel" placeholder="10-digit number" value={form.whatsappNumber} onChange={handleChange}
+                onFocus={() => setFocused("whatsappNumber")} onBlur={() => setFocused("")} maxLength={10}
+                style={inputStyle("whatsappNumber")} />
+              {errors.whatsappNumber && <p style={{ fontSize: 12, color: "#c0392b", marginTop: 4, fontFamily: font }}>{errors.whatsappNumber}</p>}
+            </div>
+          </div>
+
+          <div>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#6B3A1F", marginBottom: 6, fontFamily: font }}>
+              Email <span style={{ color: "#aaa", fontWeight: 400 }}>(optional)</span>
+            </label>
+            <input name="email" type="email" placeholder="e.g. rahul@example.com" value={form.email} onChange={handleChange}
+              onFocus={() => setFocused("email")} onBlur={() => setFocused("")}
+              style={inputStyle("email")} />
+            {errors.email && <p style={{ fontSize: 12, color: "#c0392b", marginTop: 4, fontFamily: font }}>{errors.email}</p>}
+          </div>
+
+          <div>
+            <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#6B3A1F", marginBottom: 6, fontFamily: font }}>
+              City / Area you serve <span style={{ color: gold }}>*</span>
+            </label>
+            <textarea name="address" placeholder="e.g. South Delhi, Noida, Gurgaon" value={form.address} onChange={handleChange}
+              onFocus={() => setFocused("address")} onBlur={() => setFocused("")} rows={2}
+              style={{ ...inputStyle("address"), resize: "vertical" }} />
+            {errors.address && <p style={{ fontSize: 12, color: "#c0392b", marginTop: 4, fontFamily: font }}>{errors.address}</p>}
+          </div>
+
+          {/* Selected type chip */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 10, background: "#F9F6F1", border: "1px solid rgba(28,14,4,0.09)" }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>{form.serviceType}</div>
+              <div style={{ fontSize: 11, color: muted }}>Your service type</div>
+            </div>
+            <button type="button" onClick={() => setStep(2)} style={{ fontSize: 12, fontWeight: 600, color: gold, background: "none", border: "none", cursor: "pointer", fontFamily: font }}>Change</button>
+          </div>
+
+          {errors.serviceType && <p style={{ fontSize: 12, color: "#c0392b", fontFamily: font }}>{errors.serviceType}</p>}
+
+          <button type="submit" disabled={loading}
+            style={{ width: "100%", padding: "14px", borderRadius: 10, border: "none", background: loading ? "#e5e7eb" : gold, color: loading ? "#9ca3af" : "#fff", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: loading ? "not-allowed" : "pointer", boxShadow: loading ? "none" : "0 4px 14px rgba(196,122,46,0.3)", transition: "all 0.2s" }}>
+            {loading ? "Submitting…" : "Submit Application →"}
+          </button>
+        </form>
+      </div>
+
+      <p style={{ textAlign: "center", fontSize: 12, color: muted, marginTop: 16 }}>Free to register · No monthly fee · No commission</p>
+      <p style={{ textAlign: "center", fontSize: 13, color: muted, marginTop: 6 }}>
+        Already a partner?{" "}
+        <span onClick={() => navigate("/login")} style={{ color: gold, fontWeight: 600, cursor: "pointer" }}>Sign in</span>
+      </p>
+    </Shell>
   );
 }
