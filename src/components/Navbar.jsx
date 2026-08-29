@@ -278,18 +278,21 @@ const Navbar = ({
 
   const NAV_ITEMS = [
     {
-      label: "Plan",
+      label: "Tools",
       items: [
-        { label: "Browse Vendors",   href: "/listings" },
-        { label: "Event Timeline",   href: "/timeline-picker" },
-        { label: "Set my Budget",    href: "/budget-picker" },
-        { label: "Plan by Occasion", onClick: () => { navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 120); } },
+        { label: "Planning Timeline",  href: "/timeline-picker" },
+        { label: "Budget Allocator",   href: "/budget-picker" },
+        { label: "Find by Style",      href: "/find-by-style" },
       ],
     },
     {
-      label: "Chat with us",
-      directLink: true,
-      href: "/baat-karo",
+      label: "Booking",
+      items: [
+        { label: "You Do It",           href: "/booking" },
+        { label: "Smart Planner",       href: "/booking" },
+        { label: "Baat Karo",           href: "/baat-karo" },
+        { label: "Plan by Occasion", onClick: () => { navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 120); } },
+      ],
     },
     {
       label: "Company",
@@ -410,6 +413,7 @@ const Navbar = ({
           >
             <FaSearch size={12} style={{ color: "#C47A2E", flexShrink: 0 }} />
             <span style={{ fontSize: 13, color: "#A07850", whiteSpace: "nowrap", flex: 1, letterSpacing: "0.01em" }}>Search vendors, services…</span>
+            <span style={{ fontSize: 9.5, color: "rgba(160,120,80,0.45)", border: "1px solid rgba(160,120,80,0.18)", borderRadius: 5, padding: "2px 6px", whiteSpace: "nowrap", fontFamily: "monospace", letterSpacing: "0.04em" }}>⌘K</span>
           </button>
           {/* Primary nav links */}
           <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
@@ -701,17 +705,16 @@ const Navbar = ({
                 >Sign In</a>
               </div>
             )}
-            {/* WhatsApp — subtle icon link */}
+            {/* WhatsApp — always rightmost, with clear gap */}
             <a
               href="https://wa.me/919211668427"
               target="_blank"
               rel="noopener noreferrer"
-              title="Chat on WhatsApp"
-              style={{ color: "#25D366", width: 34, height: 34, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", flexShrink: 0, transition: "background 0.2s", background: "rgba(37,211,102,0.08)", border: "1.5px solid rgba(37,211,102,0.22)" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(37,211,102,0.18)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(37,211,102,0.08)"; }}
+              style={{ background: "#25D366", color: "#fff", width: 36, height: 36, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(37,211,102,0.3)", textDecoration: "none", flexShrink: 0, transition: "transform 0.2s" }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
             >
-              <FaWhatsapp size={15} />
+              <FaWhatsapp size={14} />
             </a>
           </div>{/* end inner right cluster */}
           </div>{/* end right action cluster desktop-nav */}
