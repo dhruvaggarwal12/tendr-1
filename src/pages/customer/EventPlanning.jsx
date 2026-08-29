@@ -2213,13 +2213,14 @@ const EventPlanning = () => {
           .eq-title { font-size: 1.25rem !important; }
           .eq-subtitle { font-size: 0.8rem !important; }
           .eq-icon-wrap { width: 38px !important; height: 38px !important; }
+          .ep-outer { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important; }
         }
         .event-question-card { background: #FFFCF7; border-radius: 22px; padding: 28px 26px 24px; margin-bottom: 20px; border: 1.5px solid rgba(196,122,46,0.12); box-shadow: 0 2px 20px rgba(44,26,14,0.07); }
       `}</style>
       <HamburgerNav active="Plan" />
       <BasicSpeedDial />
       <SelectedVendorsFloat />
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: 16, paddingBottom: 48, paddingLeft: 16, paddingRight: 16 }}>
+      <div className="ep-outer" style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: 16, paddingBottom: 48, paddingLeft: 16, paddingRight: 16 }}>
       <div style={{ width: "100%", maxWidth: 560 }}>
 
         {/* Step indicator dots + progress */}

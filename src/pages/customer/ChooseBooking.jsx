@@ -340,38 +340,6 @@ export default function ChooseBooking() {
           })}
         </div>
 
-        {/* Trust strip */}
-        <div style={{
-          marginTop:52,
-          display:"flex", alignItems:"center", justifyContent:"center",
-          gap:0, flexWrap:"wrap",
-          background:"#fff",
-          borderRadius:16,
-          border:"1px solid rgba(196,122,46,0.14)",
-          boxShadow:"0 2px 12px rgba(28,14,4,0.06)",
-          overflow:"hidden",
-        }}>
-          {[
-            { n: "500+",  label: "Events Planned" },
-            { n: "200+",  label: "Verified Vendors" },
-            { n: "4.8★",  label: "Avg. Rating" },
-            { n: "NCR",   label: "Delhi · Noida · Gurgaon" },
-          ].map(({ n, label }, i, arr) => (
-            <div key={label} style={{
-              textAlign:"center", padding:"20px 32px",
-              borderRight: i < arr.length - 1 ? "1px solid rgba(196,122,46,0.1)" : "none",
-              flex:1, minWidth:120,
-            }}>
-              <div style={{ fontFamily:serif, fontSize:"1.3rem", fontWeight:600, color:ink, lineHeight:1 }}>{n}</div>
-              <div style={{ fontSize:10, fontWeight:700, color:"#9B7450", letterSpacing:"0.1em", textTransform:"uppercase", marginTop:5 }}>{label}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Footer note */}
-        <p style={{ marginTop:24, fontSize:12.5, fontWeight:400, color:"#B08A6A", textAlign:"center", lineHeight:1.7 }}>
-          Pehle do options ek hi form se shuru hote hain — aap baad mein bhi switch kar sakte hain.
-        </p>
       </div>
 
       <style>{`

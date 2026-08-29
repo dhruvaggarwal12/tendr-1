@@ -375,6 +375,7 @@ const Navbar = ({
             height: scrolled ? 62 : 68,
             display: "flex",
             alignItems: "center",
+            gap: 20,
             transition: "height 0.3s ease",
           }}
         >
@@ -407,7 +408,7 @@ const Navbar = ({
           <button
             data-tour="search-bar"
             onClick={() => setSearchOverlay(true)}
-            style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 16px 9px 13px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.04)", cursor: "pointer", fontFamily: font, marginRight: 10, flexShrink: 0, transition: "all 0.2s ease", minWidth: 200 }}
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 16px 9px 13px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.04)", cursor: "pointer", fontFamily: font, marginRight: 18, flexShrink: 0, transition: "all 0.2s ease", minWidth: 210 }}
             onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.09)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.4)"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.04)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.22)"; }}
           >
@@ -416,7 +417,7 @@ const Navbar = ({
             <span style={{ fontSize: 9.5, color: "rgba(160,120,80,0.45)", border: "1px solid rgba(160,120,80,0.18)", borderRadius: 5, padding: "2px 6px", whiteSpace: "nowrap", fontFamily: "monospace", letterSpacing: "0.04em" }}>⌘K</span>
           </button>
           {/* Primary nav links */}
-          <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             {NAV_ITEMS.map((group) => (
               group.directLink ? (
                 <div key={group.label} style={{ position: "relative" }}>
@@ -694,7 +695,7 @@ const Navbar = ({
                 )}
               </div>
             ) : (
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <a href="/vendor/register" style={{ fontSize: 13, fontWeight: 600, color: "#7A4A1E", padding: "9px 16px", borderRadius: 9, textDecoration: "none", border: "1.5px solid rgba(196,122,46,0.45)", background: "linear-gradient(135deg,rgba(255,244,224,0.95),rgba(255,237,195,0.9))", transition: "all 0.18s", whiteSpace: "nowrap", fontFamily: font, boxShadow: "0 1px 4px rgba(196,122,46,0.12)" }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = "linear-gradient(135deg,rgba(255,234,190,0.98),rgba(255,220,155,0.95))"; e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.boxShadow = "0 3px 10px rgba(196,122,46,0.22)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "linear-gradient(135deg,rgba(255,244,224,0.95),rgba(255,237,195,0.9))"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.45)"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(196,122,46,0.12)"; }}
