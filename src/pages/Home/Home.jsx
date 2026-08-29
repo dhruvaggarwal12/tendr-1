@@ -1419,56 +1419,37 @@ const Home = () => {
         <div style={{ maxWidth: 1120, margin: "0 auto" }}>
           <div className="cat-strip" style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none" }}>
             {[
-              {
-                label: "Caterer", type: "Caterer",
-                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11l1.5-1.5A4 4 0 0 1 12 8a4 4 0 0 1 7.5 1.5L21 11"/><path d="M3 11h18"/><path d="M5 11v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8"/><path d="M12 11V8"/></svg>,
-              },
-              {
-                label: "Decorator", type: "Decorator",
-                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10"/><path d="M17 3c0 3-2.5 4.5-2.5 4.5S12 6 12 3a2.5 2.5 0 0 1 5 0z"/><path d="M21 7c0 2-1.5 3-1.5 3S18 9 18 7a1.5 1.5 0 0 1 3 0z"/></svg>,
-              },
-              {
-                label: "Photographer", type: "Photographer",
-                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>,
-              },
-              {
-                label: "DJ", type: "DJ",
-                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8" opacity="0.4"/><path d="M8.5 2.5A10 10 0 0 1 21.5 15.5"/><path d="M2.5 8.5A10 10 0 0 0 15.5 21.5"/></svg>,
-              },
-              {
-                label: "Gift Hampers", type: null, href: "/gift-hampers-cakes",
-                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12v10H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>,
-              },
-              {
-                label: "Stationery", type: null, href: "/stationery",
-                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
-              },
-            ].map(({ label, type, href, icon }) => (
+              { label: "Caterer",      type: "Caterer",      href: null, photo: "https://images.unsplash.com/photo-1555244162-803834f70033?w=300&q=75" },
+              { label: "Decorator",    type: "Decorator",    href: null, photo: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=300&q=75" },
+              { label: "Photographer", type: "Photographer", href: null, photo: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=300&q=75" },
+              { label: "DJ",           type: "DJ",           href: null, photo: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=300&q=75" },
+              { label: "Gift Hampers", type: null,           href: "/gift-hampers-cakes", photo: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=300&q=75" },
+              { label: "Stationery",   type: null,           href: "/stationery", photo: "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=300&q=75" },
+            ].map(({ label, type, href, photo }) => (
               <button
                 key={label}
                 onClick={() => href ? navigate(href) : navigate(`/listings?serviceType=${encodeURIComponent(type)}`)}
                 style={{
                   flexShrink: 0,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "10px 14px",
+                  position: "relative",
+                  overflow: "hidden",
                   borderRadius: 12,
-                  border: "1.5px solid rgba(28,14,4,0.09)",
-                  background: "#fff",
+                  border: "none",
                   cursor: "pointer",
-                  minWidth: 76,
+                  minWidth: 88,
                   flex: "1 1 0",
+                  height: 80,
+                  padding: 0,
                   fontFamily: "'Outfit', sans-serif",
-                  transition: "all 0.18s",
-                  color: "#4A2C1A",
+                  transition: "transform 0.18s, box-shadow 0.18s",
+                  boxShadow: "0 2px 8px rgba(28,14,4,0.1)",
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.5)"; e.currentTarget.style.background = "#FFFDF8"; e.currentTarget.style.color = "#C47A2E"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.09)"; e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#4A2C1A"; }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.04)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(28,14,4,0.18)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 2px 8px rgba(28,14,4,0.1)"; }}
               >
-                <div style={{ opacity: 0.72 }}>{icon}</div>
-                <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.01em", whiteSpace: "nowrap" }}>{label}</span>
+                <img src={photo} alt={label} loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(8,3,0,0.72) 0%, rgba(8,3,0,0.18) 55%, transparent 100%)" }} />
+                <span style={{ position: "absolute", bottom: 8, left: 0, right: 0, textAlign: "center", fontSize: 11.5, fontWeight: 700, color: "#fff", letterSpacing: "0.02em", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>{label}</span>
               </button>
             ))}
           </div>
@@ -1802,8 +1783,8 @@ const Home = () => {
         );
       })()}
 
-      {/* ── Everything for your celebration ── */}
-      <section data-tour="efc-section" style={{ background: "#ffffff", padding: "72px 28px 80px", fontFamily: "'Outfit', sans-serif" }}>
+      {/* ── Everything for your celebration — removed ── */}
+      {false && <section data-tour="efc-section" style={{ background: "#ffffff", padding: "72px 28px 80px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1080, margin: "0 auto" }}>
 
           {/* Header */}
@@ -1910,7 +1891,7 @@ const Home = () => {
             }
           `}</style>
         </div>
-      </section>
+      </section>}
 
       {/* ── Live Entertainment Add-ons — coverflow carousel ── */}
       <section data-tour="fun-activities-section" style={{ background:"#0C0600", padding:"48px 0 52px", fontFamily:"'Outfit', sans-serif", overflow:"hidden" }}>

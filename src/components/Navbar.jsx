@@ -278,21 +278,6 @@ const Navbar = ({
 
   const NAV_ITEMS = [
     {
-      label: "Browse",
-      megaMenu: true,
-      items: [
-        { id: "Decorator",    label: "Decorator",    href: "/search?categories=Decorator" },
-        { id: "Caterer",      label: "Caterer",      href: "/search?categories=Caterer" },
-        { id: "Photographer", label: "Photographer", href: "/search?categories=Photographer" },
-        { id: "DJ",           label: "DJ",           href: "/search?categories=DJ" },
-        { id: "Band",         label: "Band",         href: "/search?categories=Band" },
-        { id: "Emcee",        label: "Emcee / Host", href: "/search?categories=Emcee" },
-      ],
-      sideItems: [
-        { label: "Top Rated Vendors", href: "/search?sort=topRated" },
-      ],
-    },
-    {
       label: "Our Products",
       items: [
         { label: "Gift Hampers",        href: "/gift-hampers-cakes" },
