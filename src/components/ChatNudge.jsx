@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useChatOverlay } from "../context/ChatContext";
 
 const SESSION_KEY = "tendr_nudge_dismissed";
 
@@ -22,6 +23,7 @@ export default function ChatNudge() {
   const [mounted, setMounted]   = useState(false);
   const [visible, setVisible]   = useState(false);
   const navigate = useNavigate();
+  const { openTendrTeamChat } = useChatOverlay();
 
   useEffect(() => {
     try { if (sessionStorage.getItem(SESSION_KEY)) return; } catch {}
@@ -39,7 +41,7 @@ export default function ChatNudge() {
       if (window.scrollY > document.documentElement.scrollHeight * 0.30) fire();
     };
 
-    const timer = setTimeout(fire, 8000);
+    const timer = setTimeout(fire, 20000);
     window.addEventListener("scroll", onScroll, { passive: true });
 
     const cleanup = () => {
@@ -134,7 +136,7 @@ export default function ChatNudge() {
             {/* Row 2 — secondary actions */}
             <div style={{ display: "flex", gap: 7 }}>
               <button style={outline} onClick={dismiss}>Just browsing</button>
-              <button style={outline} onClick={() => go("/baat-karo")}>Need help</button>
+              <button style={outline} onClick={() => { dismiss(); openTendrTeamChat(); }}>Need help</button>
             </div>
           </div>
         </div>
