@@ -199,6 +199,17 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
     return () => document.removeEventListener("tendr:open-chat-with-plan", handler);
   }, []);
 
+  // Open Tendr Support MiniChatWidget (dispatched from ChatNudge "Need help")
+  useEffect(() => {
+    const handler = () => {
+      setMiniChatPrefill("");
+      setShowMiniChat(true);
+      setOpen(false);
+    };
+    document.addEventListener("tendr:open-support", handler);
+    return () => document.removeEventListener("tendr:open-support", handler);
+  }, []);
+
   // Re-fetch chats when a new vendor conversation is created
   useEffect(() => {
     const handler = () => fetchVendorChats();

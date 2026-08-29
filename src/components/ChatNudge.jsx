@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useChatOverlay } from "../context/ChatContext";
 
 const SESSION_KEY = "tendr_nudge_dismissed";
 
@@ -24,7 +23,6 @@ export default function ChatNudge() {
   const [visible, setVisible]   = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { openTendrTeamChat } = useChatOverlay();
 
   const handleHelpMePlan = () => {
     dismiss();
@@ -147,7 +145,7 @@ export default function ChatNudge() {
             {/* Row 2 — secondary actions */}
             <div style={{ display: "flex", gap: 7 }}>
               <button style={outline} onClick={dismiss}>Just browsing</button>
-              <button style={outline} onClick={() => { dismiss(); openTendrTeamChat(); }}>Need help</button>
+              <button style={outline} onClick={() => { dismiss(); document.dispatchEvent(new CustomEvent("tendr:open-support")); }}>Need help</button>
             </div>
           </div>
         </div>
