@@ -2518,7 +2518,7 @@ const Home = () => {
       <TipsByTendrSection />
 
       {/* Become a Partner Section */}
-      <section style={{ background: "#F9F6F1", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+      <section className="partner-section" style={{ background: "#F9F6F1", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
         {/* Subtle dot texture */}
         <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(196,122,46,0.065) 1px, transparent 1px)", backgroundSize: "28px 28px", pointerEvents: "none" }} />
         <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative" }}>
@@ -2582,7 +2582,7 @@ const Home = () => {
                 { num: "03", stat: "24h", title: "Approval — then you're live", sub: "Submit your details, get approved in one business day, start receiving requests.", icon: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></> },
                 { num: "04", stat: "Direct", title: "Chat with every customer", sub: "No gatekeeping. Discuss requirements, negotiate, and close the booking yourself.", icon: <><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></> },
               ].map((b, i, arr) => (
-                <div key={b.num} style={{ display: "flex", gap: 20, padding: "22px 0", borderBottom: i < arr.length - 1 ? "1px solid rgba(28,14,4,0.08)" : "none" }}>
+                <div key={b.num} className="partner-benefit" style={{ display: "flex", gap: 20, padding: "22px 0", borderBottom: i < arr.length - 1 ? "1px solid rgba(28,14,4,0.08)" : "none" }}>
                   <div style={{ fontSize: 10.5, fontWeight: 800, color: "rgba(196,122,46,0.45)", letterSpacing: "0.08em", paddingTop: 3, flexShrink: 0, width: 20, fontVariantNumeric: "tabular-nums" }}>{b.num}</div>
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
                     <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">{b.icon}</svg>
@@ -2623,6 +2623,7 @@ const Home = () => {
 
             {/* Right — mock vendor profile card */}
             <motion.div
+              className="partner-card-col"
               variants={{ hidden: { opacity: 0, x: 24 }, visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 220, damping: 28 } } }}
               style={{ display: "flex", flexDirection: "column", gap: 10 }}
             >
@@ -2721,9 +2722,13 @@ const Home = () => {
 
         <style>{`
           @media (max-width: 860px) {
-            .partner-grid { grid-template-columns: 1fr !important; gap: 36px !important; }
-            .partner-header { grid-template-columns: 1fr !important; gap: 20px !important; }
-            .partner-header > div:last-child { justify-content: flex-start !important; }
+            .partner-section { padding: 44px 18px 52px !important; }
+            .partner-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
+            .partner-header { grid-template-columns: 1fr !important; gap: 12px !important; }
+            .partner-header > div:last-child { display: none !important; }
+            .partner-card-col { display: none !important; }
+            .partner-benefit { padding: 14px 0 !important; }
+            .partner-benefit:last-of-type { border-bottom: none !important; }
           }
         `}</style>
       </section>
