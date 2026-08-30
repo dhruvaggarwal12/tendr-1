@@ -3125,6 +3125,34 @@ function OccPolygonGrid({ tools, onOpen, accent }) {
 
   const hovTool = tools.find(t => t.id === hovId);
 
+  // On narrow screens swap the polygon for a clean 3-col grid
+  if (size < 440) {
+    return (
+      <div ref={containerRef} style={{ width: "100%" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, width: "100%", animation: "tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+          {tools.map((t, i) => (
+            <button key={t.id} onClick={() => onOpen(t.id)}
+              style={{
+                background: "rgba(14,11,6,0.93)",
+                border: i === 0 ? `1px solid ${accent}55` : "1px solid rgba(255,255,255,0.10)",
+                borderRadius: 14, padding: "14px 8px 12px",
+                cursor: "pointer", fontFamily: font,
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 7,
+                position: "relative", WebkitTapHighlightColor: "transparent",
+                animation: `card-pop 0.38s cubic-bezier(0.22,1,0.36,1) ${i * 0.05}s both`,
+              }}>
+              {i === 0 && (
+                <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", fontSize: 7, fontWeight: 800, color: accent, background: `${accent}25`, border: `1px solid ${accent}70`, borderRadius: 100, padding: "2px 6px", letterSpacing: "0.05em", whiteSpace: "nowrap", zIndex: 2 }}>★ Start here</div>
+              )}
+              <div style={{ color: accent, opacity: 0.88 }}>{TOOL_ICONS[t.id] || occic(<><circle cx="12" cy="12" r="10"/></>)}</div>
+              <span style={{ fontSize: 10.5, fontWeight: 700, color: "#fff", textAlign: "center", lineHeight: 1.3, letterSpacing: "-0.01em", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{t.title}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div ref={containerRef} style={{ width: "100%", maxWidth: 520, margin: "0 auto" }}>
       <div style={{ position: "relative", width: size, height: size, margin: "0 auto" }}>

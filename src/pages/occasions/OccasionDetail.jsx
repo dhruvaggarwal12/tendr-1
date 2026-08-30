@@ -2712,8 +2712,9 @@ export default function OccasionDetail(){
       </div>
 
       {/* fixed bottom CTA */}
+      <style>{`@media(max-width:900px){.occ-det-cta{bottom:calc(60px + env(safe-area-inset-bottom,0px))!important;}}`}</style>
       {step>0&&(
-        <div style={{position:"fixed",bottom:0,left:0,right:0,background:bg,borderTop:`1px solid ${border}`,padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
+        <div className="occ-det-cta" style={{position:"fixed",bottom:0,left:0,right:0,background:bg,borderTop:`1px solid ${border}`,padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
           <div style={{maxWidth:680,margin:"0 auto",display:"flex",gap:10}}>
             {step>0&&<button onClick={back} style={btnGhost}>← Back</button>}
             {step<6&&(
