@@ -2548,7 +2548,6 @@ const Home = () => {
               </button>
             </div>
           </div>
-        </div>
       </section>
 
       {/* ── FAQ ── */}
