@@ -42,15 +42,15 @@ export default function ChatNudge() {
       requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
     };
 
-    // Trigger on 8s delay OR 35% scroll depth — whichever fires first
+    // Trigger on 60s delay OR 65% scroll depth — whichever fires first
     let fired = false;
     const fire = () => { if (fired) return; fired = true; show(); cleanup(); };
 
     const onScroll = () => {
-      if (window.scrollY > document.documentElement.scrollHeight * 0.30) fire();
+      if (window.scrollY > document.documentElement.scrollHeight * 0.65) fire();
     };
 
-    const timer = setTimeout(fire, 20000);
+    const timer = setTimeout(fire, 60000);
     window.addEventListener("scroll", onScroll, { passive: true });
 
     const cleanup = () => {

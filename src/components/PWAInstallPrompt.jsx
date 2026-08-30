@@ -4,8 +4,8 @@ import router from "../router";
 const font = "'Outfit', sans-serif";
 const KEY_DISMISSED = "tendr_pwa_dismissed_at";
 const KEY_INSTALLED = "tendr_pwa_installed";
-const DISMISS_TTL   = 3 * 24 * 60 * 60 * 1000; // 3 days
-const FIVE_MIN      = 5 * 60 * 1000;
+const DISMISS_TTL   = 7 * 24 * 60 * 60 * 1000; // 7 days
+const FIVE_MIN      = 20 * 60 * 1000; // 20 min — don't interrupt early browsing
 
 function isInstalledPWA() {
   try {
