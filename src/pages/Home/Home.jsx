@@ -1453,19 +1453,14 @@ const Home = () => {
                   <source media="(min-width: 900px)" srcSet={photoDesk} />
                   <img src={photoMob} alt={label} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                 </picture>
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(8,3,0,0.72) 0%, rgba(8,3,0,0.18) 55%, transparent 100%)" }} />
-                <span className="cat-tile-label" style={{ position: "absolute", bottom: 8, left: 0, right: 0, textAlign: "center", fontWeight: 700, color: "#fff", letterSpacing: "0.02em", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>{label}</span>
               </button>
             ))}
           </div>
           <style>{`
             .cat-strip::-webkit-scrollbar{display:none}
-            /* Tile dimensions: mobile 80×80px, desktop 112×108px */
             .cat-tile { height: 80px; }
-            .cat-tile-label { font-size: 11px; }
             @media (min-width: 900px) {
               .cat-tile { height: 108px; min-width: 112px !important; border-radius: 14px !important; }
-              .cat-tile-label { font-size: 12.5px; bottom: 10px !important; }
             }
           `}</style>
         </div>
