@@ -1553,7 +1553,9 @@ const Home = () => {
           .hero-desktop-search { display: none !important; }
           .home-hero-cta-wrap { flex-wrap: nowrap !important; gap: 8px !important; }
           .home-hero-cta { flex: 1 !important; padding: 11px 6px !important; font-size: 13px !important; text-align: center !important; justify-content: center !important; white-space: normal !important; }
+          .occ-strip-label { font-size: 13px !important; }
         }
+        .occ-strip-label { font-size: 16px; }
       `}</style>
 
       {/* ── Plan by Occasion ── */}
@@ -1666,7 +1668,7 @@ const Home = () => {
                     style={{ position: "absolute", inset: 0, borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.55)", pointerEvents: "none" }}
                   />
                   <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", padding: "16px 12px", textAlign: "center" }}>
-                    <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 16, fontWeight: 700, fontStyle: "italic", color: "#FFF8EC", lineHeight: 1.2, textShadow: "0 2px 10px rgba(0,0,0,0.55)", letterSpacing: "-0.01em" }}>{label}</span>
+                    <span className="occ-strip-label" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontStyle: "italic", color: "#FFF8EC", lineHeight: 1.2, textShadow: "0 2px 10px rgba(0,0,0,0.55)", letterSpacing: "-0.01em" }}>{label}</span>
                     <div style={{ width: 22, height: 1, background: "rgba(196,122,46,0.6)", margin: "10px auto 8px" }} />
                     <motion.span
                       animate={{ opacity: isHovered ? 1 : 0.5 }}
@@ -2600,6 +2602,13 @@ const Home = () => {
           @keyframes vt { from { transform: translateX(0); } to { transform: translateX(-50%); } }
           .vd-ticker { display: flex; gap: 8px; width: max-content; animation: vt 26s linear infinite; }
           .vd-ticker:hover { animation-play-state: paused; }
+          .vend-inner { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+          .vend-left { flex-shrink: 0; max-width: 250px; }
+          @media (max-width: 767px) {
+            .vend-inner { flex-direction: column; align-items: flex-start; gap: 14px; }
+            .vend-left { max-width: 100%; }
+            .vend-ticker-wrap { width: 100%; }
+          }
         `}</style>
 
         {/* SVG film-grain */}
@@ -2619,10 +2628,10 @@ const Home = () => {
         {/* Oversized italic serif watermark — distinct from other sections */}
         <div aria-hidden style={{ position: "absolute", left: -30, top: "50%", transform: "translateY(-50%)", fontSize: "clamp(10rem,28vw,18rem)", fontFamily: "'Cormorant Garamond',Georgia,serif", fontWeight: 800, fontStyle: "italic", color: "rgba(196,122,46,0.03)", lineHeight: 1, userSelect: "none", pointerEvents: "none", zIndex: 0, letterSpacing: "-0.04em" }}>V</div>
 
-        <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 2, display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
+        <div className="vend-inner" style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 2 }}>
 
           {/* Left: badge + headlines */}
-          <div style={{ flexShrink: 0, maxWidth: 250 }}>
+          <div className="vend-left">
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
               <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", display: "inline-block", boxShadow: "0 0 0 3px rgba(34,197,94,0.22), 0 0 10px rgba(34,197,94,0.38)" }} />
               <span style={{ fontSize: 10, fontWeight: 800, color: "#CCAB4A", letterSpacing: "0.16em", textTransform: "uppercase" }}>For Event Professionals</span>
@@ -2636,7 +2645,7 @@ const Home = () => {
           </div>
 
           {/* Centre: scrolling ticker */}
-          <div style={{ flex: 1, overflow: "hidden", maskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)", WebkitMaskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)", minWidth: 0 }}>
+          <div className="vend-ticker-wrap" style={{ flex: 1, overflow: "hidden", maskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)", WebkitMaskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)", minWidth: 0 }}>
             <div className="vd-ticker">
               {[...["DJ", "Emcee", "Photographer", "Decorator", "Caterer", "Band", "Videographer", "AV Setup", "Florist", "Anchor", "Makeup Artist", "Event Planner", "Dhol Player"], ...["DJ", "Emcee", "Photographer", "Decorator", "Caterer", "Band", "Videographer", "AV Setup", "Florist", "Anchor", "Makeup Artist", "Event Planner", "Dhol Player"]].map((t, i) => (
                 <span key={i} style={{ flexShrink: 0, fontSize: 12, fontWeight: 600, color: "#CCAB4A", background: "rgba(204,171,74,0.07)", border: "1px solid rgba(204,171,74,0.2)", borderRadius: 100, padding: "8px 18px", whiteSpace: "nowrap" }}>{t}</span>
