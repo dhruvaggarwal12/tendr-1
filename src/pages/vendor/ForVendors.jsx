@@ -208,7 +208,7 @@ export default function ForVendors() {
               List My Service Free →
             </button>
             <button
-              onClick={() => document.getElementById("fv-dashboard-tour")?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() => navigate("/vendor/dashboard")}
               style={{ padding: "13px 24px", borderRadius: 12, border: "1.5px solid rgba(255,248,236,0.2)", background: "transparent", color: "rgba(255,248,236,0.8)", fontSize: 14, fontWeight: 600, fontFamily: font, cursor: "pointer" }}
             >
               View Dashboard →
@@ -336,9 +336,14 @@ export default function ForVendors() {
                   ))}
                 </div>
                 {idx === DASHBOARD_SECTIONS.length - 1 ? (
-                  <button onClick={() => navigate("/vendor/register")} style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                    Get Started →
-                  </button>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <button onClick={() => navigate("/vendor/dashboard")} style={{ padding: "10px 20px", borderRadius: 10, border: "1.5px solid rgba(204,171,74,0.4)", background: "rgba(196,122,46,0.1)", color: "#CCAB4A", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                      Enter Dashboard →
+                    </button>
+                    <button onClick={() => navigate("/vendor/register")} style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                      Get Started →
+                    </button>
+                  </div>
                 ) : (
                   <button onClick={() => setActiveTab(DASHBOARD_SECTIONS[idx + 1].id)} style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid rgba(204,171,74,0.3)", background: "rgba(196,122,46,0.1)", color: "#CCAB4A", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
                     Next →
@@ -350,10 +355,15 @@ export default function ForVendors() {
 
           {/* CTA */}
           <div style={{ textAlign: "center", marginTop: 44, paddingTop: 36, borderTop: "1px solid rgba(204,171,74,0.1)" }}>
-            <button onClick={() => navigate("/vendor/register")} style={{ padding: "14px 36px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: font, cursor: "pointer", boxShadow: "0 6px 22px rgba(196,122,46,0.4)" }}>
-              Get My Dashboard →
-            </button>
-            <div style={{ marginTop: 10, fontSize: 12, color: "rgba(255,248,236,0.3)" }}>Free · No credit card · Live in 24h</div>
+            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 10 }}>
+              <button onClick={() => navigate("/vendor/dashboard")} style={{ padding: "14px 28px", borderRadius: 12, border: "1.5px solid rgba(204,171,74,0.4)", background: "rgba(196,122,46,0.1)", color: "#CCAB4A", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer" }}>
+                View Dashboard
+              </button>
+              <button onClick={() => navigate("/vendor/register")} style={{ padding: "14px 36px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: font, cursor: "pointer", boxShadow: "0 6px 22px rgba(196,122,46,0.4)" }}>
+                Get My Dashboard →
+              </button>
+            </div>
+            <div style={{ fontSize: 12, color: "rgba(255,248,236,0.3)" }}>Free · No credit card · Live in 24h</div>
           </div>
         </div>
         <style>{`@keyframes fv-step-in { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }`}</style>
