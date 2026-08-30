@@ -3123,12 +3123,12 @@ function PartyHubBackground() {
       H = canvas.height = canvas.offsetHeight;
       circuits.length = 0;
       particles.length = 0;
-      for (let i = 0; i < 12; i++) circuits.push(genCircuit());
-      for (let i = 0; i < 55; i++) {
+      for (let i = 0; i < 7; i++) circuits.push(genCircuit());
+      for (let i = 0; i < 28; i++) {
         particles.push({
           x: Math.random() * W, y: Math.random() * H,
-          r: 0.4 + Math.random() * 1.2,
-          base: 0.06 + Math.random() * 0.18,
+          r: 0.3 + Math.random() * 0.9,
+          base: 0.03 + Math.random() * 0.10,
           vx: (Math.random() - 0.5) * 0.06,
           vy: (Math.random() - 0.5) * 0.06,
           ph: Math.random() * Math.PI * 2,
@@ -3142,7 +3142,7 @@ function PartyHubBackground() {
 
       /* ── faint grid ── */
       const GRID = 56;
-      ctx.strokeStyle = "rgba(139,92,246,0.032)";
+      ctx.strokeStyle = "rgba(139,92,246,0.018)";
       ctx.lineWidth = 1;
       ctx.beginPath();
       for (let x = 0; x <= W; x += GRID) { ctx.moveTo(x, 0); ctx.lineTo(x, H); }
@@ -3157,15 +3157,15 @@ function PartyHubBackground() {
         ctx.beginPath();
         ctx.moveTo(c.pts[0].x, c.pts[0].y);
         for (let i = 1; i < c.pts.length; i++) ctx.lineTo(c.pts[i].x, c.pts[i].y);
-        ctx.strokeStyle = "rgba(139,92,246,0.11)";
+        ctx.strokeStyle = "rgba(139,92,246,0.065)";
         ctx.lineWidth = 1;
         ctx.stroke();
 
         /* junction nodes */
         c.pts.forEach(p => {
           ctx.beginPath();
-          ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(167,139,250,0.28)";
+          ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(167,139,250,0.10)";
           ctx.fill();
         });
 
@@ -3179,12 +3179,12 @@ function PartyHubBackground() {
         const px = p1.x + (p2.x - p1.x) * st;
         const py = p1.y + (p2.y - p1.y) * st;
 
-        const g = ctx.createRadialGradient(px, py, 0, px, py, 8);
-        g.addColorStop(0, "rgba(196,166,255,0.95)");
-        g.addColorStop(0.4, "rgba(139,92,246,0.45)");
+        const g = ctx.createRadialGradient(px, py, 0, px, py, 5);
+        g.addColorStop(0, "rgba(196,166,255,0.55)");
+        g.addColorStop(0.4, "rgba(139,92,246,0.22)");
         g.addColorStop(1, "rgba(139,92,246,0)");
         ctx.beginPath();
-        ctx.arc(px, py, 8, 0, Math.PI * 2);
+        ctx.arc(px, py, 5, 0, Math.PI * 2);
         ctx.fillStyle = g;
         ctx.fill();
       });
@@ -3238,6 +3238,50 @@ const PLAN_IDS = new Set([
   "venue","seating","budget","vendors","wabroadcast","potluck","giftregistry",
   "advicecards","namesuggestions","kittyfund","countdown","runofshow",
 ]);
+
+const GAME_IDS = new Set([
+  "truthordare","neverhavei","wouldyou","hottakes","spin","charades","bingo",
+  "birthdayquiz","couplequiz","t2l","rapidfire","mostlikelyto","luckydraw","genderpoll","babynamevote","moodmeter",
+]);
+
+const TOOL_STATUS_MAP = {
+  invite:["INVITE","READY"], checklist:["PLAN","READY"], giftregistry:["REGISTRY","OPEN"],
+  potluck:["LIST","OPEN"], guestlist:["GUESTS","OPEN"], budget:["BUDGET","READY"],
+  daytimeline:["SCHEDULE","READY"], venue:["VENUE","READY"], countdown:["TIMER","LIVE"],
+  wabroadcast:["BROADCAST","READY"], menu:["MENU","READY"], seating:["SEATING","OPEN"],
+  vendors:["VENDORS","OPEN"], bills:["SPLIT","READY"], gifttracker:["GIFTS","OPEN"],
+  kittyfund:["FUND","OPEN"], advicecards:["ADVICE","OPEN"], namesuggestions:["NAMES","OPEN"],
+  runofshow:["SHOW","READY"], theme:["VOTE","OPEN"],
+  truthordare:["GAME","READY"], neverhavei:["GAME","READY"], wouldyou:["GAME","READY"],
+  hottakes:["GAME","READY"], spin:["SPIN","READY"], charades:["GAME","READY"],
+  bingo:["BINGO","READY"], birthdayquiz:["QUIZ","READY"], couplequiz:["QUIZ","READY"],
+  t2l:["GAME","READY"], rapidfire:["RAPID","READY"], mostlikelyto:["GAME","READY"],
+  luckydraw:["DRAW","READY"], genderpoll:["POLL","LIVE"], babynamevote:["VOTE","OPEN"],
+  wishwall:["WALL","OPEN"], photowall:["WALL","OPEN"], lovenotes:["NOTES","OPEN"],
+  blessingswall:["BLESS","OPEN"], blessings:["BLESS","OPEN"], appreciationwall:["WALL","OPEN"],
+  secretmessage:["MSG","OPEN"], reportcard:["RECAP","READY"], playlist:["MUSIC","READY"],
+  moodmeter:["MOOD","LIVE"], awardsceremony:["AWARDS","READY"],
+};
+
+function getOccHubIcon(occasion, color, size = 38) {
+  const sw = { fill:"none", stroke:color, strokeWidth:1.3, strokeLinecap:"round", strokeLinejoin:"round" };
+  const icons = {
+    birthday: <svg width={size} height={size} viewBox="0 0 24 24" {...sw}><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 1.5 1 1.5 1"/><path d="M2 21h20"/><path d="M7 8v2"/><path d="M12 8v2"/><path d="M17 8v2"/><path d="M7 4 8.5 6"/><path d="M12 4v2"/><path d="M17 4 15.5 6"/></svg>,
+    housewarming: <svg width={size} height={size} viewBox="0 0 24 24" {...sw}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+    wedding: <svg width={size} height={size} viewBox="0 0 24 24" {...sw}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
+    anniversary: <svg width={size} height={size} viewBox="0 0 24 24" {...sw}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/><path d="M12 17V7m-5 5h10"/></svg>,
+    "baby-shower": <svg width={size} height={size} viewBox="0 0 24 24" {...sw}><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>,
+    bachelorette: <svg width={size} height={size} viewBox="0 0 24 24" {...sw}><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M2 9h20M6 3 2 9l10 13M18 3l4 6-10 13"/></svg>,
+    farewell: <svg width={size} height={size} viewBox="0 0 24 24" {...sw}><circle cx="12" cy="12" r="10"/><path d="M8 12h8m-4-4 4 4-4 4"/></svg>,
+    "office-party": <svg width={size} height={size} viewBox="0 0 24 24" {...sw}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+    "kitty-party": <svg width={size} height={size} viewBox="0 0 24 24" {...sw}><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>,
+  };
+  return icons[occasion] || (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+  );
+}
 
 function OccPolygonGrid({ tools, onOpen, accent }) {
   const containerRef = useRef(null);
@@ -3594,7 +3638,7 @@ export default function OccasionHub({ occasion }) {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         @keyframes splash-pulse { 0%,100%{opacity:0.8;transform:scale(1)} 50%{opacity:1;transform:scale(1.04)} }
         @keyframes splash-line  { from{width:0} to{width:100%} }
-        @keyframes ph-glow      { 0%,100%{opacity:0.28;transform:translateX(-50%) scale(1)} 50%{opacity:0.55;transform:translateX(-50%) scale(1.08)} }
+        @keyframes ph-glow      { 0%,100%{opacity:0.15;transform:translateX(-50%) scale(1)} 50%{opacity:0.28;transform:translateX(-50%) scale(1.06)} }
         @keyframes rm-in        { from{opacity:0;transform:scale(0.93)} to{opacity:1;transform:scale(1)} }
         @keyframes dot-pulse    { 0%,100%{opacity:0.4;transform:scale(0.8)} 50%{opacity:1;transform:scale(1)} }
         @keyframes tab-slide    { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
@@ -3610,7 +3654,7 @@ export default function OccasionHub({ occasion }) {
       {/* Immersive background — canvas particles + circuit lines + grid */}
       <PartyHubBackground />
       {/* Deep violet bloom — top-centre */}
-      <div style={{ position:"fixed", top:-140, left:"50%", transform:"translateX(-50%)", width:700, height:480, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(109,40,217,0.22) 0%, rgba(139,92,246,0.08) 45%, transparent 70%)", pointerEvents:"none", zIndex:0, animation:"ph-glow 7s ease-in-out infinite" }} />
+      <div style={{ position:"fixed", top:-140, left:"50%", transform:"translateX(-50%)", width:560, height:360, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(109,40,217,0.12) 0%, rgba(139,92,246,0.04) 45%, transparent 70%)", pointerEvents:"none", zIndex:0, animation:"ph-glow 7s ease-in-out infinite" }} />
       {/* Accent glow — occasion colour, corner */}
       <div style={{ position:"fixed", top:-60, right:-80, width:400, height:300, borderRadius:"50%", background:`radial-gradient(ellipse, ${accent}18 0%, transparent 65%)`, pointerEvents:"none", zIndex:0 }} />
       {/* Cool blue undertone — bottom left */}
@@ -3800,43 +3844,88 @@ export default function OccasionHub({ occasion }) {
         {/* LOBBY */}
         {activeTab === "lobby" && (
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-            {room && (
-              <div style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(74,222,128,0.08)", border:"1px solid rgba(74,222,128,0.25)", borderRadius:12, padding:"10px 14px", marginBottom:14 }}>
-                <span style={{ width:8, height:8, borderRadius:"50%", background:"#4ade80", animation:"dot-pulse 1.5s ease infinite" }} />
-                <span style={{ fontSize:12, fontWeight:700, color:"#4ade80", letterSpacing:"0.1em", fontFamily:"monospace" }}>PARTY LIVE</span>
-                <span style={{ marginLeft:"auto", fontFamily:"monospace", fontSize:12, color:"#4ade80", fontWeight:700, letterSpacing:"0.1em" }}>{room.code}</span>
-                <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>· {room.players?.length||1} online</span>
+
+            {/* Immersive hero — enter the room */}
+            <div style={{ background:"linear-gradient(160deg, rgba(109,40,217,0.10) 0%, rgba(13,13,23,0.55) 60%, rgba(7,7,17,0.35) 100%)", border:"1px solid rgba(139,92,246,0.2)", borderRadius:24, padding:"28px 20px 24px", marginBottom:16, position:"relative", overflow:"hidden", textAlign:"center" }}>
+              {/* Top glow line */}
+              <div style={{ position:"absolute", top:0, left:0, right:0, height:1, background:"linear-gradient(90deg, transparent 0%, rgba(139,92,246,0.75) 50%, transparent 100%)" }} />
+              {/* Ambient radial behind icon */}
+              <div style={{ position:"absolute", top:"38%", left:"50%", transform:"translate(-50%,-50%)", width:220, height:220, borderRadius:"50%", background:"radial-gradient(circle, rgba(109,40,217,0.16) 0%, rgba(109,40,217,0.04) 50%, transparent 70%)", pointerEvents:"none" }} />
+
+              {/* Status chip */}
+              <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:room?"rgba(74,222,128,0.07)":"rgba(139,92,246,0.07)", border:`1px solid ${room?"rgba(74,222,128,0.22)":"rgba(139,92,246,0.22)"}`, borderRadius:100, padding:"4px 14px", marginBottom:16, fontFamily:"monospace" }}>
+                <span style={{ width:5, height:5, borderRadius:"50%", background:room?"#4ade80":PH.violet, animation:"dot-pulse 2s ease infinite", flexShrink:0 }} />
+                <span style={{ fontSize:9, fontWeight:700, color:room?"#4ade80":PH.violet, letterSpacing:"0.2em" }}>{room ? `PARTY LIVE · ${room.code}` : "ROOM READY"}</span>
               </div>
-            )}
-            {/* Glass hero panel */}
-            <div style={{ background:"linear-gradient(135deg, rgba(139,92,246,0.13) 0%, rgba(56,189,248,0.05) 100%)", border:"1px solid rgba(139,92,246,0.28)", borderRadius:20, padding:"24px 20px", marginBottom:16, position:"relative", overflow:"hidden" }}>
-              <div style={{ position:"absolute", top:0, left:0, right:0, height:1, background:"linear-gradient(90deg, transparent, rgba(139,92,246,0.7), transparent)" }} />
-              <div style={{ fontSize:44, marginBottom:8 }}>{occ.emoji}</div>
-              <div style={{ fontSize:20, fontWeight:900, color:"#fff", marginBottom:4, letterSpacing:"-0.02em" }}>{occ.name}</div>
-              <div style={{ fontSize:13, color:"rgba(255,255,255,0.72)", marginBottom:20, lineHeight:1.5 }}>{occ.tagline}</div>
+
+              {/* Hub label */}
+              <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.38)", letterSpacing:"0.2em", textTransform:"uppercase", fontFamily:"monospace", marginBottom:18 }}>{occ.name.toUpperCase()} HUB</div>
+
+              {/* Icon with concentric glow rings */}
+              <div style={{ position:"relative", display:"inline-flex", alignItems:"center", justifyContent:"center", marginBottom:18 }}>
+                <div style={{ position:"absolute", width:92, height:92, borderRadius:"50%", border:"1px solid rgba(139,92,246,0.18)", boxShadow:"0 0 28px rgba(139,92,246,0.12)" }} />
+                <div style={{ position:"absolute", width:68, height:68, borderRadius:"50%", border:"1px solid rgba(139,92,246,0.10)" }} />
+                <div style={{ width:52, height:52, borderRadius:"50%", background:"rgba(139,92,246,0.10)", display:"flex", alignItems:"center", justifyContent:"center", filter:"drop-shadow(0 0 10px rgba(139,92,246,0.45))", position:"relative", zIndex:1 }}>
+                  {getOccHubIcon(occasion, PH.violet, 26)}
+                </div>
+              </div>
+
+              {/* Tagline */}
+              <div style={{ fontSize:21, fontWeight:900, color:"#fff", letterSpacing:"-0.025em", lineHeight:1.2, marginBottom:4 }}>{occ.tagline || occ.name}</div>
+
+              {/* Online / prompt */}
+              {room ? (
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, margin:"14px 0 20px" }}>
+                  <div style={{ display:"flex" }}>
+                    {(room.players || [myName]).slice(0,5).map((p,i) => (
+                      <div key={i} style={{ width:22, height:22, borderRadius:"50%", background:`linear-gradient(135deg, ${PH.violet}88, ${PH.blue}55)`, border:`1.5px solid ${PH.bg}`, marginLeft:i>0?-7:0, display:"flex", alignItems:"center", justifyContent:"center", fontSize:8, fontWeight:800, color:"#fff", position:"relative", zIndex:5-i }}>{p[0].toUpperCase()}</div>
+                    ))}
+                  </div>
+                  <span style={{ fontSize:11, fontWeight:700, color:"#4ade80", fontFamily:"monospace", letterSpacing:"0.12em" }}>{room.players?.length||1} ONLINE</span>
+                </div>
+              ) : (
+                <div style={{ fontSize:12, color:"rgba(255,255,255,0.38)", margin:"12px 0 20px", letterSpacing:"0.01em" }}>Start a room · share the code · play together</div>
+              )}
+
+              {/* CTAs */}
               {!room ? (
                 <div style={{ display:"flex", gap:10 }}>
-                  <button onClick={()=>setRoomModal("host-setup")} style={{ flex:1, padding:"12px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:13, fontWeight:800, cursor:"pointer" }}>Host a Room</button>
-                  <button onClick={()=>setRoomModal("join")} style={{ flex:1, padding:"12px 0", borderRadius:12, border:"1px solid rgba(255,255,255,0.14)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.7)", fontSize:13, fontWeight:600, cursor:"pointer" }}>Join Room</button>
+                  <button onClick={()=>setRoomModal("host-setup")} style={{ flex:1, padding:"13px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:11, fontWeight:800, cursor:"pointer", letterSpacing:"0.1em", fontFamily:"monospace" }}>HOST A ROOM</button>
+                  <button onClick={()=>setRoomModal("join")} style={{ flex:1, padding:"13px 0", borderRadius:12, border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.04)", color:"rgba(255,255,255,0.68)", fontSize:11, fontWeight:600, cursor:"pointer", letterSpacing:"0.08em", fontFamily:"monospace" }}>JOIN ROOM</button>
                 </div>
               ) : (
                 <div style={{ display:"flex", gap:10 }}>
-                  <button onClick={()=>copyRoomLink(room.code)} style={{ flex:1, padding:"12px 0", borderRadius:12, border:`1px solid ${PH.violet}44`, background:`${PH.violet}14`, color:PH.violet, fontSize:13, fontWeight:700, cursor:"pointer" }}>{copied?"✓ Copied!":"📋 Share Link"}</button>
-                  <button onClick={()=>setActiveTab("play")} style={{ flex:1, padding:"12px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:13, fontWeight:800, cursor:"pointer" }}>Play Games →</button>
+                  <button onClick={()=>copyRoomLink(room.code)} style={{ flex:1, padding:"13px 0", borderRadius:12, border:`1px solid ${PH.violet}44`, background:`${PH.violet}12`, color:PH.violet, fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.08em" }}>{copied?"✓ COPIED":"SHARE LINK"}</button>
+                  <button onClick={()=>setActiveTab("play")} style={{ flex:1, padding:"13px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:11, fontWeight:800, cursor:"pointer", letterSpacing:"0.1em", fontFamily:"monospace" }}>PLAY GAMES</button>
                 </div>
               )}
             </div>
-            {/* Quick access */}
+
+            {/* Room modules */}
             {lobbyQuick.length > 0 && (<>
-              <div style={{ fontSize:10, fontWeight:700, color:PH.violet, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:10, fontFamily:"monospace" }}>// QUICK ACCESS</div>
+              <div style={{ fontSize:9, fontWeight:700, color:PH.violet, textTransform:"uppercase", letterSpacing:"0.2em", marginBottom:10, fontFamily:"monospace" }}>// ROOM MODULES</div>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-                {lobbyQuick.map(t => (
-                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:"14px 12px", cursor:"pointer", display:"flex", flexDirection:"column", gap:6 }}>
-                    <div style={{ color:PH.violet }}>{TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}</div>
-                    <div style={{ fontSize:12, fontWeight:700, color:"#fff" }}>{t.title}</div>
-                    <div style={{ fontSize:11, color:"rgba(255,255,255,0.68)" }}>{t.desc}</div>
-                  </div>
-                ))}
+                {lobbyQuick.map(t => {
+                  const status = TOOL_STATUS_MAP[t.id] || ["TOOL","READY"];
+                  const isGame = GAME_IDS.has(t.id);
+                  return (
+                    <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{
+                      background: isGame ? "rgba(56,189,248,0.04)" : "rgba(139,92,246,0.04)",
+                      border: `1px solid ${isGame ? "rgba(56,189,248,0.14)" : "rgba(139,92,246,0.14)"}`,
+                      borderRadius:14, padding:"14px 12px 12px", cursor:"pointer", display:"flex", flexDirection:"column", gap:8,
+                    }}>
+                      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                        <div style={{ color: isGame ? PH.blue : PH.violet }}>{TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}</div>
+                        <div style={{ display:"flex", alignItems:"center", gap:2, background: isGame ? "rgba(56,189,248,0.08)" : "rgba(139,92,246,0.08)", borderRadius:4, padding:"2px 6px" }}>
+                          <span style={{ fontSize:8, fontWeight:800, color: isGame ? PH.blue : PH.violet, fontFamily:"monospace", letterSpacing:"0.08em" }}>{status[0]}</span>
+                          <span style={{ fontSize:8, color:"rgba(255,255,255,0.25)", fontFamily:"monospace", margin:"0 1px" }}>//</span>
+                          <span style={{ fontSize:8, fontWeight:700, color:"rgba(255,255,255,0.5)", fontFamily:"monospace" }}>{status[1]}</span>
+                        </div>
+                      </div>
+                      <div style={{ fontSize:12, fontWeight:700, color:"#fff" }}>{t.title}</div>
+                    </div>
+                  );
+                })}
               </div>
             </>)}
           </div>
@@ -3869,7 +3958,7 @@ export default function OccasionHub({ occasion }) {
               <>
                 <div style={{ fontSize:10, fontWeight:700, color:PH.pink, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:14, fontFamily:"monospace" }}>// {room.players?.length||1} ONLINE NOW</div>
                 {(room.players||[myName]).map((p,i) => (
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:12, marginBottom:8 }}>
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:"rgba(244,114,182,0.04)", border:"1px solid rgba(244,114,182,0.13)", borderRadius:12, marginBottom:8 }}>
                     <div style={{ width:34, height:34, borderRadius:"50%", background:`linear-gradient(135deg, ${PH.violet}44, ${PH.pink}44)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:800, color:"#fff", flexShrink:0 }}>{p.charAt(0).toUpperCase()}</div>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:14, fontWeight:700, color:"#fff" }}>{p}{p===myName&&<span style={{ fontSize:11, color:PH.violet, fontWeight:500, marginLeft:6 }}>you</span>}</div>

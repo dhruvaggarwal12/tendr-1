@@ -1259,7 +1259,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"
             stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        <span className="chat-btn-text">View Chats</span>
+        <span className="chat-btn-text">CHAT</span>
         {/* Minimized vendor chat indicator */}
         {hasMinimizedChat && (
           <span style={{
@@ -1307,11 +1307,11 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
       </button>
       <style>{`
         .floating-chat-btn {
-          padding: 13px 22px;
+          padding: 13px 18px;
           bottom: calc(22px + env(safe-area-inset-bottom, 0px));
           right: 20px;
         }
-        .chat-btn-text { font-size: 14px; font-weight: 700; }
+        .chat-btn-text { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; font-family: monospace; }
         .chat-popup { animation: chatPop 0.18s cubic-bezier(0.4,0,0.2,1); }
         @keyframes chatPop {
           from { opacity: 0; transform: scale(0.92) translateY(10px); }
