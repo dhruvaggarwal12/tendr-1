@@ -1579,7 +1579,7 @@ export default function VendorDashboard() {
   const vendorName = user?.name || 'Vendor';
   const initial = vendorName.charAt(0).toUpperCase();
 
-  const [tab, setTab] = useState('overview');
+  const [tab, setTab] = useState('home');
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
 
