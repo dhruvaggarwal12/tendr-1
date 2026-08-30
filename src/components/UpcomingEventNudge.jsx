@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const INTERVAL_MS = 7 * 60 * 1000; // 7 minutes
+const INTERVAL_MS = 2 * 60 * 1000; // 2 minutes
 const gold   = '#C47A2E';
 const goldLt = '#CCAB4A';
 const ink    = '#2C1A0E';
