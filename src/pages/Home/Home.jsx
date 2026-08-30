@@ -1419,13 +1419,13 @@ const Home = () => {
         <div style={{ maxWidth: 1120, margin: "0 auto" }}>
           <div className="cat-strip" style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none" }}>
             {[
-              { label: "Caterer",        type: "Caterer",      href: null,                  photoMob: "https://images.unsplash.com/photo-1555244162-803834f70033?w=200&q=70", photoDesk: "https://images.unsplash.com/photo-1555244162-803834f70033?w=400&q=80" },
-              { label: "Decorator",      type: "Decorator",    href: null,                  photoMob: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=200&q=70", photoDesk: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&q=80" },
-              { label: "Photographer",   type: "Photographer", href: null,                  photoMob: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=200&q=70", photoDesk: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&q=80" },
-              { label: "DJ",             type: "DJ",           href: null,                  photoMob: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=200&q=70", photoDesk: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&q=80" },
-              { label: "Gift Hampers",   type: null,           href: "/gift-hampers-cakes", photoMob: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=200&q=70", photoDesk: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=400&q=80" },
-              { label: "Stationery",     type: null,           href: "/stationery",         photoMob: "https://images.unsplash.com/photo-1456735190827-d1262f71b8a3?w=200&q=70", photoDesk: "https://images.unsplash.com/photo-1456735190827-d1262f71b8a3?w=400&q=80" },
-              { label: "Fun Activities", type: null,           href: "/fun-activities",     photoMob: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=200&q=70", photoDesk: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=400&q=80" },
+              { label: "Caterer",        type: "Caterer",      href: null,                  photoMob: "/occasions/mobile/Caterer.png",                  photoDesk: "/occasions/desktop/Caterer.png" },
+              { label: "Decorator",      type: "Decorator",    href: null,                  photoMob: "/occasions/mobile/Decorator.png",                photoDesk: "/occasions/desktop/Decorator.png" },
+              { label: "Photographer",   type: "Photographer", href: null,                  photoMob: "/occasions/mobile/Photographer.png",             photoDesk: "/occasions/desktop/Photographer.png" },
+              { label: "DJ",             type: "DJ",           href: null,                  photoMob: "/occasions/mobile/DJ.png",                       photoDesk: "/occasions/desktop/DJ.png" },
+              { label: "Gift Hampers",   type: null,           href: "/gift-hampers-cakes", photoMob: "/occasions/mobile/Gift%20hampers.png",           photoDesk: "/occasions/desktop/Gift_hampers.png" },
+              { label: "Stationery",     type: null,           href: "/stationery",         photoMob: "/occasions/mobile/event_stationaries.png",       photoDesk: "/occasions/desktop/Event_stationaries.png" },
+              { label: "Fun Activities", type: null,           href: "/fun-activities",     photoMob: "/occasions/mobile/Fun_activities.png",           photoDesk: "/occasions/desktop/Fun_activities.png" },
             ].map(({ label, type, href, photoMob, photoDesk }) => (
               <button
                 key={label}
