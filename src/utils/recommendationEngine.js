@@ -241,6 +241,132 @@ const TEMPLATES = {
     },
   },
 
+  "Wedding": {
+    services: {
+      intimate: ["Decorator", "Photographer"],
+      small:    ["Decorator", "Photographer", "Caterer"],
+      medium:   ["Decorator", "Caterer", "Photographer", "DJ"],
+      large:    ["Decorator", "Caterer", "DJ", "Photographer"],
+    },
+    themes: {
+      intimate: ["💍 Intimate Garden", "🕯️ Candlelit Ceremony", "🌹 Classic Romance"],
+      small:    ["💍 Garden Wedding", "🌸 Floral Elegance", "✨ Fairytale Theme"],
+      medium:   ["✨ Grand Ballroom", "🌹 Royal Garden", "💎 Black & Gold Gala"],
+      large:    ["💎 Grand Royal Wedding", "✨ Luxury Ballroom", "🌸 Premium Garden"],
+    },
+    tips: {
+      intimate: "Intimate weddings prioritise a great decorator and photographer above everything else.",
+      small:    "With 20–50 guests, add catering for a proper sit-down meal experience.",
+      medium:   "Most weddings in NCR book all four services — confirm vendors 6+ weeks in advance.",
+      large:    "Large weddings need a dedicated coordinator. Ask about Tendr Smart Plans.",
+    },
+  },
+
+  "Bachelorette": {
+    services: {
+      intimate: ["Decorator", "Photographer"],
+      small:    ["Decorator", "Photographer"],
+      medium:   ["Decorator", "Photographer", "DJ"],
+      large:    ["Decorator", "Photographer", "DJ", "Caterer"],
+    },
+    themes: {
+      intimate: ["💅 Glam Spa Night", "🥂 Champagne Brunch", "🌸 Garden Party"],
+      small:    ["💅 Pink & Gold Glam", "🌸 Garden Brunch", "🌙 Night Out Vibes"],
+      medium:   ["💃 Retro Disco Night", "💅 Hollywood Glam", "🌟 Sequin & Sparkle"],
+      large:    ["💎 Grand Glam Night", "💃 Disco Gala", "✨ Luxury Party Night"],
+    },
+    tips: {
+      intimate: "Bachelorette parties focus on vibes — a themed setup and photographer are key.",
+      small:    "Keep it personal — the best bachelorette parties are about the squad and memories.",
+      medium:   "With 20+ guests a DJ transforms the energy — book one who reads the crowd well.",
+      large:    "Large bachelorette events benefit from a decorated venue and professional photographer.",
+    },
+  },
+
+  "Farewell": {
+    services: {
+      intimate: ["Decorator", "Photographer"],
+      small:    ["Decorator", "Photographer", "Caterer"],
+      medium:   ["Decorator", "Caterer", "Photographer"],
+      large:    ["Decorator", "Caterer", "Photographer", "DJ"],
+    },
+    themes: {
+      intimate: ["✈️ Bon Voyage", "🌍 World Explorer", "💌 Memory Lane"],
+      small:    ["✈️ Travel Theme", "🌟 Send-Off Night", "📸 Memory Wall"],
+      medium:   ["🌟 Grand Send-Off", "✈️ Airport Vibes", "💛 Golden Farewell"],
+      large:    ["🎊 Grand Farewell Gala", "✈️ World Traveller Night", "💎 Luxury Send-Off"],
+    },
+    tips: {
+      intimate: "Farewell parties are about memories — invest in photography and a personalised setup.",
+      small:    "A memory wall backdrop with themed decor makes the send-off truly special.",
+      medium:   "Good food is essential for farewell gatherings — catering is the top priority.",
+      large:    "Large farewell events need catering and decoration confirmed well in advance.",
+    },
+  },
+
+  "Retirement": {
+    services: {
+      intimate: ["Decorator", "Caterer"],
+      small:    ["Decorator", "Caterer", "Photographer"],
+      medium:   ["Decorator", "Caterer", "Photographer"],
+      large:    ["Decorator", "Caterer", "Photographer", "DJ"],
+    },
+    themes: {
+      intimate: ["🌅 Golden Years", "🌿 Garden Celebration", "🎂 Milestone Dinner"],
+      small:    ["🌅 Retirement Gala", "📅 Out of Office Forever", "🌟 Career Milestone"],
+      medium:   ["💛 Golden Retirement Night", "🌅 Sunset Celebration", "✨ Career Legacy"],
+      large:    ["💎 Grand Retirement Gala", "🌟 Career Achievement Night", "✨ Golden Jubilee"],
+    },
+    tips: {
+      intimate: "Retirement parties are dignified celebrations — quality catering sets the right tone.",
+      small:    "Add a photographer to capture career tribute moments — priceless memories.",
+      medium:   "A well-catered dinner with decoration and photography is the standard retirement event.",
+      large:    "Large retirement parties benefit from a stage, AV setup, and a proper emcee.",
+    },
+  },
+
+  "Gender Reveal": {
+    services: {
+      intimate: ["Decorator", "Photographer"],
+      small:    ["Decorator", "Photographer"],
+      medium:   ["Decorator", "Photographer", "Caterer"],
+      large:    ["Decorator", "Photographer", "Caterer"],
+    },
+    themes: {
+      intimate: ["🎀 Pink or Blue?", "🐝 What Will It Bee?", "⭐ Twinkle Reveal"],
+      small:    ["🎀 Pink vs Blue", "🍰 Cake Cut Reveal", "🎈 Balloon Drop Reveal"],
+      medium:   ["🌈 Grand Reveal Party", "🎊 Colour Pop Celebration", "💫 Celestial Reveal"],
+      large:    ["✨ Grand Gender Reveal", "🎊 Celebration Carnival", "💎 Premium Reveal"],
+    },
+    tips: {
+      intimate: "Gender reveals are all about the big moment — a great photographer is non-negotiable.",
+      small:    "Keep the colour scheme neutral until the reveal — pink and blue accents reveal after.",
+      medium:   "With 50+ guests, catering for a proper celebration makes the reveal more festive.",
+      large:    "Large gender reveal events need a decorated reveal station and professional photographer.",
+    },
+  },
+
+  "Kitty Party": {
+    services: {
+      intimate: ["Caterer", "Decorator"],
+      small:    ["Caterer", "Decorator"],
+      medium:   ["Caterer", "Decorator", "Photographer"],
+      large:    ["Caterer", "Decorator", "Photographer"],
+    },
+    themes: {
+      intimate: ["👜 Bollywood Housewives", "☕ English Afternoon Tea", "🎭 Saree Soirée"],
+      small:    ["👜 Glam Kitty Night", "🎭 Theme Party", "🌸 Garden High Tea"],
+      medium:   ["💅 Neon Disco Glam", "🎰 Casino Night", "✨ Bollywood Glam Night"],
+      large:    ["💎 Grand Kitty Gala", "🎰 Casino Royale", "✨ Bollywood Grand Night"],
+    },
+    tips: {
+      intimate: "Quality food is the centrepiece of any kitty party — invest in great catering.",
+      small:    "A themed decorator brings the wow factor — pick a theme and commit to it fully.",
+      medium:   "Photography is popular at kitty parties — great for the group album and social media.",
+      large:    "Large kitty parties benefit from a stage for the fashion show and tambola ceremony.",
+    },
+  },
+
   "Others": {
     services: {
       intimate: ["Decorator", "Photographer"],

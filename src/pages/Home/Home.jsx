@@ -1577,6 +1577,13 @@ const Home = () => {
               { label: "Kitty Party",     photo: "/occasions/kitty-party-mobile.png" },
               { label: "Graduation",      photo: "/occasions/get-together-mobile.png" },
               { label: "Office Party",    photo: "/occasions/get-together-mobile.png" },
+              { label: "Wedding",         photo: "/occasions/anniversary-mobile.png" },
+              { label: "Bachelorette",    photo: "/occasions/birthday-mobile.png" },
+              { label: "Farewell",        photo: "/occasions/get-together-mobile.png" },
+              { label: "Retirement",      photo: "/occasions/get-together-mobile.png" },
+              { label: "Diwali Party",    photo: "/occasions/housewarming-mobile.png" },
+              { label: "Holi Party",      photo: "/occasions/house-party-mobile.png" },
+              { label: "Navratri Garba",  photo: "/occasions/house-party-mobile.png" },
             ].map(({ label, photo }, i) => {
               const isHovered = hoveredOcc === label;
               const isDimmed  = hoveredOcc !== null && !isHovered;
@@ -1589,16 +1596,22 @@ const Home = () => {
                       "First Birthday":"first-birthday","House Party":"get-together","Housewarming":"housewarming",
                       "Get Together":"get-together","Naming Ceremony":"naming-ceremony",
                       "Gender Reveal":"gender-reveal","Newborn Welcome":"newborn-welcome",
-                      "Kitty Party":"get-together","Graduation":"graduation",
-                      "Office Party":"office-party",
+                      "Kitty Party":"kitty-party","Graduation":"graduation",
+                      "Office Party":"office-party","Wedding":"wedding","Bachelorette":"bachelorette",
+                      "Farewell":"farewell","Retirement":"retirement","Diwali Party":"diwali-party",
+                      "Holi Party":"holi-party","Navratri Garba":"navratri-garba",
                     };
                     const hubMap = {
-                      "birthday-party":"/birthday-hub","first-birthday":"/birthday-hub",
+                      "birthday-party":"/birthday-hub","first-birthday":"/first-birthday-hub",
                       "anniversary":"/anniversary-hub","baby-shower":"/baby-shower-hub",
-                      "gender-reveal":"/baby-shower-hub","newborn-welcome":"/baby-shower-hub",
+                      "gender-reveal":"/gender-reveal-hub","newborn-welcome":"/newborn-welcome-hub",
                       "get-together":"/get-together-hub","housewarming":"/housewarming-hub",
-                      "naming-ceremony":"/naming-ceremony-hub","graduation":"/get-together-hub",
-                      "office-party":"/office-party-hub",
+                      "naming-ceremony":"/naming-ceremony-hub","graduation":"/graduation-hub",
+                      "office-party":"/office-party-hub","kitty-party":"/kitty-party-hub",
+                      "wedding":"/wedding-hub","bachelorette":"/bachelorette-hub",
+                      "farewell":"/farewell-hub","retirement":"/retirement-hub",
+                      "diwali-party":"/diwali-party-hub","holi-party":"/holi-party-hub",
+                      "navratri-garba":"/navratri-garba-hub",
                     };
                     const slug = slugMap[label] || "birthday-party";
                     setOccModal({ label, slug, hub: hubMap[slug] || "/birthday-hub", photo, step: 1 });
