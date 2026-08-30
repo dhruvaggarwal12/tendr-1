@@ -2512,37 +2512,70 @@ const Home = () => {
       {/* ── Tips by Tendr ── */}
       <TipsByTendrSection />
 
-      {/* Become a Partner Section — compact strip */}
-      <section style={{ background: "#F9F6F1", padding: "36px 24px", fontFamily: "'Outfit', sans-serif" }}>
-          {/* Compact vendor join strip */}
-          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 16 }}>
-            {/* Left: text + pills */}
-            <div style={{ flex: 1, minWidth: 200 }}>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-                {["DJ", "Emcee", "Photographer", "Decorator", "Caterer", "Band", "Videographer", "AV Setup", "Florist", "Anchor"].map(t => (
-                  <span key={t} style={{ fontSize: 11, fontWeight: 600, color: "#7A5535", background: "#fff", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 100, padding: "3px 10px" }}>{t}</span>
-                ))}
-              </div>
-              <p style={{ margin: 0, fontSize: 13, color: "#7A5535", lineHeight: 1.5 }}>
-                In the event industry? You can join Tendr as a vendor, partner, or collaborator — any way you like.
-              </p>
-            </div>
-            {/* Right: CTA */}
-            <div style={{ display: "flex", gap: 10, flexShrink: 0, flexWrap: "wrap" }}>
-              <button
-                onClick={() => navigate("/for-vendors")}
-                style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(196,122,46,0.3)", minHeight: 40 }}
-              >
-                Join Tendr →
-              </button>
-              <button
-                onClick={() => navigate("/vendor/login")}
-                style={{ padding: "10px 16px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.28)", background: "transparent", color: "#7A5535", fontSize: 13, fontWeight: 600, fontFamily: "'Outfit',sans-serif", cursor: "pointer", minHeight: 40 }}
-              >
-                Log in
-              </button>
+      {/* Become a Partner Section */}
+      <section style={{ background: "linear-gradient(135deg,#1C0E04 0%,#2C1A0E 55%,#1A0A02 100%)", padding: "56px 24px 60px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+        {/* Ambient glow orbs */}
+        <div aria-hidden style={{ position: "absolute", top: -60, left: "10%", width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,122,46,0.18) 0%,transparent 70%)", pointerEvents: "none" }} />
+        <div aria-hidden style={{ position: "absolute", bottom: -80, right: "8%", width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle,rgba(204,171,74,0.12) 0%,transparent 70%)", pointerEvents: "none" }} />
+
+        <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 1 }}>
+          {/* Top label */}
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(204,171,74,0.1)", border: "1px solid rgba(204,171,74,0.25)", borderRadius: 100, padding: "5px 16px" }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
+              <span style={{ fontSize: 10, fontWeight: 800, color: "#CCAB4A", letterSpacing: "0.15em", textTransform: "uppercase" }}>Now accepting vendors</span>
+            </span>
+          </div>
+
+          {/* Headline */}
+          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.8rem)", fontWeight: 300, color: "#FFF8EC", textAlign: "center", margin: "0 0 8px", lineHeight: 1.15 }}>
+            In the event industry?{" "}
+            <em style={{ fontStyle: "italic", color: "#CCAB4A" }}>You belong here.</em>
+          </h2>
+          <p style={{ textAlign: "center", fontSize: 14, color: "rgba(255,248,236,0.5)", margin: "0 0 32px" }}>
+            Join as a vendor, partner, or collaborator — any way you like.
+          </p>
+
+          {/* Scrolling pill ticker */}
+          <div style={{ overflow: "hidden", marginBottom: 36, maskImage: "linear-gradient(to right,transparent,black 12%,black 88%,transparent)", WebkitMaskImage: "linear-gradient(to right,transparent,black 12%,black 88%,transparent)" }}>
+            <style>{`
+              @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+              .vendor-ticker { display: flex; gap: 10px; width: max-content; animation: ticker 22s linear infinite; }
+              .vendor-ticker:hover { animation-play-state: paused; }
+            `}</style>
+            <div className="vendor-ticker">
+              {[...["DJ", "Emcee", "Photographer", "Decorator", "Caterer", "Band", "Videographer", "AV Setup", "Florist", "Anchor", "Mehendi Artist", "Makeup Artist", "Event Planner", "Dhol Player"], ...["DJ", "Emcee", "Photographer", "Decorator", "Caterer", "Band", "Videographer", "AV Setup", "Florist", "Anchor", "Mehendi Artist", "Makeup Artist", "Event Planner", "Dhol Player"]].map((t, i) => (
+                <span key={i} style={{ flexShrink: 0, fontSize: 12, fontWeight: 600, color: "#CCAB4A", background: "rgba(204,171,74,0.08)", border: "1px solid rgba(204,171,74,0.2)", borderRadius: 100, padding: "6px 16px", whiteSpace: "nowrap" }}>{t}</span>
+              ))}
             </div>
           </div>
+
+          {/* Stats row */}
+          <div style={{ display: "flex", justifyContent: "center", gap: 40, flexWrap: "wrap", marginBottom: 36 }}>
+            {[{ n: "₹0", l: "Commission" }, { n: "24h", l: "Go live" }, { n: "100+", l: "Vendors" }, { n: "Direct", l: "Customer chat" }].map(s => (
+              <div key={s.l} style={{ textAlign: "center" }}>
+                <div style={{ fontFamily: "'Cormorant Garamond',Georgia,serif", fontSize: "1.7rem", fontWeight: 600, color: "#C47A2E", lineHeight: 1 }}>{s.n}</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,248,236,0.4)", marginTop: 4, letterSpacing: "0.06em", textTransform: "uppercase" }}>{s.l}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* CTAs */}
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+            <button
+              onClick={() => navigate("/for-vendors")}
+              style={{ padding: "13px 32px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 6px 22px rgba(196,122,46,0.4)" }}
+            >
+              List My Service Free →
+            </button>
+            <button
+              onClick={() => navigate("/vendor/login")}
+              style={{ padding: "13px 22px", borderRadius: 12, border: "1.5px solid rgba(255,248,236,0.15)", background: "transparent", color: "rgba(255,248,236,0.7)", fontSize: 14, fontWeight: 600, fontFamily: "'Outfit',sans-serif", cursor: "pointer" }}
+            >
+              Already a vendor? Log in
+            </button>
+          </div>
+        </div>
       </section>
 
       {/* ── FAQ ── */}
