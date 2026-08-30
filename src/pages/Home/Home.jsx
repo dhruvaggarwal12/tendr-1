@@ -2436,108 +2436,130 @@ const Home = () => {
 
 
       {/* ── Party Places ── */}
-      <section style={{ background: "#FFFCF5", padding: "22px 24px 28px", fontFamily: "'Outfit', sans-serif" }}>
+      <section style={{ background: "linear-gradient(180deg, #FBF4EA 0%, #FFFCF5 100%)", padding: "48px 24px 52px", fontFamily: "'Outfit', sans-serif", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
         <div style={{ maxWidth: 1060, margin: "0 auto" }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-            style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 16 }}
+            style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 16 }}
           >
             <div>
-              <div style={{ display:"flex", alignItems:"center", gap:9, margin:"0 0 14px" }}>
-                <div style={{ width:24, height:1.5, background:"#C47A2E", flexShrink:0 }} />
-                <span style={{ fontSize:13, fontWeight:500, color:"#C47A2E" }}>Party Places</span>
+              <div style={{ display:"flex", alignItems:"center", gap:8, margin:"0 0 12px" }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span style={{ fontSize:11, fontWeight:700, color:"#C47A2E", letterSpacing:"0.12em", textTransform:"uppercase" }}>Party Places</span>
               </div>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#1C0E04", letterSpacing: "0.01em", lineHeight: 1.15, margin: "0 0 8px" }}>
-                Private venues for your next celebration
+              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.9rem,3.5vw,2.8rem)", fontWeight: 600, color: "#1C0E04", letterSpacing: "-0.01em", lineHeight: 1.1, margin: "0 0 10px" }}>
+                Private venues for<br/>your next celebration
               </h2>
-              <p style={{ fontSize: 15, color: "#9B7450", margin: 0, lineHeight: 1.65, maxWidth: 480 }}>
-                Villas, farmhouses, terraces, and venue halls across Delhi NCR — bookable with your Tendr vendors included.
+              <p style={{ fontSize: 14, color: "#9B7450", margin: 0, lineHeight: 1.7, maxWidth: 400 }}>
+                Villas, farmhouses &amp; terraces across Delhi NCR — bookable with your Tendr vendors included.
               </p>
             </div>
             <button
               onClick={() => navigate("/party-places")}
-              style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", flexShrink: 0, transition: "all 0.2s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.5)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
+              style={{ padding: "11px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", flexShrink: 0, boxShadow: "0 4px 14px rgba(196,122,46,0.28)" }}
             >
               Browse All Venues →
             </button>
           </motion.div>
 
-          {/* Venue cards — asymmetric bento: 1 featured tall + 2 compact */}
+          {/* 3-col grid: 1 featured wide + 2 standard */}
           <motion.div
             className="party-places-grid"
             initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }}
             variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
-            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "auto auto", gap: 14 }}
+            style={{ display: "grid", gridTemplateColumns: "1.45fr 1fr 1fr", gap: 16 }}
           >
-            {/* Featured card — spans both rows */}
+            {/* Featured card */}
             <motion.div
               className="pp-featured"
               variants={{ hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 280, damping: 26 } } }}
               onClick={() => navigate(`/party-places/${PARTY_PLACES[0].id}`)}
-              style={{ gridRow: "span 2", borderRadius: 13, overflow: "hidden", cursor: "pointer", position: "relative", minHeight: 200 }}
+              style={{ borderRadius: 16, overflow: "hidden", cursor: "pointer", position: "relative", minHeight: 340 }}
               whileHover={{ scale: 1.012, transition: { type: "spring", stiffness: 340, damping: 28 } }}
             >
               <img src={PARTY_PLACES[0].coverPhoto} alt={PARTY_PLACES[0].name} loading="lazy"
                 style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", position: "absolute", inset: 0 }} />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,14,4,0.78) 0%, transparent 52%)" }} />
-              <div style={{ position: "absolute", top: 14, left: 14, background: "rgba(28,14,4,0.62)", backdropFilter: "blur(6px)", borderRadius: 100, padding: "3px 11px" }}>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: "#fff", textTransform: "capitalize" }}>{PARTY_PLACES[0].type}</span>
-              </div>
-              {PARTY_PLACES[0].rating >= 4.8 && (
-                <div style={{ position: "absolute", top: 14, right: 14, background: "rgba(196,122,46,0.88)", borderRadius: 100, padding: "3px 9px", display: "flex", alignItems: "center", gap: 4 }}>
-                  <span style={{ fontSize: 9, color: "#fff" }}>★</span>
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: "#fff" }}>{PARTY_PLACES[0].rating}</span>
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,14,4,0.85) 0%, rgba(28,14,4,0.1) 55%, transparent 100%)" }} />
+              {/* Top badges */}
+              <div style={{ position: "absolute", top: 14, left: 14, right: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ background: "rgba(28,14,4,0.55)", backdropFilter: "blur(8px)", borderRadius: 100, padding: "4px 12px" }}>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: "#fff", textTransform: "capitalize" }}>{PARTY_PLACES[0].type}</span>
                 </div>
-              )}
-              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px 20px 22px" }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 4, lineHeight: 1.3 }}>{PARTY_PLACES[0].name}</div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", marginBottom: 10 }}>{PARTY_PLACES[0].location} · up to {PARTY_PLACES[0].maxGuests} guests</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#CCAB4A" }}>from ₹{PARTY_PLACES[0].roomPrice.toLocaleString("en-IN")}</div>
+                {PARTY_PLACES[0].rating >= 4.8 && (
+                  <div style={{ background: "rgba(196,122,46,0.9)", borderRadius: 100, padding: "4px 10px", display: "flex", alignItems: "center", gap: 4 }}>
+                    <span style={{ fontSize: 9, color: "#fff" }}>★</span>
+                    <span style={{ fontSize: 10.5, fontWeight: 700, color: "#fff" }}>{PARTY_PLACES[0].rating}</span>
+                  </div>
+                )}
+              </div>
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "24px 22px" }}>
+                <div style={{ fontSize: 19, fontWeight: 800, color: "#fff", marginBottom: 5, lineHeight: 1.25 }}>{PARTY_PLACES[0].name}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{PARTY_PLACES[0].location}</span>
+                  <span style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(255,255,255,0.3)" }} />
+                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>up to {PARTY_PLACES[0].maxGuests} guests</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#CCAB4A" }}>from ₹{PARTY_PLACES[0].roomPrice.toLocaleString("en-IN")}</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.5)", background: "rgba(255,255,255,0.08)", borderRadius: 8, padding: "4px 10px", border: "1px solid rgba(255,255,255,0.12)" }}>View Details →</div>
+                </div>
               </div>
             </motion.div>
 
-            {/* Two compact cards stacked on right */}
+            {/* Two standard cards */}
             {PARTY_PLACES.slice(1, 3).map((place) => (
               <motion.div
                 key={place.id}
                 variants={{ hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 280, damping: 26 } } }}
                 onClick={() => navigate(`/party-places/${place.id}`)}
-                style={{ borderRadius: 13, overflow: "hidden", background: "#fff", cursor: "pointer", boxShadow: "0 2px 10px rgba(139,69,19,0.07)" }}
-                whileHover={{ y: -3, transition: { type: "spring", stiffness: 340, damping: 26 } }}
+                style={{ borderRadius: 16, overflow: "hidden", background: "#fff", cursor: "pointer", boxShadow: "0 4px 16px rgba(139,69,19,0.09)", display: "flex", flexDirection: "column" }}
+                whileHover={{ y: -4, boxShadow: "0 10px 28px rgba(139,69,19,0.14)", transition: { type: "spring", stiffness: 340, damping: 26 } }}
               >
-                <div style={{ position: "relative", paddingBottom: "36%" }}>
+                <div style={{ position: "relative", paddingBottom: "58%", flexShrink: 0 }}>
                   <img src={place.coverPhoto} alt={place.name} loading="lazy"
                     style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-                  <div style={{ position: "absolute", top: 10, left: 10, background: "rgba(28,14,4,0.62)", backdropFilter: "blur(6px)", borderRadius: 100, padding: "3px 10px" }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "#fff", textTransform: "capitalize" }}>{place.type}</span>
-                  </div>
-                  {place.rating >= 4.8 && (
-                    <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(196,122,46,0.88)", borderRadius: 100, padding: "3px 8px", display: "flex", alignItems: "center", gap: 3 }}>
-                      <span style={{ fontSize: 9, color: "#fff" }}>★</span>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>{place.rating}</span>
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,14,4,0.45) 0%, transparent 55%)" }} />
+                  <div style={{ position: "absolute", top: 12, left: 12, right: 12, display: "flex", justifyContent: "space-between" }}>
+                    <div style={{ background: "rgba(28,14,4,0.55)", backdropFilter: "blur(6px)", borderRadius: 100, padding: "3px 10px" }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff", textTransform: "capitalize" }}>{place.type}</span>
                     </div>
-                  )}
+                    {place.rating >= 4.8 && (
+                      <div style={{ background: "rgba(196,122,46,0.9)", borderRadius: 100, padding: "3px 9px", display: "flex", alignItems: "center", gap: 3 }}>
+                        <span style={{ fontSize: 9, color: "#fff" }}>★</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>{place.rating}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div style={{ padding: "12px 14px 14px" }}>
-                  <div style={{ fontSize: 13.5, fontWeight: 700, color: "#1C0E04", marginBottom: 3, lineHeight: 1.3 }}>{place.name}</div>
-                  <div style={{ fontSize: 11.5, color: "#9B7450", marginBottom: 8 }}>{place.location} · up to {place.maxGuests} guests</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E" }}>from ₹{place.roomPrice.toLocaleString("en-IN")}</div>
+                <div style={{ padding: "14px 16px 18px", flex: 1, display: "flex", flexDirection: "column" }}>
+                  <div style={{ fontSize: 14.5, fontWeight: 800, color: "#1C0E04", marginBottom: 4, lineHeight: 1.25 }}>{place.name}</div>
+                  <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                    <span>{place.location}</span>
+                    <span style={{ width: 2, height: 2, borderRadius: "50%", background: "#C4B09A" }} />
+                    <span>≤ {place.maxGuests} guests</span>
+                  </div>
+                  <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: "#C47A2E" }}>from ₹{place.roomPrice.toLocaleString("en-IN")}</div>
+                    <div style={{ fontSize: 10.5, fontWeight: 600, color: "#C47A2E", opacity: 0.7 }}>View →</div>
+                  </div>
                 </div>
               </motion.div>
             ))}
           </motion.div>
           <style>{`
-            .pp-featured { min-height: 200px !important; }
-            @media (max-width: 640px) {
+            .pp-featured { min-height: 340px !important; }
+            @media (max-width: 768px) {
+              .party-places-grid { grid-template-columns: 1fr 1fr !important; }
+              .pp-featured { grid-column: span 2 !important; min-height: 260px !important; }
+            }
+            @media (max-width: 540px) {
               .party-places-grid { display: flex !important; overflow-x: auto !important; scroll-snap-type: x mandatory !important; gap: 14px !important; padding-bottom: 12px !important; margin: 0 -24px !important; padding-left: 24px !important; scrollbar-width: none; grid-template-rows: unset !important; }
               .party-places-grid::-webkit-scrollbar { display: none; }
-              .pp-featured { grid-row: unset !important; flex: 0 0 75% !important; scroll-snap-align: start !important; min-height: 260px !important; }
-              .party-places-grid > div:not(.pp-featured) { flex: 0 0 65% !important; scroll-snap-align: start !important; }
+              .pp-featured { grid-column: unset !important; flex: 0 0 78% !important; scroll-snap-align: start !important; min-height: 300px !important; }
+              .party-places-grid > div:not(.pp-featured) { flex: 0 0 68% !important; scroll-snap-align: start !important; }
             }
           `}</style>
         </div>
@@ -2577,10 +2599,10 @@ const Home = () => {
           <div style={{ flexShrink: 0, maxWidth: 250 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
               <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", display: "inline-block", boxShadow: "0 0 0 3px rgba(34,197,94,0.22), 0 0 10px rgba(34,197,94,0.38)" }} />
-              <span style={{ fontSize: 10, fontWeight: 800, color: "#CCAB4A", letterSpacing: "0.16em", textTransform: "uppercase" }}>For Vendors</span>
+              <span style={{ fontSize: 10, fontWeight: 800, color: "#CCAB4A", letterSpacing: "0.16em", textTransform: "uppercase" }}>For Event Professionals</span>
             </div>
             <p style={{ margin: "0 0 5px", fontSize: 18, fontWeight: 800, color: "#FFF8EC", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
-              In the event industry?
+              Are you an event professional?
             </p>
             <p style={{ margin: 0, fontSize: 12.5, color: "rgba(255,248,236,0.46)", lineHeight: 1.5 }}>
               Join Tendr any way you like.
@@ -2591,7 +2613,7 @@ const Home = () => {
           <div style={{ flex: 1, overflow: "hidden", maskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)", WebkitMaskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)", minWidth: 0 }}>
             <div className="vd-ticker">
               {[...["DJ", "Emcee", "Photographer", "Decorator", "Caterer", "Band", "Videographer", "AV Setup", "Florist", "Anchor", "Makeup Artist", "Event Planner", "Dhol Player"], ...["DJ", "Emcee", "Photographer", "Decorator", "Caterer", "Band", "Videographer", "AV Setup", "Florist", "Anchor", "Makeup Artist", "Event Planner", "Dhol Player"]].map((t, i) => (
-                <span key={i} style={{ flexShrink: 0, fontSize: 11.5, fontWeight: 600, color: "#CCAB4A", background: "rgba(204,171,74,0.07)", border: "1px solid rgba(204,171,74,0.2)", borderRadius: 100, padding: "5px 14px", whiteSpace: "nowrap" }}>{t}</span>
+                <span key={i} style={{ flexShrink: 0, fontSize: 12, fontWeight: 600, color: "#CCAB4A", background: "rgba(204,171,74,0.07)", border: "1px solid rgba(204,171,74,0.2)", borderRadius: 100, padding: "8px 18px", whiteSpace: "nowrap" }}>{t}</span>
               ))}
             </div>
           </div>
