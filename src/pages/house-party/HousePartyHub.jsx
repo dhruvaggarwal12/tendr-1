@@ -1227,6 +1227,9 @@ const SECTIONS = [
   { id: "fun",    label: "Fun",    subtitle: "Theme · music · photos · countdown" },
 ];
 
+// Manage tools guests can access (shareable/interactive ones); the rest are host-private
+const GUEST_MANAGE_TOOLS = new Set(['potluck', 'invite', 'photowall', 'bills', 'menu']);
+
 // ── New game modals ───────────────────────────────────────────────────────────
 
 function TwoTruthsLieGame({ onClose }) {
@@ -2768,6 +2771,121 @@ function LoveNotes({ onClose, room, myName, gameState, sendAction, sendEffect })
 }
 
 // ── Room lobby modal ──────────────────────────────────────────────────────────
+// ── Entry Gate — shown before the hub on first open ──────────────────────────
+function EntryGate({ onExplore, onCreate, onJoin, error, clearError }) {
+  const [view, setView]           = useState('pick'); // 'pick' | 'host' | 'join'
+  const [name, setName]           = useState('');
+  const [partyName, setPartyName] = useState('');
+  const [code, setCode]           = useState('');
+  const [loading, setLoading]     = useState(false);
+  const navigate = useNavigate();
+
+  const handleCreate = async () => {
+    if (!name.trim()) return;
+    setLoading(true);
+    await onCreate({ partyName: partyName.trim() || `${name.trim()}'s Party`, hostName: name.trim(), occasionType: 'house-party' });
+    setLoading(false);
+  };
+
+  const handleJoin = async () => {
+    if (!name.trim() || code.length < 4) return;
+    setLoading(true);
+    await onJoin({ code: code.trim().toUpperCase(), name: name.trim() });
+    setLoading(false);
+  };
+
+  const iStyle = { width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 12, padding: "13px 16px", color: "#fff", fontSize: 15, fontFamily: font, outline: "none", boxSizing: "border-box" };
+  const lStyle = { fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 6 };
+
+  return (
+    <div style={{ minHeight: "100dvh", background: "#0C0904", display: "flex", flexDirection: "column", fontFamily: font }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&display=swap');`}</style>
+
+      <div style={{ padding: "24px 20px 0" }}>
+        <button onClick={() => navigate(-1)} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)", padding: "7px 16px", borderRadius: 100, cursor: "pointer", fontSize: 12, fontFamily: font, fontWeight: 600 }}>← Back</button>
+      </div>
+
+      <div style={{ textAlign: "center", padding: "32px 24px 28px" }}>
+        <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", letterSpacing: "0.22em", textTransform: "uppercase", margin: "0 0 12px" }}>Party Toolkit</p>
+        <h1 style={{ fontSize: "clamp(1.9rem,5vw,2.6rem)", fontWeight: 700, color: "#fff", margin: "0 0 8px", lineHeight: 1.1 }}>House Party Hub</h1>
+        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.38)", margin: 0, lineHeight: 1.5 }}>The app everyone opens during the party</p>
+      </div>
+
+      <div style={{ flex: 1, padding: "0 20px 52px", maxWidth: 480, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
+
+        {view === 'pick' && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <button
+              onClick={() => { clearError?.(); setView('host'); }}
+              style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.2),rgba(196,122,46,0.08))", border: "1.5px solid rgba(196,122,46,0.5)", borderRadius: 20, padding: "24px 22px", cursor: "pointer", textAlign: "left", fontFamily: font }}
+            >
+              <div style={{ fontSize: 30, marginBottom: 10 }}>👑</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#FFF8EC", marginBottom: 5, letterSpacing: "-0.01em" }}>I'm Hosting</div>
+              <div style={{ fontSize: 13, color: "rgba(255,248,236,0.48)", lineHeight: 1.5 }}>Create a room · get a code · manage everything · guests see results</div>
+            </button>
+
+            <button
+              onClick={() => { clearError?.(); setView('join'); }}
+              style={{ background: "rgba(255,255,255,0.04)", border: "1.5px solid rgba(255,255,255,0.13)", borderRadius: 20, padding: "24px 22px", cursor: "pointer", textAlign: "left", fontFamily: font }}
+            >
+              <div style={{ fontSize: 30, marginBottom: 10 }}>🚀</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#FFF8EC", marginBottom: 5, letterSpacing: "-0.01em" }}>Join a Party</div>
+              <div style={{ fontSize: 13, color: "rgba(255,248,236,0.48)", lineHeight: 1.5 }}>Enter the code your host shared · games and fun await</div>
+            </button>
+
+            <button
+              onClick={onExplore}
+              style={{ background: "transparent", border: "1px dashed rgba(255,255,255,0.15)", borderRadius: 16, padding: "16px 20px", cursor: "pointer", textAlign: "left", fontFamily: font }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <span style={{ fontSize: 26, flexShrink: 0 }}>👀</span>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "rgba(255,248,236,0.68)", marginBottom: 3 }}>Just Exploring</div>
+                  <div style={{ fontSize: 12, color: "rgba(255,248,236,0.32)", lineHeight: 1.4 }}>Browse all tools · play freely · no code needed</div>
+                </div>
+              </div>
+            </button>
+          </div>
+        )}
+
+        {view === 'host' && (
+          <div>
+            <button onClick={() => { clearError?.(); setView('pick'); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", fontSize: 13, cursor: "pointer", fontFamily: font, marginBottom: 22, padding: 0 }}>← Back</button>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>👑</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#FFF8EC", marginBottom: 4 }}>Set Up Your Room</div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.38)", marginBottom: 24, lineHeight: 1.5 }}>Share the room code with guests — they join and see tools you've set up.</div>
+            {error && <div style={{ background: "rgba(239,68,68,0.12)", border: "1.5px solid rgba(239,68,68,0.3)", borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#FCA5A5", marginBottom: 14 }}>{error}</div>}
+            <div style={{ marginBottom: 12 }}><label style={lStyle}>Your Name</label><input value={name} onChange={e => setName(e.target.value)} placeholder="What should we call you?" style={iStyle} /></div>
+            <div style={{ marginBottom: 24 }}><label style={lStyle}>Party Name <span style={{ fontWeight: 400, opacity: 0.5 }}>(optional)</span></label><input value={partyName} onChange={e => setPartyName(e.target.value)} placeholder="Saturday Night Out" style={iStyle} /></div>
+            <button onClick={handleCreate} disabled={!name.trim() || loading} style={{ width: "100%", background: name.trim() && !loading ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "rgba(255,255,255,0.08)", border: "none", borderRadius: 14, padding: "15px", color: "#fff", fontSize: 16, fontWeight: 800, cursor: name.trim() && !loading ? "pointer" : "not-allowed", fontFamily: font, boxShadow: name.trim() ? "0 4px 18px rgba(196,122,46,0.35)" : "none" }}>
+              {loading ? "Creating Room…" : "🎉 Create My Room"}
+            </button>
+          </div>
+        )}
+
+        {view === 'join' && (
+          <div>
+            <button onClick={() => { clearError?.(); setView('pick'); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", fontSize: 13, cursor: "pointer", fontFamily: font, marginBottom: 22, padding: 0 }}>← Back</button>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>🚀</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#FFF8EC", marginBottom: 4 }}>Join the Party</div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.38)", marginBottom: 24, lineHeight: 1.5 }}>Enter the code your host shared with you.</div>
+            {error && <div style={{ background: "rgba(239,68,68,0.12)", border: "1.5px solid rgba(239,68,68,0.3)", borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#FCA5A5", marginBottom: 14 }}>{error}</div>}
+            <div style={{ marginBottom: 12 }}><label style={lStyle}>Your Name</label><input value={name} onChange={e => setName(e.target.value)} placeholder="Your name" style={iStyle} /></div>
+            <div style={{ marginBottom: 24 }}>
+              <label style={lStyle}>Room Code</label>
+              <input value={code} onChange={e => setCode(e.target.value.toUpperCase())} placeholder="ABC123" maxLength={6} style={{ ...iStyle, fontSize: 22, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.18em", textAlign: "center" }} />
+            </div>
+            <button onClick={handleJoin} disabled={!name.trim() || code.length < 4 || loading} style={{ width: "100%", background: name.trim() && code.length >= 4 && !loading ? "linear-gradient(135deg,#059669,#10B981)" : "rgba(255,255,255,0.08)", border: "none", borderRadius: 14, padding: "15px", color: "#fff", fontSize: 16, fontWeight: 800, cursor: name.trim() && code.length >= 4 && !loading ? "pointer" : "not-allowed", fontFamily: font }}>
+              {loading ? "Joining…" : "🚀 Join Room"}
+            </button>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
 function RoomLobbyModal({ onClose, onCreate, onJoin, error }) {
   const [tab, setTab] = useState('join'); // 'host' | 'join'
   const [name, setName] = useState('');
@@ -2880,8 +2998,8 @@ function EffectFlash({ effect }) {
 }
 
 export default function HousePartyHub() {
-  const [open, setOpen]               = useState(null);
-  const [showRoomLobby, setShowRoomLobby] = useState(false);
+  const [open, setOpen]           = useState(null);
+  const [entryMode, setEntryMode] = useState(null); // null | 'exploring' | 'hosting' | 'joined'
   const navigate = useNavigate();
 
   const {
@@ -2889,11 +3007,29 @@ export default function HousePartyHub() {
     createRoom, joinRoom, closeRoom, leaveRoom, sendAction, sendEffect, clearError,
   } = usePartyRoom();
 
+  // When room disappears (host closed it for guests, or we closed it), fall back to explore
+  useEffect(() => {
+    if (!room && (entryMode === 'hosting' || entryMode === 'joined')) {
+      setEntryMode('exploring');
+    }
+  }, [room]);
+
+  const handleHostCreate = useCallback(async (args) => {
+    const res = await createRoom(args);
+    if (res?.ok) setEntryMode('hosting');
+    return res;
+  }, [createRoom]);
+
+  const handleGuestJoin = useCallback(async (args) => {
+    const res = await joinRoom(args);
+    if (res?.ok) setEntryMode('joined');
+    return res;
+  }, [joinRoom]);
+
   // When a live game tool is opened in a room, push game state to room
   const openTool = (id) => {
     const tool = TOOLS.find(t => t.id === id);
     if (tool?.live && room) {
-      // Sync game to room (host only sets game; members just open local view)
       if (isHost) sendAction('next', {}).catch?.(() => {});
     }
     setOpen(id);
@@ -2973,6 +3109,19 @@ export default function HousePartyHub() {
     }
   };
 
+  // Show entry gate until a mode is chosen
+  if (!entryMode) {
+    return (
+      <EntryGate
+        onExplore={() => setEntryMode('exploring')}
+        onCreate={handleHostCreate}
+        onJoin={handleGuestJoin}
+        error={error}
+        clearError={clearError}
+      />
+    );
+  }
+
   return (
     <div style={{ minHeight: "100dvh", fontFamily: font, background: "#0C0904" }}>
       <style>{`
@@ -3005,22 +3154,10 @@ export default function HousePartyHub() {
           margin: "0 0 22px", lineHeight: 1.5, maxWidth: 320, marginLeft: "auto", marginRight: "auto",
         }}>The app everyone opens during the party</p>
 
-        {!room ? (
-          <button
-            onClick={() => setShowRoomLobby(true)}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 22px", borderRadius: 8, background: "transparent", border: "1px solid rgba(196,122,46,0.5)", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, marginBottom: 28, letterSpacing: "0.02em" }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
-          >
-            {hpic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>, 15)}
-            Host or Join a Room
-          </button>
-        ) : (
-          <div style={{ marginBottom: 20 }} />
-        )}
+        <div style={{ marginBottom: 20 }} />
       </div>
 
-      {/* ── Room banner ── */}
+      {/* ── Room banner (hosting / joined) ── */}
       {room && (
         <RoomBanner
           room={room} players={players} isHost={isHost} myName={myName}
@@ -3029,15 +3166,47 @@ export default function HousePartyHub() {
         />
       )}
 
+      {/* ── Explore-mode banner ── */}
+      {entryMode === 'exploring' && !room && (
+        <div style={{ margin: "0 16px 12px", background: "rgba(255,255,255,0.03)", border: "1px dashed rgba(255,255,255,0.13)", borderRadius: 14, padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ fontSize: 20, flexShrink: 0 }}>👀</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,248,236,0.65)" }}>Exploring — tools run locally</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", marginTop: 2 }}>Start or join a room to sync with others</div>
+          </div>
+          <button
+            onClick={() => setEntryMode(null)}
+            style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", borderRadius: 8, padding: "7px 13px", color: "#fff", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0 }}
+          >
+            Host / Join
+          </button>
+        </div>
+      )}
+
+      {/* ── Joined-mode banner (no room yet — shouldn't happen but guard) ── */}
+      {entryMode === 'joined' && !room && (
+        <div style={{ margin: "0 16px 12px", background: "rgba(5,150,105,0.08)", border: "1px solid rgba(5,150,105,0.25)", borderRadius: 14, padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 18 }}>🚀</span>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", fontFamily: font }}>Joining room…</div>
+        </div>
+      )}
+
       {/* ── Sections ── */}
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 16px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
         {SECTIONS.map((sec) => {
-          const sectionTools = TOOLS.filter(t => t.section === sec.id);
+          let sectionTools = TOOLS.filter(t => t.section === sec.id);
+          // Guests only see the shareable manage tools; host-private ones are hidden
+          if (entryMode === 'joined' && sec.id === 'manage') {
+            sectionTools = sectionTools.filter(t => GUEST_MANAGE_TOOLS.has(t.id));
+            if (!sectionTools.length) return null;
+          }
+          const secLabel = entryMode === 'joined' && sec.id === 'manage' ? 'Shared Tools' : sec.label;
+          const secSub   = entryMode === 'joined' && sec.id === 'manage' ? 'Potluck · RSVP · bills · photos' : sec.subtitle;
           return (
             <div key={sec.id} style={{ marginBottom: 36 }}>
               <div style={{ marginBottom: 12 }}>
-                <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.18em", margin: "0 0 2px" }}>{sec.label}</p>
-                <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.28)", margin: 0 }}>{sec.subtitle}</p>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.18em", margin: "0 0 2px" }}>{secLabel}</p>
+                <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.28)", margin: 0 }}>{secSub}</p>
               </div>
               {sectionTools.length >= 3
                 ? <PolygonGrid tools={sectionTools} onOpen={openTool} />
@@ -3062,15 +3231,6 @@ export default function HousePartyHub() {
       </div>
 
       {renderModal()}
-
-      {showRoomLobby && (
-        <RoomLobbyModal
-          onClose={() => { setShowRoomLobby(false); clearError(); }}
-          onCreate={createRoom}
-          onJoin={joinRoom}
-          error={error}
-        />
-      )}
 
       <EffectFlash effect={effect} />
     </div>
