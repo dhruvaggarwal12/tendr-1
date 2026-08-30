@@ -1459,7 +1459,7 @@ const Home = () => {
               { label: "Photographer",   type: "Photographer", href: null,                  photoMob: "/occasions/mobile/Photographer.png",             photoDesk: "/occasions/desktop/Photographer.png" },
               { label: "DJ",             type: "DJ",           href: null,                  photoMob: "/occasions/mobile/DJ.png",                       photoDesk: "/occasions/desktop/DJ.png" },
               { label: "Gift Hampers",   type: null,           href: "/gift-hampers-cakes", photoMob: "/occasions/mobile/Gift%20hampers.png",           photoDesk: "/occasions/desktop/Gift_hampers.png" },
-              { label: "Stationery",     type: null,           href: "/stationery",         photoMob: "/occasions/mobile/event_stationaries.png",       photoDesk: "/occasions/desktop/Event_stationaries.png" },
+              { label: "Stationery",     type: null,           href: "/stationery",         photoMob: "/occasions/mobile/Event_stationaries.png",       photoDesk: "/occasions/desktop/Event_stationaries.png" },
               { label: "Fun Activities", type: null,           href: "/fun-activities",     photoMob: "/occasions/mobile/Fun_activities.png",           photoDesk: "/occasions/desktop/Fun_activities.png" },
             ].map(({ label, type, href, photoMob, photoDesk }) => (
               <button
@@ -1666,7 +1666,7 @@ const Home = () => {
                     style={{ position: "absolute", inset: 0, borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.55)", pointerEvents: "none" }}
                   />
                   <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", padding: "16px 12px", textAlign: "center" }}>
-                    <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 700, fontStyle: "italic", color: "#FFF8EC", lineHeight: 1.1, textShadow: "0 2px 10px rgba(0,0,0,0.55)", letterSpacing: "-0.01em" }}>{label}</span>
+                    <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: label.length > 14 ? 18 : label.length > 10 ? 21 : label.length > 8 ? 23 : 26, fontWeight: 700, fontStyle: "italic", color: "#FFF8EC", lineHeight: 1.1, textShadow: "0 2px 10px rgba(0,0,0,0.55)", letterSpacing: "-0.01em", wordBreak: "break-word" }}>{label}</span>
                     <div style={{ width: 22, height: 1, background: "rgba(196,122,46,0.6)", margin: "10px auto 8px" }} />
                     <motion.span
                       animate={{ opacity: isHovered ? 1 : 0.5 }}
