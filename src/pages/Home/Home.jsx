@@ -1666,7 +1666,7 @@ const Home = () => {
                     style={{ position: "absolute", inset: 0, borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.55)", pointerEvents: "none" }}
                   />
                   <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", padding: "16px 12px", textAlign: "center" }}>
-                    <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: label.length > 14 ? 18 : label.length > 10 ? 21 : label.length > 8 ? 23 : 26, fontWeight: 700, fontStyle: "italic", color: "#FFF8EC", lineHeight: 1.1, textShadow: "0 2px 10px rgba(0,0,0,0.55)", letterSpacing: "-0.01em", wordBreak: "break-word" }}>{label}</span>
+                    <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 16, fontWeight: 700, fontStyle: "italic", color: "#FFF8EC", lineHeight: 1.2, textShadow: "0 2px 10px rgba(0,0,0,0.55)", letterSpacing: "-0.01em" }}>{label}</span>
                     <div style={{ width: 22, height: 1, background: "rgba(196,122,46,0.6)", margin: "10px auto 8px" }} />
                     <motion.span
                       animate={{ opacity: isHovered ? 1 : 0.5 }}
@@ -2777,24 +2777,39 @@ const Home = () => {
               {/* Grid */}
               <div style={{ overflowY: "auto", flex: 1, padding: "14px 14px 24px" }}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(120px,1fr))", gap: 10 }}>
-                  {filtered.map(o => (
-                    <button
-                      key={o.id}
-                      onClick={() => {
-                        setOccasionFlow(null);
-                        const hub = HUB_ROUTES[o.id];
-                        setOccModal({ label: o.name, slug: o.id, hub: hub || null, photo: o.coverImage, step: hub ? 1 : 2 });
-                      }}
-                      style={{ background: "rgba(255,247,235,0.04)", border: "1.5px solid rgba(196,122,46,0.12)", borderRadius: 14, overflow: "hidden", cursor: "pointer", textAlign: "left", padding: 0, fontFamily: f, transition: "all 0.18s" }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.45)"; e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.12)"; e.currentTarget.style.background = "rgba(255,247,235,0.04)"; e.currentTarget.style.transform = "translateY(0)"; }}
-                    >
-                      <div style={{ padding: "18px 12px 16px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", minHeight: 96 }}>
-                        <div style={{ fontSize: 16, fontWeight: 700, fontStyle: "italic", color: "#F5ECD8", lineHeight: 1.15, fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "-0.01em" }}>{o.name}</div>
-                        {o.localName && <div style={{ fontSize: 10, color: "#C47A2E", fontWeight: 600, marginTop: 5, letterSpacing: "0.03em" }}>{o.localName}</div>}
-                      </div>
-                    </button>
-                  ))}
+                  {(() => {
+                    const _mtg = [
+                      "linear-gradient(145deg,#2D1205,#1A0A03)",
+                      "linear-gradient(145deg,#1E0A20,#2A0E2E)",
+                      "linear-gradient(145deg,#0C1A08,#162A0E)",
+                      "linear-gradient(145deg,#0A1528,#0F1E38)",
+                      "linear-gradient(145deg,#1A0808,#2E1010)",
+                      "linear-gradient(145deg,#0A1A18,#0E2A26)",
+                      "linear-gradient(145deg,#1A1208,#2A1C0A)",
+                      "linear-gradient(145deg,#201005,#301808)",
+                    ];
+                    return filtered.map((o, mIdx) => {
+                      const occIdx = OCCASIONS.indexOf(o);
+                      const tileBgM = _mtg[(occIdx >= 0 ? occIdx : mIdx) % _mtg.length];
+                      return (
+                        <button
+                          key={o.id}
+                          onClick={() => {
+                            setOccasionFlow(null);
+                            const hub = HUB_ROUTES[o.id];
+                            setOccModal({ label: o.name, slug: o.id, hub: hub || null, photo: o.coverImage, step: hub ? 1 : 2 });
+                          }}
+                          style={{ background: tileBgM, border: "1.5px solid rgba(196,122,46,0.15)", borderRadius: 14, overflow: "hidden", cursor: "pointer", textAlign: "left", padding: 0, fontFamily: f, transition: "all 0.18s" }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.55)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.15)"; e.currentTarget.style.transform = "translateY(0)"; }}
+                        >
+                          <div style={{ padding: "18px 12px 16px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", minHeight: 96 }}>
+                            <div style={{ fontSize: 16, fontWeight: 700, fontStyle: "italic", color: "#F5ECD8", lineHeight: 1.15, fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "-0.01em" }}>{o.name}</div>
+                          </div>
+                        </button>
+                      );
+                    });
+                  })()}
                 </div>
               </div>
             </div>
