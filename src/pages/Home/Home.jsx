@@ -135,16 +135,19 @@ function TipsByTendrSection() {
   return (
     <section style={{ background: "#0E0700", padding: "56px 24px 60px", fontFamily: font, position: "relative", overflow: "hidden" }}>
 
-      {/* SVG film-grain texture */}
+      {/* SVG film-grain */}
       <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }} aria-hidden="true">
         <filter id="tips-grain"><feTurbulence type="fractalNoise" baseFrequency="0.78" numOctaves="4" stitchTiles="stitch" /></filter>
-        <rect width="100%" height="100%" filter="url(#tips-grain)" opacity="0.04" />
+        <rect width="100%" height="100%" filter="url(#tips-grain)" opacity="0.055" />
       </svg>
-
-      {/* Warm glow layers — top-right amber, bottom-left deep amber */}
+      {/* Dot grid */}
+      <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle, rgba(204,171,74,0.07) 1px, transparent 1px)", backgroundSize: "28px 28px", pointerEvents: "none", zIndex: 0 }} />
+      {/* Amber glows — bolder */}
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0,
-        backgroundImage: "radial-gradient(ellipse 55% 55% at 88% 15%, rgba(196,122,46,0.1), transparent), radial-gradient(ellipse 45% 50% at 12% 85%, rgba(140,72,16,0.09), transparent), radial-gradient(ellipse 30% 40% at 50% 50%, rgba(196,122,46,0.04), transparent)"
+        backgroundImage: "radial-gradient(ellipse 65% 65% at 92% 8%, rgba(196,122,46,0.2), transparent), radial-gradient(ellipse 55% 60% at 6% 92%, rgba(140,72,16,0.17), transparent), radial-gradient(ellipse 40% 50% at 50% 50%, rgba(196,122,46,0.06), transparent)"
       }} />
+      {/* Top hairline */}
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent 0%, rgba(204,171,74,0.38) 28%, rgba(204,171,74,0.38) 72%, transparent 100%)", zIndex: 1 }} />
 
       <div style={{ maxWidth: 1060, margin: "0 auto", position: "relative", zIndex: 1 }}>
         {/* Header */}
@@ -2082,14 +2085,18 @@ const Home = () => {
       {/* ── Trust bar ── */}
       <section style={{ background: "#1C0E04", padding: "52px 24px 60px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
 
-        {/* SVG film-grain texture */}
+        {/* SVG film-grain */}
         <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }} aria-hidden="true">
           <filter id="trust-grain"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch" /></filter>
-          <rect width="100%" height="100%" filter="url(#trust-grain)" opacity="0.038" />
+          <rect width="100%" height="100%" filter="url(#trust-grain)" opacity="0.052" />
         </svg>
-
-        {/* Gold glow blobs — enhanced with a third central glow */}
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(ellipse 45% 70% at 15% 60%, rgba(204,171,74,0.09), transparent), radial-gradient(ellipse 40% 60% at 85% 35%, rgba(196,122,46,0.08), transparent), radial-gradient(ellipse 30% 50% at 52% 50%, rgba(180,100,20,0.05), transparent)", pointerEvents: "none", zIndex: 0 }} />
+        {/* Horizontal ledger lines */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(204,171,74,0.038) 1px, transparent 1px)", backgroundSize: "100% 44px", pointerEvents: "none", zIndex: 0 }} />
+        {/* Gold glows — stronger */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(ellipse 55% 85% at 10% 55%, rgba(204,171,74,0.16), transparent), radial-gradient(ellipse 50% 75% at 90% 30%, rgba(196,122,46,0.14), transparent), radial-gradient(ellipse 40% 60% at 50% 50%, rgba(180,100,20,0.08), transparent)", pointerEvents: "none", zIndex: 0 }} />
+        {/* Top & bottom hairlines */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent, rgba(204,171,74,0.38) 30%, rgba(204,171,74,0.38) 70%, transparent)", zIndex: 1 }} />
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent, rgba(204,171,74,0.22) 30%, rgba(204,171,74,0.22) 70%, transparent)", zIndex: 1 }} />
 
         <div style={{ maxWidth: 1060, margin: "0 auto", position: "relative", zIndex: 1 }}>
           {/* Header */}
@@ -2539,19 +2546,20 @@ const Home = () => {
           .vd-ticker:hover { animation-play-state: paused; }
         `}</style>
 
-        {/* SVG film-grain layer */}
+        {/* SVG film-grain */}
         <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }} aria-hidden="true">
           <filter id="vend-grain"><feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="4" stitchTiles="stitch" /></filter>
-          <rect width="100%" height="100%" filter="url(#vend-grain)" opacity="0.042" />
+          <rect width="100%" height="100%" filter="url(#vend-grain)" opacity="0.052" />
         </svg>
-
-        {/* Warm amber radial glows */}
+        {/* Diagonal stripe texture */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(204,171,74,0.022) 20px, rgba(204,171,74,0.022) 21px)", pointerEvents: "none", zIndex: 0 }} />
+        {/* Amber glows — balanced both sides */}
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0,
-          backgroundImage: "radial-gradient(ellipse 55% 120% at 3% 50%, rgba(196,122,46,0.22), transparent), radial-gradient(ellipse 38% 90% at 90% 50%, rgba(204,171,74,0.11), transparent), radial-gradient(ellipse 50% 30% at 50% 105%, rgba(196,122,46,0.07), transparent)"
+          backgroundImage: "radial-gradient(ellipse 60% 130% at 2% 50%, rgba(196,122,46,0.24), transparent), radial-gradient(ellipse 50% 110% at 98% 50%, rgba(204,171,74,0.16), transparent), radial-gradient(ellipse 45% 35% at 50% 110%, rgba(196,122,46,0.08), transparent)"
         }} />
-
-        {/* Gold hairline at top */}
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent 0%, rgba(204,171,74,0.4) 25%, rgba(204,171,74,0.4) 75%, transparent 100%)", zIndex: 1 }} />
+        {/* Top & bottom hairlines */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent 0%, rgba(204,171,74,0.42) 25%, rgba(204,171,74,0.42) 75%, transparent 100%)", zIndex: 1 }} />
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent 0%, rgba(204,171,74,0.2) 25%, rgba(204,171,74,0.2) 75%, transparent 100%)", zIndex: 1 }} />
 
         <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 2, display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
 
