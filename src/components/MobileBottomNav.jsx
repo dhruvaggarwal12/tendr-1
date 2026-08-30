@@ -143,7 +143,7 @@ function BottomNavInner() {
 
   const isActive = (paths, label) => {
     if (fromPlan) {
-      if (label === "Plan") return true;
+      if (label === "My Event") return true;
       if (label === "Browse") return false;
     }
     return paths.some((p) => p === "/" ? location.pathname === "/" : location.pathname.startsWith(p));
@@ -161,7 +161,23 @@ function BottomNavInner() {
     { label: "Home",     paths: ["/"],                                onTap: () => navigate("/") },
     ...(!isHomePage ? [{ label: "Browse", paths: ["/listings","/search"], onTap: () => { setProductsOpen(false); setTipsOpen(false); setBrowseOpen(o => !o); } }] : []),
     { label: "Tools", paths: ["/checklist","/timeline","/budget","/decor"], onTap: () => { setBrowseOpen(false); setTipsOpen(false); setProductsOpen(o => !o); } },
-    { label: "Plan",     paths: ["/booking","/plan-event","/baat-karo","/my-event"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setTipsOpen(false); if (hasActivePlan) navigate('/my-event'); else setPlanOpen(o => !o); } },
+    { label: "My Event", paths: ["/booking","/plan-event","/baat-karo","/my-event"], onTap: () => {
+        setBrowseOpen(false); setProductsOpen(false); setTipsOpen(false);
+        try {
+          const plan = localStorage.getItem('tendr_smart_plan');
+          if (plan) {
+            const p = JSON.parse(plan);
+            if (!p._draft && (p.conversationId || p._id)) { navigate('/my-event'); return; }
+          }
+          const session = localStorage.getItem('tendr_ep_session');
+          if (session) {
+            const s = JSON.parse(session);
+            const fd = s.formData || {};
+            if (fd.eventType || fd.date || fd.location) { navigate('/plan-event/form', { state: { backToForm: true } }); return; }
+          }
+        } catch {}
+        navigate('/booking');
+      }},
     { label: "Tips", paths: ["/guides","/community"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setPlanOpen(false); setTipsOpen(o => !o); } },
     { label: "Profile",  paths: ["/dashboard","/AdminDashboard"],     onTap: () => navigate(token ? (user?.isAdmin ? "/AdminDashboard" : "/dashboard") : "/login") },
   ];
@@ -428,7 +444,7 @@ function BottomNavInner() {
                 {hasProductsSaved && (
                   <div style={{ position: "absolute", top: isOn ? 2 : -2, right: isOn ? 3 : -3, width: 8, height: 8, borderRadius: "50%", background: "#22c55e", border: "1.5px solid #FFFCF5" }} />
                 )}
-                {label === "Plan" && hasActivePlan && (
+                {label === "My Event" && hasActivePlan && (
                   <div style={{ position: "absolute", top: isOn ? 2 : -2, right: isOn ? 3 : -3, width: 8, height: 8, borderRadius: "50%", background: "#C47A2E", border: "1.5px solid #FFFCF5" }} />
                 )}
               </div>
@@ -438,7 +454,7 @@ function BottomNavInner() {
                 lineHeight: 1, letterSpacing: "0.01em",
                 transition: "color 0.18s, font-weight 0.18s",
               }}>
-                {label === "Plan" && hasActivePlan ? "My Event" : label}
+                {label}
               </span>
               {/* Active dot below label */}
               <div style={{

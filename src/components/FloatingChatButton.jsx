@@ -67,7 +67,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const [miniChatPrefill, setMiniChatPrefill] = useState("");
   const [showActiveChats, setShowActiveChats] = useState(false);
   const [planChip, setPlanChip] = useState(() => loadPlan());
-  const [planChipDismissed, setPlanChipDismissed] = useState(false);
+  const [planChipHidden, setPlanChipHidden] = useState(false);
   const [chatTabFilter, setChatTabFilter] = useState("All");
   const [vendorChats, setVendorChats] = useState([]);
   const [rejectedPanel, setRejectedPanel] = useState(null); // { convo, vendors, serviceType, eventDetails } | null
@@ -1186,39 +1186,58 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         );
       })()}
 
-      {/* Plan mini-chip — above View Chats when a plan exists */}
-      {planChip && !planChipDismissed && (() => {
+      {/* Plan mini-chip — desktop only, above chat button; hideable (not permanently dismissable) */}
+      {planChip && (() => {
         const eventType = planChip.eventDetails?.eventType || planChip.eventType || "My Event";
         const eventDate = planChip.eventDetails?.date || planChip.date || "";
         const daysLeft = eventDate ? Math.ceil((new Date(eventDate) - Date.now()) / 86400000) : null;
         const isDraft = planChip._draft === true;
+        const hasChat = !isDraft && !!(planChip.conversationId || planChip._id);
         return (
-          <div style={{
+          <div className="me-chip-wrap" style={{
             position: "fixed", bottom: 84, right: 20, zIndex: 901,
-            background: "#FFFCF5",
-            borderRadius: 14,
-            boxShadow: "0 6px 24px rgba(196,122,46,0.2)",
-            border: "1.5px solid rgba(196,122,46,0.22)",
-            padding: "10px 12px",
-            minWidth: 200, maxWidth: 260,
             fontFamily: font,
-            animation: "chatPop 0.2s cubic-bezier(0.4,0,0.2,1)",
           }}>
-            <button
-              onClick={() => setPlanChipDismissed(true)}
-              style={{ position: "absolute", top: 6, right: 8, background: "none", border: "none", fontSize: 13, color: "#bbb", cursor: "pointer", lineHeight: 1, padding: 2 }}>✕</button>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>
-              {isDraft ? "Draft Plan" : "My Event"}
-            </div>
-            <div style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E", marginBottom: 2, paddingRight: 16 }}>{eventType}</div>
-            {daysLeft !== null && (
-              <div style={{ fontSize: 11.5, color: "#9B7450", marginBottom: 8 }}>
-                {daysLeft > 0 ? `${daysLeft} days to go` : daysLeft === 0 ? "Today!" : "Event passed"}
+            {planChipHidden ? (
+              /* Collapsed pill — click to re-expand */
+              <div
+                onClick={() => setPlanChipHidden(false)}
+                style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFCF5", border: "1.5px solid rgba(196,122,46,0.22)", borderRadius: 100, padding: "5px 12px 5px 10px", boxShadow: "0 4px 12px rgba(196,122,46,0.15)", cursor: "pointer", animation: "chatPop 0.18s cubic-bezier(0.4,0,0.2,1)" }}>
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#C47A2E", flexShrink: 0 }} />
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#2C1A0E" }}>{eventType}</span>
+                <span style={{ fontSize: 11, color: "#9B7450", marginLeft: 2 }}>↑</span>
+              </div>
+            ) : (
+              <div style={{
+                background: "#FFFCF5",
+                borderRadius: 14,
+                boxShadow: "0 6px 24px rgba(196,122,46,0.2)",
+                border: "1.5px solid rgba(196,122,46,0.22)",
+                padding: "10px 12px",
+                minWidth: 200, maxWidth: 260,
+                animation: "chatPop 0.2s cubic-bezier(0.4,0,0.2,1)",
+              }}>
+                {/* Minimize button — hides this session only */}
+                <button
+                  onClick={() => setPlanChipHidden(true)}
+                  title="Hide for now"
+                  style={{ position: "absolute", top: 6, right: 8, background: "none", border: "none", fontSize: 15, color: "#bbb", cursor: "pointer", lineHeight: 1, padding: "0 2px" }}>−</button>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>
+                  My Event
+                </div>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E", marginBottom: 2, paddingRight: 16 }}>{eventType}</div>
+                {daysLeft !== null && (
+                  <div style={{ fontSize: 11.5, color: "#9B7450", marginBottom: 8 }}>
+                    {daysLeft > 0 ? `${daysLeft} days to go` : daysLeft === 0 ? "Today!" : "Event passed"}
+                  </div>
+                )}
+                <a
+                  href={hasChat ? "/my-event" : "/plan-event/form"}
+                  style={{ display: "block", textAlign: "center", padding: "7px 10px", borderRadius: 9, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", fontFamily: font }}>
+                  {hasChat ? "My Event →" : "Continue Booking →"}
+                </a>
               </div>
             )}
-            <a href="/plan" style={{ display: "block", textAlign: "center", padding: "7px 10px", borderRadius: 9, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", fontFamily: font }}>
-              View Plan →
-            </a>
           </div>
         );
       })()}
@@ -1311,6 +1330,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           bottom: calc(22px + env(safe-area-inset-bottom, 0px));
           right: 20px;
         }
+        /* My Event chip — desktop only */
+        @media (max-width: 768px) { .me-chip-wrap { display: none !important; } }
         .chat-btn-text { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; font-family: monospace; }
         .chat-popup { animation: chatPop 0.18s cubic-bezier(0.4,0,0.2,1); }
         @keyframes chatPop {

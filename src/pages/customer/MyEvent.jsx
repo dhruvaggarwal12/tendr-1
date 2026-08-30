@@ -202,79 +202,10 @@ export default function MyEvent() {
     );
   }
 
-  // Draft only (form not submitted, no chat) — show continue popup instead of full dashboard
+  // Draft — redirect directly back to the booking form, no page shown
   if (isDraft) {
-    const filledFields = [
-      eventDetails.eventType && eventDetails.eventType,
-      eventDetails.location  && eventDetails.location,
-      eventDetails.guests    && `${eventDetails.guests} guests`,
-      eventDetails.date      && new Date(eventDetails.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
-    ].filter(Boolean);
-
-    return (
-      <div style={{ minHeight: '100dvh', background: '#FAF7F2', fontFamily: font, display: 'flex', flexDirection: 'column' }}>
-        {/* Dimmed backdrop top area */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-
-          {/* Bottom-sheet card */}
-          <div style={{
-            width: '100%', maxWidth: 520, background: '#fff',
-            borderRadius: '28px 28px 0 0',
-            boxShadow: '0 -8px 40px rgba(44,26,14,0.13)',
-            padding: '32px 28px 40px',
-            animation: 'me-slide-up 0.38s cubic-bezier(0.22,1,0.36,1)',
-          }}>
-            <style>{`@keyframes me-slide-up{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}`}</style>
-
-            {/* Drag handle */}
-            <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(44,26,14,0.12)', margin: '0 auto 28px' }} />
-
-            {/* Event identity */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
-              <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(196,122,46,0.09)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0 }}>
-                {eventEmoji}
-              </div>
-              <div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: ink, lineHeight: 1.2 }}>
-                  {eventDetails.eventType || 'Your Event'}
-                </div>
-                <div style={{ fontSize: 12, color: '#9B7450', marginTop: 3 }}>Booking in progress</div>
-              </div>
-            </div>
-
-            {/* What's been filled */}
-            {filledFields.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
-                {filledFields.map(f => (
-                  <span key={f} style={{ padding: '5px 11px', borderRadius: 100, background: 'rgba(196,122,46,0.08)', border: '1px solid rgba(196,122,46,0.18)', fontSize: 12, fontWeight: 600, color: '#7A4F1E' }}>
-                    {f}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Progress hint */}
-            <div style={{ padding: '12px 16px', background: 'rgba(196,122,46,0.05)', border: '1px solid rgba(196,122,46,0.15)', borderRadius: 12, marginBottom: 24 }}>
-              <div style={{ fontSize: 12, color: '#9B7450', lineHeight: 1.55 }}>
-                Finish the form to confirm vendors, unlock chat with your concierge, and see your full event dashboard here.
-              </div>
-            </div>
-
-            {/* CTA */}
-            <button
-              onClick={() => navigate('/plan-event/form', { state: { backToForm: true } })}
-              style={{ width: '100%', padding: '15px', borderRadius: 14, border: 'none', background: `linear-gradient(135deg,${gold},${goldLt})`, color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font, boxShadow: '0 4px 16px rgba(196,122,46,0.32)', letterSpacing: '0.01em', marginBottom: 12 }}>
-              Continue Booking →
-            </button>
-            <button
-              onClick={() => navigate(-1)}
-              style={{ width: '100%', padding: '12px', borderRadius: 14, border: '1.5px solid rgba(196,122,46,0.2)', background: 'transparent', color: '#9B7450', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: font }}>
-              Go Back
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    navigate('/plan-event/form', { state: { backToForm: true }, replace: true });
+    return null;
   }
 
   const countdownStyle = daysUntil === null ? {} :
@@ -311,6 +242,23 @@ export default function MyEvent() {
           )}
         </div>
       </div>
+
+      {/* ── Continue Chat CTA strip ── */}
+      {convId && (
+        <div style={{ background: `linear-gradient(135deg,${gold},${goldLt})`, padding: '0 16px' }}>
+          <div style={{ maxWidth: 900, margin: '0 auto', padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>Your concierge is ready</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.78)', marginTop: 2 }}>Pick up where you left off</div>
+            </div>
+            <button
+              onClick={() => openConciergeChat(convId, false)}
+              style={{ padding: '9px 18px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font, whiteSpace: 'nowrap', flexShrink: 0, backdropFilter: 'blur(4px)' }}>
+              Continue Chat →
+            </button>
+          </div>
+        </div>
+      )}
 
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '20px 16px 72px' }}>
 
