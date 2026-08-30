@@ -175,6 +175,15 @@ export default function MyEvent() {
     ? new Date(eventDetails.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
     : 'Date TBD';
 
+  const EVENT_EMOJI = {
+    'Birthday': '🎂', '1st Birthday': '🎀', 'Anniversary': '💍',
+    'Baby Shower': '👶', 'Housewarming': '🏡', 'Get-together': '🥂',
+    'Kitty Party': '🎀', 'Naming Ceremony': '🌸', 'Office Party': '🏢',
+    'House Party': '🎉', 'Party': '🎉', 'Corporate': '💼',
+  };
+  const eventEmoji = EVENT_EMOJI[eventDetails?.eventType] || '🎊';
+
+  // No plan at all — nudge to start
   if (!plan) {
     return (
       <div style={{ minHeight: '100dvh', background: '#FAF7F2', fontFamily: font, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -188,6 +197,81 @@ export default function MyEvent() {
             style={{ padding: '13px 32px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,${gold},${goldLt})`, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font, boxShadow: '0 4px 16px rgba(196,122,46,0.3)' }}>
             Start Planning →
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Draft only (form not submitted, no chat) — show continue popup instead of full dashboard
+  if (isDraft) {
+    const filledFields = [
+      eventDetails.eventType && eventDetails.eventType,
+      eventDetails.location  && eventDetails.location,
+      eventDetails.guests    && `${eventDetails.guests} guests`,
+      eventDetails.date      && new Date(eventDetails.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+    ].filter(Boolean);
+
+    return (
+      <div style={{ minHeight: '100dvh', background: '#FAF7F2', fontFamily: font, display: 'flex', flexDirection: 'column' }}>
+        {/* Dimmed backdrop top area */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+
+          {/* Bottom-sheet card */}
+          <div style={{
+            width: '100%', maxWidth: 520, background: '#fff',
+            borderRadius: '28px 28px 0 0',
+            boxShadow: '0 -8px 40px rgba(44,26,14,0.13)',
+            padding: '32px 28px 40px',
+            animation: 'me-slide-up 0.38s cubic-bezier(0.22,1,0.36,1)',
+          }}>
+            <style>{`@keyframes me-slide-up{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}`}</style>
+
+            {/* Drag handle */}
+            <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(44,26,14,0.12)', margin: '0 auto 28px' }} />
+
+            {/* Event identity */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+              <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(196,122,46,0.09)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0 }}>
+                {eventEmoji}
+              </div>
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: ink, lineHeight: 1.2 }}>
+                  {eventDetails.eventType || 'Your Event'}
+                </div>
+                <div style={{ fontSize: 12, color: '#9B7450', marginTop: 3 }}>Booking in progress</div>
+              </div>
+            </div>
+
+            {/* What's been filled */}
+            {filledFields.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
+                {filledFields.map(f => (
+                  <span key={f} style={{ padding: '5px 11px', borderRadius: 100, background: 'rgba(196,122,46,0.08)', border: '1px solid rgba(196,122,46,0.18)', fontSize: 12, fontWeight: 600, color: '#7A4F1E' }}>
+                    {f}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Progress hint */}
+            <div style={{ padding: '12px 16px', background: 'rgba(196,122,46,0.05)', border: '1px solid rgba(196,122,46,0.15)', borderRadius: 12, marginBottom: 24 }}>
+              <div style={{ fontSize: 12, color: '#9B7450', lineHeight: 1.55 }}>
+                Finish the form to confirm vendors, unlock chat with your concierge, and see your full event dashboard here.
+              </div>
+            </div>
+
+            {/* CTA */}
+            <button
+              onClick={() => navigate('/plan-event/form', { state: { backToForm: true } })}
+              style={{ width: '100%', padding: '15px', borderRadius: 14, border: 'none', background: `linear-gradient(135deg,${gold},${goldLt})`, color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font, boxShadow: '0 4px 16px rgba(196,122,46,0.32)', letterSpacing: '0.01em', marginBottom: 12 }}>
+              Continue Booking →
+            </button>
+            <button
+              onClick={() => navigate(-1)}
+              style={{ width: '100%', padding: '12px', borderRadius: 14, border: '1.5px solid rgba(196,122,46,0.2)', background: 'transparent', color: '#9B7450', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: font }}>
+              Go Back
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -229,21 +313,6 @@ export default function MyEvent() {
       </div>
 
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '20px 16px 72px' }}>
-
-        {/* ── Draft banner ── */}
-        {isDraft && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'rgba(196,122,46,0.07)', border: '1.5px solid rgba(196,122,46,0.22)', borderRadius: 14, marginBottom: 16 }}>
-            <span style={{ fontSize: 20, flexShrink: 0 }}>✏️</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>Plan in progress</div>
-              <div style={{ fontSize: 11, color: '#9B7450' }}>Finish filling the form and submit to confirm vendors & unlock chat</div>
-            </div>
-            <button onClick={() => navigate('/plan-event/form')}
-              style={{ padding: '7px 14px', borderRadius: 9, border: 'none', background: `linear-gradient(135deg,${gold},${goldLt})`, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font, whiteSpace: 'nowrap', flexShrink: 0 }}>
-              Continue →
-            </button>
-          </div>
-        )}
 
         {/* ── 4 Stat Tiles ── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 16 }}>

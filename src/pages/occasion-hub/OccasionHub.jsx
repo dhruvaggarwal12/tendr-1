@@ -3084,7 +3084,26 @@ const getPolyClip = (n) => POLY_CLIP[Math.min(n, 7)] ?? DEFAULT_POLY;
 const POLY_PAD = { 3: "36% 20% 12%", 4: "14% 14% 14%", 5: "14% 14% 14%", 6: "18% 12% 18%", 7: "16% 12% 16%" };
 const getPolyPad = (n) => POLY_PAD[Math.min(n, 7)] || "14% 10% 14%";
 
-// ── Polygon vertex grid for OccasionHub ───────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════════
+// PARTY HUB — Tool category sets for the 5-section layout
+// ════════════════════════════════════════════════════════════════════════════
+
+const PLAY_IDS = new Set([
+  "truthordare","neverhavei","wouldyou","hottakes","spin","charades","bingo",
+  "birthdayquiz","couplequiz","t2l","rapidfire","mostlikelyto","luckydraw",
+  "moodmeter","genderpoll","babynamevote","theme","blessings","blessingswall",
+  "lovenotes","wishwall","secretmessage","moodmeter","awardsceremony",
+]);
+const MOMENTS_IDS = new Set([
+  "photowall","wishwall","lovenotes","blessingswall","blessings","appreciationwall",
+  "secretmessage","reportcard","awardsceremony","playlist","moodmeter",
+]);
+const PLAN_IDS = new Set([
+  "invite","checklist","bills","gifttracker","guestlist","menu","daytimeline",
+  "venue","seating","budget","vendors","wabroadcast","potluck","giftregistry",
+  "advicecards","namesuggestions","kittyfund","countdown","runofshow",
+]);
+
 function OccPolygonGrid({ tools, onOpen, accent }) {
   const containerRef = useRef(null);
   const [size, setSize] = useState(300);
@@ -3268,8 +3287,7 @@ const SLUG_FOR_OCC = {
 
 export default function OccasionHub({ occasion }) {
   const [open, setOpen]         = useState(null);
-  const [hovered, setHovered]   = useState(null);
-  const [glare, setGlare]       = useState({});
+  const [activeTab, setActiveTab] = useState("lobby");
   const [showSplash, setShowSplash] = useState(() => {
     try { return !localStorage.getItem(`tendr-splash-${occasion}`); } catch { return true; }
   });
@@ -3278,7 +3296,6 @@ export default function OccasionHub({ occasion }) {
   });
   const [tourStep, setTourStep] = useState(0);
   const [splashOut, setSplashOut]   = useState(false);
-  const [activeTab, setActiveTab]   = useState(0);
   const [planData, setPlanData]     = useState(null);
 
   // Room modal flow states
@@ -3289,6 +3306,7 @@ export default function OccasionHub({ occasion }) {
   const [joinName,  setJoinName]    = useState("");
   const [roomLoading, setRoomLoading] = useState(false);
   const [copied, setCopied]         = useState(false);
+  const [showHostControls, setShowHostControls] = useState(false);
 
   const { room, connected, error: roomError, myName, createRoom, joinRoom, leaveRoom } = usePartyRoom();
   const navigate = useNavigate();
@@ -3326,12 +3344,6 @@ export default function OccasionHub({ occasion }) {
   if (!occ) return <div style={{ color: "#fff", padding: 40, textAlign: "center", fontFamily: font }}>Unknown occasion: {occasion}</div>;
 
   const { accent, sections } = occ;
-
-  const handleMove = (e, id) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setGlare(prev => ({ ...prev, [id]: { x: ((e.clientX - rect.left) / rect.width) * 100, y: ((e.clientY - rect.top) / rect.height) * 100 } }));
-  };
-  const handleLeave = (id) => { setHovered(null); setGlare(prev => { const n = { ...prev }; delete n[id]; return n; }); };
 
   const handleHostCreate = async () => {
     if (!hostName.trim()) return;
@@ -3416,91 +3428,98 @@ export default function OccasionHub({ occasion }) {
     }
   };
 
-  const GAME_IDS = new Set(["truthordare","neverhavei","wouldyou","hottakes","spin","charades","bingo","luckydraw","birthdayquiz","couplequiz","genderpoll","mostlikelyto","t2l","rapidfire"]);
-  const currentSection = sections[Math.min(activeTab, sections.length - 1)];
+  // Party Hub section classification
+  const allTools   = (occ.sections || []).flatMap(s => s.tools || []);
+  const playTools  = allTools.filter(t => PLAY_IDS.has(t.id));
+  const momentTools = allTools.filter(t => MOMENTS_IDS.has(t.id));
+  const planTools  = allTools.filter(t => PLAN_IDS.has(t.id));
+  const lobbyQuick = [...planTools.slice(0, 2), ...playTools.slice(0, 2)].slice(0, 4);
+
+  const PH = { violet: "#8B5CF6", blue: "#38BDF8", gold: "#F5C77A", pink: "#F472B6", bg: "#070711", surface: "#0D0D17" };
+  const tabAccentMap = { lobby: "#8B5CF6", play: "#38BDF8", people: "#F472B6", plan: "#F5C77A", moments: "#F472B6" };
+  const ta = tabAccentMap[activeTab] || accent;
+
+  const TAB_CFG = [
+    { id: "lobby",   label: "LOBBY",
+      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
+    { id: "play",    label: "PLAY",
+      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> },
+    { id: "people",  label: "PEOPLE",
+      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+    { id: "plan",    label: "PLAN",
+      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> },
+    { id: "moments", label: "MOMENTS",
+      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> },
+  ];
 
   // ── RENDER ────────────────────────────────────────────────────────────────
   return (
-    <div style={{ height: "100dvh", display: "flex", flexDirection: "column", fontFamily: font, background: "#0C0904", position: "relative", overflow: "hidden" }}>
-      {/* Subtle per-occasion glow in top-right corner — not animated, not centered */}
-      <div style={{ position: "fixed", top: -80, right: -60, width: 420, height: 320, borderRadius: "50%", background: `radial-gradient(ellipse at 60% 30%, ${accent}1a 0%, transparent 68%)`, pointerEvents: "none", zIndex: 0 }} />
+    <div style={{ height: "100dvh", display: "flex", flexDirection: "column", fontFamily: font, background: PH.bg, position: "relative", overflow: "hidden" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap');
-        @keyframes splash-pulse { 0%,100% { opacity:0.8;transform:scale(1);} 50%{opacity:1;transform:scale(1.04);} }
-        @keyframes splash-line { from{width:0} to{width:100%} }
-        @keyframes card-pop { 0%{transform:scale(0.92) translateY(12px);opacity:0} 100%{transform:scale(1) translateY(0);opacity:1} }
-        @keyframes modal-in { from{opacity:0;transform:scale(0.94) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
-        @keyframes tab-slide { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes rm-in { from{opacity:0;transform:scale(0.93)} to{opacity:1;transform:scale(1)} }
-        @keyframes dot-pulse { 0%,100%{opacity:0.4;transform:scale(0.8)} 50%{opacity:1;transform:scale(1)} }
-        @keyframes card-flip { 0%{transform:rotateY(90deg) scale(0.95);opacity:0.4} 100%{transform:rotateY(0deg) scale(1);opacity:1} }
-        @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        .occ-tool-card:active { transform: scale(0.96) !important; transition: transform 0.08s !important; }
-        .occ-tab-btn { transition: background 0.16s, color 0.16s, box-shadow 0.16s; }
-        textarea,input { font-family: ${font}; }
-        select option { background: #110d07; color: #fff; }
-        ::-webkit-scrollbar { display: none; }
-        @media (max-width: 600px) {
-          .occ-h1 { font-size: 1.5rem !important; }
-          .occ-tab-label { font-size: 9px !important; }
-          .occ-scroll-area { padding: 4px 8px calc(80px + env(safe-area-inset-bottom, 0px)) !important; }
-          .occ-tab-btn { padding: 7px 4px 5px !important; min-width: 56px !important; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .occ-tab-btn { transition: none !important; }
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        @keyframes splash-pulse { 0%,100%{opacity:0.8;transform:scale(1)} 50%{opacity:1;transform:scale(1.04)} }
+        @keyframes splash-line  { from{width:0} to{width:100%} }
+        @keyframes ph-glow      { 0%,100%{opacity:0.35} 50%{opacity:0.6} }
+        @keyframes rm-in        { from{opacity:0;transform:scale(0.93)} to{opacity:1;transform:scale(1)} }
+        @keyframes dot-pulse    { 0%,100%{opacity:0.4;transform:scale(0.8)} 50%{opacity:1;transform:scale(1)} }
+        @keyframes tab-slide    { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes modal-in     { from{opacity:0;transform:scale(0.94) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+        @keyframes spin         { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        .occ-tool-card:active   { transform:scale(0.96) !important; transition:transform 0.08s !important; }
+        ::-webkit-scrollbar     { display:none; }
+        textarea, input         { font-family:${font}; }
+        select option           { background:#0D0D17; color:#fff; }
+        @media (prefers-reduced-motion:reduce) { * { animation:none !important; transition:none !important; } }
       `}</style>
 
-      {/* Splash */}
+      {/* Ambient violet aura */}
+      <div style={{ position:"fixed", top:-100, left:"50%", transform:"translateX(-50%)", width:520, height:360, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(139,92,246,0.16) 0%, transparent 70%)", pointerEvents:"none", zIndex:0, animation:"ph-glow 6s ease-in-out infinite" }} />
+      <div style={{ position:"fixed", top:-40, right:-60, width:320, height:240, borderRadius:"50%", background:`radial-gradient(ellipse, ${accent}12 0%, transparent 65%)`, pointerEvents:"none", zIndex:0 }} />
+
+      {/* ── Splash ── */}
       {showSplash && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: `radial-gradient(ellipse at 30% 40%, ${accent}28 0%, #0C0904 60%)`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", opacity: splashOut ? 0 : 1, transition: "opacity 0.55s cubic-bezier(0.4,0,0.2,1)", pointerEvents: splashOut ? "none" : "all" }}>
-          <div style={{ textAlign: "center", padding: "0 32px" }}>
-            <div style={{ fontSize: 72, marginBottom: 18, animation: "splash-pulse 1.8s ease-in-out infinite", filter: `drop-shadow(0 0 28px ${accent}90)` }}>{occ.emoji}</div>
-            <div style={{ fontSize: "clamp(1.7rem,5vw,2.5rem)", fontWeight: 900, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1.15, marginBottom: 10 }}>
-              Let's make it<br/><span style={{ color: accent }}>a party.</span>
+        <div style={{ position:"fixed", inset:0, zIndex:9999, background:`radial-gradient(ellipse at 30% 40%, ${accent}28 0%, ${PH.bg} 60%)`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", opacity:splashOut?0:1, transition:"opacity 0.55s cubic-bezier(0.4,0,0.2,1)", pointerEvents:splashOut?"none":"all" }}>
+          <div style={{ textAlign:"center", padding:"0 32px" }}>
+            <div style={{ fontSize:72, marginBottom:18, animation:"splash-pulse 1.8s ease-in-out infinite", filter:`drop-shadow(0 0 28px ${accent}90)` }}>{occ.emoji}</div>
+            <div style={{ fontSize:"clamp(1.7rem,5vw,2.5rem)", fontWeight:900, color:"#fff", letterSpacing:"-0.03em", lineHeight:1.15, marginBottom:10 }}>
+              Let's make it<br/><span style={{ color:accent }}>a party.</span>
             </div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginBottom: 32 }}>{occ.tagline}</div>
-            <div style={{ width: 180, height: 2, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden", margin: "0 auto" }}>
-              <div style={{ height: "100%", background: accent, animation: "splash-line 2s ease-out both" }} />
+            <div style={{ fontSize:13, color:"rgba(255,255,255,0.4)", marginBottom:32 }}>{occ.tagline}</div>
+            <div style={{ width:180, height:2, background:"rgba(255,255,255,0.08)", borderRadius:2, overflow:"hidden", margin:"0 auto" }}>
+              <div style={{ height:"100%", background:accent, animation:"splash-line 2s ease-out both" }} />
             </div>
           </div>
         </div>
       )}
 
-      {/* First-time tour — shown once after splash clears */}
+      {/* ── First-time tour ── */}
       {showTour && !showSplash && (() => {
         const steps = [
-          { icon: "👆", title: "Tap any tool", body: "Each node opens a planner — guest list, budget, timeline and more." },
-          { icon: "📑", title: "Switch sections", body: "Use the tabs above to move between Manage, Fun and Games." },
-          { icon: "🎮", title: "Play together", body: "Hit Host or Join to start a live room and play games with your group." },
+          { icon:"👆", title:"Tap any tool",    body:"Each card opens a party tool — planner, game, or memory maker." },
+          { icon:"◈",  title:"Browse by tab",   body:"PLAY for games, PLAN for logistics, MOMENTS to capture memories." },
+          { icon:"🎮", title:"Play together",   body:"Hit HOST to start a live room and play with your whole group." },
         ];
         const step = steps[tourStep];
-        const dismissTour = () => {
-          setShowTour(false);
-          try { localStorage.setItem("tendr-occ-tour-v1", "1"); } catch {}
-        };
+        const dismissTour = () => { setShowTour(false); try { localStorage.setItem("tendr-occ-tour-v1","1"); } catch {} };
         return (
-          <div style={{ position: "fixed", inset: 0, zIndex: 4000, background: "rgba(0,0,0,0.72)", display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "0 0 40px" }}>
-            <div style={{ background: "#130f08", border: `1.5px solid ${accent}35`, borderRadius: 24, padding: "28px 24px 24px", maxWidth: 360, width: "calc(100% - 32px)", animation: "rm-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-              <div style={{ textAlign: "center", marginBottom: 20 }}>
-                <div style={{ fontSize: 42, marginBottom: 12 }}>{step.icon}</div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8, fontFamily: font }}>{step.title}</div>
-                <div style={{ fontSize: 13.5, color: "rgba(255,255,255,0.5)", lineHeight: 1.6, fontFamily: font }}>{step.body}</div>
+          <div style={{ position:"fixed", inset:0, zIndex:4000, background:"rgba(0,0,0,0.72)", display:"flex", alignItems:"flex-end", justifyContent:"center", padding:"0 0 40px" }}>
+            <div style={{ background:PH.surface, border:`1.5px solid ${PH.violet}35`, borderRadius:24, padding:"28px 24px 24px", maxWidth:360, width:"calc(100% - 32px)", animation:"rm-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+              <div style={{ textAlign:"center", marginBottom:20 }}>
+                <div style={{ fontSize:42, marginBottom:12 }}>{step.icon}</div>
+                <div style={{ fontSize:18, fontWeight:800, color:"#fff", marginBottom:8 }}>{step.title}</div>
+                <div style={{ fontSize:13.5, color:"rgba(255,255,255,0.5)", lineHeight:1.6 }}>{step.body}</div>
               </div>
-              {/* Step dots */}
-              <div style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 20 }}>
-                {steps.map((_, i) => (
-                  <div key={i} style={{ width: i === tourStep ? 18 : 6, height: 6, borderRadius: 3, background: i === tourStep ? accent : `${accent}35`, transition: "width 0.2s, background 0.2s" }} />
-                ))}
+              <div style={{ display:"flex", justifyContent:"center", gap:6, marginBottom:20 }}>
+                {steps.map((_,i) => <div key={i} style={{ width:i===tourStep?18:6, height:6, borderRadius:3, background:i===tourStep?PH.violet:`${PH.violet}35`, transition:"width 0.2s,background 0.2s" }} />)}
               </div>
-              <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ display:"flex", gap:10 }}>
                 {tourStep < steps.length - 1 ? (
                   <>
-                    <button onClick={dismissTour} style={{ flex: 1, padding: "11px 0", borderRadius: 12, border: "1px solid rgba(255,255,255,0.1)", background: "transparent", color: "rgba(255,255,255,0.35)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Skip</button>
-                    <button onClick={() => setTourStep(s => s + 1)} style={{ flex: 2, padding: "11px 0", borderRadius: 12, border: "none", background: accent, color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font }}>Next →</button>
+                    <button onClick={dismissTour} style={{ flex:1, padding:"11px 0", borderRadius:12, border:"1px solid rgba(255,255,255,0.1)", background:"transparent", color:"rgba(255,255,255,0.35)", fontSize:13, fontWeight:600, cursor:"pointer" }}>Skip</button>
+                    <button onClick={() => setTourStep(s=>s+1)} style={{ flex:2, padding:"11px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer" }}>Next →</button>
                   </>
                 ) : (
-                  <button onClick={dismissTour} style={{ flex: 1, padding: "13px 0", borderRadius: 12, border: "none", background: accent, color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font }}>Got it 🎉</button>
+                  <button onClick={dismissTour} style={{ flex:1, padding:"13px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:15, fontWeight:800, cursor:"pointer" }}>Got it 🎉</button>
                 )}
               </div>
             </div>
@@ -3508,199 +3527,306 @@ export default function OccasionHub({ occasion }) {
         );
       })()}
 
-      {/* Room setup modals */}
+      {/* ── Room modals ── */}
       {roomModal && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 5000, background: "rgba(0,0,0,0.8)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => { setRoomModal(null); setRoomLoading(false); }}>
-          <div style={{ background: "#110d07", border: `1.5px solid ${accent}44`, borderRadius: 24, padding: "28px 24px", maxWidth: 360, width: "100%", boxShadow: `0 36px 80px rgba(0,0,0,0.6)`, animation: "rm-in 0.25s cubic-bezier(0.22,1,0.36,1)" }} onClick={e => e.stopPropagation()}>
+        <div style={{ position:"fixed", inset:0, zIndex:5000, background:"rgba(0,0,0,0.8)", backdropFilter:"blur(10px)", display:"flex", alignItems:"center", justifyContent:"center", padding:20 }} onClick={() => { setRoomModal(null); setRoomLoading(false); }}>
+          <div style={{ background:PH.surface, border:`1.5px solid ${PH.violet}44`, borderRadius:24, padding:"28px 24px", maxWidth:360, width:"100%", boxShadow:"0 36px 80px rgba(0,0,0,0.6)", animation:"rm-in 0.25s cubic-bezier(0.22,1,0.36,1)" }} onClick={e=>e.stopPropagation()}>
 
             {roomModal === "host-setup" && (<>
-              <div style={{ textAlign: "center", marginBottom: 20 }}>
-                <div style={{ fontSize: 36, marginBottom: 8 }}>🏠</div>
-                <div style={{ fontSize: 17, fontWeight: 800, color: "#fff", marginBottom: 4 }}>Host a Room</div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Your guests join with the room code</div>
+              <div style={{ textAlign:"center", marginBottom:20 }}>
+                <div style={{ fontSize:36, marginBottom:8 }}>🏠</div>
+                <div style={{ fontSize:17, fontWeight:800, color:"#fff", marginBottom:4 }}>Host a Room</div>
+                <div style={{ fontSize:13, color:"rgba(255,255,255,0.4)" }}>Your guests join with the room code</div>
               </div>
-              <div style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: accent, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>Your Name</div>
-                <input value={hostName} onChange={e => setHostName(e.target.value)} placeholder="e.g. Priya" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${accent}33`, background: "rgba(255,255,255,0.05)", color: "#fff", fontSize: 15, outline: "none", boxSizing: "border-box" }} />
+              <div style={{ marginBottom:12 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:PH.violet, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Your Name</div>
+                <input value={hostName} onChange={e=>setHostName(e.target.value)} placeholder="e.g. Priya" style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:15, outline:"none", boxSizing:"border-box" }} />
               </div>
-              <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: accent, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>Party Name <span style={{ color: "rgba(255,255,255,0.3)", fontWeight: 400, textTransform: "none" }}>(optional)</span></div>
-                <input value={partyName} onChange={e => setPartyName(e.target.value)} placeholder={`e.g. ${occ.name}`} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${accent}33`, background: "rgba(255,255,255,0.05)", color: "#fff", fontSize: 15, outline: "none", boxSizing: "border-box" }} />
+              <div style={{ marginBottom:20 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:PH.violet, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Party Name <span style={{ color:"rgba(255,255,255,0.3)", fontWeight:400, textTransform:"none" }}>(optional)</span></div>
+                <input value={partyName} onChange={e=>setPartyName(e.target.value)} placeholder={`e.g. ${occ.name}`} style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:15, outline:"none", boxSizing:"border-box" }} />
               </div>
-              <button onClick={handleHostCreate} disabled={!hostName.trim() || roomLoading} style={{ width: "100%", padding: "14px 0", borderRadius: 12, border: "none", background: hostName.trim() ? accent : "rgba(255,255,255,0.08)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: hostName.trim() ? "pointer" : "not-allowed", opacity: hostName.trim() ? 1 : 0.5, marginBottom: 10 }}>
+              <button onClick={handleHostCreate} disabled={!hostName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:hostName.trim()?PH.violet:"rgba(255,255,255,0.08)", color:"#fff", fontSize:14, fontWeight:800, cursor:hostName.trim()?"pointer":"not-allowed", opacity:hostName.trim()?1:0.5, marginBottom:10 }}>
                 {roomLoading ? "Creating…" : "Create Room →"}
               </button>
-              <button onClick={() => setRoomModal(null)} style={{ width: "100%", padding: "10px 0", border: "none", background: "none", color: "rgba(255,255,255,0.3)", fontSize: 13, cursor: "pointer" }}>Cancel</button>
+              <button onClick={()=>setRoomModal(null)} style={{ width:"100%", padding:"10px 0", border:"none", background:"none", color:"rgba(255,255,255,0.3)", fontSize:13, cursor:"pointer" }}>Cancel</button>
             </>)}
 
             {roomModal === "players" && room && (<>
-              <div style={{ textAlign: "center", marginBottom: 16 }}>
-                <div style={{ fontSize: 30, marginBottom: 6 }}>🎉</div>
-                <div style={{ fontSize: 17, fontWeight: 800, color: "#fff", marginBottom: 2 }}>Room Created!</div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 16 }}>Share the code with your guests</div>
-                <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: accent + "1a", border: `1px solid ${accent}55`, borderRadius: 14, padding: "12px 24px", marginBottom: 14 }}>
-                  <span style={{ fontSize: 32, fontWeight: 900, color: accent, letterSpacing: "0.2em", fontFamily: "monospace" }}>{room.code}</span>
+              <div style={{ textAlign:"center", marginBottom:16 }}>
+                <div style={{ fontSize:30, marginBottom:6 }}>🎉</div>
+                <div style={{ fontSize:17, fontWeight:800, color:"#fff", marginBottom:2 }}>Room Created!</div>
+                <div style={{ fontSize:12, color:"rgba(255,255,255,0.4)", marginBottom:16 }}>Share the code with your guests</div>
+                <div style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", background:`${PH.violet}1a`, border:`1px solid ${PH.violet}55`, borderRadius:14, padding:"12px 24px", marginBottom:14 }}>
+                  <span style={{ fontSize:32, fontWeight:900, color:PH.violet, letterSpacing:"0.2em", fontFamily:"monospace" }}>{room.code}</span>
                 </div>
               </div>
-              <button onClick={() => copyRoomLink(room.code)} style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: `1.5px solid ${copied ? accent : "rgba(255,255,255,0.14)"}`, background: copied ? accent + "20" : "rgba(255,255,255,0.05)", color: copied ? accent : "rgba(255,255,255,0.75)", fontSize: 14, fontWeight: 700, cursor: "pointer", marginBottom: 12, transition: "all 0.18s" }}>
+              <button onClick={()=>copyRoomLink(room.code)} style={{ width:"100%", padding:"12px 0", borderRadius:12, border:`1.5px solid ${copied?PH.violet:"rgba(255,255,255,0.14)"}`, background:copied?`${PH.violet}20`:"rgba(255,255,255,0.05)", color:copied?PH.violet:"rgba(255,255,255,0.75)", fontSize:14, fontWeight:700, cursor:"pointer", marginBottom:12, transition:"all 0.18s" }}>
                 {copied ? "✓ Link Copied!" : "📋 Copy Room Link"}
               </button>
-              <div style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Players ({room.players?.length || 1})</div>
-                {(room.players || [myName]).map((p, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", background: "rgba(255,255,255,0.04)", borderRadius: 8, marginBottom: 4 }}>
-                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#4ade80", animation: "dot-pulse 2s ease-in-out infinite", animationDelay: `${i * 0.3}s` }} />
-                    <span style={{ fontSize: 13, color: "#fff", fontWeight: 500 }}>{p}{p === myName ? " (you)" : ""}</span>
+              <div style={{ marginBottom:14 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.4)", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>Players ({room.players?.length||1})</div>
+                {(room.players||[myName]).map((p,i) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 10px", background:"rgba(255,255,255,0.04)", borderRadius:8, marginBottom:4 }}>
+                    <span style={{ width:7, height:7, borderRadius:"50%", background:"#4ade80", animation:`dot-pulse 2s ease-in-out infinite`, animationDelay:`${i*0.3}s` }} />
+                    <span style={{ fontSize:13, color:"#fff", fontWeight:500 }}>{p}{p===myName?" (you)":""}</span>
                   </div>
                 ))}
               </div>
-              <button onClick={() => setRoomModal(null)} style={{ width: "100%", padding: "11px 0", borderRadius: 12, border: "none", background: accent, color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer" }}>Let's Play →</button>
+              <button onClick={()=>setRoomModal(null)} style={{ width:"100%", padding:"11px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer" }}>Let's Play →</button>
             </>)}
 
             {roomModal === "join" && (<>
-              <div style={{ textAlign: "center", marginBottom: 20 }}>
-                <div style={{ fontSize: 36, marginBottom: 8 }}>🔗</div>
-                <div style={{ fontSize: 17, fontWeight: 800, color: "#fff", marginBottom: 4 }}>Join a Room</div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>
-                  {joinCode ? "You were invited — just enter your name!" : "Enter the code your host shared"}
-                </div>
+              <div style={{ textAlign:"center", marginBottom:20 }}>
+                <div style={{ fontSize:36, marginBottom:8 }}>🔗</div>
+                <div style={{ fontSize:17, fontWeight:800, color:"#fff", marginBottom:4 }}>Join a Room</div>
+                <div style={{ fontSize:13, color:"rgba(255,255,255,0.4)" }}>{joinCode?"You were invited — just enter your name!":"Enter the code your host shared"}</div>
               </div>
-              <div style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: accent, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>Room Code</div>
-                <input value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase().slice(0, 6))} placeholder="ABC123" maxLength={6} style={{ width: "100%", padding: "14px 16px", borderRadius: 12, border: `1.5px solid ${accent}44`, background: "rgba(255,255,255,0.05)", color: "#fff", fontSize: 24, fontWeight: 900, textAlign: "center", letterSpacing: "0.22em", fontFamily: "monospace", outline: "none", boxSizing: "border-box", marginBottom: 0 }} />
+              <div style={{ marginBottom:12 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:PH.violet, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Room Code</div>
+                <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="ABC123" maxLength={6} style={{ width:"100%", padding:"14px 16px", borderRadius:12, border:`1.5px solid ${PH.violet}44`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:24, fontWeight:900, textAlign:"center", letterSpacing:"0.22em", fontFamily:"monospace", outline:"none", boxSizing:"border-box" }} />
               </div>
-              <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: accent, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>Your Name</div>
-                <input value={joinName} onChange={e => setJoinName(e.target.value)} placeholder="e.g. Rahul" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${accent}33`, background: "rgba(255,255,255,0.05)", color: "#fff", fontSize: 15, outline: "none", boxSizing: "border-box" }} />
+              <div style={{ marginBottom:20 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:PH.violet, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Your Name</div>
+                <input value={joinName} onChange={e=>setJoinName(e.target.value)} placeholder="e.g. Rahul" style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:15, outline:"none", boxSizing:"border-box" }} />
               </div>
-              <button onClick={handleJoin} disabled={joinCode.length < 6 || !joinName.trim() || roomLoading} style={{ width: "100%", padding: "14px 0", borderRadius: 12, border: "none", background: (joinCode.length >= 6 && joinName.trim()) ? accent : "rgba(255,255,255,0.08)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: (joinCode.length >= 6 && joinName.trim()) ? "pointer" : "not-allowed", opacity: (joinCode.length >= 6 && joinName.trim()) ? 1 : 0.5, marginBottom: 10 }}>
+              <button onClick={handleJoin} disabled={joinCode.length<6||!joinName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:(joinCode.length>=6&&joinName.trim())?PH.violet:"rgba(255,255,255,0.08)", color:"#fff", fontSize:14, fontWeight:800, cursor:(joinCode.length>=6&&joinName.trim())?"pointer":"not-allowed", opacity:(joinCode.length>=6&&joinName.trim())?1:0.5, marginBottom:10 }}>
                 {roomLoading ? "Joining…" : "Join Room →"}
               </button>
-              <button onClick={() => setRoomModal(null)} style={{ width: "100%", padding: "10px 0", border: "none", background: "none", color: "rgba(255,255,255,0.3)", fontSize: 13, cursor: "pointer" }}>Cancel</button>
+              <button onClick={()=>setRoomModal(null)} style={{ width:"100%", padding:"10px 0", border:"none", background:"none", color:"rgba(255,255,255,0.3)", fontSize:13, cursor:"pointer" }}>Cancel</button>
             </>)}
           </div>
         </div>
       )}
 
-      {/* ── Top bar ── */}
-      <div style={{ flexShrink: 0, padding: "14px 16px 0", display: "flex", alignItems: "center", gap: 10, maxWidth: 800, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
-        <button onClick={() => navigate(-1)} style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.65)", padding: "7px 14px", borderRadius: 100, cursor: "pointer", fontSize: 12, fontFamily: font, fontWeight: 600, flexShrink: 0 }}>← Back</button>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 900, color: "#fff", letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{occ.emoji} {occ.name}</div>
-          {room && <div style={{ fontSize: 11, color: accent, fontWeight: 700, marginTop: 1 }}>Room: <span style={{ fontFamily: "monospace", letterSpacing: "0.1em" }}>{room.code}</span> · {room.players?.length || 1} player{(room.players?.length || 1) !== 1 ? "s" : ""}</div>}
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
-          <div style={{ display: "flex", gap: 6 }}>
+      {/* ── HOST controls bottom sheet ── */}
+      {showHostControls && (
+        <div style={{ position:"fixed", inset:0, zIndex:4500, background:"rgba(0,0,0,0.7)", display:"flex", alignItems:"flex-end" }} onClick={()=>setShowHostControls(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{ width:"100%", background:PH.surface, borderRadius:"24px 24px 0 0", padding:"24px 20px calc(32px + env(safe-area-inset-bottom,0px))", border:"1px solid rgba(139,92,246,0.2)", animation:"tab-slide 0.25s cubic-bezier(0.22,1,0.36,1)" }}>
+            <div style={{ width:36, height:4, background:"rgba(255,255,255,0.15)", borderRadius:2, margin:"0 auto 20px" }} />
+            <div style={{ fontSize:10, fontWeight:700, color:PH.violet, textTransform:"uppercase", letterSpacing:"0.16em", marginBottom:16, fontFamily:"monospace" }}>// HOST CONTROLS</div>
             {room ? (
               <>
-                <button onClick={() => setRoomModal("players")} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 100, border: `1.5px solid ${accent}55`, background: accent + "1a", color: accent, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ade80", boxShadow: "0 0 6px #4ade80" }} />{room.code}
+                <div style={{ display:"flex", alignItems:"center", gap:10, background:"rgba(139,92,246,0.08)", border:"1px solid rgba(139,92,246,0.25)", borderRadius:12, padding:"12px 14px", marginBottom:14 }}>
+                  <span style={{ width:8, height:8, borderRadius:"50%", background:"#4ade80", animation:"dot-pulse 2s ease infinite" }} />
+                  <span style={{ fontFamily:"monospace", fontSize:22, fontWeight:900, color:PH.violet, letterSpacing:"0.2em" }}>{room.code}</span>
+                  <span style={{ fontSize:12, color:"rgba(255,255,255,0.4)", marginLeft:4 }}>{room.players?.length||1} online</span>
+                </div>
+                <button onClick={()=>copyRoomLink(room.code)} style={{ width:"100%", padding:"13px", borderRadius:12, border:`1px solid rgba(139,92,246,0.4)`, background:"rgba(139,92,246,0.1)", color:PH.violet, fontSize:14, fontWeight:700, cursor:"pointer", marginBottom:10 }}>
+                  {copied ? "✓ Copied!" : "📋 Copy Room Link"}
                 </button>
-                <button onClick={leaveRoom} style={{ padding: "7px 12px", borderRadius: 100, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.45)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Leave</button>
+                <button onClick={()=>{setRoomModal("players");setShowHostControls(false);}} style={{ width:"100%", padding:"13px", borderRadius:12, border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.04)", color:"rgba(255,255,255,0.7)", fontSize:14, fontWeight:600, cursor:"pointer", marginBottom:10 }}>
+                  View Players →
+                </button>
+                <button onClick={leaveRoom} style={{ width:"100%", padding:"12px", border:"none", background:"none", color:"rgba(255,82,82,0.7)", fontSize:13, fontWeight:600, cursor:"pointer" }}>Leave Room</button>
               </>
             ) : (
               <>
-                <button onClick={() => setRoomModal("host-setup")} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 100, border: `1.5px solid ${accent}55`, background: accent + "18", color: accent, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                  Host
+                <button onClick={()=>{setRoomModal("host-setup");setShowHostControls(false);}} style={{ width:"100%", padding:"14px", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:15, fontWeight:800, cursor:"pointer", marginBottom:10 }}>
+                  🏠 Host a Room
                 </button>
-                <button onClick={() => setRoomModal("join")} style={{ padding: "7px 14px", borderRadius: 100, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.65)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Join</button>
+                <button onClick={()=>{setRoomModal("join");setShowHostControls(false);}} style={{ width:"100%", padding:"13px", borderRadius:12, border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.7)", fontSize:14, fontWeight:600, cursor:"pointer" }}>
+                  🔗 Join a Room
+                </button>
               </>
             )}
-          </div>
-          {!room && <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.3)", fontFamily: font, letterSpacing: "0.02em" }}>Play games with your group</div>}
-        </div>
-      </div>
-
-      {/* Plan banner + Live room — merged into one compact strip */}
-      {(planData || room) && (
-        <div style={{ flexShrink: 0, maxWidth: 800, margin: "8px auto 0", padding: "0 16px", width: "100%", boxSizing: "border-box" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, background: room ? `linear-gradient(90deg, ${accent}14, rgba(255,255,255,0.03))` : "rgba(255,255,255,0.04)", border: `1px solid ${room ? accent + "35" : "rgba(255,255,255,0.07)"}`, borderRadius: 10, padding: "7px 12px", flexWrap: "wrap" }}>
-            {room && <>
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#4ADE80", boxShadow: "0 0 6px #4ADE80", flexShrink: 0, animation: "dot-pulse 2s ease infinite" }} />
-              <span style={{ fontSize: 11, fontWeight: 700, color: accent, fontFamily: "monospace", letterSpacing: "0.15em" }}>{room.code}</span>
-              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>· {room.players?.length || 1} online</span>
-              <button onClick={() => copyRoomLink(room.code)} style={{ padding: "3px 10px", borderRadius: 100, border: `1px solid ${accent}45`, background: accent + "18", color: accent, fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", marginLeft: "auto" }}>
-                {copied ? "✓ Copied" : "Share"}
-              </button>
-            </>}
-            {planData && !room && <>
-              <span style={{ fontSize: 13 }}>📋</span>
-              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", flex: 1 }}>
-                <strong style={{ color: "rgba(255,255,255,0.75)" }}>{planData.guests} guests</strong>
-                {planData.date ? ` · ${new Date(planData.date + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short" })}` : ""}
-                {planData.city ? ` · ${planData.city}` : ""}
-              </span>
-            </>}
           </div>
         </div>
       )}
 
-      {/* ── Section Tabs ── */}
-      <div style={{ flexShrink: 0, maxWidth: 800, margin: "10px auto 0", padding: "0 16px", width: "100%", boxSizing: "border-box" }}>
-        <div style={{ display: "flex", gap: 3, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: 4 }}>
-          {sections.map((sec, i) => {
-            const active = activeTab === i;
-            const label = sec.label.replace(/^\S+\s*/, "").trim() || sec.label;
+      {/* ── Top Bar ── */}
+      <div style={{ flexShrink:0, padding:"max(14px, env(safe-area-inset-top)) 16px 0", position:"relative", zIndex:2 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10, maxWidth:800, margin:"0 auto" }}>
+          <button onClick={()=>navigate(-1)} style={{ width:36, height:36, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.6)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontSize:9.5, fontWeight:700, color:PH.violet, letterSpacing:"0.18em", textTransform:"uppercase", fontFamily:"monospace" }}>PARTY HUB</div>
+            <div style={{ fontSize:14, fontWeight:800, color:"#fff", letterSpacing:"-0.01em", display:"flex", alignItems:"center", gap:6, overflow:"hidden" }}>
+              <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{occ.emoji} {occ.name}</span>
+              {room && <><span style={{ color:"rgba(255,255,255,0.2)", fontWeight:400 }}>//</span><span style={{ fontFamily:"monospace", color:PH.violet, fontSize:12, fontWeight:700, flexShrink:0, letterSpacing:"0.1em" }}>{room.code}</span></>}
+            </div>
+          </div>
+          <button onClick={()=>setShowHostControls(true)} style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 14px", borderRadius:100, border:`1.5px solid ${room?"rgba(74,222,128,0.5)":`${PH.violet}55`}`, background:room?"rgba(74,222,128,0.1)":`${PH.violet}14`, color:room?"#4ade80":PH.violet, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0 }}>
+            {room && <span style={{ width:6, height:6, borderRadius:"50%", background:"#4ade80", animation:"dot-pulse 2s ease infinite" }} />}
+            {room ? "LIVE" : "HOST"}
+          </button>
+        </div>
+      </div>
+
+      {/* ── Section content ── */}
+      <div className="occ-scroll-area" style={{ flex:1, overflowY:"auto", padding:"14px 16px calc(80px + env(safe-area-inset-bottom,0px))", maxWidth:800, margin:"0 auto", width:"100%", boxSizing:"border-box", position:"relative", zIndex:1 }}>
+
+        {/* LOBBY */}
+        {activeTab === "lobby" && (
+          <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+            {room && (
+              <div style={{ display:"flex", alignItems:"center", gap:8, background:"rgba(74,222,128,0.08)", border:"1px solid rgba(74,222,128,0.25)", borderRadius:12, padding:"10px 14px", marginBottom:14 }}>
+                <span style={{ width:8, height:8, borderRadius:"50%", background:"#4ade80", animation:"dot-pulse 1.5s ease infinite" }} />
+                <span style={{ fontSize:12, fontWeight:700, color:"#4ade80", letterSpacing:"0.1em", fontFamily:"monospace" }}>PARTY LIVE</span>
+                <span style={{ marginLeft:"auto", fontFamily:"monospace", fontSize:12, color:"#4ade80", fontWeight:700, letterSpacing:"0.1em" }}>{room.code}</span>
+                <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>· {room.players?.length||1} online</span>
+              </div>
+            )}
+            {/* Glass hero panel */}
+            <div style={{ background:"linear-gradient(135deg, rgba(139,92,246,0.13) 0%, rgba(56,189,248,0.05) 100%)", border:"1px solid rgba(139,92,246,0.28)", borderRadius:20, padding:"24px 20px", marginBottom:16, position:"relative", overflow:"hidden" }}>
+              <div style={{ position:"absolute", top:0, left:0, right:0, height:1, background:"linear-gradient(90deg, transparent, rgba(139,92,246,0.7), transparent)" }} />
+              <div style={{ fontSize:44, marginBottom:8 }}>{occ.emoji}</div>
+              <div style={{ fontSize:20, fontWeight:900, color:"#fff", marginBottom:4, letterSpacing:"-0.02em" }}>{occ.name}</div>
+              <div style={{ fontSize:12, color:"rgba(255,255,255,0.42)", marginBottom:20, lineHeight:1.5 }}>{occ.tagline}</div>
+              {!room ? (
+                <div style={{ display:"flex", gap:10 }}>
+                  <button onClick={()=>setRoomModal("host-setup")} style={{ flex:1, padding:"12px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:13, fontWeight:800, cursor:"pointer" }}>Host a Room</button>
+                  <button onClick={()=>setRoomModal("join")} style={{ flex:1, padding:"12px 0", borderRadius:12, border:"1px solid rgba(255,255,255,0.14)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.7)", fontSize:13, fontWeight:600, cursor:"pointer" }}>Join Room</button>
+                </div>
+              ) : (
+                <div style={{ display:"flex", gap:10 }}>
+                  <button onClick={()=>copyRoomLink(room.code)} style={{ flex:1, padding:"12px 0", borderRadius:12, border:`1px solid ${PH.violet}44`, background:`${PH.violet}14`, color:PH.violet, fontSize:13, fontWeight:700, cursor:"pointer" }}>{copied?"✓ Copied!":"📋 Share Link"}</button>
+                  <button onClick={()=>setActiveTab("play")} style={{ flex:1, padding:"12px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:13, fontWeight:800, cursor:"pointer" }}>Play Games →</button>
+                </div>
+              )}
+            </div>
+            {/* Quick access */}
+            {lobbyQuick.length > 0 && (<>
+              <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.28)", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:10, fontFamily:"monospace" }}>// QUICK ACCESS</div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+                {lobbyQuick.map(t => (
+                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:"14px 12px", cursor:"pointer", display:"flex", flexDirection:"column", gap:6 }}>
+                    <div style={{ color:PH.violet }}>{TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}</div>
+                    <div style={{ fontSize:12, fontWeight:700, color:"#fff" }}>{t.title}</div>
+                    <div style={{ fontSize:11, color:"rgba(255,255,255,0.35)" }}>{t.desc}</div>
+                  </div>
+                ))}
+              </div>
+            </>)}
+          </div>
+        )}
+
+        {/* PLAY */}
+        {activeTab === "play" && (
+          <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+            <div style={{ fontSize:10, fontWeight:700, color:PH.blue, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:14, fontFamily:"monospace" }}>// {playTools.length} GAMES</div>
+            {playTools.length === 0 ? (
+              <div style={{ textAlign:"center", padding:"48px 20px", color:"rgba(255,255,255,0.3)", fontSize:14 }}>No games available for this occasion.</div>
+            ) : (
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+                {playTools.map(t => (
+                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"rgba(56,189,248,0.04)", border:"1px solid rgba(56,189,248,0.12)", borderRadius:16, padding:"16px 14px", cursor:"pointer", display:"flex", flexDirection:"column", gap:8 }}>
+                    <div style={{ color:PH.blue }}>{TOOL_ICONS[t.id]||occic(<polygon points="5 3 19 12 5 21 5 3"/>)}</div>
+                    <div style={{ fontSize:13, fontWeight:700, color:"#fff" }}>{t.title}</div>
+                    <div style={{ fontSize:11, color:"rgba(255,255,255,0.35)", lineHeight:1.4 }}>{t.desc}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* PEOPLE */}
+        {activeTab === "people" && (
+          <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+            {room ? (
+              <>
+                <div style={{ fontSize:10, fontWeight:700, color:PH.pink, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:14, fontFamily:"monospace" }}>// {room.players?.length||1} ONLINE NOW</div>
+                {(room.players||[myName]).map((p,i) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:12, marginBottom:8 }}>
+                    <div style={{ width:34, height:34, borderRadius:"50%", background:`linear-gradient(135deg, ${PH.violet}44, ${PH.pink}44)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:800, color:"#fff", flexShrink:0 }}>{p.charAt(0).toUpperCase()}</div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:14, fontWeight:700, color:"#fff" }}>{p}{p===myName&&<span style={{ fontSize:11, color:PH.violet, fontWeight:500, marginLeft:6 }}>you</span>}</div>
+                    </div>
+                    <div style={{ display:"flex", alignItems:"center", gap:5 }}>
+                      <span style={{ width:6, height:6, borderRadius:"50%", background:"#4ade80", animation:`dot-pulse 2s ease infinite`, animationDelay:`${i*0.3}s` }} />
+                      <span style={{ fontSize:11, color:"rgba(255,255,255,0.3)" }}>online</span>
+                    </div>
+                  </div>
+                ))}
+                <button onClick={()=>copyRoomLink(room.code)} style={{ width:"100%", padding:"13px", borderRadius:12, border:`1px solid rgba(244,114,182,0.35)`, background:"rgba(244,114,182,0.07)", color:PH.pink, fontSize:14, fontWeight:700, cursor:"pointer", marginTop:10 }}>
+                  {copied?"✓ Link Copied!":"📋 Invite More Friends"}
+                </button>
+              </>
+            ) : (
+              <div style={{ textAlign:"center", padding:"48px 20px" }}>
+                <div style={{ fontSize:52, marginBottom:16 }}>👥</div>
+                <div style={{ fontSize:17, fontWeight:800, color:"#fff", marginBottom:8 }}>Start a Party Room</div>
+                <div style={{ fontSize:13, color:"rgba(255,255,255,0.4)", marginBottom:24, lineHeight:1.6 }}>Host a live room so your guests can join, see who's online, and play games together in real time.</div>
+                <div style={{ display:"flex", gap:10 }}>
+                  <button onClick={()=>setRoomModal("host-setup")} style={{ flex:1, padding:"13px", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer" }}>Host a Room</button>
+                  <button onClick={()=>setRoomModal("join")} style={{ flex:1, padding:"13px", borderRadius:12, border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.7)", fontSize:14, fontWeight:600, cursor:"pointer" }}>Join Room</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* PLAN */}
+        {activeTab === "plan" && (
+          <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+            <div style={{ fontSize:10, fontWeight:700, color:PH.gold, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:14, fontFamily:"monospace" }}>// PLANNING TOOLS</div>
+            {planTools.length === 0 ? (
+              <div style={{ textAlign:"center", padding:"48px 20px", color:"rgba(255,255,255,0.3)", fontSize:14 }}>No planning tools for this occasion.</div>
+            ) : (
+              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                {planTools.map(t => (
+                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"rgba(245,199,122,0.04)", border:"1px solid rgba(245,199,122,0.12)", borderRadius:14, padding:"14px 16px", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
+                    <div style={{ color:PH.gold, flexShrink:0 }}>{TOOL_ICONS[t.id]||occic(<rect x="3" y="3" width="18" height="18" rx="2"/>)}</div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:14, fontWeight:700, color:"#fff" }}>{t.title}</div>
+                      <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.38)", marginTop:2 }}>{t.desc}</div>
+                    </div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* MOMENTS */}
+        {activeTab === "moments" && (
+          <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+            <div style={{ fontSize:10, fontWeight:700, color:PH.pink, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:14, fontFamily:"monospace" }}>// CAPTURE &amp; CELEBRATE</div>
+            {momentTools.length === 0 ? (
+              <div style={{ textAlign:"center", padding:"40px 20px", color:"rgba(255,255,255,0.3)", fontSize:14 }}>No moments tools for this occasion.</div>
+            ) : (
+              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                {momentTools.map(t => (
+                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"rgba(244,114,182,0.04)", border:"1px solid rgba(244,114,182,0.12)", borderRadius:14, padding:"14px 16px", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
+                    <div style={{ color:PH.pink, flexShrink:0 }}>{TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}</div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:14, fontWeight:700, color:"#fff" }}>{t.title}</div>
+                      <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.38)", marginTop:2 }}>{t.desc}</div>
+                    </div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </div>
+                ))}
+              </div>
+            )}
+            {/* Party Recap card */}
+            <div style={{ marginTop:16, background:"linear-gradient(135deg, rgba(244,114,182,0.09), rgba(139,92,246,0.07))", border:"1px solid rgba(244,114,182,0.18)", borderRadius:16, padding:"20px", textAlign:"center" }}>
+              <div style={{ fontSize:24, marginBottom:8 }}>✨</div>
+              <div style={{ fontSize:14, fontWeight:700, color:"#fff", marginBottom:4 }}>Party Recap</div>
+              <div style={{ fontSize:12, color:"rgba(255,255,255,0.4)", marginBottom:14, lineHeight:1.5 }}>Capture the highlights and create a shareable summary of your event.</div>
+              <button onClick={()=>setOpen("reportcard")} style={{ padding:"10px 22px", borderRadius:10, border:`1px solid rgba(244,114,182,0.35)`, background:"rgba(244,114,182,0.1)", color:PH.pink, fontSize:13, fontWeight:700, cursor:"pointer" }}>Create Recap →</button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Bottom Navigation ── */}
+      <div style={{ position:"fixed", bottom:0, left:0, right:0, zIndex:100, background:"rgba(7,7,17,0.96)", backdropFilter:"blur(24px)", borderTop:"1px solid rgba(255,255,255,0.07)", padding:"10px 0", paddingBottom:"calc(10px + env(safe-area-inset-bottom,0px))" }}>
+        <div style={{ display:"flex", maxWidth:800, margin:"0 auto" }}>
+          {TAB_CFG.map(t => {
+            const isActive = activeTab === t.id;
+            const tColor = tabAccentMap[t.id] || accent;
             return (
-              <button key={sec.id} className="occ-tab-btn" onClick={() => setActiveTab(i)} style={{
-                flex: 1, padding: "8px 4px", border: "none",
-                background: active ? accent : "transparent",
-                color: active ? "#fff" : "rgba(255,255,255,0.38)",
-                fontSize: 10, fontWeight: active ? 800 : 600, cursor: "pointer", fontFamily: font,
-                textTransform: "uppercase", letterSpacing: "0.04em",
-                borderRadius: 10,
-                boxShadow: "none",
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
-              }}>
-                <div style={{ color: active ? "#fff" : "rgba(255,255,255,0.4)" }}>{SECTION_ICONS[sec.id] || defaultSecIcon}</div>
-                <div className="occ-tab-label" style={{ letterSpacing: "0.05em" }}>{label}</div>
+              <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:3, padding:"4px 0 2px", border:"none", background:"transparent", cursor:"pointer" }}>
+                <div style={{ color:isActive?tColor:"rgba(255,255,255,0.28)", transition:"color 0.18s" }}>{t.icon}</div>
+                <div style={{ fontSize:9, fontWeight:isActive?800:600, color:isActive?tColor:"rgba(255,255,255,0.28)", letterSpacing:"0.1em", textTransform:"uppercase", fontFamily:"monospace", transition:"color 0.18s" }}>{t.label}</div>
+                <div style={{ width:isActive?16:0, height:2, borderRadius:1, background:tColor, transition:"width 0.22s cubic-bezier(0.22,1,0.36,1)" }} />
               </button>
             );
           })}
         </div>
-      </div>
-
-      {/* ── Tool grid — polygon vertex layout ── */}
-      <div className="occ-scroll-area" style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px 12px 32px", maxWidth: 800, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
-
-        {/* Section subtitle */}
-        <div style={{ width: "100%", marginBottom: 8, animation: "tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-          <div style={{ fontSize: 11.5, fontWeight: 600, color: "rgba(255,255,255,0.42)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{currentSection?.subtitle}</div>
-        </div>
-
-        {currentSection?.tools.length >= 3 ? (
-          <OccPolygonGrid
-            key={activeTab}
-            tools={currentSection.tools}
-            onOpen={setOpen}
-            accent={accent}
-          />
-        ) : (
-          /* 1–2 tools: simple centered row */
-          <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap", width: "100%", animation: "tab-slide 0.3s cubic-bezier(0.22,1,0.36,1)" }}>
-            {currentSection?.tools.map((t) => {
-              const isH = hovered === t.id;
-              return (
-                <div key={t.id}
-                  onClick={() => setOpen(t.id)}
-                  onMouseEnter={() => setHovered(t.id)}
-                  onMouseLeave={() => handleLeave(t.id)}
-                  style={{
-                    width: 140, background: isH ? `${accent}18` : "rgba(255,255,255,0.06)",
-                    border: `1.5px solid ${isH ? accent + "66" : accent + "25"}`,
-                    borderRadius: 18, padding: "22px 14px", cursor: "pointer",
-                    display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
-                    transition: "all 0.18s", transform: isH ? "translateY(-3px)" : "none",
-                  }}>
-                  <div style={{ color: accent }}>{TOOL_ICONS[t.id] || occic(<><circle cx="12" cy="12" r="10"/></>)}</div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", textAlign: "center" }}>{t.title}</div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", textAlign: "center" }}>{t.desc}</div>
-                </div>
-              );
-            })}
-          </div>
-        )}
       </div>
 
       {renderModal()}

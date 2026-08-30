@@ -133,8 +133,20 @@ function TipsByTendrSection() {
   const font = "'Outfit', sans-serif";
   const preview = GUIDES.slice(0, 3);
   return (
-    <section style={{ background: "#0E0700", padding: "56px 24px 60px", fontFamily: font }}>
-      <div style={{ maxWidth: 1060, margin: "0 auto" }}>
+    <section style={{ background: "#0E0700", padding: "56px 24px 60px", fontFamily: font, position: "relative", overflow: "hidden" }}>
+
+      {/* SVG film-grain texture */}
+      <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }} aria-hidden="true">
+        <filter id="tips-grain"><feTurbulence type="fractalNoise" baseFrequency="0.78" numOctaves="4" stitchTiles="stitch" /></filter>
+        <rect width="100%" height="100%" filter="url(#tips-grain)" opacity="0.04" />
+      </svg>
+
+      {/* Warm glow layers — top-right amber, bottom-left deep amber */}
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0,
+        backgroundImage: "radial-gradient(ellipse 55% 55% at 88% 15%, rgba(196,122,46,0.1), transparent), radial-gradient(ellipse 45% 50% at 12% 85%, rgba(140,72,16,0.09), transparent), radial-gradient(ellipse 30% 40% at 50% 50%, rgba(196,122,46,0.04), transparent)"
+      }} />
+
+      <div style={{ maxWidth: 1060, margin: "0 auto", position: "relative", zIndex: 1 }}>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -2069,10 +2081,17 @@ const Home = () => {
 
       {/* ── Trust bar ── */}
       <section style={{ background: "#1C0E04", padding: "52px 24px 60px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
-        {/* Gold glow blobs */}
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 15% 60%,rgba(204,171,74,0.07),transparent 45%), radial-gradient(circle at 85% 40%,rgba(196,122,46,0.06),transparent 45%)", pointerEvents: "none" }} />
 
-        <div style={{ maxWidth: 1060, margin: "0 auto", position: "relative" }}>
+        {/* SVG film-grain texture */}
+        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }} aria-hidden="true">
+          <filter id="trust-grain"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch" /></filter>
+          <rect width="100%" height="100%" filter="url(#trust-grain)" opacity="0.038" />
+        </svg>
+
+        {/* Gold glow blobs — enhanced with a third central glow */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(ellipse 45% 70% at 15% 60%, rgba(204,171,74,0.09), transparent), radial-gradient(ellipse 40% 60% at 85% 35%, rgba(196,122,46,0.08), transparent), radial-gradient(ellipse 30% 50% at 52% 50%, rgba(180,100,20,0.05), transparent)", pointerEvents: "none", zIndex: 0 }} />
+
+        <div style={{ maxWidth: 1060, margin: "0 auto", position: "relative", zIndex: 1 }}>
           {/* Header */}
           <div style={{ textAlign: "center", marginBottom: 36 }}>
             <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(1.4rem,2.4vw,1.9rem)", fontWeight: 700, color: "#FFF8EC", margin: 0, lineHeight: 1.1, letterSpacing: "-0.01em" }}>
@@ -2512,24 +2531,41 @@ const Home = () => {
       {/* ── Tips by Tendr ── */}
       <TipsByTendrSection />
 
-      {/* Become a Partner — compact strip */}
-      <section style={{ background: "#1C0E04", padding: "20px 24px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+      {/* Become a Partner — vendor strip */}
+      <section style={{ background: "#1C0E04", padding: "46px 28px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
         <style>{`
           @keyframes vt { from { transform: translateX(0); } to { transform: translateX(-50%); } }
           .vd-ticker { display: flex; gap: 8px; width: max-content; animation: vt 26s linear infinite; }
           .vd-ticker:hover { animation-play-state: paused; }
         `}</style>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
 
-          {/* Left: live badge + tagline */}
-          <div style={{ flexShrink: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", display: "inline-block", boxShadow: "0 0 0 3px rgba(34,197,94,0.2)" }} />
-              <span style={{ fontSize: 10, fontWeight: 800, color: "#CCAB4A", letterSpacing: "0.14em", textTransform: "uppercase" }}>For Vendors</span>
+        {/* SVG film-grain layer */}
+        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }} aria-hidden="true">
+          <filter id="vend-grain"><feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="4" stitchTiles="stitch" /></filter>
+          <rect width="100%" height="100%" filter="url(#vend-grain)" opacity="0.042" />
+        </svg>
+
+        {/* Warm amber radial glows */}
+        <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0,
+          backgroundImage: "radial-gradient(ellipse 55% 120% at 3% 50%, rgba(196,122,46,0.22), transparent), radial-gradient(ellipse 38% 90% at 90% 50%, rgba(204,171,74,0.11), transparent), radial-gradient(ellipse 50% 30% at 50% 105%, rgba(196,122,46,0.07), transparent)"
+        }} />
+
+        {/* Gold hairline at top */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent 0%, rgba(204,171,74,0.4) 25%, rgba(204,171,74,0.4) 75%, transparent 100%)", zIndex: 1 }} />
+
+        <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 2, display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
+
+          {/* Left: badge + headlines */}
+          <div style={{ flexShrink: 0, maxWidth: 250 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", display: "inline-block", boxShadow: "0 0 0 3px rgba(34,197,94,0.22), 0 0 10px rgba(34,197,94,0.38)" }} />
+              <span style={{ fontSize: 10, fontWeight: 800, color: "#CCAB4A", letterSpacing: "0.16em", textTransform: "uppercase" }}>For Vendors</span>
             </div>
-            <p style={{ margin: 0, fontSize: 12.5, color: "rgba(255,248,236,0.55)", lineHeight: 1.45, maxWidth: 220 }}>
-              In the event industry?{" "}
-              <span style={{ color: "rgba(255,248,236,0.85)", fontWeight: 600 }}>Join Tendr any way you like.</span>
+            <p style={{ margin: "0 0 5px", fontSize: 18, fontWeight: 800, color: "#FFF8EC", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
+              In the event industry?
+            </p>
+            <p style={{ margin: 0, fontSize: 12.5, color: "rgba(255,248,236,0.46)", lineHeight: 1.5 }}>
+              Join Tendr any way you like.
             </p>
           </div>
 
@@ -2537,7 +2573,7 @@ const Home = () => {
           <div style={{ flex: 1, overflow: "hidden", maskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)", WebkitMaskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)", minWidth: 0 }}>
             <div className="vd-ticker">
               {[...["DJ", "Emcee", "Photographer", "Decorator", "Caterer", "Band", "Videographer", "AV Setup", "Florist", "Anchor", "Makeup Artist", "Event Planner", "Dhol Player"], ...["DJ", "Emcee", "Photographer", "Decorator", "Caterer", "Band", "Videographer", "AV Setup", "Florist", "Anchor", "Makeup Artist", "Event Planner", "Dhol Player"]].map((t, i) => (
-                <span key={i} style={{ flexShrink: 0, fontSize: 11, fontWeight: 600, color: "#CCAB4A", background: "rgba(204,171,74,0.08)", border: "1px solid rgba(204,171,74,0.18)", borderRadius: 100, padding: "4px 12px", whiteSpace: "nowrap" }}>{t}</span>
+                <span key={i} style={{ flexShrink: 0, fontSize: 11.5, fontWeight: 600, color: "#CCAB4A", background: "rgba(204,171,74,0.07)", border: "1px solid rgba(204,171,74,0.2)", borderRadius: 100, padding: "5px 14px", whiteSpace: "nowrap" }}>{t}</span>
               ))}
             </div>
           </div>
@@ -2546,13 +2582,13 @@ const Home = () => {
           <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
             <button
               onClick={() => navigate("/for-vendors")}
-              style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12.5, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}
+              style={{ padding: "11px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 0 22px rgba(196,122,46,0.38)" }}
             >
               Join Tendr →
             </button>
             <button
               onClick={() => navigate("/vendor/login")}
-              style={{ padding: "9px 14px", borderRadius: 10, border: "1px solid rgba(255,248,236,0.12)", background: "transparent", color: "rgba(255,248,236,0.55)", fontSize: 12.5, fontWeight: 500, fontFamily: "'Outfit',sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}
+              style={{ padding: "11px 16px", borderRadius: 10, border: "1px solid rgba(255,248,236,0.13)", background: "rgba(255,255,255,0.04)", color: "rgba(255,248,236,0.52)", fontSize: 13, fontWeight: 500, fontFamily: "'Outfit',sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}
             >
               Log in
             </button>

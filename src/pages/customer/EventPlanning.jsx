@@ -396,6 +396,14 @@ const EventPlanning = () => {
     fetch(`${BASE_URL}/vendors/availability/by-date?date=warmup`, { method: "HEAD" }).catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // If navigated here from MyEvent "Continue" banner, reset to form view so the user
+  // continues the wizard rather than landing directly on the vendor-selection screen.
+  useEffect(() => {
+    if (location.state?.backToForm && showVendorScreen) {
+      dispatch(backToFormAction());
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // When date is set: fetch date-specific availability counts (5s timeout)
   useEffect(() => {
     if (!formData?.date) return;
