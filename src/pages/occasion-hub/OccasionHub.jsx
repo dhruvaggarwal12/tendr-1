@@ -3085,6 +3085,141 @@ const POLY_PAD = { 3: "36% 20% 12%", 4: "14% 14% 14%", 5: "14% 14% 14%", 6: "18%
 const getPolyPad = (n) => POLY_PAD[Math.min(n, 7)] || "14% 10% 14%";
 
 // ════════════════════════════════════════════════════════════════════════════
+// PARTY HUB — Immersive canvas background (grid + particles + circuit pulses)
+// ════════════════════════════════════════════════════════════════════════════
+
+function PartyHubBackground() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let animId;
+    let W = 0, H = 0;
+    const circuits = [];
+    const particles = [];
+
+    /* ── circuit path generator ── */
+    const genCircuit = () => {
+      const pts = [];
+      let x = Math.random() * W;
+      let y = Math.random() * H;
+      pts.push({ x, y });
+      let dir = Math.random() > 0.5 ? "h" : "v";
+      const segs = 3 + Math.floor(Math.random() * 4);
+      for (let i = 0; i < segs; i++) {
+        const len = 80 + Math.random() * 200;
+        if (dir === "h") x = Math.max(20, Math.min(W - 20, x + (Math.random() > 0.5 ? 1 : -1) * len));
+        else             y = Math.max(20, Math.min(H - 20, y + (Math.random() > 0.5 ? 1 : -1) * len));
+        pts.push({ x, y });
+        dir = dir === "h" ? "v" : "h";
+      }
+      return { pts, t: Math.random(), speed: 0.00025 + Math.random() * 0.0003 };
+    };
+
+    const init = () => {
+      W = canvas.width  = canvas.offsetWidth;
+      H = canvas.height = canvas.offsetHeight;
+      circuits.length = 0;
+      particles.length = 0;
+      for (let i = 0; i < 12; i++) circuits.push(genCircuit());
+      for (let i = 0; i < 55; i++) {
+        particles.push({
+          x: Math.random() * W, y: Math.random() * H,
+          r: 0.4 + Math.random() * 1.2,
+          base: 0.06 + Math.random() * 0.18,
+          vx: (Math.random() - 0.5) * 0.06,
+          vy: (Math.random() - 0.5) * 0.06,
+          ph: Math.random() * Math.PI * 2,
+          ps: 0.004 + Math.random() * 0.008,
+        });
+      }
+    };
+
+    const draw = () => {
+      ctx.clearRect(0, 0, W, H);
+
+      /* ── faint grid ── */
+      const GRID = 56;
+      ctx.strokeStyle = "rgba(139,92,246,0.032)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let x = 0; x <= W; x += GRID) { ctx.moveTo(x, 0); ctx.lineTo(x, H); }
+      for (let y = 0; y <= H; y += GRID) { ctx.moveTo(0, y); ctx.lineTo(W, y); }
+      ctx.stroke();
+
+      /* ── circuit lines + junction dots + data pulses ── */
+      circuits.forEach(c => {
+        if (c.pts.length < 2) return;
+
+        /* line */
+        ctx.beginPath();
+        ctx.moveTo(c.pts[0].x, c.pts[0].y);
+        for (let i = 1; i < c.pts.length; i++) ctx.lineTo(c.pts[i].x, c.pts[i].y);
+        ctx.strokeStyle = "rgba(139,92,246,0.11)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        /* junction nodes */
+        c.pts.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(167,139,250,0.28)";
+          ctx.fill();
+        });
+
+        /* animated pulse */
+        c.t += c.speed;
+        if (c.t > 1) c.t = 0;
+        const total = c.pts.length - 1;
+        const si = Math.min(Math.floor(c.t * total), total - 1);
+        const st = c.t * total - si;
+        const p1 = c.pts[si], p2 = c.pts[si + 1];
+        const px = p1.x + (p2.x - p1.x) * st;
+        const py = p1.y + (p2.y - p1.y) * st;
+
+        const g = ctx.createRadialGradient(px, py, 0, px, py, 8);
+        g.addColorStop(0, "rgba(196,166,255,0.95)");
+        g.addColorStop(0.4, "rgba(139,92,246,0.45)");
+        g.addColorStop(1, "rgba(139,92,246,0)");
+        ctx.beginPath();
+        ctx.arc(px, py, 8, 0, Math.PI * 2);
+        ctx.fillStyle = g;
+        ctx.fill();
+      });
+
+      /* ── drifting particles ── */
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy; p.ph += p.ps;
+        if (p.x < -4) p.x = W + 4; if (p.x > W + 4) p.x = -4;
+        if (p.y < -4) p.y = H + 4; if (p.y > H + 4) p.y = -4;
+        const alpha = p.base * (0.55 + 0.45 * Math.sin(p.ph));
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(167,139,250,${alpha.toFixed(3)})`;
+        ctx.fill();
+      });
+
+      animId = requestAnimationFrame(draw);
+    };
+
+    init();
+    const ro = new ResizeObserver(init);
+    ro.observe(canvas);
+    animId = requestAnimationFrame(draw);
+    return () => { cancelAnimationFrame(animId); ro.disconnect(); };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ position: "fixed", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }}
+    />
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // PARTY HUB — Tool category sets for the 5-section layout
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -3459,7 +3594,7 @@ export default function OccasionHub({ occasion }) {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         @keyframes splash-pulse { 0%,100%{opacity:0.8;transform:scale(1)} 50%{opacity:1;transform:scale(1.04)} }
         @keyframes splash-line  { from{width:0} to{width:100%} }
-        @keyframes ph-glow      { 0%,100%{opacity:0.35} 50%{opacity:0.6} }
+        @keyframes ph-glow      { 0%,100%{opacity:0.28;transform:translateX(-50%) scale(1)} 50%{opacity:0.55;transform:translateX(-50%) scale(1.08)} }
         @keyframes rm-in        { from{opacity:0;transform:scale(0.93)} to{opacity:1;transform:scale(1)} }
         @keyframes dot-pulse    { 0%,100%{opacity:0.4;transform:scale(0.8)} 50%{opacity:1;transform:scale(1)} }
         @keyframes tab-slide    { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
@@ -3472,9 +3607,14 @@ export default function OccasionHub({ occasion }) {
         @media (prefers-reduced-motion:reduce) { * { animation:none !important; transition:none !important; } }
       `}</style>
 
-      {/* Ambient violet aura */}
-      <div style={{ position:"fixed", top:-100, left:"50%", transform:"translateX(-50%)", width:520, height:360, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(139,92,246,0.16) 0%, transparent 70%)", pointerEvents:"none", zIndex:0, animation:"ph-glow 6s ease-in-out infinite" }} />
-      <div style={{ position:"fixed", top:-40, right:-60, width:320, height:240, borderRadius:"50%", background:`radial-gradient(ellipse, ${accent}12 0%, transparent 65%)`, pointerEvents:"none", zIndex:0 }} />
+      {/* Immersive background — canvas particles + circuit lines + grid */}
+      <PartyHubBackground />
+      {/* Deep violet bloom — top-centre */}
+      <div style={{ position:"fixed", top:-140, left:"50%", transform:"translateX(-50%)", width:700, height:480, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(109,40,217,0.22) 0%, rgba(139,92,246,0.08) 45%, transparent 70%)", pointerEvents:"none", zIndex:0, animation:"ph-glow 7s ease-in-out infinite" }} />
+      {/* Accent glow — occasion colour, corner */}
+      <div style={{ position:"fixed", top:-60, right:-80, width:400, height:300, borderRadius:"50%", background:`radial-gradient(ellipse, ${accent}18 0%, transparent 65%)`, pointerEvents:"none", zIndex:0 }} />
+      {/* Cool blue undertone — bottom left */}
+      <div style={{ position:"fixed", bottom:-120, left:-60, width:420, height:320, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(56,189,248,0.06) 0%, transparent 65%)", pointerEvents:"none", zIndex:0 }} />
 
       {/* ── Splash ── */}
       {showSplash && (
