@@ -148,6 +148,10 @@ function TipsByTendrSection() {
       }} />
       {/* Top hairline */}
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent 0%, rgba(204,171,74,0.38) 28%, rgba(204,171,74,0.38) 72%, transparent 100%)", zIndex: 1 }} />
+      {/* Large italic serif watermark — unique to this section */}
+      <div aria-hidden style={{ position: "absolute", bottom: -20, right: -16, fontSize: "clamp(7rem,22vw,13rem)", fontFamily: "'Cormorant Garamond',Georgia,serif", fontWeight: 800, fontStyle: "italic", color: "rgba(196,122,46,0.038)", lineHeight: 1, userSelect: "none", pointerEvents: "none", zIndex: 0, letterSpacing: "-0.04em", transform: "rotate(-5deg)", whiteSpace: "nowrap" }}>Guides</div>
+      {/* Vertical ruled lines — like book spines */}
+      <div style={{ position: "absolute", inset: 0, backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(204,171,74,0.015) 60px, rgba(204,171,74,0.015) 61px)", pointerEvents: "none", zIndex: 0 }} />
 
       <div style={{ maxWidth: 1060, margin: "0 auto", position: "relative", zIndex: 1 }}>
         {/* Header */}
@@ -2097,6 +2101,10 @@ const Home = () => {
         {/* Top & bottom hairlines */}
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent, rgba(204,171,74,0.38) 30%, rgba(204,171,74,0.38) 70%, transparent)", zIndex: 1 }} />
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent, rgba(204,171,74,0.22) 30%, rgba(204,171,74,0.22) 70%, transparent)", zIndex: 1 }} />
+        {/* Concentric gauge rings — unique to this trust section */}
+        <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: 520, height: 520, borderRadius: "50%", border: "1px solid rgba(204,171,74,0.045)", pointerEvents: "none", zIndex: 0 }} />
+        <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: 370, height: 370, borderRadius: "50%", border: "1px solid rgba(204,171,74,0.055)", pointerEvents: "none", zIndex: 0 }} />
+        <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: 220, height: 220, borderRadius: "50%", border: "1px solid rgba(204,171,74,0.07)", pointerEvents: "none", zIndex: 0 }} />
 
         <div style={{ maxWidth: 1060, margin: "0 auto", position: "relative", zIndex: 1 }}>
           {/* Header */}
@@ -2539,7 +2547,7 @@ const Home = () => {
       <TipsByTendrSection />
 
       {/* Become a Partner — vendor strip */}
-      <section style={{ background: "#1C0E04", padding: "46px 28px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+      <section style={{ background: "#1C0E04", padding: "72px 28px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
         <style>{`
           @keyframes vt { from { transform: translateX(0); } to { transform: translateX(-50%); } }
           .vd-ticker { display: flex; gap: 8px; width: max-content; animation: vt 26s linear infinite; }
@@ -2560,6 +2568,8 @@ const Home = () => {
         {/* Top & bottom hairlines */}
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent 0%, rgba(204,171,74,0.42) 25%, rgba(204,171,74,0.42) 75%, transparent 100%)", zIndex: 1 }} />
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent 0%, rgba(204,171,74,0.2) 25%, rgba(204,171,74,0.2) 75%, transparent 100%)", zIndex: 1 }} />
+        {/* Oversized italic serif watermark — distinct from other sections */}
+        <div aria-hidden style={{ position: "absolute", left: -30, top: "50%", transform: "translateY(-50%)", fontSize: "clamp(10rem,28vw,18rem)", fontFamily: "'Cormorant Garamond',Georgia,serif", fontWeight: 800, fontStyle: "italic", color: "rgba(196,122,46,0.03)", lineHeight: 1, userSelect: "none", pointerEvents: "none", zIndex: 0, letterSpacing: "-0.04em" }}>V</div>
 
         <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 2, display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
 

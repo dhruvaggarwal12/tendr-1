@@ -1926,7 +1926,7 @@ function SecretMessage({ onClose, accent }) {
               {messages.map((m,i) => { const isOpen=revealed.includes(i); return (
                 <div key={i} onClick={()=>!isOpen&&setRevealed(r=>[...r,i])} style={{ padding:"16px 18px", borderRadius:14, border:`1.5px solid ${isOpen?accent+"44":"rgba(255,255,255,0.1)"}`, background:isOpen?accent+"09":"rgba(255,255,255,0.04)", cursor:isOpen?"default":"pointer", transition:"all 0.3s" }}>
                   {!isOpen
-                    ? <div style={{ textAlign:"center", color:"rgba(255,255,255,0.35)", fontSize:26 }}>💌 Tap to open</div>
+                    ? <div style={{ textAlign:"center", color:"rgba(255,255,255,0.68)", fontSize:26 }}>💌 Tap to open</div>
                     : <>
                       <div style={{ fontSize:10, fontWeight:700, color:accent, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:6 }}>from {m.from}</div>
                       <div style={{ fontSize:14, color:"#fff", lineHeight:1.6 }}>{m.text}</div>
@@ -3655,7 +3655,7 @@ export default function OccasionHub({ occasion }) {
               <div style={{ display:"flex", gap:10 }}>
                 {tourStep < steps.length - 1 ? (
                   <>
-                    <button onClick={dismissTour} style={{ flex:1, padding:"11px 0", borderRadius:12, border:"1px solid rgba(255,255,255,0.1)", background:"transparent", color:"rgba(255,255,255,0.35)", fontSize:13, fontWeight:600, cursor:"pointer" }}>Skip</button>
+                    <button onClick={dismissTour} style={{ flex:1, padding:"11px 0", borderRadius:12, border:"1px solid rgba(255,255,255,0.1)", background:"transparent", color:"rgba(255,255,255,0.68)", fontSize:13, fontWeight:600, cursor:"pointer" }}>Skip</button>
                     <button onClick={() => setTourStep(s=>s+1)} style={{ flex:2, padding:"11px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer" }}>Next →</button>
                   </>
                 ) : (
@@ -3813,7 +3813,7 @@ export default function OccasionHub({ occasion }) {
               <div style={{ position:"absolute", top:0, left:0, right:0, height:1, background:"linear-gradient(90deg, transparent, rgba(139,92,246,0.7), transparent)" }} />
               <div style={{ fontSize:44, marginBottom:8 }}>{occ.emoji}</div>
               <div style={{ fontSize:20, fontWeight:900, color:"#fff", marginBottom:4, letterSpacing:"-0.02em" }}>{occ.name}</div>
-              <div style={{ fontSize:12, color:"rgba(255,255,255,0.42)", marginBottom:20, lineHeight:1.5 }}>{occ.tagline}</div>
+              <div style={{ fontSize:13, color:"rgba(255,255,255,0.72)", marginBottom:20, lineHeight:1.5 }}>{occ.tagline}</div>
               {!room ? (
                 <div style={{ display:"flex", gap:10 }}>
                   <button onClick={()=>setRoomModal("host-setup")} style={{ flex:1, padding:"12px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:13, fontWeight:800, cursor:"pointer" }}>Host a Room</button>
@@ -3828,13 +3828,13 @@ export default function OccasionHub({ occasion }) {
             </div>
             {/* Quick access */}
             {lobbyQuick.length > 0 && (<>
-              <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.28)", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:10, fontFamily:"monospace" }}>// QUICK ACCESS</div>
+              <div style={{ fontSize:10, fontWeight:700, color:PH.violet, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:10, fontFamily:"monospace" }}>// QUICK ACCESS</div>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
                 {lobbyQuick.map(t => (
                   <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:"14px 12px", cursor:"pointer", display:"flex", flexDirection:"column", gap:6 }}>
                     <div style={{ color:PH.violet }}>{TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}</div>
                     <div style={{ fontSize:12, fontWeight:700, color:"#fff" }}>{t.title}</div>
-                    <div style={{ fontSize:11, color:"rgba(255,255,255,0.35)" }}>{t.desc}</div>
+                    <div style={{ fontSize:11, color:"rgba(255,255,255,0.68)" }}>{t.desc}</div>
                   </div>
                 ))}
               </div>
@@ -3854,7 +3854,7 @@ export default function OccasionHub({ occasion }) {
                   <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"rgba(56,189,248,0.04)", border:"1px solid rgba(56,189,248,0.12)", borderRadius:16, padding:"16px 14px", cursor:"pointer", display:"flex", flexDirection:"column", gap:8 }}>
                     <div style={{ color:PH.blue }}>{TOOL_ICONS[t.id]||occic(<polygon points="5 3 19 12 5 21 5 3"/>)}</div>
                     <div style={{ fontSize:13, fontWeight:700, color:"#fff" }}>{t.title}</div>
-                    <div style={{ fontSize:11, color:"rgba(255,255,255,0.35)", lineHeight:1.4 }}>{t.desc}</div>
+                    <div style={{ fontSize:11, color:"rgba(255,255,255,0.68)", lineHeight:1.4 }}>{t.desc}</div>
                   </div>
                 ))}
               </div>
@@ -3911,9 +3911,9 @@ export default function OccasionHub({ occasion }) {
                     <div style={{ color:PH.gold, flexShrink:0 }}>{TOOL_ICONS[t.id]||occic(<rect x="3" y="3" width="18" height="18" rx="2"/>)}</div>
                     <div style={{ flex:1, minWidth:0 }}>
                       <div style={{ fontSize:14, fontWeight:700, color:"#fff" }}>{t.title}</div>
-                      <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.38)", marginTop:2 }}>{t.desc}</div>
+                      <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.68)", marginTop:2 }}>{t.desc}</div>
                     </div>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.42)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
                   </div>
                 ))}
               </div>
@@ -3934,9 +3934,9 @@ export default function OccasionHub({ occasion }) {
                     <div style={{ color:PH.pink, flexShrink:0 }}>{TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}</div>
                     <div style={{ flex:1, minWidth:0 }}>
                       <div style={{ fontSize:14, fontWeight:700, color:"#fff" }}>{t.title}</div>
-                      <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.38)", marginTop:2 }}>{t.desc}</div>
+                      <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.68)", marginTop:2 }}>{t.desc}</div>
                     </div>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.42)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
                   </div>
                 ))}
               </div>
@@ -3960,8 +3960,8 @@ export default function OccasionHub({ occasion }) {
             const tColor = tabAccentMap[t.id] || accent;
             return (
               <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:3, padding:"4px 0 2px", border:"none", background:"transparent", cursor:"pointer" }}>
-                <div style={{ color:isActive?tColor:"rgba(255,255,255,0.28)", transition:"color 0.18s" }}>{t.icon}</div>
-                <div style={{ fontSize:9, fontWeight:isActive?800:600, color:isActive?tColor:"rgba(255,255,255,0.28)", letterSpacing:"0.1em", textTransform:"uppercase", fontFamily:"monospace", transition:"color 0.18s" }}>{t.label}</div>
+                <div style={{ color:isActive?tColor:"rgba(255,255,255,0.48)", transition:"color 0.18s" }}>{t.icon}</div>
+                <div style={{ fontSize:9, fontWeight:isActive?800:600, color:isActive?tColor:"rgba(255,255,255,0.48)", letterSpacing:"0.1em", textTransform:"uppercase", fontFamily:"monospace", transition:"color 0.18s" }}>{t.label}</div>
                 <div style={{ width:isActive?16:0, height:2, borderRadius:1, background:tColor, transition:"width 0.22s cubic-bezier(0.22,1,0.36,1)" }} />
               </button>
             );

@@ -34,7 +34,7 @@ const VENDOR_TYPES = [
 ];
 
 const TRUST = [
-  { n: "0%", label: "Commission", sub: "We never take a cut from your bookings" },
+  { n: "15%", label: "Commission", sub: "15% platform fee on confirmed bookings only" },
   { n: "Free", label: "To list", sub: "No monthly fees, no hidden charges" },
   { n: "24 hrs", label: "Review time", sub: "Our team reviews every application fast" },
 ];
@@ -101,7 +101,7 @@ function Shell({ children, step, narrow = true }) {
               Get discovered by thousands of event planners in Delhi NCR.
             </h2>
             <p style={{ fontSize: 14, color: "rgba(245,236,216,0.55)", lineHeight: 1.7, margin: 0 }}>
-              Join Tendr's verified vendor network — real clients, real bookings, zero commission.
+              Join Tendr's verified vendor network — real clients, real bookings, 15% platform fee.
             </p>
           </div>
 

@@ -402,7 +402,7 @@ const Navbar = ({
           {/* ── Desktop nav — search LEFT of Browse, then links ── */}
           <div
             className="desktop-nav"
-            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 0 }}
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 0 }}
           >
           {/* Search pill — left of Browse */}
           <button
@@ -417,7 +417,7 @@ const Navbar = ({
             <span style={{ fontSize: 9.5, color: "rgba(160,120,80,0.45)", border: "1px solid rgba(160,120,80,0.18)", borderRadius: 5, padding: "2px 6px", whiteSpace: "nowrap", fontFamily: "monospace", letterSpacing: "0.04em" }}>⌘K</span>
           </button>
           {/* Primary nav links */}
-          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 4, marginLeft: "auto" }}>
             {NAV_ITEMS.map((group) => (
               group.directLink ? (
                 <div key={group.label} style={{ position: "relative" }}>
