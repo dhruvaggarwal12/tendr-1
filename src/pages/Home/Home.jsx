@@ -1603,6 +1603,8 @@ const Home = () => {
             ].map(({ label, photo }, i) => {
               const isHovered = hoveredOcc === label;
               const isDimmed  = hoveredOcc !== null && !isHovered;
+              const _tg = ["linear-gradient(150deg,#2D1205,#1A0A03)","linear-gradient(150deg,#1E0A20,#2A0E2E)","linear-gradient(150deg,#0C1A08,#162A0E)","linear-gradient(150deg,#0A1528,#0F1E38)","linear-gradient(150deg,#201005,#301808)"];
+              const tileBg = _tg[i % _tg.length];
               return (
                 <motion.button
                   key={label}
@@ -1648,7 +1650,7 @@ const Home = () => {
                     borderRadius: 16,
                     overflow: "hidden",
                     border: "none",
-                    background: "#D4C0A8",
+                    background: tileBg,
                     cursor: "pointer",
                     padding: 0,
                     display: "block",
@@ -1657,24 +1659,19 @@ const Home = () => {
                     boxShadow: "0 2px 8px rgba(28,14,4,0.08)",
                   }}
                 >
-                  <motion.img
-                    src={photo} alt={label} loading="lazy"
-                    animate={{ scale: isHovered ? 1.09 : 1 }}
-                    transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block", transformOrigin: "center" }}
-                  />
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(6,2,0,0.88) 0%, rgba(6,2,0,0.18) 52%, transparent 100%)" }} />
+                  <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 25% 75%, rgba(196,122,46,0.18) 0%, transparent 55%), radial-gradient(circle at 80% 20%, rgba(255,247,235,0.06) 0%, transparent 50%)" }} />
                   <motion.div
                     animate={{ opacity: isHovered ? 1 : 0 }}
                     transition={{ duration: 0.18 }}
-                    style={{ position: "absolute", inset: 0, borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.6)", pointerEvents: "none" }}
+                    style={{ position: "absolute", inset: 0, borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.55)", pointerEvents: "none" }}
                   />
-                  <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "10px 10px 10px" }}>
-                    <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 13, fontWeight: 600, fontStyle: "italic", color: "#fff", display: "block", lineHeight: 1.25, textShadow: "0 1px 4px rgba(0,0,0,0.45)" }}>{label}</span>
+                  <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", padding: "16px 12px", textAlign: "center" }}>
+                    <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, fontWeight: 700, fontStyle: "italic", color: "#FFF8EC", lineHeight: 1.1, textShadow: "0 2px 10px rgba(0,0,0,0.55)", letterSpacing: "-0.01em" }}>{label}</span>
+                    <div style={{ width: 22, height: 1, background: "rgba(196,122,46,0.6)", margin: "10px auto 8px" }} />
                     <motion.span
-                      animate={{ opacity: isHovered ? 1 : 0.55 }}
+                      animate={{ opacity: isHovered ? 1 : 0.5 }}
                       transition={{ duration: 0.18 }}
-                      style={{ fontSize: 11, color: "#CCAB4A", fontWeight: 600, display: "block", marginTop: 2, letterSpacing: "0.08em", textTransform: "uppercase" }}
+                      style={{ fontSize: 9, color: "#CCAB4A", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}
                     >Explore →</motion.span>
                   </div>
                 </motion.button>
@@ -2792,14 +2789,9 @@ const Home = () => {
                       onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.45)"; e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.12)"; e.currentTarget.style.background = "rgba(255,247,235,0.04)"; e.currentTarget.style.transform = "translateY(0)"; }}
                     >
-                      <div style={{ height: 80, overflow: "hidden", position: "relative" }}>
-                        <img src={o.coverImage} alt={o.name} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.78 }} />
-                        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(0,0,0,0.52) 0%,transparent 55%)" }} />
-                        <span style={{ position: "absolute", top: 7, left: 8, color: "#fff", display: "flex" }}>{OCCASION_ICONS[o.id] || _ic(<><circle cx="12" cy="12" r="10"/></>)}</span>
-                      </div>
-                      <div style={{ padding: "7px 10px 9px" }}>
-                        <div style={{ fontSize: 11.5, fontWeight: 700, color: "#F5ECD8", lineHeight: 1.25 }}>{o.name}</div>
-                        {o.localName && <div style={{ fontSize: 11, color: "#C47A2E", fontWeight: 600, marginTop: 2 }}>{o.localName}</div>}
+                      <div style={{ padding: "18px 12px 16px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", minHeight: 96 }}>
+                        <div style={{ fontSize: 16, fontWeight: 700, fontStyle: "italic", color: "#F5ECD8", lineHeight: 1.15, fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "-0.01em" }}>{o.name}</div>
+                        {o.localName && <div style={{ fontSize: 10, color: "#C47A2E", fontWeight: 600, marginTop: 5, letterSpacing: "0.03em" }}>{o.localName}</div>}
                       </div>
                     </button>
                   ))}
