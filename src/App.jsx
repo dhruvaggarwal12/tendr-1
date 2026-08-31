@@ -151,6 +151,7 @@ function App() {
           </Suspense>
           <FloatingChatButton hideOnRoutes={["/chat", "/chats", "/login", "/signup", "/otp", "/guides"]} />
           <MyEventFloatDesktop />
+          <ShortlistFloat />
           <VendorChatModal />
         </ChatProvider>
         </TourProvider>

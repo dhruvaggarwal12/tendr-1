@@ -181,7 +181,7 @@ const VendorList_ListingPage = ({
   const handleViewProfile = (e, vendorId) => {
     e.stopPropagation();
     if (!vendorId) return;
-    const url = `/vendor/${vendorId}`;
+    const url = `/vendor/${vendorId}${isFromPlanFlow ? "?fromPlan=1" : ""}`;
     const state = { from: "listing", compareInProfile, filters: { eventType, serviceType, locationType, date, guestCount, sortBy, sortOrder } };
     if (window.innerWidth >= 768) {
       // Desktop — open in new tab so user keeps their listings context
@@ -296,7 +296,7 @@ const VendorList_ListingPage = ({
                     className="vendor-card"
                     onClick={() => {
                       if (window.innerWidth >= 1024) {
-                        window.open(`/vendor/${vendor._id}`, "_blank");
+                        window.open(`/vendor/${vendor._id}${isFromPlanFlow ? "?fromPlan=1" : ""}`, "_blank");
                       } else {
                         setQuickViewVendor(vendor);
                       }
@@ -691,7 +691,7 @@ const VendorList_ListingPage = ({
                       const vendorId = quickViewVendor._id || quickViewVendor.id;
                       if (!vendorId) return;
                       closePanel();
-                      const url = `/vendor/${vendorId}`;
+                      const url = `/vendor/${vendorId}${isFromPlanFlow ? "?fromPlan=1" : ""}`;
                       const state = { from: "listing", compareInProfile, filters: { eventType, serviceType, locationType, date, guestCount, sortBy, sortOrder } };
                       if (window.innerWidth >= 768) {
                         window.open(url, "_blank");

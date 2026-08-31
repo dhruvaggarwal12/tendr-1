@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { addToShortlist, isInShortlist } from "../../components/ShortlistFloat";
 import SEO, { vendorPageTitle, vendorPageDescription } from "../../components/SEO";
 
 import ListingsNav from "../../components/ListingsNav";
@@ -109,6 +110,12 @@ const VendorDetailsPage = () => {
     }
   }, [id, location.search]);
 
+  useEffect(() => {
+    const handler = () => setShortlistTick(t => t + 1);
+    window.addEventListener("tendr:shortlist-update", handler);
+    return () => window.removeEventListener("tendr:shortlist-update", handler);
+  }, []);
+
   // If navigated from listings
   const vendorFromState = location.state?.vendor;
   // Only show compare button when navigated from normal booking flow
@@ -131,6 +138,9 @@ const VendorDetailsPage = () => {
   const hasEventContext = !!(location.state?.compareInProfile && formEventType);
   // Browse/search/top-rated flow — do NOT carry planning form data here
   const isFromListingFlow = location.state?.from === "listing";
+  // DIY shortlist mode — URL param fromPlan=1 set by HamburgerNav Browse→ links
+  const isFromPlanFlow = new URLSearchParams(location.search).get("fromPlan") === "1";
+  const [shortlistTick, setShortlistTick] = useState(0);
 
   // Selected Vendors modal state
   const [isSelectedModalOpen, setIsSelectedModalOpen] = useState(false);
@@ -573,25 +583,38 @@ const VendorDetailsPage = () => {
                   style={{ flexShrink: 0, width: 42, height: 42, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: shareCopied ? "rgba(196,122,46,0.08)" : "#fff", color: "#C47A2E", fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {shareCopied ? "✓" : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>}
                 </button>
-                <button
-                  onClick={() => {
-                    if (!token) { setAuthModalOpen(true); return; }
-                    if (hasActiveChatSave) { openExistingChatForVendor(vendor._id, vendor, token, openExistingChat, openVendorChat); return; }
-                    if (isFromListingFlow) {
-                      openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
-                    } else if (hasEventContext) {
-                      dispatch(setBookingType("you-do-it"));
-                      openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
-                    } else {
-                      setChatEventForm({ eventType: formEventType || "", guests: formGuests ? String(formGuests) : "", date: formDate || "", location: formLocation || "" });
-                      setChatFormOpen(true);
-                    }
-                  }}
-                  style={{ flex: 1, padding: "12px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(196,122,46,0.4)", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                  {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
-                </button>
+                {isFromPlanFlow ? (() => {
+                  void shortlistTick;
+                  const slActive = vendor && isInShortlist(vendor.serviceType, vendor._id);
+                  return (
+                    <button
+                      onClick={() => { if (!slActive && vendor) addToShortlist(vendor.serviceType, vendor); }}
+                      style={{ flex: 1, padding: "12px", borderRadius: 10, border: "none", background: slActive ? "rgba(34,197,94,0.08)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: slActive ? "#16a34a" : "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: slActive ? "default" : "pointer", boxShadow: slActive ? "none" : "0 3px 12px rgba(196,122,46,0.4)", border: slActive ? "1.5px solid rgba(34,197,94,0.3)" : "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}
+                    >
+                      {slActive ? "✓ Shortlisted" : "Shortlist Vendor"}
+                    </button>
+                  );
+                })() : (
+                  <button
+                    onClick={() => {
+                      if (!token) { setAuthModalOpen(true); return; }
+                      if (hasActiveChatSave) { openExistingChatForVendor(vendor._id, vendor, token, openExistingChat, openVendorChat); return; }
+                      if (isFromListingFlow) {
+                        openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                      } else if (hasEventContext) {
+                        dispatch(setBookingType("you-do-it"));
+                        openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                      } else {
+                        setChatEventForm({ eventType: formEventType || "", guests: formGuests ? String(formGuests) : "", date: formDate || "", location: formLocation || "" });
+                        setChatFormOpen(true);
+                      }
+                    }}
+                    style={{ flex: 1, padding: "12px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(196,122,46,0.4)", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
+                  </button>
+                )}
               </div>
               <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "0 0 10px", lineHeight: 1.5 }}>Our team reviews and connects you within a few hours</p>
               {/* Contact directly (mobile) */}
@@ -833,25 +856,38 @@ const VendorDetailsPage = () => {
                     style={{ flexShrink: 0, width: 44, height: 44, borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: shareCopied ? "rgba(196,122,46,0.08)" : "#fff", color: shareCopied ? "#15803d" : "#C47A2E", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     {shareCopied ? "✓" : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>}
                   </button>
-                  <button
-                    onClick={() => {
-                      if (!token) { setAuthModalOpen(true); return; }
-                      if (hasActiveChatSave) { openExistingChatForVendor(vendor._id, vendor, token, openExistingChat, openVendorChat); return; }
-                      if (isFromListingFlow) {
-                        openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
-                      } else if (hasEventContext) {
-                        dispatch(setBookingType("you-do-it"));
-                        openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
-                      } else {
-                        setChatEventForm({ eventType: formEventType || "", guests: formGuests ? String(formGuests) : "", date: formDate || "", location: formLocation || "" });
-                        setChatFormOpen(true);
-                      }
-                    }}
-                    style={{ flex: 1, padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
-                  </button>
+                  {isFromPlanFlow ? (() => {
+                    void shortlistTick;
+                    const slActive = vendor && isInShortlist(vendor.serviceType, vendor._id);
+                    return (
+                      <button
+                        onClick={() => { if (!slActive && vendor) addToShortlist(vendor.serviceType, vendor); }}
+                        style={{ flex: 1, padding: "14px", borderRadius: 12, border: slActive ? "1.5px solid rgba(34,197,94,0.3)" : "none", background: slActive ? "rgba(34,197,94,0.08)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: slActive ? "#16a34a" : "#fff", fontSize: 15, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: slActive ? "default" : "pointer", boxShadow: slActive ? "none" : "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+                      >
+                        {slActive ? "✓ Shortlisted" : "Shortlist Vendor"}
+                      </button>
+                    );
+                  })() : (
+                    <button
+                      onClick={() => {
+                        if (!token) { setAuthModalOpen(true); return; }
+                        if (hasActiveChatSave) { openExistingChatForVendor(vendor._id, vendor, token, openExistingChat, openVendorChat); return; }
+                        if (isFromListingFlow) {
+                          openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                        } else if (hasEventContext) {
+                          dispatch(setBookingType("you-do-it"));
+                          openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                        } else {
+                          setChatEventForm({ eventType: formEventType || "", guests: formGuests ? String(formGuests) : "", date: formDate || "", location: formLocation || "" });
+                          setChatFormOpen(true);
+                        }
+                      }}
+                      style={{ flex: 1, padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                      {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
+                    </button>
+                  )}
                 </div>
                 <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "0 0 10px", lineHeight: 1.5 }}>
                   Our team reviews and connects you within a few hours

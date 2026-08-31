@@ -1186,61 +1186,6 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         );
       })()}
 
-      {/* Plan mini-chip — desktop only, above chat button; hideable (not permanently dismissable) */}
-      {planChip && (() => {
-        const eventType = planChip.eventDetails?.eventType || planChip.eventType || "My Event";
-        const eventDate = planChip.eventDetails?.date || planChip.date || "";
-        const daysLeft = eventDate ? Math.ceil((new Date(eventDate) - Date.now()) / 86400000) : null;
-        const isDraft = planChip._draft === true;
-        const hasChat = !isDraft && !!(planChip.conversationId || planChip._id);
-        return (
-          <div className="me-chip-wrap" style={{
-            position: "fixed", bottom: 84, right: 20, zIndex: 901,
-            fontFamily: font,
-          }}>
-            {planChipHidden ? (
-              /* Collapsed pill — click to re-expand */
-              <div
-                onClick={() => setPlanChipHidden(false)}
-                style={{ display: "flex", alignItems: "center", gap: 6, background: "#FFFCF5", border: "1.5px solid rgba(196,122,46,0.22)", borderRadius: 100, padding: "5px 12px 5px 10px", boxShadow: "0 4px 12px rgba(196,122,46,0.15)", cursor: "pointer", animation: "chatPop 0.18s cubic-bezier(0.4,0,0.2,1)" }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#C47A2E", flexShrink: 0 }} />
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#2C1A0E" }}>{eventType}</span>
-                <span style={{ fontSize: 11, color: "#9B7450", marginLeft: 2 }}>↑</span>
-              </div>
-            ) : (
-              <div style={{
-                background: "#FFFCF5",
-                borderRadius: 14,
-                boxShadow: "0 6px 24px rgba(196,122,46,0.2)",
-                border: "1.5px solid rgba(196,122,46,0.22)",
-                padding: "10px 12px",
-                minWidth: 200, maxWidth: 260,
-                animation: "chatPop 0.2s cubic-bezier(0.4,0,0.2,1)",
-              }}>
-                {/* Minimize button — hides this session only */}
-                <button
-                  onClick={() => setPlanChipHidden(true)}
-                  title="Hide for now"
-                  style={{ position: "absolute", top: 6, right: 8, background: "none", border: "none", fontSize: 15, color: "#bbb", cursor: "pointer", lineHeight: 1, padding: "0 2px" }}>−</button>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>
-                  My Event
-                </div>
-                <div style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E", marginBottom: 2, paddingRight: 16 }}>{eventType}</div>
-                {daysLeft !== null && (
-                  <div style={{ fontSize: 11.5, color: "#9B7450", marginBottom: 8 }}>
-                    {daysLeft > 0 ? `${daysLeft} days to go` : daysLeft === 0 ? "Today!" : "Event passed"}
-                  </div>
-                )}
-                <a
-                  href={hasChat ? "/my-event" : "/plan-event/form"}
-                  style={{ display: "block", textAlign: "center", padding: "7px 10px", borderRadius: 9, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", fontFamily: font }}>
-                  {hasChat ? "My Event →" : "Continue Booking →"}
-                </a>
-              </div>
-            )}
-          </div>
-        );
-      })()}
 
       {/* Floating button */}
       <button
@@ -1437,12 +1382,12 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
             bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
             right: 72px !important;
           }
-          .chat-popup {
-            right: 12px !important;
-            left: 12px !important;
-            min-width: unset !important;
-            max-width: unset !important;
-            bottom: calc(140px + env(safe-area-inset-bottom, 0px)) !important;
+          .chat-popup-row {
+            right: 76px !important;
+            bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+            flex-wrap: wrap !important;
+            max-width: calc(100vw - 90px) !important;
+            justify-content: flex-end !important;
           }
           .mobile-saved-popup, .mobile-compare-popup {
             bottom: calc(260px + env(safe-area-inset-bottom, 0px)) !important;
@@ -1457,97 +1402,73 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         }
       `}</style>
 
-      {/* Popup menu */}
+      {/* Popup — horizontal row to the LEFT of the chat button */}
       {open && (
         <>
+          <div style={{ position: "fixed", inset: 0, zIndex: 899 }} onClick={() => setOpen(false)} />
           <div
-            style={{ position: "fixed", inset: 0, zIndex: 899 }}
-            onClick={() => setOpen(false)}
-          />
-          <div
-            className="chat-popup"
+            className="chat-popup-row"
             style={{
               position: "fixed",
-              bottom: 82,
-              right: 20,
+              bottom: "calc(22px + env(safe-area-inset-bottom, 0px))",
+              right: 145,
               zIndex: 901,
-              background: "#FFFCF5",
-              borderRadius: 20,
-              boxShadow: "0 12px 48px rgba(139,69,19,0.18)",
-              border: "1px solid rgba(196,122,46,0.15)",
-              padding: 10,
-              minWidth: 260,
-              maxWidth: 300,
+              display: "flex",
+              flexDirection: "row",
+              gap: 8,
+              alignItems: "center",
+              animation: "chatPop 0.18s cubic-bezier(0.4,0,0.2,1)",
               fontFamily: font,
             }}
           >
-            {/* Resume minimized chat — shown at top when a chat is minimized */}
+            {/* Resume minimized chat chip */}
             {hasMinimizedChat && chatState?.vendor && (
-              <>
-                <button
-                  onClick={() => { setOpen(false); expandChat(); }}
-                  style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 12px", borderRadius: 10, border: "none", background: "rgba(21,128,61,0.07)", cursor: "pointer", textAlign: "left", fontFamily: font }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(21,128,61,0.12)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "rgba(21,128,61,0.07)")}
-                >
-                  <span style={{ fontSize: 18, flexShrink: 0 }}>💬</span>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#15803d" }}>
-                      Resume: {chatState.vendor.name || "Chat"}
-                    </div>
-                    <div style={{ fontSize: 11, color: "#9B7450" }}>Tap to continue your minimized chat</div>
-                  </div>
-                </button>
-                <div style={{ height: 1, background: "rgba(196,122,46,0.1)", margin: "4px 12px" }} />
-              </>
+              <button
+                onClick={() => { setOpen(false); expandChat(); }}
+                style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 13px", borderRadius: 12, border: "1.5px solid rgba(21,128,61,0.3)", background: "rgba(21,128,61,0.06)", boxShadow: "0 4px 14px rgba(21,128,61,0.12)", cursor: "pointer", textAlign: "left", fontFamily: font, whiteSpace: "nowrap" }}
+                onMouseEnter={e => (e.currentTarget.style.background = "rgba(21,128,61,0.1)")}
+                onMouseLeave={e => (e.currentTarget.style.background = "rgba(21,128,61,0.06)")}
+              >
+                <span style={{ fontSize: 16, flexShrink: 0 }}>💬</span>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#15803d" }}>Resume</div>
+                  <div style={{ fontSize: 10, color: "#9B7450", maxWidth: 80, overflow: "hidden", textOverflow: "ellipsis" }}>{chatState.vendor.name || "Chat"}</div>
+                </div>
+              </button>
             )}
 
-
-            {/* Active Chats */}
+            {/* Active Chats chip */}
             <button
               onClick={handleActiveChats}
-              style={{
-                display: "flex", alignItems: "flex-start", gap: 12,
-                width: "100%", padding: "10px 12px", borderRadius: 10,
-                border: "none", background: "transparent", cursor: "pointer",
-                textAlign: "left", fontFamily: font, transition: "background 0.15s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.07)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 13px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.18)", background: "#FFFCF5", boxShadow: "0 4px 16px rgba(44,26,14,0.12)", cursor: "pointer", textAlign: "left", fontFamily: font, whiteSpace: "nowrap" }}
+              onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
+              onMouseLeave={e => (e.currentTarget.style.background = "#FFFCF5")}
             >
-              <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>💬</span>
+              <span style={{ fontSize: 16, flexShrink: 0 }}>💬</span>
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: "#2C1A0E" }}>Active Chats</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>Active Chats</span>
                   {vendorChats.length > 0 && (
-                    <span style={{ fontSize: 10, fontWeight: 800, background: "#22c55e", color: "#fff", borderRadius: 100, padding: "1px 7px" }}>{vendorChats.length}</span>
+                    <span style={{ fontSize: 9, fontWeight: 800, background: "#22c55e", color: "#fff", borderRadius: 100, padding: "1px 5px" }}>{vendorChats.length}</span>
                   )}
                 </div>
-                <div style={{ fontSize: 12, color: "#9B7450" }}>Vendors · Concierge · All chats</div>
+                <div style={{ fontSize: 10, color: "#9B7450" }}>Vendors · Concierge</div>
               </div>
             </button>
 
-            <div style={{ height: 1, background: "rgba(196,122,46,0.1)", margin: "4px 12px" }} />
-
-            {/* Tendr Support — FAQ chatbot */}
+            {/* Tendr Support chip */}
             <button
               onClick={handleSupport}
-              style={{
-                display: "flex", alignItems: "flex-start", gap: 12,
-                width: "100%", padding: "10px 12px", borderRadius: 10,
-                border: "none", background: "transparent", cursor: "pointer",
-                textAlign: "left", fontFamily: font, transition: "background 0.15s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.07)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 13px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.18)", background: "#FFFCF5", boxShadow: "0 4px 16px rgba(44,26,14,0.12)", cursor: "pointer", textAlign: "left", fontFamily: font, whiteSpace: "nowrap" }}
+              onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
+              onMouseLeave={e => (e.currentTarget.style.background = "#FFFCF5")}
             >
-              <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>🤝</span>
+              <span style={{ fontSize: 16, flexShrink: 0 }}>🤝</span>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: "#2C1A0E" }}>Tendr Support</div>
-                <div style={{ fontSize: 12, color: "#9B7450" }}>Quick answers · FAQ · Help</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>Tendr Support</div>
+                <div style={{ fontSize: 10, color: "#9B7450" }}>Help · FAQ</div>
               </div>
             </button>
-
           </div>
         </>
       )}
