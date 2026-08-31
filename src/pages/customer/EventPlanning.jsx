@@ -2094,6 +2094,20 @@ const EventPlanning = () => {
 
             {isYouDoIt ? (
               <>
+                <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap", justifyContent: "center" }}>
+                  <button
+                    onClick={() => window.open('/timeline-picker', '_blank')}
+                    style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.3)", background: "#FFFCF5", color: "#2C1A0E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 2px 8px rgba(196,122,46,0.08)" }}
+                  >
+                    📅 Plan Timeline
+                  </button>
+                  <button
+                    onClick={() => window.open('/checklist-picker', '_blank')}
+                    style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.3)", background: "#FFFCF5", color: "#2C1A0E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 2px 8px rgba(196,122,46,0.08)" }}
+                  >
+                    🔧 Equipment List
+                  </button>
+                </div>
                 <button
                   disabled={selectedVendors.length === 0}
                   onClick={() => { if (selectedVendors.length > 0) { const init = {}; selectedVendors.forEach(c => { init[c] = savedCategoryBudgets[c] || CAT_BUDGET_RANGES[c]?.default || 10000; }); dispatch(setCategoryBudgets(init)); setShowYouDoItBudget(true); } }}
