@@ -9,6 +9,7 @@ import { setMultipleFormData, setBookingType } from "../redux/eventPlanningSlice
 import { EventIdeasPanel } from "../utils/eventIdeas";
 import VendorPhotoPlaceholder from "./VendorPhotoPlaceholder";
 import { getRecommendations } from "../utils/recommendationEngine";
+import { addToShortlist, isInShortlist } from "./ShortlistFloat";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -126,6 +127,15 @@ const VendorList_ListingPage = ({
   const [brokenQvPhotos, setBrokenQvPhotos] = useState(new Set());
   const [unavailModal, setUnavailModal] = useState(null); // null or { vendor, date, alternatives[] }
   const [checkingAvail, setCheckingAvail] = useState(false);
+  // Shortlist re-render tick (DIY flow)
+  const [shortlistTick, setShortlistTick] = useState(0);
+
+  // Re-render shortlist state when vendors are shortlisted/removed
+  useEffect(() => {
+    const handler = () => setShortlistTick(t => t + 1);
+    window.addEventListener("tendr:shortlist-update", handler);
+    return () => window.removeEventListener("tendr:shortlist-update", handler);
+  }, []);
 
   // Restore quick view after login redirect
   useEffect(() => {
@@ -715,62 +725,81 @@ const VendorList_ListingPage = ({
                     );
                   })()}
                 </div>
-                <button
-                  onClick={async () => {
-                    if (!token) {
-                      setPendingChatVendor(quickViewVendor);
-                      setAuthModalOpen(true);
-                      return;
-                    }
-                    // Already have an active chat request for this vendor — open active chats
-                    if (getChatSave(quickViewVendor._id)) {
-                      document.dispatchEvent(new CustomEvent("tendr:open-active-chats"));
+                {/* DIY flow: Shortlist button — replaces Chat & Finalise */}
+                {isFromPlanFlow ? (() => {
+                  void shortlistTick;
+                  const slActive = isInShortlist(serviceType, quickViewVendor._id);
+                  return (
+                    <button
+                      onClick={() => {
+                        if (slActive) return; // already shortlisted — no-op on main button
+                        addToShortlist(serviceType, quickViewVendor);
+                        closePanel();
+                      }}
+                      style={{ width: "100%", padding: "12px", borderRadius: 12, border: slActive ? "1.5px solid rgba(34,197,94,0.4)" : "none", background: slActive ? "rgba(34,197,94,0.08)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: slActive ? "#16a34a" : "#fff", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: slActive ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+                      {slActive ? (
+                        <>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                          Shortlisted
+                        </>
+                      ) : (
+                        <>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                          Shortlist
+                        </>
+                      )}
+                    </button>
+                  );
+                })() : (
+                  <button
+                    onClick={async () => {
+                      if (!token) {
+                        setPendingChatVendor(quickViewVendor);
+                        setAuthModalOpen(true);
+                        return;
+                      }
+                      if (getChatSave(quickViewVendor._id)) {
+                        document.dispatchEvent(new CustomEvent("tendr:open-active-chats"));
+                        closePanel();
+                        return;
+                      }
+                      const vendor = quickViewVendor;
                       closePanel();
-                      return;
-                    }
-                    const vendor = quickViewVendor;
-                    closePanel();
-                    // Discovery listings (top-rated/browse/search): show pre-filled form
-                    if (requireFormBeforeChat) {
-                      const discoveryData = getDiscoverySession();
-                      setChatFormVendor(vendor);
-                      // Pre-fill event details from session but always clear budget (it's per-vendor)
-                      setChatEventForm({ eventType: "", guests: "", date: "", location: "", eventTime: "", ...(discoveryData || {}), budget: "" });
-                      return;
-                    }
-                    // Planning flow: check 24h save for this vendor
-                    const saved = getChatSave(vendor._id);
-                    if (saved) {
-                      // Already submitted within 24h — open existing conversation
-                      try {
-                        const res = await fetch(`${BASE_URL}/conversations`, {
-                          headers: { Authorization: `Bearer ${token}` },
-                          credentials: "include",
-                        });
-                        if (res.ok) {
-                          const data = await res.json();
-                          const convo = (data.conversations || []).find(c => {
-                            const cvid = typeof c.vendorId === "object" ? c.vendorId?._id : c.vendorId;
-                            return String(cvid) === String(vendor._id);
+                      if (requireFormBeforeChat) {
+                        const discoveryData = getDiscoverySession();
+                        setChatFormVendor(vendor);
+                        setChatEventForm({ eventType: "", guests: "", date: "", location: "", eventTime: "", ...(discoveryData || {}), budget: "" });
+                        return;
+                      }
+                      const saved = getChatSave(vendor._id);
+                      if (saved) {
+                        try {
+                          const res = await fetch(`${BASE_URL}/conversations`, {
+                            headers: { Authorization: `Bearer ${token}` },
+                            credentials: "include",
                           });
-                          if (convo) {
-                            openExistingChat(convo._id, { _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, approved: convo.chatApproved, addToCompare: true });
-                            return;
+                          if (res.ok) {
+                            const data = await res.json();
+                            const convo = (data.conversations || []).find(c => {
+                              const cvid = typeof c.vendorId === "object" ? c.vendorId?._id : c.vendorId;
+                              return String(cvid) === String(vendor._id);
+                            });
+                            if (convo) {
+                              openExistingChat(convo._id, { _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, approved: convo.chatApproved, addToCompare: true });
+                              return;
+                            }
                           }
-                        }
-                      } catch {}
-                      // Fallback if conversation not found yet
+                        } catch {}
+                        openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, addToCompare: true });
+                        return;
+                      }
                       openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, addToCompare: true });
-                      return;
-                    }
-                    // Planning flow → open chat modal; chatSave is written after conversation is created
-                    openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, addToCompare: true });
-                  }}
-                  style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                  {!token ? "Sign In to Chat" : getChatSave(quickViewVendor._id) ? "View Active Chat" : "Chat & Finalise"}
-                </button>
+                    }}
+                    style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    {!token ? "Sign In to Chat" : getChatSave(quickViewVendor._id) ? "View Active Chat" : "Chat & Finalise"}
+                  </button>
+                )}
               </div>
             </div>
           </div>

@@ -10,6 +10,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import FloatingChatButton from "./components/FloatingChatButton";
 import VendorChatModal from "./components/VendorChatModal";
 import { MyEventFloatDesktop } from "./components/PlanSummaryModal";
+import ShortlistFloat from "./components/ShortlistFloat";
 import SignInPromptController from "./components/SignInPromptController";
 import { ChatProvider } from "./context/ChatContext";
 import { StationeryCartProvider } from "./context/StationeryCartContext";
@@ -111,6 +112,7 @@ function App() {
               </Suspense>
               <FloatingChatButton hideOnRoutes={["/chat", "/chats", "/login", "/signup", "/otp", "/guides"]} />
               <MyEventFloatDesktop />
+              <ShortlistFloat />
               <VendorChatModal />
             </ChatProvider>
             </TourProvider>

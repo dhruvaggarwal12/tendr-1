@@ -1876,79 +1876,20 @@ const EventPlanning = () => {
             );
           })()}
 
-          {/* ── You-Do-It Package Summary Panel ─────────────────────────────── */}
-          {isYouDoIt && selectedVendors.length > 0 && (() => {
-            const totalCats = selectedVendors.length;
-            const pickedCount = Object.keys(pickedVendors).filter(c => selectedVendors.includes(c)).length;
-            const allPicked = pickedCount === totalCats && totalCats > 0;
-            return (
-              <div className="w-full" style={{ maxWidth: 1100, marginBottom: 24 }}>
-                <div style={{ borderRadius: 18, overflow: "hidden", border: "1.5px solid rgba(196,122,46,0.2)", boxShadow: "0 4px 20px rgba(44,26,14,0.1)", fontFamily: "'Outfit', sans-serif" }}>
-                  {/* Header */}
-                  <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <div>
-                      <div style={{ fontSize: 10, fontWeight: 800, color: "rgba(204,171,74,0.7)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 3 }}>Your Package</div>
-                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", fontWeight: 500 }}>
-                        {[formData?.eventType, formData?.date && new Date(formData.date + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }), formData?.location, formData?.guests && `${formData.guests} guests`].filter(Boolean).join(" · ")}
-                      </div>
-                    </div>
-                    <div style={{ background: allPicked ? "rgba(21,128,61,0.25)" : "rgba(204,171,74,0.15)", border: `1px solid ${allPicked ? "rgba(21,128,61,0.4)" : "rgba(204,171,74,0.3)"}`, borderRadius: 100, padding: "4px 12px", fontSize: 12, fontWeight: 800, color: allPicked ? "#4ade80" : "#CCAB4A", whiteSpace: "nowrap" }}>
-                      {pickedCount}/{totalCats} picked
-                    </div>
-                  </div>
-
-                  {/* Category rows */}
-                  <div style={{ background: "#FFFCF5" }}>
-                    {selectedVendors.map((cat, i) => {
-                      const vendor = pickedVendors[cat];
-                      const isPicked = Boolean(vendor);
-                      const photo = vendor?.portfolioPhotos?.[0] || vendor?.image || vendor?.coverImage;
-                      return (
-                        <div key={cat} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 18px", borderBottom: i < selectedVendors.length - 1 ? "1px solid rgba(196,122,46,0.08)" : "none", transition: "background 0.15s" }}>
-                          <div style={{ width: 36, height: 36, borderRadius: 10, background: isPicked ? "rgba(21,128,61,0.08)" : "rgba(196,122,46,0.07)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>
-                            {YDI_ICON[cat] || "🏷"}
-                          </div>
-                          {isPicked && photo && (
-                            <img src={photo} alt={vendor.name} style={{ width: 36, height: 36, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} />
-                          )}
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 12, fontWeight: 800, color: "#2C1A0E" }}>{YDI_LABEL[cat] || cat}</div>
-                            {isPicked ? (
-                              <div style={{ fontSize: 11, color: "#16a34a", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>✓ {vendor.name || vendor.businessName}{(vendor.startingPrice || vendor.price) ? ` · ₹${Number(vendor.startingPrice || vendor.price).toLocaleString("en-IN")}+` : ""}</div>
-                            ) : (
-                              <div style={{ fontSize: 11, color: "#9B7450" }}>0/1 — No vendor picked yet</div>
-                            )}
-                          </div>
-                          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                            {isPicked && (
-                              <button onClick={() => setPickedVendors(p => { const n = { ...p }; delete n[cat]; return n; })} style={{ width: 26, height: 26, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.2)", background: "transparent", color: "#9B7450", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
-                            )}
-                            <button onClick={() => openBrowseModal(cat)} style={{ padding: "5px 13px", borderRadius: 8, border: isPicked ? "1.5px solid rgba(196,122,46,0.25)" : "none", background: isPicked ? "transparent" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: isPicked ? "#C47A2E" : "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}>
-                              {isPicked ? "Change" : "Pick Vendor"}
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Footer CTA */}
-                  <div style={{ background: "#FFFCF5", borderTop: "1.5px solid rgba(196,122,46,0.1)", padding: "14px 18px" }}>
-                    {pickedCount > 0 ? (
-                      <button onClick={() => setShowYdiConfirm(true)} disabled={ydiSubmitLoading}
-                        style={{ width: "100%", padding: "13px 0", borderRadius: 12, border: "none", background: ydiSubmitLoading ? "rgba(196,122,46,0.4)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: ydiSubmitLoading ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", letterSpacing: "0.01em" }}>
-                        {ydiSubmitLoading ? "Sending…" : `Send Package Request (${pickedCount} vendor${pickedCount !== 1 ? "s" : ""}) →`}
-                      </button>
-                    ) : (
-                      <div style={{ textAlign: "center", fontSize: 12, color: "#9B7450", fontWeight: 500 }}>
-                        Pick at least one vendor above to send a package request
-                      </div>
-                    )}
+          {/* DIY flow: prompt users to browse and shortlist vendors */}
+          {isYouDoIt && selectedVendors.length > 0 && (
+            <div className="w-full" style={{ maxWidth: 1100, marginBottom: 24 }}>
+              <div style={{ borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.18)", background: "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.04))", padding: "18px 22px", fontFamily: "'Outfit', sans-serif", display: "flex", alignItems: "center", gap: 16 }}>
+                <div style={{ fontSize: 32, flexShrink: 0 }}>🛍️</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Browse &amp; shortlist vendors</div>
+                  <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.5 }}>
+                    Use the <strong>Browse →</strong> links for each service in the sidebar to find vendors. Shortlist as many as you like — then send a single request from the shortlist icon.
                   </div>
                 </div>
               </div>
-            );
-          })()}
+            </div>
+          )}
 
           {/* Event form summary */}
           <div className="w-full mb-8" style={{ maxWidth: 1100 }}>
