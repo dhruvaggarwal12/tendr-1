@@ -9,6 +9,7 @@ import store from "./store";
 import ErrorBoundary from "./components/ErrorBoundary";
 import FloatingChatButton from "./components/FloatingChatButton";
 import VendorChatModal from "./components/VendorChatModal";
+import { MyEventFloatDesktop } from "./components/PlanSummaryModal";
 import SignInPromptController from "./components/SignInPromptController";
 import { ChatProvider } from "./context/ChatContext";
 import { StationeryCartProvider } from "./context/StationeryCartContext";
@@ -109,6 +110,7 @@ function App() {
                 <RouterProvider router={router} />
               </Suspense>
               <FloatingChatButton hideOnRoutes={["/chat", "/chats", "/login", "/signup", "/otp", "/guides"]} />
+              <MyEventFloatDesktop />
               <VendorChatModal />
             </ChatProvider>
             </TourProvider>
@@ -146,6 +148,7 @@ function App() {
             <RouterProvider router={router} />
           </Suspense>
           <FloatingChatButton hideOnRoutes={["/chat", "/chats", "/login", "/signup", "/otp", "/guides"]} />
+          <MyEventFloatDesktop />
           <VendorChatModal />
         </ChatProvider>
         </TourProvider>

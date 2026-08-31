@@ -41,3 +41,4 @@ Thumbs.db
 
 # Backend folder (kept locally in VS Code only, has its own repo)
 TENDR-2/
+.vercel

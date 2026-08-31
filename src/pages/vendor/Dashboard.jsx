@@ -64,7 +64,7 @@ const EVENT_TYPES = ['Birthday', '1st Birthday', 'Baby Shower', 'Anniversary', '
 const SOURCES = ['WhatsApp', 'Instagram', 'Facebook', 'Referral', 'Walk-in', 'Phone', 'Other'];
 const STATUSES = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
 
-const BLANK_FORM = { clientName: '', clientPhone: '', clientEmail: '', eventType: '', eventDate: '', startTime: '', endTime: '', equipment: [], amount: '', paidAmount: '', source: 'WhatsApp', status: 'Pending', notes: '', milestones: [], expenses: [], reminders: [], crew: [], travel: { mode: '', departureTime: '', venueAddress: '', hotelNeeded: false, hotelName: '', notes: '' } };
+const BLANK_FORM = { clientName: '', clientPhone: '', clientEmail: '', eventType: '', eventDate: '', startTime: '', endTime: '', equipment: [], amount: '', paidAmount: '', source: 'WhatsApp', status: 'Pending', notes: '', milestones: [], expenses: [], reminders: [], crew: [], travel: { mode: '', departureTime: '', venueAddress: '', hotelNeeded: false, hotelName: '', notes: '' }, guestCount: '', perPlateRate: '', vegCount: '', nonvegCount: '', jainCount: '', menuItems: [] };
 const CREW_ROLES = ['Vocalist', 'Guitarist', 'Drummer', 'Bassist', 'Keyboardist', 'Violinist', 'Sound Engineer', 'Lighting Tech', 'Photographer', 'Assistant', 'Driver', 'Other'];
 const TRAVEL_MODES = ['Own Car', 'Cab / Taxi', 'Auto', 'Bus', 'Train', 'Flight', 'Client Arranged'];
 const REMINDER_PRESETS = [
@@ -74,7 +74,7 @@ const REMINDER_PRESETS = [
   { label: '1 week before', days: 7 },
   { label: '2 weeks before', days: 14 },
 ];
-const ENTERTAINMENT_TYPES = ['DJ', 'Emcee/Host', 'Anchor', 'AV Setup', 'Band', 'Singer', 'Musician', 'Performer', 'Stand-up Comedian', 'Magician'];
+const ENTERTAINMENT_TYPES = ['DJ', 'Emcee/Host', 'Anchor', 'AV Setup', 'Band', 'Singer', 'Musician', 'Performer', 'Stand-up Comedian', 'Magician', 'Choreographer'];
 
 // Per-type dashboard config
 const TYPE_CONFIG = {
@@ -261,6 +261,221 @@ const TYPE_CONFIG = {
     quickTips:['A 2-minute highlight reel is worth 100 photos — keep it current','State clearly if you offer drone — it\'s the most-asked question','Add your delivery timeline — clients want to know when they get the video'],
     emptyGigMsg:'No shoots logged yet — start tracking your videography bookings.',
   },
+  // ── Beauty & Grooming ──
+  'Makeup Artist': {
+    isArtist:false, emoji:'💄', term:'Booking', terms:'Bookings', invLabel:'Kit', invEmoji:'💄',
+    invCats:['Foundation & Concealer','Eyeshadow Palette','Lipstick & Gloss','Blush & Highlighter','Setting Spray','Brushes Set','False Lashes','Primer','Contour Kit','Airbrush Machine','Ring Light','Makeup Chair','Kit Bag / Trolley','Other'],
+    invPlaceholder:'e.g. MAC Studio Fix Foundation',
+    profileTools:[
+      { label:'Portfolio / Bridal Looks', sub:'Before & after, bridal, editorial',   icon:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+      { label:'Specialisations',          sub:'Bridal, HD, airbrush, party, editorial', icon:<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></> },
+      { label:'Brands Used',              sub:'MAC, Huda, Kryolan, Armani…',          icon:<><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/></> },
+      { label:'Social Links',             sub:'Instagram, YouTube',                   icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['Bridal trial bookings convert fastest — offer them upfront','List which brands you use — brides always ask','Before/after reels get the most DMs on Instagram'],
+    emptyGigMsg:'No bookings yet — log your first makeup session to start tracking.',
+  },
+  'Mehendi Artist': {
+    isArtist:false, emoji:'🌿', term:'Session', terms:'Sessions', invLabel:'Supplies', invEmoji:'🌿',
+    invCats:['Mehendi Cones (natural)','Essential Oil (Eucalyptus/Clove)','Glitter & Stones','Stencils','Lemon & Sugar Mix','Tissues & Wet Wipes','Cape / Apron','Cone Storage Bag','Other'],
+    invPlaceholder:'e.g. Natural henna cones (box of 12)',
+    profileTools:[
+      { label:'Design Portfolio',         sub:'Bridal, bridesmaid, and guest designs', icon:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+      { label:'Design Styles',            sub:'Arabic, Indian, Fusion, Moroccan',      icon:<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></> },
+      { label:'Coverage Packages',        sub:'Bride full, bridesmaids, guest hands',  icon:<><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/></> },
+      { label:'Social Links',             sub:'Instagram, WhatsApp catalogue',         icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['Upload fresh bridal hand photos every week — Instagram traffic follows','Quote by hand count (bride + bridesmaids + guests), not by time','Always carry extra cones — running short mid-session loses repeat clients'],
+    emptyGigMsg:'No sessions yet — log your first mehendi booking to start tracking.',
+  },
+  'Hair Stylist': {
+    isArtist:false, emoji:'💇', term:'Booking', terms:'Bookings', invLabel:'Kit', invEmoji:'✂️',
+    invCats:['Hair Dryer','Straightener / Flat Iron','Curling Wand / Tong','Bobby Pins & Clips','Hair Spray','Serum & Oils','Hair Extensions','Combs & Brushes','Rollers','Sectioning Clips','Kit Bag','Other'],
+    invPlaceholder:'e.g. Dyson Supersonic Hair Dryer',
+    profileTools:[
+      { label:'Style Portfolio',          sub:'Bridal, party, editorial looks',        icon:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+      { label:'Specialisations',          sub:'Bridal updo, extensions, highlights',   icon:<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></> },
+      { label:'Hair Types',               sub:'Straight, wavy, curly, thick, fine',    icon:<><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/></> },
+      { label:'Social Links',             sub:'Instagram, YouTube',                    icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['Bridal hairstyle photos convert better than any description','Mention extension services — high-value add-on clients specifically search for it','Bundle with a makeup artist for combo package bookings'],
+    emptyGigMsg:'No bookings yet — log your first hair styling session to start tracking.',
+  },
+  // ── Food & Sweet ──
+  'Cake Artist': {
+    isArtist:false, emoji:'🎂', term:'Order', terms:'Orders', invLabel:'Pantry', invEmoji:'🎂',
+    invCats:['Flour','Sugar','Butter / Oil','Eggs','Fondant (white & coloured)','Food Colouring','Flavouring / Essence','Chocolate','Cake Boards','Cake Boxes','Piping Bags & Tips','Moulds & Cutters','Other'],
+    invPlaceholder:'e.g. Fondant, white, 5kg',
+    profileTools:[
+      { label:'Cake Gallery',             sub:'Custom cakes, themes, wedding tiers',   icon:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+      { label:'Cake Styles & Flavours',   sub:'Fondant, cream, drip, naked, floral',   icon:<><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/></> },
+      { label:'Pricing & Minimums',       sub:'Per-kg rate, minimum order, lead time', icon:<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></> },
+      { label:'Social Links',             sub:'Instagram, Zomato, website',            icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['Clear white-background cake photos get the most DMs','Always clarify delivery vs pickup at order time — it affects your pricing','Add your minimum order size — saves back-and-forth on last-minute tiny enquiries'],
+    emptyGigMsg:'No cake orders yet — log your first custom order to start tracking.',
+  },
+  'Bartender': {
+    isArtist:false, emoji:'🍹', term:'Job', terms:'Jobs', invLabel:'Bar Stock', invEmoji:'🍸',
+    invCats:['Cocktail Shaker & Strainer','Jigger / Measuring Tools','Bar Spoon & Muddler','Ice Machine / Ice Bags','Glassware (various)','Bar Counter / Foldable Table','Garnish Kit','Blender','Soda Siphon / Machine','Apron & Uniform','Display Bottles','Other'],
+    invPlaceholder:'e.g. Professional cocktail shaker set',
+    profileTools:[
+      { label:'Bar Setup Photos',         sub:'Past setups, styling, presentation',    icon:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+      { label:'Drink Menu',               sub:'Cocktails, mocktails, shots, LIIT…',    icon:<><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/></> },
+      { label:'Specialisations',          sub:'Cocktails, mocktails, wine service',    icon:<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></> },
+      { label:'Social Links',             sub:'Instagram, LinkedIn',                   icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['A mocktail menu gets family events booked faster — always include one','Offer a "house special" per event — clients love personalisation','Confirm setup space & ice supply availability before confirming the booking'],
+    emptyGigMsg:'No bar jobs yet — log your first bartending event to start tracking.',
+  },
+  'Food Truck': {
+    isArtist:false, emoji:'🚚', term:'Job', terms:'Jobs', invLabel:'Equipment', invEmoji:'🍳',
+    invCats:['Gas Cylinder','Cooking Range / Burner','Serving Counter','Utensils & Ladles','Disposable Packaging','Generator','Water Tank','Awning / Shade Canopy','Menu Board','Signage / Banner','Gloves & Safety Kit','Other'],
+    invPlaceholder:'e.g. 5-burner cooking range',
+    profileTools:[
+      { label:'Menu & Food Photos',       sub:'Signature dishes, live counter setup',  icon:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+      { label:'Counter Types',            sub:'Chaat, dosa, pizza, biryani, desserts', icon:<><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/></> },
+      { label:'Space & Power Needs',      sub:'Sq ft required, kW load, water point',  icon:<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></> },
+      { label:'Social Links',             sub:'Instagram, Zomato, Swiggy',             icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['Live chaat counter is the most-requested for house parties — price it well','Show your setup running at an event — video converts better than static photos','State your power and space requirements upfront to save back-and-forth'],
+    emptyGigMsg:'No live counter jobs yet — log your first event to start tracking.',
+  },
+  // ── Gifting ──
+  'Gift Hamper': {
+    isArtist:false, emoji:'🎁', term:'Order', terms:'Orders', invLabel:'Stock', invEmoji:'🎁',
+    invCats:['Baskets / Boxes','Tissue Paper & Filler','Ribbons & Bows','Gift Tags','Customised Printed Items','Dry Fruits / Nuts','Chocolates','Candles','Skincare Products','Drinkware / Mugs','Packing Tape & Scissors','Other'],
+    invPlaceholder:'e.g. Premium wicker basket, medium',
+    profileTools:[
+      { label:'Hamper Gallery',           sub:'Themes, occasions, unboxing photos',    icon:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+      { label:'Occasion Specialities',    sub:'Wedding, corporate, Diwali, baby shower', icon:<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></> },
+      { label:'Customisation Options',    sub:'Branding, personalised items, themes',  icon:<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></> },
+      { label:'Social Links',             sub:'Instagram, WhatsApp catalogue',         icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['Diwali & wedding hampers sell out early — take advance orders in bulk','Show the unboxing experience — reels work brilliantly for hampers','Offer bulk corporate pricing — one corporate client equals 50+ orders'],
+    emptyGigMsg:'No hamper orders yet — log your first order to start tracking.',
+  },
+  // ── Décor Specialists ──
+  'Florist': {
+    isArtist:false, emoji:'🌹', term:'Order', terms:'Orders', invLabel:'Flowers & Stock', invEmoji:'🌸',
+    invCats:['Roses','Marigold (Genda)','Orchids','Lilies','Carnations','Tuberose / Rajnigandha','Baby\'s Breath','Greenery / Foliage','Floral Foam / Oasis','Vases & Pots','Ribbons & Wire','Floral Tape','Other'],
+    invPlaceholder:'e.g. Red roses, 100 stems',
+    profileTools:[
+      { label:'Floral Work Portfolio',    sub:'Mandap, bouquet, centrepiece, garland', icon:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+      { label:'Arrangement Types',        sub:'Bouquet, centrepiece, arch, garland',   icon:<><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/></> },
+      { label:'Seasonal Availability',    sub:'Which flowers are in season when',      icon:<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></> },
+      { label:'Social Links',             sub:'Instagram, WhatsApp catalogue',         icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['Wedding mandap florals are highest value — specialise and price accordingly','Mention which flowers are seasonal — clients appreciate transparency','A freshness guarantee in your profile builds trust faster than photos alone'],
+    emptyGigMsg:'No floral orders yet — log your first event to start tracking.',
+  },
+  'Balloon Artist': {
+    isArtist:false, emoji:'🎈', term:'Order', terms:'Orders', invLabel:'Supplies', invEmoji:'🎈',
+    invCats:['Latex Balloons (11")','Latex Balloons (5")','Foil Balloons (various)','Number & Letter Balloons','Balloon Strip / Grid','Helium Tank','Electric Balloon Pump','Ribbon','Balloon Weights','LED Balloon Lights','Confetti Balloons','Other'],
+    invPlaceholder:'e.g. 11" latex balloons, bag of 100',
+    profileTools:[
+      { label:'Design Portfolio',         sub:'Organic arches, columns, ceilings',     icon:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+      { label:'Balloon Styles',           sub:'Organic arch, column, bouquet, mosaic', icon:<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></> },
+      { label:'Colour Matching',          sub:'Theme-based palettes & custom colours', icon:<><circle cx="12" cy="12" r="10"/></> },
+      { label:'Social Links',             sub:'Instagram, WhatsApp catalogue',         icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['Organic balloon arches are the most Instagrammed backdrop — price them well','Show your colour matching skill — clients search by theme colour','Confirm helium availability before booking — shortages happen without warning'],
+    emptyGigMsg:'No balloon orders yet — log your first decoration event to start tracking.',
+  },
+  'Tent House': {
+    isArtist:false, emoji:'⛺', term:'Job', terms:'Jobs', invLabel:'Inventory', invEmoji:'🏕️',
+    invCats:['Shamiana / Tent','Mandap Structure','Chairs (folding)','Chairs (banquet/cushioned)','Tables (round)','Tables (rectangular)','Stage / Platform','Red Carpet','Draping Fabric','Basic Lighting','Generator','Cooler / AC Unit','Other'],
+    invPlaceholder:'e.g. 40×60 ft shamiana tent',
+    profileTools:[
+      { label:'Setup Photos',             sub:'Past weddings, tent & mandap setups',   icon:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+      { label:'Setup Types & Capacity',   sub:'Wedding, reception, corporate pavilion', icon:<><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/></> },
+      { label:'Delivery Radius',          sub:'Areas you cover & outstation charges',  icon:<><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></> },
+      { label:'Social Links',             sub:'WhatsApp, Facebook, Instagram',         icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['Show your largest setup — it anchors client expectations and upsells naturally','List your delivery radius clearly — saves you from unworkable bookings','Always do a site visit before finalising — venue constraints change pricing'],
+    emptyGigMsg:'No tent or mandap jobs yet — log your first event to start tracking.',
+  },
+  // ── Planning & Coordination ──
+  'Wedding Planner': {
+    isArtist:false, emoji:'📋', term:'Event', terms:'Events', invLabel:'Supplies', invEmoji:'📦',
+    invCats:['Stationery & Folders','Emergency Kit','Walkie-Talkies','Measuring Tape & Tools','Laptop / iPad','Extension Board','Signage Board','Vendor Contact Book','Other'],
+    invPlaceholder:'e.g. Professional coordinator emergency kit',
+    profileTools:[
+      { label:'Event Portfolio',          sub:'Weddings, receptions, corporate events', icon:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+      { label:'Services Offered',         sub:'Full planning, partial, day coordination', icon:<><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/></> },
+      { label:'Vendor Network',           sub:'Your go-to caterers, DJs, décor vendors', icon:<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></> },
+      { label:'Social Links',             sub:'Instagram, LinkedIn, website',           icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['Day-of coordination is your easiest entry point — then upsell to full planning','Your vendor network is your biggest differentiator — name your trusted vendors','A sample event timeline in your portfolio signals professionalism instantly'],
+    emptyGigMsg:'No events yet — log your first wedding or event to start tracking.',
+  },
+  'Choreographer': {
+    isArtist:true, emoji:'💃', term:'Session', terms:'Sessions', invLabel:'Studio Gear', invEmoji:'🎵',
+    invCats:['Bluetooth Speaker','Extension Board','Dance Floor Mat','Portable Mirror','Demo Costume / Outfit','Props','Laptop / Phone Stand','Other'],
+    invPlaceholder:'e.g. JBL Partybox Bluetooth Speaker',
+    profileTools:[
+      { label:'Performance / Reel Video', sub:'Sangeet, couple, group performance clips', icon:<><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></> },
+      { label:'Dance Styles',             sub:'Bollywood, contemporary, bhangra, hip-hop', icon:<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></> },
+      { label:'Package Options',          sub:'Sangeet sessions, private, group classes', icon:<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></> },
+      { label:'Social Links',             sub:'Instagram, YouTube',                      icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['A 30-second sangeet reel on Instagram is your best advertisement','Sangeet packages with 4–6 sessions convert best — bundle and price them together','Film your students performing at the event — it\'s free content that sells your work'],
+    emptyGigMsg:'No sessions yet — log your first choreography booking to start tracking.',
+  },
+  // ── Tech Specialists ──
+  'Drone Operator': {
+    isArtist:false, emoji:'🚁', term:'Shoot', terms:'Shoots', invLabel:'Equipment', invEmoji:'🚁',
+    invCats:['Primary Drone','Backup Drone','Battery Pack (set)','Remote Controller','Tablet / Monitor','ND Filters','Spare Props & Blades','Carrying Case','Landing Pad','Other'],
+    invPlaceholder:'e.g. DJI Mavic 3 Pro',
+    profileTools:[
+      { label:'Aerial Footage Reel',      sub:'Wedding, landscape, event aerials',     icon:<><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></> },
+      { label:'Drone Models & Specs',     sub:'Camera resolution, flight time, range', icon:<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></> },
+      { label:'Permit & Licence Info',    sub:'DGCA certification, no-fly zone process', icon:<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></> },
+      { label:'Social Links',             sub:'Instagram, YouTube, Vimeo',             icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['Upload a 60-second aerial wedding reel — it sells itself','Always check DGCA no-fly zones before confirming a venue booking','Battery count limits your flight time — be upfront about turnaround between shots'],
+    emptyGigMsg:'No aerial shoots yet — log your first drone shoot to start tracking.',
+  },
+  'Live Streaming': {
+    isArtist:false, emoji:'📡', term:'Stream', terms:'Streams', invLabel:'Equipment', invEmoji:'📡',
+    invCats:['Streaming Camera','Capture Card','Laptop / PC (encoding)','ATEM / Video Switcher','Microphone','Ring Light / Panel Light','Tripod','HDMI Cables','Internet Dongle / Router','OBS / Streaming Software Licence','Other'],
+    invPlaceholder:'e.g. ATEM Mini Pro Switcher',
+    profileTools:[
+      { label:'Past Stream Recordings',   sub:'Links to past live streams & weddings', icon:<><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></> },
+      { label:'Platforms Supported',      sub:'YouTube, Zoom, Facebook, custom RTMP',  icon:<><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/></> },
+      { label:'Tech Specs',               sub:'Resolution, bitrate, camera count',     icon:<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></> },
+      { label:'Social Links',             sub:'Instagram, LinkedIn, YouTube',          icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['Always carry a backup internet connection — mobile hotspot at minimum','Show a past stream link in your profile — it\'s the fastest trust-builder','Confirm venue internet speed 48hrs before — it\'s the #1 failure point for streams'],
+    emptyGigMsg:'No streams yet — log your first live streaming job to start tracking.',
+  },
+  'Photo Booth': {
+    isArtist:false, emoji:'🎞️', term:'Job', terms:'Jobs', invLabel:'Equipment', invEmoji:'📸',
+    invCats:['Booth Structure / Frame','360 Platform','Camera (DSLR / Mirrorless)','Ring Light / Strobe','Backdrop / Green Screen','Props Box','Printer','Printer Paper & Ink','iPad / Touchscreen Kiosk','Laptop (control)','Extension Board','Other'],
+    invPlaceholder:'e.g. 360 photo booth platform',
+    profileTools:[
+      { label:'Sample Prints & Photos',   sub:'Print templates, photo quality samples', icon:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+      { label:'Booth Types',              sub:'Open, enclosed, 360, mirror, GIF booth', icon:<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></> },
+      { label:'Customisation Options',    sub:'Branded overlay, logo, print template', icon:<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></> },
+      { label:'Social Links',             sub:'Instagram, LinkedIn',                   icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['360 booths are the biggest trend right now — if you have one, lead with it','Branded print overlays are your upsell to corporate clients — always offer them','Show a crowded queue at your booth — that energy is what sells bookings'],
+    emptyGigMsg:'No photo booth jobs yet — log your first event to start tracking.',
+  },
+  // ── Stationery & Print ──
+  'Invitation Designer': {
+    isArtist:false, emoji:'✉️', term:'Order', terms:'Orders', invLabel:'Stock', invEmoji:'🖨️',
+    invCats:['Paper (250 GSM)','Paper (350 GSM)','Envelopes','Printing Ink / Cartridges','Foil / Embossing Tools','Ribbons & Wax Seals','Tissue & Wrapping','Boxes','Stamps & Dies','Binding Materials','Other'],
+    invPlaceholder:'e.g. 350 GSM matte art paper, 500 sheets',
+    profileTools:[
+      { label:'Design Portfolio',         sub:'Wedding, corporate, birthday invites',  icon:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+      { label:'Print Styles',             sub:'Digital, letterpress, foil, embossed',  icon:<><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/></> },
+      { label:'Turnaround & Minimums',    sub:'Lead time, minimum quantity, rush orders', icon:<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></> },
+      { label:'Social Links',             sub:'Instagram, Pinterest, website',         icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['Wedding invitation designs are your portfolio anchors — keep them updated monthly','Quote by quantity — price breaks at 50, 100, 200, 500 cards keep clients on the phone','Always get content approved in writing before printing — saves disputes every time'],
+    emptyGigMsg:'No stationery orders yet — log your first design order to start tracking.',
+  },
   // Default fallback for any unlisted type
   'default': {
     isArtist:false, emoji:'💼', term:'Order', terms:'Orders', invLabel:'Inventory', invEmoji:'📦',
@@ -328,6 +543,10 @@ ${order.clientEmail ? `<div style="font-size:13px;color:#9B7450">✉ ${escapeHtm
 ${order.eventDate ? `<div class="row"><span>Event Date</span><span>${new Date(order.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</span></div>` : ''}
 ${order.startTime ? `<div class="row"><span>Performance Time</span><span>${order.startTime}${order.endTime ? ` – ${order.endTime}` : ''}</span></div>` : ''}
 ${order.equipment?.length ? `<div class="row"><span>Equipment</span><span style="max-width:60%;text-align:right">${order.equipment.filter(Boolean).map(escapeHtml).join(', ')}</span></div>` : ''}
+${order.guestCount ? `<div class="row"><span>Guest Count</span><span>${Number(order.guestCount).toLocaleString('en-IN')} guests</span></div>` : ''}
+${order.perPlateRate ? `<div class="row"><span>Per Plate Rate</span><span>₹${Number(order.perPlateRate).toLocaleString('en-IN')}/plate</span></div>` : ''}
+${(order.vegCount||order.nonvegCount||order.jainCount) ? `<div class="row"><span>Dietary Split</span><span>${[order.vegCount?`${order.vegCount} Veg`:'',order.nonvegCount?`${order.nonvegCount} Non-Veg`:'',order.jainCount?`${order.jainCount} Jain`:''].filter(Boolean).join(' · ')}</span></div>` : ''}
+${order.menuItems?.filter(Boolean).length ? `<div class="row"><span>Menu</span><span style="max-width:60%;text-align:right">${order.menuItems.filter(Boolean).map(escapeHtml).join(', ')}</span></div>` : ''}
 ${order.notes ? `<div class="row"><span>Notes</span><span style="max-width:60%;text-align:right">${escapeHtml(order.notes)}</span></div>` : ''}
 
 <h3>Payment Schedule</h3>
@@ -413,8 +632,9 @@ ${quote.notes?`<h3>Notes</h3><div style="font-size:13px;color:#6B4A2A;line-heigh
 }
 
 function OrderModal({ initial, onSave, onClose, saving, existingClients = [], serviceType = '' }) {
-  const [form, setForm] = useState(() => ({ ...BLANK_FORM, ...(initial || {}), milestones: initial?.milestones || [], expenses: initial?.expenses || [], equipment: initial?.equipment || [], reminders: initial?.reminders || [], crew: initial?.crew || [], travel: { ...BLANK_FORM.travel, ...(initial?.travel || {}) } }));
+  const [form, setForm] = useState(() => ({ ...BLANK_FORM, ...(initial || {}), milestones: initial?.milestones || [], expenses: initial?.expenses || [], equipment: initial?.equipment || [], reminders: initial?.reminders || [], crew: initial?.crew || [], menuItems: initial?.menuItems || [], travel: { ...BLANK_FORM.travel, ...(initial?.travel || {}) } }));
   const isEntertainment = ENTERTAINMENT_TYPES.includes(serviceType);
+  const isCaterer = serviceType === 'Caterer';
   const [modalTab, setModalTab] = useState('details');
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const phoneDigits = (form.clientPhone || '').replace(/\D/g, '');
@@ -449,6 +669,14 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
   const updateCrew       = (i, k, v) => set('crew', (form.crew || []).map((c, idx) => idx === i ? { ...c, [k]: v } : c));
   const removeCrew       = (i) => set('crew', (form.crew || []).filter((_, idx) => idx !== i));
   const setTravel        = (k, v) => set('travel', { ...(form.travel || {}), [k]: v });
+
+  // Auto-compute order total from guest count × per-plate rate for caterers
+  useEffect(() => {
+    if (!isCaterer || useMilestones) return;
+    const guests = Number(form.guestCount) || 0;
+    const rate = Number(form.perPlateRate) || 0;
+    if (guests > 0 && rate > 0) set('amount', String(guests * rate));
+  }, [form.guestCount, form.perPlateRate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const inp = (style) => ({ width: '100%', padding: '9px 12px', borderRadius: 9, border: '1.5px solid rgba(196,122,46,0.25)', fontFamily: font, fontSize: 13.5, color: ink, outline: 'none', background: '#FFFCF5', boxSizing: 'border-box', ...style });
   const lbl = { display: 'block', fontSize: 11.5, fontWeight: 700, color: '#6B3A1F', marginBottom: 4 };
@@ -588,10 +816,72 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
               </div>
             )}
 
+            {/* ── Caterer-specific fields ── */}
+            {isCaterer && <>
+              <div style={row}>
+                <div style={half}>
+                  <label style={lbl}>Total Guests</label>
+                  <input style={inp()} type="number" min="0" value={form.guestCount} onChange={e => set('guestCount', e.target.value)} placeholder="e.g. 150" />
+                </div>
+                <div style={half}>
+                  <label style={lbl}>Per Plate Rate (₹)</label>
+                  <input style={inp()} type="number" min="0" value={form.perPlateRate} onChange={e => set('perPlateRate', e.target.value)} placeholder="e.g. 450" />
+                </div>
+              </div>
+              {Number(form.guestCount) > 0 && Number(form.perPlateRate) > 0 && (
+                <div style={{ padding: '8px 12px', borderRadius: 9, background: 'rgba(196,122,46,0.06)', border: '1px solid rgba(196,122,46,0.15)', fontSize: 12.5, color: '#9B7450' }}>
+                  Auto-total: <span style={{ fontWeight: 700, color: gold }}>₹{(Number(form.guestCount) * Number(form.perPlateRate)).toLocaleString('en-IN')}</span>
+                  <span style={{ marginLeft: 6 }}>· {form.guestCount} guests × ₹{Number(form.perPlateRate).toLocaleString('en-IN')}/plate</span>
+                </div>
+              )}
+              <div>
+                <label style={lbl}>Dietary Split</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {[['vegCount','🟢 Veg'],['nonvegCount','🔴 Non-Veg'],['jainCount','🟡 Jain']].map(([key, dietLabel]) => (
+                    <div key={key} style={{ flex: 1 }}>
+                      <div style={{ fontSize: 10.5, color: '#9B7450', marginBottom: 3 }}>{dietLabel}</div>
+                      <input style={inp()} type="number" min="0" value={form[key]} onChange={e => set(key, e.target.value)} placeholder="0" />
+                    </div>
+                  ))}
+                </div>
+                {(() => {
+                  const dietTotal = Number(form.vegCount) + Number(form.nonvegCount) + Number(form.jainCount);
+                  const guestTotal = Number(form.guestCount) || 0;
+                  if (!dietTotal || !guestTotal) return null;
+                  if (dietTotal > guestTotal) return <div style={{ fontSize: 11, color: '#DC2626', marginTop: 4 }}>⚠️ Split ({dietTotal}) exceeds guest count ({guestTotal})</div>;
+                  if (dietTotal < guestTotal) return <div style={{ fontSize: 11, color: '#9B7450', marginTop: 4 }}>{guestTotal - dietTotal} guests unaccounted for</div>;
+                  return <div style={{ fontSize: 11, color: '#16A34A', marginTop: 4 }}>✓ Dietary split accounts for all {guestTotal} guests</div>;
+                })()}
+              </div>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <label style={lbl}>Menu — what's being served</label>
+                  <button onClick={() => set('menuItems', [...(form.menuItems || []), ''])}
+                    style={{ padding: '3px 10px', borderRadius: 7, border: 'none', background: `linear-gradient(135deg,${gold},${goldLt})`, color: '#fff', fontSize: 11.5, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>
+                    + Add Dish
+                  </button>
+                </div>
+                {(form.menuItems || []).length === 0 ? (
+                  <div style={{ fontSize: 12, color: '#9B7450', fontStyle: 'italic' }}>e.g. Paneer Butter Masala, Dal Makhani, Biryani, Raita, Gulab Jamun</div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {(form.menuItems || []).map((item, i) => (
+                      <div key={i} style={{ display: 'flex', gap: 6 }}>
+                        <input value={item} onChange={e => set('menuItems', (form.menuItems || []).map((it, idx) => idx === i ? e.target.value : it))}
+                          placeholder={`Dish ${i + 1}`} style={{ flex: 1, ...inp(), padding: '7px 10px', fontSize: 12.5 }} />
+                        <button onClick={() => set('menuItems', (form.menuItems || []).filter((_, idx) => idx !== i))}
+                          style={{ width: 28, height: 34, borderRadius: 7, border: '1px solid rgba(220,38,38,0.3)', background: 'transparent', color: '#DC2626', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>}
+
             {!useMilestones && (
               <div style={row}>
                 <div style={half}>
-                  <label style={lbl}>Total Amount (₹)</label>
+                  <label style={lbl}>{isCaterer ? 'Total Amount (₹) — auto-filled above' : 'Total Amount (₹)'}</label>
                   <input style={inp()} type="number" min="0" value={form.amount} onChange={e => set('amount', e.target.value)} placeholder="0" />
                 </div>
                 <div style={half}>
@@ -1167,6 +1457,8 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus, onRequestPayment,
               {order.clientPhone && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.29 6.29l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></>)}{order.clientPhone}</span>}
               {order.eventType   && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>)}{order.eventType}</span>}
               {order.eventDate   && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>)}{new Date(order.eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>}
+              {order.guestCount  && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>)}{order.guestCount} guests{order.perPlateRate ? ` · ₹${Number(order.perPlateRate).toLocaleString('en-IN')}/plate` : ''}</span>}
+              {(order.vegCount || order.nonvegCount || order.jainCount) && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>{order.vegCount ? `🟢${order.vegCount}` : ''}{order.nonvegCount ? ` 🔴${order.nonvegCount}` : ''}{order.jainCount ? ` 🟡${order.jainCount}` : ''}</span>}
             </div>
             {/* Contract signed badge */}
             {order.contract?.terms && (

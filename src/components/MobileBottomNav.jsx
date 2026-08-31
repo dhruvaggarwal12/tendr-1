@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { loadPlan, PlanSummaryModal } from "./PlanSummaryModal";
 
 const font = "'Outfit', sans-serif";
 
@@ -113,6 +114,9 @@ function BottomNavInner() {
   const [planOpen, setPlanOpen] = useState(false);
   const [tipsOpen, setTipsOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  // My Event popup state
+  const [myEventModal, setMyEventModal] = useState(null); // null | 'mini' | 'full'
+  const [activePlan, setActivePlan] = useState(null);
   const scrollTimer = useRef(null);
 
   // Hide while scrolling, show 400ms after scroll stops
@@ -170,20 +174,10 @@ function BottomNavInner() {
     { label: "Tools", paths: ["/checklist","/timeline","/budget","/decor"], onTap: () => { setBrowseOpen(false); setTipsOpen(false); setProductsOpen(o => !o); } },
     { label: "My Event", paths: ["/booking","/plan-event","/baat-karo","/my-event"], onTap: () => {
         setBrowseOpen(false); setProductsOpen(false); setTipsOpen(false);
-        try {
-          const plan = localStorage.getItem('tendr_smart_plan');
-          if (plan) {
-            const p = JSON.parse(plan);
-            if (!p._draft && (p.conversationId || p._id)) { navigate('/my-event'); return; }
-          }
-          const session = localStorage.getItem('tendr_ep_session');
-          if (session) {
-            const s = JSON.parse(session);
-            const fd = s.formData || {};
-            if (fd.eventType || fd.date || fd.location) { navigate('/plan-event/form', { state: { backToForm: true } }); return; }
-          }
-        } catch {}
-        navigate('/booking');
+        const p = loadPlan();
+        if (!p) { navigate('/booking'); return; }
+        setActivePlan(p);
+        setMyEventModal(p._draft ? 'mini' : 'full');
       }},
     { label: "Tips", paths: ["/guides","/community"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setPlanOpen(false); setTipsOpen(o => !o); } },
     { label: "Profile",  paths: ["/dashboard","/AdminDashboard"],     onTap: () => navigate(token ? (user?.isAdmin ? "/AdminDashboard" : "/dashboard") : "/login") },
@@ -191,6 +185,56 @@ function BottomNavInner() {
 
   return (
     <div className="mobile-bottom-nav-root">
+
+      {/* ── My Event: mini popup (draft / pre-chat) ── */}
+      {myEventModal === 'mini' && activePlan && (
+        <>
+          <div onClick={() => setMyEventModal(null)} style={{ position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',zIndex:99993,pointerEvents:'auto' }} />
+          <div style={{
+            position:'fixed', bottom:'calc(64px + env(safe-area-inset-bottom,0px))',
+            left:16, right:16, zIndex:99994, pointerEvents:'auto',
+            background:'#FFFCF5', borderRadius:20,
+            boxShadow:'0 -8px 40px rgba(44,26,14,0.22)',
+            padding:'18px 20px', fontFamily:font,
+            border:'1.5px solid rgba(196,122,46,0.2)',
+            animation:'sheet-up 0.24s cubic-bezier(0.4,0,0.2,1)',
+          }}>
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}>
+              <div style={{width:40,height:40,borderRadius:12,background:'linear-gradient(135deg,#B45309,#C47A2E)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>📋</div>
+              <div>
+                <div style={{fontSize:14,fontWeight:700,color:'#2C1A0E'}}>Planning in progress</div>
+                <div style={{fontSize:12,color:'#9B7450'}}>{activePlan.eventDetails?.eventType || activePlan.eventType || 'Your event'}</div>
+              </div>
+            </div>
+            <button
+              onClick={() => { setMyEventModal(null); navigate('/plan-event/form'); }}
+              style={{width:'100%',padding:'13px 0',borderRadius:14,background:'linear-gradient(135deg,#C47A2E,#CCAB4A)',color:'#fff',fontSize:14,fontWeight:700,border:'none',cursor:'pointer',fontFamily:font,boxShadow:'0 4px 16px rgba(196,122,46,0.35)'}}
+            >
+              Continue Planning →
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* ── My Event: full modal (post-chat) ── */}
+      {myEventModal === 'full' && activePlan && (() => {
+        const eventDate = activePlan.eventDetails?.date || activePlan.date || '';
+        const daysLeft = eventDate ? Math.ceil((new Date(eventDate) - Date.now()) / 86400000) : null;
+        return (
+          <PlanSummaryModal
+            plan={activePlan}
+            daysLeft={daysLeft}
+            isDraft={activePlan._draft === true}
+            onClose={() => setMyEventModal(null)}
+            onDismiss={() => {
+              try { localStorage.removeItem('tendr_smart_plan'); localStorage.removeItem('tendr_ep_session'); } catch {}
+              setActivePlan(null); setMyEventModal(null);
+            }}
+            navigate={navigate}
+          />
+        );
+      })()}
+
       {/* Browse category picker — pops up just above the bottom nav */}
       {browseOpen && (
         <>

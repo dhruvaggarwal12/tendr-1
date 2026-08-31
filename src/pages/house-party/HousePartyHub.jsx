@@ -1180,6 +1180,10 @@ function PolygonGrid({ tools, onOpen }) {
 // ════════════════════════════════════════════════════════════════════════════
 
 const TOOLS = [
+  // Plan Together (live collaborative)
+  { id: "venuevote",  section: "together", emoji: "📍", title: "Venue Vote",       desc: "Host adds options · everyone votes live",           color: "#7C3AED", live: true },
+  { id: "groupcheck", section: "together", emoji: "✅", title: "Group Checklist",  desc: "Add tasks · anyone ticks them off in real-time",    color: "#059669", live: true },
+  { id: "kittyfund",  section: "together", emoji: "🐷", title: "Kitty Fund",       desc: "Everyone chips in · track who paid what",           color: "#C47A2E", live: true },
   // Manage
   { id: "potluck", section: "manage", emoji: "🥘", title: "Potluck Planner", desc: "Shareable link · claim items · no duplicates", color: "#059669" },
   { id: "invite", section: "manage", emoji: "📨", title: "Digital Invite & RSVP", desc: "One link · guests RSVP · live count", color: "#2563EB" },
@@ -1222,13 +1226,14 @@ const TOOLS = [
 ];
 
 const SECTIONS = [
-  { id: "manage", label: "Manage", subtitle: "Plan · track · coordinate" },
-  { id: "games",  label: "Games",  subtitle: "Biggest reason to come back" },
-  { id: "fun",    label: "Fun",    subtitle: "Theme · music · photos · countdown" },
+  { id: "together", label: "Plan Together", subtitle: "Vote · track · chip in — all live" },
+  { id: "manage",   label: "Manage",        subtitle: "Plan · track · coordinate" },
+  { id: "games",    label: "Games",         subtitle: "Biggest reason to come back" },
+  { id: "fun",      label: "Fun",           subtitle: "Theme · music · photos · countdown" },
 ];
 
 // Manage tools guests can access (shareable/interactive ones); the rest are host-private
-const GUEST_MANAGE_TOOLS = new Set(['potluck', 'invite', 'photowall', 'bills', 'menu']);
+const GUEST_MANAGE_TOOLS = new Set(['potluck', 'invite', 'photowall', 'bills', 'menu', 'venuevote', 'groupcheck', 'kittyfund']);
 
 // ── New game modals ───────────────────────────────────────────────────────────
 
@@ -2608,6 +2613,194 @@ function WABroadcastModal({ onClose }) {
   );
 }
 
+// ── Collaborative planning tools (live, Plan Together section) ───────────────
+
+function VenueVote({ onClose, room, myName, isHost, gameState, sendAction }) {
+  const [name, setName] = useState('');
+  const [cost, setCost] = useState('');
+  const venues = gameState?.venues || [];
+  const totalVotes = venues.reduce((s, v) => s + Object.keys(v.votes || {}).length, 0);
+
+  const addVenue = () => {
+    if (!name.trim()) return;
+    sendAction?.('add-venue', { name: name.trim(), cost: cost.trim() });
+    setName(''); setCost('');
+  };
+
+  const vote = (id) => sendAction?.('vote', { id });
+
+  return (
+    <Modal onClose={onClose} emoji="📍" title="Venue Vote">
+      {!room && <div style={{ background: "rgba(124,58,237,0.1)", border: "1.5px solid rgba(124,58,237,0.3)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#C4B5FD", marginBottom: 14 }}>Join a room for live voting</div>}
+      {isHost && (
+        <>
+          <span style={label}>Add a venue option</span>
+          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <input value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === "Enter" && addVenue()} placeholder="Venue name…" style={{ ...inp, flex: 2 }} />
+            <input value={cost} onChange={e => setCost(e.target.value)} placeholder="~₹ cost" style={{ ...inp, flex: 1 }} />
+          </div>
+          <button onClick={addVenue} style={{ ...btn("#7C3AED"), marginBottom: 20 }}>+ Add Option</button>
+        </>
+      )}
+      {venues.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>
+          {isHost ? "Add venue options above" : "Waiting for host to add venues…"}
+        </div>
+      ) : venues.map(v => {
+        const voteCount = Object.keys(v.votes || {}).length;
+        const pct = totalVotes > 0 ? Math.round(voteCount / totalVotes * 100) : 0;
+        const myVote = v.votes?.[myName];
+        return (
+          <div key={v.id} style={{ ...card, marginBottom: 10 }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", fontFamily: font }}>{v.name}</div>
+                {v.cost && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>{v.cost}</div>}
+              </div>
+              <button onClick={() => vote(v.id)} style={{ padding: "6px 14px", borderRadius: 100, border: `1.5px solid ${myVote ? "#7C3AED" : "rgba(255,255,255,0.15)"}`, background: myVote ? "rgba(124,58,237,0.3)" : "rgba(255,255,255,0.06)", color: myVote ? "#C4B5FD" : "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
+                {myVote ? "✓ Voted" : "Vote"}
+              </button>
+            </div>
+            <div style={{ marginTop: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "rgba(255,255,255,0.35)", marginBottom: 4 }}>
+                <span>{voteCount} {voteCount === 1 ? "vote" : "votes"}</span>
+                <span>{pct}%</span>
+              </div>
+              <div style={{ height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 3, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${pct}%`, background: "#7C3AED", borderRadius: 3, transition: "width 0.4s ease" }} />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </Modal>
+  );
+}
+
+function GroupChecklist({ onClose, room, myName, gameState, sendAction }) {
+  const [text, setText] = useState('');
+  const items = gameState?.items || [];
+  const done = items.filter(i => i.done).length;
+
+  const add = () => {
+    if (!text.trim()) return;
+    sendAction?.('add', { text: text.trim() });
+    setText('');
+  };
+
+  const toggle = (id) => sendAction?.('toggle', { id });
+  const remove = (id) => sendAction?.('remove', { id });
+
+  return (
+    <Modal onClose={onClose} emoji="✅" title="Group Checklist">
+      {!room && <div style={{ background: "rgba(5,150,105,0.1)", border: "1.5px solid rgba(5,150,105,0.3)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#6EE7B7", marginBottom: 14 }}>Join a room to sync the checklist live</div>}
+      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Add a task…" style={{ ...inp, flex: 1 }} />
+        <button onClick={add} style={{ ...btn("#059669"), width: "auto", padding: "10px 16px" }}>+</button>
+      </div>
+      {items.length > 0 && (
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginBottom: 12 }}>{done}/{items.length} done</div>
+      )}
+      {items.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>No tasks yet — add one!</div>
+      ) : items.map(it => (
+        <div key={it.id} style={{ ...card, display: "flex", alignItems: "center", gap: 10, marginBottom: 8, opacity: it.done ? 0.55 : 1 }}>
+          <button onClick={() => toggle(it.id)} style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${it.done ? "#059669" : "rgba(255,255,255,0.25)"}`, background: it.done ? "#059669" : "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            {it.done && <span style={{ fontSize: 12, color: "#fff" }}>✓</span>}
+          </button>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 14, color: "#fff", textDecoration: it.done ? "line-through" : "none", fontFamily: font }}>{it.text}</div>
+            {it.doneBy && <div style={{ fontSize: 11, color: "#6EE7B7", marginTop: 2 }}>✓ {it.doneBy}</div>}
+          </div>
+          <button onClick={() => remove(it.id)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: 18, cursor: "pointer", lineHeight: 1, padding: "0 4px" }}>×</button>
+        </div>
+      ))}
+    </Modal>
+  );
+}
+
+function KittyFund({ onClose, room, myName, isHost, gameState, sendAction }) {
+  const [name, setName] = useState(myName || '');
+  const [amount, setAmount] = useState('');
+  const [note, setNote] = useState('');
+  const [targetInput, setTargetInput] = useState('');
+
+  const target = gameState?.target || 0;
+  const contributions = gameState?.contributions || [];
+  const total = contributions.reduce((s, c) => s + (Number(c.amount) || 0), 0);
+  const pct = target > 0 ? Math.min(100, Math.round(total / target * 100)) : 0;
+
+  const addContribution = () => {
+    if (!name.trim() || !amount || isNaN(Number(amount))) return;
+    sendAction?.('add-contribution', { name: name.trim(), amount: Number(amount), note: note.trim() });
+    setAmount(''); setNote('');
+  };
+
+  const setTarget = () => {
+    if (!targetInput || isNaN(Number(targetInput))) return;
+    sendAction?.('set-target', { target: Number(targetInput) });
+    setTargetInput('');
+  };
+
+  const remove = (id) => sendAction?.('remove-contribution', { id });
+
+  return (
+    <Modal onClose={onClose} emoji="🐷" title="Kitty Fund">
+      {!room && <div style={{ background: "rgba(196,122,46,0.1)", border: "1.5px solid rgba(196,122,46,0.3)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#FCD34D", marginBottom: 14 }}>Join a room to pool contributions live</div>}
+
+      {isHost && !target && (
+        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+          <input value={targetInput} onChange={e => setTargetInput(e.target.value)} placeholder="Set target amount (₹)" type="number" style={{ ...inp, flex: 1 }} />
+          <button onClick={setTarget} style={{ ...btn("#C47A2E"), width: "auto", padding: "10px 14px" }}>Set</button>
+        </div>
+      )}
+
+      {target > 0 ? (
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 6 }}>
+            <span style={{ color: "#FCD34D", fontWeight: 700, fontFamily: font }}>₹{total.toLocaleString()} raised</span>
+            <span style={{ color: "rgba(255,255,255,0.4)", fontFamily: font }}>of ₹{target.toLocaleString()}</span>
+          </div>
+          <div style={{ height: 8, background: "rgba(255,255,255,0.1)", borderRadius: 4, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,#C47A2E,#F59E0B)", borderRadius: 4, transition: "width 0.5s ease" }} />
+          </div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 4 }}>{pct}% of goal</div>
+        </div>
+      ) : (
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", textAlign: "center", marginBottom: 16 }}>
+          Total: <strong style={{ color: "#FCD34D" }}>₹{total.toLocaleString()}</strong>
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+        <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name" style={{ ...inp, flex: 1 }} />
+        <input value={amount} onChange={e => setAmount(e.target.value)} placeholder="₹ Amount" type="number" style={{ ...inp, flex: 1 }} />
+      </div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        <input value={note} onChange={e => setNote(e.target.value)} placeholder="Note (optional)" style={{ ...inp, flex: 1 }} onKeyDown={e => e.key === "Enter" && addContribution()} />
+        <button onClick={addContribution} style={{ ...btn("#C47A2E"), width: "auto", padding: "10px 16px" }}>+ Add</button>
+      </div>
+
+      {contributions.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "24px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>No contributions yet — be the first! 🐷</div>
+      ) : contributions.map(c => (
+        <div key={c.id} style={{ ...card, display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 15, fontWeight: 700, color: "#FCD34D", fontFamily: font }}>₹{Number(c.amount).toLocaleString()}</span>
+              <span style={{ fontSize: 14, color: "#fff", fontFamily: font }}>— {c.name}</span>
+            </div>
+            {c.note && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>{c.note}</div>}
+          </div>
+          {(c.name === myName || isHost) && (
+            <button onClick={() => remove(c.id)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: 18, cursor: "pointer", lineHeight: 1, padding: "0 4px" }}>×</button>
+          )}
+        </div>
+      ))}
+    </Modal>
+  );
+}
+
 // ── Room-based new tools ──────────────────────────────────────────────────────
 
 function WishWall({ onClose, room, myName, gameState, sendAction, sendEffect }) {
@@ -3038,7 +3231,7 @@ export default function HousePartyHub() {
   const close = () => setOpen(null);
 
   // Shared room props for live tools
-  const liveProps = { room, myName, players, gameState, sendAction, sendEffect };
+  const liveProps = { room, myName, players, gameState, sendAction, sendEffect, isHost };
 
   const renderModal = () => {
     switch (open) {
@@ -3056,6 +3249,9 @@ export default function HousePartyHub() {
       case "countdown": return <Countdown onClose={close} />;
       case "playlist": return <PlaylistBuilder onClose={close} />;
       case "reportcard": return <PartyReportCard onClose={close} />;
+      case "venuevote":  return <VenueVote      onClose={close} {...liveProps} />;
+      case "groupcheck": return <GroupChecklist onClose={close} {...liveProps} />;
+      case "kittyfund":  return <KittyFund      onClose={close} {...liveProps} />;
       case "wishwall":   return <WishWall   onClose={close} {...liveProps} />;
       case "moodmeter":  return <MoodMeter  onClose={close} {...liveProps} />;
       case "secretmsg":  return <SecretMessages onClose={close} {...liveProps} />;

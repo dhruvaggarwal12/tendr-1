@@ -20,10 +20,42 @@ const PHOTO_HOURS   = ["2", "4", "8", "Full day"];
 const PHOTO_EDITING = ["2", "5", "7", "10+"];
 
 const CATEGORIES = [
-  { id: "DJ",           label: "DJ",          icon: "🎧", color: "#7c3aed", desc: "Music, sound, lights" },
-  { id: "Decorator",    label: "Decorator",   icon: "🎨", color: "#C47A2E", desc: "Themes, balloons, florals" },
-  { id: "Caterer",      label: "Caterer",     icon: "🍽️", color: "#0369a1", desc: "Food, catering, live counters" },
-  { id: "Photographer", label: "Photographer",icon: "📸", color: "#15803d", desc: "Photography & videography" },
+  // Photography & Video
+  { id: "Photographer",      label: "Photographer",       icon: "📸", color: "#15803d", desc: "Photography & videography" },
+  { id: "Videographer",      label: "Videographer",       icon: "🎬", color: "#0f766e", desc: "Wedding & event films" },
+  { id: "Drone Operator",    label: "Drone Operator",     icon: "🚁", color: "#0369a1", desc: "Aerial photography & video" },
+  { id: "Photo Booth",       label: "Photo Booth",        icon: "🎞️", color: "#6d28d9", desc: "360 booth, GIF & print booths" },
+  { id: "Live Streaming",    label: "Live Streaming",     icon: "📡", color: "#b45309", desc: "YouTube, Zoom, Facebook live" },
+  // Music & Entertainment
+  { id: "DJ",                label: "DJ",                 icon: "🎧", color: "#7c3aed", desc: "Music, sound, lights" },
+  { id: "Band",              label: "Band",               icon: "🎸", color: "#b91c1c", desc: "Live band performance" },
+  { id: "Singer",            label: "Singer",             icon: "🎤", color: "#be185d", desc: "Live vocals, ghazals, Bollywood" },
+  { id: "Musician",          label: "Musician",           icon: "🎻", color: "#92400e", desc: "Instrumentalist" },
+  { id: "Performer",         label: "Performer",          icon: "🎭", color: "#0e7490", desc: "Dancer, fire artist, acrobat" },
+  { id: "Stand-up Comedian", label: "Stand-up Comedian",  icon: "🎙️", color: "#374151", desc: "Comedy & hosting" },
+  { id: "Magician",          label: "Magician",           icon: "🪄", color: "#4c1d95", desc: "Magic & illusion shows" },
+  { id: "Choreographer",     label: "Choreographer",      icon: "💃", color: "#9d174d", desc: "Sangeet & group choreography" },
+  { id: "Emcee/Host",        label: "Emcee / Host",       icon: "🎤", color: "#1d4ed8", desc: "Anchor & event hosting" },
+  { id: "AV Setup",          label: "AV Setup",           icon: "🔊", color: "#064e3b", desc: "Sound, lighting, LED screens" },
+  // Beauty & Grooming
+  { id: "Makeup Artist",     label: "Makeup Artist",      icon: "💄", color: "#db2777", desc: "Bridal, party & editorial makeup" },
+  { id: "Mehendi Artist",    label: "Mehendi Artist",     icon: "🌿", color: "#16a34a", desc: "Bridal & guest mehendi" },
+  { id: "Hair Stylist",      label: "Hair Stylist",       icon: "💇", color: "#7c3aed", desc: "Bridal & party hairstyling" },
+  // Décor
+  { id: "Decorator",         label: "Decorator",          icon: "🎨", color: "#C47A2E", desc: "Themes, balloons, florals" },
+  { id: "Florist",           label: "Florist",            icon: "🌹", color: "#e11d48", desc: "Mandap, bouquet & floral décor" },
+  { id: "Balloon Artist",    label: "Balloon Artist",     icon: "🎈", color: "#ea580c", desc: "Organic arches, columns, décor" },
+  { id: "Tent House",        label: "Tent House",         icon: "⛺", color: "#854d0e", desc: "Shamiana, mandap, chairs, tables" },
+  // Food & Drink
+  { id: "Caterer",           label: "Caterer",            icon: "🍽️", color: "#0369a1", desc: "Food, catering, live counters" },
+  { id: "Cake Artist",       label: "Cake Artist",        icon: "🎂", color: "#d97706", desc: "Custom cakes & baked goods" },
+  { id: "Bartender",         label: "Bartender",          icon: "🍹", color: "#0891b2", desc: "Cocktails, mocktails & bar setup" },
+  { id: "Food Truck",        label: "Food Truck",         icon: "🚚", color: "#b45309", desc: "Live counters & food trucks" },
+  // Gifting & Stationery
+  { id: "Gift Hamper",       label: "Gift Hamper",        icon: "🎁", color: "#7c3aed", desc: "Custom gift hampers & packaging" },
+  { id: "Invitation Designer",label: "Invitation Designer",icon: "✉️", color: "#0f172a", desc: "Wedding & event stationery" },
+  // Planning
+  { id: "Wedding Planner",   label: "Wedding Planner",    icon: "📋", color: "#0369a1", desc: "Full planning & day coordination" },
 ];
 
 // ── Reusable input components ─────────────────────────────────────────────────

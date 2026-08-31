@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 const F = "'Outfit', sans-serif";
@@ -218,7 +218,7 @@ export function PlanIconButton() {
 }
 
 // ── Centered scrollable modal ──────────────────────────────────────────────
-function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, navigate }) {
+export function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, navigate }) {
   const eventType = plan.eventDetails?.eventType || plan.eventType || '';
   const date = plan.eventDetails?.date || plan.date || '';
   const location = plan.eventDetails?.location || plan.location || '';
@@ -450,9 +450,17 @@ function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, navigat
 
           {/* Footer actions */}
           <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+            {hasChat && (
+              <button
+                onClick={() => { onClose(); navigate('/chats'); }}
+                style={{ flex: 1, minWidth: 140, padding: '11px 0', borderRadius: 12, background: '#25D366', color: '#fff', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 4px 14px rgba(37,211,102,0.3)' }}
+              >
+                💬 Continue Chat
+              </button>
+            )}
             <button
               onClick={() => { onClose(); navigate(isDraft ? '/plan-event/form' : '/my-event'); }}
-              style={{ flex: 1, minWidth: 140, padding: '11px 0', borderRadius: 12, background: GOLD, color: '#fff', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 4px 14px rgba(196,122,46,0.3)' }}
+              style={{ flex: 1, minWidth: 120, padding: '11px 0', borderRadius: 12, background: hasChat ? 'transparent' : GOLD, color: hasChat ? GOLD : '#fff', fontSize: 13, fontWeight: 700, border: hasChat ? `1.5px solid ${GOLD}` : 'none', cursor: 'pointer', boxShadow: hasChat ? 'none' : '0 4px 14px rgba(196,122,46,0.3)' }}
             >
               {isDraft ? 'Continue Planning' : 'Full Event View'} →
             </button>
@@ -460,7 +468,7 @@ function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, navigat
               onClick={onDismiss}
               style={{ padding: '11px 14px', borderRadius: 12, border: '1.5px solid rgba(196,122,46,0.22)', background: 'transparent', color: '#9B7450', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}
             >
-              Clear plan
+              Clear
             </button>
           </div>
         </div>
@@ -484,5 +492,140 @@ function InfoRow({ icon, label, value }) {
       <span style={{ color: '#9B7450', fontWeight: 500 }}>{label}:</span>
       <span style={{ fontWeight: 600 }}>{value}</span>
     </div>
+  );
+}
+
+// ── Desktop floating "My Event" button (site-wide, bottom-right) ───────────
+export function MyEventFloatDesktop() {
+  const [plan, setPlan] = useState(null);
+  const [modal, setModal] = useState(false);  // null | 'mini' | 'full'
+  const navigate = useNavigate();
+  const location = useLocation();
+  const reduxFormData = useSelector(s => s.eventPlanning?.formData);
+
+  const HIDE = ['/login', '/signup', '/otp', '/vendor/register', '/booking/payment'];
+  const hidden = HIDE.some(p => location.pathname.startsWith(p));
+
+  const refresh = useCallback(() => { setPlan(loadPlan()); }, []);
+
+  useEffect(() => { refresh(); }, [reduxFormData?.eventType, reduxFormData?.date, reduxFormData?.location, refresh]);
+  useEffect(() => {
+    refresh();
+    window.addEventListener('storage', refresh);
+    window.addEventListener('tendr:plan-confirmed', refresh);
+    return () => { window.removeEventListener('storage', refresh); window.removeEventListener('tendr:plan-confirmed', refresh); };
+  }, [refresh]);
+
+  if (!plan || hidden) return null;
+
+  const isDraft = plan._draft === true;
+  const hasChat = !!(plan.conversationId);
+  const eventType = plan.eventDetails?.eventType || plan.eventType || 'My Event';
+  const eventDate = plan.eventDetails?.date || plan.date || '';
+  const daysLeft = eventDate ? Math.ceil((new Date(eventDate) - Date.now()) / 86400000) : null;
+
+  const handleClick = () => setModal(isDraft ? 'mini' : 'full');
+
+  return (
+    <>
+      {/* Desktop-only floating button */}
+      <style>{`
+        .my-event-float { display: none; }
+        @media (min-width: 768px) { .my-event-float { display: flex !important; } }
+      `}</style>
+
+      <button
+        className="my-event-float"
+        onClick={handleClick}
+        style={{
+          position: 'fixed', bottom: 88, right: 24, zIndex: 8900,
+          alignItems: 'center', gap: 10,
+          padding: '10px 18px 10px 14px',
+          borderRadius: 100,
+          border: 'none',
+          background: isDraft
+            ? 'linear-gradient(135deg,#B45309,#C47A2E)'
+            : 'linear-gradient(135deg,#2C1A0E,#4A2810)',
+          color: '#fff',
+          fontSize: 13, fontWeight: 700,
+          fontFamily: F,
+          cursor: 'pointer',
+          boxShadow: isDraft
+            ? '0 6px 22px rgba(196,122,46,0.45)'
+            : '0 6px 22px rgba(44,26,14,0.45)',
+          transition: 'transform 0.18s, box-shadow 0.18s',
+          whiteSpace: 'nowrap',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
+      >
+        {/* Icon */}
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+          <line x1="9" y1="12" x2="15" y2="12"/>
+          <line x1="9" y1="16" x2="12" y2="16"/>
+        </svg>
+        <span>{isDraft ? 'In Planning…' : eventType}</span>
+        {/* Pulse dot */}
+        <span style={{
+          width: 8, height: 8, borderRadius: '50%',
+          background: isDraft ? '#FCD34D' : '#4ade80',
+          boxShadow: isDraft ? '0 0 0 3px rgba(252,211,77,0.3)' : '0 0 0 3px rgba(74,222,128,0.3)',
+          animation: 'myevent-pulse 2s infinite',
+          flexShrink: 0,
+        }} />
+        <style>{`@keyframes myevent-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.25)} }`}</style>
+      </button>
+
+      {/* Mini popup — draft only: just a "Continue Planning" call-to-action */}
+      {modal === 'mini' && (
+        <div
+          onClick={() => setModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', padding: '0 24px 140px' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: CREAM, borderRadius: 18, padding: '20px 22px',
+              boxShadow: '0 16px 48px rgba(44,26,14,0.22)',
+              fontFamily: F, width: 260,
+              border: '1.5px solid rgba(196,122,46,0.2)',
+              animation: 'myevent-pop 0.22s cubic-bezier(0.34,1.56,0.64,1)',
+            }}
+          >
+            <style>{`@keyframes myevent-pop { from{opacity:0;transform:scale(0.9) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }`}</style>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+              <span style={{ fontSize: 18 }}>📋</span>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: INK }}>Planning in progress</div>
+                <div style={{ fontSize: 11, color: '#9B7450' }}>{eventType || 'Your event'}</div>
+              </div>
+            </div>
+            <button
+              onClick={() => { setModal(false); navigate('/plan-event/form'); }}
+              style={{ width: '100%', padding: '11px 0', borderRadius: 12, background: GOLD, color: '#fff', fontSize: 13.5, fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 4px 14px rgba(196,122,46,0.3)' }}
+            >
+              Continue Planning →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Full modal — post-chat state */}
+      {modal === 'full' && (
+        <PlanSummaryModal
+          plan={plan}
+          daysLeft={daysLeft}
+          isDraft={isDraft}
+          onClose={() => setModal(false)}
+          onDismiss={() => {
+            try { localStorage.removeItem('tendr_smart_plan'); localStorage.removeItem('tendr_ep_session'); } catch {}
+            setPlan(null); setModal(false);
+          }}
+          navigate={navigate}
+        />
+      )}
+    </>
   );
 }
