@@ -4601,7 +4601,7 @@ export default function OccasionHub({ occasion }) {
         {/* Header */}
         <div style={{ position:"relative", zIndex:2, textAlign:"center", padding:"0 24px 28px" }}>
           <div style={{ fontSize:52, marginBottom:10, filter:`drop-shadow(0 0 24px ${accent}80)` }}>{occ.emoji}</div>
-          <div style={{ fontSize:"clamp(1.4rem,4vw,1.9rem)", fontWeight:900, color:"#fff", letterSpacing:"-0.03em", marginBottom:6 }}>{occ.name} Hub</div>
+          <div style={{ fontSize:"clamp(1.4rem,4vw,1.9rem)", fontWeight:900, color:"#fff", letterSpacing:"-0.03em", marginBottom:6 }}>{occ.name}</div>
           <div style={{ fontSize:13, color:"rgba(255,255,255,0.38)" }}>{occ.tagline}</div>
         </div>
 
@@ -4886,7 +4886,7 @@ export default function OccasionHub({ occasion }) {
               </div>
 
               {/* Hub label */}
-              <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.38)", letterSpacing:"0.2em", textTransform:"uppercase", fontFamily:"monospace", marginBottom:18 }}>{occ.name.toUpperCase()} HUB</div>
+              <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.38)", letterSpacing:"0.2em", textTransform:"uppercase", fontFamily:"monospace", marginBottom:18 }}>{occ.name.toUpperCase()}</div>
 
               {/* Icon with concentric glow rings */}
               <div style={{ position:"relative", display:"inline-flex", alignItems:"center", justifyContent:"center", marginBottom:18 }}>
