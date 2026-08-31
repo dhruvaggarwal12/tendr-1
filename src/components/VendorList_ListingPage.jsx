@@ -109,9 +109,8 @@ const VendorList_ListingPage = ({
   const openBaatKaroChat = useOpenBaatKaroChat();
   const { token } = useSelector(s => s.auth);
   const formData = useSelector(s => s.eventPlanning?.formData || {});
-  const bookingTypeRedux = useSelector(s => s.eventPlanning?.bookingType || "");
-  // Show shortlist UI when: URL has fromPlan=1 OR Redux says you-do-it (covers returning customers)
-  const isFromPlanFlow = (location.pathname === "/listings" && new URLSearchParams(location.search).get("fromPlan") === "1") || bookingTypeRedux === "you-do-it";
+  // Show shortlist UI only when explicitly arriving via fromPlan=1 (DIY Browse links)
+  const isFromPlanFlow = location.pathname === "/listings" && new URLSearchParams(location.search).get("fromPlan") === "1";
   const recommendedServices = eventType ? getRecommendations({ eventType }).services : [];
   const [quickViewVendor, setQuickViewVendor] = useState(null);
   const [chatFormVendor, setChatFormVendor] = useState(null);
