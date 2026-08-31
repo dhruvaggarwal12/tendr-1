@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 const F = "'Outfit', sans-serif";
@@ -499,12 +499,11 @@ function InfoRow({ icon, label, value }) {
 export function MyEventFloatDesktop() {
   const [plan, setPlan] = useState(null);
   const [modal, setModal] = useState(false);  // null | 'mini' | 'full'
-  const navigate = useNavigate();
-  const location = useLocation();
   const reduxFormData = useSelector(s => s.eventPlanning?.formData);
 
   const HIDE = ['/login', '/signup', '/otp', '/vendor/register', '/booking/payment'];
-  const hidden = HIDE.some(p => location.pathname.startsWith(p));
+  const hidden = HIDE.some(p => window.location.pathname.startsWith(p));
+  const navigate = (path) => { window.location.href = path; };
 
   const refresh = useCallback(() => { setPlan(loadPlan()); }, []);
 
