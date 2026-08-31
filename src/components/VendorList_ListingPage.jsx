@@ -104,13 +104,14 @@ const VendorList_ListingPage = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  // true only when user arrived via planning flow (Save and Browse)
-  const isFromPlanFlow = location.pathname === "/listings" && new URLSearchParams(location.search).get("fromPlan") === "1";
   const dispatch = useDispatch();
   const { openVendorChat, openExistingChat } = useChatOverlay();
   const openBaatKaroChat = useOpenBaatKaroChat();
   const { token } = useSelector(s => s.auth);
   const formData = useSelector(s => s.eventPlanning?.formData || {});
+  const bookingTypeRedux = useSelector(s => s.eventPlanning?.bookingType || "");
+  // Show shortlist UI when: URL has fromPlan=1 OR Redux says you-do-it (covers returning customers)
+  const isFromPlanFlow = (location.pathname === "/listings" && new URLSearchParams(location.search).get("fromPlan") === "1") || bookingTypeRedux === "you-do-it";
   const recommendedServices = eventType ? getRecommendations({ eventType }).services : [];
   const [quickViewVendor, setQuickViewVendor] = useState(null);
   const [chatFormVendor, setChatFormVendor] = useState(null);
