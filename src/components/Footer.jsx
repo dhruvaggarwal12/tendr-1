@@ -77,12 +77,10 @@ export default function Footer() {
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            {/* Logo — inverted white */}
-            <img
-              src={tendrLogo}
-              alt="Tendr"
-              style={{ height: 36, maxWidth: 150, objectFit: "contain", display: "block", filter: "brightness(0) invert(1)", marginBottom: 20, opacity: 0.92 }}
-            />
+            {/* Logo wordmark */}
+            <div style={{ fontFamily: font, fontSize: 30, fontWeight: 900, color: "#FFF8EC", letterSpacing: "-0.04em", lineHeight: 1, marginBottom: 20 }}>
+              tendr
+            </div>
 
             {/* Brand tagline in Cormorant (ui-ux-pro-max: font-pairing, typography carries personality) */}
             <p style={{ fontFamily: serif, fontSize: 17, fontWeight: 400, fontStyle: "italic", color: "rgba(255,247,235,0.55)", lineHeight: 1.62, marginBottom: 28, maxWidth: 268 }}>

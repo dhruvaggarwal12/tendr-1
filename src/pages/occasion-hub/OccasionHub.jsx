@@ -3961,6 +3961,10 @@ export default function OccasionHub({ occasion }) {
   const [copied, setCopied]         = useState(false);
   const [showHostControls, setShowHostControls] = useState(false);
 
+  // Entry gate: null = gate showing; 'exploring' | 'hosting' | 'joined' = hub visible
+  const [entryMode, setEntryMode]   = useState(null);
+  const [entryView, setEntryView]   = useState("pick"); // "pick" | "host" | "join"
+
   const { room, connected, error: roomError, myName, createRoom, joinRoom, leaveRoom } = usePartyRoom();
   const navigate = useNavigate();
 
@@ -3970,13 +3974,13 @@ export default function OccasionHub({ occasion }) {
     try { const raw = localStorage.getItem(`tendr-plan-${slug}`); if (raw) setPlanData(JSON.parse(raw)); } catch {}
   }, [occasion]);
 
-  // Auto-detect ?room=CODE in URL and pre-fill join modal
+  // Auto-detect ?room=CODE in URL and open join view in entry gate
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get("room");
     if (code && !room) {
       setJoinCode(code.toUpperCase());
-      setRoomModal("join");
+      setEntryView("join");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -3993,6 +3997,13 @@ export default function OccasionHub({ occasion }) {
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
+  // If room closes while hosting/joined, fall back to exploring
+  useEffect(() => {
+    if (!room && (entryMode === "hosting" || entryMode === "joined")) {
+      setEntryMode("exploring");
+    }
+  }, [room]);
+
   const occ = OCCASIONS[occasion];
   if (!occ) return <div style={{ color: "#fff", padding: 40, textAlign: "center", fontFamily: font }}>Unknown occasion: {occasion}</div>;
 
@@ -4004,7 +4015,7 @@ export default function OccasionHub({ occasion }) {
     const res = await createRoom({ occasionType: occasion, partyName: partyName.trim() || `${occ.name}`, hostName: hostName.trim() });
     setRoomLoading(false);
     if (!res.ok) alert(res.error || "Failed to create room");
-    else setRoomModal("players");
+    else { setEntryMode("hosting"); setRoomModal("players"); }
   };
 
   const handleJoin = async () => {
@@ -4014,6 +4025,7 @@ export default function OccasionHub({ occasion }) {
     setRoomLoading(false);
     if (!res.ok) alert(res.error || "Room not found — check the code and try again.");
     else {
+      setEntryMode("joined");
       setRoomModal(null);
       // Clear ?room= param from URL so refreshing doesn't re-prompt join
       const url = new URL(window.location.href);
@@ -4104,6 +4116,67 @@ export default function OccasionHub({ occasion }) {
     { id: "moments", label: "MOMENTS",
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> },
   ];
+
+  // ── ENTRY GATE ────────────────────────────────────────────────────────────
+  if (!entryMode) {
+    return (
+      <div style={{ height:"100dvh", display:"flex", flexDirection:"column", fontFamily:font, background:PH.bg, position:"relative", overflow:"hidden", alignItems:"center", justifyContent:"center" }}>
+        <style>{`@keyframes eg-glow{0%,100%{opacity:0.15;transform:translateX(-50%) scale(1)}50%{opacity:0.28;transform:translateX(-50%) scale(1.06)}} @keyframes eg-in{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}}`}</style>
+        <PartyHubBackground />
+        <div style={{ position:"fixed", top:-140, left:"50%", transform:"translateX(-50%)", width:560, height:360, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(109,40,217,0.12) 0%, rgba(139,92,246,0.04) 45%, transparent 70%)", pointerEvents:"none", zIndex:0 }} />
+        <div style={{ position:"fixed", top:-60, right:-80, width:400, height:300, borderRadius:"50%", background:`radial-gradient(ellipse, ${accent}18 0%, transparent 65%)`, pointerEvents:"none", zIndex:0 }} />
+
+        {/* Header */}
+        <div style={{ position:"relative", zIndex:2, textAlign:"center", padding:"0 24px 28px" }}>
+          <div style={{ fontSize:52, marginBottom:10, filter:`drop-shadow(0 0 24px ${accent}80)` }}>{occ.emoji}</div>
+          <div style={{ fontSize:"clamp(1.4rem,4vw,1.9rem)", fontWeight:900, color:"#fff", letterSpacing:"-0.03em", marginBottom:6 }}>{occ.name} Hub</div>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,0.38)" }}>{occ.tagline}</div>
+        </div>
+
+        {entryView === "pick" ? (
+          <div style={{ display:"flex", flexDirection:"column", gap:12, padding:"0 20px", width:"100%", maxWidth:400, position:"relative", zIndex:2, animation:"eg-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+            <button onClick={()=>setEntryView("host")} style={{ padding:"18px 22px", borderRadius:18, border:`1.5px solid ${PH.violet}40`, background:`${PH.violet}14`, color:"#fff", textAlign:"left", cursor:"pointer", transition:"border-color 0.2s,background 0.2s" }}>
+              <div style={{ fontSize:28 }}>👑</div>
+              <div style={{ fontSize:16, fontWeight:800, marginTop:6 }}>I'm Hosting</div>
+              <div style={{ fontSize:12, color:"rgba(255,255,255,0.42)", marginTop:3 }}>Create a room · control the vibe</div>
+            </button>
+            <button onClick={()=>setEntryView("join")} style={{ padding:"18px 22px", borderRadius:18, border:`1.5px solid ${PH.blue}40`, background:`${PH.blue}0e`, color:"#fff", textAlign:"left", cursor:"pointer", transition:"border-color 0.2s,background 0.2s" }}>
+              <div style={{ fontSize:28 }}>🚀</div>
+              <div style={{ fontSize:16, fontWeight:800, marginTop:6 }}>Join a Party</div>
+              <div style={{ fontSize:12, color:"rgba(255,255,255,0.42)", marginTop:3 }}>Enter a room code to join your crew</div>
+            </button>
+            <button onClick={()=>setEntryMode("exploring")} style={{ padding:"18px 22px", borderRadius:18, border:"1.5px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.04)", color:"#fff", textAlign:"left", cursor:"pointer", transition:"border-color 0.2s,background 0.2s" }}>
+              <div style={{ fontSize:28 }}>👀</div>
+              <div style={{ fontSize:16, fontWeight:800, marginTop:6 }}>Just Exploring</div>
+              <div style={{ fontSize:12, color:"rgba(255,255,255,0.42)", marginTop:3 }}>Browse tools · no commitment</div>
+            </button>
+          </div>
+        ) : entryView === "host" ? (
+          <div style={{ padding:"0 20px", width:"100%", maxWidth:400, position:"relative", zIndex:2, animation:"eg-in 0.22s cubic-bezier(0.22,1,0.36,1)" }}>
+            <button onClick={()=>setEntryView("pick")} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.45)", fontSize:13, cursor:"pointer", marginBottom:18, display:"flex", alignItems:"center", gap:4, padding:0 }}>← Back</button>
+            <div style={{ fontSize:18, fontWeight:800, color:"#fff", marginBottom:4 }}>Host a Room 👑</div>
+            <div style={{ fontSize:13, color:"rgba(255,255,255,0.38)", marginBottom:22 }}>Start a live party room for your crew</div>
+            <input value={hostName} onChange={e=>setHostName(e.target.value)} placeholder="Your name" style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:15, outline:"none", boxSizing:"border-box", marginBottom:10 }} />
+            <input value={partyName} onChange={e=>setPartyName(e.target.value)} placeholder={`Party name (e.g. ${occ.name} Bash)`} style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:15, outline:"none", boxSizing:"border-box", marginBottom:14 }} />
+            <button onClick={handleHostCreate} disabled={!hostName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:hostName.trim()?PH.violet:"rgba(255,255,255,0.08)", color:"#fff", fontSize:14, fontWeight:800, cursor:hostName.trim()?"pointer":"not-allowed", opacity:hostName.trim()?1:0.5 }}>
+              {roomLoading ? "Creating…" : "Create Room →"}
+            </button>
+          </div>
+        ) : (
+          <div style={{ padding:"0 20px", width:"100%", maxWidth:400, position:"relative", zIndex:2, animation:"eg-in 0.22s cubic-bezier(0.22,1,0.36,1)" }}>
+            <button onClick={()=>setEntryView("pick")} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.45)", fontSize:13, cursor:"pointer", marginBottom:18, display:"flex", alignItems:"center", gap:4, padding:0 }}>← Back</button>
+            <div style={{ fontSize:18, fontWeight:800, color:"#fff", marginBottom:4 }}>Join a Party 🚀</div>
+            <div style={{ fontSize:13, color:"rgba(255,255,255,0.38)", marginBottom:22 }}>{joinCode ? "You were invited — just enter your name!" : "Enter the code your host shared"}</div>
+            <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="ABC123" maxLength={6} style={{ width:"100%", padding:"14px 16px", borderRadius:12, border:`1.5px solid ${PH.blue}44`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:24, fontWeight:900, textAlign:"center", letterSpacing:"0.22em", fontFamily:"monospace", outline:"none", boxSizing:"border-box", marginBottom:10 }} />
+            <input value={joinName} onChange={e=>setJoinName(e.target.value)} placeholder="Your name" style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.blue}33`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:15, outline:"none", boxSizing:"border-box", marginBottom:14 }} />
+            <button onClick={handleJoin} disabled={joinCode.length<6||!joinName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:(joinCode.length>=6&&joinName.trim())?PH.blue:"rgba(255,255,255,0.08)", color:"#fff", fontSize:14, fontWeight:800, cursor:(joinCode.length>=6&&joinName.trim())?"pointer":"not-allowed", opacity:(joinCode.length>=6&&joinName.trim())?1:0.5 }}>
+              {roomLoading ? "Joining…" : "Join Room →"}
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   // ── RENDER ────────────────────────────────────────────────────────────────
   return (
@@ -4314,6 +4387,14 @@ export default function OccasionHub({ occasion }) {
 
       {/* ── Section content ── */}
       <div className="occ-scroll-area" style={{ flex:1, overflowY:"auto", padding:"14px 16px calc(80px + env(safe-area-inset-bottom,0px))", maxWidth:800, margin:"0 auto", width:"100%", boxSizing:"border-box", position:"relative", zIndex:1 }}>
+
+        {/* Exploring banner */}
+        {entryMode === "exploring" && (
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:12, padding:"10px 14px", marginBottom:14, gap:8 }}>
+            <span style={{ fontSize:12, color:"rgba(255,255,255,0.45)" }}>👀 Exploring · Host or join to play together</span>
+            <button onClick={()=>{ setEntryMode(null); setEntryView("pick"); }} style={{ fontSize:12, fontWeight:700, color:PH.violet, background:"none", border:"none", cursor:"pointer", whiteSpace:"nowrap", padding:0 }}>Host / Join →</button>
+          </div>
+        )}
 
         {/* LOBBY */}
         {activeTab === "lobby" && (
