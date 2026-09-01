@@ -33,6 +33,10 @@ const PAY_COLOR = {
   Paid:    '#16A34A',
 };
 const dsic = (d) => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
+const SOURCE_EMOJI = {
+  WhatsApp: '💬', Instagram: '📸', Facebook: '👥', Referral: '🤝',
+  'Walk-in': '🚶', Phone: '📞', 'Tendr Profile': '🔗', Other: '📋',
+};
 const SOURCE_ICON = {
   WhatsApp:  dsic(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>),
   Instagram: dsic(<><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></>),
@@ -2850,7 +2854,7 @@ export default function VendorDashboard() {
               {workSubTab === 'outside' && (
                 <div>
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
-                    <div style={{ fontSize:12, color:'#9B7450' }}>Direct bookings — WhatsApp, referrals, walk-ins</div>
+                    <div style={{ fontSize:12, color:'#9B7450' }}>Direct bookings — WhatsApp, referrals, walk-ins, Tendr profile</div>
                     {outsideOrders.length>0 && <button onClick={exportCSV} style={{ padding:'5px 12px', borderRadius:8, border:'1.5px solid rgba(196,122,46,0.2)', background:'#fff', color:'#9B7450', fontFamily:font, fontSize:12, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', gap:5 }}>{dsic(<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></>)} CSV</button>}
                   </div>
                   {/* Status pills */}
@@ -3792,14 +3796,14 @@ export default function VendorDashboard() {
 
       {/* ── Bottom nav (mobile) ── */}
       {isMobile && (
-        <div style={{ position:'fixed', bottom:0, left:0, right:0, background:'#fff', borderTop:'1px solid rgba(196,122,46,0.12)', display:'flex', zIndex:200, paddingBottom:'env(safe-area-inset-bottom,0px)' }}>
+        <div style={{ position:'fixed', bottom:0, left:0, right:0, background:'#fff', borderTop:'1px solid rgba(196,122,46,0.12)', zIndex:200, paddingBottom:'env(safe-area-inset-bottom,0px)', overflowX:'auto', display:'flex' }}>
           {NAV_ITEMS.map(item => {
             const active = tab===item.key;
             return (
               <button key={item.key} onClick={() => setTab(item.key)}
-                style={{ flex:1, padding:'8px 2px 10px', border:'none', background:'transparent', cursor:'pointer', fontFamily:font, display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
+                style={{ flexShrink:0, minWidth:60, padding:'8px 6px 10px', border:'none', background:active?'rgba(196,122,46,0.06)':'transparent', cursor:'pointer', fontFamily:font, display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
                 <span style={{ color:active?gold:'#BDA282', display:'flex' }}>{item.icon}</span>
-                <span style={{ fontSize:9.5, fontWeight:active?700:500, color:active?gold:'#9B7450' }}>{item.label}</span>
+                <span style={{ fontSize:9, fontWeight:active?700:500, color:active?gold:'#9B7450', whiteSpace:'nowrap' }}>{item.label}</span>
               </button>
             );
           })}
