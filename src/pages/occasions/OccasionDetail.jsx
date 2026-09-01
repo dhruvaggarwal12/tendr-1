@@ -1268,6 +1268,7 @@ export default function OccasionDetail(){
   /* decor builder */
   const [showDecorBuilder,setShowDecorBuilder]=useState(false);
   const [customDecor,setCustomDecor]=useState({}); // {category:[items]}
+  const [editedPackageItems,setEditedPackageItems]=useState(null); // null | string[] — package item editing
 
   /* fun activities */
   const [selectedActivities,setSelectedActivities]=useState([]); // array of activity ids
@@ -1868,40 +1869,54 @@ export default function OccasionDetail(){
               </span>}
             </div>
 
-            {/* ── Service picker chips ── */}
-            <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:16}}>
-              {ALL_VENDORS.map(v=>{
+            {/* ── Service picker — 3 tiers ── */}
+            {(()=>{
+              const essential=occasion.vendorCategories||[];
+              const recOnly=[...recommended].filter(v=>!essential.includes(v));
+              const addOns=ALL_VENDORS.filter(v=>!essential.includes(v)&&!recOnly.includes(v));
+              const tierLabel=(label,color)=>(
+                <div style={{fontSize:10,fontWeight:800,color,textTransform:"uppercase",letterSpacing:"0.13em",marginBottom:8,marginTop:4}}>{label}</div>
+              );
+              const chip=(v)=>{
                 const sel=vendors.includes(v);
                 const isRec=recommended.has(v);
                 return(
                   <button key={v} onClick={()=>toggleVendor(v)}
                     style={{
                       display:"inline-flex",alignItems:"center",gap:6,
-                      padding:"9px 14px",borderRadius:100,
-                      border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.2)"}`,
+                      padding:"9px 15px",borderRadius:100,
+                      border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.22)"}`,
                       background:sel?`rgba(196,122,46,0.1)`:"#fff",
                       color:sel?gold:ink,
-                      fontSize:13,fontWeight:sel?700:500,
+                      fontSize:13.5,fontWeight:sel?700:600,
+                      letterSpacing:"-0.01em",
                       cursor:"pointer",fontFamily:font,
                       transition:"all 0.18s",
-                      boxShadow:sel?`0 0 0 3px rgba(196,122,46,0.08)`:"none",
+                      boxShadow:sel?`0 0 0 3px rgba(196,122,46,0.08)`:"0 1px 3px rgba(0,0,0,0.06)",
                     }}>
                     {sel
                       ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(196,122,46,0.45)" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(196,122,46,0.4)" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     }
                     {v}
-                    {isRec&&!sel&&<span style={{fontSize:9,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"1px 6px",marginLeft:2}}>✦</span>}
+                    {isRec&&!sel&&<span style={{fontSize:9,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"1px 5px",marginLeft:1}}>✦</span>}
                   </button>
                 );
-              })}
-              {/* + Other chip */}
-              <button onClick={()=>setShowCustomVendorInput(v=>!v)}
-                style={{display:"inline-flex",alignItems:"center",gap:6,padding:"9px 14px",borderRadius:100,border:`1.5px dashed ${showCustomVendorInput?"rgba(196,122,46,0.5)":"rgba(196,122,46,0.28)"}`,background:showCustomVendorInput?"rgba(196,122,46,0.06)":"#fff",color:"rgba(196,122,46,0.7)",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s"}}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Other
-              </button>
-            </div>
+              };
+              return(
+                <div style={{marginBottom:16}}>
+                  {essential.length>0&&<>{tierLabel("Essential","#92400E")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{essential.filter(v=>ALL_VENDORS.includes(v)).map(chip)}</div></>}
+                  {recOnly.length>0&&<>{tierLabel("Recommended for your event",gold)}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{recOnly.filter(v=>ALL_VENDORS.includes(v)).map(chip)}</div></>}
+                  {addOns.length>0&&<>{tierLabel("Add-ons","rgba(28,9,0,0.4)")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{addOns.map(chip)}
+                    <button onClick={()=>setShowCustomVendorInput(v=>!v)}
+                      style={{display:"inline-flex",alignItems:"center",gap:6,padding:"9px 15px",borderRadius:100,border:`1.5px dashed ${showCustomVendorInput?"rgba(196,122,46,0.5)":"rgba(196,122,46,0.28)"}`,background:showCustomVendorInput?"rgba(196,122,46,0.06)":"#fff",color:"rgba(196,122,46,0.7)",fontSize:13.5,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s",letterSpacing:"-0.01em"}}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      Other
+                    </button>
+                  </div></>}
+                </div>
+              );
+            })()}
 
             {/* custom service input — revealed when + Other is tapped */}
             {showCustomVendorInput&&(
@@ -2131,11 +2146,15 @@ export default function OccasionDetail(){
                                   <div style={{fontSize:11.5,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{opt.style}</div>
                                   <div style={{fontSize:10,fontWeight:700,color:"rgba(196,122,46,0.65)"}}>{opt.priceHint}</div>
                                   <div style={{display:"flex",flexDirection:"column",gap:2}}>
-                                    {opt.items.map((it,ii)=><div key={ii} style={{fontSize:10,color:muted,lineHeight:1.4}}>· {it}</div>)}
+                                    {(sel&&editedPackageItems!==null?editedPackageItems:opt.items).map((it,ii)=>(
+                                      <div key={ii} style={{fontSize:11,color:muted,lineHeight:1.45,display:"flex",alignItems:"flex-start",gap:3}}>
+                                        <span style={{flexShrink:0}}>·</span><span>{it}</span>
+                                      </div>
+                                    ))}
                                   </div>
-                                  {sel&&<button onClick={e=>{e.stopPropagation();setShowDecorBuilder(b=>!b);}}
+                                  {sel&&<button onClick={e=>{e.stopPropagation();if(showDecorBuilder&&editedPackageItems!==null){setShowDecorBuilder(false);setEditedPackageItems(null);}else{setEditedPackageItems([...opt.items]);setShowDecorBuilder(true);}}}
                                     style={{marginTop:4,fontSize:10,fontWeight:700,color:gold,background:"rgba(196,122,46,0.08)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:8,padding:"4px 8px",cursor:"pointer",fontFamily:font,textAlign:"center"}}>
-                                    ✏️ Edit items
+                                    {showDecorBuilder&&editedPackageItems!==null?"✓ Done":"✏️ Edit items"}
                                   </button>}
                                 </button>
                               );
@@ -2157,28 +2176,55 @@ export default function OccasionDetail(){
                         {/* Decor Builder panel */}
                         {showDecorBuilder&&(chosen==="custom"||typeof chosen==="number")&&(
                           <div style={{borderTop:`1px solid rgba(196,122,46,0.1)`,background:"#FFFDF8",padding:"14px 14px 16px"}}>
+
+                            {/* Package edit mode — remove existing + add from categories */}
+                            {editedPackageItems!==null&&typeof chosen==="number"&&(
+                              <div style={{marginBottom:16}}>
+                                <div style={{fontSize:11,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>Current items</div>
+                                <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:4}}>
+                                  {editedPackageItems.map((item,idx)=>(
+                                    <div key={idx} style={{display:"flex",alignItems:"center",gap:4,padding:"5px 10px",borderRadius:100,background:"rgba(196,122,46,0.1)",border:`1.5px solid ${gold}`,fontSize:12,fontWeight:600,color:gold,fontFamily:font}}>
+                                      <span>{item}</span>
+                                      <button onClick={()=>setEditedPackageItems(prev=>prev.filter((_,i)=>i!==idx))}
+                                        style={{display:"flex",alignItems:"center",justifyContent:"center",width:14,height:14,borderRadius:"50%",background:"rgba(196,122,46,0.2)",border:"none",color:gold,fontSize:9,fontWeight:900,cursor:"pointer",padding:0,lineHeight:1}}>✕</button>
+                                    </div>
+                                  ))}
+                                  {editedPackageItems.length===0&&<div style={{fontSize:12,color:muted,padding:"4px 0"}}>No items — add from below</div>}
+                                </div>
+                                <div style={{borderTop:`1px solid rgba(196,122,46,0.1)`,marginTop:10,paddingTop:10,fontSize:11,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>Add items</div>
+                              </div>
+                            )}
+
                             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-                              <div style={{fontSize:11,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em"}}>Pick what you need</div>
-                              {totalDecorItems>0&&<button onClick={()=>setCustomDecor({})} style={{fontSize:11,fontWeight:600,color:"rgba(196,122,46,0.6)",background:"none",border:"none",cursor:"pointer",fontFamily:font,padding:0,textDecoration:"underline"}}>Clear all</button>}
+                              {editedPackageItems===null&&<div style={{fontSize:11,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em"}}>Pick what you need</div>}
+                              {editedPackageItems===null&&totalDecorItems>0&&<button onClick={()=>setCustomDecor({})} style={{fontSize:11,fontWeight:600,color:"rgba(196,122,46,0.6)",background:"none",border:"none",cursor:"pointer",fontFamily:font,padding:0,textDecoration:"underline"}}>Clear all</button>}
                             </div>
                             {DECOR_CATEGORIES.map(cat=>{
                               const items=DECOR_ITEMS[cat]||[];
-                              const picked=(customDecor[cat]||[]);
+                              const picked=editedPackageItems!==null
+                                ? editedPackageItems.filter(i=>items.includes(i))
+                                : (customDecor[cat]||[]);
                               const otherVal=decorOtherInputs[cat]||"";
                               return(
                                 <div key={cat} style={{marginBottom:14}}>
                                   <div style={{fontSize:11,fontWeight:700,color:ink,marginBottom:7,display:"flex",alignItems:"center",gap:6}}>
                                     {cat}
                                     {picked.length>0&&<span style={{fontSize:9,fontWeight:800,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"1px 6px"}}>{picked.length} picked</span>}
-                                    {picked.length>0&&<button onClick={()=>setCustomDecor(prev=>({...prev,[cat]:[]}))} style={{fontSize:9,fontWeight:600,color:muted,background:"none",border:"none",cursor:"pointer",fontFamily:font,padding:"0 4px",marginLeft:"auto",textDecoration:"underline"}}>Clear</button>}
+                                    {picked.length>0&&editedPackageItems===null&&<button onClick={()=>setCustomDecor(prev=>({...prev,[cat]:[]}))} style={{fontSize:9,fontWeight:600,color:muted,background:"none",border:"none",cursor:"pointer",fontFamily:font,padding:"0 4px",marginLeft:"auto",textDecoration:"underline"}}>Clear</button>}
                                   </div>
                                   <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                                     {items.map(item=>{
                                       const isSel=picked.includes(item);
                                       return(
                                         <button key={item}
-                                          onClick={()=>setCustomDecor(prev=>({...prev,[cat]:isSel?picked.filter(x=>x!==item):[...picked,item]}))}
-                                          style={{padding:"6px 12px",borderRadius:100,border:`1.5px solid ${isSel?gold:"rgba(196,122,46,0.18)"}`,background:isSel?"rgba(196,122,46,0.1)":"#fff",color:isSel?gold:ink,fontSize:12,fontWeight:isSel?700:400,cursor:"pointer",fontFamily:font,transition:"all 0.15s",minHeight:32}}>
+                                          onClick={()=>{
+                                            if(editedPackageItems!==null){
+                                              setEditedPackageItems(prev=>isSel?prev.filter(x=>x!==item):[...prev,item]);
+                                            } else {
+                                              setCustomDecor(prev=>({...prev,[cat]:isSel?picked.filter(x=>x!==item):[...picked,item]}));
+                                            }
+                                          }}
+                                          style={{padding:"6px 12px",borderRadius:100,border:`1.5px solid ${isSel?gold:"rgba(196,122,46,0.18)"}`,background:isSel?"rgba(196,122,46,0.1)":"#fff",color:isSel?gold:ink,fontSize:12,fontWeight:isSel?700:500,cursor:"pointer",fontFamily:font,transition:"all 0.15s",minHeight:32}}>
                                           {item}
                                         </button>
                                       );
@@ -2187,17 +2233,26 @@ export default function OccasionDetail(){
                                     <div style={{display:"flex",gap:4,alignItems:"center"}}>
                                       <input type="text" value={otherVal}
                                         onChange={e=>setDecorOtherInputs(prev=>({...prev,[cat]:e.target.value}))}
-                                        onKeyDown={e=>{if(e.key==="Enter"&&otherVal.trim()){setCustomDecor(prev=>({...prev,[cat]:[...(prev[cat]||[]),otherVal.trim()]}));setDecorOtherInputs(prev=>({...prev,[cat]:""}));}}}
+                                        onKeyDown={e=>{if(e.key==="Enter"&&otherVal.trim()){
+                                          if(editedPackageItems!==null){setEditedPackageItems(prev=>[...prev,otherVal.trim()]);}
+                                          else{setCustomDecor(prev=>({...prev,[cat]:[...(prev[cat]||[]),otherVal.trim()]}));}
+                                          setDecorOtherInputs(prev=>({...prev,[cat]:""}));
+                                        }}}
                                         placeholder="Other…"
                                         style={{padding:"5px 10px",borderRadius:100,border:"1.5px dashed rgba(196,122,46,0.28)",background:"transparent",fontSize:12,fontFamily:font,outline:"none",color:ink,width:90,minHeight:32}}/>
-                                      {otherVal.trim()&&<button onClick={()=>{setCustomDecor(prev=>({...prev,[cat]:[...(prev[cat]||[]),otherVal.trim()]}));setDecorOtherInputs(prev=>({...prev,[cat]:""}));}}
+                                      {otherVal.trim()&&<button onClick={()=>{
+                                          if(editedPackageItems!==null){setEditedPackageItems(prev=>[...prev,otherVal.trim()]);}
+                                          else{setCustomDecor(prev=>({...prev,[cat]:[...(prev[cat]||[]),otherVal.trim()]}));}
+                                          setDecorOtherInputs(prev=>({...prev,[cat]:""}));
+                                        }}
                                         style={{padding:"5px 10px",borderRadius:100,background:gold,color:"#fff",fontFamily:font,fontWeight:700,fontSize:12,border:"none",cursor:"pointer"}}>+</button>}
                                     </div>
                                   </div>
                                 </div>
                               );
                             })}
-                            {totalDecorItems>0&&<div style={{marginTop:4,fontSize:11.5,fontWeight:600,color:"#16a34a"}}>{totalDecorItems} item{totalDecorItems!==1?"s":""} selected</div>}
+                            {editedPackageItems!==null&&<div style={{marginTop:8,fontSize:12,fontWeight:700,color:gold}}>{editedPackageItems.length} item{editedPackageItems.length!==1?"s":""} in your package</div>}
+                            {editedPackageItems===null&&totalDecorItems>0&&<div style={{marginTop:4,fontSize:11.5,fontWeight:600,color:"#16a34a"}}>{totalDecorItems} item{totalDecorItems!==1?"s":""} selected</div>}
                           </div>
                         )}
                         </>)}
