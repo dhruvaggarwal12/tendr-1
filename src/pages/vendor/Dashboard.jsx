@@ -40,6 +40,7 @@ const SOURCE_ICON = {
   Referral:  dsic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>),
   'Walk-in': dsic(<><circle cx="12" cy="5" r="1"/><path d="m9 20 3-3 1.5 3"/><path d="m6 8 3 1.5L12 8l1.5 4-3 3"/><path d="M18 14v-4"/></>),
   Phone:     dsic(<><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.29 6.29l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></>),
+  'Tendr Profile': dsic(<><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></>),
   Other:     dsic(<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>),
 };
 
@@ -61,7 +62,7 @@ function Stat({ label, value, sub, icon, accent }) {
 
 // ── Outside Order Form Modal ───────────────────────────────────────────────────
 const EVENT_TYPES = ['Birthday', '1st Birthday', 'Baby Shower', 'Anniversary', 'Wedding', 'Engagement', 'Housewarming', 'Graduation', 'Puja/Religious', 'Corporate', 'Office Party', 'Get-together', 'Other'];
-const SOURCES = ['WhatsApp', 'Instagram', 'Facebook', 'Referral', 'Walk-in', 'Phone', 'Other'];
+const SOURCES = ['WhatsApp', 'Instagram', 'Facebook', 'Referral', 'Walk-in', 'Phone', 'Tendr Profile', 'Other'];
 const STATUSES = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
 
 const BLANK_FORM = { clientName: '', clientPhone: '', clientEmail: '', eventType: '', eventDate: '', startTime: '', endTime: '', equipment: [], amount: '', paidAmount: '', source: 'WhatsApp', status: 'Pending', notes: '', milestones: [], expenses: [], reminders: [], crew: [], travel: { mode: '', departureTime: '', venueAddress: '', hotelNeeded: false, hotelName: '', notes: '' }, guestCount: '', perPlateRate: '', vegCount: '', nonvegCount: '', jainCount: '', menuItems: [] };
@@ -1442,7 +1443,7 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus, onRequestPayment,
       <div style={{ padding: '14px 16px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
           {/* Source badge */}
-          <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(196,122,46,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9B7450', flexShrink: 0 }}>
+          <div style={{ width: 38, height: 38, borderRadius: 10, background: order.source === 'Tendr Profile' ? 'rgba(196,122,46,0.15)' : 'rgba(196,122,46,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: order.source === 'Tendr Profile' ? '#C47A2E' : '#9B7450', flexShrink: 0, border: order.source === 'Tendr Profile' ? '1.5px solid rgba(196,122,46,0.3)' : 'none' }}>
             {SOURCE_ICON[order.source] || dsic(<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>)}
           </div>
 
@@ -1451,7 +1452,7 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus, onRequestPayment,
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <span style={{ fontWeight: 700, color: ink, fontSize: 14 }}>{order.clientName}</span>
               <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 100, background: sc.bg, color: sc.color }}>{order.status}</span>
-              <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 100, background: 'rgba(196,122,46,0.08)', color: '#9B7450' }}>{order.source}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 100, background: order.source === 'Tendr Profile' ? 'rgba(196,122,46,0.12)' : 'rgba(196,122,46,0.08)', color: order.source === 'Tendr Profile' ? '#C47A2E' : '#9B7450', border: order.source === 'Tendr Profile' ? '1px solid rgba(196,122,46,0.25)' : 'none' }}>{order.source === 'Tendr Profile' ? '🔗 Tendr Profile' : order.source}</span>
             </div>
             <div style={{ fontSize: 12, color: '#9B7450', marginTop: 3, display: 'flex', flexWrap: 'wrap', gap: '2px 12px' }}>
               {order.clientPhone && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.29 6.29l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></>)}{order.clientPhone}</span>}

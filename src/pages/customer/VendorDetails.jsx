@@ -94,6 +94,34 @@ const VendorDetailsPage = () => {
     }
   };
 
+  const handleEnquirySubmit = async () => {
+    if (!enquiryForm.name.trim() || !enquiryForm.phone.trim()) {
+      setEnquiryError('Name and phone are required');
+      return;
+    }
+    setEnquiryLoading(true);
+    setEnquiryError('');
+    try {
+      const res = await fetch(`${BASE_URL}/vendors/${vendor._id}/direct-enquiry`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clientName: enquiryForm.name.trim(),
+          clientPhone: enquiryForm.phone.trim(),
+          eventType: enquiryForm.eventType || undefined,
+          eventDate: enquiryForm.eventDate || undefined,
+          message: enquiryForm.message || undefined,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      setEnquiryDone(true);
+    } catch {
+      setEnquiryError('Something went wrong. Please try again.');
+    } finally {
+      setEnquiryLoading(false);
+    }
+  };
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { openVendorChat, openExistingChat, chatState } = useChatOverlay();
@@ -141,6 +169,11 @@ const VendorDetailsPage = () => {
   // DIY shortlist mode — URL param fromPlan=1 set by HamburgerNav Browse→ links
   const isFromPlanFlow = new URLSearchParams(location.search).get("fromPlan") === "1";
   const [shortlistTick, setShortlistTick] = useState(0);
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
+  const [enquiryForm, setEnquiryForm] = useState({ name: '', phone: '', eventType: '', eventDate: '', message: '' });
+  const [enquiryLoading, setEnquiryLoading] = useState(false);
+  const [enquiryDone, setEnquiryDone] = useState(false);
+  const [enquiryError, setEnquiryError] = useState('');
 
   // Selected Vendors modal state
   const [isSelectedModalOpen, setIsSelectedModalOpen] = useState(false);
@@ -616,6 +649,13 @@ const VendorDetailsPage = () => {
                   </button>
                 )}
               </div>
+              {!isFromPlanFlow && (
+                <button onClick={() => { setEnquiryOpen(true); setEnquiryDone(false); setEnquiryError(''); setEnquiryForm({ name: '', phone: '', eventType: '', eventDate: '', message: '' }); }}
+                  style={{ width: '100%', padding: '10px', borderRadius: 10, border: '1.5px solid rgba(196,122,46,0.35)', background: 'transparent', color: '#C47A2E', fontSize: 13, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                  Send Direct Enquiry
+                </button>
+              )}
               <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "0 0 10px", lineHeight: 1.5 }}>Our team reviews and connects you within a few hours</p>
               {/* Contact directly (mobile) */}
               {vendor?.phoneNumber && (
@@ -889,6 +929,13 @@ const VendorDetailsPage = () => {
                     </button>
                   )}
                 </div>
+                {!isFromPlanFlow && (
+                  <button onClick={() => { setEnquiryOpen(true); setEnquiryDone(false); setEnquiryError(''); setEnquiryForm({ name: '', phone: '', eventType: '', eventDate: '', message: '' }); }}
+                    style={{ width: '100%', padding: '11px', borderRadius: 11, border: '1.5px solid rgba(196,122,46,0.35)', background: 'transparent', color: '#C47A2E', fontSize: 13, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    Send Direct Enquiry
+                  </button>
+                )}
                 <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "0 0 10px", lineHeight: 1.5 }}>
                   Our team reviews and connects you within a few hours
                 </p>
@@ -1313,6 +1360,76 @@ const VendorDetailsPage = () => {
               style={{ width: "100%", marginTop: 18, padding: "11px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
               Close
             </button>
+          </div>
+        </div>
+      )}
+      {/* Direct Enquiry Modal */}
+      {enquiryOpen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+          onClick={e => { if (e.target === e.currentTarget) setEnquiryOpen(false); }}>
+          <div style={{ background: '#FFFCF5', borderRadius: '20px 20px 0 0', padding: '24px 22px 32px', width: '100%', maxWidth: 480, maxHeight: '90vh', overflowY: 'auto', fontFamily: "'Outfit', sans-serif" }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <div>
+                <div style={{ fontSize: 17, fontWeight: 800, color: '#2C1A0E' }}>Send Enquiry</div>
+                <div style={{ fontSize: 12, color: '#9B7450', marginTop: 2 }}>{vendor?.name} will contact you directly</div>
+              </div>
+              <button onClick={() => setEnquiryOpen(false)} style={{ width: 32, height: 32, borderRadius: 8, border: '1.5px solid rgba(196,122,46,0.2)', background: 'transparent', color: '#9B7450', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+            </div>
+            {enquiryDone ? (
+              <div style={{ textAlign: 'center', padding: '28px 0 8px' }}>
+                <div style={{ fontSize: 44, marginBottom: 14 }}>✅</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: '#2C1A0E', marginBottom: 8 }}>Enquiry Sent!</div>
+                <div style={{ fontSize: 13, color: '#9B7450', marginBottom: 28, lineHeight: 1.6 }}>{vendor?.name} has received your enquiry and will reach out to you directly.</div>
+                <button onClick={() => setEnquiryOpen(false)}
+                  style={{ padding: '12px 32px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg,#C47A2E,#CCAB4A)', color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>
+                  Done
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: '#9B7450', display: 'block', marginBottom: 5 }}>Your Name *</label>
+                  <input value={enquiryForm.name} onChange={e => setEnquiryForm(f => ({ ...f, name: e.target.value }))}
+                    placeholder="Full name"
+                    style={{ width: '100%', padding: '11px 13px', borderRadius: 10, border: '1.5px solid rgba(196,122,46,0.25)', background: '#fff', fontSize: 14, color: '#2C1A0E', fontFamily: "'Outfit',sans-serif", boxSizing: 'border-box', outline: 'none' }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: '#9B7450', display: 'block', marginBottom: 5 }}>Phone Number *</label>
+                  <input value={enquiryForm.phone} onChange={e => setEnquiryForm(f => ({ ...f, phone: e.target.value }))}
+                    placeholder="10-digit mobile number" type="tel"
+                    style={{ width: '100%', padding: '11px 13px', borderRadius: 10, border: '1.5px solid rgba(196,122,46,0.25)', background: '#fff', fontSize: 14, color: '#2C1A0E', fontFamily: "'Outfit',sans-serif", boxSizing: 'border-box', outline: 'none' }} />
+                </div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: '#9B7450', display: 'block', marginBottom: 5 }}>Event Type</label>
+                    <select value={enquiryForm.eventType} onChange={e => setEnquiryForm(f => ({ ...f, eventType: e.target.value }))}
+                      style={{ width: '100%', padding: '11px 13px', borderRadius: 10, border: '1.5px solid rgba(196,122,46,0.25)', background: '#fff', fontSize: 14, color: enquiryForm.eventType ? '#2C1A0E' : '#9B7450', fontFamily: "'Outfit',sans-serif", boxSizing: 'border-box', outline: 'none', cursor: 'pointer' }}>
+                      <option value="">Select type</option>
+                      {['Birthday', '1st Birthday', 'Baby Shower', 'Anniversary', 'Wedding', 'Engagement', 'Housewarming', 'Graduation', 'Puja/Religious', 'Corporate', 'Office Party', 'Get-together', 'Other'].map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: '#9B7450', display: 'block', marginBottom: 5 }}>Event Date</label>
+                    <input type="date" value={enquiryForm.eventDate} onChange={e => setEnquiryForm(f => ({ ...f, eventDate: e.target.value }))}
+                      style={{ width: '100%', padding: '11px 13px', borderRadius: 10, border: '1.5px solid rgba(196,122,46,0.25)', background: '#fff', fontSize: 14, color: enquiryForm.eventDate ? '#2C1A0E' : '#9B7450', fontFamily: "'Outfit',sans-serif", boxSizing: 'border-box', outline: 'none' }} />
+                  </div>
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: '#9B7450', display: 'block', marginBottom: 5 }}>Message (optional)</label>
+                  <textarea value={enquiryForm.message} onChange={e => setEnquiryForm(f => ({ ...f, message: e.target.value }))}
+                    placeholder="Any details about your event…" rows={3}
+                    style={{ width: '100%', padding: '11px 13px', borderRadius: 10, border: '1.5px solid rgba(196,122,46,0.25)', background: '#fff', fontSize: 14, color: '#2C1A0E', fontFamily: "'Outfit',sans-serif", boxSizing: 'border-box', outline: 'none', resize: 'vertical' }} />
+                </div>
+                {enquiryError && <div style={{ fontSize: 12, color: '#dc2626', fontWeight: 600 }}>{enquiryError}</div>}
+                <button onClick={handleEnquirySubmit} disabled={enquiryLoading}
+                  style={{ padding: '13px', borderRadius: 12, border: 'none', background: enquiryLoading ? 'rgba(196,122,46,0.5)' : 'linear-gradient(135deg,#C47A2E,#CCAB4A)', color: '#fff', fontSize: 14, fontWeight: 800, cursor: enquiryLoading ? 'default' : 'pointer', fontFamily: "'Outfit',sans-serif", boxShadow: '0 4px 16px rgba(196,122,46,0.3)' }}>
+                  {enquiryLoading ? 'Sending…' : 'Send Enquiry'}
+                </button>
+                <p style={{ fontSize: 11, color: '#9B7450', textAlign: 'center', margin: 0, lineHeight: 1.5 }}>
+                  Your details go directly to {vendor?.name}. Tendr is not involved in this booking.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}
