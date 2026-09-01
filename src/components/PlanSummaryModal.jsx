@@ -217,6 +217,27 @@ export function PlanIconButton() {
   );
 }
 
+function buildPlanMessage(plan) {
+  const eventType = plan.eventDetails?.eventType || plan.eventType || 'My Event';
+  const date = plan.eventDetails?.date || plan.date || '';
+  const location = plan.eventDetails?.location || plan.location || '';
+  const guests = plan.eventDetails?.guests || plan.guests || '';
+  const budget = plan.eventDetails?.budget || plan.budget || '';
+  const slots = plan.vendorSlots || [];
+
+  const lines = [`📋 *Event Plan — ${eventType}*`, ''];
+  if (date) lines.push(`📅 Date: ${new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}`);
+  if (location) lines.push(`📍 Location: ${location}`);
+  if (guests) lines.push(`👥 Guests: ${guests}`);
+  if (budget) lines.push(`💰 Budget: ₹${Number(budget).toLocaleString('en-IN')}`);
+  if (slots.length) {
+    lines.push('', '*Vendors needed:*');
+    slots.forEach(s => lines.push(`• ${CAT_ICON[s.category] || '📌'} ${s.category}${s.vendorName ? ` — ${s.vendorName}` : ''} (${s.status || 'Pending'})`));
+  }
+  lines.push('', 'Can you help me plan this event? Looking for vendor recommendations and a quote.');
+  return lines.join('\n');
+}
+
 // ── Centered scrollable modal ──────────────────────────────────────────────
 export function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, navigate }) {
   const eventType = plan.eventDetails?.eventType || plan.eventType || '';
@@ -229,6 +250,7 @@ export function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, 
   const hasChat = !!(plan.conversationId);
   const planKey = plan._id || 'draft';
 
+  const [inviteOpen, setInviteOpen] = useState(false);
   const [taskState, setTaskState] = useState(() => {
     try { return JSON.parse(localStorage.getItem(`tendr_tasks_${planKey}`) || '{}'); } catch { return {}; }
   });
@@ -448,22 +470,50 @@ export function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, 
             </div>
           )}
 
+          {/* Invitation Flyer + Send to Chat row */}
+          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <button
+              onClick={() => setInviteOpen(true)}
+              style={{ flex: 1, padding: '11px 0', borderRadius: 12, background: 'linear-gradient(135deg,#2C1A0E,#4A2810)', color: '#CCAB4A', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+            >
+              💌 Create Invitation Flyer
+            </button>
+            <button
+              onClick={() => {
+                const msg = buildPlanMessage(plan);
+                document.dispatchEvent(new CustomEvent('tendr:open-chat-with-plan', { detail: { message: msg } }));
+                onClose();
+              }}
+              style={{ flex: 1, padding: '11px 0', borderRadius: 12, background: 'rgba(37,211,102,0.1)', color: '#166534', fontSize: 13, fontWeight: 700, border: '1.5px solid rgba(37,211,102,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+            >
+              📤 Send to Chat
+            </button>
+          </div>
+
           {/* Footer actions */}
           <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+            <button
+              onClick={() => { onClose(); navigate('/plan-event/form'); }}
+              style={{ flex: 1, minWidth: 120, padding: '11px 0', borderRadius: 12, background: 'transparent', color: GOLD, fontSize: 13, fontWeight: 700, border: `1.5px solid ${GOLD}`, cursor: 'pointer' }}
+            >
+              ✏️ Edit Everything
+            </button>
             {hasChat && (
               <button
                 onClick={() => { onClose(); navigate('/chats'); }}
-                style={{ flex: 1, minWidth: 140, padding: '11px 0', borderRadius: 12, background: '#25D366', color: '#fff', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 4px 14px rgba(37,211,102,0.3)' }}
+                style={{ flex: 1, minWidth: 120, padding: '11px 0', borderRadius: 12, background: GOLD, color: '#fff', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 4px 14px rgba(196,122,46,0.3)' }}
               >
                 💬 Continue Chat
               </button>
             )}
-            <button
-              onClick={() => { onClose(); navigate(isDraft ? '/plan-event/form' : '/my-event'); }}
-              style={{ flex: 1, minWidth: 120, padding: '11px 0', borderRadius: 12, background: hasChat ? 'transparent' : GOLD, color: hasChat ? GOLD : '#fff', fontSize: 13, fontWeight: 700, border: hasChat ? `1.5px solid ${GOLD}` : 'none', cursor: 'pointer', boxShadow: hasChat ? 'none' : '0 4px 14px rgba(196,122,46,0.3)' }}
-            >
-              {isDraft ? 'Continue Planning' : 'Full Event View'} →
-            </button>
+            {!hasChat && (
+              <button
+                onClick={() => { onClose(); navigate('/my-event'); }}
+                style={{ flex: 1, minWidth: 120, padding: '11px 0', borderRadius: 12, background: GOLD, color: '#fff', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 4px 14px rgba(196,122,46,0.3)' }}
+              >
+                Full Event View →
+              </button>
+            )}
             <button
               onClick={onDismiss}
               style={{ padding: '11px 14px', borderRadius: 12, border: '1.5px solid rgba(196,122,46,0.22)', background: 'transparent', color: '#9B7450', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}
@@ -473,6 +523,29 @@ export function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, 
           </div>
         </div>
       </div>
+
+      {/* ── Invitation Flyer full-screen overlay ── */}
+      {inviteOpen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 10001, background: '#000', display: 'flex', flexDirection: 'column' }}>
+          {/* Top bar */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', background: '#2C1A0E', flexShrink: 0 }}>
+            <span style={{ color: '#CCAB4A', fontSize: 14, fontWeight: 700, fontFamily: F }}>💌 Create Invitation Flyer</span>
+            <button
+              onClick={() => setInviteOpen(false)}
+              style={{ padding: '7px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: F }}
+            >
+              ✕ Cancel
+            </button>
+          </div>
+          {/* Iframe */}
+          <iframe
+            src="/invitation/customize"
+            style={{ flex: 1, border: 'none', width: '100%' }}
+            title="Invitation Flyer Builder"
+            allow="clipboard-write"
+          />
+        </div>
+      )}
     </div>
   );
 }
