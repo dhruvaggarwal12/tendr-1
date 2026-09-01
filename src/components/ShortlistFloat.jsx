@@ -60,6 +60,10 @@ export default function ShortlistFloat() {
 
   const [shortlist,    setShortlist]    = useState(() => getShortlist());
   const [panelOpen,    setPanelOpen]    = useState(false);
+  // Detect InPlanning button presence so we can stack above it on desktop
+  const [hasPlan,      setHasPlan]      = useState(() => {
+    try { return !!(localStorage.getItem("tendr_smart_plan") || localStorage.getItem("tendr_ep_session")); } catch { return false; }
+  });
   const [chipVisible,  setChipVisible]  = useState(true);
   const [wizardOpen,   setWizardOpen]   = useState(false);
   const [wizardAnswers, setWizardAnswers] = useState({});
@@ -298,7 +302,8 @@ export default function ShortlistFloat() {
       `}</style>
 
       {/* ── Floating glass button — DESKTOP (bottom-right, above In Planning) ── */}
-      <div className="sl-float-btn" style={{ position: "fixed", bottom: 148, right: 24, zIndex: 8950, flexDirection: "column", alignItems: "flex-end", gap: 8, display: "none" }}>
+      {/* Conditionally rendered: hidden when panel is open so it doesn't show through overlay */}
+      {!panelOpen && <div className="sl-float-btn" style={{ position: "fixed", bottom: hasPlan ? 148 : 24, right: 24, zIndex: 8950, flexDirection: "column", alignItems: "flex-end", gap: 8, display: "none" }}>
         {/* Pop-out chip */}
         {chipVisible && (
           <div style={{ display: "flex", alignItems: "center", gap: 6, background: INK, borderRadius: 100, padding: "6px 12px 6px 10px", boxShadow: "0 4px 16px rgba(44,26,14,0.35)", animation: "sl-chip 0.25s cubic-bezier(0.34,1.56,0.64,1)" }}>
@@ -341,7 +346,8 @@ export default function ShortlistFloat() {
       />
 
       {/* ── Floating button — MOBILE (bottom, above mobile nav) ────────── */}
-      <div className="sl-float-mobile" style={{ position: "fixed", bottom: "calc(72px + env(safe-area-inset-bottom,0px) + 12px)", right: 16, zIndex: 8950, display: "none", alignItems: "center", gap: 8 }}>
+      {/* Conditionally rendered: hidden when panel is open */}
+      {!panelOpen && <div className="sl-float-mobile" style={{ position: "fixed", bottom: "calc(72px + env(safe-area-inset-bottom,0px) + 12px)", right: 16, zIndex: 8950, display: "none", alignItems: "center", gap: 8 }}>
         <button
           onClick={() => setPanelOpen(true)}
           style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px 10px 12px", borderRadius: 100, border: "none", background: `linear-gradient(135deg,${INK},#3A2210)`, color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: F, cursor: "pointer", boxShadow: "0 6px 20px rgba(44,26,14,0.4)", whiteSpace: "nowrap" }}>

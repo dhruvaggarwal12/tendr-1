@@ -1504,37 +1504,195 @@ function CoupleQuiz({ onClose, accent }) {
 }
 
 // Baby Shower: Baby Name Vote
+const NAME_CATS = [
+  { id: "boy",     label: "👦 Boy",    color: "#60A5FA" },
+  { id: "girl",    label: "👧 Girl",   color: "#F472B6" },
+  { id: "neutral", label: "💫 Either", color: "#A78BFA" },
+];
 function BabyNameVote({ onClose, accent }) {
-  const [names, setNames] = useState([]);
-  const [newName, setNewName] = useState("");
-  const [votes, setVotes] = useState({});
-  const [voted, setVoted] = useState(null);
-  const add = () => { if (newName.trim() && !names.includes(newName.trim())) { setNames(n => [...n, newName.trim()]); setNewName(""); } };
-  const vote = (n) => {
-    if (voted) setVotes(v => ({ ...v, [voted]: Math.max(0, (v[voted] || 0) - 1) }));
-    setVoted(n);
-    setVotes(v => ({ ...v, [n]: (v[n] || 0) + 1 }));
+  const [voterName, setVoterName]   = useState("");
+  const [nameInput, setNameInput]   = useState("");
+  const [category,  setCategory]    = useState("neutral");
+  const [entries, setEntries]       = useState([]); // [{id, name, cat, addedBy, votes:[{voter,ts}]}]
+  const [myVote,   setMyVote]       = useState(null);
+  const [pulsing,  setPulsing]      = useState(null);
+  const [copied,   setCopied]       = useState(false);
+  const [phase,    setPhase]        = useState("name"); // "name" | "vote"
+
+  const totalVotes = entries.reduce((s, e) => s + e.votes.length, 0);
+  const maxVotes   = Math.max(...entries.map(e => e.votes.length), 0);
+
+  const addName = () => {
+    const t = nameInput.trim();
+    if (!t || entries.find(e => e.name.toLowerCase() === t.toLowerCase())) return;
+    setEntries(prev => [...prev, { id: Date.now(), name: t, cat: category, addedBy: voterName || "Guest", votes: [] }]);
+    setNameInput("");
   };
-  const max = Math.max(...Object.values(votes), 0);
+
+  const vote = (id) => {
+    if (!voterName.trim()) return;
+    setPulsing(id);
+    setTimeout(() => setPulsing(null), 500);
+    setEntries(prev => prev.map(e => {
+      // remove my previous vote from wherever it was
+      const filtered = e.votes.filter(v => v.voter !== voterName);
+      if (e.id === id) return { ...e, votes: [...filtered, { voter: voterName, ts: Date.now() }] };
+      return { ...e, votes: filtered };
+    }));
+    setMyVote(id);
+  };
+
+  const removeEntry = (id) => {
+    setEntries(prev => prev.filter(e => e.id !== id));
+    if (myVote === id) setMyVote(null);
+  };
+
+  const sorted = [...entries].sort((a, b) => b.votes.length - a.votes.length);
+  const leader = sorted[0];
+
+  const copyResults = () => {
+    const lines = ["👶 Baby Name Vote Results\n"];
+    sorted.forEach((e, i) => {
+      const cat = NAME_CATS.find(c => c.id === e.cat);
+      lines.push(`${i === 0 && e.votes.length > 0 ? "🏆" : `${i + 1}.`} ${e.name} ${cat?.label || ""} — ${e.votes.length} vote${e.votes.length !== 1 ? "s" : ""}`);
+    });
+    lines.push(`\nTotal votes: ${totalVotes}`);
+    navigator.clipboard?.writeText(lines.join("\n")).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  if (phase === "name") {
+    return (
+      <Modal onClose={onClose} emoji="👶" title="Baby Name Vote">
+        <p style={{ textAlign: "center", color: "rgba(255,255,255,0.55)", fontSize: 13, marginBottom: 20 }}>What's your name? You'll vote with this identity.</p>
+        <input
+          value={voterName}
+          onChange={e => setVoterName(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && voterName.trim() && setPhase("vote")}
+          placeholder="Your name or nickname…"
+          style={{ ...inp, width: "100%", boxSizing: "border-box", marginBottom: 12, fontSize: 16, textAlign: "center" }}
+          autoFocus
+        />
+        <button onClick={() => setPhase("vote")} disabled={!voterName.trim()}
+          style={{ ...mkBtn(accent), width: "100%", opacity: voterName.trim() ? 1 : 0.4, cursor: voterName.trim() ? "pointer" : "default" }}>
+          Enter →
+        </button>
+        <button onClick={() => { setVoterName("Guest"); setPhase("vote"); }}
+          style={{ width: "100%", marginTop: 8, background: "transparent", border: "none", color: "rgba(255,255,255,0.35)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+          Continue as Guest
+        </button>
+      </Modal>
+    );
+  }
+
   return (
     <Modal onClose={onClose} emoji="👶" title="Baby Name Vote">
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-        <input value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Suggest a name" style={{ ...inp, flex: 1 }} />
-        <button onClick={add} style={{ ...mkBtn(accent), width: "auto", padding: "10px 16px" }}>Add</button>
+      <style>{`
+        @keyframes bnv-pulse { 0%{transform:scale(1)} 30%{transform:scale(1.08)} 100%{transform:scale(1)} }
+        .bnv-pulse { animation: bnv-pulse 0.45s cubic-bezier(0.34,1.56,0.64,1); }
+      `}</style>
+
+      {/* Voter banner */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>Voting as <span style={{ color: accent, fontWeight: 700 }}>{voterName}</span></div>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>{totalVotes} vote{totalVotes !== 1 ? "s" : ""} cast</div>
       </div>
-      {names.length === 0 && <p style={{ textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: 13 }}>Add baby name suggestions above!</p>}
-      {names.map(n => (
-        <div key={n} onClick={() => vote(n)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${voted === n ? accent : "rgba(255,255,255,0.1)"}`, background: voted === n ? accent + "22" : "rgba(255,255,255,0.04)", marginBottom: 8, cursor: "pointer" }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ color: "#fff", fontSize: 15, fontWeight: 600 }}>{n}</div>
-            <div style={{ height: 4, background: "rgba(255,255,255,0.1)", borderRadius: 4, marginTop: 6, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${max ? ((votes[n] || 0) / max) * 100 : 0}%`, background: accent, borderRadius: 4, transition: "width 0.3s" }} />
-            </div>
-          </div>
-          <span style={{ fontWeight: 800, color: accent, fontSize: 18 }}>{votes[n] || 0}</span>
+
+      {/* Add name row */}
+      <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 14, padding: "12px 14px", marginBottom: 16 }}>
+        <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+          {NAME_CATS.map(c => (
+            <button key={c.id} onClick={() => setCategory(c.id)}
+              style={{ flex: 1, padding: "5px 4px", borderRadius: 8, border: `1.5px solid ${category === c.id ? c.color : "rgba(255,255,255,0.1)"}`, background: category === c.id ? c.color + "25" : "transparent", color: category === c.id ? c.color : "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>
+              {c.label}
+            </button>
+          ))}
         </div>
-      ))}
-      {max > 0 && <div style={{ textAlign: "center", marginTop: 12, color: "#FBBF24", fontSize: 14 }}>🏆 Leading: {Object.entries(votes).sort(([, a], [, b]) => b - a)[0]?.[0]}</div>}
+        <div style={{ display: "flex", gap: 8 }}>
+          <input value={nameInput} onChange={e => setNameInput(e.target.value)} onKeyDown={e => e.key === "Enter" && addName()}
+            placeholder="Suggest a baby name…"
+            style={{ ...inp, flex: 1, fontSize: 14 }} />
+          <button onClick={addName} style={{ ...mkBtn(accent), width: "auto", padding: "10px 14px", fontSize: 13 }}>+ Add</button>
+        </div>
+      </div>
+
+      {/* Name list */}
+      {entries.length === 0 && (
+        <p style={{ textAlign: "center", color: "rgba(255,255,255,0.25)", fontSize: 13, padding: "20px 0" }}>No names yet — suggest the first one above!</p>
+      )}
+      {sorted.map((entry, idx) => {
+        const pct   = maxVotes ? Math.round((entry.votes.length / maxVotes) * 100) : 0;
+        const totalPct = totalVotes ? Math.round((entry.votes.length / totalVotes) * 100) : 0;
+        const isLeader = idx === 0 && entry.votes.length > 0;
+        const isMine   = myVote === entry.id;
+        const catColor = NAME_CATS.find(c => c.id === entry.cat)?.color || accent;
+        const voters   = entry.votes.map(v => v.voter);
+
+        return (
+          <div key={entry.id}
+            className={pulsing === entry.id ? "bnv-pulse" : ""}
+            onClick={() => vote(entry.id)}
+            style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 14,
+              border: `1.5px solid ${isMine ? catColor : "rgba(255,255,255,0.08)"}`,
+              background: isMine ? catColor + "1A" : "rgba(255,255,255,0.04)",
+              marginBottom: 8, cursor: "pointer", transition: "border-color 0.15s, background 0.15s", position: "relative" }}>
+            {/* Rank */}
+            <div style={{ width: 24, textAlign: "center", fontSize: 16, flexShrink: 0 }}>
+              {isLeader ? "🏆" : <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", fontWeight: 700 }}>#{idx + 1}</span>}
+            </div>
+            {/* Info */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
+                <span style={{ color: "#fff", fontSize: 15, fontWeight: 700 }}>{entry.name}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: catColor, background: catColor + "20", borderRadius: 5, padding: "1px 6px" }}>
+                  {NAME_CATS.find(c => c.id === entry.cat)?.label}
+                </span>
+                {isMine && <span style={{ fontSize: 10, color: catColor, fontWeight: 700 }}>✓ My vote</span>}
+              </div>
+              {/* Progress bar */}
+              <div style={{ height: 5, background: "rgba(255,255,255,0.08)", borderRadius: 4, overflow: "hidden", marginBottom: 4 }}>
+                <div style={{ height: "100%", width: `${pct}%`, background: catColor, borderRadius: 4, transition: "width 0.4s cubic-bezier(0.22,1,0.36,1)" }} />
+              </div>
+              {/* Voter avatars */}
+              {voters.length > 0 && (
+                <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+                  {voters.slice(0, 6).map((v, i) => (
+                    <div key={i} title={v} style={{ width: 18, height: 18, borderRadius: "50%", background: catColor + "40", border: `1px solid ${catColor}50`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: catColor }}>
+                      {v[0]?.toUpperCase()}
+                    </div>
+                  ))}
+                  {voters.length > 6 && <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", alignSelf: "center" }}>+{voters.length - 6}</span>}
+                </div>
+              )}
+            </div>
+            {/* Vote count + % */}
+            <div style={{ textAlign: "right", flexShrink: 0 }}>
+              <div style={{ fontSize: 22, fontWeight: 900, color: catColor, lineHeight: 1 }}>{entry.votes.length}</div>
+              {totalVotes > 0 && <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>{totalPct}%</div>}
+            </div>
+            {/* Delete */}
+            <button onClick={e => { e.stopPropagation(); removeEntry(entry.id); }}
+              style={{ position: "absolute", top: 6, right: 6, width: 18, height: 18, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.35)", fontSize: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
+              ✕
+            </button>
+          </div>
+        );
+      })}
+
+      {/* Footer */}
+      {entries.length > 0 && (
+        <div style={{ marginTop: 14, display: "flex", gap: 8 }}>
+          <button onClick={copyResults}
+            style={{ flex: 1, padding: "9px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.12)", background: "transparent", color: copied ? "#4ade80" : "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "color 0.2s" }}>
+            {copied ? "✓ Copied!" : "📋 Copy Results"}
+          </button>
+          <button onClick={() => { setPhase("name"); setVoterName(""); }}
+            style={{ padding: "9px 14px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.12)", background: "transparent", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
+            Switch Voter
+          </button>
+        </div>
+      )}
     </Modal>
   );
 }
