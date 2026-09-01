@@ -14,6 +14,9 @@ const HIDE_PATHS = [
   "/chat",
 ];
 
+// Exact-match paths where bottom nav should be hidden (e.g. intro/landing pages)
+const HIDE_EXACT = ["/", "/for-vendors", "/launch-live"];
+
 const ic = (d, extra) => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}{extra}</svg>
 );
@@ -146,7 +149,9 @@ function BottomNavInner() {
     return () => window.removeEventListener('tendr:drawer', h);
   }, []);
 
-  const shouldHide = HIDE_PATHS.some((p) => location.pathname.startsWith(p));
+  const shouldHide =
+    HIDE_PATHS.some((p) => location.pathname.startsWith(p)) ||
+    HIDE_EXACT.includes(location.pathname);
   if (shouldHide) return null;
   if (drawerOpen) return null;
 
