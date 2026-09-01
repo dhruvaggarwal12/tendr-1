@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { confirmSmartPlan } from "../apis/vendorApi";
+import AuthModal from "./AuthModal";
 
 const F = "'Outfit', sans-serif";
 const GOLD = "#C47A2E";
@@ -65,6 +66,7 @@ export default function ShortlistFloat() {
   const [submitting,   setSubmitting]   = useState(false);
   const [submitted,    setSubmitted]    = useState(false);
   const [convId,       setConvId]       = useState(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   const refresh = useCallback(() => {
     const sl = getShortlist();
@@ -125,6 +127,8 @@ export default function ShortlistFloat() {
       setConvId(result.conversationId);
       setSubmitted(true);
       setWizardOpen(false);
+      // Notify FloatingChatButton to refresh its conversation list
+      window.dispatchEvent(new CustomEvent("tendr:chat-started"));
     } catch (e) {
       console.error("Shortlist request failed:", e);
     }
@@ -263,9 +267,14 @@ export default function ShortlistFloat() {
             {/* Panel footer */}
             <div style={{ padding: "14px 20px 20px", borderTop: "1px solid rgba(196,122,46,0.1)", flexShrink: 0, background: CREAM }}>
               <button
-                onClick={() => { setPanelOpen(false); setWizardAnswers({}); setWizardOpen(true); }}
+                onClick={() => {
+                  if (!authUser) { setAuthModalOpen(true); return; }
+                  setPanelOpen(false);
+                  setWizardAnswers({});
+                  setWizardOpen(true);
+                }}
                 style={{ ...btnBase, width: "100%", padding: "14px", borderRadius: 12, background: `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: "#fff", fontSize: 14, fontWeight: 800, boxShadow: "0 4px 16px rgba(196,122,46,0.35)" }}>
-                Send Request →
+                {authUser ? "Send Request →" : "Sign In to Send Request"}
               </button>
             </div>
           </div>
@@ -317,6 +326,19 @@ export default function ShortlistFloat() {
           </span>
         </button>
       </div>
+
+      {/* Auth gate — shown when unauthenticated user taps Send Request */}
+      <AuthModal
+        open={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onSuccess={() => {
+          setAuthModalOpen(false);
+          setPanelOpen(false);
+          setWizardAnswers({});
+          setWizardOpen(true);
+        }}
+        defaultMode="login"
+      />
 
       {/* ── Floating button — MOBILE (bottom, above mobile nav) ────────── */}
       <div className="sl-float-mobile" style={{ position: "fixed", bottom: "calc(72px + env(safe-area-inset-bottom,0px) + 12px)", right: 16, zIndex: 8950, display: "none", alignItems: "center", gap: 8 }}>
