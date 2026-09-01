@@ -2173,7 +2173,7 @@ const EventPlanning = () => {
       <HamburgerNav active="Plan" />
       <BasicSpeedDial />
       <SelectedVendorsFloat />
-      <div className="ep-outer" style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: 16, paddingBottom: 48, paddingLeft: 16, paddingRight: 16 }}>
+      <div className="ep-outer" style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: 16, paddingBottom: "calc(80px + env(safe-area-inset-bottom, 0px))", paddingLeft: 16, paddingRight: 16 }}>
       <div style={{ width: "100%", maxWidth: 560 }}>
 
         {/* Step indicator dots + progress */}

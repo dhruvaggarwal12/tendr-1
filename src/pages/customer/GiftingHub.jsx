@@ -721,9 +721,9 @@ function BuilderView({ setView, onSubmit }) {
       {/* Sticky box summary */}
       {box.length > 0 && (
         <div style={{
-          position: "fixed", bottom: 0, left: 0, right: 0, background: "#fff",
+          position: "fixed", bottom: "calc(60px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, background: "#fff",
           borderTop: "1.5px solid rgba(196,122,46,0.2)", padding: "14px 20px",
-          boxShadow: "0 -4px 24px rgba(44,26,14,0.12)", zIndex: 100,
+          boxShadow: "0 -4px 24px rgba(44,26,14,0.12)", zIndex: 100000,
         }}>
           <div style={{ maxWidth: 560, margin: "0 auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>

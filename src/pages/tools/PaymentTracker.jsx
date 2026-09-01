@@ -48,7 +48,7 @@ function IntroScreen({ onStart }) {
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column" }}>
       <HamburgerNav title="Payment Tracker" />
-      <div style={{ maxWidth: 760, margin: "0 auto", padding: "48px 24px 80px" }}>
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "48px 24px", paddingBottom: "calc(80px + env(safe-area-inset-bottom, 0px))" }}>
         {/* Hero */}
         <div style={{ textAlign: "center", marginBottom: 44 }}>
           <div style={{ fontSize: 52, marginBottom: 16 }}>💳</div>
@@ -213,7 +213,7 @@ export default function PaymentTracker() {
       <BasicSpeedDial />
       <HamburgerNav title="Payment Tracker" />
 
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "36px 20px 80px" }}>
+      <div style={{ maxWidth: 900, margin: "0 auto", padding: "36px 20px", paddingBottom: "calc(80px + env(safe-area-inset-bottom, 0px))" }}>
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 28, flexWrap: "wrap" }}>
           <div>

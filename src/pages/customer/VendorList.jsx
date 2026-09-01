@@ -322,7 +322,7 @@ const VendorList = () => {
 
   return (
     <PullToRefresh onRefresh={doFetch}>
-    <div style={{ minHeight: "100vh", background: "#F8F4EF" }}>
+    <div style={{ minHeight: "100vh", background: "#F8F4EF", paddingBottom: "calc(60px + env(safe-area-inset-bottom, 0px))" }}>
       <SEO
         title={vendorListTitle(serviceType, locationType)}
         description={vendorListDescription(serviceType, locationType)}

@@ -192,7 +192,7 @@ export default function TimelineBuilder() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font, paddingBottom: 60 }}>
+    <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font, paddingBottom: "calc(60px + env(safe-area-inset-bottom, 0px))" }}>
       <SEO title="Custom Timeline Builder — Tendr" description="Build a custom event timeline with drag-and-drop milestones." path="/timeline" />
       <BasicSpeedDial />
       <HamburgerNav title="Timeline Builder" />

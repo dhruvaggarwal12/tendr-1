@@ -492,7 +492,7 @@ export default function PartyPlaceProfile() {
       </div>
 
       {/* ── Mobile sticky bottom bar ── */}
-      <div className="ppp-mob-book" style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#fff", borderTop: "1.5px solid rgba(196,122,46,0.12)", padding: "12px 20px", zIndex: 200, alignItems: "center", justifyContent: "space-between", gap: 12, paddingBottom: "calc(12px + env(safe-area-inset-bottom,0px))" }}>
+      <div className="ppp-mob-book" style={{ position: "fixed", bottom: "calc(60px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, background: "#fff", borderTop: "1.5px solid rgba(196,122,46,0.12)", padding: "12px 20px", zIndex: 100000, alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         <div>
           <div style={{ fontSize: 11, color: "#9B7450" }}>Total</div>
           <div style={{ fontSize: 18, fontWeight: 900, color: gold }}>{fmt(grandTotal)}</div>

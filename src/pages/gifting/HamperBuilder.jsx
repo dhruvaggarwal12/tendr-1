@@ -217,7 +217,7 @@ function BaseStep({ onSelect }) {
       </div>
 
       {/* Hint + CTA */}
-      <div style={{ padding: "0 24px 40px", maxWidth: 480, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
+      <div style={{ padding: "0 24px", paddingBottom: "calc(80px + env(safe-area-inset-bottom, 0px))", maxWidth: 480, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
         <AnimatePresence mode="wait">
           <motion.p
             key={base.id}
