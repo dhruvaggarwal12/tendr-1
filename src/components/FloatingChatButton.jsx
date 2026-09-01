@@ -1370,12 +1370,12 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           }
           .chat-btn-text { display: none; }
           .launcher-fab {
-            bottom: calc(138px + env(safe-area-inset-bottom, 0px)) !important;
+            bottom: calc(190px + env(safe-area-inset-bottom, 0px)) !important;
             right: 14px !important;
             width: 44px !important; height: 44px !important;
           }
           .launcher-stack {
-            bottom: calc(192px + env(safe-area-inset-bottom, 0px)) !important;
+            bottom: calc(242px + env(safe-area-inset-bottom, 0px)) !important;
             right: 14px !important;
           }
           .chat-row-left {

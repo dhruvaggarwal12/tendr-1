@@ -330,7 +330,7 @@ export default function ShortlistFloat() {
             {totalCount}
           </span>
         </button>
-      </div>
+      </div>}
 
       {/* Auth gate — shown when unauthenticated user taps Send Request */}
       <AuthModal
@@ -347,7 +347,7 @@ export default function ShortlistFloat() {
 
       {/* ── Floating button — MOBILE (bottom, above mobile nav) ────────── */}
       {/* Conditionally rendered: hidden when panel is open */}
-      {!panelOpen && <div className="sl-float-mobile" style={{ position: "fixed", bottom: "calc(72px + env(safe-area-inset-bottom,0px) + 12px)", right: 16, zIndex: 8950, display: "none", alignItems: "center", gap: 8 }}>
+      {!panelOpen && <div className="sl-float-mobile" style={{ position: "fixed", bottom: "calc(138px + env(safe-area-inset-bottom,0px))", right: 16, zIndex: 8950, display: "none", alignItems: "center", gap: 8 }}>
         <button
           onClick={() => setPanelOpen(true)}
           style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px 10px 12px", borderRadius: 100, border: "none", background: `linear-gradient(135deg,${INK},#3A2210)`, color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: F, cursor: "pointer", boxShadow: "0 6px 20px rgba(44,26,14,0.4)", whiteSpace: "nowrap" }}>
@@ -360,7 +360,7 @@ export default function ShortlistFloat() {
           Shortlist
           <span style={{ background: GOLD, borderRadius: 100, padding: "1px 7px", fontSize: 12, fontWeight: 800 }}>{totalCount}</span>
         </button>
-      </div>
+      </div>}
     </>
   );
 }

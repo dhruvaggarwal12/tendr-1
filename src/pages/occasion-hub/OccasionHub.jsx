@@ -1827,12 +1827,43 @@ function GiftRegistry({ onClose, accent }) {
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState("");
   const [category, setCategory] = useState("Kitchen");
+  const [claimingIdx, setClaimingIdx] = useState(null);
+  const [claimerName, setClaimerName] = useState("");
   const cats = ["Kitchen", "Living Room", "Bedroom", "Garden", "Tech", "Decor", "Other"];
-  const add = () => { if (newItem.trim()) { setItems(i => [...i, { item: newItem.trim(), category, claimed: false }]); setNewItem(""); } };
-  const claim = (idx) => setItems(it => it.map((item, i) => i === idx ? { ...item, claimed: !item.claimed } : item));
+  const add = () => { if (newItem.trim()) { setItems(i => [...i, { item: newItem.trim(), category, claimed: false, claimedBy: "" }]); setNewItem(""); } };
+  const startClaim = (idx) => { setClaimingIdx(idx); setClaimerName(""); };
+  const confirmClaim = () => {
+    if (claimingIdx === null) return;
+    setItems(it => it.map((item, i) => i === claimingIdx ? { ...item, claimed: true, claimedBy: claimerName.trim() || "Someone" } : item));
+    setClaimingIdx(null); setClaimerName("");
+  };
+  const unclaim = (idx) => setItems(it => it.map((item, i) => i === idx ? { ...item, claimed: false, claimedBy: "" } : item));
+  const claimedCount = items.filter(i => i.claimed).length;
   return (
     <Modal onClose={onClose} emoji="🎁" title="Gift Registry" wide>
       <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 14 }}>Add what you'd love for the new home. Guests tap to claim!</p>
+
+      {/* Claim prompt */}
+      {claimingIdx !== null && (
+        <div style={{ background: "rgba(15,10,30,0.95)", borderRadius: 16, padding: "20px 16px", marginBottom: 16, border: `1.5px solid ${accent}55`, textAlign: "center", boxShadow: `0 8px 32px ${accent}22` }}>
+          <div style={{ fontSize: 20, marginBottom: 8 }}>🎁</div>
+          <div style={{ fontSize: 14, color: "#fff", fontWeight: 700, marginBottom: 4 }}>Claiming: <span style={{ color: accent }}>{items[claimingIdx]?.item}</span></div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 14 }}>Who are you? So the host knows!</div>
+          <input value={claimerName} onChange={e => setClaimerName(e.target.value)} onKeyDown={e => e.key === "Enter" && confirmClaim()} placeholder="Your name…" style={{ ...inp, marginBottom: 12, textAlign: "center" }} autoFocus />
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={confirmClaim} style={{ ...mkBtn(accent), flex: 2 }}>✓ Claim It!</button>
+            <button onClick={() => setClaimingIdx(null)} style={{ ...mkBtn("rgba(255,255,255,0.07)"), flex: 1 }}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {items.length > 0 && claimedCount > 0 && (
+        <div style={{ background: "#34D39910", border: "1px solid #34D39930", borderRadius: 10, padding: "8px 14px", marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 13, color: "#34D399", fontWeight: 700 }}>🎉 {claimedCount} gift{claimedCount !== 1 ? "s" : ""} claimed!</span>
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>{items.length - claimedCount} remaining</span>
+        </div>
+      )}
+
       <select value={category} onChange={e => setCategory(e.target.value)} style={{ ...inp, marginBottom: 8 }}>
         {cats.map(c => <option key={c} value={c}>{c}</option>)}
       </select>
@@ -1843,15 +1874,22 @@ function GiftRegistry({ onClose, accent }) {
       {cats.map(cat => {
         const catItems = items.filter(i => i.category === cat);
         if (!catItems.length) return null;
+        const catClaimed = catItems.filter(i => i.claimed).length;
         return (
           <div key={cat} style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: accent, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>{cat}</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: accent, textTransform: "uppercase", letterSpacing: "0.07em" }}>{cat}</div>
+              {catClaimed > 0 && <div style={{ fontSize: 10, color: "#34D399", fontWeight: 700 }}>{catClaimed}/{catItems.length} claimed</div>}
+            </div>
             {catItems.map((item, gi) => {
               const idx = items.indexOf(item);
               return (
-                <div key={gi} onClick={() => claim(idx)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: item.claimed ? accent + "22" : "rgba(255,255,255,0.05)", borderRadius: 10, marginBottom: 6, cursor: "pointer", border: `1.5px solid ${item.claimed ? accent : "transparent"}`, textDecoration: item.claimed ? "line-through" : "none" }}>
-                  <span style={{ color: item.claimed ? "rgba(255,255,255,0.4)" : "#fff", fontSize: 13 }}>{item.item}</span>
-                  <span style={{ fontSize: 13, color: item.claimed ? "#34D399" : "rgba(255,255,255,0.3)", fontWeight: 700 }}>{item.claimed ? "✅ Claimed" : "Tap to claim"}</span>
+                <div key={gi} onClick={() => item.claimed ? unclaim(idx) : startClaim(idx)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", background: item.claimed ? "#34D39912" : "rgba(255,255,255,0.05)", borderRadius: 12, marginBottom: 7, cursor: "pointer", border: `1.5px solid ${item.claimed ? "#34D39944" : "rgba(255,255,255,0.07)"}`, transition: "all 0.2s" }}>
+                  <div>
+                    <div style={{ color: item.claimed ? "rgba(255,255,255,0.45)" : "#fff", fontSize: 14, textDecoration: item.claimed ? "line-through" : "none", fontWeight: item.claimed ? 400 : 500 }}>{item.item}</div>
+                    {item.claimed && item.claimedBy && <div style={{ fontSize: 11, color: "#34D399", marginTop: 2, fontWeight: 600 }}>by {item.claimedBy}</div>}
+                  </div>
+                  <span style={{ fontSize: 12, color: item.claimed ? "#34D399" : "rgba(255,255,255,0.3)", fontWeight: 700, flexShrink: 0, marginLeft: 10 }}>{item.claimed ? "✅ Claimed" : "Tap to claim"}</span>
                 </div>
               );
             })}
@@ -1987,34 +2025,128 @@ function KittyFund({ onClose, accent }) {
 
 // Naming Ceremony: Name Suggestions Wall
 function NameSuggestions({ onClose, accent }) {
-  const [suggestions, setSuggestions] = useState([]);
-  const [from, setFrom] = useState("");
-  const [name, setName] = useState("");
+  const [voterName, setVoterName] = useState("");
+  const [nameInput, setNameInput] = useState("");
   const [meaning, setMeaning] = useState("");
-  const post = () => {
-    if (!name.trim()) return;
-    setSuggestions(s => [{ from: from.trim() || "Anonymous", name: name.trim(), meaning: meaning.trim(), emoji: rand(["🌸", "✨", "🌺", "💫", "🌟", "🙏", "🌼", "🎋"]) }, ...s]);
-    setFrom(""); setName(""); setMeaning("");
+  const [entries, setEntries] = useState([]); // [{id,name,meaning,suggestedBy,votes:[{voter,ts}]}]
+  const [myVote, setMyVote] = useState(null);
+  const [pulsing, setPulsing] = useState(null);
+  const [copied, setCopied] = useState(false);
+  const [phase, setPhase] = useState("name"); // "name" | "main"
+
+  const totalVotes = entries.reduce((s, e) => s + e.votes.length, 0);
+  const maxVotes = Math.max(...entries.map(e => e.votes.length), 0);
+
+  const addSuggestion = () => {
+    const t = nameInput.trim();
+    if (!t || entries.find(e => e.name.toLowerCase() === t.toLowerCase())) return;
+    setEntries(prev => [...prev, { id: Date.now(), name: t, meaning: meaning.trim(), suggestedBy: voterName || "Guest", votes: [] }]);
+    setNameInput(""); setMeaning("");
   };
+
+  const vote = (id) => {
+    if (!voterName.trim()) return;
+    setPulsing(id); setTimeout(() => setPulsing(null), 500);
+    setEntries(prev => prev.map(e => {
+      const filtered = e.votes.filter(v => v.voter !== voterName);
+      if (e.id === id) return { ...e, votes: [...filtered, { voter: voterName, ts: Date.now() }] };
+      return { ...e, votes: filtered };
+    }));
+    setMyVote(id);
+  };
+
+  const removeEntry = (id) => { setEntries(prev => prev.filter(e => e.id !== id)); if (myVote === id) setMyVote(null); };
+  const sorted = [...entries].sort((a, b) => b.votes.length - a.votes.length);
+
+  const copyResults = () => {
+    const lines = ["🌸 Name Suggestions\n"];
+    sorted.forEach((e, i) => {
+      lines.push(`${i === 0 && e.votes.length > 0 ? "🏆" : `${i + 1}.`} ${e.name}${e.meaning ? ` — ${e.meaning}` : ""} (${e.votes.length} vote${e.votes.length !== 1 ? "s" : ""})`);
+    });
+    if (totalVotes > 0) lines.push(`\nTotal votes: ${totalVotes}`);
+    navigator.clipboard?.writeText(lines.join("\n")).catch(() => {});
+    setCopied(true); setTimeout(() => setCopied(false), 2000);
+  };
+
+  if (phase === "name") return (
+    <Modal onClose={onClose} emoji="🌸" title="Name Suggestions">
+      <p style={{ textAlign: "center", color: "rgba(255,255,255,0.55)", fontSize: 13, marginBottom: 20 }}>What's your name? You'll suggest and vote with this identity.</p>
+      <input value={voterName} onChange={e => setVoterName(e.target.value)} onKeyDown={e => e.key === "Enter" && voterName.trim() && setPhase("main")} placeholder="Your name or nickname…" style={{ ...inp, fontSize: 16, textAlign: "center", marginBottom: 12 }} autoFocus />
+      <button onClick={() => setPhase("main")} disabled={!voterName.trim()} style={{ ...mkBtn(accent), opacity: voterName.trim() ? 1 : 0.4, cursor: voterName.trim() ? "pointer" : "default" }}>Enter →</button>
+      <button onClick={() => { setVoterName("Guest"); setPhase("main"); }} style={{ width: "100%", marginTop: 8, background: "transparent", border: "none", color: "rgba(255,255,255,0.35)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Continue as Guest</button>
+    </Modal>
+  );
+
   return (
-    <Modal onClose={onClose} emoji="🌸" title="Name Suggestions" wide>
-      <input value={from} onChange={e => setFrom(e.target.value)} placeholder="Suggested by (your name)" style={{ ...inp, marginBottom: 8 }} />
-      <input value={name} onChange={e => setName(e.target.value)} placeholder="Name suggestion" style={{ ...inp, marginBottom: 8 }} />
-      <input value={meaning} onChange={e => setMeaning(e.target.value)} placeholder="Meaning / significance (optional)" style={{ ...inp, marginBottom: 10 }} />
-      <button onClick={post} style={{ ...mkBtn(accent), marginBottom: 20 }}>Suggest Name 🌸</button>
-      {suggestions.length === 0 && <p style={{ textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: 13 }}>Be the first to suggest a name!</p>}
-      {suggestions.map((s, i) => (
-        <div key={i} style={{ ...crd, borderLeft: `3px solid ${accent}` }}>
-          <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-            <span style={{ fontSize: 20 }}>{s.emoji}</span>
-            <div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>{s.name}</div>
-              {s.meaning && <div style={{ fontSize: 13, color: accent, marginTop: 2 }}>{s.meaning}</div>}
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>by {s.from}</div>
-            </div>
-          </div>
+    <Modal onClose={onClose} emoji="🌸" title="Name Suggestions">
+      <style>{`@keyframes ns-pulse{0%{transform:scale(1)}30%{transform:scale(1.08)}100%{transform:scale(1)}} .ns-pulse{animation:ns-pulse 0.45s cubic-bezier(0.34,1.56,0.64,1);}`}</style>
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>Suggesting as <span style={{ color: accent, fontWeight: 700 }}>{voterName}</span></div>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>{totalVotes} vote{totalVotes !== 1 ? "s" : ""}</div>
+      </div>
+
+      {/* Add suggestion box */}
+      <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 14, padding: "12px 14px", marginBottom: 16 }}>
+        <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+          <input value={nameInput} onChange={e => setNameInput(e.target.value)} onKeyDown={e => e.key === "Enter" && addSuggestion()} placeholder="Suggest a name…" style={{ ...inp, flex: 1, fontSize: 14 }} />
+          <button onClick={addSuggestion} style={{ ...mkBtn(accent), width: "auto", padding: "10px 14px", fontSize: 13 }}>+ Add</button>
         </div>
-      ))}
+        <input value={meaning} onChange={e => setMeaning(e.target.value)} onKeyDown={e => e.key === "Enter" && addSuggestion()} placeholder="Meaning / significance (optional)" style={{ ...inp, fontSize: 12 }} />
+      </div>
+
+      {entries.length === 0 && <p style={{ textAlign: "center", color: "rgba(255,255,255,0.25)", fontSize: 13, padding: "20px 0" }}>No suggestions yet — be the first!</p>}
+      {sorted.map((entry, idx) => {
+        const pct = maxVotes ? Math.round((entry.votes.length / maxVotes) * 100) : 0;
+        const totalPct = totalVotes ? Math.round((entry.votes.length / totalVotes) * 100) : 0;
+        const isLeader = idx === 0 && entry.votes.length > 0;
+        const isMine = myVote === entry.id;
+        const voters = entry.votes.map(v => v.voter);
+        return (
+          <div key={entry.id} className={pulsing === entry.id ? "ns-pulse" : ""} onClick={() => vote(entry.id)}
+            style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 14, border: `1.5px solid ${isMine ? accent : "rgba(255,255,255,0.08)"}`, background: isMine ? accent + "1A" : "rgba(255,255,255,0.04)", marginBottom: 8, cursor: "pointer", transition: "border-color 0.15s, background 0.15s", position: "relative" }}>
+            <div style={{ width: 24, textAlign: "center", fontSize: 16, flexShrink: 0 }}>
+              {isLeader ? "🏆" : <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", fontWeight: 700 }}>#{idx + 1}</span>}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                <span style={{ color: "#fff", fontSize: 15, fontWeight: 700 }}>{entry.name}</span>
+                {isMine && <span style={{ fontSize: 10, color: accent, fontWeight: 700 }}>✓ My vote</span>}
+              </div>
+              {entry.meaning && <div style={{ fontSize: 11, color: accent + "cc", marginBottom: 4, fontStyle: "italic" }}>{entry.meaning}</div>}
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginBottom: 5 }}>suggested by {entry.suggestedBy}</div>
+              <div style={{ height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden", marginBottom: 5 }}>
+                <div style={{ height: "100%", width: `${pct}%`, background: accent, borderRadius: 3, transition: "width 0.4s cubic-bezier(0.22,1,0.36,1)" }} />
+              </div>
+              {voters.length > 0 && (
+                <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+                  {voters.slice(0, 6).map((v, i) => (
+                    <div key={i} title={v} style={{ width: 18, height: 18, borderRadius: "50%", background: accent + "40", border: `1px solid ${accent}50`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: accent }}>
+                      {v[0]?.toUpperCase()}
+                    </div>
+                  ))}
+                  {voters.length > 6 && <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", alignSelf: "center" }}>+{voters.length - 6}</span>}
+                </div>
+              )}
+            </div>
+            <div style={{ textAlign: "right", flexShrink: 0 }}>
+              <div style={{ fontSize: 22, fontWeight: 900, color: accent, lineHeight: 1 }}>{entry.votes.length}</div>
+              {totalVotes > 0 && <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>{totalPct}%</div>}
+            </div>
+            <button onClick={e => { e.stopPropagation(); removeEntry(entry.id); }} style={{ position: "absolute", top: 6, right: 6, width: 18, height: 18, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.35)", fontSize: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>✕</button>
+          </div>
+        );
+      })}
+
+      {entries.length > 0 && (
+        <div style={{ marginTop: 14, display: "flex", gap: 8 }}>
+          <button onClick={copyResults} style={{ flex: 1, padding: "9px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.12)", background: "transparent", color: copied ? "#4ade80" : "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "color 0.2s" }}>
+            {copied ? "✓ Copied!" : "📋 Copy Results"}
+          </button>
+          <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent("🌸 Name Suggestions\n\n" + sorted.map((e, i) => `${i === 0 && e.votes.length > 0 ? "🏆" : `${i + 1}.`} ${e.name}${e.meaning ? ` — ${e.meaning}` : ""} (${e.votes.length} votes)`).join("\n"))}`, "_blank")} style={{ ...mkBtn("#25D366"), width: "auto", padding: "9px 14px" }}>📤 Share</button>
+          <button onClick={() => { setPhase("name"); setVoterName(""); }} style={{ padding: "9px 14px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.12)", background: "transparent", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Switch</button>
+        </div>
+      )}
     </Modal>
   );
 }
