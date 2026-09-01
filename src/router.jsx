@@ -125,6 +125,7 @@ const GiftHampersCakes    = lazy(() => import('./pages/customer/GiftHampersCakes
 const GiftingHub          = lazy(() => import('./pages/customer/GiftingHub'));
 const HamperBuilder       = lazy(() => import('./pages/gifting/HamperBuilder'));
 const CheckboxPicker         = lazy(() => import('./pages/checkbox/CheckboxPicker'));
+const EquipmentGenerator     = lazy(() => import('./pages/tools/EquipmentGenerator'));
 const PrebuiltCheckbox       = lazy(() => import('./pages/checkbox/PrebuiltCheckbox'));
 // const DecorFinder      = lazy(() => import('./pages/tools/DecorFinder.jsx')); // disabled
 const FindByStyle         = lazy(() => import('./pages/customer/FindByStyle.jsx'));
@@ -530,6 +531,7 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
   },
   { path: '/checklist-picker', element: <CheckboxPicker />,         errorElement: <ErrorPage /> },
+  { path: '/equipment-generator', element: <EquipmentGenerator />, errorElement: <ErrorPage /> },
   { path: '/prebuilt-checklist',element: <PrebuiltCheckbox />,      errorElement: <ErrorPage /> },
   { path: '/memories', element: <MemoriesPage />, errorElement: <ErrorPage /> },
   { path: '/memories/:id', element: <MemoryProfile />, errorElement: <ErrorPage /> },

@@ -2102,7 +2102,7 @@ const EventPlanning = () => {
                     📅 Plan Timeline
                   </button>
                   <button
-                    onClick={() => window.open('/checklist-picker', '_blank')}
+                    onClick={() => window.open('/equipment-generator', '_blank')}
                     style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.3)", background: "#FFFCF5", color: "#2C1A0E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 2px 8px rgba(196,122,46,0.08)" }}
                   >
                     🔧 Equipment List
