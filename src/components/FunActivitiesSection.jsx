@@ -263,11 +263,11 @@ function ActivityModal({ activity, onClose, onAddToCart }) {
 }
 
 // ── Single Card ───────────────────────────────────────────────────────────────
-export function FunActivityCard({ activity, onQuickView, onBook, onAddToCart }) {
+export function FunActivityCard({ activity, onQuickView, onBook, onAddToCart, isAiPick = false }) {
   const isMobile = window.innerWidth < 768;
   return (
     <div onClick={() => onQuickView(activity)}
-      style={{ borderRadius: 11, overflow: "hidden", position: "relative", cursor: "pointer", aspectRatio: "3/4", transition: "transform 0.22s ease", minWidth: isMobile ? 114 : 160, flex: "0 0 auto" }}
+      style={{ borderRadius: 11, overflow: "hidden", position: "relative", cursor: "pointer", aspectRatio: "3/4", transition: "transform 0.22s ease", minWidth: isMobile ? 114 : 160, flex: "0 0 auto", outline: isAiPick ? "2px solid #C47A2E" : "none", boxShadow: isAiPick ? "0 0 0 3px rgba(196,122,46,0.18)" : undefined }}
       onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; }}
       onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; }}>
 
@@ -275,15 +275,22 @@ export function FunActivityCard({ activity, onQuickView, onBook, onAddToCart }) 
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,14,4,0.92) 0%, rgba(28,14,4,0.28) 52%, transparent 100%)" }} />
 
+      {/* AI Pick banner */}
+      {isAiPick && (
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "4px 0", textAlign: "center", zIndex: 3 }}>
+          <span style={{ fontSize: 8.5, fontWeight: 800, color: "#fff", letterSpacing: "0.08em", fontFamily: F }}>✨ FOR YOU</span>
+        </div>
+      )}
+
       {/* Price badge */}
-      <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(28,14,4,0.62)", backdropFilter: "blur(6px)", borderRadius: 5, padding: "3px 8px" }}>
+      <div style={{ position: "absolute", top: isAiPick ? 26 : 10, right: 10, background: "rgba(28,14,4,0.62)", backdropFilter: "blur(6px)", borderRadius: 5, padding: "3px 8px" }}>
         <span style={{ fontSize: isMobile ? 10 : 10.5, fontWeight: 700, color: "#CCAB4A", fontFamily: F }}>₹{activity.price.toLocaleString("en-IN")}</span>
       </div>
 
       {/* Cart button */}
       <button
         onClick={e => { e.stopPropagation(); onAddToCart(activity); }}
-        style={{ position: "absolute", top: 10, left: 10, background: "rgba(28,14,4,0.62)", backdropFilter: "blur(6px)", borderRadius: 5, padding: "3px 8px", border: "1px solid rgba(196,122,46,0.38)", cursor: "pointer", fontFamily: F }}
+        style={{ position: "absolute", top: isAiPick ? 26 : 10, left: 10, background: "rgba(28,14,4,0.62)", backdropFilter: "blur(6px)", borderRadius: 5, padding: "3px 8px", border: "1px solid rgba(196,122,46,0.38)", cursor: "pointer", fontFamily: F }}
       >
         <span style={{ fontSize: 9.5, fontWeight: 700, color: "#CCAB4A" }}>+ Cart</span>
       </button>
@@ -536,6 +543,17 @@ export default function FunActivitiesSection({ heading, subheading, activities =
   const [booking,   setBooking]   = useState(null);
   const scrollRef = useRef(null);
 
+  // Read AI personalisation from sessionStorage (set by EventPlanning wizard)
+  const aiPickIds = (() => {
+    try {
+      const recs = JSON.parse(sessionStorage.getItem('tendr_ai_recs') || 'null');
+      return new Set(recs?.funActivityIds || []);
+    } catch { return new Set(); }
+  })();
+
+  const pickedActivities = activities.filter(a => aiPickIds.has(a.id));
+  const otherActivities  = activities.filter(a => !aiPickIds.has(a.id));
+
   const handleAddToCart = (activity) => {
     dispatch(addActivity({ id: activity.id, name: activity.name, emoji: activity.emoji, price: activity.price, perUnit: activity.perUnit, unitLabel: activity.unitLabel }));
   };
@@ -543,6 +561,10 @@ export default function FunActivitiesSection({ heading, subheading, activities =
   const scroll = (dir) => {
     if (scrollRef.current) scrollRef.current.scrollBy({ left: dir * 260, behavior: "smooth" });
   };
+
+  const renderCard = (a) => (
+    <FunActivityCard key={a.id} activity={a} onQuickView={setQuickView} onBook={setBooking} onAddToCart={handleAddToCart} isAiPick={aiPickIds.has(a.id)} />
+  );
 
   return (
     <>
@@ -556,18 +578,33 @@ export default function FunActivitiesSection({ heading, subheading, activities =
           </div>
         )}
 
+        {/* AI-personalised "For You" section */}
+        {pickedActivities.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+              <span style={{ fontSize: 13, fontWeight: 800, color: GOLD, fontFamily: F }}>✨ Picked for your event</span>
+              <div style={{ height: 1, flex: 1, background: "rgba(196,122,46,0.2)" }} />
+            </div>
+            <div style={{ display: "flex", gap: 14, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
+              {pickedActivities.map(renderCard)}
+            </div>
+            {otherActivities.length > 0 && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "18px 0 12px" }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", fontFamily: F }}>All activities</span>
+                <div style={{ height: 1, flex: 1, background: "rgba(0,0,0,0.08)" }} />
+              </div>
+            )}
+          </div>
+        )}
+
         {grid ? (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(175px,1fr))", gap: 14 }}>
-            {activities.map(a => (
-              <FunActivityCard key={a.id} activity={a} onQuickView={setQuickView} onBook={setBooking} onAddToCart={handleAddToCart} />
-            ))}
+            {(pickedActivities.length > 0 ? otherActivities : activities).map(renderCard)}
           </div>
         ) : (
           <div style={{ position: "relative" }}>
             <div ref={scrollRef} style={{ display: "flex", gap: 14, overflowX: "auto", paddingBottom: 8, scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
-              {activities.map(a => (
-                <FunActivityCard key={a.id} activity={a} onQuickView={setQuickView} onBook={setBooking} onAddToCart={handleAddToCart} />
-              ))}
+              {(pickedActivities.length > 0 ? otherActivities : activities).map(renderCard)}
             </div>
             {activities.length > 3 && (
               <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 10 }}>

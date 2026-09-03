@@ -286,6 +286,9 @@ export default function CustomerDashboard() {
     const tab = new URLSearchParams(location.search).get("tab");
     return TABS.includes(tab) ? tab : "All";
   });
+  const [chatsLastViewed, setChatsLastViewed] = useState(() =>
+    parseInt(localStorage.getItem("tendr:chatsLastViewed") || "0")
+  );
   const [plans, setPlans] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -476,6 +479,11 @@ export default function CustomerDashboard() {
     if (!c.chatApproved) return false;
     return openedSupportChats.has(c._id);
   });
+
+  const unreadChats = visibleChats.filter(c => {
+    const ts = new Date(c.updatedAt || c.createdAt).getTime();
+    return ts > chatsLastViewed;
+  }).length;
 
   const counts = {
     All:       plans.length,
@@ -925,8 +933,16 @@ export default function CustomerDashboard() {
           {/* Tabs */}
           <div className="cust-tab-row" style={{ display: "flex", gap: 6, marginBottom: 20, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 2 }}>
             {TABS.map((tab) => (
-              <button key={tab} onClick={() => setActiveTab(tab)}
-                style={{ padding: "7px 16px", borderRadius: 100, fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer", border: "1.5px solid", transition: "all 0.18s", flexShrink: 0,
+              <button key={tab}
+                onClick={() => {
+                  setActiveTab(tab);
+                  if (tab === "Chats") {
+                    const now = Date.now();
+                    setChatsLastViewed(now);
+                    localStorage.setItem("tendr:chatsLastViewed", now.toString());
+                  }
+                }}
+                style={{ padding: "7px 16px", borderRadius: 100, fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer", border: "1.5px solid", transition: "all 0.18s", flexShrink: 0, position: "relative",
                   borderColor: activeTab === tab ? "#C47A2E" : "rgba(139,69,19,0.18)",
                   background: activeTab === tab ? "#C47A2E" : "#fff",
                   color: activeTab === tab ? "#fff" : "#6B3A1F",
@@ -940,6 +956,11 @@ export default function CustomerDashboard() {
                     color: activeTab === tab ? "#fff" : "#C47A2E",
                     borderRadius: 100, padding: "1px 6px" }}>
                     {counts[tab]}
+                  </span>
+                )}
+                {tab === "Chats" && unreadChats > 0 && activeTab !== "Chats" && (
+                  <span style={{ position: "absolute", top: -4, right: -4, width: 17, height: 17, borderRadius: "50%", background: "#DC2626", color: "#fff", fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #F8F4EF" }}>
+                    {unreadChats > 9 ? "9+" : unreadChats}
                   </span>
                 )}
               </button>
@@ -1566,6 +1587,18 @@ export default function CustomerDashboard() {
                     );
                   })()}
 
+                  {/* Resume Planning — for submitted/draft plans not yet booked */}
+                  {["submitted", "draft"].includes(plan.status) && !isPastUnbooked(plan) && (
+                    <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(196,122,46,0.1)", display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      <button
+                        onClick={() => navigate("/booking")}
+                        style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.25)" }}
+                      >
+                        Continue Planning →
+                      </button>
+                    </div>
+                  )}
+
                   {/* 4 download buttons — shown for Upcoming (in_progress) plans */}
                   {plan.status === "in_progress" && (() => {
                     const eventSummary = { eventType: plan.eventType, date: plan.date, location: plan.location, guests: plan.guests };
@@ -1719,14 +1752,18 @@ export default function CustomerDashboard() {
                     }
                     // Default: show button
                     return (
-                      <button
-                        onClick={() => openChangeReq(plan._id)}
-                        style={{ marginTop: 14, width: "100%", padding: "10px", borderRadius: 10, border: "1.5px dashed rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, transition: "background 0.15s" }}
-                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.04)")}
-                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                      >
-                        ⚠️ Make a Change Request
-                      </button>
+                      <div style={{ marginTop: 14, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.18)", borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>Need to change something?</div>
+                          <div style={{ fontSize: 11.5, color: "#9B7450", marginTop: 2 }}>Date, guest count, vendors, or any other detail</div>
+                        </div>
+                        <button
+                          onClick={() => openChangeReq(plan._id)}
+                          style={{ padding: "8px 18px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0, boxShadow: "0 2px 8px rgba(196,122,46,0.3)" }}
+                        >
+                          Request Change
+                        </button>
+                      </div>
                     );
                   })()}
 

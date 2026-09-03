@@ -43,6 +43,8 @@ import {
 } from "../../redux/eventPlanningSlice.js";
 
 import { setFilters } from "../../redux/listingFiltersSlice";
+import { selectFunCartItems } from "../../redux/funActivitiesCartSlice.js";
+import { selectCartItems as selectGhCartItems } from "../../redux/giftHamperCartSlice.js";
 
 import MakeAGroup_Nav from "../../components/MakeAGroup_Nav.jsx";
 import EventFormSummary from "../../components/EventFormSummary.jsx";
@@ -121,6 +123,7 @@ const EventPlanning = () => {
   const [splitPct, setSplitPct] = useState({ Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15 });
   const [totalPlanBudget, setTotalPlanBudget] = useState(50000);
   const [selectedTier, setSelectedTier] = useState('balanced');
+  const [aiRecs, setAiRecs] = useState(null);
 
   // Declared early (before the early-return Smart Plan view block) so closures
   // created earlier in this render — like applyTier — never hit it in the TDZ.
@@ -239,6 +242,8 @@ const EventPlanning = () => {
   } = useSelector((state) => state.eventPlanning);
   const extraRequirements = formData?.extraRequirements || [];
   const { token, user: authUser } = useSelector((state) => state.auth);
+  const funActivitiesItems = useSelector(selectFunCartItems);
+  const giftHamperItems    = useSelector(selectGhCartItems);
   const { startSession, trackClick, trackSelect, trackDeselect, trackIgnored } = useRecommendationTracking();
 
   // Scroll to top whenever the smart plan screen opens (must be after showVendorScreen is declared)
@@ -361,6 +366,15 @@ const EventPlanning = () => {
       optional: true,
       icon: <Clock className="w-8 h-8" />,
     },
+    {
+      id: "vision",
+      title: "Describe your dream event",
+      subtitle: "Write freely in English, Hindi, or Hinglish — theme, vibe, must-haves, anything. The more you share, the better we personalise vendors, activities, and gifts for you.",
+      type: "textarea",
+      placeholder: "e.g. Outdoor birthday for 60 log, pastel theme, live music zaroor chahiye, photo booth bhi... aur ek surprise element bhi add karna hai!",
+      optional: true,
+      icon: <span style={{ fontSize: 22 }}>✨</span>,
+    },
   ];
 
   const vendors = [
@@ -461,6 +475,29 @@ const EventPlanning = () => {
     if (animating) return;
     setAnimating(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // When leaving the vision step, fire AI personalisation in background
+    if (currentQuestion?.id === 'vision' && formData.vision?.trim()) {
+      fetch(`${BASE_URL}/ai-recommendations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: formData.vision,
+          eventType: formData.eventType,
+          guests: formData.guests,
+          location: formData.location,
+        }),
+      })
+        .then(r => r.json())
+        .then(d => {
+          if (d?.recommendations) {
+            setAiRecs(d.recommendations);
+            try { sessionStorage.setItem('tendr_ai_recs', JSON.stringify(d.recommendations)); } catch {}
+          }
+        })
+        .catch(() => {});
+    }
+
     setTimeout(() => {
       if (currentStep < questions.length - 1) {
         dispatch(goToNextStep());
@@ -552,6 +589,9 @@ const EventPlanning = () => {
         },
         vendorSlots,
         bookingType: "you-do-it",
+        selectedPackages,
+        funActivities: funActivitiesItems.map(a => ({ id: a.id, name: a.name, emoji: a.emoji, totalPrice: a.totalPrice || 0 })),
+        giftHampers: giftHamperItems.map(h => ({ name: h.name, quantity: h.quantity, pricePerUnit: h.pricePerUnit, subtotal: h.subtotal })),
       });
       const planData = {
         ...result.plan,
@@ -1085,8 +1125,12 @@ const EventPlanning = () => {
                   return (
                     <div key={tier} onClick={() => applyTier(tier)}
                       style={{ background: isActive ? (tier === 'balanced' ? "linear-gradient(145deg,#FFFCF0,#FFF4E0)" : "linear-gradient(145deg,#F5F0FF,#EDE8FF)") : "#fff", borderRadius: 14, border: isActive ? `2px solid ${meta.color}` : "1.5px solid rgba(0,0,0,0.06)", padding: "12px 10px 10px", cursor: "pointer", position: "relative", boxShadow: isActive ? `0 4px 16px ${meta.color}28` : "0 2px 8px rgba(0,0,0,0.05)", transition: "all 0.2s" }}>
-                      {/* Recommended badge */}
-                      {meta.recommended && (
+                      {/* Recommendation badge — AI pick takes priority over default */}
+                      {aiRecs?.tier === tier ? (
+                        <div style={{ position: "absolute", top: -9, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", borderRadius: 100, padding: "2px 10px", whiteSpace: "nowrap" }}>
+                          <span style={{ fontSize: 9, fontWeight: 800, color: "#fff", letterSpacing: "0.04em" }}>✨ AI PICK</span>
+                        </div>
+                      ) : meta.recommended && !aiRecs && (
                         <div style={{ position: "absolute", top: -9, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", borderRadius: 100, padding: "2px 10px", whiteSpace: "nowrap" }}>
                           <span style={{ fontSize: 9, fontWeight: 800, color: "#fff", letterSpacing: "0.04em" }}>RECOMMENDED</span>
                         </div>
@@ -1725,7 +1769,7 @@ const EventPlanning = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-5 w-full" style={{ maxWidth: 1100, marginBottom: 36 }}>
                 {sortedVendors.map((vendor) => {
                   const isSelected = selectedVendors.includes(vendor.id);
-                  const isRecommended = recs.services.includes(vendor.id);
+                  const isRecommended = recs.services.includes(vendor.id) || (aiRecs?.vendorCategories || []).includes(vendor.id);
                   const count = vendorCounts[vendor.id] ?? vendorCounts[vendor.id.toLowerCase()] ?? vendorCounts[Object.keys(vendorCounts).find(k => k.toLowerCase() === vendor.id.toLowerCase())];
                   return (
                     <div

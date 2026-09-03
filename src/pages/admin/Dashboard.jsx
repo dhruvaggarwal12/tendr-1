@@ -305,6 +305,7 @@ const sidebar_arr = [
   { label: "Ebooks",               icon: <span style={{ fontSize: 16 }}>📚</span>,  key: "Ebooks" },
   { label: "Reminders",             icon: <span style={{ fontSize: 16 }}>📲</span>,  key: "Reminders" },
   { label: "🚀 Launch",            icon: <span style={{ fontSize: 16 }}>🚀</span>,  key: "Launch" },
+  { label: "Coordinators",         icon: <span style={{ fontSize: 16 }}>🎯</span>,  key: "Coordinators" },
 ];
 
 // Simple inline markdown renderer — handles *bold*, _italic_, line breaks, [img:...] images
@@ -2071,6 +2072,15 @@ const AdminDashboard = () => {
                                           style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: `1.5px solid ${plan.isBaatKaro ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: plan.isBaatKaro ? "rgba(196,122,46,0.12)" : "transparent", color: plan.isBaatKaro ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
                                           💬 {plan.isBaatKaro ? "Baat Karo ✓" : "Baat Karo"}
                                         </button>
+                                        <button
+                                          onClick={() => {
+                                            const payload = { eventPlanId: plan._id, customerName: plan.customerId?.name, eventType: plan.eventType, eventDate: plan.date, location: plan.location, guests: plan.guests, budget: plan.totalAmount || plan.amount, phone: plan.customerId?.phoneNumber, notes: `Booking from ${plan.customerId?.name} — ${plan.eventType}` };
+                                            fetch(`${BASE_URL}/admin/coordinators/assign-lead`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, credentials: 'include', body: JSON.stringify(payload) })
+                                              .then(r => r.json()).then(d => alert(d.message || d.error || 'Lead sent to coordinator')).catch(() => alert('Failed to send lead'));
+                                          }}
+                                          style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "1.5px solid rgba(99,102,241,0.4)", background: "rgba(99,102,241,0.08)", color: "#4F46E5", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                          🎯 Send to Coordinator
+                                        </button>
                                       </div>
                                     </>
                                   );
@@ -2128,6 +2138,15 @@ const AdminDashboard = () => {
                                         }}
                                         style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: `1.5px solid ${plan.isBaatKaro ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: plan.isBaatKaro ? "rgba(196,122,46,0.12)" : "transparent", color: plan.isBaatKaro ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
                                         💬 {plan.isBaatKaro ? "Baat Karo ✓" : "Baat Karo"}
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          const payload = { eventPlanId: plan._id, customerName: plan.customerId?.name, eventType: plan.eventType, eventDate: plan.date, location: plan.location, guests: plan.guests, budget: plan.totalAmount || plan.amount, phone: plan.customerId?.phoneNumber, notes: `Confirmed booking — ${plan.customerId?.name} · ${plan.eventType}` };
+                                          fetch(`${BASE_URL}/admin/coordinators/assign-lead`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, credentials: 'include', body: JSON.stringify(payload) })
+                                            .then(r => r.json()).then(d => alert(d.message || d.error || 'Lead sent to coordinator')).catch(() => alert('Failed to send lead'));
+                                        }}
+                                        style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "1.5px solid rgba(99,102,241,0.4)", background: "rgba(99,102,241,0.08)", color: "#4F46E5", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                        🎯 Send to Coordinator
                                       </button>
                                     </div>
                                   );
@@ -6220,6 +6239,106 @@ const AdminDashboard = () => {
             </div>
           </div>
         )}
+
+        {/* ── COORDINATORS TAB ── */}
+        {activeDropdown === "coordinators" && (() => {
+          const F = "'Outfit', sans-serif";
+          const [coords, setCoords] = React.useState([]);
+          const [coordsLoaded, setCoordsLoaded] = React.useState(false);
+          const [coordFilter, setCoordFilter] = React.useState("pending");
+
+          React.useEffect(() => {
+            if (coordsLoaded) return;
+            fetch(`${BASE_URL}/admin/coordinators`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' })
+              .then(r => r.json()).then(d => { setCoords(Array.isArray(d) ? d : d.coordinators || []); setCoordsLoaded(true); }).catch(() => setCoordsLoaded(true));
+          }, []);
+
+          const updateStatus = (id, status) => {
+            fetch(`${BASE_URL}/admin/coordinators/${id}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, credentials: 'include', body: JSON.stringify({ status }) })
+              .then(r => r.json()).then(d => { if (d.coordinator) setCoords(prev => prev.map(c => c._id === id ? d.coordinator : c)); else alert(d.error || 'Failed'); }).catch(() => alert('Network error'));
+          };
+
+          const filtered = coords.filter(c => coordFilter === "all" ? true : c.status === coordFilter);
+
+          return (
+            <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-6 overflow-y-auto">
+              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", fontFamily: F, marginBottom: 4 }}>🎯 Event Coordinators</h2>
+              <p style={{ fontSize: 13, color: "#9B7450", fontFamily: F, marginBottom: 20 }}>Review and approve coordinator applications. Approved coordinators get a dashboard + referral code.</p>
+
+              {/* Filter tabs */}
+              <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+                {[["pending", "⏳ Pending"], ["approved", "✅ Approved"], ["rejected", "❌ Rejected"], ["all", "All"]].map(([val, label]) => {
+                  const count = val === "all" ? coords.length : coords.filter(c => c.status === val).length;
+                  return (
+                    <button key={val} onClick={() => setCoordFilter(val)} style={{ padding: "7px 16px", borderRadius: 100, fontSize: 12, fontWeight: 700, fontFamily: F, cursor: "pointer", background: coordFilter === val ? "#C47A2E" : "#fff", color: coordFilter === val ? "#fff" : "#9B7450", border: coordFilter === val ? "none" : "1.5px solid #E5D5C0" }}>
+                      {label} <span style={{ marginLeft: 4, fontSize: 11, background: coordFilter === val ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)", color: coordFilter === val ? "#fff" : "#C47A2E", borderRadius: 100, padding: "1px 7px" }}>{count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {!coordsLoaded && <p style={{ color: "#9B7450", fontFamily: F, fontSize: 13 }}>Loading…</p>}
+              {coordsLoaded && filtered.length === 0 && (
+                <div style={{ textAlign: "center", padding: "60px 0", color: "#9B7450", fontFamily: F }}>
+                  <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
+                  <p style={{ fontWeight: 700, color: "#2C1A0E" }}>No {coordFilter === "all" ? "" : coordFilter} applications</p>
+                </div>
+              )}
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {filtered.map(c => (
+                  <div key={c._id} style={{ background: "#FFFCF5", borderRadius: 14, padding: "20px", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 2px 10px rgba(44,26,14,0.04)", fontFamily: F }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 14 }}>
+                      <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                        <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{c.name?.[0]?.toUpperCase()}</div>
+                        <div>
+                          <p style={{ margin: 0, fontWeight: 800, color: "#2C1A0E", fontSize: 16 }}>{c.name}</p>
+                          <p style={{ margin: "2px 0 0", fontSize: 12, color: "#9B7450" }}>{c.city} · {c.experience} yrs exp · {c.eventsPerMonth} events/mo</p>
+                        </div>
+                      </div>
+                      <span style={{ fontSize: 11, fontWeight: 700, borderRadius: 100, padding: "4px 12px", background: c.status === "approved" ? "#F0FDF4" : c.status === "rejected" ? "#FFF1F2" : "#FEF3C7", color: c.status === "approved" ? "#15803D" : c.status === "rejected" ? "#BE123C" : "#D97706" }}>
+                        {c.status === "approved" ? "✅ Approved" : c.status === "rejected" ? "❌ Rejected" : "⏳ Pending"}
+                      </span>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 8, marginBottom: 12 }}>
+                      {[["📞 Phone", c.phoneNumber], ["📧 Email", c.email], ["📅 Applied", c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN") : "—"]].map(([k, v]) => (
+                        <div key={k} style={{ background: "#F8F4EF", borderRadius: 8, padding: "7px 10px" }}>
+                          <p style={{ margin: 0, fontSize: 10, color: "#9B7450", fontWeight: 600 }}>{k}</p>
+                          <p style={{ margin: "2px 0 0", fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{v || "—"}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {c.specializations?.length > 0 && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+                        {c.specializations.map(s => <span key={s} style={{ background: "#FFF8EE", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "3px 10px", fontSize: 11, fontWeight: 600, color: "#C47A2E" }}>{s}</span>)}
+                      </div>
+                    )}
+                    {c.bio && <p style={{ fontSize: 13, color: "#5A3A1A", lineHeight: 1.6, margin: "0 0 12px", background: "#FFF8EE", borderRadius: 8, padding: "8px 12px", borderLeft: "3px solid #C47A2E" }}>{c.bio}</p>}
+
+                    {c.referralCode && <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 12px" }}>Referral Code: <strong style={{ color: "#C47A2E", letterSpacing: "0.05em" }}>{c.referralCode}</strong></p>}
+
+                    {c.status === "pending" && (
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button onClick={() => updateStatus(c._id, "approved")} style={{ padding: "8px 20px", borderRadius: 8, border: "none", background: "#15803D", color: "#fff", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>✅ Approve</button>
+                        <button onClick={() => updateStatus(c._id, "rejected")} style={{ padding: "8px 20px", borderRadius: 8, border: "1.5px solid #FCA5A5", background: "#FFF1F2", color: "#BE123C", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>❌ Reject</button>
+                      </div>
+                    )}
+                    {c.status === "approved" && (
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button onClick={() => updateStatus(c._id, "rejected")} style={{ padding: "7px 16px", borderRadius: 8, border: "1.5px solid #FCA5A5", background: "#FFF1F2", color: "#BE123C", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Revoke Access</button>
+                      </div>
+                    )}
+                    {c.status === "rejected" && (
+                      <button onClick={() => updateStatus(c._id, "approved")} style={{ padding: "7px 16px", borderRadius: 8, border: "none", background: "#15803D", color: "#fff", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Re-Approve</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
       </div>
     </div>

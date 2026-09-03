@@ -96,6 +96,9 @@ import OtpVerification  from "./pages/customer/OtpVerification";
 import CustomerChatList from "./pages/customer/Chats";
 
 // ── Lazy loaded (not on critical path — split into separate chunks) ─────────
+const CoordinatorRegister = lazy(() => import("./pages/coordinator/Register"));
+const CoordinatorLogin    = lazy(() => import("./pages/coordinator/Login"));
+const CoordinatorDashboard= lazy(() => import("./pages/coordinator/Dashboard"));
 const WeddingApp          = lazy(() => import("./wedding-stationery/WeddingApp"));
 const EventPlanningForm   = lazy(() => import("./pages/customer/EventPlanning.jsx"));
 const EventPlanning       = lazy(() => import("./pages/customer/EventPlanning.jsx"));
@@ -224,11 +227,14 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />
   },
   
-  { 
-    path: '/corporate/booking', 
+  {
+    path: '/corporate/booking',
     element: <CorporateBooking />,
     errorElement: <ErrorPage />
   },
+  { path: '/coordinator/register',  element: <CoordinatorRegister />, errorElement: <ErrorPage /> },
+  { path: '/coordinator/login',     element: <CoordinatorLogin />,    errorElement: <ErrorPage /> },
+  { path: '/coordinator/dashboard', element: <CoordinatorDashboard />,errorElement: <ErrorPage /> },
   {
     path: '/corporateEventPlanning',
     element: <CorporateLogin />,

@@ -65,6 +65,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [showMiniChat, setShowMiniChat] = useState(false);
   const [miniChatPrefill, setMiniChatPrefill] = useState("");
+  const [miniChatPrefillPhoto, setMiniChatPrefillPhoto] = useState(null);
   const [showActiveChats, setShowActiveChats] = useState(false);
   const [planChip, setPlanChip] = useState(() => loadPlan());
   const [planChipHidden, setPlanChipHidden] = useState(false);
@@ -192,6 +193,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   useEffect(() => {
     const handler = (e) => {
       setMiniChatPrefill(e.detail?.message || "");
+      setMiniChatPrefillPhoto(e.detail?.photo || null);
       setShowMiniChat(true);
       setOpen(false);
     };
@@ -332,7 +334,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           </div>
         </>
       )}
-      {showMiniChat && <MiniChatWidget onClose={() => { setShowMiniChat(false); setMiniChatPrefill(""); }} prefillMessage={miniChatPrefill} />}
+      {showMiniChat && <MiniChatWidget onClose={() => { setShowMiniChat(false); setMiniChatPrefill(""); setMiniChatPrefillPhoto(null); }} prefillMessage={miniChatPrefill} prefillPhoto={miniChatPrefillPhoto} />}
 
       {isCompareModalOpen && (
         <CompareModal

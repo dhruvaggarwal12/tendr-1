@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
@@ -224,6 +224,9 @@ function buildPlanMessage(plan) {
   const guests = plan.eventDetails?.guests || plan.guests || '';
   const budget = plan.eventDetails?.budget || plan.budget || '';
   const slots = plan.vendorSlots || [];
+  const packages = plan.selectedPackages || {};
+  const activities = plan.funActivities || [];
+  const hampers = plan.giftHampers || [];
 
   const lines = [`📋 *Event Plan — ${eventType}*`, ''];
   if (date) lines.push(`📅 Date: ${new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}`);
@@ -233,6 +236,18 @@ function buildPlanMessage(plan) {
   if (slots.length) {
     lines.push('', '*Vendors needed:*');
     slots.forEach(s => lines.push(`• ${CAT_ICON[s.category] || '📌'} ${s.category}${s.vendorName ? ` — ${s.vendorName}` : ''} (${s.status || 'Pending'})`));
+  }
+  if (Object.keys(packages).length) {
+    lines.push('', '*Packages selected:*');
+    Object.entries(packages).forEach(([cat, pkg]) => lines.push(`• ${cat}: ${pkg} Package`));
+  }
+  if (activities.length) {
+    lines.push('', '*Fun activities:*');
+    activities.forEach(a => lines.push(`• ${a.emoji || '🎉'} ${a.name}${a.totalPrice ? ` — ₹${Number(a.totalPrice).toLocaleString('en-IN')}` : ''}`));
+  }
+  if (hampers.length) {
+    lines.push('', '*Gift hampers:*');
+    hampers.forEach(h => lines.push(`• ${h.name} × ${h.quantity} — ₹${Number(h.subtotal || 0).toLocaleString('en-IN')}`));
   }
   lines.push('', 'Can you help me plan this event? Looking for vendor recommendations and a quote.');
   return lines.join('\n');
@@ -250,7 +265,71 @@ export function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, 
   const hasChat = !!(plan.conversationId);
   const planKey = plan._id || 'draft';
 
+  const { token } = useSelector(s => s.auth);
   const [inviteOpen, setInviteOpen] = useState(false);
+
+  // Decor mockup popup state
+  const [decorPopup, setDecorPopup] = useState(false);   // "want decor mockup?" question
+  const [decorPhoto, setDecorPhoto] = useState(null);    // { file, preview }
+  const [decorDesc, setDecorDesc] = useState('');
+  const [decorSending, setDecorSending] = useState(false);
+  const decorFileRef = useRef(null);
+
+  // Auth-gate: if user clicked download while signed out, auto-trigger on return
+  useEffect(() => {
+    const pending = sessionStorage.getItem('tendr_pending_plan_download');
+    if (pending && token) {
+      sessionStorage.removeItem('tendr_pending_plan_download');
+      try { downloadPlanAsHTML(JSON.parse(pending)); } catch {}
+    }
+  }, [token]);
+
+  const handleDownload = () => {
+    if (!token) {
+      sessionStorage.setItem('tendr_pending_plan_download', JSON.stringify(plan));
+      navigate('/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search));
+      onClose();
+      return;
+    }
+    downloadPlanAsHTML(plan);
+  };
+
+  const handleSendToChat = () => {
+    setDecorPopup(true);
+  };
+
+  const sendPlanToChat = (extraMsg = '', photoDataUrl = null) => {
+    const base = buildPlanMessage(plan);
+    const full = extraMsg ? base + '\n\n' + extraMsg : base;
+    document.dispatchEvent(new CustomEvent('tendr:open-chat-with-plan', { detail: { message: full, photo: photoDataUrl } }));
+    onClose();
+  };
+
+  const handleDecorNo = () => {
+    setDecorPopup(false);
+    sendPlanToChat();
+  };
+
+  const handleDecorPhotoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setDecorPhoto({ file, preview: ev.target.result });
+    reader.readAsDataURL(file);
+  };
+
+  const handleDecorSend = () => {
+    setDecorSending(true);
+    const descText = decorDesc.trim()
+      ? `🎨 *Decor Mockup Request*\n${decorDesc.trim()}`
+      : '🎨 *Decor Mockup Request* — Please share some decor mockup ideas for my event.';
+    sendPlanToChat(descText, decorPhoto?.preview || null);
+    setDecorSending(false);
+    setDecorPopup(false);
+    setDecorPhoto(null);
+    setDecorDesc('');
+  };
+
   const [taskState, setTaskState] = useState(() => {
     try { return JSON.parse(localStorage.getItem(`tendr_tasks_${planKey}`) || '{}'); } catch { return {}; }
   });
@@ -336,8 +415,9 @@ export function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, 
             </div>
             <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
               <button
-                onClick={() => downloadPlanAsHTML(plan)}
-                title="Download as PDF"
+                onClick={handleDownload}
+                title={token ? "Download plan" : "Sign in to download"}
+
                 style={{ width: 32, height: 32, borderRadius: 8, border: '1.5px solid rgba(196,122,46,0.28)', background: 'rgba(196,122,46,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(196,122,46,0.14)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'rgba(196,122,46,0.06)'}
@@ -479,11 +559,7 @@ export function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, 
               💌 Create Invitation Flyer
             </button>
             <button
-              onClick={() => {
-                const msg = buildPlanMessage(plan);
-                document.dispatchEvent(new CustomEvent('tendr:open-chat-with-plan', { detail: { message: msg } }));
-                onClose();
-              }}
+              onClick={handleSendToChat}
               style={{ flex: 1, padding: '11px 0', borderRadius: 12, background: 'rgba(37,211,102,0.1)', color: '#166534', fontSize: 13, fontWeight: 700, border: '1.5px solid rgba(37,211,102,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
             >
               📤 Send to Chat
@@ -523,6 +599,75 @@ export function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, 
           </div>
         </div>
       </div>
+
+      {/* ── Decor Mockup Popup ── */}
+      {decorPopup && (
+        <>
+          <div onClick={() => { setDecorPopup(false); setDecorPhoto(null); setDecorDesc(''); }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 10002, backdropFilter: 'blur(3px)' }} />
+          <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 10003, background: CREAM, borderRadius: 20, padding: '28px 26px', width: 'min(420px, 92vw)', boxShadow: '0 24px 64px rgba(44,26,14,0.22)', border: '1.5px solid rgba(196,122,46,0.18)', fontFamily: F }}>
+            {!decorPhoto ? (
+              /* Step 1: ask if they want decor mockup */
+              <>
+                <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                  <div style={{ fontSize: 36, marginBottom: 10 }}>🎨</div>
+                  <p style={{ fontSize: 16, fontWeight: 800, color: INK, margin: '0 0 8px' }}>Want decor mockups?</p>
+                  <p style={{ fontSize: 13, color: '#9B7450', margin: 0, lineHeight: 1.6 }}>Share a reference photo from your space or inspiration — our team will suggest decor ideas for your event.</p>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <button
+                    onClick={() => decorFileRef.current?.click()}
+                    style={{ padding: '13px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                  >
+                    📷 Yes, upload a photo
+                  </button>
+                  <input ref={decorFileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleDecorPhotoChange} />
+                  <button
+                    onClick={handleDecorNo}
+                    style={{ padding: '12px', borderRadius: 12, border: '1.5px solid rgba(196,122,46,0.25)', background: 'transparent', color: '#9B7450', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    No thanks, just send plan
+                  </button>
+                </div>
+              </>
+            ) : (
+              /* Step 2: photo uploaded — show preview + description */
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                  <p style={{ fontSize: 15, fontWeight: 800, color: INK, margin: 0 }}>🎨 Decor Reference</p>
+                  <button onClick={() => setDecorPhoto(null)} style={{ background: 'none', border: 'none', color: '#9B7450', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: F }}>Change photo</button>
+                </div>
+                <div style={{ borderRadius: 12, overflow: 'hidden', marginBottom: 14, maxHeight: 180 }}>
+                  <img src={decorPhoto.preview} alt="Reference" style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }} />
+                </div>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>Description <span style={{ fontWeight: 400, textTransform: 'none' }}>(optional)</span></label>
+                  <textarea
+                    value={decorDesc}
+                    onChange={e => setDecorDesc(e.target.value)}
+                    placeholder="e.g. Looking for floral arch ideas, pastel colour palette, rustic theme…"
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid #E5D5C0', background: '#FFFEF9', fontFamily: F, fontSize: 13, color: INK, outline: 'none', resize: 'vertical', minHeight: 72, boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    onClick={() => { setDecorPopup(false); setDecorPhoto(null); setDecorDesc(''); }}
+                    style={{ flex: 1, padding: '11px', borderRadius: 10, border: '1.5px solid #E5D5C0', background: 'transparent', color: '#9B7450', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: F }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDecorSend}
+                    disabled={decorSending}
+                    style={{ flex: 2, padding: '11px', borderRadius: 10, border: 'none', background: decorSending ? '#D4B483' : `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: '#fff', fontSize: 13, fontWeight: 700, cursor: decorSending ? 'not-allowed' : 'pointer', fontFamily: F }}
+                  >
+                    {decorSending ? 'Sending…' : '📤 Send to Chat'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </>
+      )}
 
       {/* ── Invitation Flyer full-screen overlay ── */}
       {inviteOpen && (

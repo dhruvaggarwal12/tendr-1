@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { confirmSmartPlan } from "../apis/vendorApi";
+import { selectFunCartItems } from "../redux/funActivitiesCartSlice";
+import { selectCartItems as selectGhCartItems } from "../redux/giftHamperCartSlice";
 import AuthModal from "./AuthModal";
 
 const F = "'Outfit', sans-serif";
@@ -53,9 +55,11 @@ const CAT_EMOJI = {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function ShortlistFloat() {
-  const bookingType = useSelector(s => s.eventPlanning?.bookingType || "");
-  const formData    = useSelector(s => s.eventPlanning?.formData || {});
-  const authUser    = useSelector(s => s.auth?.user);
+  const bookingType        = useSelector(s => s.eventPlanning?.bookingType || "");
+  const formData           = useSelector(s => s.eventPlanning?.formData || {});
+  const authUser           = useSelector(s => s.auth?.user);
+  const funActivitiesItems = useSelector(selectFunCartItems);
+  const giftHamperItems    = useSelector(selectGhCartItems);
 
 
   const [shortlist,    setShortlist]    = useState(() => getShortlist());
@@ -107,6 +111,7 @@ export default function ShortlistFloat() {
           requirements: wizardAnswers[cat] || "",
         }))
       );
+      const selectedPackages = (() => { try { return JSON.parse(sessionStorage.getItem("tendr_wiz_packages") || "{}"); } catch { return {}; } })();
       const result = await confirmSmartPlan({
         customerId:    authUser?._id || null,
         customerName:  authUser?.name || "",
@@ -121,6 +126,9 @@ export default function ShortlistFloat() {
         },
         vendorSlots,
         bookingType: "you-do-it",
+        selectedPackages,
+        funActivities: funActivitiesItems.map(a => ({ id: a.id, name: a.name, emoji: a.emoji, totalPrice: a.totalPrice || 0 })),
+        giftHampers: giftHamperItems.map(h => ({ name: h.name, quantity: h.quantity, pricePerUnit: h.pricePerUnit, subtotal: h.subtotal })),
       });
       const planData = { ...result.plan, conversationId: result.conversationId || null, _savedAt: Date.now() };
       localStorage.setItem("tendr_smart_plan", JSON.stringify(planData));

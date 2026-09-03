@@ -96,7 +96,7 @@ function getFAQAnswer(text) {
 
 // conversationId + vendorName → vendor chat mode (join existing approved conversation)
 // no props (default) → support chat mode
-export default function MiniChatWidget({ onClose, conversationId: existingConvoId, vendorName, prefillMessage }) {
+export default function MiniChatWidget({ onClose, conversationId: existingConvoId, vendorName, prefillMessage, prefillPhoto }) {
   const isVendorChat = !!existingConvoId;
   const { user, token: authToken } = useSelector((s) => s.auth);
   const [messages, setMessages] = useState([]);
@@ -106,6 +106,7 @@ export default function MiniChatWidget({ onClose, conversationId: existingConvoI
   const [retryTick, setRetryTick] = useState(0);
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const prefillSentRef = useRef(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -218,6 +219,32 @@ export default function MiniChatWidget({ onClose, conversationId: existingConvoI
   };
 
   const chatReady = !!user?._id && !connectError && !!conversationId;
+
+  useEffect(() => {
+    if (!chatReady || prefillSentRef.current) return;
+    if (!prefillMessage && !prefillPhoto) return;
+    prefillSentRef.current = true;
+    const convoId = isVendorChat ? existingConvoId : conversationId;
+    if (!convoId) return;
+
+    const timer = setTimeout(() => {
+      if (prefillMessage) {
+        setMessages(prev => [...prev, { text: prefillMessage, sender: "user", ts: Date.now() }]);
+        socketRef.current?.emit("send_message", { conversationId: convoId, sender: "user", content: prefillMessage });
+        localStorage.setItem("tendr:lastMsgAt", Date.now().toString());
+        setInput("");
+      }
+      if (prefillPhoto) {
+        const content = `[img:${prefillPhoto}]`;
+        setTimeout(() => {
+          setMessages(prev => [...prev, { text: content, sender: "user", ts: Date.now() }]);
+          socketRef.current?.emit("send_message", { conversationId: convoId, sender: "user", content });
+          localStorage.setItem("tendr:lastMsgAt", Date.now().toString());
+        }, 300);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [chatReady]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const renderMsg = (text) => {
     if (text?.startsWith("[img:")) {

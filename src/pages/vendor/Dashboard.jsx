@@ -1366,25 +1366,72 @@ function QuoteModal({ initial, onSave, onClose }) {
 }
 
 // ── Booking card (Tendr) ───────────────────────────────────────────────────────
-function BookingCard({ b }) {
+function BookingCard({ b, font: fnt }) {
   const sc = STATUS_COLOR[b.status] || STATUS_COLOR.Pending;
+  const [expanded, setExpanded] = useState(false);
+  const [note, setNote] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('tendr:bookingNotes') || '{}')[b._id||b.id] || ''; } catch { return ''; }
+  });
+  const [noteSaved, setNoteSaved] = useState(false);
   return (
-    <div style={{ background: '#fff', borderRadius: 14, padding: '14px 16px', border: '1px solid rgba(196,122,46,0.12)', display: 'flex', alignItems: 'center', gap: 14 }}>
-      <div style={{ width: 38, height: 38, borderRadius: '50%', background: `linear-gradient(135deg,${gold},${goldLt})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 15, flexShrink: 0 }}>
-        {b.customerName?.charAt(0)?.toUpperCase() || '?'}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <span style={{ fontWeight: 700, color: ink, fontSize: 14 }}>{b.customerName || 'Customer'}</span>
-          <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 100, background: sc.bg, color: sc.color }}>{b.status}</span>
+    <div style={{ background: '#fff', borderRadius: 14, border: '1px solid rgba(196,122,46,0.12)', overflow: 'hidden' }}>
+      <div
+        onClick={() => setExpanded(e => !e)}
+        style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer' }}
+      >
+        <div style={{ width: 38, height: 38, borderRadius: '50%', background: `linear-gradient(135deg,${gold},${goldLt})`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 15, flexShrink: 0 }}>
+          {b.customerName?.charAt(0)?.toUpperCase() || '?'}
         </div>
-        <div style={{ fontSize: 12, color: '#9B7450', marginTop: 2, display: 'flex', flexWrap: 'wrap', gap: '2px 10px' }}>
-          {b.eventType && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>)}{b.eventType}</span>}
-          {b.eventDate && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>)}{new Date(b.eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>}
-          {b.guestCount && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>)}{b.guestCount}</span>}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{ fontWeight: 700, color: ink, fontSize: 14 }}>{b.customerName || 'Customer'}</span>
+            <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 100, background: sc.bg, color: sc.color }}>{b.status}</span>
+          </div>
+          <div style={{ fontSize: 12, color: '#9B7450', marginTop: 2, display: 'flex', flexWrap: 'wrap', gap: '2px 10px' }}>
+            {b.eventType && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>)}{b.eventType}</span>}
+            {b.eventDate && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>)}{new Date(b.eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>}
+            {b.guestCount && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>)}{b.guestCount}</span>}
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {b.amount != null && <div style={{ fontWeight: 800, color: ink, fontSize: 15 }}>₹{b.amount.toLocaleString('en-IN')}</div>}
+          <span style={{ fontSize: 13, color: '#9B7450' }}>{expanded ? '▲' : '▼'}</span>
         </div>
       </div>
-      {b.amount != null && <div style={{ fontWeight: 800, color: ink, fontSize: 15, flexShrink: 0 }}>₹{b.amount.toLocaleString('en-IN')}</div>}
+      {expanded && (
+        <div style={{ padding: '0 16px 14px', borderTop: '1px solid rgba(196,122,46,0.1)' }}>
+          <div style={{ paddingTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+            {b.location && <span style={{ fontSize: 12, color: '#5a3a1a', background: 'rgba(196,122,46,0.07)', borderRadius: 8, padding: '3px 10px' }}>📍 {b.location}</span>}
+            {b.customerPhone && <a href={`tel:${b.customerPhone}`} style={{ fontSize: 12, color: gold, background: 'rgba(196,122,46,0.07)', borderRadius: 8, padding: '3px 10px', textDecoration: 'none' }}>📞 {b.customerPhone}</a>}
+            {b.serviceType && <span style={{ fontSize: 12, color: '#5a3a1a', background: 'rgba(196,122,46,0.07)', borderRadius: 8, padding: '3px 10px' }}>{b.serviceType}</span>}
+          </div>
+          {b.specialRequests && (
+            <div style={{ fontSize: 12, color: '#5a3a1a', marginBottom: 10, background: 'rgba(196,122,46,0.04)', borderRadius: 8, padding: '8px 10px', lineHeight: 1.5 }}>
+              <span style={{ fontWeight: 700, color: gold }}>Notes: </span>{b.specialRequests}
+            </div>
+          )}
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ fontSize: 11.5, fontWeight: 700, color: '#6B3A1F', marginBottom: 5 }}>Your notes</div>
+            <textarea
+              value={note}
+              onChange={e => { setNote(e.target.value); setNoteSaved(false); }}
+              rows={2}
+              placeholder="Add private notes about this booking…"
+              style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1.5px solid rgba(196,122,46,0.22)', fontSize: 12, fontFamily: fnt, resize: 'vertical', boxSizing: 'border-box', outline: 'none', color: ink }}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={() => {
+                try { const stored = JSON.parse(localStorage.getItem('tendr:bookingNotes') || '{}'); stored[b._id||b.id] = note; localStorage.setItem('tendr:bookingNotes', JSON.stringify(stored)); setNoteSaved(true); } catch {}
+              }}
+              style={{ padding: '6px 16px', borderRadius: 8, border: 'none', background: gold, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: fnt }}
+            >
+              {noteSaved ? '✓ Saved' : 'Save Note'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1914,6 +1961,29 @@ export default function VendorDashboard() {
   const [mediaForm, setMediaForm]   = useState({ title:'', url:'' });
   const [mediaLoading, setMediaLoading] = useState(false);
   const [photoCount, setPhotoCount] = useState(null); // null = not loaded yet
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const photoFileRef = useRef(null);
+
+  const uploadPortfolioPhotos = async (files) => {
+    if (!files?.length || photoUploading) return;
+    setPhotoUploading(true);
+    const fd = new FormData();
+    Array.from(files).forEach(f => fd.append('photos', f));
+    try {
+      const r = await fetch(`${BASE}/vendors/${vendorId}/portfolio-photos`, {
+        method: 'POST', credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Upload failed');
+      setPhotoCount((data.portfolioPhotos||[]).length);
+      showToast(`${files.length} photo${files.length > 1 ? 's' : ''} uploaded!`);
+    } catch (e) {
+      showToast(e.message || 'Upload failed', false);
+    }
+    setPhotoUploading(false);
+  };
 
   const addMediaLink = async () => {
     if (!mediaForm.url.trim() || mediaLoading) return;
@@ -2087,11 +2157,13 @@ export default function VendorDashboard() {
   }, []);
 
   // Derived stats
-  const tendrCount     = bookings.length;
-  const outsideCount   = outsideOrders.length;
-  const outsideRevenue = outsideOrders.reduce((s, o) => s + (o.amount || 0), 0);
+  const tendrCount       = bookings.length;
+  const outsideCount     = outsideOrders.length;
+  const outsideRevenue   = outsideOrders.reduce((s, o) => s + (o.amount || 0), 0);
   const outsideCollected = outsideOrders.reduce((s, o) => s + (o.paidAmount || 0), 0);
-  const pendingCount   = outsideOrders.filter(o => o.status === 'Pending').length;
+  const tendrRevenue     = bookings.reduce((s, b) => s + (b.amount || 0), 0);
+  const tendrCollected   = bookings.filter(b => ['Completed','Confirmed'].includes(b.status)).reduce((s, b) => s + (b.amount || 0), 0);
+  const pendingCount     = outsideOrders.filter(o => o.status === 'Pending').length;
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -2605,6 +2677,31 @@ export default function VendorDashboard() {
                 </div>
               )}
 
+              {/* Tendr vs Outside booking breakdown */}
+              {(tendrCount > 0 || outsideCount > 0) && (
+                <div style={{ background:'#fff', borderRadius:16, border:'1px solid rgba(196,122,46,0.12)', padding:'14px 18px', marginBottom:18 }}>
+                  <div style={{ fontSize:12, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 }}>Booking Sources</div>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+                    <div style={{ background:'rgba(196,122,46,0.05)', borderRadius:12, padding:'12px 14px', border:'1.5px solid rgba(196,122,46,0.15)' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:6 }}>
+                        <span style={{ fontSize:13, fontWeight:800, color:gold }}>Tendr</span>
+                        <span style={{ fontSize:10, fontWeight:700, background:gold, color:'#fff', borderRadius:100, padding:'1px 6px' }}>{tendrCount}</span>
+                      </div>
+                      <div style={{ fontSize:17, fontWeight:800, color:ink }}>₹{tendrRevenue.toLocaleString('en-IN')}</div>
+                      <div style={{ fontSize:11, color:'#9B7450', marginTop:2 }}>Platform bookings</div>
+                    </div>
+                    <div style={{ background:'rgba(22,163,74,0.04)', borderRadius:12, padding:'12px 14px', border:'1.5px solid rgba(22,163,74,0.15)' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:6 }}>
+                        <span style={{ fontSize:13, fontWeight:800, color:'#16A34A' }}>Outside</span>
+                        <span style={{ fontSize:10, fontWeight:700, background:'#16A34A', color:'#fff', borderRadius:100, padding:'1px 6px' }}>{outsideCount}</span>
+                      </div>
+                      <div style={{ fontSize:17, fontWeight:800, color:ink }}>₹{outsideRevenue.toLocaleString('en-IN')}</div>
+                      <div style={{ fontSize:11, color:'#9B7450', marginTop:2 }}>Collected ₹{outsideCollected.toLocaleString('en-IN')}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Empty state — nothing logged yet */}
               {outsideOrders.length===0 && bookings.length===0 && !nextEvent && (
                 <div style={{ textAlign:'center', padding:'32px 20px', background:'#fff', borderRadius:18, border:'1.5px dashed rgba(196,122,46,0.18)' }}>
@@ -2844,7 +2941,7 @@ export default function VendorDashboard() {
                     </div>
                   ) : (
                     <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                      {bookings.filter(b => !oSearch||b.customerName?.toLowerCase().includes(oSearch.toLowerCase())||b.eventType?.toLowerCase().includes(oSearch.toLowerCase())).map((b,i) => <BookingCard key={b.id||b._id||i} b={b} />)}
+                      {bookings.filter(b => !oSearch||b.customerName?.toLowerCase().includes(oSearch.toLowerCase())||b.eventType?.toLowerCase().includes(oSearch.toLowerCase())).map((b,i) => <BookingCard key={b.id||b._id||i} b={b} font={font} />)}
                     </div>
                   )}
                 </div>
@@ -3039,8 +3136,20 @@ export default function VendorDashboard() {
               m.expenses += orderExpenses;
               m.count++;
             });
+            // Include Tendr bookings in monthly totals
+            bookings.forEach(b => {
+              const d = new Date(b.createdAt || b.eventDate);
+              if (isNaN(d)) return;
+              const m = plMonths.find(m => m.month === d.getMonth() && m.year === d.getFullYear());
+              if (!m) return;
+              m.revenue += Number(b.amount)||0;
+              if (['Completed','Confirmed'].includes(b.status)) m.collected += Number(b.amount)||0;
+              m.count++;
+            });
             const totalExpensesAll = outsideOrders.reduce((s,o) => s + (o.expenses||[]).reduce((ss,e) => ss+(Number(e.amount)||0), 0), 0);
-            const netProfit = outsideCollected - totalExpensesAll;
+            const totalRevenue   = outsideRevenue + tendrRevenue;
+            const totalCollected = outsideCollected + tendrCollected;
+            const netProfit = totalCollected - totalExpensesAll;
             const thisM = plMonths[plMonths.length - 1];
             const prevM = plMonths[plMonths.length - 2];
             const momChange = prevM?.collected > 0 ? Math.round(((thisM.collected - prevM.collected) / prevM.collected) * 100) : null;
@@ -3049,8 +3158,8 @@ export default function VendorDashboard() {
               <div>
                 {/* Top stats */}
                 <div style={{ display:'flex', gap:12, marginBottom:20, flexWrap:'wrap' }}>
-                  <Stat label="Total Revenue"  value={outsideRevenue>=1000?`₹${(outsideRevenue/1000).toFixed(1)}k`:`₹${outsideRevenue}`} sub="all time billed" icon={dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>)} accent="rgba(196,122,46,0.1)" />
-                  <Stat label="Total Collected" value={outsideCollected>=1000?`₹${(outsideCollected/1000).toFixed(1)}k`:`₹${outsideCollected}`} sub={`₹${(outsideRevenue-outsideCollected).toLocaleString('en-IN')} pending`} icon={dsic(<><polyline points="20 6 9 17 4 12"/></>)} accent="rgba(22,163,74,0.1)" />
+                  <Stat label="Total Revenue"  value={totalRevenue>=1000?`₹${(totalRevenue/1000).toFixed(1)}k`:`₹${totalRevenue}`} sub={tendrRevenue>0?`incl. ₹${tendrRevenue.toLocaleString('en-IN')} Tendr`:'all time billed'} icon={dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>)} accent="rgba(196,122,46,0.1)" />
+                  <Stat label="Total Collected" value={totalCollected>=1000?`₹${(totalCollected/1000).toFixed(1)}k`:`₹${totalCollected}`} sub={`₹${(totalRevenue-totalCollected).toLocaleString('en-IN')} pending`} icon={dsic(<><polyline points="20 6 9 17 4 12"/></>)} accent="rgba(22,163,74,0.1)" />
                   <Stat label="Total Expenses" value={totalExpensesAll>=1000?`₹${(totalExpensesAll/1000).toFixed(1)}k`:`₹${totalExpensesAll}`} sub="materials, travel, labour" icon={dsic(<><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></>)} accent="rgba(220,38,38,0.07)" />
                   <Stat label="Net Profit" value={netProfit>=1000?`₹${(netProfit/1000).toFixed(1)}k`:`₹${netProfit}`} sub={momChange!==null?`${momChange>=0?'+':''}${momChange}% vs last month`:'collected − expenses'} icon={dsic(<><path d="M23 6l-9.5 9.5-5-5L1 18"/><polyline points="17 6 23 6 23 12"/></>)} accent={netProfit>=0?'rgba(22,163,74,0.1)':'rgba(220,38,38,0.07)'} />
                 </div>
@@ -3488,22 +3597,33 @@ export default function VendorDashboard() {
                   <div style={{ fontSize:14, fontWeight:800, color:ink, marginBottom:14 }}>Photos & Videos</div>
 
                   {/* Photos row */}
-                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 14px', borderRadius:12, border:'1.5px solid rgba(196,122,46,0.13)', background:'#FFFCF5', marginBottom:10 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-                      <div style={{ width:38, height:38, borderRadius:10, background:`linear-gradient(135deg,${gold},${goldLt})`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                      </div>
-                      <div>
-                        <div style={{ fontSize:13, fontWeight:700, color:ink }}>Portfolio Photos</div>
-                        <div style={{ fontSize:11.5, color:'#9B7450', marginTop:1 }}>
-                          {photoCount === null ? 'Loading…' : photoCount === 0 ? 'No photos yet — add some to impress customers' : `${photoCount}/10 photo${photoCount!==1?'s':''} uploaded`}
+                  <input ref={photoFileRef} type="file" accept="image/*" multiple style={{ display:'none' }} onChange={e => { uploadPortfolioPhotos(e.target.files); e.target.value = ''; }} />
+                  <div style={{ padding:'12px 14px', borderRadius:12, border:'1.5px solid rgba(196,122,46,0.13)', background:'#FFFCF5', marginBottom:10 }}>
+                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                        <div style={{ width:38, height:38, borderRadius:10, background:`linear-gradient(135deg,${gold},${goldLt})`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        </div>
+                        <div>
+                          <div style={{ fontSize:13, fontWeight:700, color:ink }}>Portfolio Photos</div>
+                          <div style={{ fontSize:11.5, color:'#9B7450', marginTop:1 }}>
+                            {photoCount === null ? 'Loading…' : photoCount === 0 ? 'No photos yet — add some to impress customers' : `${photoCount}/10 photo${photoCount!==1?'s':''} uploaded`}
+                          </div>
                         </div>
                       </div>
+                      <div style={{ display:'flex', gap:7, flexShrink:0 }}>
+                        <button
+                          onClick={() => photoFileRef.current?.click()}
+                          disabled={photoUploading || photoCount >= 10}
+                          style={{ padding:'7px 14px', borderRadius:9, border:'none', background:photoCount >= 10 ? '#e5e7eb' : `linear-gradient(135deg,${gold},${goldLt})`, color:photoCount >= 10 ? '#9B7450' : '#fff', fontSize:12, fontWeight:700, cursor:photoCount >= 10 ? 'not-allowed' : 'pointer', fontFamily:font, whiteSpace:'nowrap' }}>
+                          {photoUploading ? 'Uploading…' : photoCount >= 10 ? 'Max' : '+ Upload'}
+                        </button>
+                        <button onClick={() => navigate('/vendor/profile?tab=portfolio')}
+                          style={{ padding:'7px 12px', borderRadius:9, border:`1.5px solid ${gold}`, background:'transparent', color:gold, fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:font, whiteSpace:'nowrap' }}>
+                          Manage
+                        </button>
+                      </div>
                     </div>
-                    <button onClick={() => navigate('/vendor/profile?tab=portfolio')}
-                      style={{ padding:'7px 14px', borderRadius:9, border:`1.5px solid ${gold}`, background:'transparent', color:gold, fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:font, flexShrink:0, whiteSpace:'nowrap' }}>
-                      {photoCount === 0 ? '+ Add Photos' : 'Manage'}
-                    </button>
                   </div>
 
                   {/* Video/demo links */}
