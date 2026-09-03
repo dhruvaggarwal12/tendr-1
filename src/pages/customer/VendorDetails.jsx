@@ -390,6 +390,18 @@ const VendorDetailsPage = () => {
 
   const font = "'Outfit', sans-serif";
 
+  const GIG_PRO_TYPES = ['DJ', 'Emcee', 'Anchor', 'Band', 'Choreographer', 'Performer', 'LiveBand', 'Musician', 'Singer', 'Comedian', 'Magician'];
+  const isGigPro = GIG_PRO_TYPES.some(t => serviceType?.toLowerCase() === t.toLowerCase() || serviceType?.toLowerCase().includes(t.toLowerCase()));
+
+  const openGigHeroChat = () => {
+    if (!token) { setAuthModalOpen(true); return; }
+    if (hasActiveChatSave) { openExistingChatForVendor(vendor._id, vendor, token, openExistingChat, openVendorChat); return; }
+    if (isFromListingFlow) { openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType }); return; }
+    if (hasEventContext) { dispatch(setBookingType("you-do-it")); openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType }); return; }
+    setChatEventForm({ eventType: "", guests: "", date: "", location: "" });
+    setChatFormOpen(true);
+  };
+
   const CATEGORY_SECTIONS = {
     Caterer: [
       { key: "cuisine",           title: "Cuisine Types" },
@@ -411,6 +423,47 @@ const VendorDetailsPage = () => {
       { key: "setup",             title: "Setup Type" },
       { key: "lightsIncluded",    title: "Lights Included", bool: true },
       { key: "eventTypes",        title: "Event Types" },
+    ],
+    Emcee: [
+      { key: "eventTypes",       title: "Event Specialties" },
+      { key: "performingStyle",  title: "Performing Style" },
+      { key: "languages",        title: "Languages" },
+    ],
+    Anchor: [
+      { key: "eventTypes",       title: "Event Types" },
+      { key: "languages",        title: "Languages" },
+      { key: "performingStyle",  title: "Style" },
+    ],
+    Band: [
+      { key: "genres",           title: "Music Genres" },
+      { key: "instruments",      title: "Instruments" },
+      { key: "bandSize",         title: "Band Size", single: true },
+      { key: "performingStyle",  title: "Performance Style" },
+    ],
+    Choreographer: [
+      { key: "danceStyles",      title: "Dance Styles" },
+      { key: "eventTypes",       title: "Event Types" },
+      { key: "performingStyle",  title: "Training Style" },
+    ],
+    Performer: [
+      { key: "performanceType",  title: "Performance Type" },
+      { key: "eventTypes",       title: "Suitable For" },
+      { key: "performingStyle",  title: "Style" },
+    ],
+    Musician: [
+      { key: "genres",           title: "Music Genres" },
+      { key: "instruments",      title: "Instruments" },
+      { key: "performingStyle",  title: "Style" },
+    ],
+    Singer: [
+      { key: "genres",           title: "Music Genres" },
+      { key: "languages",        title: "Languages" },
+      { key: "performingStyle",  title: "Style" },
+    ],
+    Comedian: [
+      { key: "performingStyle",  title: "Comedy Style" },
+      { key: "languages",        title: "Languages" },
+      { key: "eventTypes",       title: "Suitable For" },
     ],
     GiftHamper: [
       { key: "deliveryOptions",       title: "Delivery Options" },
@@ -460,14 +513,25 @@ const VendorDetailsPage = () => {
     availableSizes:       fic(<><path d="M21 3H3v7h18V3z"/><path d="M21 14H3v7h18v-7z"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="12" y1="10" x2="12" y2="14"/><line x1="16" y1="10" x2="16" y2="14"/></>),
     customFlavors:        fic(<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>),
     pricesNegotiable:     fic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>),
+    genres:               fic(<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>),
+    instruments:          fic(<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>),
+    bandSize:             fic(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>),
+    performingStyle:      fic(<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>),
+    languages:            fic(<><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></>),
+    danceStyles:          fic(<><path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2 2 6.48 2 12s4.48 10 10 10z"/><path d="m8 14 2-4 4 4 2-4"/></>),
+    performanceType:      fic(<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>),
   };
 
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
       <style>{`
+        @keyframes gig-scroll-bounce { 0%,100%{transform:translateY(0) translateX(-50%)} 50%{transform:translateY(6px) translateX(-50%)} }
+        @keyframes gig-fade-up { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
         @media (max-width: 768px) {
           .vendor-mobile-booking-card { display: block !important; }
           .vendor-booking-card { display: none !important; }
+          .gig-hero-mobile { display: block !important; }
+          .gig-hide-mobile { display: none !important; }
         }
       `}</style>
       <SEO
@@ -486,10 +550,102 @@ const VendorDetailsPage = () => {
       <BasicSpeedDial />
       <HamburgerNav active="Browse" />
 
+      {/* ── Cinematic hero — gig professionals, mobile only ── */}
+      {isGigPro && (
+        <div className="gig-hero-mobile" style={{ display: "none", position: "relative", height: "100svh", overflow: "hidden" }}>
+          {/* Background photo */}
+          {vendor.portfolioPhotos?.[0] ? (
+            <img src={vendor.portfolioPhotos[0]} alt={vendor.name}
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }} />
+          ) : (
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(160deg,#1C0A04 0%,#2C1A0E 50%,#4A2810 100%)" }} />
+          )}
+          {/* Gradient overlays */}
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.18) 35%, rgba(0,0,0,0.72) 65%, rgba(0,0,0,0.94) 100%)" }} />
+          {/* Subtle left-edge vignette for text readability */}
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(0,0,0,0.35) 0%, transparent 60%)" }} />
+
+          {/* Scroll hint */}
+          <div style={{ position: "absolute", bottom: 230, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, animation: "gig-scroll-bounce 1.8s ease-in-out infinite", opacity: 0.5 }}>
+            <div style={{ width: 1, height: 28, background: "rgba(255,255,255,0.6)" }} />
+            <span style={{ fontSize: 9, color: "rgba(255,255,255,0.7)", letterSpacing: "0.15em", fontFamily: font, fontWeight: 700 }}>SCROLL</span>
+          </div>
+
+          {/* Content overlay */}
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 22px calc(28px + env(safe-area-inset-bottom,0px))", animation: "gig-fade-up 0.6s ease-out" }}>
+
+            {/* Badges row */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 11, fontWeight: 800, padding: "5px 14px", borderRadius: 100, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: font }}>
+                {serviceType}
+              </span>
+              {isPhoneVerified && (
+                <span style={{ fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 100, background: "rgba(22,163,74,0.18)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.35)", fontFamily: font }}>
+                  ✓ Verified
+                </span>
+              )}
+              {vendor?.isTopRated && (
+                <span style={{ fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 100, background: "rgba(251,191,36,0.15)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.3)", fontFamily: font }}>
+                  ★ Top Rated
+                </span>
+              )}
+            </div>
+
+            {/* Name */}
+            <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,8vw,2.8rem)", fontWeight: 700, color: "#fff", margin: "0 0 12px", lineHeight: 1.05, letterSpacing: "0.01em", textShadow: "0 2px 20px rgba(0,0,0,0.4)" }}>
+              {vendor.name}
+            </h1>
+
+            {/* Stars + location + exp */}
+            <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px 16px", marginBottom: 20 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} style={{ fontSize: 14, color: i < Math.round(rating) ? "#CCAB4A" : "rgba(255,255,255,0.25)", lineHeight: 1 }}>★</span>
+                ))}
+                <span style={{ fontSize: 13, fontWeight: 800, color: "#CCAB4A", marginLeft: 5, fontFamily: font }}>{rating.toFixed(1)}</span>
+              </div>
+              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", fontFamily: font, display: "flex", alignItems: "center", gap: 4 }}>
+                <MapPin size={12} color="rgba(196,122,46,0.9)" /> {primaryCity}
+              </span>
+              {yearsOfExperience != null && (
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", fontFamily: font }}>
+                  {yearsOfExperience}y exp
+                </span>
+              )}
+              {totalEventsCompleted != null && (
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", fontFamily: font }}>
+                  {totalEventsCompleted}+ events
+                </span>
+              )}
+            </div>
+
+            {/* CTA row */}
+            <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
+              <button
+                onClick={() => { setEnquiryOpen(true); setEnquiryDone(false); setEnquiryError(''); setEnquiryForm({ name: '', phone: '', eventType: '', eventDate: '', message: '' }); }}
+                style={{ flex: 1, padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: font, cursor: "pointer", boxShadow: "0 6px 24px rgba(196,122,46,0.45)", letterSpacing: "0.02em" }}>
+                Book Now
+              </button>
+              <button onClick={openGigHeroChat}
+                style={{ flex: 1, padding: "14px", borderRadius: 14, border: "1.5px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.1)", backdropFilter: "blur(12px)", color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: "pointer" }}>
+                Chat
+              </button>
+            </div>
+
+            {/* Price chip */}
+            {vendor.price && (
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", textAlign: "center", margin: 0, fontFamily: font }}>
+                Starting from <span style={{ color: "#CCAB4A", fontWeight: 800 }}>₹{Number(vendor.price).toLocaleString("en-IN")}</span>
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="page-container vendor-profile-content" style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
 
         {/* ── Hero Header ── */}
-        <div style={{ padding: "28px 0 20px" }}>
+        <div className={isGigPro ? "gig-hide-mobile" : ""} style={{ padding: "28px 0 20px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
             <span style={{ fontSize: 11, fontWeight: 700, padding: "4px 14px", borderRadius: 100, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", letterSpacing: "0.06em", textTransform: "uppercase" }}>{serviceType}</span>
             {isPhoneVerified && <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 11px", borderRadius: 100, background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0", display: "flex", alignItems: "center", gap: 4 }}><CheckCircle2 size={11} /> Phone Verified</span>}
@@ -519,7 +675,7 @@ const VendorDetailsPage = () => {
         </div>
 
         {/* ── Gallery — horizontal scroll with arrows ── */}
-        <div style={{ position: "relative", marginBottom: 36 }}>
+        <div className={isGigPro ? "gig-hide-mobile" : ""} style={{ position: "relative", marginBottom: 36 }}>
           {/* Left arrow — only when multiple items */}
           {galleryItems.length > 1 && (
             <button
@@ -594,7 +750,7 @@ const VendorDetailsPage = () => {
         </div>
 
         {/* Mobile-only compact booking card — appears right after gallery */}
-        <div className="vendor-mobile-booking-card" style={{ display: "none", marginBottom: 24 }}>
+        <div className={`vendor-mobile-booking-card${isGigPro ? " gig-hide-mobile" : ""}`} style={{ display: "none", marginBottom: 24 }}>
           <div style={{ background: "#FFFCF5", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.22)", boxShadow: "0 4px 20px rgba(139,69,19,0.1)", overflow: "hidden" }}>
             <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
@@ -787,6 +943,32 @@ const VendorDetailsPage = () => {
                 </div>
               );
             })()}
+
+            {/* ── Gig Pro: Showreel + Social ── */}
+            {isGigPro && (vendor?.showreel || vendor?.socialLink) && (
+              <>
+                <div style={{ height: 1, background: "rgba(196,122,46,0.1)", marginBottom: 24 }} />
+                <div style={{ marginBottom: 28 }}>
+                  <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 16px" }}>Watch & Follow</h2>
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                    {vendor.showreel && (
+                      <a href={vendor.showreel} target="_blank" rel="noopener noreferrer"
+                        style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 12, background: "#fee2e2", border: "1.5px solid #fca5a5", color: "#dc2626", fontSize: 13, fontWeight: 700, textDecoration: "none", fontFamily: font }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.67a8.17 8.17 0 0 0 4.77 1.52V6.74a4.85 4.85 0 0 1-1-.05z"/></svg>
+                        Watch Showreel
+                      </a>
+                    )}
+                    {vendor.socialLink && (
+                      <a href={vendor.socialLink} target="_blank" rel="noopener noreferrer"
+                        style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 12, background: "linear-gradient(135deg,#fdf4ff,#fce7f3)", border: "1.5px solid #e9d5ff", color: "#7c3aed", fontSize: 13, fontWeight: 700, textDecoration: "none", fontFamily: font }}>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                        Instagram
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* ── Business Details ── */}
             <div style={{ height: 1, background: "rgba(196,122,46,0.1)", marginBottom: 24 }} />

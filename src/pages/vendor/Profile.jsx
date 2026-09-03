@@ -13,6 +13,24 @@ const LOCATION_OPTIONS = [
 const SERVICE_TYPE_LABELS = {
   DJ: "DJ", Decorator: "Decorator", Photographer: "Photographer",
   Caterer: "Caterer", GiftHamper: "Gift Hamper", Cake: "Cake",
+  Emcee: "Emcee", Anchor: "Anchor", Band: "Band", Choreographer: "Choreographer",
+  Performer: "Performer", Musician: "Musician", Singer: "Singer", Comedian: "Comedian",
+};
+
+const GIG_PRO_TYPES = ['DJ', 'Emcee', 'Anchor', 'Band', 'Choreographer', 'Performer', 'Musician', 'Singer', 'Comedian'];
+
+const GIG_GENRE_OPTIONS = ['Bollywood', 'EDM', 'Classical', 'Hip-Hop', 'Sufi', 'Punjabi', 'Jazz', 'Rock', 'Pop', 'Folk', 'Ghazal', 'Devotional'];
+const GIG_LANG_OPTIONS = ['Hindi', 'English', 'Punjabi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam', 'Bengali', 'Gujarati', 'Marathi'];
+const GIG_STYLE_OPTIONS = {
+  DJ:           ['Indoor', 'Outdoor', 'Wedding', 'Corporate', 'Club', 'Festival'],
+  Emcee:        ['Formal', 'Casual', 'Bilingual', 'Interactive', 'High-energy'],
+  Anchor:       ['Formal', 'Casual', 'Bilingual', 'Scripted', 'Improvised'],
+  Band:         ['Live Band', 'Cover Songs', 'Original Compositions', 'Jazz Set', 'Bollywood Night', 'Sufi Night'],
+  Choreographer:['Bollywood', 'Contemporary', 'Hip-Hop', 'Classical', 'Wedding Sangeet', 'Couple Dance', 'Group Choreography'],
+  Performer:    ['Stage Act', 'Walk Act', 'Flash Mob', 'Stunt', 'Dance', 'Comedy'],
+  Musician:     ['Solo', 'Duo', 'Ensemble', 'Classical', 'Fusion', 'Acoustic'],
+  Singer:       ['Solo Vocals', 'Duet', 'Background Vocals', 'Live Looping', 'Classical', 'Ghazal'],
+  Comedian:     ['Stand-Up', 'Roast', 'Mimicry', 'Improv', 'Corporate Safe'],
 };
 
 export default function VendorProfile() {
@@ -32,6 +50,11 @@ export default function VendorProfile() {
   const [form, setForm] = useState({
     name: "", yearsOfExperience: "", teamSize: "",
     upiId: "", city: "", state: "",
+  });
+  const [gigForm, setGigForm] = useState({
+    performingStyle: [], genres: [], languages: [],
+    instruments: [], danceStyles: [], eventTypes: [],
+    bandSize: "", bio: "", socialLink: "", showreel: "",
   });
   const [locations, setLocations] = useState([]);
   const [locInput, setLocInput]   = useState("");
@@ -55,6 +78,18 @@ export default function VendorProfile() {
           city: v.address?.city || "",
           state: v.address?.state || "",
         });
+        setGigForm({
+          performingStyle: v.performingStyle || [],
+          genres:          v.genres || [],
+          languages:       v.languages || [],
+          instruments:     v.instruments || [],
+          danceStyles:     v.danceStyles || [],
+          eventTypes:      v.eventTypes || [],
+          bandSize:        v.bandSize || "",
+          bio:             v.bio || "",
+          socialLink:      v.socialLink || "",
+          showreel:        v.showreel || "",
+        });
         setLocations(v.locations || []);
       })
       .catch(() => showToast("Failed to load profile", false))
@@ -66,6 +101,7 @@ export default function VendorProfile() {
   const saveInfo = async () => {
     setSaving(true);
     try {
+      const isGig = GIG_PRO_TYPES.includes(profile?.serviceType);
       const body = {
         name: form.name,
         yearsOfExperience: Number(form.yearsOfExperience) || 0,
@@ -73,6 +109,18 @@ export default function VendorProfile() {
         upiId: form.upiId,
         locations,
         address: { city: form.city, state: form.state },
+        ...(isGig ? {
+          performingStyle: gigForm.performingStyle,
+          genres:          gigForm.genres,
+          languages:       gigForm.languages,
+          instruments:     gigForm.instruments,
+          danceStyles:     gigForm.danceStyles,
+          eventTypes:      gigForm.eventTypes,
+          bandSize:        gigForm.bandSize,
+          bio:             gigForm.bio,
+          socialLink:      gigForm.socialLink,
+          showreel:        gigForm.showreel,
+        } : {}),
       };
       const r = await fetch(`${BASE_URL}/vendors/${vendorId}`, {
         method: "PATCH",
@@ -167,9 +215,14 @@ export default function VendorProfile() {
 
       <div className="max-w-4xl mx-auto px-6 py-8">
         {/* Tabs */}
-        <div className="flex gap-2 mb-8 border-b border-gray-200">
-          {[["info", "Business Info"], ["portfolio", "Portfolio Photos"], ["bank", "Bank & Payments"]].map(([id, label]) => (
-            <button key={id} onClick={() => setTab(id)} className={`px-5 py-2.5 text-sm font-semibold rounded-t-lg transition-colors ${tab === id ? "bg-yellow-500 text-white" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"}`}>
+        <div className="flex gap-2 mb-8 border-b border-gray-200 overflow-x-auto">
+          {[
+            ["info", "Business Info"],
+            ...(GIG_PRO_TYPES.includes(profile?.serviceType) ? [["gig", "Performance Details"]] : []),
+            ["portfolio", "Portfolio Photos"],
+            ["bank", "Bank & Payments"],
+          ].map(([id, label]) => (
+            <button key={id} onClick={() => setTab(id)} className={`px-5 py-2.5 text-sm font-semibold rounded-t-lg transition-colors whitespace-nowrap ${tab === id ? "bg-yellow-500 text-white" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"}`}>
               {label}
             </button>
           ))}
@@ -238,6 +291,107 @@ export default function VendorProfile() {
             </div>
           </div>
         )}
+
+        {/* ── Performance Details Tab (gig pros only) ── */}
+        {tab === "gig" && GIG_PRO_TYPES.includes(profile?.serviceType) && (() => {
+          const svc = profile.serviceType;
+          const styleOpts = GIG_STYLE_OPTIONS[svc] || [];
+          const setGig = (k, v) => setGigForm(f => ({ ...f, [k]: v }));
+          const toggleArr = (k, val) => setGigForm(f => ({ ...f, [k]: f[k].includes(val) ? f[k].filter(x => x !== val) : [...f[k], val] }));
+
+          const ChipPicker = ({ label, field, options }) => (
+            <div className="mb-5">
+              <label className="block text-sm font-semibold text-gray-600 mb-2">{label}</label>
+              <div className="flex flex-wrap gap-2">
+                {options.map(opt => {
+                  const active = gigForm[field]?.includes(opt);
+                  return (
+                    <button key={opt} type="button" onClick={() => toggleArr(field, opt)}
+                      className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${active ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+
+          return (
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-800">Performance Details</h2>
+                  <p className="text-sm text-gray-500 mt-0.5">Help customers understand exactly what you offer — this info shows on your public profile.</p>
+                </div>
+              </div>
+
+              {/* Bio / About */}
+              <div className="mb-5">
+                <label className="block text-sm font-semibold text-gray-600 mb-1.5">About You <span className="text-gray-400 font-normal">(shown on your profile)</span></label>
+                <textarea value={gigForm.bio} onChange={e => setGig("bio", e.target.value)} rows={3}
+                  placeholder={`Tell customers about your ${svc?.toLowerCase()} journey, style, and what makes you special...`}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm resize-none" />
+              </div>
+
+              {/* Style options */}
+              {styleOpts.length > 0 && <ChipPicker label="Performing Style" field="performingStyle" options={styleOpts} />}
+
+              {/* Genres — for music-based gig types */}
+              {['DJ', 'Band', 'Musician', 'Singer'].includes(svc) && <ChipPicker label="Music Genres" field="genres" options={GIG_GENRE_OPTIONS} />}
+
+              {/* Instruments — Band & Musician */}
+              {['Band', 'Musician'].includes(svc) && (
+                <div className="mb-5">
+                  <label className="block text-sm font-semibold text-gray-600 mb-1.5">Instruments <span className="text-gray-400 font-normal">(comma-separated)</span></label>
+                  <input value={gigForm.instruments?.join(', ')} onChange={e => setGig("instruments", e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                    placeholder="e.g. Guitar, Tabla, Keyboard, Violin" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                </div>
+              )}
+
+              {/* Band size */}
+              {svc === 'Band' && (
+                <div className="mb-5">
+                  <label className="block text-sm font-semibold text-gray-600 mb-1.5">Number of Members</label>
+                  <input type="number" min="1" value={gigForm.bandSize} onChange={e => setGig("bandSize", e.target.value)}
+                    placeholder="e.g. 5" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                </div>
+              )}
+
+              {/* Dance styles — Choreographer */}
+              {svc === 'Choreographer' && (
+                <ChipPicker label="Dance Styles" field="danceStyles" options={['Bollywood', 'Classical', 'Contemporary', 'Hip-Hop', 'Salsa', 'Couple Dance', 'Group']} />
+              )}
+
+              {/* Languages — Emcee, Anchor, Singer, Comedian */}
+              {['Emcee', 'Anchor', 'Singer', 'Comedian'].includes(svc) && <ChipPicker label="Languages" field="languages" options={GIG_LANG_OPTIONS} />}
+
+              {/* Suitable event types */}
+              <ChipPicker label="Suitable For" field="eventTypes"
+                options={['Wedding', 'Birthday', 'Corporate', 'Festival', 'College Event', 'Private Party', 'Sangeet', 'Anniversary', 'Award Night']} />
+
+              {/* Social / showreel */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-600 mb-1.5">Instagram / Social Link</label>
+                  <input value={gigForm.socialLink} onChange={e => setGig("socialLink", e.target.value)}
+                    placeholder="https://instagram.com/yourprofile" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-600 mb-1.5">Showreel / YouTube Link</label>
+                  <input value={gigForm.showreel} onChange={e => setGig("showreel", e.target.value)}
+                    placeholder="https://youtube.com/watch?v=..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                </div>
+              </div>
+
+              <div className="mt-8 flex justify-end">
+                <button onClick={saveInfo} disabled={saving}
+                  className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-bold text-sm transition-colors disabled:opacity-60">
+                  {saving ? "Saving…" : "Save Performance Details"}
+                </button>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── Portfolio Tab ── */}
         {tab === "portfolio" && (
