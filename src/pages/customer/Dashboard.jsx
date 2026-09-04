@@ -271,10 +271,8 @@ export default function CustomerDashboard() {
   const OCCASION_OPTIONS = ['Birthday','Anniversary','Baby Shower','House Party','Housewarming','Get Together','Kitty Party','Naming Ceremony','Farewell','College Fest','Office Party','Diwali','Holi','Raksha Bandhan','Other'];
 
   const OCC_HUB_MAP = {
-    'Birthday':'/birthday-hub','Anniversary':'/anniversary-hub','Baby Shower':'/baby-shower-hub',
-    'House Party':'/get-together-hub','Housewarming':'/housewarming-hub','Get Together':'/get-together-hub',
-    'Kitty Party':'/kitty-party-hub','Naming Ceremony':'/naming-ceremony-hub',
-    'Office Party':'/office-party-hub',
+    'House Party': '/house-party',
+    'Get Together': '/house-party',
   };
 
   const handleEditPlannedEvent = async (id) => {
