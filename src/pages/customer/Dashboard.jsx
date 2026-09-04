@@ -213,6 +213,8 @@ export default function CustomerDashboard() {
   const [showPastVendors, setShowPastVendors]     = useState(null); // stores the ev object when open
   const [vendorQuickView, setVendorQuickView]     = useState(null); // full vendor object
   const [vendorQvLoading, setVendorQvLoading]     = useState(false);
+  const [editingEvent, setEditingEvent]           = useState(null);
+  const [editFields, setEditFields]               = useState({});
 
   useEffect(() => {
     if (!token) return;
@@ -250,8 +252,9 @@ export default function CustomerDashboard() {
   };
 
   const daysUntil = (dateStr) => {
-    const diff = new Date(dateStr) - new Date(new Date().toISOString().slice(0,10));
-    return Math.round(diff / 86_400_000);
+    const eventDate = new Date(dateStr.slice(0,10) + "T00:00:00");
+    const today = new Date(); today.setHours(0,0,0,0);
+    return Math.round((eventDate - today) / 86_400_000);
   };
 
   const openVendorQV = async (vendorId) => {
@@ -266,6 +269,34 @@ export default function CustomerDashboard() {
   };
 
   const OCCASION_OPTIONS = ['Birthday','Anniversary','Baby Shower','House Party','Housewarming','Get Together','Kitty Party','Naming Ceremony','Farewell','College Fest','Office Party','Diwali','Holi','Raksha Bandhan','Other'];
+
+  const OCC_HUB_MAP = {
+    'Birthday':'/birthday-hub','Anniversary':'/anniversary-hub','Baby Shower':'/baby-shower-hub',
+    'House Party':'/get-together-hub','Housewarming':'/housewarming-hub','Get Together':'/get-together-hub',
+    'Kitty Party':'/kitty-party-hub','Naming Ceremony':'/naming-ceremony-hub',
+    'Office Party':'/office-party-hub',
+  };
+
+  const handleEditPlannedEvent = async (id) => {
+    try {
+      const res = await fetch(`${BASE_URL}/planned-events/${id}`, {
+        method:'PATCH',
+        headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+        credentials:'include',
+        body: JSON.stringify(editFields),
+      });
+      const data = await res.json();
+      if (data.event) {
+        setPlannedEvents(prev => prev.map(e => e._id === id ? data.event : e).sort((a,b) => a.date.localeCompare(b.date)));
+      } else {
+        setPlannedEvents(prev => prev.map(e => e._id === id ? {...e, ...editFields} : e).sort((a,b) => a.date.localeCompare(b.date)));
+      }
+    } catch {
+      setPlannedEvents(prev => prev.map(e => e._id === id ? {...e, ...editFields} : e));
+    }
+    setEditingEvent(null);
+    setEditFields({});
+  };
 
   // ── End Planned Events state ──────────────────────────────────────────────
 
@@ -586,6 +617,18 @@ export default function CustomerDashboard() {
                     min={new Date().toISOString().slice(0,10)}
                     style={{ width:"100%", padding:"8px 10px", borderRadius:8, border:"1px solid rgba(196,122,46,0.3)", fontFamily:font, fontSize:13, color:"#2C1A0E" }} />
                 </div>
+                <div style={{ flex:"1 1 160px" }}>
+                  <div style={{ fontSize:11, fontWeight:600, color:"#9B7450", marginBottom:4 }}>Who's it for? <span style={{ fontWeight:400 }}>(optional)</span></div>
+                  <input type="text" value={newEvent.personName} onChange={e => setNewEvent(p => ({...p, personName:e.target.value}))}
+                    placeholder="e.g. Maa, Rahul…"
+                    style={{ width:"100%", padding:"8px 10px", borderRadius:8, border:"1px solid rgba(196,122,46,0.3)", fontFamily:font, fontSize:13, color:"#2C1A0E", boxSizing:"border-box" }} />
+                </div>
+                <div style={{ flex:"1 1 120px" }}>
+                  <div style={{ fontSize:11, fontWeight:600, color:"#9B7450", marginBottom:4 }}>Guests <span style={{ fontWeight:400 }}>(optional)</span></div>
+                  <input type="number" value={newEvent.guestCount} onChange={e => setNewEvent(p => ({...p, guestCount:e.target.value}))}
+                    placeholder="e.g. 50"
+                    style={{ width:"100%", padding:"8px 10px", borderRadius:8, border:"1px solid rgba(196,122,46,0.3)", fontFamily:font, fontSize:13, color:"#2C1A0E", boxSizing:"border-box" }} />
+                </div>
               </div>
               <button onClick={handleAddPlannedEvent} disabled={addingEvent || !newEvent.occasion || !newEvent.date}
                 style={{ marginTop:12, padding:"9px 22px", borderRadius:9, border:"none", background:"#C47A2E", color:"#fff", fontFamily:font, fontSize:13, fontWeight:700, cursor:"pointer", opacity:(!newEvent.occasion||!newEvent.date)?0.5:1 }}>
@@ -609,6 +652,8 @@ export default function CustomerDashboard() {
                   .filter(p => p.status === "completed" && p.finalisedVendors && Object.keys(p.finalisedVendors).length > 0)
                   .flatMap(p => Object.entries(p.finalisedVendors).map(([cat, v]) => ({ ...v, category:cat, fromEvent:p.eventType })));
                 const hasPastVendors = pastVendorList.length > 0;
+                const isEditing = editingEvent === ev._id;
+                const hubRoute = OCC_HUB_MAP[ev.occasion];
                 return (
                   <div key={ev._id} style={{
                     background: past ? "#f5f0ea" : urgent ? "linear-gradient(135deg,#FFF5E8,#FFF0D8)" : "#FFFDF8",
@@ -617,18 +662,49 @@ export default function CustomerDashboard() {
                     boxShadow: urgent?"0 2px 8px rgba(196,122,46,0.15)":"none", position:"relative",
                     display:"flex", flexDirection:"column", gap:4,
                   }}>
-                    <button onClick={() => handleDeletePlannedEvent(ev._id)}
-                      style={{ position:"absolute", top:8, right:10, background:"none", border:"none", color:"#CCC", fontSize:14, cursor:"pointer", padding:0, lineHeight:1 }}>✕</button>
-                    <div style={{ fontSize:11, fontWeight:700, color:urgent?"#C47A2E":"#9B7450", textTransform:"uppercase", letterSpacing:"0.07em" }}>
-                      {past ? "Past" : days === 0 ? "Today!" : `${days} day${days>1?"s":""} away`}
+                    {/* Top-right actions */}
+                    <div style={{ position:"absolute", top:8, right:10, display:"flex", gap:6, alignItems:"center" }}>
+                      <button onClick={() => { setEditingEvent(ev._id); setEditFields({ occasion:ev.occasion, date:ev.date, personName:ev.personName||"", guestCount:ev.guestCount||"" }); }}
+                        style={{ background:"none", border:"none", color:"#C47A2E", fontSize:11, fontWeight:700, cursor:"pointer", padding:"2px 6px", borderRadius:6, lineHeight:1 }}>Edit</button>
+                      <button onClick={() => handleDeletePlannedEvent(ev._id)}
+                        style={{ background:"none", border:"none", color:"#CCC", fontSize:14, cursor:"pointer", padding:0, lineHeight:1 }}>✕</button>
                     </div>
-                    <div style={{ fontSize:16, fontWeight:800, color:"#2C1A0E" }}>{ev.occasion}</div>
-                    <div style={{ fontSize:12, color:"#B8A090" }}>{new Date(ev.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>
 
-                    {/* Action buttons — only for future events */}
-                    {!past && (
+                    {!isEditing ? (<>
+                      <div style={{ fontSize:11, fontWeight:700, color:urgent?"#C47A2E":"#9B7450", textTransform:"uppercase", letterSpacing:"0.07em" }}>
+                        {past ? "Past" : days === 0 ? "Today!" : `${days} day${days>1?"s":""} away`}
+                      </div>
+                      <div style={{ fontSize:16, fontWeight:800, color:"#2C1A0E" }}>{ev.occasion}{ev.personName ? ` · ${ev.personName}` : ""}</div>
+                      <div style={{ display:"flex", gap:8, flexWrap:"wrap", alignItems:"center" }}>
+                        <span style={{ fontSize:12, color:"#B8A090" }}>{new Date(ev.date.slice(0,10)+"T00:00:00").toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</span>
+                        {ev.guestCount && <span style={{ fontSize:11, color:"#9B7450", background:"rgba(196,122,46,0.08)", padding:"2px 8px", borderRadius:20 }}>👥 {ev.guestCount} guests</span>}
+                      </div>
+                    </>) : (
+                      <div style={{ display:"flex", flexDirection:"column", gap:8, paddingTop:4 }}>
+                        <select value={editFields.occasion} onChange={e => setEditFields(f=>({...f,occasion:e.target.value}))}
+                          style={{ padding:"7px 9px", borderRadius:7, border:"1px solid rgba(196,122,46,0.3)", fontFamily:font, fontSize:12, color:"#2C1A0E", background:"#fff" }}>
+                          {OCCASION_OPTIONS.map(o=><option key={o} value={o}>{o}</option>)}
+                        </select>
+                        <input type="date" value={editFields.date} onChange={e=>setEditFields(f=>({...f,date:e.target.value}))}
+                          style={{ padding:"7px 9px", borderRadius:7, border:"1px solid rgba(196,122,46,0.3)", fontFamily:font, fontSize:12, color:"#2C1A0E" }} />
+                        <input type="text" value={editFields.personName} onChange={e=>setEditFields(f=>({...f,personName:e.target.value}))}
+                          placeholder="Who's it for? (optional)"
+                          style={{ padding:"7px 9px", borderRadius:7, border:"1px solid rgba(196,122,46,0.3)", fontFamily:font, fontSize:12, color:"#2C1A0E", boxSizing:"border-box", width:"100%" }} />
+                        <input type="number" value={editFields.guestCount} onChange={e=>setEditFields(f=>({...f,guestCount:e.target.value}))}
+                          placeholder="Guests (optional)"
+                          style={{ padding:"7px 9px", borderRadius:7, border:"1px solid rgba(196,122,46,0.3)", fontFamily:font, fontSize:12, color:"#2C1A0E", boxSizing:"border-box", width:"100%" }} />
+                        <div style={{ display:"flex", gap:8 }}>
+                          <button onClick={() => handleEditPlannedEvent(ev._id)}
+                            style={{ flex:1, padding:"8px 0", borderRadius:8, border:"none", background:"#C47A2E", color:"#fff", fontFamily:font, fontSize:12, fontWeight:700, cursor:"pointer" }}>Save</button>
+                          <button onClick={() => { setEditingEvent(null); setEditFields({}); }}
+                            style={{ flex:1, padding:"8px 0", borderRadius:8, border:"1px solid rgba(196,122,46,0.2)", background:"transparent", color:"#9B7450", fontFamily:font, fontSize:12, fontWeight:600, cursor:"pointer" }}>Cancel</button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action buttons — only for future events, not editing */}
+                    {!past && !isEditing && (
                       <div style={{ display:"flex", flexDirection:"column", gap:6, marginTop:10 }}>
-                        {/* Past Vendors */}
                         <button
                           onClick={() => hasPastVendors ? setShowPastVendors(ev) : null}
                           disabled={!hasPastVendors}
@@ -636,11 +712,10 @@ export default function CustomerDashboard() {
                           <span>🔁 Past Vendors</span>
                           {!hasPastVendors && <span style={{ fontSize:10, fontWeight:500 }}>No past vendors yet</span>}
                         </button>
-                        {/* Plan Full Event */}
                         <button
-                          onClick={() => navigate("/?occasion=" + encodeURIComponent(ev.occasion))}
+                          onClick={() => navigate(hubRoute || "/?occasion=" + encodeURIComponent(ev.occasion))}
                           style={{ width:"100%", padding:"8px 12px", borderRadius:8, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontFamily:font, fontSize:12, fontWeight:600, cursor:"pointer", textAlign:"left" }}>
-                          🎯 Plan Full Event →
+                          {hubRoute ? `🎮 Open ${ev.occasion} Hub →` : "🎯 Plan Full Event →"}
                         </button>
                       </div>
                     )}

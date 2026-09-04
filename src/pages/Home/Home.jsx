@@ -1357,7 +1357,7 @@ const Home = () => {
             ].map(({ icon, label, desc, href }) => (
               <div key={label} className="offer-tier2-item" onClick={() => {
                 if (href === "__upcoming__") {
-                  if (isSignedIn) navigate("/dashboard");
+                  if (isSignedIn) navigate("/dashboard", { state: { scrollTo: "upcoming-events" } });
                   else navigate("/login", { state: { returnTo: "/dashboard" } });
                 } else {
                   navigate(href);
