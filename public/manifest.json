@@ -1,0 +1,41 @@
+{
+  "name": "Tendr — Event Planning Platform",
+  "short_name": "Tendr",
+  "description": "Book verified decorators, photographers, caterers and DJs for events in Delhi NCR.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F8F4EF",
+  "theme_color": "#C47A2E",
+  "lang": "en-IN",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/tendr-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/tendr-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "shopping", "entertainment"],
+  "shortcuts": [
+    {
+      "name": "Find Vendors",
+      "short_name": "Vendors",
+      "url": "/listings",
+      "description": "Browse and book event vendors"
+    },
+    {
+      "name": "My Dashboard",
+      "short_name": "Dashboard",
+      "url": "/dashboard",
+      "description": "View your upcoming events"
+    }
+  ]
+}
