@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../redux/authSlice';
 import VendorAvailabilityCalendar from '../../components/VendorAvailabilityCalendar';
+import PageTour from '../../components/PageTour';
 import logo from '../../assets/logos/tendr-logo-secondary.png';
 const FlyerBuilderLazy    = lazy(() => import('./FlyerBuilder'));
 const LinktreeBuilderLazy = lazy(() => import('./LinktreeBuilder'));
@@ -2400,6 +2401,75 @@ export default function VendorDashboard() {
   ];
   const sideW = 220;
 
+  const TOUR_STEPS = [
+    {
+      target: 'body',
+      placement: 'center',
+      title: `Welcome, ${vendorName.split(' ')[0]} 👋`,
+      content: "You're now on your Tendr vendor dashboard. Let's take a quick tour of everything available to you — it only takes a minute.",
+    },
+    {
+      target: '#tour-nav-home',
+      placement: isMobile ? 'top' : 'right',
+      title: 'Home',
+      content: "Your command centre. See today's gigs, a countdown to your next event, upcoming reminders, conflict alerts, and seasonal business tips — all at a glance.",
+    },
+    {
+      target: '#tour-nav-work',
+      placement: isMobile ? 'top' : 'right',
+      title: 'My Work',
+      content: 'All your bookings in one place — Tendr bookings, outside gigs, a combined calendar, quote builder, and client list. Manage invoices and contracts right from each order.',
+    },
+    {
+      target: '#tour-nav-earnings',
+      placement: isMobile ? 'top' : 'right',
+      title: 'Earnings',
+      content: 'Track every rupee. View monthly P&L, collected vs pending amounts, expense tracking, and your overall profit across all bookings.',
+    },
+    {
+      target: '#tour-nav-performance',
+      placement: isMobile ? 'top' : 'right',
+      title: 'Stats',
+      content: 'Your business analytics — gig volume over 12 months, average gig value, collection rate, net profit, repeat client percentage, and top event types.',
+    },
+    {
+      target: '#tour-nav-inventory',
+      placement: isMobile ? 'top' : 'right',
+      title: typeConfig.invLabel,
+      content: `Track your ${typeConfig.invLabel.toLowerCase()} by category, log quantities and condition, and get alerts when equipment needs service or repair.`,
+    },
+    {
+      target: '#tour-nav-profile',
+      placement: isMobile ? 'top' : 'right',
+      title: 'My Page',
+      content: 'Preview your public profile exactly as clients see it. Share your Tendr link or a direct tracking link with a single tap.',
+    },
+    {
+      target: '#tour-nav-clients',
+      placement: isMobile ? 'top' : 'right',
+      title: 'Clients',
+      content: 'Your built-in CRM. Every client you\'ve worked with — booking count, total paid, pending balance, and last event date — automatically compiled from your orders.',
+    },
+    {
+      target: '#tour-nav-calendar',
+      placement: isMobile ? 'top' : 'right',
+      title: 'Availability',
+      content: 'Mark your available and blocked dates so Tendr customers only see you for events you can actually take.',
+    },
+    {
+      target: '#tour-nav-flyer',
+      placement: isMobile ? 'top' : 'right',
+      title: 'Flyer Builder',
+      content: 'Generate a ready-to-share marketing flyer for WhatsApp, Instagram, or print — branded with your name and service — in seconds.',
+    },
+    {
+      target: '#tour-nav-linktree',
+      placement: isMobile ? 'top' : 'right',
+      title: 'Link Hub',
+      content: "Your personal mini link page — share your portfolio, showreel, Instagram, and booking link all from one URL. Great for your bio or WhatsApp status.",
+    },
+  ];
+
   const COND_COLOR = { 'Good': { bg:'rgba(22,163,74,0.08)', color:'#16A34A', dot:'#16A34A' }, 'Needs Service': { bg:'rgba(217,119,6,0.08)', color:'#D97706', dot:'#D97706' }, 'Out of Order': { bg:'rgba(220,38,38,0.08)', color:'#DC2626', dot:'#DC2626' } };
   const INV_CATS    = typeConfig.invCats;
 
@@ -2418,7 +2488,7 @@ export default function VendorDashboard() {
             {NAV_ITEMS.map(item => {
               const active = tab === item.key;
               return (
-                <button key={item.key} onClick={() => setTab(item.key)}
+                <button key={item.key} id={`tour-nav-${item.key}`} onClick={() => setTab(item.key)}
                   style={{ width:'100%', padding:'9px 12px', borderRadius:10, border:'none', background:active?'rgba(196,122,46,0.09)':'transparent', color:active?gold:'#9B7450', cursor:'pointer', fontFamily:font, fontSize:13.5, fontWeight:active?700:500, display:'flex', alignItems:'center', gap:10, marginBottom:2, transition:'all 0.15s', textAlign:'left' }}>
                   <span style={{ color:active?gold:'#BDA282', display:'flex', flexShrink:0 }}>{item.icon}</span>
                   <span style={{ flex:1 }}>{item.label}</span>
@@ -3920,7 +3990,7 @@ export default function VendorDashboard() {
           {NAV_ITEMS.map(item => {
             const active = tab===item.key;
             return (
-              <button key={item.key} onClick={() => setTab(item.key)}
+              <button key={item.key} id={`tour-nav-${item.key}`} onClick={() => setTab(item.key)}
                 style={{ flexShrink:0, minWidth:60, padding:'8px 6px 10px', border:'none', background:active?'rgba(196,122,46,0.06)':'transparent', cursor:'pointer', fontFamily:font, display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
                 <span style={{ color:active?gold:'#BDA282', display:'flex' }}>{item.icon}</span>
                 <span style={{ fontSize:9, fontWeight:active?700:500, color:active?gold:'#9B7450', whiteSpace:'nowrap' }}>{item.label}</span>
@@ -3929,6 +3999,9 @@ export default function VendorDashboard() {
           })}
         </div>
       )}
+
+      {/* First-time dashboard tour */}
+      <PageTour pageKey="vendor-dashboard" steps={TOUR_STEPS} condition={!!vendorId} />
 
       {/* Toast */}
       {toast && <div style={{ position:'fixed', top:16, right:16, zIndex:9999, padding:'12px 20px', borderRadius:12, background:toast.ok?'#166534':'#991B1B', color:'#fff', fontSize:14, fontWeight:600, boxShadow:'0 4px 20px rgba(0,0,0,0.2)' }}>{toast.ok?'✓':'✕'} {toast.msg}</div>}
