@@ -1635,7 +1635,8 @@ const Home = () => {
                       "navratri-garba":"/navratri-garba-hub",
                     };
                     const slug = slugMap[label] || "birthday-party";
-                    setOccModal({ label, slug, hub: hubMap[slug] || "/birthday-hub", photo, step: 1 });
+                    const _occ = OCCASIONS.find(o=>o.id===slug)||{};
+                    setOccModal({ label, slug, hub: hubMap[slug] || "/birthday-hub", photo, icon: _occ.icon||"🎉", color: _occ.color||"#C47A2E", step: 1 });
                   }}
                   initial={{ opacity: 0, y: 20, scale: 0.95 }}
                   whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -2793,7 +2794,7 @@ const Home = () => {
                       onClick={() => {
                         setOccasionFlow(null);
                         const hub = HUB_ROUTES[o.id];
-                        setOccModal({ label: o.name, slug: o.id, hub: hub || null, photo: o.coverImage, step: hub ? 1 : 2 });
+                        setOccModal({ label: o.name, slug: o.id, hub: hub || null, photo: o.coverImage, icon: o.icon||"🎉", color: o.color||"#C47A2E", step: hub ? 1 : 2 });
                       }}
                       style={{ background: o.color + "14", border: `1px solid ${o.color}35`, borderRadius: 12, cursor: "pointer", textAlign: "left", padding: "14px 12px 12px", fontFamily: f, transition: "all 0.18s", display: "flex", flexDirection: "column", alignItems: "flex-start" }}
                       onMouseEnter={e => { e.currentTarget.style.background = o.color + "28"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = o.color + "70"; }}
@@ -2830,17 +2831,14 @@ const Home = () => {
               style={{background:"#FDFAF5",borderRadius:28,overflow:"hidden",maxWidth:380,width:"100%",boxShadow:"0 36px 90px rgba(28,9,0,0.38)",animation:"occm-in 0.26s cubic-bezier(0.22,1,0.36,1)"}}
               onClick={e=>e.stopPropagation()}
             >
-              {/* photo header */}
-              <div style={{position:"relative",height:140,overflow:"hidden"}}>
-                {occModal.photo&&<img src={occModal.photo} alt={occModal.label} style={{width:"100%",height:"100%",objectFit:"cover"}}/>}
-                <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(8,4,0,0.82) 0%,rgba(8,4,0,0.3) 60%,transparent 100%)"}}/>
-                <div style={{position:"absolute",bottom:16,left:20,right:20}}>
-                  {step===2&&occModal.hub&&(
-                    <button onClick={()=>setOccModal(m=>({...m,step:1}))} style={{background:"rgba(255,255,255,0.12)",border:"none",color:"rgba(255,255,255,0.7)",fontSize:11,fontWeight:600,borderRadius:100,padding:"4px 12px",cursor:"pointer",fontFamily:f,marginBottom:8,display:"block"}}>← Back</button>
-                  )}
-                  <p style={{fontSize:10,color:"rgba(255,255,255,0.55)",fontWeight:700,letterSpacing:"0.14em",textTransform:"uppercase",margin:"0 0 2px",fontFamily:f}}>{step===1?"Choose":"How to plan"}</p>
-                  <p style={{fontFamily:ser,fontSize:22,fontWeight:500,color:"#fff",margin:0,lineHeight:1.15}}>{occModal.label}</p>
-                </div>
+              {/* emoji + name header */}
+              <div style={{background:`linear-gradient(135deg,${occModal.color||"#C47A2E"}18 0%,${occModal.color||"#C47A2E"}08 100%)`,borderBottom:`1px solid ${occModal.color||"#C47A2E"}22`,padding:"24px 20px 20px",textAlign:"center",position:"relative"}}>
+                {step===2&&occModal.hub&&(
+                  <button onClick={()=>setOccModal(m=>({...m,step:1}))} style={{position:"absolute",top:14,left:14,background:"rgba(28,9,0,0.08)",border:"none",color:"rgba(28,9,0,0.45)",fontSize:11,fontWeight:600,borderRadius:100,padding:"4px 12px",cursor:"pointer",fontFamily:f}}>← Back</button>
+                )}
+                <div style={{fontSize:48,lineHeight:1,marginBottom:10}}>{occModal.icon||"🎉"}</div>
+                <p style={{fontSize:10,color:occModal.color||"#C47A2E",fontWeight:700,letterSpacing:"0.14em",textTransform:"uppercase",margin:"0 0 4px",fontFamily:f}}>{step===1?"Choose":"How to plan"}</p>
+                <p style={{fontFamily:ser,fontSize:22,fontWeight:500,color:"#1C0900",margin:0,lineHeight:1.15}}>{occModal.label}</p>
               </div>
 
               <div style={{padding:"20px 20px 24px",animation:"occm-slide 0.2s ease both"}}>

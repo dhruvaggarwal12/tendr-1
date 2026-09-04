@@ -5148,7 +5148,7 @@ export default function OccasionHub({ occasion }) {
       </div>
 
       {/* ── Section content ── */}
-      <div className="occ-scroll-area" style={{ flex:1, overflowY:"auto", padding:"14px 16px calc(80px + env(safe-area-inset-bottom,0px))", maxWidth:800, margin:"0 auto", width:"100%", boxSizing:"border-box", position:"relative", zIndex:1 }}>
+      <div className="occ-scroll-area" style={{ flex:1, overflowY:"auto", padding:"14px 16px 20px", maxWidth:800, margin:"0 auto", width:"100%", boxSizing:"border-box", position:"relative", zIndex:1 }}>
 
         {/* Exploring banner */}
         {entryMode === "exploring" && (
@@ -5359,7 +5359,7 @@ export default function OccasionHub({ occasion }) {
       </div>
 
       {/* ── Bottom Navigation ── */}
-      <div style={{ position:"fixed", bottom:0, left:0, right:0, zIndex:100, background:"rgba(7,7,17,0.96)", backdropFilter:"blur(24px)", borderTop:"1px solid rgba(255,255,255,0.07)", padding:"10px 0", paddingBottom:"calc(10px + env(safe-area-inset-bottom,0px))" }}>
+      <div style={{ flexShrink:0, background:"rgba(7,7,17,0.96)", backdropFilter:"blur(24px)", borderTop:"1px solid rgba(255,255,255,0.07)", padding:"10px 0", paddingBottom:"calc(10px + env(safe-area-inset-bottom,0px))", position:"relative", zIndex:2 }}>
         <div style={{ display:"flex", maxWidth:800, margin:"0 auto" }}>
           {TAB_CFG.map(t => {
             const isActive = activeTab === t.id;
