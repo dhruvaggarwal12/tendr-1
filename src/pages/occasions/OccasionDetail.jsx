@@ -1242,6 +1242,7 @@ export default function OccasionDetail(){
   const [guests,setGuests]=useState(20);
   const [date,setDate]=useState("");
   const [budget,setBudget]=useState("");
+  const [notes,setNotes]=useState("");
   const [city,setCity]=useState("");
   const [venueType,setVenueType]=useState("");
   const [ageGroups,setAgeGroups]=useState([]);
@@ -1764,6 +1765,24 @@ export default function OccasionDetail(){
                   })}
                 </div>
                 {ageGroups.length===0&&<p style={{fontSize:11,color:"rgba(30,15,0,0.28)",textAlign:"center",marginTop:10}}>Select all that apply — or skip</p>}
+              </div>
+
+              {/* anything else? */}
+              <div style={{paddingTop:28,borderTop:`1px solid rgba(196,122,46,0.08)`,marginTop:28}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                  <div style={{fontSize:14,color:muted,fontWeight:500,fontFamily:font,letterSpacing:"0.01em"}}>anything else we should know?</div>
+                  <span style={{fontSize:10,color:muted,fontWeight:500}}>optional</span>
+                </div>
+                <textarea
+                  value={notes}
+                  onChange={e=>setNotes(e.target.value)}
+                  placeholder={`e.g. it's a surprise party, guests are mostly family, prefer vegetarian food…`}
+                  rows={3}
+                  style={{width:"100%",padding:"13px 15px",borderRadius:12,border:`1.5px solid ${notes?gold:"rgba(196,122,46,0.18)"}`,background:notes?"rgba(196,122,46,0.03)":"#fff",fontSize:14,fontFamily:font,color:ink,outline:"none",resize:"none",lineHeight:1.55,boxSizing:"border-box",transition:"border-color 0.2s,background 0.2s"}}
+                  onFocus={e=>{e.target.style.borderColor=gold;e.target.style.background="rgba(196,122,46,0.03)";}}
+                  onBlur={e=>{e.target.style.borderColor=notes?gold:"rgba(196,122,46,0.18)";e.target.style.background=notes?"rgba(196,122,46,0.03)":"#fff";}}
+                />
+                <div style={{fontSize:11,color:muted,marginTop:6}}>Shared with your planning summary</div>
               </div>
 
             </div>
