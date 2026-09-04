@@ -1168,7 +1168,7 @@ const Home = () => {
         <div
           className="hero-mobile-photo-overlay"
           aria-hidden
-          style={{ display: "none", position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(8,4,0,0.62) 0%, rgba(8,4,0,0.28) 42%, rgba(8,4,0,0.22) 100%)", zIndex: 1 }}
+          style={{ display: "none", position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.68) 38%, rgba(0,0,0,0.60) 100%)", zIndex: 1 }}
         />
         <div
           style={{
@@ -1530,7 +1530,8 @@ const Home = () => {
         @media (max-width: 900px) {
           .hero-mobile-photo-bg { display: block !important; }
           .hero-mobile-photo-overlay { display: block !important; }
-          .hero-section-wrap { height: auto !important; min-height: 100svh !important; position: relative !important; }
+          .hero-section-wrap { height: 100dvh !important; min-height: 600px !important; position: relative !important; overflow: hidden !important; }
+          .hero-split { min-height: 0 !important; flex: 1 !important; }
           .hero-split { flex-direction: column !important; }
           .hero-split > div:first-child {
             flex: 1 !important;
@@ -2785,40 +2786,24 @@ const Home = () => {
 
               {/* Grid */}
               <div style={{ overflowY: "auto", flex: 1, padding: "14px 14px 24px" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(120px,1fr))", gap: 10 }}>
-                  {(() => {
-                    const _mtg = [
-                      "linear-gradient(145deg,#2D1205,#1A0A03)",
-                      "linear-gradient(145deg,#1E0A20,#2A0E2E)",
-                      "linear-gradient(145deg,#0C1A08,#162A0E)",
-                      "linear-gradient(145deg,#0A1528,#0F1E38)",
-                      "linear-gradient(145deg,#1A0808,#2E1010)",
-                      "linear-gradient(145deg,#0A1A18,#0E2A26)",
-                      "linear-gradient(145deg,#1A1208,#2A1C0A)",
-                      "linear-gradient(145deg,#201005,#301808)",
-                    ];
-                    return filtered.map((o, mIdx) => {
-                      const occIdx = OCCASIONS.indexOf(o);
-                      const tileBgM = _mtg[(occIdx >= 0 ? occIdx : mIdx) % _mtg.length];
-                      return (
-                        <button
-                          key={o.id}
-                          onClick={() => {
-                            setOccasionFlow(null);
-                            const hub = HUB_ROUTES[o.id];
-                            setOccModal({ label: o.name, slug: o.id, hub: hub || null, photo: o.coverImage, step: hub ? 1 : 2 });
-                          }}
-                          style={{ background: tileBgM, border: "1.5px solid rgba(196,122,46,0.15)", borderRadius: 14, overflow: "hidden", cursor: "pointer", textAlign: "left", padding: 0, fontFamily: f, transition: "all 0.18s" }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.55)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.15)"; e.currentTarget.style.transform = "translateY(0)"; }}
-                        >
-                          <div style={{ padding: "18px 12px 16px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", minHeight: 96 }}>
-                            <div style={{ fontSize: 16, fontWeight: 700, fontStyle: "italic", color: "#F5ECD8", lineHeight: 1.15, fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "-0.01em" }}>{o.name}</div>
-                          </div>
-                        </button>
-                      );
-                    });
-                  })()}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(130px,1fr))", gap: 8 }}>
+                  {filtered.map((o) => (
+                    <button
+                      key={o.id}
+                      onClick={() => {
+                        setOccasionFlow(null);
+                        const hub = HUB_ROUTES[o.id];
+                        setOccModal({ label: o.name, slug: o.id, hub: hub || null, photo: o.coverImage, step: hub ? 1 : 2 });
+                      }}
+                      style={{ background: o.color + "14", border: `1px solid ${o.color}35`, borderRadius: 12, cursor: "pointer", textAlign: "left", padding: "14px 12px 12px", fontFamily: f, transition: "all 0.18s", display: "flex", flexDirection: "column", alignItems: "flex-start" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = o.color + "28"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = o.color + "70"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = o.color + "14"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = o.color + "35"; }}
+                    >
+                      <div style={{ fontSize: 26, lineHeight: 1, marginBottom: 8 }}>{o.icon}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#F5ECD8", lineHeight: 1.2, fontFamily: "'Cormorant Garamond',Georgia,serif", fontStyle: "italic", letterSpacing: "-0.01em" }}>{o.name}</div>
+                      {o.localName && <div style={{ fontSize: 10, color: "rgba(245,236,216,0.45)", marginTop: 3, fontFamily: f }}>{o.localName}</div>}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>

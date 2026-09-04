@@ -1472,7 +1472,7 @@ export default function OccasionDetail(){
   })).sort((a,b)=>b.score-a.score);
 
   return(
-    <div style={{minHeight:"100dvh",background:bg,fontFamily:font,display:"flex",flexDirection:"column"}}>
+    <div style={{height:"100dvh",background:bg,fontFamily:font,display:"flex",flexDirection:"column",overflow:"hidden"}}>
       <style>{css}</style>
       <SEO title={`Plan your ${occasion.name} — Tendr`} description={`Guided ${occasion.name} planner`} path={`/occasions/${slug}`}/>
 
@@ -1494,7 +1494,7 @@ export default function OccasionDetail(){
       </div>
 
       {/* content */}
-      <div ref={contentRef} style={{flex:1,overflowY:"auto",padding:"28px 20px 140px",maxWidth:680,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
+      <div ref={contentRef} style={{flex:1,overflowY:"auto",padding:"28px 20px 32px",maxWidth:680,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
 
         {/* ══ STEP 0: CUSTOM OCCASION — name & describe ══ */}
         {step===0&&isCustomOccasion&&(
@@ -2766,10 +2766,9 @@ export default function OccasionDetail(){
         )}
       </div>
 
-      {/* fixed bottom CTA */}
-      <style>{`@media(max-width:900px){.occ-det-cta{bottom:calc(60px + env(safe-area-inset-bottom,0px))!important;}}`}</style>
+      {/* bottom CTA — flex footer, always visible */}
       {step>0&&(
-        <div className="occ-det-cta" style={{position:"fixed",bottom:0,left:0,right:0,background:bg,borderTop:`1px solid ${border}`,padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
+        <div style={{flexShrink:0,background:bg,borderTop:`1px solid ${border}`,padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
           <div style={{maxWidth:680,margin:"0 auto",display:"flex",gap:10}}>
             {step>0&&<button onClick={back} style={btnGhost}>← Back</button>}
             {step<6&&(
