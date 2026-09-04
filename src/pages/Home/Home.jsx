@@ -1885,7 +1885,7 @@ const Home = () => {
                 className="efc-tile"
                 onClick={() => {
                   if (href === "__upcoming__") {
-                    if (isSignedIn) navigate("/dashboard");
+                    if (isSignedIn) navigate("/dashboard", { state: { scrollTo: "upcoming-events" } });
                     else navigate("/login", { state: { returnTo: "/dashboard" } });
                   } else navigate(href);
                 }}
