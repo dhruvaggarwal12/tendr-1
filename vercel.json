@@ -10,22 +10,18 @@
       ]
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/sitemap.xml",
-      "dest": "https://tendr-backend-75ag.onrender.com/sitemap.xml"
+      "source": "/sitemap.xml",
+      "destination": "https://tendr-backend-75ag.onrender.com/sitemap.xml"
     },
     {
-      "src": "/social.html",
-      "dest": "/social.html"
+      "source": "/links",
+      "destination": "/social.html"
     },
     {
-      "src": "/links",
-      "dest": "/social.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
