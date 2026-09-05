@@ -302,10 +302,8 @@ const CSS = `
 
   .pf-datetime { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
-  .op-occ-card:hover  { transform:translateY(-4px) scale(1.02) !important; box-shadow:0 16px 44px rgba(0,0,0,0.62) !important; border-color:rgba(245,236,216,0.18) !important; }
-  .op-occ-card:hover img { transform:scale(1.06) !important; opacity:0.92 !important; }
-  .op-theme-card:hover { background:rgba(245,236,216,0.06) !important; transform:translateY(-2px) !important; box-shadow:0 8px 28px rgba(0,0,0,0.38) !important; border-color:rgba(196,122,46,0.48) !important; }
-  .op-theme-card:hover .op-theme-img { transform:scale(1.07) !important; }
+  .op-occ-chip:hover  { border-color:rgba(196,122,46,0.55) !important; background:rgba(196,122,46,0.1) !important; color:rgba(204,171,74,0.95) !important; }
+  .op-theme-card:hover{ background:rgba(245,236,216,0.07) !important; }
 
   .op-opt:hover { background:rgba(245,236,216,0.07) !important; }
   .op-sel-chip:hover { opacity:0.9; }
@@ -319,7 +317,7 @@ const CSS = `
     .op-panel        { border-radius:20px !important; max-height:82vh !important; margin:auto !important; }
     .op-overlay-wrap { align-items:center !important; padding:16px !important; }
     .op-picker-grid  { gap:7px !important; }
-    .op-picker-card  { height:84px !important; }
+    .op-occ-chip     { font-size:12px !important; padding:8px 14px !important; }
     .op-2col-form    { grid-template-columns:1fr 1fr !important; }
     .book-detail-panel{ border-radius:20px !important; max-height:80vh !important; margin:auto !important; }
     .book-detail-wrap { align-items:center !important; padding:16px !important; }
@@ -1148,6 +1146,8 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
   const [timeOfDay, setTimeOfDay] = useState(null);
   const [showAll,   setShowAll]   = useState(false);
   const [expandedTheme, setExpandedTheme] = useState(null);
+  const [occSearch,    setOccSearch]    = useState('');
+  const [selectedOcc,  setSelectedOcc]  = useState(null);
 
   const occColor = OCC_COLOR[occasion] || FALLBACK_COLOR;
 
@@ -1273,30 +1273,56 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
               {/* Step 0 — Occasion picker */}
               {step === 0 && (
                 <div>
-                  <p style={{ fontSize: 10, fontWeight: 800, color: FALLBACK_COLOR, textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 8px', fontFamily: "'Outfit',sans-serif" }}>Plan your event</p>
-                  <h2 style={h2Style}>What's the occasion?</h2>
-                  <p style={subStyle}>Choose your celebration to get started</p>
-                  <div className="op-picker-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
-                    {OCCASIONS_LIST.map(({ label, photo }) => (
-                      <button key={label} className="op-occ-card op-picker-card" onClick={() => { setOccasion(label); goNext(0.5); }}
-                        style={{
-                          position: 'relative', height: 112, borderRadius: 14,
-                          overflow: 'hidden', border: '1.5px solid rgba(245,236,216,0.06)',
-                          cursor: 'pointer', padding: 0, background: '#160800',
-                          transition: 'transform 0.22s, box-shadow 0.22s, border-color 0.22s',
-                          boxShadow: '0 4px 20px rgba(0,0,0,0.52)',
-                        }}>
-                        <img src={photo} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.82, transition: 'transform 0.4s, opacity 0.22s' }} />
-                        <div style={{
-                          position: 'absolute', inset: 0,
-                          background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.14) 52%, transparent 100%)',
-                          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '8px 8px',
-                        }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: '#F5ECD8', lineHeight: 1.2, fontFamily: "'Outfit',sans-serif", letterSpacing: '0.01em' }}>{label}</span>
-                        </div>
-                      </button>
-                    ))}
+                  <p style={{ fontSize: 10, fontWeight: 700, color: FALLBACK_COLOR, textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 10px', fontFamily: "'Outfit',sans-serif" }}>Plan an Occasion</p>
+                  <h2 style={h2Style}>What are you celebrating?</h2>
+
+                  {/* Search */}
+                  <div style={{ position: 'relative', marginBottom: 22 }}>
+                    <span style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: 'rgba(245,236,216,0.28)', fontSize: 15, pointerEvents: 'none', lineHeight: 1 }}>⌕</span>
+                    <input
+                      type="text" placeholder="Search occasions…" value={occSearch}
+                      onChange={e => setOccSearch(e.target.value)}
+                      style={{
+                        width: '100%', boxSizing: 'border-box', padding: '10px 14px 10px 36px',
+                        borderRadius: 10, border: '1px solid rgba(245,236,216,0.1)',
+                        background: 'rgba(245,236,216,0.04)', color: '#F5ECD8',
+                        fontSize: 13, fontFamily: "'Outfit',sans-serif", outline: 'none', transition: 'border-color 0.15s',
+                      }}
+                      onFocus={e => e.target.style.borderColor = 'rgba(196,122,46,0.4)'}
+                      onBlur={e => e.target.style.borderColor = 'rgba(245,236,216,0.1)'}
+                    />
                   </div>
+
+                  {/* Chips */}
+                  <div className="op-picker-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: 9 }}>
+                    {OCCASIONS_LIST
+                      .filter(o => !occSearch || o.label.toLowerCase().includes(occSearch.toLowerCase()))
+                      .map(({ label }) => {
+                        const isSel = selectedOcc === label;
+                        return (
+                          <button key={label} className="op-occ-chip"
+                            onClick={() => {
+                              setSelectedOcc(label);
+                              setOccasion(label);
+                              setTimeout(() => goNext(0.5), 160);
+                            }}
+                            style={{
+                              padding: '9px 18px', borderRadius: 8, cursor: 'pointer',
+                              border: `1.5px solid ${isSel ? FALLBACK_COLOR : 'rgba(245,236,216,0.1)'}`,
+                              background: isSel ? 'rgba(196,122,46,0.14)' : 'rgba(245,236,216,0.04)',
+                              color: isSel ? '#CCAB4A' : 'rgba(245,236,216,0.88)',
+                              fontSize: 13, fontWeight: isSel ? 600 : 400,
+                              fontFamily: "'Outfit',sans-serif", letterSpacing: '0.01em',
+                              transition: 'all 0.15s', boxShadow: 'none',
+                            }}
+                          >{label}</button>
+                        );
+                      })
+                    }
+                  </div>
+                  {OCCASIONS_LIST.filter(o => !occSearch || o.label.toLowerCase().includes(occSearch.toLowerCase())).length === 0 && (
+                    <p style={{ color: 'rgba(245,236,216,0.4)', fontSize: 13, fontFamily: "'Outfit',sans-serif", margin: '12px 0 0' }}>No occasions found</p>
+                  )}
                 </div>
               )}
 
