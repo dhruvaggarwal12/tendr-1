@@ -13,6 +13,17 @@ const font = "'Syne', sans-serif";
 
 const THEMES = ["Retro 70s", "Bollywood Night", "Neon Glow", "Black & White", "Beach Vibes", "Royale / OTT", "Masquerade", "Fairy Lights"];
 
+const THEME_DATA = [
+  { name: "Retro 70s",       emoji: "🕺", color: "#F59E0B", bg: "linear-gradient(135deg,#78350F,#92400E)",  mood: "Groovy • Disco • Funky",       dress: "Bell-bottoms, platform shoes",      music: "Donna Summer, Bee Gees" },
+  { name: "Bollywood Night", emoji: "🌟", color: "#EC4899", bg: "linear-gradient(135deg,#831843,#9D174D)",  mood: "Glam • Filmi • Drama",          dress: "Lehenga, sherwani, jewellery",      music: "Shah Rukh classics, item songs" },
+  { name: "Neon Glow",       emoji: "⚡", color: "#A855F7", bg: "linear-gradient(135deg,#4C1D95,#5B21B6)",  mood: "Electric • Cyberpunk • UV",     dress: "Neon, glow-in-dark, white",         music: "EDM, house, techno" },
+  { name: "Black & White",   emoji: "🎭", color: "#E5E7EB", bg: "linear-gradient(135deg,#111827,#1F2937)",  mood: "Elegant • Classic • Classy",    dress: "Monochrome only!",                  music: "Frank Sinatra, jazz classics" },
+  { name: "Beach Vibes",     emoji: "🏄", color: "#06B6D4", bg: "linear-gradient(135deg,#0E7490,#0891B2)",  mood: "Chill • Sunny • Tropical",      dress: "Shorts, sundresses, flip-flops",    music: "Reggae, tropical house" },
+  { name: "Royale / OTT",    emoji: "👑", color: "#FBBF24", bg: "linear-gradient(135deg,#78350F,#92400E)",  mood: "Lavish • Regal • Extra",        dress: "Formal, gowns, suits",              music: "Classical, cinematic" },
+  { name: "Masquerade",      emoji: "🎭", color: "#8B5CF6", bg: "linear-gradient(135deg,#312E81,#4338CA)",  mood: "Mysterious • Dark • Secret",    dress: "Masks required, black/red",         music: "Dramatic classical, opera" },
+  { name: "Fairy Lights",    emoji: "✨", color: "#FDE68A", bg: "linear-gradient(135deg,#1F2937,#374151)",  mood: "Dreamy • Cozy • Warm",          dress: "Pastel, flowy, white",              music: "Indie, acoustic, soft pop" },
+];
+
 // ── helpers ──────────────────────────────────────────────────────────────────
 function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
@@ -96,31 +107,72 @@ const card = { background: "rgba(255,255,255,0.06)", borderRadius: 14, padding: 
 // ════════════════════════════════════════════════════════════════════════════
 
 function TruthOrDare({ onClose }) {
-  const [mode, setMode] = useState(null); // 'truth' | 'dare'
+  const [mode, setMode] = useState(null);
   const [card, setCardState] = useState(null);
+  const [flipping, setFlipping] = useState(false);
+  const [discarded, setDiscarded] = useState([]);
+  const [passed, setPassed] = useState(0);
 
-  const pick = (m) => { setMode(m); setCardState(rand(m === "truth" ? TRUTHS : DARES)); };
-  const next = () => setCardState(rand(mode === "truth" ? TRUTHS : DARES));
+  const pick = (m) => {
+    setFlipping(true);
+    setTimeout(() => { setMode(m); setCardState(rand(m === "truth" ? TRUTHS : DARES)); setFlipping(false); }, 300);
+  };
+  const next = () => {
+    setDiscarded(d => [...d, card]);
+    setFlipping(true);
+    setTimeout(() => { setCardState(rand(mode === "truth" ? TRUTHS : DARES)); setFlipping(false); }, 300);
+  };
+  const pass = () => { setPassed(p => p + 1); next(); };
+
+  if (!card) return (
+    <Modal onClose={onClose} emoji="🎯" title="Truth or Dare">
+      <div style={{ textAlign: "center", marginBottom: 24 }}>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginBottom: 20 }}>Choose your fate</div>
+        {/* Giant card split */}
+        <div style={{ display: "flex", gap: 10, height: 200 }}>
+          <button onClick={() => pick("truth")} style={{ flex: 1, background: "linear-gradient(160deg,#1E3A8A,#1D4ED8)", border: "2.5px solid #3B82F6", borderRadius: 20, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, transition: "transform 0.15s", fontFamily: font }} onMouseDown={e => e.currentTarget.style.transform = "scale(0.96)"} onMouseUp={e => e.currentTarget.style.transform = "scale(1)"}>
+            <span style={{ fontSize: 48 }}>🤔</span>
+            <span style={{ fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: "0.06em" }}>TRUTH</span>
+            <span style={{ fontSize: 11, color: "#93C5FD", fontWeight: 600 }}>{TRUTHS.length} questions</span>
+          </button>
+          <button onClick={() => pick("dare")} style={{ flex: 1, background: "linear-gradient(160deg,#7F1D1D,#DC2626)", border: "2.5px solid #F87171", borderRadius: 20, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, transition: "transform 0.15s", fontFamily: font }} onMouseDown={e => e.currentTarget.style.transform = "scale(0.96)"} onMouseUp={e => e.currentTarget.style.transform = "scale(1)"}>
+            <span style={{ fontSize: 48 }}>🔥</span>
+            <span style={{ fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: "0.06em" }}>DARE</span>
+            <span style={{ fontSize: 11, color: "#FCA5A5", fontWeight: 600 }}>{DARES.length} dares</span>
+          </button>
+        </div>
+      </div>
+      {/* Discarded pile indicator */}
+      {discarded.length > 0 && <div style={{ textAlign: "center", fontSize: 12, color: "rgba(255,255,255,0.3)" }}>🃏 {discarded.length} used · {passed} passed</div>}
+    </Modal>
+  );
+
+  const isTruth = mode === "truth";
+  const accent = isTruth ? "#3B82F6" : "#F87171";
+  const bgGrad = isTruth ? "linear-gradient(160deg,#1E3A8A,#1D4ED8 60%,#1E40AF)" : "linear-gradient(160deg,#7F1D1D,#DC2626 60%,#B91C1C)";
 
   return (
     <Modal onClose={onClose} emoji="🎯" title="Truth or Dare">
-      {!card ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <button onClick={() => pick("truth")} style={{ ...btn("#1D4ED8"), padding: "18px 20px", fontSize: 18 }}>🤔 Truth</button>
-          <button onClick={() => pick("dare")} style={{ ...btn("#DC2626"), padding: "18px 20px", fontSize: 18 }}>🔥 Dare</button>
-        </div>
-      ) : (
-        <div>
-          <div style={{ background: mode === "truth" ? "rgba(29,78,216,0.2)" : "rgba(220,38,38,0.2)", borderRadius: 16, padding: "28px 20px", textAlign: "center", marginBottom: 20, border: `1.5px solid ${mode === "truth" ? "rgba(29,78,216,0.4)" : "rgba(220,38,38,0.4)"}` }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: mode === "truth" ? "#60A5FA" : "#F87171", marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.1em" }}>{mode === "truth" ? "🤔 TRUTH" : "🔥 DARE"}</div>
-            <div style={{ fontSize: 17, color: "#fff", lineHeight: 1.5 }}>{card}</div>
-          </div>
-          <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={next} style={{ ...btn("#C47A2E"), flex: 1 }}>Next Card</button>
-            <button onClick={() => { setMode(null); setCardState(null); }} style={{ ...btn("rgba(255,255,255,0.1)"), flex: 1 }}>Switch</button>
-          </div>
+      {/* Discard pile (stacked look) */}
+      {discarded.length > 0 && (
+        <div style={{ position: "relative", height: 18, marginBottom: -10 }}>
+          {[...Array(Math.min(discarded.length, 3))].map((_, i) => (
+            <div key={i} style={{ position: "absolute", width: "100%", height: 8, background: "rgba(255,255,255,0.06)", borderRadius: 4, top: i * 3, transform: `rotate(${(i - 1) * 1.5}deg)` }} />
+          ))}
         </div>
       )}
+      {/* Main card */}
+      <div style={{ background: bgGrad, borderRadius: 24, padding: "36px 24px 28px", textAlign: "center", marginBottom: 14, border: `3px solid ${accent}80`, boxShadow: `0 20px 60px ${accent}30, 0 4px 12px rgba(0,0,0,0.5)`, opacity: flipping ? 0.3 : 1, transform: flipping ? "rotateY(90deg)" : "rotateY(0)", transition: "opacity 0.2s, transform 0.2s", minHeight: 180, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: accent, textTransform: "uppercase", letterSpacing: "0.16em", marginBottom: 16 }}>{isTruth ? "🤔 TRUTH" : "🔥 DARE"} · #{discarded.length + 1}</div>
+        <div style={{ fontSize: 19, color: "#fff", lineHeight: 1.55, fontWeight: 600 }}>{card}</div>
+      </div>
+      {/* Action row */}
+      <div style={{ display: "flex", gap: 8 }}>
+        <button onClick={pass} style={{ flex: 1, padding: "12px", borderRadius: 14, border: "1.5px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.6)", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>😭 Pass</button>
+        <button onClick={next} style={{ flex: 2, ...btn(isTruth ? "#1D4ED8" : "#DC2626"), fontSize: 15, fontWeight: 800 }}>Next Card →</button>
+        <button onClick={() => { setMode(null); setCardState(null); }} style={{ flex: 1, padding: "12px", borderRadius: 14, border: "1.5px solid rgba(255,255,255,0.1)", background: "transparent", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer", fontFamily: font }}>Switch</button>
+      </div>
+      <div style={{ textAlign: "center", marginTop: 10, fontSize: 11, color: "rgba(255,255,255,0.25)" }}>🃏 {discarded.length} used · {passed} passed</div>
     </Modal>
   );
 }
@@ -130,42 +182,92 @@ function NeverHaveI({ onClose }) {
   const [scores, setScores] = useState({});
   const [players, setPlayers] = useState([]);
   const [newPlayer, setNewPlayer] = useState("");
+  const [roundHave, setRoundHave] = useState({}); // who tapped "I HAVE" this round
+  const [revealed, setRevealed] = useState(false);
 
-  const addPlayer = () => { if (newPlayer.trim()) { setPlayers(p => [...p, newPlayer.trim()]); setNewPlayer(""); } };
-  const mark = (name) => setScores(s => ({ ...s, [name]: (s[name] || 0) + 1 }));
-  const next = () => setIdx(i => (i + 1) % NEVER_HAVE_I.length);
+  const addPlayer = () => { if (newPlayer.trim() && !players.includes(newPlayer.trim())) { setPlayers(p => [...p, newPlayer.trim()]); setNewPlayer(""); } };
+  const toggleHave = (name) => setRoundHave(r => ({ ...r, [name]: !r[name] }));
+  const reveal = () => {
+    setRevealed(true);
+    Object.entries(roundHave).forEach(([name, has]) => { if (has) setScores(s => ({ ...s, [name]: (s[name] || 0) + 1 })); });
+  };
+  const next = () => { setIdx(i => (i + 1) % NEVER_HAVE_I.length); setRoundHave({}); setRevealed(false); };
+
+  // Table layout: place avatars in a circle around the statement card
+  const tablePositions = (count) => {
+    const r = 88; // radius
+    return Array.from({ length: count }, (_, i) => {
+      const a = (i / count) * 2 * Math.PI - Math.PI / 2;
+      return { x: 50 + Math.cos(a) * (r * 0.9), y: 50 + Math.sin(a) * r * 0.72 };
+    });
+  };
+
+  if (players.length < 2) return (
+    <Modal onClose={onClose} emoji="🙅" title="Never Have I Ever">
+      <p style={{ color: "rgba(255,255,255,0.5)", marginBottom: 14, fontSize: 13, textAlign: "center" }}>Sit in a circle — add everyone playing</p>
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        <input value={newPlayer} onChange={e => setNewPlayer(e.target.value)} onKeyDown={e => e.key === "Enter" && addPlayer()} placeholder="Player name" style={{ ...inp, flex: 1 }} />
+        <button onClick={addPlayer} style={{ ...btn("#059669"), width: "auto", padding: "10px 16px" }}>Add</button>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+        {players.map(p => <span key={p} style={{ background: "rgba(5,150,105,0.2)", border: "1px solid rgba(5,150,105,0.4)", color: "#34D399", padding: "5px 12px", borderRadius: 20, fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>{p} <span onClick={() => setPlayers(pl => pl.filter(x => x !== p))} style={{ cursor: "pointer", opacity: 0.5 }}>✕</span></span>)}
+      </div>
+      {players.length >= 2 && <button onClick={next} style={btn("#059669")}>Start →</button>}
+    </Modal>
+  );
+
+  const positions = tablePositions(players.length);
+  const haveCount = Object.values(roundHave).filter(Boolean).length;
 
   return (
     <Modal onClose={onClose} emoji="🙅" title="Never Have I Ever">
-      {players.length < 2 ? (
-        <div>
-          <p style={{ color: "rgba(255,255,255,0.6)", marginBottom: 16, fontSize: 14 }}>Add at least 2 players to track scores, or just play without tracking.</p>
-          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-            <input value={newPlayer} onChange={e => setNewPlayer(e.target.value)} onKeyDown={e => e.key === "Enter" && addPlayer()} placeholder="Player name" style={{ ...inp, flex: 1 }} />
-            <button onClick={addPlayer} style={{ ...btn("#C47A2E"), width: "auto", padding: "10px 16px" }}>Add</button>
-          </div>
-          {players.map(p => <div key={p} style={{ ...card, display: "flex", justifyContent: "space-between" }}>{p} <span onClick={() => setPlayers(pl => pl.filter(x => x !== p))} style={{ cursor: "pointer", opacity: 0.5 }}>✕</span></div>)}
-          <button onClick={next} style={{ ...btn("#059669"), marginTop: 8 }}>Play without scores →</button>
-        </div>
-      ) : (
-        <div>
-          <div style={{ background: "rgba(5,150,105,0.15)", border: "1.5px solid rgba(5,150,105,0.35)", borderRadius: 16, padding: "24px 18px", textAlign: "center", marginBottom: 16 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#34D399", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Never Have I Ever…</div>
-            <div style={{ fontSize: 16, color: "#fff", lineHeight: 1.5 }}>{NEVER_HAVE_I[idx]}</div>
-          </div>
-          <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 8 }}>Who HAS done it? (tap to add a point)</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {players.map(p => (
-                <button key={p} onClick={() => mark(p)} style={{ padding: "8px 14px", borderRadius: 20, border: "1.5px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.08)", color: "#fff", cursor: "pointer", fontFamily: font, fontSize: 13 }}>
-                  {p} · {scores[p] || 0}
-                </button>
-              ))}
+      {/* Statement */}
+      <div style={{ background: "rgba(5,150,105,0.15)", border: "2px solid rgba(5,150,105,0.4)", borderRadius: 18, padding: "20px 18px", textAlign: "center", marginBottom: 6 }}>
+        <div style={{ fontSize: 10, fontWeight: 800, color: "#34D399", textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 10 }}>Never Have I Ever…</div>
+        <div style={{ fontSize: 17, color: "#fff", lineHeight: 1.5, fontWeight: 600 }}>{NEVER_HAVE_I[idx]}</div>
+      </div>
+
+      {/* Virtual round table */}
+      <div style={{ position: "relative", width: "100%", paddingBottom: "70%", marginBottom: 10, overflow: "visible" }}>
+        {/* Table surface */}
+        <div style={{ position: "absolute", left: "15%", top: "10%", width: "70%", height: "80%", borderRadius: "50%", background: "radial-gradient(ellipse,rgba(5,150,105,0.12),rgba(5,150,105,0.04))", border: "2px solid rgba(5,150,105,0.2)" }} />
+        {/* Player tokens around table */}
+        {players.map((p, i) => {
+          const pos = positions[i];
+          const has = roundHave[p];
+          const raised = revealed && has;
+          const notHave = revealed && !has;
+          return (
+            <div key={p} onClick={() => !revealed && toggleHave(p)}
+              style={{ position: "absolute", left: `${pos.x}%`, top: `${pos.y}%`, transform: "translate(-50%,-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: revealed ? "default" : "pointer", userSelect: "none" }}>
+              {/* Avatar circle */}
+              <div style={{ width: 44, height: 44, borderRadius: "50%", background: has ? "rgba(5,150,105,0.6)" : "rgba(255,255,255,0.1)", border: `2.5px solid ${has ? "#34D399" : "rgba(255,255,255,0.2)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 900, color: "#fff", transition: "all 0.2s", transform: raised ? "translateY(-8px) scale(1.15)" : notHave ? "scale(0.9)" : "scale(1)", boxShadow: raised ? "0 8px 20px rgba(5,150,105,0.5)" : "none" }}>
+                {has && !revealed ? "✋" : p[0].toUpperCase()}
+              </div>
+              {/* Hand raised */}
+              {raised && <div style={{ fontSize: 14, animation: "none" }}>✋</div>}
+              <div style={{ fontSize: 9, fontWeight: 700, color: has ? "#34D399" : "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.04em", maxWidth: 52, textAlign: "center", lineHeight: 1.1 }}>{p}</div>
+              {revealed && <div style={{ fontSize: 10, fontWeight: 800, color: has ? "#34D399" : "rgba(255,255,255,0.3)" }}>{scores[p] || 0} pts</div>}
             </div>
-          </div>
-          <button onClick={next} style={btn("#059669")}>Next Statement</button>
+          );
+        })}
+        {/* Centre label */}
+        <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", textAlign: "center" }}>
+          {!revealed ? (
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontWeight: 700 }}>{haveCount > 0 ? `${haveCount} tapped` : "Tap if you HAVE"}</div>
+          ) : (
+            <div style={{ fontSize: 13, fontWeight: 800, color: "#34D399" }}>+{haveCount} pts each</div>
+          )}
         </div>
-      )}
+      </div>
+
+      <div style={{ display: "flex", gap: 8 }}>
+        {!revealed ? (
+          <button onClick={reveal} style={{ flex: 1, ...btn("#059669"), fontSize: 15 }}>Reveal! 👀</button>
+        ) : (
+          <button onClick={next} style={{ flex: 1, ...btn("#059669"), fontSize: 15 }}>Next →</button>
+        )}
+      </div>
     </Modal>
   );
 }
@@ -173,42 +275,98 @@ function NeverHaveI({ onClose }) {
 function WouldYouRather({ onClose }) {
   const [pair, setPair] = useState(() => rand(WOULD_YOU_RATHER));
   const [pick, setPick] = useState(null);
+  const [votes, setVotes] = useState({ a: 0, b: 0 });
+  const [revealed, setRevealed] = useState(false);
 
-  const next = () => { setPair(rand(WOULD_YOU_RATHER)); setPick(null); };
+  const vote = (side) => {
+    if (pick) return;
+    setPick(side);
+    setVotes(v => ({ ...v, [side]: v[side] + 1 }));
+  };
+  const next = () => { setPair(rand(WOULD_YOU_RATHER)); setPick(null); setVotes({ a: 0, b: 0 }); setRevealed(false); };
+  const total = votes.a + votes.b;
+  const aPct = total ? Math.round((votes.a / total) * 100) : 50;
+  const bPct = 100 - aPct;
 
   return (
     <Modal onClose={onClose} emoji="🤷" title="Would You Rather">
-      <div style={{ marginBottom: 16 }}>
-        {["a", "b"].map(side => (
-          <button key={side} onClick={() => setPick(side)} style={{ display: "block", width: "100%", marginBottom: 10, padding: "20px 16px", borderRadius: 14, border: `2px solid ${pick === side ? "#C47A2E" : "rgba(255,255,255,0.15)"}`, background: pick === side ? "rgba(196,122,46,0.25)" : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 15, fontFamily: font, cursor: "pointer", textAlign: "left", lineHeight: 1.4 }}>
-            {side === "a" ? "👈 " : "👉 "}{pair[side]}
+      {/* OR divider */}
+      <div style={{ textAlign: "center", fontSize: 11, fontWeight: 800, color: "rgba(255,255,255,0.3)", letterSpacing: "0.2em", marginBottom: 10 }}>— WOULD YOU RATHER —</div>
+
+      {/* Two giant cards side by side */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 14, height: 170 }}>
+        {[["a","#2563EB","#1E3A8A","👈"], ["b","#7C3AED","#4C1D95","👉"]].map(([side, acc, dark, ico]) => (
+          <button key={side} onClick={() => vote(side)} style={{ flex: 1, background: pick === side ? `linear-gradient(160deg,${dark},${acc})` : pick && pick !== side ? "rgba(255,255,255,0.03)" : `linear-gradient(160deg,rgba(15,10,5,0.9),${dark}80)`, border: `2.5px solid ${pick === side ? acc : pick && pick !== side ? "rgba(255,255,255,0.06)" : acc + "50"}`, borderRadius: 20, cursor: pick ? "default" : "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 14, gap: 8, opacity: pick && pick !== side ? 0.45 : 1, transition: "all 0.25s", fontFamily: font }}>
+            <span style={{ fontSize: 28 }}>{ico}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: pick === side ? "#fff" : "rgba(255,255,255,0.8)", lineHeight: 1.3, textAlign: "center" }}>{pair[side]}</span>
+            {pick === side && <span style={{ fontSize: 10, fontWeight: 800, color: acc, textTransform: "uppercase", letterSpacing: "0.1em" }}>Your pick ✓</span>}
           </button>
         ))}
       </div>
-      {pick && <div style={{ textAlign: "center", color: "#CCAB4A", fontSize: 14, marginBottom: 14 }}>You chose {pick === "a" ? `"${pair.a}"` : `"${pair.b}"`} — defend your answer!</div>}
-      <button onClick={next} style={btn("#C47A2E")}>Next Question</button>
+
+      {/* Vote crowd bar */}
+      {pick && (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ display: "flex", borderRadius: 10, overflow: "hidden", height: 32 }}>
+            <div style={{ width: `${aPct}%`, background: "#2563EB", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 800, transition: "width 0.5s" }}>{aPct > 20 ? `${aPct}%` : ""}</div>
+            <div style={{ flex: 1, background: "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 800 }}>{bPct > 20 ? `${bPct}%` : ""}</div>
+          </div>
+          <div style={{ textAlign: "center", fontSize: 13, color: "#CCAB4A", marginTop: 8, fontWeight: 700 }}>Now defend your answer! 🗣️</div>
+        </div>
+      )}
+
+      <button onClick={next} style={btn("#C47A2E")}>Next →</button>
     </Modal>
   );
 }
 
 function HotTakes({ onClose }) {
-  const [take, setTake] = useState(() => rand(HOT_TAKES));
-  const [agreed, setAgreed] = useState(null);
+  const [takes, setTakes] = useState([{ id: Date.now(), text: rand(HOT_TAKES), reactions: {} }]);
+  const [agreed, setAgreed] = useState({});
+  const [temp, setTemp] = useState(0); // -100 to 100
 
-  const next = () => { setTake(rand(HOT_TAKES)); setAgreed(null); };
+  const addTake = () => {
+    const t = rand(HOT_TAKES);
+    setTakes(ts => [{ id: Date.now(), text: t, reactions: {} }, ...ts]);
+  };
+  const react = (id, emoji) => {
+    const key = `${id}-${emoji}`;
+    if (agreed[key]) return;
+    setTakes(ts => ts.map(t => t.id === id ? { ...t, reactions: { ...t.reactions, [emoji]: (t.reactions[emoji] || 0) + 1 } } : t));
+    setAgreed(a => ({ ...a, [key]: true }));
+    setTemp(v => Math.max(-100, Math.min(100, v + (emoji === "🔥" ? 12 : emoji === "💀" ? 8 : -10))));
+  };
+
+  const tempColor = temp > 40 ? "#EF4444" : temp > 0 ? "#F97316" : temp < -40 ? "#3B82F6" : "#A3A3A3";
+  const tempLabel = temp > 60 ? "🔥 CHAOS" : temp > 20 ? "🌶️ Spicy" : temp < -60 ? "🧊 Dead Crowd" : temp < -20 ? "😐 Lukewarm" : "🌡️ Warming Up";
 
   return (
-    <Modal onClose={onClose} emoji="🌶️" title="Hot Takes">
-      <div style={{ background: "rgba(239,68,68,0.12)", border: "1.5px solid rgba(239,68,68,0.3)", borderRadius: 16, padding: "28px 18px", textAlign: "center", marginBottom: 16 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#F87171", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>🌶️ Hot Take</div>
-        <div style={{ fontSize: 16, color: "#fff", lineHeight: 1.5 }}>{take}</div>
+    <Modal onClose={onClose} emoji="🌶️" title="Hot Takes" wide>
+      {/* Room temperature meter */}
+      <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 16, padding: "12px 16px", marginBottom: 14, display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ flex: 1, height: 8, borderRadius: 4, background: "rgba(255,255,255,0.08)", overflow: "hidden", position: "relative" }}>
+          <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: `${Math.abs(temp) / 2}%`, background: tempColor, borderRadius: 4, transition: "all 0.4s", transform: temp >= 0 ? "none" : "translateX(-100%)", transformOrigin: temp >= 0 ? "left" : "right" }} />
+        </div>
+        <div style={{ fontSize: 13, fontWeight: 800, color: tempColor, minWidth: 100, textAlign: "right" }}>{tempLabel}</div>
       </div>
-      <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
-        <button onClick={() => setAgreed(true)} style={{ ...btn(agreed === true ? "#059669" : "rgba(255,255,255,0.08)"), flex: 1 }}>✅ Agree</button>
-        <button onClick={() => setAgreed(false)} style={{ ...btn(agreed === false ? "#DC2626" : "rgba(255,255,255,0.08)"), flex: 1 }}>❌ Disagree</button>
-      </div>
-      {agreed !== null && <div style={{ textAlign: "center", color: agreed ? "#34D399" : "#F87171", fontSize: 14, marginBottom: 12 }}>Debate time! Go.</div>}
-      <button onClick={next} style={btn("#C47A2E")}>Next Take</button>
+
+      {/* Takes as speech bubbles */}
+      {takes.slice(0, 3).map((take, idx) => (
+        <div key={take.id} style={{ background: idx === 0 ? "linear-gradient(135deg,rgba(239,68,68,0.2),rgba(239,68,68,0.08))" : "rgba(255,255,255,0.04)", border: `1.5px solid ${idx === 0 ? "rgba(239,68,68,0.5)" : "rgba(255,255,255,0.08)"}`, borderRadius: 18, padding: "18px 16px", marginBottom: 10, position: "relative" }}>
+          {/* Speech bubble tail */}
+          {idx === 0 && <div style={{ position: "absolute", bottom: -8, left: 20, width: 0, height: 0, borderLeft: "8px solid transparent", borderRight: "8px solid transparent", borderTop: "8px solid rgba(239,68,68,0.5)" }} />}
+          <div style={{ fontSize: idx === 0 ? 16 : 13, color: idx === 0 ? "#fff" : "rgba(255,255,255,0.55)", lineHeight: 1.45, marginBottom: 12, fontWeight: idx === 0 ? 600 : 400 }}>{take.text}</div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {[["🔥", "#EF4444"], ["💀", "#8B5CF6"], ["👎", "#3B82F6"]].map(([emoji, col]) => (
+              <button key={emoji} onClick={() => react(take.id, emoji)} style={{ padding: "5px 12px", borderRadius: 100, border: `1.5px solid ${agreed[`${take.id}-${emoji}`] ? col : "rgba(255,255,255,0.12)"}`, background: agreed[`${take.id}-${emoji}`] ? col + "30" : "transparent", color: agreed[`${take.id}-${emoji}`] ? col : "rgba(255,255,255,0.4)", fontSize: 13, cursor: agreed[`${take.id}-${emoji}`] ? "default" : "pointer", fontFamily: font, fontWeight: 700 }}>
+                {emoji} {take.reactions[emoji] || 0}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <button onClick={addTake} style={btn("#EF4444")}>🌶️ Next Hot Take</button>
     </Modal>
   );
 }
@@ -219,45 +377,117 @@ function SpinBottle({ onClose }) {
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState(null);
   const [angle, setAngle] = useState(0);
+  const [spotlightIdx, setSpotlightIdx] = useState(null);
 
-  const addP = () => { if (newP.trim()) { setPlayers(p => [...p, newP.trim()]); setNewP(""); } };
+  const addP = () => { if (newP.trim() && !players.includes(newP.trim())) { setPlayers(p => [...p, newP.trim()]); setNewP(""); } };
   const spin = () => {
     if (players.length < 2) return;
-    setSpinning(true);
-    setResult(null);
+    setSpinning(true); setResult(null); setSpotlightIdx(null);
     const extra = 1440 + Math.random() * 720;
+    const targetIdx = Math.floor(Math.random() * players.length);
+    // Spin so bottle points at targetIdx
+    const sliceDeg = 360 / players.length;
+    const targetAngle = extra + targetIdx * sliceDeg;
     setAngle(a => a + extra);
     setTimeout(() => {
       setSpinning(false);
-      setResult(rand(players));
+      setResult(players[targetIdx]);
+      setSpotlightIdx(targetIdx);
     }, 3000);
   };
 
-  return (
-    <Modal onClose={onClose} emoji="🍾" title="Spin the Bottle / Random Picker">
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+  // Position players around a circle
+  const radius = 110;
+  const cx = 140, cy = 140;
+  const playerPositions = players.map((_, i) => {
+    const a = (i / players.length) * 2 * Math.PI - Math.PI / 2;
+    return { x: cx + Math.cos(a) * radius, y: cy + Math.sin(a) * radius };
+  });
+
+  if (players.length < 2) return (
+    <Modal onClose={onClose} emoji="🍾" title="Spin the Bottle">
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 14, textAlign: "center" }}>Add players — they'll sit in a circle around the bottle</p>
+      <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
         <input value={newP} onChange={e => setNewP(e.target.value)} onKeyDown={e => e.key === "Enter" && addP()} placeholder="Add a name" style={{ ...inp, flex: 1 }} />
         <button onClick={addP} style={{ ...btn("#C47A2E"), width: "auto", padding: "10px 16px" }}>Add</button>
       </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
-        {players.map(p => (
-          <span key={p} style={{ background: "rgba(196,122,46,0.2)", border: "1px solid rgba(196,122,46,0.4)", color: "#E5C97A", padding: "5px 12px", borderRadius: 20, fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>
-            {p} <span onClick={() => setPlayers(pl => pl.filter(x => x !== p))} style={{ cursor: "pointer", opacity: 0.6 }}>✕</span>
-          </span>
-        ))}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+        {players.map(p => <span key={p} style={{ background: "rgba(196,122,46,0.2)", border: "1px solid rgba(196,122,46,0.4)", color: "#E5C97A", padding: "5px 12px", borderRadius: 20, fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>{p}<span onClick={() => setPlayers(pl => pl.filter(x => x !== p))} style={{ cursor: "pointer", opacity: 0.6 }}>✕</span></span>)}
       </div>
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
-        <div style={{ position: "relative", width: 180, height: 180 }}>
-          <div style={{ width: 180, height: 180, borderRadius: "50%", border: "4px solid rgba(196,122,46,0.5)", background: "rgba(196,122,46,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ width: 4, height: 80, background: "linear-gradient(to top, #C47A2E, #E5C97A)", borderRadius: 4, transformOrigin: "50% 100%", transform: `rotate(${angle}deg)`, transition: spinning ? "transform 3s cubic-bezier(0.17,0.67,0.12,0.99)" : "none", position: "absolute", bottom: "50%", left: "calc(50% - 2px)" }} />
-            <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#C47A2E", zIndex: 2, position: "relative" }} />
-          </div>
+      {players.length >= 2 && <button onClick={spin} style={btn("#C47A2E")}>Start →</button>}
+    </Modal>
+  );
+
+  return (
+    <Modal onClose={onClose} emoji="🍾" title="Spin the Bottle">
+      {/* Player circle + bottle SVG */}
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+        <svg width={280} height={280} style={{ overflow: "visible" }}>
+          {/* Floor circle */}
+          <ellipse cx={cx} cy={cy} rx={116} ry={116} fill="rgba(196,122,46,0.07)" stroke="rgba(196,122,46,0.2)" strokeWidth={1.5} />
+
+          {/* Player avatars */}
+          {players.map((p, i) => {
+            const pos = playerPositions[i];
+            const isSpotlit = spotlightIdx === i;
+            return (
+              <g key={p} transform={`translate(${pos.x},${pos.y})`}>
+                {/* Spotlight glow */}
+                {isSpotlit && <circle r={26} fill="rgba(251,191,36,0.25)" />}
+                <circle r={18} fill={isSpotlit ? "#FBBF24" : "rgba(255,255,255,0.12)"} stroke={isSpotlit ? "#FBBF24" : "rgba(255,255,255,0.2)"} strokeWidth={2} />
+                <text x={0} y={6} textAnchor="middle" fontSize={13} fontWeight={900} fill={isSpotlit ? "#1a0a00" : "#fff"}>{p[0].toUpperCase()}</text>
+                <text x={0} y={36} textAnchor="middle" fontSize={8} fontWeight={700} fill={isSpotlit ? "#FBBF24" : "rgba(255,255,255,0.45)"}>{p.slice(0,8)}</text>
+              </g>
+            );
+          })}
+
+          {/* Bottle */}
+          <g transform={`translate(${cx},${cy})`} style={{ transformOrigin: `${cx}px ${cy}px` }}>
+            {/* Bottle body */}
+            <g transform={`rotate(${angle})`} style={{ transition: spinning ? "transform 3s cubic-bezier(0.15,0.6,0.1,1)" : "none" }}>
+              {/* Neck */}
+              <rect x={-4} y={-90} width={8} height={40} rx={4} fill="url(#bottleGrad)" />
+              {/* Body */}
+              <ellipse cx={0} cy={-32} rx={14} ry={22} fill="url(#bottleGrad)" />
+              {/* Bottom */}
+              <ellipse cx={0} cy={10} rx={14} ry={8} fill="url(#bottleGrad2)" />
+              {/* Cap */}
+              <rect x={-5} y={-95} width={10} height={8} rx={2} fill="#8B4513" />
+            </g>
+            {/* Centre pivot */}
+            <circle r={6} fill="#C47A2E" />
+          </g>
+
+          <defs>
+            <linearGradient id="bottleGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#2D6A2D" />
+              <stop offset="40%" stopColor="#4CAF50" />
+              <stop offset="100%" stopColor="#1B4B1B" />
+            </linearGradient>
+            <linearGradient id="bottleGrad2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#3A7A3A" />
+              <stop offset="100%" stopColor="#1B4B1B" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
+      {/* Result banner */}
+      {result && !spinning && (
+        <div style={{ textAlign: "center", padding: "14px", background: "rgba(251,191,36,0.15)", border: "2px solid rgba(251,191,36,0.4)", borderRadius: 16, marginBottom: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: "#FBBF24", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>🎯 The bottle chose…</div>
+          <div style={{ fontSize: 26, fontWeight: 900, color: "#fff" }}>{result}!</div>
         </div>
-      </div>
-      {result && !spinning && <div style={{ textAlign: "center", fontSize: 22, fontWeight: 800, color: "#E5C97A", marginBottom: 16 }}>🎯 {result}!</div>}
-      <button onClick={spin} disabled={players.length < 2 || spinning} style={{ ...btn("#C47A2E"), opacity: players.length < 2 ? 0.5 : 1 }}>
-        {spinning ? "Spinning…" : players.length < 2 ? "Add at least 2 names" : "SPIN!"}
+      )}
+
+      <button onClick={spin} disabled={spinning} style={{ ...btn("#C47A2E"), fontSize: 17, fontWeight: 900 }}>
+        {spinning ? "Spinning…" : result ? "Spin Again 🍾" : "SPIN! 🍾"}
       </button>
+      {/* Add more players */}
+      <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+        <input value={newP} onChange={e => setNewP(e.target.value)} onKeyDown={e => e.key === "Enter" && addP()} placeholder="Add player…" style={{ ...inp, flex: 1, fontSize: 13 }} />
+        <button onClick={addP} style={{ ...btn("#C47A2E"), width: "auto", padding: "8px 12px", fontSize: 13 }}>+</button>
+      </div>
     </Modal>
   );
 }
@@ -266,76 +496,175 @@ function Charades({ onClose }) {
   const cats = { bollywood: "🎬 Bollywood", webshows: "📺 Web Shows", celebs: "🌟 Celebs", memesphrases: "😂 Memes & Phrases" };
   const [cat, setCat] = useState(null);
   const [word, setWord] = useState(null);
-  const [timer, setTimer] = useState(null);
+  const [timer, setTimer] = useState(60);
+  const [running, setRunning] = useState(false);
+  const [history, setHistory] = useState([]); // film strip
+  const [score, setScore] = useState({ correct: 0, skip: 0 });
   const timerRef = useRef(null);
 
-  const pick = (c) => { setCat(c); setWord(rand(CHARADES[c])); setTimer(60); };
-  const next = () => setWord(rand(CHARADES[cat]));
-
-  useEffect(() => {
-    if (timer === null) return;
-    if (timer === 0) { clearInterval(timerRef.current); return; }
-    timerRef.current = setInterval(() => setTimer(t => t - 1), 1000);
-    return () => clearInterval(timerRef.current);
-  }, [cat]);
+  const startRound = (c, w) => {
+    setRunning(true); setTimer(60);
+    clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => setTimer(t => { if (t <= 1) { clearInterval(timerRef.current); setRunning(false); return 0; } return t - 1; }), 1000);
+  };
+  const pick = (c) => { const w = rand(CHARADES[c]); setCat(c); setWord(w); startRound(c, w); };
+  const correct = () => {
+    setScore(s => ({ ...s, correct: s.correct + 1 }));
+    setHistory(h => [{ word, result: "correct" }, ...h.slice(0, 5)]);
+    const w = rand(CHARADES[cat]); setWord(w); startRound(cat, w);
+  };
+  const skip = () => {
+    setScore(s => ({ ...s, skip: s.skip + 1 }));
+    setHistory(h => [{ word, result: "skip" }, ...h.slice(0, 5)]);
+    const w = rand(CHARADES[cat]); setWord(w); startRound(cat, w);
+  };
+  useEffect(() => () => clearInterval(timerRef.current), []);
 
   if (!cat) return (
     <Modal onClose={onClose} emoji="🎭" title="Dumb Charades">
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16, textAlign: "center" }}>Pick a category — actor takes centre stage</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {Object.entries(cats).map(([k, v]) => (
-          <button key={k} onClick={() => pick(k)} style={{ ...btn("rgba(196,122,46,0.3)"), border: "1.5px solid rgba(196,122,46,0.5)", textAlign: "left", padding: "14px 16px", fontSize: 15 }}>{v}</button>
+          <button key={k} onClick={() => pick(k)} style={{ background: "rgba(196,122,46,0.12)", border: "1.5px solid rgba(196,122,46,0.4)", borderRadius: 14, padding: "16px 18px", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 10, textAlign: "left" }}>
+            <span style={{ fontSize: 24 }}>{v.split(" ")[0]}</span>
+            <span>{v.split(" ").slice(1).join(" ")}</span>
+          </button>
         ))}
       </div>
     </Modal>
   );
 
+  const timerPct = (timer / 60) * 100;
+  const timerColor = timer > 20 ? "#34D399" : timer > 8 ? "#F59E0B" : "#EF4444";
+
   return (
-    <Modal onClose={onClose} emoji="🎭" title="Dumb Charades">
-      <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: 13, color: "#CCAB4A", marginBottom: 16 }}>{cats[cat]}</div>
-        <div style={{ background: "rgba(196,122,46,0.15)", border: "2px solid rgba(196,122,46,0.4)", borderRadius: 20, padding: "32px 20px", marginBottom: 16 }}>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#fff" }}>{word}</div>
+    <Modal onClose={onClose} emoji="🎭" title="Dumb Charades" wide>
+      {/* Stage */}
+      <div style={{ background: "linear-gradient(180deg,#0a0505 0%,#1a0a05 100%)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "0 0 16px", marginBottom: 12, overflow: "hidden" }}>
+        {/* Stage lights */}
+        <div style={{ display: "flex", justifyContent: "space-around", padding: "0 20px", marginBottom: -8 }}>
+          {[0,1,2,3,4].map(i => <div key={i} style={{ width: 8, height: 28, background: `linear-gradient(180deg,#FBBF24,transparent)`, borderRadius: "0 0 4px 4px", opacity: 0.6 + (i % 2) * 0.3 }} />)}
         </div>
-        <div style={{ fontSize: 36, fontWeight: 800, color: timer > 10 ? "#34D399" : "#F87171", marginBottom: 16 }}>{timer}s</div>
-        <div style={{ display: "flex", gap: 10 }}>
-          <button onClick={next} style={{ ...btn("#C47A2E"), flex: 1 }}>Next Word</button>
-          <button onClick={() => { setCat(null); setWord(null); setTimer(null); }} style={{ ...btn("rgba(255,255,255,0.1)"), flex: 1 }}>Change Category</button>
+        {/* Stage floor strip */}
+        <div style={{ height: 4, background: "linear-gradient(90deg,transparent,#FBBF2460,#FBBF24,#FBBF2460,transparent)", marginBottom: 16 }} />
+
+        {/* Category + timer */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 20px", marginBottom: 12 }}>
+          <span style={{ fontSize: 12, color: "#CCAB4A", fontWeight: 700 }}>{cats[cat]}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 80, height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 3, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${timerPct}%`, background: timerColor, borderRadius: 3, transition: "width 1s linear, background 0.3s" }} />
+            </div>
+            <span style={{ fontSize: 22, fontWeight: 900, color: timerColor, minWidth: 36, textAlign: "right" }}>{timer}s</span>
+          </div>
+        </div>
+
+        {/* Word — hidden from actor but visible to audience */}
+        <div style={{ margin: "0 16px", background: "rgba(255,255,255,0.06)", border: "2px solid rgba(196,122,46,0.4)", borderRadius: 16, padding: "28px 20px", textAlign: "center" }}>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginBottom: 10, letterSpacing: "0.1em" }}>🎭 ACTOR ACTS THIS OUT</div>
+          <div style={{ fontSize: 28, fontWeight: 900, color: "#fff", letterSpacing: "0.02em" }}>{word}</div>
+        </div>
+
+        {/* Score */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 12, fontSize: 12 }}>
+          <span style={{ color: "#34D399", fontWeight: 700 }}>✓ {score.correct} correct</span>
+          <span style={{ color: "rgba(255,255,255,0.35)", fontWeight: 700 }}>↩ {score.skip} skipped</span>
         </div>
       </div>
+
+      {/* Action buttons */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        <button onClick={skip} style={{ flex: 1, padding: "13px", borderRadius: 14, border: "1.5px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.6)", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>↩ Skip</button>
+        <button onClick={correct} style={{ flex: 2, ...btn("#22C55E"), fontSize: 16, fontWeight: 900 }}>✓ Correct!</button>
+        <button onClick={() => { setCat(null); setWord(null); clearInterval(timerRef.current); setRunning(false); setScore({ correct: 0, skip: 0 }); setHistory([]); }} style={{ flex: 1, padding: "13px", borderRadius: 14, border: "1px solid rgba(255,255,255,0.08)", background: "transparent", color: "rgba(255,255,255,0.3)", fontSize: 11, cursor: "pointer", fontFamily: font }}>Change</button>
+      </div>
+
+      {/* Film strip history */}
+      {history.length > 0 && (
+        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4 }}>
+          {history.map((h, i) => (
+            <div key={i} style={{ flexShrink: 0, background: h.result === "correct" ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.05)", border: `1px solid ${h.result === "correct" ? "rgba(34,197,94,0.3)" : "rgba(255,255,255,0.08)"}`, borderRadius: 8, padding: "6px 10px", textAlign: "center", minWidth: 70 }}>
+              <div style={{ fontSize: 14 }}>{h.result === "correct" ? "✓" : "↩"}</div>
+              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", marginTop: 2, lineHeight: 1.2 }}>{h.word.slice(0, 12)}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </Modal>
   );
 }
 
 function Bingo({ onClose }) {
-  const [card] = useState(() => shuffle(BINGO_SQUARES).slice(0, 25).map((t, i) => ({ text: t, marked: i === 12 })));
-  const [marked, setMarked] = useState(() => {
-    const m = {}; m[12] = true; return m;
-  });
+  const [card] = useState(() => shuffle(BINGO_SQUARES).slice(0, 25));
+  const [marked, setMarked] = useState({ 12: true });
   const [bingo, setBingo] = useState(false);
+  const [bingoLine, setBingoLine] = useState([]);
+  const [justStamped, setJustStamped] = useState(null);
+
+  const ROWS = [[0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24]];
+  const COLS = [[0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24]];
+  const DIAGS = [[0,6,12,18,24],[4,8,12,16,20]];
+  const LINES = [...ROWS, ...COLS, ...DIAGS];
 
   const toggle = (i) => {
     if (i === 12) return;
     const next = { ...marked, [i]: !marked[i] };
     setMarked(next);
-
-    const rows = [[0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24]];
-    const cols = [[0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24]];
-    const diags = [[0,6,12,18,24],[4,8,12,16,20]];
-    const lines = [...rows, ...cols, ...diags];
-    setBingo(lines.some(line => line.every(j => next[j])));
+    setJustStamped(i);
+    setTimeout(() => setJustStamped(null), 500);
+    const wonLine = LINES.find(line => line.every(j => next[j]));
+    if (wonLine) { setBingo(true); setBingoLine(wonLine); }
+    else { setBingo(false); setBingoLine([]); }
   };
+
+  const markedCount = Object.values(marked).filter(Boolean).length;
 
   return (
     <Modal onClose={onClose} emoji="🎱" title="Party Bingo" wide>
-      {bingo && <div style={{ textAlign: "center", fontSize: 22, fontWeight: 800, color: "#FBBF24", marginBottom: 16, animation: "pulse 0.5s ease" }}>🎉 BINGO! You got it!</div>}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 5, marginBottom: 16 }}>
-        {card.map((sq, i) => (
-          <div key={i} onClick={() => toggle(i)} style={{ aspectRatio: "1", background: marked[i] ? "rgba(196,122,46,0.5)" : "rgba(255,255,255,0.06)", border: `1.5px solid ${marked[i] ? "#C47A2E" : "rgba(255,255,255,0.12)"}`, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: 4, cursor: i === 12 ? "default" : "pointer", transition: "all 0.15s" }}>
-            <span style={{ fontSize: 11, color: marked[i] ? "#fff" : "rgba(255,255,255,0.7)", textAlign: "center", lineHeight: 1.2 }}>{sq.text}</span>
-          </div>
-        ))}
+      {/* Physical card */}
+      <div style={{ background: "#FFFBEB", borderRadius: 16, padding: 12, marginBottom: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.9)" }}>
+        {/* Card header */}
+        <div style={{ display: "flex", gap: 2, marginBottom: 8 }}>
+          {["B","I","N","G","O"].map((l, i) => (
+            <div key={l} style={{ flex: 1, textAlign: "center", fontWeight: 900, fontSize: 18, color: ["#EF4444","#F97316","#3B82F6","#22C55E","#8B5CF6"][i], letterSpacing: "0.05em", fontFamily: "'Syne', sans-serif" }}>{l}</div>
+          ))}
+        </div>
+        {/* Grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 3 }}>
+          {card.map((sq, i) => {
+            const isMarked = marked[i];
+            const isCenter = i === 12;
+            const inWinLine = bingoLine.includes(i);
+            const isStamping = justStamped === i;
+            return (
+              <div key={i} onClick={() => toggle(i)} style={{ aspectRatio: "1", background: isCenter ? "#C47A2E" : inWinLine ? "#FEF08A" : "#FFFBEB", border: `1.5px solid ${inWinLine ? "#CA8A04" : "#E5D5A0"}`, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", padding: 3, cursor: isCenter ? "default" : "pointer", position: "relative", overflow: "hidden", transform: isStamping ? "scale(0.92)" : "scale(1)", transition: "transform 0.15s" }}>
+                {/* Ink stamp overlay */}
+                {isMarked && !isCenter && (
+                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>
+                    <div style={{ width: "78%", height: "78%", borderRadius: "50%", background: "rgba(220,38,38,0.85)", border: "2.5px solid rgba(180,20,20,0.9)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontSize: 14, color: "#fff", fontWeight: 900 }}>✓</span>
+                    </div>
+                  </div>
+                )}
+                {isCenter && <span style={{ fontSize: 16, color: "#fff", fontWeight: 900, position: "relative", zIndex: 1 }}>★</span>}
+                <span style={{ fontSize: 8, color: isMarked || isCenter ? "transparent" : "#5C4A1E", textAlign: "center", lineHeight: 1.15, fontWeight: 600 }}>{sq}</span>
+              </div>
+            );
+          })}
+        </div>
+        {/* Progress */}
+        <div style={{ textAlign: "center", fontSize: 11, color: "#7C5B2A", marginTop: 8, fontWeight: 600 }}>{markedCount - 1} / 24 stamped</div>
       </div>
-      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", textAlign: "center" }}>Tap squares you've seen happen at the party. Get 5 in a row to win!</p>
+
+      {/* BINGO banner */}
+      {bingo && (
+        <div style={{ textAlign: "center", background: "linear-gradient(135deg,#FBBF24,#F59E0B)", borderRadius: 14, padding: "16px", marginBottom: 12 }}>
+          <div style={{ fontSize: 32, fontWeight: 900, color: "#fff", letterSpacing: "0.1em", textShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>🎉 BINGO!</div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", marginTop: 4 }}>You got it! Show your card!</div>
+        </div>
+      )}
+
+      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", textAlign: "center" }}>Tap squares you've seen happen at the party · 5 in a row wins!</p>
     </Modal>
   );
 }
@@ -407,44 +736,75 @@ function Checklist({ onClose }) {
 
   if (!savedItems) return (
     <Modal onClose={onClose} emoji="📋" title="Party Checklist">
-      <div style={{ fontSize:13, color:'rgba(255,255,255,0.45)', marginBottom:18, textAlign:'center' }}>Pick a template to get started instantly</div>
-      {Object.entries(TEMPLATES).map(([key, tpl]) => (
-        <button key={key} onClick={() => loadTemplate(key)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', width:'100%', background:'rgba(255,255,255,0.05)', border:'1.5px solid rgba(255,255,255,0.1)', borderRadius:12, padding:'14px 18px', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:font, marginBottom:10 }}>
-          <span>{tpl.label}</span><span style={{ fontSize:12, color:'rgba(255,255,255,0.35)' }}>{tpl.items.length} items →</span>
-        </button>
-      ))}
-      <button onClick={() => persist([])} style={{ width:'100%', background:'transparent', border:'1px dashed rgba(255,255,255,0.15)', borderRadius:10, padding:'11px', color:'rgba(255,255,255,0.35)', fontSize:13, cursor:'pointer', fontFamily:font, marginTop:4 }}>Start blank →</button>
+      {/* Clipboard visual */}
+      <div style={{ position:"relative", marginBottom:4 }}>
+        {/* Metal clip */}
+        <div style={{ width:68, height:24, background:"linear-gradient(180deg,#9CA3AF,#6B7280)", borderRadius:"6px 6px 0 0", margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 2px 8px rgba(0,0,0,0.5)", position:"relative", zIndex:2 }}>
+          <div style={{ width:32, height:14, background:"linear-gradient(180deg,#E5E7EB,#D1D5DB)", borderRadius:4, border:"2px solid #9CA3AF", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <div style={{ width:20, height:4, background:"rgba(0,0,0,0.15)", borderRadius:2 }} />
+          </div>
+        </div>
+        {/* Clipboard board edge */}
+        <div style={{ height:10, background:"linear-gradient(180deg,#8B6914,#A0782A)", borderRadius:"2px 2px 0 0", margin:"0 2px", position:"relative", zIndex:1 }} />
+        {/* Paper area */}
+        <div style={{ background:"linear-gradient(180deg,#FFFBEB 0%,#FFF9E0 100%)", borderRadius:"0 0 10px 10px", padding:"18px 16px 16px", boxShadow:"0 6px 20px rgba(0,0,0,0.35)", position:"relative", overflow:"hidden" }}>
+          {/* Red margin line */}
+          <div style={{ position:"absolute", left:38, top:0, bottom:0, width:1.5, background:"rgba(239,68,68,0.28)", pointerEvents:"none", zIndex:0 }} />
+          <div style={{ fontSize:12, color:"#78716C", marginBottom:14, textAlign:"center", fontStyle:"italic", fontFamily:"Georgia,serif", position:"relative", zIndex:1 }}>Pick a template to get started</div>
+          {Object.entries(TEMPLATES).map(([key, tpl]) => (
+            <button key={key} onClick={() => loadTemplate(key)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', width:'100%', background:'rgba(0,0,0,0.04)', border:'1px solid rgba(0,0,0,0.1)', borderRadius:8, padding:'11px 14px 11px 52px', color:'#1C1917', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:'Georgia,serif', marginBottom:8, position:'relative', zIndex:1, boxSizing:'border-box', textAlign:'left' }}>
+              <span>{tpl.label}</span><span style={{ fontSize:11, color:'rgba(0,0,0,0.38)', fontWeight:400 }}>{tpl.items.length} items →</span>
+            </button>
+          ))}
+          <button onClick={() => persist([])} style={{ width:'100%', background:'transparent', border:'1px dashed rgba(0,0,0,0.18)', borderRadius:8, padding:'10px', color:'rgba(0,0,0,0.38)', fontSize:12, cursor:'pointer', fontFamily:'Georgia,serif', marginTop:4, boxSizing:'border-box', position:'relative', zIndex:1 }}>Start blank →</button>
+        </div>
+      </div>
     </Modal>
   );
 
   return (
     <Modal onClose={onClose} emoji="📋" title="Party Checklist" wide>
+      {/* Progress bar */}
       <div style={{ marginBottom:14 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
           <span style={{ fontSize:12, fontWeight:700, color:'rgba(255,255,255,0.45)' }}>Progress</span>
-          <span style={{ fontSize:12, fontWeight:700, color:'#22c55e' }}>{done} / {total} done</span>
+          <span style={{ fontSize:12, fontWeight:700, color: done===total&&total>0?'#22c55e':'rgba(255,255,255,0.6)' }}>{done} / {total} done</span>
         </div>
         <div style={{ height:6, borderRadius:3, background:'rgba(255,255,255,0.08)', overflow:'hidden' }}>
-          <div style={{ height:'100%', width:`${total?done/total*100:0}%`, background:'linear-gradient(90deg,#22c55e,#16a34a)', borderRadius:3, transition:'width 0.3s' }} />
+          <div style={{ height:'100%', width:`${total?done/total*100:0}%`, background: done===total&&total>0?'linear-gradient(90deg,#22c55e,#16a34a)':'linear-gradient(90deg,#C47A2E,#E5A84A)', borderRadius:3, transition:'width 0.3s' }} />
         </div>
       </div>
 
+      {/* Clipboard paper */}
       {CATS.map(cat => {
         const catItems = savedItems.filter(it => it.cat === cat.id);
         if (!catItems.length) return null;
         return (
-          <div key={cat.id} style={{ marginBottom:16 }}>
-            <div style={{ fontSize:10.5, fontWeight:800, color:cat.color, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:7 }}>{cat.label} ({catItems.length})</div>
-            {catItems.map(it => (
-              <div key={it.id} style={{ display:'flex', alignItems:'center', gap:9, padding:'9px 12px', background: it.done?'rgba(34,197,94,0.06)':'rgba(255,255,255,0.04)', borderRadius:10, marginBottom:5, border:`1px solid ${it.done?'rgba(34,197,94,0.15)':'rgba(255,255,255,0.05)'}` }}>
-                <button onClick={() => toggleDone(it.id)} style={{ width:20, height:20, borderRadius:6, border:`2px solid ${it.done?cat.color:'rgba(255,255,255,0.2)'}`, background:it.done?cat.color+'28':'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                  {it.done && <span style={{ color:cat.color, fontSize:11, fontWeight:900 }}>✓</span>}
-                </button>
-                <span style={{ flex:1, fontSize:13.5, color:it.done?'rgba(255,255,255,0.3)':'#fff', textDecoration:it.done?'line-through':'none', fontFamily:font }}>{it.name}</span>
-                <input value={it.person} onChange={e => updatePerson(it.id, e.target.value)} placeholder="Who?" style={{ width:72, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:6, padding:'4px 8px', color:'rgba(255,255,255,0.6)', fontSize:11, fontFamily:font, outline:'none', textAlign:'center' }} />
-                <button onClick={() => persist(savedItems.filter(x=>x.id!==it.id))} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.15)', cursor:'pointer', fontSize:18, lineHeight:1, padding:'0 2px' }}>×</button>
-              </div>
-            ))}
+          <div key={cat.id} style={{ marginBottom:14 }}>
+            {/* Section header */}
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:5 }}>
+              <div style={{ height:1.5, width:10, background:cat.color+'66', borderRadius:2 }} />
+              <span style={{ fontSize:10, fontWeight:800, color:cat.color, textTransform:'uppercase', letterSpacing:'0.1em' }}>{cat.label} ({catItems.length})</span>
+              <div style={{ height:1.5, flex:1, background:cat.color+'22', borderRadius:2 }} />
+            </div>
+            {/* Cream notebook paper */}
+            <div style={{ background:'linear-gradient(180deg,#FFFBEB,#FFF9E0)', borderRadius:10, overflow:'hidden', boxShadow:'0 3px 12px rgba(0,0,0,0.25)', position:'relative' }}>
+              <div style={{ position:'absolute', left:40, top:0, bottom:0, width:1.5, background:'rgba(239,68,68,0.28)', pointerEvents:'none', zIndex:0 }} />
+              {catItems.map((it, idx) => (
+                <div key={it.id} onClick={() => toggleDone(it.id)} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'9px 12px 9px 56px', cursor:'pointer', borderBottom:idx<catItems.length-1?'1px solid rgba(0,0,0,0.07)':undefined, background:it.done?'rgba(34,197,94,0.06)':'transparent', transition:'background 0.15s', position:'relative', zIndex:1 }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                    <div style={{ width:16, height:16, borderRadius:3, border:`2px solid ${it.done?cat.color:'rgba(0,0,0,0.22)'}`, background:it.done?cat.color:'transparent', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all 0.15s' }}>
+                      {it.done && <span style={{ color:'#fff', fontSize:9, fontWeight:900, lineHeight:1 }}>✓</span>}
+                    </div>
+                    <span style={{ color:it.done?'rgba(0,0,0,0.28)':'#1C1917', fontSize:13, textDecoration:it.done?'line-through':'none', fontFamily:'Georgia,serif' }}>{it.name}</span>
+                  </div>
+                  <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                    <input value={it.person} onClick={e=>e.stopPropagation()} onChange={e => { e.stopPropagation(); updatePerson(it.id, e.target.value); }} placeholder="Who?" style={{ width:64, background:'rgba(0,0,0,0.05)', border:'1px solid rgba(0,0,0,0.12)', borderRadius:5, padding:'3px 7px', color:'#6B7280', fontSize:11, fontFamily:font, outline:'none', textAlign:'center' }} />
+                    <button onClick={e => { e.stopPropagation(); persist(savedItems.filter(x=>x.id!==it.id)); }} style={{ background:'none', border:'none', color:'rgba(0,0,0,0.2)', cursor:'pointer', fontSize:16, lineHeight:1, padding:'0 2px' }}>×</button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         );
       })}
@@ -761,39 +1121,45 @@ function BillSplitter({ onClose }) {
       {/* ── Settle Up tab ── */}
       {tab === "settle" && (
         <>
-          {settlements.length === 0
-            ? <div style={{ textAlign: "center", padding: "32px 0" }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>🎉</div>
-                <div style={{ color: "#34D399", fontWeight: 700, fontSize: 15 }}>All settled up!</div>
-                <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, marginTop: 4 }}>No payments needed</div>
+          {settlements.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "32px 0" }}>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>🎉</div>
+              <div style={{ color: "#34D399", fontWeight: 700, fontSize: 15 }}>All settled up!</div>
+              <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, marginTop: 4 }}>No payments needed</div>
+            </div>
+          ) : (
+            <div style={{ background:"#FFFBEB", borderRadius:14, padding:"18px 16px 14px", boxShadow:"0 4px 20px rgba(0,0,0,0.3)", fontFamily:"'Courier New',monospace", position:"relative" }}>
+              {/* Receipt notch */}
+              <div style={{ position:"absolute", top:-1, left:"50%", transform:"translateX(-50%)", width:40, height:8, background:"#0F0A05", borderRadius:"0 0 8px 8px" }} />
+              <div style={{ textAlign:"center", paddingTop:8, borderBottom:"1px dashed rgba(0,0,0,0.18)", paddingBottom:12, marginBottom:12 }}>
+                <div style={{ fontSize:8, fontWeight:700, color:"#6B7280", textTransform:"uppercase", letterSpacing:"0.2em", marginBottom:2 }}>Settlement Receipt</div>
+                <div style={{ fontSize:18, fontWeight:900, color:"#111827" }}>💸 Who Pays Who</div>
+                <div style={{ fontSize:10, color:"#9CA3AF", marginTop:3 }}>Total: ₹{grandTotal.toLocaleString()} · {settlements.length} payment{settlements.length !== 1 ? "s" : ""}</div>
               </div>
-            : settlements.map(t => {
-              const done = settled.has(t.key);
-              return (
-                <div key={t.key} style={{ ...card, display: "flex", alignItems: "center", gap: 10, opacity: done ? 0.45 : 1 }}>
-                  <Avatar name={t.from} size={32} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, color: "#fff" }}>
-                      <b style={{ color: colorOf(t.from) }}>{t.from}</b>
-                      <span style={{ color: "rgba(255,255,255,0.45)", margin: "0 6px" }}>pays</span>
-                      <b style={{ color: colorOf(t.to) }}>{t.to}</b>
+              {settlements.map(t => {
+                const done = settled.has(t.key);
+                return (
+                  <div key={t.key} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"9px 0", borderBottom:"1px solid rgba(0,0,0,0.08)", opacity:done?0.45:1 }}>
+                    <div>
+                      <span style={{ fontSize:13, fontWeight:700, color:"#DC2626" }}>{t.from}</span>
+                      <span style={{ color:"#9CA3AF", margin:"0 7px", fontSize:12 }}>→</span>
+                      <span style={{ fontSize:13, fontWeight:700, color:"#16A34A" }}>{t.to}</span>
                     </div>
-                    <div style={{ fontSize: 17, fontWeight: 800, color: "#FBBF24", marginTop: 2 }}>₹{t.amount.toLocaleString()}</div>
+                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                      <span style={{ fontWeight:900, color:"#111827", fontSize:16 }}>₹{t.amount.toLocaleString()}</span>
+                      <button
+                        onClick={() => setSettled(prev => { const s = new Set(prev); done ? s.delete(t.key) : s.add(t.key); return s; })}
+                        style={{ fontSize:10, padding:"3px 10px", borderRadius:20, border:`1.5px solid ${done?"#16A34A":"rgba(0,0,0,0.2)"}`, background:done?"rgba(22,163,74,0.12)":"transparent", color:done?"#16A34A":"rgba(0,0,0,0.45)", cursor:"pointer", fontFamily:"'Courier New',monospace", fontWeight:700 }}
+                      >
+                        {done ? "✓ Paid" : "Pay"}
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => setSettled(prev => {
-                      const s = new Set(prev);
-                      done ? s.delete(t.key) : s.add(t.key);
-                      return s;
-                    })}
-                    style={{ padding: "7px 14px", borderRadius: 20, border: `1.5px solid ${done ? "#34D399" : "rgba(255,255,255,0.2)"}`, background: done ? "rgba(52,211,153,0.15)" : "transparent", color: done ? "#34D399" : "rgba(255,255,255,0.5)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}
-                  >
-                    {done ? "✓ Done" : "Mark done"}
-                  </button>
-                </div>
-              );
-            })
-          }
+                );
+              })}
+              <div style={{ textAlign:"center", marginTop:12, fontSize:9, color:"rgba(0,0,0,0.25)", letterSpacing:"0.18em" }}>TENDR · BILL SPLITTER</div>
+            </div>
+          )}
         </>
       )}
     </Modal>
@@ -803,29 +1169,76 @@ function BillSplitter({ onClose }) {
 function ThemePicker({ onClose }) {
   const [votes, setVotes] = useState({});
   const [myVote, setMyVote] = useState(null);
+  const [winner, setWinner] = useState(null);
 
-  const vote = (t) => {
+  const castVote = (name) => {
     if (myVote) setVotes(v => ({ ...v, [myVote]: Math.max(0, (v[myVote] || 0) - 1) }));
-    setMyVote(t);
-    setVotes(v => ({ ...v, [t]: (v[t] || 0) + 1 }));
+    setMyVote(name);
+    setVotes(v => ({ ...v, [name]: (v[name] || 0) + 1 }));
   };
-  const maxVotes = Math.max(...Object.values(votes), 0);
+  const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0);
+  const maxVotes = Math.max(...Object.values(votes), 1);
+  const leadTheme = totalVotes > 0 ? Object.entries(votes).sort(([,a],[,b]) => b-a)[0]?.[0] : null;
+
+  if (winner) {
+    const t = THEME_DATA.find(x => x.name === winner) || THEME_DATA[0];
+    return (
+      <Modal onClose={onClose} emoji="🎨" title="Tonight's Theme!">
+        <div style={{ textAlign: "center", padding: "20px 0" }}>
+          <div style={{ fontSize: 64, marginBottom: 12 }}>{t.emoji}</div>
+          <div style={{ fontSize: 26, fontWeight: 900, color: t.color }}>{t.name}</div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 8 }}>{t.mood}</div>
+          <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 14, padding: "14px 16px", marginTop: 20, textAlign: "left" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Dress Code</div>
+            <div style={{ fontSize: 14, color: "#fff", marginBottom: 12 }}>{t.dress}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Music</div>
+            <div style={{ fontSize: 14, color: "#fff" }}>{t.music}</div>
+          </div>
+          <button onClick={() => setWinner(null)} style={{ ...btn("rgba(255,255,255,0.1)"), marginTop: 16 }}>← Back to voting</button>
+        </div>
+      </Modal>
+    );
+  }
 
   return (
-    <Modal onClose={onClose} emoji="🎨" title="Theme Picker">
-      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>Everyone votes. Pass the phone around!</p>
-      {THEMES.map(t => (
-        <div key={t} onClick={() => vote(t)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${myVote === t ? "#C47A2E" : "rgba(255,255,255,0.1)"}`, background: myVote === t ? "rgba(196,122,46,0.2)" : "rgba(255,255,255,0.04)", marginBottom: 8, cursor: "pointer" }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ color: "#fff", fontSize: 14 }}>{t}</div>
-            <div style={{ height: 4, background: "rgba(255,255,255,0.1)", borderRadius: 4, marginTop: 6, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${maxVotes ? ((votes[t] || 0) / maxVotes) * 100 : 0}%`, background: "#C47A2E", borderRadius: 4, transition: "width 0.3s" }} />
-            </div>
-          </div>
-          <span style={{ fontSize: 18, fontWeight: 800, color: "#CCAB4A", minWidth: 28, textAlign: "right" }}>{votes[t] || 0}</span>
-        </div>
-      ))}
-      {maxVotes > 0 && <div style={{ textAlign: "center", marginTop: 12, fontSize: 14, color: "#FBBF24" }}>🏆 Leading: {Object.entries(votes).sort(([,a],[,b]) => b-a)[0]?.[0]}</div>}
+    <Modal onClose={onClose} emoji="🎨" title="Theme Picker" wide>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>Pass the phone — vote for tonight's vibe!</p>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+        {THEME_DATA.map(t => {
+          const v = votes[t.name] || 0;
+          const pct = maxVotes > 0 ? v / maxVotes : 0;
+          const isVoted = myVote === t.name;
+          return (
+            <button key={t.name} onClick={() => castVote(t.name)} style={{
+              background: t.bg, borderRadius: 16, padding: "16px 12px",
+              border: `2px solid ${isVoted ? t.color : "transparent"}`,
+              cursor: "pointer", textAlign: "left", fontFamily: font,
+              transform: `scale(${1 + pct * 0.06})`,
+              transition: "transform 0.3s cubic-bezier(0.22,1,0.36,1), border-color 0.2s",
+              boxShadow: isVoted ? `0 8px 24px ${t.color}44` : "0 4px 12px rgba(0,0,0,0.3)",
+              position: "relative",
+            }}>
+              <div style={{ fontSize: 28, marginBottom: 6 }}>{t.emoji}</div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", lineHeight: 1.3, marginBottom: 4 }}>{t.name}</div>
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", lineHeight: 1.4 }}>{t.mood}</div>
+              {v > 0 && (
+                <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 4 }}>
+                  <div style={{ flex: 1, height: 3, background: "rgba(255,255,255,0.2)", borderRadius: 2, overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${pct * 100}%`, background: t.color, borderRadius: 2, transition: "width 0.4s" }} />
+                  </div>
+                  <span style={{ fontSize: 10, color: "#fff", fontWeight: 800 }}>{v}</span>
+                </div>
+              )}
+              {isVoted && <div style={{ position: "absolute", top: 8, right: 8, fontSize: 14 }}>✓</div>}
+            </button>
+          );
+        })}
+      </div>
+      {leadTheme && totalVotes > 0 && (
+        <button onClick={() => setWinner(leadTheme)} style={btn("#C47A2E")}>
+          🏆 Reveal Winner: {leadTheme}
+        </button>
+      )}
     </Modal>
   );
 }
@@ -833,32 +1246,67 @@ function ThemePicker({ onClose }) {
 function Countdown({ onClose }) {
   const [target, setTarget] = useState("");
   const [timeLeft, setTimeLeft] = useState(null);
+  const [celebrating, setCelebrating] = useState(false);
   const intervalRef = useRef(null);
 
   const start = () => {
     if (!target) return;
     clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(() => {
+    const tick = () => {
       const diff = new Date(target) - Date.now();
-      if (diff <= 0) { setTimeLeft("🎉 Party time!"); clearInterval(intervalRef.current); return; }
-      const h = Math.floor(diff / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      const s = Math.floor((diff % 60000) / 1000);
-      setTimeLeft(`${h}h ${m}m ${s}s`);
-    }, 1000);
+      if (diff <= 0) { setTimeLeft({ d:0, h:0, m:0, s:0 }); setCelebrating(true); clearInterval(intervalRef.current); return; }
+      setTimeLeft({
+        d: Math.floor(diff / 86400000),
+        h: Math.floor((diff % 86400000) / 3600000),
+        m: Math.floor((diff % 3600000) / 60000),
+        s: Math.floor((diff % 60000) / 1000),
+      });
+    };
+    tick();
+    intervalRef.current = setInterval(tick, 1000);
   };
-
   useEffect(() => () => clearInterval(intervalRef.current), []);
+
+  const FlipCard = ({ value, lbl }) => (
+    <div style={{ textAlign: "center" }}>
+      <div style={{ background: "linear-gradient(180deg,#1a1208 50%,#0f0a05 50%)", borderRadius: 10, width: 64, height: 76, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 38, fontWeight: 900, color: "#FBBF24", border: "2px solid rgba(196,122,46,0.4)", boxShadow: "0 8px 24px rgba(0,0,0,0.5)", position: "relative", overflow: "hidden", fontFamily: font, letterSpacing: "-0.03em" }}>
+        <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 1.5, background: "rgba(0,0,0,0.6)", zIndex: 2 }} />
+        <span style={{ position: "relative", zIndex: 1 }}>{String(value).padStart(2, "0")}</span>
+      </div>
+      <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.35)", marginTop: 5, textTransform: "uppercase", letterSpacing: "0.1em" }}>{lbl}</div>
+    </div>
+  );
+
+  if (celebrating) return (
+    <Modal onClose={onClose} emoji="⏱️" title="Countdown Timer">
+      <div style={{ textAlign: "center", padding: "28px 0" }}>
+        <div style={{ fontSize: 72, marginBottom: 12 }}>🎉</div>
+        <div style={{ fontSize: 28, fontWeight: 900, color: "#FBBF24" }}>Party Time!</div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 8 }}>The moment is here!</div>
+        <button onClick={() => { setCelebrating(false); setTimeLeft(null); setTarget(""); }} style={{ ...btn("rgba(255,255,255,0.1)"), marginTop: 20 }}>Reset</button>
+      </div>
+    </Modal>
+  );
 
   return (
     <Modal onClose={onClose} emoji="⏱️" title="Countdown Timer">
-      <label style={label}>Party Start Date & Time</label>
-      <input type="datetime-local" value={target} onChange={e => setTarget(e.target.value)} style={{ ...inp, marginBottom: 12 }} />
-      <button onClick={start} style={{ ...btn("#C47A2E"), marginBottom: 20 }}>Start Countdown</button>
-      {timeLeft && (
-        <div style={{ textAlign: "center", fontSize: typeof timeLeft === "string" && timeLeft.includes("🎉") ? 26 : 40, fontWeight: 800, color: "#FBBF24" }}>
-          {timeLeft}
-        </div>
+      {!timeLeft ? (
+        <>
+          <label style={label}>Party Start Date & Time</label>
+          <input type="datetime-local" value={target} onChange={e => setTarget(e.target.value)} style={{ ...inp, marginBottom: 12 }} />
+          <button onClick={start} style={btn("#C47A2E")}>Start Countdown</button>
+        </>
+      ) : (
+        <>
+          <div style={{ display: "flex", justifyContent: "center", gap: 10, padding: "28px 0 16px" }}>
+            {timeLeft.d > 0 && <FlipCard value={timeLeft.d} lbl="Days" />}
+            <FlipCard value={timeLeft.h} lbl="Hours" />
+            <FlipCard value={timeLeft.m} lbl="Min" />
+            <FlipCard value={timeLeft.s} lbl="Sec" />
+          </div>
+          <div style={{ textAlign: "center", fontSize: 12, color: "rgba(255,255,255,0.35)", marginBottom: 18 }}>Party is coming… 🎊</div>
+          <button onClick={() => { clearInterval(intervalRef.current); setTimeLeft(null); setTarget(""); }} style={btn("rgba(255,255,255,0.1)")}>Reset</button>
+        </>
       )}
     </Modal>
   );
@@ -868,87 +1316,158 @@ function PlaylistBuilder({ onClose }) {
   const [songs, setSongs] = useState([]);
   const [newSong, setNewSong] = useState("");
   const [newArtist, setNewArtist] = useState("");
+  const [nowPlaying, setNowPlaying] = useState(null);
+  const [reelAngle, setReelAngle] = useState(0);
+
+  useEffect(() => {
+    if (!nowPlaying) return;
+    const id = setInterval(() => setReelAngle(a => a + 3), 50);
+    return () => clearInterval(id);
+  }, [nowPlaying]);
 
   const add = () => {
     if (!newSong.trim()) return;
-    setSongs(s => [...s, { song: newSong.trim(), artist: newArtist.trim() }]);
+    setSongs(s => [...s, { id: Date.now(), song: newSong.trim(), artist: newArtist.trim(), votes: 0 }].sort((a, b) => b.votes - a.votes));
     setNewSong(""); setNewArtist("");
   };
-
-  const copy = () => {
-    const text = songs.map((s, i) => `${i + 1}. ${s.song}${s.artist ? ` — ${s.artist}` : ""}`).join("\n");
-    copyLink(text);
-    alert("Playlist copied to clipboard!");
-  };
+  const upvote = (id) => setSongs(s => s.map(x => x.id === id ? { ...x, votes: x.votes + 1 } : x).sort((a, b) => b.votes - a.votes));
+  const remove = (id) => { setSongs(s => s.filter(x => x.id !== id)); if (nowPlaying === id) setNowPlaying(null); };
+  const displaySong = songs.find(s => s.id === nowPlaying) || songs[0];
 
   return (
-    <Modal onClose={onClose} emoji="🎵" title="Playlist Builder">
-      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 14 }}>Everyone adds 2 songs. Build tonight's playlist together.</p>
+    <Modal onClose={onClose} emoji="🎵" title="Playlist Builder" wide>
+      {/* Cassette deck */}
+      <div style={{ background: "linear-gradient(145deg,#1a0f05,#0f0a03)", borderRadius: 20, padding: "18px 16px", marginBottom: 16, border: "2px solid rgba(196,122,46,0.25)" }}>
+        <div style={{ background: "linear-gradient(135deg,#C47A2E,#9A621E)", borderRadius: 10, padding: "12px 14px", marginBottom: 12, textAlign: "center" }}>
+          <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 2 }}>NOW PLAYING</div>
+          <div style={{ fontSize: 15, fontWeight: 900, color: "#fff", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displaySong?.song || "Add your first song!"}</div>
+          {displaySong?.artist && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>{displaySong.artist}</div>}
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-around" }}>
+          {[0, 1].map(i => (
+            <svg key={i} width="54" height="54" viewBox="0 0 56 56">
+              <circle cx="28" cy="28" r="26" fill="#0a0602" stroke="rgba(196,122,46,0.3)" strokeWidth="2"/>
+              <g transform={`rotate(${reelAngle + i * 60}, 28, 28)`}>
+                {[0, 120, 240].map(a => <rect key={a} x="26" y="6" width="4" height="16" rx="2" fill="#C47A2E" transform={`rotate(${a} 28 28)`} opacity="0.8"/>)}
+              </g>
+              <circle cx="28" cy="28" r="7" fill="#1a0f05" stroke="rgba(196,122,46,0.4)" strokeWidth="1.5"/>
+              <circle cx="28" cy="28" r="3" fill="#C47A2E" opacity="0.6"/>
+            </svg>
+          ))}
+        </div>
+      </div>
       <input value={newSong} onChange={e => setNewSong(e.target.value)} placeholder="Song name" style={{ ...inp, marginBottom: 8 }} />
-      <input value={newArtist} onChange={e => setNewArtist(e.target.value)} placeholder="Artist (optional)" style={{ ...inp, marginBottom: 10 }} onKeyDown={e => e.key === "Enter" && add()} />
-      <button onClick={add} style={{ ...btn("#C47A2E"), marginBottom: 16 }}>Add Song</button>
+      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        <input value={newArtist} onChange={e => setNewArtist(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Artist (optional)" style={{ ...inp, flex: 1 }} />
+        <button onClick={add} style={{ ...btn("#C47A2E"), width: "auto", padding: "10px 16px" }}>+ Add</button>
+      </div>
+      {songs.length === 0 && <div style={{ textAlign: "center", color: "rgba(255,255,255,0.25)", fontSize: 13, padding: "20px 0" }}>No songs yet — start the queue!</div>}
       {songs.map((s, i) => (
-        <div key={i} style={{ ...card, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <div style={{ fontWeight: 600 }}>{i + 1}. {s.song}</div>
-            {s.artist && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{s.artist}</div>}
+        <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: nowPlaying === s.id ? "rgba(196,122,46,0.15)" : "rgba(255,255,255,0.04)", borderRadius: 12, marginBottom: 7, border: `1.5px solid ${nowPlaying === s.id ? "rgba(196,122,46,0.4)" : "rgba(255,255,255,0.07)"}` }}>
+          <div style={{ width: 22, textAlign: "center", fontSize: 11, color: i === 0 ? "#FBBF24" : "rgba(255,255,255,0.3)", fontWeight: 800 }}>{i === 0 ? "🔊" : `${i + 1}`}</div>
+          <div onClick={() => setNowPlaying(np => np === s.id ? null : s.id)} style={{ flex: 1, minWidth: 0, cursor: "pointer" }}>
+            <div style={{ fontSize: 13, color: "#fff", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.song}</div>
+            {s.artist && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>{s.artist}</div>}
           </div>
-          <span onClick={() => setSongs(ss => ss.filter((_, j) => j !== i))} style={{ cursor: "pointer", opacity: 0.5 }}>✕</span>
+          <button onClick={() => upvote(s.id)} style={{ background: "rgba(196,122,46,0.15)", border: "none", borderRadius: 8, padding: "4px 9px", color: "#FBBF24", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>↑ {s.votes}</button>
+          <button onClick={() => remove(s.id)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", cursor: "pointer", fontSize: 15, padding: "0 2px" }}>✕</button>
         </div>
       ))}
-      {songs.length > 0 && <button onClick={copy} style={{ ...btn("rgba(255,255,255,0.1)"), marginTop: 10 }}>📋 Copy Playlist</button>}
+      {songs.length > 0 && (
+        <button onClick={() => copyLink(songs.map((s, i) => `${i + 1}. ${s.song}${s.artist ? ` — ${s.artist}` : ""}`).join("\n"))} style={{ ...btn("rgba(255,255,255,0.07)"), marginTop: 10 }}>📋 Copy Playlist</button>
+      )}
     </Modal>
   );
 }
 
 function PartyReportCard({ onClose }) {
-  const [ratings, setRatings] = useState({ vibe: 0, music: 0, food: 0, host: 0, drama: 0 });
-  const [done, setDone] = useState(false);
-
-  const cats = [
-    { key: "vibe", label: "Overall Vibe", emoji: "✨" },
-    { key: "music", label: "Music", emoji: "🎵" },
-    { key: "food", label: "Food & Drinks", emoji: "🍕" },
-    { key: "host", label: "Host", emoji: "👑" },
-    { key: "drama", label: "Drama Level", emoji: "💀" },
+  const subjects = [
+    { key: "dancefloor", label: "Dance Floor",      emoji: "💃", note: "Did they move or did the floor move?" },
+    { key: "vibes",      label: "Overall Vibes",    emoji: "✨", note: "Atmosphere assessment" },
+    { key: "music",      label: "Music Selection",  emoji: "🎵", note: "DJ skills evaluation" },
+    { key: "food",       label: "Food & Drinks",    emoji: "🍕", note: "Caloric performance" },
+    { key: "host",       label: "Host Behaviour",   emoji: "👑", note: "Leadership under pressure" },
+    { key: "drama",      label: "Drama Generated",  emoji: "💀", note: "Entertainment value" },
+    { key: "timeliness", label: "Leaving on Time",  emoji: "⏰", note: "Exit punctuality" },
   ];
+  const gradeMap = { 5: "A+", 4: "A", 3: "B", 2: "C", 1: "D", 0: "—" };
+  const gradeColor = { "A+": "#22C55E", A: "#34D399", B: "#FBBF24", C: "#F97316", D: "#EF4444", "—": "#6B7280" };
+  const teacherLines = { "A+": "Outstanding! Exceeds all expectations.", A: "Excellent performance. Well done.", B: "Satisfactory. Room for improvement.", C: "Below average. Must try harder.", D: "Disappointing. See me after class.", "—": "Not yet assessed." };
 
-  const avg = (Object.values(ratings).reduce((a, b) => a + b, 0) / 5).toFixed(1);
-  const grade = avg >= 4.5 ? "S+" : avg >= 4 ? "A" : avg >= 3 ? "B" : avg >= 2 ? "C" : "D";
-  const verdict = avg >= 4.5 ? "Legendary party!" : avg >= 4 ? "That was a banger!" : avg >= 3 ? "Decent night out" : avg >= 2 ? "Could've been better" : "Never again";
+  const [ratings, setRatings] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [comment, setComment] = useState("");
+
+  const allRated = subjects.every(s => ratings[s.key]);
+  const overallGrade = allRated ? (() => {
+    const avg = subjects.reduce((a, s) => a + ratings[s.key], 0) / subjects.length;
+    return avg >= 4.5 ? "A+" : avg >= 4 ? "A" : avg >= 3 ? "B" : avg >= 2 ? "C" : "D";
+  })() : null;
+
+  if (submitted && overallGrade) return (
+    <Modal onClose={onClose} emoji="📝" title="Party Report Card" wide>
+      <div style={{ background: "#FFFBEB", borderRadius: 16, overflow: "hidden", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}>
+        <div style={{ background: "#DC2626", padding: "14px 18px", textAlign: "center" }}>
+          <div style={{ fontSize: 10, fontWeight: 800, color: "rgba(255,255,255,0.85)", letterSpacing: "0.18em", textTransform: "uppercase" }}>Official Party Report Card</div>
+          <div style={{ fontSize: 18, fontWeight: 900, color: "#fff", marginTop: 4 }}>ANNUAL ASSESSMENT</div>
+        </div>
+        <div style={{ padding: "16px 18px", background: "repeating-linear-gradient(transparent,transparent 27px,rgba(0,0,0,0.04) 27px,rgba(0,0,0,0.04) 28px)", position: "relative" }}>
+          <div style={{ position: "absolute", left: 40, top: 0, bottom: 0, width: 1.5, background: "rgba(220,38,38,0.18)" }} />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, paddingLeft: 22 }}>
+            <div>
+              <div style={{ fontSize: 10, color: "#6B7280", fontWeight: 600, textTransform: "uppercase" }}>Final Grade</div>
+              <div style={{ fontSize: 38, fontWeight: 900, color: gradeColor[overallGrade], lineHeight: 1 }}>{overallGrade}</div>
+            </div>
+            <div style={{ width: 56, height: 56, borderRadius: "50%", border: `3px solid ${gradeColor[overallGrade]}`, display: "flex", alignItems: "center", justifyContent: "center", background: gradeColor[overallGrade] + "22" }}>
+              <span style={{ fontSize: 24, fontWeight: 900, color: gradeColor[overallGrade] }}>{overallGrade}</span>
+            </div>
+          </div>
+          {subjects.map(s => {
+            const g = gradeMap[ratings[s.key] || 0];
+            return (
+              <div key={s.key} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0 6px 22px", borderBottom: "1px dashed rgba(0,0,0,0.07)" }}>
+                <span style={{ fontSize: 13, minWidth: 20 }}>{s.emoji}</span>
+                <span style={{ flex: 1, fontSize: 12, color: "#374151", fontFamily: "Georgia, serif" }}>{s.label}</span>
+                <span style={{ fontSize: 9, color: "#9CA3AF", fontStyle: "italic", flexShrink: 0, maxWidth: 90, textAlign: "right" }}>{s.note}</span>
+                <span style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", background: gradeColor[g], borderRadius: 6, fontSize: 12, fontWeight: 900, color: "#fff", flexShrink: 0, marginLeft: 6 }}>{g}</span>
+              </div>
+            );
+          })}
+          <div style={{ padding: "12px 0 0 22px", marginTop: 6 }}>
+            <div style={{ fontSize: 9, color: "#6B7280", fontWeight: 700, textTransform: "uppercase", marginBottom: 4 }}>Teacher's Comment</div>
+            <div style={{ fontFamily: "Georgia, serif", fontSize: 12, color: "#1F2937", fontStyle: "italic", lineHeight: 1.7 }}>{comment || teacherLines[overallGrade]}</div>
+            <div style={{ marginTop: 14, borderTop: "1px solid rgba(0,0,0,0.1)", paddingTop: 8, display: "flex", justifyContent: "space-between" }}>
+              <div style={{ fontSize: 9, color: "#9CA3AF" }}>Signed: The Host</div>
+              <div style={{ fontSize: 9, color: "#9CA3AF", fontStyle: "italic" }}>{new Date().toLocaleDateString("en-IN")}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button onClick={() => { setSubmitted(false); setRatings({}); setComment(""); }} style={{ ...btn("rgba(255,255,255,0.08)"), marginTop: 16 }}>Fill Again</button>
+    </Modal>
+  );
 
   return (
-    <Modal onClose={onClose} emoji="🏆" title="Party Report Card">
-      {!done ? (
-        <>
-          {cats.map(({ key, label, emoji }) => (
-            <div key={key} style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: 13, color: "#fff", marginBottom: 8 }}>{emoji} {label}</div>
-              <div style={{ display: "flex", gap: 6 }}>
-                {[1, 2, 3, 4, 5].map(n => (
-                  <button key={n} onClick={() => setRatings(r => ({ ...r, [key]: n }))} style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: `1.5px solid ${ratings[key] >= n ? "#C47A2E" : "rgba(255,255,255,0.15)"}`, background: ratings[key] >= n ? "rgba(196,122,46,0.35)" : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 16, cursor: "pointer" }}>
-                    {n <= ratings[key] ? "⭐" : "☆"}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-          <button onClick={() => setDone(true)} disabled={Object.values(ratings).some(r => r === 0)} style={{ ...btn("#C47A2E"), opacity: Object.values(ratings).some(r => r === 0) ? 0.5 : 1 }}>Generate Report Card</button>
-        </>
-      ) : (
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 80, fontWeight: 900, color: grade === "S+" ? "#FBBF24" : grade === "A" ? "#34D399" : "#CCAB4A" }}>{grade}</div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: "#fff", marginBottom: 8 }}>{verdict}</div>
-          <div style={{ fontSize: 15, color: "#CCAB4A", marginBottom: 20 }}>{avg} / 5.0</div>
-          {cats.map(({ key, label, emoji }) => (
-            <div key={key} style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", marginBottom: 6, background: "rgba(255,255,255,0.05)", borderRadius: 10 }}>
-              <span style={{ color: "#fff", fontSize: 13 }}>{emoji} {label}</span>
-              <span style={{ color: "#FBBF24" }}>{"⭐".repeat(ratings[key])}</span>
-            </div>
-          ))}
-          <button onClick={() => { setDone(false); setRatings({ vibe: 0, music: 0, food: 0, host: 0, drama: 0 }); }} style={{ ...btn("rgba(255,255,255,0.1)"), marginTop: 14 }}>Rate Again</button>
+    <Modal onClose={onClose} emoji="📝" title="Party Report Card" wide>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>Rate the party honestly — it's for science.</p>
+      {subjects.map(s => (
+        <div key={s.key} style={{ marginBottom: 14 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+            <div style={{ fontSize: 13, color: "#fff" }}>{s.emoji} {s.label}</div>
+            {ratings[s.key] && <span style={{ fontSize: 16, fontWeight: 900, color: gradeColor[gradeMap[ratings[s.key]]] }}>{gradeMap[ratings[s.key]]}</span>}
+          </div>
+          <div style={{ display: "flex", gap: 5 }}>
+            {[1, 2, 3, 4, 5].map(n => (
+              <button key={n} onClick={() => setRatings(r => ({ ...r, [s.key]: n }))} style={{ flex: 1, padding: "10px 0", borderRadius: 8, border: `1.5px solid ${ratings[s.key] >= n ? "#C47A2E" : "rgba(255,255,255,0.12)"}`, background: ratings[s.key] >= n ? "rgba(196,122,46,0.3)" : "rgba(255,255,255,0.04)", color: ratings[s.key] >= n ? "#FBBF24" : "rgba(255,255,255,0.3)", fontSize: 14, cursor: "pointer" }}>★</button>
+            ))}
+          </div>
         </div>
-      )}
+      ))}
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Teacher's Special Comment (optional)</div>
+        <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="What would Mrs Sharma say about this night..." style={{ ...inp, minHeight: 56, resize: "vertical" }} />
+      </div>
+      <button onClick={() => setSubmitted(true)} disabled={!allRated} style={{ ...btn("#C47A2E"), opacity: allRated ? 1 : 0.45 }}>Generate Report Card 📝</button>
     </Modal>
   );
 }
@@ -978,29 +1497,86 @@ const MOST_LIKELY_TO = [
 ];
 
 function MostLikelyTo({ onClose }) {
-  const [idx, setIdx] = useState(() => Math.floor(Math.random() * MOST_LIKELY_TO.length));
-  const [voted, setVoted] = useState(null);
+  const [players, setPlayers] = useState([]);
+  const [input, setInput]     = useState("");
+  const [promptIdx, setPromptIdx] = useState(() => Math.floor(Math.random() * MOST_LIKELY_TO.length));
+  const [votes, setVotes]     = useState({});
+  const [phase, setPhase]     = useState("setup");
+  const [history, setHistory] = useState([]);
 
-  const next = () => { setIdx(i => (i + 1) % MOST_LIKELY_TO.length); setVoted(null); };
+  const prompt = MOST_LIKELY_TO[promptIdx % MOST_LIKELY_TO.length];
+  const addPlayer = () => { const n = input.trim(); if (n && !players.includes(n)) { setPlayers(p => [...p, n]); setInput(""); } };
+  const vote = (name) => setVotes(v => ({ ...v, [prompt]: name }));
+  const reveal = () => { setHistory(h => [...h, { prompt, winner: votes[prompt] }]); setPhase("result"); };
+  const next = () => { setPromptIdx(i => i + 1); setPhase("voting"); };
 
-  return (
-    <Modal onClose={onClose} emoji="🎲" title="Most Likely To">
-      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>
-        Everyone points at the person they think fits — most fingers = winner.
-      </p>
-      <div style={{ background: "rgba(196,122,46,0.15)", border: "1.5px solid rgba(196,122,46,0.35)", borderRadius: 16, padding: "28px 20px", textAlign: "center", marginBottom: 20 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#CCAB4A", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.1em" }}>🎲 MOST LIKELY TO…</div>
-        <div style={{ fontSize: 17, color: "#fff", lineHeight: 1.55 }}>{MOST_LIKELY_TO[idx]}</div>
+  if (phase === "setup") return (
+    <Modal onClose={onClose} emoji="🎲" title="Most Likely To" wide>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>Add everyone playing, then vote on each prompt together.</p>
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && addPlayer()} placeholder="Add player name…" style={{ ...inp, flex: 1 }} />
+        <button onClick={addPlayer} style={{ ...btn("#C47A2E"), width: "auto", padding: "10px 18px" }}>+</button>
       </div>
-      {voted && (
-        <div style={{ textAlign: "center", fontSize: 26, marginBottom: 14, color: "#FBBF24", fontWeight: 800 }}>
-          👆 Everyone point now!
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+        {players.map(p => (
+          <span key={p} style={{ background: "rgba(196,122,46,0.15)", border: "1px solid rgba(196,122,46,0.3)", color: "#fff", padding: "5px 14px", borderRadius: 100, fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>
+            {p}<button onClick={() => setPlayers(pl => pl.filter(x => x !== p))} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", padding: 0, fontSize: 15 }}>×</button>
+          </span>
+        ))}
+      </div>
+      {players.length >= 2
+        ? <button onClick={() => setPhase("voting")} style={btn("#C47A2E")}>Start Voting →</button>
+        : <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", textAlign: "center" }}>Add at least 2 players to begin</div>
+      }
+    </Modal>
+  );
+
+  if (phase === "voting") return (
+    <Modal onClose={onClose} emoji="🎲" title="Most Likely To" wide>
+      <div style={{ background: "rgba(196,122,46,0.1)", border: "2px solid rgba(196,122,46,0.25)", borderRadius: 20, padding: "26px 20px", textAlign: "center", marginBottom: 22 }}>
+        <div style={{ fontSize: 10, fontWeight: 800, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 12 }}>Who is most likely to…</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", lineHeight: 1.4 }}>{prompt}</div>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 20 }}>
+        {players.map(p => {
+          const voted = votes[prompt] === p;
+          return (
+            <button key={p} onClick={() => vote(p)} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "12px 14px", borderRadius: 14, border: `2px solid ${voted ? "#C47A2E" : "rgba(255,255,255,0.12)"}`, background: voted ? "rgba(196,122,46,0.2)" : "rgba(255,255,255,0.04)", cursor: "pointer", fontFamily: font, transition: "all 0.2s", transform: voted ? "scale(1.08)" : "scale(1)", minWidth: 70 }}>
+              <div style={{ width: 42, height: 42, borderRadius: "50%", background: voted ? "#C47A2E" : "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#fff", transition: "all 0.2s" }}>
+                {voted ? "✓" : p.charAt(0).toUpperCase()}
+              </div>
+              <span style={{ fontSize: 12, color: voted ? "#fff" : "rgba(255,255,255,0.6)", fontWeight: voted ? 700 : 400 }}>{p}</span>
+            </button>
+          );
+        })}
+      </div>
+      {votes[prompt] && <button onClick={reveal} style={btn("#C47A2E")}>Reveal 🎉</button>}
+    </Modal>
+  );
+
+  const last = history[history.length - 1];
+  return (
+    <Modal onClose={onClose} emoji="🎲" title="Most Likely To" wide>
+      <div style={{ textAlign: "center", marginBottom: 22 }}>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 8 }}>Most likely to…</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 18, lineHeight: 1.4 }}>{last.prompt}</div>
+        <div style={{ fontSize: 56, marginBottom: 8 }}>🏆</div>
+        <div style={{ fontSize: 28, fontWeight: 900, color: "#C47A2E" }}>{last.winner}</div>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>Everyone agrees!</div>
+      </div>
+      {history.length > 1 && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Previous</div>
+          {history.slice(0, -1).map((h, i) => (
+            <div key={i} style={{ ...card, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 14px", marginBottom: 6 }}>
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", flex: 1 }}>{h.prompt.substring(0, 42)}…</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#CCAB4A", marginLeft: 10 }}>{h.winner}</span>
+            </div>
+          ))}
         </div>
       )}
-      <div style={{ display: "flex", gap: 10 }}>
-        <button onClick={() => setVoted(true)} style={{ ...btn("rgba(196,122,46,0.4)"), flex: 1 }}>👆 Point!</button>
-        <button onClick={next} style={{ ...btn("rgba(255,255,255,0.1)"), flex: 1 }}>Next →</button>
-      </div>
+      <button onClick={next} style={btn("#C47A2E")}>Next Prompt →</button>
+      <button onClick={() => setPhase("setup")} style={{ ...btn("rgba(255,255,255,0.06)"), marginTop: 10 }}>Change Players</button>
     </Modal>
   );
 }
@@ -1285,115 +1861,126 @@ function TwoTruthsLieGame({ onClose }) {
 
   const cur = players[currentIdx];
 
+  const STMT_COLORS = ['#3B82F6', '#10B981', '#F59E0B'];
+  const STMT_LABELS = ['A', 'B', 'C'];
+
   return (
-    <Modal onClose={onClose} title="Two Truths One Lie" emoji="🤥" wide>
+    <Modal onClose={onClose} title="Two Truths One Lie" emoji="🕵️" wide>
       {phase === 'setup' && (
         <>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 20, lineHeight: 1.6 }}>
-            Each player adds their name + 3 statements (2 truths, 1 lie). Others guess which is the lie.
-          </div>
+          {/* Detective dossier board */}
           {players.length > 0 && (
-            <div style={{ marginBottom: 16 }}>
-              {players.map((p, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, marginBottom: 6 }}>
-                  <span style={{ fontSize: 16 }}>🤥</span>
-                  <span style={{ fontSize: 14, color: '#fff', fontFamily: font, fontWeight: 700 }}>{p.name}</span>
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginLeft: 'auto' }}>ready</span>
-                </div>
-              ))}
+            <div style={{ background:"linear-gradient(135deg,#0f1116,#1a1d27)", borderRadius:14, padding:"12px 14px", marginBottom:14, border:"1px solid rgba(59,130,246,0.15)" }}>
+              <div style={{ fontSize:9, fontWeight:800, color:"rgba(59,130,246,0.5)", textTransform:"uppercase", letterSpacing:"0.16em", marginBottom:10 }}>🕵️ DOSSIER BOARD · {players.length} SUSPECT{players.length!==1?"S":""}</div>
+              <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
+                {players.map((p, i) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:6, background:"rgba(59,130,246,0.1)", borderRadius:8, padding:"6px 10px", border:"1px solid rgba(59,130,246,0.2)" }}>
+                    <div style={{ width:22, height:22, borderRadius:"50%", background:"rgba(59,130,246,0.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:900, color:"#60a5fa" }}>{p.name[0].toUpperCase()}</div>
+                    <span style={{ fontSize:12, color:"#93c5fd", fontWeight:700 }}>{p.name}</span>
+                    <span style={{ fontSize:9, color:"rgba(59,130,246,0.5)" }}>FILED</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
-          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: '16px 14px', marginBottom: 16 }}>
-            <input value={nameInput} onChange={e => setNameInput(e.target.value)} placeholder="Your name" style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: font, outline: 'none', boxSizing: 'border-box', marginBottom: 10 }} />
+
+          {/* Case file form */}
+          <div style={{ background:"rgba(255,255,255,0.04)", borderRadius:14, padding:"16px 14px", marginBottom:14, border:"1px dashed rgba(255,255,255,0.1)" }}>
+            <div style={{ fontSize:9, fontWeight:800, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:12 }}>📋 FILE A CASE · Add your 3 statements</div>
+            <input value={nameInput} onChange={e=>setNameInput(e.target.value)} placeholder="Your name" style={{ width:'100%', background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:10, padding:'10px 14px', color:'#fff', fontSize:14, fontFamily:font, outline:'none', boxSizing:'border-box', marginBottom:12 }} />
             {[0, 1, 2].map(i => (
-              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
-                <button onClick={() => setLieIdx(i)} style={{ width: 28, height: 28, borderRadius: '50%', border: `2px solid ${lieIdx === i ? '#EF4444' : 'rgba(255,255,255,0.2)'}`, background: lieIdx === i ? '#EF444422' : 'transparent', color: lieIdx === i ? '#EF4444' : 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 800, cursor: 'pointer', flexShrink: 0 }}>LIE</button>
-                <input value={stmts[i]} onChange={e => setStmts(s => { const n = [...s]; n[i] = e.target.value; return n; })} placeholder={`Statement ${i + 1}`} style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: `1px solid ${lieIdx === i ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.1)'}`, borderRadius: 10, padding: '9px 12px', color: '#fff', fontSize: 13, fontFamily: font, outline: 'none' }} />
+              <div key={i} style={{ display:'flex', gap:8, marginBottom:8, alignItems:'center' }}>
+                <div style={{ width:28, height:28, borderRadius:6, background:lieIdx===i?'#EF444422':'rgba(255,255,255,0.06)', border:`2px solid ${lieIdx===i?'#EF4444':'rgba(255,255,255,0.12)'}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <span style={{ fontSize:11, fontWeight:900, color:STMT_COLORS[i] }}>{STMT_LABELS[i]}</span>
+                </div>
+                <input value={stmts[i]} onChange={e=>setStmts(s=>{const n=[...s];n[i]=e.target.value;return n;})} placeholder={`Statement ${STMT_LABELS[i]}`} style={{ flex:1, background:'rgba(255,255,255,0.06)', border:`1px solid ${lieIdx===i?'rgba(239,68,68,0.35)':'rgba(255,255,255,0.1)'}`, borderRadius:10, padding:'9px 12px', color:'#fff', fontSize:13, fontFamily:font, outline:'none' }} />
+                <button onClick={()=>setLieIdx(i===lieIdx?null:i)} style={{ padding:"6px 9px", borderRadius:8, border:`1.5px solid ${lieIdx===i?'#EF4444':'rgba(255,255,255,0.1)'}`, background:lieIdx===i?'#EF444420':'transparent', color:lieIdx===i?'#EF4444':'rgba(255,255,255,0.3)', fontSize:9, fontWeight:800, cursor:'pointer', fontFamily:font, textTransform:"uppercase", letterSpacing:"0.06em" }}>LIE</button>
               </div>
             ))}
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginBottom: 10 }}>Mark which statement is the LIE before adding ↑</div>
-            <button onClick={addPlayer} disabled={!nameInput.trim() || stmts.some(s => !s.trim()) || lieIdx === null} style={{ width: '100%', background: nameInput.trim() && stmts.every(s => s.trim()) && lieIdx !== null ? '#1A7A8A' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 10, padding: '11px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>+ Add Player</button>
+            {lieIdx===null && <div style={{ fontSize:10, color:'rgba(255,100,100,0.6)', marginBottom:8 }}>↑ Mark which statement is the lie</div>}
+            <button onClick={addPlayer} disabled={!nameInput.trim()||stmts.some(s=>!s.trim())||lieIdx===null} style={{ width:'100%', background:nameInput.trim()&&stmts.every(s=>s.trim())&&lieIdx!==null?'#1A7A8A':'rgba(255,255,255,0.05)', border:'none', borderRadius:10, padding:'11px 0', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:font, marginTop:4 }}>+ File This Case</button>
           </div>
-          <button onClick={startVoting} disabled={players.length < 2} style={{ width: '100%', background: players.length >= 2 ? 'linear-gradient(135deg,#1A7A8A,#C85A2A)' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: players.length >= 2 ? 'pointer' : 'not-allowed', fontFamily: font }}>
-            {players.length < 2 ? `Add ${2 - players.length} more player${players.length === 1 ? '' : 's'} to start` : `Start Game (${players.length} players) →`}
+          <button onClick={startVoting} disabled={players.length<2} style={{ width:'100%', background:players.length>=2?'linear-gradient(135deg,#1A7A8A,#C85A2A)':'rgba(255,255,255,0.05)', border:'none', borderRadius:12, padding:'14px 0', color:'#fff', fontSize:15, fontWeight:800, cursor:players.length>=2?'pointer':'not-allowed', fontFamily:font }}>
+            {players.length<2?`Add ${2-players.length} more player${players.length===1?'':'s'} to start`:`🕵️ Start Investigation (${players.length} players) →`}
           </button>
         </>
       )}
 
       {phase === 'vote' && cur && (
         <>
-          <div style={{ textAlign: 'center', marginBottom: 20 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#1A7A8A', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 4 }}>Player {currentIdx + 1} of {players.length}</div>
-            <div style={{ fontSize: 24, fontWeight: 900, color: '#fff', fontFamily: font }}>{cur.name}'s statements</div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>Which one is the LIE?</div>
+          <div style={{ textAlign:'center', marginBottom:18 }}>
+            <div style={{ fontSize:10, fontWeight:800, color:'#60a5fa', textTransform:'uppercase', letterSpacing:'0.18em', marginBottom:4 }}>SUSPECT {currentIdx+1} of {players.length}</div>
+            <div style={{ fontSize:22, fontWeight:900, color:'#fff', fontFamily:font }}>{cur.name}</div>
+            <div style={{ fontSize:12, color:'rgba(255,255,255,0.4)', marginTop:4 }}>🔍 Spot the lie. One of these is false.</div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
-            {cur.shuffled.map((origIdx, si) => (
-              <div key={si} style={{ padding: '14px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', fontSize: 14, color: '#fff', fontFamily: font, lineHeight: 1.5 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.35)', marginRight: 8 }}>{si + 1}.</span>
-                {cur.s[origIdx]}
-              </div>
-            ))}
+          {/* Evidence cards */}
+          <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:20 }}>
+            {cur.shuffled.map((origIdx, si) => {
+              const col = STMT_COLORS[si];
+              const isVoted = votingFor === si;
+              return (
+                <div key={si} onClick={()=>setVotingFor(si===votingFor?null:si)}
+                  style={{ padding:'16px', background:isVoted?`${col}18`:'rgba(255,255,255,0.05)', borderRadius:12, border:`2px solid ${isVoted?col:'rgba(255,255,255,0.1)'}`, cursor:'pointer', display:'flex', gap:12, alignItems:'flex-start', transition:'all 0.15s' }}>
+                  <div style={{ width:32, height:32, borderRadius:8, background:`${col}25`, border:`2px solid ${col}60`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, fontWeight:900, color:col, flexShrink:0 }}>{STMT_LABELS[si]}</div>
+                  <div style={{ flex:1, fontSize:14, color:'#fff', fontFamily:font, lineHeight:1.6 }}>{cur.s[origIdx]}</div>
+                  {isVoted && <div style={{ fontSize:10, fontWeight:800, color:'#EF4444', background:'rgba(239,68,68,0.15)', padding:'3px 8px', borderRadius:100, alignSelf:'center', flexShrink:0 }}>THE LIE?</div>}
+                </div>
+              );
+            })}
           </div>
-          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: '14px' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>Cast your vote</div>
-            <input value={voterInput} onChange={e => setVoterInput(e.target.value)} placeholder="Your name" style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '9px 12px', color: '#fff', fontSize: 14, fontFamily: font, outline: 'none', boxSizing: 'border-box', marginBottom: 10 }} />
-            <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-              {[1, 2, 3].map(n => (
-                <button key={n} onClick={() => setVotingFor(n - 1)} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: `2px solid ${votingFor === n - 1 ? '#EF4444' : 'rgba(255,255,255,0.12)'}`, background: votingFor === n - 1 ? '#EF444422' : 'rgba(255,255,255,0.04)', color: votingFor === n - 1 ? '#EF4444' : 'rgba(255,255,255,0.6)', fontSize: 16, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>#{n}</button>
-              ))}
+          <div style={{ background:'rgba(255,255,255,0.04)', borderRadius:14, padding:14 }}>
+            <div style={{ fontSize:10, fontWeight:800, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:10 }}>📝 Register Vote</div>
+            <input value={voterInput} onChange={e=>setVoterInput(e.target.value)} placeholder="Your name" style={{ width:'100%', background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:10, padding:'9px 12px', color:'#fff', fontSize:14, fontFamily:font, outline:'none', boxSizing:'border-box', marginBottom:10 }} />
+            <div style={{ display:'flex', gap:8 }}>
+              <button onClick={submitVote} disabled={!voterInput.trim()||votingFor===null} style={{ flex:1, background:voterInput.trim()&&votingFor!==null?'#1A7A8A':'rgba(255,255,255,0.05)', border:'none', borderRadius:10, padding:'11px 0', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:font }}>Submit Vote</button>
+              <button onClick={reveal} disabled={Object.keys(votes).length===0} style={{ flex:1, background:Object.keys(votes).length>0?'#EF4444':'rgba(255,255,255,0.05)', border:'none', borderRadius:10, padding:'11px 0', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:font }}>🔓 Reveal ({Object.keys(votes).length})</button>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={submitVote} disabled={!voterInput.trim() || votingFor === null} style={{ flex: 1, background: voterInput.trim() && votingFor !== null ? '#1A7A8A' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 10, padding: '11px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Submit Vote</button>
-              <button onClick={reveal} disabled={Object.keys(votes).length === 0} style={{ flex: 1, background: Object.keys(votes).length > 0 ? '#F43F5E' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 10, padding: '11px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Reveal ({Object.keys(votes).length} voted)</button>
-            </div>
           </div>
+          {Object.keys(votes).length>0 && <div style={{ marginTop:10, fontSize:10, color:'rgba(255,255,255,0.3)', textAlign:'center' }}>{Object.keys(votes).join(', ')} voted</div>}
         </>
       )}
 
       {phase === 'reveal' && cur && (
         <>
-          <div style={{ textAlign: 'center', marginBottom: 20 }}>
-            <div style={{ fontSize: 36, marginBottom: 8 }}>🤥</div>
-            <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', fontFamily: font }}>{cur.name}'s LIE was:</div>
+          <div style={{ textAlign:'center', marginBottom:18 }}>
+            <div style={{ fontSize:48, marginBottom:8 }}>🤥</div>
+            <div style={{ fontSize:10, fontWeight:800, color:'#EF4444', textTransform:'uppercase', letterSpacing:'0.2em', marginBottom:6 }}>CASE CLOSED · THE LIE WAS</div>
+            <div style={{ fontSize:18, fontWeight:900, color:'#fff', fontFamily:font }}>"{cur.s[cur.lieIdx]}"</div>
           </div>
-          <div style={{ padding: '16px', background: '#EF444418', borderRadius: 14, border: '1.5px solid #EF444455', marginBottom: 20, fontSize: 15, color: '#fff', fontFamily: font, lineHeight: 1.5, textAlign: 'center' }}>
-            "{cur.s[cur.lieIdx]}"
-          </div>
-          <div style={{ marginBottom: 20 }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:6, marginBottom:20 }}>
             {Object.entries(votes).map(([voter, guessIdx]) => {
               const guessedOrigIdx = cur.shuffled[guessIdx];
               const correct = guessedOrigIdx === cur.lieIdx;
               return (
-                <div key={voter} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: correct ? '#22c55e14' : '#EF444414', borderRadius: 10, marginBottom: 6, border: `1px solid ${correct ? '#22c55e30' : '#EF444430'}` }}>
-                  <span style={{ fontSize: 16 }}>{correct ? '✅' : '❌'}</span>
-                  <span style={{ flex: 1, fontSize: 14, color: '#fff', fontFamily: font, fontWeight: 600 }}>{voter}</span>
-                  <span style={{ fontSize: 12, color: correct ? '#22c55e' : '#EF4444', fontWeight: 700 }}>{correct ? '+1 point' : 'fooled!'}</span>
+                <div key={voter} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 12px', background:correct?'rgba(34,197,94,0.1)':'rgba(239,68,68,0.08)', borderRadius:10, border:`1px solid ${correct?'rgba(34,197,94,0.25)':'rgba(239,68,68,0.2)'}` }}>
+                  <span style={{ fontSize:16 }}>{correct?'✅':'❌'}</span>
+                  <span style={{ flex:1, fontSize:14, color:'#fff', fontFamily:font, fontWeight:600 }}>{voter}</span>
+                  <span style={{ fontSize:11, color:correct?'#22c55e':'#EF4444', fontWeight:700 }}>{correct?'+1 point':'fooled!'}</span>
                 </div>
               );
             })}
           </div>
-          <button onClick={next} style={{ width: '100%', background: 'linear-gradient(135deg,#1A7A8A,#C85A2A)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>
-            {currentIdx + 1 >= players.length ? 'See Final Scores →' : `Next Player: ${players[currentIdx + 1]?.name} →`}
+          <button onClick={next} style={{ width:'100%', background:'linear-gradient(135deg,#1A7A8A,#C85A2A)', border:'none', borderRadius:12, padding:'14px 0', color:'#fff', fontSize:15, fontWeight:800, cursor:'pointer', fontFamily:font }}>
+            {currentIdx+1>=players.length?'See Final Scores →':`Next: ${players[currentIdx+1]?.name} →`}
           </button>
         </>
       )}
 
       {phase === 'scores' && (
         <>
-          <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <div style={{ fontSize: 40 }}>🏆</div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', fontFamily: font, marginTop: 8 }}>Final Scores</div>
+          <div style={{ textAlign:'center', marginBottom:20 }}>
+            <div style={{ fontSize:44 }}>🏆</div>
+            <div style={{ fontSize:10, fontWeight:800, color:'rgba(255,255,255,0.4)', textTransform:'uppercase', letterSpacing:'0.18em', marginTop:8 }}>FINAL DEDUCTIONS</div>
           </div>
-          {Object.entries(scores).sort(([, a], [, b]) => b - a).map(([name, score], i) => (
-            <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: i === 0 ? 'linear-gradient(90deg,#1A7A8A20,rgba(255,255,255,0.03))' : 'rgba(255,255,255,0.04)', borderRadius: 12, marginBottom: 8, border: i === 0 ? '1px solid #1A7A8A40' : '1px solid rgba(255,255,255,0.07)' }}>
-              <span style={{ fontSize: 18, minWidth: 28 }}>{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}</span>
-              <span style={{ flex: 1, fontSize: 15, color: '#fff', fontFamily: font, fontWeight: 700 }}>{name}</span>
-              <span style={{ fontSize: 20, fontWeight: 900, color: i === 0 ? '#1A7A8A' : '#fff', fontFamily: font }}>{score}</span>
+          {Object.entries(scores).sort(([,a],[,b])=>b-a).map(([name, score], i) => (
+            <div key={name} style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', background:i===0?'linear-gradient(90deg,rgba(26,122,138,0.2),rgba(255,255,255,0.03))':'rgba(255,255,255,0.04)', borderRadius:12, marginBottom:8, border:i===0?'1px solid rgba(26,122,138,0.3)':'1px solid rgba(255,255,255,0.07)' }}>
+              <span style={{ fontSize:18, minWidth:28 }}>{i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`}</span>
+              <span style={{ flex:1, fontSize:15, color:'#fff', fontFamily:font, fontWeight:700 }}>{name}</span>
+              <span style={{ fontSize:22, fontWeight:900, color:i===0?'#1A7A8A':'#fff', fontFamily:font }}>{score}</span>
             </div>
           ))}
-          {Object.keys(scores).length === 0 && <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 14, padding: 20 }}>No one guessed correctly. You're all expert liars! 🤥</div>}
-          <button onClick={() => { setPhase('setup'); setPlayers([]); setScores({}); setCurrentIdx(0); }} style={{ width: '100%', marginTop: 16, background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: 12, padding: '12px 0', color: 'rgba(255,255,255,0.6)', fontSize: 14, cursor: 'pointer', fontFamily: font }}>Play Again</button>
+          {Object.keys(scores).length===0 && <div style={{ textAlign:'center', color:'rgba(255,255,255,0.3)', fontSize:14, padding:20 }}>No one cracked the case. Expert liars! 🤥</div>}
+          <button onClick={()=>{setPhase('setup');setPlayers([]);setScores({});setCurrentIdx(0);}} style={{ width:'100%', marginTop:16, background:'rgba(255,255,255,0.07)', border:'none', borderRadius:12, padding:'12px 0', color:'rgba(255,255,255,0.6)', fontSize:14, cursor:'pointer', fontFamily:font }}>Play Again</button>
         </>
       )}
     </Modal>
@@ -1433,62 +2020,88 @@ function HotSeatGame({ onClose }) {
     <Modal onClose={onClose} title="Hot Seat" emoji="🔥">
       {phase === 'setup' && (
         <>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 24, lineHeight: 1.7 }}>
-            One player sits in the <strong style={{ color: '#F43F5E' }}>Hot Seat</strong>. The group fires rapid questions at them. 60 seconds. Answer or pass — no hiding.
+          {/* Hot seat chair visual */}
+          <div style={{ position:'relative', background:'linear-gradient(180deg,#1A0505,#0F0303)', borderRadius:16, padding:'24px 16px 16px', marginBottom:16, overflow:'hidden' }}>
+            {/* Spotlight from above */}
+            <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:'60%', height:'100%', background:'radial-gradient(ellipse 60% 80% at 50% 0%,rgba(249,115,22,0.18) 0%,transparent 70%)', pointerEvents:'none' }} />
+            {/* Chair */}
+            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:0, position:'relative', zIndex:1 }}>
+              {/* Chair back */}
+              <div style={{ width:56, height:44, background:'linear-gradient(180deg,#7C1D1D,#991B1B)', borderRadius:'6px 6px 0 0', border:'2px solid #B91C1C', boxShadow:'0 4px 16px rgba(239,68,68,0.3)', position:'relative' }}>
+                {/* Back slats */}
+                {[0,1,2].map(i => <div key={i} style={{ position:'absolute', left:10+i*14, top:6, width:6, height:32, background:'rgba(0,0,0,0.25)', borderRadius:3 }} />)}
+              </div>
+              {/* Seat */}
+              <div style={{ width:68, height:12, background:'linear-gradient(180deg,#B91C1C,#991B1B)', borderRadius:'2px 2px 4px 4px', border:'2px solid #DC2626', marginTop:-1 }} />
+              {/* Legs */}
+              <div style={{ display:'flex', gap:36 }}>
+                {[0,1].map(i => <div key={i} style={{ width:5, height:28, background:'#7C1D1D', borderRadius:'0 0 3px 3px', border:'1px solid #B91C1C' }} />)}
+              </div>
+            </div>
+            <div style={{ textAlign:'center', marginTop:10, position:'relative', zIndex:1 }}>
+              <div style={{ fontSize:10, color:'rgba(249,115,22,0.7)', fontWeight:800, letterSpacing:'0.2em', textTransform:'uppercase' }}>THE HOT SEAT</div>
+              <div style={{ fontSize:11, color:'rgba(255,255,255,0.35)', marginTop:3 }}>60s · answer or pass · no hiding</div>
+            </div>
           </div>
-          <input value={player} onChange={e => setPlayer(e.target.value)} placeholder="Who's in the hot seat?" style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: '14px 16px', color: '#fff', fontSize: 16, fontFamily: font, outline: 'none', boxSizing: 'border-box', marginBottom: 16, textAlign: 'center', fontWeight: 700 }} />
-          <button onClick={start} disabled={!player.trim()} style={{ width: '100%', background: player.trim() ? 'linear-gradient(135deg,#F43F5E,#F97316)' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 12, padding: '16px 0', color: '#fff', fontSize: 16, fontWeight: 800, cursor: player.trim() ? 'pointer' : 'not-allowed', fontFamily: font }}>
+          <input value={player} onChange={e => setPlayer(e.target.value)} placeholder="Who's in the hot seat?" style={{ width:'100%', background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:12, padding:'14px 16px', color:'#fff', fontSize:16, fontFamily:font, outline:'none', boxSizing:'border-box', marginBottom:12, textAlign:'center', fontWeight:700 }} />
+          <button onClick={start} disabled={!player.trim()} style={{ width:'100%', background:player.trim()?'linear-gradient(135deg,#F43F5E,#F97316)':'rgba(255,255,255,0.05)', border:'none', borderRadius:12, padding:'15px 0', color:'#fff', fontSize:16, fontWeight:800, cursor:player.trim()?'pointer':'not-allowed', fontFamily:font }}>
             Start the Clock 🔥
           </button>
         </>
       )}
       {phase === 'playing' && (
         <>
-          <div style={{ textAlign: 'center', marginBottom: 20 }}>
-            <div style={{ position: 'relative', width: 80, height: 80, margin: '0 auto 12px' }}>
-              <svg viewBox="0 0 80 80" style={{ position: 'absolute', inset: 0, transform: 'rotate(-90deg)' }}>
-                <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
-                <circle cx="40" cy="40" r="34" fill="none" stroke={timerColor} strokeWidth="6"
-                  strokeDasharray={`${2 * Math.PI * 34 * pct} ${2 * Math.PI * 34 * (1 - pct)}`}
-                  style={{ transition: 'stroke-dasharray 0.9s linear, stroke 0.3s' }} />
-              </svg>
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 900, color: timerColor, fontFamily: "'Outfit',sans-serif" }}>{timer}</div>
-            </div>
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>{player} is in the hot seat</div>
+          {/* Player name badge */}
+          <div style={{ background:'linear-gradient(135deg,rgba(244,63,94,0.15),rgba(249,115,22,0.1))', border:'1.5px solid rgba(244,63,94,0.3)', borderRadius:12, padding:'10px 14px', marginBottom:14, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            <span style={{ fontSize:13, color:'rgba(255,255,255,0.6)' }}>On the seat:</span>
+            <span style={{ fontSize:15, fontWeight:800, color:'#F87171' }}>{player} 🔥</span>
           </div>
-          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: '20px 18px', marginBottom: 20, minHeight: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', fontFamily: font, textAlign: 'center', lineHeight: 1.5 }}>
+          {/* Timer ring */}
+          <div style={{ textAlign:'center', marginBottom:14 }}>
+            <div style={{ position:'relative', width:80, height:80, margin:'0 auto' }}>
+              <svg viewBox="0 0 80 80" style={{ position:'absolute', inset:0, transform:'rotate(-90deg)' }}>
+                <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="7" />
+                <circle cx="40" cy="40" r="34" fill="none" stroke={timerColor} strokeWidth="7"
+                  strokeDasharray={`${2*Math.PI*34*pct} ${2*Math.PI*34*(1-pct)}`}
+                  style={{ transition:'stroke-dasharray 0.9s linear, stroke 0.3s' }} />
+              </svg>
+              <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, fontWeight:900, color:timerColor, fontVariantNumeric:'tabular-nums' }}>{timer}</div>
+            </div>
+          </div>
+          {/* Question card */}
+          <div style={{ background:'linear-gradient(135deg,#FFFBF0,#FFF8E7)', borderRadius:12, padding:'20px 16px', marginBottom:14, minHeight:72, display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 6px 20px rgba(0,0,0,0.4)', position:'relative' }}>
+            <div style={{ fontSize:16, fontWeight:700, color:'#1A0A05', fontFamily:'Georgia,serif', textAlign:'center', lineHeight:1.5 }}>
               {shuffled[qIdx] || "That's all the questions!"}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={() => next(false)} style={{ flex: 1, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: '14px 0', color: 'rgba(255,255,255,0.55)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Pass</button>
-            <button onClick={() => next(true)} style={{ flex: 2, background: 'linear-gradient(135deg,#F43F5E,#F97316)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>Answered ✓</button>
+          <div style={{ display:'flex', gap:8, marginBottom:12 }}>
+            <button onClick={() => next(false)} style={{ flex:1, background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:12, padding:'13px 0', color:'rgba(255,255,255,0.55)', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:font }}>Pass</button>
+            <button onClick={() => next(true)} style={{ flex:2, background:'linear-gradient(135deg,#F43F5E,#F97316)', border:'none', borderRadius:12, padding:'13px 0', color:'#fff', fontSize:15, fontWeight:800, cursor:'pointer', fontFamily:font }}>Answered ✓</button>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 16 }}>
-            <div style={{ textAlign: 'center' }}><div style={{ fontSize: 22, fontWeight: 900, color: '#22c55e' }}>{answered}</div><div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>ANSWERED</div></div>
-            <div style={{ textAlign: 'center' }}><div style={{ fontSize: 22, fontWeight: 900, color: '#f59e0b' }}>{passed}</div><div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>PASSED</div></div>
+          <div style={{ display:'flex', justifyContent:'center', gap:28 }}>
+            <div style={{ textAlign:'center' }}><div style={{ fontSize:22, fontWeight:900, color:'#22c55e', fontVariantNumeric:'tabular-nums' }}>{answered}</div><div style={{ fontSize:9, color:'rgba(255,255,255,0.3)', letterSpacing:'0.1em' }}>ANSWERED</div></div>
+            <div style={{ width:1, background:'rgba(255,255,255,0.08)' }} />
+            <div style={{ textAlign:'center' }}><div style={{ fontSize:22, fontWeight:900, color:'#f59e0b', fontVariantNumeric:'tabular-nums' }}>{passed}</div><div style={{ fontSize:9, color:'rgba(255,255,255,0.3)', letterSpacing:'0.1em' }}>PASSED</div></div>
           </div>
         </>
       )}
       {phase === 'done' && (
         <>
-          <div style={{ textAlign: 'center', padding: '20px 0 28px' }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>🔥</div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', fontFamily: font }}>{player} survived!</div>
-            <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', marginTop: 6 }}>60 seconds of pure pressure</div>
+          <div style={{ textAlign:'center', padding:'16px 0 20px' }}>
+            <div style={{ fontSize:11, color:'rgba(249,115,22,0.7)', fontWeight:800, letterSpacing:'0.2em', textTransform:'uppercase', marginBottom:8 }}>TIME'S UP</div>
+            <div style={{ fontSize:22, fontWeight:900, color:'#fff', fontFamily:font }}>{player} survived! 🔥</div>
           </div>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 28 }}>
-            <div style={{ textAlign: 'center', background: '#22c55e18', border: '1px solid #22c55e30', borderRadius: 14, padding: '16px 24px' }}>
-              <div style={{ fontSize: 36, fontWeight: 900, color: '#22c55e' }}>{answered}</div>
-              <div style={{ fontSize: 11, color: '#22c55e', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 2 }}>Answered</div>
+          <div style={{ display:'flex', gap:10, justifyContent:'center', marginBottom:20 }}>
+            <div style={{ flex:1, textAlign:'center', background:'#22c55e18', border:'1px solid #22c55e30', borderRadius:14, padding:'16px 12px' }}>
+              <div style={{ fontSize:36, fontWeight:900, color:'#22c55e', fontVariantNumeric:'tabular-nums' }}>{answered}</div>
+              <div style={{ fontSize:10, color:'#22c55e', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.1em', marginTop:2 }}>Answered</div>
             </div>
-            <div style={{ textAlign: 'center', background: '#f59e0b18', border: '1px solid #f59e0b30', borderRadius: 14, padding: '16px 24px' }}>
-              <div style={{ fontSize: 36, fontWeight: 900, color: '#f59e0b' }}>{passed}</div>
-              <div style={{ fontSize: 11, color: '#f59e0b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 2 }}>Passed</div>
+            <div style={{ flex:1, textAlign:'center', background:'#f59e0b18', border:'1px solid #f59e0b30', borderRadius:14, padding:'16px 12px' }}>
+              <div style={{ fontSize:36, fontWeight:900, color:'#f59e0b', fontVariantNumeric:'tabular-nums' }}>{passed}</div>
+              <div style={{ fontSize:10, color:'#f59e0b', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.1em', marginTop:2 }}>Passed</div>
             </div>
           </div>
-          <button onClick={() => { setPhase('setup'); setPlayer(''); }} style={{ width: '100%', background: 'linear-gradient(135deg,#F43F5E,#F97316)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>Next Player →</button>
+          <button onClick={() => { setPhase('setup'); setPlayer(''); }} style={{ width:'100%', background:'linear-gradient(135deg,#F43F5E,#F97316)', border:'none', borderRadius:12, padding:'14px 0', color:'#fff', fontSize:15, fontWeight:800, cursor:'pointer', fontFamily:font }}>Next Player →</button>
         </>
       )}
     </Modal>
@@ -1641,25 +2254,52 @@ function WordWolfGame({ onClose }) {
       )}
       {phase === 'deal' && (
         <>
-          <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>Pass phone to each player</div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', fontFamily: font }}>{players[dealIdx]}, look at your word</div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>Don't show anyone else</div>
+          <div style={{ textAlign:'center', marginBottom:20 }}>
+            <div style={{ fontSize:10, fontWeight:800, color:'#10B981', textTransform:'uppercase', letterSpacing:'0.18em', marginBottom:6 }}>DEALING CARDS · {dealIdx+1} of {players.length}</div>
+            <div style={{ fontSize:20, fontWeight:900, color:'#fff', fontFamily:font }}>{players[dealIdx]}</div>
+            <div style={{ fontSize:12, color:'rgba(255,255,255,0.35)', marginTop:4 }}>Your card is face-down. Only you may see it.</div>
           </div>
           {!showing ? (
-            <button onClick={() => setShowing(true)} style={{ width: '100%', background: 'linear-gradient(135deg,#10B981,#06b6d4)', border: 'none', borderRadius: 12, padding: '18px 0', color: '#fff', fontSize: 16, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>Tap to see your word</button>
+            /* Card back — physical playing card */
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:16 }}>
+              <div style={{ width:160, height:220, borderRadius:16, background:"linear-gradient(135deg,#065f46,#047857)", border:"3px solid rgba(255,255,255,0.15)", boxShadow:"0 20px 60px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden", cursor:"pointer" }} onClick={()=>setShowing(true)}>
+                {/* Card pattern */}
+                <div style={{ position:"absolute", inset:0, backgroundImage:"repeating-linear-gradient(45deg,rgba(255,255,255,0.04) 0,rgba(255,255,255,0.04) 2px,transparent 0,transparent 50%)", backgroundSize:"12px 12px" }} />
+                <div style={{ textAlign:"center", position:"relative", zIndex:1 }}>
+                  <div style={{ fontSize:36, marginBottom:8 }}>🐺</div>
+                  <div style={{ fontSize:10, fontWeight:800, color:"rgba(255,255,255,0.5)", textTransform:"uppercase", letterSpacing:"0.14em" }}>WORD WOLF</div>
+                  <div style={{ fontSize:9, color:"rgba(255,255,255,0.3)", marginTop:4 }}>Tap to reveal</div>
+                </div>
+                {/* Corner pips */}
+                {["top:8px,left:10px","bottom:8px,right:10px"].map((pos,i)=>(
+                  <div key={i} style={{ position:"absolute", [pos.split(",")[0].split(":")[0]]:pos.split(",")[0].split(":")[1], [pos.split(",")[1].split(":")[0]]:pos.split(",")[1].split(":")[1], fontSize:10, color:"rgba(255,255,255,0.3)", transform:i===1?"rotate(180deg)":"none" }}>🐺</div>
+                ))}
+              </div>
+              <button onClick={()=>setShowing(true)} style={{ background:'linear-gradient(135deg,#10B981,#06b6d4)', border:'none', borderRadius:12, padding:'14px 40px', color:'#fff', fontSize:15, fontWeight:800, cursor:'pointer', fontFamily:font }}>Tap to Reveal Your Word</button>
+            </div>
           ) : (
-            <>
-              <div style={{ background: '#10B98118', border: '2px solid #10B98155', borderRadius: 16, padding: '28px 20px', textAlign: 'center', marginBottom: 16 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>Your word is</div>
-                <div style={{ fontSize: 36, fontWeight: 900, color: '#fff', fontFamily: font }}>
-                  {wolves.includes(dealIdx) ? pair.minority : pair.majority}
+            /* Card face — word revealed */
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:16 }}>
+              <div style={{ width:160, height:220, borderRadius:16, background:"linear-gradient(135deg,#FFFBF5,#FFF5E0)", border:"3px solid rgba(0,0,0,0.1)", boxShadow:"0 20px 60px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", position:"relative" }}>
+                {/* Top-left pip */}
+                <div style={{ position:"absolute", top:10, left:12, textAlign:"center" }}>
+                  <div style={{ fontSize:11, fontWeight:900, color:"#10B981" }}>W</div>
+                </div>
+                {/* Word */}
+                <div style={{ textAlign:"center", padding:"0 16px" }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:"#10B981", textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:10 }}>YOUR WORD</div>
+                  <div style={{ fontSize:wolves.includes(dealIdx)?28:32, fontWeight:900, color:"#1a1a1a", fontFamily:"Georgia,serif", lineHeight:1.2 }}>{wolves.includes(dealIdx)?pair.minority:pair.majority}</div>
+                </div>
+                {/* Bottom-right pip */}
+                <div style={{ position:"absolute", bottom:10, right:12, transform:"rotate(180deg)" }}>
+                  <div style={{ fontSize:11, fontWeight:900, color:"#10B981" }}>W</div>
                 </div>
               </div>
-              <button onClick={() => { setShowing(false); if (dealIdx + 1 >= players.length) { setPhase('discuss'); } else { setDealIdx(i => i + 1); } }} style={{ width: '100%', background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>
-                {dealIdx + 1 >= players.length ? 'Start Discussion →' : `Done — pass to ${players[dealIdx + 1]}`}
+              <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", textAlign:"center" }}>Remember it. Don't show anyone.</div>
+              <button onClick={()=>{setShowing(false);if(dealIdx+1>=players.length){setPhase('discuss');}else{setDealIdx(i=>i+1);}}} style={{ width:'100%', maxWidth:240, background:'rgba(255,255,255,0.08)', border:'none', borderRadius:12, padding:'14px 0', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:font }}>
+                {dealIdx+1>=players.length?'Start Discussion →':`Done — pass to ${players[dealIdx+1]}`}
               </button>
-            </>
+            </div>
           )}
         </>
       )}
@@ -1755,13 +2395,14 @@ function CategoryBlitzGame({ onClose }) {
     <Modal onClose={onClose} title="Category Blitz" emoji="⚡">
       {phase === 'pick' && (
         <>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 20, lineHeight: 1.6 }}>
-            Pick a category. Go around the group naming items. Can't think of one in time → you're out! Or just list everything you can in 60 seconds.
+          <div style={{ background:"linear-gradient(135deg,#1a0f04,#120a02)", borderRadius:14, padding:"12px 14px", marginBottom:14, border:"1px solid rgba(245,158,11,0.2)" }}>
+            <div style={{ fontSize:9, fontWeight:800, color:"rgba(245,158,11,0.6)", textTransform:"uppercase", letterSpacing:"0.18em", marginBottom:4 }}>⚡ CATEGORY BLITZ</div>
+            <div style={{ fontSize:12, color:"rgba(255,255,255,0.4)", lineHeight:1.6 }}>Pick a category. Name items one by one. 60 seconds on the clock.</div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {CATEGORY_BLITZ.sort(() => Math.random() - 0.5).slice(0, 12).map(c => (
-              <button key={c.name} onClick={() => start(c)} style={{ padding: '12px 10px', background: 'rgba(255,255,255,0.05)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 12, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font, textAlign: 'left', lineHeight: 1.4 }}>
-                <div style={{ fontSize: 18, marginBottom: 4 }}>{c.emoji}</div>
+              <button key={c.name} onClick={() => start(c)} style={{ padding: '12px 10px', background: 'rgba(245,158,11,0.06)', border: '1.5px solid rgba(245,158,11,0.15)', borderRadius: 12, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font, textAlign: 'left', lineHeight: 1.4 }}>
+                <div style={{ fontSize: 20, marginBottom: 4 }}>{c.emoji}</div>
                 {c.name}
               </button>
             ))}
@@ -1770,35 +2411,55 @@ function CategoryBlitzGame({ onClose }) {
       )}
       {phase === 'playing' && (
         <>
-          <div style={{ textAlign: 'center', marginBottom: 16 }}>
-            <div style={{ fontSize: 28, marginBottom: 6 }}>{cat.emoji}</div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', fontFamily: font, lineHeight: 1.4 }}>{cat.name}</div>
-            <div style={{ fontSize: 36, fontWeight: 900, color: timerColor, fontFamily: font, marginTop: 8 }}>{timer}s</div>
+          {/* Blitz header with giant timer */}
+          <div style={{ background:"linear-gradient(135deg,#0a0500,#150c02)", borderRadius:16, padding:"16px", marginBottom:14, border:`2px solid ${timerColor}40`, boxShadow:`0 0 24px ${timerColor}20`, textAlign:"center" }}>
+            <div style={{ fontSize:13, fontWeight:900, color:"rgba(255,255,255,0.5)", letterSpacing:"0.1em", marginBottom:6 }}>{cat.emoji} {cat.name}</div>
+            {/* Timer ring */}
+            <div style={{ display:"inline-flex", position:"relative", marginBottom:8 }}>
+              <svg width={80} height={80} style={{ transform:"rotate(-90deg)" }}>
+                <circle cx={40} cy={40} r={34} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={6} />
+                <circle cx={40} cy={40} r={34} fill="none" stroke={timerColor} strokeWidth={6}
+                  strokeDasharray={`${2*Math.PI*34}`}
+                  strokeDashoffset={`${2*Math.PI*34*(1-timer/60)}`}
+                  strokeLinecap="round" style={{ transition:"stroke-dashoffset 0.8s linear,stroke 0.3s" }} />
+              </svg>
+              <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <span style={{ fontSize:22, fontWeight:900, color:timerColor, fontVariantNumeric:"tabular-nums" }}>{timer}</span>
+              </div>
+            </div>
+            {/* Timer bar */}
+            <div style={{ height:4, borderRadius:2, background:"rgba(255,255,255,0.08)", overflow:"hidden" }}>
+              <div style={{ height:"100%", width:`${timer/60*100}%`, background:`linear-gradient(90deg,${timerColor}80,${timerColor})`, borderRadius:2, transition:"width 0.8s linear" }} />
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-            <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && submit()} placeholder="Type an answer…" style={{ flex: 1, background: 'rgba(255,255,255,0.07)', border: `1.5px solid ${timerColor}44`, borderRadius: 10, padding: '12px 14px', color: '#fff', fontSize: 15, fontFamily: font, outline: 'none' }} />
-            <button onClick={submit} style={{ background: timerColor, border: 'none', borderRadius: 10, padding: '12px 16px', color: '#fff', fontWeight: 800, cursor: 'pointer', fontSize: 18 }}>✓</button>
+          {/* Neon input */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+            <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && submit()} placeholder="Name something…" style={{ flex: 1, background: 'rgba(255,255,255,0.07)', border: `2px solid ${timerColor}60`, borderRadius: 12, padding: '14px 16px', color: '#fff', fontSize: 16, fontFamily: font, outline: 'none', boxShadow:`0 0 12px ${timerColor}20` }} />
+            <button onClick={submit} style={{ background: timerColor, border: 'none', borderRadius: 12, padding: '14px 20px', color: '#fff', fontWeight: 900, cursor: 'pointer', fontSize: 20, boxShadow:`0 4px 16px ${timerColor}40` }}>✓</button>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, minHeight: 60 }}>
+          {/* Answers */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, minHeight: 50 }}>
             {answers.map((a, i) => (
-              <span key={i} style={{ fontSize: 13, fontWeight: 700, color: '#22c55e', background: '#22c55e14', border: '1px solid #22c55e30', borderRadius: 100, padding: '4px 12px' }}>{a}</span>
+              <span key={i} style={{ fontSize: 12, fontWeight: 800, color: '#22c55e', background: '#22c55e12', border: '1px solid #22c55e30', borderRadius: 100, padding: '4px 12px' }}>✓ {a}</span>
             ))}
           </div>
+          {answers.length > 0 && <div style={{ fontSize:10, color:"rgba(255,255,255,0.25)", marginTop:8, textAlign:"center" }}>{answers.length} answer{answers.length!==1?"s":""} so far</div>}
         </>
       )}
       {phase === 'done' && (
         <>
-          <div style={{ textAlign: 'center', padding: '16px 0 24px' }}>
-            <div style={{ fontSize: 40, marginBottom: 8 }}>⏱️</div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', fontFamily: font }}>{answers.length} answers!</div>
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>Category: {cat.name}</div>
+          <div style={{ background:"linear-gradient(135deg,#0a0500,#150c02)", borderRadius:16, padding:"24px 20px", marginBottom:16, textAlign:"center", border:"2px solid rgba(245,158,11,0.3)" }}>
+            <div style={{ fontSize:48, marginBottom:8 }}>⚡</div>
+            <div style={{ fontSize:10, fontWeight:800, color:"rgba(245,158,11,0.6)", textTransform:"uppercase", letterSpacing:"0.18em", marginBottom:6 }}>TIME'S UP!</div>
+            <div style={{ fontSize:32, fontWeight:900, color:"#F59E0B" }}>{answers.length}</div>
+            <div style={{ fontSize:14, color:"rgba(255,255,255,0.5)", marginTop:4 }}>answers in {cat.name}</div>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
-            {answers.map((a, i) => <span key={i} style={{ fontSize: 13, fontWeight: 700, color: '#F59E0B', background: '#F59E0B14', border: '1px solid #F59E0B30', borderRadius: 100, padding: '6px 14px' }}>{a}</span>)}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 20 }}>
+            {answers.map((a, i) => <span key={i} style={{ fontSize: 13, fontWeight: 700, color: '#F59E0B', background: '#F59E0B12', border: '1px solid #F59E0B25', borderRadius: 100, padding: '5px 13px' }}>{a}</span>)}
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={() => start(cat)} style={{ flex: 1, background: 'linear-gradient(135deg,#F59E0B,#F97316)', border: 'none', borderRadius: 12, padding: '13px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Same category</button>
-            <button onClick={() => setPhase('pick')} style={{ flex: 1, background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: 12, padding: '13px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>New category</button>
+            <button onClick={() => start(cat)} style={{ flex: 1, background: 'linear-gradient(135deg,#F59E0B,#F97316)', border: 'none', borderRadius: 12, padding: '13px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>⚡ Same Category</button>
+            <button onClick={() => setPhase('pick')} style={{ flex: 1, background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: 12, padding: '13px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>New Category</button>
           </div>
         </>
       )}
@@ -1851,44 +2512,57 @@ function RoastBattleGame({ onClose }) {
     <Modal onClose={onClose} title="Roast Battle" emoji="🎤">
       {phase === 'setup' && (
         <>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 24, lineHeight: 1.7 }}>
-            Two players. A random roast prompt. 30 seconds each. The audience votes who roasted better. Best of 3 wins. Keep it playful — roast with love!
+          {/* Comedy club stage banner */}
+          <div style={{ background:"linear-gradient(135deg,#1a0508,#0f0205)", borderRadius:14, padding:"14px 16px", marginBottom:16, border:"1px solid rgba(244,63,94,0.2)", textAlign:"center" }}>
+            <div style={{ fontSize:32, marginBottom:6 }}>🎤</div>
+            <div style={{ fontSize:9, fontWeight:800, color:"rgba(244,63,94,0.6)", textTransform:"uppercase", letterSpacing:"0.2em" }}>ROAST BATTLE STAGE</div>
+            <div style={{ fontSize:11, color:"rgba(255,255,255,0.35)", marginTop:4 }}>Two players. Three rounds. Best of 3 wins. Keep it playful.</div>
           </div>
           {[0, 1].map(i => (
             <div key={i} style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: i === 0 ? '#F43F5E' : '#C85A2A', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>Player {i + 1}</div>
-              <input value={players[i]} onChange={e => { const p = [...players]; p[i] = e.target.value; setPlayers(p); }} placeholder={`Player ${i + 1} name`} style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: `1.5px solid ${i === 0 ? 'rgba(244,63,94,0.3)' : 'rgba(139,92,246,0.3)'}`, borderRadius: 10, padding: '12px 14px', color: '#fff', fontSize: 15, fontFamily: font, outline: 'none', boxSizing: 'border-box', fontWeight: 700 }} />
+              <div style={{ fontSize:10, fontWeight:800, color:i===0?'#F43F5E':'#F97316', textTransform:'uppercase', letterSpacing:'0.14em', marginBottom:6 }}>🎤 ROASTER {i+1}</div>
+              <input value={players[i]} onChange={e=>{const p=[...players];p[i]=e.target.value;setPlayers(p);}} placeholder={`Player ${i+1} name`} style={{ width:'100%', background:'rgba(255,255,255,0.06)', border:`1.5px solid ${i===0?'rgba(244,63,94,0.3)':'rgba(249,115,22,0.3)'}`, borderRadius:10, padding:'12px 14px', color:'#fff', fontSize:15, fontFamily:font, outline:'none', boxSizing:'border-box', fontWeight:700 }} />
             </div>
           ))}
-          <button onClick={start} disabled={!players[0].trim() || !players[1].trim()} style={{ width: '100%', marginTop: 8, background: players.every(p => p.trim()) ? 'linear-gradient(135deg,#F43F5E,#C85A2A)' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 12, padding: '15px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>
-            Let the Roast Begin 🎤
+          <button onClick={start} disabled={!players[0].trim()||!players[1].trim()} style={{ width:'100%', marginTop:8, background:players.every(p=>p.trim())?'linear-gradient(135deg,#F43F5E,#F97316)':'rgba(255,255,255,0.05)', border:'none', borderRadius:12, padding:'15px 0', color:'#fff', fontSize:15, fontWeight:800, cursor:'pointer', fontFamily:font }}>
+            🎤 Let the Roast Begin
           </button>
         </>
       )}
       {phase === 'roast' && (
         <>
-          <div style={{ textAlign: 'center', marginBottom: 16 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 4 }}>Round {round} of 3</div>
-            <div style={{ fontSize: 20, fontWeight: 900, color: roasterIdx === 0 ? '#F43F5E' : '#C85A2A', fontFamily: font }}>{players[roasterIdx]}'s turn to roast</div>
-            <div style={{ fontSize: 36, fontWeight: 900, color: timerColor, fontFamily: font, marginTop: 6 }}>{timer}s</div>
+          {/* Stage spotlight */}
+          <div style={{ background:"linear-gradient(180deg,#1a0204 0%,#0a0102 100%)", borderRadius:16, padding:"20px 16px", marginBottom:14, border:`1.5px solid ${roasterIdx===0?'rgba(244,63,94,0.3)':'rgba(249,115,22,0.3)'}`, position:"relative", overflow:"hidden", textAlign:"center" }}>
+            {/* Spotlight gradient */}
+            <div style={{ position:"absolute", top:0, left:"50%", transform:"translateX(-50%)", width:160, height:100, background:`radial-gradient(ellipse at top,${roasterIdx===0?'rgba(244,63,94,0.25)':'rgba(249,115,22,0.25)'} 0%,transparent 70%)`, pointerEvents:"none" }} />
+            <div style={{ fontSize:10, fontWeight:800, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"0.18em", marginBottom:8 }}>ROUND {round} OF 3 · ON STAGE</div>
+            <div style={{ fontSize:22, fontWeight:900, color:roasterIdx===0?'#F43F5E':'#F97316', fontFamily:font, marginBottom:4 }}>🎤 {players[roasterIdx]}</div>
+            {/* Timer */}
+            <div style={{ fontSize:40, fontWeight:900, color:timerColor, fontVariantNumeric:"tabular-nums" }}>{timer}s</div>
+            <div style={{ height:4, borderRadius:2, background:"rgba(255,255,255,0.08)", overflow:"hidden", marginTop:8 }}>
+              <div style={{ height:"100%", width:`${timer/30*100}%`, background:`linear-gradient(90deg,${timerColor}80,${timerColor})`, borderRadius:2, transition:"width 0.8s linear" }} />
+            </div>
           </div>
-          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: '20px 18px', marginBottom: 20, minHeight: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', fontFamily: font, textAlign: 'center', lineHeight: 1.6 }}>{currentPrompt}</div>
+          {/* Roast prompt card */}
+          <div style={{ background:'rgba(255,255,255,0.05)', borderRadius:16, padding:'20px 18px', marginBottom:14, border:'1px solid rgba(255,255,255,0.08)', minHeight:80, display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <div style={{ fontSize:15, fontWeight:700, color:'#fff', fontFamily:'Georgia,serif', textAlign:'center', lineHeight:1.7, fontStyle:"italic" }}>"{currentPrompt}"</div>
           </div>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>Audience vote happens when the timer ends</div>
+          <div style={{ fontSize:11, color:'rgba(255,255,255,0.25)', textAlign:'center' }}>Audience votes when the timer ends</div>
         </>
       )}
       {phase === 'vote' && (
         <>
-          <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', fontFamily: font }}>Who roasted better?</div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>Round {round} · Audience votes</div>
+          <div style={{ textAlign:'center', marginBottom:20 }}>
+            <div style={{ fontSize:10, fontWeight:800, color:'rgba(255,255,255,0.4)', textTransform:'uppercase', letterSpacing:'0.18em', marginBottom:6 }}>AUDIENCE VERDICT · Round {round}</div>
+            <div style={{ fontSize:20, fontWeight:900, color:'#fff', fontFamily:font }}>Who got the bigger laugh?</div>
           </div>
-          <div style={{ display: 'flex', gap: 12 }}>
-            {[0, 1].map(i => (
-              <button key={i} onClick={() => vote(i)} style={{ flex: 1, padding: '20px 0', background: i === 0 ? '#F43F5E22' : '#C85A2A22', border: `2px solid ${i === 0 ? '#F43F5E66' : '#C85A2A66'}`, borderRadius: 16, cursor: 'pointer', fontFamily: font }}>
-                <div style={{ fontSize: 22, fontWeight: 900, color: i === 0 ? '#F43F5E' : '#C85A2A' }}>{players[i]}</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>{scores[i]} point{scores[i] !== 1 ? 's' : ''}</div>
+          <div style={{ display:'flex', gap:12 }}>
+            {[0,1].map(i=>(
+              <button key={i} onClick={()=>vote(i)} style={{ flex:1, padding:'24px 0', background:i===0?'rgba(244,63,94,0.12)':'rgba(249,115,22,0.12)', border:`2px solid ${i===0?'rgba(244,63,94,0.5)':'rgba(249,115,22,0.5)'}`, borderRadius:16, cursor:'pointer', fontFamily:font, textAlign:"center" }}>
+                <div style={{ fontSize:20 }}>🎤</div>
+                <div style={{ fontSize:18, fontWeight:900, color:i===0?'#F43F5E':'#F97316', marginTop:6 }}>{players[i]}</div>
+                <div style={{ fontSize:11, color:'rgba(255,255,255,0.35)', marginTop:4 }}>{scores[i]} pt{scores[i]!==1?'s':''}</div>
+                <div style={{ marginTop:8, fontSize:10, fontWeight:800, color:i===0?'#F43F5E':'#F97316', textTransform:"uppercase", letterSpacing:"0.08em" }}>Tap to Vote</div>
               </button>
             ))}
           </div>
@@ -1896,21 +2570,22 @@ function RoastBattleGame({ onClose }) {
       )}
       {phase === 'scores' && (
         <>
-          <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <div style={{ fontSize: 40 }}>🎤</div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', fontFamily: font, marginTop: 8 }}>
-              {scores[0] === scores[1] ? "It's a tie!" : `${players[scores[0] > scores[1] ? 0 : 1]} wins!`}
+          <div style={{ textAlign:'center', marginBottom:20 }}>
+            <div style={{ fontSize:48 }}>🏆</div>
+            <div style={{ fontSize:10, fontWeight:800, color:'rgba(255,255,255,0.4)', textTransform:'uppercase', letterSpacing:'0.18em', marginTop:8 }}>FINAL VERDICT</div>
+            <div style={{ fontSize:22, fontWeight:900, color:'#fff', fontFamily:font, marginTop:6 }}>
+              {scores[0]===scores[1]?"It's a tie! 🤝":`${players[scores[0]>scores[1]?0:1]} wins the roast! 🎤`}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
-            {[0, 1].map(i => (
-              <div key={i} style={{ flex: 1, textAlign: 'center', background: i === 0 ? '#F43F5E18' : '#C85A2A18', border: `1.5px solid ${i === 0 ? '#F43F5E40' : '#C85A2A40'}`, borderRadius: 14, padding: '20px 0' }}>
-                <div style={{ fontSize: 36, fontWeight: 900, color: i === 0 ? '#F43F5E' : '#C85A2A' }}>{scores[i]}</div>
-                <div style={{ fontSize: 14, color: '#fff', fontFamily: font, fontWeight: 700, marginTop: 4 }}>{players[i]}</div>
+          <div style={{ display:'flex', gap:12, marginBottom:20 }}>
+            {[0,1].map(i=>(
+              <div key={i} style={{ flex:1, textAlign:'center', background:i===0?'rgba(244,63,94,0.1)':'rgba(249,115,22,0.1)', border:`1.5px solid ${i===0?'rgba(244,63,94,0.3)':'rgba(249,115,22,0.3)'}`, borderRadius:14, padding:'20px 0' }}>
+                <div style={{ fontSize:38, fontWeight:900, color:i===0?'#F43F5E':'#F97316' }}>{scores[i]}</div>
+                <div style={{ fontSize:14, color:'#fff', fontFamily:font, fontWeight:700, marginTop:4 }}>{players[i]}</div>
               </div>
             ))}
           </div>
-          <button onClick={() => { setPhase('setup'); setPlayers(['', '']); }} style={{ width: '100%', background: 'linear-gradient(135deg,#F43F5E,#C85A2A)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>New Battle 🎤</button>
+          <button onClick={()=>{setPhase('setup');setPlayers(['','']);}} style={{ width:'100%', background:'linear-gradient(135deg,#F43F5E,#F97316)', border:'none', borderRadius:12, padding:'14px 0', color:'#fff', fontSize:15, fontWeight:800, cursor:'pointer', fontFamily:font }}>New Battle 🎤</button>
         </>
       )}
     </Modal>
@@ -1946,25 +2621,28 @@ function GuestListModal({ onClose }) {
   };
 
   return (
-    <Modal onClose={onClose} title="Guest List" emoji="👥">
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8, marginBottom:14 }}>
-        {[['Coming',counts.yes,'#22c55e'],['Maybe',counts.maybe,'#f59e0b'],['Not Coming',counts.no,'#ef4444'],['Pending',counts.pending,'#6b7280']].map(([lbl,count,color]) => (
-          <div key={lbl} style={{ textAlign:'center', background:'rgba(255,255,255,0.04)', borderRadius:10, padding:'8px 4px', border:`1px solid ${color}30` }}>
-            <div style={{ fontSize:20, fontWeight:800, color }}>{count}</div>
-            <div style={{ fontSize:9.5, color:'rgba(255,255,255,0.35)', marginTop:2 }}>{lbl}</div>
-          </div>
-        ))}
+    <Modal onClose={onClose} title="Guest List" emoji="👥" wide>
+      {/* Entrance board header */}
+      <div style={{ background: "linear-gradient(135deg,#0f0a04,#1a1206)", border: "2px solid rgba(196,122,46,0.4)", borderRadius: 18, padding: "16px 18px", marginBottom: 14, textAlign: "center", boxShadow: "0 4px 24px rgba(0,0,0,0.5)" }}>
+        <div style={{ fontSize: 9, fontWeight: 800, color: "#C47A2E", letterSpacing: "0.3em", textTransform: "uppercase", marginBottom: 6 }}>🎟️ GUEST CHECK-IN BOARD</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8 }}>
+          {[["CONFIRMED", counts.yes, "#22C55E"], ["MAYBE", counts.maybe, "#F59E0B"], ["DECLINED", counts.no, "#EF4444"], ["PENDING", counts.pending, "#6B7280"]].map(([lbl, count, color]) => (
+            <div key={lbl} style={{ textAlign: "center", background: `${color}12`, border: `1px solid ${color}40`, borderRadius: 10, padding: "10px 4px" }}>
+              <div style={{ fontSize: 24, fontWeight: 900, color, fontFamily: "Georgia, serif" }}>{count}</div>
+              <div style={{ fontSize: 8, fontWeight: 800, color: `${color}aa`, letterSpacing: "0.1em", marginTop: 2 }}>{lbl}</div>
+            </div>
+          ))}
+        </div>
+        {totalAttending > 0 && (
+          <div style={{ marginTop: 10, fontSize: 13, fontWeight: 700, color: "#22C55E" }}>🎉 {totalAttending} attending{plusOneCount > 0 ? ` (incl. ${plusOneCount} +1${plusOneCount !== 1 ? "s" : ""})` : ""}</div>
+        )}
       </div>
 
-      {totalAttending > 0 && (
-        <div style={{ background:'rgba(34,197,94,0.08)', border:'1px solid rgba(34,197,94,0.2)', borderRadius:10, padding:'8px 14px', marginBottom:12, fontSize:13, color:'#22c55e', fontWeight:700 }}>
-          🎉 {totalAttending} attending{plusOneCount>0?` (incl. ${plusOneCount} +1${plusOneCount!==1?'s':''})`:''}
-        </div>
-      )}
-
+      {/* Add guest form */}
       {showAdd ? (
-        <div style={{ background:'rgba(255,255,255,0.04)', borderRadius:12, padding:14, marginBottom:12, border:'1px solid rgba(255,255,255,0.1)' }}>
-          <input value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&add()} placeholder="Name *" style={{ width:'100%', boxSizing:'border-box', background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:8, padding:'9px 12px', color:'#fff', fontSize:13.5, fontFamily:font, outline:'none', marginBottom:8 }} />
+        <div style={{ background: "rgba(196,122,46,0.06)", borderRadius: 14, padding: 14, marginBottom: 12, border: "1.5px dashed rgba(196,122,46,0.3)" }}>
+          <div style={{ fontSize: 10, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>🎟️ Add Guest to List</div>
+          <input value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&add()} placeholder="Guest name *" style={{ width:'100%', boxSizing:'border-box', background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:8, padding:'9px 12px', color:'#fff', fontSize:13.5, fontFamily:font, outline:'none', marginBottom:8 }} />
           <input value={form.phone} onChange={e=>setForm(p=>({...p,phone:e.target.value}))} placeholder="Phone (for WhatsApp)" type="tel" style={{ width:'100%', boxSizing:'border-box', background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:8, padding:'9px 12px', color:'#fff', fontSize:13.5, fontFamily:font, outline:'none', marginBottom:10 }} />
           <div style={{ display:'flex', gap:7, flexWrap:'wrap', marginBottom:10 }}>
             {[['🟢 Veg','veg'],['🔴 Non-Veg','nonveg'],['🟡 Jain','jain']].map(([lbl,val]) => (
@@ -1973,37 +2651,47 @@ function GuestListModal({ onClose }) {
             <button onClick={()=>setForm(p=>({...p,plusOne:!p.plusOne}))} style={{ fontSize:11, padding:'5px 10px', borderRadius:100, border:`1.5px solid ${form.plusOne?'#f59e0b':'rgba(255,255,255,0.12)'}`, background:form.plusOne?'rgba(245,158,11,0.15)':'transparent', color:form.plusOne?'#f59e0b':'rgba(255,255,255,0.4)', cursor:'pointer', fontFamily:font, fontWeight:700 }}>+1 Guest</button>
           </div>
           <div style={{ display:'flex', gap:8 }}>
-            <button onClick={add} style={{ flex:1, background:'#C47A2E', border:'none', borderRadius:9, padding:'10px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>Add Guest</button>
+            <button onClick={add} style={{ flex:1, background:'#C47A2E', border:'none', borderRadius:9, padding:'10px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>✓ Add to List</button>
             <button onClick={()=>setShowAdd(false)} style={{ padding:'10px 16px', borderRadius:9, border:'1px solid rgba(255,255,255,0.15)', background:'transparent', color:'rgba(255,255,255,0.5)', cursor:'pointer', fontFamily:font, fontSize:13 }}>Cancel</button>
           </div>
         </div>
       ) : (
-        <button onClick={()=>setShowAdd(true)} style={{ width:'100%', background:'rgba(196,122,46,0.12)', border:'1.5px dashed rgba(196,122,46,0.3)', borderRadius:10, padding:'11px', color:'#C47A2E', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font, marginBottom:12 }}>+ Add Guest</button>
+        <button onClick={()=>setShowAdd(true)} style={{ width:'100%', background:'rgba(196,122,46,0.08)', border:'1.5px dashed rgba(196,122,46,0.35)', borderRadius:10, padding:'11px', color:'#C47A2E', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font, marginBottom:12 }}>+ Add Guest</button>
       )}
 
+      {/* Guest wristband list */}
       {guests.length === 0 ? (
         <div style={{ textAlign:'center', color:'rgba(255,255,255,0.25)', fontSize:13, padding:'28px 0' }}>No guests yet. Add names above!</div>
       ) : (
-        <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
           {guests.map(g => {
             const rsvpColor = g.rsvp==='yes'?'#22c55e':g.rsvp==='maybe'?'#f59e0b':g.rsvp==='no'?'#ef4444':'#6b7280';
             const ph = g.phone?.replace(/\D/g,'');
             const waPhone = ph ? (ph.startsWith('91')&&ph.length===12?ph:'91'+ph) : null;
+            const rsvpLabel = g.rsvp==='yes'?'✓ IN':g.rsvp==='maybe'?'? MAYBE':g.rsvp==='no'?'✗ OUT':'PENDING';
             return (
-              <div key={g.id} style={{ background:'rgba(255,255,255,0.04)', borderRadius:12, padding:'10px 12px', border:'1px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                  <div style={{ width:32, height:32, borderRadius:'50%', background:`${rsvpColor}22`, border:`2px solid ${rsvpColor}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:800, color:rsvpColor, flexShrink:0 }}>{g.name[0]?.toUpperCase()}</div>
+              <div key={g.id} style={{ background:'rgba(255,255,255,0.03)', borderRadius:12, border:`1.5px solid ${rsvpColor}30`, borderLeft:`4px solid ${rsvpColor}`, overflow:'hidden' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 12px' }}>
+                  {/* Avatar */}
+                  <div style={{ width:36, height:36, borderRadius:'50%', background:`${rsvpColor}20`, border:`2px solid ${rsvpColor}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, fontWeight:900, color:rsvpColor, flexShrink:0 }}>{g.name[0]?.toUpperCase()}</div>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <span style={{ fontSize:14, color:'#fff', fontFamily:font, fontWeight:600 }}>{g.name}</span>
-                    {g.plusOne && <span style={{ marginLeft:6, fontSize:10, fontWeight:700, color:'#f59e0b', background:'rgba(245,158,11,0.15)', padding:'2px 6px', borderRadius:100 }}>+1</span>}
-                    {g.phone && waPhone && <a href={`https://wa.me/${waPhone}`} target="_blank" rel="noreferrer" style={{ display:'block', fontSize:10.5, color:'#25D366', fontWeight:700, textDecoration:'none', marginTop:2 }}>📱 {g.phone}</a>}
+                    <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                      <span style={{ fontSize:14, color:'#fff', fontFamily:font, fontWeight:700 }}>{g.name}</span>
+                      {g.plusOne && <span style={{ fontSize:9, fontWeight:800, color:'#f59e0b', background:'rgba(245,158,11,0.15)', padding:'2px 7px', borderRadius:100 }}>+1</span>}
+                      {g.meal && g.meal!=='veg' && <span style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.4)' }}>{g.meal==='nonveg'?'🔴':'🟡'}</span>}
+                    </div>
+                    {g.phone && waPhone && <a href={`https://wa.me/${waPhone}`} target="_blank" rel="noreferrer" style={{ display:'block', fontSize:10, color:'#25D366', fontWeight:700, textDecoration:'none', marginTop:1 }}>📱 {g.phone}</a>}
                   </div>
-                  {[['✓','yes','#22c55e'],['?','maybe','#f59e0b'],['✗','no','#ef4444']].map(([lbl,val,color]) => (
-                    <button key={val} onClick={()=>setRsvp(g.id,g.rsvp===val?'pending':val)} style={{ padding:'4px 9px', borderRadius:100, border:`1.5px solid ${g.rsvp===val?color:'rgba(255,255,255,0.1)'}`, background:g.rsvp===val?color+'22':'transparent', color:g.rsvp===val?color:'rgba(255,255,255,0.35)', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:font }}>{lbl}</button>
-                  ))}
-                  <button onClick={()=>save(guests.filter(x=>x.id!==g.id))} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.2)', cursor:'pointer', fontSize:18, lineHeight:1, padding:'0 2px' }}>×</button>
+                  {/* RSVP badge */}
+                  <div style={{ fontSize:10, fontWeight:800, color:rsvpColor, background:`${rsvpColor}15`, border:`1px solid ${rsvpColor}40`, padding:'3px 8px', borderRadius:100, flexShrink:0 }}>{rsvpLabel}</div>
+                  {/* RSVP toggles */}
+                  <div style={{ display:'flex', gap:4 }}>
+                    {[['✓','yes','#22c55e'],['?','maybe','#f59e0b'],['✗','no','#ef4444']].map(([lbl,val,color]) => (
+                      <button key={val} onClick={()=>setRsvp(g.id,g.rsvp===val?'pending':val)} style={{ width:26, height:26, borderRadius:8, border:`1.5px solid ${g.rsvp===val?color:'rgba(255,255,255,0.1)'}`, background:g.rsvp===val?color+'22':'transparent', color:g.rsvp===val?color:'rgba(255,255,255,0.3)', fontSize:11, fontWeight:800, cursor:'pointer', fontFamily:font, padding:0, display:'flex', alignItems:'center', justifyContent:'center' }}>{lbl}</button>
+                    ))}
+                  </div>
+                  <button onClick={()=>save(guests.filter(x=>x.id!==g.id))} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.15)', cursor:'pointer', fontSize:18, lineHeight:1, padding:'0 2px', marginLeft:2 }}>×</button>
                 </div>
-                {g.meal && g.meal!=='veg' && <div style={{ fontSize:10.5, color:'rgba(255,255,255,0.35)', fontWeight:600, paddingLeft:40, marginTop:3 }}>{g.meal==='nonveg'?'🔴 Non-Veg':'🟡 Jain'}</div>}
               </div>
             );
           })}
@@ -2082,14 +2770,20 @@ function MenuPlannerModal({ onClose }) {
         const catItems = items.filter(it=>it.cat===c.id);
         if (!catItems.length) return null;
         return (
-          <div key={c.id} style={{ marginBottom:16 }}>
-            <div style={{ fontSize:10.5, fontWeight:800, color:c.color, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:7 }}>{c.label} ({catItems.length})</div>
+          <div key={c.id} style={{ marginBottom:18 }}>
+            {/* Restaurant menu section divider */}
+            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:10 }}>
+              <div style={{ flex:1, height:1, background:`linear-gradient(to right,transparent,${c.color}44)` }} />
+              <span style={{ fontSize:11, fontWeight:900, color:c.color, letterSpacing:'0.14em', textTransform:'uppercase', fontFamily:'Georgia,serif' }}>{c.label}</span>
+              <div style={{ flex:1, height:1, background:`linear-gradient(to left,transparent,${c.color}44)` }} />
+            </div>
             {catItems.map(it => (
-              <div key={it.id} style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 12px', background:'rgba(255,255,255,0.03)', borderRadius:10, marginBottom:5, border:'1px solid rgba(255,255,255,0.05)' }}>
-                <span style={{ flex:1, fontSize:13.5, color:'#fff', fontFamily:font }}>{it.name}</span>
+              <div key={it.id} style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 4px', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+                <span style={{ color:c.color, fontSize:18, flexShrink:0, lineHeight:1, fontWeight:900 }}>•</span>
+                <span style={{ flex:1, fontSize:13.5, color:it.done?'rgba(255,255,255,0.3)':'#fff', fontFamily:'Georgia,serif', textDecoration:it.done?'line-through':undefined }}>{it.name}</span>
                 {it.diet==='nonveg' && <span style={{ fontSize:11 }}>🔴</span>}
                 {it.diet==='jain' && <span style={{ fontSize:11 }}>🟡</span>}
-                {it.person && <span style={{ fontSize:11, color:'rgba(255,255,255,0.45)', background:'rgba(255,255,255,0.06)', padding:'2px 8px', borderRadius:100, whiteSpace:'nowrap' }}>{it.person}</span>}
+                {it.person && <span style={{ fontSize:11, color:'rgba(255,255,255,0.4)', fontStyle:'italic', fontFamily:'Georgia,serif' }}>{it.person}</span>}
                 <select value={it.status} onChange={e=>setStatus(it.id,e.target.value)} style={{ background:'rgba(255,255,255,0.06)', border:`1px solid ${STATUS_COLORS[it.status]}55`, borderRadius:6, color:STATUS_COLORS[it.status], fontSize:10.5, padding:'3px 6px', fontFamily:font, outline:'none', colorScheme:'dark', cursor:'pointer' }}>
                   {Object.entries(STATUS_LABELS).map(([val,lbl])=><option key={val} value={val}>{lbl}</option>)}
                 </select>
@@ -2266,15 +2960,30 @@ function VenueNotesModal({ onClose }) {
 
   return (
     <Modal onClose={onClose} title="Venue Notes" emoji="📍">
-      <div style={{ display:'flex', flexDirection:'column', gap:12, marginBottom:16 }}>
-        {fields.map(f => (
-          <div key={f.key}>
-            <div style={{ fontSize:10.5, fontWeight:700, color:'rgba(255,255,255,0.4)', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:5 }}>{f.label}</div>
-            <textarea value={data[f.key]||''} onChange={e=>update(f.key,e.target.value)} placeholder={f.placeholder} rows={f.rows}
-              style={{ width:'100%', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:10, padding:'10px 14px', color:'#fff', fontSize:13, fontFamily:font, outline:'none', resize:'none', boxSizing:'border-box', lineHeight:1.5, colorScheme:'dark' }}
-            />
+      {/* Blueprint container */}
+      <div style={{ background:"#0D1B2D", borderRadius:12, padding:14, marginBottom:14, border:"1px solid rgba(96,165,250,0.2)", backgroundImage:"linear-gradient(rgba(96,165,250,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(96,165,250,0.04) 1px,transparent 1px)", backgroundSize:"22px 22px", position:"relative", overflow:"hidden" }}>
+        {/* Blueprint title bar */}
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", paddingBottom:8, marginBottom:12, borderBottom:"1px solid rgba(96,165,250,0.18)" }}>
+          <span style={{ fontSize:8.5, fontWeight:800, color:"rgba(96,165,250,0.55)", textTransform:"uppercase", letterSpacing:"0.2em", fontFamily:"'Courier New',monospace" }}>VENUE BLUEPRINT · REF: HP-VENUE-001</span>
+          <div style={{ display:"flex", gap:4, alignItems:"center" }}>
+            <span style={{ width:8, height:8, borderRadius:"50%", background:"rgba(96,165,250,0.3)", display:"inline-block" }} />
+            <span style={{ fontSize:8, color:"rgba(96,165,250,0.4)", fontFamily:"'Courier New',monospace" }}>TENDR</span>
           </div>
-        ))}
+        </div>
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+          {fields.map(f => (
+            <div key={f.key} style={{ borderLeft:"2px solid rgba(96,165,250,0.35)", paddingLeft:10 }}>
+              <div style={{ fontSize:8.5, fontWeight:800, color:"rgba(96,165,250,0.65)", textTransform:'uppercase', letterSpacing:'0.14em', marginBottom:4, fontFamily:"'Courier New',monospace" }}>
+                {f.label.replace(/[^\w\s]/g, '').trim()}
+              </div>
+              <textarea value={data[f.key]||''} onChange={e=>update(f.key,e.target.value)} placeholder={f.placeholder} rows={f.rows}
+                style={{ width:'100%', background:'rgba(96,165,250,0.07)', border:'1px solid rgba(96,165,250,0.2)', borderRadius:6, padding:'8px 10px', color:'#BFD7FF', fontSize:13, fontFamily:"'Courier New',monospace", outline:'none', resize:'none', boxSizing:'border-box', lineHeight:1.55, colorScheme:'dark' }}
+              />
+            </div>
+          ))}
+        </div>
+        {/* Blueprint corner marks */}
+        {[[0,0],[0,'auto'],['auto',0],['auto','auto']].map(([t,b],i)=>(<div key={i} aria-hidden style={{ position:"absolute", top:t, bottom:b, left:i<2?4:undefined, right:i>=2?4:undefined, width:8, height:8, border:`1px solid rgba(96,165,250,0.4)`, borderRadius:0, pointerEvents:"none" }} />))}
       </div>
       <div style={{ display:'flex', gap:8 }}>
         {data.address && (
@@ -2319,90 +3028,90 @@ function SeatingChartModal({ onClose }) {
 
   return (
     <Modal onClose={onClose} title="Seating Chart" emoji="🪑" wide>
-      {(tables.length>0||guests.length>0) && (
-        <div style={{ display:'flex', gap:10, marginBottom:12, alignItems:'center' }}>
-          <span style={{ fontSize:12, color:'rgba(255,255,255,0.4)' }}>{totalSeated}/{guests.length} guests seated</span>
-          {guests.length>0 && <button onClick={shareChart} style={{ marginLeft:'auto', padding:'6px 12px', borderRadius:8, border:'none', background:'linear-gradient(135deg,#25D366,#128C7E)', color:'#fff', fontSize:11, fontWeight:700, cursor:'pointer', fontFamily:font }}>Share Chart</button>}
-        </div>
-      )}
+      {/* Add controls */}
+      <div style={{ display:'flex', gap:8, marginBottom:8 }}>
+        <input value={tName} onChange={e=>setTName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addTable()} placeholder="Table name" style={{ flex:2, ...inp }} />
+        <input type="number" value={tCap} onChange={e=>setTCap(Math.max(1,Number(e.target.value)))} min={1} max={30} style={{ width:60, ...inp, textAlign:'center' }} />
+        <button onClick={addTable} style={{ ...btn(gold), width:'auto', padding:'10px 14px' }}>+ Table</button>
+      </div>
+      <div style={{ display:'flex', gap:8, marginBottom:12 }}>
+        <input value={gName} onChange={e=>setGName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addGuest()} placeholder="Guest name" style={{ flex:1, ...inp }} />
+        <button onClick={addGuest} style={{ ...btn(gold), width:'auto', padding:'10px 14px' }}>+ Guest</button>
+        {guests.length>0 && <button onClick={shareChart} style={{ ...btn('#25D366'), width:'auto', padding:'10px 14px' }}>Share</button>}
+      </div>
 
+      {/* Assignment banner */}
       {selected && (
         <div style={{ background:'rgba(196,122,46,0.12)', border:'1px solid rgba(196,122,46,0.3)', borderRadius:10, padding:'10px 14px', marginBottom:12, fontSize:13, color:'#CCAB4A', fontWeight:700, display:'flex', alignItems:'center', gap:8 }}>
-          <span>Assigning: <strong>{guests.find(g=>g.id===selected)?.name}</strong> → tap a table</span>
+          <span>Placing <strong>{guests.find(g=>g.id===selected)?.name}</strong> — tap a table below</span>
           <button onClick={()=>setSelected(null)} style={{ marginLeft:'auto', background:'none', border:'none', color:'rgba(255,255,255,0.45)', cursor:'pointer', fontSize:13, fontFamily:font }}>Cancel</button>
         </div>
       )}
 
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
-        <div>
-          <div style={{ fontSize:10.5, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:8 }}>Tables</div>
-          <div style={{ display:'flex', gap:5, marginBottom:10 }}>
-            <input value={tName} onChange={e=>setTName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addTable()} placeholder="Table name" style={{ flex:1, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:8, padding:'7px 9px', color:'#fff', fontSize:12, fontFamily:font, outline:'none' }} />
-            <input type="number" value={tCap} onChange={e=>setTCap(Math.max(1,Number(e.target.value)))} min={1} max={30} style={{ width:38, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:8, padding:'7px 5px', color:'#fff', fontSize:12, fontFamily:font, outline:'none', textAlign:'center' }} />
-            <button onClick={addTable} style={{ background:'#C47A2E', border:'none', borderRadius:8, padding:'7px 11px', color:'#fff', fontWeight:700, cursor:'pointer', fontFamily:font }}>+</button>
-          </div>
-          {tables.length===0 ? <div style={{ fontSize:12, color:'rgba(255,255,255,0.2)', textAlign:'center', padding:16 }}>Add tables above</div> : tables.map(t => {
-            const seated = guests.filter(g=>g.table===t.id);
-            const pct = t.cap ? seated.length/t.cap : 0;
-            const full = seated.length>=t.cap;
-            return (
-              <div key={t.id} onClick={()=>selected&&!full&&assignToTable(t.id)}
-                style={{ background:selected&&!full?'rgba(196,122,46,0.1)':'rgba(255,255,255,0.04)', borderRadius:12, padding:'10px 12px', marginBottom:8, border:`1.5px solid ${selected&&!full?'rgba(196,122,46,0.35)':full?'rgba(34,197,94,0.2)':'rgba(255,255,255,0.08)'}`, cursor:selected&&!full?'pointer':'default', transition:'all 0.15s' }}>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:4 }}>
-                  <span style={{ fontSize:13, fontWeight:700, color:full?'#22c55e':'#CCAB4A' }}>{t.name}</span>
-                  <span style={{ fontSize:10.5, color:full?'#22c55e':'rgba(255,255,255,0.4)', fontWeight:700 }}>{seated.length}/{t.cap}</span>
-                </div>
-                <div style={{ height:3, borderRadius:2, background:'rgba(255,255,255,0.08)', overflow:'hidden', marginBottom:6 }}>
-                  <div style={{ height:'100%', width:`${Math.min(pct*100,100)}%`, background:full?'#22c55e':'#C47A2E', borderRadius:2 }} />
-                </div>
-                {seated.length>0 ? (
-                  <div style={{ display:'flex', flexWrap:'wrap', gap:4 }}>
-                    {seated.map(g => (
-                      <span key={g.id} onClick={e=>{e.stopPropagation();removeFromTable(g.id);}} title="Click to unassign" style={{ fontSize:10.5, color:'rgba(255,255,255,0.7)', background:'rgba(255,255,255,0.08)', padding:'2px 7px', borderRadius:100, cursor:'pointer' }}>{g.name} ×</span>
-                    ))}
+      {/* Floor plan */}
+      {tables.length > 0 && (
+        <div style={{ background:"linear-gradient(135deg,#0D1B2A,#0A1520)", borderRadius:14, padding:16, marginBottom:12, border:"1px solid rgba(59,130,246,0.2)", backgroundImage:"radial-gradient(rgba(59,130,246,0.06) 1px, transparent 1px)", backgroundSize:"20px 20px", position:"relative" }}>
+          <div style={{ fontSize:9, fontWeight:800, color:"rgba(59,130,246,0.5)", textTransform:"uppercase", letterSpacing:"0.18em", marginBottom:12 }}>🏛️ FLOOR PLAN · {totalSeated}/{guests.length} seated</div>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(130px, 1fr))", gap:12 }}>
+            {tables.map(t => {
+              const seated = guests.filter(g=>g.table===t.id);
+              const full = seated.length >= t.cap;
+              const canDrop = selected && !full;
+              return (
+                <div key={t.id} onClick={()=>canDrop&&assignToTable(t.id)} style={{ display:"flex", flexDirection:"column", alignItems:"center", cursor:canDrop?"pointer":"default" }}>
+                  {/* Round table top view */}
+                  <div style={{ position:"relative", width:90, height:90, marginBottom:6 }}>
+                    {/* Table surface */}
+                    <div style={{ position:"absolute", inset:8, borderRadius:"50%", background:canDrop?"rgba(196,122,46,0.2)":full?"rgba(34,197,94,0.12)":"rgba(255,255,255,0.06)", border:`2px solid ${canDrop?"#C47A2E":full?"#22c55e":"rgba(255,255,255,0.15)"}`, transition:"all 0.15s", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      <span style={{ fontSize:10, fontWeight:700, color:full?"#22c55e":"rgba(255,255,255,0.5)", textAlign:"center", lineHeight:1.2 }}>{seated.length}/{t.cap}</span>
+                    </div>
+                    {/* Seats around perimeter */}
+                    {Array.from({length: Math.min(t.cap, 8)}).map((_, si) => {
+                      const angle = (si / Math.min(t.cap, 8)) * 2 * Math.PI - Math.PI/2;
+                      const r = 40;
+                      const x = 45 + Math.cos(angle) * r - 5;
+                      const y = 45 + Math.sin(angle) * r - 5;
+                      const hasGuest = seated[si];
+                      return (
+                        <div key={si} style={{ position:"absolute", left:x, top:y, width:10, height:10, borderRadius:"50%", background:hasGuest?(full?"#22c55e":"#C47A2E"):"rgba(255,255,255,0.1)", border:`1.5px solid ${hasGuest?(full?"#22c55e":"#C47A2E60"):"rgba(255,255,255,0.15)"}`, transition:"background 0.2s" }} title={hasGuest?.name} />
+                      );
+                    })}
                   </div>
-                ) : <div style={{ fontSize:11, color:'rgba(255,255,255,0.18)', fontStyle:'italic' }}>Empty</div>}
-              </div>
-            );
-          })}
+                  <div style={{ fontSize:11, fontWeight:700, color:full?"#22c55e":"#CCAB4A", textAlign:"center", marginBottom:4 }}>{t.name}</div>
+                  {/* Guest name chips on table */}
+                  {seated.length > 0 && (
+                    <div style={{ display:"flex", flexWrap:"wrap", gap:3, justifyContent:"center", maxWidth:130 }}>
+                      {seated.map(g => (
+                        <span key={g.id} onClick={e=>{e.stopPropagation();removeFromTable(g.id);}} style={{ fontSize:9, padding:"1px 6px", borderRadius:100, background:"rgba(196,122,46,0.2)", color:"#CCAB4A", cursor:"pointer", border:"1px solid rgba(196,122,46,0.3)" }}>{g.name} ×</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
+      )}
 
+      {/* Unassigned guests */}
+      {unassigned.length > 0 && (
         <div>
-          <div style={{ fontSize:10.5, fontWeight:700, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:8 }}>Guests</div>
-          <div style={{ display:'flex', gap:5, marginBottom:10 }}>
-            <input value={gName} onChange={e=>setGName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addGuest()} placeholder="Guest name" style={{ flex:1, background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:8, padding:'7px 9px', color:'#fff', fontSize:12, fontFamily:font, outline:'none' }} />
-            <button onClick={addGuest} style={{ background:'#C47A2E', border:'none', borderRadius:8, padding:'7px 11px', color:'#fff', fontWeight:700, cursor:'pointer', fontFamily:font }}>+</button>
+          <div style={{ fontSize:10, fontWeight:700, color:'rgba(255,255,255,0.3)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:8 }}>Unassigned guests ({unassigned.length})</div>
+          <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+            {unassigned.map(g => (
+              <div key={g.id} onClick={()=>setSelected(g.id===selected?null:g.id)} style={{ display:'flex', alignItems:'center', gap:5, padding:'6px 12px', borderRadius:100, background:selected===g.id?'rgba(196,122,46,0.2)':'rgba(255,255,255,0.06)', border:`1.5px solid ${selected===g.id?'#C47A2E':'rgba(255,255,255,0.1)'}`, cursor:'pointer', transition:'all 0.15s' }}>
+                <span style={{ fontSize:12, color:selected===g.id?'#CCAB4A':'rgba(255,255,255,0.7)', fontWeight:selected===g.id?700:400 }}>{g.name}</span>
+                {selected===g.id && <span style={{ fontSize:10, color:'#C47A2E', fontWeight:800 }}>→ seat</span>}
+                <button onClick={e=>{e.stopPropagation();saveG(guests.filter(x=>x.id!==g.id));}} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.2)', cursor:'pointer', fontSize:14, lineHeight:1 }}>×</button>
+              </div>
+            ))}
           </div>
-          {unassigned.length>0 && (
-            <>
-              <div style={{ fontSize:10, fontWeight:700, color:'rgba(255,255,255,0.25)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:6 }}>Unassigned ({unassigned.length})</div>
-              {unassigned.map(g => (
-                <div key={g.id} onClick={()=>setSelected(g.id===selected?null:g.id)} style={{ display:'flex', alignItems:'center', gap:7, background:selected===g.id?'rgba(196,122,46,0.15)':'rgba(255,255,255,0.04)', borderRadius:10, padding:'8px 10px', marginBottom:5, border:`1.5px solid ${selected===g.id?'rgba(196,122,46,0.4)':'rgba(255,255,255,0.06)'}`, cursor:'pointer', transition:'all 0.15s' }}>
-                  <span style={{ flex:1, fontSize:12.5, color:selected===g.id?'#CCAB4A':'#fff', fontFamily:font }}>{g.name}</span>
-                  <span style={{ fontSize:9.5, color:selected===g.id?'#CCAB4A':'rgba(255,255,255,0.2)', fontWeight:700 }}>{selected===g.id?'→ TAP TABLE':'seat'}</span>
-                  <button onClick={e=>{e.stopPropagation();saveG(guests.filter(x=>x.id!==g.id));}} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.2)', cursor:'pointer', fontSize:16, lineHeight:1, padding:'0 2px' }}>×</button>
-                </div>
-              ))}
-            </>
-          )}
-          {guests.filter(g=>g.table).length>0 && (
-            <>
-              <div style={{ fontSize:10, fontWeight:700, color:'rgba(34,197,94,0.5)', textTransform:'uppercase', letterSpacing:'0.08em', margin:'10px 0 6px' }}>Seated ({guests.filter(g=>g.table).length})</div>
-              {guests.filter(g=>g.table).map(g => {
-                const t = tables.find(t=>t.id===g.table);
-                return (
-                  <div key={g.id} style={{ display:'flex', alignItems:'center', gap:7, background:'rgba(34,197,94,0.04)', borderRadius:10, padding:'7px 10px', marginBottom:4, border:'1px solid rgba(34,197,94,0.1)' }}>
-                    <span style={{ flex:1, fontSize:12, color:'rgba(255,255,255,0.5)', fontFamily:font }}>{g.name}</span>
-                    <span style={{ fontSize:10.5, color:'rgba(34,197,94,0.7)', fontWeight:700 }}>{t?.name}</span>
-                    <button onClick={()=>removeFromTable(g.id)} title="Unassign" style={{ background:'none', border:'none', color:'rgba(255,255,255,0.15)', cursor:'pointer', fontSize:14, lineHeight:1 }}>↩</button>
-                  </div>
-                );
-              })}
-            </>
-          )}
-          {guests.length===0 && <div style={{ fontSize:12, color:'rgba(255,255,255,0.2)', textAlign:'center', padding:16 }}>Add guests above</div>}
         </div>
-      </div>
+      )}
+
+      {tables.length===0 && guests.length===0 && (
+        <div style={{ textAlign:'center', padding:'24px 0', color:'rgba(255,255,255,0.25)', fontSize:13, fontStyle:'italic' }}>Add tables and guests above to build your floor plan</div>
+      )}
     </Modal>
   );
 }
@@ -2424,46 +3133,58 @@ function BudgetPlannerModal({ onClose }) {
   const overBudget = total>0&&spent>total;
   return (
     <Modal onClose={onClose} title="Budget Planner" emoji="💰" wide>
-      <div style={{ background:'rgba(255,255,255,0.04)', borderRadius:14, padding:14, marginBottom:16, border:'1px solid rgba(255,255,255,0.08)' }}>
-        <div style={{ fontSize:10.5, fontWeight:700, color:'rgba(255,255,255,0.4)', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:6 }}>Total Budget</div>
-        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-          <span style={{ fontSize:20, color:'rgba(255,255,255,0.35)', fontWeight:700 }}>₹</span>
-          <input type="number" value={data.total||''} onChange={e=>upd('total',e.target.value)} placeholder="0" style={{ flex:1, background:'transparent', border:'none', outline:'none', fontSize:30, fontWeight:900, color:goldLt, fontFamily:font }} />
+      {/* Master envelope */}
+      <div style={{ position:"relative", borderRadius:12, overflow:"hidden", marginBottom:16, boxShadow:"0 8px 32px rgba(0,0,0,0.5)" }}>
+        {/* Envelope flap strip */}
+        <div style={{ height:8, background:`linear-gradient(90deg,${gold},#F59E0B,${gold})`, opacity:0.85 }} />
+        <div style={{ background:"linear-gradient(135deg,#1C1207,#120D05)", padding:"14px 16px", border:`1px solid ${gold}33`, borderTop:"none", borderRadius:"0 0 12px 12px" }}>
+          <div style={{ fontSize:9, fontWeight:800, color:`${gold}80`, textTransform:"uppercase", letterSpacing:"0.2em", marginBottom:6 }}>💰 TOTAL BUDGET ENVELOPE</div>
+          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:total>0?12:0 }}>
+            <span style={{ fontSize:22, color:'rgba(255,255,255,0.35)', fontWeight:700 }}>₹</span>
+            <input type="number" value={data.total||''} onChange={e=>upd('total',e.target.value)} placeholder="0" style={{ flex:1, background:'transparent', border:'none', outline:'none', fontSize:30, fontWeight:900, color:goldLt, fontFamily:font }} />
+          </div>
+          {total>0&&<>
+            <div style={{ height:5, borderRadius:3, background:'rgba(255,255,255,0.08)', overflow:'hidden', marginBottom:8 }}>
+              <div style={{ height:'100%', width:`${Math.min(spent/total*100,100)}%`, background:overBudget?'#ef4444':gold, borderRadius:3, transition:'width 0.3s' }} />
+            </div>
+            <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, fontWeight:700 }}>
+              <span style={{ color:'rgba(255,255,255,0.45)' }}>Spent ₹{spent.toLocaleString('en-IN')}</span>
+              <span style={{ color:overBudget?'#ef4444':'#22c55e' }}>{overBudget?`⚠️ Over ₹${(spent-total).toLocaleString('en-IN')}`:`₹${(total-spent).toLocaleString('en-IN')} left`}</span>
+            </div>
+          </>}
         </div>
-        {total>0&&<>
-          <div style={{ height:5, borderRadius:3, background:'rgba(255,255,255,0.08)', overflow:'hidden', margin:'12px 0 8px' }}>
-            <div style={{ height:'100%', width:`${Math.min(spent/total*100,100)}%`, background:overBudget?'#ef4444':gold, borderRadius:3, transition:'width 0.3s' }} />
-          </div>
-          <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, fontWeight:700 }}>
-            <span style={{ color:'rgba(255,255,255,0.45)' }}>Spent ₹{spent.toLocaleString('en-IN')}</span>
-            <span style={{ color:overBudget?'#ef4444':'#22c55e' }}>{overBudget?`⚠️ Over ₹${(spent-total).toLocaleString('en-IN')}`:`₹${(total-spent).toLocaleString('en-IN')} left`}</span>
-          </div>
-        </>}
       </div>
+
+      {/* Category envelopes */}
+      <div style={{ fontSize:10, fontWeight:800, color:'rgba(255,255,255,0.3)', textTransform:'uppercase', letterSpacing:'0.15em', marginBottom:10 }}>📬 Category Envelopes</div>
       <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
         {CATS.map(c=>{
           const alloc=Number(data[`alloc_${c.id}`]||0), act=Number(data[`spent_${c.id}`]||0);
           const pct=alloc>0?Math.min(act/alloc*100,100):0, over=alloc>0&&act>alloc;
           return (
-            <div key={c.id} style={{ background:'rgba(255,255,255,0.03)', borderRadius:12, padding:'12px 14px', border:`1px solid ${c.color}22` }}>
-              <div style={{ fontSize:12, fontWeight:700, color:c.color, marginBottom:8 }}>{c.label}</div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
-                {[['Budget',`alloc_${c.id}`,'rgba(255,255,255,0.5)'],['Spent',`spent_${c.id}`,over?'#ef4444':'#fff']].map(([lbl,key,color])=>(
-                  <div key={key}>
-                    <div style={{ fontSize:9.5, fontWeight:700, color:'rgba(255,255,255,0.3)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>{lbl}</div>
-                    <div style={{ display:'flex', alignItems:'center', gap:4, background:'rgba(255,255,255,0.06)', borderRadius:8, padding:'7px 10px', border:over&&key.startsWith('spent')?'1px solid rgba(239,68,68,0.3)':'1px solid transparent' }}>
-                      <span style={{ fontSize:11, color:'rgba(255,255,255,0.3)' }}>₹</span>
-                      <input type="number" value={data[key]||''} onChange={e=>upd(key,e.target.value)} placeholder="0" style={{ background:'transparent', border:'none', outline:'none', fontSize:15, fontWeight:700, color, fontFamily:font, width:'100%' }} />
+            <div key={c.id} style={{ position:"relative", borderRadius:10, overflow:"hidden" }}>
+              {/* Envelope top flap */}
+              <div style={{ height:4, background:`linear-gradient(90deg,${c.color}99,${c.color},${c.color}99)` }} />
+              <div style={{ background:'rgba(255,255,255,0.03)', padding:'10px 14px', border:`1px solid ${c.color}22`, borderTop:"none", borderRadius:"0 0 10px 10px" }}>
+                <div style={{ fontSize:12, fontWeight:700, color:c.color, marginBottom:8 }}>{c.label}</div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+                  {[['Allotted',`alloc_${c.id}`,'rgba(255,255,255,0.5)'],['Spent',`spent_${c.id}`,over?'#ef4444':'#fff']].map(([lbl,key,color])=>(
+                    <div key={key}>
+                      <div style={{ fontSize:9.5, fontWeight:700, color:'rgba(255,255,255,0.3)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>{lbl}</div>
+                      <div style={{ display:'flex', alignItems:'center', gap:4, background:'rgba(255,255,255,0.06)', borderRadius:8, padding:'7px 10px', border:over&&key.startsWith('spent')?'1px solid rgba(239,68,68,0.3)':'1px solid transparent' }}>
+                        <span style={{ fontSize:11, color:'rgba(255,255,255,0.3)' }}>₹</span>
+                        <input type="number" value={data[key]||''} onChange={e=>upd(key,e.target.value)} placeholder="0" style={{ background:'transparent', border:'none', outline:'none', fontSize:15, fontWeight:700, color, fontFamily:font, width:'100%' }} />
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-              {alloc>0&&<>
-                <div style={{ height:3, borderRadius:2, background:'rgba(255,255,255,0.06)', overflow:'hidden', marginTop:8 }}>
-                  <div style={{ height:'100%', width:`${pct}%`, background:over?'#ef4444':c.color, borderRadius:2 }} />
+                  ))}
                 </div>
-                <div style={{ fontSize:10, color:over?'#ef4444':'rgba(255,255,255,0.3)', marginTop:3, textAlign:'right', fontWeight:700 }}>{over?`Over ₹${(act-alloc).toLocaleString('en-IN')}`:`₹${(alloc-act).toLocaleString('en-IN')} free`}</div>
-              </>}
+                {alloc>0&&<>
+                  <div style={{ height:3, borderRadius:2, background:'rgba(255,255,255,0.06)', overflow:'hidden', marginTop:8 }}>
+                    <div style={{ height:'100%', width:`${pct}%`, background:over?'#ef4444':c.color, borderRadius:2 }} />
+                  </div>
+                  <div style={{ fontSize:10, color:over?'#ef4444':'rgba(255,255,255,0.3)', marginTop:3, textAlign:'right', fontWeight:700 }}>{over?`Over ₹${(act-alloc).toLocaleString('en-IN')}`:`₹${(alloc-act).toLocaleString('en-IN')} free`}</div>
+                </>}
+              </div>
             </div>
           );
         })}
@@ -2491,19 +3212,25 @@ function VendorTrackerModal({ onClose }) {
   const totalPaid=vendors.reduce((s,v)=>s+Number(v.deposit||0),0);
   const totalBal=totalCost-totalPaid;
   return (
-    <Modal onClose={onClose} title="Vendor Tracker" emoji="🗂️" wide>
-      {vendors.length>0&&(
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8, marginBottom:14 }}>
-          {[['Total Cost',`₹${totalCost.toLocaleString('en-IN')}`,gold],['Paid',`₹${totalPaid.toLocaleString('en-IN')}`,'#22c55e'],['Balance Due',`₹${totalBal.toLocaleString('en-IN')}`,totalBal>0?'#f59e0b':'#22c55e']].map(([lbl,val,color])=>(
-            <div key={lbl} style={{ textAlign:'center', background:'rgba(255,255,255,0.04)', borderRadius:10, padding:'10px 6px', border:`1px solid ${color}30` }}>
-              <div style={{ fontSize:15, fontWeight:800, color }}>{val}</div>
-              <div style={{ fontSize:9.5, color:'rgba(255,255,255,0.35)', marginTop:2 }}>{lbl}</div>
-            </div>
-          ))}
-        </div>
-      )}
+    <Modal onClose={onClose} title="Vendor Tracker" emoji="🎬" wide>
+      {/* Backstage production board header */}
+      <div style={{ background:"linear-gradient(135deg,#1a1207,#0f0a04)", borderRadius:14, padding:"12px 14px", marginBottom:14, border:"1px solid rgba(196,122,46,0.2)" }}>
+        <div style={{ fontSize:9, fontWeight:800, color:"rgba(196,122,46,0.6)", textTransform:"uppercase", letterSpacing:"0.18em", marginBottom:8 }}>🎬 PRODUCTION BOARD</div>
+        {vendors.length>0 ? (
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8 }}>
+            {[['TOTAL COST',`₹${totalCost.toLocaleString('en-IN')}`,gold],['PAID',`₹${totalPaid.toLocaleString('en-IN')}`,'#22c55e'],['BALANCE',`₹${totalBal.toLocaleString('en-IN')}`,totalBal>0?'#f59e0b':'#22c55e']].map(([lbl,val,color])=>(
+              <div key={lbl} style={{ textAlign:'center', background:`${color}10`, borderRadius:10, padding:'10px 6px', border:`1px solid ${color}25` }}>
+                <div style={{ fontSize:16, fontWeight:900, color, fontVariantNumeric:"tabular-nums" }}>{val}</div>
+                <div style={{ fontSize:8.5, color:`${color}80`, marginTop:3, fontWeight:800, letterSpacing:"0.08em" }}>{lbl}</div>
+              </div>
+            ))}
+          </div>
+        ) : <div style={{ fontSize:12, color:"rgba(196,122,46,0.4)", fontStyle:"italic" }}>No vendors yet. Build your backstage crew below.</div>}
+      </div>
+
       {showAdd?(
-        <div style={{ background:'rgba(255,255,255,0.04)', borderRadius:14, padding:14, marginBottom:14, border:'1px solid rgba(255,255,255,0.1)' }}>
+        <div style={{ background:'rgba(255,255,255,0.04)', borderRadius:14, padding:14, marginBottom:14, border:'1.5px dashed rgba(255,255,255,0.1)' }}>
+          <div style={{ fontSize:9, fontWeight:800, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:10 }}>🎬 Add to Production Board</div>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:8 }}>
             <input value={form.name} onChange={e=>setForm(p=>({...p,name:e.target.value}))} placeholder="Vendor name *" style={inp} />
             <select value={form.cat} onChange={e=>setForm(p=>({...p,cat:e.target.value}))} style={{ ...inp, colorScheme:'dark' }}>{CATS.map(c=><option key={c} value={c}>{c}</option>)}</select>
@@ -2519,51 +3246,64 @@ function VendorTrackerModal({ onClose }) {
           </div>
           <input value={form.notes} onChange={e=>setForm(p=>({...p,notes:e.target.value}))} placeholder="Notes (optional)" style={{ ...inp, marginBottom:10 }} />
           <div style={{ display:'flex', gap:8 }}>
-            <button onClick={add} style={{ flex:1, background:gold, border:'none', borderRadius:9, padding:'10px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>Add Vendor</button>
+            <button onClick={add} style={{ flex:1, background:gold, border:'none', borderRadius:9, padding:'10px', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>Add to Board</button>
             <button onClick={()=>setShowAdd(false)} style={{ padding:'10px 16px', borderRadius:9, border:'1px solid rgba(255,255,255,0.15)', background:'transparent', color:'rgba(255,255,255,0.5)', cursor:'pointer', fontFamily:font, fontSize:13 }}>Cancel</button>
           </div>
         </div>
       ):(
-        <button onClick={()=>setShowAdd(true)} style={{ width:'100%', background:'rgba(196,122,46,0.12)', border:'1.5px dashed rgba(196,122,46,0.4)', borderRadius:10, padding:'11px', color:gold, fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font, marginBottom:14 }}>+ Add Vendor</button>
+        <button onClick={()=>setShowAdd(true)} style={{ width:'100%', background:'rgba(196,122,46,0.1)', border:'1.5px dashed rgba(196,122,46,0.35)', borderRadius:10, padding:'11px', color:gold, fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font, marginBottom:14 }}>🎬 Add Vendor to Board</button>
       )}
       {vendors.length===0?(
-        <div style={{ textAlign:'center', color:'rgba(255,255,255,0.25)', fontSize:13, padding:'28px 0' }}>No vendors yet — add caterers, decorators, photographers…</div>
+        <div style={{ textAlign:'center', color:'rgba(255,255,255,0.2)', fontSize:13, padding:'28px 0' }}>Add caterers, decorators, photographers…</div>
       ):(
-        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-          {vendors.map(v=>{
-            const balance=Number(v.total||0)-Number(v.deposit||0);
-            const st=STATUS[v.status]||STATUS.enquired;
-            const ph=v.contact?.replace(/\D/g,'');
-            const isPhone=ph&&ph.length>=10;
+        /* Group by status */
+        <div>
+          {Object.entries(STATUS).map(([statusKey, s]) => {
+            const group = vendors.filter(v=>v.status===statusKey);
+            if (!group.length) return null;
             return (
-              <div key={v.id} style={{ background:'rgba(255,255,255,0.04)', borderRadius:14, padding:'12px 14px', border:'1px solid rgba(255,255,255,0.07)' }}>
-                <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
-                  <div style={{ flex:1 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-                      <span style={{ fontSize:15, fontWeight:700, color:'#fff', fontFamily:font }}>{v.name}</span>
-                      <span style={{ fontSize:10, fontWeight:700, color:gold, background:'rgba(196,122,46,0.15)', padding:'2px 8px', borderRadius:100 }}>{v.cat}</span>
-                      <span style={{ fontSize:10, fontWeight:700, color:st.color, background:`${st.color}22`, padding:'2px 8px', borderRadius:100 }}>{st.label}</span>
-                    </div>
-                    {v.contact&&(isPhone?<a href={`https://wa.me/${ph.startsWith('91')&&ph.length===12?ph:'91'+ph}`} target="_blank" rel="noreferrer" style={{ fontSize:11.5, color:'#25D366', textDecoration:'none', fontWeight:700, display:'block', marginTop:3 }}>📱 {v.contact}</a>:<div style={{ fontSize:11.5, color:'rgba(255,255,255,0.4)', marginTop:3 }}>{v.contact}</div>)}
-                    {v.notes&&<div style={{ fontSize:11, color:'rgba(255,255,255,0.3)', marginTop:4, fontStyle:'italic' }}>{v.notes}</div>}
-                  </div>
-                  <button onClick={()=>save(vendors.filter(x=>x.id!==v.id))} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.2)', cursor:'pointer', fontSize:18, lineHeight:1 }}>×</button>
+              <div key={statusKey} style={{ marginBottom:16 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
+                  <div style={{ width:10, height:10, borderRadius:2, background:s.color }} />
+                  <span style={{ fontSize:10, fontWeight:800, color:s.color, textTransform:"uppercase", letterSpacing:"0.12em" }}>{s.label}</span>
+                  <span style={{ fontSize:9, fontWeight:700, color:`${s.color}60`, background:`${s.color}12`, padding:"2px 8px", borderRadius:100 }}>{group.length}</span>
+                  <div style={{ flex:1, height:1, background:`${s.color}20` }} />
                 </div>
-                {(v.total||v.deposit)&&(
-                  <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:6, marginTop:10 }}>
-                    {[['Total',v.total,'rgba(255,255,255,0.6)'],['Paid',v.deposit,'#22c55e'],['Balance',balance,balance>0?'#f59e0b':'#22c55e']].map(([lbl,val,color])=>(
-                      <div key={lbl} style={{ textAlign:'center', background:'rgba(255,255,255,0.04)', borderRadius:8, padding:'6px 4px' }}>
-                        <div style={{ fontSize:13, fontWeight:800, color }}>₹{Number(val||0).toLocaleString('en-IN')}</div>
-                        <div style={{ fontSize:9, color:'rgba(255,255,255,0.3)', marginTop:1 }}>{lbl}</div>
+                {group.map(v=>{
+                  const balance=Number(v.total||0)-Number(v.deposit||0);
+                  const ph=v.contact?.replace(/\D/g,'');
+                  const isPhone=ph&&ph.length>=10;
+                  return (
+                    <div key={v.id} style={{ background:'rgba(255,255,255,0.04)', borderRadius:12, padding:'11px 13px', marginBottom:7, borderLeft:`3px solid ${s.color}`, display:'flex', flexDirection:'column', gap:6 }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                        <div style={{ flex:1 }}>
+                          <div style={{ display:'flex', alignItems:'center', gap:6, flexWrap:'wrap' }}>
+                            <span style={{ fontSize:14, fontWeight:700, color:'#fff' }}>{v.name}</span>
+                            <span style={{ fontSize:9, fontWeight:700, color:gold, background:'rgba(196,122,46,0.15)', padding:'2px 7px', borderRadius:100 }}>{v.cat}</span>
+                          </div>
+                          {v.contact&&(isPhone?<a href={`https://wa.me/${ph.startsWith('91')&&ph.length===12?ph:'91'+ph}`} target="_blank" rel="noreferrer" style={{ fontSize:10.5, color:'#25D366', textDecoration:'none', fontWeight:700, display:'block', marginTop:2 }}>📱 {v.contact}</a>:<div style={{ fontSize:10.5, color:'rgba(255,255,255,0.35)', marginTop:2 }}>{v.contact}</div>)}
+                          {v.notes&&<div style={{ fontSize:10.5, color:'rgba(255,255,255,0.28)', fontStyle:'italic', marginTop:2 }}>{v.notes}</div>}
+                        </div>
+                        <button onClick={()=>save(vendors.filter(x=>x.id!==v.id))} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.15)', cursor:'pointer', fontSize:18, lineHeight:1 }}>×</button>
                       </div>
-                    ))}
-                  </div>
-                )}
-                <div style={{ marginTop:10, display:'flex', gap:5, flexWrap:'wrap' }}>
-                  {Object.entries(STATUS).map(([key,s])=>(
-                    <button key={key} onClick={()=>save(vendors.map(x=>x.id===v.id?{...x,status:key}:x))} style={{ fontSize:10.5, padding:'4px 10px', borderRadius:100, border:`1.5px solid ${v.status===key?s.color:'rgba(255,255,255,0.1)'}`, background:v.status===key?s.color+'22':'transparent', color:v.status===key?s.color:'rgba(255,255,255,0.35)', cursor:'pointer', fontFamily:font, fontWeight:700 }}>{s.label}</button>
-                  ))}
-                </div>
+                      {(v.total||v.deposit)&&(
+                        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:5 }}>
+                          {[['Total',v.total,'rgba(255,255,255,0.55)'],['Paid',v.deposit,'#22c55e'],['Bal',balance,balance>0?'#f59e0b':'#22c55e']].map(([lbl,val,color])=>(
+                            <div key={lbl} style={{ textAlign:'center', background:'rgba(0,0,0,0.2)', borderRadius:7, padding:'5px 4px' }}>
+                              <div style={{ fontSize:12, fontWeight:800, color, fontVariantNumeric:"tabular-nums" }}>₹{Number(val||0).toLocaleString('en-IN')}</div>
+                              <div style={{ fontSize:8.5, color:'rgba(255,255,255,0.25)', marginTop:1 }}>{lbl}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div style={{ display:'flex', gap:4, flexWrap:'wrap' }}>
+                        {Object.entries(STATUS).filter(([key])=>key!==statusKey).map(([key,st])=>(
+                          <button key={key} onClick={()=>save(vendors.map(x=>x.id===v.id?{...x,status:key}:x))} style={{ fontSize:9.5, padding:'3px 9px', borderRadius:100, border:`1px solid ${st.color}40`, background:`${st.color}10`, color:st.color, cursor:'pointer', fontFamily:font, fontWeight:700 }}>→ {st.label}</button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             );
           })}
@@ -2597,19 +3337,43 @@ function WABroadcastModal({ onClose }) {
   const copyText = () => { navigator.clipboard.writeText(msg).then(()=>{ setCopied(true); setTimeout(()=>setCopied(false),1800); }).catch(()=>{}); };
   return (
     <Modal onClose={onClose} title="WA Broadcasts" emoji="📣" wide>
-      <div style={{ display:'flex', gap:6, marginBottom:12, flexWrap:'wrap' }}>
-        {PHASES.map(p=>(
-          <button key={p.id} onClick={()=>setPhase(p.id)} style={{ fontSize:11.5, padding:'6px 12px', borderRadius:100, border:`1.5px solid ${phase===p.id?'#C47A2E':'rgba(255,255,255,0.12)'}`, background:phase===p.id?'rgba(196,122,46,0.15)':'transparent', color:phase===p.id?'#CCAB4A':'rgba(255,255,255,0.5)', cursor:'pointer', fontFamily:font, fontWeight:700 }}>{p.emoji} {p.label}</button>
-        ))}
+      {/* WhatsApp phone shell */}
+      <div style={{ background:"#111b21", borderRadius:16, overflow:"hidden", border:"1px solid rgba(255,255,255,0.08)", marginBottom:12 }}>
+        {/* WA header bar */}
+        <div style={{ background:"#202c33", padding:"10px 14px", display:"flex", alignItems:"center", gap:10 }}>
+          <div style={{ width:36, height:36, borderRadius:"50%", background:"linear-gradient(135deg,#25D366,#128C7E)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>🏠</div>
+          <div>
+            <div style={{ fontSize:13, fontWeight:700, color:"#e9edef" }}>House Party Broadcast</div>
+            <div style={{ fontSize:10.5, color:"#8696a0" }}>{PHASES.find(p=>p.id===phase)?.label}</div>
+          </div>
+          {hasVenue&&<div style={{ marginLeft:"auto", fontSize:9, fontWeight:700, color:"#25D366", background:"rgba(37,211,102,0.12)", padding:"3px 8px", borderRadius:100, border:"1px solid rgba(37,211,102,0.2)" }}>✓ Venue linked</div>}
+        </div>
+        {/* Phase tabs */}
+        <div style={{ display:"flex", gap:0, borderBottom:"1px solid rgba(255,255,255,0.05)", background:"#1a2229" }}>
+          {PHASES.map(p=>(
+            <button key={p.id} onClick={()=>setPhase(p.id)} style={{ flex:1, padding:"8px 4px", background:"transparent", border:"none", borderBottom:`2px solid ${phase===p.id?"#25D366":"transparent"}`, color:phase===p.id?"#25D366":"#8696a0", fontSize:9.5, fontWeight:700, cursor:"pointer", fontFamily:font, textTransform:"uppercase", letterSpacing:"0.06em" }}>{p.emoji}</button>
+          ))}
+        </div>
+        {/* Chat bubble */}
+        <div style={{ background:"#0b141a", backgroundImage:"url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")", padding:"16px 12px", minHeight:140 }}>
+          <div style={{ display:"flex", justifyContent:"flex-end" }}>
+            <div style={{ maxWidth:"80%", background:"#005c4b", borderRadius:"12px 0 12px 12px", padding:"10px 12px", position:"relative" }}>
+              <div style={{ fontSize:12, color:"#e9edef", lineHeight:1.6, whiteSpace:"pre-wrap", fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" }}>{msg}</div>
+              <div style={{ fontSize:9, color:"rgba(134,150,160,0.8)", textAlign:"right", marginTop:4 }}>12:00 PM ✓✓</div>
+              <div style={{ position:"absolute", top:0, right:-8, width:0, height:0, borderStyle:"solid", borderWidth:"0 0 10px 10px", borderColor:"transparent transparent transparent #005c4b" }} />
+            </div>
+          </div>
+        </div>
+        {/* Editable input area */}
+        <div style={{ background:"#1f2c34", padding:"8px 12px", display:"flex", gap:8, alignItems:"flex-end" }}>
+          <textarea value={msg} onChange={e=>setMsgs(m=>({...m,[phase]:e.target.value}))} rows={3}
+            style={{ flex:1, background:"#2a3942", border:"none", borderRadius:10, padding:"10px 12px", color:"#e9edef", fontSize:12.5, fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", outline:"none", resize:"none", lineHeight:1.6, colorScheme:"dark" }} />
+        </div>
       </div>
-      {hasVenue&&<div style={{ fontSize:11, color:'#22c55e', background:'rgba(34,197,94,0.08)', border:'1px solid rgba(34,197,94,0.2)', borderRadius:8, padding:'6px 12px', marginBottom:12, fontWeight:600 }}>✓ Venue address auto-filled from Venue Notes</div>}
-      <textarea value={msg} onChange={e=>setMsgs(m=>({...m,[phase]:e.target.value}))} rows={10}
-        style={{ width:'100%', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:12, padding:14, color:'#fff', fontSize:13.5, fontFamily:font, outline:'none', resize:'vertical', boxSizing:'border-box', lineHeight:1.6, colorScheme:'dark', marginBottom:12 }} />
       <div style={{ display:'flex', gap:8 }}>
-        <button onClick={copyText} style={{ flex:1, padding:'11px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.15)', background:copied?'rgba(34,197,94,0.12)':'transparent', color:copied?'#22c55e':'rgba(255,255,255,0.7)', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font, transition:'all 0.2s' }}>{copied?'✓ Copied!':'📋 Copy'}</button>
-        <button onClick={()=>window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank')} style={{ flex:2, padding:'11px', borderRadius:10, border:'none', background:'linear-gradient(135deg,#25D366,#128C7E)', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>📤 Open in WhatsApp</button>
+        <button onClick={copyText} style={{ flex:1, padding:'11px', borderRadius:10, border:'1.5px solid rgba(255,255,255,0.12)', background:copied?'rgba(34,197,94,0.12)':'rgba(255,255,255,0.04)', color:copied?'#22c55e':'rgba(255,255,255,0.6)', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>{copied?'✓ Copied!':'📋 Copy'}</button>
+        <button onClick={()=>window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank')} style={{ flex:2, padding:'11px', borderRadius:10, border:'none', background:'linear-gradient(135deg,#25D366,#128C7E)', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>📤 Send via WhatsApp</button>
       </div>
-      <div style={{ marginTop:10, fontSize:11, color:'rgba(255,255,255,0.25)', textAlign:'center' }}>Edit the message above then send — changes are not saved between sessions</div>
     </Modal>
   );
 }
@@ -2630,47 +3394,60 @@ function VenueVote({ onClose, room, myName, isHost, gameState, sendAction }) {
 
   const vote = (id) => sendAction?.('vote', { id });
 
+  const BALLOT_COLORS = ["#7C3AED","#2563EB","#059669","#D97706","#DC2626","#DB2777"];
+
   return (
-    <Modal onClose={onClose} emoji="📍" title="Venue Vote">
-      {!room && <div style={{ background: "rgba(124,58,237,0.1)", border: "1.5px solid rgba(124,58,237,0.3)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#C4B5FD", marginBottom: 14 }}>Join a room for live voting</div>}
+    <Modal onClose={onClose} emoji="🗳️" title="Venue Vote">
+      {!room && <div style={{ background:"rgba(124,58,237,0.1)", border:"1.5px solid rgba(124,58,237,0.3)", borderRadius:12, padding:"10px 14px", fontSize:13, color:"#C4B5FD", marginBottom:14 }}>Join a room for live voting</div>}
       {isHost && (
-        <>
-          <span style={label}>Add a venue option</span>
-          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-            <input value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === "Enter" && addVenue()} placeholder="Venue name…" style={{ ...inp, flex: 2 }} />
-            <input value={cost} onChange={e => setCost(e.target.value)} placeholder="~₹ cost" style={{ ...inp, flex: 1 }} />
+        <div style={{ background:"rgba(255,255,255,0.03)", borderRadius:12, padding:"12px 14px", marginBottom:14, border:"1px dashed rgba(255,255,255,0.1)" }}>
+          <div style={{ fontSize:9, fontWeight:800, color:"rgba(255,255,255,0.3)", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:10 }}>🗳️ Add Ballot Option</div>
+          <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+            <input value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addVenue()} placeholder="Venue name…" style={{ ...inp, flex:2 }} />
+            <input value={cost} onChange={e=>setCost(e.target.value)} placeholder="~₹ cost" style={{ ...inp, flex:1 }} />
           </div>
-          <button onClick={addVenue} style={{ ...btn("#7C3AED"), marginBottom: 20 }}>+ Add Option</button>
-        </>
+          <button onClick={addVenue} style={{ ...btn("#7C3AED") }}>+ Add to Ballot</button>
+        </div>
       )}
       {venues.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>
-          {isHost ? "Add venue options above" : "Waiting for host to add venues…"}
+        <div style={{ textAlign:"center", padding:"32px 0", color:"rgba(255,255,255,0.3)", fontSize:14 }}>
+          {isHost?"Add venue options above":"Waiting for host to add venues…"}
         </div>
-      ) : venues.map(v => {
+      ) : venues.map((v, vi) => {
         const voteCount = Object.keys(v.votes || {}).length;
         const pct = totalVotes > 0 ? Math.round(voteCount / totalVotes * 100) : 0;
         const myVote = v.votes?.[myName];
+        const col = BALLOT_COLORS[vi % BALLOT_COLORS.length];
+        const isLeading = voteCount > 0 && voteCount === Math.max(...venues.map(x=>Object.keys(x.votes||{}).length));
         return (
-          <div key={v.id} style={{ ...card, marginBottom: 10 }}>
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", fontFamily: font }}>{v.name}</div>
-                {v.cost && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>{v.cost}</div>}
+          <div key={v.id} style={{ background:"rgba(255,255,255,0.04)", borderRadius:14, padding:"14px", marginBottom:10, border:`1.5px solid ${myVote?col+'55':'rgba(255,255,255,0.07)'}`, borderLeft:`4px solid ${col}`, position:"relative" }}>
+            {isLeading && voteCount > 0 && <div style={{ position:"absolute", top:10, right:12, fontSize:9, fontWeight:800, color:"#F59E0B", background:"rgba(245,158,11,0.15)", padding:"2px 8px", borderRadius:100 }}>LEADING</div>}
+            <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:8, marginBottom:10 }}>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:15, fontWeight:800, color:"#fff", fontFamily:font }}>{v.name}</div>
+                {v.cost && <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginTop:2 }}>{v.cost}</div>}
               </div>
-              <button onClick={() => vote(v.id)} style={{ padding: "6px 14px", borderRadius: 100, border: `1.5px solid ${myVote ? "#7C3AED" : "rgba(255,255,255,0.15)"}`, background: myVote ? "rgba(124,58,237,0.3)" : "rgba(255,255,255,0.06)", color: myVote ? "#C4B5FD" : "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
-                {myVote ? "✓ Voted" : "Vote"}
+              <button onClick={()=>vote(v.id)} style={{ padding:"8px 16px", borderRadius:100, border:`2px solid ${myVote?col:'rgba(255,255,255,0.15)'}`, background:myVote?`${col}30`:"transparent", color:myVote?col:"rgba(255,255,255,0.6)", fontSize:12, fontWeight:800, cursor:"pointer", fontFamily:font, flexShrink:0, transition:"all 0.15s" }}>
+                {myVote?"✓ Voted":"Vote"}
               </button>
             </div>
-            <div style={{ marginTop: 10 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "rgba(255,255,255,0.35)", marginBottom: 4 }}>
-                <span>{voteCount} {voteCount === 1 ? "vote" : "votes"}</span>
-                <span>{pct}%</span>
-              </div>
-              <div style={{ height: 6, background: "rgba(255,255,255,0.1)", borderRadius: 3, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${pct}%`, background: "#7C3AED", borderRadius: 3, transition: "width 0.4s ease" }} />
-              </div>
+            {/* Tally bar */}
+            <div style={{ display:"flex", justifyContent:"space-between", fontSize:10, color:"rgba(255,255,255,0.35)", marginBottom:5 }}>
+              <span style={{ fontWeight:700 }}>{voteCount} vote{voteCount!==1?"s":""}</span>
+              <span style={{ fontWeight:800, color:col }}>{pct}%</span>
             </div>
+            <div style={{ height:8, background:"rgba(255,255,255,0.08)", borderRadius:4, overflow:"hidden" }}>
+              <div style={{ height:"100%", width:`${pct}%`, background:`linear-gradient(90deg,${col}80,${col})`, borderRadius:4, transition:"width 0.4s ease" }} />
+            </div>
+            {/* Tally marks */}
+            {voteCount > 0 && (
+              <div style={{ marginTop:8, display:"flex", gap:3 }}>
+                {Array.from({length:Math.min(voteCount,10)}).map((_,i)=>(
+                  <div key={i} style={{ width:3, height:14, background:col, borderRadius:2, opacity:0.7 }} />
+                ))}
+                {voteCount>10 && <span style={{ fontSize:9, color:`${col}80`, fontWeight:700, alignSelf:"center" }}>+{voteCount-10}</span>}
+              </div>
+            )}
           </div>
         );
       })}
@@ -2693,29 +3470,45 @@ function GroupChecklist({ onClose, room, myName, gameState, sendAction }) {
   const remove = (id) => sendAction?.('remove', { id });
 
   return (
-    <Modal onClose={onClose} emoji="✅" title="Group Checklist">
-      {!room && <div style={{ background: "rgba(5,150,105,0.1)", border: "1.5px solid rgba(5,150,105,0.3)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#6EE7B7", marginBottom: 14 }}>Join a room to sync the checklist live</div>}
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-        <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Add a task…" style={{ ...inp, flex: 1 }} />
-        <button onClick={add} style={{ ...btn("#059669"), width: "auto", padding: "10px 16px" }}>+</button>
-      </div>
-      {items.length > 0 && (
-        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginBottom: 12 }}>{done}/{items.length} done</div>
-      )}
-      {items.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>No tasks yet — add one!</div>
-      ) : items.map(it => (
-        <div key={it.id} style={{ ...card, display: "flex", alignItems: "center", gap: 10, marginBottom: 8, opacity: it.done ? 0.55 : 1 }}>
-          <button onClick={() => toggle(it.id)} style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${it.done ? "#059669" : "rgba(255,255,255,0.25)"}`, background: it.done ? "#059669" : "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            {it.done && <span style={{ fontSize: 12, color: "#fff" }}>✓</span>}
-          </button>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, color: "#fff", textDecoration: it.done ? "line-through" : "none", fontFamily: font }}>{it.text}</div>
-            {it.doneBy && <div style={{ fontSize: 11, color: "#6EE7B7", marginTop: 2 }}>✓ {it.doneBy}</div>}
-          </div>
-          <button onClick={() => remove(it.id)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: 18, cursor: "pointer", lineHeight: 1, padding: "0 4px" }}>×</button>
+    <Modal onClose={onClose} emoji="📋" title="Group Checklist">
+      {!room && <div style={{ background:"rgba(5,150,105,0.1)", border:"1.5px solid rgba(5,150,105,0.3)", borderRadius:12, padding:"10px 14px", fontSize:13, color:"#6EE7B7", marginBottom:14 }}>Join a room to sync live</div>}
+      {/* Physical clipboard */}
+      <div style={{ background:"linear-gradient(180deg,#FFFBF0,#FFF8E7)", borderRadius:4, boxShadow:"0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)", position:"relative", marginBottom:14 }}>
+        {/* Clipboard metal clip */}
+        <div style={{ background:"linear-gradient(90deg,#9CA3AF,#6B7280,#9CA3AF)", height:20, borderRadius:"4px 4px 0 0", display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <div style={{ width:48, height:14, background:"linear-gradient(90deg,#4B5563,#6B7280,#4B5563)", borderRadius:4, border:"2px solid #374151", boxShadow:"0 2px 4px rgba(0,0,0,0.3)" }} />
         </div>
-      ))}
+        {/* Paper */}
+        <div style={{ padding:"14px 16px", backgroundImage:"repeating-linear-gradient(transparent, transparent 27px, rgba(59,130,246,0.12) 27px, rgba(59,130,246,0.12) 28px)", backgroundColor:"#FFFBF0" }}>
+          {/* Red margin line */}
+          <div style={{ position:"absolute", left:36, top:20, bottom:0, width:1, background:"rgba(239,68,68,0.2)", pointerEvents:"none" }} />
+          {/* Progress */}
+          {items.length > 0 && (
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+              <span style={{ fontSize:10, fontWeight:800, color:"rgba(0,0,0,0.4)", textTransform:"uppercase", letterSpacing:"0.1em" }}>Party Checklist</span>
+              <span style={{ fontSize:10, fontWeight:800, color:done===items.length?"#059669":"rgba(0,0,0,0.35)" }}>{done}/{items.length} ✓</span>
+            </div>
+          )}
+          {items.length === 0 ? (
+            <div style={{ textAlign:"center", padding:"20px 0", color:"rgba(0,0,0,0.3)", fontSize:13, fontFamily:"Georgia,serif", fontStyle:"italic" }}>Add tasks below…</div>
+          ) : items.map(it => (
+            <div key={it.id} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:4, minHeight:28 }}>
+              <button onClick={()=>toggle(it.id)} style={{ width:18, height:18, borderRadius:3, border:`2px solid ${it.done?"#059669":"rgba(0,0,0,0.3)"}`, background:it.done?"#059669":"transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                {it.done && <span style={{ fontSize:11, color:"#fff", lineHeight:1 }}>✓</span>}
+              </button>
+              <div style={{ flex:1 }}>
+                <span style={{ fontSize:13, color:it.done?"rgba(0,0,0,0.3)":"#1a1a1a", fontFamily:"Georgia,serif", textDecoration:it.done?"line-through":"none" }}>{it.text}</span>
+                {it.doneBy && <span style={{ fontSize:10, color:"#059669", marginLeft:6, fontWeight:700 }}>— {it.doneBy}</span>}
+              </div>
+              <button onClick={()=>remove(it.id)} style={{ background:"none", border:"none", color:"rgba(0,0,0,0.2)", fontSize:16, cursor:"pointer", lineHeight:1 }}>×</button>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{ display:"flex", gap:8 }}>
+        <input value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&add()} placeholder="Add a task to the checklist…" style={{ ...inp, flex:1 }} />
+        <button onClick={add} style={{ ...btn("#059669"), width:"auto", padding:"10px 18px" }}>+</button>
+      </div>
     </Modal>
   );
 }
@@ -2745,56 +3538,93 @@ function KittyFund({ onClose, room, myName, isHost, gameState, sendAction }) {
 
   const remove = (id) => sendAction?.('remove-contribution', { id });
 
+  const BILL_COLORS = ["#16A34A","#15803D","#166534","#14532D","#4ADE80","#22C55E"];
+
   return (
     <Modal onClose={onClose} emoji="🐷" title="Kitty Fund">
-      {!room && <div style={{ background: "rgba(196,122,46,0.1)", border: "1.5px solid rgba(196,122,46,0.3)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#FCD34D", marginBottom: 14 }}>Join a room to pool contributions live</div>}
+      {!room && <div style={{ background:"rgba(196,122,46,0.1)", border:"1.5px solid rgba(196,122,46,0.3)", borderRadius:12, padding:"10px 14px", fontSize:13, color:"#FCD34D", marginBottom:14 }}>Join a room to pool contributions live</div>}
 
-      {isHost && !target && (
-        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-          <input value={targetInput} onChange={e => setTargetInput(e.target.value)} placeholder="Set target amount (₹)" type="number" style={{ ...inp, flex: 1 }} />
-          <button onClick={setTarget} style={{ ...btn("#C47A2E"), width: "auto", padding: "10px 14px" }}>Set</button>
+      {/* Physical collection jar */}
+      <div style={{ display:"flex", justifyContent:"center", marginBottom:16 }}>
+        <div style={{ position:"relative", width:120 }}>
+          {/* Jar neck */}
+          <div style={{ width:48, height:12, background:"linear-gradient(90deg,#6B7280,#9CA3AF,#6B7280)", borderRadius:"8px 8px 0 0", margin:"0 auto", border:"2px solid #4B5563" }} />
+          {/* Jar lid slot */}
+          <div style={{ width:60, height:6, background:"linear-gradient(90deg,#4B5563,#6B7280,#4B5563)", borderRadius:4, margin:"0 auto", marginTop:-2, position:"relative" }}>
+            <div style={{ width:20, height:2, background:"#374151", borderRadius:2, position:"absolute", left:"50%", top:"50%", transform:"translate(-50%,-50%)" }} />
+          </div>
+          {/* Jar body */}
+          <div style={{ width:120, height:100, background:"linear-gradient(180deg,rgba(167,243,208,0.15),rgba(52,211,153,0.08))", border:"3px solid rgba(167,243,208,0.3)", borderRadius:"8px 8px 16px 16px", position:"relative", overflow:"hidden", boxShadow:"0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)" }}>
+            {/* Fill level */}
+            {(target > 0 || total > 0) && (
+              <div style={{ position:"absolute", bottom:0, left:0, right:0, height:`${target > 0 ? pct : Math.min(100, contributions.length * 10)}%`, background:"linear-gradient(180deg,rgba(74,222,128,0.25),rgba(22,163,74,0.35))", transition:"height 0.8s ease", borderTop:"1px solid rgba(74,222,128,0.4)" }} />
+            )}
+            {/* Stacked bills inside */}
+            <div style={{ position:"absolute", bottom:8, left:8, right:8, display:"flex", flexDirection:"column-reverse", gap:3 }}>
+              {contributions.slice(-4).map((c, i) => (
+                <div key={c.id} style={{ height:8, background:`linear-gradient(90deg,${BILL_COLORS[i % BILL_COLORS.length]},${BILL_COLORS[(i+1) % BILL_COLORS.length]})`, borderRadius:2, opacity:0.7+i*0.08, boxShadow:"0 1px 3px rgba(0,0,0,0.3)" }} />
+              ))}
+            </div>
+            {/* Shine */}
+            <div style={{ position:"absolute", top:4, left:8, width:12, bottom:4, background:"rgba(255,255,255,0.06)", borderRadius:4 }} />
+            {/* Amount label inside */}
+            <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
+              <div style={{ fontSize:13, fontWeight:800, color:"#4ADE80", textShadow:"0 1px 4px rgba(0,0,0,0.8)", fontFamily:font }}>₹{total.toLocaleString()}</div>
+              {target > 0 && <div style={{ fontSize:9, color:"rgba(255,255,255,0.5)", marginTop:1, fontWeight:700 }}>{pct}%</div>}
+            </div>
+          </div>
+          {/* Jar base */}
+          <div style={{ width:110, height:8, background:"linear-gradient(90deg,#6B7280,#9CA3AF,#6B7280)", borderRadius:"0 0 8px 8px", margin:"0 auto", border:"2px solid #4B5563", borderTop:"none" }} />
         </div>
-      )}
+      </div>
 
+      {/* Target progress */}
       {target > 0 ? (
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 6 }}>
-            <span style={{ color: "#FCD34D", fontWeight: 700, fontFamily: font }}>₹{total.toLocaleString()} raised</span>
-            <span style={{ color: "rgba(255,255,255,0.4)", fontFamily: font }}>of ₹{target.toLocaleString()}</span>
+        <div style={{ marginBottom:14 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, marginBottom:5 }}>
+            <span style={{ color:"#4ADE80", fontWeight:700, fontFamily:font }}>₹{total.toLocaleString()} collected</span>
+            <span style={{ color:"rgba(255,255,255,0.4)" }}>Goal: ₹{target.toLocaleString()}</span>
           </div>
-          <div style={{ height: 8, background: "rgba(255,255,255,0.1)", borderRadius: 4, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,#C47A2E,#F59E0B)", borderRadius: 4, transition: "width 0.5s ease" }} />
+          <div style={{ height:6, background:"rgba(255,255,255,0.08)", borderRadius:3, overflow:"hidden" }}>
+            <div style={{ height:"100%", width:`${pct}%`, background:"linear-gradient(90deg,#16A34A,#4ADE80)", borderRadius:3, transition:"width 0.5s ease" }} />
           </div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 4 }}>{pct}% of goal</div>
         </div>
       ) : (
-        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", textAlign: "center", marginBottom: 16 }}>
-          Total: <strong style={{ color: "#FCD34D" }}>₹{total.toLocaleString()}</strong>
+        <div style={{ fontSize:12, color:"rgba(255,255,255,0.3)", textAlign:"center", marginBottom:12 }}>
+          Total pooled: <strong style={{ color:"#4ADE80" }}>₹{total.toLocaleString()}</strong>
         </div>
       )}
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-        <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name" style={{ ...inp, flex: 1 }} />
-        <input value={amount} onChange={e => setAmount(e.target.value)} placeholder="₹ Amount" type="number" style={{ ...inp, flex: 1 }} />
+      {isHost && !target && (
+        <div style={{ display:"flex", gap:8, marginBottom:14 }}>
+          <input value={targetInput} onChange={e=>setTargetInput(e.target.value)} placeholder="Set collection target (₹)" type="number" style={{ ...inp, flex:1 }} />
+          <button onClick={setTarget} style={{ ...btn("#16A34A"), width:"auto", padding:"10px 14px" }}>Set Goal</button>
+        </div>
+      )}
+
+      <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+        <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name" style={{ ...inp, flex:1 }} />
+        <input value={amount} onChange={e=>setAmount(e.target.value)} placeholder="₹ Amount" type="number" style={{ ...inp, flex:1 }} />
       </div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-        <input value={note} onChange={e => setNote(e.target.value)} placeholder="Note (optional)" style={{ ...inp, flex: 1 }} onKeyDown={e => e.key === "Enter" && addContribution()} />
-        <button onClick={addContribution} style={{ ...btn("#C47A2E"), width: "auto", padding: "10px 16px" }}>+ Add</button>
+      <div style={{ display:"flex", gap:8, marginBottom:14 }}>
+        <input value={note} onChange={e=>setNote(e.target.value)} placeholder="Note (optional)" style={{ ...inp, flex:1 }} onKeyDown={e=>e.key==="Enter"&&addContribution()} />
+        <button onClick={addContribution} style={{ ...btn("#16A34A"), width:"auto", padding:"10px 16px" }}>+ Contribute</button>
       </div>
 
       {contributions.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "24px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>No contributions yet — be the first! 🐷</div>
-      ) : contributions.map(c => (
-        <div key={c.id} style={{ ...card, display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 15, fontWeight: 700, color: "#FCD34D", fontFamily: font }}>₹{Number(c.amount).toLocaleString()}</span>
-              <span style={{ fontSize: 14, color: "#fff", fontFamily: font }}>— {c.name}</span>
+        <div style={{ textAlign:"center", padding:"16px 0", color:"rgba(255,255,255,0.3)", fontSize:13 }}>No contributions yet — drop in the first! 🐷</div>
+      ) : contributions.map((c, i) => (
+        <div key={c.id} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6, padding:"10px 12px", borderRadius:10, background:"rgba(255,255,255,0.04)", borderLeft:`3px solid ${BILL_COLORS[i % BILL_COLORS.length]}` }}>
+          <div style={{ width:28, height:28, borderRadius:"50%", background:BILL_COLORS[i % BILL_COLORS.length], display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, flexShrink:0 }}>₹</div>
+          <div style={{ flex:1 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+              <span style={{ fontSize:14, fontWeight:700, color:"#4ADE80", fontFamily:font }}>₹{Number(c.amount).toLocaleString()}</span>
+              <span style={{ fontSize:13, color:"#fff" }}>— {c.name}</span>
             </div>
-            {c.note && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>{c.note}</div>}
+            {c.note && <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginTop:2 }}>{c.note}</div>}
           </div>
           {(c.name === myName || isHost) && (
-            <button onClick={() => remove(c.id)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", fontSize: 18, cursor: "pointer", lineHeight: 1, padding: "0 4px" }}>×</button>
+            <button onClick={()=>remove(c.id)} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.2)", fontSize:18, cursor:"pointer", lineHeight:1, padding:"0 4px" }}>×</button>
           )}
         </div>
       ))}
@@ -2803,6 +3633,9 @@ function KittyFund({ onClose, room, myName, isHost, gameState, sendAction }) {
 }
 
 // ── Room-based new tools ──────────────────────────────────────────────────────
+
+const STICKY_COLORS = ["#FEF08A","#86EFAC","#FDA4AF","#93C5FD","#FCA5A5","#C4B5FD","#FCD34D","#6EE7B7"];
+const STICKY_ROTATES = ["-2deg","1.5deg","-1deg","2.5deg","-3deg","1deg","-1.8deg","2deg"];
 
 function WishWall({ onClose, room, myName, gameState, sendAction, sendEffect }) {
   const [text, setText] = useState('');
@@ -2817,20 +3650,54 @@ function WishWall({ onClose, room, myName, gameState, sendAction, sendEffect }) 
   };
 
   if (showWall) return <DesignerWall onClose={()=>setShowWall(false)} items={items} title="Wish Wall" wallEmoji="⭐" />;
+
+  const recent = items.slice(-6);
+
   return (
-    <Modal onClose={onClose} emoji="⭐" title="Wish Wall">
+    <Modal onClose={onClose} emoji="⭐" title="Wish Wall" wide>
       {!room && <div style={{ background: "rgba(245,158,11,0.1)", border: "1.5px solid rgba(245,158,11,0.3)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#FCD34D", marginBottom: 14 }}>Join or host a room for live sharing</div>}
-      <button onClick={()=>setShowWall(true)} style={{ width:"100%", padding:"11px", borderRadius:12, border:`1.5px solid ${items.length?"#F59E0B":"rgba(255,255,255,0.12)"}`, background:items.length?"rgba(245,158,11,0.1)":"rgba(255,255,255,0.04)", color:items.length?"#FCD34D":"rgba(255,255,255,0.45)", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:font, marginBottom:16, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
-        <span>✨ View Wall</span>
-        {items.length>0&&<span style={{background:"rgba(255,255,255,0.15)",borderRadius:20,padding:"1px 9px",fontSize:12}}>{items.length}</span>}
-      </button>
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-        <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Add your wish…" style={{ ...inp, flex: 1 }} />
-        <button onClick={add} style={{ ...btn("#F59E0B"), width: "auto", padding: "10px 16px" }}>⭐</button>
+
+      {/* Corkboard wall */}
+      <div style={{ background: "linear-gradient(135deg,#8B6914,#A0782A,#7A5C0E)", borderRadius: 18, padding: "20px 14px 16px", marginBottom: 16, minHeight: 160, position: "relative", boxShadow: "inset 0 2px 8px rgba(0,0,0,0.4), 0 4px 20px rgba(0,0,0,0.5)", border: "4px solid #5C4308" }}>
+        {/* Cork texture dots */}
+        <div aria-hidden style={{ position: "absolute", inset: 0, borderRadius: 14, backgroundImage: "radial-gradient(ellipse at 20% 30%, rgba(255,200,80,0.08) 0%, transparent 60%), radial-gradient(circle at 70% 70%, rgba(0,0,0,0.1) 0%, transparent 50%)", pointerEvents: "none" }} />
+
+        {/* String across top */}
+        <div style={{ position: "absolute", top: 14, left: 10, right: 10, height: 2, background: "rgba(0,0,0,0.3)", borderRadius: 1 }} />
+
+        {items.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "28px 0 8px", color: "rgba(255,255,255,0.35)", fontSize: 13 }}>Be the first to pin a wish ⭐</div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, paddingTop: 8 }}>
+            {recent.map((item, i) => {
+              const col = STICKY_COLORS[i % STICKY_COLORS.length];
+              const rot = STICKY_ROTATES[i % STICKY_ROTATES.length];
+              return (
+                <div key={item.id || i} style={{ background: col, borderRadius: 4, padding: "8px 8px 10px", transform: `rotate(${rot})`, boxShadow: "0 3px 12px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.2)", position: "relative" }}>
+                  {/* Push pin */}
+                  <div style={{ position: "absolute", top: -7, left: "50%", transform: "translateX(-50%)", width: 10, height: 10, borderRadius: "50%", background: "#DC2626", boxShadow: "0 2px 4px rgba(0,0,0,0.5)" }} />
+                  <div style={{ fontSize: 9, lineHeight: 1.5, color: "#1C1917", fontFamily: "Georgia, serif", fontWeight: 500, wordBreak: "break-word", maxHeight: 52, overflow: "hidden" }}>{item.text}</div>
+                  {(item.name || item.by) && <div style={{ fontSize: 8, color: "#57534e", marginTop: 4, fontWeight: 700 }}>— {item.name || item.by}</div>}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
-      {items.length === 0 && (
-        <div style={{ textAlign: "center", padding: "20px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>No wishes yet — add one!</div>
+
+      {/* Full wall button */}
+      {items.length > 0 && (
+        <button onClick={()=>setShowWall(true)} style={{ width:"100%", padding:"10px", borderRadius:10, border:"1.5px solid rgba(245,158,11,0.35)", background:"rgba(245,158,11,0.1)", color:"#FCD34D", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:font, marginBottom:12, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+          <span>🖼️ View Full Wall</span>
+          <span style={{background:"rgba(255,255,255,0.15)",borderRadius:20,padding:"1px 9px",fontSize:12}}>{items.length} wishes</span>
+        </button>
       )}
+
+      {/* Add input */}
+      <div style={{ display: "flex", gap: 8 }}>
+        <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Make a wish…" style={{ ...inp, flex: 1 }} />
+        <button onClick={add} style={{ ...btn("#F59E0B"), width: "auto", padding: "10px 16px" }}>⭐ Pin</button>
+      </div>
     </Modal>
   );
 }
@@ -2838,35 +3705,70 @@ function WishWall({ onClose, room, myName, gameState, sendAction, sendEffect }) 
 function MoodMeter({ onClose, room, myName, gameState, sendAction }) {
   const moods = gameState?.moods || {};
   const MOOD_OPTIONS = [
-    { mood: "🔥", label: "On Fire", color: "#EF4444" },
-    { mood: "😄", label: "Happy",   color: "#22C55E" },
-    { mood: "😎", label: "Chill",   color: "#3B82F6" },
-    { mood: "🤔", label: "Unsure",  color: "#F59E0B" },
-    { mood: "😴", label: "Sleepy",  color: "#C85A2A" },
+    { mood: "🔥", label: "On Fire",  color: "#EF4444", temp: 100 },
+    { mood: "😄", label: "Happy",    color: "#22C55E", temp: 70  },
+    { mood: "😎", label: "Chill",    color: "#3B82F6", temp: 40  },
+    { mood: "🤔", label: "Unsure",   color: "#F59E0B", temp: 20  },
+    { mood: "😴", label: "Sleepy",   color: "#C85A2A", temp: 5   },
   ];
   const myMood = moods[myName];
   const set = (mood, lbl) => sendAction?.('set-mood', { mood, label: lbl });
 
+  // Compute dominant mood
+  const moodCounts = {};
+  Object.values(moods).forEach(m => { moodCounts[m.mood] = (moodCounts[m.mood] || 0) + 1; });
+  const dominantEmoji = Object.entries(moodCounts).sort((a,b) => b[1]-a[1])[0]?.[0];
+  const dominantOption = MOOD_OPTIONS.find(o => o.mood === dominantEmoji);
+  const avgTemp = Object.values(moods).length
+    ? MOOD_OPTIONS.reduce((sum, o) => sum + (moodCounts[o.mood] || 0) * o.temp, 0) / Object.values(moods).length
+    : 30;
+  const thermColor = avgTemp > 70 ? "#EF4444" : avgTemp > 40 ? "#F97316" : avgTemp > 20 ? "#3B82F6" : "#8B5CF6";
+  const vibeLabel = avgTemp > 70 ? "🔥 CHAOS MODE" : avgTemp > 40 ? "😄 Party Vibes" : avgTemp > 20 ? "😎 Chill Zone" : "😴 Need Energy";
+  const totalPeople = Object.keys(moods).length;
+
   return (
     <Modal onClose={onClose} emoji="💫" title="Mood Meter">
       {!room && <div style={{ background: "rgba(236,72,153,0.1)", border: "1.5px solid rgba(236,72,153,0.3)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#F9A8D4", marginBottom: 14 }}>Join a room to share your mood live</div>}
-      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>How are you feeling right now?</p>
-      <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 24 }}>
+
+      {/* Giant circular orb */}
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+        <div style={{ position: "relative", width: 160, height: 160 }}>
+          {/* Outer glow ring */}
+          <div style={{ position: "absolute", inset: 0, borderRadius: "50%", background: `radial-gradient(ellipse, ${thermColor}30 0%, transparent 70%)`, animation: "pulse 2s infinite" }} />
+          {/* Orb */}
+          <div style={{ position: "absolute", inset: 8, borderRadius: "50%", background: `radial-gradient(ellipse at 35% 35%, ${thermColor}80, ${thermColor}20)`, border: `3px solid ${thermColor}60`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2 }}>
+            <span style={{ fontSize: 36 }}>{dominantEmoji || "🌡️"}</span>
+            <span style={{ fontSize: 11, fontWeight: 800, color: "#fff", textAlign: "center", lineHeight: 1.2, letterSpacing: "0.04em" }}>{vibeLabel}</span>
+            {totalPeople > 0 && <span style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>{totalPeople} vibing</span>}
+          </div>
+          {/* Emoji particles around orb */}
+          {Object.values(moods).slice(0, 8).map((m, i) => {
+            const a = (i / Math.min(Object.values(moods).length, 8)) * 2 * Math.PI;
+            const r = 68;
+            return (
+              <div key={i} style={{ position: "absolute", left: 80 + Math.cos(a) * r - 10, top: 80 + Math.sin(a) * r - 10, fontSize: 18, userSelect: "none" }}>{m.mood}</div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Mood selector row */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
         {MOOD_OPTIONS.map(({ mood, label, color }) => (
-          <button key={mood} onClick={() => set(mood, label)} style={{ flex: 1, padding: "16px 4px", borderRadius: 14, border: `2px solid ${myMood?.mood === mood ? color : "rgba(255,255,255,0.1)"}`, background: myMood?.mood === mood ? `${color}22` : "rgba(255,255,255,0.04)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-            <span style={{ fontSize: 24 }}>{mood}</span>
-            <span style={{ fontSize: 10, color: myMood?.mood === mood ? color : "rgba(255,255,255,0.4)", fontWeight: 700, fontFamily: font }}>{label}</span>
+          <button key={mood} onClick={() => set(mood, label)} style={{ flex: 1, padding: "12px 4px", borderRadius: 14, border: `2px solid ${myMood?.mood === mood ? color : "rgba(255,255,255,0.1)"}`, background: myMood?.mood === mood ? `${color}30` : "rgba(255,255,255,0.04)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, transition: "all 0.15s", fontFamily: font, transform: myMood?.mood === mood ? "scale(1.08)" : "scale(1)" }}>
+            <span style={{ fontSize: 22 }}>{mood}</span>
+            <span style={{ fontSize: 9, color: myMood?.mood === mood ? color : "rgba(255,255,255,0.35)", fontWeight: 700 }}>{label}</span>
           </button>
         ))}
       </div>
-      {Object.keys(moods).length > 0 && (
-        <div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Room Vibes</div>
+
+      {/* Who's what mood */}
+      {totalPeople > 0 && (
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {Object.entries(moods).map(([name, m]) => (
-            <div key={name} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: "rgba(255,255,255,0.04)", borderRadius: 10, marginBottom: 6 }}>
-              <span style={{ fontSize: 20 }}>{m.mood}</span>
-              <span style={{ flex: 1, fontSize: 14, color: "#fff", fontWeight: name === myName ? 700 : 400, fontFamily: font }}>{name}</span>
-              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", fontFamily: font }}>{m.label}</span>
+            <div key={name} style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,0.05)", borderRadius: 100, padding: "4px 10px", fontSize: 12 }}>
+              <span>{m.mood}</span>
+              <span style={{ color: name === myName ? "#fff" : "rgba(255,255,255,0.6)", fontWeight: name === myName ? 700 : 400 }}>{name}</span>
             </div>
           ))}
         </div>
@@ -2878,6 +3780,7 @@ function MoodMeter({ onClose, room, myName, gameState, sendAction }) {
 function SecretMessages({ onClose, room, myName, players, gameState, sendAction }) {
   const [text, setText] = useState('');
   const [to, setTo] = useState('everyone');
+  const [openedIds, setOpenedIds] = useState(new Set());
   const msgs = gameState?.messages || [];
 
   const send = () => {
@@ -2885,39 +3788,93 @@ function SecretMessages({ onClose, room, myName, players, gameState, sendAction 
     sendAction?.('send', { text: text.trim(), to });
     setText('');
   };
+  const openEnvelope = (id) => setOpenedIds(s => new Set([...s, id]));
 
   return (
     <Modal onClose={onClose} emoji="🤫" title="Secret Messages">
       {!room && <div style={{ background: "rgba(99,102,241,0.1)", border: "1.5px solid rgba(99,102,241,0.3)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#A5B4FC", marginBottom: 14 }}>Join a room to send live secret messages</div>}
-      <div style={{ marginBottom: 12 }}>
-        <label style={label}>Send to</label>
+
+      {/* To selector */}
+      <div style={{ marginBottom: 10 }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Send to</div>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {["everyone", ...(players || [])].map(p => (
-            <button key={p} onClick={() => setTo(p)} style={{ padding: "5px 12px", borderRadius: 100, border: `1.5px solid ${to === p ? "#1A7A8A" : "rgba(255,255,255,0.12)"}`, background: to === p ? "rgba(99,102,241,0.25)" : "transparent", color: to === p ? "#fff" : "rgba(255,255,255,0.45)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+            <button key={p} onClick={() => setTo(p)} style={{ padding: "5px 12px", borderRadius: 100, border: `1.5px solid ${to === p ? "#6366F1" : "rgba(255,255,255,0.1)"}`, background: to === p ? "rgba(99,102,241,0.25)" : "transparent", color: to === p ? "#A5B4FC" : "rgba(255,255,255,0.4)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
               {p === "everyone" ? "🌐 Everyone" : p}
             </button>
           ))}
         </div>
       </div>
+
+      {/* Compose */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Your secret message…" style={{ ...inp, flex: 1 }} />
-        <button onClick={send} style={{ ...btn("#1A7A8A"), width: "auto", padding: "10px 16px" }}>Send</button>
+        <button onClick={send} style={{ ...btn("#6366F1"), width: "auto", padding: "10px 16px" }}>Send 🔒</button>
       </div>
+
+      {/* Envelope pile */}
       {msgs.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "24px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>No messages yet 🤫</div>
-      ) : msgs.map(m => (
-        <div key={m.id} style={{ ...card }}>
-          <div style={{ fontSize: 11, color: "#A5B4FC", fontWeight: 700, marginBottom: 4 }}>→ {m.to}</div>
-          <div style={{ fontSize: 14, color: "#fff", lineHeight: 1.5, fontStyle: "italic" }}>"{m.text}"</div>
+        <div style={{ textAlign:"center", padding:"28px 0" }}>
+          <div style={{ fontSize:40, marginBottom:8 }}>📬</div>
+          <div style={{ color:"rgba(255,255,255,0.3)", fontSize:13 }}>No messages yet — send the first secret</div>
         </div>
-      ))}
+      ) : (
+        <div>
+          <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.35)", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:10 }}>
+            {msgs.filter(m=>!openedIds.has(m.id)).length} sealed · {openedIds.size} opened
+          </div>
+          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+            {msgs.map((m, i) => {
+              const opened = openedIds.has(m.id);
+              const envColor = ["#7C3AED","#2563EB","#DC2626","#D97706","#059669","#DB2777"][i % 6];
+              return (
+                <div key={m.id}>
+                  {!opened ? (
+                    /* Physical sealed envelope */
+                    <div onClick={()=>openEnvelope(m.id)} style={{ cursor:"pointer", position:"relative", borderRadius:8, overflow:"hidden" }} onMouseDown={e=>e.currentTarget.style.transform="scale(0.97)"} onMouseUp={e=>e.currentTarget.style.transform="scale(1)"} onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}>
+                      {/* Envelope body */}
+                      <div style={{ background:`linear-gradient(135deg,${envColor}22,${envColor}11)`, border:`2px solid ${envColor}55`, borderRadius:8, padding:"12px 14px 14px" }}>
+                        {/* Envelope flap triangle */}
+                        <div style={{ position:"absolute", top:0, left:0, right:0, height:0, borderLeft:"100% solid transparent", borderTop:`40px solid ${envColor}40` }} />
+                        {/* Wax seal */}
+                        <div style={{ position:"absolute", top:16, left:"50%", transform:"translateX(-50%)", width:28, height:28, borderRadius:"50%", background:`radial-gradient(circle at 35% 35%, ${envColor}, ${envColor}AA)`, boxShadow:`0 2px 8px ${envColor}66`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, border:`2px solid ${envColor}` }}>🔒</div>
+                        <div style={{ marginTop:36, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                          <div>
+                            <div style={{ fontSize:10, fontWeight:700, color:`${envColor}CC`, textTransform:"uppercase", letterSpacing:"0.08em" }}>To: {m.to || "everyone"}</div>
+                            <div style={{ fontSize:11, color:"rgba(255,255,255,0.35)", marginTop:2 }}>Tap to break seal</div>
+                          </div>
+                          <div style={{ background:envColor, borderRadius:6, padding:"3px 10px", fontSize:10, fontWeight:800, color:"#fff", letterSpacing:"0.06em" }}>SEALED</div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Opened — letter inside */
+                    <div style={{ background:"linear-gradient(135deg,#FFFBF5,#FFF8E7)", borderRadius:8, padding:"14px 16px", boxShadow:`0 0 0 2px ${envColor}55, 0 4px 16px rgba(0,0,0,0.4)`, position:"relative" }}>
+                      {/* Torn top edge */}
+                      <div style={{ position:"absolute", top:-2, left:0, right:0, height:6, background:"linear-gradient(90deg,#FFFBF5 0%,#FFF0D0 50%,#FFFBF5 100%)", borderRadius:"0 0 4px 4px" }} />
+                      <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
+                        <div style={{ width:8, height:8, borderRadius:"50%", background:envColor, flexShrink:0 }} />
+                        <span style={{ fontSize:10, fontWeight:800, color:"rgba(0,0,0,0.4)", textTransform:"uppercase", letterSpacing:"0.08em" }}>To: {m.to || "everyone"}</span>
+                      </div>
+                      <div style={{ fontSize:14, color:"#1a1a1a", lineHeight:1.65, fontStyle:"italic", fontFamily:"Georgia,serif" }}>"{m.text}"</div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </Modal>
   );
 }
 
+const ENVELOPE_COLORS = ["#F43F5E","#EC4899","#8B5CF6","#F97316","#EF4444","#D946EF","#FB7185","#E879F9"];
+
 function LoveNotes({ onClose, room, myName, gameState, sendAction, sendEffect }) {
   const [text, setText] = useState('');
   const [showWall, setShowWall] = useState(false);
+  const [openedIds, setOpenedIds] = useState(new Set());
   const items = gameState?.items || [];
 
   const add = () => {
@@ -2927,21 +3884,76 @@ function LoveNotes({ onClose, room, myName, gameState, sendAction, sendEffect })
     setText('');
   };
 
+  const toggleOpen = (id) => setOpenedIds(s => { const ns = new Set(s); ns.has(id) ? ns.delete(id) : ns.add(id); return ns; });
+
   if (showWall) return <DesignerWall onClose={()=>setShowWall(false)} items={items} title="Love Notes Wall" wallEmoji="💌" />;
+
+  const recent = items.slice(-6);
+
   return (
-    <Modal onClose={onClose} emoji="💌" title="Love Notes Wall">
+    <Modal onClose={onClose} emoji="💌" title="Love Notes Wall" wide>
+      <style>{`@keyframes ln-swing{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}} @keyframes ln-sway{0%,100%{transform:rotate(1.5deg)}50%{transform:rotate(-1.5deg)}}`}</style>
       {!room && <div style={{ background: "rgba(244,63,94,0.1)", border: "1.5px solid rgba(244,63,94,0.3)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#FDA4AF", marginBottom: 14 }}>Join a room to share live love notes</div>}
-      <button onClick={()=>setShowWall(true)} style={{ width:"100%", padding:"11px", borderRadius:12, border:`1.5px solid ${items.length?"#F43F5E":"rgba(255,255,255,0.12)"}`, background:items.length?"rgba(244,63,94,0.1)":"rgba(255,255,255,0.04)", color:items.length?"#FDA4AF":"rgba(255,255,255,0.45)", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:font, marginBottom:16, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
-        <span>✨ View Wall</span>
-        {items.length>0&&<span style={{background:"rgba(255,255,255,0.15)",borderRadius:20,padding:"1px 9px",fontSize:12}}>{items.length}</span>}
-      </button>
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-        <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Write a sweet note…" style={{ ...inp, flex: 1 }} />
-        <button onClick={add} style={{ ...btn("#F43F5E"), width: "auto", padding: "10px 16px" }}>💌</button>
+
+      {/* Hanging string display */}
+      <div style={{ background: "linear-gradient(180deg,#1a0a12,#0f0508)", borderRadius: 18, padding: "0 0 16px", marginBottom: 16, overflow: "hidden", border: "1px solid rgba(244,63,94,0.2)", minHeight: 180 }}>
+        {/* String line */}
+        <div style={{ height: 3, background: "linear-gradient(90deg,transparent,rgba(244,63,94,0.6),rgba(244,63,94,0.8),rgba(244,63,94,0.6),transparent)", margin: "0 -1px 8px" }} />
+
+        {items.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "40px 20px", color: "rgba(255,255,255,0.3)", fontSize: 13 }}>
+            <div style={{ fontSize: 32, marginBottom: 10 }}>💌</div>
+            Be the first to hang a love note!
+          </div>
+        ) : (
+          <div style={{ display: "flex", gap: 12, padding: "4px 16px 0", overflowX: "auto" }}>
+            {recent.map((item, i) => {
+              const col = ENVELOPE_COLORS[i % ENVELOPE_COLORS.length];
+              const isOpen = openedIds.has(item.id || i);
+              const anim = i % 2 === 0 ? "ln-swing 4s ease-in-out infinite" : "ln-sway 3.5s ease-in-out infinite";
+              return (
+                <div key={item.id || i} onClick={() => toggleOpen(item.id || i)} style={{ flexShrink: 0, width: 90, cursor: "pointer", animation: anim, transformOrigin: "50% 0%" }}>
+                  {/* Clip/peg */}
+                  <div style={{ width: 12, height: 18, background: "#D4B896", borderRadius: 2, margin: "0 auto -2px", boxShadow: "0 2px 4px rgba(0,0,0,0.3)" }} />
+
+                  {/* Envelope */}
+                  <div style={{ background: isOpen ? `${col}20` : col, borderRadius: 8, padding: isOpen ? "10px 8px" : "12px 8px", border: `2px solid ${col}`, boxShadow: `0 4px 16px ${col}40`, transition: "all 0.3s" }}>
+                    {!isOpen ? (
+                      /* Sealed envelope */
+                      <div style={{ textAlign: "center" }}>
+                        <div style={{ fontSize: 22 }}>💌</div>
+                        <div style={{ fontSize: 8, color: "rgba(255,255,255,0.7)", marginTop: 4, fontWeight: 700 }}>TAP TO OPEN</div>
+                        {(item.name || item.by) && <div style={{ fontSize: 7, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>from {item.name || item.by}</div>}
+                      </div>
+                    ) : (
+                      /* Opened */
+                      <div>
+                        <div style={{ fontSize: 7, lineHeight: 1.5, color: col, fontFamily: "Georgia, serif", fontStyle: "italic", wordBreak: "break-word" }}>{item.text?.slice(0, 80)}</div>
+                        {(item.name || item.by) && <div style={{ fontSize: 6, color: "rgba(255,255,255,0.4)", marginTop: 4, fontWeight: 700 }}>— {item.name || item.by}</div>}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            {items.length > 6 && (
+              <div style={{ flexShrink: 0, width: 70, display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.3)", fontSize: 11 }}>+{items.length - 6} more</div>
+            )}
+          </div>
+        )}
       </div>
-      {items.length === 0 && (
-        <div style={{ textAlign: "center", padding: "20px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>No notes yet — be the first!</div>
+
+      {items.length > 0 && (
+        <button onClick={()=>setShowWall(true)} style={{ width:"100%", padding:"10px", borderRadius:10, border:"1.5px solid rgba(244,63,94,0.35)", background:"rgba(244,63,94,0.1)", color:"#FDA4AF", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:font, marginBottom:12, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+          <span>💌 View All Notes</span>
+          <span style={{background:"rgba(255,255,255,0.15)",borderRadius:20,padding:"1px 9px",fontSize:12}}>{items.length}</span>
+        </button>
       )}
+
+      <div style={{ display: "flex", gap: 8 }}>
+        <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Write a sweet note…" style={{ ...inp, flex: 1 }} />
+        <button onClick={add} style={{ ...btn("#F43F5E"), width: "auto", padding: "10px 16px" }}>💌 Send</button>
+      </div>
     </Modal>
   );
 }
