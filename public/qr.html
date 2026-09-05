@@ -7,18 +7,23 @@
 <title>Tendr — We Curate, You Celebrate</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 :root{
-  --bg:#09081A;--sf:#0D0C22;--sf2:#14132E;
+  --bg:#0B0A1C;--sf:#100F26;--sf2:#16152E;
   --gold:#C89B3C;--gl:#EDBD5A;--gg:rgba(200,155,60,.3);--gls:rgba(200,155,60,.08);
   --txt:#EAE5DB;--dim:#6A6488;--muted:#383658;
   --bdr:rgba(255,255,255,.07);--bdg:rgba(200,155,60,.22);
   --grn:#3ECF8E;--grng:rgba(62,207,142,.11);--grnb:rgba(62,207,142,.28);
   --font:'Plus Jakarta Sans',-apple-system,'SF Pro Display',sans-serif;
+  --font2:'DM Sans',-apple-system,sans-serif;
 }
 html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--font);overflow:hidden;}
+/* grain texture overlay */
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.68' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23g)' opacity='.045'/%3E%3C/svg%3E");
+  background-size:280px 280px;}
 
 /* ── AMBIENT ── */
 #amb{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
@@ -72,7 +77,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--fo
   border-radius:0 2px 2px 0;}
 
 .qtop{display:flex;align-items:center;justify-content:space-between;
-  padding:calc(env(safe-area-inset-top,0px)+32px) 28px 0;flex-shrink:0;}
+  padding:calc(env(safe-area-inset-top,0px)+44px) 28px 0;flex-shrink:0;}
 .qdots{display:flex;gap:7px;align-items:center;}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);transition:all .45s cubic-bezier(.08,.9,.22,1);}
 .dot.on{background:var(--gold);width:22px;border-radius:4px;box-shadow:0 0 8px var(--gg);}
@@ -98,7 +103,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--fo
   background:linear-gradient(90deg,transparent,rgba(200,155,60,.18) 25%,rgba(200,155,60,.18) 75%,transparent);}
 
 /* ── ANSWER CARDS — visually distinct YES vs NO ── */
-.qans{padding:16px 20px calc(env(safe-area-inset-bottom,0px)+24px);display:flex;flex-direction:column;gap:11px;flex-shrink:0;}
+.qans{padding:14px 20px calc(env(safe-area-inset-bottom,0px)+10px);display:flex;flex-direction:column;gap:11px;flex-shrink:0;}
 
 .ans{display:flex;align-items:center;gap:15px;padding:0 20px;
   border-radius:18px;border:1.5px solid;cursor:pointer;font-family:var(--font);text-align:left;
@@ -110,8 +115,8 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--fo
 
 .aem{font-size:28px;flex-shrink:0;transition:transform .35s cubic-bezier(.15,1.5,.35,1);}
 .atxt{flex:1;}
-.am{font-size:16px;font-weight:800;color:var(--txt);line-height:1.3;display:block;}
-.as{font-size:12px;color:var(--dim);margin-top:2px;display:block;line-height:1.5;}
+.am{font-size:16px;font-weight:700;font-family:var(--font2);color:var(--txt);line-height:1.3;display:block;}
+.as{font-size:12px;font-family:var(--font2);color:var(--dim);margin-top:2px;display:block;line-height:1.5;}
 .abadge{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;
   font-size:12px;font-weight:900;opacity:0;transform:scale(0);flex-shrink:0;
   transition:opacity .22s,transform .3s cubic-bezier(.15,1.5,.35,1);}
@@ -247,7 +252,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--fo
   opacity:0;transform:scale(.78);transition:opacity .4s,transform .42s cubic-bezier(.15,1.5,.35,1);}
 .cpill.in{opacity:1;transform:scale(1);}
 .ci{font-size:22px;display:block;margin-bottom:6px;}
-.rlogo{width:min(148px,48vw);height:auto;opacity:0;transform:scale(.65) translateY(8px);
+.rlogo{width:min(200px,58vw);height:auto;opacity:0;transform:scale(.65) translateY(8px);
   transition:opacity .58s,transform .58s cubic-bezier(.15,1.5,.35,1);}
 .rlogo.in{opacity:1;transform:scale(1) translateY(0);}
 .ctaw{position:relative;width:100%;margin-top:26px;}
@@ -416,16 +421,7 @@ let lang='en',yCount=0,fqTimer=null,advTimer=null;
 const app=document.getElementById('app'),pf=document.getElementById('pf');
 const PROG=[0,20,40,58,76,88,100];
 
-const LOGO=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 172" class="rlogo">
-  <path d="M55,8L125,8C133,8 135,22 129,42Q118,68 100,84L94,88L94,110Q94,116 106,116L74,116Q86,116 86,110L86,88L80,84Q62,68 51,42C45,22 47,8 55,8Z" fill="rgba(200,155,60,.1)" stroke="#C89B3C" stroke-width="2.5"/>
-  <path d="M64,56Q90,68 116,56Q112,72 100,84L80,84Q68,72 64,56Z" fill="rgba(200,155,60,.38)"/>
-  <path d="M22,26L25.5,17L29,26L38,29.5L29,33L25.5,42L22,33L13,29.5Z" fill="#EDBD5A"/>
-  <path d="M14,58L16.5,51L19,58L26,60.5L19,63L16.5,70L14,63L7,60.5Z" fill="#C89B3C" opacity=".7"/>
-  <path d="M148,18L150.5,12L153,18L159,20.5L153,23L150.5,29L148,23L142,20.5Z" fill="#C89B3C" opacity=".65"/>
-  <circle cx="158" cy="54" r="3" fill="#C89B3C" opacity=".45"/>
-  <text x="90" y="148" font-family="Georgia,serif" font-size="33" fill="#EDBD5A" text-anchor="middle" letter-spacing="3">tendr</text>
-  <text x="90" y="165" font-family="-apple-system,Arial,sans-serif" font-size="7.5" fill="#C89B3C" text-anchor="middle" letter-spacing="2.5">— • WE CURATE YOU CELEBRATE • —</text>
-</svg>`;
+const LOGO=`<img src="tendr-logo-secondary.png" class="rlogo" alt="Tendr">`;
 
 function prog(p){pf.style.width=p+'%';}
 
