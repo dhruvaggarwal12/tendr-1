@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { usePartyRoom } from "../../hooks/usePartyRoom";
 import { useNavigate } from "react-router-dom";
 import { TRUTHS, DARES, NEVER_HAVE_I, WOULD_YOU_RATHER, CHARADES, HOT_TAKES, BINGO_SQUARES } from "../../data/housePartyData";
+import DesignerWall from "../../components/DesignerWall";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Manrope', 'Inter', sans-serif";
@@ -1251,25 +1252,24 @@ function PolaroidCard({ post, accent, onReact, onDownload }) {
 // Legacy alias so any remaining WallPost references still compile
 const WallPost = PolaroidCard;
 
-// Wish Wall — polaroid corkboard
+// Wish Wall
 function WishWall({ onClose, accent, celebrant, placeholder }) {
   const [wishes, setWishes] = useState([]);
   const [name, setName] = useState("");
   const [wish, setWish] = useState("");
+  const [showWall, setShowWall] = useState(false);
   const post = () => {
     if (!wish.trim()) return;
-    setWishes(w=>[...w,{id:Date.now(),name:name.trim()||"Anonymous",text:wish.trim(),emoji:rand(["🎂","🎉","🥳","🎁","❤️","✨","🌟","🎈"]),reactions:{}}]);
+    setWishes(w=>[...w,{id:Date.now(),name:name.trim()||"Anonymous",text:wish.trim()}]);
     setName("");setWish("");
   };
-  const react = (id,emoji)=>setWishes(ws=>ws.map(w=>w.id===id?{...w,reactions:{...w.reactions,[emoji]:(w.reactions[emoji]||0)+1}}:w));
+  if (showWall) return <DesignerWall onClose={()=>setShowWall(false)} items={wishes} title={`Wish Wall${celebrant?` for ${celebrant}`:""}`} wallEmoji="⭐" />;
   return (
-    <Modal onClose={onClose} emoji="🎂" title={`Wish Wall${celebrant?` for ${celebrant}`:""}`} wide>
-      {/* Corkboard */}
-      <div style={{background:'#7B5230',borderRadius:12,padding:wishes.length===0?'40px 20px':'30px 20px 22px',marginBottom:16,display:'flex',flexWrap:'wrap',gap:20,alignItems:'flex-start',justifyContent:wishes.length===0?'center':'flex-start',alignContent:'flex-start',border:'6px solid #4E321A',boxShadow:'inset 0 3px 14px rgba(0,0,0,0.4),0 4px 20px rgba(0,0,0,0.3)',position:'relative',minHeight:wishes.length===0?160:undefined}}>
-        <div aria-hidden style={{position:'absolute',inset:0,borderRadius:7,opacity:0.15,backgroundImage:"url(\"data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-rule='evenodd'%3E%3Ccircle cx='5' cy='5' r='1'/%3E%3Ccircle cx='25' cy='15' r='1'/%3E%3Ccircle cx='15' cy='35' r='0.8'/%3E%3Ccircle cx='35' cy='30' r='0.8'/%3E%3C/g%3E%3C/svg%3E\")",pointerEvents:'none'}}/>
-        {wishes.length===0&&<p style={{color:'rgba(255,220,160,0.45)',fontSize:13,textAlign:'center',width:'100%',lineHeight:1.7}}><span style={{fontSize:30,display:'block',marginBottom:8}}>📌</span>No wishes yet — be the first to pin one!</p>}
-        {wishes.map(w=><PolaroidCard key={w.id} post={w} accent={accent} onReact={react} onDownload={downloadPolaroid}/>)}
-      </div>
+    <Modal onClose={onClose} emoji="⭐" title={`Wish Wall${celebrant?` for ${celebrant}`:""}`} wide>
+      <button onClick={()=>setShowWall(true)} style={{...mkBtn(wishes.length?accent:"rgba(255,255,255,0.08)"),marginBottom:16,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+        <span>✨ View Wall</span>
+        {wishes.length>0&&<span style={{background:"rgba(255,255,255,0.15)",borderRadius:20,padding:"1px 9px",fontSize:12,fontWeight:700}}>{wishes.length}</span>}
+      </button>
       <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name (optional)" style={{...inp,marginBottom:8}}/>
       <textarea value={wish} onChange={e=>setWish(e.target.value)} placeholder={placeholder||`Write a wish for ${celebrant||"them"}…`} style={{...inp,minHeight:72,resize:"vertical",marginBottom:10}}/>
       <button onClick={post} style={{...mkBtn(accent)}}>📌 Pin Wish</button>
@@ -1369,51 +1369,24 @@ function BirthdayQuiz({ onClose, accent, celebrant }) {
   );
 }
 
-// Anniversary: Love Notes Wall — parchment letter cards with wax seal
+// Anniversary: Love Notes Wall
 function LoveNotes({ onClose, accent }) {
   const [notes, setNotes] = useState([]);
   const [from, setFrom] = useState("");
   const [note, setNote] = useState("");
+  const [showWall, setShowWall] = useState(false);
   const post = () => {
     if (!note.trim()) return;
-    setNotes(n=>[...n,{id:Date.now(),name:from.trim()||"Anonymous",text:note.trim(),emoji:rand(["💍","❤️","🌹","💫","✨","💌","🥂","💎"]),reactions:{}}]);
+    setNotes(n=>[...n,{id:Date.now(),name:from.trim()||"Anonymous",text:note.trim()}]);
     setFrom("");setNote("");
   };
-  const react=(id,emoji)=>setNotes(ns=>ns.map(n=>n.id===id?{...n,reactions:{...n.reactions,[emoji]:(n.reactions[emoji]||0)+1}}:n));
-  const CARD_BG=["#FFF9EE","#FFF5F8","#F8F0FF","#F0F8FF","#FFFFF0"];
-  const SEAL=["#C53030","#B7791F","#6B46C1","#2B6CB0","#276749"];
+  if (showWall) return <DesignerWall onClose={()=>setShowWall(false)} items={notes} title="Love Notes Wall" wallEmoji="💌" />;
   return (
     <Modal onClose={onClose} emoji="💌" title="Love Notes Wall" wide>
-      {notes.length===0&&<p style={{textAlign:"center",color:"rgba(255,255,255,0.3)",fontSize:13,padding:"20px 0 16px"}}>Be the first to leave a note for the couple 💑</p>}
-      <div style={{display:'flex',flexDirection:'column',gap:14,marginBottom:20}}>
-        {notes.map((n,i)=>{
-          const bg=CARD_BG[i%CARD_BG.length], seal=SEAL[i%SEAL.length];
-          return (
-            <div key={n.id} style={{background:bg,borderRadius:3,padding:'18px 22px 14px',boxShadow:'0 4px 22px rgba(0,0,0,0.32),0 1px 4px rgba(0,0,0,0.14)',position:'relative',border:'1px solid rgba(0,0,0,0.06)'}}>
-              {/* Ruled lines */}
-              {[64,90,116,142,168].map(y=><div key={y} aria-hidden style={{position:'absolute',left:0,right:0,top:y,height:1,background:'rgba(100,100,200,0.07)'}}/>)}
-              {/* Left margin */}
-              <div aria-hidden style={{position:'absolute',left:40,top:0,bottom:0,width:1,background:'rgba(220,80,80,0.14)'}}/>
-              {/* Wax seal */}
-              <div style={{position:'absolute',top:14,right:16,width:36,height:36,borderRadius:'50%',background:`radial-gradient(circle at 38% 36%,${seal}cc,${seal})`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,boxShadow:`0 3px 10px ${seal}55`,color:'#fff'}}>
-                {n.emoji}
-              </div>
-              {/* Message */}
-              <div style={{color:'#2d2420',fontSize:13.5,lineHeight:1.8,fontFamily:"'Georgia',serif",fontStyle:'italic',paddingLeft:48,paddingRight:50,marginBottom:10,wordBreak:'break-word',whiteSpace:'pre-wrap'}}>{n.text}</div>
-              {/* Author */}
-              <div style={{color:'#9A8070',fontSize:11,fontWeight:600,paddingLeft:48,marginBottom:8,letterSpacing:'0.04em'}}>— {n.name}</div>
-              {/* Reactions */}
-              <div style={{display:'flex',gap:5,flexWrap:'wrap',paddingLeft:48}}>
-                {["❤️","💍","✨","😍"].map(r=>(
-                  <button key={r} onClick={()=>react(n.id,r)} style={{background:(n.reactions?.[r]||0)>0?'rgba(0,0,0,0.07)':'transparent',border:'none',borderRadius:10,padding:'2px 7px',cursor:'pointer',fontSize:12,color:'#555',transition:'background 0.15s'}}>
-                    {r}{(n.reactions?.[r]||0)>0?' '+n.reactions[r]:''}
-                  </button>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <button onClick={()=>setShowWall(true)} style={{...mkBtn(notes.length?accent:"rgba(255,255,255,0.08)"),marginBottom:16,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+        <span>✨ View Wall</span>
+        {notes.length>0&&<span style={{background:"rgba(255,255,255,0.15)",borderRadius:20,padding:"1px 9px",fontSize:12,fontWeight:700}}>{notes.length}</span>}
+      </button>
       <input value={from} onChange={e=>setFrom(e.target.value)} placeholder="Your name" style={{...inp,marginBottom:8}}/>
       <textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="Write a note for the couple…" style={{...inp,minHeight:80,resize:"vertical",marginBottom:10}}/>
       <button onClick={post} style={{...mkBtn(accent)}}>Post Note 💌</button>
@@ -2151,45 +2124,24 @@ function NameSuggestions({ onClose, accent }) {
   );
 }
 
-// Blessings Wall — warm glowing blessing cards
+// Blessings Wall
 function BlessingsWall({ onClose, accent, placeholder }) {
   const [blessings, setBlessings] = useState([]);
   const [from, setFrom] = useState("");
   const [blessing, setBlessing] = useState("");
+  const [showWall, setShowWall] = useState(false);
   const post = () => {
     if (!blessing.trim()) return;
-    setBlessings(b=>[...b,{id:Date.now(),name:from.trim()||"Anonymous",text:blessing.trim(),emoji:rand(["🙏","🌸","✨","💫","🌺","🙌","❤️","🌼"]),reactions:{}}]);
+    setBlessings(b=>[...b,{id:Date.now(),name:from.trim()||"Anonymous",text:blessing.trim()}]);
     setFrom("");setBlessing("");
   };
-  const react=(id,emoji)=>setBlessings(bs=>bs.map(b=>b.id===id?{...b,reactions:{...b.reactions,[emoji]:(b.reactions[emoji]||0)+1}}:b));
-  const LEAF=[["#F6AD55","#ED8936"],["#68D391","#38A169"],["#FC8181","#E53E3E"],["#76E4F7","#0BC5EA"],["#D6BCFA","#9F7AEA"],["#FBD38D","#ECC94B"]];
+  if (showWall) return <DesignerWall onClose={()=>setShowWall(false)} items={blessings} title="Blessings Wall" wallEmoji="🙏" />;
   return (
     <Modal onClose={onClose} emoji="🙏" title="Blessings Wall" wide>
-      {blessings.length===0&&<p style={{textAlign:"center",color:"rgba(255,255,255,0.3)",fontSize:13,padding:"20px 0 14px"}}>Be the first to share a blessing 🙏</p>}
-      <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:20}}>
-        {blessings.map((b,i)=>{
-          const [c1,c2]=LEAF[i%LEAF.length];
-          return (
-            <div key={b.id} style={{borderRadius:14,padding:'16px 18px',background:`linear-gradient(135deg,${c1}1a,${c2}0f)`,border:`1px solid ${c1}40`,position:'relative',overflow:'hidden'}}>
-              <div aria-hidden style={{position:'absolute',right:-10,top:-10,fontSize:64,opacity:0.06,transform:'rotate(18deg)',userSelect:'none',pointerEvents:'none'}}>{b.emoji}</div>
-              <div style={{display:'flex',gap:12,alignItems:'flex-start'}}>
-                <span style={{fontSize:24,flexShrink:0,filter:'drop-shadow(0 2px 6px rgba(0,0,0,0.3))'}}>{b.emoji}</span>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:11,fontWeight:700,color:c1,letterSpacing:'0.05em',marginBottom:5,textTransform:'uppercase'}}>{b.name}</div>
-                  <div style={{fontSize:14,color:'rgba(255,255,255,0.88)',lineHeight:1.65,wordBreak:'break-word'}}>{b.text}</div>
-                  <div style={{display:'flex',gap:5,flexWrap:'wrap',marginTop:10}}>
-                    {["🙏","❤️","✨","🌸"].map(r=>(
-                      <button key={r} onClick={()=>react(b.id,r)} style={{background:(b.reactions?.[r]||0)>0?c1+'25':'rgba(255,255,255,0.07)',border:`1px solid ${(b.reactions?.[r]||0)>0?c1+'55':'rgba(255,255,255,0.1)'}`,borderRadius:20,padding:'3px 9px',cursor:'pointer',fontSize:12,color:(b.reactions?.[r]||0)>0?c1:'rgba(255,255,255,0.45)',fontFamily:font,transition:'all 0.15s'}}>
-                        {r}{(b.reactions?.[r]||0)>0?' '+b.reactions[r]:''}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <button onClick={()=>setShowWall(true)} style={{...mkBtn(blessings.length?accent:"rgba(255,255,255,0.08)"),marginBottom:16,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+        <span>✨ View Wall</span>
+        {blessings.length>0&&<span style={{background:"rgba(255,255,255,0.15)",borderRadius:20,padding:"1px 9px",fontSize:12,fontWeight:700}}>{blessings.length}</span>}
+      </button>
       <input value={from} onChange={e=>setFrom(e.target.value)} placeholder="Your name" style={{...inp,marginBottom:8}}/>
       <textarea value={blessing} onChange={e=>setBlessing(e.target.value)} placeholder={placeholder||"Share your blessings…"} style={{...inp,minHeight:80,resize:"vertical",marginBottom:10}}/>
       <button onClick={post} style={{...mkBtn(accent)}}>Share Blessing 🙏</button>

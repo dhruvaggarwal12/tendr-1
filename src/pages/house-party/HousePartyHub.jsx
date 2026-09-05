@@ -6,6 +6,7 @@ import {
   HOT_SEAT_QUESTIONS, WORD_WOLF_PAIRS, CATEGORY_BLITZ, ROAST_PROMPTS,
 } from "../../data/housePartyData";
 import { usePartyRoom } from "../../hooks/usePartyRoom";
+import DesignerWall from "../../components/DesignerWall";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Syne', sans-serif";
@@ -2805,6 +2806,7 @@ function KittyFund({ onClose, room, myName, isHost, gameState, sendAction }) {
 
 function WishWall({ onClose, room, myName, gameState, sendAction, sendEffect }) {
   const [text, setText] = useState('');
+  const [showWall, setShowWall] = useState(false);
   const items = gameState?.items || [];
 
   const add = () => {
@@ -2814,32 +2816,21 @@ function WishWall({ onClose, room, myName, gameState, sendAction, sendEffect }) 
     setText('');
   };
 
-  const react = (id, emoji) => sendAction?.('react', { id, emoji });
-
+  if (showWall) return <DesignerWall onClose={()=>setShowWall(false)} items={items} title="Wish Wall" wallEmoji="⭐" />;
   return (
     <Modal onClose={onClose} emoji="⭐" title="Wish Wall">
       {!room && <div style={{ background: "rgba(245,158,11,0.1)", border: "1.5px solid rgba(245,158,11,0.3)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#FCD34D", marginBottom: 14 }}>Join or host a room for live sharing</div>}
+      <button onClick={()=>setShowWall(true)} style={{ width:"100%", padding:"11px", borderRadius:12, border:`1.5px solid ${items.length?"#F59E0B":"rgba(255,255,255,0.12)"}`, background:items.length?"rgba(245,158,11,0.1)":"rgba(255,255,255,0.04)", color:items.length?"#FCD34D":"rgba(255,255,255,0.45)", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:font, marginBottom:16, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+        <span>✨ View Wall</span>
+        {items.length>0&&<span style={{background:"rgba(255,255,255,0.15)",borderRadius:20,padding:"1px 9px",fontSize:12}}>{items.length}</span>}
+      </button>
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Add your wish…" style={{ ...inp, flex: 1 }} />
         <button onClick={add} style={{ ...btn("#F59E0B"), width: "auto", padding: "10px 16px" }}>⭐</button>
       </div>
-      {items.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>No wishes yet — add one!</div>
-      ) : items.map(it => (
-        <div key={it.id} style={{ ...card, display: "flex", gap: 10, alignItems: "flex-start" }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, color: "#fff", lineHeight: 1.5 }}>{it.text}</div>
-            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 4 }}>— {it.by}</div>
-            <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
-              {["❤️","🔥","😂","👏"].map(e => (
-                <button key={e} onClick={() => react(it.id, e)} style={{ padding: "3px 8px", borderRadius: 100, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", cursor: "pointer", fontSize: 12, fontFamily: font }}>
-                  {e} {it.reactions?.[e] || 0}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      ))}
+      {items.length === 0 && (
+        <div style={{ textAlign: "center", padding: "20px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>No wishes yet — add one!</div>
+      )}
     </Modal>
   );
 }
@@ -2926,6 +2917,7 @@ function SecretMessages({ onClose, room, myName, players, gameState, sendAction 
 
 function LoveNotes({ onClose, room, myName, gameState, sendAction, sendEffect }) {
   const [text, setText] = useState('');
+  const [showWall, setShowWall] = useState(false);
   const items = gameState?.items || [];
 
   const add = () => {
@@ -2935,30 +2927,21 @@ function LoveNotes({ onClose, room, myName, gameState, sendAction, sendEffect })
     setText('');
   };
 
-  const react = (id, emoji) => sendAction?.('react', { id, emoji });
-
+  if (showWall) return <DesignerWall onClose={()=>setShowWall(false)} items={items} title="Love Notes Wall" wallEmoji="💌" />;
   return (
     <Modal onClose={onClose} emoji="💌" title="Love Notes Wall">
       {!room && <div style={{ background: "rgba(244,63,94,0.1)", border: "1.5px solid rgba(244,63,94,0.3)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#FDA4AF", marginBottom: 14 }}>Join a room to share live love notes</div>}
+      <button onClick={()=>setShowWall(true)} style={{ width:"100%", padding:"11px", borderRadius:12, border:`1.5px solid ${items.length?"#F43F5E":"rgba(255,255,255,0.12)"}`, background:items.length?"rgba(244,63,94,0.1)":"rgba(255,255,255,0.04)", color:items.length?"#FDA4AF":"rgba(255,255,255,0.45)", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:font, marginBottom:16, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+        <span>✨ View Wall</span>
+        {items.length>0&&<span style={{background:"rgba(255,255,255,0.15)",borderRadius:20,padding:"1px 9px",fontSize:12}}>{items.length}</span>}
+      </button>
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Write a sweet note…" style={{ ...inp, flex: 1 }} />
         <button onClick={add} style={{ ...btn("#F43F5E"), width: "auto", padding: "10px 16px" }}>💌</button>
       </div>
-      {items.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>No notes yet — be the first!</div>
-      ) : items.map(it => (
-        <div key={it.id} style={{ ...card, background: "rgba(244,63,94,0.07)", border: "1.5px solid rgba(244,63,94,0.2)" }}>
-          <div style={{ fontSize: 14, color: "#fff", lineHeight: 1.6, marginBottom: 4 }}>{it.text}</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginBottom: 8 }}>— {it.by}</div>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {["❤️","😭","🥹","💕"].map(e => (
-              <button key={e} onClick={() => react(it.id, e)} style={{ padding: "3px 8px", borderRadius: 100, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", cursor: "pointer", fontSize: 12, fontFamily: font }}>
-                {e} {it.reactions?.[e] || 0}
-              </button>
-            ))}
-          </div>
-        </div>
-      ))}
+      {items.length === 0 && (
+        <div style={{ textAlign: "center", padding: "20px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>No notes yet — be the first!</div>
+      )}
     </Modal>
   );
 }
