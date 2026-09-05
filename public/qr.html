@@ -72,27 +72,29 @@ html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--fo
   border-radius:0 2px 2px 0;}
 
 .qtop{display:flex;align-items:center;justify-content:space-between;
-  padding:calc(env(safe-area-inset-top,0px)+18px) 28px 0;flex-shrink:0;}
+  padding:calc(env(safe-area-inset-top,0px)+32px) 28px 0;flex-shrink:0;}
 .qdots{display:flex;gap:7px;align-items:center;}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);transition:all .45s cubic-bezier(.08,.9,.22,1);}
 .dot.on{background:var(--gold);width:22px;border-radius:4px;box-shadow:0 0 8px var(--gg);}
 .dot.dn{background:var(--gold);opacity:.28;}
 .qstep{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--muted);}
 
-/* Question body — CENTERED, not flex-end */
-.qbody{flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 28px 12px;}
+/* Question body — flex-end pushes question toward separator/answers, empty space sits at top */
+.qbody{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:0 28px 28px;}
 .qcat{font-size:10px;font-weight:800;letter-spacing:3.5px;text-transform:uppercase;
   color:var(--gold);opacity:.65;margin-bottom:18px;display:flex;align-items:center;gap:8px;}
 .qcat::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(200,155,60,.25),transparent);}
 
-/* Question text — large, blur-in, left aligned */
-.qtxt{font-size:clamp(26px,7vw,32px);font-weight:900;color:var(--txt);line-height:1.24;
+/* Question text — large, blur-in, gold-to-cream gradient */
+.qtxt{font-size:clamp(26px,7vw,34px);font-weight:800;line-height:1.24;
+  background:linear-gradient(145deg,#EDBD5A 0%,#EAE5DB 55%,#EAE5DB 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
   opacity:0;filter:blur(8px);transform:translateY(14px);
   transition:opacity .65s .08s ease,filter .65s .08s ease,transform .65s .08s cubic-bezier(.08,.9,.22,1);}
 .qtxt.reveal{opacity:1;filter:blur(0);transform:translateY(0);}
 
 /* Separator between question and answers */
-.qdiv{height:1px;margin:20px 20px 0;flex-shrink:0;
+.qdiv{height:1px;margin:16px 20px 0;flex-shrink:0;
   background:linear-gradient(90deg,transparent,rgba(200,155,60,.18) 25%,rgba(200,155,60,.18) 75%,transparent);}
 
 /* ── ANSWER CARDS — visually distinct YES vs NO ── */
