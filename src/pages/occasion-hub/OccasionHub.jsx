@@ -5,7 +5,7 @@ import { TRUTHS, DARES, NEVER_HAVE_I, WOULD_YOU_RATHER, CHARADES, HOT_TAKES, BIN
 import DesignerWall from "../../components/DesignerWall";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
-const font = "'Manrope', 'Inter', sans-serif";
+const font = "'Outfit', sans-serif";
 
 function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
@@ -5777,8 +5777,8 @@ export default function OccasionHub({ occasion }) {
   const planTools  = allTools.filter(t => PLAN_IDS.has(t.id));
   const lobbyQuick = [...planTools.slice(0, 2), ...playTools.slice(0, 2)].slice(0, 4);
 
-  const PH = { violet: "#8B5CF6", blue: "#38BDF8", gold: "#F5C77A", pink: "#F472B6", bg: "#070711", surface: "#0D0D17" };
-  const tabAccentMap = { lobby: "#8B5CF6", play: "#38BDF8", people: "#F472B6", plan: "#F5C77A", moments: "#F472B6" };
+  const PH = { violet: "#C4973A", blue: "#A0714A", gold: "#C4973A", pink: "#C4973A", bg: "#100906", surface: "#1A0F08" };
+  const tabAccentMap = { lobby: "#C4973A", play: "#A0714A", people: "#C4973A", plan: "#C4973A", moments: "#C4973A" };
   const ta = tabAccentMap[activeTab] || accent;
 
   const TAB_CFG = [
@@ -5799,14 +5799,12 @@ export default function OccasionHub({ occasion }) {
     return (
       <div style={{ height:"100dvh", display:"flex", flexDirection:"column", fontFamily:font, background:PH.bg, position:"relative", overflow:"hidden", alignItems:"center", justifyContent:"center" }}>
         <style>{`@keyframes eg-glow{0%,100%{opacity:0.15;transform:translateX(-50%) scale(1)}50%{opacity:0.28;transform:translateX(-50%) scale(1.06)}} @keyframes eg-in{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}}`}</style>
-        <PartyHubBackground />
-        <div style={{ position:"fixed", top:-140, left:"50%", transform:"translateX(-50%)", width:560, height:360, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(109,40,217,0.12) 0%, rgba(139,92,246,0.04) 45%, transparent 70%)", pointerEvents:"none", zIndex:0 }} />
         <div style={{ position:"fixed", top:-60, right:-80, width:400, height:300, borderRadius:"50%", background:`radial-gradient(ellipse, ${accent}18 0%, transparent 65%)`, pointerEvents:"none", zIndex:0 }} />
 
         {/* Header */}
         <div style={{ position:"relative", zIndex:2, textAlign:"center", padding:"0 24px 28px" }}>
           <div style={{ fontSize:52, marginBottom:10, filter:`drop-shadow(0 0 24px ${accent}80)` }}>{occ.emoji}</div>
-          <div style={{ fontSize:"clamp(1.4rem,4vw,1.9rem)", fontWeight:900, color:"#fff", letterSpacing:"-0.03em", marginBottom:6 }}>{occ.name}</div>
+          <div style={{ fontSize:"clamp(1.4rem,4vw,1.9rem)", fontWeight:700, color:"#fff", letterSpacing:"-0.02em", marginBottom:6 }}>{occ.name}</div>
           <div style={{ fontSize:13, color:"rgba(255,255,255,0.38)" }}>{occ.tagline}</div>
         </div>
 
@@ -5814,39 +5812,39 @@ export default function OccasionHub({ occasion }) {
           <div style={{ display:"flex", flexDirection:"column", gap:12, padding:"0 20px", width:"100%", maxWidth:400, position:"relative", zIndex:2, animation:"eg-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
             <button onClick={()=>setEntryView("host")} style={{ padding:"18px 22px", borderRadius:18, border:`1.5px solid ${PH.violet}40`, background:`${PH.violet}14`, color:"#fff", textAlign:"left", cursor:"pointer", transition:"border-color 0.2s,background 0.2s" }}>
               <div style={{ fontSize:28 }}>👑</div>
-              <div style={{ fontSize:16, fontWeight:800, marginTop:6 }}>I'm Hosting</div>
+              <div style={{ fontSize:16, fontWeight:700, marginTop:6 }}>I'm Hosting</div>
               <div style={{ fontSize:12, color:"rgba(255,255,255,0.42)", marginTop:3 }}>Create a room · control the vibe</div>
             </button>
             <button onClick={()=>setEntryView("join")} style={{ padding:"18px 22px", borderRadius:18, border:`1.5px solid ${PH.blue}40`, background:`${PH.blue}0e`, color:"#fff", textAlign:"left", cursor:"pointer", transition:"border-color 0.2s,background 0.2s" }}>
               <div style={{ fontSize:28 }}>🚀</div>
-              <div style={{ fontSize:16, fontWeight:800, marginTop:6 }}>Join a Party</div>
+              <div style={{ fontSize:16, fontWeight:700, marginTop:6 }}>Join a Party</div>
               <div style={{ fontSize:12, color:"rgba(255,255,255,0.42)", marginTop:3 }}>Enter a room code to join your crew</div>
             </button>
             <button onClick={()=>setEntryMode("exploring")} style={{ padding:"18px 22px", borderRadius:18, border:"1.5px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.04)", color:"#fff", textAlign:"left", cursor:"pointer", transition:"border-color 0.2s,background 0.2s" }}>
               <div style={{ fontSize:28 }}>👀</div>
-              <div style={{ fontSize:16, fontWeight:800, marginTop:6 }}>Just Exploring</div>
+              <div style={{ fontSize:16, fontWeight:700, marginTop:6 }}>Just Exploring</div>
               <div style={{ fontSize:12, color:"rgba(255,255,255,0.42)", marginTop:3 }}>Browse tools · no commitment</div>
             </button>
           </div>
         ) : entryView === "host" ? (
           <div style={{ padding:"0 20px", width:"100%", maxWidth:400, position:"relative", zIndex:2, animation:"eg-in 0.22s cubic-bezier(0.22,1,0.36,1)" }}>
             <button onClick={()=>setEntryView("pick")} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.45)", fontSize:13, cursor:"pointer", marginBottom:18, display:"flex", alignItems:"center", gap:4, padding:0 }}>← Back</button>
-            <div style={{ fontSize:18, fontWeight:800, color:"#fff", marginBottom:4 }}>Host a Room 👑</div>
+            <div style={{ fontSize:18, fontWeight:700, color:"#fff", marginBottom:4 }}>Host a Room</div>
             <div style={{ fontSize:13, color:"rgba(255,255,255,0.38)", marginBottom:22 }}>Start a live party room for your crew</div>
             <input value={hostName} onChange={e=>setHostName(e.target.value)} placeholder="Your name" style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:15, outline:"none", boxSizing:"border-box", marginBottom:10 }} />
             <input value={partyName} onChange={e=>setPartyName(e.target.value)} placeholder={`Party name (e.g. ${occ.name} Bash)`} style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:15, outline:"none", boxSizing:"border-box", marginBottom:14 }} />
-            <button onClick={handleHostCreate} disabled={!hostName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:hostName.trim()?PH.violet:"rgba(255,255,255,0.08)", color:"#fff", fontSize:14, fontWeight:800, cursor:hostName.trim()?"pointer":"not-allowed", opacity:hostName.trim()?1:0.5 }}>
+            <button onClick={handleHostCreate} disabled={!hostName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:hostName.trim()?PH.violet:"rgba(255,255,255,0.08)", color:"#fff", fontSize:14, fontWeight:700, cursor:hostName.trim()?"pointer":"not-allowed", opacity:hostName.trim()?1:0.5 }}>
               {roomLoading ? "Creating…" : "Create Room →"}
             </button>
           </div>
         ) : (
           <div style={{ padding:"0 20px", width:"100%", maxWidth:400, position:"relative", zIndex:2, animation:"eg-in 0.22s cubic-bezier(0.22,1,0.36,1)" }}>
             <button onClick={()=>setEntryView("pick")} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.45)", fontSize:13, cursor:"pointer", marginBottom:18, display:"flex", alignItems:"center", gap:4, padding:0 }}>← Back</button>
-            <div style={{ fontSize:18, fontWeight:800, color:"#fff", marginBottom:4 }}>Join a Party 🚀</div>
+            <div style={{ fontSize:18, fontWeight:700, color:"#fff", marginBottom:4 }}>Join a Party</div>
             <div style={{ fontSize:13, color:"rgba(255,255,255,0.38)", marginBottom:22 }}>{joinCode ? "You were invited — just enter your name!" : "Enter the code your host shared"}</div>
-            <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="ABC123" maxLength={6} style={{ width:"100%", padding:"14px 16px", borderRadius:12, border:`1.5px solid ${PH.blue}44`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:24, fontWeight:900, textAlign:"center", letterSpacing:"0.22em", fontFamily:"monospace", outline:"none", boxSizing:"border-box", marginBottom:10 }} />
+            <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="ABC123" maxLength={6} style={{ width:"100%", padding:"14px 16px", borderRadius:12, border:`1.5px solid ${PH.blue}44`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:24, fontWeight:700, textAlign:"center", letterSpacing:"0.22em", outline:"none", boxSizing:"border-box", marginBottom:10 }} />
             <input value={joinName} onChange={e=>setJoinName(e.target.value)} placeholder="Your name" style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.blue}33`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:15, outline:"none", boxSizing:"border-box", marginBottom:14 }} />
-            <button onClick={handleJoin} disabled={joinCode.length<6||!joinName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:(joinCode.length>=6&&joinName.trim())?PH.blue:"rgba(255,255,255,0.08)", color:"#fff", fontSize:14, fontWeight:800, cursor:(joinCode.length>=6&&joinName.trim())?"pointer":"not-allowed", opacity:(joinCode.length>=6&&joinName.trim())?1:0.5 }}>
+            <button onClick={handleJoin} disabled={joinCode.length<6||!joinName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:(joinCode.length>=6&&joinName.trim())?PH.violet:"rgba(255,255,255,0.08)", color:"#fff", fontSize:14, fontWeight:700, cursor:(joinCode.length>=6&&joinName.trim())?"pointer":"not-allowed", opacity:(joinCode.length>=6&&joinName.trim())?1:0.5 }}>
               {roomLoading ? "Joining…" : "Join Room →"}
             </button>
           </div>
@@ -5859,7 +5857,7 @@ export default function OccasionHub({ occasion }) {
   return (
     <div style={{ height: "100dvh", display: "flex", flexDirection: "column", fontFamily: font, background: PH.bg, position: "relative", overflow: "hidden" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');
         @keyframes splash-pulse { 0%,100%{opacity:0.8;transform:scale(1)} 50%{opacity:1;transform:scale(1.04)} }
         @keyframes splash-line  { from{width:0} to{width:100%} }
         @keyframes ph-glow      { 0%,100%{opacity:0.15;transform:translateX(-50%) scale(1)} 50%{opacity:0.28;transform:translateX(-50%) scale(1.06)} }
@@ -5871,25 +5869,19 @@ export default function OccasionHub({ occasion }) {
         .occ-tool-card:active   { transform:scale(0.96) !important; transition:transform 0.08s !important; }
         ::-webkit-scrollbar     { display:none; }
         textarea, input         { font-family:${font}; }
-        select option           { background:#0D0D17; color:#fff; }
+        select option           { background:#1A0F08; color:#fff; }
         @media (prefers-reduced-motion:reduce) { * { animation:none !important; transition:none !important; } }
       `}</style>
 
-      {/* Immersive background — canvas particles + circuit lines + grid */}
-      <PartyHubBackground />
-      {/* Deep violet bloom — top-centre */}
-      <div style={{ position:"fixed", top:-140, left:"50%", transform:"translateX(-50%)", width:560, height:360, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(109,40,217,0.12) 0%, rgba(139,92,246,0.04) 45%, transparent 70%)", pointerEvents:"none", zIndex:0, animation:"ph-glow 7s ease-in-out infinite" }} />
-      {/* Accent glow — occasion colour, corner */}
+      {/* Accent glow — occasion colour */}
       <div style={{ position:"fixed", top:-60, right:-80, width:400, height:300, borderRadius:"50%", background:`radial-gradient(ellipse, ${accent}18 0%, transparent 65%)`, pointerEvents:"none", zIndex:0 }} />
-      {/* Cool blue undertone — bottom left */}
-      <div style={{ position:"fixed", bottom:-120, left:-60, width:420, height:320, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(56,189,248,0.06) 0%, transparent 65%)", pointerEvents:"none", zIndex:0 }} />
 
       {/* ── Splash ── */}
       {showSplash && (
         <div style={{ position:"fixed", inset:0, zIndex:9999, background:`radial-gradient(ellipse at 30% 40%, ${accent}28 0%, ${PH.bg} 60%)`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", opacity:splashOut?0:1, transition:"opacity 0.55s cubic-bezier(0.4,0,0.2,1)", pointerEvents:splashOut?"none":"all" }}>
           <div style={{ textAlign:"center", padding:"0 32px" }}>
             <div style={{ fontSize:72, marginBottom:18, animation:"splash-pulse 1.8s ease-in-out infinite", filter:`drop-shadow(0 0 28px ${accent}90)` }}>{occ.emoji}</div>
-            <div style={{ fontSize:"clamp(1.7rem,5vw,2.5rem)", fontWeight:900, color:"#fff", letterSpacing:"-0.03em", lineHeight:1.15, marginBottom:10 }}>
+            <div style={{ fontSize:"clamp(1.7rem,5vw,2.5rem)", fontWeight:700, color:"#fff", letterSpacing:"-0.02em", lineHeight:1.15, marginBottom:10 }}>
               Let's make it<br/><span style={{ color:accent }}>a party.</span>
             </div>
             <div style={{ fontSize:13, color:"rgba(255,255,255,0.4)", marginBottom:32 }}>{occ.tagline}</div>
@@ -5914,7 +5906,7 @@ export default function OccasionHub({ occasion }) {
             <div style={{ background:PH.surface, border:`1.5px solid ${PH.violet}35`, borderRadius:24, padding:"28px 24px 24px", maxWidth:360, width:"calc(100% - 32px)", animation:"rm-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
               <div style={{ textAlign:"center", marginBottom:20 }}>
                 <div style={{ fontSize:42, marginBottom:12 }}>{step.icon}</div>
-                <div style={{ fontSize:18, fontWeight:800, color:"#fff", marginBottom:8 }}>{step.title}</div>
+                <div style={{ fontSize:18, fontWeight:700, color:"#fff", marginBottom:8 }}>{step.title}</div>
                 <div style={{ fontSize:13.5, color:"rgba(255,255,255,0.5)", lineHeight:1.6 }}>{step.body}</div>
               </div>
               <div style={{ display:"flex", justifyContent:"center", gap:6, marginBottom:20 }}>
@@ -5943,7 +5935,7 @@ export default function OccasionHub({ occasion }) {
             {roomModal === "host-setup" && (<>
               <div style={{ textAlign:"center", marginBottom:20 }}>
                 <div style={{ fontSize:36, marginBottom:8 }}>🏠</div>
-                <div style={{ fontSize:17, fontWeight:800, color:"#fff", marginBottom:4 }}>Host a Room</div>
+                <div style={{ fontSize:17, fontWeight:700, color:"#fff", marginBottom:4 }}>Host a Room</div>
                 <div style={{ fontSize:13, color:"rgba(255,255,255,0.4)" }}>Your guests join with the room code</div>
               </div>
               <div style={{ marginBottom:12 }}>
@@ -5954,7 +5946,7 @@ export default function OccasionHub({ occasion }) {
                 <div style={{ fontSize:11, fontWeight:700, color:PH.violet, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Party Name <span style={{ color:"rgba(255,255,255,0.3)", fontWeight:400, textTransform:"none" }}>(optional)</span></div>
                 <input value={partyName} onChange={e=>setPartyName(e.target.value)} placeholder={`e.g. ${occ.name}`} style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:15, outline:"none", boxSizing:"border-box" }} />
               </div>
-              <button onClick={handleHostCreate} disabled={!hostName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:hostName.trim()?PH.violet:"rgba(255,255,255,0.08)", color:"#fff", fontSize:14, fontWeight:800, cursor:hostName.trim()?"pointer":"not-allowed", opacity:hostName.trim()?1:0.5, marginBottom:10 }}>
+              <button onClick={handleHostCreate} disabled={!hostName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:hostName.trim()?PH.violet:"rgba(255,255,255,0.08)", color:"#fff", fontSize:14, fontWeight:700, cursor:hostName.trim()?"pointer":"not-allowed", opacity:hostName.trim()?1:0.5, marginBottom:10 }}>
                 {roomLoading ? "Creating…" : "Create Room →"}
               </button>
               <button onClick={()=>setRoomModal(null)} style={{ width:"100%", padding:"10px 0", border:"none", background:"none", color:"rgba(255,255,255,0.3)", fontSize:13, cursor:"pointer" }}>Cancel</button>
@@ -5966,7 +5958,7 @@ export default function OccasionHub({ occasion }) {
                 <div style={{ fontSize:17, fontWeight:800, color:"#fff", marginBottom:2 }}>Room Created!</div>
                 <div style={{ fontSize:12, color:"rgba(255,255,255,0.4)", marginBottom:16 }}>Share the code with your guests</div>
                 <div style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", background:`${PH.violet}1a`, border:`1px solid ${PH.violet}55`, borderRadius:14, padding:"12px 24px", marginBottom:14 }}>
-                  <span style={{ fontSize:32, fontWeight:900, color:PH.violet, letterSpacing:"0.2em", fontFamily:"monospace" }}>{room.code}</span>
+                  <span style={{ fontSize:32, fontWeight:700, color:PH.violet, letterSpacing:"0.18em" }}>{room.code}</span>
                 </div>
               </div>
               <button onClick={()=>copyRoomLink(room.code)} style={{ width:"100%", padding:"12px 0", borderRadius:12, border:`1.5px solid ${copied?PH.violet:"rgba(255,255,255,0.14)"}`, background:copied?`${PH.violet}20`:"rgba(255,255,255,0.05)", color:copied?PH.violet:"rgba(255,255,255,0.75)", fontSize:14, fontWeight:700, cursor:"pointer", marginBottom:12, transition:"all 0.18s" }}>
@@ -5992,7 +5984,7 @@ export default function OccasionHub({ occasion }) {
               </div>
               <div style={{ marginBottom:12 }}>
                 <div style={{ fontSize:11, fontWeight:700, color:PH.violet, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Room Code</div>
-                <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="ABC123" maxLength={6} style={{ width:"100%", padding:"14px 16px", borderRadius:12, border:`1.5px solid ${PH.violet}44`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:24, fontWeight:900, textAlign:"center", letterSpacing:"0.22em", fontFamily:"monospace", outline:"none", boxSizing:"border-box" }} />
+                <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="ABC123" maxLength={6} style={{ width:"100%", padding:"14px 16px", borderRadius:12, border:`1.5px solid ${PH.violet}44`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:24, fontWeight:700, textAlign:"center", letterSpacing:"0.22em", outline:"none", boxSizing:"border-box" }} />
               </div>
               <div style={{ marginBottom:20 }}>
                 <div style={{ fontSize:11, fontWeight:700, color:PH.violet, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Your Name</div>
@@ -6012,12 +6004,12 @@ export default function OccasionHub({ occasion }) {
         <div style={{ position:"fixed", inset:0, zIndex:4500, background:"rgba(0,0,0,0.7)", display:"flex", alignItems:"flex-end" }} onClick={()=>setShowHostControls(false)}>
           <div onClick={e=>e.stopPropagation()} style={{ width:"100%", background:PH.surface, borderRadius:"24px 24px 0 0", padding:"24px 20px calc(32px + env(safe-area-inset-bottom,0px))", border:"1px solid rgba(139,92,246,0.2)", animation:"tab-slide 0.25s cubic-bezier(0.22,1,0.36,1)" }}>
             <div style={{ width:36, height:4, background:"rgba(255,255,255,0.15)", borderRadius:2, margin:"0 auto 20px" }} />
-            <div style={{ fontSize:10, fontWeight:700, color:PH.violet, textTransform:"uppercase", letterSpacing:"0.16em", marginBottom:16, fontFamily:"monospace" }}>// HOST CONTROLS</div>
+            <div style={{ fontSize:11, fontWeight:600, color:"rgba(196,151,58,0.65)", textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:16 }}>Host Controls</div>
             {room ? (
               <>
                 <div style={{ display:"flex", alignItems:"center", gap:10, background:"rgba(139,92,246,0.08)", border:"1px solid rgba(139,92,246,0.25)", borderRadius:12, padding:"12px 14px", marginBottom:14 }}>
                   <span style={{ width:8, height:8, borderRadius:"50%", background:"#4ade80", animation:"dot-pulse 2s ease infinite" }} />
-                  <span style={{ fontFamily:"monospace", fontSize:22, fontWeight:900, color:PH.violet, letterSpacing:"0.2em" }}>{room.code}</span>
+                  <span style={{ fontSize:22, fontWeight:700, color:PH.violet, letterSpacing:"0.18em" }}>{room.code}</span>
                   <span style={{ fontSize:12, color:"rgba(255,255,255,0.4)", marginLeft:4 }}>{room.players?.length||1} online</span>
                 </div>
                 <button onClick={()=>copyRoomLink(room.code)} style={{ width:"100%", padding:"13px", borderRadius:12, border:`1px solid rgba(139,92,246,0.4)`, background:"rgba(139,92,246,0.1)", color:PH.violet, fontSize:14, fontWeight:700, cursor:"pointer", marginBottom:10 }}>
@@ -6049,10 +6041,10 @@ export default function OccasionHub({ occasion }) {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ fontSize:9.5, fontWeight:700, color:PH.violet, letterSpacing:"0.18em", textTransform:"uppercase", fontFamily:"monospace" }}>PARTY HUB</div>
-            <div style={{ fontSize:14, fontWeight:800, color:"#fff", letterSpacing:"-0.01em", display:"flex", alignItems:"center", gap:6, overflow:"hidden" }}>
+            <div style={{ fontSize:9.5, fontWeight:600, color:"rgba(196,151,58,0.65)", letterSpacing:"0.14em", textTransform:"uppercase" }}>Party Hub</div>
+            <div style={{ fontSize:14, fontWeight:700, color:"#fff", letterSpacing:"-0.01em", display:"flex", alignItems:"center", gap:6, overflow:"hidden" }}>
               <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{occ.emoji} {occ.name}</span>
-              {room && <><span style={{ color:"rgba(255,255,255,0.2)", fontWeight:400 }}>//</span><span style={{ fontFamily:"monospace", color:PH.violet, fontSize:12, fontWeight:700, flexShrink:0, letterSpacing:"0.1em" }}>{room.code}</span></>}
+              {room && <><span style={{ color:"rgba(255,255,255,0.2)", fontWeight:400, margin:"0 4px" }}>·</span><span style={{ color:PH.violet, fontSize:12, fontWeight:600, flexShrink:0, letterSpacing:"0.1em" }}>{room.code}</span></>}
             </div>
           </div>
           <button onClick={()=>setShowHostControls(true)} style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 14px", borderRadius:100, border:`1.5px solid ${room?"rgba(74,222,128,0.5)":`${PH.violet}55`}`, background:room?"rgba(74,222,128,0.1)":`${PH.violet}14`, color:room?"#4ade80":PH.violet, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0 }}>
@@ -6085,13 +6077,13 @@ export default function OccasionHub({ occasion }) {
               <div style={{ position:"absolute", top:"38%", left:"50%", transform:"translate(-50%,-50%)", width:220, height:220, borderRadius:"50%", background:"radial-gradient(circle, rgba(109,40,217,0.16) 0%, rgba(109,40,217,0.04) 50%, transparent 70%)", pointerEvents:"none" }} />
 
               {/* Status chip */}
-              <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:room?"rgba(74,222,128,0.07)":"rgba(139,92,246,0.07)", border:`1px solid ${room?"rgba(74,222,128,0.22)":"rgba(139,92,246,0.22)"}`, borderRadius:100, padding:"4px 14px", marginBottom:16, fontFamily:"monospace" }}>
+              <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:room?"rgba(74,222,128,0.07)":"rgba(196,151,58,0.07)", border:`1px solid ${room?"rgba(74,222,128,0.22)":"rgba(196,151,58,0.22)"}`, borderRadius:100, padding:"4px 14px", marginBottom:16 }}>
                 <span style={{ width:5, height:5, borderRadius:"50%", background:room?"#4ade80":PH.violet, animation:"dot-pulse 2s ease infinite", flexShrink:0 }} />
                 <span style={{ fontSize:9, fontWeight:700, color:room?"#4ade80":PH.violet, letterSpacing:"0.2em" }}>{room ? `PARTY LIVE · ${room.code}` : "ROOM READY"}</span>
               </div>
 
               {/* Hub label */}
-              <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.38)", letterSpacing:"0.2em", textTransform:"uppercase", fontFamily:"monospace", marginBottom:18 }}>{occ.name.toUpperCase()}</div>
+              <div style={{ fontSize:10, fontWeight:600, color:"rgba(255,255,255,0.35)", letterSpacing:"0.14em", textTransform:"uppercase", marginBottom:18 }}>{occ.name}</div>
 
               {/* Icon with concentric glow rings */}
               <div style={{ position:"relative", display:"inline-flex", alignItems:"center", justifyContent:"center", marginBottom:18 }}>
@@ -6103,7 +6095,7 @@ export default function OccasionHub({ occasion }) {
               </div>
 
               {/* Tagline */}
-              <div style={{ fontSize:21, fontWeight:900, color:"#fff", letterSpacing:"-0.025em", lineHeight:1.2, marginBottom:4 }}>{occ.tagline || occ.name}</div>
+              <div style={{ fontSize:21, fontWeight:700, color:"#fff", letterSpacing:"-0.02em", lineHeight:1.2, marginBottom:4 }}>{occ.tagline || occ.name}</div>
 
               {/* Online / prompt */}
               {room ? (
@@ -6113,7 +6105,7 @@ export default function OccasionHub({ occasion }) {
                       <div key={i} style={{ width:22, height:22, borderRadius:"50%", background:`linear-gradient(135deg, ${PH.violet}88, ${PH.blue}55)`, border:`1.5px solid ${PH.bg}`, marginLeft:i>0?-7:0, display:"flex", alignItems:"center", justifyContent:"center", fontSize:8, fontWeight:800, color:"#fff", position:"relative", zIndex:5-i }}>{p[0].toUpperCase()}</div>
                     ))}
                   </div>
-                  <span style={{ fontSize:11, fontWeight:700, color:"#4ade80", fontFamily:"monospace", letterSpacing:"0.12em" }}>{room.players?.length||1} ONLINE</span>
+                  <span style={{ fontSize:11, fontWeight:600, color:"#4ade80" }}>{room.players?.length||1} online</span>
                 </div>
               ) : (
                 <div style={{ fontSize:12, color:"rgba(255,255,255,0.38)", margin:"12px 0 20px", letterSpacing:"0.01em" }}>Start a room · share the code · play together</div>
@@ -6122,42 +6114,31 @@ export default function OccasionHub({ occasion }) {
               {/* CTAs */}
               {!room ? (
                 <div style={{ display:"flex", gap:10 }}>
-                  <button onClick={()=>setRoomModal("host-setup")} style={{ flex:1, padding:"13px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:11, fontWeight:800, cursor:"pointer", letterSpacing:"0.1em", fontFamily:"monospace" }}>HOST A ROOM</button>
-                  <button onClick={()=>setRoomModal("join")} style={{ flex:1, padding:"13px 0", borderRadius:12, border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.04)", color:"rgba(255,255,255,0.68)", fontSize:11, fontWeight:600, cursor:"pointer", letterSpacing:"0.08em", fontFamily:"monospace" }}>JOIN ROOM</button>
+                  <button onClick={()=>setRoomModal("host-setup")} style={{ flex:1, padding:"13px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer" }}>Host a Room</button>
+                  <button onClick={()=>setRoomModal("join")} style={{ flex:1, padding:"13px 0", borderRadius:12, border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.04)", color:"rgba(255,255,255,0.68)", fontSize:13, fontWeight:500, cursor:"pointer" }}>Join Room</button>
                 </div>
               ) : (
                 <div style={{ display:"flex", gap:10 }}>
-                  <button onClick={()=>copyRoomLink(room.code)} style={{ flex:1, padding:"13px 0", borderRadius:12, border:`1px solid ${PH.violet}44`, background:`${PH.violet}12`, color:PH.violet, fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"monospace", letterSpacing:"0.08em" }}>{copied?"✓ COPIED":"SHARE LINK"}</button>
-                  <button onClick={()=>setActiveTab("play")} style={{ flex:1, padding:"13px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:11, fontWeight:800, cursor:"pointer", letterSpacing:"0.1em", fontFamily:"monospace" }}>PLAY GAMES</button>
+                  <button onClick={()=>copyRoomLink(room.code)} style={{ flex:1, padding:"13px 0", borderRadius:12, border:`1px solid ${PH.violet}44`, background:`${PH.violet}12`, color:PH.violet, fontSize:13, fontWeight:600, cursor:"pointer" }}>{copied?"✓ Copied":"Share Link"}</button>
+                  <button onClick={()=>setActiveTab("play")} style={{ flex:1, padding:"13px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer" }}>Play Games</button>
                 </div>
               )}
             </div>
 
             {/* Room modules */}
             {lobbyQuick.length > 0 && (<>
-              <div style={{ fontSize:9, fontWeight:700, color:PH.violet, textTransform:"uppercase", letterSpacing:"0.2em", marginBottom:10, fontFamily:"monospace" }}>// ROOM MODULES</div>
+              <div style={{ fontSize:11, fontWeight:600, color:"rgba(196,151,58,0.65)", textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:10 }}>Quick Actions</div>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-                {lobbyQuick.map(t => {
-                  const status = TOOL_STATUS_MAP[t.id] || ["TOOL","READY"];
-                  const isGame = GAME_IDS.has(t.id);
-                  return (
-                    <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{
-                      background: isGame ? "rgba(56,189,248,0.04)" : "rgba(139,92,246,0.04)",
-                      border: `1px solid ${isGame ? "rgba(56,189,248,0.14)" : "rgba(139,92,246,0.14)"}`,
-                      borderRadius:14, padding:"14px 12px 12px", cursor:"pointer", display:"flex", flexDirection:"column", gap:8,
-                    }}>
-                      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                        <div style={{ color: isGame ? PH.blue : PH.violet }}>{TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}</div>
-                        <div style={{ display:"flex", alignItems:"center", gap:2, background: isGame ? "rgba(56,189,248,0.08)" : "rgba(139,92,246,0.08)", borderRadius:4, padding:"2px 6px" }}>
-                          <span style={{ fontSize:8, fontWeight:800, color: isGame ? PH.blue : PH.violet, fontFamily:"monospace", letterSpacing:"0.08em" }}>{status[0]}</span>
-                          <span style={{ fontSize:8, color:"rgba(255,255,255,0.25)", fontFamily:"monospace", margin:"0 1px" }}>//</span>
-                          <span style={{ fontSize:8, fontWeight:700, color:"rgba(255,255,255,0.5)", fontFamily:"monospace" }}>{status[1]}</span>
-                        </div>
-                      </div>
-                      <div style={{ fontSize:12, fontWeight:700, color:"#fff" }}>{t.title}</div>
-                    </div>
-                  );
-                })}
+                {lobbyQuick.map(t => (
+                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{
+                    background: "rgba(196,151,58,0.05)",
+                    border: "1px solid rgba(196,151,58,0.16)",
+                    borderRadius:14, padding:"14px 12px 12px", cursor:"pointer", display:"flex", flexDirection:"column", gap:8,
+                  }}>
+                    <div style={{ color:PH.violet }}>{TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}</div>
+                    <div style={{ fontSize:12, fontWeight:600, color:"#fff" }}>{t.title}</div>
+                  </div>
+                ))}
               </div>
             </>)}
           </div>
@@ -6166,13 +6147,13 @@ export default function OccasionHub({ occasion }) {
         {/* PLAY */}
         {activeTab === "play" && (
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-            <div style={{ fontSize:10, fontWeight:700, color:PH.blue, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:14, fontFamily:"monospace" }}>// {playTools.length} GAMES</div>
+            <div style={{ fontSize:11, fontWeight:600, color:"rgba(196,151,58,0.65)", textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:14 }}>Games</div>
             {playTools.length === 0 ? (
               <div style={{ textAlign:"center", padding:"48px 20px", color:"rgba(255,255,255,0.3)", fontSize:14 }}>No games available for this occasion.</div>
             ) : (
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
                 {playTools.map(t => (
-                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"rgba(56,189,248,0.04)", border:"1px solid rgba(56,189,248,0.12)", borderRadius:16, padding:"16px 14px", cursor:"pointer", display:"flex", flexDirection:"column", gap:8 }}>
+                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"rgba(160,113,74,0.05)", border:"1px solid rgba(160,113,74,0.16)", borderRadius:16, padding:"16px 14px", cursor:"pointer", display:"flex", flexDirection:"column", gap:8 }}>
                     <div style={{ color:PH.blue }}>{TOOL_ICONS[t.id]||occic(<polygon points="5 3 19 12 5 21 5 3"/>)}</div>
                     <div style={{ fontSize:13, fontWeight:700, color:"#fff" }}>{t.title}</div>
                     <div style={{ fontSize:11, color:"rgba(255,255,255,0.68)", lineHeight:1.4 }}>{t.desc}</div>
@@ -6188,10 +6169,10 @@ export default function OccasionHub({ occasion }) {
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
             {room ? (
               <>
-                <div style={{ fontSize:10, fontWeight:700, color:PH.pink, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:14, fontFamily:"monospace" }}>// {room.players?.length||1} ONLINE NOW</div>
+                <div style={{ fontSize:11, fontWeight:600, color:"rgba(196,151,58,0.65)", textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:14 }}>{room.players?.length||1} Online</div>
                 {(room.players||[myName]).map((p,i) => (
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:"rgba(244,114,182,0.04)", border:"1px solid rgba(244,114,182,0.13)", borderRadius:12, marginBottom:8 }}>
-                    <div style={{ width:34, height:34, borderRadius:"50%", background:`linear-gradient(135deg, ${PH.violet}44, ${PH.pink}44)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:800, color:"#fff", flexShrink:0 }}>{p.charAt(0).toUpperCase()}</div>
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:"rgba(196,151,58,0.04)", border:"1px solid rgba(196,151,58,0.13)", borderRadius:12, marginBottom:8 }}>
+                    <div style={{ width:34, height:34, borderRadius:"50%", background:`${PH.violet}28`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:700, color:"#fff", flexShrink:0 }}>{p.charAt(0).toUpperCase()}</div>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:14, fontWeight:700, color:"#fff" }}>{p}{p===myName&&<span style={{ fontSize:11, color:PH.violet, fontWeight:500, marginLeft:6 }}>you</span>}</div>
                     </div>
@@ -6201,17 +6182,17 @@ export default function OccasionHub({ occasion }) {
                     </div>
                   </div>
                 ))}
-                <button onClick={()=>copyRoomLink(room.code)} style={{ width:"100%", padding:"13px", borderRadius:12, border:`1px solid rgba(244,114,182,0.35)`, background:"rgba(244,114,182,0.07)", color:PH.pink, fontSize:14, fontWeight:700, cursor:"pointer", marginTop:10 }}>
+                <button onClick={()=>copyRoomLink(room.code)} style={{ width:"100%", padding:"13px", borderRadius:12, border:`1px solid ${PH.violet}44`, background:`${PH.violet}10`, color:PH.violet, fontSize:14, fontWeight:600, cursor:"pointer", marginTop:10 }}>
                   {copied?"✓ Link Copied!":"📋 Invite More Friends"}
                 </button>
               </>
             ) : (
               <div style={{ textAlign:"center", padding:"48px 20px" }}>
                 <div style={{ fontSize:52, marginBottom:16 }}>👥</div>
-                <div style={{ fontSize:17, fontWeight:800, color:"#fff", marginBottom:8 }}>Start a Party Room</div>
+                <div style={{ fontSize:17, fontWeight:700, color:"#fff", marginBottom:8 }}>Start a Party Room</div>
                 <div style={{ fontSize:13, color:"rgba(255,255,255,0.4)", marginBottom:24, lineHeight:1.6 }}>Host a live room so your guests can join, see who's online, and play games together in real time.</div>
                 <div style={{ display:"flex", gap:10 }}>
-                  <button onClick={()=>setRoomModal("host-setup")} style={{ flex:1, padding:"13px", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer" }}>Host a Room</button>
+                  <button onClick={()=>setRoomModal("host-setup")} style={{ flex:1, padding:"13px", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer" }}>Host a Room</button>
                   <button onClick={()=>setRoomModal("join")} style={{ flex:1, padding:"13px", borderRadius:12, border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.7)", fontSize:14, fontWeight:600, cursor:"pointer" }}>Join Room</button>
                 </div>
               </div>
@@ -6222,13 +6203,13 @@ export default function OccasionHub({ occasion }) {
         {/* PLAN */}
         {activeTab === "plan" && (
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-            <div style={{ fontSize:10, fontWeight:700, color:PH.gold, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:14, fontFamily:"monospace" }}>// PLANNING TOOLS</div>
+            <div style={{ fontSize:11, fontWeight:600, color:"rgba(196,151,58,0.65)", textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:14 }}>Planning Tools</div>
             {planTools.length === 0 ? (
               <div style={{ textAlign:"center", padding:"48px 20px", color:"rgba(255,255,255,0.3)", fontSize:14 }}>No planning tools for this occasion.</div>
             ) : (
               <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
                 {planTools.map(t => (
-                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"rgba(245,199,122,0.04)", border:"1px solid rgba(245,199,122,0.12)", borderRadius:14, padding:"14px 16px", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
+                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"rgba(196,151,58,0.05)", border:"1px solid rgba(196,151,58,0.15)", borderRadius:14, padding:"14px 16px", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
                     <div style={{ color:PH.gold, flexShrink:0 }}>{TOOL_ICONS[t.id]||occic(<rect x="3" y="3" width="18" height="18" rx="2"/>)}</div>
                     <div style={{ flex:1, minWidth:0 }}>
                       <div style={{ fontSize:14, fontWeight:700, color:"#fff" }}>{t.title}</div>
@@ -6245,13 +6226,13 @@ export default function OccasionHub({ occasion }) {
         {/* MOMENTS */}
         {activeTab === "moments" && (
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-            <div style={{ fontSize:10, fontWeight:700, color:PH.pink, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:14, fontFamily:"monospace" }}>// CAPTURE &amp; CELEBRATE</div>
+            <div style={{ fontSize:11, fontWeight:600, color:"rgba(196,151,58,0.65)", textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:14 }}>Capture &amp; Celebrate</div>
             {momentTools.length === 0 ? (
               <div style={{ textAlign:"center", padding:"40px 20px", color:"rgba(255,255,255,0.3)", fontSize:14 }}>No moments tools for this occasion.</div>
             ) : (
               <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
                 {momentTools.map(t => (
-                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"rgba(244,114,182,0.04)", border:"1px solid rgba(244,114,182,0.12)", borderRadius:14, padding:"14px 16px", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
+                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"rgba(196,151,58,0.05)", border:"1px solid rgba(196,151,58,0.15)", borderRadius:14, padding:"14px 16px", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
                     <div style={{ color:PH.pink, flexShrink:0 }}>{TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}</div>
                     <div style={{ flex:1, minWidth:0 }}>
                       <div style={{ fontSize:14, fontWeight:700, color:"#fff" }}>{t.title}</div>
@@ -6263,18 +6244,17 @@ export default function OccasionHub({ occasion }) {
               </div>
             )}
             {/* Party Recap card */}
-            <div style={{ marginTop:16, background:"linear-gradient(135deg, rgba(244,114,182,0.09), rgba(139,92,246,0.07))", border:"1px solid rgba(244,114,182,0.18)", borderRadius:16, padding:"20px", textAlign:"center" }}>
-              <div style={{ fontSize:24, marginBottom:8 }}>✨</div>
+            <div style={{ marginTop:16, background:"rgba(196,151,58,0.06)", border:"1px solid rgba(196,151,58,0.18)", borderRadius:16, padding:"20px", textAlign:"center" }}>
               <div style={{ fontSize:14, fontWeight:700, color:"#fff", marginBottom:4 }}>Party Recap</div>
               <div style={{ fontSize:12, color:"rgba(255,255,255,0.4)", marginBottom:14, lineHeight:1.5 }}>Capture the highlights and create a shareable summary of your event.</div>
-              <button onClick={()=>setOpen("reportcard")} style={{ padding:"10px 22px", borderRadius:10, border:`1px solid rgba(244,114,182,0.35)`, background:"rgba(244,114,182,0.1)", color:PH.pink, fontSize:13, fontWeight:700, cursor:"pointer" }}>Create Recap →</button>
+              <button onClick={()=>setOpen("reportcard")} style={{ padding:"10px 22px", borderRadius:10, border:`1px solid ${PH.violet}44`, background:`${PH.violet}12`, color:PH.violet, fontSize:13, fontWeight:600, cursor:"pointer" }}>Create Recap →</button>
             </div>
           </div>
         )}
       </div>
 
       {/* ── Bottom Navigation ── */}
-      <div style={{ flexShrink:0, background:"rgba(7,7,17,0.96)", backdropFilter:"blur(24px)", borderTop:"1px solid rgba(255,255,255,0.07)", padding:"10px 0", paddingBottom:"calc(10px + env(safe-area-inset-bottom,0px))", position:"relative", zIndex:2 }}>
+      <div style={{ flexShrink:0, background:"rgba(16,9,6,0.96)", backdropFilter:"blur(24px)", borderTop:"1px solid rgba(255,255,255,0.07)", padding:"10px 0", paddingBottom:"calc(10px + env(safe-area-inset-bottom,0px))", position:"relative", zIndex:2 }}>
         <div style={{ display:"flex", maxWidth:800, margin:"0 auto" }}>
           {TAB_CFG.map(t => {
             const isActive = activeTab === t.id;
@@ -6282,7 +6262,7 @@ export default function OccasionHub({ occasion }) {
             return (
               <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:3, padding:"4px 0 2px", border:"none", background:"transparent", cursor:"pointer" }}>
                 <div style={{ color:isActive?tColor:"rgba(255,255,255,0.48)", transition:"color 0.18s" }}>{t.icon}</div>
-                <div style={{ fontSize:9, fontWeight:isActive?800:600, color:isActive?tColor:"rgba(255,255,255,0.48)", letterSpacing:"0.1em", textTransform:"uppercase", fontFamily:"monospace", transition:"color 0.18s" }}>{t.label}</div>
+                <div style={{ fontSize:9, fontWeight:isActive?700:500, color:isActive?tColor:"rgba(255,255,255,0.4)", letterSpacing:"0.08em", textTransform:"uppercase", transition:"color 0.18s" }}>{t.label}</div>
                 <div style={{ width:isActive?16:0, height:2, borderRadius:1, background:tColor, transition:"width 0.22s cubic-bezier(0.22,1,0.36,1)" }} />
               </button>
             );
