@@ -75,6 +75,18 @@ const OCC_COLOR = {
   'Naming Ceremony': '#D4922E',  // saffron
 };
 const FALLBACK_COLOR = '#C47A2E';
+const CHAMP = '#C4973A'; // single champagne accent — used everywhere
+
+const HINGLISH = {
+  'Birthday':        'Janamdin',
+  'Anniversary':     'Shaadi ki Saalgirah',
+  'Baby Shower':     'Godh Bharai',
+  'House Party':     'Ghar ki Party',
+  'Housewarming':    'Griha Pravesh',
+  'Get Together':    'Milna Julna',
+  'Kitty Party':     'Kitty Party',
+  'Naming Ceremony': 'Naamkaran',
+};
 
 const OCC_BG = {
   'Birthday':        ['#220814', '#140408'],  // deep pink/berry
@@ -299,13 +311,15 @@ const CSS = `
 
   .op-scroll::-webkit-scrollbar { display:none; }
   .op-scroll { scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+  .op-panel::-webkit-scrollbar { display:none; }
+  .op-panel { scrollbar-width:none; }
 
   .pf-datetime { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
-  .op-occ-chip:hover  { border-color:rgba(196,122,46,0.55) !important; background:rgba(196,122,46,0.1) !important; color:rgba(204,171,74,0.95) !important; }
+  .op-occ-card:hover  { border-color:rgba(196,151,58,0.42) !important; background:rgba(245,236,216,0.07) !important; }
   .op-theme-card:hover{ background:rgba(245,236,216,0.07) !important; }
-
-  .op-opt:hover { background:rgba(245,236,216,0.07) !important; }
+  .op-step-opt:hover  { border-color:rgba(196,151,58,0.38) !important; background:rgba(245,236,216,0.055) !important; }
+  .op-opt:hover       { border-color:rgba(196,151,58,0.32) !important; background:rgba(245,236,216,0.06) !important; }
   .op-sel-chip:hover { opacity:0.9; }
 
   button { user-select:none; -webkit-user-select:none; }
@@ -402,7 +416,7 @@ function NavRow({ onBack, onNext, nextLabel = 'Next', color }) {
         Back
       </button>
       {onNext && (
-        <button onClick={onNext} style={{ padding: '12px 32px', borderRadius: 100, background: `linear-gradient(135deg, ${color || FALLBACK_COLOR}, ${color ? darken(color, 18) : '#A0621C'})`, color: '#fff', border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", boxShadow: `0 5px 18px ${color||FALLBACK_COLOR}45`, letterSpacing: '0.02em' }}>
+        <button className="op-nav-next" onClick={onNext} style={{ padding: '11px 28px', borderRadius: 100, background: CHAMP, color: '#1C0E04', border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", letterSpacing: '0.01em', transition: 'opacity 0.15s' }}>
           {nextLabel}
         </button>
       )}
@@ -1149,7 +1163,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
   const [occSearch,    setOccSearch]    = useState('');
   const [selectedOcc,  setSelectedOcc]  = useState(null);
 
-  const occColor = OCC_COLOR[occasion] || FALLBACK_COLOR;
+  const occColor = CHAMP;
 
   const results = step === 5 && occasion
     ? (showAll ? (THEME_DATA_MAP[occasion] || []) : getFiltered(occasion, { budget, guests, venue, timeOfDay }))
@@ -1177,17 +1191,16 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
   const adjustFilters = () => { setShowAll(false); setStep(1); };
   const restart = () => { setBudget(null); setGuests(''); setVenue(null); setTimeOfDay(null); setShowAll(false); setStep(fromCard ? 0.5 : 0); if (!fromCard) setOccasion(null); };
 
-  // Form option button shared style
+  // Form option button shared style — minimal, only 1px champagne border when selected
   const optStyle = (selected) => ({
-    padding: '18px 15px', borderRadius: 16, textAlign: 'left', cursor: 'pointer',
-    border: `1.5px solid ${selected ? occColor + 'BB' : 'rgba(245,236,216,0.1)'}`,
-    background: selected ? `${occColor}1A` : 'rgba(245,236,216,0.04)',
-    boxShadow: selected ? `0 0 0 1px ${occColor}22, 0 4px 22px ${occColor}1E` : 'none',
-    transition: 'all 0.2s', fontFamily: "'Outfit',sans-serif",
+    padding: '18px 16px', borderRadius: 14, textAlign: 'left', cursor: 'pointer',
+    border: `1px solid ${selected ? CHAMP : 'rgba(245,236,216,0.09)'}`,
+    background: selected ? 'rgba(196,151,58,0.09)' : 'rgba(245,236,216,0.03)',
+    transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
+    position: 'relative',
   });
 
-  const occBg = OCC_BG[occasion] || ['#1C0A04', '#130600'];
-  const occBgGradient = `linear-gradient(160deg, ${occBg[0]} 0%, ${occBg[1]} 100%)`;
+  const occBgGradient = '#17100B';
 
   const h2Style = {
     fontFamily: "'Cormorant Garamond', Georgia, serif",
@@ -1203,7 +1216,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
       {/* Backdrop */}
       <div className="op-rise" onClick={onClose} style={{
         position: 'fixed', inset: 0, zIndex: 9990,
-        background: 'rgba(10,4,0,0.88)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+        background: 'rgba(0,0,0,0.64)', backdropFilter: 'blur(5px)', WebkitBackdropFilter: 'blur(5px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '20px 16px', overflowY: 'auto',
       }}>
@@ -1224,14 +1237,12 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
           <div className="op-panel op-scroll" onClick={e => e.stopPropagation()} style={{
             width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto',
             background: occBgGradient,
-            border: `1px solid ${occColor}3A`,
+            border: '1px solid rgba(196,151,58,0.13)',
             borderRadius: 26,
             fontFamily: "'Outfit',sans-serif",
-            boxShadow: `0 36px 110px rgba(0,0,0,0.78), 0 0 0 1px ${occColor}18`,
+            boxShadow: '0 24px 80px rgba(0,0,0,0.55)',
             position: 'relative',
           }}>
-            {/* Top ambient glow hairline */}
-            <div aria-hidden style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '55%', height: 1, background: `linear-gradient(90deg, transparent, ${occColor}70, transparent)`, pointerEvents: 'none', zIndex: 1 }} />
 
             {/* Close */}
             <button onClick={onClose} style={{
@@ -1273,7 +1284,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
               {/* Step 0 — Occasion picker */}
               {step === 0 && (
                 <div>
-                  <p style={{ fontSize: 10, fontWeight: 700, color: FALLBACK_COLOR, textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 10px', fontFamily: "'Outfit',sans-serif" }}>Plan an Occasion</p>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: CHAMP, textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 10px', fontFamily: "'Outfit',sans-serif" }}>Plan an Occasion</p>
                   <h2 style={h2Style}>What are you celebrating?</h2>
 
                   {/* Search */}
@@ -1288,39 +1299,40 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                         background: 'rgba(245,236,216,0.04)', color: '#F5ECD8',
                         fontSize: 13, fontFamily: "'Outfit',sans-serif", outline: 'none', transition: 'border-color 0.15s',
                       }}
-                      onFocus={e => e.target.style.borderColor = 'rgba(196,122,46,0.4)'}
+                      onFocus={e => e.target.style.borderColor = 'rgba(196,151,58,0.45)'}
                       onBlur={e => e.target.style.borderColor = 'rgba(245,236,216,0.1)'}
                     />
                   </div>
 
-                  {/* Chips */}
-                  <div className="op-picker-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: 9 }}>
+                  {/* Occasion cards */}
+                  <div className="op-picker-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
                     {OCCASIONS_LIST
-                      .filter(o => !occSearch || o.label.toLowerCase().includes(occSearch.toLowerCase()))
+                      .filter(o => !occSearch || o.label.toLowerCase().includes(occSearch.toLowerCase()) || (HINGLISH[o.label]||'').toLowerCase().includes(occSearch.toLowerCase()))
                       .map(({ label }) => {
                         const isSel = selectedOcc === label;
                         return (
-                          <button key={label} className="op-occ-chip"
+                          <button key={label} className="op-occ-card"
                             onClick={() => {
                               setSelectedOcc(label);
                               setOccasion(label);
                               setTimeout(() => goNext(0.5), 160);
                             }}
                             style={{
-                              padding: '9px 18px', borderRadius: 8, cursor: 'pointer',
-                              border: `1.5px solid ${isSel ? FALLBACK_COLOR : 'rgba(245,236,216,0.1)'}`,
-                              background: isSel ? 'rgba(196,122,46,0.14)' : 'rgba(245,236,216,0.04)',
-                              color: isSel ? '#CCAB4A' : 'rgba(245,236,216,0.88)',
-                              fontSize: 13, fontWeight: isSel ? 600 : 400,
-                              fontFamily: "'Outfit',sans-serif", letterSpacing: '0.01em',
-                              transition: 'all 0.15s', boxShadow: 'none',
+                              display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+                              padding: '14px 16px', borderRadius: 12, cursor: 'pointer', textAlign: 'left',
+                              border: `1px solid ${isSel ? CHAMP : 'rgba(245,236,216,0.09)'}`,
+                              background: isSel ? 'rgba(196,151,58,0.09)' : 'rgba(245,236,216,0.03)',
+                              transition: 'all 0.15s',
                             }}
-                          >{label}</button>
+                          >
+                            <span style={{ fontSize: 13, fontWeight: 600, color: isSel ? '#F5ECD8' : 'rgba(245,236,216,0.85)', fontFamily: "'Outfit',sans-serif", lineHeight: 1.3, marginBottom: 3 }}>{label}</span>
+                            <span style={{ fontSize: 11, color: isSel ? CHAMP : 'rgba(196,151,58,0.7)', fontFamily: "'Outfit',sans-serif", letterSpacing: '0.01em' }}>{HINGLISH[label]}</span>
+                          </button>
                         );
                       })
                     }
                   </div>
-                  {OCCASIONS_LIST.filter(o => !occSearch || o.label.toLowerCase().includes(occSearch.toLowerCase())).length === 0 && (
+                  {OCCASIONS_LIST.filter(o => !occSearch || o.label.toLowerCase().includes(occSearch.toLowerCase()) || (HINGLISH[o.label]||'').toLowerCase().includes(occSearch.toLowerCase())).length === 0 && (
                     <p style={{ color: 'rgba(245,236,216,0.4)', fontSize: 13, fontFamily: "'Outfit',sans-serif", margin: '12px 0 0' }}>No occasions found</p>
                   )}
                 </div>
@@ -1338,67 +1350,39 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {/* Primary: Plan with Theme */}
-                    <button onClick={() => goNext(1)}
+                    <button className="op-step-opt" onClick={() => goNext(1)}
                       style={{
-                        padding: '22px 20px', borderRadius: 18, textAlign: 'left', cursor: 'pointer',
-                        border: `1.5px solid ${occColor}55`,
-                        background: `linear-gradient(135deg, ${occColor}16 0%, ${occColor}06 100%)`,
-                        transition: 'all 0.2s', fontFamily: "'Outfit',sans-serif",
-                        position: 'relative', overflow: 'hidden',
+                        padding: '20px 18px', borderRadius: 14, textAlign: 'left', cursor: 'pointer',
+                        border: `1px solid rgba(196,151,58,0.3)`,
+                        background: 'rgba(196,151,58,0.07)',
+                        transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
                       }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = `${occColor}85`; e.currentTarget.style.background = `linear-gradient(135deg, ${occColor}22 0%, ${occColor}0D 100%)`; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = `${occColor}55`; e.currentTarget.style.background = `linear-gradient(135deg, ${occColor}16 0%, ${occColor}06 100%)`; }}
                     >
-                      {/* Decorative concentric rings top-right */}
-                      <div aria-hidden style={{ position: 'absolute', top: -32, right: -32, width: 100, height: 100, borderRadius: '50%', border: `1px solid ${occColor}18`, pointerEvents: 'none' }} />
-                      <div aria-hidden style={{ position: 'absolute', top: -16, right: -16, width: 64, height: 64, borderRadius: '50%', border: `1px solid ${occColor}12`, pointerEvents: 'none' }} />
-
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-                        <div style={{ width: 46, height: 46, borderRadius: 13, background: `${occColor}1C`, border: `1px solid ${occColor}38`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={occColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                            <rect x="3" y="3" width="7" height="7" rx="1.5"/>
-                            <rect x="14" y="3" width="7" height="7" rx="1.5"/>
-                            <rect x="3" y="14" width="7" height="7" rx="1.5"/>
-                            <rect x="14" y="14" width="7" height="7" rx="1.5"/>
-                          </svg>
-                        </div>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 }}>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 19, fontWeight: 500, color: '#F5ECD8', marginBottom: 5, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em', lineHeight: 1.15 }}>Plan with Theme</div>
-                          <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.70)', lineHeight: 1.6 }}>Browse curated themes and get tailored vendor suggestions for your event</div>
+                          <div style={{ fontSize: 17, fontWeight: 500, color: '#F5ECD8', marginBottom: 5, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em', lineHeight: 1.2 }}>Plan with Theme</div>
+                          <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.62)', lineHeight: 1.6 }}>Browse curated themes — get tailored vendor suggestions for your event</div>
                         </div>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={occColor} strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, marginTop: 15, opacity: 0.75 }}>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={CHAMP} strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, marginTop: 2, opacity: 0.7 }}>
                           <path d="M5 12h14M12 5l7 7-7 7"/>
                         </svg>
-                      </div>
-
-                      <div style={{ display: 'flex', gap: 7, marginTop: 14, paddingTop: 14, borderTop: `1px solid ${occColor}18` }}>
-                        {['Curated Themes', 'Vendor Match', 'Full Planning'].map((tag, i) => (
-                          <span key={i} style={{ fontSize: 9.5, padding: '3px 10px', borderRadius: 100, background: `${occColor}10`, border: `1px solid ${occColor}28`, color: occColor, fontFamily: "'Outfit',sans-serif", fontWeight: 600, letterSpacing: '0.04em' }}>{tag}</span>
-                        ))}
                       </div>
                     </button>
 
                     {/* Secondary: Plan without Theme */}
-                    <button onClick={() => { onClose(); navigate('/booking'); }}
+                    <button className="op-step-opt" onClick={() => { onClose(); navigate('/booking'); }}
                       style={{
-                        padding: '18px 20px', borderRadius: 18, textAlign: 'left', cursor: 'pointer',
-                        border: '1px solid rgba(245,236,216,0.1)', background: 'rgba(245,236,216,0.03)',
+                        padding: '20px 18px', borderRadius: 14, textAlign: 'left', cursor: 'pointer',
+                        border: '1px solid rgba(245,236,216,0.09)', background: 'rgba(245,236,216,0.03)',
                         transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
                       }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(245,236,216,0.2)'; e.currentTarget.style.background = 'rgba(245,236,216,0.055)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(245,236,216,0.1)'; e.currentTarget.style.background = 'rgba(245,236,216,0.03)'; }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                        <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(245,236,216,0.48)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                          </svg>
-                        </div>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 }}>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 17, fontWeight: 400, color: 'rgba(245,236,216,0.82)', marginBottom: 3, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em', lineHeight: 1.2 }}>Plan without Theme</div>
-                          <div style={{ fontSize: 12.5, fontWeight: 400, color: 'rgba(245,236,216,0.44)', lineHeight: 1.5 }}>Browse vendors directly, get quotes, and finalise</div>
+                          <div style={{ fontSize: 17, fontWeight: 400, color: 'rgba(245,236,216,0.75)', marginBottom: 4, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em', lineHeight: 1.2 }}>Plan without Theme</div>
+                          <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.4)', lineHeight: 1.5 }}>Browse vendors directly, get quotes, and finalise</div>
                         </div>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(245,236,216,0.25)" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(245,236,216,0.25)" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, marginTop: 2 }}>
                           <path d="M5 12h14M12 5l7 7-7 7"/>
                         </svg>
                       </div>
@@ -1413,19 +1397,27 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                   <Breadcrumb occasion={occasion} current="Budget" color={occColor} />
                   <h2 style={h2Style}>What's your budget?</h2>
                   <p style={subStyle}>Pick your range</p>
-                  <div className="op-2col-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 11 }}>
-                    {BUDGET_OPTIONS.map(({ key, label, desc, stars }) => (
-                      <button key={key} onClick={() => { setBudget(key); setTimeout(() => goNext(), 260); }}
-                        style={optStyle(budget === key)}>
-                        <div style={{ display: 'flex', gap: 3, marginBottom: 10 }}>
-                          {[1,2,3,4].map(s => (
-                            <div key={s} style={{ height: 3, flex: 1, borderRadius: 2, background: s <= stars ? occColor : 'rgba(245,236,216,0.12)', transition: 'background 0.2s' }} />
-                          ))}
-                        </div>
-                        <div style={{ fontSize: 17, fontWeight: 400, color: '#F5ECD8', marginBottom: 5, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>{label}</div>
-                        <div style={{ fontSize: 12.5, fontWeight: 400, color: 'rgba(245,236,216,0.82)', lineHeight: 1.5 }}>{desc}</div>
-                      </button>
-                    ))}
+                  <div className="op-2col-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10 }}>
+                    {BUDGET_OPTIONS.map(({ key, label, desc, stars }) => {
+                      const isSel = budget === key;
+                      return (
+                        <button key={key} className="op-opt" onClick={() => { setBudget(key); setTimeout(() => goNext(), 260); }}
+                          style={optStyle(isSel)}>
+                          {isSel && (
+                            <div style={{ position: 'absolute', top: 10, right: 10, width: 16, height: 16, borderRadius: '50%', background: CHAMP, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', gap: 3, marginBottom: 10 }}>
+                            {[1,2,3,4].map(s => (
+                              <div key={s} style={{ height: 2.5, flex: 1, borderRadius: 2, background: s <= stars ? CHAMP : 'rgba(245,236,216,0.12)', transition: 'background 0.2s' }} />
+                            ))}
+                          </div>
+                          <div style={{ fontSize: 17, fontWeight: 400, color: '#F5ECD8', marginBottom: 5, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>{label}</div>
+                          <div style={{ fontSize: 12.5, fontWeight: 400, color: 'rgba(245,236,216,0.72)', lineHeight: 1.5 }}>{desc}</div>
+                        </button>
+                      );
+                    })}
                   </div>
                   <NavRow onBack={goBack} onNext={budget ? () => goNext() : null} color={occColor} />
                 </div>
@@ -1475,14 +1467,19 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                   <Breadcrumb occasion={occasion} current="Venue" color={occColor} />
                   <h2 style={h2Style}>Where is the event?</h2>
                   <p style={subStyle}>Pick your venue type</p>
-                  <div className="op-2col-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 11, marginBottom: 20 }}>
+                  <div className="op-2col-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10, marginBottom: 20 }}>
                     {VENUE_OPTIONS.map(({ key, label, desc }) => {
                       const sel = venue === key;
                       return (
-                        <button key={key} onClick={() => { setVenue(key); setTimeout(() => goNext(), 260); }}
+                        <button key={key} className="op-opt" onClick={() => { setVenue(key); setTimeout(() => goNext(), 260); }}
                           style={optStyle(sel)}>
-                          <div style={{ width: 34, height: 34, borderRadius: 10, background: sel ? `${occColor}22` : 'rgba(245,236,216,0.07)', border: `1px solid ${sel ? occColor + '45' : 'rgba(245,236,216,0.1)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10, transition: 'all 0.18s' }}>
-                            {venueIcon(key, sel ? occColor : 'rgba(245,236,216,0.5)')}
+                          {sel && (
+                            <div style={{ position: 'absolute', top: 10, right: 10, width: 16, height: 16, borderRadius: '50%', background: CHAMP, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                            </div>
+                          )}
+                          <div style={{ width: 34, height: 34, borderRadius: 10, background: sel ? 'rgba(196,151,58,0.14)' : 'rgba(245,236,216,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10, transition: 'all 0.18s' }}>
+                            {venueIcon(key, sel ? CHAMP : 'rgba(245,236,216,0.5)')}
                           </div>
                           <div style={{ fontSize: 15, fontWeight: 400, color: '#F5ECD8', fontFamily: "'Cormorant Garamond',serif", lineHeight: 1.2, marginBottom: 3 }}>{label}</div>
                           {desc && <div style={{ fontSize: 11, color: 'rgba(245,236,216,0.46)', fontFamily: "'Outfit',sans-serif", lineHeight: 1.35 }}>{desc}</div>}
@@ -1500,15 +1497,23 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                   <Breadcrumb occasion={occasion} current="Time" color={occColor} />
                   <h2 style={h2Style}>When is the celebration?</h2>
                   <p style={subStyle}>Choose a time slot</p>
-                  <div className="op-2col-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 11, marginBottom: 20 }}>
-                    {TIME_OPTIONS.map(({ key, label, desc }) => (
-                      <button key={key} onClick={() => { setTimeOfDay(key); setTimeout(() => goNext(5), 260); }}
-                        style={optStyle(timeOfDay === key)}>
-                        <div style={{ width: 26, height: 26, marginBottom: 8, color: timeOfDay === key ? occColor : 'rgba(245,236,216,0.5)', display: 'flex' }}>{timeIcon(key)}</div>
-                        <div style={{ fontSize: 17, fontWeight: 400, color: '#F5ECD8', marginBottom: 4, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>{label}</div>
-                        <div style={{ fontSize: 12.5, fontWeight: 400, color: 'rgba(245,236,216,0.82)' }}>{desc}</div>
-                      </button>
-                    ))}
+                  <div className="op-2col-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10, marginBottom: 20 }}>
+                    {TIME_OPTIONS.map(({ key, label, desc }) => {
+                      const sel = timeOfDay === key;
+                      return (
+                        <button key={key} className="op-opt" onClick={() => { setTimeOfDay(key); setTimeout(() => goNext(5), 260); }}
+                          style={optStyle(sel)}>
+                          {sel && (
+                            <div style={{ position: 'absolute', top: 10, right: 10, width: 16, height: 16, borderRadius: '50%', background: CHAMP, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                            </div>
+                          )}
+                          <div style={{ width: 26, height: 26, marginBottom: 8, color: sel ? CHAMP : 'rgba(245,236,216,0.45)', display: 'flex' }}>{timeIcon(key)}</div>
+                          <div style={{ fontSize: 17, fontWeight: 400, color: '#F5ECD8', marginBottom: 4, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>{label}</div>
+                          <div style={{ fontSize: 12.5, fontWeight: 400, color: 'rgba(245,236,216,0.72)' }}>{desc}</div>
+                        </button>
+                      );
+                    })}
                   </div>
                   <NavRow onBack={goBack} onNext={timeOfDay ? () => goNext(5) : null} nextLabel="See themes" color={occColor} />
                 </div>
