@@ -2863,13 +2863,19 @@ const Home = () => {
           setOccModal({ label: o.name, slug: o.id, hub: hub || null, photo: o.coverImage, icon: o.icon || "🎉", color: o.color || CHAMP, step: hub ? 1 : 2 });
         };
 
-        const renderRow = (occ) => (
+        const renderRow = (occ, num) => (
           <button
             key={occ.id}
             className="occ-flow-row"
             onClick={() => pickOcc(occ)}
           >
-            <span>{occ.name}</span>
+            {num != null && (
+              <span className="occ-num">{String(num).padStart(2, "0")}</span>
+            )}
+            <span className="occ-name-wrap">
+              <span className="occ-name">{occ.name}</span>
+              {occ.localName && <span className="occ-hinglish">{occ.localName}</span>}
+            </span>
             <span className="occ-flow-arr">→</span>
           </button>
         );
@@ -2878,15 +2884,37 @@ const Home = () => {
           <>
             <style>{`
               .occ-flow-row {
-                display: flex; align-items: center; justify-content: space-between;
-                width: 100%; padding: 11px 0;
-                border: none; border-bottom: 1px solid rgba(255,255,255,0.05);
+                display: flex; align-items: center; gap: 14px;
+                width: 100%; padding: 12px 0;
+                border: none;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+                border-left: 2px solid transparent;
                 background: transparent; cursor: pointer;
-                font-family: ${f}; font-size: 14px;
-                color: rgba(245,236,216,0.68); text-align: left;
+                font-family: ${f}; font-size: 14.5px;
+                color: rgba(245,236,216,0.88); text-align: left;
+                transition: color 0.14s, border-left-color 0.14s;
+              }
+              .occ-flow-row:hover {
+                color: #F5ECD8;
+                border-left-color: ${CHAMP};
+              }
+              .occ-num {
+                font-family: ${ser}; font-size: 10.5px; font-weight: 400;
+                color: rgba(196,151,58,0.35); flex-shrink: 0; min-width: 22px;
+                letter-spacing: 0.04em; line-height: 1; padding-top: 1px;
                 transition: color 0.14s;
               }
-              .occ-flow-row:hover { color: #F5ECD8; }
+              .occ-flow-row:hover .occ-num { color: rgba(196,151,58,0.7); }
+              .occ-name-wrap {
+                flex: 1; display: flex; flex-direction: column; gap: 1px;
+              }
+              .occ-name { line-height: 1.3; }
+              .occ-hinglish {
+                font-size: 11px; color: transparent;
+                transition: color 0.14s; font-family: ${f};
+                letter-spacing: 0.01em;
+              }
+              .occ-flow-row:hover .occ-hinglish { color: rgba(196,151,58,0.52); }
               .occ-flow-arr {
                 font-size: 14px; color: transparent;
                 transition: color 0.14s; flex-shrink: 0;
@@ -2915,16 +2943,16 @@ const Home = () => {
               overflow: "hidden",
             }}>
               {/* Header */}
-              <div style={{ padding: "22px 24px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0, position: "relative" }}>
+              <div style={{ padding: "24px 26px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0, position: "relative" }}>
                 <button
                   onClick={closeFlow}
-                  style={{ position: "absolute", top: 18, right: 20, background: "none", border: "none", color: "rgba(245,236,216,0.35)", fontSize: 24, lineHeight: 1, cursor: "pointer", fontFamily: f, padding: "0 4px" }}
+                  style={{ position: "absolute", top: 20, right: 22, background: "none", border: "none", color: "rgba(245,236,216,0.32)", fontSize: 24, lineHeight: 1, cursor: "pointer", fontFamily: f, padding: "0 4px" }}
                 >×</button>
-                <p style={{ fontSize: 10, fontWeight: 700, color: "rgba(245,236,216,0.36)", textTransform: "uppercase", letterSpacing: "0.18em", margin: "0 0 5px", fontFamily: f }}>PLAN AN OCCASION</p>
-                <h2 style={{ fontFamily: ser, fontSize: "clamp(1.3rem,3vw,1.75rem)", fontWeight: 400, color: "#F5ECD8", margin: "0 0 16px", lineHeight: 1.15 }}>What are you planning?</h2>
-                {/* Search — rectangular, 7px radius */}
-                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)", borderRadius: 7, padding: "0 12px" }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(245,236,216,0.32)" strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "rgba(196,151,58,0.65)", textTransform: "uppercase", letterSpacing: "0.20em", margin: "0 0 6px", fontFamily: f }}>PLAN AN OCCASION</p>
+                <h2 style={{ fontFamily: ser, fontSize: "clamp(1.9rem,4vw,2.7rem)", fontWeight: 400, color: "#F5ECD8", margin: "0 0 18px", lineHeight: 1.1 }}>What are you planning?</h2>
+                {/* Search */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.13)", borderRadius: 7, padding: "0 12px" }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(245,236,216,0.35)" strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                   <input
                     value={occasionSearch}
                     onChange={e => setOccasionSearch(e.target.value)}
@@ -2940,12 +2968,12 @@ const Home = () => {
               {/* Body */}
               <div className="occ-flow-body" style={{ overflowY: "auto", flex: 1, scrollbarWidth: "none" }}>
                 {searchTrim ? (
-                  /* Search results: flat list */
-                  <div style={{ padding: "0 24px 20px" }}>
+                  /* Search results: flat numbered list */
+                  <div style={{ padding: "0 26px 24px" }}>
                     {filtered.length === 0 ? (
                       <p style={{ color: "rgba(245,236,216,0.36)", fontSize: 13.5, fontFamily: f, padding: "20px 0", margin: 0 }}>No occasions found.</p>
                     ) : (
-                      filtered.map(o => renderRow(o))
+                      filtered.map((o, i) => renderRow(o, i + 1))
                     )}
                   </div>
                 ) : (
@@ -2953,23 +2981,25 @@ const Home = () => {
                   <>
                     <div style={{ display: "flex" }}>
                       {FLOW_GROUPS.map((group, gi) => (
-                        <div key={group.label} style={{ flex: 1, padding: "0 24px 20px", borderRight: gi === 0 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
-                          <p style={{ fontSize: 9.5, fontWeight: 700, color: "rgba(245,236,216,0.28)", textTransform: "uppercase", letterSpacing: "0.18em", margin: "18px 0 8px", fontFamily: f }}>
+                        <div key={group.label} style={{ flex: 1, padding: "0 26px 24px", borderRight: gi === 0 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
+                          <p style={{ fontSize: 9, fontWeight: 700, color: "rgba(245,236,216,0.26)", textTransform: "uppercase", letterSpacing: "0.22em", margin: "20px 0 10px", fontFamily: f }}>
                             {group.label}
                           </p>
-                          {group.ids.map(id => {
+                          {group.ids.map((id, rowIdx) => {
                             const occ = OCCASIONS.find(o => o.id === id);
-                            return occ ? renderRow(occ) : null;
+                            return occ ? renderRow(occ, rowIdx + 1) : null;
                           })}
                         </div>
                       ))}
                     </div>
 
-                    {/* Business — full width */}
-                    <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "0 24px 20px" }}>
-                      <p style={{ fontSize: 9.5, fontWeight: 700, color: "rgba(245,236,216,0.28)", textTransform: "uppercase", letterSpacing: "0.18em", margin: "18px 0 8px", fontFamily: f }}>
-                        BUSINESS
-                      </p>
+                    {/* Business — full width with centered divider label */}
+                    <div style={{ padding: "0 26px 24px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "22px 0 10px" }}>
+                        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.05)" }} />
+                        <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(245,236,216,0.22)", textTransform: "uppercase", letterSpacing: "0.24em", fontFamily: f }}>BUSINESS</span>
+                        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.05)" }} />
+                      </div>
                       {BUSINESS_IDS.map(id => {
                         const occ = OCCASIONS.find(o => o.id === id);
                         return occ ? renderRow(occ) : null;
