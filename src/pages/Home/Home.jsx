@@ -1075,18 +1075,21 @@ const Home = () => {
     {
       target: "body",
       placement: "center",
+      image: "/occasions/birthday-mobile.png",
       title: "Welcome to Tendr",
       content: "Book verified vendors and plan every detail of your event in Delhi NCR — from one place.",
     },
     {
       target: "body",
       placement: "center",
+      image: "/occasions/house-party-mobile.png",
       title: "Start here",
       content: "Use 'Book Vendors' to browse the vendor directory, or hit 'Plan an Occasion' for a step-by-step flow — pick your occasion, date and budget.",
     },
     {
-      target: '[data-tour="mob-nav-profile"]',
-      placement: "top",
+      target: "body",
+      placement: "center",
+      image: "/hero-mobile-bg.png",
       title: isSignedIn ? "Your bookings" : "Sign in to save",
       content: isSignedIn ? "View confirmed bookings and event documents from your account." : "Sign in to save vendors, confirm bookings and access your documents anytime.",
     },
