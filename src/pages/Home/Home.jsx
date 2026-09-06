@@ -278,131 +278,141 @@ function TipsByTendrSection() {
   );
 }
 
+const FAQ_GROUPS = [
+  { category: "Getting Started", indices: [0, 6, 8] },
+  { category: "Planning",        indices: [1] },
+  { category: "Vendors",         indices: [2, 5] },
+  { category: "Booking & Payments", indices: [3, 4, 7] },
+];
+
 function FaqSection() {
   const [open, setOpen] = React.useState(null);
   const navigate = useNavigate();
-  return (
-    <section style={{ background: "#070400", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif" }}>
-      <div style={{ maxWidth: 760, margin: "0 auto" }}>
+  const serif = "'Cormorant Garamond', Georgia, serif";
+  const sans  = "'Outfit', sans-serif";
 
-        {/* Heading */}
+  return (
+    <section style={{ background: "#070400", padding: "80px 24px 88px", fontFamily: sans }}>
+      <div style={{ maxWidth: 940, margin: "0 auto" }}>
+
+        {/* Heading — more breathing room, no pill/lines decoration */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.4 }}
           transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-          style={{ textAlign: "center", marginBottom: 44 }}
+          style={{ textAlign: "center", marginBottom: 64 }}
         >
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:9, margin:"0 0 14px" }}>
-            <div style={{ width:24, height:1.5, background:"#CCAB4A", flexShrink:0 }} />
-            <span style={{ fontSize:13, fontWeight:500, color:"#CCAB4A" }}>Got Questions?</span>
-            <div style={{ width:24, height:1.5, background:"#CCAB4A", flexShrink:0 }} />
-          </div>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.8rem)", fontWeight: 800, color: "#FFF8EC", letterSpacing: "-0.02em", margin: "0 0 12px", lineHeight: 1.1 }}>
+          <h2 style={{ fontFamily: serif, fontSize: "clamp(1.8rem,3.5vw,2.8rem)", fontWeight: 400, color: "#FFF8EC", letterSpacing: "0.01em", margin: "0 0 14px", lineHeight: 1.1 }}>
             Frequently Asked Questions
           </h2>
-          <p style={{ fontSize: 14.5, color: "rgba(255,248,236,0.52)", maxWidth: 420, margin: "0 auto", lineHeight: 1.65 }}>
+          <p style={{ fontSize: 14.5, color: "rgba(255,248,236,0.38)", maxWidth: 360, margin: "0 auto", lineHeight: 1.65 }}>
             Everything you need to know before you start planning.
           </p>
         </motion.div>
 
-        {/* FAQ items — framer-motion height anim + chat-bubble answers, pattern from 21st.dev/anshuman008/faq-chat-accordion */}
-        <motion.div
-          style={{ display: "flex", flexDirection: "column" }}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.08 }}
-          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.045 } } }}
-        >
-          {FAQS.map(({ q, a }, i) => (
+        {/* Grouped FAQ — editorial list, no cards, just dividers */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 52 }}>
+          {FAQ_GROUPS.map(({ category, indices }) => (
             <motion.div
-              key={i}
-              variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 320, damping: 28 } } }}
-              style={{
-                borderTop: i === 0 ? "1px solid rgba(196,122,46,0.14)" : "none",
-                borderBottom: "1px solid rgba(196,122,46,0.14)",
-              }}
+              key={category}
+              initial={{ opacity: 0, y: 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.15 }}
+              transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
-              {/* Trigger — ui-ux-pro-max: touch-target ≥44px, scale-feedback on press */}
-              <motion.button
-                onClick={() => setOpen(open === i ? null : i)}
-                whileTap={{ scale: 0.985 }}
-                transition={{ type: "spring", stiffness: 400, damping: 28 }}
-                style={{ width: "100%", minHeight: 44, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 4px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "left", gap: 20 }}
-              >
-                <span style={{ fontSize: 14.5, fontWeight: open === i ? 600 : 500, color: open === i ? "#FFF8EC" : "rgba(255,248,236,0.78)", lineHeight: 1.45, transition: "color 0.18s" }}>{q}</span>
-                {/* +/− icon — clean SVG, no circle (ui-ux-pro-max: no decorative-only shapes) */}
-                <motion.span
-                  animate={{ rotate: open === i ? 45 : 0 }}
-                  transition={{ type: "spring", stiffness: 380, damping: 26 }}
-                  style={{ flexShrink: 0, color: "#C47A2E", display: "flex", alignItems: "center" }}
-                >
-                  <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
-                </motion.span>
-              </motion.button>
-              {/* Answer — framer-motion height:"auto", chat-bubble style (21st.dev pattern) */}
-              <AnimatePresence initial={false}>
-                {open === i && (
-                  <motion.div
-                    key="answer"
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
-                    style={{ overflow: "hidden" }}
-                  >
-                    <div style={{ paddingBottom: 20, paddingLeft: 0 }}>
-                      <p style={{
-                        display: "inline-block", margin: 0,
-                        padding: "12px 18px",
-                        background: "rgba(196,122,46,0.1)",
-                        border: "1px solid rgba(196,122,46,0.18)",
-                        borderRadius: "4px 14px 14px 14px",
-                        fontSize: 14, color: "rgba(255,248,236,0.68)", lineHeight: 1.75,
-                        maxWidth: "92%",
-                      }}>{a}</p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {/* Category label */}
+              <div style={{ fontSize: 9.5, fontWeight: 700, color: "rgba(204,171,74,0.38)", textTransform: "uppercase", letterSpacing: "0.22em", marginBottom: 18, fontFamily: sans }}>
+                {category}
+              </div>
+              {/* Top rule */}
+              <div style={{ height: 1, background: "rgba(255,248,236,0.07)" }} />
+
+              {indices.map((idx) => {
+                const { q, a } = FAQS[idx];
+                const key = `${category}-${idx}`;
+                const isOpen = open === key;
+                return (
+                  <div key={key} style={{ borderBottom: "1px solid rgba(255,248,236,0.07)" }}>
+                    <motion.button
+                      onClick={() => setOpen(isOpen ? null : key)}
+                      whileTap={{ scale: 0.997 }}
+                      style={{
+                        width: "100%", minHeight: 72, display: "flex", justifyContent: "space-between",
+                        alignItems: "center", padding: "0", background: "none", border: "none",
+                        cursor: "pointer", fontFamily: sans, textAlign: "left", gap: 28,
+                      }}
+                    >
+                      <span style={{
+                        fontSize: 16, fontWeight: isOpen ? 500 : 400,
+                        color: isOpen ? "#FFF8EC" : "rgba(255,248,236,0.75)",
+                        lineHeight: 1.4, transition: "color 0.18s",
+                      }}>
+                        {q}
+                      </span>
+                      <motion.span
+                        animate={{ rotate: isOpen ? 45 : 0 }}
+                        transition={{ type: "spring", stiffness: 380, damping: 26 }}
+                        style={{ flexShrink: 0, color: isOpen ? "rgba(204,171,74,0.75)" : "rgba(204,171,74,0.4)", display: "flex" }}
+                      >
+                        <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round">
+                          <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                      </motion.span>
+                    </motion.button>
+
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          key="answer"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                          style={{ overflow: "hidden" }}
+                        >
+                          <p style={{ fontSize: 14.5, color: "rgba(255,248,236,0.48)", lineHeight: 1.8, margin: 0, paddingBottom: 26, maxWidth: 660 }}>
+                            {a}
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
             </motion.div>
           ))}
-        </motion.div>
+        </div>
 
-        {/* Still have questions CTA */}
+        {/* Still have questions — plain, no card */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.45, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-          style={{ textAlign: "center", marginTop: 44, padding: "28px 32px", background: "#140B03", borderRadius: 18, border: "1px solid rgba(196,122,46,0.2)", boxShadow: "0 2px 16px rgba(0,0,0,0.3)" }}
+          transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ marginTop: 64, borderTop: "1px solid rgba(255,248,236,0.07)", paddingTop: 32, display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}
         >
-          <p style={{ fontSize: 16, fontWeight: 700, color: "#FFF8EC", margin: "0 0 5px", fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "0.01em" }}>Still have questions?</p>
-          <p style={{ fontSize: 13.5, color: "rgba(255,248,236,0.52)", margin: "0 0 18px", lineHeight: 1.6 }}>Our team is happy to help you plan your perfect event.</p>
-          <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-            <motion.a
-              href="https://wa.me/919211668427"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ padding: "10px 22px", borderRadius: 10, background: "#25d366", color: "#fff", fontSize: 13.5, fontWeight: 600, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 4px 14px rgba(37,211,102,0.28)" }}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: "spring", stiffness: 400, damping: 24 }}
+          <div>
+            <p style={{ fontSize: 15, fontWeight: 400, color: "rgba(255,248,236,0.52)", margin: "0 0 4px", fontFamily: serif }}>Still have questions?</p>
+            <p style={{ fontSize: 13, color: "rgba(255,248,236,0.28)", margin: 0 }}>Our team is happy to help you plan your event.</p>
+          </div>
+          <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+            <a
+              href="https://wa.me/919211668427" target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: 13, color: "rgba(255,248,236,0.42)", textDecoration: "none", transition: "color 0.15s", fontFamily: sans }}
+              onMouseEnter={e => e.currentTarget.style.color = "#FFF8EC"}
+              onMouseLeave={e => e.currentTarget.style.color = "rgba(255,248,236,0.42)"}
             >
-              <FaWhatsapp size={15} /> WhatsApp Us
-            </motion.a>
-            <motion.button
+              WhatsApp us →
+            </a>
+            <button
               onClick={() => navigate("/contact-us")}
-              style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.28)", background: "transparent", color: "#C47A2E", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
-              whileHover={{ scale: 1.03, backgroundColor: "#C47A2E", color: "#fff" }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: "spring", stiffness: 400, damping: 24 }}
+              style={{ background: "none", border: "none", color: "rgba(204,171,74,0.55)", fontSize: 13, cursor: "pointer", fontFamily: sans, padding: 0, transition: "color 0.15s" }}
+              onMouseEnter={e => e.currentTarget.style.color = "#CCAB4A"}
+              onMouseLeave={e => e.currentTarget.style.color = "rgba(204,171,74,0.55)"}
             >
-              Contact Us →
-            </motion.button>
+              Contact us →
+            </button>
           </div>
         </motion.div>
 
