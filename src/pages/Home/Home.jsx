@@ -144,118 +144,157 @@ const FAQS = [
   { q: "How do I open a chat with a vendor I was already talking to?", a: "Go to your Dashboard → Chats tab to see all your active vendor conversations and open them directly. You can also click the Saved Vendors icon in the top-right corner and tap 'Chat' next to any saved vendor. Alternatively, visit the vendor's profile page and click 'Request to Chat' to start a new conversation." },
 ];
 
+const GUIDE_PHOTOS = {
+  "event-budget-blueprint":   heroFestive,
+  "corporate-event-playbook": heroCorporate,
+  "house-party-handbook":     heroHouseParty,
+};
+
 function TipsByTendrSection() {
   const navigate = useNav();
   const serif = "'Cormorant Garamond', Georgia, serif";
   const sans  = "'Outfit', sans-serif";
-  const preview = GUIDES.slice(0, 3);
-  return (
-    <section style={{ background: "#0D0700", fontFamily: sans, position: "relative", overflow: "hidden" }}>
-      {/* Subtle grain only — no dot grids, no glow blobs, no watermark */}
-      <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 0 }} aria-hidden>
-        <filter id="tips-grain"><feTurbulence type="fractalNoise" baseFrequency="0.78" numOctaves="4" stitchTiles="stitch" /></filter>
-        <rect width="100%" height="100%" filter="url(#tips-grain)" opacity="0.038" />
-      </svg>
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(to right, transparent 0%, rgba(204,171,74,0.22) 30%, rgba(204,171,74,0.22) 70%, transparent 100%)", zIndex: 1 }} />
+  const [featured, ...rest] = GUIDES.slice(0, 3);
+  const secondary = rest[0];
+  const tertiary  = rest[1];
 
-      <div style={{ maxWidth: 920, margin: "0 auto", padding: "68px 24px 0", position: "relative", zIndex: 1 }}>
+  return (
+    <section style={{ background: "#0D0700", fontFamily: sans }}>
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "72px 24px 80px" }}>
 
         {/* ── Header ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-          style={{ marginBottom: 44 }}
-        >
-          {/* Eyebrow — plain text, no pill */}
-          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 20 }}>
-            <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke="rgba(204,171,74,0.45)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-            <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(204,171,74,0.45)", textTransform: "uppercase", letterSpacing: "0.2em" }}>Tips by Tendr</span>
-          </div>
-
-          {/* Heading row + plain-text CTA */}
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 24, flexWrap: "wrap", marginBottom: 14 }}>
-            <h2 style={{ fontFamily: serif, fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 400, color: "#FFF8EC", letterSpacing: "-0.01em", lineHeight: 1.05, margin: 0 }}>
-              Free Event Planning Guides
-            </h2>
-            <button
-              onClick={() => navigate("/guides")}
-              style={{ background: "none", border: "none", color: "rgba(204,171,74,0.58)", fontSize: 13, cursor: "pointer", fontFamily: sans, padding: 0, whiteSpace: "nowrap", flexShrink: 0, transition: "color 0.15s" }}
-              onMouseEnter={e => e.currentTarget.style.color = "#CCAB4A"}
-              onMouseLeave={e => e.currentTarget.style.color = "rgba(204,171,74,0.58)"}
-            >
-              View all guides →
-            </button>
-          </div>
-
-          <p style={{ fontSize: 14.5, color: "rgba(255,248,236,0.38)", margin: 0, lineHeight: 1.7, maxWidth: 420 }}>
-            Practical guides for budgeting, decorating, and planning better events.
-          </p>
-        </motion.div>
-
-        {/* ── Top rule ── */}
-        <div style={{ height: 1, background: "rgba(204,171,74,0.1)", marginBottom: 0 }} />
-
-        {/* ── Guide rows — no cards, just typography ── */}
-        {preview.map((guide, gi) => (
-          <motion.div
-            key={guide.slug}
-            initial={{ opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.4, delay: gi * 0.07, ease: [0.25, 0.46, 0.45, 0.94] }}
-            onClick={() => navigate(`/guides/${guide.slug}`)}
-            style={{
-              padding: "38px 0",
-              borderBottom: "1px solid rgba(204,171,74,0.08)",
-              cursor: "pointer",
-              display: "grid",
-              gridTemplateColumns: "52px 1fr",
-              gap: "0 32px",
-              transition: "opacity 0.15s",
-            }}
-            onMouseEnter={e => e.currentTarget.style.opacity = "0.78"}
-            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-          >
-            {/* Issue number */}
-            <div style={{ paddingTop: 5 }}>
-              <span style={{ fontFamily: serif, fontSize: 13, fontWeight: 400, color: "rgba(204,171,74,0.32)", letterSpacing: "0.08em" }}>0{gi + 1}</span>
-            </div>
-            {/* Article */}
-            <div>
-              <h3 style={{ fontFamily: serif, fontSize: "clamp(1.35rem,2.8vw,1.75rem)", fontWeight: 400, color: "#FFF8EC", margin: "0 0 10px", lineHeight: 1.2, letterSpacing: "0.01em" }}>
-                {guide.title}
-              </h3>
-              <p style={{ fontSize: 14, color: "rgba(255,248,236,0.42)", margin: "0 0 18px", lineHeight: 1.65, maxWidth: 540 }}>
-                {guide.subtitle}
-              </p>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 11, color: "rgba(204,171,74,0.48)", fontWeight: 500 }}>{guide.tags[0]}</span>
-                <span style={{ color: "rgba(204,171,74,0.2)" }}>·</span>
-                <span style={{ fontSize: 11, color: "rgba(255,248,236,0.28)" }}>{guide.readTime}</span>
-                {guide.pages && <>
-                  <span style={{ color: "rgba(204,171,74,0.2)" }}>·</span>
-                  <span style={{ fontSize: 11, color: "rgba(255,248,236,0.28)" }}>{guide.pages} pages</span>
-                </>}
-              </div>
-            </div>
-          </motion.div>
-        ))}
-
-        {/* ── Community — separate visual idea ── */}
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.45, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-          style={{ padding: "56px 0 72px" }}
+          transition={{ duration: 0.48, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ marginBottom: 40 }}
         >
-          <div style={{ height: 1, background: "rgba(204,171,74,0.06)", marginBottom: 44 }} />
+          <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(204,171,74,0.42)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 18, fontFamily: sans }}>
+            Tendr Journal
+          </div>
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 24, flexWrap: "wrap", marginBottom: 12 }}>
+            <h2 style={{ fontFamily: serif, fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#FFF8EC", letterSpacing: "-0.01em", lineHeight: 1.08, margin: 0 }}>
+              Free Event Planning Guides
+            </h2>
+            <button
+              onClick={() => navigate("/guides")}
+              style={{ background: "none", border: "none", color: "rgba(204,171,74,0.52)", fontSize: 13, cursor: "pointer", fontFamily: sans, padding: 0, whiteSpace: "nowrap", flexShrink: 0, transition: "color 0.15s" }}
+              onMouseEnter={e => e.currentTarget.style.color = "#CCAB4A"}
+              onMouseLeave={e => e.currentTarget.style.color = "rgba(204,171,74,0.52)"}
+            >
+              View all guides →
+            </button>
+          </div>
+          <p style={{ fontSize: 14, color: "rgba(255,248,236,0.35)", margin: 0, lineHeight: 1.7, maxWidth: 400 }}>
+            Practical guides for budgeting, decorating, and planning better events.
+          </p>
+        </motion.div>
+
+        {/* ── Hairline ── */}
+        <div style={{ height: 1, background: "rgba(255,248,236,0.07)", marginBottom: 2 }} />
+
+        {/* ── Photo grid — featured + secondary ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.15 }}
+          transition={{ duration: 0.52, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ display: "flex", flexWrap: "wrap", gap: 2, marginBottom: 2 }}
+        >
+          {/* Featured guide */}
+          {featured && (
+            <div
+              onClick={() => navigate(`/guides/${featured.slug}`)}
+              style={{ flex: "3 1 320px", minHeight: 340, position: "relative", overflow: "hidden", cursor: "pointer" }}
+            >
+              <img
+                src={GUIDE_PHOTOS[featured.slug] || heroFestive}
+                alt={featured.title}
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.5s ease" }}
+                onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"}
+                onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+              />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.86) 0%, rgba(0,0,0,0.24) 55%, transparent 100%)" }} />
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "28px 26px" }}>
+                <div style={{ fontSize: 8.5, color: "rgba(196,151,58,0.72)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 10, fontFamily: sans }}>Featured</div>
+                <h3 style={{ fontFamily: serif, fontSize: "clamp(1.4rem,2.2vw,1.9rem)", fontWeight: 400, color: "#FFF8EC", margin: "0 0 10px", lineHeight: 1.15, letterSpacing: "0.01em" }}>
+                  {featured.title}
+                </h3>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                  <span style={{ fontSize: 11, color: "rgba(255,248,236,0.42)", fontFamily: sans }}>{featured.readTime}</span>
+                  {featured.pages && <>
+                    <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
+                    <span style={{ fontSize: 11, color: "rgba(255,248,236,0.42)", fontFamily: sans }}>{featured.pages} pages</span>
+                  </>}
+                </div>
+                <span style={{ fontSize: 12.5, color: "rgba(196,151,58,0.82)", fontFamily: sans }}>Read guide →</span>
+              </div>
+            </div>
+          )}
+
+          {/* Secondary guide */}
+          {secondary && (
+            <div
+              onClick={() => navigate(`/guides/${secondary.slug}`)}
+              style={{ flex: "2 1 200px", minHeight: 340, position: "relative", overflow: "hidden", cursor: "pointer" }}
+            >
+              <img
+                src={GUIDE_PHOTOS[secondary.slug] || heroCorporate}
+                alt={secondary.title}
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.5s ease" }}
+                onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"}
+                onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+              />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.86) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)" }} />
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "22px 20px" }}>
+                <div style={{ fontSize: 8.5, color: "rgba(196,151,58,0.62)", textTransform: "uppercase", letterSpacing: "0.2em", marginBottom: 8, fontFamily: sans }}>{secondary.tags[0]}</div>
+                <h3 style={{ fontFamily: serif, fontSize: "clamp(1.1rem,1.6vw,1.4rem)", fontWeight: 400, color: "#FFF8EC", margin: "0 0 10px", lineHeight: 1.2, letterSpacing: "0.01em" }}>
+                  {secondary.title}
+                </h3>
+                <span style={{ fontSize: 12, color: "rgba(196,151,58,0.78)", fontFamily: sans }}>Read guide →</span>
+              </div>
+            </div>
+          )}
+        </motion.div>
+
+        {/* ── Tertiary guide — text row ── */}
+        {tertiary && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
+            onClick={() => navigate(`/guides/${tertiary.slug}`)}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "26px 0", borderBottom: "1px solid rgba(255,248,236,0.07)",
+              cursor: "pointer", transition: "opacity 0.15s", gap: 24,
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.72"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+          >
+            <div>
+              <div style={{ fontSize: 9, color: "rgba(196,151,74,0.42)", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: 6, fontFamily: sans }}>{tertiary.tags[0]}</div>
+              <h3 style={{ fontFamily: serif, fontSize: "clamp(1.1rem,2vw,1.45rem)", fontWeight: 400, color: "#FFF8EC", margin: 0, lineHeight: 1.2 }}>{tertiary.title}</h3>
+            </div>
+            <span style={{ fontSize: 12.5, color: "rgba(196,151,58,0.62)", flexShrink: 0, fontFamily: sans }}>Read guide →</span>
+          </motion.div>
+        )}
+
+        {/* ── Community — separate visual block ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.45, delay: 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ padding: "52px 0 0" }}
+        >
+          <div style={{ height: 1, background: "rgba(204,171,74,0.06)", marginBottom: 40 }} />
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
             <div>
-              <div style={{ fontSize: 9.5, fontWeight: 700, color: "rgba(204,171,74,0.35)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 18 }}>From the Tendr Community</div>
-              <h3 style={{ fontFamily: serif, fontSize: "clamp(1.4rem,3vw,2.1rem)", fontWeight: 400, color: "rgba(255,248,236,0.65)", margin: "0 0 8px", lineHeight: 1.2, letterSpacing: "0.01em" }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(204,171,74,0.35)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 16 }}>From the Tendr Community</div>
+              <h3 style={{ fontFamily: serif, fontSize: "clamp(1.3rem,2.6vw,2rem)", fontWeight: 400, color: "rgba(255,248,236,0.62)", margin: "0 0 8px", lineHeight: 1.2 }}>
                 Real events. Real setups.
               </h3>
               <p style={{ fontSize: 14, color: "rgba(255,248,236,0.28)", margin: 0, lineHeight: 1.6 }}>
@@ -264,9 +303,9 @@ function TipsByTendrSection() {
             </div>
             <button
               onClick={() => navigate("/community")}
-              style={{ background: "none", border: "none", color: "rgba(204,171,74,0.52)", fontSize: 13, cursor: "pointer", fontFamily: sans, padding: 0, whiteSpace: "nowrap", flexShrink: 0, transition: "color 0.15s", marginBottom: 2 }}
+              style={{ background: "none", border: "none", color: "rgba(204,171,74,0.5)", fontSize: 13, cursor: "pointer", fontFamily: sans, padding: 0, whiteSpace: "nowrap", flexShrink: 0, transition: "color 0.15s", marginBottom: 2 }}
               onMouseEnter={e => e.currentTarget.style.color = "#CCAB4A"}
-              onMouseLeave={e => e.currentTarget.style.color = "rgba(204,171,74,0.52)"}
+              onMouseLeave={e => e.currentTarget.style.color = "rgba(204,171,74,0.5)"}
             >
               Explore community →
             </button>
@@ -291,71 +330,88 @@ function FaqSection() {
   const serif = "'Cormorant Garamond', Georgia, serif";
   const sans  = "'Outfit', sans-serif";
 
+  // Pre-number all questions sequentially across groups
+  let runNum = 0;
+  const numberedGroups = FAQ_GROUPS.map(({ category, indices }) => ({
+    category,
+    qs: indices.map(idx => ({ ...FAQS[idx], num: ++runNum, idx })),
+  }));
+
   return (
     <section style={{ background: "#070400", padding: "80px 24px 88px", fontFamily: sans }}>
-      <div style={{ maxWidth: 940, margin: "0 auto" }}>
+      <div style={{ maxWidth: 900, margin: "0 auto" }}>
 
-        {/* Heading — more breathing room, no pill/lines decoration */}
+        {/* Heading */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-          style={{ textAlign: "center", marginBottom: 64 }}
+          transition={{ duration: 0.48, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ marginBottom: 68 }}
         >
-          <h2 style={{ fontFamily: serif, fontSize: "clamp(1.8rem,3.5vw,2.8rem)", fontWeight: 400, color: "#FFF8EC", letterSpacing: "0.01em", margin: "0 0 14px", lineHeight: 1.1 }}>
+          <h2 style={{ fontFamily: serif, fontSize: "clamp(1.8rem,3.2vw,2.6rem)", fontWeight: 400, color: "#FFF8EC", letterSpacing: "0.01em", margin: "0 0 14px", lineHeight: 1.1 }}>
             Frequently Asked Questions
           </h2>
-          <p style={{ fontSize: 14.5, color: "rgba(255,248,236,0.38)", maxWidth: 360, margin: "0 auto", lineHeight: 1.65 }}>
+          <p style={{ fontSize: 14, color: "rgba(255,248,236,0.36)", maxWidth: 380, margin: 0, lineHeight: 1.65 }}>
             Everything you need to know before you start planning.
           </p>
         </motion.div>
 
-        {/* Grouped FAQ — editorial list, no cards, just dividers */}
+        {/* Grouped numbered FAQ */}
         <div style={{ display: "flex", flexDirection: "column", gap: 52 }}>
-          {FAQ_GROUPS.map(({ category, indices }) => (
+          {numberedGroups.map(({ category, qs }) => (
             <motion.div
               key={category}
-              initial={{ opacity: 0, y: 14 }}
+              initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.15 }}
-              transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
+              viewport={{ once: true, amount: 0.12 }}
+              transition={{ duration: 0.44, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
-              {/* Category label */}
-              <div style={{ fontSize: 9.5, fontWeight: 700, color: "rgba(204,171,74,0.38)", textTransform: "uppercase", letterSpacing: "0.22em", marginBottom: 18, fontFamily: sans }}>
+              {/* Category eyebrow */}
+              <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(204,171,74,0.36)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 14, fontFamily: sans }}>
                 {category}
               </div>
-              {/* Top rule */}
               <div style={{ height: 1, background: "rgba(255,248,236,0.07)" }} />
 
-              {indices.map((idx) => {
-                const { q, a } = FAQS[idx];
+              {qs.map(({ q, a, num, idx }) => {
                 const key = `${category}-${idx}`;
                 const isOpen = open === key;
                 return (
                   <div key={key} style={{ borderBottom: "1px solid rgba(255,248,236,0.07)" }}>
                     <motion.button
                       onClick={() => setOpen(isOpen ? null : key)}
-                      whileTap={{ scale: 0.997 }}
+                      whileTap={{ scale: 0.998 }}
                       style={{
-                        width: "100%", minHeight: 72, display: "flex", justifyContent: "space-between",
-                        alignItems: "center", padding: "0", background: "none", border: "none",
-                        cursor: "pointer", fontFamily: sans, textAlign: "left", gap: 28,
+                        width: "100%", minHeight: 72, display: "flex", alignItems: "center",
+                        padding: "0", background: "none", border: "none",
+                        cursor: "pointer", fontFamily: sans, textAlign: "left", gap: 0,
                       }}
                     >
+                      {/* Question number */}
                       <span style={{
-                        fontSize: 16, fontWeight: isOpen ? 500 : 400,
-                        color: isOpen ? "#FFF8EC" : "rgba(255,248,236,0.75)",
+                        fontFamily: serif, fontSize: 12.5, fontWeight: 400,
+                        color: "rgba(204,171,74,0.28)", minWidth: 44, flexShrink: 0,
+                        letterSpacing: "0.04em", lineHeight: 1,
+                      }}>
+                        {String(num).padStart(2, "0")}
+                      </span>
+
+                      {/* Question text */}
+                      <span style={{
+                        flex: 1, fontSize: 15.5, fontWeight: isOpen ? 500 : 400,
+                        color: isOpen ? "#FFF8EC" : "rgba(255,248,236,0.74)",
                         lineHeight: 1.4, transition: "color 0.18s",
                       }}>
                         {q}
                       </span>
+
+                      {/* + icon */}
                       <motion.span
                         animate={{ rotate: isOpen ? 45 : 0 }}
                         transition={{ type: "spring", stiffness: 380, damping: 26 }}
-                        style={{ flexShrink: 0, color: isOpen ? "rgba(204,171,74,0.75)" : "rgba(204,171,74,0.4)", display: "flex" }}
+                        style={{ flexShrink: 0, color: isOpen ? "rgba(204,171,74,0.7)" : "rgba(204,171,74,0.35)", display: "flex", marginLeft: 20 }}
                       >
-                        <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round">
+                        <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round">
                           <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
                         </svg>
                       </motion.span>
@@ -368,10 +424,10 @@ function FaqSection() {
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                          transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}
                           style={{ overflow: "hidden" }}
                         >
-                          <p style={{ fontSize: 14.5, color: "rgba(255,248,236,0.48)", lineHeight: 1.8, margin: 0, paddingBottom: 26, maxWidth: 660 }}>
+                          <p style={{ fontSize: 14, color: "rgba(255,248,236,0.46)", lineHeight: 1.8, margin: 0, paddingBottom: 24, paddingLeft: 44, maxWidth: 640 }}>
                             {a}
                           </p>
                         </motion.div>
@@ -384,32 +440,32 @@ function FaqSection() {
           ))}
         </div>
 
-        {/* Still have questions — plain, no card */}
+        {/* Still have questions */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+          transition={{ duration: 0.4, delay: 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
           style={{ marginTop: 64, borderTop: "1px solid rgba(255,248,236,0.07)", paddingTop: 32, display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}
         >
           <div>
-            <p style={{ fontSize: 15, fontWeight: 400, color: "rgba(255,248,236,0.52)", margin: "0 0 4px", fontFamily: serif }}>Still have questions?</p>
-            <p style={{ fontSize: 13, color: "rgba(255,248,236,0.28)", margin: 0 }}>Our team is happy to help you plan your event.</p>
+            <p style={{ fontSize: 15, fontWeight: 400, color: "rgba(255,248,236,0.5)", margin: "0 0 4px", fontFamily: serif }}>Still have questions?</p>
+            <p style={{ fontSize: 13, color: "rgba(255,248,236,0.26)", margin: 0 }}>Our team is happy to help you plan your event.</p>
           </div>
           <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
             <a
               href="https://wa.me/919211668427" target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: 13, color: "rgba(255,248,236,0.42)", textDecoration: "none", transition: "color 0.15s", fontFamily: sans }}
+              style={{ fontSize: 13, color: "rgba(255,248,236,0.4)", textDecoration: "none", transition: "color 0.15s", fontFamily: sans }}
               onMouseEnter={e => e.currentTarget.style.color = "#FFF8EC"}
-              onMouseLeave={e => e.currentTarget.style.color = "rgba(255,248,236,0.42)"}
+              onMouseLeave={e => e.currentTarget.style.color = "rgba(255,248,236,0.4)"}
             >
               WhatsApp us →
             </a>
             <button
               onClick={() => navigate("/contact-us")}
-              style={{ background: "none", border: "none", color: "rgba(204,171,74,0.55)", fontSize: 13, cursor: "pointer", fontFamily: sans, padding: 0, transition: "color 0.15s" }}
+              style={{ background: "none", border: "none", color: "rgba(204,171,74,0.52)", fontSize: 13, cursor: "pointer", fontFamily: sans, padding: 0, transition: "color 0.15s" }}
               onMouseEnter={e => e.currentTarget.style.color = "#CCAB4A"}
-              onMouseLeave={e => e.currentTarget.style.color = "rgba(204,171,74,0.55)"}
+              onMouseLeave={e => e.currentTarget.style.color = "rgba(204,171,74,0.52)"}
             >
               Contact us →
             </button>

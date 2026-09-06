@@ -88,6 +88,12 @@ const HINGLISH = {
   'Naming Ceremony': 'Naamkaran',
 };
 
+const OCC_GROUPS = [
+  { label: 'Personal',   items: ['Baby Shower', 'Naming Ceremony', 'Housewarming', 'Get Together'] },
+  { label: 'Milestones', items: ['Birthday', 'Anniversary'] },
+  { label: 'Social',     items: ['House Party', 'Kitty Party'] },
+];
+
 const OCC_BG = {
   'Birthday':        ['#220814', '#140408'],  // deep pink/berry
   'Anniversary':     ['#1E0A18', '#120412'],
@@ -316,7 +322,7 @@ const CSS = `
 
   .pf-datetime { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
-  .op-occ-card:hover  { border-color:rgba(196,151,58,0.42) !important; background:rgba(245,236,216,0.07) !important; }
+  .op-occ-row:hover   { background:rgba(245,236,216,0.04) !important; }
   .op-theme-card:hover{ background:rgba(245,236,216,0.07) !important; }
   .op-step-opt:hover  { border-color:rgba(196,151,58,0.38) !important; background:rgba(245,236,216,0.055) !important; }
   .op-opt:hover       { border-color:rgba(196,151,58,0.32) !important; background:rgba(245,236,216,0.06) !important; }
@@ -1216,14 +1222,14 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
       {/* Backdrop */}
       <div className="op-rise" onClick={onClose} style={{
         position: 'fixed', inset: 0, zIndex: 9990,
-        background: 'rgba(0,0,0,0.64)', backdropFilter: 'blur(5px)', WebkitBackdropFilter: 'blur(5px)',
+        background: 'rgba(0,0,0,0.72)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '20px 16px', overflowY: 'auto',
       }}>
         <div className="op-overlay-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: '100%' }}>
 
           {existingChat && (
-            <div style={{ width: '100%', maxWidth: 640, marginBottom: 10 }}>
+            <div style={{ width: '100%', maxWidth: 860, marginBottom: 10 }}>
               <button
                 onClick={() => { openExistingChat(existingChat._id, { _id: null, name: 'Tendr Team', serviceType: 'Occasions', approved: true }); onClose(); }}
                 style={{ width: '100%', background: 'rgba(196,122,46,0.2)', border: '1.5px solid rgba(196,122,46,0.5)', borderRadius: 12, padding: '10px 16px', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', textAlign: 'left', fontFamily: "'Outfit',sans-serif" }}
@@ -1235,12 +1241,12 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
 
           {/* Panel */}
           <div className="op-panel op-scroll" onClick={e => e.stopPropagation()} style={{
-            width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto',
-            background: occBgGradient,
-            border: '1px solid rgba(196,151,58,0.13)',
-            borderRadius: 26,
+            width: '100%', maxWidth: 860, maxHeight: '90vh', overflowY: 'auto',
+            background: '#160D06',
+            border: '1px solid rgba(196,151,58,0.1)',
+            borderRadius: 14,
             fontFamily: "'Outfit',sans-serif",
-            boxShadow: '0 24px 80px rgba(0,0,0,0.55)',
+            boxShadow: '0 32px 80px rgba(0,0,0,0.62)',
             position: 'relative',
           }}>
 
@@ -1281,59 +1287,101 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
             {/* ─── Step content ─── */}
             <div key={step} className="op-step" style={{ padding: '26px 24px 32px' }}>
 
-              {/* Step 0 — Occasion picker */}
+              {/* Step 0 — Occasion directory */}
               {step === 0 && (
                 <div>
-                  <p style={{ fontSize: 10, fontWeight: 700, color: CHAMP, textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 10px', fontFamily: "'Outfit',sans-serif" }}>Plan an Occasion</p>
-                  <h2 style={h2Style}>What are you celebrating?</h2>
+                  <p style={{ fontSize: 9.5, fontWeight: 700, color: 'rgba(196,151,58,0.55)', textTransform: 'uppercase', letterSpacing: '0.22em', margin: '0 0 8px', fontFamily: "'Outfit',sans-serif" }}>Plan an Occasion</p>
+                  <h2 style={{ ...h2Style, marginBottom: 20 }}>What are you celebrating?</h2>
 
                   {/* Search */}
-                  <div style={{ position: 'relative', marginBottom: 22 }}>
-                    <span style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: 'rgba(245,236,216,0.28)', fontSize: 15, pointerEvents: 'none', lineHeight: 1 }}>⌕</span>
+                  <div style={{ position: 'relative', marginBottom: 28 }}>
+                    <svg style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(245,236,216,0.25)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                     <input
                       type="text" placeholder="Search occasions…" value={occSearch}
                       onChange={e => setOccSearch(e.target.value)}
                       style={{
-                        width: '100%', boxSizing: 'border-box', padding: '10px 14px 10px 36px',
-                        borderRadius: 10, border: '1px solid rgba(245,236,216,0.1)',
-                        background: 'rgba(245,236,216,0.04)', color: '#F5ECD8',
+                        width: '100%', boxSizing: 'border-box', padding: '10px 14px 10px 34px',
+                        borderRadius: 8, border: '1px solid rgba(245,236,216,0.09)',
+                        background: 'rgba(245,236,216,0.03)', color: '#F5ECD8',
                         fontSize: 13, fontFamily: "'Outfit',sans-serif", outline: 'none', transition: 'border-color 0.15s',
                       }}
-                      onFocus={e => e.target.style.borderColor = 'rgba(196,151,58,0.45)'}
-                      onBlur={e => e.target.style.borderColor = 'rgba(245,236,216,0.1)'}
+                      onFocus={e => e.target.style.borderColor = 'rgba(196,151,58,0.38)'}
+                      onBlur={e => e.target.style.borderColor = 'rgba(245,236,216,0.09)'}
                     />
                   </div>
 
-                  {/* Occasion cards */}
-                  <div className="op-picker-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-                    {OCCASIONS_LIST
-                      .filter(o => !occSearch || o.label.toLowerCase().includes(occSearch.toLowerCase()) || (HINGLISH[o.label]||'').toLowerCase().includes(occSearch.toLowerCase()))
-                      .map(({ label }) => {
-                        const isSel = selectedOcc === label;
-                        return (
-                          <button key={label} className="op-occ-card"
-                            onClick={() => {
-                              setSelectedOcc(label);
-                              setOccasion(label);
-                              setTimeout(() => goNext(0.5), 160);
-                            }}
-                            style={{
-                              display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
-                              padding: '14px 16px', borderRadius: 12, cursor: 'pointer', textAlign: 'left',
-                              border: `1px solid ${isSel ? CHAMP : 'rgba(245,236,216,0.09)'}`,
-                              background: isSel ? 'rgba(196,151,58,0.09)' : 'rgba(245,236,216,0.03)',
-                              transition: 'all 0.15s',
-                            }}
-                          >
-                            <span style={{ fontSize: 13, fontWeight: 600, color: isSel ? '#F5ECD8' : 'rgba(245,236,216,0.85)', fontFamily: "'Outfit',sans-serif", lineHeight: 1.3, marginBottom: 3 }}>{label}</span>
-                            <span style={{ fontSize: 11, color: isSel ? CHAMP : 'rgba(196,151,58,0.7)', fontFamily: "'Outfit',sans-serif", letterSpacing: '0.01em' }}>{HINGLISH[label]}</span>
-                          </button>
-                        );
-                      })
-                    }
-                  </div>
-                  {OCCASIONS_LIST.filter(o => !occSearch || o.label.toLowerCase().includes(occSearch.toLowerCase()) || (HINGLISH[o.label]||'').toLowerCase().includes(occSearch.toLowerCase())).length === 0 && (
-                    <p style={{ color: 'rgba(245,236,216,0.4)', fontSize: 13, fontFamily: "'Outfit',sans-serif", margin: '12px 0 0' }}>No occasions found</p>
+                  {/* Occasion directory — grouped or flat search results */}
+                  {occSearch ? (
+                    /* Search results — flat list */
+                    <div style={{ borderTop: '1px solid rgba(245,236,216,0.07)' }}>
+                      {OCCASIONS_LIST
+                        .filter(o => o.label.toLowerCase().includes(occSearch.toLowerCase()) || (HINGLISH[o.label]||'').toLowerCase().includes(occSearch.toLowerCase()))
+                        .map(({ label }) => {
+                          const isSel = selectedOcc === label;
+                          return (
+                            <button key={label} className="op-occ-row"
+                              onClick={() => { setSelectedOcc(label); setOccasion(label); setTimeout(() => goNext(0.5), 160); }}
+                              style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                width: '100%', padding: '14px 8px', border: 'none',
+                                borderBottom: '1px solid rgba(245,236,216,0.06)',
+                                background: isSel ? 'rgba(196,151,58,0.06)' : 'transparent',
+                                cursor: 'pointer', textAlign: 'left', transition: 'background 0.15s',
+                              }}
+                            >
+                              <div>
+                                <div style={{ fontSize: 14, fontWeight: 400, color: isSel ? '#F5ECD8' : 'rgba(245,236,216,0.82)', fontFamily: "'Outfit',sans-serif" }}>{label}</div>
+                                {HINGLISH[label] && <div style={{ fontSize: 11, color: isSel ? CHAMP : 'rgba(196,151,58,0.52)', fontFamily: "'Outfit',sans-serif", marginTop: 2 }}>{HINGLISH[label]}</div>}
+                              </div>
+                              {isSel
+                                ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={CHAMP} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                                : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(245,236,216,0.18)" strokeWidth="1.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                              }
+                            </button>
+                          );
+                        })
+                      }
+                      {OCCASIONS_LIST.filter(o => o.label.toLowerCase().includes(occSearch.toLowerCase()) || (HINGLISH[o.label]||'').toLowerCase().includes(occSearch.toLowerCase())).length === 0 && (
+                        <p style={{ color: 'rgba(245,236,216,0.38)', fontSize: 13, fontFamily: "'Outfit',sans-serif", margin: '14px 0 0' }}>No occasions found</p>
+                      )}
+                    </div>
+                  ) : (
+                    /* Grouped directory */
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+                      {OCC_GROUPS.map(group => (
+                        <div key={group.label}>
+                          <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(196,151,58,0.4)', textTransform: 'uppercase', letterSpacing: '0.22em', marginBottom: 10, fontFamily: "'Outfit',sans-serif" }}>
+                            {group.label}
+                          </div>
+                          <div style={{ borderTop: '1px solid rgba(245,236,216,0.07)' }}>
+                            {group.items.map(label => {
+                              const isSel = selectedOcc === label;
+                              return (
+                                <button key={label} className="op-occ-row"
+                                  onClick={() => { setSelectedOcc(label); setOccasion(label); setTimeout(() => goNext(0.5), 160); }}
+                                  style={{
+                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                    width: '100%', padding: '14px 8px', border: 'none',
+                                    borderBottom: '1px solid rgba(245,236,216,0.06)',
+                                    background: isSel ? 'rgba(196,151,58,0.06)' : 'transparent',
+                                    cursor: 'pointer', textAlign: 'left', transition: 'background 0.15s',
+                                  }}
+                                >
+                                  <div>
+                                    <div style={{ fontSize: 14, fontWeight: 400, color: isSel ? '#F5ECD8' : 'rgba(245,236,216,0.82)', fontFamily: "'Outfit',sans-serif" }}>{label}</div>
+                                    {HINGLISH[label] && <div style={{ fontSize: 11, color: isSel ? CHAMP : 'rgba(196,151,58,0.52)', fontFamily: "'Outfit',sans-serif", marginTop: 2 }}>{HINGLISH[label]}</div>}
+                                  </div>
+                                  {isSel
+                                    ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={CHAMP} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                                    : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(245,236,216,0.18)" strokeWidth="1.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                                  }
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               )}
