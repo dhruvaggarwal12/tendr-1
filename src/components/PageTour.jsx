@@ -312,10 +312,8 @@ export default function PageTour({ pageKey, steps, condition = true, onDone }) {
 
   if (!run || !condition) return null;
 
-  /* Mobile: bypass Joyride entirely */
-  if (isMobile) {
-    return <MobileTour steps={steps} onDone={markDone} />;
-  }
+  /* Mobile: WebsiteIntro already handles the onboarding flow */
+  if (isMobile) return null;
 
   /* Desktop: Joyride spotlight tour */
   const safeSteps = steps.map((s) => ({ ...s, disableBeacon: true }));

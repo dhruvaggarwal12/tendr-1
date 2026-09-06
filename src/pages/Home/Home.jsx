@@ -1153,6 +1153,7 @@ const Home = () => {
             onDone={() => {
               try { localStorage.setItem("tendr_intro_seen", "1"); } catch {}
               setShowIntro(false);
+              window.scrollTo({ top: 0, behavior: "instant" });
             }}
           />
         )}
