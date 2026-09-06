@@ -379,12 +379,14 @@ function FaqSection() {
                 return (
                   <div key={key} style={{ borderBottom: "1px solid rgba(255,248,236,0.07)" }}>
                     <motion.button
+                      className="faq-q-btn"
                       onClick={() => setOpen(isOpen ? null : key)}
                       whileTap={{ scale: 0.998 }}
                       style={{
                         width: "100%", minHeight: 72, display: "flex", alignItems: "center",
                         padding: "0", background: "none", border: "none",
                         cursor: "pointer", fontFamily: sans, textAlign: "left", gap: 0,
+                        WebkitAppearance: "none", appearance: "none",
                       }}
                     >
                       {/* Question number */}
@@ -1209,7 +1211,12 @@ const Home = () => {
             onDone={() => {
               try { localStorage.setItem("tendr_intro_seen", "1"); } catch {}
               setShowIntro(false);
-              window.scrollTo({ top: 0, behavior: "instant" });
+              setTimeout(() => {
+                try { window.scrollTo({ top: 0, behavior: "instant" }); } catch {
+                  document.documentElement.scrollTop = 0;
+                  document.body.scrollTop = 0;
+                }
+              }, 0);
             }}
           />
         )}
@@ -2831,77 +2838,145 @@ const Home = () => {
 
       {/* ── Plan an Occasion Flow ── */}
       {occasionFlow && (() => {
-        const isGrid = occasionFlow === "grid";
-        const occ = isGrid ? null : occasionFlow;
-        const hub = occ ? HUB_ROUTES[occ.id] : null;
-        const filtered = OCCASIONS.filter(o =>
-          !occasionSearch.trim() ||
-          o.name.toLowerCase().includes(occasionSearch.toLowerCase()) ||
-          (o.localName || "").toLowerCase().includes(occasionSearch.toLowerCase())
-        );
         const f = "'Outfit', sans-serif";
+        const ser = "'Cormorant Garamond', Georgia, serif";
+        const CHAMP = "#C4973A";
+
+        const FLOW_GROUPS = [
+          { label: "PERSONAL", ids: ["baby-shower","newborn-welcome","naming-ceremony","birthday-party","gender-reveal","housewarming","bachelorette","kitty-party","get-together","diwali-party","holi-party","navratri-garba"] },
+          { label: "MILESTONES", ids: ["first-birthday","anniversary","graduation","farewell","retirement"] },
+        ];
+        const BUSINESS_IDS = ["office-party"];
+
+        const searchTrim = occasionSearch.trim().toLowerCase();
+        const filtered = OCCASIONS.filter(o =>
+          !searchTrim ||
+          o.name.toLowerCase().includes(searchTrim) ||
+          (o.localName || "").toLowerCase().includes(searchTrim)
+        );
+
+        const closeFlow = () => { setOccasionFlow(null); setOccasionSearch(""); };
+
+        const pickOcc = (o) => {
+          closeFlow();
+          const hub = HUB_ROUTES[o.id];
+          setOccModal({ label: o.name, slug: o.id, hub: hub || null, photo: o.coverImage, icon: o.icon || "🎉", color: o.color || CHAMP, step: hub ? 1 : 2 });
+        };
+
+        const renderRow = (occ) => (
+          <button
+            key={occ.id}
+            className="occ-flow-row"
+            onClick={() => pickOcc(occ)}
+          >
+            <span>{occ.name}</span>
+            <span className="occ-flow-arr">→</span>
+          </button>
+        );
+
         return (
           <>
+            <style>{`
+              .occ-flow-row {
+                display: flex; align-items: center; justify-content: space-between;
+                width: 100%; padding: 11px 0;
+                border: none; border-bottom: 1px solid rgba(255,255,255,0.05);
+                background: transparent; cursor: pointer;
+                font-family: ${f}; font-size: 14px;
+                color: rgba(245,236,216,0.68); text-align: left;
+                transition: color 0.14s;
+              }
+              .occ-flow-row:hover { color: #F5ECD8; }
+              .occ-flow-arr {
+                font-size: 14px; color: transparent;
+                transition: color 0.14s; flex-shrink: 0;
+              }
+              .occ-flow-row:hover .occ-flow-arr { color: ${CHAMP}; }
+              .occ-flow-body::-webkit-scrollbar { display: none; }
+            `}</style>
+
             {/* Backdrop */}
             <div
-              onClick={() => setOccasionFlow(null)}
-              style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.68)", zIndex: 9000, backdropFilter: "blur(5px)", WebkitBackdropFilter: "blur(5px)" }}
+              onClick={closeFlow}
+              style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 9000 }}
             />
 
-            {/* Center modal */}
+            {/* Modal */}
             <div style={{
-              position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
-              zIndex: 9001, width: "min(94vw, 560px)", maxHeight: "82dvh",
-              background: "linear-gradient(180deg,#1D0E03 0%,#120700 100%)",
-              borderRadius: 22, display: "flex", flexDirection: "column",
-              boxShadow: "0 24px 80px rgba(0,0,0,0.75), 0 0 0 1px rgba(196,122,46,0.18)",
+              position: "fixed", top: "50%", left: "50%",
+              transform: "translate(-50%,-50%)",
+              zIndex: 9001, width: "min(96vw, 820px)",
+              maxHeight: "80dvh",
+              background: "#160D06",
+              borderRadius: 12,
+              border: "1px solid rgba(255,255,255,0.10)",
+              display: "flex", flexDirection: "column",
+              boxShadow: "0 24px 80px rgba(0,0,0,0.70)",
               overflow: "hidden",
             }}>
               {/* Header */}
-              <div style={{ padding: "20px 20px 14px", borderBottom: "1px solid rgba(196,122,46,0.12)", flexShrink: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                  <div>
-                    <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 4px", fontFamily: f }}>Plan an Occasion</p>
-                    <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.25rem,3vw,1.7rem)", fontWeight: 400, color: "#F5ECD8", margin: 0, lineHeight: 1.15 }}>What are you celebrating?</h2>
-                  </div>
-                  <button onClick={() => setOccasionFlow(null)} style={{ background: "rgba(255,247,235,0.08)", border: "1px solid rgba(255,247,235,0.1)", color: "#F5ECD8", width: 32, height: 32, borderRadius: "50%", cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.18s" }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,247,235,0.16)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,247,235,0.08)"; }}>✕</button>
-                </div>
-                {/* Search */}
-                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,247,235,0.06)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "0 14px" }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(245,236,216,0.4)" strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <div style={{ padding: "22px 24px 18px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0, position: "relative" }}>
+                <button
+                  onClick={closeFlow}
+                  style={{ position: "absolute", top: 18, right: 20, background: "none", border: "none", color: "rgba(245,236,216,0.35)", fontSize: 24, lineHeight: 1, cursor: "pointer", fontFamily: f, padding: "0 4px" }}
+                >×</button>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "rgba(245,236,216,0.36)", textTransform: "uppercase", letterSpacing: "0.18em", margin: "0 0 5px", fontFamily: f }}>PLAN AN OCCASION</p>
+                <h2 style={{ fontFamily: ser, fontSize: "clamp(1.3rem,3vw,1.75rem)", fontWeight: 400, color: "#F5ECD8", margin: "0 0 16px", lineHeight: 1.15 }}>What are you planning?</h2>
+                {/* Search — rectangular, 7px radius */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)", borderRadius: 7, padding: "0 12px" }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(245,236,216,0.32)" strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                   <input
                     value={occasionSearch}
                     onChange={e => setOccasionSearch(e.target.value)}
                     placeholder="Search occasions…"
-                    style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 13, fontFamily: f, color: "#F5ECD8", padding: "10px 0" }}
+                    style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 13.5, fontFamily: f, color: "#F5ECD8", padding: "10px 0" }}
                   />
-                  {occasionSearch && <button onClick={() => setOccasionSearch("")} style={{ background: "none", border: "none", color: "rgba(245,236,216,0.4)", cursor: "pointer", fontSize: 15, padding: 0 }}>✕</button>}
+                  {occasionSearch && (
+                    <button onClick={() => setOccasionSearch("")} style={{ background: "none", border: "none", color: "rgba(245,236,216,0.35)", cursor: "pointer", fontSize: 18, padding: 0, lineHeight: 1 }}>×</button>
+                  )}
                 </div>
               </div>
 
-              {/* Grid */}
-              <div style={{ overflowY: "auto", flex: 1, padding: "14px 14px 24px" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(130px,1fr))", gap: 8 }}>
-                  {filtered.map((o) => (
-                    <button
-                      key={o.id}
-                      onClick={() => {
-                        setOccasionFlow(null);
-                        const hub = HUB_ROUTES[o.id];
-                        setOccModal({ label: o.name, slug: o.id, hub: hub || null, photo: o.coverImage, icon: o.icon||"🎉", color: o.color||"#C47A2E", step: hub ? 1 : 2 });
-                      }}
-                      style={{ background: o.color + "14", border: `1px solid ${o.color}35`, borderRadius: 12, cursor: "pointer", textAlign: "left", padding: "14px 12px 12px", fontFamily: f, transition: "all 0.18s", display: "flex", flexDirection: "column", alignItems: "flex-start" }}
-                      onMouseEnter={e => { e.currentTarget.style.background = o.color + "28"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = o.color + "70"; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = o.color + "14"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = o.color + "35"; }}
-                    >
-                      <div style={{ fontSize: 26, lineHeight: 1, marginBottom: 8 }}>{o.icon}</div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#F5ECD8", lineHeight: 1.2, fontFamily: "'Cormorant Garamond',Georgia,serif", fontStyle: "italic", letterSpacing: "-0.01em" }}>{o.name}</div>
-                      {o.localName && <div style={{ fontSize: 10, color: "rgba(245,236,216,0.45)", marginTop: 3, fontFamily: f }}>{o.localName}</div>}
-                    </button>
-                  ))}
-                </div>
+              {/* Body */}
+              <div className="occ-flow-body" style={{ overflowY: "auto", flex: 1, scrollbarWidth: "none" }}>
+                {searchTrim ? (
+                  /* Search results: flat list */
+                  <div style={{ padding: "0 24px 20px" }}>
+                    {filtered.length === 0 ? (
+                      <p style={{ color: "rgba(245,236,216,0.36)", fontSize: 13.5, fontFamily: f, padding: "20px 0", margin: 0 }}>No occasions found.</p>
+                    ) : (
+                      filtered.map(o => renderRow(o))
+                    )}
+                  </div>
+                ) : (
+                  /* Two-column directory */
+                  <>
+                    <div style={{ display: "flex" }}>
+                      {FLOW_GROUPS.map((group, gi) => (
+                        <div key={group.label} style={{ flex: 1, padding: "0 24px 20px", borderRight: gi === 0 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
+                          <p style={{ fontSize: 9.5, fontWeight: 700, color: "rgba(245,236,216,0.28)", textTransform: "uppercase", letterSpacing: "0.18em", margin: "18px 0 8px", fontFamily: f }}>
+                            {group.label}
+                          </p>
+                          {group.ids.map(id => {
+                            const occ = OCCASIONS.find(o => o.id === id);
+                            return occ ? renderRow(occ) : null;
+                          })}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Business — full width */}
+                    <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "0 24px 20px" }}>
+                      <p style={{ fontSize: 9.5, fontWeight: 700, color: "rgba(245,236,216,0.28)", textTransform: "uppercase", letterSpacing: "0.18em", margin: "18px 0 8px", fontFamily: f }}>
+                        BUSINESS
+                      </p>
+                      {BUSINESS_IDS.map(id => {
+                        const occ = OCCASIONS.find(o => o.id === id);
+                        return occ ? renderRow(occ) : null;
+                      })}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </>

@@ -788,6 +788,10 @@ button::after {
 
 /* Suppress sheen on flat sidebar nav buttons */
 .ham-nav-btn::after { display: none; }
+/* Suppress sheen on flat FAQ accordion rows */
+.faq-q-btn::after { display: none; }
+/* Suppress sheen on plain occasion flow rows */
+.occ-flow-row::after { display: none; }
 
 /* ── Launcher FAB — polished glass orb ── */
 .launcher-fab {
