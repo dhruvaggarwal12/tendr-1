@@ -5808,7 +5808,28 @@ export default function OccasionHub({ occasion }) {
   const planTools  = allTools.filter(t => PLAN_IDS.has(t.id));
   const lobbyQuick = [...planTools.slice(0, 2), ...playTools.slice(0, 2)].slice(0, 4);
 
-  const PH = { violet: "#C4973A", blue: "#A0714A", gold: "#C4973A", pink: "#C4973A", bg: "#100906", surface: "#1A0F08" };
+  const OCC_BG = {
+    "baby-shower": "#F5EEE9",
+    "newborn-welcome": "#F4EEE9",
+    "naming-ceremony": "#F5EEE9",
+    "birthday-party": "#FDF3EC",
+    "gender-reveal": "#F9EFF5",
+    "housewarming": "#EFF4EE",
+    "anniversary": "#F8EEF3",
+    "first-birthday": "#FDF3EC",
+    "graduation": "#EEF1F8",
+    "farewell": "#F3EEF5",
+    "retirement": "#EEF2F5",
+    "bachelorette": "#F8EEF5",
+    "diwali-party": "#FDF4E5",
+    "holi-party": "#F5F0F8",
+    "navratri-garba": "#F5EEF0",
+    "kitty-party": "#F5EEF8",
+    "get-together": "#F4EEE9",
+    "office-party": "#EEF1F5",
+  };
+  const pageBg = OCC_BG[occasion] || "#F4EDE8";
+  const PH = { violet: "#C4973A", blue: "#A0714A", gold: "#C4973A", pink: "#C4973A", bg: pageBg, surface: "#F0E8DF" };
   const tabAccentMap = { lobby: "#C4973A", play: "#A0714A", people: "#C4973A", plan: "#C4973A", moments: "#C4973A" };
   const ta = tabAccentMap[activeTab] || accent;
 
@@ -5898,12 +5919,12 @@ export default function OccasionHub({ occasion }) {
         @keyframes modal-in     { from{opacity:0;transform:scale(0.94) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
         @keyframes spin         { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         .occ-tool-card          { transition:background 0.12s ease, border-color 0.12s ease, transform 0.08s ease; }
-        .occ-tool-card:hover    { background:rgba(255,255,255,0.055) !important; border-color:rgba(196,151,58,0.28) !important; }
-        .occ-tool-card:hover svg { stroke:rgba(255,255,255,0.55) !important; }
+        .occ-tool-card:hover    { background:rgba(196,151,58,0.06) !important; border-color:rgba(196,151,58,0.3) !important; }
+        .occ-tool-card:hover svg { opacity:0.85 !important; }
         .occ-tool-card:active   { transform:scale(0.97) !important; transition:transform 0.06s !important; }
         ::-webkit-scrollbar     { display:none; }
         textarea, input         { font-family:${font}; }
-        select option           { background:#1A0F08; color:#fff; }
+        select option           { background:#F4EDE8; color:#2C1A0E; }
         @media (prefers-reduced-motion:reduce) { * { animation:none !important; transition:none !important; } }
       `}</style>
 
@@ -6069,28 +6090,38 @@ export default function OccasionHub({ occasion }) {
       )}
 
       {/* ── Top Bar ── */}
-      <div style={{ flexShrink:0, padding:"max(14px, env(safe-area-inset-top)) 16px 0", position:"relative", zIndex:2 }}>
+      <div style={{ flexShrink:0, padding:"max(14px, env(safe-area-inset-top)) 16px 12px", background: pageBg, position:"relative", zIndex:2 }}>
         <div style={{ display:"flex", alignItems:"center", maxWidth:800, margin:"0 auto", position:"relative" }}>
-          <button onClick={()=>navigate(-1)} style={{ width:36, height:36, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.6)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, zIndex:1 }}>
+          <button onClick={()=>navigate(-1)} style={{ width:36, height:36, borderRadius:"50%", border:"1px solid rgba(44,26,14,0.12)", background:"rgba(44,26,14,0.04)", color:"rgba(44,26,14,0.55)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, zIndex:1 }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <div style={{ position:"absolute", left:0, right:0, textAlign:"center", pointerEvents:"none" }}>
-            <div style={{ fontSize:9.5, fontWeight:600, color:"rgba(196,151,58,0.65)", letterSpacing:"0.14em", textTransform:"uppercase" }}>Party Hub</div>
-            <div style={{ fontSize:14, fontWeight:700, color:"#fff", letterSpacing:"-0.01em" }}>
+            <div style={{ fontSize:9.5, fontWeight:700, color:"#C4973A", letterSpacing:"0.16em", textTransform:"uppercase", marginBottom:2 }}>Party Hub</div>
+            <div style={{ fontSize:"clamp(1.1rem,3vw,1.4rem)", fontWeight:700, color:"#2C1A0E", fontFamily:"'Cormorant Garamond',Georgia,serif", letterSpacing:"-0.01em", lineHeight:1.15 }}>
               {occ.emoji} {occ.name}
-              {room && <><span style={{ color:"rgba(255,255,255,0.2)", fontWeight:400, margin:"0 4px" }}>·</span><span style={{ color:PH.violet, fontSize:12, fontWeight:600, letterSpacing:"0.1em" }}>{room.code}</span></>}
+              {room && <><span style={{ color:"rgba(44,26,14,0.2)", fontWeight:400, margin:"0 4px" }}>·</span><span style={{ color:PH.violet, fontSize:12, fontWeight:600 }}>{room.code}</span></>}
             </div>
           </div>
           <div style={{ flex:1 }} />
-          <button onClick={()=>setShowHostControls(true)} style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 16px", borderRadius:100, border:`1.5px solid ${room?"rgba(74,222,128,0.45)":`${PH.violet}45`}`, background:room?"rgba(74,222,128,0.09)":`${PH.violet}12`, color:room?"#4ade80":PH.violet, fontSize:12, fontWeight:600, cursor:"pointer", flexShrink:0, letterSpacing:"0.01em", zIndex:1 }}>
-            {room && <span style={{ width:6, height:6, borderRadius:"50%", background:"#4ade80", animation:"dot-pulse 2s ease infinite" }} />}
+          <button onClick={()=>setShowHostControls(true)} style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 16px", borderRadius:100, border:`1.5px solid ${room?"rgba(74,200,100,0.5)":"rgba(44,26,14,0.2)"}`, background:room?"rgba(74,200,100,0.08)":"transparent", color:room?"#2D8A50":"#2C1A0E", fontSize:12, fontWeight:600, cursor:"pointer", flexShrink:0, zIndex:1 }}>
+            {room ? <span style={{ width:6, height:6, borderRadius:"50%", background:"#4ade80", animation:"dot-pulse 2s ease infinite" }} /> : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>}
             {room ? "Live" : "Host"}
           </button>
         </div>
       </div>
 
+      {/* Botanical watermark */}
+      <div style={{ position:"fixed", top:60, right:-20, pointerEvents:"none", zIndex:0, opacity:0.06 }}>
+        <svg width="180" height="280" viewBox="0 0 180 280" fill="none" stroke={accent} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M90 280 C90 280 90 180 60 120 M90 280 C90 280 90 180 130 100 M90 220 C90 220 50 170 20 150 M90 200 C90 200 140 160 165 130 M60 120 C60 120 30 100 10 70 M130 100 C130 100 158 80 170 50"/>
+          <path d="M15 80 C15 80 25 60 40 52 M168 60 C168 60 155 44 140 38"/>
+          <path d="M90 260 C90 260 75 240 65 220 M90 250 C90 250 105 230 115 210"/>
+          <path d="M70 170 C70 170 50 155 38 140 M110 165 C110 165 130 148 145 135"/>
+        </svg>
+      </div>
+
       {/* ── Section content ── */}
-      <div className="occ-scroll-area" style={{ flex:1, overflowY:"auto", padding:"14px 16px 110px", maxWidth:800, margin:"0 auto", width:"100%", boxSizing:"border-box", position:"relative", zIndex:1 }}>
+      <div className="occ-scroll-area" style={{ flex:1, overflowY:"auto", padding:"14px 16px 110px", maxWidth:800, margin:"0 auto", width:"100%", boxSizing:"border-box", position:"relative", zIndex:1, background: pageBg }}>
 
 
         {/* LOBBY */}
@@ -6099,15 +6130,42 @@ export default function OccasionHub({ occasion }) {
 
             {/* Host / Join strip */}
             {!room ? (
-              <div style={{ display:"flex", gap:10, marginBottom:20 }}>
-                <button onClick={()=>setRoomModal("host-setup")} style={{ flex:1, padding:"13px 0", borderRadius:12, border:`1.5px solid ${PH.violet}55`, background:`${PH.violet}18`, color:PH.violet, fontSize:13, fontWeight:600, cursor:"pointer", letterSpacing:"0.01em" }}>Host a Room</button>
-                <button onClick={()=>setRoomModal("join")} style={{ flex:1, padding:"13px 0", borderRadius:12, border:"1.5px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.04)", color:"rgba(255,255,255,0.75)", fontSize:13, fontWeight:500, cursor:"pointer" }}>Join Room</button>
+              <div style={{ display:"flex", gap:12, marginBottom:24 }}>
+                {/* Host card — dark */}
+                <button onClick={()=>setRoomModal("host-setup")} style={{ flex:1, padding:"18px 16px", borderRadius:18, border:`1.5px solid ${PH.violet}55`, background:"#2A3828", cursor:"pointer", textAlign:"left", position:"relative", overflow:"hidden", display:"flex", alignItems:"flex-start", gap:12 }}>
+                  {/* Botanical watermark */}
+                  <svg width="60" height="70" viewBox="0 0 60 70" fill="none" stroke="#fff" strokeWidth="0.8" strokeLinecap="round" style={{ position:"absolute", bottom:-4, right:-4, opacity:0.06 }}>
+                    <path d="M30 70 C30 70 30 40 15 25 M30 70 C30 70 30 40 45 25 M30 50 C30 50 20 35 10 30 M30 50 C30 50 40 35 50 30 M15 25 C15 25 5 20 2 10 M45 25 C45 25 55 20 58 10"/>
+                    <path d="M8 15 C8 15 12 8 18 6 M52 15 C52 15 48 8 42 6"/>
+                  </svg>
+                  <div style={{ width:38, height:38, borderRadius:12, background:"rgba(255,255,255,0.1)", border:"1px solid rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C4973A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                  </div>
+                  <div style={{ position:"relative", zIndex:1 }}>
+                    <div style={{ fontSize:15, fontWeight:700, color:"#fff", marginBottom:3, fontFamily:font }}>Host a Room</div>
+                    <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.55)", lineHeight:1.45, fontFamily:font }}>Create and manage your event</div>
+                  </div>
+                </button>
+                {/* Join card — light */}
+                <button onClick={()=>setRoomModal("join")} style={{ flex:1, padding:"18px 16px", borderRadius:18, border:"1.5px solid rgba(44,26,14,0.1)", background:"#F0E8DE", cursor:"pointer", textAlign:"left", position:"relative", overflow:"hidden", display:"flex", alignItems:"flex-start", gap:12 }}>
+                  <svg width="60" height="70" viewBox="0 0 60 70" fill="none" stroke="#2C1A0E" strokeWidth="0.8" strokeLinecap="round" style={{ position:"absolute", bottom:-4, right:-4, opacity:0.05 }}>
+                    <path d="M30 70 C30 70 30 40 15 25 M30 70 C30 70 30 40 45 25 M30 50 C30 50 20 35 10 30 M30 50 C30 50 40 35 50 30 M15 25 C15 25 5 20 2 10 M45 25 C45 25 55 20 58 10"/>
+                    <path d="M8 15 C8 15 12 8 18 6 M52 15 C52 15 48 8 42 6"/>
+                  </svg>
+                  <div style={{ width:38, height:38, borderRadius:12, background:"rgba(44,26,14,0.06)", border:"1px solid rgba(44,26,14,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2C1A0E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  </div>
+                  <div style={{ position:"relative", zIndex:1 }}>
+                    <div style={{ fontSize:15, fontWeight:700, color:"#2C1A0E", marginBottom:3, fontFamily:font }}>Join Room</div>
+                    <div style={{ fontSize:11.5, color:"rgba(44,26,14,0.5)", lineHeight:1.45, fontFamily:font }}>Enter with an invite code</div>
+                  </div>
+                </button>
               </div>
             ) : (
-              <div style={{ display:"flex", alignItems:"center", gap:10, background:"rgba(74,222,128,0.06)", border:"1px solid rgba(74,222,128,0.20)", borderRadius:12, padding:"12px 16px", marginBottom:20 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10, background:"rgba(74,222,128,0.08)", border:"1px solid rgba(74,222,128,0.25)", borderRadius:14, padding:"12px 16px", marginBottom:20 }}>
                 <span style={{ width:7, height:7, borderRadius:"50%", background:"#4ade80", animation:"dot-pulse 2s ease infinite", flexShrink:0 }} />
-                <span style={{ fontSize:13, fontWeight:600, color:"#4ade80", flex:1 }}>Live · {room.code}</span>
-                <span style={{ fontSize:12, color:"rgba(255,255,255,0.45)" }}>{room.players?.length||1} online</span>
+                <span style={{ fontSize:13, fontWeight:600, color:"#2A8A50", flex:1 }}>Live · {room.code}</span>
+                <span style={{ fontSize:12, color:"rgba(44,26,14,0.4)" }}>{room.players?.length||1} online</span>
                 <button onClick={()=>copyRoomLink(room.code)} style={{ padding:"6px 14px", borderRadius:8, border:`1px solid ${PH.violet}40`, background:`${PH.violet}12`, color:PH.violet, fontSize:12, fontWeight:600, cursor:"pointer" }}>{copied?"✓":"Share"}</button>
               </div>
             )}
@@ -6118,34 +6176,34 @@ export default function OccasionHub({ occasion }) {
               const isGameSection = sectionTools.some(t => GAME_IDS.has(t.id));
               return (
                 <div key={section.id} style={{ marginBottom:28 }}>
-                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:7 }}>
-                      <div style={{ color:`${PH.violet}90`, opacity:0.9 }}>{SECTION_ICONS[section.id] || defaultSecIcon}</div>
-                      <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.88)", textTransform:"uppercase", letterSpacing:"0.16em" }}>{section.label.replace(/^.{1,2}\s/, '')}</div>
-                    </div>
-                    <div style={{ fontSize:10, color:"rgba(255,255,255,0.28)", fontWeight:500, letterSpacing:"0.04em" }}>{sectionTools.length}</div>
+                  <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12 }}>
+                    <div style={{ fontSize:10, fontWeight:800, color:"#2C1A0E", textTransform:"uppercase", letterSpacing:"0.16em", flexShrink:0 }}>{section.label.replace(/^.{1,2}\s/, '')}</div>
+                    <div style={{ flex:1, height:1, background:"rgba(44,26,14,0.1)" }} />
+                    <div style={{ fontSize:10, color:PH.violet, fontWeight:600 }}>{sectionTools.length}</div>
                   </div>
                   {isGameSection ? (
                     <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }}>
                       {sectionTools.map(t => (
-                        <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"transparent", border:`1px solid ${PH.violet}20`, borderRadius:12, padding:"14px 8px 12px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:9, textAlign:"center" }}>
+                        <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"#F0E8DC", border:"1.5px solid rgba(196,122,46,0.12)", borderRadius:14, padding:"16px 8px 14px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:10, textAlign:"center" }}>
                           <div style={{ color:PH.violet }}>{TOOL_ICONS[t.id]||occic(<polygon points="5 3 19 12 5 21 5 3"/>)}</div>
-                          <div style={{ fontSize:11, fontWeight:600, color:"rgba(255,255,255,0.88)", lineHeight:1.35 }}>{t.title}</div>
+                          <div style={{ fontSize:11.5, fontWeight:600, color:"#2C1A0E", lineHeight:1.35 }}>{t.title}</div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div style={{ display:"flex", flexDirection:"column", gap:1 }}>
-                      {sectionTools.map((t,i) => {
+                    <div style={{ display:"flex", flexDirection:"column" }}>
+                      {sectionTools.map((t) => {
                         const desc = t.desc && !t.desc.startsWith('#') ? t.desc : null;
                         return (
-                          <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"transparent", border:"none", borderBottom:"1px solid rgba(255,255,255,0.06)", borderRadius:i===0?`10px 10px 0 0`:i===sectionTools.length-1?`0 0 10px 10px`:"0", padding:"15px 16px", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
-                            <div style={{ color:PH.violet, flexShrink:0 }}>{TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}</div>
-                            <div style={{ flex:1, minWidth:0 }}>
-                              <div style={{ fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.92)" }}>{t.title}</div>
-                              {desc && <div style={{ fontSize:12, color:"rgba(255,255,255,0.50)", marginTop:2, lineHeight:1.45 }}>{desc}</div>}
+                          <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"transparent", border:"none", borderBottom:"1px solid rgba(0,0,0,0.06)", padding:"14px 4px", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
+                            <div style={{ width:46, height:46, borderRadius:14, background:"#F0E8DC", border:"1.5px solid rgba(196,122,46,0.15)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:PH.violet }}>
+                              {TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}
                             </div>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                            <div style={{ flex:1, minWidth:0 }}>
+                              <div style={{ fontSize:15, fontWeight:700, color:"#2C1A0E" }}>{t.title}</div>
+                              {desc && <div style={{ fontSize:12.5, color:"rgba(44,26,14,0.5)", marginTop:2, lineHeight:1.45 }}>{desc}</div>}
+                            </div>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(44,26,14,0.3)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                           </div>
                         );
                       })}
@@ -6160,18 +6218,19 @@ export default function OccasionHub({ occasion }) {
         {/* PLAY */}
         {activeTab === "play" && (
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
-              <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.80)", textTransform:"uppercase", letterSpacing:"0.12em" }}>Games & Activities</div>
-              <div style={{ fontSize:11, color:"rgba(255,255,255,0.28)" }}>{playTools.length}</div>
+            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
+              <div style={{ fontSize:10, fontWeight:800, color:"#2C1A0E", textTransform:"uppercase", letterSpacing:"0.16em" }}>Games &amp; Activities</div>
+              <div style={{ flex:1, height:1, background:"rgba(44,26,14,0.1)" }} />
+              <div style={{ fontSize:10, color:PH.violet, fontWeight:600 }}>{playTools.length}</div>
             </div>
             {playTools.length === 0 ? (
-              <div style={{ textAlign:"center", padding:"48px 20px", color:"rgba(255,255,255,0.3)", fontSize:14 }}>No games available for this occasion.</div>
+              <div style={{ textAlign:"center", padding:"48px 20px", color:"rgba(44,26,14,0.35)", fontSize:14 }}>No games available for this occasion.</div>
             ) : (
               <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }}>
                 {playTools.map(t => (
-                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"transparent", border:`1px solid ${PH.blue}22`, borderRadius:12, padding:"12px 8px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:8, textAlign:"center" }}>
-                    <div style={{ color:PH.blue }}>{TOOL_ICONS[t.id]||occic(<polygon points="5 3 19 12 5 21 5 3"/>)}</div>
-                    <div style={{ fontSize:11, fontWeight:600, color:"rgba(255,255,255,0.85)", lineHeight:1.3 }}>{t.title}</div>
+                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"#F0E8DC", border:"1.5px solid rgba(196,122,46,0.12)", borderRadius:14, padding:"16px 8px 14px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:10, textAlign:"center" }}>
+                    <div style={{ color:PH.violet }}>{TOOL_ICONS[t.id]||occic(<polygon points="5 3 19 12 5 21 5 3"/>)}</div>
+                    <div style={{ fontSize:11.5, fontWeight:600, color:"#2C1A0E", lineHeight:1.35 }}>{t.title}</div>
                   </div>
                 ))}
               </div>
@@ -6184,16 +6243,20 @@ export default function OccasionHub({ occasion }) {
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
             {room ? (
               <>
-                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}><div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.88)", textTransform:"uppercase", letterSpacing:"0.16em" }}>Online Now</div><div style={{ fontSize:10, color:"rgba(255,255,255,0.25)" }}>{room.players?.length||1}</div></div>
+                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
+                  <div style={{ fontSize:10, fontWeight:800, color:"#2C1A0E", textTransform:"uppercase", letterSpacing:"0.16em" }}>Online Now</div>
+                  <div style={{ flex:1, height:1, background:"rgba(44,26,14,0.1)" }} />
+                  <div style={{ fontSize:10, color:PH.violet, fontWeight:600 }}>{room.players?.length||1}</div>
+                </div>
                 {(room.players||[myName]).map((p,i) => (
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 16px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:12, marginBottom:8 }}>
-                    <div style={{ width:34, height:34, borderRadius:"50%", background:`${PH.violet}22`, border:`1px solid ${PH.violet}30`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.88)", flexShrink:0 }}>{p.charAt(0).toUpperCase()}</div>
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 16px", background:"#F0E8DC", border:"1px solid rgba(196,122,46,0.12)", borderRadius:12, marginBottom:8 }}>
+                    <div style={{ width:34, height:34, borderRadius:"50%", background:`${PH.violet}18`, border:`1px solid ${PH.violet}28`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:600, color:"#2C1A0E", flexShrink:0 }}>{p.charAt(0).toUpperCase()}</div>
                     <div style={{ flex:1 }}>
-                      <div style={{ fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.92)" }}>{p}{p===myName&&<span style={{ fontSize:11, color:PH.violet, fontWeight:500, marginLeft:6 }}>you</span>}</div>
+                      <div style={{ fontSize:14, fontWeight:600, color:"#2C1A0E" }}>{p}{p===myName&&<span style={{ fontSize:11, color:PH.violet, fontWeight:500, marginLeft:6 }}>you</span>}</div>
                     </div>
                     <div style={{ display:"flex", alignItems:"center", gap:5 }}>
                       <span style={{ width:6, height:6, borderRadius:"50%", background:"#4ade80", animation:`dot-pulse 2s ease infinite`, animationDelay:`${i*0.3}s` }} />
-                      <span style={{ fontSize:11, color:"rgba(255,255,255,0.45)" }}>online</span>
+                      <span style={{ fontSize:11, color:"rgba(44,26,14,0.45)" }}>online</span>
                     </div>
                   </div>
                 ))}
@@ -6204,11 +6267,11 @@ export default function OccasionHub({ occasion }) {
             ) : (
               <div style={{ textAlign:"center", padding:"48px 20px" }}>
                 <div style={{ fontSize:52, marginBottom:16 }}>👥</div>
-                <div style={{ fontSize:17, fontWeight:700, color:"#fff", marginBottom:8 }}>Start a Party Room</div>
-                <div style={{ fontSize:13, color:"rgba(255,255,255,0.4)", marginBottom:24, lineHeight:1.6 }}>Host a live room so your guests can join, see who's online, and play games together in real time.</div>
+                <div style={{ fontSize:17, fontWeight:700, color:"#2C1A0E", marginBottom:8 }}>Start a Party Room</div>
+                <div style={{ fontSize:13, color:"rgba(44,26,14,0.45)", marginBottom:24, lineHeight:1.6 }}>Host a live room so your guests can join, see who's online, and play games together in real time.</div>
                 <div style={{ display:"flex", gap:10 }}>
                   <button onClick={()=>setRoomModal("host-setup")} style={{ flex:1, padding:"13px", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer" }}>Host a Room</button>
-                  <button onClick={()=>setRoomModal("join")} style={{ flex:1, padding:"13px", borderRadius:12, border:"1px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.7)", fontSize:14, fontWeight:600, cursor:"pointer" }}>Join Room</button>
+                  <button onClick={()=>setRoomModal("join")} style={{ flex:1, padding:"13px", borderRadius:12, border:"1px solid rgba(44,26,14,0.12)", background:"#F0E8DC", color:"rgba(44,26,14,0.7)", fontSize:14, fontWeight:600, cursor:"pointer" }}>Join Room</button>
                 </div>
               </div>
             )}
@@ -6218,24 +6281,27 @@ export default function OccasionHub({ occasion }) {
         {/* PLAN */}
         {activeTab === "plan" && (
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
-              <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.88)", textTransform:"uppercase", letterSpacing:"0.16em" }}>Planning Tools</div>
-              <div style={{ fontSize:10, color:"rgba(255,255,255,0.25)" }}>{planTools.length}</div>
+            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
+              <div style={{ fontSize:10, fontWeight:800, color:"#2C1A0E", textTransform:"uppercase", letterSpacing:"0.16em" }}>Planning Tools</div>
+              <div style={{ flex:1, height:1, background:"rgba(44,26,14,0.1)" }} />
+              <div style={{ fontSize:10, color:PH.violet, fontWeight:600 }}>{planTools.length}</div>
             </div>
             {planTools.length === 0 ? (
-              <div style={{ textAlign:"center", padding:"48px 20px", color:"rgba(255,255,255,0.3)", fontSize:14 }}>No planning tools for this occasion.</div>
+              <div style={{ textAlign:"center", padding:"48px 20px", color:"rgba(44,26,14,0.35)", fontSize:14 }}>No planning tools for this occasion.</div>
             ) : (
-              <div style={{ display:"flex", flexDirection:"column", gap:1 }}>
-                {planTools.map((t,i) => {
+              <div style={{ display:"flex", flexDirection:"column" }}>
+                {planTools.map((t) => {
                   const desc = t.desc && !t.desc.startsWith('#') ? t.desc : null;
                   return (
-                    <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"transparent", border:"none", borderBottom:"1px solid rgba(255,255,255,0.06)", borderRadius:i===0?`10px 10px 0 0`:i===planTools.length-1?`0 0 10px 10px`:"0", padding:"15px 16px", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
-                      <div style={{ color:PH.gold, flexShrink:0 }}>{TOOL_ICONS[t.id]||occic(<rect x="3" y="3" width="18" height="18" rx="2"/>)}</div>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.92)" }}>{t.title}</div>
-                        {desc && <div style={{ fontSize:12, color:"rgba(255,255,255,0.52)", marginTop:3, lineHeight:1.45 }}>{desc}</div>}
+                    <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"transparent", border:"none", borderBottom:"1px solid rgba(0,0,0,0.06)", padding:"14px 4px", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
+                      <div style={{ width:46, height:46, borderRadius:14, background:"#F0E8DC", border:"1.5px solid rgba(196,122,46,0.15)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:PH.violet }}>
+                        {TOOL_ICONS[t.id]||occic(<rect x="3" y="3" width="18" height="18" rx="2"/>)}
                       </div>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontSize:15, fontWeight:700, color:"#2C1A0E" }}>{t.title}</div>
+                        {desc && <div style={{ fontSize:12.5, color:"rgba(44,26,14,0.5)", marginTop:2, lineHeight:1.45 }}>{desc}</div>}
+                      </div>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(44,26,14,0.3)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                     </div>
                   );
                 })}
@@ -6247,33 +6313,36 @@ export default function OccasionHub({ occasion }) {
         {/* MOMENTS */}
         {activeTab === "moments" && (
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
-              <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.88)", textTransform:"uppercase", letterSpacing:"0.16em" }}>Capture &amp; Celebrate</div>
-              <div style={{ fontSize:10, color:"rgba(255,255,255,0.25)" }}>{momentTools.length}</div>
+            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
+              <div style={{ fontSize:10, fontWeight:800, color:"#2C1A0E", textTransform:"uppercase", letterSpacing:"0.16em" }}>Capture &amp; Celebrate</div>
+              <div style={{ flex:1, height:1, background:"rgba(44,26,14,0.1)" }} />
+              <div style={{ fontSize:10, color:PH.violet, fontWeight:600 }}>{momentTools.length}</div>
             </div>
             {momentTools.length === 0 ? (
-              <div style={{ textAlign:"center", padding:"40px 20px", color:"rgba(255,255,255,0.3)", fontSize:14 }}>No moments tools for this occasion.</div>
+              <div style={{ textAlign:"center", padding:"40px 20px", color:"rgba(44,26,14,0.35)", fontSize:14 }}>No moments tools for this occasion.</div>
             ) : (
-              <div style={{ display:"flex", flexDirection:"column", gap:1 }}>
-                {momentTools.map((t,i) => {
+              <div style={{ display:"flex", flexDirection:"column" }}>
+                {momentTools.map((t) => {
                   const desc = t.desc && !t.desc.startsWith('#') ? t.desc : null;
                   return (
-                    <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"transparent", border:"none", borderBottom:"1px solid rgba(255,255,255,0.06)", borderRadius:i===0?`10px 10px 0 0`:i===momentTools.length-1?`0 0 10px 10px`:"0", padding:"15px 16px", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
-                      <div style={{ color:PH.pink, flexShrink:0 }}>{TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}</div>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.92)" }}>{t.title}</div>
-                        {desc && <div style={{ fontSize:12, color:"rgba(255,255,255,0.52)", marginTop:3, lineHeight:1.45 }}>{desc}</div>}
+                    <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"transparent", border:"none", borderBottom:"1px solid rgba(0,0,0,0.06)", padding:"14px 4px", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
+                      <div style={{ width:46, height:46, borderRadius:14, background:"#F0E8DC", border:"1.5px solid rgba(196,122,46,0.15)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:PH.violet }}>
+                        {TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}
                       </div>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontSize:15, fontWeight:700, color:"#2C1A0E" }}>{t.title}</div>
+                        {desc && <div style={{ fontSize:12.5, color:"rgba(44,26,14,0.5)", marginTop:2, lineHeight:1.45 }}>{desc}</div>}
+                      </div>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(44,26,14,0.3)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                     </div>
                   );
                 })}
               </div>
             )}
-            <div style={{ marginTop:20, background:`${PH.violet}08`, border:`1px solid ${PH.violet}22`, borderRadius:14, padding:"18px 20px", display:"flex", alignItems:"center", gap:14 }}>
+            <div style={{ marginTop:20, background:"rgba(196,151,58,0.06)", border:"1px solid rgba(196,151,58,0.15)", borderRadius:14, padding:"18px 20px", display:"flex", alignItems:"center", gap:14 }}>
               <div style={{ flex:1 }}>
-                <div style={{ fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.92)", marginBottom:3 }}>Party Recap</div>
-                <div style={{ fontSize:12, color:"rgba(255,255,255,0.45)", lineHeight:1.5 }}>Create a shareable summary of your event.</div>
+                <div style={{ fontSize:14, fontWeight:600, color:"#2C1A0E", marginBottom:3 }}>Party Recap</div>
+                <div style={{ fontSize:12, color:"rgba(44,26,14,0.45)", lineHeight:1.5 }}>Create a shareable summary of your event.</div>
               </div>
               <button onClick={()=>setOpen("reportcard")} style={{ padding:"9px 18px", borderRadius:10, border:`1.5px solid ${PH.violet}50`, background:`${PH.violet}14`, color:PH.violet, fontSize:12, fontWeight:600, cursor:"pointer", flexShrink:0 }}>Create →</button>
             </div>
@@ -6282,15 +6351,15 @@ export default function OccasionHub({ occasion }) {
       </div>
 
       {/* ── Bottom Navigation ── */}
-      <div style={{ flexShrink:0, background:"rgba(16,9,6,0.96)", backdropFilter:"blur(24px)", borderTop:"1px solid rgba(255,255,255,0.07)", padding:"10px 0", paddingBottom:"calc(10px + env(safe-area-inset-bottom,0px))", position:"relative", zIndex:2 }}>
+      <div style={{ flexShrink:0, background: pageBg, borderTop:"1px solid rgba(44,26,14,0.08)", padding:"10px 0", paddingBottom:"calc(10px + env(safe-area-inset-bottom,0px))", position:"relative", zIndex:2, boxShadow:"0 -1px 0 rgba(0,0,0,0.05)" }}>
         <div style={{ display:"flex", maxWidth:800, margin:"0 auto" }}>
           {TAB_CFG.map(t => {
             const isActive = activeTab === t.id;
             const tColor = tabAccentMap[t.id] || accent;
             return (
               <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:3, padding:"4px 0 2px", border:"none", background:"transparent", cursor:"pointer" }}>
-                <div style={{ color:isActive?tColor:"rgba(255,255,255,0.48)", transition:"color 0.18s" }}>{t.icon}</div>
-                <div style={{ fontSize:9, fontWeight:isActive?700:500, color:isActive?tColor:"rgba(255,255,255,0.4)", letterSpacing:"0.08em", textTransform:"uppercase", transition:"color 0.18s" }}>{t.label}</div>
+                <div style={{ color:isActive?tColor:"rgba(44,26,14,0.38)", transition:"color 0.18s" }}>{t.icon}</div>
+                <div style={{ fontSize:9, fontWeight:isActive?700:500, color:isActive?tColor:"rgba(44,26,14,0.38)", letterSpacing:"0.08em", textTransform:"uppercase", transition:"color 0.18s" }}>{t.label}</div>
                 <div style={{ width:isActive?16:0, height:2, borderRadius:1, background:tColor, transition:"width 0.22s cubic-bezier(0.22,1,0.36,1)" }} />
               </button>
             );
