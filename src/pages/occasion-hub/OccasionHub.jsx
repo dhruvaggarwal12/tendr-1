@@ -5848,55 +5848,67 @@ export default function OccasionHub({ occasion }) {
 
   // ── ENTRY GATE ────────────────────────────────────────────────────────────
   if (!entryMode) {
+    const inpStyle = { width:"100%", padding:"12px 14px", borderRadius:12, border:"1.5px solid rgba(44,26,14,0.15)", background:"rgba(255,255,255,0.6)", color:"#2C1A0E", fontSize:15, outline:"none", boxSizing:"border-box" };
     return (
-      <div style={{ height:"100dvh", display:"flex", flexDirection:"column", fontFamily:font, background:PH.bg, position:"relative", overflow:"hidden", alignItems:"center", justifyContent:"center" }}>
-        <style>{`@keyframes eg-glow{0%,100%{opacity:0.15;transform:translateX(-50%) scale(1)}50%{opacity:0.28;transform:translateX(-50%) scale(1.06)}} @keyframes eg-in{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}}`}</style>
-        <div style={{ position:"fixed", top:-60, right:-80, width:400, height:300, borderRadius:"50%", background:`radial-gradient(ellipse, ${accent}18 0%, transparent 65%)`, pointerEvents:"none", zIndex:0 }} />
+      <div style={{ height:"100dvh", display:"flex", flexDirection:"column", fontFamily:font, background:pageBg, position:"relative", overflow:"hidden", alignItems:"center", justifyContent:"center" }}>
+        <style>{`@keyframes eg-in{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}} @keyframes eg-glow{0%,100%{opacity:0.08}50%{opacity:0.14}}`}</style>
+        {/* Subtle botanical tint */}
+        <div style={{ position:"fixed", top:-80, right:-80, width:360, height:360, borderRadius:"50%", background:`radial-gradient(ellipse, ${accent}14 0%, transparent 70%)`, pointerEvents:"none", zIndex:0 }} />
 
         {/* Header */}
-        <div style={{ position:"relative", zIndex:2, textAlign:"center", padding:"0 24px 28px" }}>
-          <div style={{ fontSize:52, marginBottom:10, filter:`drop-shadow(0 0 24px ${accent}80)` }}>{occ.emoji}</div>
-          <div style={{ fontSize:"clamp(1.4rem,4vw,1.9rem)", fontWeight:700, color:"#fff", letterSpacing:"-0.02em", marginBottom:6 }}>{occ.name}</div>
-          <div style={{ fontSize:13, color:"rgba(255,255,255,0.38)" }}>{occ.tagline}</div>
+        <div style={{ position:"relative", zIndex:2, textAlign:"center", padding:"0 24px 32px" }}>
+          <div style={{ fontSize:56, marginBottom:12, lineHeight:1 }}>{occ.emoji}</div>
+          <div style={{ fontSize:9, fontWeight:700, color:PH.violet, textTransform:"uppercase", letterSpacing:"0.18em", marginBottom:6, fontFamily:font }}>Party Hub</div>
+          <div style={{ fontSize:"clamp(1.5rem,4vw,2rem)", fontWeight:700, color:"#2C1A0E", fontFamily:"'Cormorant Garamond',Georgia,serif", letterSpacing:"-0.01em", marginBottom:6 }}>{occ.name} Hub</div>
+          <div style={{ fontSize:13, color:"rgba(44,26,14,0.45)" }}>{occ.tagline}</div>
         </div>
 
         {entryView === "pick" ? (
-          <div style={{ display:"flex", flexDirection:"column", gap:12, padding:"0 20px", width:"100%", maxWidth:400, position:"relative", zIndex:2, animation:"eg-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-            <button onClick={()=>setEntryView("host")} style={{ padding:"18px 22px", borderRadius:18, border:`1.5px solid ${PH.violet}40`, background:`${PH.violet}14`, color:"#fff", textAlign:"left", cursor:"pointer", transition:"border-color 0.2s,background 0.2s" }}>
-              <div style={{ fontSize:28 }}>👑</div>
-              <div style={{ fontSize:16, fontWeight:700, marginTop:6 }}>I'm Hosting</div>
-              <div style={{ fontSize:12, color:"rgba(255,255,255,0.42)", marginTop:3 }}>Create a room · control the vibe</div>
+          <div style={{ display:"flex", flexDirection:"column", gap:10, padding:"0 20px", width:"100%", maxWidth:400, position:"relative", zIndex:2, animation:"eg-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+            {/* Host card — dark */}
+            <button onClick={()=>setEntryView("host")} style={{ padding:"18px 20px", borderRadius:18, border:`1.5px solid ${PH.violet}44`, background:"#2A3828", color:"#fff", textAlign:"left", cursor:"pointer", display:"flex", alignItems:"center", gap:14, position:"relative", overflow:"hidden" }}>
+              <div style={{ width:40, height:40, borderRadius:12, background:"rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#C4973A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+              <div>
+                <div style={{ fontSize:15, fontWeight:700, marginBottom:2 }}>I'm Hosting</div>
+                <div style={{ fontSize:12, color:"rgba(255,255,255,0.5)" }}>Create a room · control the vibe</div>
+              </div>
             </button>
-            <button onClick={()=>setEntryView("join")} style={{ padding:"18px 22px", borderRadius:18, border:`1.5px solid ${PH.blue}40`, background:`${PH.blue}0e`, color:"#fff", textAlign:"left", cursor:"pointer", transition:"border-color 0.2s,background 0.2s" }}>
-              <div style={{ fontSize:28 }}>🚀</div>
-              <div style={{ fontSize:16, fontWeight:700, marginTop:6 }}>Join a Party</div>
-              <div style={{ fontSize:12, color:"rgba(255,255,255,0.42)", marginTop:3 }}>Enter a room code to join your crew</div>
+            {/* Join card — light */}
+            <button onClick={()=>setEntryView("join")} style={{ padding:"18px 20px", borderRadius:18, border:"1.5px solid rgba(44,26,14,0.12)", background:"rgba(255,255,255,0.55)", color:"#2C1A0E", textAlign:"left", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
+              <div style={{ width:40, height:40, borderRadius:12, background:"rgba(44,26,14,0.05)", border:"1px solid rgba(44,26,14,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#2C1A0E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <div>
+                <div style={{ fontSize:15, fontWeight:700, marginBottom:2 }}>Join a Party</div>
+                <div style={{ fontSize:12, color:"rgba(44,26,14,0.45)" }}>Enter a room code to join your crew</div>
+              </div>
             </button>
-            <button onClick={()=>setEntryMode("exploring")} style={{ padding:"18px 22px", borderRadius:18, border:"1.5px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.04)", color:"#fff", textAlign:"left", cursor:"pointer", transition:"border-color 0.2s,background 0.2s" }}>
-              <div style={{ fontSize:28 }}>👀</div>
-              <div style={{ fontSize:16, fontWeight:700, marginTop:6 }}>Just Exploring</div>
-              <div style={{ fontSize:12, color:"rgba(255,255,255,0.42)", marginTop:3 }}>Browse tools · no commitment</div>
+            {/* Explore — minimal */}
+            <button onClick={()=>setEntryMode("exploring")} style={{ padding:"14px 20px", borderRadius:18, border:"1.5px solid rgba(44,26,14,0.08)", background:"transparent", color:"rgba(44,26,14,0.55)", textAlign:"center", cursor:"pointer", fontSize:13, fontWeight:500 }}>
+              Just Exploring →
             </button>
           </div>
         ) : entryView === "host" ? (
           <div style={{ padding:"0 20px", width:"100%", maxWidth:400, position:"relative", zIndex:2, animation:"eg-in 0.22s cubic-bezier(0.22,1,0.36,1)" }}>
-            <button onClick={()=>setEntryView("pick")} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.45)", fontSize:13, cursor:"pointer", marginBottom:18, display:"flex", alignItems:"center", gap:4, padding:0 }}>← Back</button>
-            <div style={{ fontSize:18, fontWeight:700, color:"#fff", marginBottom:4 }}>Host a Room</div>
-            <div style={{ fontSize:13, color:"rgba(255,255,255,0.38)", marginBottom:22 }}>Start a live party room for your crew</div>
-            <input value={hostName} onChange={e=>setHostName(e.target.value)} placeholder="Your name" style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:15, outline:"none", boxSizing:"border-box", marginBottom:10 }} />
-            <input value={partyName} onChange={e=>setPartyName(e.target.value)} placeholder={`Party name (e.g. ${occ.name} Bash)`} style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:15, outline:"none", boxSizing:"border-box", marginBottom:14 }} />
-            <button onClick={handleHostCreate} disabled={!hostName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:hostName.trim()?PH.violet:"rgba(255,255,255,0.08)", color:"#fff", fontSize:14, fontWeight:700, cursor:hostName.trim()?"pointer":"not-allowed", opacity:hostName.trim()?1:0.5 }}>
+            <button onClick={()=>setEntryView("pick")} style={{ background:"none", border:"none", color:"rgba(44,26,14,0.45)", fontSize:13, cursor:"pointer", marginBottom:18, display:"flex", alignItems:"center", gap:4, padding:0 }}>← Back</button>
+            <div style={{ fontSize:18, fontWeight:700, color:"#2C1A0E", marginBottom:4 }}>Host a Room</div>
+            <div style={{ fontSize:13, color:"rgba(44,26,14,0.45)", marginBottom:22 }}>Start a live party room for your crew</div>
+            <input value={hostName} onChange={e=>setHostName(e.target.value)} placeholder="Your name" style={{ ...inpStyle, marginBottom:10 }} />
+            <input value={partyName} onChange={e=>setPartyName(e.target.value)} placeholder={`Party name (e.g. ${occ.name} Bash)`} style={{ ...inpStyle, marginBottom:14 }} />
+            <button onClick={handleHostCreate} disabled={!hostName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:hostName.trim()?PH.violet:"rgba(44,26,14,0.1)", color:hostName.trim()?"#fff":"rgba(44,26,14,0.35)", fontSize:14, fontWeight:700, cursor:hostName.trim()?"pointer":"not-allowed" }}>
               {roomLoading ? "Creating…" : "Create Room →"}
             </button>
           </div>
         ) : (
           <div style={{ padding:"0 20px", width:"100%", maxWidth:400, position:"relative", zIndex:2, animation:"eg-in 0.22s cubic-bezier(0.22,1,0.36,1)" }}>
-            <button onClick={()=>setEntryView("pick")} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.45)", fontSize:13, cursor:"pointer", marginBottom:18, display:"flex", alignItems:"center", gap:4, padding:0 }}>← Back</button>
-            <div style={{ fontSize:18, fontWeight:700, color:"#fff", marginBottom:4 }}>Join a Party</div>
-            <div style={{ fontSize:13, color:"rgba(255,255,255,0.38)", marginBottom:22 }}>{joinCode ? "You were invited — just enter your name!" : "Enter the code your host shared"}</div>
-            <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="ABC123" maxLength={6} style={{ width:"100%", padding:"14px 16px", borderRadius:12, border:`1.5px solid ${PH.blue}44`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:24, fontWeight:700, textAlign:"center", letterSpacing:"0.22em", outline:"none", boxSizing:"border-box", marginBottom:10 }} />
-            <input value={joinName} onChange={e=>setJoinName(e.target.value)} placeholder="Your name" style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.blue}33`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:15, outline:"none", boxSizing:"border-box", marginBottom:14 }} />
-            <button onClick={handleJoin} disabled={joinCode.length<6||!joinName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:(joinCode.length>=6&&joinName.trim())?PH.violet:"rgba(255,255,255,0.08)", color:"#fff", fontSize:14, fontWeight:700, cursor:(joinCode.length>=6&&joinName.trim())?"pointer":"not-allowed", opacity:(joinCode.length>=6&&joinName.trim())?1:0.5 }}>
+            <button onClick={()=>setEntryView("pick")} style={{ background:"none", border:"none", color:"rgba(44,26,14,0.45)", fontSize:13, cursor:"pointer", marginBottom:18, display:"flex", alignItems:"center", gap:4, padding:0 }}>← Back</button>
+            <div style={{ fontSize:18, fontWeight:700, color:"#2C1A0E", marginBottom:4 }}>Join a Party</div>
+            <div style={{ fontSize:13, color:"rgba(44,26,14,0.45)", marginBottom:22 }}>{joinCode ? "You were invited — just enter your name!" : "Enter the code your host shared"}</div>
+            <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="ABC123" maxLength={6} style={{ ...inpStyle, fontSize:24, fontWeight:700, textAlign:"center", letterSpacing:"0.22em", marginBottom:10 }} />
+            <input value={joinName} onChange={e=>setJoinName(e.target.value)} placeholder="Your name" style={{ ...inpStyle, marginBottom:14 }} />
+            <button onClick={handleJoin} disabled={joinCode.length<6||!joinName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:(joinCode.length>=6&&joinName.trim())?PH.violet:"rgba(44,26,14,0.1)", color:(joinCode.length>=6&&joinName.trim())?"#fff":"rgba(44,26,14,0.35)", fontSize:14, fontWeight:700, cursor:(joinCode.length>=6&&joinName.trim())?"pointer":"not-allowed" }}>
               {roomLoading ? "Joining…" : "Join Room →"}
             </button>
           </div>
