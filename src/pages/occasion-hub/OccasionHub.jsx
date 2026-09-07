@@ -5808,55 +5808,53 @@ export default function OccasionHub({ occasion }) {
   const planTools  = allTools.filter(t => PLAN_IDS.has(t.id));
   const lobbyQuick = [...planTools.slice(0, 2), ...playTools.slice(0, 2)].slice(0, 4);
 
-  const OCC_BG = {
-    "baby-shower": "#F5EEE9",
-    "newborn-welcome": "#F4EEE9",
-    "naming-ceremony": "#F5EEE9",
-    "birthday-party": "#FDF3EC",
-    "gender-reveal": "#F9EFF5",
-    "housewarming": "#EFF4EE",
-    "anniversary": "#F8EEF3",
-    "first-birthday": "#FDF3EC",
-    "graduation": "#EEF1F8",
-    "farewell": "#F3EEF5",
-    "retirement": "#EEF2F5",
-    "bachelorette": "#F8EEF5",
-    "diwali-party": "#FDF4E5",
-    "holi-party": "#F5F0F8",
-    "navratri-garba": "#F5EEF0",
-    "kitty-party": "#F5EEF8",
-    "get-together": "#F4EEE9",
-    "office-party": "#EEF1F5",
-  };
-  const pageBg = OCC_BG[occasion] || "#F4EDE8";
   const OCC_THEME = {
-    "baby-shower":     { accent:"#C96A5E", iconBg:"#FAE0DC", hostGrad:"linear-gradient(135deg,#D97A6E,#C0604E)", confetti:["#F4B8B0","#FFD4B0","#B8D4F4","#F4D4B8","#D4C4E8"] },
-    "newborn-welcome": { accent:"#5A7AB8", iconBg:"#D8E4F8", hostGrad:"linear-gradient(135deg,#6A8AC8,#4A6AA0)", confetti:["#B0C8F4","#D0E8FF","#F4D8B0","#D8F4D0","#F4D0E8"] },
-    "naming-ceremony": { accent:"#C4973A", iconBg:"#F8EDD0", hostGrad:"linear-gradient(135deg,#D4A740,#B88020)", confetti:["#F4D878","#F8E4B0","#D8F4D0","#F4D0E8","#D0E8F4"] },
-    "birthday-party":  { accent:"#E07A30", iconBg:"#FDE8D4", hostGrad:"linear-gradient(135deg,#F08A40,#C86820)", confetti:["#F4C878","#F4A060","#A0D4F4","#F4A0C8","#C0F4A0"] },
-    "gender-reveal":   { accent:"#A85AB8", iconBg:"#EDD8F8", hostGrad:"linear-gradient(135deg,#B870C8,#9040A0)", confetti:["#E8B8F4","#B8D0F4","#F4B8D8","#F4E8B8","#B8F4D8"] },
-    "housewarming":    { accent:"#4A8A5A", iconBg:"#D4EDD8", hostGrad:"linear-gradient(135deg,#5A9A6A,#387848)", confetti:["#A0F4B8","#D4F0A0","#F4E8A0","#A0D4F4","#F4C8A0"] },
-    "anniversary":     { accent:"#B85A78", iconBg:"#FADADD", hostGrad:"linear-gradient(135deg,#C86888,#A04060)", confetti:["#F4B8C8","#FFD4D8","#F4D4B8","#E8B8F4","#F4E8B8"] },
-    "first-birthday":  { accent:"#E07A30", iconBg:"#FDE8D4", hostGrad:"linear-gradient(135deg,#F08A40,#C86820)", confetti:["#F4C878","#F4A060","#A0D4F4","#F4A0C8","#C0F4A0"] },
-    "graduation":      { accent:"#3A78B8", iconBg:"#D0E4F8", hostGrad:"linear-gradient(135deg,#4A88C8,#2860A0)", confetti:["#B0C8F4","#F4E8B0","#D0F4E8","#F4D0B0","#D0C8F4"] },
-    "farewell":        { accent:"#7870C0", iconBg:"#E0DDF8", hostGrad:"linear-gradient(135deg,#8880D0,#6058A8)", confetti:["#D8D0F8","#F4D8E8","#D8F4E8","#F4E8D8","#D8E8F4"] },
-    "retirement":      { accent:"#5A8A7A", iconBg:"#D4EDE8", hostGrad:"linear-gradient(135deg,#6A9A8A,#487860)", confetti:["#A0F4D8","#D0EDA0","#F4E8A0","#A0D8F4","#F4D0A0"] },
-    "bachelorette":    { accent:"#C858A8", iconBg:"#F8D4EE", hostGrad:"linear-gradient(135deg,#D868B8,#B04090)", confetti:["#F4B8E8","#FFD4F0","#F4D4B8","#E8B8F4","#D8F4B8"] },
-    "diwali-party":    { accent:"#D88020", iconBg:"#FDECD0", hostGrad:"linear-gradient(135deg,#E89030,#C07010)", confetti:["#F4D878","#F4A040","#E8F4B0","#F4C8A0","#F0D0F4"] },
-    "holi-party":      { accent:"#D04898", iconBg:"#F8D4EE", hostGrad:"linear-gradient(135deg,#E85AA8,#B83080)", confetti:["#F4B8E0","#A8F4B8","#F4F4A8","#B8C8F4","#F4B8A8"] },
-    "navratri-garba":  { accent:"#C03838", iconBg:"#FAD4D4", hostGrad:"linear-gradient(135deg,#D04848,#A82020)", confetti:["#F4B8B8","#F4D878","#D8F4B8","#B8D8F4","#F4B8D8"] },
-    "kitty-party":     { accent:"#C07830", iconBg:"#FDE4D0", hostGrad:"linear-gradient(135deg,#D08840,#A86020)", confetti:["#F4C878","#F4A8B8","#B8E8F4","#E8F4B8","#D8B8F4"] },
-    "get-together":    { accent:"#6878C8", iconBg:"#DCDFF8", hostGrad:"linear-gradient(135deg,#7888D8,#5060B0)", confetti:["#D8DCF8","#F8DCD8","#D8F8DC","#F8F8D8","#DCD8F8"] },
-    "office-party":    { accent:"#3A78B8", iconBg:"#D0E4F8", hostGrad:"linear-gradient(135deg,#4A88C8,#2860A0)", confetti:["#B0C8F4","#F4E8B0","#D0F4E8","#F4D0B0","#D0C8F4"] },
+    "baby-shower":     { bg:"#FAF0EC", dark:false, accent:"#D4856E", iconBg:"#FAE4DE", hostGrad:"linear-gradient(135deg,#E09080,#C47060)", confetti:["#F4B8A8","#F8D4B8","#C8D8B0","#F0D080","#E8C8D8"] },
+    "newborn-welcome": { bg:"#F8F4F0", dark:false, accent:"#7890A8", iconBg:"#D8E8F0", hostGrad:"linear-gradient(135deg,#8898B8,#607890)", confetti:["#C8D8EC","#D8ECC8","#ECD8C8","#F0ECC8","#D0C8EC"] },
+    "naming-ceremony": { bg:"#F8F4EE", dark:false, accent:"#7A9058", iconBg:"#E4EED4", hostGrad:"linear-gradient(135deg,#8AA068,#608040)", confetti:["#C8D8A8","#ECD8B8","#B8D0C8","#F0D898","#D8C8B8"] },
+    "birthday-party":  { bg:"#FDF4EC", dark:false, accent:"#E07A30", iconBg:"#FDE8D4", hostGrad:"linear-gradient(135deg,#F08A40,#C86820)", confetti:["#F4C870","#F4A060","#A0C8F4","#F4A0C0","#A8F4A8"] },
+    "gender-reveal":   { bg:"#FDF4FD", dark:false, accent:"#B070B8", iconBg:"#F0D8F4", hostGrad:"linear-gradient(135deg,#C080C8,#9050A0)", confetti:["#F4B8E0","#B8C8F4","#F4E0B8","#D8B8F4","#B8F0D8"] },
+    "housewarming":    { bg:"#FAF0E4", dark:false, accent:"#C07040", iconBg:"#F5E4D0", hostGrad:"linear-gradient(135deg,#D08050,#A05830)", confetti:["#F0C890","#C8D8A8","#F0E0A8","#D0C0B0","#E8D0B0"] },
+    "anniversary":     { bg:"#FAF4EE", dark:false, accent:"#8B3A5A", iconBg:"#F5D8E4", hostGrad:"linear-gradient(135deg,#9B4A6A,#6B2040)", confetti:["#F4C8D8","#F0E0B8","#E8C8D8","#F8E8B8","#D8C8E8"] },
+    "first-birthday":  { bg:"#FDF4EE", dark:false, accent:"#E87060", iconBg:"#FAE0D8", hostGrad:"linear-gradient(135deg,#F08070,#C85848)", confetti:["#F4B8A8","#A8D8F4","#A8F4C0","#F4D880","#F4A8C8"] },
+    "graduation":      { bg:"#F4F4FA", dark:false, accent:"#2A4E98", iconBg:"#D0D8F0", hostGrad:"linear-gradient(135deg,#3A5EA8,#182878)", confetti:["#B0C0F0","#F0E098","#D0E8F0","#F0D0A8","#C0B8F0"] },
+    "farewell":        { bg:"#F8F0E8", dark:false, accent:"#7070A8", iconBg:"#E0E0F0", hostGrad:"linear-gradient(135deg,#8080B8,#505088)", confetti:["#D0D0F0","#E8C8B0","#F0E8D0","#B8C8D8","#E8D0C8"] },
+    "retirement":      { bg:"#F8F4EC", dark:false, accent:"#806020", iconBg:"#EEE0C0", hostGrad:"linear-gradient(135deg,#907030,#604810)", confetti:["#E8D080","#C8C0B0","#F0E0B0","#B8C8D8","#D0C8B0"] },
+    "bachelorette":    { bg:"#0E0C10", dark:true,  accent:"#E878B8", iconBg:"#2A1828", hostGrad:"linear-gradient(135deg,#E878B8,#A03878)", confetti:["#F4B8E0","#F0F080","#D0B8F4","#F4D0A8","#B8F0D8"] },
+    "kitty-party":     { bg:"#FEF0F5", dark:false, accent:"#C0507A", iconBg:"#F8D4E4", hostGrad:"linear-gradient(135deg,#D0608A,#A03060)", confetti:["#F4B8D0","#F8D8B0","#E8B8D8","#F0E0B0","#D8B8E8"] },
+    "get-together":    { bg:"#FAF0E8", dark:false, accent:"#C07830", iconBg:"#F5E4D0", hostGrad:"linear-gradient(135deg,#D08840,#A06020)", confetti:["#F0C870","#C8D898","#F4A858","#E0D0A8","#C8C0A8"] },
+    "diwali-party":    { bg:"#FAF0E0", dark:false, accent:"#C08020", iconBg:"#F8EAC0", hostGrad:"linear-gradient(135deg,#D09030,#A07010)", confetti:["#F8D860","#408040","#E04040","#F8F080","#8060A8"] },
+    "holi-party":      { bg:"#F8F8F4", dark:false, accent:"#D04898", iconBg:"#F8D4EE", hostGrad:"linear-gradient(135deg,#E058A8,#A03080)", confetti:["#F84848","#F8E820","#48C848","#5888F8","#F878D8"] },
+    "navratri-garba":  { bg:"#080618", dark:true,  accent:"#F0A020", iconBg:"#1C1430", hostGrad:"linear-gradient(135deg,#F0A020,#C07010)", confetti:["#F8C820","#E040A8","#3848C0","#20A840","#F84848"] },
+    "office-party":    { bg:"#0E1018", dark:true,  accent:"#7098D8", iconBg:"#1E2838", hostGrad:"linear-gradient(135deg,#5078B8,#203870)", confetti:["#8098D0","#40C0B0","#C0C0D8","#F0D080","#9878D0"] },
+    "house-party":     { bg:"#1A1218", dark:true,  accent:"#F0A050", iconBg:"#3A2828", hostGrad:"linear-gradient(135deg,#F0A050,#C07030)", confetti:["#F8B848","#F87858","#F8D058","#C878E8","#78B8F8"] },
   };
   const occTheme = OCC_THEME[occasion] || OCC_THEME["birthday-party"];
+  const isDark = occTheme.dark === true;
+  const pageBg = occTheme.bg;
   const occAccent = occTheme.accent;
   const occIconBg = occTheme.iconBg;
   const occHostGrad = occTheme.hostGrad;
   const occConfetti = occTheme.confetti;
-  const PH = { violet: occAccent, blue: occAccent, gold: occAccent, pink: occAccent, bg: pageBg, surface: "#F0E8DF" };
+  // Text + surface colors derived from dark/light mode
+  const T = {
+    main:      isDark ? "rgba(255,255,255,0.90)" : "#2C1A0E",
+    sub:       isDark ? "rgba(255,255,255,0.50)" : "rgba(44,26,14,0.50)",
+    muted:     isDark ? "rgba(255,255,255,0.30)" : "rgba(44,26,14,0.30)",
+    cardBg:    isDark ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.78)",
+    cardBd:    isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+    rowBd:     isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
+    navBg:     isDark ? "rgba(14,12,18,0.96)"   : "rgba(255,255,255,0.92)",
+    navInact:  isDark ? "rgba(255,255,255,0.38)" : "rgba(44,26,14,0.45)",
+    backBtn:   isDark ? { background:"rgba(255,255,255,0.08)", color:"rgba(255,255,255,0.7)" } : { background:"rgba(255,255,255,0.85)", color:"rgba(44,26,14,0.7)" },
+    joinCard:  isDark ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.85)",
+    joinBd:    isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)",
+    sectionLbl:isDark ? "rgba(255,255,255,0.88)" : "#2C1A0E",
+    sectionLn: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
+  };
+  const PH = { violet: occAccent, blue: occAccent, gold: occAccent, pink: occAccent, bg: pageBg, surface: isDark ? "#1A1520" : "#F0E8DF" };
   const tabAccentMap = { lobby: occAccent, play: occAccent, people: occAccent, plan: occAccent, moments: occAccent };
-  const ta = tabAccentMap[activeTab] || accent;
+  const ta = occAccent;
 
   const TAB_CFG = [
     { id: "lobby",   label: "LOBBY",
@@ -5873,7 +5871,7 @@ export default function OccasionHub({ occasion }) {
 
   // ── ENTRY GATE ────────────────────────────────────────────────────────────
   if (!entryMode) {
-    const inpStyle = { width:"100%", padding:"12px 14px", borderRadius:12, border:"1.5px solid rgba(44,26,14,0.15)", background:"rgba(255,255,255,0.6)", color:"#2C1A0E", fontSize:15, outline:"none", boxSizing:"border-box" };
+    const inpStyle = { width:"100%", padding:"12px 14px", borderRadius:12, border:isDark?"1.5px solid rgba(255,255,255,0.15)":"1.5px solid rgba(44,26,14,0.15)", background:isDark?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.8)", color:T.main, fontSize:15, outline:"none", boxSizing:"border-box" };
     return (
       <div style={{ height:"100dvh", display:"flex", flexDirection:"column", fontFamily:font, background:pageBg, position:"relative", overflow:"hidden", alignItems:"center", justifyContent:"center" }}>
         <style>{`@keyframes eg-in{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}} @keyframes eg-glow{0%,100%{opacity:0.08}50%{opacity:0.14}}`}</style>
@@ -5884,8 +5882,8 @@ export default function OccasionHub({ occasion }) {
         <div style={{ position:"relative", zIndex:2, textAlign:"center", padding:"0 24px 32px" }}>
           <div style={{ fontSize:56, marginBottom:12, lineHeight:1 }}>{occ.emoji}</div>
           <div style={{ fontSize:9, fontWeight:700, color:PH.violet, textTransform:"uppercase", letterSpacing:"0.18em", marginBottom:6, fontFamily:font }}>Party Hub</div>
-          <div style={{ fontSize:"clamp(1.5rem,4vw,2rem)", fontWeight:700, color:"#2C1A0E", fontFamily:"'Cormorant Garamond',Georgia,serif", letterSpacing:"-0.01em", marginBottom:6 }}>{occ.name} Hub</div>
-          <div style={{ fontSize:13, color:"rgba(44,26,14,0.45)" }}>{occ.tagline}</div>
+          <div style={{ fontSize:"clamp(1.5rem,4vw,2rem)", fontWeight:700, color:T.main, fontFamily:"'Cormorant Garamond',Georgia,serif", letterSpacing:"-0.01em", marginBottom:6 }}>{occ.name} Hub</div>
+          <div style={{ fontSize:13, color:T.sub }}>{occ.tagline}</div>
         </div>
 
         {entryView === "pick" ? (
@@ -5901,25 +5899,25 @@ export default function OccasionHub({ occasion }) {
               </div>
             </button>
             {/* Join card — light */}
-            <button onClick={()=>setEntryView("join")} style={{ padding:"18px 20px", borderRadius:18, border:"1.5px solid rgba(44,26,14,0.12)", background:"rgba(255,255,255,0.55)", color:"#2C1A0E", textAlign:"left", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
-              <div style={{ width:40, height:40, borderRadius:12, background:"rgba(44,26,14,0.05)", border:"1px solid rgba(44,26,14,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#2C1A0E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <button onClick={()=>setEntryView("join")} style={{ padding:"18px 20px", borderRadius:18, border:`1.5px solid ${T.joinBd}`, background:T.joinCard, color:T.main, textAlign:"left", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
+              <div style={{ width:40, height:40, borderRadius:12, background:isDark?"rgba(255,255,255,0.08)":"rgba(44,26,14,0.05)", border:`1px solid ${T.joinBd}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={T.main} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               </div>
               <div>
                 <div style={{ fontSize:15, fontWeight:700, marginBottom:2 }}>Join a Party</div>
-                <div style={{ fontSize:12, color:"rgba(44,26,14,0.45)" }}>Enter a room code to join your crew</div>
+                <div style={{ fontSize:12, color:T.sub }}>Enter a room code to join your crew</div>
               </div>
             </button>
             {/* Explore — minimal */}
-            <button onClick={()=>setEntryMode("exploring")} style={{ padding:"14px 20px", borderRadius:18, border:"1.5px solid rgba(44,26,14,0.08)", background:"transparent", color:"rgba(44,26,14,0.55)", textAlign:"center", cursor:"pointer", fontSize:13, fontWeight:500 }}>
+            <button onClick={()=>setEntryMode("exploring")} style={{ padding:"14px 20px", borderRadius:18, border:`1.5px solid ${T.joinBd}`, background:"transparent", color:T.sub, textAlign:"center", cursor:"pointer", fontSize:13, fontWeight:500 }}>
               Just Exploring →
             </button>
           </div>
         ) : entryView === "host" ? (
           <div style={{ padding:"0 20px", width:"100%", maxWidth:400, position:"relative", zIndex:2, animation:"eg-in 0.22s cubic-bezier(0.22,1,0.36,1)" }}>
-            <button onClick={()=>setEntryView("pick")} style={{ background:"none", border:"none", color:"rgba(44,26,14,0.45)", fontSize:13, cursor:"pointer", marginBottom:18, display:"flex", alignItems:"center", gap:4, padding:0 }}>← Back</button>
-            <div style={{ fontSize:18, fontWeight:700, color:"#2C1A0E", marginBottom:4 }}>Host a Room</div>
-            <div style={{ fontSize:13, color:"rgba(44,26,14,0.45)", marginBottom:22 }}>Start a live party room for your crew</div>
+            <button onClick={()=>setEntryView("pick")} style={{ background:"none", border:"none", color:T.sub, fontSize:13, cursor:"pointer", marginBottom:18, display:"flex", alignItems:"center", gap:4, padding:0 }}>← Back</button>
+            <div style={{ fontSize:18, fontWeight:700, color:T.main, marginBottom:4 }}>Host a Room</div>
+            <div style={{ fontSize:13, color:T.sub, marginBottom:22 }}>Start a live party room for your crew</div>
             <input value={hostName} onChange={e=>setHostName(e.target.value)} placeholder="Your name" style={{ ...inpStyle, marginBottom:10 }} />
             <input value={partyName} onChange={e=>setPartyName(e.target.value)} placeholder={`Party name (e.g. ${occ.name} Bash)`} style={{ ...inpStyle, marginBottom:14 }} />
             <button onClick={handleHostCreate} disabled={!hostName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:hostName.trim()?PH.violet:"rgba(44,26,14,0.1)", color:hostName.trim()?"#fff":"rgba(44,26,14,0.35)", fontSize:14, fontWeight:700, cursor:hostName.trim()?"pointer":"not-allowed" }}>
@@ -5928,9 +5926,9 @@ export default function OccasionHub({ occasion }) {
           </div>
         ) : (
           <div style={{ padding:"0 20px", width:"100%", maxWidth:400, position:"relative", zIndex:2, animation:"eg-in 0.22s cubic-bezier(0.22,1,0.36,1)" }}>
-            <button onClick={()=>setEntryView("pick")} style={{ background:"none", border:"none", color:"rgba(44,26,14,0.45)", fontSize:13, cursor:"pointer", marginBottom:18, display:"flex", alignItems:"center", gap:4, padding:0 }}>← Back</button>
-            <div style={{ fontSize:18, fontWeight:700, color:"#2C1A0E", marginBottom:4 }}>Join a Party</div>
-            <div style={{ fontSize:13, color:"rgba(44,26,14,0.45)", marginBottom:22 }}>{joinCode ? "You were invited — just enter your name!" : "Enter the code your host shared"}</div>
+            <button onClick={()=>setEntryView("pick")} style={{ background:"none", border:"none", color:T.sub, fontSize:13, cursor:"pointer", marginBottom:18, display:"flex", alignItems:"center", gap:4, padding:0 }}>← Back</button>
+            <div style={{ fontSize:18, fontWeight:700, color:T.main, marginBottom:4 }}>Join a Party</div>
+            <div style={{ fontSize:13, color:T.sub, marginBottom:22 }}>{joinCode ? "You were invited — just enter your name!" : "Enter the code your host shared"}</div>
             <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="ABC123" maxLength={6} style={{ ...inpStyle, fontSize:24, fontWeight:700, textAlign:"center", letterSpacing:"0.22em", marginBottom:10 }} />
             <input value={joinName} onChange={e=>setJoinName(e.target.value)} placeholder="Your name" style={{ ...inpStyle, marginBottom:14 }} />
             <button onClick={handleJoin} disabled={joinCode.length<6||!joinName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:(joinCode.length>=6&&joinName.trim())?PH.violet:"rgba(44,26,14,0.1)", color:(joinCode.length>=6&&joinName.trim())?"#fff":"rgba(44,26,14,0.35)", fontSize:14, fontWeight:700, cursor:(joinCode.length>=6&&joinName.trim())?"pointer":"not-allowed" }}>
@@ -6130,7 +6128,7 @@ export default function OccasionHub({ occasion }) {
       <div style={{ flexShrink:0, padding:"max(14px, env(safe-area-inset-top)) 16px 10px", background:"transparent", position:"relative", zIndex:2 }}>
         <div style={{ display:"flex", alignItems:"center", maxWidth:800, margin:"0 auto", position:"relative" }}>
           {/* Back button */}
-          <button onClick={()=>navigate(-1)} style={{ width:36, height:36, borderRadius:"50%", border:"none", background:"rgba(255,255,255,0.8)", boxShadow:"0 2px 8px rgba(0,0,0,0.1)", color:"rgba(44,26,14,0.7)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, zIndex:1 }}>
+          <button onClick={()=>navigate(-1)} style={{ width:36, height:36, borderRadius:"50%", border:"none", ...T.backBtn, boxShadow:"0 2px 8px rgba(0,0,0,0.1)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, zIndex:1 }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           {/* Center */}
@@ -6142,7 +6140,7 @@ export default function OccasionHub({ occasion }) {
             </div>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, marginTop:4 }}>
               <div style={{ flex:1, maxWidth:60, height:1, background:`linear-gradient(to right, transparent, ${occAccent}50)` }} />
-              <div style={{ fontSize:"clamp(1rem,2.5vw,1.25rem)", fontWeight:800, color:"#2C1A0E", fontFamily:font, letterSpacing:"-0.01em", whiteSpace:"nowrap" }}>
+              <div style={{ fontSize:"clamp(1rem,2.5vw,1.25rem)", fontWeight:800, color:T.main, fontFamily:font, letterSpacing:"-0.01em", whiteSpace:"nowrap" }}>
                 {occ.emoji} {occ.name} Hub
                 {room && <span style={{ color:occAccent, fontSize:11, fontWeight:600, marginLeft:8 }}>{room.code}</span>}
               </div>
@@ -6181,6 +6179,197 @@ export default function OccasionHub({ occasion }) {
         ))}
       </div>
 
+      {/* Per-occasion decorative illustrations */}
+      {(() => {
+        const decorStyle = { position:"fixed", pointerEvents:"none", zIndex:0 };
+        switch(occasion) {
+          case "birthday-party": case "first-birthday":
+            return <>
+              {/* Balloons top-left */}
+              <svg style={{...decorStyle,top:60,left:-10,opacity:0.13}} width="110" height="160" viewBox="0 0 110 160" fill="none" stroke={occAccent} strokeWidth="1.2" strokeLinecap="round">
+                <ellipse cx="30" cy="30" r="22" rx="18"/><line x1="30" y1="52" x2="28" y2="120"/>
+                <ellipse cx="65" cy="22" r="20" rx="16"/><line x1="65" y1="42" x2="63" y2="120"/>
+                <ellipse cx="95" cy="35" r="18" rx="14"/><line x1="95" y1="53" x2="93" y2="120"/>
+                <path d="M28 120 Q55 130 63 120 Q75 115 93 120"/>
+              </svg>
+              {/* Cake bottom-right */}
+              <svg style={{...decorStyle,bottom:80,right:10,opacity:0.10}} width="80" height="90" viewBox="0 0 80 90" fill="none" stroke={occAccent} strokeWidth="1.2" strokeLinecap="round">
+                <rect x="10" y="40" width="60" height="30" rx="4"/><rect x="18" y="20" width="44" height="22" rx="3"/>
+                <line x1="25" y1="20" x2="25" y2="12"/><line x1="40" y1="20" x2="40" y2="10"/><line x1="55" y1="20" x2="55" y2="13"/>
+                <path d="M25 12 Q27 8 25 6 Q23 8 25 12"/><path d="M40 10 Q42 6 40 4 Q38 6 40 10"/><path d="M55 13 Q57 9 55 7 Q53 9 55 13"/>
+                <line x1="10" y1="55" x2="70" y2="55"/>
+              </svg>
+            </>;
+
+          case "baby-shower": case "newborn-welcome":
+            return <>
+              {/* Moon + stars top-right */}
+              <svg style={{...decorStyle,top:50,right:0,opacity:0.12}} width="130" height="120" viewBox="0 0 130 120" fill="none" stroke={occAccent} strokeWidth="1.2" strokeLinecap="round">
+                <path d="M100 20 Q80 40 85 65 Q110 72 120 52 Q95 55 100 20Z"/>
+                <circle cx="30" cy="25" r="3"/><circle cx="50" cy="10" r="2"/><circle cx="15" cy="45" r="2"/>
+                <path d="M60 50 L62 44 L64 50 L70 52 L64 54 L62 60 L60 54 L54 52 Z"/>
+                <path d="M25 70 L26.5 65 L28 70 L33 71.5 L28 73 L26.5 78 L25 73 L20 71.5 Z"/>
+              </svg>
+              {/* Teddy/pacifier bottom-left */}
+              <svg style={{...decorStyle,bottom:90,left:5,opacity:0.10}} width="80" height="80" viewBox="0 0 80 80" fill="none" stroke={occAccent} strokeWidth="1.3" strokeLinecap="round">
+                <circle cx="40" cy="45" r="28"/><circle cx="40" cy="20" r="16"/>
+                <circle cx="16" cy="32" r="10"/><circle cx="64" cy="32" r="10"/>
+                <circle cx="32" cy="44" r="3"/><circle cx="48" cy="44" r="3"/>
+                <path d="M34 54 Q40 60 46 54"/>
+              </svg>
+            </>;
+
+          case "anniversary":
+            return <>
+              {/* Champagne glasses top-right */}
+              <svg style={{...decorStyle,top:55,right:5,opacity:0.13}} width="90" height="110" viewBox="0 0 90 110" fill="none" stroke={occAccent} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+                <g transform="rotate(-12 30 80)"><path d="M14 15 C14 15 10 50 18 56 L42 56"/><line x1="28" y1="56" x2="28" y2="86"/><line x1="20" y1="86" x2="36" y2="86"/></g>
+                <g transform="rotate(12 60 80)"><path d="M48 15 C48 15 44 50 52 56 L76 56"/><line x1="62" y1="56" x2="62" y2="86"/><line x1="54" y1="86" x2="70" y2="86"/></g>
+                <path d="M44 6v4M42 8h4"/><path d="M28 10v3M26.5 11.5h3"/><path d="M60 8v3M58.5 9.5h3"/>
+              </svg>
+              {/* Floral corner bottom-left */}
+              <svg style={{...decorStyle,bottom:80,left:0,opacity:0.09}} width="100" height="100" viewBox="0 0 100 100" fill="none" stroke={occAccent} strokeWidth="1.2" strokeLinecap="round">
+                <path d="M10 90 C10 90 10 50 30 30 C50 10 90 10 90 10"/>
+                <circle cx="30" cy="30" r="8"/><circle cx="50" cy="20" r="6"/><circle cx="20" cy="50" r="6"/>
+                <path d="M30 22 Q36 15 30 8 M30 22 Q24 15 30 8"/><path d="M30 38 Q36 45 30 52 M30 38 Q24 45 30 52"/>
+                <path d="M22 30 Q15 36 8 30 M22 30 Q15 24 8 30"/><path d="M38 30 Q45 36 52 30 M38 30 Q45 24 52 30"/>
+              </svg>
+            </>;
+
+          case "housewarming":
+            return <>
+              {/* Diya + marigold top-right */}
+              <svg style={{...decorStyle,top:55,right:5,opacity:0.13}} width="120" height="120" viewBox="0 0 120 120" fill="none" stroke={occAccent} strokeWidth="1.3" strokeLinecap="round">
+                <ellipse cx="90" cy="90" rx="22" ry="12"/><path d="M90 90 C90 90 88 70 90 60 C92 70 90 90 90Z"/>
+                <path d="M82 78 Q90 68 98 78"/>
+                {[0,45,90,135,180,225,270,315].map((a,i)=><path key={i} d={`M50 50 L${50+18*Math.cos(a*Math.PI/180)} ${50+18*Math.sin(a*Math.PI/180)}`}/>)}
+                <circle cx="50" cy="50" r="10"/>
+                <path d="M10 80 C10 80 10 40 30 20 C50 0 90 10 90 10" strokeOpacity="0.4"/>
+              </svg>
+            </>;
+
+          case "diwali-party":
+            return <>
+              {/* Multiple diyas + sparkles */}
+              <svg style={{...decorStyle,top:55,right:0,opacity:0.14}} width="140" height="160" viewBox="0 0 140 160" fill="none" stroke={occAccent} strokeWidth="1.2" strokeLinecap="round">
+                <ellipse cx="110" cy="110" rx="20" ry="11"/><path d="M110 110 C110 110 108 92 110 82 C112 92 110 110 110Z"/>
+                <ellipse cx="50" cy="140" rx="16" ry="9"/><path d="M50 140 C50 140 48 125 50 117 C52 125 50 140 50Z"/>
+                <ellipse cx="80" cy="125" rx="14" ry="8"/><path d="M80 125 C80 125 78 112 80 105 C82 112 80 125 80Z"/>
+                {/* Sparkle rays */}
+                <path d="M30 30 L32 24 L34 30 L40 32 L34 34 L32 40 L30 34 L24 32 Z" strokeWidth="0.9"/>
+                <path d="M100 20 L101.5 15 L103 20 L108 21.5 L103 23 L101.5 28 L100 23 L95 21.5 Z" strokeWidth="0.9"/>
+                <path d="M20 70 L21 66 L22 70 L26 71 L22 72 L21 76 L20 72 L16 71 Z" strokeWidth="0.9"/>
+                {/* Hanging lights */}
+                <path d="M0 30 Q20 40 40 30 Q60 20 80 30 Q100 40 120 30 Q140 20 160 30" strokeOpacity="0.5"/>
+                {[10,30,50,70,90,110,130].map((x,i)=><circle key={i} cx={x} cy={31+(i%3)*2} r="3"/>)}
+              </svg>
+            </>;
+
+          case "navratri-garba":
+            return <>
+              {/* Mandala + dandiya */}
+              <svg style={{...decorStyle,top:50,right:-20,opacity:0.16}} width="180" height="180" viewBox="0 0 180 180" fill="none" stroke={occAccent} strokeWidth="1.1" strokeLinecap="round">
+                <circle cx="90" cy="90" r="70"/><circle cx="90" cy="90" r="50"/><circle cx="90" cy="90" r="30"/><circle cx="90" cy="90" r="10"/>
+                {[0,30,60,90,120,150,180,210,240,270,300,330].map((a,i)=>(
+                  <line key={i} x1={90+30*Math.cos(a*Math.PI/180)} y1={90+30*Math.sin(a*Math.PI/180)} x2={90+70*Math.cos(a*Math.PI/180)} y2={90+70*Math.sin(a*Math.PI/180)}/>
+                ))}
+                {[0,45,90,135,180,225,270,315].map((a,i)=>(
+                  <path key={i} d={`M${90+50*Math.cos(a*Math.PI/180)} ${90+50*Math.sin(a*Math.PI/180)} L${90+64*Math.cos((a+15)*Math.PI/180)} ${90+64*Math.sin((a+15)*Math.PI/180)} L${90+50*Math.cos((a+30)*Math.PI/180)} ${90+50*Math.sin((a+30)*Math.PI/180)}`}/>
+                ))}
+              </svg>
+              {/* Dandiya sticks */}
+              <svg style={{...decorStyle,bottom:90,left:10,opacity:0.14}} width="80" height="80" viewBox="0 0 80 80" fill="none" stroke={occAccent} strokeWidth="2" strokeLinecap="round">
+                <line x1="10" y1="70" x2="70" y2="10"/><line x1="70" y1="70" x2="10" y2="10"/>
+                <circle cx="10" cy="70" r="5"/><circle cx="70" cy="10" r="5"/><circle cx="70" cy="70" r="5"/><circle cx="10" cy="10" r="5"/>
+              </svg>
+            </>;
+
+          case "bachelorette":
+            return <>
+              {/* Disco ball top */}
+              <svg style={{...decorStyle,top:50,right:10,opacity:0.18}} width="100" height="130" viewBox="0 0 100 130" fill="none" stroke={occAccent} strokeWidth="0.9" strokeLinecap="round">
+                <line x1="50" y1="0" x2="50" y2="20"/>
+                <circle cx="50" cy="55" r="32"/>
+                {[-3,-1,1,3].map(r=><path key={r} d={`M${50+32*Math.cos((90+r*15)*Math.PI/180)} ${55+32*Math.sin((90+r*15)*Math.PI/180)} Q50 ${55+32*Math.sin((90+r*15)*Math.PI/180)+5} ${50+32*Math.cos((90-r*15+180)*Math.PI/180)} ${55+32*Math.sin((90-r*15+180)*Math.PI/180)}`}/>)}
+                {[0,30,60,90,120,150,180,210,240,270,300,330].map((a,i)=><line key={i} x1={50+22*Math.cos(a*Math.PI/180)} y1={55+22*Math.sin(a*Math.PI/180)} x2={50+32*Math.cos(a*Math.PI/180)} y2={55+32*Math.sin(a*Math.PI/180)}/>)}
+                {/* Reflection sparkles */}
+                <path d="M10 20 L11 16 L12 20 L16 21 L12 22 L11 26 L10 22 L6 21 Z"/>
+                <path d="M85 30 L86 27 L87 30 L90 31 L87 32 L86 35 L85 32 L82 31 Z"/>
+                <path d="M20 90 L21 87 L22 90 L25 91 L22 92 L21 95 L20 92 L17 91 Z"/>
+              </svg>
+            </>;
+
+          case "graduation":
+            return <>
+              {/* Graduation cap top-right */}
+              <svg style={{...decorStyle,top:55,right:10,opacity:0.12}} width="120" height="110" viewBox="0 0 120 110" fill="none" stroke={occAccent} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="60,20 110,45 60,70 10,45"/>
+                <path d="M60 70 L60 90"/><path d="M95 55 L95 80"/><path d="M85 80 Q95 85 105 80"/>
+                <circle cx="60" cy="92" r="3"/>
+                {/* Stars */}
+                <path d="M20 20 L21.5 15 L23 20 L28 21.5 L23 23 L21.5 28 L20 23 L15 21.5 Z"/>
+                <path d="M100 15 L101 12 L102 15 L105 16 L102 17 L101 20 L100 17 L97 16 Z"/>
+              </svg>
+              {/* Diploma bottom-left */}
+              <svg style={{...decorStyle,bottom:85,left:5,opacity:0.10}} width="80" height="60" viewBox="0 0 80 60" fill="none" stroke={occAccent} strokeWidth="1.2" strokeLinecap="round">
+                <rect x="5" y="10" width="70" height="45" rx="3"/>
+                <path d="M15 25 L65 25 M15 33 L65 33 M15 41 L45 41"/>
+                <circle cx="60" cy="45" r="8"/>
+              </svg>
+            </>;
+
+          case "farewell":
+            return <>
+              {/* Polaroid frames top-right */}
+              <svg style={{...decorStyle,top:55,right:5,opacity:0.12}} width="130" height="130" viewBox="0 0 130 130" fill="none" stroke={occAccent} strokeWidth="1.2" strokeLinecap="round">
+                <g transform="rotate(-8 40 50)"><rect x="10" y="10" width="60" height="70" rx="2"/><rect x="15" y="15" width="50" height="50"/><line x1="10" y1="65" x2="70" y2="65"/></g>
+                <g transform="rotate(10 90 80)"><rect x="65" y="50" width="55" height="65" rx="2"/><rect x="70" y="55" width="45" height="45"/><line x1="65" y1="100" x2="120" y2="100"/></g>
+                <path d="M20 10 L21.5 5 L23 10 L28 11.5 L23 13 L21.5 18 L20 13 L15 11.5 Z" strokeWidth="0.9"/>
+                <path d="M105 30 L106 27 L107 30 L110 31 L107 32 L106 35 L105 32 L102 31 Z" strokeWidth="0.9"/>
+              </svg>
+            </>;
+
+          case "retirement":
+            return <>
+              {/* Trophy top-right */}
+              <svg style={{...decorStyle,top:55,right:5,opacity:0.12}} width="100" height="130" viewBox="0 0 100 130" fill="none" stroke={occAccent} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M30 20 Q20 20 20 35 Q20 55 50 65 Q80 55 80 35 Q80 20 70 20 Z"/>
+                <path d="M20 28 Q5 30 8 50 Q10 65 25 62"/><path d="M80 28 Q95 30 92 50 Q90 65 75 62"/>
+                <line x1="50" y1="65" x2="50" y2="90"/><path d="M30 90 L70 90"/><rect x="30" y="90" width="40" height="8" rx="2"/>
+                <path d="M42 38 L44.5 31 L47 38 L54 40 L47 42 L44.5 49 L42 42 L35 40 Z"/>
+              </svg>
+            </>;
+
+          case "holi-party":
+            return <>
+              {/* Color splash blobs */}
+              <svg style={{...decorStyle,top:0,left:0,width:"100%",height:"100%",opacity:0.07}} viewBox="0 0 400 700" fill="none" preserveAspectRatio="none">
+                <ellipse cx="30" cy="80" rx="55" ry="45" fill={occConfetti[0]}/>
+                <ellipse cx="370" cy="120" rx="50" ry="40" fill={occConfetti[1]}/>
+                <ellipse cx="50" cy="350" rx="40" ry="55" fill={occConfetti[2]}/>
+                <ellipse cx="360" cy="400" rx="55" ry="40" fill={occConfetti[3]}/>
+                <ellipse cx="200" cy="620" rx="60" ry="45" fill={occConfetti[4]}/>
+              </svg>
+            </>;
+
+          case "wedding":
+            return <>
+              {/* Floral mandala border top-right */}
+              <svg style={{...decorStyle,top:40,right:-30,opacity:0.11}} width="160" height="160" viewBox="0 0 160 160" fill="none" stroke={occAccent} strokeWidth="1" strokeLinecap="round">
+                {[0,45,90,135,180,225,270,315].map((a,i)=>{
+                  const r=60,cx=80,cy=80;
+                  const x1=cx+r*Math.cos(a*Math.PI/180),y1=cy+r*Math.sin(a*Math.PI/180);
+                  return <g key={i}><path d={`M${cx} ${cy} Q${cx+r*0.7*Math.cos((a+22)*Math.PI/180)} ${cy+r*0.7*Math.sin((a+22)*Math.PI/180)} ${x1} ${y1}`}/><circle cx={x1} cy={y1} r="8"/></g>;
+                })}
+                <circle cx="80" cy="80" r="20"/><circle cx="80" cy="80" r="8"/>
+              </svg>
+            </>;
+
+          default:
+            return null;
+        }
+      })()}
+
       {/* ── Section content ── */}
       <div className="occ-scroll-area" style={{ flex:1, overflowY:"auto", padding:"14px 16px 110px", maxWidth:800, margin:"0 auto", width:"100%", boxSizing:"border-box", position:"relative", zIndex:1, background: pageBg }}>
 
@@ -6212,16 +6401,16 @@ export default function OccasionHub({ occasion }) {
                   </div>
                 </button>
                 {/* Join card */}
-                <button onClick={()=>setRoomModal("join")} style={{ flex:2, padding:"18px 14px", borderRadius:18, border:"1.5px solid rgba(0,0,0,0.07)", background:"rgba(255,255,255,0.85)", cursor:"pointer", display:"flex", alignItems:"center", gap:12, boxShadow:"0 4px 16px rgba(0,0,0,0.06)" }}>
+                <button onClick={()=>setRoomModal("join")} style={{ flex:2, padding:"18px 14px", borderRadius:18, border:`1.5px solid ${T.joinBd}`, background:T.joinCard, cursor:"pointer", display:"flex", alignItems:"center", gap:12, boxShadow:"0 4px 16px rgba(0,0,0,0.06)" }}>
                   <div style={{ width:48, height:48, borderRadius:"50%", background:occIconBg, border:`1.5px solid ${occAccent}25`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={occAccent} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                   </div>
                   <div style={{ flex:1, textAlign:"left" }}>
-                    <div style={{ fontSize:15, fontWeight:700, color:"#2C1A0E", marginBottom:3 }}>Join Room</div>
-                    <div style={{ fontSize:11.5, color:"rgba(44,26,14,0.5)" }}>Enter with an invite code</div>
+                    <div style={{ fontSize:15, fontWeight:700, color:T.main, marginBottom:3 }}>Join Room</div>
+                    <div style={{ fontSize:11.5, color:T.sub }}>Enter with an invite code</div>
                   </div>
-                  <div style={{ width:32, height:32, borderRadius:"50%", border:"1.5px solid rgba(44,26,14,0.12)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(44,26,14,0.5)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  <div style={{ width:32, height:32, borderRadius:"50%", border:`1.5px solid ${T.joinBd}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={T.sub} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                   </div>
                 </button>
               </div>
@@ -6241,21 +6430,21 @@ export default function OccasionHub({ occasion }) {
               return (
                 <div key={section.id} style={{ marginBottom:28 }}>
                   <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12 }}>
-                    <div style={{ fontSize:10, fontWeight:800, color:"#2C1A0E", textTransform:"uppercase", letterSpacing:"0.16em", flexShrink:0 }}>{section.label.replace(/^.{1,2}\s/, '')}</div>
-                    <div style={{ flex:1, height:1, background:"rgba(44,26,14,0.1)" }} />
+                    <div style={{ fontSize:10, fontWeight:800, color:T.sectionLbl, textTransform:"uppercase", letterSpacing:"0.16em", flexShrink:0 }}>{section.label.replace(/^.{1,2}\s/, '')}</div>
+                    <div style={{ flex:1, height:1, background:T.sectionLn }} />
                     <div style={{ fontSize:10, color:PH.violet, fontWeight:600 }}>{sectionTools.length}</div>
                   </div>
                   {isGameSection ? (
                     <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }}>
                       {sectionTools.map(t => (
-                        <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"#F0E8DC", border:"1.5px solid rgba(196,122,46,0.12)", borderRadius:14, padding:"16px 8px 14px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:10, textAlign:"center" }}>
+                        <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:T.cardBg, border:`1.5px solid ${T.cardBd}`, borderRadius:14, padding:"16px 8px 14px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:10, textAlign:"center" }}>
                           <div style={{ color:PH.violet }}>{TOOL_ICONS[t.id]||occic(<polygon points="5 3 19 12 5 21 5 3"/>)}</div>
-                          <div style={{ fontSize:11.5, fontWeight:600, color:"#2C1A0E", lineHeight:1.35 }}>{t.title}</div>
+                          <div style={{ fontSize:11.5, fontWeight:600, color:T.main, lineHeight:1.35 }}>{t.title}</div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div style={{ background:"rgba(255,255,255,0.75)", borderRadius:16, border:"1px solid rgba(0,0,0,0.06)", overflow:"hidden", boxShadow:"0 2px 12px rgba(0,0,0,0.05)" }}>
+                    <div style={{ background:T.cardBg, borderRadius:16, border:`1px solid ${T.cardBd}`, overflow:"hidden", boxShadow:"0 2px 12px rgba(0,0,0,0.05)" }}>
                       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:0 }}>
                         {sectionTools.map((t,i) => {
                           const desc = t.desc && !t.desc.startsWith('#') ? t.desc : null;
@@ -6263,18 +6452,18 @@ export default function OccasionHub({ occasion }) {
                           return (
                             <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{
                               background:"transparent", border:"none",
-                              borderBottom: i < sectionTools.length - (sectionTools.length%2===0?2:1) ? "1px solid rgba(0,0,0,0.05)" : "none",
-                              borderRight: !isRight && i < sectionTools.length-1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+                              borderBottom: i < sectionTools.length - (sectionTools.length%2===0?2:1) ? `1px solid ${T.rowBd}` : "none",
+                              borderRight: !isRight && i < sectionTools.length-1 ? `1px solid ${T.rowBd}` : "none",
                               padding:"14px 14px", cursor:"pointer", display:"flex", alignItems:"center", gap:12
                             }}>
                               <div style={{ width:44, height:44, borderRadius:12, background:occIconBg, border:`1.5px solid ${occAccent}20`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:occAccent }}>
                                 {TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}
                               </div>
                               <div style={{ flex:1, minWidth:0 }}>
-                                <div style={{ fontSize:13.5, fontWeight:700, color:"#2C1A0E", lineHeight:1.3 }}>{t.title}</div>
-                                {desc && <div style={{ fontSize:11.5, color:"rgba(44,26,14,0.48)", marginTop:2, lineHeight:1.4 }}>{desc}</div>}
+                                <div style={{ fontSize:13.5, fontWeight:700, color:T.main, lineHeight:1.3 }}>{t.title}</div>
+                                {desc && <div style={{ fontSize:11.5, color:T.sub, marginTop:2, lineHeight:1.4 }}>{desc}</div>}
                               </div>
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(44,26,14,0.25)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                             </div>
                           );
                         })}
@@ -6291,18 +6480,18 @@ export default function OccasionHub({ occasion }) {
         {activeTab === "play" && (
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
             <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
-              <div style={{ fontSize:10, fontWeight:800, color:"#2C1A0E", textTransform:"uppercase", letterSpacing:"0.16em" }}>Games &amp; Activities</div>
-              <div style={{ flex:1, height:1, background:"rgba(44,26,14,0.1)" }} />
+              <div style={{ fontSize:10, fontWeight:800, color:T.sectionLbl, textTransform:"uppercase", letterSpacing:"0.16em" }}>Games &amp; Activities</div>
+              <div style={{ flex:1, height:1, background:T.sectionLn }} />
               <div style={{ fontSize:10, color:PH.violet, fontWeight:600 }}>{playTools.length}</div>
             </div>
             {playTools.length === 0 ? (
-              <div style={{ textAlign:"center", padding:"48px 20px", color:"rgba(44,26,14,0.35)", fontSize:14 }}>No games available for this occasion.</div>
+              <div style={{ textAlign:"center", padding:"48px 20px", color:T.sub, fontSize:14 }}>No games available for this occasion.</div>
             ) : (
               <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }}>
                 {playTools.map(t => (
-                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"#F0E8DC", border:"1.5px solid rgba(196,122,46,0.12)", borderRadius:14, padding:"16px 8px 14px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:10, textAlign:"center" }}>
+                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:T.cardBg, border:`1.5px solid ${T.cardBd}`, borderRadius:14, padding:"16px 8px 14px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:10, textAlign:"center" }}>
                     <div style={{ color:PH.violet }}>{TOOL_ICONS[t.id]||occic(<polygon points="5 3 19 12 5 21 5 3"/>)}</div>
-                    <div style={{ fontSize:11.5, fontWeight:600, color:"#2C1A0E", lineHeight:1.35 }}>{t.title}</div>
+                    <div style={{ fontSize:11.5, fontWeight:600, color:T.main, lineHeight:1.35 }}>{t.title}</div>
                   </div>
                 ))}
               </div>
@@ -6316,19 +6505,19 @@ export default function OccasionHub({ occasion }) {
             {room ? (
               <>
                 <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
-                  <div style={{ fontSize:10, fontWeight:800, color:"#2C1A0E", textTransform:"uppercase", letterSpacing:"0.16em" }}>Online Now</div>
-                  <div style={{ flex:1, height:1, background:"rgba(44,26,14,0.1)" }} />
+                  <div style={{ fontSize:10, fontWeight:800, color:T.sectionLbl, textTransform:"uppercase", letterSpacing:"0.16em" }}>Online Now</div>
+                  <div style={{ flex:1, height:1, background:T.sectionLn }} />
                   <div style={{ fontSize:10, color:PH.violet, fontWeight:600 }}>{room.players?.length||1}</div>
                 </div>
                 {(room.players||[myName]).map((p,i) => (
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 16px", background:"#F0E8DC", border:"1px solid rgba(196,122,46,0.12)", borderRadius:12, marginBottom:8 }}>
-                    <div style={{ width:34, height:34, borderRadius:"50%", background:`${PH.violet}18`, border:`1px solid ${PH.violet}28`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:600, color:"#2C1A0E", flexShrink:0 }}>{p.charAt(0).toUpperCase()}</div>
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 16px", background:T.cardBg, border:`1px solid ${T.cardBd}`, borderRadius:12, marginBottom:8 }}>
+                    <div style={{ width:34, height:34, borderRadius:"50%", background:`${PH.violet}18`, border:`1px solid ${PH.violet}28`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:600, color:T.main, flexShrink:0 }}>{p.charAt(0).toUpperCase()}</div>
                     <div style={{ flex:1 }}>
-                      <div style={{ fontSize:14, fontWeight:600, color:"#2C1A0E" }}>{p}{p===myName&&<span style={{ fontSize:11, color:PH.violet, fontWeight:500, marginLeft:6 }}>you</span>}</div>
+                      <div style={{ fontSize:14, fontWeight:600, color:T.main }}>{p}{p===myName&&<span style={{ fontSize:11, color:PH.violet, fontWeight:500, marginLeft:6 }}>you</span>}</div>
                     </div>
                     <div style={{ display:"flex", alignItems:"center", gap:5 }}>
                       <span style={{ width:6, height:6, borderRadius:"50%", background:"#4ade80", animation:`dot-pulse 2s ease infinite`, animationDelay:`${i*0.3}s` }} />
-                      <span style={{ fontSize:11, color:"rgba(44,26,14,0.45)" }}>online</span>
+                      <span style={{ fontSize:11, color:T.sub }}>online</span>
                     </div>
                   </div>
                 ))}
@@ -6339,11 +6528,11 @@ export default function OccasionHub({ occasion }) {
             ) : (
               <div style={{ textAlign:"center", padding:"48px 20px" }}>
                 <div style={{ fontSize:52, marginBottom:16 }}>👥</div>
-                <div style={{ fontSize:17, fontWeight:700, color:"#2C1A0E", marginBottom:8 }}>Start a Party Room</div>
-                <div style={{ fontSize:13, color:"rgba(44,26,14,0.45)", marginBottom:24, lineHeight:1.6 }}>Host a live room so your guests can join, see who's online, and play games together in real time.</div>
+                <div style={{ fontSize:17, fontWeight:700, color:T.main, marginBottom:8 }}>Start a Party Room</div>
+                <div style={{ fontSize:13, color:T.sub, marginBottom:24, lineHeight:1.6 }}>Host a live room so your guests can join, see who's online, and play games together in real time.</div>
                 <div style={{ display:"flex", gap:10 }}>
                   <button onClick={()=>setRoomModal("host-setup")} style={{ flex:1, padding:"13px", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer" }}>Host a Room</button>
-                  <button onClick={()=>setRoomModal("join")} style={{ flex:1, padding:"13px", borderRadius:12, border:"1px solid rgba(44,26,14,0.12)", background:"#F0E8DC", color:"rgba(44,26,14,0.7)", fontSize:14, fontWeight:600, cursor:"pointer" }}>Join Room</button>
+                  <button onClick={()=>setRoomModal("join")} style={{ flex:1, padding:"13px", borderRadius:12, border:`1px solid ${T.cardBd}`, background:T.cardBg, color:T.sub, fontSize:14, fontWeight:600, cursor:"pointer" }}>Join Room</button>
                 </div>
               </div>
             )}
@@ -6354,14 +6543,14 @@ export default function OccasionHub({ occasion }) {
         {activeTab === "plan" && (
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
             <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
-              <div style={{ fontSize:10, fontWeight:800, color:"#2C1A0E", textTransform:"uppercase", letterSpacing:"0.16em" }}>Planning Tools</div>
-              <div style={{ flex:1, height:1, background:"rgba(44,26,14,0.1)" }} />
+              <div style={{ fontSize:10, fontWeight:800, color:T.sectionLbl, textTransform:"uppercase", letterSpacing:"0.16em" }}>Planning Tools</div>
+              <div style={{ flex:1, height:1, background:T.sectionLn }} />
               <div style={{ fontSize:10, color:PH.violet, fontWeight:600 }}>{planTools.length}</div>
             </div>
             {planTools.length === 0 ? (
-              <div style={{ textAlign:"center", padding:"48px 20px", color:"rgba(44,26,14,0.35)", fontSize:14 }}>No planning tools for this occasion.</div>
+              <div style={{ textAlign:"center", padding:"48px 20px", color:T.sub, fontSize:14 }}>No planning tools for this occasion.</div>
             ) : (
-              <div style={{ background:"rgba(255,255,255,0.75)", borderRadius:16, border:"1px solid rgba(0,0,0,0.06)", overflow:"hidden", boxShadow:"0 2px 12px rgba(0,0,0,0.05)" }}>
+              <div style={{ background:T.cardBg, borderRadius:16, border:`1px solid ${T.cardBd}`, overflow:"hidden", boxShadow:"0 2px 12px rgba(0,0,0,0.05)" }}>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:0 }}>
                   {planTools.map((t,i) => {
                     const desc = t.desc && !t.desc.startsWith('#') ? t.desc : null;
@@ -6369,18 +6558,18 @@ export default function OccasionHub({ occasion }) {
                     return (
                       <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{
                         background:"transparent", border:"none",
-                        borderBottom: i < planTools.length - (planTools.length%2===0?2:1) ? "1px solid rgba(0,0,0,0.05)" : "none",
-                        borderRight: !isRight && i < planTools.length-1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+                        borderBottom: i < planTools.length - (planTools.length%2===0?2:1) ? `1px solid ${T.rowBd}` : "none",
+                        borderRight: !isRight && i < planTools.length-1 ? `1px solid ${T.rowBd}` : "none",
                         padding:"14px 14px", cursor:"pointer", display:"flex", alignItems:"center", gap:12
                       }}>
                         <div style={{ width:44, height:44, borderRadius:12, background:occIconBg, border:`1.5px solid ${occAccent}20`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:occAccent }}>
                           {TOOL_ICONS[t.id]||occic(<rect x="3" y="3" width="18" height="18" rx="2"/>)}
                         </div>
                         <div style={{ flex:1, minWidth:0 }}>
-                          <div style={{ fontSize:13.5, fontWeight:700, color:"#2C1A0E", lineHeight:1.3 }}>{t.title}</div>
-                          {desc && <div style={{ fontSize:11.5, color:"rgba(44,26,14,0.48)", marginTop:2, lineHeight:1.4 }}>{desc}</div>}
+                          <div style={{ fontSize:13.5, fontWeight:700, color:T.main, lineHeight:1.3 }}>{t.title}</div>
+                          {desc && <div style={{ fontSize:11.5, color:T.sub, marginTop:2, lineHeight:1.4 }}>{desc}</div>}
                         </div>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(44,26,14,0.25)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                       </div>
                     );
                   })}
@@ -6394,14 +6583,14 @@ export default function OccasionHub({ occasion }) {
         {activeTab === "moments" && (
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
             <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
-              <div style={{ fontSize:10, fontWeight:800, color:"#2C1A0E", textTransform:"uppercase", letterSpacing:"0.16em" }}>Capture &amp; Celebrate</div>
-              <div style={{ flex:1, height:1, background:"rgba(44,26,14,0.1)" }} />
+              <div style={{ fontSize:10, fontWeight:800, color:T.sectionLbl, textTransform:"uppercase", letterSpacing:"0.16em" }}>Capture &amp; Celebrate</div>
+              <div style={{ flex:1, height:1, background:T.sectionLn }} />
               <div style={{ fontSize:10, color:PH.violet, fontWeight:600 }}>{momentTools.length}</div>
             </div>
             {momentTools.length === 0 ? (
-              <div style={{ textAlign:"center", padding:"40px 20px", color:"rgba(44,26,14,0.35)", fontSize:14 }}>No moments tools for this occasion.</div>
+              <div style={{ textAlign:"center", padding:"40px 20px", color:T.sub, fontSize:14 }}>No moments tools for this occasion.</div>
             ) : (
-              <div style={{ background:"rgba(255,255,255,0.75)", borderRadius:16, border:"1px solid rgba(0,0,0,0.06)", overflow:"hidden", boxShadow:"0 2px 12px rgba(0,0,0,0.05)" }}>
+              <div style={{ background:T.cardBg, borderRadius:16, border:`1px solid ${T.cardBd}`, overflow:"hidden", boxShadow:"0 2px 12px rgba(0,0,0,0.05)" }}>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:0 }}>
                   {momentTools.map((t,i) => {
                     const desc = t.desc && !t.desc.startsWith('#') ? t.desc : null;
@@ -6409,28 +6598,28 @@ export default function OccasionHub({ occasion }) {
                     return (
                       <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{
                         background:"transparent", border:"none",
-                        borderBottom: i < momentTools.length - (momentTools.length%2===0?2:1) ? "1px solid rgba(0,0,0,0.05)" : "none",
-                        borderRight: !isRight && i < momentTools.length-1 ? "1px solid rgba(0,0,0,0.05)" : "none",
+                        borderBottom: i < momentTools.length - (momentTools.length%2===0?2:1) ? `1px solid ${T.rowBd}` : "none",
+                        borderRight: !isRight && i < momentTools.length-1 ? `1px solid ${T.rowBd}` : "none",
                         padding:"14px 14px", cursor:"pointer", display:"flex", alignItems:"center", gap:12
                       }}>
                         <div style={{ width:44, height:44, borderRadius:12, background:occIconBg, border:`1.5px solid ${occAccent}20`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:occAccent }}>
                           {TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}
                         </div>
                         <div style={{ flex:1, minWidth:0 }}>
-                          <div style={{ fontSize:13.5, fontWeight:700, color:"#2C1A0E", lineHeight:1.3 }}>{t.title}</div>
-                          {desc && <div style={{ fontSize:11.5, color:"rgba(44,26,14,0.48)", marginTop:2, lineHeight:1.4 }}>{desc}</div>}
+                          <div style={{ fontSize:13.5, fontWeight:700, color:T.main, lineHeight:1.3 }}>{t.title}</div>
+                          {desc && <div style={{ fontSize:11.5, color:T.sub, marginTop:2, lineHeight:1.4 }}>{desc}</div>}
                         </div>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(44,26,14,0.25)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                       </div>
                     );
                   })}
                 </div>
               </div>
             )}
-            <div style={{ marginTop:20, background:"rgba(196,151,58,0.06)", border:"1px solid rgba(196,151,58,0.15)", borderRadius:14, padding:"18px 20px", display:"flex", alignItems:"center", gap:14 }}>
+            <div style={{ marginTop:20, background:`${occAccent}0a`, border:`1px solid ${occAccent}25`, borderRadius:14, padding:"18px 20px", display:"flex", alignItems:"center", gap:14 }}>
               <div style={{ flex:1 }}>
-                <div style={{ fontSize:14, fontWeight:600, color:"#2C1A0E", marginBottom:3 }}>Party Recap</div>
-                <div style={{ fontSize:12, color:"rgba(44,26,14,0.45)", lineHeight:1.5 }}>Create a shareable summary of your event.</div>
+                <div style={{ fontSize:14, fontWeight:600, color:T.main, marginBottom:3 }}>Party Recap</div>
+                <div style={{ fontSize:12, color:T.sub, lineHeight:1.5 }}>Create a shareable summary of your event.</div>
               </div>
               <button onClick={()=>setOpen("reportcard")} style={{ padding:"9px 18px", borderRadius:10, border:`1.5px solid ${PH.violet}50`, background:`${PH.violet}14`, color:PH.violet, fontSize:12, fontWeight:600, cursor:"pointer", flexShrink:0 }}>Create →</button>
             </div>
@@ -6439,15 +6628,15 @@ export default function OccasionHub({ occasion }) {
       </div>
 
       {/* ── Bottom Navigation ── */}
-      <div style={{ flexShrink:0, background:"rgba(255,255,255,0.92)", borderTop:"1px solid rgba(0,0,0,0.06)", padding:"10px 0", paddingBottom:"calc(10px + env(safe-area-inset-bottom,0px))", position:"relative", zIndex:2, boxShadow:"0 -1px 0 rgba(0,0,0,0.05)", backdropFilter:"blur(20px)" }}>
+      <div style={{ flexShrink:0, background:T.navBg, borderTop:`1px solid ${T.sectionLn}`, padding:"10px 0", paddingBottom:"calc(10px + env(safe-area-inset-bottom,0px))", position:"relative", zIndex:2, boxShadow:"0 -1px 0 rgba(0,0,0,0.05)", backdropFilter:"blur(20px)" }}>
         <div style={{ display:"flex", maxWidth:800, margin:"0 auto" }}>
           {TAB_CFG.map(t => {
             const isActive = activeTab === t.id;
-            const tColor = tabAccentMap[t.id] || accent;
+            const tColor = tabAccentMap[t.id] || occAccent;
             return (
               <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:3, padding:"4px 0 2px", border:"none", background:"transparent", cursor:"pointer" }}>
-                <div style={{ color:isActive?tColor:"rgba(44,26,14,0.38)", transition:"color 0.18s" }}>{t.icon}</div>
-                <div style={{ fontSize:9, fontWeight:isActive?700:500, color:isActive?tColor:"rgba(44,26,14,0.38)", letterSpacing:"0.08em", textTransform:"uppercase", transition:"color 0.18s" }}>{t.label}</div>
+                <div style={{ color:isActive?tColor:T.navInact, transition:"color 0.18s" }}>{t.icon}</div>
+                <div style={{ fontSize:9, fontWeight:isActive?700:500, color:isActive?tColor:T.navInact, letterSpacing:"0.08em", textTransform:"uppercase", transition:"color 0.18s" }}>{t.label}</div>
                 <div style={{ width:isActive?16:0, height:2, borderRadius:1, background:tColor, transition:"width 0.22s cubic-bezier(0.22,1,0.36,1)" }} />
               </button>
             );
