@@ -2882,7 +2882,9 @@ const Home = () => {
               <span className="occ-name">{occ.name}</span>
               {occ.localName && <span className="occ-hinglish">{occ.localName}</span>}
             </span>
-            <span className="occ-flow-arr">→</span>
+            <span className="occ-flow-arr">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </span>
           </button>
         );
 
@@ -2890,38 +2892,32 @@ const Home = () => {
           <>
             <style>{`
               .occ-flow-row {
-                display: flex; align-items: center; gap: 14px;
-                width: 100%; padding: 11px 8px;
+                display: flex; align-items: center; gap: 16px;
+                width: 100%; padding: 16px 4px;
                 border: none;
-                border-bottom: 1px solid rgba(196,122,46,0.08);
-                border-radius: 8px;
+                border-bottom: 1px solid rgba(0,0,0,0.06);
                 background: transparent; cursor: pointer;
-                font-family: ${f}; font-size: 14.5px;
+                font-family: ${f}; font-size: 15px; font-weight: 600;
                 color: #2C1A0E; text-align: left;
-                transition: background 0.14s, color 0.14s;
+                transition: background 0.14s;
               }
-              .occ-flow-row:hover {
-                background: rgba(196,122,46,0.06);
-                color: #1A0800;
-              }
+              .occ-flow-row:last-child { border-bottom: none; }
+              .occ-flow-row:hover { background: rgba(196,122,46,0.05); border-radius: 8px; }
               .occ-num {
-                font-family: ${ser}; font-size: 10.5px; font-weight: 400;
-                color: ${CHAMP}; flex-shrink: 0; min-width: 22px;
-                letter-spacing: 0.04em; line-height: 1; padding-top: 1px;
+                font-family: ${ser}; font-size: 12px; font-weight: 500;
+                color: ${CHAMP}; flex-shrink: 0; min-width: 24px;
+                letter-spacing: 0.03em; line-height: 1;
               }
-              .occ-name-wrap {
-                flex: 1; display: flex; flex-direction: column; gap: 1px;
-              }
+              .occ-name-wrap { flex: 1; display: flex; flex-direction: column; gap: 1px; }
               .occ-name { line-height: 1.3; }
               .occ-hinglish {
-                font-size: 11px; color: transparent;
+                font-size: 11px; font-weight: 400; color: transparent;
                 transition: color 0.14s; font-family: ${f};
-                letter-spacing: 0.01em;
               }
               .occ-flow-row:hover .occ-hinglish { color: rgba(196,122,46,0.55); }
               .occ-flow-arr {
-                font-size: 13px; color: rgba(196,122,46,0.35);
-                transition: color 0.14s; flex-shrink: 0;
+                color: rgba(44,26,14,0.3); flex-shrink: 0;
+                transition: color 0.14s;
               }
               .occ-flow-row:hover .occ-flow-arr { color: ${CHAMP}; }
               .occ-flow-body::-webkit-scrollbar { display: none; }
@@ -2948,24 +2944,24 @@ const Home = () => {
               position: "fixed",
             }}>
               {/* Header */}
-              <div style={{ padding: "24px 26px 20px", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0, position: "relative" }}>
+              <div style={{ padding: "28px 32px 22px", borderBottom: "1px solid rgba(0,0,0,0.07)", flexShrink: 0, position: "relative" }}>
                 <button
                   onClick={closeFlow}
-                  style={{ position: "absolute", top: 18, right: 20, width: 28, height: 28, borderRadius: "50%", background: "rgba(44,26,14,0.06)", border: "none", color: "rgba(44,26,14,0.5)", fontSize: 16, lineHeight: 1, cursor: "pointer", fontFamily: f, display: "flex", alignItems: "center", justifyContent: "center" }}
+                  style={{ position: "absolute", top: 22, right: 22, width: 32, height: 32, borderRadius: "50%", background: "rgba(44,26,14,0.06)", border: "1px solid rgba(44,26,14,0.08)", color: "rgba(44,26,14,0.55)", fontSize: 18, lineHeight: 1, cursor: "pointer", fontFamily: f, display: "flex", alignItems: "center", justifyContent: "center" }}
                 >×</button>
-                <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.20em", margin: "0 0 6px", fontFamily: f }}>PLAN AN OCCASION</p>
-                <h2 style={{ fontFamily: ser, fontSize: "clamp(1.9rem,4vw,2.7rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 18px", lineHeight: 1.1 }}>What are you planning?</h2>
+                <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.18em", margin: "0 0 8px", fontFamily: f }}>PLAN AN OCCASION</p>
+                <h2 style={{ fontFamily: ser, fontSize: "clamp(2.2rem,4vw,3rem)", fontWeight: 700, color: "#2C1A0E", margin: "0 0 22px", lineHeight: 1.05 }}>What are you planning?</h2>
                 {/* Search */}
-                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#FAFAF8", border: "1.5px solid rgba(196,122,46,0.18)", borderRadius: 100, padding: "0 16px" }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#F8F5F0", border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 100, padding: "0 20px" }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                   <input
                     value={occasionSearch}
                     onChange={e => setOccasionSearch(e.target.value)}
                     placeholder="Search occasions…"
-                    style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 13.5, fontFamily: f, color: "#2C1A0E", padding: "11px 0" }}
+                    style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 14, fontFamily: f, color: "#2C1A0E", padding: "13px 0" }}
                   />
                   {occasionSearch && (
-                    <button onClick={() => setOccasionSearch("")} style={{ background: "none", border: "none", color: "rgba(44,26,14,0.3)", cursor: "pointer", fontSize: 18, padding: 0, lineHeight: 1 }}>×</button>
+                    <button onClick={() => setOccasionSearch("")} style={{ background: "none", border: "none", color: "rgba(44,26,14,0.35)", cursor: "pointer", fontSize: 20, padding: 0, lineHeight: 1 }}>×</button>
                   )}
                 </div>
               </div>
@@ -2986,24 +2982,24 @@ const Home = () => {
                   <>
                     <div style={{ display: "flex", position: "relative" }}>
                       {FLOW_GROUPS.map((group, gi) => (
-                        <div key={group.label} style={{ flex: 1, padding: "0 26px 24px", borderRight: gi === 0 ? "1px solid rgba(196,122,46,0.1)" : "none" }}>
+                        <div key={group.label} style={{ flex: 1, padding: "0 32px 28px", borderRight: gi === 0 ? "1px solid rgba(0,0,0,0.07)" : "none" }}>
                           {/* Category header with icon */}
-                          <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "18px 0 14px" }}>
-                            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "22px 0 18px" }}>
+                            <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#F5F0E8", border: "1.5px solid rgba(196,122,46,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                               {group.icon === "gift" ? (
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                                   <polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/>
                                   <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
                                 </svg>
                               ) : (
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                                   <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>
                                 </svg>
                               )}
                             </div>
                             <div>
-                              <p style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "rgba(44,26,14,0.5)", margin: 0, fontFamily: f }}>{group.label}</p>
-                              <p style={{ fontSize: 11, fontStyle: "italic", color: "rgba(44,26,14,0.38)", margin: "2px 0 0", fontFamily: ser }}>{group.desc}</p>
+                              <p style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.18em", color: "#2C1A0E", margin: 0, fontFamily: f, borderBottom: "2px solid #2C1A0E", paddingBottom: 2, display: "inline-block" }}>{group.label}</p>
+                              <p style={{ fontSize: 12, fontStyle: "italic", color: "rgba(44,26,14,0.45)", margin: "4px 0 0", fontFamily: ser, fontWeight: 400 }}>{group.desc}</p>
                             </div>
                           </div>
                           {group.ids.map((id, rowIdx) => {
@@ -3012,23 +3008,39 @@ const Home = () => {
                           })}
                         </div>
                       ))}
-                      {/* OR circle at column midpoint */}
-                      <div style={{ position: "absolute", left: "50%", top: 46, transform: "translateX(-50%)", width: 30, height: 30, borderRadius: "50%", background: "#fff", border: "1px solid rgba(196,122,46,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 700, color: "rgba(196,122,46,0.55)", letterSpacing: "0.06em", fontFamily: f, zIndex: 2, boxShadow: "0 1px 6px rgba(0,0,0,0.06)" }}>OR</div>
+                      {/* OR circle centered on divider line */}
+                      <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: 34, height: 34, borderRadius: "50%", background: "#fff", border: "1px solid rgba(0,0,0,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "rgba(44,26,14,0.45)", letterSpacing: "0.06em", fontFamily: f, zIndex: 2, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>OR</div>
                     </div>
 
                     {/* Business — full width with centered divider label */}
-                    <div style={{ padding: "0 26px 24px", position: "relative" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "8px 0 12px" }}>
-                        <div style={{ flex: 1, height: 1, background: "rgba(196,122,46,0.1)" }} />
-                        <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(196,122,46,0.45)", textTransform: "uppercase", letterSpacing: "0.24em", fontFamily: f }}>BUSINESS</span>
-                        <div style={{ flex: 1, height: 1, background: "rgba(196,122,46,0.1)" }} />
+                    <div style={{ padding: "0 32px 32px", position: "relative" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "4px 0 14px" }}>
+                        <div style={{ flex: 1, height: 1, background: "rgba(0,0,0,0.07)" }} />
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(44,26,14,0.4)", textTransform: "uppercase", letterSpacing: "0.22em", fontFamily: f }}>BUSINESS</span>
+                        <div style={{ flex: 1, height: 1, background: "rgba(0,0,0,0.07)" }} />
                       </div>
                       {BUSINESS_IDS.map(id => {
                         const occ = OCCASIONS.find(o => o.id === id);
                         return occ ? renderRow(occ) : null;
                       })}
-                      {/* Champagne decoration */}
-                      <div style={{ position: "absolute", bottom: 0, right: 20, opacity: 0.09, fontSize: 52, lineHeight: 1, pointerEvents: "none", userSelect: "none" }}>🥂</div>
+                      {/* Champagne SVG decoration */}
+                      <div style={{ position: "absolute", bottom: 8, right: 24, pointerEvents: "none", userSelect: "none" }}>
+                        <svg width="88" height="100" viewBox="0 0 88 100" fill="none" stroke="#C4973A" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.28 }}>
+                          <path d="M44 2v3M42.5 3.5h3M41 1.5l1 1M47 1.5l-1 1M41 6.5l1-1M47 6.5l-1-1"/>
+                          <path d="M22 10v2.5M20.8 11.3h2.5M20 9.5l.8.8M24 9.5l-.8.8M20 14l.8-.8M24 14l-.8-.8"/>
+                          <path d="M67 8v2.5M65.8 9.3h2.5M65 7.5l.8.8M69 7.5l-.8.8M65 12l.8-.8M69 12l-.8-.8"/>
+                          <g transform="rotate(-12 30 72)">
+                            <path d="M18 18 C18 18 14 46 20 52 L40 52 C46 46 42 18 42 18 Z"/>
+                            <line x1="30" y1="52" x2="30" y2="78"/>
+                            <line x1="22" y1="78" x2="38" y2="78"/>
+                          </g>
+                          <g transform="rotate(12 58 72)">
+                            <path d="M46 18 C46 18 42 46 48 52 L68 52 C74 46 70 18 70 18 Z"/>
+                            <line x1="58" y1="52" x2="58" y2="78"/>
+                            <line x1="50" y1="78" x2="66" y2="78"/>
+                          </g>
+                        </svg>
+                      </div>
                     </div>
                   </>
                 )}
