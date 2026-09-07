@@ -5925,7 +5925,10 @@ export default function OccasionHub({ occasion }) {
     sectionLbl:isDark ? "rgba(255,255,255,0.88)" : "#2C1A0E",
     sectionLn: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
   };
-  const PH = { violet: occAccent, blue: occAccent, gold: occAccent, pink: occAccent, bg: pageBg, surface: isDark ? "#1A1520" : "#F0E8DF" };
+  const PH = { violet: occAccent, blue: occAccent, gold: occAccent, pink: occAccent, bg: pageBg, surface: isDark ? "#1A1520" : "#F0E8DF",
+    txt: isDark?"#fff":"#1C1410", sub: isDark?"rgba(255,255,255,0.58)":"rgba(28,9,0,0.55)",
+    dim: isDark?"rgba(255,255,255,0.30)":"rgba(28,9,0,0.35)", bd: isDark?"rgba(255,255,255,0.10)":"rgba(0,0,0,0.08)",
+    inputBg: isDark?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.04)", dotLine: isDark?"rgba(255,255,255,0.15)":"rgba(0,0,0,0.10)" };
   const tabAccentMap = { lobby: occAccent, play: occAccent, people: occAccent, plan: occAccent, moments: occAccent };
   const ta = occAccent;
 
@@ -5955,7 +5958,7 @@ export default function OccasionHub({ occasion }) {
         <div style={{ position:"relative", zIndex:2, textAlign:"center", padding:"0 24px 32px" }}>
           <div style={{ fontSize:56, marginBottom:12, lineHeight:1 }}>{occ.emoji}</div>
           <div style={{ fontSize:9, fontWeight:700, color:PH.violet, textTransform:"uppercase", letterSpacing:"0.18em", marginBottom:6, fontFamily:font }}>Party Hub</div>
-          <div style={{ fontSize:"clamp(1.5rem,4vw,2rem)", fontWeight:700, color:T.main, fontFamily:"'Cormorant Garamond',Georgia,serif", letterSpacing:"-0.01em", marginBottom:6 }}>{occ.name} Hub</div>
+          <div style={{ fontSize:"clamp(1.5rem,4vw,2rem)", fontWeight:700, color:T.main, fontFamily:"'Cormorant Garamond',Georgia,serif", letterSpacing:"-0.01em", marginBottom:6 }}>{occ.name}</div>
           <div style={{ fontSize:13, color:T.sub }}>{occ.tagline}</div>
         </div>
 
@@ -6066,19 +6069,19 @@ export default function OccasionHub({ occasion }) {
         const dismissTour = () => { setShowTour(false); try { localStorage.setItem("tendr-occ-tour-v1","1"); } catch {} };
         return (
           <div style={{ position:"fixed", inset:0, zIndex:4000, background:"rgba(0,0,0,0.72)", display:"flex", alignItems:"flex-end", justifyContent:"center", padding:"0 0 40px" }}>
-            <div style={{ background:PH.surface, border:"1px solid rgba(255,255,255,0.10)", borderRadius:24, padding:"28px 24px 24px", maxWidth:360, width:"calc(100% - 32px)", animation:"rm-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+            <div style={{ background:PH.surface, border:`1px solid ${isDark?"rgba(255,255,255,0.10)":"rgba(0,0,0,0.08)"}`, borderRadius:24, padding:"28px 24px 24px", maxWidth:360, width:"calc(100% - 32px)", animation:"rm-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
               <div style={{ textAlign:"center", marginBottom:20 }}>
                 <div style={{ fontSize:42, marginBottom:12 }}>{step.icon}</div>
-                <div style={{ fontSize:18, fontWeight:700, color:"#fff", marginBottom:8 }}>{step.title}</div>
-                <div style={{ fontSize:13.5, color:"rgba(255,255,255,0.62)", lineHeight:1.6 }}>{step.body}</div>
+                <div style={{ fontSize:18, fontWeight:700, color:isDark?"#fff":"#1C1410", marginBottom:8 }}>{step.title}</div>
+                <div style={{ fontSize:13.5, color:isDark?"rgba(255,255,255,0.62)":"rgba(28,9,0,0.60)", lineHeight:1.6 }}>{step.body}</div>
               </div>
               <div style={{ display:"flex", justifyContent:"center", gap:6, marginBottom:20 }}>
-                {steps.map((_,i) => <div key={i} style={{ width:i===tourStep?18:6, height:6, borderRadius:3, background:i===tourStep?PH.violet:"rgba(255,255,255,0.18)", transition:"width 0.2s,background 0.2s" }} />)}
+                {steps.map((_,i) => <div key={i} style={{ width:i===tourStep?18:6, height:6, borderRadius:3, background:i===tourStep?PH.violet:isDark?"rgba(255,255,255,0.18)":"rgba(0,0,0,0.15)", transition:"width 0.2s,background 0.2s" }} />)}
               </div>
               <div style={{ display:"flex", gap:10 }}>
                 {tourStep < steps.length - 1 ? (
                   <>
-                    <button onClick={dismissTour} style={{ flex:1, padding:"11px 0", borderRadius:12, border:"1px solid rgba(255,255,255,0.10)", background:"transparent", color:"rgba(255,255,255,0.72)", fontSize:13, fontWeight:500, cursor:"pointer" }}>Skip</button>
+                    <button onClick={dismissTour} style={{ flex:1, padding:"11px 0", borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.10)":"rgba(0,0,0,0.12)"}`, background:"transparent", color:isDark?"rgba(255,255,255,0.72)":"rgba(28,9,0,0.55)", fontSize:13, fontWeight:500, cursor:"pointer" }}>Skip</button>
                     <button onClick={() => setTourStep(s=>s+1)} style={{ flex:2, padding:"11px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:14, fontWeight:600, cursor:"pointer" }}>Next →</button>
                   </>
                 ) : (
@@ -6093,46 +6096,46 @@ export default function OccasionHub({ occasion }) {
       {/* ── Room modals ── */}
       {roomModal && (
         <div style={{ position:"fixed", inset:0, zIndex:5000, background:"rgba(0,0,0,0.8)", backdropFilter:"blur(10px)", display:"flex", alignItems:"center", justifyContent:"center", padding:20 }} onClick={() => { setRoomModal(null); setRoomLoading(false); }}>
-          <div style={{ background:PH.surface, border:"1px solid rgba(255,255,255,0.10)", borderRadius:24, padding:"28px 24px", maxWidth:360, width:"100%", boxShadow:"0 36px 80px rgba(0,0,0,0.6)", animation:"rm-in 0.25s cubic-bezier(0.22,1,0.36,1)" }} onClick={e=>e.stopPropagation()}>
+          <div style={{ background:PH.surface, border:`1px solid ${PH.bd}`, borderRadius:24, padding:"28px 24px", maxWidth:360, width:"100%", boxShadow:"0 36px 80px rgba(0,0,0,0.6)", animation:"rm-in 0.25s cubic-bezier(0.22,1,0.36,1)" }} onClick={e=>e.stopPropagation()}>
 
             {roomModal === "host-setup" && (<>
               <div style={{ textAlign:"center", marginBottom:20 }}>
                 <div style={{ fontSize:36, marginBottom:8 }}>🏠</div>
-                <div style={{ fontSize:17, fontWeight:700, color:"#fff", marginBottom:4 }}>Host a Room</div>
-                <div style={{ fontSize:13, color:"rgba(255,255,255,0.58)", lineHeight:1.5 }}>Your guests join with the room code</div>
+                <div style={{ fontSize:17, fontWeight:700, color:PH.txt, marginBottom:4 }}>Host a Room</div>
+                <div style={{ fontSize:13, color:PH.sub, lineHeight:1.5 }}>Your guests join with the room code</div>
               </div>
               <div style={{ marginBottom:12 }}>
                 <div style={{ fontSize:11, fontWeight:700, color:PH.violet, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Your Name</div>
-                <input value={hostName} onChange={e=>setHostName(e.target.value)} placeholder="e.g. Priya" style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:15, outline:"none", boxSizing:"border-box" }} />
+                <input value={hostName} onChange={e=>setHostName(e.target.value)} placeholder="e.g. Priya" style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:PH.inputBg, color:PH.txt, fontSize:15, outline:"none", boxSizing:"border-box" }} />
               </div>
               <div style={{ marginBottom:20 }}>
-                <div style={{ fontSize:11, fontWeight:700, color:PH.violet, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Party Name <span style={{ color:"rgba(255,255,255,0.3)", fontWeight:400, textTransform:"none" }}>(optional)</span></div>
-                <input value={partyName} onChange={e=>setPartyName(e.target.value)} placeholder={`e.g. ${occ.name}`} style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:15, outline:"none", boxSizing:"border-box" }} />
+                <div style={{ fontSize:11, fontWeight:700, color:PH.violet, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Party Name <span style={{ color:PH.dim, fontWeight:400, textTransform:"none" }}>(optional)</span></div>
+                <input value={partyName} onChange={e=>setPartyName(e.target.value)} placeholder={`e.g. ${occ.name}`} style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:PH.inputBg, color:PH.txt, fontSize:15, outline:"none", boxSizing:"border-box" }} />
               </div>
-              <button onClick={handleHostCreate} disabled={!hostName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:hostName.trim()?PH.violet:"rgba(255,255,255,0.08)", color:"#fff", fontSize:14, fontWeight:700, cursor:hostName.trim()?"pointer":"not-allowed", opacity:hostName.trim()?1:0.5, marginBottom:10 }}>
+              <button onClick={handleHostCreate} disabled={!hostName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:hostName.trim()?PH.violet:PH.inputBg, color:"#fff", fontSize:14, fontWeight:700, cursor:hostName.trim()?"pointer":"not-allowed", opacity:hostName.trim()?1:0.5, marginBottom:10 }}>
                 {roomLoading ? "Creating…" : "Create Room →"}
               </button>
-              <button onClick={()=>setRoomModal(null)} style={{ width:"100%", padding:"10px 0", border:"none", background:"none", color:"rgba(255,255,255,0.3)", fontSize:13, cursor:"pointer" }}>Cancel</button>
+              <button onClick={()=>setRoomModal(null)} style={{ width:"100%", padding:"10px 0", border:"none", background:"none", color:PH.dim, fontSize:13, cursor:"pointer" }}>Cancel</button>
             </>)}
 
             {roomModal === "players" && room && (<>
               <div style={{ textAlign:"center", marginBottom:16 }}>
                 <div style={{ fontSize:30, marginBottom:6 }}>🎉</div>
-                <div style={{ fontSize:17, fontWeight:700, color:"#fff", marginBottom:2 }}>Room Created!</div>
-                <div style={{ fontSize:13, color:"rgba(255,255,255,0.58)", marginBottom:16, lineHeight:1.5 }}>Share the code with your guests</div>
+                <div style={{ fontSize:17, fontWeight:700, color:PH.txt, marginBottom:2 }}>Room Created!</div>
+                <div style={{ fontSize:13, color:PH.sub, marginBottom:16, lineHeight:1.5 }}>Share the code with your guests</div>
                 <div style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", background:`${PH.violet}1a`, border:`1px solid ${PH.violet}55`, borderRadius:14, padding:"12px 24px", marginBottom:14 }}>
                   <span style={{ fontSize:32, fontWeight:700, color:PH.violet, letterSpacing:"0.18em" }}>{room.code}</span>
                 </div>
               </div>
-              <button onClick={()=>copyRoomLink(room.code)} style={{ width:"100%", padding:"12px 0", borderRadius:12, border:`1.5px solid ${copied?PH.violet:"rgba(255,255,255,0.14)"}`, background:copied?`${PH.violet}20`:"rgba(255,255,255,0.05)", color:copied?PH.violet:"rgba(255,255,255,0.75)", fontSize:14, fontWeight:700, cursor:"pointer", marginBottom:12, transition:"all 0.18s" }}>
+              <button onClick={()=>copyRoomLink(room.code)} style={{ width:"100%", padding:"12px 0", borderRadius:12, border:`1.5px solid ${copied?PH.violet:PH.bd}`, background:copied?`${PH.violet}20`:PH.inputBg, color:copied?PH.violet:PH.sub, fontSize:14, fontWeight:700, cursor:"pointer", marginBottom:12, transition:"all 0.18s" }}>
                 {copied ? "✓ Link Copied!" : "📋 Copy Room Link"}
               </button>
               <div style={{ marginBottom:14 }}>
-                <div style={{ fontSize:12, fontWeight:600, color:"rgba(255,255,255,0.55)", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>Players ({room.players?.length||1})</div>
+                <div style={{ fontSize:12, fontWeight:600, color:PH.sub, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>Players ({room.players?.length||1})</div>
                 {(room.players||[myName]).map((p,i) => (
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 10px", background:"rgba(255,255,255,0.04)", borderRadius:8, marginBottom:4 }}>
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 10px", background:PH.inputBg, borderRadius:8, marginBottom:4 }}>
                     <span style={{ width:7, height:7, borderRadius:"50%", background:"#4ade80", animation:`dot-pulse 2s ease-in-out infinite`, animationDelay:`${i*0.3}s` }} />
-                    <span style={{ fontSize:13, color:"#fff", fontWeight:500 }}>{p}{p===myName?" (you)":""}</span>
+                    <span style={{ fontSize:13, color:PH.txt, fontWeight:500 }}>{p}{p===myName?" (you)":""}</span>
                   </div>
                 ))}
               </div>
@@ -6142,21 +6145,21 @@ export default function OccasionHub({ occasion }) {
             {roomModal === "join" && (<>
               <div style={{ textAlign:"center", marginBottom:20 }}>
                 <div style={{ fontSize:36, marginBottom:8 }}>🔗</div>
-                <div style={{ fontSize:17, fontWeight:800, color:"#fff", marginBottom:4 }}>Join a Room</div>
-                <div style={{ fontSize:13, color:"rgba(255,255,255,0.4)" }}>{joinCode?"You were invited — just enter your name!":"Enter the code your host shared"}</div>
+                <div style={{ fontSize:17, fontWeight:800, color:PH.txt, marginBottom:4 }}>Join a Room</div>
+                <div style={{ fontSize:13, color:PH.dim }}>{joinCode?"You were invited — just enter your name!":"Enter the code your host shared"}</div>
               </div>
               <div style={{ marginBottom:12 }}>
                 <div style={{ fontSize:11, fontWeight:700, color:PH.violet, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Room Code</div>
-                <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="ABC123" maxLength={6} style={{ width:"100%", padding:"14px 16px", borderRadius:12, border:`1.5px solid ${PH.violet}44`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:24, fontWeight:700, textAlign:"center", letterSpacing:"0.22em", outline:"none", boxSizing:"border-box" }} />
+                <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="ABC123" maxLength={6} style={{ width:"100%", padding:"14px 16px", borderRadius:12, border:`1.5px solid ${PH.violet}44`, background:PH.inputBg, color:PH.txt, fontSize:24, fontWeight:700, textAlign:"center", letterSpacing:"0.22em", outline:"none", boxSizing:"border-box" }} />
               </div>
               <div style={{ marginBottom:20 }}>
                 <div style={{ fontSize:11, fontWeight:700, color:PH.violet, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Your Name</div>
-                <input value={joinName} onChange={e=>setJoinName(e.target.value)} placeholder="e.g. Rahul" style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:15, outline:"none", boxSizing:"border-box" }} />
+                <input value={joinName} onChange={e=>setJoinName(e.target.value)} placeholder="e.g. Rahul" style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:PH.inputBg, color:PH.txt, fontSize:15, outline:"none", boxSizing:"border-box" }} />
               </div>
-              <button onClick={handleJoin} disabled={joinCode.length<6||!joinName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:(joinCode.length>=6&&joinName.trim())?PH.violet:"rgba(255,255,255,0.08)", color:"#fff", fontSize:14, fontWeight:700, cursor:(joinCode.length>=6&&joinName.trim())?"pointer":"not-allowed", opacity:(joinCode.length>=6&&joinName.trim())?1:0.5, marginBottom:10 }}>
+              <button onClick={handleJoin} disabled={joinCode.length<6||!joinName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:(joinCode.length>=6&&joinName.trim())?PH.violet:PH.inputBg, color:"#fff", fontSize:14, fontWeight:700, cursor:(joinCode.length>=6&&joinName.trim())?"pointer":"not-allowed", opacity:(joinCode.length>=6&&joinName.trim())?1:0.5, marginBottom:10 }}>
                 {roomLoading ? "Joining…" : "Join Room →"}
               </button>
-              <button onClick={()=>setRoomModal(null)} style={{ width:"100%", padding:"10px 0", border:"none", background:"none", color:"rgba(255,255,255,0.3)", fontSize:13, cursor:"pointer" }}>Cancel</button>
+              <button onClick={()=>setRoomModal(null)} style={{ width:"100%", padding:"10px 0", border:"none", background:"none", color:PH.dim, fontSize:13, cursor:"pointer" }}>Cancel</button>
             </>)}
           </div>
         </div>
@@ -6165,20 +6168,20 @@ export default function OccasionHub({ occasion }) {
       {/* ── HOST controls bottom sheet ── */}
       {showHostControls && (
         <div style={{ position:"fixed", inset:0, zIndex:4500, background:"rgba(0,0,0,0.7)", display:"flex", alignItems:"flex-end" }} onClick={()=>setShowHostControls(false)}>
-          <div onClick={e=>e.stopPropagation()} style={{ width:"100%", background:PH.surface, borderRadius:"24px 24px 0 0", padding:"24px 20px calc(32px + env(safe-area-inset-bottom,0px))", border:"1px solid rgba(255,255,255,0.08)", borderBottom:"none", animation:"tab-slide 0.25s cubic-bezier(0.22,1,0.36,1)" }}>
-            <div style={{ width:36, height:4, background:"rgba(255,255,255,0.15)", borderRadius:2, margin:"0 auto 20px" }} />
+          <div onClick={e=>e.stopPropagation()} style={{ width:"100%", background:PH.surface, borderRadius:"24px 24px 0 0", padding:"24px 20px calc(32px + env(safe-area-inset-bottom,0px))", border:`1px solid ${PH.bd}`, borderBottom:"none", animation:"tab-slide 0.25s cubic-bezier(0.22,1,0.36,1)" }}>
+            <div style={{ width:36, height:4, background:PH.dotLine, borderRadius:2, margin:"0 auto 20px" }} />
             <div style={{ fontSize:12, fontWeight:600, color:"rgba(196,151,58,0.80)", textTransform:"uppercase", letterSpacing:"0.10em", marginBottom:16 }}>Host Controls</div>
             {room ? (
               <>
-                <div style={{ display:"flex", alignItems:"center", gap:10, background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.10)", borderRadius:12, padding:"12px 16px", marginBottom:14 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:10, background:PH.inputBg, border:`1px solid ${PH.bd}`, borderRadius:12, padding:"12px 16px", marginBottom:14 }}>
                   <span style={{ width:7, height:7, borderRadius:"50%", background:"#4ade80", animation:"dot-pulse 2s ease infinite" }} />
-                  <span style={{ fontSize:22, fontWeight:700, color:"rgba(255,255,255,0.92)", letterSpacing:"0.18em", flex:1 }}>{room.code}</span>
-                  <span style={{ fontSize:12, color:"rgba(255,255,255,0.50)" }}>{room.players?.length||1} online</span>
+                  <span style={{ fontSize:22, fontWeight:700, color:PH.txt, letterSpacing:"0.18em", flex:1 }}>{room.code}</span>
+                  <span style={{ fontSize:12, color:PH.sub }}>{room.players?.length||1} online</span>
                 </div>
                 <button onClick={()=>copyRoomLink(room.code)} style={{ width:"100%", padding:"13px", borderRadius:12, border:`1px solid ${PH.violet}44`, background:`${PH.violet}12`, color:PH.violet, fontSize:14, fontWeight:600, cursor:"pointer", marginBottom:10 }}>
                   {copied ? "✓ Copied!" : "Copy Room Link"}
                 </button>
-                <button onClick={()=>{setRoomModal("players");setShowHostControls(false);}} style={{ width:"100%", padding:"13px", borderRadius:12, border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.04)", color:"rgba(255,255,255,0.7)", fontSize:14, fontWeight:600, cursor:"pointer", marginBottom:10 }}>
+                <button onClick={()=>{setRoomModal("players");setShowHostControls(false);}} style={{ width:"100%", padding:"13px", borderRadius:12, border:`1px solid ${PH.bd}`, background:PH.inputBg, color:PH.sub, fontSize:14, fontWeight:600, cursor:"pointer", marginBottom:10 }}>
                   View Players →
                 </button>
                 <button onClick={leaveRoom} style={{ width:"100%", padding:"12px", border:"none", background:"none", color:"rgba(255,82,82,0.7)", fontSize:13, fontWeight:600, cursor:"pointer" }}>Leave Room</button>
@@ -6188,7 +6191,7 @@ export default function OccasionHub({ occasion }) {
                 <button onClick={()=>{setRoomModal("host-setup");setShowHostControls(false);}} style={{ width:"100%", padding:"14px", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:14, fontWeight:600, cursor:"pointer", marginBottom:10 }}>
                   Host a Room
                 </button>
-                <button onClick={()=>{setRoomModal("join");setShowHostControls(false);}} style={{ width:"100%", padding:"13px", borderRadius:12, border:"1px solid rgba(255,255,255,0.10)", background:"rgba(255,255,255,0.04)", color:"rgba(255,255,255,0.78)", fontSize:14, fontWeight:500, cursor:"pointer" }}>
+                <button onClick={()=>{setRoomModal("join");setShowHostControls(false);}} style={{ width:"100%", padding:"13px", borderRadius:12, border:`1px solid ${PH.bd}`, background:PH.inputBg, color:PH.sub, fontSize:14, fontWeight:500, cursor:"pointer" }}>
                   Join a Room
                 </button>
               </>
