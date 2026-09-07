@@ -6217,7 +6217,7 @@ export default function OccasionHub({ occasion }) {
             <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, marginTop:4 }}>
               <div style={{ flex:1, maxWidth:60, height:1, background:`linear-gradient(to right, transparent, ${occAccent}50)` }} />
               <div style={{ fontSize:"clamp(1rem,2.5vw,1.25rem)", fontWeight:800, color:T.main, fontFamily:font, letterSpacing:"-0.01em", whiteSpace:"nowrap" }}>
-                {occ.emoji} {occ.name} Hub
+                {occ.emoji} {occ.name}
                 {room && <span style={{ color:occAccent, fontSize:11, fontWeight:600, marginLeft:8 }}>{room.code}</span>}
               </div>
               <div style={{ flex:1, maxWidth:60, height:1, background:`linear-gradient(to left, transparent, ${occAccent}50)` }} />
@@ -6232,15 +6232,42 @@ export default function OccasionHub({ occasion }) {
         </div>
       </div>
 
-      {/* Botanical watermark */}
-      <div style={{ position:"fixed", top:60, right:-20, pointerEvents:"none", zIndex:0, opacity:0.06 }}>
-        <svg width="180" height="280" viewBox="0 0 180 280" fill="none" stroke={accent} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M90 280 C90 280 90 180 60 120 M90 280 C90 280 90 180 130 100 M90 220 C90 220 50 170 20 150 M90 200 C90 200 140 160 165 130 M60 120 C60 120 30 100 10 70 M130 100 C130 100 158 80 170 50"/>
-          <path d="M15 80 C15 80 25 60 40 52 M168 60 C168 60 155 44 140 38"/>
-          <path d="M90 260 C90 260 75 240 65 220 M90 250 C90 250 105 230 115 210"/>
-          <path d="M70 170 C70 170 50 155 38 140 M110 165 C110 165 130 148 145 135"/>
-        </svg>
-      </div>
+      {/* Occasion-specific emoji background scatter */}
+      {(()=>{
+        const OCC_BG = {
+          "birthday-party":  [{e:"🎂",x:8,y:12,s:52},{e:"🎈",x:88,y:8,s:44},{e:"🎉",x:5,y:55,s:36},{e:"⭐",x:82,y:60,s:30},{e:"🎊",x:45,y:85,s:40},{e:"🎈",x:92,y:40,s:28}],
+          "first-birthday":  [{e:"🎂",x:8,y:12,s:52},{e:"🎈",x:88,y:8,s:44},{e:"👶",x:5,y:55,s:36},{e:"⭐",x:82,y:60,s:30},{e:"🎀",x:45,y:85,s:40},{e:"🍭",x:92,y:40,s:28}],
+          "baby-shower":     [{e:"🍼",x:8,y:12,s:52},{e:"🧸",x:88,y:8,s:44},{e:"🌸",x:5,y:55,s:36},{e:"💕",x:82,y:60,s:30},{e:"👶",x:45,y:85,s:40},{e:"🌙",x:92,y:40,s:28}],
+          "newborn-welcome": [{e:"👶",x:8,y:12,s:52},{e:"🌟",x:88,y:8,s:44},{e:"💙",x:5,y:55,s:36},{e:"🌙",x:82,y:60,s:30},{e:"⭐",x:45,y:85,s:40},{e:"🍼",x:92,y:40,s:28}],
+          "naming-ceremony": [{e:"🪔",x:8,y:12,s:52},{e:"🌺",x:88,y:8,s:44},{e:"🙏",x:5,y:55,s:36},{e:"✨",x:82,y:60,s:30},{e:"🌸",x:45,y:85,s:40},{e:"🪷",x:92,y:40,s:28}],
+          "anniversary":     [{e:"💍",x:8,y:12,s:52},{e:"🌹",x:88,y:8,s:44},{e:"💕",x:5,y:55,s:36},{e:"🥂",x:82,y:60,s:30},{e:"❤️",x:45,y:85,s:40},{e:"✨",x:92,y:40,s:28}],
+          "gender-reveal":   [{e:"🎀",x:8,y:12,s:52},{e:"💙",x:88,y:8,s:44},{e:"💗",x:5,y:55,s:36},{e:"🎈",x:82,y:60,s:30},{e:"✨",x:45,y:85,s:40},{e:"🌈",x:92,y:40,s:28}],
+          "housewarming":    [{e:"🏡",x:8,y:12,s:52},{e:"🪴",x:88,y:8,s:44},{e:"🔑",x:5,y:55,s:36},{e:"🌻",x:82,y:60,s:30},{e:"🕯️",x:45,y:85,s:40},{e:"🌿",x:92,y:40,s:28}],
+          "graduation":      [{e:"🎓",x:8,y:12,s:52},{e:"📜",x:88,y:8,s:44},{e:"⭐",x:5,y:55,s:36},{e:"🏆",x:82,y:60,s:30},{e:"📚",x:45,y:85,s:40},{e:"🌟",x:92,y:40,s:28}],
+          "farewell":        [{e:"✈️",x:8,y:12,s:52},{e:"🌟",x:88,y:8,s:44},{e:"💌",x:5,y:55,s:36},{e:"🙏",x:82,y:60,s:30},{e:"🎊",x:45,y:85,s:40},{e:"🌅",x:92,y:40,s:28}],
+          "retirement":      [{e:"🏆",x:8,y:12,s:52},{e:"🌅",x:88,y:8,s:44},{e:"⭐",x:5,y:55,s:36},{e:"🎉",x:82,y:60,s:30},{e:"🌿",x:45,y:85,s:40},{e:"☕",x:92,y:40,s:28}],
+          "bachelorette":    [{e:"💃",x:8,y:12,s:52},{e:"🍾",x:88,y:8,s:44},{e:"💋",x:5,y:55,s:36},{e:"✨",x:82,y:60,s:30},{e:"🎉",x:45,y:85,s:40},{e:"👑",x:92,y:40,s:28}],
+          "kitty-party":     [{e:"🌸",x:8,y:12,s:52},{e:"💅",x:88,y:8,s:44},{e:"☕",x:5,y:55,s:36},{e:"💕",x:82,y:60,s:30},{e:"🎀",x:45,y:85,s:40},{e:"🌺",x:92,y:40,s:28}],
+          "get-together":    [{e:"☕",x:8,y:12,s:52},{e:"🤝",x:88,y:8,s:44},{e:"🍕",x:5,y:55,s:36},{e:"🎵",x:82,y:60,s:30},{e:"💬",x:45,y:85,s:40},{e:"😄",x:92,y:40,s:28}],
+          "diwali-party":    [{e:"🪔",x:8,y:12,s:52},{e:"✨",x:88,y:8,s:44},{e:"🎆",x:5,y:55,s:36},{e:"🌟",x:82,y:60,s:30},{e:"🎉",x:45,y:85,s:40},{e:"🪔",x:92,y:40,s:28}],
+          "holi-party":      [{e:"🌈",x:8,y:12,s:52},{e:"🎨",x:88,y:8,s:44},{e:"💦",x:5,y:55,s:36},{e:"🌸",x:82,y:60,s:30},{e:"🎉",x:45,y:85,s:40},{e:"🌊",x:92,y:40,s:28}],
+          "navratri-garba":  [{e:"🏮",x:8,y:12,s:52},{e:"💃",x:88,y:8,s:44},{e:"🎵",x:5,y:55,s:36},{e:"🌟",x:82,y:60,s:30},{e:"🎀",x:45,y:85,s:40},{e:"🪘",x:92,y:40,s:28}],
+          "office-party":    [{e:"🎉",x:8,y:12,s:52},{e:"🏆",x:88,y:8,s:44},{e:"💼",x:5,y:55,s:36},{e:"🥂",x:82,y:60,s:30},{e:"⭐",x:45,y:85,s:40},{e:"🎊",x:92,y:40,s:28}],
+          "house-party":     [{e:"🎵",x:8,y:12,s:52},{e:"🎶",x:88,y:8,s:44},{e:"🍕",x:5,y:55,s:36},{e:"🎉",x:82,y:60,s:30},{e:"🌙",x:45,y:85,s:40},{e:"🕺",x:92,y:40,s:28}],
+          "wedding":         [{e:"💍",x:8,y:12,s:52},{e:"🌹",x:88,y:8,s:44},{e:"🎊",x:5,y:55,s:36},{e:"💕",x:82,y:60,s:30},{e:"✨",x:45,y:85,s:40},{e:"🕊️",x:92,y:40,s:28}],
+          "dussehra-party":  [{e:"🏹",x:8,y:12,s:52},{e:"🌟",x:88,y:8,s:44},{e:"🎆",x:5,y:55,s:36},{e:"🪔",x:82,y:60,s:30},{e:"✨",x:45,y:85,s:40},{e:"🔱",x:92,y:40,s:28}],
+        };
+        const emojis = OCC_BG[occasion] || [{e:occ.emoji,x:8,y:12,s:52},{e:"✨",x:88,y:8,s:44},{e:"🎉",x:5,y:55,s:36},{e:"⭐",x:82,y:60,s:30},{e:"🎊",x:45,y:85,s:40},{e:occ.emoji,x:92,y:40,s:28}];
+        return (
+          <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, overflow:"hidden" }}>
+            {emojis.map((d,i)=>(
+              <div key={i} style={{ position:"absolute", left:`${d.x}%`, top:`${d.y}%`, fontSize:d.s, opacity:isDark?0.07:0.09, lineHeight:1, userSelect:"none", transform:`rotate(${(i%2===0?1:-1)*12}deg)` }}>
+                {d.e}
+              </div>
+            ))}
+          </div>
+        );
+      })()}
 
       {/* Confetti */}
       <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, overflow:"hidden" }}>
