@@ -2,7 +2,7 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import { HelmetProvider } from "react-helmet-async";
-import { useState, useEffect, Suspense, lazy } from "react";
+import { useState, Suspense, lazy } from "react";
 import "./App.css";
 import router from "./router";
 import store from "./store";
@@ -69,64 +69,11 @@ const showSplash = !sessionStorage.getItem(SPLASH_KEY);
 
 function App() {
   const [splashDone, setSplashDone] = useState(!showSplash);
-  const [liveStatus, setLiveStatus] = useState(true); // default true — full app always shown
 
   const handleSplashDone = () => {
     sessionStorage.setItem(SPLASH_KEY, "1");
     setSplashDone(true);
   };
-
-  // On tendr.co.in — fetch launch status, fall back to Coming Soon on any failure
-  useEffect(() => {
-    if (!isLiveDomain) return;
-    const controller = new AbortController();
-    const timer = setTimeout(() => { controller.abort(); setLiveStatus(false); }, 4000);
-    fetch(`${import.meta.env.VITE_BASE_URL}/launch-status`, { signal: controller.signal })
-      .then(r => { if (!r.ok) throw new Error("not ok"); return r.json(); })
-      .then(d => { clearTimeout(timer); setLiveStatus(!!d.isLive); })
-      .catch(() => { clearTimeout(timer); setLiveStatus(false); });
-    return () => { clearTimeout(timer); controller.abort(); };
-  }, []);
-
-  if (isLiveDomain) {
-    // Live — show full app
-    if (liveStatus === true) {
-      return (
-        <HelmetProvider>
-          <ErrorBoundary>
-            <StationeryCartProvider>
-            <TourProvider>
-            <ChatProvider>
-              <SiteTour />
-              <SignInPromptController />
-              {!splashDone && <SplashScreen onDone={handleSplashDone} />}
-              <Suspense fallback={
-                <div style={{ minHeight: "100vh", background: "#FFFCF5", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <div style={{ width: 36, height: 36, border: "3px solid rgba(196,122,46,0.2)", borderTopColor: "#C47A2E", borderRadius: "50%", animation: "tendr-spin 0.65s linear infinite" }} />
-                  <style>{`@keyframes tendr-spin { to { transform: rotate(360deg); } }`}</style>
-                </div>
-              }>
-                <RouterProvider router={router} />
-              </Suspense>
-              <FloatingChatButton hideOnRoutes={["/chat", "/chats", "/login", "/signup", "/otp", "/guides"]} />
-              <VendorChatModal />
-            </ChatProvider>
-            </TourProvider>
-            </StationeryCartProvider>
-          </ErrorBoundary>
-        </HelmetProvider>
-      );
-    }
-    // Not live — Coming Soon
-    return (
-      <HelmetProvider>
-        <ErrorBoundary>
-          {!splashDone && <SplashScreen onDone={handleSplashDone} />}
-          <RouterProvider router={liveSiteRouter} />
-        </ErrorBoundary>
-      </HelmetProvider>
-    );
-  }
 
   return (
     <HelmetProvider>
