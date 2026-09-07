@@ -134,6 +134,36 @@ function Modal({ onClose, title, emoji, children, wide }) {
   );
 }
 
+// ── Light Form Modal (white card, occasion-tinted) ──────────────────────────
+function LightFormModal({ onClose, emoji, title, subtitle, accent, children }) {
+  useEffect(() => {
+    const h = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [onClose]);
+  const accentRgb = accent || "#C4973A";
+  return (
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.52)", backdropFilter:"blur(12px)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:"16px" }}>
+      <div onClick={e=>e.stopPropagation()} style={{ background:"#FFFAF7", borderRadius:28, width:"100%", maxWidth:480, maxHeight:"92dvh", overflowY:"auto", padding:"26px 22px 30px", fontFamily:font, boxShadow:"0 32px 80px rgba(0,0,0,0.20), 0 2px 8px rgba(0,0,0,0.06)", animation:"modal-in 0.24s cubic-bezier(0.22,1,0.36,1)" }}>
+        {/* Header row */}
+        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:20 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+            <div style={{ width:54, height:54, borderRadius:16, background:`${accentRgb}18`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              <span style={{ fontSize:27 }}>{emoji}</span>
+            </div>
+            <div>
+              <div style={{ fontSize:21, fontWeight:800, color:"#1C1410", fontFamily:"'Cormorant Garamond',Georgia,serif", letterSpacing:"-0.01em", lineHeight:1.15 }}>{title}</div>
+              {subtitle && <div style={{ fontSize:13, color:"rgba(28,20,16,0.45)", marginTop:3, lineHeight:1.4 }}>{subtitle}</div>}
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background:"rgba(0,0,0,0.07)", border:"none", color:"#555", width:34, height:34, borderRadius:"50%", cursor:"pointer", fontSize:14, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginLeft:8 }}>✕</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 const inp = { width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.07)", color: "#fff", fontSize: 14, fontFamily: font, boxSizing: "border-box", outline: "none", minWidth: 0 };
 const mkBtn = (color = "#7C3AED") => ({ padding: "12px 20px", borderRadius: 12, border: "none", background: color, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, width: "100%" });
 const lbl = { fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.5)", marginBottom: 5, display: "block", textTransform: "uppercase", letterSpacing: "0.06em" };
@@ -625,11 +655,23 @@ function PartyReportCard({ onClose, accent, categories }) {
   );
 }
 
+// Field icon SVGs for light form modals
+const FIELD_ICONS = {
+  partyName: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
+  hostName:  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  date:      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>,
+  time:      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  location:  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
+  note:      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
+  items:     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
+};
+
 function ShareableTool({ onClose, emoji, title, description, path, fields, accent }) {
   const [data, setData] = useState({});
   const [link, setLink] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const acc = accent || "#C4973A";
   const create = async () => {
     setLoading(true);
     try {
@@ -642,29 +684,55 @@ function ShareableTool({ onClose, emoji, title, description, path, fields, accen
     } catch { alert("Something went wrong. Try again."); }
     finally { setLoading(false); }
   };
+  const lightInp = { width:"100%", padding:"13px 14px", borderRadius:12, border:"1.5px solid rgba(0,0,0,0.09)", background:"rgba(0,0,0,0.03)", color:"#1C1410", fontSize:15, fontFamily:font, boxSizing:"border-box", outline:"none", minWidth:0, transition:"border-color 0.15s" };
+  const canCreate = fields.every(f => !f.required || data[f.key]?.trim());
   return (
-    <Modal onClose={onClose} emoji={emoji} title={title}>
+    <LightFormModal onClose={onClose} emoji={emoji} title={title} subtitle={description} accent={acc}>
       {!link ? <>
-        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>{description}</p>
-        {fields.map(f => (
-          <div key={f.key} style={{ marginBottom: 12 }}>
-            <label style={lbl}>{f.label}</label>
-            <input value={data[f.key] || ""} onChange={e => setData(d => ({ ...d, [f.key]: e.target.value }))} placeholder={f.placeholder} style={inp} />
-          </div>
-        ))}
-        <button onClick={create} disabled={loading || !fields.every(f => !f.required || data[f.key]?.trim())} style={{ ...mkBtn(accent), marginTop: 8, opacity: loading ? 0.7 : 1 }}>{loading ? "Creating…" : `Create ${title}`}</button>
+        <div style={{ display:"flex", flexDirection:"column", gap:14, marginTop:4 }}>
+          {fields.map(f => (
+            <div key={f.key} style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
+              {/* Left icon */}
+              <div style={{ width:36, height:36, borderRadius:10, background:`${acc}14`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:acc, marginTop:24 }}>
+                {FIELD_ICONS[f.key] || FIELD_ICONS.note}
+              </div>
+              {/* Label + Input */}
+              <div style={{ flex:1, minWidth:0 }}>
+                <label style={{ fontSize:11, fontWeight:700, color:"rgba(28,20,16,0.50)", marginBottom:6, display:"block", textTransform:"uppercase", letterSpacing:"0.12em" }}>{f.label}</label>
+                <input
+                  value={data[f.key] || ""}
+                  onChange={e => setData(d => ({ ...d, [f.key]: e.target.value }))}
+                  placeholder={f.placeholder}
+                  style={lightInp}
+                  onFocus={e => e.target.style.borderColor = acc}
+                  onBlur={e => e.target.style.borderColor = "rgba(0,0,0,0.09)"}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* CTA */}
+        <button
+          onClick={create}
+          disabled={loading || !canCreate}
+          style={{ marginTop:20, padding:"16px 20px", borderRadius:14, border:"none", background: canCreate && !loading ? acc : "rgba(0,0,0,0.12)", color: canCreate && !loading ? "#fff" : "rgba(0,0,0,0.35)", fontSize:15, fontWeight:700, cursor: canCreate && !loading ? "pointer" : "default", fontFamily:font, width:"100%", display:"flex", alignItems:"center", justifyContent:"center", gap:10, transition:"all 0.18s", letterSpacing:"0.01em" }}
+        >
+          <span style={{ fontSize:17 }}>🪅</span>
+          {loading ? "Creating…" : title}
+        </button>
       </> : (
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
-          <div style={{ color: "#34D399", fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Link created!</div>
-          <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 12, padding: "12px 14px", wordBreak: "break-all", fontSize: 13, color: "#A78BFA", marginBottom: 16 }}>{link}</div>
-          <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={() => copyLink(link)} style={{ ...mkBtn("rgba(255,255,255,0.1)"), flex: 1 }}>📋 Copy</button>
-            <button onClick={() => navigate(link.replace(window.location.origin, ""))} style={{ ...mkBtn(accent), flex: 1 }}>Open →</button>
+        <div style={{ textAlign:"center", paddingTop:8 }}>
+          <div style={{ fontSize:48, marginBottom:12 }}>✅</div>
+          <div style={{ color:acc, fontSize:17, fontWeight:800, marginBottom:6, fontFamily:"'Cormorant Garamond',Georgia,serif" }}>Link created!</div>
+          <div style={{ fontSize:13, color:"rgba(28,20,16,0.5)", marginBottom:18 }}>Share this link with your guests</div>
+          <div style={{ background:"rgba(0,0,0,0.04)", borderRadius:12, padding:"13px 14px", wordBreak:"break-all", fontSize:13, color:acc, marginBottom:18, border:`1.5px solid ${acc}28`, fontWeight:500 }}>{link}</div>
+          <div style={{ display:"flex", gap:10 }}>
+            <button onClick={() => copyLink(link)} style={{ flex:1, padding:"13px 16px", borderRadius:12, border:`1.5px solid ${acc}35`, background:"transparent", color:acc, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:font }}>📋 Copy Link</button>
+            <button onClick={() => navigate(link.replace(window.location.origin, ""))} style={{ flex:1, padding:"13px 16px", borderRadius:12, border:"none", background:acc, color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:font }}>Open →</button>
           </div>
         </div>
       )}
-    </Modal>
+    </LightFormModal>
   );
 }
 
