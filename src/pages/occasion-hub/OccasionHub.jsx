@@ -168,6 +168,11 @@ const inp = { width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.
 const mkBtn = (color = "#7C3AED") => ({ padding: "12px 20px", borderRadius: 12, border: "none", background: color, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, width: "100%" });
 const lbl = { fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.5)", marginBottom: 5, display: "block", textTransform: "uppercase", letterSpacing: "0.06em" };
 const crd = { background: "rgba(255,255,255,0.06)", borderRadius: 14, padding: "14px 16px", marginBottom: 10, color: "#fff", fontSize: 14 };
+// Light-theme equivalents (used inside LightFormModal)
+const linp = { width:"100%", padding:"11px 13px", borderRadius:12, border:"1.5px solid rgba(0,0,0,0.09)", background:"rgba(0,0,0,0.03)", color:"#1C1410", fontSize:14, fontFamily:font, boxSizing:"border-box", outline:"none", minWidth:0 };
+const llbl = { fontSize:11, fontWeight:700, color:"rgba(28,20,16,0.50)", marginBottom:6, display:"block", textTransform:"uppercase", letterSpacing:"0.12em" };
+const lBtn = (color = "#C4973A") => ({ padding:"12px 18px", borderRadius:12, border:"none", background:color, color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:font, width:"100%" });
+const lcrd = { background:"rgba(0,0,0,0.04)", borderRadius:12, padding:"12px 14px", marginBottom:8, color:"#1C1410", fontSize:14 };
 
 // ════════════════════════════════════════════════════════════════════════════
 // SHARED TOOLS
@@ -207,28 +212,28 @@ function BillSplitter({ onClose, accent }) {
     return { total, share, txns };
   };
   return (
-    <Modal onClose={onClose} emoji="💸" title="Bill Splitter" wide>
+    <LightFormModal onClose={onClose} emoji="💸" title="Bill Splitter" subtitle="Enter expenses — see exactly who owes whom" accent={accent} wide>
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-        {["add", "result"].map(v => <button key={v} onClick={() => setView(v)} style={{ ...mkBtn(view === v ? accent : "rgba(255,255,255,0.08)"), flex: 1, padding: "10px" }}>{v === "add" ? "Add Expenses" : "Settle Up"}</button>)}
+        {["add", "result"].map(v => <button key={v} onClick={() => setView(v)} style={{ ...lBtn(view === v ? accent : "rgba(0,0,0,0.07)"), flex: 1, padding: "10px", color: view === v ? "#fff" : "#1C1410" }}>{v === "add" ? "Add Expenses" : "Settle Up"}</button>)}
       </div>
       {view === "add" && <>
         <div style={{ marginBottom: 16 }}>
-          <label style={lbl}>People</label>
+          <label style={llbl}>People</label>
           <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-            <input value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === "Enter" && addPerson()} placeholder="Name" style={{ ...inp, flex: 1 }} />
-            <button onClick={addPerson} style={{ ...mkBtn(accent), width: "auto", padding: "10px 16px" }}>+</button>
+            <input value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === "Enter" && addPerson()} placeholder="Name" style={{ ...linp, flex: 1 }} />
+            <button onClick={addPerson} style={{ ...lBtn(accent), width: "auto", padding: "10px 16px" }}>+</button>
           </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{people.map(p => <span key={p} style={{ background: accent + "33", color: "#fff", padding: "4px 12px", borderRadius: 20, fontSize: 13 }}>{p}</span>)}</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{people.map(p => <span key={p} style={{ background: accent + "22", color: accent, padding: "4px 12px", borderRadius: 20, fontSize: 13, fontWeight: 600 }}>{p}</span>)}</div>
         </div>
         {people.length >= 2 && <div>
-          <label style={lbl}>Add Expense</label>
-          <select value={paidBy} onChange={e => setPaidBy(e.target.value)} style={{ ...inp, marginBottom: 8 }}><option value="">Who paid?</option>{people.map(p => <option key={p} value={p}>{p}</option>)}</select>
-          <input value={amount} onChange={e => setAmount(e.target.value)} placeholder="Amount (₹)" type="number" style={{ ...inp, marginBottom: 8 }} />
-          <input value={desc} onChange={e => setDesc(e.target.value)} placeholder="Description" style={{ ...inp, marginBottom: 10 }} />
-          <button onClick={addExpense} style={mkBtn(accent)}>Add</button>
+          <label style={llbl}>Add Expense</label>
+          <select value={paidBy} onChange={e => setPaidBy(e.target.value)} style={{ ...linp, marginBottom: 8 }}><option value="">Who paid?</option>{people.map(p => <option key={p} value={p}>{p}</option>)}</select>
+          <input value={amount} onChange={e => setAmount(e.target.value)} placeholder="Amount (₹)" type="number" style={{ ...linp, marginBottom: 8 }} />
+          <input value={desc} onChange={e => setDesc(e.target.value)} placeholder="Description" style={{ ...linp, marginBottom: 10 }} />
+          <button onClick={addExpense} style={lBtn(accent)}>Add</button>
         </div>}
-        {expenses.map((e, i) => <div key={i} style={{ ...crd, display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-          <span style={{ color: "rgba(255,255,255,0.8)" }}>{e.paidBy} — {e.desc}</span>
+        {expenses.map((e, i) => <div key={i} style={{ ...lcrd, display: "flex", justifyContent: "space-between", marginTop: 8 }}>
+          <span style={{ color: "rgba(28,20,16,0.75)" }}>{e.paidBy} — {e.desc}</span>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontWeight: 700, color: accent }}>₹{e.amount}</span>
             <span onClick={() => setExpenses(ex => ex.filter((_, j) => j !== i))} style={{ cursor: "pointer", opacity: 0.4, fontSize: 13 }}>✕</span>
@@ -278,8 +283,8 @@ function BillSplitter({ onClose, accent }) {
           )}
         </>;
       })()}
-      {view === "result" && (people.length < 2 || expenses.length === 0) && <p style={{ color: "rgba(255,255,255,0.5)", textAlign: "center" }}>Add at least 2 people and 1 expense first.</p>}
-    </Modal>
+      {view === "result" && (people.length < 2 || expenses.length === 0) && <p style={{ color: "rgba(28,20,16,0.45)", textAlign: "center" }}>Add at least 2 people and 1 expense first.</p>}
+    </LightFormModal>
   );
 }
 
@@ -305,13 +310,12 @@ function PlaylistBuilder({ onClose, accent }) {
     {case:'#1f1a10',label:'#B7791F',text:'#FFF8E1'},
   ];
   return (
-    <Modal onClose={onClose} emoji="🎵" title="Playlist Builder" wide>
-      <p style={{fontSize:13,color:'rgba(255,255,255,0.5)',marginBottom:14}}>Everyone adds their song · upvote your favourites!</p>
-      <input value={addedBy} onChange={e=>setAddedBy(e.target.value)} placeholder="Your name" style={{...inp,marginBottom:8}}/>
-      <input value={newSong} onChange={e=>setNewSong(e.target.value)} placeholder="Song name" style={{...inp,marginBottom:8}}/>
-      <input value={newArtist} onChange={e=>setNewArtist(e.target.value)} placeholder="Artist (optional)" style={{...inp,marginBottom:10}} onKeyDown={e=>e.key==="Enter"&&add()}/>
-      <button onClick={add} style={{...mkBtn(accent),marginBottom:16}}>+ Add Track</button>
-      {songs.length===0&&<p style={{textAlign:'center',color:'rgba(255,255,255,0.25)',fontSize:13}}>No tracks yet — drop the first one!</p>}
+    <LightFormModal onClose={onClose} emoji="🎵" title="Playlist Builder" subtitle="Everyone adds their song · upvote your favourites!" accent={accent} wide>
+      <input value={addedBy} onChange={e=>setAddedBy(e.target.value)} placeholder="Your name" style={{...linp,marginBottom:8}}/>
+      <input value={newSong} onChange={e=>setNewSong(e.target.value)} placeholder="Song name" style={{...linp,marginBottom:8}}/>
+      <input value={newArtist} onChange={e=>setNewArtist(e.target.value)} placeholder="Artist (optional)" style={{...linp,marginBottom:10}} onKeyDown={e=>e.key==="Enter"&&add()}/>
+      <button onClick={add} style={{...lBtn(accent),marginBottom:16}}>+ Add Track</button>
+      {songs.length===0&&<p style={{textAlign:'center',color:'rgba(28,20,16,0.35)',fontSize:13}}>No tracks yet — drop the first one!</p>}
       <div style={{display:'flex',flexDirection:'column',gap:10}}>
         {songs.map((s,i)=>{
           const T=THEMES[i%THEMES.length];
@@ -344,11 +348,11 @@ function PlaylistBuilder({ onClose, accent }) {
       </div>
       {songs.length>0&&(
         <div style={{display:"flex",gap:8,marginTop:12}}>
-          <button onClick={()=>copyLink(playlistText)} style={{...mkBtn("rgba(255,255,255,0.08)"),flex:1}}>📋 Copy List</button>
-          <button onClick={()=>window.open(`https://wa.me/?text=${encodeURIComponent("🎵 *Tonight's Playlist*\n\n"+playlistText)}`,"_blank")} style={{...mkBtn("#25D366"),flex:1}}>📤 WhatsApp</button>
+          <button onClick={()=>copyLink(playlistText)} style={{...lBtn("rgba(0,0,0,0.08)"),flex:1,color:"#1C1410"}}>📋 Copy List</button>
+          <button onClick={()=>window.open(`https://wa.me/?text=${encodeURIComponent("🎵 *Tonight's Playlist*\n\n"+playlistText)}`,"_blank")} style={{...lBtn("#25D366"),flex:1}}>📤 WhatsApp</button>
         </div>
       )}
-    </Modal>
+    </LightFormModal>
   );
 }
 
@@ -521,23 +525,23 @@ function Checklist({ onClose, accent, checklistItems, initialGuests }) {
   const addCustom = () => { if (newCustom.trim()) { setCustom(c => [...c, { name: newCustom.trim(), qty: "1" }]); setNewCustom(""); } };
   const toggle = (name) => setChecked(c => ({ ...c, [name]: !c[name] }));
   return (
-    <Modal onClose={onClose} emoji="📋" title="Checklist" wide>
+    <LightFormModal onClose={onClose} emoji="📋" title="Checklist" subtitle="Guest count → auto buy list" accent={accent} wide>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
         <div>
-          <label style={{ ...lbl, marginBottom: 4 }}>Guests</label>
+          <label style={{ ...llbl, marginBottom: 4 }}>Guests</label>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button onClick={() => setGuests(g => Math.max(2, g - 1))} style={{ ...mkBtn("rgba(255,255,255,0.1)"), width: 34, padding: 0, height: 34, fontSize: 18 }}>−</button>
-            <span style={{ fontSize: 22, fontWeight: 900, color: "#fff", minWidth: 34, textAlign: "center" }}>{guests}</span>
-            <button onClick={() => setGuests(g => g + 1)} style={{ ...mkBtn(accent), width: 34, padding: 0, height: 34, fontSize: 18 }}>+</button>
+            <button onClick={() => setGuests(g => Math.max(2, g - 1))} style={{ ...lBtn("rgba(0,0,0,0.08)"), width: 34, padding: 0, height: 34, fontSize: 18, color: "#1C1410" }}>−</button>
+            <span style={{ fontSize: 22, fontWeight: 900, color: "#1C1410", minWidth: 34, textAlign: "center" }}>{guests}</span>
+            <button onClick={() => setGuests(g => g + 1)} style={{ ...lBtn(accent), width: 34, padding: 0, height: 34, fontSize: 18 }}>+</button>
           </div>
         </div>
         <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 26, fontWeight: 900, color: doneCount === allKeys.length && allKeys.length > 0 ? "#34D399" : accent }}>{doneCount}<span style={{ fontSize: 14, color: "rgba(255,255,255,0.3)", fontWeight: 400 }}>/{allKeys.length}</span></div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>bought</div>
+          <div style={{ fontSize: 26, fontWeight: 900, color: doneCount === allKeys.length && allKeys.length > 0 ? "#16A34A" : accent }}>{doneCount}<span style={{ fontSize: 14, color: "rgba(28,20,16,0.30)", fontWeight: 400 }}>/{allKeys.length}</span></div>
+          <div style={{ fontSize: 11, color: "rgba(28,20,16,0.40)" }}>bought</div>
         </div>
       </div>
-      <div style={{ height: 5, background: "rgba(255,255,255,0.07)", borderRadius: 4, marginBottom: 18, overflow: "hidden" }}>
-        <div style={{ height: "100%", width: `${allKeys.length ? (doneCount / allKeys.length) * 100 : 0}%`, background: doneCount === allKeys.length && allKeys.length > 0 ? "#34D399" : accent, borderRadius: 4, transition: "width 0.35s cubic-bezier(0.22,1,0.36,1)" }} />
+      <div style={{ height: 5, background: "rgba(0,0,0,0.07)", borderRadius: 4, marginBottom: 18, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${allKeys.length ? (doneCount / allKeys.length) * 100 : 0}%`, background: doneCount === allKeys.length && allKeys.length > 0 ? "#16A34A" : accent, borderRadius: 4, transition: "width 0.35s cubic-bezier(0.22,1,0.36,1)" }} />
       </div>
       {/* Ruled notebook paper items */}
       {[...items, ...(custom.length>0?[{cat:"Custom",things:custom}]:[])].map(({cat,things})=>(
@@ -570,10 +574,10 @@ function Checklist({ onClose, accent, checklistItems, initialGuests }) {
         </div>
       ))}
       <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
-        <input value={newCustom} onChange={e => setNewCustom(e.target.value)} onKeyDown={e => e.key === "Enter" && addCustom()} placeholder="Add custom item…" style={{ ...inp, flex: 1 }} />
-        <button onClick={addCustom} style={{ ...mkBtn(accent), width: "auto", padding: "10px 16px" }}>+</button>
+        <input value={newCustom} onChange={e => setNewCustom(e.target.value)} onKeyDown={e => e.key === "Enter" && addCustom()} placeholder="Add custom item…" style={{ ...linp, flex: 1 }} />
+        <button onClick={addCustom} style={{ ...lBtn(accent), width: "auto", padding: "10px 16px" }}>+</button>
       </div>
-    </Modal>
+    </LightFormModal>
   );
 }
 
@@ -1383,7 +1387,7 @@ function WishWall({ onClose, accent, celebrant, placeholder }) {
   const recent = wishes.slice(-6);
 
   return (
-    <Modal onClose={onClose} emoji="⭐" title={`Wish Wall${celebrant?` for ${celebrant}`:""}`} wide>
+    <LightFormModal onClose={onClose} emoji="⭐" title={`Wish Wall${celebrant?` for ${celebrant}`:""}`} subtitle="Pin a wish on the board — everyone can see it" accent={accent} wide>
       {/* Corkboard mini preview */}
       <div style={{ background: "linear-gradient(135deg,#8B6914,#A0782A,#7A5C0E)", borderRadius: 18, padding: "20px 14px 16px", marginBottom: 16, minHeight: 140, position: "relative", boxShadow: "inset 0 2px 8px rgba(0,0,0,0.4), 0 4px 20px rgba(0,0,0,0.5)", border: "4px solid #5C4308" }}>
         <div style={{ position: "absolute", top: 14, left: 10, right: 10, height: 2, background: "rgba(0,0,0,0.25)", borderRadius: 1 }} />
@@ -1412,10 +1416,10 @@ function WishWall({ onClose, accent, celebrant, placeholder }) {
         </button>
       )}
 
-      <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name (optional)" style={{...inp,marginBottom:8}}/>
-      <textarea value={wish} onChange={e=>setWish(e.target.value)} placeholder={placeholder||`Write a wish for ${celebrant||"them"}…`} style={{...inp,minHeight:72,resize:"vertical",marginBottom:10}}/>
-      <button onClick={post} style={{...mkBtn(accent)}}>📌 Pin Wish</button>
-    </Modal>
+      <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name (optional)" style={{...linp,marginBottom:8}}/>
+      <textarea value={wish} onChange={e=>setWish(e.target.value)} placeholder={placeholder||`Write a wish for ${celebrant||"them"}…`} style={{...linp,minHeight:72,resize:"vertical",marginBottom:10}}/>
+      <button onClick={post} style={{...lBtn(accent)}}>📌 Pin Wish</button>
+    </LightFormModal>
   );
 }
 
@@ -1617,7 +1621,7 @@ function LoveNotes({ onClose, accent }) {
   const recent = notes.slice(-6);
 
   return (
-    <Modal onClose={onClose} emoji="💌" title="Love Notes Wall" wide>
+    <LightFormModal onClose={onClose} emoji="💌" title="Love Notes Wall" subtitle="Hang a love note — everyone can read them" accent={accent} wide>
       <style>{`@keyframes occ-swing{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}} @keyframes occ-sway{0%,100%{transform:rotate(1.5deg)}50%{transform:rotate(-1.5deg)}}`}</style>
 
       {/* Hanging string display */}
@@ -1664,10 +1668,10 @@ function LoveNotes({ onClose, accent }) {
         </button>
       )}
 
-      <input value={from} onChange={e=>setFrom(e.target.value)} placeholder="Your name" style={{...inp,marginBottom:8}}/>
-      <textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="Write a note for the couple…" style={{...inp,minHeight:72,resize:"vertical",marginBottom:10}}/>
-      <button onClick={post} style={{...mkBtn(accent)}}>Post Note 💌</button>
-    </Modal>
+      <input value={from} onChange={e=>setFrom(e.target.value)} placeholder="Your name" style={{...linp,marginBottom:8}}/>
+      <textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="Write a note for the couple…" style={{...linp,minHeight:72,resize:"vertical",marginBottom:10}}/>
+      <button onClick={post} style={{...lBtn(accent)}}>Post Note 💌</button>
+    </LightFormModal>
   );
 }
 
@@ -2219,28 +2223,28 @@ function GiftRegistry({ onClose, accent }) {
   const displayItems = activeFilter === "All" ? items : items.filter(i => i.category === activeFilter);
 
   return (
-    <Modal onClose={onClose} emoji="🎁" title="Gift Registry" wide>
+    <LightFormModal onClose={onClose} emoji="🎁" title="Gift Registry" subtitle="Add what you need — guests claim what they'll bring" accent={accent} wide>
       {/* Claim prompt overlay */}
       {claimingIdx !== null && (
-        <div style={{ background: "rgba(10,5,20,0.97)", borderRadius: 16, padding: "20px 16px", marginBottom: 16, border: `1.5px solid ${accent}55`, textAlign: "center", boxShadow: `0 8px 32px ${accent}22` }}>
+        <div style={{ background: `${accent}10`, borderRadius: 16, padding: "20px 16px", marginBottom: 16, border: `1.5px solid ${accent}30`, textAlign: "center" }}>
           <div style={{ fontSize: 24, marginBottom: 8 }}>🎁</div>
-          <div style={{ fontSize: 15, color: "#fff", fontWeight: 700, marginBottom: 4 }}>You're getting: <span style={{ color: accent }}>{items[claimingIdx]?.item}</span></div>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 14 }}>Leave your name so the host knows who's bringing what!</div>
-          <input value={claimerName} onChange={e => setClaimerName(e.target.value)} onKeyDown={e => e.key === "Enter" && confirmClaim()} placeholder="Your name…" style={{ ...inp, marginBottom: 12, textAlign: "center" }} autoFocus />
+          <div style={{ fontSize: 15, color: "#1C1410", fontWeight: 700, marginBottom: 4 }}>You're getting: <span style={{ color: accent }}>{items[claimingIdx]?.item}</span></div>
+          <div style={{ fontSize: 12, color: "rgba(28,20,16,0.45)", marginBottom: 14 }}>Leave your name so the host knows who's bringing what!</div>
+          <input value={claimerName} onChange={e => setClaimerName(e.target.value)} onKeyDown={e => e.key === "Enter" && confirmClaim()} placeholder="Your name…" style={{ ...linp, marginBottom: 12, textAlign: "center" }} autoFocus />
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={confirmClaim} style={{ ...mkBtn(accent), flex: 2 }}>🎀 Wrap It!</button>
-            <button onClick={() => setClaimingIdx(null)} style={{ ...mkBtn("rgba(255,255,255,0.07)"), flex: 1 }}>Cancel</button>
+            <button onClick={confirmClaim} style={{ ...lBtn(accent), flex: 2 }}>🎀 Wrap It!</button>
+            <button onClick={() => setClaimingIdx(null)} style={{ ...lBtn("rgba(0,0,0,0.07)"), flex: 1, color: "#1C1410" }}>Cancel</button>
           </div>
         </div>
       )}
 
       {/* Add form */}
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-        <select value={category} onChange={e => setCategory(e.target.value)} style={{ ...inp, flex: "0 0 120px" }}>
+        <select value={category} onChange={e => setCategory(e.target.value)} style={{ ...linp, flex: "0 0 120px" }}>
           {cats.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
-        <input value={newItem} onChange={e => setNewItem(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Add a wish…" style={{ ...inp, flex: 1 }} />
-        <button onClick={add} style={{ ...mkBtn(accent), width: "auto", padding: "10px 16px" }}>Add</button>
+        <input value={newItem} onChange={e => setNewItem(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Add a wish…" style={{ ...linp, flex: 1 }} />
+        <button onClick={add} style={{ ...lBtn(accent), width: "auto", padding: "10px 16px" }}>Add</button>
       </div>
 
       {/* Progress + category filter */}
@@ -2248,18 +2252,18 @@ function GiftRegistry({ onClose, accent }) {
         <>
           {claimedCount > 0 && (
             <div style={{ marginBottom: 10 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 4 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "rgba(28,20,16,0.45)", marginBottom: 4 }}>
                 <span>{claimedCount} of {items.length} wrapped</span>
-                <span style={{ color: "#34D399", fontWeight: 700 }}>{Math.round(claimedCount / items.length * 100)}%</span>
+                <span style={{ color: "#16A34A", fontWeight: 700 }}>{Math.round(claimedCount / items.length * 100)}%</span>
               </div>
-              <div style={{ height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 4 }}>
-                <div style={{ height: "100%", width: `${claimedCount / items.length * 100}%`, background: "#34D399", borderRadius: 4, transition: "width 0.4s" }} />
+              <div style={{ height: 4, background: "rgba(0,0,0,0.07)", borderRadius: 4 }}>
+                <div style={{ height: "100%", width: `${claimedCount / items.length * 100}%`, background: "#16A34A", borderRadius: 4, transition: "width 0.4s" }} />
               </div>
             </div>
           )}
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
             {["All", ...usedCats].map(f => (
-              <button key={f} onClick={() => setActiveFilter(f)} style={{ padding: "5px 12px", borderRadius: 20, border: `1px solid ${activeFilter === f ? accent : "rgba(255,255,255,0.15)"}`, background: activeFilter === f ? `${accent}22` : "transparent", color: activeFilter === f ? accent : "rgba(255,255,255,0.5)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+              <button key={f} onClick={() => setActiveFilter(f)} style={{ padding: "5px 12px", borderRadius: 20, border: `1px solid ${activeFilter === f ? accent : "rgba(0,0,0,0.12)"}`, background: activeFilter === f ? `${accent}18` : "transparent", color: activeFilter === f ? accent : "rgba(28,20,16,0.50)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
                 {f}
               </button>
             ))}
@@ -2287,13 +2291,13 @@ function GiftRegistry({ onClose, accent }) {
             </div>
           ) : (
             /* Unwrapped gift card */
-            <div key={idx} style={{ background: "rgba(255,255,255,0.04)", border: `1.5px solid ${catColor}55`, borderRadius: 14, overflow: "hidden" }}>
+            <div key={idx} style={{ background: "rgba(0,0,0,0.03)", border: `1.5px solid ${catColor}55`, borderRadius: 14, overflow: "hidden" }}>
               <div style={{ height: 6, background: catColor, position: "relative" }}>
-                <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", width: 6, height: "100%", background: "rgba(255,255,255,0.35)" }} />
+                <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", width: 6, height: "100%", background: "rgba(255,255,255,0.5)" }} />
               </div>
               <div style={{ padding: "12px 10px" }}>
-                {item.topPick && <div style={{ fontSize: 9, fontWeight: 900, color: "#F59E0B", letterSpacing: "0.08em", marginBottom: 4 }}>⭐ TOP PICK</div>}
-                <div style={{ fontSize: 13, color: "#fff", fontWeight: 600, lineHeight: 1.3, marginBottom: 4 }}>{item.item}</div>
+                {item.topPick && <div style={{ fontSize: 9, fontWeight: 900, color: "#D97706", letterSpacing: "0.08em", marginBottom: 4 }}>⭐ TOP PICK</div>}
+                <div style={{ fontSize: 13, color: "#1C1410", fontWeight: 600, lineHeight: 1.3, marginBottom: 4 }}>{item.item}</div>
                 <div style={{ fontSize: 9, color: catColor, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>{item.category}</div>
                 <div style={{ display: "flex", gap: 4 }}>
                   <button onClick={() => startClaim(idx)} style={{ flex: 1, background: catColor, border: "none", borderRadius: 8, padding: "7px 4px", color: "#fff", fontSize: 9, fontWeight: 800, cursor: "pointer", fontFamily: font, lineHeight: 1.2 }}>🎁 I'M GETTING THIS</button>
@@ -2306,12 +2310,12 @@ function GiftRegistry({ onClose, accent }) {
       </div>
 
       {items.length === 0 && (
-        <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,0.3)" }}>
+        <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(28,20,16,0.35)" }}>
           <div style={{ fontSize: 40, marginBottom: 8 }}>🎁</div>
           <div style={{ fontSize: 13 }}>Add items to your wish list above!</div>
         </div>
       )}
-    </Modal>
+    </LightFormModal>
   );
 }
 
