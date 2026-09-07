@@ -2,7 +2,7 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import { HelmetProvider } from "react-helmet-async";
-import { useState, Suspense, lazy } from "react";
+import { useState, useEffect, Suspense, lazy } from "react";
 import "./App.css";
 import router from "./router";
 import store from "./store";
