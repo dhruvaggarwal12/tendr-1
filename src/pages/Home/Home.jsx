@@ -808,7 +808,13 @@ const Home = () => {
   const [hoveredOcc, setHoveredOcc] = useState(null);
   const [occModal, setOccModal] = useState(null);
   const [showIntro, setShowIntro] = useState(() => {
-    try { return !localStorage.getItem("tendr_intro_seen") && window.innerWidth <= 768; } catch { return false; }
+    try {
+      if (new URLSearchParams(window.location.search).get("skip_intro") === "1") {
+        localStorage.setItem("tendr_intro_seen", "1");
+        return false;
+      }
+      return !localStorage.getItem("tendr_intro_seen") && window.innerWidth <= 768;
+    } catch { return false; }
   });
   const [searchParams] = useSearchParams();
   useEffect(() => {
