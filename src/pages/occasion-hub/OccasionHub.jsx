@@ -6084,7 +6084,6 @@ export default function OccasionHub({ occasion }) {
             {(occ.sections || []).map(section => {
               const sectionTools = section.tools || [];
               const isGameSection = sectionTools.some(t => GAME_IDS.has(t.id));
-              const cleanLabel = section.label.replace(/^[^\w]*/, '').replace(/^\S+\s/, s => s.replace(/\S+/, '').trim()).trim() || section.label.replace(/^[\u{1F000}-\u{FFFF}]\s?/u, '');
               return (
                 <div key={section.id} style={{ marginBottom:28 }}>
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
