@@ -550,19 +550,13 @@ export function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, 
             </div>
           )}
 
-          {/* Invitation Flyer + Send to Chat row */}
-          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+          {/* Invitation Flyer */}
+          <div style={{ marginTop: 8 }}>
             <button
               onClick={() => setInviteOpen(true)}
-              style={{ flex: 1, padding: '11px 0', borderRadius: 12, background: 'linear-gradient(135deg,#2C1A0E,#4A2810)', color: '#CCAB4A', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+              style={{ width: '100%', padding: '11px 0', borderRadius: 12, background: 'linear-gradient(135deg,#2C1A0E,#4A2810)', color: '#CCAB4A', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
             >
               💌 Create Invitation Flyer
-            </button>
-            <button
-              onClick={handleSendToChat}
-              style={{ flex: 1, padding: '11px 0', borderRadius: 12, background: 'rgba(37,211,102,0.1)', color: '#166534', fontSize: 13, fontWeight: 700, border: '1.5px solid rgba(37,211,102,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-            >
-              📤 Send to Chat
             </button>
           </div>
 

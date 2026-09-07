@@ -859,7 +859,12 @@ export default function VendorChatModal() {
       } catch {}
     });
 
-    socket.on("chat_approved", () => { setApproved(true); setJustApproved(true); });
+    socket.on("chat_approved", () => {
+      setApproved(true);
+      setJustApproved(true);
+      // Re-fetch the active chats list so FloatingChatButton reflects chatApproved:true
+      window.dispatchEvent(new CustomEvent("tendr:chat-started"));
+    });
 
     // Re-join conversation room on reconnect (e.g. after backend restart)
     socket.on("connect", () => {
