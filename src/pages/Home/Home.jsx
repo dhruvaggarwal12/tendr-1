@@ -329,149 +329,233 @@ function FaqSection() {
   const navigate = useNavigate();
   const serif = "'Cormorant Garamond', Georgia, serif";
   const sans  = "'Outfit', sans-serif";
+  const gold  = "#CCAB4A";
+  const goldFaint = "rgba(204,171,74,0.40)";
 
-  // Pre-number all questions sequentially across groups
   let runNum = 0;
   const numberedGroups = FAQ_GROUPS.map(({ category, indices }) => ({
     category,
     qs: indices.map(idx => ({ ...FAQS[idx], num: ++runNum, idx })),
   }));
 
-  return (
-    <section style={{ background: "#070400", padding: "80px 24px 88px", fontFamily: sans }}>
-      <div style={{ maxWidth: 900, margin: "0 auto" }}>
+  const CAT_ICONS = {
+    "Getting Started": <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>,
+    "Planning":        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+    "Vendors":         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+    "Booking & Payments": <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>,
+  };
 
-        {/* Heading */}
+  return (
+    <section style={{ background: "#0A0704", padding: "80px 24px 88px", fontFamily: sans }}>
+      <style>{`
+        .faq-browse-btn:hover { border-color: ${gold} !important; background: rgba(204,171,74,0.08) !important; }
+        .faq-chat-btn:hover { background: rgba(204,171,74,0.10) !important; border-color: ${gold} !important; }
+        .faq-row-btn:hover .faq-q-text { color: #FFF8EC !important; }
+      `}</style>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+
+        {/* ── Two-column header ── */}
         <motion.div
-          initial={{ opacity: 0, y: 14 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.48, ease: [0.25, 0.46, 0.45, 0.94] }}
-          style={{ marginBottom: 68 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.52, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 72, gap: 32, flexWrap: "wrap" }}
         >
-          <h2 style={{ fontFamily: serif, fontSize: "clamp(1.8rem,3.2vw,2.6rem)", fontWeight: 400, color: "#FFF8EC", letterSpacing: "0.01em", margin: "0 0 14px", lineHeight: 1.1 }}>
-            Frequently Asked Questions
-          </h2>
-          <p style={{ fontSize: 14, color: "rgba(255,248,236,0.36)", maxWidth: 380, margin: 0, lineHeight: 1.65 }}>
-            Everything you need to know before you start planning.
-          </p>
+          {/* Left: title + CTA */}
+          <div style={{ flex: "1 1 400px", maxWidth: 560 }}>
+            {/* HELP CENTER label */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}>
+              <div style={{ flex: 1, height: 1, background: goldFaint, maxWidth: 28 }} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.22em", display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 11 }}>✦</span> HELP CENTER <span style={{ fontSize: 11 }}>✦</span>
+              </span>
+              <div style={{ flex: 1, height: 1, background: goldFaint, maxWidth: 28 }} />
+            </div>
+            {/* Title */}
+            <h2 style={{ fontFamily: serif, fontSize: "clamp(2.6rem,4.8vw,4.2rem)", fontWeight: 700, color: "#FFF8EC", letterSpacing: "-0.01em", margin: "0 0 18px", lineHeight: 1.05 }}>
+              Frequently<br/>Asked Questions
+            </h2>
+            {/* Subtitle */}
+            <p style={{ fontSize: 15, color: "rgba(255,248,236,0.42)", margin: "0 0 32px", lineHeight: 1.65, maxWidth: 400 }}>
+              Everything you need to know before you start planning.
+            </p>
+            {/* Browse button */}
+            <button
+              className="faq-browse-btn"
+              onClick={() => navigate("/faq")}
+              style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "12px 22px", borderRadius: 10, border: `1.5px solid ${goldFaint}`, background: "transparent", color: gold, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: sans, letterSpacing: "0.01em", transition: "all 0.18s" }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              Browse all guides →
+            </button>
+          </div>
+
+          {/* Right: decorative SVG illustration */}
+          <div style={{ flexShrink: 0, display: "flex", justifyContent: "flex-end", alignItems: "flex-end", alignSelf: "flex-end", opacity: 0.9 }}>
+            <svg width="290" height="220" viewBox="0 0 290 220" fill="none" style={{ display: "block" }}>
+              {/* Dotted grid background */}
+              {Array.from({ length: 8 }).map((_, row) =>
+                Array.from({ length: 10 }).map((_, col) => (
+                  <circle key={`${row}-${col}`} cx={col * 28 + 14} cy={row * 26 + 10} r="1.2" fill="rgba(204,171,74,0.18)" />
+                ))
+              )}
+              {/* Large book */}
+              <rect x="110" y="28" width="88" height="118" rx="4" fill="#1A1208" stroke="rgba(204,171,74,0.35)" strokeWidth="1.2"/>
+              <rect x="110" y="28" width="8" height="118" rx="2" fill="rgba(204,171,74,0.20)"/>
+              {/* Gold spine line */}
+              <line x1="118" y1="28" x2="118" y2="146" stroke={gold} strokeWidth="0.7" strokeOpacity="0.5"/>
+              {/* Book title */}
+              <text x="154" y="80" textAnchor="middle" fontFamily="'Cormorant Garamond', Georgia, serif" fontSize="14" fontWeight="700" fill={gold} opacity="0.85">Questions?</text>
+              {/* Question mark circle */}
+              <circle cx="154" cy="108" r="18" stroke="rgba(204,171,74,0.30)" strokeWidth="1.2" fill="rgba(204,171,74,0.06)"/>
+              <text x="154" y="114" textAnchor="middle" fontFamily="Georgia, serif" fontSize="18" fill="rgba(204,171,74,0.55)" fontWeight="400">?</text>
+              {/* Gold decorative lines on book */}
+              <line x1="128" y1="56" x2="190" y2="56" stroke="rgba(204,171,74,0.20)" strokeWidth="0.8"/>
+              <line x1="128" y1="140" x2="190" y2="140" stroke="rgba(204,171,74,0.20)" strokeWidth="0.8"/>
+              {/* Small book beside it */}
+              <rect x="202" y="68" width="52" height="78" rx="3" fill="#120E06" stroke="rgba(204,171,74,0.25)" strokeWidth="1"/>
+              <rect x="202" y="68" width="5" height="78" rx="1.5" fill="rgba(204,171,74,0.15)"/>
+              <line x1="210" y1="86" x2="248" y2="86" stroke="rgba(204,171,74,0.18)" strokeWidth="0.8"/>
+              <line x1="210" y1="92" x2="248" y2="92" stroke="rgba(204,171,74,0.12)" strokeWidth="0.8"/>
+              <line x1="210" y1="98" x2="240" y2="98" stroke="rgba(204,171,74,0.12)" strokeWidth="0.8"/>
+              {/* Vase */}
+              <path d="M58 146 C52 130 44 110 50 90 C54 76 74 72 78 90 C84 110 76 130 70 146 Z" fill="#1A1208" stroke="rgba(204,171,74,0.30)" strokeWidth="1.2"/>
+              <ellipse cx="64" cy="148" rx="14" ry="4" fill="#120E06" stroke="rgba(204,171,74,0.25)" strokeWidth="1"/>
+              {/* Dried branches */}
+              <line x1="64" y1="88" x2="42" y2="48" stroke="rgba(204,171,74,0.40)" strokeWidth="1.2"/>
+              <line x1="64" y1="88" x2="64" y2="38" stroke="rgba(204,171,74,0.40)" strokeWidth="1.2"/>
+              <line x1="64" y1="88" x2="86" y2="52" stroke="rgba(204,171,74,0.40)" strokeWidth="1.2"/>
+              <circle cx="42" cy="46" r="3" fill="rgba(204,171,74,0.50)"/>
+              <circle cx="37" cy="42" r="2" fill="rgba(204,171,74,0.35)"/>
+              <circle cx="46" cy="40" r="2" fill="rgba(204,171,74,0.35)"/>
+              <circle cx="64" cy="36" r="3" fill="rgba(204,171,74,0.50)"/>
+              <circle cx="59" cy="32" r="2" fill="rgba(204,171,74,0.35)"/>
+              <circle cx="69" cy="32" r="2" fill="rgba(204,171,74,0.35)"/>
+              <circle cx="86" cy="50" r="3" fill="rgba(204,171,74,0.50)"/>
+              <circle cx="90" cy="46" r="2" fill="rgba(204,171,74,0.35)"/>
+              <circle cx="82" cy="44" r="2" fill="rgba(204,171,74,0.35)"/>
+              {/* Candle / lantern */}
+              <rect x="238" y="110" width="34" height="40" rx="4" fill="#120E06" stroke="rgba(204,171,74,0.25)" strokeWidth="1"/>
+              {/* Candle glow */}
+              <ellipse cx="255" cy="108" rx="10" ry="8" fill="rgba(204,140,40,0.18)"/>
+              <path d="M252 108 Q255 98 258 108" stroke="rgba(204,140,40,0.6)" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+              <circle cx="255" cy="108" r="2.5" fill="rgba(255,180,60,0.80)"/>
+              {/* Lantern grid lines */}
+              <line x1="238" y1="126" x2="272" y2="126" stroke="rgba(204,171,74,0.18)" strokeWidth="0.8"/>
+              <line x1="255" y1="110" x2="255" y2="150" stroke="rgba(204,171,74,0.14)" strokeWidth="0.8"/>
+              {/* Shadow/surface line */}
+              <line x1="30" y1="150" x2="270" y2="150" stroke="rgba(204,171,74,0.10)" strokeWidth="1"/>
+            </svg>
+          </div>
         </motion.div>
 
-        {/* Grouped numbered FAQ */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 52 }}>
-          {numberedGroups.map(({ category, qs }) => (
+        {/* ── FAQ groups ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
+          {numberedGroups.map(({ category, qs }, gi) => (
             <motion.div
               key={category}
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.12 }}
-              transition={{ duration: 0.44, ease: [0.25, 0.46, 0.45, 0.94] }}
+              transition={{ duration: 0.44, delay: gi * 0.06, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
-              {/* Category eyebrow */}
-              <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(204,171,74,0.36)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 14, fontFamily: sans }}>
-                {category}
+              {/* Section header: icon circle + label + line */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                <div style={{ width: 32, height: 32, borderRadius: "50%", border: `1.5px solid ${goldFaint}`, background: "rgba(204,171,74,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  {CAT_ICONS[category]}
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 800, color: gold, textTransform: "uppercase", letterSpacing: "0.22em", whiteSpace: "nowrap" }}>{category}</span>
+                <div style={{ flex: 1, height: 1, background: "rgba(204,171,74,0.18)" }} />
               </div>
-              <div style={{ height: 1, background: "rgba(255,248,236,0.07)" }} />
 
-              {qs.map(({ q, a, num, idx }) => {
-                const key = `${category}-${idx}`;
-                const isOpen = open === key;
-                return (
-                  <div key={key} style={{ borderBottom: "1px solid rgba(255,248,236,0.07)" }}>
-                    <motion.button
-                      className="faq-q-btn"
-                      onClick={() => setOpen(isOpen ? null : key)}
-                      whileTap={{ scale: 0.998 }}
-                      style={{
-                        width: "100%", minHeight: 72, display: "flex", alignItems: "center",
-                        padding: "0", background: "none", border: "none",
-                        cursor: "pointer", fontFamily: sans, textAlign: "left", gap: 0,
-                        WebkitAppearance: "none", appearance: "none",
-                      }}
+              {/* FAQ cards */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {qs.map(({ q, a, num, idx }) => {
+                  const key = `${category}-${idx}`;
+                  const isOpen = open === key;
+                  return (
+                    <div
+                      key={key}
+                      style={{ background: "#161008", borderRadius: 14, border: `1px solid ${isOpen ? "rgba(204,171,74,0.18)" : "rgba(255,248,236,0.05)"}`, overflow: "hidden", transition: "border-color 0.18s" }}
                     >
-                      {/* Question number */}
-                      <span style={{
-                        fontFamily: serif, fontSize: 12.5, fontWeight: 400,
-                        color: "rgba(204,171,74,0.28)", minWidth: 44, flexShrink: 0,
-                        letterSpacing: "0.04em", lineHeight: 1,
-                      }}>
-                        {String(num).padStart(2, "0")}
-                      </span>
-
-                      {/* Question text */}
-                      <span style={{
-                        flex: 1, fontSize: 15.5, fontWeight: isOpen ? 500 : 400,
-                        color: isOpen ? "#FFF8EC" : "rgba(255,248,236,0.74)",
-                        lineHeight: 1.4, transition: "color 0.18s",
-                      }}>
-                        {q}
-                      </span>
-
-                      {/* + icon */}
-                      <motion.span
-                        animate={{ rotate: isOpen ? 45 : 0 }}
-                        transition={{ type: "spring", stiffness: 380, damping: 26 }}
-                        style={{ flexShrink: 0, color: isOpen ? "rgba(204,171,74,0.7)" : "rgba(204,171,74,0.35)", display: "flex", marginLeft: 20 }}
+                      <button
+                        className="faq-row-btn"
+                        onClick={() => setOpen(isOpen ? null : key)}
+                        style={{ width: "100%", display: "flex", alignItems: "center", padding: "18px 22px", background: "none", border: "none", cursor: "pointer", gap: 16, textAlign: "left", WebkitAppearance: "none" }}
                       >
-                        <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round">
-                          <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-                        </svg>
-                      </motion.span>
-                    </motion.button>
-
-                    <AnimatePresence initial={false}>
-                      {isOpen && (
-                        <motion.div
-                          key="answer"
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}
-                          style={{ overflow: "hidden" }}
+                        {/* Number badge */}
+                        <span style={{ minWidth: 34, height: 26, borderRadius: 7, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,248,236,0.07)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 600, color: "rgba(255,248,236,0.28)", fontFamily: serif, flexShrink: 0, letterSpacing: "0.04em" }}>
+                          {String(num).padStart(2, "0")}
+                        </span>
+                        {/* Question */}
+                        <span className="faq-q-text" style={{ flex: 1, fontSize: 15, fontWeight: 400, color: isOpen ? "#FFF8EC" : "rgba(255,248,236,0.76)", lineHeight: 1.45, fontFamily: sans, transition: "color 0.16s" }}>
+                          {q}
+                        </span>
+                        {/* Plus icon */}
+                        <motion.span
+                          animate={{ rotate: isOpen ? 45 : 0 }}
+                          transition={{ type: "spring", stiffness: 380, damping: 26 }}
+                          style={{ flexShrink: 0, color: isOpen ? gold : goldFaint, display: "flex" }}
                         >
-                          <p style={{ fontSize: 14, color: "rgba(255,248,236,0.46)", lineHeight: 1.8, margin: 0, paddingBottom: 24, paddingLeft: 44, maxWidth: 640 }}>
-                            {a}
-                          </p>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              })}
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                          </svg>
+                        </motion.span>
+                      </button>
+                      <AnimatePresence initial={false}>
+                        {isOpen && (
+                          <motion.div
+                            key="ans"
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}
+                            style={{ overflow: "hidden" }}
+                          >
+                            <p style={{ fontSize: 14, color: "rgba(255,248,236,0.46)", lineHeight: 1.8, margin: 0, padding: "2px 22px 22px 72px", maxWidth: 700 }}>{a}</p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
+              </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Still have questions */}
+        {/* ── Still have questions card ── */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.4, delay: 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
-          style={{ marginTop: 64, borderTop: "1px solid rgba(255,248,236,0.07)", paddingTop: 32, display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}
+          transition={{ duration: 0.4, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ marginTop: 52, background: "#161008", borderRadius: 18, border: "1px solid rgba(255,248,236,0.07)", padding: "26px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, flexWrap: "wrap" }}
         >
-          <div>
-            <p style={{ fontSize: 15, fontWeight: 400, color: "rgba(255,248,236,0.5)", margin: "0 0 4px", fontFamily: serif }}>Still have questions?</p>
-            <p style={{ fontSize: 13, color: "rgba(255,248,236,0.26)", margin: 0 }}>Our team is happy to help you plan your event.</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            {/* Headset icon circle */}
+            <div style={{ width: 52, height: 52, borderRadius: "50%", border: `1.5px solid ${goldFaint}`, background: "rgba(204,171,74,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+              </svg>
+            </div>
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: "#FFF8EC", marginBottom: 4, fontFamily: sans }}>Still have questions?</div>
+              <div style={{ fontSize: 13, color: "rgba(255,248,236,0.38)", lineHeight: 1.5 }}>Our support team is here to help you plan the perfect event.</div>
+            </div>
           </div>
-          <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
-            <a
-              href="https://wa.me/919211668427" target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: 13, color: "rgba(255,248,236,0.4)", textDecoration: "none", transition: "color 0.15s", fontFamily: sans }}
-              onMouseEnter={e => e.currentTarget.style.color = "#FFF8EC"}
-              onMouseLeave={e => e.currentTarget.style.color = "rgba(255,248,236,0.4)"}
-            >
-              WhatsApp us →
-            </a>
-            <button
-              onClick={() => navigate("/contact-us")}
-              style={{ background: "none", border: "none", color: "rgba(204,171,74,0.52)", fontSize: 13, cursor: "pointer", fontFamily: sans, padding: 0, transition: "color 0.15s" }}
-              onMouseEnter={e => e.currentTarget.style.color = "#CCAB4A"}
-              onMouseLeave={e => e.currentTarget.style.color = "rgba(204,171,74,0.52)"}
-            >
-              Contact us →
-            </button>
-          </div>
+          <button
+            className="faq-chat-btn"
+            onClick={() => navigate("/contact-us")}
+            style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "13px 22px", borderRadius: 10, border: `1.5px solid ${goldFaint}`, background: "transparent", color: gold, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: sans, transition: "all 0.18s", whiteSpace: "nowrap" }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            Chat with us →
+          </button>
         </motion.div>
 
       </div>
