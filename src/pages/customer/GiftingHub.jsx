@@ -835,7 +835,7 @@ export default function GiftingHub() {
       {/* Floating view-switcher header (non-home views) */}
       {view !== "home" && (
         <div style={{
-          background: "rgba(255,252,245,0.92)", backdropFilter: "blur(12px)",
+          background: "#FFFAF5",
           borderBottom: "1px solid rgba(196,122,46,0.12)",
           padding: "13px 20px 12px", position: "sticky", top: 0, zIndex: 90,
         }}>

@@ -558,7 +558,7 @@ export default function BudgetAllocator() {
       <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "clamp(14px,3vw,22px) clamp(16px,4vw,40px) clamp(12px,2.5vw,20px)" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", gap: "clamp(8px,2vw,16px)", flexWrap: "wrap" }}>
           <button onClick={() => navigate("/budget-picker")}
-            style={{ padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(255,255,255,0.45)", background: "rgba(255,255,255,0.12)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0, backdropFilter: "blur(4px)" }}>
+            style={{ padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(255,255,255,0.45)", background: "transparent", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
             ← Back
           </button>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -570,7 +570,7 @@ export default function BudgetAllocator() {
             </p>
           </div>
           <button onClick={saveBudget}
-            style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 10, border: budgetSaved ? "1.5px solid #22c55e" : "1.5px solid rgba(255,255,255,0.4)", background: budgetSaved ? "#dcfce7" : "rgba(255,255,255,0.12)", color: budgetSaved ? "#15803d" : "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, backdropFilter: "blur(4px)" }}>
+            style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 10, border: budgetSaved ? "1.5px solid #22c55e" : "1.5px solid rgba(255,255,255,0.4)", background: budgetSaved ? "#dcfce7" : "transparent", color: budgetSaved ? "#15803d" : "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
             {budgetSaved ? "✓ Saved" : "💾 Save"}
           </button>
         </div>

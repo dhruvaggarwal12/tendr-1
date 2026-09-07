@@ -235,7 +235,7 @@ export default function PartyPlaceProfile() {
                 {Object.keys(place.packages || {}).map(svc => {
                   const cfg = SVC_CONFIG[svc] || { icon: "✓", color: gold, bg: "rgba(196,122,46,0.08)", desc: "" };
                   return (
-                    <div key={svc} style={{ background: "rgba(255,255,255,0.07)", borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "flex-start", gap: 10 }}>
+                    <div key={svc} style={{ background: "transparent", borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "flex-start", gap: 10 }}>
                       <span style={{ fontSize: 20, flexShrink: 0 }}>{cfg.icon}</span>
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", marginBottom: 2 }}>{svc}</div>

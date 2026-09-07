@@ -164,7 +164,7 @@ export default function VendorPricing() {
       <div style={{ background: "#1C0E04", padding: "56px 24px 64px", textAlign: "center" }}>
         <button
           onClick={() => navigate("/vendor/dashboard")}
-          style={{ position: "absolute", left: 24, top: 24, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, padding: "8px 14px", color: "rgba(255,255,255,0.7)", fontFamily: font, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+          style={{ position: "absolute", left: 24, top: 24, background: "transparent", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, padding: "8px 14px", color: "rgba(255,255,255,0.7)", fontFamily: font, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
         >
           ← Dashboard
         </button>
@@ -182,7 +182,7 @@ export default function VendorPricing() {
         </p>
 
         {/* Billing toggle */}
-        <div style={{ display: "inline-flex", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 100, padding: 4, gap: 4 }}>
+        <div style={{ display: "inline-flex", background: "transparent", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 100, padding: 4, gap: 4 }}>
           {["monthly", "annual"].map(b => (
             <button
               key={b}

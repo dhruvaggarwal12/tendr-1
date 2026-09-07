@@ -3645,7 +3645,7 @@ export default function VendorDashboard() {
                   <div style={{ fontSize:11, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', color:'rgba(255,255,255,0.4)', marginBottom:6 }}>Your Public Profile</div>
                   <div style={{ fontSize:18, fontWeight:800, marginBottom:2 }}>{vendorName}</div>
                   {serviceType && <div style={{ fontSize:13, color:goldLt, fontWeight:600, marginBottom:16 }}>{serviceType}</div>}
-                  <div style={{ background:'rgba(255,255,255,0.08)', borderRadius:12, padding:'10px 14px', display:'flex', alignItems:'center', gap:10, marginBottom:14 }}>
+                  <div style={{ background:'transparent', borderRadius:12, padding:'10px 14px', display:'flex', alignItems:'center', gap:10, marginBottom:14 }}>
                     <div style={{ flex:1, fontSize:12, color:'rgba(255,255,255,0.7)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', fontFamily:'monospace' }}>{profileUrl}</div>
                     <button onClick={() => navigator.clipboard?.writeText(profileUrl).then(() => showToast('Copied!'))}
                       style={{ padding:'6px 14px', borderRadius:8, border:'none', background:gold, color:'#fff', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:font, whiteSpace:'nowrap', flexShrink:0 }}>Copy</button>

@@ -59,7 +59,7 @@ export default function InviteRSVP() {
   return (
     <Screen>
       <div style={{ padding: "30px 18px", maxWidth: 440, margin: "0 auto", width: "100%" }}>
-        <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 20, padding: "28px 22px", marginBottom: 24, textAlign: "center", border: "1.5px solid rgba(255,255,255,0.1)" }}>
+        <div style={{ background: "transparent", borderRadius: 20, padding: "28px 22px", marginBottom: 24, textAlign: "center", border: "1.5px solid rgba(255,255,255,0.1)" }}>
           <div style={{ fontSize: 46 }}>🎉</div>
           <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", margin: "10px 0 6px" }}>{invite.partyName}</h1>
           <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", margin: 0 }}>Hosted by {invite.hostName}</p>
@@ -74,9 +74,9 @@ export default function InviteRSVP() {
         </div>
 
         {!done ? (
-          <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 16, padding: 20, marginBottom: 24 }}>
+          <div style={{ background: "transparent", borderRadius: 16, padding: 20, marginBottom: 24 }}>
             <p style={{ fontSize: 14, fontWeight: 600, color: "#fff", marginBottom: 14 }}>Are you coming?</p>
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name" style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.08)", color: "#fff", fontSize: 14, fontFamily: font, boxSizing: "border-box", marginBottom: 14 }} />
+            <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name" style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.2)", background: "transparent", color: "#fff", fontSize: 14, fontFamily: font, boxSizing: "border-box", marginBottom: 14 }} />
             <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
               {[["yes", "✅ Yes!", "#059669"], ["maybe", "🤔 Maybe", "#D97706"], ["no", "❌ No", "#DC2626"]].map(([s, label, color]) => (
                 <button key={s} onClick={() => setStatus(s)} style={{ flex: 1, padding: "12px 4px", borderRadius: 12, border: `2px solid ${status === s ? color : "rgba(255,255,255,0.12)"}`, background: status === s ? `${color}33` : "transparent", color: status === s ? "#fff" : "rgba(255,255,255,0.6)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
@@ -96,7 +96,7 @@ export default function InviteRSVP() {
           </div>
         )}
 
-        <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 16, padding: 18 }}>
+        <div style={{ background: "transparent", borderRadius: 16, padding: 18 }}>
           <p style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.5)", marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.06em" }}>Guest Count</p>
           <div style={{ display: "flex", gap: 10, marginBottom: invite.rsvps.length > 0 ? 14 : 0 }}>
             <StatChip emoji="✅" label="Yes" count={yes} color="#059669" />

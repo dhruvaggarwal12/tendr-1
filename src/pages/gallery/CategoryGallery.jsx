@@ -145,7 +145,7 @@ export default function CategoryGallery() {
               style={{ maxWidth: "100%", maxHeight: "78vh", borderRadius: 14, boxShadow: "0 24px 80px rgba(0,0,0,0.6)", cursor: "zoom-out" }} />
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
               {(lightbox.theme || lightbox.caption || lightbox.vendorName) && (
-                <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 14px", display: "flex", gap: 10, alignItems: "center" }}>
+                <div style={{ background: "transparent", borderRadius: 8, padding: "8px 14px", display: "flex", gap: 10, alignItems: "center" }}>
                   {lightbox.theme && <span style={{ fontSize: 12, fontWeight: 700, color: "#CCAB4A" }}>{lightbox.theme}</span>}
                   {lightbox.caption && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.75)" }}>{lightbox.caption}</span>}
                   {lightbox.vendorName && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>by {lightbox.vendorName}</span>}

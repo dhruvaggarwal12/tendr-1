@@ -58,7 +58,7 @@ export default function PhotoWallPage() {
         </div>
 
         <div style={{ marginBottom: 20 }}>
-          <input value={name} onChange={e => { setName(e.target.value); localStorage.setItem("hp_name", e.target.value); }} placeholder="Your name" style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.07)", color: "#fff", fontSize: 14, fontFamily: font, boxSizing: "border-box", marginBottom: 10 }} />
+          <input value={name} onChange={e => { setName(e.target.value); localStorage.setItem("hp_name", e.target.value); }} placeholder="Your name" style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.15)", background: "transparent", color: "#fff", fontSize: 14, fontFamily: font, boxSizing: "border-box", marginBottom: 10 }} />
           <input ref={fileRef} type="file" accept="image/*" onChange={e => upload(e.target.files[0])} style={{ display: "none" }} />
           <button onClick={() => fileRef.current?.click()} disabled={uploading} style={{ width: "100%", padding: 13, borderRadius: 12, border: "none", background: "#DB2777", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: font, opacity: uploading ? 0.7 : 1 }}>
             {uploading ? "Uploading…" : "📸 Upload a Photo"}

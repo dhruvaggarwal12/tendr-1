@@ -117,9 +117,7 @@ function PostCard({ post, liked, onLike, onRemove, isAdmin, onAddComment, userRe
 
   return (
     <div style={{
-      background: "rgba(255,252,245,0.82)",
-      backdropFilter: "blur(12px)",
-      WebkitBackdropFilter: "blur(12px)",
+      background: "#fff",
       borderRadius: 16,
       border: "1px solid rgba(196,122,46,0.1)",
       borderLeft: `4px solid ${catColor}`,

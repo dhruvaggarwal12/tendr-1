@@ -184,7 +184,7 @@ export default function ComingSoon() {
         {/* Waitlist form */}
         <motion.div
           initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.8 }}
-          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 20, padding: "36px 32px", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", marginBottom: 40 }}
+          style={{ background: "transparent", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 20, padding: "36px 32px", marginBottom: 40 }}
         >
           <h2 style={{ fontSize: 20, fontWeight: 800, color: "#fff", margin: "0 0 8px" }}>Get Notified at Launch</h2>
           <p style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", margin: "0 0 24px" }}>Be the first to know — and get early access.</p>
@@ -201,7 +201,7 @@ export default function ComingSoon() {
                 <input
                   type="email" required placeholder="your@email.com" value={email}
                   onChange={e => setEmail(e.target.value)}
-                  style={{ flex: 1, minWidth: 200, padding: "13px 18px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(255,255,255,0.06)", color: "#fff", fontSize: 15, fontFamily: font, outline: "none", boxSizing: "border-box" }}
+                  style={{ flex: 1, minWidth: 200, padding: "13px 18px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#fff", fontSize: 15, fontFamily: font, outline: "none", boxSizing: "border-box" }}
                   onFocus={e => (e.currentTarget.style.borderColor = "rgba(196,122,46,0.7)")}
                   onBlur={e  => (e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)")}
                 />
@@ -220,7 +220,7 @@ export default function ComingSoon() {
         {IS_PROD && !isStandalone && !installed && (
           <motion.div
             initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.9 }}
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 20, padding: "32px 28px", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", marginBottom: 40 }}
+            style={{ background: "transparent", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 20, padding: "32px 28px", marginBottom: 40 }}
           >
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.12)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "4px 14px", fontSize: 11, fontWeight: 700, color: "#CCAB4A", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 14 }}>
               📲 Get the App
@@ -272,7 +272,7 @@ export default function ComingSoon() {
         {/* Community section */}
         <motion.div
           initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 1.0 }}
-          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 20, padding: "32px 28px", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", marginBottom: 40 }}
+          style={{ background: "transparent", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 20, padding: "32px 28px", marginBottom: 40 }}
         >
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.12)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "4px 14px", fontSize: 11, fontWeight: 700, color: "#CCAB4A", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 14 }}>
             ✨ Community
@@ -313,7 +313,7 @@ export default function ComingSoon() {
           ].map(({ Icon, href }, i) => (
             <motion.a key={i} href={href} target="_blank" rel="noopener noreferrer"
               whileHover={{ scale: 1.2, y: -3 }} whileTap={{ scale: 0.95 }}
-              style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(196,122,46,0.25)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.6)", fontSize: 15, textDecoration: "none", transition: "color 0.2s" }}
+              style={{ width: 40, height: 40, borderRadius: "50%", background: "transparent", border: "1px solid rgba(196,122,46,0.25)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.6)", fontSize: 15, textDecoration: "none", transition: "color 0.2s" }}
               onMouseEnter={e => (e.currentTarget.style.color = "#CCAB4A")}
               onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
             >

@@ -677,7 +677,7 @@ export function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, 
             <span style={{ color: '#CCAB4A', fontSize: 14, fontWeight: 700, fontFamily: F }}>💌 Create Invitation Flyer</span>
             <button
               onClick={() => setInviteOpen(false)}
-              style={{ padding: '7px 16px', borderRadius: 8, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: F }}
+              style={{ padding: '7px 16px', borderRadius: 8, background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: F }}
             >
               ✕ Cancel
             </button>

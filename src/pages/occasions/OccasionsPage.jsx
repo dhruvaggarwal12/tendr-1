@@ -50,7 +50,7 @@ export default function OccasionsPage() {
           </p>
 
           {/* Search pill inside hero */}
-          <div style={{ maxWidth: 380, margin: "0 auto", display: "flex", alignItems: "center", background: "rgba(255,255,255,0.82)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "0 16px", gap: 8, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}>
+          <div style={{ maxWidth: 380, margin: "0 auto", display: "flex", alignItems: "center", background: "#fff", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "0 16px", gap: 8 }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>

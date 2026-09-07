@@ -323,7 +323,7 @@ export default function DesignYourEvent() {
   return (
     <div style={{ minHeight: "100dvh", background: cream, fontFamily: font }}>
       {/* Top bar */}
-      <div style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(255,248,236,0.95)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(196,122,46,0.12)", padding: "14px 20px", display: "flex", alignItems: "center", gap: 12 }}>
+      <div style={{ position: "sticky", top: 0, zIndex: 100, background: "#FFF8EC", borderBottom: "1px solid rgba(196,122,46,0.12)", padding: "14px 20px", display: "flex", alignItems: "center", gap: 12 }}>
         <button onClick={() => step > 0 && step < 3 ? goBack() : navigate(-1)} style={{ background: "none", border: "none", cursor: "pointer", color: gold, fontSize: 18, padding: "4px 8px 4px 0", lineHeight: 1 }}>←</button>
         <span style={{ fontFamily: font, fontSize: 15, fontWeight: 700, color: ink }}>Design Your Event</span>
         {step < 3 && <span style={{ marginLeft: "auto", fontFamily: font, fontSize: 12, color: "#9B7450" }}>Step {step + 1} of 3</span>}

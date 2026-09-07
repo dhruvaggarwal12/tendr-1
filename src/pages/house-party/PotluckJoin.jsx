@@ -83,9 +83,9 @@ export default function PotluckJoin() {
         </div>
 
         {!nameLocked ? (
-          <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 16, padding: 20, marginBottom: 20 }}>
+          <div style={{ background: "transparent", borderRadius: 16, padding: 20, marginBottom: 20 }}>
             <p style={{ fontSize: 14, color: "#fff", marginBottom: 12 }}>Enter your name to claim items:</p>
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name" onKeyDown={e => e.key === "Enter" && lockName()} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.08)", color: "#fff", fontSize: 14, fontFamily: font, boxSizing: "border-box", marginBottom: 10 }} />
+            <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name" onKeyDown={e => e.key === "Enter" && lockName()} style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.2)", background: "transparent", color: "#fff", fontSize: 14, fontFamily: font, boxSizing: "border-box", marginBottom: 10 }} />
             <button onClick={lockName} style={{ width: "100%", padding: 12, borderRadius: 10, border: "none", background: "#7C3AED", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Continue →</button>
           </div>
         ) : (
@@ -99,7 +99,7 @@ export default function PotluckJoin() {
           const mine = item.claimedBy === name;
           const taken = item.claimedBy && !mine;
           return (
-            <div key={item.id} style={{ background: taken ? "rgba(255,255,255,0.04)" : mine ? "rgba(5,150,105,0.15)" : "rgba(255,255,255,0.06)", border: `1.5px solid ${mine ? "rgba(5,150,105,0.5)" : taken ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.12)"}`, borderRadius: 14, padding: "14px 16px", marginBottom: 10, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div key={item.id} style={{ background: taken ? "transparent" : mine ? "rgba(5,150,105,0.15)" : "transparent", border: `1.5px solid ${mine ? "rgba(5,150,105,0.5)" : taken ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.12)"}`, borderRadius: 14, padding: "14px 16px", marginBottom: 10, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 600, color: taken ? "rgba(255,255,255,0.4)" : "#fff" }}>{item.name}</div>
                 {item.claimedBy && <div style={{ fontSize: 12, color: mine ? "#34D399" : "rgba(255,255,255,0.4)", marginTop: 2 }}>{mine ? "✓ You're bringing this" : `Claimed by ${item.claimedBy}`}</div>}

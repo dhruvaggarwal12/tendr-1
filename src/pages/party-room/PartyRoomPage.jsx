@@ -679,7 +679,7 @@ export default function PartyRoomPage() {
               style={{ width: "100%", padding: "20px 24px", borderRadius: 20, border: `2px solid ${C.dim}`, background: C.card, color: C.text, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 16, textAlign: "left", transition: "border-color 0.18s" }}
               onMouseEnter={e => e.currentTarget.style.borderColor = C.gold}
               onMouseLeave={e => e.currentTarget.style.borderColor = C.dim}>
-              <div style={{ width: 44, height: 44, borderRadius: 14, background: "rgba(255,255,255,0.05)", border: `1.5px solid ${C.dim}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 14, background: "transparent", border: `1.5px solid ${C.dim}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 {ic(<><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></>, 22)}
               </div>
               <div>
@@ -788,7 +788,7 @@ export default function PartyRoomPage() {
           </div>
 
           {/* Tab switcher */}
-          <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.05)", borderRadius: 100, padding: 3 }}>
+          <div style={{ display: "flex", gap: 4, background: "transparent", borderRadius: 100, padding: 3 }}>
             {["game", "scores"].map(t => (
               <button key={t} onClick={() => setTab(t)}
                 style={{ padding: "5px 12px", borderRadius: 100, border: "none", background: tab === t ? accent : "transparent", color: tab === t ? "#fff" : C.muted, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>

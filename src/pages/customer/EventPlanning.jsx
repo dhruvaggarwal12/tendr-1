@@ -1094,7 +1094,7 @@ const EventPlanning = () => {
               </div>
               <div style={{ display: "flex", flexWrap: "nowrap", overflowX: "auto", gap: 8, paddingBottom: 2, msOverflowStyle: "none", scrollbarWidth: "none" }}>
                 {currentVendors.map(({ category, estimatedCost }) => (
-                  <div key={category} style={{ background: "rgba(255,255,255,0.08)", borderRadius: 10, padding: "6px 12px", border: "1px solid rgba(255,255,255,0.1)", flexShrink: 0, display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
+                  <div key={category} style={{ background: "transparent", borderRadius: 10, padding: "6px 12px", border: "1px solid rgba(255,255,255,0.1)", flexShrink: 0, display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
                     <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>{category}</span>
                     <span style={{ fontSize: 13, fontWeight: 800, color: "#CCAB4A" }}>{fmt(estimatedCost)}</span>
                   </div>
@@ -1740,7 +1740,7 @@ const EventPlanning = () => {
                       </span>
                     ))}
                     {recs.themes.slice(0, 3).map((theme) => (
-                      <span key={theme} style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 100, padding: "3px 10px" }}>
+                      <span key={theme} style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.7)", background: "transparent", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 100, padding: "3px 10px" }}>
                         {theme}
                       </span>
                     ))}
@@ -1980,7 +1980,7 @@ const EventPlanning = () => {
                       <p style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", margin: 0 }}>Choose the approach that works best for you</p>
                     </div>
                     <button onClick={() => setShowBudgetModal(false)}
-                      style={{ background: "rgba(255,255,255,0.12)", border: "none", color: "#fff", width: 28, height: 28, borderRadius: "50%", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
+                      style={{ background: "transparent", border: "none", color: "#fff", width: 28, height: 28, borderRadius: "50%", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
                   </div>
 
                   {/* Two columns on desktop, tabs on mobile */}
@@ -2099,7 +2099,7 @@ const EventPlanning = () => {
                       <h3 style={{ fontSize: 15, fontWeight: 900, color: "#CCAB4A", margin: 0 }}>Set budget per service</h3>
                       <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", margin: "2px 0 0" }}>Adjust anytime while browsing</p>
                     </div>
-                    <button onClick={() => setShowYouDoItBudget(false)} style={{ width: 26, height: 26, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.6)", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+                    <button onClick={() => setShowYouDoItBudget(false)} style={{ width: 26, height: 26, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.2)", background: "transparent", color: "rgba(255,255,255,0.6)", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
                   </div>
                   {/* Per-category sliders */}
                   <div style={{ padding: "14px 18px 18px", display: "flex", flexDirection: "column", gap: 14, maxHeight: "60vh", overflowY: "auto" }}>

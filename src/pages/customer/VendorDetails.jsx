@@ -627,7 +627,7 @@ const VendorDetailsPage = () => {
                 Book Now
               </button>
               <button onClick={openGigHeroChat}
-                style={{ flex: 1, padding: "14px", borderRadius: 14, border: "1.5px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.1)", backdropFilter: "blur(12px)", color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: "pointer" }}>
+                style={{ flex: 1, padding: "14px", borderRadius: 14, border: "1.5px solid rgba(255,255,255,0.25)", background: "transparent", color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: "pointer" }}>
                 Chat
               </button>
             </div>

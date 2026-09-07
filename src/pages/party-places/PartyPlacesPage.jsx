@@ -103,7 +103,7 @@ export default function PartyPlacesPage() {
           </p>
 
           {/* Search bar */}
-          <div style={{ background: "rgba(255,255,255,0.07)", backdropFilter: "blur(12px)", border: "1.5px solid rgba(255,255,255,0.14)", borderRadius: 18, padding: "16px 20px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 12, alignItems: "end" }} className="pp-search-bar">
+          <div style={{ background: "transparent", border: "1.5px solid rgba(255,255,255,0.14)", borderRadius: 18, padding: "16px 20px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 12, alignItems: "end" }} className="pp-search-bar">
             <style>{`.pp-search-bar{@media(max-width:640px){grid-template-columns:1fr!important}}`}</style>
             {[
               { label: "Event Date",       field: "date",     type: "date",   ph: "" },
@@ -116,7 +116,7 @@ export default function PartyPlacesPage() {
                   type={type} value={search[field]} placeholder={ph}
                   min={type === "date" ? today : type === "number" ? 1 : undefined}
                   onChange={e => setSearch(p => ({ ...p, [field]: e.target.value }))}
-                  style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.18)", background: "rgba(255,255,255,0.08)", color: "#fff", fontFamily: font, fontSize: 13, outline: "none", boxSizing: "border-box" }}
+                  style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.18)", background: "transparent", color: "#fff", fontFamily: font, fontSize: 13, outline: "none", boxSizing: "border-box" }}
                 />
               </div>
             ))}

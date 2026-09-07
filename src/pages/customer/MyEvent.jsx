@@ -253,7 +253,7 @@ export default function MyEvent() {
             </div>
             <button
               onClick={() => openConciergeChat(convId, false)}
-              style={{ padding: '9px 18px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font, whiteSpace: 'nowrap', flexShrink: 0, backdropFilter: 'blur(4px)' }}>
+              style={{ padding: '9px 18px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.35)', background: 'transparent', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font, whiteSpace: 'nowrap', flexShrink: 0 }}>
               Continue Chat →
             </button>
           </div>
