@@ -2849,8 +2849,8 @@ const Home = () => {
         const CHAMP = "#C4973A";
 
         const FLOW_GROUPS = [
-          { label: "PERSONAL", ids: ["baby-shower","newborn-welcome","naming-ceremony","birthday-party","gender-reveal","housewarming","bachelorette","kitty-party","get-together","diwali-party","holi-party","navratri-garba"] },
-          { label: "MILESTONES", ids: ["first-birthday","anniversary","graduation","farewell","retirement"] },
+          { label: "PERSONAL", desc: "Celebrate life's beautiful moments", icon: "gift", ids: ["baby-shower","newborn-welcome","naming-ceremony","birthday-party","gender-reveal","housewarming","bachelorette","kitty-party","get-together","diwali-party","holi-party","navratri-garba"] },
+          { label: "MILESTONES", desc: "Mark your important achievements", icon: "flag", ids: ["first-birthday","anniversary","graduation","farewell","retirement"] },
         ];
         const BUSINESS_IDS = ["office-party"];
 
@@ -2891,26 +2891,24 @@ const Home = () => {
             <style>{`
               .occ-flow-row {
                 display: flex; align-items: center; gap: 14px;
-                width: 100%; padding: 12px 0;
+                width: 100%; padding: 11px 8px;
                 border: none;
-                border-bottom: 1px solid rgba(255,255,255,0.05);
-                border-left: 2px solid transparent;
+                border-bottom: 1px solid rgba(196,122,46,0.08);
+                border-radius: 8px;
                 background: transparent; cursor: pointer;
                 font-family: ${f}; font-size: 14.5px;
-                color: rgba(245,236,216,0.88); text-align: left;
-                transition: color 0.14s, border-left-color 0.14s;
+                color: #2C1A0E; text-align: left;
+                transition: background 0.14s, color 0.14s;
               }
               .occ-flow-row:hover {
-                color: #F5ECD8;
-                border-left-color: ${CHAMP};
+                background: rgba(196,122,46,0.06);
+                color: #1A0800;
               }
               .occ-num {
                 font-family: ${ser}; font-size: 10.5px; font-weight: 400;
-                color: rgba(196,151,58,0.35); flex-shrink: 0; min-width: 22px;
+                color: ${CHAMP}; flex-shrink: 0; min-width: 22px;
                 letter-spacing: 0.04em; line-height: 1; padding-top: 1px;
-                transition: color 0.14s;
               }
-              .occ-flow-row:hover .occ-num { color: rgba(196,151,58,0.7); }
               .occ-name-wrap {
                 flex: 1; display: flex; flex-direction: column; gap: 1px;
               }
@@ -2920,9 +2918,9 @@ const Home = () => {
                 transition: color 0.14s; font-family: ${f};
                 letter-spacing: 0.01em;
               }
-              .occ-flow-row:hover .occ-hinglish { color: rgba(196,151,58,0.52); }
+              .occ-flow-row:hover .occ-hinglish { color: rgba(196,122,46,0.55); }
               .occ-flow-arr {
-                font-size: 14px; color: transparent;
+                font-size: 13px; color: rgba(196,122,46,0.35);
                 transition: color 0.14s; flex-shrink: 0;
               }
               .occ-flow-row:hover .occ-flow-arr { color: ${CHAMP}; }
@@ -2941,32 +2939,33 @@ const Home = () => {
               transform: "translate(-50%,-50%)",
               zIndex: 9001, width: "min(96vw, 820px)",
               maxHeight: "80dvh",
-              background: "#160D06",
-              borderRadius: 12,
-              border: "1px solid rgba(255,255,255,0.10)",
+              background: "#FFFFFF",
+              borderRadius: 18,
+              border: "1px solid rgba(196,122,46,0.12)",
               display: "flex", flexDirection: "column",
-              boxShadow: "0 24px 80px rgba(0,0,0,0.70)",
+              boxShadow: "0 24px 80px rgba(0,0,0,0.22)",
               overflow: "hidden",
+              position: "fixed",
             }}>
               {/* Header */}
-              <div style={{ padding: "24px 26px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0, position: "relative" }}>
+              <div style={{ padding: "24px 26px 20px", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0, position: "relative" }}>
                 <button
                   onClick={closeFlow}
-                  style={{ position: "absolute", top: 20, right: 22, background: "none", border: "none", color: "rgba(245,236,216,0.32)", fontSize: 24, lineHeight: 1, cursor: "pointer", fontFamily: f, padding: "0 4px" }}
+                  style={{ position: "absolute", top: 18, right: 20, width: 28, height: 28, borderRadius: "50%", background: "rgba(44,26,14,0.06)", border: "none", color: "rgba(44,26,14,0.5)", fontSize: 16, lineHeight: 1, cursor: "pointer", fontFamily: f, display: "flex", alignItems: "center", justifyContent: "center" }}
                 >×</button>
-                <p style={{ fontSize: 10, fontWeight: 700, color: "rgba(196,151,58,0.65)", textTransform: "uppercase", letterSpacing: "0.20em", margin: "0 0 6px", fontFamily: f }}>PLAN AN OCCASION</p>
-                <h2 style={{ fontFamily: ser, fontSize: "clamp(1.9rem,4vw,2.7rem)", fontWeight: 400, color: "#F5ECD8", margin: "0 0 18px", lineHeight: 1.1 }}>What are you planning?</h2>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.20em", margin: "0 0 6px", fontFamily: f }}>PLAN AN OCCASION</p>
+                <h2 style={{ fontFamily: ser, fontSize: "clamp(1.9rem,4vw,2.7rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 18px", lineHeight: 1.1 }}>What are you planning?</h2>
                 {/* Search */}
-                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.13)", borderRadius: 7, padding: "0 12px" }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(245,236,216,0.35)" strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#FAFAF8", border: "1.5px solid rgba(196,122,46,0.18)", borderRadius: 100, padding: "0 16px" }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                   <input
                     value={occasionSearch}
                     onChange={e => setOccasionSearch(e.target.value)}
                     placeholder="Search occasions…"
-                    style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 13.5, fontFamily: f, color: "#F5ECD8", padding: "10px 0" }}
+                    style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 13.5, fontFamily: f, color: "#2C1A0E", padding: "11px 0" }}
                   />
                   {occasionSearch && (
-                    <button onClick={() => setOccasionSearch("")} style={{ background: "none", border: "none", color: "rgba(245,236,216,0.35)", cursor: "pointer", fontSize: 18, padding: 0, lineHeight: 1 }}>×</button>
+                    <button onClick={() => setOccasionSearch("")} style={{ background: "none", border: "none", color: "rgba(44,26,14,0.3)", cursor: "pointer", fontSize: 18, padding: 0, lineHeight: 1 }}>×</button>
                   )}
                 </div>
               </div>
@@ -2977,7 +2976,7 @@ const Home = () => {
                   /* Search results: flat numbered list */
                   <div style={{ padding: "0 26px 24px" }}>
                     {filtered.length === 0 ? (
-                      <p style={{ color: "rgba(245,236,216,0.36)", fontSize: 13.5, fontFamily: f, padding: "20px 0", margin: 0 }}>No occasions found.</p>
+                      <p style={{ color: "rgba(44,26,14,0.36)", fontSize: 13.5, fontFamily: f, padding: "20px 0", margin: 0 }}>No occasions found.</p>
                     ) : (
                       filtered.map((o, i) => renderRow(o, i + 1))
                     )}
@@ -2985,31 +2984,51 @@ const Home = () => {
                 ) : (
                   /* Two-column directory */
                   <>
-                    <div style={{ display: "flex" }}>
+                    <div style={{ display: "flex", position: "relative" }}>
                       {FLOW_GROUPS.map((group, gi) => (
-                        <div key={group.label} style={{ flex: 1, padding: "0 26px 24px", borderRight: gi === 0 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
-                          <p style={{ fontSize: 9, fontWeight: 700, color: "rgba(245,236,216,0.26)", textTransform: "uppercase", letterSpacing: "0.22em", margin: "20px 0 10px", fontFamily: f }}>
-                            {group.label}
-                          </p>
+                        <div key={group.label} style={{ flex: 1, padding: "0 26px 24px", borderRight: gi === 0 ? "1px solid rgba(196,122,46,0.1)" : "none" }}>
+                          {/* Category header with icon */}
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "18px 0 14px" }}>
+                            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              {group.icon === "gift" ? (
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/>
+                                  <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                                </svg>
+                              ) : (
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>
+                                </svg>
+                              )}
+                            </div>
+                            <div>
+                              <p style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.2em", color: "rgba(44,26,14,0.5)", margin: 0, fontFamily: f }}>{group.label}</p>
+                              <p style={{ fontSize: 11, fontStyle: "italic", color: "rgba(44,26,14,0.38)", margin: "2px 0 0", fontFamily: ser }}>{group.desc}</p>
+                            </div>
+                          </div>
                           {group.ids.map((id, rowIdx) => {
                             const occ = OCCASIONS.find(o => o.id === id);
                             return occ ? renderRow(occ, rowIdx + 1) : null;
                           })}
                         </div>
                       ))}
+                      {/* OR circle at column midpoint */}
+                      <div style={{ position: "absolute", left: "50%", top: 46, transform: "translateX(-50%)", width: 30, height: 30, borderRadius: "50%", background: "#fff", border: "1px solid rgba(196,122,46,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 700, color: "rgba(196,122,46,0.55)", letterSpacing: "0.06em", fontFamily: f, zIndex: 2, boxShadow: "0 1px 6px rgba(0,0,0,0.06)" }}>OR</div>
                     </div>
 
                     {/* Business — full width with centered divider label */}
-                    <div style={{ padding: "0 26px 24px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "22px 0 10px" }}>
-                        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.05)" }} />
-                        <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(245,236,216,0.22)", textTransform: "uppercase", letterSpacing: "0.24em", fontFamily: f }}>BUSINESS</span>
-                        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.05)" }} />
+                    <div style={{ padding: "0 26px 24px", position: "relative" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "8px 0 12px" }}>
+                        <div style={{ flex: 1, height: 1, background: "rgba(196,122,46,0.1)" }} />
+                        <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(196,122,46,0.45)", textTransform: "uppercase", letterSpacing: "0.24em", fontFamily: f }}>BUSINESS</span>
+                        <div style={{ flex: 1, height: 1, background: "rgba(196,122,46,0.1)" }} />
                       </div>
                       {BUSINESS_IDS.map(id => {
                         const occ = OCCASIONS.find(o => o.id === id);
                         return occ ? renderRow(occ) : null;
                       })}
+                      {/* Champagne decoration */}
+                      <div style={{ position: "absolute", bottom: 0, right: 20, opacity: 0.09, fontSize: 52, lineHeight: 1, pointerEvents: "none", userSelect: "none" }}>🥂</div>
                     </div>
                   </>
                 )}
