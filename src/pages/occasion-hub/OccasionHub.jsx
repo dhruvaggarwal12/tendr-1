@@ -4444,28 +4444,35 @@ const OCCASIONS = {
     themes: ["Candlelight Dinner", "Golden Glow", "Rustic Romance", "Black & Gold", "Garden Party", "Vintage Bollywood", "Starry Night", "Minimalist Chic"],
     sections: [
       { id: "manage", label: "💛 Celebrate", subtitle: "Plan the perfect evening", tools: [
-        { id: "invite", emoji: "📨", title: "Digital Invite", desc: "Share the celebration details", color: "#2563EB" },
-        { id: "bills", emoji: "💸", title: "Bill Splitter", desc: "Split the celebration costs", color: "#DC2626" },
-        { id: "countdown",   emoji: "⏱️", title: "Countdown Timer",         desc: "Count down to the special day",       color: "#0891B2" },
-        { id: "guestlist",   emoji: "👥", title: "Guest List",             desc: "Track RSVPs · phone · +1 · WhatsApp", color: "#7C3AED" },
-        { id: "menu",        emoji: "🍽️", title: "Menu Planner",           desc: "Plan food · who brings · status",     color: "#059669" },
-        { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker", color: "#D97706" },
-        { id: "venue",       emoji: "📍", title: "Venue Notes",            desc: "Address · parking · Maps · share",    color: "#DC2626" },
-        { id: "seating",     emoji: "🪑", title: "Seating Chart",          desc: "Visual tables · tap to assign",       color: "#0891B2" },
-        { id: "budget",      emoji: "💰", title: "Budget Planner",         desc: "Set budget · track spend by category", color: "#16A34A" },
-        { id: "vendors",     emoji: "🗂️", title: "Vendor Tracker",         desc: "Caterer · DJ · deposit · balance",     color: "#F59E0B" },
-        { id: "wabroadcast", emoji: "📣", title: "WA Broadcasts",          desc: "Save the date · reminder · thank you", color: "#25D366" },
+        { id: "invite",      emoji: "📨", title: "Digital Invite",          desc: "Share the celebration details",        color: "#2563EB" },
+        { id: "checklist",   emoji: "📋", title: "Anniversary Checklist",   desc: "What to plan · order · arrange",       color: "#D97706" },
+        { id: "bills",       emoji: "💸", title: "Bill Splitter",           desc: "Split the celebration costs",           color: "#DC2626" },
+        { id: "gifttracker", emoji: "🎁", title: "Gift Tracker",            desc: "Log gifts · track thank-yous",         color: "#16A34A" },
+        { id: "guestlist",   emoji: "👥", title: "Guest List",              desc: "Track RSVPs · phone · +1 · WhatsApp",  color: "#7C3AED" },
+        { id: "menu",        emoji: "🍽️", title: "Menu Planner",           desc: "Plan food · who brings · status",      color: "#059669" },
+        { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker",  color: "#D97706" },
+        { id: "venue",       emoji: "📍", title: "Venue Notes",             desc: "Address · parking · Maps · share",     color: "#DC2626" },
+        { id: "seating",     emoji: "🪑", title: "Seating Chart",           desc: "Visual tables · tap to assign",        color: "#0891B2" },
+        { id: "budget",      emoji: "💰", title: "Budget Planner",          desc: "Set budget · track spend by category", color: "#16A34A" },
+        { id: "vendors",     emoji: "🗂️", title: "Vendor Tracker",          desc: "Caterer · DJ · deposit · balance",     color: "#F59E0B" },
+        { id: "wabroadcast", emoji: "📣", title: "WA Broadcasts",           desc: "Save the date · reminder · thank you", color: "#25D366" },
       ]},
       { id: "fun", label: "❤️ Love", subtitle: "Make it unforgettable", tools: [
-        { id: "lovenotes", emoji: "💌", title: "Love Notes Wall", desc: "Everyone writes a note for the couple", color: "#F59E0B" },
-        { id: "theme", emoji: "🎨", title: "Theme Picker", desc: "Vote on the celebration theme", color: "#7C3AED" },
-        { id: "playlist", emoji: "🎵", title: "Playlist Builder", desc: "Build their love songs playlist", color: "#059669" },
-        { id: "photowall", emoji: "📸", title: "Shared Photo Wall", desc: "Upload your favourite memories of them", color: "#DB2777" },
+        { id: "lovenotes",  emoji: "💌", title: "Love Notes Wall",     desc: "Everyone writes a note for the couple",         color: "#F59E0B" },
+        { id: "theme",      emoji: "🎨", title: "Theme Picker",        desc: "Vote on the celebration theme",                 color: "#7C3AED" },
+        { id: "playlist",   emoji: "🎵", title: "Playlist Builder",    desc: "Build their love songs playlist",               color: "#059669" },
+        { id: "photowall",  emoji: "📸", title: "Shared Photo Wall",   desc: "Upload your favourite memories of them",        color: "#DB2777" },
+        { id: "countdown",  emoji: "⏱️", title: "Countdown Timer",     desc: "Count down to the special day",                color: "#0891B2" },
+        { id: "moodmeter",  emoji: "🌡️", title: "Mood Meter",          desc: "Live celebration vibe tracker",                color: "#10B981" },
       ]},
       { id: "games", label: "🎮 Games", subtitle: "Fun for everyone", tools: [
-        { id: "couplequiz", emoji: "💑", title: "Couple Quiz", desc: "How well do you know the couple?", color: "#F59E0B" },
-        { id: "wouldyou", emoji: "🤷", title: "Would You Rather", desc: "Spicy couple edition choices", color: "#7C3AED" },
-        { id: "blessingswall", emoji: "🙏", title: "Blessings Wall", desc: "Share wishes for the couple", color: "#059669" },
+        { id: "couplequiz",   emoji: "💑", title: "Couple Quiz",         desc: "How well do you know the couple?",            color: "#F59E0B" },
+        { id: "wouldyou",     emoji: "🤷", title: "Would You Rather",    desc: "Spicy couple edition choices",                color: "#7C3AED" },
+        { id: "blessingswall",emoji: "🙏", title: "Blessings Wall",      desc: "Share wishes for the couple",                 color: "#059669" },
+        { id: "truthordare",  emoji: "🎯", title: "Truth or Dare",       desc: "Couple edition · memories & dares",           color: "#DC2626" },
+        { id: "mostlikelyto", emoji: "🏆", title: "Most Likely To",      desc: "Who in the couple is most likely to…",        color: "#F59E0B" },
+        { id: "t2l",          emoji: "🤥", title: "Two Truths One Lie",  desc: "Love story edition — find the lie",           color: "#8B5CF6" },
+        { id: "rapidfire",    emoji: "⚡", title: "Rapid Fire",           desc: "Couple trivia · 30 seconds on the clock",    color: "#EF4444" },
       ]},
       { id: "other", label: "🏆 Other", subtitle: "After the celebration", tools: [
         { id: "reportcard", emoji: "🏆", title: "Evening Report Card", desc: "Rate the celebration · get a grade", color: "#FBBF24" },
@@ -4482,17 +4489,19 @@ const OCCASIONS = {
     themes: ["Pastel Dreams", "Twinkle Stars", "Safari Animals", "Under the Sea", "Rainbow Love", "Woodland Creatures", "Floral Garden", "Oh Baby!"],
     sections: [
       { id: "manage", label: "🍼 Manage", subtitle: "Plan a beautiful shower", tools: [
-        { id: "invite", emoji: "📨", title: "Digital Invite & RSVP", desc: "One link · guests RSVP", color: "#2563EB" },
-        { id: "checklist", emoji: "📋", title: "Shower Checklist", desc: "Guest count → what to arrange", color: "#D97706" },
-        { id: "potluck",     emoji: "🥘", title: "Potluck Planner",          desc: "Everyone brings something",           color: "#059669" },
-        { id: "guestlist",   emoji: "👥", title: "Guest List",             desc: "Track RSVPs · phone · +1 · WhatsApp", color: "#7C3AED" },
-        { id: "menu",        emoji: "🍽️", title: "Menu Planner",           desc: "Plan food · who brings · status",     color: "#059669" },
-        { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker", color: "#D97706" },
-        { id: "venue",       emoji: "📍", title: "Venue Notes",            desc: "Address · parking · Maps · share",    color: "#DC2626" },
-        { id: "seating",     emoji: "🪑", title: "Seating Chart",          desc: "Visual tables · tap to assign",       color: "#0891B2" },
-        { id: "budget",      emoji: "💰", title: "Budget Planner",         desc: "Set budget · track spend by category", color: "#16A34A" },
-        { id: "vendors",     emoji: "🗂️", title: "Vendor Tracker",         desc: "Caterer · DJ · deposit · balance",     color: "#F59E0B" },
-        { id: "wabroadcast", emoji: "📣", title: "WA Broadcasts",          desc: "Save the date · reminder · thank you", color: "#25D366" },
+        { id: "invite",      emoji: "📨", title: "Digital Invite & RSVP",  desc: "One link · guests RSVP",               color: "#2563EB" },
+        { id: "checklist",   emoji: "📋", title: "Shower Checklist",        desc: "Guest count → what to arrange",         color: "#D97706" },
+        { id: "giftregistry",emoji: "🎁", title: "Gift Registry",           desc: "What the baby needs · share with guests",color: "#F97316" },
+        { id: "gifttracker", emoji: "🎁", title: "Gift Tracker",            desc: "Log shower gifts · track thank-yous",   color: "#16A34A" },
+        { id: "potluck",     emoji: "🥘", title: "Potluck Planner",         desc: "Everyone brings something",             color: "#059669" },
+        { id: "guestlist",   emoji: "👥", title: "Guest List",              desc: "Track RSVPs · phone · +1 · WhatsApp",   color: "#7C3AED" },
+        { id: "menu",        emoji: "🍽️", title: "Menu Planner",           desc: "Plan food · who brings · status",       color: "#059669" },
+        { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker",   color: "#D97706" },
+        { id: "venue",       emoji: "📍", title: "Venue Notes",             desc: "Address · parking · Maps · share",      color: "#DC2626" },
+        { id: "seating",     emoji: "🪑", title: "Seating Chart",           desc: "Visual tables · tap to assign",         color: "#0891B2" },
+        { id: "budget",      emoji: "💰", title: "Budget Planner",          desc: "Set budget · track spend by category",  color: "#16A34A" },
+        { id: "vendors",     emoji: "🗂️", title: "Vendor Tracker",          desc: "Caterer · DJ · deposit · balance",      color: "#F59E0B" },
+        { id: "wabroadcast", emoji: "📣", title: "WA Broadcasts",           desc: "Save the date · reminder · thank you",  color: "#25D366" },
       ]},
       { id: "votes", label: "👶 Baby Votes", subtitle: "Fun predictions & guesses", tools: [
         { id: "babynamevote", emoji: "👶", title: "Baby Name Vote", desc: "Suggest & vote on baby names", color: "#38BDF8" },
@@ -4520,10 +4529,11 @@ const OCCASIONS = {
     themes: ["Cozy Bohemian", "Modern Minimal", "Tropical Vibes", "Scandinavian", "Rustic Warm", "Industrial Chic", "Garden Party", "Retro Vintage"],
     sections: [
       { id: "manage", label: "🏡 Manage", subtitle: "Settle in together", tools: [
-        { id: "invite", emoji: "📨", title: "Digital Invite & RSVP", desc: "One link · guests RSVP", color: "#2563EB" },
-        { id: "giftregistry", emoji: "🎁", title: "Gift Registry", desc: "What you need for the new home", color: "#F97316" },
-        { id: "checklist", emoji: "📋", title: "Party Checklist", desc: "Guest count → what to arrange", color: "#D97706" },
-        { id: "bills",       emoji: "💸", title: "Bill Splitter",            desc: "Split the celebration expenses",      color: "#DC2626" },
+        { id: "invite",      emoji: "📨", title: "Digital Invite & RSVP",  desc: "One link · guests RSVP",              color: "#2563EB" },
+        { id: "giftregistry",emoji: "🎁", title: "Gift Registry",           desc: "What you need for the new home",      color: "#F97316" },
+        { id: "checklist",   emoji: "📋", title: "Party Checklist",         desc: "Guest count → what to arrange",       color: "#D97706" },
+        { id: "potluck",     emoji: "🥘", title: "Potluck Planner",         desc: "Everyone brings a dish for the home", color: "#059669" },
+        { id: "bills",       emoji: "💸", title: "Bill Splitter",           desc: "Split the celebration expenses",      color: "#DC2626" },
         { id: "guestlist",   emoji: "👥", title: "Guest List",             desc: "Track RSVPs · phone · +1 · WhatsApp", color: "#7C3AED" },
         { id: "menu",        emoji: "🍽️", title: "Menu Planner",           desc: "Plan food · who brings · status",     color: "#059669" },
         { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule the day · live NOW tracker", color: "#D97706" },
@@ -4735,22 +4745,34 @@ const OCCASIONS = {
     themes: ["Soft Pastels", "Stork & Stars", "Nature Welcome", "Golden Welcome", "Baby Bloom", "Moon & Stars", "Royal Welcome", "Earthy Calm"],
     sections: [
       { id: "manage", label: "👶 Manage", subtitle: "Plan the homecoming", tools: [
-        { id: "invite",      emoji: "📨", title: "Digital Invite & RSVP", desc: "One link · family RSVP instantly",      color: "#2563EB" },
-        { id: "checklist",   emoji: "📋", title: "Welcome Checklist",      desc: "What to arrange for homecoming day",    color: "#D97706" },
-        { id: "guestlist",   emoji: "👥", title: "Guest List",             desc: "Track RSVPs · phone · WhatsApp",        color: "#7C3AED" },
-        { id: "menu",        emoji: "🍽️", title: "Menu Planner",           desc: "Plan food · dietary prefs · status",    color: "#059669" },
-        { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule homecoming day · live tracker",color: "#D97706" },
-        { id: "venue",       emoji: "📍", title: "Venue Notes",            desc: "Address · setup area · Maps · share",   color: "#DC2626" },
-        { id: "budget",      emoji: "💰", title: "Budget Planner",         desc: "Set budget · track by category",        color: "#16A34A" },
-        { id: "vendors",     emoji: "🗂️", title: "Vendor Tracker",         desc: "Decorator · caterer · deposit",         color: "#F59E0B" },
-        { id: "wabroadcast", emoji: "📣", title: "WA Broadcasts",          desc: "Announce the arrival · share photos",   color: "#25D366" },
+        { id: "invite",      emoji: "📨", title: "Digital Invite & RSVP",  desc: "One link · family RSVP instantly",       color: "#2563EB" },
+        { id: "checklist",   emoji: "📋", title: "Welcome Checklist",       desc: "What to arrange for homecoming day",     color: "#D97706" },
+        { id: "bills",       emoji: "💸", title: "Bill Splitter",           desc: "Split the celebration expenses",         color: "#DC2626" },
+        { id: "giftregistry",emoji: "🎁", title: "Gift Registry",           desc: "What the family needs for the baby",     color: "#F97316" },
+        { id: "gifttracker", emoji: "🎁", title: "Gift Tracker",            desc: "Log baby gifts · track thank-yous",      color: "#16A34A" },
+        { id: "guestlist",   emoji: "👥", title: "Guest List",              desc: "Track RSVPs · phone · WhatsApp",         color: "#7C3AED" },
+        { id: "menu",        emoji: "🍽️", title: "Menu Planner",           desc: "Plan food · dietary prefs · status",     color: "#059669" },
+        { id: "daytimeline", emoji: "🗓️", title: "Day Timeline",           desc: "Schedule homecoming day · live tracker", color: "#D97706" },
+        { id: "venue",       emoji: "📍", title: "Venue Notes",             desc: "Address · setup area · Maps · share",    color: "#DC2626" },
+        { id: "seating",     emoji: "🪑", title: "Seating Chart",           desc: "Visual tables · tap to assign seats",    color: "#0891B2" },
+        { id: "budget",      emoji: "💰", title: "Budget Planner",          desc: "Set budget · track by category",         color: "#16A34A" },
+        { id: "vendors",     emoji: "🗂️", title: "Vendor Tracker",          desc: "Decorator · caterer · deposit",          color: "#F59E0B" },
+        { id: "wabroadcast", emoji: "📣", title: "WA Broadcasts",           desc: "Announce the arrival · share photos",    color: "#25D366" },
       ]},
       { id: "ceremony", label: "🌸 Blessings", subtitle: "Meaningful moments", tools: [
-        { id: "blessingswall",  emoji: "🙏", title: "Blessings Wall",    desc: "Everyone shares a blessing for the baby", color: "#34D399" },
-        { id: "babynamevote",   emoji: "👶", title: "Name Vote",         desc: "Family votes on baby names",              color: "#38BDF8" },
-        { id: "wishwall",       emoji: "💌", title: "Wish Wall",         desc: "Write wishes for the new arrival",        color: "#F472B6" },
-        { id: "countdown",      emoji: "⏱️", title: "Countdown Timer",   desc: "Count down to homecoming",                color: "#0891B2" },
-        { id: "photowall",      emoji: "📸", title: "Shared Photo Wall", desc: "First photos from the hospital & home",   color: "#DB2777" },
+        { id: "blessingswall",  emoji: "🙏", title: "Blessings Wall",    desc: "Everyone shares a blessing for the baby",  color: "#34D399" },
+        { id: "babynamevote",   emoji: "👶", title: "Name Vote",         desc: "Family votes on baby names",                color: "#38BDF8" },
+        { id: "wishwall",       emoji: "💌", title: "Wish Wall",         desc: "Write wishes for the new arrival",          color: "#F472B6" },
+        { id: "advicecards",    emoji: "💌", title: "Advice for Parents",desc: "Wisdom, blessings & predictions",           color: "#A78BFA" },
+        { id: "countdown",      emoji: "⏱️", title: "Countdown Timer",   desc: "Count down to homecoming",                  color: "#0891B2" },
+        { id: "photowall",      emoji: "📸", title: "Shared Photo Wall", desc: "First photos from the hospital & home",     color: "#DB2777" },
+      ]},
+      { id: "games", label: "🎮 Games", subtitle: "Celebrate the new arrival", tools: [
+        { id: "luckydraw",   emoji: "🍀", title: "Lucky Draw",         desc: "Guests win baby celebration prizes",          color: "#10B981" },
+        { id: "wouldyou",    emoji: "🤷", title: "Would You Rather",   desc: "Baby prediction dilemmas · group fun",        color: "#7C3AED" },
+        { id: "rapidfire",   emoji: "⚡", title: "Rapid Fire",          desc: "Baby predictions · 30 seconds",               color: "#EF4444" },
+        { id: "mostlikelyto",emoji: "🏆", title: "Most Likely To",     desc: "Who does the baby look like most?",           color: "#F59E0B" },
+        { id: "t2l",         emoji: "🤥", title: "Two Truths One Lie", desc: "Family memories edition",                     color: "#8B5CF6" },
       ]},
       { id: "other", label: "🏆 After", subtitle: "Wrap up the welcome", tools: [
         { id: "reportcard", emoji: "🏆", title: "Welcome Report Card", desc: "Rate the homecoming celebration", color: "#FBBF24" },
@@ -5169,15 +5191,27 @@ const OCCASIONS = {
         { id: "wabroadcast", emoji: "📣", title: "WA Broadcasts",          desc: "Save the date · reminder · thank you", color: "#25D366" },
       ]},
       { id: "ceremony", label: "✨ Ceremony", subtitle: "Meaningful moments", tools: [
-        { id: "namesuggestions", emoji: "🌸", title: "Name Suggestions", desc: "Family suggests names with meanings", color: "#A78BFA" },
-        { id: "blessingswall", emoji: "🙏", title: "Blessings Wall", desc: "Everyone shares a blessing for the child", color: "#F59E0B" },
-        { id: "countdown", emoji: "⏱️", title: "Countdown Timer", desc: "Count down to the ceremony", color: "#0891B2" },
-        { id: "photowall", emoji: "📸", title: "Shared Photo Wall", desc: "Everyone captures the moment", color: "#DB2777" },
+        { id: "namesuggestions",emoji: "🌸", title: "Name Suggestions",     desc: "Family suggests names with meanings",    color: "#A78BFA" },
+        { id: "blessingswall",  emoji: "🙏", title: "Blessings Wall",       desc: "Everyone shares a blessing for the child",color: "#F59E0B" },
+        { id: "wishwall",       emoji: "💌", title: "Wish Wall",            desc: "Write wishes for the child's journey",    color: "#F472B6" },
+        { id: "advicecards",    emoji: "💌", title: "Advice for Parents",   desc: "Wisdom, blessings & life predictions",    color: "#A78BFA" },
+        { id: "giftregistry",   emoji: "🎁", title: "Gift Registry",        desc: "What the family needs — share it",        color: "#F97316" },
+        { id: "gifttracker",    emoji: "🎁", title: "Gift Tracker",         desc: "Log ceremony gifts · track thank-yous",   color: "#16A34A" },
+        { id: "countdown",      emoji: "⏱️", title: "Countdown Timer",      desc: "Count down to the ceremony",              color: "#0891B2" },
+        { id: "photowall",      emoji: "📸", title: "Shared Photo Wall",    desc: "Everyone captures the moment",            color: "#DB2777" },
       ]},
       { id: "fun", label: "🎉 Celebration", subtitle: "After the ceremony", tools: [
-        { id: "theme", emoji: "🎨", title: "Theme Picker", desc: "Vote on the decoration theme", color: "#7C3AED" },
-        { id: "playlist", emoji: "🎵", title: "Playlist Builder", desc: "Music for the celebration", color: "#059669" },
-        { id: "potluck", emoji: "🥘", title: "Potluck Planner", desc: "Everyone brings a dish", color: "#059669" },
+        { id: "theme",    emoji: "🎨", title: "Theme Picker",      desc: "Vote on the decoration theme",                    color: "#7C3AED" },
+        { id: "playlist", emoji: "🎵", title: "Playlist Builder",  desc: "Music for the celebration",                       color: "#059669" },
+        { id: "potluck",  emoji: "🥘", title: "Potluck Planner",   desc: "Everyone brings a dish",                          color: "#059669" },
+        { id: "moodmeter",emoji: "🌡️", title: "Mood Meter",        desc: "Live celebration vibe tracker",                   color: "#10B981" },
+      ]},
+      { id: "games", label: "🎮 Games", subtitle: "Celebrate together", tools: [
+        { id: "luckydraw",   emoji: "🍀", title: "Lucky Draw",         desc: "Guests win ceremony favours",                 color: "#10B981" },
+        { id: "wouldyou",    emoji: "🤷", title: "Would You Rather",   desc: "Family-friendly dilemmas · group fun",        color: "#7C3AED" },
+        { id: "rapidfire",   emoji: "⚡", title: "Rapid Fire",          desc: "Baby predictions · 30 seconds",               color: "#EF4444" },
+        { id: "mostlikelyto",emoji: "🏆", title: "Most Likely To",     desc: "What will this child grow up to be?",         color: "#F59E0B" },
+        { id: "t2l",         emoji: "🤥", title: "Two Truths One Lie", desc: "Family memories edition",                     color: "#8B5CF6" },
       ]},
       { id: "other", label: "🏆 Other", subtitle: "Remember this day", tools: [
         { id: "reportcard", emoji: "🏆", title: "Ceremony Report Card", desc: "Rate the beautiful day", color: "#FBBF24" },
@@ -6094,7 +6128,7 @@ export default function OccasionHub({ occasion }) {
                   {isGameSection ? (
                     <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }}>
                       {sectionTools.map(t => (
-                        <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"rgba(255,255,255,0.035)", border:"1px solid rgba(255,255,255,0.09)", borderRadius:12, padding:"14px 8px 12px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:9, textAlign:"center" }}>
+                        <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"transparent", border:`1px solid ${PH.violet}20`, borderRadius:12, padding:"14px 8px 12px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:9, textAlign:"center" }}>
                           <div style={{ color:PH.violet }}>{TOOL_ICONS[t.id]||occic(<polygon points="5 3 19 12 5 21 5 3"/>)}</div>
                           <div style={{ fontSize:11, fontWeight:600, color:"rgba(255,255,255,0.88)", lineHeight:1.35 }}>{t.title}</div>
                         </div>
@@ -6105,7 +6139,7 @@ export default function OccasionHub({ occasion }) {
                       {sectionTools.map((t,i) => {
                         const desc = t.desc && !t.desc.startsWith('#') ? t.desc : null;
                         return (
-                          <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:i%2===0?"rgba(255,255,255,0.025)":"transparent", border:"none", borderBottom:"1px solid rgba(255,255,255,0.06)", borderRadius:i===0?`10px 10px 0 0`:i===sectionTools.length-1?`0 0 10px 10px`:"0", padding:"15px 16px", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
+                          <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"transparent", border:"none", borderBottom:"1px solid rgba(255,255,255,0.06)", borderRadius:i===0?`10px 10px 0 0`:i===sectionTools.length-1?`0 0 10px 10px`:"0", padding:"15px 16px", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
                             <div style={{ color:PH.violet, flexShrink:0 }}>{TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}</div>
                             <div style={{ flex:1, minWidth:0 }}>
                               <div style={{ fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.92)" }}>{t.title}</div>
@@ -6135,7 +6169,7 @@ export default function OccasionHub({ occasion }) {
             ) : (
               <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }}>
                 {playTools.map(t => (
-                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:12, padding:"12px 8px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:8, textAlign:"center" }}>
+                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"transparent", border:`1px solid ${PH.blue}22`, borderRadius:12, padding:"12px 8px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:8, textAlign:"center" }}>
                     <div style={{ color:PH.blue }}>{TOOL_ICONS[t.id]||occic(<polygon points="5 3 19 12 5 21 5 3"/>)}</div>
                     <div style={{ fontSize:11, fontWeight:600, color:"rgba(255,255,255,0.85)", lineHeight:1.3 }}>{t.title}</div>
                   </div>
@@ -6195,7 +6229,7 @@ export default function OccasionHub({ occasion }) {
                 {planTools.map((t,i) => {
                   const desc = t.desc && !t.desc.startsWith('#') ? t.desc : null;
                   return (
-                    <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:i%2===0?"rgba(255,255,255,0.025)":"transparent", border:"none", borderBottom:"1px solid rgba(255,255,255,0.06)", borderRadius:i===0?`10px 10px 0 0`:i===planTools.length-1?`0 0 10px 10px`:"0", padding:"15px 16px", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
+                    <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"transparent", border:"none", borderBottom:"1px solid rgba(255,255,255,0.06)", borderRadius:i===0?`10px 10px 0 0`:i===planTools.length-1?`0 0 10px 10px`:"0", padding:"15px 16px", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
                       <div style={{ color:PH.gold, flexShrink:0 }}>{TOOL_ICONS[t.id]||occic(<rect x="3" y="3" width="18" height="18" rx="2"/>)}</div>
                       <div style={{ flex:1, minWidth:0 }}>
                         <div style={{ fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.92)" }}>{t.title}</div>
@@ -6224,7 +6258,7 @@ export default function OccasionHub({ occasion }) {
                 {momentTools.map((t,i) => {
                   const desc = t.desc && !t.desc.startsWith('#') ? t.desc : null;
                   return (
-                    <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:i%2===0?"rgba(255,255,255,0.025)":"transparent", border:"none", borderBottom:"1px solid rgba(255,255,255,0.06)", borderRadius:i===0?`10px 10px 0 0`:i===momentTools.length-1?`0 0 10px 10px`:"0", padding:"15px 16px", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
+                    <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:"transparent", border:"none", borderBottom:"1px solid rgba(255,255,255,0.06)", borderRadius:i===0?`10px 10px 0 0`:i===momentTools.length-1?`0 0 10px 10px`:"0", padding:"15px 16px", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
                       <div style={{ color:PH.pink, flexShrink:0 }}>{TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}</div>
                       <div style={{ flex:1, minWidth:0 }}>
                         <div style={{ fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.92)" }}>{t.title}</div>
