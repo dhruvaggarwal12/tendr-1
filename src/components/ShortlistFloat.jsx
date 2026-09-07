@@ -53,6 +53,68 @@ const CAT_EMOJI = {
   Anchor: "🎤", Transport: "🚗", Mehendi: "🌿", Makeup: "💄",
 };
 
+// Per-service wizard questions — chips (single-select) or text (optional free-form)
+const SERVICE_QUESTIONS = {
+  Caterer: {
+    questions: [
+      { id: "foodPref", label: "Food preference", type: "chips", options: ["Pure Veg", "Non-Veg", "Both Veg & Non-Veg"] },
+      { id: "specialDiet", label: "Any special dietary needs?", type: "text", placeholder: "e.g. Jain, diabetic, gluten-free…" },
+    ],
+  },
+  Photographer: {
+    questions: [
+      { id: "coverage", label: "Coverage needed", type: "chips", options: ["Full day", "Half day", "Hourly / Custom"] },
+      { id: "reel", label: "Reels / Highlights video?", type: "chips", options: ["Yes, include", "No, photos only"] },
+    ],
+  },
+  DJ: {
+    questions: [
+      { id: "hours", label: "Performance hours", type: "chips", options: ["2–4 hrs", "4–6 hrs", "6+ hrs", "Full day"] },
+      { id: "setup", label: "Setup type", type: "chips", options: ["Indoor", "Outdoor", "Both"] },
+    ],
+  },
+  Decorator: {
+    questions: [
+      { id: "theme", label: "Theme / style preference", type: "chips", options: ["Floral", "Minimal & Elegant", "Traditional", "Modern", "Balloon-heavy", "Surprise me"] },
+      { id: "notes", label: "Specific ideas or references?", type: "text", placeholder: "e.g. pastel colours, royal look, fairy lights…" },
+    ],
+  },
+  Makeup: {
+    questions: [
+      { id: "type", label: "Makeup type", type: "chips", options: ["Bridal", "Pre-bridal", "Party / Engagement", "Regular"] },
+      { id: "trial", label: "Trial session needed?", type: "chips", options: ["Yes", "No"] },
+    ],
+  },
+  Mehendi: {
+    questions: [
+      { id: "who", label: "Who needs mehendi?", type: "chips", options: ["Bride only", "Bride + close family", "All ladies", "Small group"] },
+    ],
+  },
+  Anchor: {
+    questions: [
+      { id: "style", label: "Preferred anchor style", type: "chips", options: ["Hindi", "English", "Bilingual", "Comedy / Fun"] },
+    ],
+  },
+  Transport: {
+    questions: [
+      { id: "vehicles", label: "Approx vehicles needed", type: "chips", options: ["1–2", "3–5", "6+", "Not sure yet"] },
+    ],
+  },
+};
+
+function buildRequirementsString(cat, answers) {
+  const config = SERVICE_QUESTIONS[cat];
+  if (!config || !answers) return "";
+  const parts = config.questions
+    .map(q => {
+      const val = answers[q.id];
+      if (!val || val.trim() === "") return null;
+      return `${q.label}: ${val}`;
+    })
+    .filter(Boolean);
+  return parts.join(" | ");
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 export default function ShortlistFloat() {
   const bookingType        = useSelector(s => s.eventPlanning?.bookingType || "");
@@ -69,6 +131,11 @@ export default function ShortlistFloat() {
   const [submitted,    setSubmitted]    = useState(false);
   const [convId,       setConvId]       = useState(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+
+  // Wizard state
+  const [wizardOpen,    setWizardOpen]    = useState(false);
+  const [wizardStep,    setWizardStep]    = useState(0);
+  const [wizardAnswers, setWizardAnswers] = useState({});
 
   const refresh = useCallback(() => {
     const sl = getShortlist();
@@ -91,8 +158,9 @@ export default function ShortlistFloat() {
   // ── Handlers ─────────────────────────────────────────────────────────────
   const handleRemove = (cat, id) => removeFromShortlist(cat, id);
 
-  const handleSendRequest = async () => {
+  const handleSendRequest = async (answers = {}) => {
     setSubmitting(true);
+    setWizardOpen(false);
     try {
       const vendorSlots = categories.flatMap(cat =>
         shortlist[cat].map(v => ({
@@ -102,7 +170,7 @@ export default function ShortlistFloat() {
           estimatedCost: v.price || 0,
           percentage: Math.round(100 / Math.max(1, totalCount)),
           status: "Pending",
-          requirements: "",
+          requirements: buildRequirementsString(cat, answers[cat] || {}),
         }))
       );
       const selectedPackages = (() => { try { return JSON.parse(sessionStorage.getItem("tendr_wiz_packages") || "{}"); } catch { return {}; } })();
@@ -127,18 +195,43 @@ export default function ShortlistFloat() {
       const planData = { ...result.plan, conversationId: result.conversationId || null, _savedAt: Date.now() };
       localStorage.setItem("tendr_smart_plan", JSON.stringify(planData));
       window.dispatchEvent(new CustomEvent("tendr:plan-confirmed"));
-      // Clear shortlist
       localStorage.removeItem(SHORTLIST_KEY);
       window.dispatchEvent(new CustomEvent("tendr:shortlist-update"));
       setConvId(result.conversationId);
       setSubmitted(true);
-      setWizardOpen(false);
-      // Notify FloatingChatButton to refresh its conversation list
       window.dispatchEvent(new CustomEvent("tendr:chat-started"));
     } catch (e) {
       console.error("Shortlist request failed:", e);
     }
     setSubmitting(false);
+  };
+
+  // Open wizard: only show steps for categories that have SERVICE_QUESTIONS defined
+  const wizardCategories = categories.filter(c => SERVICE_QUESTIONS[c]);
+  const openWizard = () => {
+    if (wizardCategories.length === 0) {
+      // No wizard questions for these service types — submit directly
+      handleSendRequest({});
+      return;
+    }
+    setWizardAnswers({});
+    setWizardStep(0);
+    setWizardOpen(true);
+  };
+
+  const setAnswer = (cat, qId, val) => {
+    setWizardAnswers(prev => ({
+      ...prev,
+      [cat]: { ...(prev[cat] || {}), [qId]: val },
+    }));
+  };
+
+  const handleWizardNext = () => {
+    if (wizardStep < wizardCategories.length - 1) {
+      setWizardStep(s => s + 1);
+    } else {
+      handleSendRequest(wizardAnswers);
+    }
   };
 
   // ── Styles ────────────────────────────────────────────────────────────────
@@ -150,6 +243,88 @@ export default function ShortlistFloat() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <>
+      {/* ── Wizard ───────────────────────────────────────────────────── */}
+      {wizardOpen && (() => {
+        const cat = wizardCategories[wizardStep];
+        const config = SERVICE_QUESTIONS[cat];
+        const catAnswers = wizardAnswers[cat] || {};
+        const isLast = wizardStep === wizardCategories.length - 1;
+        return (
+          <div style={{ position: "fixed", inset: 0, zIndex: 9020, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: F }}>
+            <div style={{ background: CREAM, borderRadius: 20, padding: "28px 24px 24px", maxWidth: 420, width: "100%", boxShadow: "0 24px 64px rgba(44,26,14,0.28)" }}>
+              {/* Progress dots */}
+              <div style={{ display: "flex", gap: 5, marginBottom: 20, justifyContent: "center" }}>
+                {wizardCategories.map((_, i) => (
+                  <div key={i} style={{ width: i === wizardStep ? 20 : 6, height: 6, borderRadius: 100, background: i <= wizardStep ? GOLD : "rgba(196,122,46,0.2)", transition: "all 0.2s" }} />
+                ))}
+              </div>
+
+              {/* Header */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+                <span style={{ fontSize: 28 }}>{CAT_EMOJI[cat] || "🏷️"}</span>
+                <div>
+                  <div style={{ fontSize: 17, fontWeight: 800, color: INK }}>{cat}</div>
+                  <div style={{ fontSize: 11.5, color: "#9B7450" }}>Step {wizardStep + 1} of {wizardCategories.length}</div>
+                </div>
+              </div>
+
+              {/* Questions */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                {config.questions.map(q => (
+                  <div key={q.id}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: INK, marginBottom: 8 }}>{q.label}</div>
+                    {q.type === "chips" ? (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                        {q.options.map(opt => {
+                          const selected = catAnswers[q.id] === opt;
+                          return (
+                            <button
+                              key={opt}
+                              onClick={() => setAnswer(cat, q.id, selected ? "" : opt)}
+                              style={{ padding: "7px 13px", borderRadius: 100, border: `1.5px solid ${selected ? GOLD : "rgba(196,122,46,0.25)"}`, background: selected ? `rgba(196,122,46,0.12)` : "#fff", color: selected ? GOLD : "#7A5C3A", fontSize: 12.5, fontWeight: selected ? 700 : 500, cursor: "pointer", fontFamily: F, transition: "all 0.15s" }}>
+                              {opt}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <input
+                        type="text"
+                        value={catAnswers[q.id] || ""}
+                        onChange={e => setAnswer(cat, q.id, e.target.value)}
+                        placeholder={q.placeholder || ""}
+                        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.22)", background: "#fff", fontFamily: F, fontSize: 13, color: INK, outline: "none", boxSizing: "border-box" }}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Footer */}
+              <div style={{ display: "flex", gap: 8, marginTop: 24 }}>
+                <button
+                  onClick={handleWizardNext}
+                  disabled={submitting}
+                  style={{ flex: 1, padding: "13px", borderRadius: 12, border: "none", background: submitting ? "rgba(196,122,46,0.4)" : `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: "#fff", fontSize: 14, fontWeight: 800, cursor: submitting ? "not-allowed" : "pointer", fontFamily: F }}>
+                  {submitting ? "Sending…" : isLast ? "Send Request →" : "Next →"}
+                </button>
+                <button
+                  onClick={() => { if (wizardStep > 0) setWizardStep(s => s - 1); else setWizardOpen(false); }}
+                  style={{ padding: "13px 16px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.22)", background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: F }}>
+                  {wizardStep === 0 ? "✕" : "←"}
+                </button>
+              </div>
+              {/* Skip */}
+              <button
+                onClick={handleWizardNext}
+                style={{ width: "100%", marginTop: 10, padding: "8px", background: "none", border: "none", color: "#B08050", fontSize: 12.5, cursor: "pointer", fontFamily: F }}>
+                Skip this step →
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ── Success state ─────────────────────────────────────────────── */}
       {submitted && (
         <div style={{ position: "fixed", inset: 0, zIndex: 9997, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: F }}>
@@ -224,11 +399,11 @@ export default function ShortlistFloat() {
                 onClick={() => {
                   if (!authUser) { setAuthModalOpen(true); return; }
                   setPanelOpen(false);
-                  handleSendRequest();
+                  openWizard();
                 }}
                 disabled={submitting}
                 style={{ ...btnBase, width: "100%", padding: "14px", borderRadius: 12, background: submitting ? "rgba(196,122,46,0.4)" : `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: "#fff", fontSize: 14, fontWeight: 800, boxShadow: submitting ? "none" : "0 4px 16px rgba(196,122,46,0.35)", cursor: submitting ? "not-allowed" : "pointer" }}>
-                {submitting ? "Sending…" : authUser ? `Send Request (${totalCount}) →` : "Sign In to Send Request"}
+                {submitting ? "Sending…" : authUser ? `Next →` : "Sign In to Continue"}
               </button>
             </div>
           </div>
@@ -289,7 +464,7 @@ export default function ShortlistFloat() {
         onSuccess={() => {
           setAuthModalOpen(false);
           setPanelOpen(false);
-          handleSendRequest();
+          openWizard();
         }}
         defaultMode="login"
       />
