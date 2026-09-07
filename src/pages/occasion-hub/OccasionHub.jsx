@@ -3399,8 +3399,8 @@ function OccGuestListModal({ onClose, occasion, accent }) {
   return (
     <Modal onClose={onClose} title="Guest List" emoji="🎟️">
       {/* Check-in board header */}
-      <div style={{ background:"linear-gradient(135deg,#0f172a,#1e1b4b)", borderRadius:14, padding:"14px 16px", marginBottom:14, border:"1px solid rgba(99,102,241,0.2)" }}>
-        <div style={{ fontSize:9, fontWeight:800, color:"rgba(165,180,252,0.6)", textTransform:"uppercase", letterSpacing:"0.18em", marginBottom:10 }}>🎟️ GUEST CHECK-IN BOARD</div>
+      <div style={{ background:"rgba(255,255,255,0.025)", borderRadius:14, padding:"14px 16px", marginBottom:14, border:"1px solid rgba(255,255,255,0.07)" }}>
+        <div style={{ fontSize:9, fontWeight:600, color:"rgba(196,151,58,0.6)", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:10 }}>RSVP Overview</div>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8 }}>
           {RSVP_META.map(({ key, label, color }) => (
             <div key={key} style={{ textAlign:'center', background:`${color}12`, borderRadius:10, padding:'10px 4px', border:`1px solid ${color}30` }}>
@@ -3629,41 +3629,29 @@ function OccVenueNotesModal({ onClose, occasion }) {
     if (!parts.length) return;
     window.open(`https://wa.me/?text=${encodeURIComponent('🎉 Venue Info\n\n'+parts.join('\n\n'))}`, '_blank');
   };
+  const ACC = "#C4973A";
   return (
     <Modal onClose={onClose} title="Venue Notes" emoji="📍">
-      {/* Blueprint header */}
-      <div style={{ background:"linear-gradient(135deg,#0D1B2A,#0A1520)", borderRadius:12, padding:"12px 14px", marginBottom:14, border:"1px solid rgba(59,130,246,0.25)", backgroundImage:"radial-gradient(rgba(59,130,246,0.08) 1px, transparent 1px)", backgroundSize:"16px 16px" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <div style={{ width:32, height:32, borderRadius:8, background:"rgba(59,130,246,0.2)", border:"1.5px solid rgba(59,130,246,0.4)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16, flexShrink:0 }}>🏛️</div>
-          <div>
-            <div style={{ fontSize:10, fontWeight:800, color:"rgba(59,130,246,0.7)", textTransform:"uppercase", letterSpacing:"0.18em" }}>VENUE BLUEPRINT</div>
-            <div style={{ fontSize:12, color:"rgba(255,255,255,0.4)", marginTop:2 }}>{filled} of {fields.length} fields filled</div>
-          </div>
-          <div style={{ marginLeft:"auto", width:40, height:40, position:"relative" }}>
-            <svg width="40" height="40" viewBox="0 0 40 40">
-              <circle cx="20" cy="20" r="18" fill="none" stroke="rgba(59,130,246,0.15)" strokeWidth="3" />
-              <circle cx="20" cy="20" r="18" fill="none" stroke="#3B82F6" strokeWidth="3" strokeDasharray={`${113 * filled/fields.length} 113`} strokeLinecap="round" transform="rotate(-90 20 20)" />
-              <text x="20" y="24" textAnchor="middle" fontSize="10" fontWeight="800" fill="#60A5FA">{Math.round(filled/fields.length*100)}%</text>
-            </svg>
+      {filled > 0 && (
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, paddingBottom:12, borderBottom:`1px solid rgba(196,151,58,0.12)` }}>
+          <span style={{ fontSize:12, color:"rgba(255,255,255,0.4)" }}>{filled} of {fields.length} details saved</span>
+          <div style={{ display:"flex", gap:4 }}>
+            {fields.map(f => <div key={f.key} style={{ width:6, height:6, borderRadius:"50%", background:data[f.key]?ACC:"rgba(255,255,255,0.12)" }} />)}
           </div>
         </div>
-      </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:14 }}>
-        {fields.map(f => (
-          <div key={f.key} style={{ position:"relative", borderRadius:10, overflow:"hidden" }}>
-            {/* Field accent strip */}
-            <div style={{ height:3, background:"linear-gradient(90deg,rgba(59,130,246,0.6),rgba(59,130,246,0.2))" }} />
-            <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderTop:"none", borderRadius:"0 0 10px 10px", padding:"10px 12px" }}>
-              <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.4)", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:6 }}>{f.label}</div>
-              <textarea value={data[f.key]||''} onChange={e=>update(f.key,e.target.value)} placeholder={f.placeholder} rows={f.rows}
-                style={{ width:'100%', background:'transparent', border:'none', outline:'none', resize:'none', boxSizing:'border-box', color:'#fff', fontSize:13, fontFamily:font, lineHeight:1.55, colorScheme:'dark' }} />
-            </div>
+      )}
+      <div style={{ display:'flex', flexDirection:'column', gap:0, marginBottom:16 }}>
+        {fields.map((f, i) => (
+          <div key={f.key} style={{ borderBottom:`1px solid rgba(255,255,255,0.06)`, padding:"12px 0", paddingBottom: i === fields.length-1 ? 0 : 12 }}>
+            <div style={{ fontSize:10, fontWeight:600, color:data[f.key] ? `${ACC}90` : "rgba(255,255,255,0.28)", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:6 }}>{f.label.replace(/^\S+\s/, '')}</div>
+            <textarea value={data[f.key]||''} onChange={e=>update(f.key,e.target.value)} placeholder={f.placeholder} rows={f.rows}
+              style={{ width:'100%', background:'transparent', border:'none', outline:'none', resize:'none', boxSizing:'border-box', color:'rgba(255,255,255,0.88)', fontSize:14, fontFamily:font, lineHeight:1.6, colorScheme:'dark', padding:0 }} />
           </div>
         ))}
       </div>
       <div style={{ display:'flex', gap:8 }}>
-        {data.address && <button onClick={openMaps} style={{ flex:1, padding:'11px', borderRadius:10, border:'1.5px solid rgba(37,99,235,0.35)', background:'rgba(37,99,235,0.15)', color:'#60a5fa', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>🗺️ Open in Maps</button>}
-        <button onClick={shareWA} disabled={!filled} style={{ flex:1, padding:'11px', borderRadius:10, border:'none', background:filled?'linear-gradient(135deg,#25D366,#128C7E)':'rgba(255,255,255,0.05)', color:filled?'#fff':'rgba(255,255,255,0.25)', fontSize:13, fontWeight:700, cursor:filled?'pointer':'default', fontFamily:font }}>📤 Share on WhatsApp</button>
+        {data.address && <button onClick={openMaps} style={{ flex:1, padding:'11px', borderRadius:10, border:`1.5px solid ${ACC}44`, background:`${ACC}12`, color:ACC, fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:font }}>Open in Maps</button>}
+        <button onClick={shareWA} disabled={!filled} style={{ flex:1, padding:'11px', borderRadius:10, border:'none', background:filled?'#25D366':'rgba(255,255,255,0.05)', color:filled?'#fff':'rgba(255,255,255,0.25)', fontSize:13, fontWeight:600, cursor:filled?'pointer':'default', fontFamily:font }}>Share on WhatsApp</button>
       </div>
     </Modal>
   );
@@ -3714,8 +3702,8 @@ function OccSeatingChartModal({ onClose, occasion, accent }) {
 
       {/* Floor plan */}
       {tables.length > 0 && (
-        <div style={{ background:"linear-gradient(135deg,#0D1B2A,#0A1520)", borderRadius:14, padding:16, marginBottom:12, border:"1px solid rgba(59,130,246,0.2)", backgroundImage:"radial-gradient(rgba(59,130,246,0.06) 1px, transparent 1px)", backgroundSize:"20px 20px" }}>
-          <div style={{ fontSize:9, fontWeight:800, color:"rgba(59,130,246,0.5)", textTransform:"uppercase", letterSpacing:"0.18em", marginBottom:12 }}>🏛️ FLOOR PLAN · {totalSeated}/{guests.length} seated</div>
+        <div style={{ background:"rgba(255,255,255,0.025)", borderRadius:14, padding:16, marginBottom:12, border:"1px solid rgba(196,151,58,0.15)" }}>
+          <div style={{ fontSize:9, fontWeight:600, color:"rgba(196,151,58,0.6)", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:12 }}>Floor Plan · {totalSeated}/{guests.length} seated</div>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(130px, 1fr))", gap:12 }}>
             {tables.map(t => {
               const seated = guests.filter(g=>g.table===t.id);
@@ -3795,7 +3783,7 @@ function OccBudgetPlannerModal({ onClose, occasion, accent }) {
         {/* Envelope flap decoration */}
         <div style={{ position:"absolute", top:0, left:0, right:0, height:16, background:"rgba(196,122,46,0.08)", borderBottom:"1px dashed rgba(196,122,46,0.15)" }} />
         <div style={{ marginTop:12 }}>
-          <div style={{ fontSize:9, fontWeight:800, color:"rgba(196,122,46,0.5)", textTransform:"uppercase", letterSpacing:"0.16em", marginBottom:6 }}>💰 TOTAL BUDGET ENVELOPE</div>
+          <div style={{ fontSize:9, fontWeight:600, color:"rgba(196,122,46,0.55)", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:6 }}>Total Budget</div>
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
             <span style={{ fontSize:22, color:'rgba(196,122,46,0.5)', fontWeight:700 }}>₹</span>
             <input type="number" value={data.total||''} onChange={e=>upd('total',e.target.value)} placeholder="0" style={{ flex:1, background:'transparent', border:'none', outline:'none', fontSize:32, fontWeight:900, color:accent, fontFamily:font }} />
