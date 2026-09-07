@@ -69,7 +69,7 @@ const showSplash = !sessionStorage.getItem(SPLASH_KEY);
 
 function App() {
   const [splashDone, setSplashDone] = useState(!showSplash);
-  const [liveStatus, setLiveStatus] = useState(null); // null=loading, true/false
+  const [liveStatus, setLiveStatus] = useState(true); // default true — full app always shown
 
   const handleSplashDone = () => {
     sessionStorage.setItem(SPLASH_KEY, "1");
