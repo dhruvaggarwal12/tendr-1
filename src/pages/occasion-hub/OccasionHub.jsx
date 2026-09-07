@@ -87,6 +87,15 @@ const TOOL_ICONS = {
   awardsceremony: occic(<><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></>),
   runofshow:      occic(<><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></>),
   appreciationwall: occic(<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>),
+  guestlist:    occic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>),
+  menu:         occic(<><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="15" y2="16"/><line x1="9" y1="8" x2="11" y2="8"/></>),
+  daytimeline:  occic(<><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="12" cy="16" r="2"/></>),
+  venue:        occic(<><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></>),
+  seating:      occic(<><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></>),
+  budget:       occic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>),
+  vendors:      occic(<><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></>),
+  wabroadcast:  occic(<><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></>),
+  themepicker:  occic(<><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></>),
 };
 
 const SECTION_ICONS = {
@@ -5866,9 +5875,10 @@ export default function OccasionHub({ occasion }) {
         @keyframes tab-slide    { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
         @keyframes modal-in     { from{opacity:0;transform:scale(0.94) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
         @keyframes spin         { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        .occ-tool-card          { transition:background 0.15s, border-color 0.15s, transform 0.08s; }
-        .occ-tool-card:hover    { background:rgba(255,255,255,0.06) !important; border-color:rgba(196,151,58,0.30) !important; }
-        .occ-tool-card:active   { transform:scale(0.96) !important; transition:transform 0.08s !important; }
+        .occ-tool-card          { transition:background 0.12s ease, border-color 0.12s ease, transform 0.08s ease; }
+        .occ-tool-card:hover    { background:rgba(255,255,255,0.055) !important; border-color:rgba(196,151,58,0.28) !important; }
+        .occ-tool-card:hover svg { stroke:rgba(255,255,255,0.55) !important; }
+        .occ-tool-card:active   { transform:scale(0.97) !important; transition:transform 0.06s !important; }
         ::-webkit-scrollbar     { display:none; }
         textarea, input         { font-family:${font}; }
         select option           { background:#1A0F08; color:#fff; }
@@ -6087,8 +6097,11 @@ export default function OccasionHub({ occasion }) {
               return (
                 <div key={section.id} style={{ marginBottom:28 }}>
                   <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
-                    <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.70)", textTransform:"uppercase", letterSpacing:"0.16em" }}>{section.label.replace(/^.{1,2}\s/, '')}</div>
-                    <div style={{ fontSize:10, color:"rgba(255,255,255,0.25)", fontWeight:500, letterSpacing:"0.04em" }}>{sectionTools.length}</div>
+                    <div style={{ display:"flex", alignItems:"center", gap:7 }}>
+                      <div style={{ color:`${PH.violet}90`, opacity:0.9 }}>{SECTION_ICONS[section.id] || defaultSecIcon}</div>
+                      <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.88)", textTransform:"uppercase", letterSpacing:"0.16em" }}>{section.label.replace(/^.{1,2}\s/, '')}</div>
+                    </div>
+                    <div style={{ fontSize:10, color:"rgba(255,255,255,0.28)", fontWeight:500, letterSpacing:"0.04em" }}>{sectionTools.length}</div>
                   </div>
                   {isGameSection ? (
                     <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }}>
@@ -6149,7 +6162,7 @@ export default function OccasionHub({ occasion }) {
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
             {room ? (
               <>
-                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}><div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.70)", textTransform:"uppercase", letterSpacing:"0.16em" }}>Online Now</div><div style={{ fontSize:10, color:"rgba(255,255,255,0.25)" }}>{room.players?.length||1}</div></div>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}><div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.88)", textTransform:"uppercase", letterSpacing:"0.16em" }}>Online Now</div><div style={{ fontSize:10, color:"rgba(255,255,255,0.25)" }}>{room.players?.length||1}</div></div>
                 {(room.players||[myName]).map((p,i) => (
                   <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 16px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:12, marginBottom:8 }}>
                     <div style={{ width:34, height:34, borderRadius:"50%", background:`${PH.violet}22`, border:`1px solid ${PH.violet}30`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:600, color:"rgba(255,255,255,0.88)", flexShrink:0 }}>{p.charAt(0).toUpperCase()}</div>
@@ -6184,7 +6197,7 @@ export default function OccasionHub({ occasion }) {
         {activeTab === "plan" && (
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
-              <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.70)", textTransform:"uppercase", letterSpacing:"0.16em" }}>Planning Tools</div>
+              <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.88)", textTransform:"uppercase", letterSpacing:"0.16em" }}>Planning Tools</div>
               <div style={{ fontSize:10, color:"rgba(255,255,255,0.25)" }}>{planTools.length}</div>
             </div>
             {planTools.length === 0 ? (
@@ -6213,7 +6226,7 @@ export default function OccasionHub({ occasion }) {
         {activeTab === "moments" && (
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
-              <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.70)", textTransform:"uppercase", letterSpacing:"0.16em" }}>Capture &amp; Celebrate</div>
+              <div style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.88)", textTransform:"uppercase", letterSpacing:"0.16em" }}>Capture &amp; Celebrate</div>
               <div style={{ fontSize:10, color:"rgba(255,255,255,0.25)" }}>{momentTools.length}</div>
             </div>
             {momentTools.length === 0 ? (

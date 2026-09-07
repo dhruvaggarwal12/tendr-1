@@ -262,6 +262,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
 
   if (new URLSearchParams(search).get("standalone") === "1") return null;
   if (hideOnRoutes.some((r) => path === r || path.startsWith(r + "/"))) return null;
+  if (path.endsWith("-hub")) return null;
 
   const handleSupport = () => {
     setOpen(false);
