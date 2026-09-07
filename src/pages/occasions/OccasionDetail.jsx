@@ -25,6 +25,16 @@ const HUB_ROUTES = {
   "naming-ceremony":"\/naming-ceremony-hub",
 };
 
+const OCC_ACCENT = {
+  "birthday-party":"#E86060","first-birthday":"#F0A050","baby-shower":"#D4856E",
+  "anniversary":"#C47A2E","housewarming":"#E0A030","get-together":"#5080D0",
+  "office-party":"#5878C0","farewell":"#9070D0","retirement":"#C06030",
+  "graduation":"#4878B8","navratri-garba":"#F0A020","diwali":"#E8900A",
+  "holi":"#D040A0","bachelorette":"#E878B8","wedding":"#C05080",
+  "gender-reveal":"#A060C0","naming-ceremony":"#D08040","newborn-welcome":"#60A090",
+  "house-party":"#E87840","dussehra":"#D04040",
+};
+
 /* ── lookup tables ── */
 const AGE_GROUPS = [
   { id:"Toddlers", label:"Toddlers", sub:"0–5 yrs", icon:"👶" },
@@ -1205,22 +1215,29 @@ const css=`
   @media(min-width:600px){.venue-g{grid-template-columns:repeat(4,1fr)!important;}}
 `;
 
-/* ── Progress bar ── */
-function Progress({step,withTheme}){
-  const labels=withTheme?["Details","Theme","Services","Fun","Gifts","Plan"]:["Details","Services","Fun","Gifts","Plan"];
-  const cur=withTheme?step:(step<=1?step:step-1);
+/* ── Tab bar ── */
+function TabBar({step,withTheme,occAccent,onTab}){
+  const tabs=[
+    {label:"DETAILS",targetStep:1},
+    {label:"SERVICES",targetStep:withTheme?3:3},
+    {label:"FUN",targetStep:4},
+    {label:"GIFTS",targetStep:5},
+    {label:"PLAN",targetStep:6},
+  ];
+  const activeIdx=step<=1?0:step===2?0:step===3?1:step===4?2:step===5?3:4;
   return(
-    <div style={{padding:"0 20px 0"}}>
-      <div style={{display:"flex",gap:3,marginBottom:8}}>
-        {labels.map((_,i)=>(
-          <div key={i} style={{flex:1,height:2,borderRadius:1,background:i<cur?gold:"rgba(196,122,46,0.14)",transition:"background 0.3s"}}/>
-        ))}
-      </div>
-      <div style={{display:"flex",gap:0,overflow:"hidden"}}>
-        {labels.map((l,i)=>(
-          <div key={l} style={{flex:1,fontSize:10.5,fontWeight:i+1===cur?700:400,color:i+1===cur?gold:"rgba(196,122,46,0.40)",fontFamily:font,textAlign:"center",textTransform:"uppercase",letterSpacing:"0.05em",transition:"all 0.3s",paddingBottom:10,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{l}</div>
-        ))}
-      </div>
+    <div style={{display:"flex",borderBottom:"1.5px solid rgba(0,0,0,0.06)",background:"#fff",overflow:"hidden"}}>
+      {tabs.map((t,i)=>{
+        const isActive=activeIdx===i;
+        const isReached=step>=t.targetStep;
+        return(
+          <button key={t.label}
+            onClick={()=>{if(isReached)onTab(t.targetStep);}}
+            style={{flex:1,padding:"12px 2px 10px",border:"none",background:"transparent",fontSize:9.5,fontWeight:isActive?800:600,color:isActive?occAccent:"rgba(28,9,0,0.32)",fontFamily:font,letterSpacing:"0.08em",cursor:isReached?"pointer":"default",textAlign:"center",borderBottom:`2.5px solid ${isActive?occAccent:"transparent"}`,transition:"all 0.2s",lineHeight:1}}>
+            {t.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -1404,6 +1421,7 @@ export default function OccasionDetail(){
   if(!occasion){navigate("/occasions");return null;}
 
   const hub=HUB_ROUTES[slug];
+  const occAccent=OCC_ACCENT[slug]||gold;
   const equipment=getEquipment(slug,guests);
   const withTheme=planMode==="with";
   const recommended=getRecommended(occasion,theme,ageGroups,venueType);
@@ -1462,8 +1480,8 @@ export default function OccasionDetail(){
   };
 
   /* styles */
-  const btnPrimary={flex:1,padding:"15px 20px",borderRadius:10,border:"none",background:gold,color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:font,boxShadow:"0 2px 10px rgba(196,122,46,0.28)",transition:"all 0.18s",letterSpacing:"0.01em",opacity:canNext()?1:0.4};
-  const btnGhost={padding:"13px 18px",borderRadius:10,border:`1.5px solid rgba(196,122,46,0.28)`,background:"transparent",color:gold,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s",whiteSpace:"nowrap"};
+  const btnPrimary={flex:1,padding:"15px 20px",borderRadius:12,border:"none",background:occAccent,color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:font,boxShadow:`0 2px 12px ${occAccent}40`,transition:"all 0.18s",letterSpacing:"0.01em",opacity:canNext()?1:0.4};
+  const btnGhost={padding:"13px 18px",borderRadius:12,border:`1.5px solid ${occAccent}40`,background:"transparent",color:occAccent,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s",whiteSpace:"nowrap"};
   const sLabel={fontSize:12,fontWeight:600,color:"rgba(28,9,0,0.45)",textTransform:"uppercase",letterSpacing:"0.10em",marginBottom:14,fontFamily:font};
   const fieldCard={background:"#fff",borderRadius:12,padding:"22px 22px",border:`1px solid rgba(196,122,46,0.18)`,marginBottom:14,transition:"border-color 0.2s"};
 
@@ -1472,26 +1490,26 @@ export default function OccasionDetail(){
     ...g,...scoreGift(g,{theme,ageGroups,budget,guests})
   })).sort((a,b)=>b.score-a.score);
 
+  const pageBg = step>0 ? "#F5F3F0" : bg;
   return(
-    <div style={{height:"100dvh",background:bg,fontFamily:font,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+    <div style={{height:"100dvh",background:pageBg,fontFamily:font,display:"flex",flexDirection:"column",overflow:"hidden"}}>
       <style>{css}</style>
       <SEO title={`Plan your ${occasion.name} — Tendr`} description={`Guided ${occasion.name} planner`} path={`/occasions/${slug}`}/>
 
       {/* sticky header */}
-      <div style={{position:"sticky",top:0,zIndex:100,background:bg,borderBottom:`1px solid ${border}`}}>
+      <div style={{position:"sticky",top:0,zIndex:100,background:"#fff",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
         <HamburgerNav active="Occasions"/>
         <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 20px 6px"}}>
-          <button onClick={back} style={{width:36,height:36,borderRadius:10,border:"none",background:"rgba(196,122,46,0.08)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          <button onClick={back} style={{width:36,height:36,borderRadius:10,border:"none",background:`${occAccent}10`,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={occAccent} strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           </button>
           <span style={{fontSize:22}}>{occasion.icon}</span>
           <div style={{flex:1,minWidth:0}}>
-            <div style={{fontSize:15,fontWeight:700,color:ink,letterSpacing:"-0.01em"}}>{occasion.name}</div>
-            {occasion.localName&&<div style={{fontSize:11,color:gold,fontWeight:600}}>{occasion.localName}</div>}
+            <div style={{fontSize:15,fontWeight:700,color:ink,letterSpacing:"-0.01em"}}>{occasion.name}{occasion.localName&&<span style={{fontSize:12,color:occAccent,fontWeight:600,marginLeft:6}}>/ {occasion.localName}</span>}</div>
           </div>
-          {hub&&<button onClick={()=>navigate(hub)} style={{fontSize:11,fontWeight:700,color:"#7C3AED",background:"rgba(124,58,237,0.07)",border:"1px solid rgba(124,58,237,0.18)",borderRadius:8,padding:"6px 11px",cursor:"pointer",fontFamily:font,flexShrink:0}}>🛠️ Tools</button>}
+          {hub&&<button onClick={()=>navigate(hub)} style={{fontSize:11,fontWeight:700,color:occAccent,background:`${occAccent}0E`,border:`1px solid ${occAccent}30`,borderRadius:8,padding:"6px 11px",cursor:"pointer",fontFamily:font,flexShrink:0}}>🛠️ Tools ▼</button>}
         </div>
-        {step>0&&<Progress step={step} withTheme={withTheme}/>}
+        {step>0&&<TabBar step={step} withTheme={withTheme} occAccent={occAccent} onTab={setStep}/>}
       </div>
 
       {/* content */}
@@ -1641,150 +1659,171 @@ export default function OccasionDetail(){
           </div>
         )}
 
-        {/* ══ STEP 1: details (sentence form) ══ */}
+        {/* ══ STEP 1: details (card form) ══ */}
         {step===1&&(
           <div className="os">
-            {/* heading */}
-            <div style={{marginBottom:36}}>
-              <div style={{fontSize:12,fontWeight:600,color:"rgba(28,9,0,0.42)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8,fontFamily:font}}>Tell us about your celebration</div>
-              <div style={{fontFamily:serif,fontSize:"clamp(1.7rem,4.5vw,2.4rem)",color:ink,lineHeight:1.15,letterSpacing:"-0.02em",fontWeight:400}}>
-                {occasion.name} <span style={{fontSize:"0.7em"}}>{occasion.icon}</span>
+            {/* Hero */}
+            <div style={{position:"relative",marginBottom:22,display:"flex",alignItems:"flex-start",justifyContent:"space-between",minHeight:110,paddingBottom:18,borderBottom:`1px solid ${occAccent}14`}}>
+              <div style={{flex:1,paddingTop:2}}>
+                <div style={{fontSize:9.5,fontWeight:800,color:occAccent,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:8,fontFamily:font}}>TELL US ABOUT YOUR CELEBRATION</div>
+                <div style={{fontFamily:serif,fontSize:"clamp(1.8rem,5.5vw,2.6rem)",color:ink,lineHeight:1.1,letterSpacing:"-0.025em",fontWeight:700,marginBottom:10}}>
+                  {isCustomOccasion?customEventName||"Your Event":occasion.name}<span style={{fontSize:"0.55em",marginLeft:10,verticalAlign:"middle"}}>{occasion.icon}</span>
+                </div>
+                <div style={{width:44,height:3,borderRadius:2,background:`linear-gradient(90deg,${occAccent},${occAccent}60)`,marginBottom:10}}/>
+                <div style={{fontSize:12.5,color:muted,lineHeight:1.6,maxWidth:200}}>{occasion.tagline||"Let's build your perfect celebration plan"}</div>
+              </div>
+              <div style={{width:88,height:88,borderRadius:"50%",background:`radial-gradient(ellipse at 40% 40%, ${occAccent}1A, ${occAccent}06)`,border:`1.5px solid ${occAccent}1C`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginLeft:14,fontSize:42,lineHeight:1}}>
+                {occasion.icon||"🎉"}
               </div>
             </div>
 
-            {/* ── sentence rows ── */}
-            <div style={{display:"flex",flexDirection:"column"}}>
-
-              {/* for N guests */}
-              <div style={{paddingBottom:28,borderBottom:`1px solid rgba(196,122,46,0.08)`,marginBottom:28}}>
-                <div style={{fontSize:14,color:muted,fontWeight:500,marginBottom:12,fontFamily:font,letterSpacing:"0.01em"}}>for how many guests?</div>
-                <div style={{display:"flex",alignItems:"center",gap:0}}>
-                  <button onClick={()=>setGuests(g=>Math.max(5,g-5))}
-                    style={{width:44,height:52,borderRadius:"12px 0 0 12px",border:`1.5px solid rgba(196,122,46,0.2)`,borderRight:"none",background:"#F8F4EF",color:gold,fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontWeight:300,transition:"background 0.15s"}}
-                    onMouseEnter={e=>e.currentTarget.style.background="rgba(196,122,46,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="#F8F4EF"}>−</button>
-                  <div style={{height:52,flex:1,display:"flex",alignItems:"center",justifyContent:"center",border:`1.5px solid rgba(196,122,46,0.2)`,background:"#fff",borderLeft:"none",borderRight:"none"}}>
-                    <span style={{fontFamily:serif,fontSize:32,fontWeight:900,color:ink,letterSpacing:"-0.03em"}}>{guests}</span>
-                    <span style={{fontSize:13,color:muted,marginLeft:8}}>guests</span>
-                  </div>
-                  <button onClick={()=>setGuests(g=>g+5)}
-                    style={{width:44,height:52,borderRadius:"0 12px 12px 0",border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontWeight:300,boxShadow:"0 3px 10px rgba(196,122,46,0.3)"}}>+</button>
+            {/* Guests card */}
+            <div style={{background:"#fff",borderRadius:16,padding:"18px",border:"1.5px solid rgba(0,0,0,0.055)",marginBottom:10,boxShadow:"0 2px 10px rgba(0,0,0,0.035)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
+                <div style={{width:40,height:40,borderRadius:12,background:`${occAccent}1E`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={occAccent} strokeWidth="2.2" strokeLinecap="round"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/></svg>
                 </div>
-                <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:10}}>
-                  {[10,20,30,50,75,100,150].map(n=>(
-                    <button key={n} onClick={()=>setGuests(n)}
-                      style={{fontSize:12,fontWeight:600,padding:"5px 12px",borderRadius:100,border:`1.5px solid ${guests===n?gold:"rgba(196,122,46,0.14)"}`,background:guests===n?"rgba(196,122,46,0.09)":"transparent",color:guests===n?gold:muted,cursor:"pointer",fontFamily:font,transition:"all 0.15s"}}>{n}</button>
-                  ))}
+                <div style={{fontSize:14,fontWeight:700,color:ink}}>How many guests?</div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:0,marginBottom:10}}>
+                <button onClick={()=>setGuests(g=>Math.max(5,g-5))}
+                  style={{width:44,height:50,borderRadius:"12px 0 0 12px",border:`1.5px solid ${occAccent}28`,borderRight:"none",background:`${occAccent}0C`,color:occAccent,fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>−</button>
+                <div style={{height:50,flex:1,display:"flex",alignItems:"center",justifyContent:"center",border:`1.5px solid ${occAccent}28`,background:"#fff",borderLeft:"none",borderRight:"none"}}>
+                  <span style={{fontFamily:serif,fontSize:28,fontWeight:800,color:ink}}>{guests}</span>
+                  <span style={{fontSize:13,color:muted,marginLeft:8}}>guests</span>
+                </div>
+                <button onClick={()=>setGuests(g=>g+5)}
+                  style={{width:44,height:50,borderRadius:"0 12px 12px 0",border:"none",background:occAccent,color:"#fff",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>+</button>
+              </div>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                {[10,20,30,50,75,100,150].map(n=>(
+                  <button key={n} onClick={()=>setGuests(n)}
+                    style={{fontSize:12,fontWeight:600,padding:"5px 12px",borderRadius:100,border:`1.5px solid ${guests===n?occAccent:`${occAccent}20`}`,background:guests===n?`${occAccent}12`:"transparent",color:guests===n?occAccent:muted,cursor:"pointer",fontFamily:font,transition:"all 0.15s"}}>{n}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Date card */}
+            <div style={{background:"#fff",borderRadius:16,padding:"18px",border:"1.5px solid rgba(0,0,0,0.055)",marginBottom:10,boxShadow:"0 2px 10px rgba(0,0,0,0.035)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
+                <div style={{width:40,height:40,borderRadius:12,background:`${occAccent}1E`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={occAccent} strokeWidth="2.2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <div style={{fontSize:14,fontWeight:700,color:ink}}>On what date?</div>
+                  {!date&&<span style={{fontSize:9.5,color:"#E05252",fontWeight:800,letterSpacing:"0.06em"}}>Required</span>}
+                  {date&&<span style={{fontSize:9.5,color:occAccent,fontWeight:700}}>✓ {timeline?.days} days away</span>}
                 </div>
               </div>
-
-              {/* on [date] */}
-              <div style={{paddingBottom:28,borderBottom:`1px solid rgba(196,122,46,0.08)`,marginBottom:28}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-                  <div style={{fontSize:12,color:muted,fontWeight:500,fontFamily:font,letterSpacing:"0.02em"}}>on what date?</div>
-                  {!date&&<span style={{fontSize:10,color:"#E05252",fontWeight:800,letterSpacing:"0.08em"}}>Required</span>}
-                  {date&&<span style={{fontSize:10,color:gold,fontWeight:700}}>✓ {timeline?.days} days away</span>}
+              <div style={{position:"relative",cursor:"pointer"}} onClick={()=>{try{dateInputRef.current?.showPicker?.()}catch{dateInputRef.current?.click()}}}>
+                <div style={{display:"flex",alignItems:"center",gap:10,padding:"13px 15px",borderRadius:12,border:`1.5px solid ${date?occAccent:`${occAccent}28`}`,background:date?`${occAccent}06`:"rgba(0,0,0,0.018)",transition:"all 0.2s"}}>
+                  <span style={{fontFamily:serif,fontSize:18,fontWeight:date?700:400,color:date?ink:muted,flex:1}}>
+                    {date?new Date(date+"T00:00:00").toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"long",year:"numeric"}):"Pick a date"}
+                  </span>
+                  {date&&<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={occAccent} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
                 </div>
-                <div style={{display:"block",position:"relative",cursor:"pointer"}} onClick={()=>{try{dateInputRef.current?.showPicker?.()}catch{dateInputRef.current?.click()}}}>
-                  <div style={{display:"flex",alignItems:"center",gap:10,padding:"14px 16px",borderRadius:12,border:`1.5px solid ${date?gold:"rgba(196,122,46,0.18)"}`,background:date?"rgba(196,122,46,0.04)":"#fff",transition:"all 0.2s"}}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={date?gold:muted} strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    <span style={{fontFamily:serif,fontSize:20,fontWeight:date?700:400,color:date?ink:muted,flex:1,letterSpacing:"-0.01em"}}>
-                      {date?new Date(date+"T00:00:00").toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"long",year:"numeric"}):"Pick a date"}
-                    </span>
-                    {date&&<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
-                  </div>
-                  <input ref={dateInputRef} type="date" value={date} onChange={e=>setDate(e.target.value)}
-                    min={new Date().toISOString().split("T")[0]}
-                    style={{position:"absolute",inset:0,opacity:0,cursor:"pointer",width:"100%",height:"100%"}}/>
+                <input ref={dateInputRef} type="date" value={date} onChange={e=>setDate(e.target.value)}
+                  min={new Date().toISOString().split("T")[0]}
+                  style={{position:"absolute",inset:0,opacity:0,cursor:"pointer",width:"100%",height:"100%"}}/>
+              </div>
+            </div>
+
+            {/* Venue card */}
+            <div style={{background:"#fff",borderRadius:16,padding:"18px",border:"1.5px solid rgba(0,0,0,0.055)",marginBottom:10,boxShadow:"0 2px 10px rgba(0,0,0,0.035)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
+                <div style={{width:40,height:40,borderRadius:12,background:`${occAccent}1E`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={occAccent} strokeWidth="2.2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                </div>
+                <div style={{fontSize:14,fontWeight:700,color:ink}}>Where is your celebration?</div>
+              </div>
+              <div className="venue-g" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:8}}>
+                {VENUE_TYPES.map(v=>{
+                  const sel=venueType===v.id;
+                  return(
+                    <button key={v.id} onClick={()=>setVenueType(t=>t===v.id?"":v.id)}
+                      style={{display:"flex",alignItems:"center",gap:9,padding:"11px 12px",borderRadius:12,border:`1.5px solid ${sel?occAccent:`${occAccent}1A`}`,background:sel?`${occAccent}0E`:"#fff",cursor:"pointer",fontFamily:font,transition:"all 0.16s",textAlign:"left",minHeight:44}}>
+                      <span style={{fontSize:17,flexShrink:0,lineHeight:1}}>{v.icon}</span>
+                      <span style={{fontSize:12,fontWeight:sel?700:500,color:sel?occAccent:ink,lineHeight:1.3}}>{v.id}</span>
+                      {sel&&<svg style={{marginLeft:"auto",flexShrink:0}} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={occAccent} strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{fontSize:11,color:muted}}>Not sure yet? You can update this later.</div>
+            </div>
+
+            {/* City card */}
+            <div style={{background:"#fff",borderRadius:16,padding:"18px",border:"1.5px solid rgba(0,0,0,0.055)",marginBottom:10,boxShadow:"0 2px 10px rgba(0,0,0,0.035)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
+                <div style={{width:40,height:40,borderRadius:12,background:`${occAccent}1E`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={occAccent} strokeWidth="2.2" strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <div style={{fontSize:14,fontWeight:700,color:ink}}>In which city?</div>
+              </div>
+              <input type="text" value={city} onChange={e=>setCity(e.target.value)}
+                placeholder="Delhi, Mumbai, Bengaluru…"
+                style={{width:"100%",padding:"12px 14px",borderRadius:12,border:`1.5px solid ${city?occAccent:`${occAccent}28`}`,background:city?`${occAccent}05`:"rgba(0,0,0,0.018)",fontSize:15,fontFamily:serif,fontWeight:city?600:400,color:city?ink:muted,outline:"none",boxSizing:"border-box"}}/>
+              <div style={{fontSize:11,color:muted,marginTop:7}}>We'll show vendors near you</div>
+            </div>
+
+            {/* Budget card */}
+            <div style={{background:"#fff",borderRadius:16,padding:"18px",border:"1.5px solid rgba(0,0,0,0.055)",marginBottom:10,boxShadow:"0 2px 10px rgba(0,0,0,0.035)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
+                <div style={{width:40,height:40,borderRadius:12,background:`${occAccent}1E`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:serif,fontSize:17,fontWeight:700,color:occAccent}}>₹</div>
+                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <div style={{fontSize:14,fontWeight:700,color:ink}}>What's your budget?</div>
+                  <span style={{fontSize:10,color:muted}}>optional</span>
                 </div>
               </div>
+              <input type="number" value={budget} onChange={e=>setBudget(e.target.value)}
+                placeholder={String(Math.round((occasion.budgetMin+occasion.budgetMax)/2))}
+                style={{width:"100%",padding:"12px 14px",borderRadius:12,border:`1.5px solid ${budget?occAccent:`${occAccent}28`}`,background:budget?`${occAccent}05`:"rgba(0,0,0,0.018)",fontSize:15,fontFamily:serif,fontWeight:budget?600:400,color:budget?ink:muted,outline:"none",boxSizing:"border-box"}}/>
+              <div style={{display:"flex",justifyContent:"space-between",marginTop:7}}>
+                <span style={{fontSize:11,color:"rgba(30,15,0,0.28)"}}>Typical for {guests} guests</span>
+                <span style={{fontSize:11,fontWeight:700,color:occAccent}}>{fmtNum(occasion.budgetMin)} – {fmtNum(occasion.budgetMax)}</span>
+              </div>
+            </div>
 
-              {/* at [venue] */}
-              <div style={{paddingBottom:28,borderBottom:`1px solid rgba(196,122,46,0.08)`,marginBottom:28}}>
-                <div style={{fontSize:14,color:muted,fontWeight:500,marginBottom:12,fontFamily:font,letterSpacing:"0.01em"}}>at what kind of venue?</div>
-                <div className="venue-g" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8}}>
-                  {VENUE_TYPES.map(v=>{
-                    const sel=venueType===v.id;
-                    return(
-                      <button key={v.id} onClick={()=>setVenueType(t=>t===v.id?"":v.id)}
-                        style={{display:"flex",alignItems:"center",gap:9,padding:"11px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.12)"}`,background:sel?"rgba(196,122,46,0.07)":"#fff",cursor:"pointer",fontFamily:font,transition:"all 0.16s",textAlign:"left",minHeight:44}}>
-                        <span style={{fontSize:17,flexShrink:0,lineHeight:1}}>{v.icon}</span>
-                        <span style={{fontSize:12.5,fontWeight:sel?700:500,color:sel?gold:ink,lineHeight:1.3}}>{v.id}</span>
-                        {sel&&<svg style={{marginLeft:"auto",flexShrink:0}} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
-                      </button>
-                    );
-                  })}
+            {/* Age groups card */}
+            <div style={{background:"#fff",borderRadius:16,padding:"18px",border:"1.5px solid rgba(0,0,0,0.055)",marginBottom:10,boxShadow:"0 2px 10px rgba(0,0,0,0.035)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
+                <div style={{width:40,height:40,borderRadius:12,background:`${occAccent}1E`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={occAccent} strokeWidth="2.2" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <div style={{fontSize:14,fontWeight:700,color:ink}}>Who's coming?</div>
+              </div>
+              <div className="age-g" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+                {AGE_GROUPS.map(ag=>{
+                  const sel=ageGroups.includes(ag.id);
+                  return(
+                    <button key={ag.id} onClick={()=>toggleAge(ag.id)}
+                      style={{padding:"12px 6px",borderRadius:12,border:`1.5px solid ${sel?occAccent:`${occAccent}1A`}`,background:sel?`${occAccent}10`:"#fff",cursor:"pointer",textAlign:"center",transition:"all 0.18s",display:"flex",flexDirection:"column",alignItems:"center",gap:5}}>
+                      <span style={{fontSize:20}}>{ag.icon}</span>
+                      <div style={{fontSize:11,fontWeight:700,color:sel?occAccent:ink,lineHeight:1.2}}>{ag.label}</div>
+                      <div style={{fontSize:9.5,color:muted}}>{ag.sub}</div>
+                    </button>
+                  );
+                })}
+              </div>
+              {ageGroups.length===0&&<p style={{fontSize:11,color:"rgba(30,15,0,0.28)",textAlign:"center",marginTop:10}}>Select all that apply — or skip</p>}
+            </div>
+
+            {/* Notes card */}
+            <div style={{background:"#fff",borderRadius:16,padding:"18px",border:"1.5px solid rgba(0,0,0,0.055)",marginBottom:10,boxShadow:"0 2px 10px rgba(0,0,0,0.035)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
+                <div style={{width:40,height:40,borderRadius:12,background:`${occAccent}1E`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={occAccent} strokeWidth="2.2" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                </div>
+                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <div style={{fontSize:14,fontWeight:700,color:ink}}>Anything else we should know?</div>
+                  <span style={{fontSize:10,color:muted}}>optional</span>
                 </div>
               </div>
-
-              {/* in [city] */}
-              <div style={{paddingBottom:28,borderBottom:`1px solid rgba(196,122,46,0.08)`,marginBottom:28}}>
-                <div style={{fontSize:14,color:muted,fontWeight:500,marginBottom:12,fontFamily:font,letterSpacing:"0.01em"}}>in which city?</div>
-                <div style={{position:"relative"}}>
-                  <svg style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)"}} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={city?gold:muted} strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  <input type="text" value={city} onChange={e=>setCity(e.target.value)}
-                    placeholder="Delhi, Mumbai, Bengaluru…"
-                    style={{width:"100%",padding:"14px 14px 14px 40px",borderRadius:12,border:`1.5px solid ${city?gold:"rgba(196,122,46,0.18)"}`,background:city?"rgba(196,122,46,0.03)":"#fff",fontSize:16,fontFamily:serif,fontWeight:city?700:400,color:city?ink:muted,outline:"none",boxSizing:"border-box",transition:"all 0.2s"}}/>
-                </div>
-                <div style={{fontSize:11,color:muted,marginTop:7}}>We'll show vendors near you</div>
-              </div>
-
-              {/* budget */}
-              <div style={{paddingBottom:28,borderBottom:`1px solid rgba(196,122,46,0.08)`,marginBottom:28}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-                  <div style={{fontSize:12,color:muted,fontWeight:500,fontFamily:font,letterSpacing:"0.02em"}}>what's your budget?</div>
-                  <span style={{fontSize:10,color:muted,fontWeight:500}}>optional</span>
-                </div>
-                <div style={{position:"relative"}}>
-                  <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",fontSize:18,fontWeight:700,color:budget?gold:"rgba(196,122,46,0.25)",fontFamily:serif}}>₹</span>
-                  <input type="number" value={budget} onChange={e=>setBudget(e.target.value)}
-                    placeholder={String(Math.round((occasion.budgetMin+occasion.budgetMax)/2))}
-                    style={{width:"100%",padding:"14px 14px 14px 34px",borderRadius:12,border:`1.5px solid ${budget?gold:"rgba(196,122,46,0.18)"}`,background:budget?"rgba(196,122,46,0.03)":"#fff",fontSize:16,fontFamily:serif,fontWeight:budget?700:400,color:budget?ink:muted,outline:"none",boxSizing:"border-box",transition:"all 0.2s"}}/>
-                </div>
-                <div style={{display:"flex",justifyContent:"space-between",marginTop:7}}>
-                  <span style={{fontSize:11,color:"rgba(30,15,0,0.28)"}}>Typical for {guests} guests</span>
-                  <span style={{fontSize:11,fontWeight:700,color:gold}}>{fmtNum(occasion.budgetMin)} – {fmtNum(occasion.budgetMax)}</span>
-                </div>
-              </div>
-
-              {/* who's coming — age groups (inline, last field) */}
-              <div>
-                <div style={{fontSize:14,color:muted,fontWeight:500,marginBottom:12,fontFamily:font,letterSpacing:"0.01em"}}>who's coming?</div>
-                <p style={{fontSize:11.5,color:muted,margin:"0 0 14px",lineHeight:1.5}}>Helps us tailor catering, entertainment and activities to your crowd.</p>
-                <div className="age-g" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
-                  {AGE_GROUPS.map(ag=>{
-                    const sel=ageGroups.includes(ag.id);
-                    return(
-                      <button key={ag.id} onClick={()=>toggleAge(ag.id)}
-                        style={{padding:"14px 8px",borderRadius:14,border:`1.5px solid ${sel?gold:border}`,background:sel?"rgba(196,122,46,0.09)":"#fff",cursor:"pointer",textAlign:"center",transition:"all 0.18s",display:"flex",flexDirection:"column",alignItems:"center",gap:6,minHeight:44}}>
-                        <span style={{fontSize:22}}>{ag.icon}</span>
-                        <div style={{fontSize:11.5,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{ag.label}</div>
-                        <div style={{fontSize:9.5,color:muted,lineHeight:1.2}}>{ag.sub}</div>
-                        {sel&&<div style={{width:5,height:5,borderRadius:"50%",background:gold}}/>}
-                      </button>
-                    );
-                  })}
-                </div>
-                {ageGroups.length===0&&<p style={{fontSize:11,color:"rgba(30,15,0,0.28)",textAlign:"center",marginTop:10}}>Select all that apply — or skip</p>}
-              </div>
-
-              {/* anything else? */}
-              <div style={{paddingTop:28,borderTop:`1px solid rgba(196,122,46,0.08)`,marginTop:28}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-                  <div style={{fontSize:14,color:muted,fontWeight:500,fontFamily:font,letterSpacing:"0.01em"}}>anything else we should know?</div>
-                  <span style={{fontSize:10,color:muted,fontWeight:500}}>optional</span>
-                </div>
-                <textarea
-                  value={notes}
-                  onChange={e=>setNotes(e.target.value)}
-                  placeholder={`e.g. it's a surprise party, guests are mostly family, prefer vegetarian food…`}
-                  rows={3}
-                  style={{width:"100%",padding:"13px 15px",borderRadius:12,border:`1.5px solid ${notes?gold:"rgba(196,122,46,0.18)"}`,background:notes?"rgba(196,122,46,0.03)":"#fff",fontSize:14,fontFamily:font,color:ink,outline:"none",resize:"none",lineHeight:1.55,boxSizing:"border-box",transition:"border-color 0.2s,background 0.2s"}}
-                  onFocus={e=>{e.target.style.borderColor=gold;e.target.style.background="rgba(196,122,46,0.03)";}}
-                  onBlur={e=>{e.target.style.borderColor=notes?gold:"rgba(196,122,46,0.18)";e.target.style.background=notes?"rgba(196,122,46,0.03)":"#fff";}}
-                />
-                <div style={{fontSize:11,color:muted,marginTop:6}}>Shared with your planning summary</div>
-              </div>
-
+              <textarea value={notes} onChange={e=>setNotes(e.target.value)}
+                placeholder="e.g. it's a surprise party, guests are mostly family, prefer vegetarian food…"
+                rows={3}
+                style={{width:"100%",padding:"12px 14px",borderRadius:12,border:`1.5px solid ${notes?occAccent:`${occAccent}28`}`,background:notes?`${occAccent}05`:"rgba(0,0,0,0.018)",fontSize:13.5,fontFamily:font,color:ink,outline:"none",resize:"none",lineHeight:1.55,boxSizing:"border-box"}}/>
+              <div style={{fontSize:11,color:muted,marginTop:6}}>Shared with your planning summary</div>
             </div>
           </div>
         )}
@@ -2787,15 +2826,15 @@ export default function OccasionDetail(){
 
       {/* bottom CTA — flex footer, always visible */}
       {step>0&&(
-        <div style={{flexShrink:0,background:bg,borderTop:`1px solid ${border}`,padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
+        <div style={{flexShrink:0,background:"#fff",borderTop:"1px solid rgba(0,0,0,0.07)",padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
           <div style={{maxWidth:680,margin:"0 auto",display:"flex",gap:10}}>
             {step>0&&<button onClick={back} style={btnGhost}>← Back</button>}
             {step<6&&(
               <button onClick={next} disabled={!canNext()} style={btnPrimary}>
-                {step===1&&(!date?"Set a date first →":"Next →")}
+                {step===1&&(!date?"Set a date first →":"Next: Services →")}
                 {step===2&&(theme?`Use "${theme.name}" →`:"Skip — no theme →")}
-                {step===3&&(vendors.length>0?"Next — Add Entertainment →":"Skip →")}
-                {step===4&&(selectedActivities.length>0?`Next — Pick Gifts →`:"Skip — pick gifts →")}
+                {step===3&&(vendors.length>0?"Next: Entertainment →":"Skip →")}
+                {step===4&&(selectedActivities.length>0?"Next: Gifts →":"Skip — pick gifts →")}
                 {step===5&&(gifts.length>0?"See my plan →":"Skip — see plan →")}
               </button>
             )}

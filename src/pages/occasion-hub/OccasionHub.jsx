@@ -6437,6 +6437,110 @@ export default function OccasionHub({ occasion }) {
               </svg>
             </>;
 
+          case "get-together":
+            return <>
+              {/* Coffee mugs + speech bubbles top-right */}
+              <svg style={{...decorStyle,top:55,right:5,opacity:0.12}} width="130" height="130" viewBox="0 0 130 130" fill="none" stroke={occAccent} strokeWidth="1.3" strokeLinecap="round">
+                <rect x="15" y="60" width="40" height="30" rx="4"/>
+                <path d="M55 68 Q65 68 65 75 Q65 82 55 82"/>
+                <path d="M15 90 Q35 95 55 90"/>
+                <rect x="70" y="50" width="45" height="30" rx="4"/>
+                <path d="M115 58 Q125 58 125 65 Q125 72 115 72"/>
+                <path d="M70 80 Q93 85 115 80"/>
+                {/* Speech bubbles */}
+                <path d="M10 20 Q10 10 20 10 L60 10 Q70 10 70 20 Q70 30 60 30 L25 30 L15 40 L18 30 Q10 30 10 20Z"/>
+                <path d="M80 10 Q80 3 87 3 L115 3 Q122 3 122 10 Q122 17 115 17 L95 17 L88 24 L90 17 Q80 17 80 10Z"/>
+              </svg>
+            </>;
+
+          case "office-party":
+            return <>
+              {/* Briefcase + laptop top-right */}
+              <svg style={{...decorStyle,top:55,right:5,opacity:0.11}} width="130" height="120" viewBox="0 0 130 120" fill="none" stroke={occAccent} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+                {/* Laptop */}
+                <rect x="10" y="30" width="75" height="50" rx="3"/>
+                <rect x="15" y="35" width="65" height="38"/>
+                <path d="M0 80 Q5 86 47.5 86 Q90 86 95 80"/>
+                {/* Briefcase */}
+                <rect x="80" y="55" width="44" height="35" rx="4"/>
+                <path d="M90 55 L90 49 Q90 44 95 44 L109 44 Q114 44 114 49 L114 55"/>
+                <line x1="80" y1="70" x2="124" y2="70"/>
+                <line x1="102" y1="65" x2="102" y2="75"/>
+                {/* Star/confetti */}
+                <path d="M30 15 L31.5 10 L33 15 L38 16.5 L33 18 L31.5 23 L30 18 L25 16.5 Z" strokeWidth="0.9"/>
+              </svg>
+            </>;
+
+          case "gender-reveal":
+            return <>
+              {/* Balloons + ribbon top-right */}
+              <svg style={{...decorStyle,top:50,right:0,opacity:0.13}} width="130" height="170" viewBox="0 0 130 170" fill="none" stroke={occAccent} strokeWidth="1.2" strokeLinecap="round">
+                <ellipse cx="35" cy="32" r="25" rx="18"/><line x1="35" y1="57" x2="33" y2="120"/>
+                <ellipse cx="75" cy="25" r="22" rx="16"/><line x1="75" y1="47" x2="73" y2="120"/>
+                <ellipse cx="108" cy="38" r="20" rx="15"/><line x1="108" y1="58" x2="106" y2="120"/>
+                <path d="M33 120 Q55 132 73 120 Q88 114 106 120"/>
+                {/* Ribbon */}
+                <path d="M10 145 Q30 135 50 145 Q70 155 90 145 Q110 135 125 145" strokeDasharray="4 3"/>
+                <path d="M55 140 L60 155 L65 140" strokeWidth="1.5"/>
+              </svg>
+            </>;
+
+          case "naming-ceremony":
+            return <>
+              {/* Oil lamp + marigold petals top-right */}
+              <svg style={{...decorStyle,top:55,right:5,opacity:0.13}} width="120" height="140" viewBox="0 0 120 140" fill="none" stroke={occAccent} strokeWidth="1.3" strokeLinecap="round">
+                {/* Lamp */}
+                <path d="M50 100 Q35 90 35 75 Q35 55 50 50 L80 50 Q95 55 95 75 Q95 90 80 100 Z"/>
+                <path d="M50 100 L80 100"/>
+                <path d="M55 50 Q65 30 75 50"/>
+                <path d="M65 30 Q65 18 65 10"/>
+                <ellipse cx="65" cy="107" rx="20" ry="6"/>
+                {/* Petals around */}
+                {[0,60,120,180,240,300].map((a,i)=>(
+                  <ellipse key={i} cx={30+60*Math.cos(a*Math.PI/180)} cy={30+45*Math.sin(a*Math.PI/180)} rx="7" ry="4" transform={`rotate(${a},${30+60*Math.cos(a*Math.PI/180)},${30+45*Math.sin(a*Math.PI/180)})`}/>
+                ))}
+              </svg>
+            </>;
+
+          case "house-party":
+            return <>
+              {/* Music notes + star top-right */}
+              <svg style={{...decorStyle,top:50,right:5,opacity:0.13}} width="130" height="150" viewBox="0 0 130 150" fill="none" stroke={occAccent} strokeWidth="1.4" strokeLinecap="round">
+                {/* Music notes */}
+                <path d="M30 80 L30 40 L70 30 L70 65"/>
+                <circle cx="25" cy="83" r="8"/>
+                <circle cx="65" cy="68" r="8"/>
+                <path d="M85 100 L85 65 L115 58 L115 88"/>
+                <circle cx="80" cy="103" r="7"/>
+                <circle cx="110" cy="91" r="7"/>
+                {/* Stars */}
+                <path d="M20 20 L21.5 15 L23 20 L28 21.5 L23 23 L21.5 28 L20 23 L15 21.5 Z" strokeWidth="0.9"/>
+                <path d="M105 25 L106 22 L107 25 L110 26 L107 27 L106 30 L105 27 L102 26 Z" strokeWidth="0.9"/>
+                <path d="M15 120 L16.5 115 L18 120 L23 121.5 L18 123 L16.5 128 L15 123 L10 121.5 Z" strokeWidth="0.9"/>
+              </svg>
+            </>;
+
+          case "dussehra-party": case "dussehra":
+            return <>
+              {/* Bow + arrow top-right, victory stars */}
+              <svg style={{...decorStyle,top:55,right:5,opacity:0.12}} width="130" height="130" viewBox="0 0 130 130" fill="none" stroke={occAccent} strokeWidth="1.3" strokeLinecap="round">
+                {/* Bow */}
+                <path d="M70 20 Q40 40 50 65 Q60 90 70 110"/>
+                <path d="M70 20 Q100 40 90 65 Q80 90 70 110"/>
+                <line x1="70" y1="20" x2="70" y2="110"/>
+                {/* String */}
+                <path d="M50 65 Q70 60 90 65"/>
+                {/* Arrow */}
+                <line x1="10" y1="65" x2="50" y2="65"/>
+                <path d="M44 58 L52 65 L44 72"/>
+                {/* Dots on arrow */}
+                <circle cx="20" cy="65" r="2"/><circle cx="30" cy="65" r="2"/>
+                {/* Stars */}
+                <path d="M100 20 L101.5 15 L103 20 L108 21.5 L103 23 L101.5 28 L100 23 L95 21.5 Z" strokeWidth="0.9"/>
+                <path d="M15 25 L16 22 L17 25 L20 26 L17 27 L16 30 L15 27 L12 26 Z" strokeWidth="0.9"/>
+              </svg>
+            </>;
+
           default:
             return null;
         }
