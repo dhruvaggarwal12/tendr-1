@@ -857,11 +857,14 @@ const GiftHampersCakes = () => {
           samples={samples}
           occasions={availableEventTypes}
           categories={availableGiftTypes}
+          products={products}
+          cartItems={cartItems}
+          setQty={setQty}
           onSelect={(sample) => {
             setSelectedPhotos(prev => prev.some(p => p._id === sample._id) ? prev : [...prev, sample]);
             document.getElementById('gh-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }}
-          onClose={() => setQuizOpen(false)}
+          onClose={() => { setQuizOpen(false); if (Object.keys(cartItems).length > 0) setCheckoutOpen(true); }}
         />
       )}
     </div>
