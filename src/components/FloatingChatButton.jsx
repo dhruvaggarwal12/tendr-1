@@ -1309,10 +1309,10 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         .mobile-saved-popup { display: block; }
         .mobile-compare-popup { display: block; }
 
-        /* ── Launcher FAB (wine glass, above chat) ── */
+        /* ── Launcher FAB (above InPlanning at 88px) ── */
         .launcher-fab {
           position: fixed;
-          bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+          bottom: calc(150px + env(safe-area-inset-bottom, 0px));
           right: 20px;
           z-index: 99995;
           width: 50px; height: 50px;
@@ -1334,10 +1334,10 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           padding: 0 4px; border: 2px solid #fff;
         }
 
-        /* ── Launcher stack (expands upward) ── */
+        /* ── Launcher stack (expands upward from launcher) ── */
         .launcher-stack {
           position: fixed;
-          bottom: calc(140px + env(safe-area-inset-bottom, 0px));
+          bottom: calc(210px + env(safe-area-inset-bottom, 0px));
           right: 20px;
           z-index: 99995;
           display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
@@ -1373,12 +1373,12 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           }
           .chat-btn-text { display: none; }
           .launcher-fab {
-            bottom: calc(190px + env(safe-area-inset-bottom, 0px)) !important;
+            bottom: calc(150px + env(safe-area-inset-bottom, 0px)) !important;
             right: 14px !important;
             width: 44px !important; height: 44px !important;
           }
           .launcher-stack {
-            bottom: calc(242px + env(safe-area-inset-bottom, 0px)) !important;
+            bottom: calc(202px + env(safe-area-inset-bottom, 0px)) !important;
             right: 14px !important;
           }
           .chat-row-left {

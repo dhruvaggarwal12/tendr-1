@@ -64,13 +64,7 @@ export default function ShortlistFloat() {
 
   const [shortlist,    setShortlist]    = useState(() => getShortlist());
   const [panelOpen,    setPanelOpen]    = useState(false);
-  // Detect InPlanning button presence so we can stack above it on desktop
-  const [hasPlan,      setHasPlan]      = useState(() => {
-    try { return !!(localStorage.getItem("tendr_smart_plan") || localStorage.getItem("tendr_ep_session")); } catch { return false; }
-  });
   const [chipVisible,  setChipVisible]  = useState(true);
-  const [wizardOpen,   setWizardOpen]   = useState(false);
-  const [wizardAnswers, setWizardAnswers] = useState({});
   const [submitting,   setSubmitting]   = useState(false);
   const [submitted,    setSubmitted]    = useState(false);
   const [convId,       setConvId]       = useState(null);
@@ -108,7 +102,7 @@ export default function ShortlistFloat() {
           estimatedCost: v.price || 0,
           percentage: Math.round(100 / Math.max(1, totalCount)),
           status: "Pending",
-          requirements: wizardAnswers[cat] || "",
+          requirements: "",
         }))
       );
       const selectedPackages = (() => { try { return JSON.parse(sessionStorage.getItem("tendr_wiz_packages") || "{}"); } catch { return {}; } })();
@@ -179,58 +173,6 @@ export default function ShortlistFloat() {
         </div>
       )}
 
-      {/* ── Wizard modal ──────────────────────────────────────────────── */}
-      {wizardOpen && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 9996, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, fontFamily: F }}
-          onClick={() => !submitting && setWizardOpen(false)}>
-          <div style={{ background: CREAM, borderRadius: 20, maxWidth: 480, width: "100%", maxHeight: "calc(100dvh - 80px)", overflowY: "auto", boxShadow: "0 20px 60px rgba(44,26,14,0.25)" }}
-            onClick={e => e.stopPropagation()}>
-            {/* Header */}
-            <div style={{ padding: "22px 24px 16px", borderBottom: "1px solid rgba(196,122,46,0.12)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: INK }}>Tell us more</div>
-                  <div style={{ fontSize: 12.5, color: "#9B7450", marginTop: 3 }}>Helps vendors prepare the right proposal</div>
-                </div>
-                <button onClick={() => !submitting && setWizardOpen(false)} style={{ ...btnBase, width: 30, height: 30, borderRadius: "50%", background: "rgba(196,122,46,0.1)", color: "#9B7450", fontSize: 16 }}>✕</button>
-              </div>
-            </div>
-
-            {/* Per-category questions */}
-            <div style={{ padding: "16px 24px", display: "flex", flexDirection: "column", gap: 20 }}>
-              {categories.map(cat => (
-                <div key={cat}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                    <span style={{ fontSize: 20 }}>{CAT_EMOJI[cat] || "🏷️"}</span>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: INK }}>{cat}</div>
-                      <div style={{ fontSize: 11, color: "#9B7450" }}>{shortlist[cat]?.length} vendor{shortlist[cat]?.length !== 1 ? "s" : ""} shortlisted</div>
-                    </div>
-                  </div>
-                  <textarea
-                    placeholder={`Any specific requirements for ${cat}? (optional)`}
-                    value={wizardAnswers[cat] || ""}
-                    onChange={e => setWizardAnswers(prev => ({ ...prev, [cat]: e.target.value }))}
-                    rows={2}
-                    style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.22)", background: "#FFF8EC", fontSize: 13, fontFamily: F, color: INK, resize: "vertical", outline: "none", boxSizing: "border-box", lineHeight: 1.5 }}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Footer */}
-            <div style={{ padding: "14px 24px 24px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
-              <button
-                onClick={handleSendRequest}
-                disabled={submitting}
-                style={{ ...btnBase, width: "100%", padding: "14px", borderRadius: 12, background: submitting ? "rgba(196,122,46,0.4)" : `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: "#fff", fontSize: 14, fontWeight: 800, cursor: submitting ? "not-allowed" : "pointer", boxShadow: submitting ? "none" : "0 4px 16px rgba(196,122,46,0.35)" }}>
-                {submitting ? "Sending…" : `Send Request (${totalCount} vendor${totalCount !== 1 ? "s" : ""}) →`}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ── Shortlist panel ───────────────────────────────────────────── */}
       {panelOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 9010, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "flex-end", justifyContent: "flex-end", padding: "0 0 0 0", fontFamily: F }}
@@ -282,11 +224,11 @@ export default function ShortlistFloat() {
                 onClick={() => {
                   if (!authUser) { setAuthModalOpen(true); return; }
                   setPanelOpen(false);
-                  setWizardAnswers({});
-                  setWizardOpen(true);
+                  handleSendRequest();
                 }}
-                style={{ ...btnBase, width: "100%", padding: "14px", borderRadius: 12, background: `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: "#fff", fontSize: 14, fontWeight: 800, boxShadow: "0 4px 16px rgba(196,122,46,0.35)" }}>
-                {authUser ? "Send Request →" : "Sign In to Send Request"}
+                disabled={submitting}
+                style={{ ...btnBase, width: "100%", padding: "14px", borderRadius: 12, background: submitting ? "rgba(196,122,46,0.4)" : `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: "#fff", fontSize: 14, fontWeight: 800, boxShadow: submitting ? "none" : "0 4px 16px rgba(196,122,46,0.35)", cursor: submitting ? "not-allowed" : "pointer" }}>
+                {submitting ? "Sending…" : authUser ? `Send Request (${totalCount}) →` : "Sign In to Send Request"}
               </button>
             </div>
           </div>
@@ -311,7 +253,7 @@ export default function ShortlistFloat() {
 
       {/* ── Floating glass button — DESKTOP (bottom-right, above In Planning) ── */}
       {/* Conditionally rendered: hidden when panel is open so it doesn't show through overlay */}
-      {!panelOpen && <div className="sl-float-btn" style={{ position: "fixed", bottom: hasPlan ? 148 : 24, right: 24, zIndex: 8950, flexDirection: "column", alignItems: "flex-end", gap: 8, display: "none" }}>
+      {!panelOpen && <div className="sl-float-btn" style={{ position: "fixed", bottom: 150, right: 84, zIndex: 8950, flexDirection: "column", alignItems: "flex-end", gap: 8, display: "none" }}>
         {/* Pop-out chip */}
         {chipVisible && (
           <div style={{ display: "flex", alignItems: "center", gap: 6, background: INK, borderRadius: 100, padding: "6px 12px 6px 10px", boxShadow: "0 4px 16px rgba(44,26,14,0.35)", animation: "sl-chip 0.25s cubic-bezier(0.34,1.56,0.64,1)" }}>
@@ -347,8 +289,7 @@ export default function ShortlistFloat() {
         onSuccess={() => {
           setAuthModalOpen(false);
           setPanelOpen(false);
-          setWizardAnswers({});
-          setWizardOpen(true);
+          handleSendRequest();
         }}
         defaultMode="login"
       />
