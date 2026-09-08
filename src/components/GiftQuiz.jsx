@@ -60,9 +60,10 @@ function scoreSample(sample, chosenFillings, chosenBase) {
 
   let score = 0;
 
-  // Base match: +3 if the photo's category matches the chosen base type
-  if (chosenBase && BASE_TO_CAT[chosenBase]) {
-    if (cats.includes(BASE_TO_CAT[chosenBase])) score += 3;
+  // Base match: +3 — prefer manual base field, fall back to category inference
+  if (chosenBase) {
+    const manualBase = (sample.base || '').trim();
+    if (manualBase ? manualBase === chosenBase : (BASE_TO_CAT[chosenBase] && cats.includes(BASE_TO_CAT[chosenBase]))) score += 3;
   }
 
   if (!chosenFillings || chosenFillings.length === 0) return score;

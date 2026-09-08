@@ -4937,6 +4937,24 @@ const AdminDashboard = () => {
                                     </div>
                                   </div>
                                   <div style={{ marginBottom: 5 }}>
+                                    <div style={{ fontSize: 9, fontWeight: 700, color: "#7A5535", marginBottom: 4 }}>Base / Container</div>
+                                    <select
+                                      value={ghEditData.base || ""}
+                                      onChange={e => setGhEditData(p => ({ ...p, base: e.target.value }))}
+                                      style={{ width: "100%", padding: "4px 7px", borderRadius: 6, border: "1px solid rgba(196,122,46,0.35)", fontSize: 11, fontFamily: "'Outfit',sans-serif" }}
+                                    >
+                                      <option value="">— Not set —</option>
+                                      <option value="tokri">🧺 Tokri (Wicker Basket)</option>
+                                      <option value="box">📦 Gift Box</option>
+                                      <option value="tray">🪵 Wooden Tray</option>
+                                      <option value="bag">🛍️ Jute / Gift Bag</option>
+                                      <option value="crate">📫 Wooden Crate</option>
+                                      <option value="tin">🫙 Tin / Jar</option>
+                                      <option value="sleeve">📜 Tube / Sleeve</option>
+                                      <option value="thali">🪬 Pooja Thali</option>
+                                    </select>
+                                  </div>
+                                  <div style={{ marginBottom: 5 }}>
                                     <div style={{ fontSize: 9, fontWeight: 700, color: "#7A5535", marginBottom: 4 }}>Event Type</div>
                                     <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                                       {["Birthday","Diwali","Corporate","Wedding","Thank You","Anniversary","General"].map(o => {
@@ -4977,6 +4995,11 @@ const AdminDashboard = () => {
                                 </div>
                               ) : (
                                 <div style={{ padding: "6px 8px 7px" }}>
+                                  {s.base && (
+                                    <div style={{ fontSize: 9.5, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 20, padding: "2px 7px", display: "inline-block", marginBottom: 4 }}>
+                                      {{ tokri:"🧺 Tokri", box:"📦 Box", tray:"🪵 Tray", bag:"🛍️ Bag", crate:"📫 Crate", tin:"🫙 Tin", sleeve:"📜 Sleeve", thali:"🪬 Thali" }[s.base] || s.base}
+                                    </div>
+                                  )}
                                   {(s.name || s.priceRange || s.vendorName) ? (
                                     <>
                                       {s.name && <div style={{ fontSize: 11, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.3 }}>{s.name}</div>}
@@ -4986,7 +5009,7 @@ const AdminDashboard = () => {
                                     </>
                                   ) : (
                                     <button
-                                      onClick={() => { setGhEditingId(s._id); setGhEditData({ name: "", vendorName: "", priceRange: "", minQty: "", category: [], occasion: [] }); }}
+                                      onClick={() => { setGhEditingId(s._id); setGhEditData({ name: "", vendorName: "", priceRange: "", minQty: "", category: [], occasion: [], base: "" }); }}
                                       style={{ width: "100%", padding: "5px 0", borderRadius: 7, border: "1.5px dashed rgba(196,122,46,0.5)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}
                                     >+ Add Details</button>
                                   )}
@@ -5008,7 +5031,7 @@ const AdminDashboard = () => {
                               {/* Edit button */}
                               {!isEditing && (
                                 <button
-                                  onClick={() => { setGhEditingId(s._id); setGhEditData({ name: s.name || "", vendorName: s.vendorName || "", priceRange: s.priceRange || "", minQty: s.minQty ?? "", category: Array.isArray(s.category) ? s.category : (s.category ? [s.category] : []), occasion: s.occasion || [] }); }}
+                                  onClick={() => { setGhEditingId(s._id); setGhEditData({ name: s.name || "", vendorName: s.vendorName || "", priceRange: s.priceRange || "", minQty: s.minQty ?? "", category: Array.isArray(s.category) ? s.category : (s.category ? [s.category] : []), occasion: s.occasion || [], base: s.base || "" }); }}
                                   style={{ position: "absolute", top: 5, right: 32, width: 22, height: 22, borderRadius: "50%", background: "rgba(196,122,46,0.85)", border: "none", color: "#fff", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
                                   title="Edit info"
                                 >✎</button>
