@@ -267,7 +267,7 @@ const GiftHampersCakes = () => {
         .gh-chip.active { background:#1C0A04 !important; border-color:#1C0A04 !important; color:#CCAB4A !important; }
         .gh-btn-gold:hover { box-shadow:0 10px 36px rgba(196,122,46,0.55) !important; transform:translateY(-1px); }
         .gh-btn-gold:active { transform:scale(0.97) !important; }
-        .gh-hero-3col { display:grid; grid-template-columns:2fr 2.6fr 1.4fr; background:#1C0A04; min-height:530px; }
+        .gh-hero-3col { display:grid; grid-template-columns:2fr 1.8fr 1.2fr; background:#1C0A04; min-height:480px; }
         .gh-hero-left { padding:clamp(36px,5vw,64px) clamp(20px,3.5vw,52px); display:flex; flex-direction:column; justify-content:center; position:relative; overflow:hidden; }
         .gh-hero-left::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 60% at -10% 50%, rgba(196,122,46,0.1) 0%, transparent 65%); pointer-events:none; }
         .gh-hero-center { overflow:hidden; position:relative; }
@@ -340,23 +340,6 @@ const GiftHampersCakes = () => {
           <p style={{ fontSize:14, color:"rgba(255,248,236,0.55)", lineHeight:1.72, margin:"0 0 24px", position:"relative", zIndex:1 }}>
             Curated hampers for every celebration — fully customised, beautifully packed, delivered across Delhi NCR.
           </p>
-          {/* 2×2 value mini-grid */}
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"10px 14px", marginBottom:26, position:"relative", zIndex:1 }}>
-            {[
-              { icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>, label:"Fully Customised", sub:"Your base, fillings & finish" },
-              { icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>, label:"Same-Week Delivery", sub:"Across Delhi NCR" },
-              { icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, label:"Perfect for Every Occasion", sub:"Diwali · Corporate · Birthdays" },
-              { icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>, label:"Curated by Experts", sub:"Our team builds it with you" },
-            ].map((v, i) => (
-              <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:9 }}>
-                <span style={{ color:"#CCAB4A", marginTop:1, flexShrink:0 }}>{v.icon}</span>
-                <div>
-                  <div style={{ fontSize:11.5, fontWeight:700, color:"rgba(255,248,236,0.85)", lineHeight:1.3 }}>{v.label}</div>
-                  <div style={{ fontSize:10.5, color:"rgba(196,164,130,0.55)", marginTop:1 }}>{v.sub}</div>
-                </div>
-              </div>
-            ))}
-          </div>
           {/* CTAs */}
           <div style={{ display:"flex", gap:10, flexWrap:"wrap", position:"relative", zIndex:1 }}>
             <button
@@ -568,23 +551,24 @@ const GiftHampersCakes = () => {
             <div style={{ flex:"1 1 0", minWidth:0 }}>
               <div className="gh-cat-scroll">
                 {[
-                  { label:"Diwali",     cat:"Festive & Diwali" },
-                  { label:"Corporate",  cat:"Corporate" },
-                  { label:"Birthdays",  cat:"Birthday" },
-                  { label:"Weddings",   cat:"Wedding" },
-                  { label:"Festive",    cat:"Festive" },
-                  { label:"Spiritual",  cat:"Spiritual & Pooja" },
-                ].map(({ label, cat }) => {
+                  ...availableGiftTypes.map(cat => ({ label: cat, type: 'category' })),
+                  ...availableEventTypes.map(occ => ({ label: occ, type: 'occasion' })),
+                ].slice(0, 8).map(({ label, type }) => {
                   const photo = samples.find(s => {
-                    const cats = Array.isArray(s.category) ? s.category : [s.category || ""];
-                    return cats.some(c => (c||"").toLowerCase().includes(cat.split(" ")[0].toLowerCase()));
-                  }) || samples[0];
-                  const isActive = selectedCategories.some(c => c.toLowerCase().includes(cat.split(" ")[0].toLowerCase()));
+                    if (type === 'category') {
+                      const cats = Array.isArray(s.category) ? s.category : [s.category || ''];
+                      return cats.includes(label);
+                    } else {
+                      const occs = Array.isArray(s.occasion) ? s.occasion : [s.occasion || ''];
+                      return occs.includes(label);
+                    }
+                  });
+                  const isActive = type === 'category' ? selectedCategories.includes(label) : occasionFilter.includes(label);
                   return (
                     <div
                       key={label}
                       className="gh-cat-card"
-                      onClick={() => toggleCategory(availableGiftTypes.find(g => g.toLowerCase().includes(cat.split(" ")[0].toLowerCase())) || cat)}
+                      onClick={() => type === 'category' ? toggleCategory(label) : toggleOccasion(label)}
                       style={{ outline: isActive ? "2.5px solid #C47A2E" : "none", outlineOffset:2 }}
                     >
                       {photo?.url
