@@ -224,6 +224,8 @@ const GiftHampersCakes = () => {
   const productCategories = ['All', ...new Set(products.map(p => p.category).filter(Boolean))];
   const visibleProducts = productCatFilter === 'All' ? products : products.filter(p => p.category === productCatFilter);
 
+  const serif = "'Cormorant Garamond', Georgia, serif";
+
   return (
     <div style={{ minHeight: "100vh", background: "#FAF7F2", fontFamily: font }}>
       <SEO
@@ -249,115 +251,145 @@ const GiftHampersCakes = () => {
       )}
 
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Outfit:wght@400;500;600;700&display=swap');
         @keyframes ghShimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
         @keyframes ghPulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-        @keyframes ghOrbBreath { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:0.78} }
-        @keyframes ghCardIn { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes ghCardIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
         @keyframes ghIslandIn { from{opacity:0;transform:translateX(-50%) translateY(20px) scale(0.92)} to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)} }
         @keyframes ghIslandInMobile { from{opacity:0;transform:translateY(20px) scale(0.9)} to{opacity:1;transform:translateY(0) scale(1)} }
-        .gh-card { opacity: 0; animation: ghCardIn 0.38s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
-        .gh-card:hover .gh-overlay { opacity: 1 !important; }
-        .gh-card:hover img { transform: scale(1.05) !important; }
-        .gh-card:hover { transform: translateY(-3px) !important; box-shadow: 0 12px 36px rgba(44,26,14,0.14) !important; }
-        .gh-card:active { transform: scale(0.98) !important; }
-        .gh-filter-btn:hover { background: rgba(196,122,46,0.07) !important; }
-        .gh-cta-btn:hover { box-shadow: 0 10px 36px rgba(196,122,46,0.55) !important; transform: translateY(-1px); }
-        .gh-cta-btn:active { transform: scale(0.97) !important; }
-        @media(max-width:640px){
-          .gh-hero-inner { padding: 44px 20px 40px !important; }
-          .gh-h1 { font-size: clamp(1.9rem,7vw,2.5rem) !important; }
-          .gh-cta-btn { width: 100% !important; justify-content: center; }
-          .gh-island { min-width: unset !important; left: 16px !important; right: 16px !important; transform: none !important; border-radius: 20px !important; bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important; }
-          .gh-island { animation-name: ghIslandInMobile !important; }
-          .gh-photos-grid { padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px)) !important; }
-          .gh-card-grid { grid-template-columns: repeat(2,1fr) !important; gap: 8px !important; }
-          .gh-card { border-radius: 12px !important; }
-          .gh-card-info { padding: 7px 9px 9px !important; font-size: 11px !important; }
-        }
-        .gh-hero-split { display: flex; align-items: stretch; min-height: 420px; }
-        .gh-hero-carousel-col { flex: 0 0 42%; position: relative; overflow: hidden; }
         @keyframes ghHeroFade { from{opacity:0;transform:scale(1.04)} to{opacity:1;transform:scale(1)} }
-        .gh-hero-carousel-col img { width:100%; height:100%; object-fit:cover; animation: ghHeroFade 0.7s ease forwards; }
-        .gh-hero-dots { position:absolute; bottom:14px; left:50%; transform:translateX(-50%); display:flex; gap:6px; z-index:2; }
-        .gh-hero-dots span { width:6px; height:6px; border-radius:50%; background:rgba(255,248,236,0.35); transition:background 0.3s,width 0.3s; }
-        .gh-hero-dots span.active { background:#CCAB4A; width:18px; border-radius:4px; }
-        @media(max-width:900px){ .gh-hero-carousel-col { display:none !important; } .gh-hero-split { min-height:unset; } }
+        .gh-card { opacity:0; animation:ghCardIn 0.36s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
+        .gh-card:hover .gh-overlay { opacity:1 !important; }
+        .gh-card:hover img { transform:scale(1.05) !important; }
+        .gh-card:hover { transform:translateY(-3px) !important; box-shadow:0 12px 36px rgba(44,26,14,0.15) !important; }
+        .gh-card:active { transform:scale(0.98) !important; }
+        .gh-chip:hover { border-color:#C47A2E !important; color:#C47A2E !important; }
+        .gh-chip.active { background:#1C0A04 !important; border-color:#1C0A04 !important; color:#CCAB4A !important; }
+        .gh-btn-gold:hover { box-shadow:0 10px 36px rgba(196,122,46,0.55) !important; transform:translateY(-1px); }
+        .gh-btn-gold:active { transform:scale(0.97) !important; }
+        .gh-hero { display:grid; grid-template-columns:55fr 45fr; background:#1C0A04; min-height:460px; }
+        .gh-hero-text { padding:clamp(52px,7vw,88px) clamp(24px,5vw,60px); display:flex; flex-direction:column; justify-content:center; position:relative; overflow:hidden; }
+        .gh-hero-text::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 60% 70% at 10% 40%, rgba(196,122,46,0.12) 0%, transparent 70%); pointer-events:none; }
+        .gh-hero-photos { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:3px; overflow:hidden; }
+        .gh-hero-photos img { width:100%; height:100%; object-fit:cover; display:block; animation:ghHeroFade 0.7s ease forwards; }
+        .gh-hero-photos .gh-ph-main { grid-row:1/3; }
+        .gh-value-strip { background:#F0E8DC; border-top:1px solid rgba(196,122,46,0.15); border-bottom:1px solid rgba(196,122,46,0.15); padding:16px clamp(20px,5vw,56px); display:flex; overflow-x:auto; }
+        .gh-value-item { flex:1; min-width:150px; display:flex; align-items:center; gap:10px; padding:6px 20px 6px 0; }
+        .gh-value-item+.gh-value-item { border-left:1px solid rgba(196,122,46,0.2); padding-left:20px; }
+        .gh-quiz-band { background:#1C0A04; padding:clamp(44px,6vw,72px) clamp(24px,5vw,56px); display:flex; gap:clamp(28px,5vw,72px); align-items:center; flex-wrap:wrap; }
+        .gh-quiz-step { display:flex; align-items:center; gap:14px; padding:13px 16px; background:rgba(255,248,236,0.05); border:1px solid rgba(196,122,46,0.2); border-radius:12px; }
+        .gh-masonry { columns:3 200px; column-gap:12px; }
+        .gh-masonry-card { break-inside:avoid; margin-bottom:12px; }
+        .gh-process { display:grid; grid-template-columns:repeat(3,1fr); position:relative; gap:0; }
+        .gh-process::before { content:''; position:absolute; top:21px; left:calc(100%/6); right:calc(100%/6); height:1px; background:rgba(196,122,46,0.18); z-index:0; }
+        @media(max-width:900px) {
+          .gh-hero { grid-template-columns:1fr; }
+          .gh-hero-photos { grid-template-columns:1fr 1fr 1fr; grid-template-rows:1fr; height:220px; }
+          .gh-hero-photos .gh-ph-main { grid-row:auto; }
+          .gh-quiz-band { flex-direction:column; }
+          .gh-process { grid-template-columns:1fr; gap:28px; }
+          .gh-process::before { display:none; }
+          .gh-process-step { display:flex; align-items:flex-start; gap:16px; text-align:left; }
+          .gh-process-num { margin:0 !important; flex-shrink:0; }
+        }
+        @media(max-width:560px) {
+          .gh-hero-photos { height:180px; }
+          .gh-masonry { columns:2 140px; column-gap:8px; }
+          .gh-masonry-card { margin-bottom:8px; }
+          .gh-island { left:16px !important; right:16px !important; transform:none !important; border-radius:20px !important; animation-name:ghIslandInMobile !important; bottom:calc(72px + env(safe-area-inset-bottom,0px)) !important; }
+          .gh-value-item { min-width:130px; }
+        }
       `}</style>
 
-      {/* ── Hero ── */}
-      <div style={{ background: "#1C0A04", position: "relative", overflow: "hidden" }}>
-        {/* Ambient orbs */}
-        <div aria-hidden style={{ position:"absolute", top:"-28%", right:"-10%", width:520, height:520, borderRadius:"50%", background:"radial-gradient(circle, rgba(196,122,46,0.22) 0%, rgba(196,122,46,0.07) 42%, transparent 70%)", pointerEvents:"none", animation:"ghOrbBreath 7s ease-in-out infinite" }} />
-        <div aria-hidden style={{ position:"absolute", bottom:"-22%", left:"-8%", width:380, height:380, borderRadius:"50%", background:"radial-gradient(circle, rgba(204,171,74,0.14) 0%, transparent 65%)", pointerEvents:"none" }} />
-        {/* Crosshatch grid */}
-        <div aria-hidden style={{ position:"absolute", inset:0, backgroundImage:"linear-gradient(rgba(204,171,74,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(204,171,74,0.04) 1px, transparent 1px)", backgroundSize:"44px 44px", pointerEvents:"none" }} />
-        {/* Top hairline */}
-        <div aria-hidden style={{ position:"absolute", top:0, left:"12%", right:"12%", height:1, background:"linear-gradient(90deg, transparent, rgba(196,122,46,0.38), transparent)", pointerEvents:"none" }} />
-
-        <div className="gh-hero-split" style={{ position:"relative", zIndex:1 }}>
-          {/* Left: text */}
-          <div className="gh-hero-inner" style={{ flex:"1 1 58%", padding:"64px 48px 56px 48px", display:"flex", flexDirection:"column", justifyContent:"center", minWidth:0 }}>
-            {/* Live badge */}
-            <div style={{ display:"inline-flex", alignItems:"center", gap:7, background:"rgba(196,122,46,0.1)", border:"1px solid rgba(196,122,46,0.22)", borderRadius:100, padding:"5px 14px 5px 10px", marginBottom:20, width:"fit-content" }}>
-              <div style={{ width:6, height:6, borderRadius:"50%", background:"#4ADE80", boxShadow:"0 0 0 2px rgba(74,222,128,0.22)", animation:"ghPulse 2s infinite", flexShrink:0 }} />
-              <span style={{ fontSize:10, fontWeight:700, color:"#CCAB4A", letterSpacing:"0.14em", textTransform:"uppercase", fontFamily:font }}>Available now · Delhi NCR</span>
-            </div>
-
-            <h1 className="gh-h1" style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:"clamp(2.2rem,4vw,3.4rem)", fontWeight:300, fontStyle:"italic", color:"#FFF8EC", margin:"0 0 8px", lineHeight:1.2, letterSpacing:"-0.01em" }}>
-              Gift Hampers
-            </h1>
-            <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:"clamp(1rem,1.8vw,1.35rem)", fontWeight:300, color:"rgba(255,248,236,0.45)", margin:"0 0 22px", letterSpacing:"0.03em" }}>
-              Curated for every occasion
-            </div>
-            <p style={{ fontSize:15, color:"rgba(255,248,236,0.62)", margin:"0 0 34px", lineHeight:1.78, maxWidth:440, fontFamily:font }}>
-              Browse our sample collection, pick your favourites, and our team will curate the perfect hamper — custom packaging, personalised notes, delivery across Delhi NCR.
-            </p>
-
-            <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
-              <button
-                onClick={() => setQuizOpen(true)}
-                style={{ display:"inline-flex", alignItems:"center", gap:9, background:"rgba(196,122,46,0.12)", color:"#CCAB4A", fontSize:15, fontWeight:700, padding:"14px 28px", borderRadius:100, border:"1.5px solid rgba(196,122,46,0.35)", cursor:"pointer", fontFamily:font, letterSpacing:"0.02em", backdropFilter:"blur(4px)", transition:"background 0.2s" }}
-                onMouseEnter={e => e.currentTarget.style.background="rgba(196,122,46,0.2)"}
-                onMouseLeave={e => e.currentTarget.style.background="rgba(196,122,46,0.12)"}
-              >
-                🎁 Find Your Perfect Gift
-              </button>
-              <button
-                className="gh-cta-btn"
-                onClick={goToChat}
-                style={{ display:"inline-flex", alignItems:"center", gap:9, background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:15, fontWeight:700, padding:"14px 30px", borderRadius:100, border:"none", cursor:"pointer", fontFamily:font, boxShadow:"0 8px 28px rgba(196,122,46,0.42)", letterSpacing:"0.02em", transition:"box-shadow 0.2s, transform 0.2s" }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Talk to Our Team{selectedPhotos.length > 0 ? ` · ${selectedPhotos.length} selected` : ""}
-              </button>
-            </div>
-            <p style={{ fontSize:11, color:"rgba(255,248,236,0.28)", marginTop:14, fontFamily:font, letterSpacing:"0.04em" }}>Replies within 2 hours · Custom orders welcome</p>
+      {/* ── HERO ── */}
+      <section className="gh-hero">
+        <div className="gh-hero-text">
+          <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase", color:"#CCAB4A", marginBottom:18, display:"flex", alignItems:"center", gap:10 }}>
+            <span style={{ width:6, height:6, borderRadius:"50%", background:"#4ADE80", boxShadow:"0 0 0 3px rgba(74,222,128,0.2)", display:"inline-block", animation:"ghPulse 2s infinite", flexShrink:0 }} />
+            Available Now · Delhi NCR
           </div>
-
-          {/* Right: photo carousel (desktop only) */}
-          <div className="gh-hero-carousel-col">
-            <img
-              key={heroIdx}
-              src={heroPhotos[heroIdx]?.url}
-              alt={heroPhotos[heroIdx]?.name || "Gift Hamper"}
-            />
-            {/* gradient overlay on left edge for blend */}
-            <div aria-hidden style={{ position:"absolute", inset:0, background:"linear-gradient(90deg, #1C0A04 0%, transparent 28%)", pointerEvents:"none" }} />
-            {/* dots */}
-            <div className="gh-hero-dots">
-              {heroPhotos.map((_, i) => (
-                <span key={i} className={i === heroIdx ? "active" : ""} onClick={() => setHeroIdx(i)} style={{ cursor:"pointer" }} />
-              ))}
-            </div>
-            {/* vendor label */}
-            {heroPhotos[heroIdx]?.vendorName && (
-              <div style={{ position:"absolute", top:14, right:14, background:"rgba(28,10,4,0.7)", backdropFilter:"blur(6px)", borderRadius:8, padding:"4px 10px", fontSize:11, color:"rgba(255,248,236,0.7)", fontFamily:font }}>
-                {heroPhotos[heroIdx].vendorName}
-              </div>
-            )}
+          <h1 style={{ fontFamily:serif, fontSize:"clamp(2.4rem,5vw,3.6rem)", fontWeight:400, lineHeight:1.15, color:"#FFF8EC", margin:"0 0 18px", textWrap:"balance", position:"relative", zIndex:1 }}>
+            Gifts that say exactly <em style={{ fontStyle:"italic", color:"#CCAB4A" }}>what you mean.</em>
+          </h1>
+          <p style={{ fontSize:15, color:"rgba(255,248,236,0.6)", lineHeight:1.75, maxWidth:420, margin:"0 0 32px", position:"relative", zIndex:1 }}>
+            Curated hampers for every celebration — fully customised, beautifully packed, delivered across Delhi NCR.
+          </p>
+          <div style={{ display:"flex", gap:12, flexWrap:"wrap", position:"relative", zIndex:1 }}>
+            <button
+              className="gh-btn-gold"
+              onClick={() => setQuizOpen(true)}
+              style={{ display:"inline-flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:14, fontWeight:700, padding:"13px 28px", borderRadius:100, border:"none", cursor:"pointer", fontFamily:font, boxShadow:"0 6px 24px rgba(196,122,46,0.42)", letterSpacing:"0.02em", transition:"box-shadow 0.18s,transform 0.12s" }}
+            >
+              🎁 Find Your Gift
+            </button>
+            <button
+              onClick={() => document.getElementById("gh-grid")?.scrollIntoView({ behavior:"smooth" })}
+              style={{ display:"inline-flex", alignItems:"center", gap:6, background:"none", color:"rgba(196,164,130,0.75)", fontSize:13, fontWeight:600, padding:"13px 4px", border:"none", cursor:"pointer", fontFamily:font, textDecoration:"underline", textDecorationColor:"rgba(196,122,46,0.3)", textUnderlineOffset:4 }}
+            >
+              Browse collection ↓
+            </button>
           </div>
+          <p style={{ fontSize:11, color:"rgba(255,248,236,0.22)", marginTop:16, fontFamily:font, letterSpacing:"0.04em", position:"relative", zIndex:1 }}>Replies within 2 hours · Custom orders welcome</p>
         </div>
+        <div className="gh-hero-photos">
+          <img className="gh-ph-main" src={heroPhotos[0]?.url} alt={heroPhotos[0]?.name || "Gift hamper"} />
+          <img src={heroPhotos[1]?.url || heroPhotos[0]?.url} alt="Hamper" />
+          <img src={heroPhotos[2]?.url || heroPhotos[0]?.url} alt="Hamper" />
+        </div>
+      </section>
+
+      {/* ── VALUE STRIP ── */}
+      <div className="gh-value-strip">
+        {[
+          { title:"Fully Customised", sub:"Base, fillings & garnish your way" },
+          { title:"Same-Week Delivery", sub:"Across Delhi NCR" },
+          { title:"Every Occasion", sub:"Diwali · Corporate · Birthdays & more" },
+          { title:"Personal Curation", sub:"Our team builds it with you" },
+        ].map((v, i) => (
+          <div key={i} className="gh-value-item">
+            <span style={{ fontSize:14, color:"#C47A2E", flexShrink:0 }}>✦</span>
+            <div>
+              <div style={{ fontSize:12.5, fontWeight:700, color:"#2C1A0E", letterSpacing:"0.01em" }}>{v.title}</div>
+              <div style={{ fontSize:11, color:"#9B7450", lineHeight:1.4 }}>{v.sub}</div>
+            </div>
+          </div>
+        ))}
       </div>
+
+      {/* ── QUIZ BAND ── */}
+      <section className="gh-quiz-band">
+        <div style={{ flex:"1 1 260px", minWidth:0 }}>
+          <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", textTransform:"uppercase", color:"#CCAB4A", marginBottom:14 }}>Gift Finder · 3 Steps</div>
+          <h2 style={{ fontFamily:serif, fontSize:"clamp(2rem,4vw,2.8rem)", fontWeight:400, color:"#FFF8EC", lineHeight:1.2, textWrap:"balance", margin:"0 0 14px" }}>
+            Not sure what to get? <em style={{ fontStyle:"italic", color:"#CCAB4A" }}>We'll help.</em>
+          </h2>
+          <p style={{ fontSize:14, color:"rgba(196,164,130,0.75)", lineHeight:1.7, maxWidth:380, margin:"0 0 26px" }}>
+            Tell us the base, what goes inside, and finishing touches — we'll show you hampers that match.
+          </p>
+          <button
+            className="gh-btn-gold"
+            onClick={() => setQuizOpen(true)}
+            style={{ display:"inline-flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:14, fontWeight:700, padding:"13px 28px", borderRadius:100, border:"none", cursor:"pointer", fontFamily:font, boxShadow:"0 6px 24px rgba(196,122,46,0.4)", letterSpacing:"0.02em", transition:"box-shadow 0.18s,transform 0.12s" }}
+          >
+            Start Finding →
+          </button>
+        </div>
+        <div style={{ display:"flex", flexDirection:"column", gap:10, flex:"0 0 auto", minWidth:220, width:"min(100%,320px)" }}>
+          {[
+            { n:"1", label:"Choose a base", sub:"Tokri · Gift Box · Wooden Tray · Pooja Thali…" },
+            { n:"2", label:"What goes inside?", sub:"Chocolates · Dry Fruits · Drinkware · Spiritual…" },
+            { n:"3", label:"Finishing touches", sub:"Ribbons · Dried flowers · Wax seal · Gift card…" },
+          ].map(s => (
+            <div key={s.n} className="gh-quiz-step">
+              <div style={{ width:28, height:28, borderRadius:"50%", background:"rgba(196,122,46,0.18)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"#CCAB4A", flexShrink:0 }}>{s.n}</div>
+              <div>
+                <div style={{ fontSize:13, fontWeight:600, color:"#FFF8EC" }}>{s.label}</div>
+                <div style={{ fontSize:11, color:"rgba(196,164,130,0.65)", marginTop:1 }}>{s.sub}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
 
       {/* ── Checkout modal ── */}
@@ -409,149 +441,95 @@ const GiftHampersCakes = () => {
         </div>
       )}
 
-      {/* ── Sample Photos ── */}
-      <div id="gh-grid" className="gh-photos-grid" style={{ background: "#FAF7F2", padding: "52px 24px", paddingBottom: selectedPhotos.length > 0 ? "120px" : "52px", transition: "padding-bottom 0.3s" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-
-          {/* Section header */}
-          <div style={{ marginBottom: 32 }}>
-            <p style={{ fontSize:10, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.24em", margin:"0 0 12px", fontFamily:font }}>Browse samples</p>
-            <h2 style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:"clamp(1.6rem,3.5vw,2.1rem)", fontWeight:400, color:"#2C1A0E", margin:"0 0 8px", letterSpacing:"-0.01em" }}>Gift Hamper Collection</h2>
-            <p style={{ fontSize:13, color:"#9B7450", margin:0, fontFamily:font }}>Tap any photo to preview · select favourites · share with our team</p>
+      {/* ── GALLERY ── */}
+      <section id="gh-grid" style={{ background:"#FAF7F2", padding:"clamp(48px,6vw,80px) clamp(20px,5vw,56px)", paddingBottom: selectedPhotos.length > 0 ? "clamp(140px,18vw,160px)" : undefined, transition:"padding-bottom 0.3s" }}>
+        <div style={{ maxWidth:1160, margin:"0 auto" }}>
+          <div style={{ marginBottom:32 }}>
+            <p style={{ fontSize:10, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.24em", margin:"0 0 10px", fontFamily:font }}>Browse Samples</p>
+            <h2 style={{ fontFamily:serif, fontSize:"clamp(1.7rem,3.5vw,2.4rem)", fontWeight:400, color:"#2C1A0E", margin:"0 0 6px", lineHeight:1.2 }}>
+              Real hampers, <em style={{ fontStyle:"italic", color:"#C47A2E" }}>real occasions.</em>
+            </h2>
+            <p style={{ fontSize:13, color:"#9B7450", margin:0, fontFamily:font }}>Click any photo to preview · select favourites · share with our team</p>
           </div>
 
-          {/* ── Filters ── */}
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.14em", flexShrink: 0, fontFamily: font }}>Filter</span>
+          {/* Filter chips */}
+          <div style={{ marginBottom:8, display:"flex", gap:7, flexWrap:"wrap" }}>
+            <button
+              className={`gh-chip${activeFilterCount === 0 ? " active" : ""}`}
+              onClick={clearAll}
+              style={{ fontFamily:font, fontSize:12.5, fontWeight:600, padding:"7px 16px", borderRadius:100, border:"1.5px solid rgba(196,122,46,0.25)", background:"#fff", color:"#9B7450", cursor:"pointer", transition:"all 0.15s" }}
+            >All</button>
+            {availableGiftTypes.map(cat => (
               <button
-                className="gh-filter-btn"
-                onClick={() => { setShowEventTypeFilter(v => !v); setShowGiftTypeFilter(false); }}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 15px", borderRadius: 100, border: `1.5px solid ${showEventTypeFilter || occasionFilter.length > 0 ? "#C47A2E" : "rgba(196,122,46,0.28)"}`, background: showEventTypeFilter || occasionFilter.length > 0 ? "rgba(196,122,46,0.08)" : "transparent", color: occasionFilter.length > 0 ? "#C47A2E" : "#5A3A1A", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", transition: "all 0.18s" }}
-              >
-                Event Type
-                {occasionFilter.length > 0 && <span style={{ background: "#C47A2E", color: "#fff", fontSize: 9, fontWeight: 800, borderRadius: 100, padding: "1px 6px", marginLeft: 2 }}>{occasionFilter.length}</span>}
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" style={{ transform: showEventTypeFilter ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}><path d="M1.5 3.5l3.5 3 3.5-3"/></svg>
-              </button>
-              <button
-                className="gh-filter-btn"
-                onClick={() => { setShowGiftTypeFilter(v => !v); setShowEventTypeFilter(false); }}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 15px", borderRadius: 100, border: `1.5px solid ${showGiftTypeFilter || selectedCategories.length > 0 ? "#C47A2E" : "rgba(196,122,46,0.28)"}`, background: showGiftTypeFilter || selectedCategories.length > 0 ? "rgba(196,122,46,0.08)" : "transparent", color: selectedCategories.length > 0 ? "#C47A2E" : "#5A3A1A", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", transition: "all 0.18s" }}
-              >
-                Gift Type
-                {selectedCategories.length > 0 && <span style={{ background: "#C47A2E", color: "#fff", fontSize: 9, fontWeight: 800, borderRadius: 100, padding: "1px 6px", marginLeft: 2 }}>{selectedCategories.length}</span>}
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" style={{ transform: showGiftTypeFilter ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}><path d="M1.5 3.5l3.5 3 3.5-3"/></svg>
-              </button>
-              {activeFilterCount > 0 && (
-                <button onClick={clearAll} style={{ fontSize: 12, color: "#9B7450", fontWeight: 600, background: "none", border: "none", cursor: "pointer", fontFamily: font, padding: "7px 4px" }}>
-                  Clear all
-                </button>
-              )}
+                key={cat}
+                className={`gh-chip${selectedCategories.includes(cat) ? " active" : ""}`}
+                onClick={() => toggleCategory(cat)}
+                style={{ fontFamily:font, fontSize:12.5, fontWeight:600, padding:"7px 16px", borderRadius:100, border:"1.5px solid rgba(196,122,46,0.25)", background:"#fff", color:"#9B7450", cursor:"pointer", transition:"all 0.15s" }}
+              >{cat}</button>
+            ))}
+          </div>
+          {availableEventTypes.length > 0 && (
+            <div style={{ marginBottom:28, display:"flex", gap:7, flexWrap:"wrap" }}>
+              {availableEventTypes.map(o => (
+                <button
+                  key={o}
+                  className={`gh-chip${occasionFilter.includes(o) ? " active" : ""}`}
+                  onClick={() => toggleOccasion(o)}
+                  style={{ fontFamily:font, fontSize:11.5, fontWeight:600, padding:"5px 13px", borderRadius:100, border:"1.5px solid rgba(196,122,46,0.2)", background:"#fff", color:"#9B7450", cursor:"pointer", transition:"all 0.15s" }}
+                >{o}</button>
+              ))}
             </div>
+          )}
 
-            {showEventTypeFilter && (
-              <div style={{ marginTop: 10, padding: "14px 16px", background: "#fff", borderRadius: 14, border: "1px solid rgba(196,122,46,0.16)", boxShadow: "0 4px 20px rgba(44,26,14,0.08)" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.14em", fontFamily: font }}>Event Type</span>
-                  <button onClick={() => setShowEventTypeFilter(false)} style={{ width: 24, height: 24, borderRadius: "50%", background: "rgba(44,26,14,0.07)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#7A5535" strokeWidth="2" strokeLinecap="round"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9"/></svg>
-                  </button>
-                </div>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {availableEventTypes.length === 0
-                    ? <span style={{ fontSize: 12, color: "#9B7450", fontFamily: font }}>No event types tagged yet</span>
-                    : availableEventTypes.map(o => {
-                        const active = occasionFilter.includes(o);
-                        return (
-                          <button key={o} onClick={() => toggleOccasion(o)}
-                            style={{ padding: "7px 15px", borderRadius: 100, border: `1.5px solid ${active ? "#C47A2E" : "rgba(196,122,46,0.25)"}`, background: active ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "transparent", color: active ? "#fff" : "#5A3A1A", fontSize: 13, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: font, transition: "all 0.18s" }}
-                          >{o}</button>
-                        );
-                      })
-                  }
-                </div>
-              </div>
-            )}
-
-            {showGiftTypeFilter && (
-              <div style={{ marginTop: 10, padding: "14px 16px", background: "#fff", borderRadius: 14, border: "1px solid rgba(196,122,46,0.16)", boxShadow: "0 4px 20px rgba(44,26,14,0.08)" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.14em", fontFamily: font }}>Gift Type</span>
-                  <button onClick={() => setShowGiftTypeFilter(false)} style={{ width: 24, height: 24, borderRadius: "50%", background: "rgba(44,26,14,0.07)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#7A5535" strokeWidth="2" strokeLinecap="round"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9"/></svg>
-                  </button>
-                </div>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {availableGiftTypes.length === 0
-                    ? <span style={{ fontSize: 12, color: "#9B7450", fontFamily: font }}>No gift types tagged yet</span>
-                    : availableGiftTypes.map(cat => {
-                        const active = selectedCategories.includes(cat);
-                        return (
-                          <button key={cat} onClick={() => toggleCategory(cat)}
-                            style={{ padding: "7px 15px", borderRadius: 100, border: `1.5px solid ${active ? "#C47A2E" : "rgba(196,122,46,0.25)"}`, background: active ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "transparent", color: active ? "#fff" : "#5A3A1A", fontSize: 13, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: font, transition: "all 0.18s" }}
-                          >{cat}</button>
-                        );
-                      })
-                  }
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* ── Grid ── */}
+          {/* Grid */}
           {loading ? (
-            <div className="gh-card-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 16 }}>
-              {[0,1,2,3,4,5].map(i => (
-                <div key={i} style={{ borderRadius: 16, overflow: "hidden", background: "#fff", border: "1px solid rgba(196,122,46,0.1)" }}>
-                  <div style={{ aspectRatio: "4/3", background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "ghShimmer 1.4s infinite" }} />
-                  <div style={{ padding: "10px 12px 14px" }}>
-                    <div style={{ height: 11, width: "62%", background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "ghShimmer 1.4s infinite", borderRadius: 6, marginBottom: 8 }} />
-                    <div style={{ height: 10, width: "38%", background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "ghShimmer 1.4s infinite", borderRadius: 6 }} />
-                  </div>
+            <div className="gh-masonry">
+              {[0,1,2,3,4,5,6,7,8].map(i => (
+                <div key={i} className="gh-masonry-card" style={{ borderRadius:14, overflow:"hidden", background:"#fff" }}>
+                  <div style={{ aspectRatio: i%3===0 ? "3/4" : "4/3", background:"linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize:"200% 100%", animation:"ghShimmer 1.4s infinite" }} />
                 </div>
               ))}
             </div>
           ) : filteredSamples.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "64px 24px" }}>
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4, marginBottom: 16, display: "block", margin: "0 auto 16px" }}>
-                <path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/>
-                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
-                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
-              </svg>
-              <p style={{ fontSize: 14, color: "#9B7450", margin: 0, fontFamily: font }}>
+            <div style={{ textAlign:"center", padding:"64px 24px" }}>
+              <p style={{ fontSize:14, color:"#9B7450", margin:0, fontFamily:font }}>
                 {activeFilterCount === 0 ? "Sample photos coming soon. Talk to our team for options." : "No hampers match these filters. Try adjusting your selection."}
               </p>
+              {activeFilterCount > 0 && <button onClick={clearAll} style={{ marginTop:12, fontFamily:font, fontSize:13, fontWeight:600, color:"#C47A2E", background:"none", border:"none", cursor:"pointer", textDecoration:"underline", textUnderlineOffset:3 }}>Clear filters</button>}
             </div>
           ) : (
-            <div className="gh-card-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 16 }}>
+            <div className="gh-masonry">
               {filteredSamples.map((s, idx) => {
                 const isSelected = selectedPhotos.some(p => p._id === s._id);
                 return (
                   <div
                     key={s._id}
-                    className="gh-card"
+                    className="gh-masonry-card gh-card"
                     onClick={() => setPreviewIdx(idx)}
-                    style={{ borderRadius: 16, overflow: "hidden", background: "#fff", border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(196,122,46,0.1)"}`, boxShadow: isSelected ? "0 0 0 2.5px rgba(196,122,46,0.26), 0 6px 24px rgba(44,26,14,0.09)" : "0 2px 12px rgba(44,26,14,0.06)", cursor: "pointer", position: "relative", transition: "box-shadow 0.22s, border-color 0.22s, transform 0.22s", animationDelay: `${Math.min(idx * 48, 480)}ms` }}
+                    style={{ borderRadius:14, overflow:"hidden", background:"#fff", border:`1.5px solid ${isSelected ? "#C47A2E" : "rgba(196,122,46,0.12)"}`, boxShadow: isSelected ? "0 0 0 2.5px rgba(196,122,46,0.24), 0 6px 24px rgba(44,26,14,0.09)" : "0 1px 8px rgba(44,26,14,0.06)", cursor:"pointer", position:"relative", transition:"box-shadow 0.22s,border-color 0.22s,transform 0.22s", animationDelay:`${Math.min(idx*40,400)}ms` }}
                   >
                     {isSelected && (
-                      <div style={{ position: "absolute", top: 10, right: 10, zIndex: 2, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", display: "flex", alignItems: "center", gap: 4, borderRadius: 100, padding: "4px 9px", boxShadow: "0 2px 8px rgba(196,122,46,0.42)" }}>
+                      <div style={{ position:"absolute", top:10, right:10, zIndex:2, background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", display:"flex", alignItems:"center", gap:4, borderRadius:100, padding:"4px 9px", boxShadow:"0 2px 8px rgba(196,122,46,0.42)" }}>
                         <svg width="8" height="8" viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 6l3 3 5-5"/></svg>
-                        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.06em", fontFamily: font }}>Added</span>
+                        <span style={{ fontSize:9, fontWeight:800, letterSpacing:"0.06em", fontFamily:font }}>Added</span>
                       </div>
                     )}
-                    <div style={{ overflow: "hidden", position: "relative" }}>
-                      <img src={s.url} alt={s.name || "Gift Hamper"} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block", transition: "transform 0.38s" }} />
-                      <div className="gh-overlay" style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(44,26,14,0.68) 0%, rgba(44,26,14,0.08) 55%, transparent 100%)", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.22s" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#fff", fontSize: 12, fontWeight: 700, background: "rgba(0,0,0,0.32)", borderRadius: 100, padding: "6px 16px", backdropFilter: "blur(4px)", fontFamily: font }}>
+                    <div style={{ overflow:"hidden", position:"relative" }}>
+                      <img src={s.url} alt={s.name || "Gift Hamper"} style={{ width:"100%", aspectRatio: idx%5===0?"3/4":"4/3", objectFit:"cover", display:"block", transition:"transform 0.38s" }} loading="lazy" />
+                      <div className="gh-overlay" style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(44,26,14,0.68) 0%, rgba(44,26,14,0.06) 55%, transparent 100%)", display:"flex", alignItems:"center", justifyContent:"center", opacity:0, transition:"opacity 0.22s" }}>
+                        <div style={{ display:"flex", alignItems:"center", gap:6, color:"#fff", fontSize:12, fontWeight:700, background:"rgba(0,0,0,0.28)", borderRadius:100, padding:"6px 16px", backdropFilter:"blur(4px)", fontFamily:font }}>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                          View details
+                          View
                         </div>
                       </div>
                     </div>
-                    {(s.name || s.priceRange) && (
-                      <div style={{ padding: "10px 12px 13px" }}>
-                        {s.name && <div style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E", marginBottom: 3, fontFamily: font, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.name}</div>}
-                        {s.priceRange && <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", fontFamily: font }}>{s.priceRange}</div>}
+                    {(s.name || s.priceRange || (Array.isArray(s.category)?s.category:[s.category||""]).filter(Boolean).length>0) && (
+                      <div style={{ padding:"10px 12px 12px" }}>
+                        {(Array.isArray(s.category)?s.category:[s.category||""]).filter(Boolean).map(c=>(
+                          <span key={c} style={{ fontSize:9.5, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color:"#C47A2E", marginRight:6, fontFamily:font }}>{c}</span>
+                        ))}
+                        {s.name && <div style={{ fontSize:12, fontWeight:700, color:"#2C1A0E", marginTop:3, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", fontFamily:font }}>{s.name}</div>}
+                        {s.priceRange && <div style={{ fontSize:11, fontWeight:700, color:"#C47A2E", marginTop:2, fontFamily:font }}>{s.priceRange}</div>}
                       </div>
                     )}
                   </div>
@@ -560,7 +538,56 @@ const GiftHampersCakes = () => {
             </div>
           )}
         </div>
-      </div>
+      </section>
+
+      {/* ── HOW IT WORKS ── */}
+      <section style={{ background:"#F0E8DC", padding:"clamp(52px,7vw,88px) clamp(20px,5vw,56px)" }}>
+        <div style={{ maxWidth:1000, margin:"0 auto" }}>
+          <p style={{ fontSize:10, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.24em", margin:"0 0 10px", fontFamily:font }}>How It Works</p>
+          <h2 style={{ fontFamily:serif, fontSize:"clamp(1.7rem,3.5vw,2.4rem)", fontWeight:400, color:"#2C1A0E", margin:"0 0 44px", lineHeight:1.2 }}>
+            From idea to <em style={{ fontStyle:"italic", color:"#C47A2E" }}>your door.</em>
+          </h2>
+          <div className="gh-process">
+            {[
+              { n:"1", title:"Browse & Quiz", body:"Use the gift finder or scroll the gallery. Shortlist the photos that feel right." },
+              { n:"2", title:"Baat Karo", body:"Chat with our team. We'll confirm your budget, occasion, and personalisation." },
+              { n:"3", title:"We Curate & Deliver", body:"Your hamper is hand-packed and delivered across Delhi NCR — often within the week." },
+            ].map(step => (
+              <div key={step.n} className="gh-process-step" style={{ textAlign:"center", padding:"0 clamp(12px,3vw,32px)" }}>
+                <div className="gh-process-num" style={{ width:44, height:44, borderRadius:"50%", background:"#FAF7F2", border:"1.5px solid rgba(196,122,46,0.2)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 18px", fontFamily:serif, fontSize:17, fontWeight:500, color:"#C47A2E", position:"relative", zIndex:1 }}>{step.n}</div>
+                <h4 style={{ fontFamily:serif, fontSize:"1.2rem", fontWeight:500, color:"#2C1A0E", margin:"0 0 8px" }}>{step.title}</h4>
+                <p style={{ fontSize:13.5, color:"#9B7450", lineHeight:1.65, margin:0, fontFamily:font }}>{step.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── BOTTOM CTA ── */}
+      <section style={{ background:"#1C0A04", padding:"clamp(56px,8vw,96px) clamp(20px,5vw,56px)", textAlign:"center", position:"relative", overflow:"hidden" }}>
+        <div aria-hidden style={{ position:"absolute", top:"-40%", left:"50%", transform:"translateX(-50%)", width:600, height:400, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(196,122,46,0.12) 0%, transparent 70%)", pointerEvents:"none" }} />
+        <p style={{ fontSize:10, fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase", color:"#CCAB4A", margin:"0 0 16px", fontFamily:font }}>Ready to Order?</p>
+        <h2 style={{ fontFamily:serif, fontSize:"clamp(2.2rem,5vw,3.4rem)", fontWeight:400, color:"#FFF8EC", lineHeight:1.2, margin:"0 0 14px" }}>
+          Let's build something <em style={{ fontStyle:"italic", color:"#CCAB4A" }}>they'll remember.</em>
+        </h2>
+        <p style={{ fontSize:14.5, color:"rgba(196,164,130,0.72)", maxWidth:420, margin:"0 auto 36px", lineHeight:1.7, fontFamily:font }}>
+          Tell us your occasion, budget, and the person you're gifting — our team takes it from there.
+        </p>
+        <div style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap" }}>
+          <button
+            className="gh-btn-gold"
+            onClick={goToChat}
+            style={{ display:"inline-flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:14.5, fontWeight:700, padding:"15px 36px", borderRadius:100, border:"none", cursor:"pointer", fontFamily:font, boxShadow:"0 6px 24px rgba(196,122,46,0.42)", letterSpacing:"0.02em", transition:"box-shadow 0.18s,transform 0.12s" }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Baat Karo →
+          </button>
+          <button
+            onClick={() => document.getElementById("gh-grid")?.scrollIntoView({ behavior:"smooth" })}
+            style={{ display:"inline-flex", alignItems:"center", gap:6, background:"transparent", color:"rgba(255,248,236,0.7)", fontSize:14, fontWeight:600, padding:"15px 28px", borderRadius:100, border:"1.5px solid rgba(196,122,46,0.35)", cursor:"pointer", fontFamily:font, transition:"border-color 0.15s,color 0.15s" }}
+          >Browse Gallery</button>
+        </div>
+      </section>
 
       {/* ── Floating Island (Dynamic Action — ln-dev7 pattern) ── */}
       {selectedPhotos.length > 0 && (
