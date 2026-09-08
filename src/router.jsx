@@ -114,6 +114,7 @@ const VendorChat          = lazy(() => import("./pages/vendor/Chat"));
 const VendorHowToUse     = lazy(() => import("./pages/vendor/HowToUse"));
 const VendorPricing      = lazy(() => import("./pages/vendor/Pricing"));
 const VendorLogin        = lazy(() => import("./pages/vendor/VendorLogin"));
+const VendorDemo         = lazy(() => import("./pages/vendor/VendorDemo"));
 const CorporateLogin      = lazy(() => import("./pages/corporate/Login"));
 const CorporateSignup     = lazy(() => import("./pages/corporate/SignUp.jsx"));
 const CorporateBooking    = lazy(() => import("./pages/corporate/Booking"));
@@ -356,6 +357,7 @@ const router = createBrowserRouter([
       { path: "guide",     element: <VendorHowToUse /> },
       { path: "pricing",   element: <VendorPricing /> },
       { path: "login",     element: <VendorLogin /> },
+      { path: "demo",      element: <VendorDemo /> },
     ],
   },
 
