@@ -22,18 +22,39 @@ const BASES = [
   { id:'surprise', emoji:'✨', label:'Surprise me',       sub:'Let our team choose the best fit' },
 ];
 
+// cat = category keywords used to match against sample.category
 const FILLINGS = [
-  { id:'dryfruits',   emoji:'🥜', label:'Dry Fruits & Nuts' },
-  { id:'chocolates',  emoji:'🍫', label:'Chocolates & Sweets' },
-  { id:'drinkware',   emoji:'☕', label:'Tea / Coffee / Drinks' },
-  { id:'pooja',       emoji:'🪔', label:'Spiritual & Pooja' },
-  { id:'decor',       emoji:'🎀', label:'Decorative Items' },
-  { id:'skincare',    emoji:'🧴', label:'Skincare / Wellness' },
-  { id:'snacks',      emoji:'🍪', label:'Snacks & Munchies' },
-  { id:'stationary',  emoji:'📓', label:'Stationery / Books' },
-  { id:'candles',     emoji:'🕯️', label:'Candles' },
-  { id:'flowers',     emoji:'🌸', label:'Dried / Artificial Flowers' },
+  { id:'dryfruits',   emoji:'🥜', label:'Dry Fruits & Nuts',       cats:['Dry Fruits & Nuts','dry fruits','nuts'] },
+  { id:'chocolates',  emoji:'🍫', label:'Chocolates & Sweets',     cats:['Chocolates & Sweets','chocolate','sweets','mithai'] },
+  { id:'drinkware',   emoji:'☕', label:'Tea / Coffee / Drinks',   cats:['Drinkware','tea','coffee','drinks'] },
+  { id:'pooja',       emoji:'🪔', label:'Spiritual & Pooja',       cats:['Spiritual & Pooja','pooja','spiritual','diya','religious'] },
+  { id:'decor',       emoji:'🎀', label:'Decorative Items',        cats:['Decorative Boxes','decor','decorative'] },
+  { id:'skincare',    emoji:'🧴', label:'Skincare / Wellness',     cats:['skincare','wellness','beauty'] },
+  { id:'snacks',      emoji:'🍪', label:'Snacks & Munchies',       cats:['snacks','munchies','food'] },
+  { id:'stationary',  emoji:'📓', label:'Stationery / Books',      cats:['stationery','books','journal'] },
+  { id:'candles',     emoji:'🕯️', label:'Candles',                cats:['candles','candle'] },
+  { id:'flowers',     emoji:'🌸', label:'Dried / Artificial Flowers', cats:['flowers','floral','dried flowers'] },
 ];
+
+// Score a sample against chosen filling ids — higher = better match
+function scoreSample(sample, chosenFillings) {
+  if (!chosenFillings || chosenFillings.length === 0) return 0;
+  const rawCat = sample.category || sample.categories || '';
+  const catStr = (Array.isArray(rawCat) ? rawCat.join(' ') : rawCat).toLowerCase();
+  const name   = (sample.name || '').toLowerCase();
+  let score = 0;
+  for (const id of chosenFillings) {
+    const filling = FILLINGS.find(f => f.id === id);
+    if (!filling) continue;
+    for (const kw of filling.cats) {
+      if (catStr.includes(kw.toLowerCase()) || name.includes(kw.toLowerCase())) {
+        score += 3;
+        break;
+      }
+    }
+  }
+  return score;
+}
 
 const GARNISH = [
   { id:'ribbon',      emoji:'🎀', label:'Satin Ribbon & Bow' },
@@ -127,7 +148,15 @@ export default function GiftQuiz({ samples, onSelect, onClose }) {
   const back   = () => setStep(s => Math.max(s-1, 0));
   const restart= () => { setStep(0); setAnswers({ fillings:[], garnish:[] }); };
 
-  const photoResults = useMemo(() => step === total ? (samples || []).slice(0, 12) : [], [step, samples]);
+  const photoResults = useMemo(() => {
+    if (step !== total) return [];
+    const all = samples || [];
+    const scored = all.map(s => ({ ...s, _score: scoreSample(s, answers.fillings) }));
+    // Sort: matched items first, then unmatched — both groups shuffled so it feels fresh
+    const matched   = scored.filter(s => s._score > 0).sort((a,b) => b._score - a._score);
+    const unmatched = scored.filter(s => s._score === 0);
+    return [...matched, ...unmatched].slice(0, 12);
+  }, [step, samples, answers.fillings]);
 
   const progress = Math.round((step / total) * 100);
   const isResult = step === total;
