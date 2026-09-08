@@ -251,13 +251,13 @@ const GiftHampersCakes = () => {
       )}
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Outfit:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Outfit:wght@400;500;600;700&family=Dancing+Script:wght@600&display=swap');
         @keyframes ghShimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
         @keyframes ghPulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
         @keyframes ghCardIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
         @keyframes ghIslandIn { from{opacity:0;transform:translateX(-50%) translateY(20px) scale(0.92)} to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)} }
         @keyframes ghIslandInMobile { from{opacity:0;transform:translateY(20px) scale(0.9)} to{opacity:1;transform:translateY(0) scale(1)} }
-        @keyframes ghHeroFade { from{opacity:0;transform:scale(1.04)} to{opacity:1;transform:scale(1)} }
+        @keyframes ghFade { from{opacity:0} to{opacity:1} }
         .gh-card { opacity:0; animation:ghCardIn 0.36s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
         .gh-card:hover .gh-overlay { opacity:1 !important; }
         .gh-card:hover img { transform:scale(1.05) !important; }
@@ -267,87 +267,171 @@ const GiftHampersCakes = () => {
         .gh-chip.active { background:#1C0A04 !important; border-color:#1C0A04 !important; color:#CCAB4A !important; }
         .gh-btn-gold:hover { box-shadow:0 10px 36px rgba(196,122,46,0.55) !important; transform:translateY(-1px); }
         .gh-btn-gold:active { transform:scale(0.97) !important; }
-        .gh-hero { display:grid; grid-template-columns:55fr 45fr; background:#1C0A04; min-height:460px; }
-        .gh-hero-text { padding:clamp(52px,7vw,88px) clamp(24px,5vw,60px); display:flex; flex-direction:column; justify-content:center; position:relative; overflow:hidden; }
-        .gh-hero-text::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 60% 70% at 10% 40%, rgba(196,122,46,0.12) 0%, transparent 70%); pointer-events:none; }
-        .gh-hero-photos { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:3px; overflow:hidden; }
-        .gh-hero-photos img { width:100%; height:100%; object-fit:cover; display:block; animation:ghHeroFade 0.7s ease forwards; }
-        .gh-hero-photos .gh-ph-main { grid-row:1/3; }
-        .gh-value-strip { background:#F0E8DC; border-top:1px solid rgba(196,122,46,0.15); border-bottom:1px solid rgba(196,122,46,0.15); padding:16px clamp(20px,5vw,56px); display:flex; overflow-x:auto; }
-        .gh-value-item { flex:1; min-width:150px; display:flex; align-items:center; gap:10px; padding:6px 20px 6px 0; }
-        .gh-value-item+.gh-value-item { border-left:1px solid rgba(196,122,46,0.2); padding-left:20px; }
-        .gh-quiz-band { background:#1C0A04; padding:clamp(44px,6vw,72px) clamp(24px,5vw,56px); display:flex; gap:clamp(28px,5vw,72px); align-items:center; flex-wrap:wrap; }
-        .gh-quiz-step { display:flex; align-items:center; gap:14px; padding:13px 16px; background:rgba(255,248,236,0.05); border:1px solid rgba(196,122,46,0.2); border-radius:12px; }
+        .gh-hero-3col { display:grid; grid-template-columns:2fr 2.6fr 1.4fr; background:#1C0A04; min-height:530px; }
+        .gh-hero-left { padding:clamp(36px,5vw,64px) clamp(20px,3.5vw,52px); display:flex; flex-direction:column; justify-content:center; position:relative; overflow:hidden; }
+        .gh-hero-left::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 60% at -10% 50%, rgba(196,122,46,0.1) 0%, transparent 65%); pointer-events:none; }
+        .gh-hero-center { overflow:hidden; position:relative; }
+        .gh-hero-center img { width:100%; height:100%; object-fit:cover; display:block; animation:ghFade 0.8s ease forwards; }
+        .gh-hero-right { display:flex; flex-direction:column; gap:2px; }
+        .gh-hero-right-card { flex:1; position:relative; overflow:hidden; cursor:pointer; }
+        .gh-hero-right-card img { width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.4s; }
+        .gh-hero-right-card:hover img { transform:scale(1.06); }
+        .gh-hero-right-card-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(28,10,4,0.82) 0%, rgba(28,10,4,0.2) 55%, transparent 100%); display:flex; flex-direction:column; justify-content:flex-end; padding:16px 14px; }
+        .gh-value-strip { background:#F0E8DC; border-top:1px solid rgba(196,122,46,0.12); border-bottom:1px solid rgba(196,122,46,0.12); padding:14px clamp(16px,4vw,52px); display:flex; overflow-x:auto; gap:0; scrollbar-width:none; }
+        .gh-value-strip::-webkit-scrollbar { display:none; }
+        .gh-value-item { flex:1; min-width:148px; display:flex; align-items:center; gap:11px; padding:5px 18px 5px 0; }
+        .gh-value-item+.gh-value-item { border-left:1px solid rgba(196,122,46,0.18); padding-left:18px; }
+        .gh-quiz-band { position:relative; overflow:hidden; min-height:360px; display:flex; align-items:stretch; }
+        .gh-quiz-bg { position:absolute; inset:0; z-index:0; }
+        .gh-quiz-bg img { width:100%; height:100%; object-fit:cover; display:block; }
+        .gh-quiz-bg::after { content:''; position:absolute; inset:0; background:linear-gradient(100deg, rgba(20,8,2,0.94) 0%, rgba(20,8,2,0.82) 42%, rgba(20,8,2,0.65) 65%, rgba(20,8,2,0.5) 100%); }
+        .gh-quiz-inner { position:relative; z-index:1; width:100%; display:flex; gap:clamp(24px,5vw,72px); align-items:center; flex-wrap:wrap; padding:clamp(44px,6vw,72px) clamp(24px,5vw,56px); }
+        .gh-quiz-step { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; background:rgba(255,248,236,0.06); border:1px solid rgba(196,122,46,0.22); border-radius:14px; backdrop-filter:blur(6px); cursor:pointer; transition:background 0.18s,border-color 0.18s; }
+        .gh-quiz-step:hover { background:rgba(196,122,46,0.12) !important; border-color:rgba(196,122,46,0.4) !important; }
         .gh-masonry { columns:3 200px; column-gap:12px; }
         .gh-masonry-card { break-inside:avoid; margin-bottom:12px; }
+        .gh-cat-scroll { display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; padding-bottom:4px; }
+        .gh-cat-scroll::-webkit-scrollbar { display:none; }
+        .gh-cat-card { flex:0 0 160px; height:200px; border-radius:14px; overflow:hidden; position:relative; cursor:pointer; flex-shrink:0; }
+        .gh-cat-card img { width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.38s; }
+        .gh-cat-card:hover img { transform:scale(1.07); }
         .gh-process { display:grid; grid-template-columns:repeat(3,1fr); position:relative; gap:0; }
         .gh-process::before { content:''; position:absolute; top:21px; left:calc(100%/6); right:calc(100%/6); height:1px; background:rgba(196,122,46,0.18); z-index:0; }
-        @media(max-width:900px) {
-          .gh-hero { grid-template-columns:1fr; }
-          .gh-hero-photos { grid-template-columns:1fr 1fr 1fr; grid-template-rows:1fr; height:220px; }
-          .gh-hero-photos .gh-ph-main { grid-row:auto; }
-          .gh-quiz-band { flex-direction:column; }
+        @media(max-width:960px) {
+          .gh-hero-3col { grid-template-columns:1fr; min-height:unset; }
+          .gh-hero-center { height:260px; }
+          .gh-hero-right { flex-direction:row; height:160px; }
+          .gh-quiz-inner { flex-direction:column; }
           .gh-process { grid-template-columns:1fr; gap:28px; }
           .gh-process::before { display:none; }
           .gh-process-step { display:flex; align-items:flex-start; gap:16px; text-align:left; }
           .gh-process-num { margin:0 !important; flex-shrink:0; }
         }
         @media(max-width:560px) {
-          .gh-hero-photos { height:180px; }
+          .gh-hero-center { height:220px; }
+          .gh-hero-right { height:130px; }
           .gh-masonry { columns:2 140px; column-gap:8px; }
           .gh-masonry-card { margin-bottom:8px; }
           .gh-island { left:16px !important; right:16px !important; transform:none !important; border-radius:20px !important; animation-name:ghIslandInMobile !important; bottom:calc(72px + env(safe-area-inset-bottom,0px)) !important; }
-          .gh-value-item { min-width:130px; }
+          .gh-cat-card { flex:0 0 130px; height:165px; }
         }
       `}</style>
 
-      {/* ── HERO ── */}
-      <section className="gh-hero">
-        <div className="gh-hero-text">
-          <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase", color:"#CCAB4A", marginBottom:18, display:"flex", alignItems:"center", gap:10 }}>
-            <span style={{ width:6, height:6, borderRadius:"50%", background:"#4ADE80", boxShadow:"0 0 0 3px rgba(74,222,128,0.2)", display:"inline-block", animation:"ghPulse 2s infinite", flexShrink:0 }} />
-            Available Now · Delhi NCR
+      {/* ── GIFT HAMPERS HEADER BAR ── */}
+      <div style={{ background:"#F5F0E8", display:"flex", alignItems:"center", justifyContent:"center", gap:14, padding:"11px clamp(20px,5vw,48px)" }}>
+        <div style={{ flex:1, height:1, background:"rgba(28,10,4,0.12)" }} />
+        <span style={{ fontSize:10, fontWeight:700, letterSpacing:"0.22em", textTransform:"uppercase", color:"#2C1A0E", fontFamily:font, whiteSpace:"nowrap" }}>Gift Hampers</span>
+        <div style={{ flex:1, height:1, background:"rgba(28,10,4,0.12)" }} />
+      </div>
+
+      {/* ── HERO (3-col: text | main photo | 2 stacked cards) ── */}
+      <section className="gh-hero-3col">
+        {/* Left: text panel */}
+        <div className="gh-hero-left">
+          {/* Live badge */}
+          <div style={{ display:"inline-flex", alignItems:"center", gap:8, marginBottom:20, position:"relative", zIndex:1 }}>
+            <span style={{ width:6, height:6, borderRadius:"50%", background:"#4ADE80", boxShadow:"0 0 0 3px rgba(74,222,128,0.18)", display:"inline-block", animation:"ghPulse 2s infinite", flexShrink:0 }} />
+            <span style={{ fontSize:10, fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase", color:"rgba(196,164,130,0.8)", fontFamily:font }}>Available Now · Delhi NCR</span>
           </div>
-          <h1 style={{ fontFamily:serif, fontSize:"clamp(2.4rem,5vw,3.6rem)", fontWeight:400, lineHeight:1.15, color:"#FFF8EC", margin:"0 0 18px", textWrap:"balance", position:"relative", zIndex:1 }}>
+          {/* Headline */}
+          <h1 style={{ fontFamily:serif, fontSize:"clamp(2.1rem,3.8vw,3.2rem)", fontWeight:400, lineHeight:1.12, color:"#FFF8EC", margin:"0 0 14px", position:"relative", zIndex:1, textWrap:"balance" }}>
             Gifts that say exactly <em style={{ fontStyle:"italic", color:"#CCAB4A" }}>what you mean.</em>
           </h1>
-          <p style={{ fontSize:15, color:"rgba(255,248,236,0.6)", lineHeight:1.75, maxWidth:420, margin:"0 0 32px", position:"relative", zIndex:1 }}>
+          <p style={{ fontSize:14, color:"rgba(255,248,236,0.55)", lineHeight:1.72, margin:"0 0 24px", position:"relative", zIndex:1 }}>
             Curated hampers for every celebration — fully customised, beautifully packed, delivered across Delhi NCR.
           </p>
-          <div style={{ display:"flex", gap:12, flexWrap:"wrap", position:"relative", zIndex:1 }}>
+          {/* 2×2 value mini-grid */}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"10px 14px", marginBottom:26, position:"relative", zIndex:1 }}>
+            {[
+              { icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>, label:"Fully Customised", sub:"Your base, fillings & finish" },
+              { icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>, label:"Same-Week Delivery", sub:"Across Delhi NCR" },
+              { icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, label:"Perfect for Every Occasion", sub:"Diwali · Corporate · Birthdays" },
+              { icon:<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>, label:"Curated by Experts", sub:"Our team builds it with you" },
+            ].map((v, i) => (
+              <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:9 }}>
+                <span style={{ color:"#CCAB4A", marginTop:1, flexShrink:0 }}>{v.icon}</span>
+                <div>
+                  <div style={{ fontSize:11.5, fontWeight:700, color:"rgba(255,248,236,0.85)", lineHeight:1.3 }}>{v.label}</div>
+                  <div style={{ fontSize:10.5, color:"rgba(196,164,130,0.55)", marginTop:1 }}>{v.sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* CTAs */}
+          <div style={{ display:"flex", gap:10, flexWrap:"wrap", position:"relative", zIndex:1 }}>
             <button
               className="gh-btn-gold"
               onClick={() => setQuizOpen(true)}
-              style={{ display:"inline-flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:14, fontWeight:700, padding:"13px 28px", borderRadius:100, border:"none", cursor:"pointer", fontFamily:font, boxShadow:"0 6px 24px rgba(196,122,46,0.42)", letterSpacing:"0.02em", transition:"box-shadow 0.18s,transform 0.12s" }}
+              style={{ display:"inline-flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:13.5, fontWeight:700, padding:"12px 26px", borderRadius:100, border:"none", cursor:"pointer", fontFamily:font, boxShadow:"0 6px 22px rgba(196,122,46,0.42)", letterSpacing:"0.02em", transition:"box-shadow 0.18s,transform 0.12s" }}
             >
-              🎁 Find Your Gift
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+              Find Your Gift →
             </button>
             <button
               onClick={() => document.getElementById("gh-grid")?.scrollIntoView({ behavior:"smooth" })}
-              style={{ display:"inline-flex", alignItems:"center", gap:6, background:"none", color:"rgba(196,164,130,0.75)", fontSize:13, fontWeight:600, padding:"13px 4px", border:"none", cursor:"pointer", fontFamily:font, textDecoration:"underline", textDecorationColor:"rgba(196,122,46,0.3)", textUnderlineOffset:4 }}
+              style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,248,236,0.07)", color:"rgba(255,248,236,0.78)", fontSize:13.5, fontWeight:600, padding:"12px 22px", borderRadius:100, border:"1px solid rgba(255,248,236,0.14)", cursor:"pointer", fontFamily:font, transition:"background 0.15s" }}
             >
-              Browse collection ↓
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              Browse Collection
             </button>
           </div>
-          <p style={{ fontSize:11, color:"rgba(255,248,236,0.22)", marginTop:16, fontFamily:font, letterSpacing:"0.04em", position:"relative", zIndex:1 }}>Replies within 2 hours · Custom orders welcome</p>
+          {/* Meta */}
+          <div style={{ display:"flex", alignItems:"center", gap:14, marginTop:16, position:"relative", zIndex:1 }}>
+            <span style={{ fontSize:11, color:"rgba(255,248,236,0.28)", fontFamily:font, display:"flex", alignItems:"center", gap:5 }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Replies within 2 hours
+            </span>
+            <span style={{ width:3, height:3, borderRadius:"50%", background:"rgba(255,248,236,0.15)", flexShrink:0 }} />
+            <span style={{ fontSize:11, color:"rgba(255,248,236,0.28)", fontFamily:font, display:"flex", alignItems:"center", gap:5 }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Custom orders welcome
+            </span>
+          </div>
+          {/* Script text */}
+          <div style={{ fontFamily:"'Dancing Script', cursive", fontSize:"clamp(1.1rem,2vw,1.5rem)", color:"rgba(196,164,130,0.38)", marginTop:"auto", paddingTop:28, position:"relative", zIndex:1, lineHeight:1.3 }}>
+            Thoughtful Gifts. Happier People.
+          </div>
         </div>
-        <div className="gh-hero-photos">
-          <img className="gh-ph-main" src={heroPhotos[0]?.url} alt={heroPhotos[0]?.name || "Gift hamper"} />
-          <img src={heroPhotos[1]?.url || heroPhotos[0]?.url} alt="Hamper" />
-          <img src={heroPhotos[2]?.url || heroPhotos[0]?.url} alt="Hamper" />
+
+        {/* Center: main photo */}
+        <div className="gh-hero-center">
+          <img src={heroPhotos[0]?.url} alt={heroPhotos[0]?.name || "Gift hamper"} />
+        </div>
+
+        {/* Right: 2 stacked photo cards */}
+        <div className="gh-hero-right">
+          {[
+            { photo: heroPhotos[1] || heroPhotos[0], title:"Timeless Traditions", sub:"For your loved ones" },
+            { photo: heroPhotos[2] || heroPhotos[0], title:"Personalised Just for You", sub:"Make it truly theirs" },
+          ].map((card, i) => (
+            <div
+              key={i}
+              className="gh-hero-right-card"
+              onClick={() => document.getElementById("gh-grid")?.scrollIntoView({ behavior:"smooth" })}
+            >
+              <img src={card.photo?.url} alt={card.title} />
+              <div className="gh-hero-right-card-overlay">
+                <div style={{ fontSize:13, fontWeight:700, color:"#FFF8EC", fontFamily:serif, lineHeight:1.25, marginBottom:4 }}>{card.title}</div>
+                <div style={{ fontSize:11, color:"rgba(255,248,236,0.58)", fontFamily:font, marginBottom:10 }}>{card.sub}</div>
+                <div style={{ width:28, height:28, borderRadius:"50%", border:"1px solid rgba(255,248,236,0.25)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,248,236,0.7)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* ── VALUE STRIP ── */}
       <div className="gh-value-strip">
         {[
-          { title:"Fully Customised", sub:"Base, fillings & garnish your way" },
-          { title:"Same-Week Delivery", sub:"Across Delhi NCR" },
-          { title:"Every Occasion", sub:"Diwali · Corporate · Birthdays & more" },
-          { title:"Personal Curation", sub:"Our team builds it with you" },
+          { icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>, title:"Fully Customised", sub:"Base, fillings & garnish your way" },
+          { icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>, title:"Same-Week Delivery", sub:"Across Delhi NCR" },
+          { icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>, title:"Every Occasion", sub:"Diwali · Corporate · Birthdays & more" },
+          { icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>, title:"Personal Curation", sub:"Our team builds it with you" },
         ].map((v, i) => (
           <div key={i} className="gh-value-item">
-            <span style={{ fontSize:14, color:"#C47A2E", flexShrink:0 }}>✦</span>
+            <span style={{ flexShrink:0, lineHeight:0 }}>{v.icon}</span>
             <div>
               <div style={{ fontSize:12.5, fontWeight:700, color:"#2C1A0E", letterSpacing:"0.01em" }}>{v.title}</div>
               <div style={{ fontSize:11, color:"#9B7450", lineHeight:1.4 }}>{v.sub}</div>
@@ -356,38 +440,65 @@ const GiftHampersCakes = () => {
         ))}
       </div>
 
-      {/* ── QUIZ BAND ── */}
+      {/* ── QUIZ BAND (with background photo) ── */}
       <section className="gh-quiz-band">
-        <div style={{ flex:"1 1 260px", minWidth:0 }}>
-          <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", textTransform:"uppercase", color:"#CCAB4A", marginBottom:14 }}>Gift Finder · 3 Steps</div>
-          <h2 style={{ fontFamily:serif, fontSize:"clamp(2rem,4vw,2.8rem)", fontWeight:400, color:"#FFF8EC", lineHeight:1.2, textWrap:"balance", margin:"0 0 14px" }}>
-            Not sure what to get? <em style={{ fontStyle:"italic", color:"#CCAB4A" }}>We'll help.</em>
-          </h2>
-          <p style={{ fontSize:14, color:"rgba(196,164,130,0.75)", lineHeight:1.7, maxWidth:380, margin:"0 0 26px" }}>
-            Tell us the base, what goes inside, and finishing touches — we'll show you hampers that match.
-          </p>
-          <button
-            className="gh-btn-gold"
-            onClick={() => setQuizOpen(true)}
-            style={{ display:"inline-flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:14, fontWeight:700, padding:"13px 28px", borderRadius:100, border:"none", cursor:"pointer", fontFamily:font, boxShadow:"0 6px 24px rgba(196,122,46,0.4)", letterSpacing:"0.02em", transition:"box-shadow 0.18s,transform 0.12s" }}
-          >
-            Start Finding →
-          </button>
+        {/* Background photo with overlay */}
+        <div className="gh-quiz-bg">
+          {heroPhotos[1]?.url && <img src={heroPhotos[1].url} alt="" aria-hidden />}
         </div>
-        <div style={{ display:"flex", flexDirection:"column", gap:10, flex:"0 0 auto", minWidth:220, width:"min(100%,320px)" }}>
-          {[
-            { n:"1", label:"Choose a base", sub:"Tokri · Gift Box · Wooden Tray · Pooja Thali…" },
-            { n:"2", label:"What goes inside?", sub:"Chocolates · Dry Fruits · Drinkware · Spiritual…" },
-            { n:"3", label:"Finishing touches", sub:"Ribbons · Dried flowers · Wax seal · Gift card…" },
-          ].map(s => (
-            <div key={s.n} className="gh-quiz-step">
-              <div style={{ width:28, height:28, borderRadius:"50%", background:"rgba(196,122,46,0.18)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"#CCAB4A", flexShrink:0 }}>{s.n}</div>
-              <div>
-                <div style={{ fontSize:13, fontWeight:600, color:"#FFF8EC" }}>{s.label}</div>
-                <div style={{ fontSize:11, color:"rgba(196,164,130,0.65)", marginTop:1 }}>{s.sub}</div>
-              </div>
+        <div className="gh-quiz-inner">
+          {/* Left: text + CTA */}
+          <div style={{ flex:"1 1 260px", minWidth:0 }}>
+            <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", textTransform:"uppercase", color:"#CCAB4A", marginBottom:14, fontFamily:font }}>Gift Finder — 3 Steps</div>
+            <h2 style={{ fontFamily:serif, fontSize:"clamp(2.2rem,4.5vw,3.2rem)", fontWeight:400, color:"#FFF8EC", lineHeight:1.12, textWrap:"balance", margin:"0 0 14px" }}>
+              Not sure what to get? <em style={{ fontStyle:"italic", color:"#CCAB4A" }}>We'll help.</em>
+            </h2>
+            <p style={{ fontSize:14, color:"rgba(196,164,130,0.72)", lineHeight:1.72, maxWidth:360, margin:"0 0 28px", fontFamily:font }}>
+              Tell us the base, what goes inside, and the finishing touches — we'll show you hampers that match.
+            </p>
+            <div style={{ display:"flex", gap:14, alignItems:"center", flexWrap:"wrap" }}>
+              <button
+                className="gh-btn-gold"
+                onClick={() => setQuizOpen(true)}
+                style={{ display:"inline-flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:14, fontWeight:700, padding:"13px 28px", borderRadius:100, border:"none", cursor:"pointer", fontFamily:font, boxShadow:"0 6px 24px rgba(196,122,46,0.45)", letterSpacing:"0.02em", transition:"box-shadow 0.18s,transform 0.12s" }}
+              >
+                Start Finding →
+              </button>
+              <button
+                onClick={() => document.getElementById("gh-grid")?.scrollIntoView({ behavior:"smooth" })}
+                style={{ display:"inline-flex", alignItems:"center", gap:7, background:"none", border:"none", color:"rgba(255,248,236,0.5)", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:font }}
+              >
+                <span style={{ width:24, height:24, borderRadius:"50%", border:"1px solid rgba(255,248,236,0.22)", display:"inline-flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                </span>
+                Watch how it works
+              </button>
             </div>
-          ))}
+            <div style={{ fontFamily:"'Dancing Script', cursive", fontSize:"1.3rem", color:"rgba(196,164,130,0.32)", marginTop:32, lineHeight:1.3 }}>
+              Thoughtful gifts for every occasion
+            </div>
+          </div>
+          {/* Right: step cards */}
+          <div style={{ display:"flex", flexDirection:"column", gap:10, flex:"0 0 auto", minWidth:220, width:"min(100%,340px)" }}>
+            {[
+              { n:"1", icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>, label:"Choose a base", sub:"Tokri, Gift Box, Wooden Tray, Pooja Thali…" },
+              { n:"2", icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>, label:"What goes inside?", sub:"Chocolates, Dry Fruits, Drinkware, Spiritual…" },
+              { n:"3", icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, label:"Finishing touches", sub:"Ribbons, Dried Flowers, Wax Seal, Gift Card…" },
+            ].map(s => (
+              <div key={s.n} className="gh-quiz-step" onClick={() => setQuizOpen(true)}>
+                <div style={{ display:"flex", alignItems:"center", gap:12, minWidth:0 }}>
+                  <div style={{ width:34, height:34, borderRadius:"50%", background:"rgba(196,122,46,0.2)", border:"1px solid rgba(204,171,74,0.3)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                    {s.icon}
+                  </div>
+                  <div style={{ minWidth:0 }}>
+                    <div style={{ fontSize:13, fontWeight:600, color:"#FFF8EC", fontFamily:font }}>{s.label}</div>
+                    <div style={{ fontSize:11, color:"rgba(196,164,130,0.6)", marginTop:2, fontFamily:font, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{s.sub}</div>
+                  </div>
+                </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(196,164,130,0.45)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}><path d="M9 18l6-6-6-6"/></svg>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -444,12 +555,51 @@ const GiftHampersCakes = () => {
       {/* ── GALLERY ── */}
       <section id="gh-grid" style={{ background:"#FAF7F2", padding:"clamp(48px,6vw,80px) clamp(20px,5vw,56px)", paddingBottom: selectedPhotos.length > 0 ? "clamp(140px,18vw,160px)" : undefined, transition:"padding-bottom 0.3s" }}>
         <div style={{ maxWidth:1160, margin:"0 auto" }}>
-          <div style={{ marginBottom:32 }}>
-            <p style={{ fontSize:10, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.24em", margin:"0 0 10px", fontFamily:font }}>Browse Samples</p>
-            <h2 style={{ fontFamily:serif, fontSize:"clamp(1.7rem,3.5vw,2.4rem)", fontWeight:400, color:"#2C1A0E", margin:"0 0 6px", lineHeight:1.2 }}>
-              Real hampers, <em style={{ fontStyle:"italic", color:"#C47A2E" }}>real occasions.</em>
-            </h2>
-            <p style={{ fontSize:13, color:"#9B7450", margin:0, fontFamily:font }}>Click any photo to preview · select favourites · share with our team</p>
+          {/* Header: left text + right category scroll */}
+          <div style={{ display:"flex", gap:"clamp(24px,4vw,56px)", alignItems:"flex-start", marginBottom:36, flexWrap:"wrap" }}>
+            <div style={{ flex:"0 0 auto", maxWidth:360 }}>
+              <p style={{ fontSize:10, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.24em", margin:"0 0 10px", fontFamily:font }}>Browse Samples</p>
+              <h2 style={{ fontFamily:serif, fontSize:"clamp(1.7rem,3.5vw,2.4rem)", fontWeight:400, color:"#2C1A0E", margin:"0 0 6px", lineHeight:1.2 }}>
+                Real hampers, <em style={{ fontStyle:"italic", color:"#C47A2E" }}>real occasions.</em>
+              </h2>
+              <p style={{ fontSize:13, color:"#9B7450", margin:0, fontFamily:font }}>Click any photo to preview · select favourites · share with our team</p>
+            </div>
+            {/* Category scroll cards */}
+            <div style={{ flex:"1 1 0", minWidth:0 }}>
+              <div className="gh-cat-scroll">
+                {[
+                  { label:"Diwali",     cat:"Festive & Diwali" },
+                  { label:"Corporate",  cat:"Corporate" },
+                  { label:"Birthdays",  cat:"Birthday" },
+                  { label:"Weddings",   cat:"Wedding" },
+                  { label:"Festive",    cat:"Festive" },
+                  { label:"Spiritual",  cat:"Spiritual & Pooja" },
+                ].map(({ label, cat }) => {
+                  const photo = samples.find(s => {
+                    const cats = Array.isArray(s.category) ? s.category : [s.category || ""];
+                    return cats.some(c => (c||"").toLowerCase().includes(cat.split(" ")[0].toLowerCase()));
+                  }) || samples[0];
+                  const isActive = selectedCategories.some(c => c.toLowerCase().includes(cat.split(" ")[0].toLowerCase()));
+                  return (
+                    <div
+                      key={label}
+                      className="gh-cat-card"
+                      onClick={() => toggleCategory(availableGiftTypes.find(g => g.toLowerCase().includes(cat.split(" ")[0].toLowerCase())) || cat)}
+                      style={{ outline: isActive ? "2.5px solid #C47A2E" : "none", outlineOffset:2 }}
+                    >
+                      {photo?.url
+                        ? <img src={photo.url} alt={label} />
+                        : <div style={{ width:"100%", height:"100%", background:"linear-gradient(135deg,#2C1A0E,#1C0A04)" }} />}
+                      <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(28,10,4,0.78) 0%, rgba(28,10,4,0.1) 55%, transparent 100%)" }} />
+                      <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"10px 12px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                        <span style={{ fontSize:13, fontWeight:700, color:"#FFF8EC", fontFamily:font }}>{label}</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,248,236,0.7)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
           {/* Filter chips */}
