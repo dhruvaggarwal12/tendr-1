@@ -573,15 +573,14 @@ export default function VendorDemo() {
       </div>
 
       {/* ── Hero cover ── */}
-      <div style={{ height: 220, background: `linear-gradient(135deg, #2C1208 0%, ${ink} 60%, #3D1A06 100%)`, position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 70% 80% at 70% 50%, rgba(196,122,46,0.18) 0%, transparent 60%)" }} />
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 80, background: "linear-gradient(to top, rgba(250,247,242,0.15) 0%, transparent 100%)" }} />
-        {/* Decorative pattern */}
-        <svg style={{ position: "absolute", right: 0, bottom: 0, opacity: 0.06 }} width="320" height="220" viewBox="0 0 320 220" fill="none">
-          <circle cx="260" cy="60" r="120" stroke={goldLt} strokeWidth="1"/>
-          <circle cx="260" cy="60" r="80" stroke={goldLt} strokeWidth="1"/>
-          <circle cx="260" cy="60" r="40" stroke={goldLt} strokeWidth="1"/>
-        </svg>
+      <div style={{ height: 160, position: "relative", overflow: "hidden" }}>
+        <img
+          src={`https://picsum.photos/seed/${encodeURIComponent(d.serviceType + "-cover")}/1200/320`}
+          alt=""
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
+        />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(28,10,4,0.72) 0%, rgba(44,18,8,0.55) 60%, rgba(61,26,6,0.4) 100%)" }} />
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 60, background: "linear-gradient(to top, rgba(250,247,242,0.25) 0%, transparent 100%)" }} />
       </div>
 
       {/* ── Profile header ── */}
@@ -662,26 +661,31 @@ export default function VendorDemo() {
             </div>
             {/* Masonry grid */}
             <div style={{ columns: "3 200px", columnGap: 10 }}>
-              {d.portfolio.map((p, i) => (
-                <div key={i} className="vd-portfolio-card" style={{ boxShadow: "0 2px 10px rgba(28,10,4,0.1)" }}>
-                  <div style={{
-                    background: p.gradient,
-                    aspectRatio: i % 3 === 0 ? "3/4" : "4/3",
-                    display: "flex",
-                    alignItems: "flex-end",
-                    padding: "12px 14px",
-                  }}>
-                    <div>
-                      <div style={{ fontSize: 13.5, fontWeight: 700, color: "#FFF8EC", marginBottom: 4, fontFamily: serif }}>{p.label}</div>
-                      <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                        {p.tags.map(t => (
-                          <span key={t} style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,248,236,0.7)", background: "rgba(0,0,0,0.28)", borderRadius: 100, padding: "2px 7px", backdropFilter: "blur(4px)" }}>{t}</span>
-                        ))}
+              {d.portfolio.map((p, i) => {
+                const seed = encodeURIComponent((d.serviceType + "-" + p.label).toLowerCase().replace(/\s+/g, "-"));
+                const ar = i % 3 === 0 ? "3/4" : "4/3";
+                return (
+                  <div key={i} className="vd-portfolio-card" style={{ boxShadow: "0 2px 10px rgba(28,10,4,0.1)" }}>
+                    <div style={{ aspectRatio: ar, position: "relative", overflow: "hidden" }}>
+                      <img
+                        src={`https://picsum.photos/seed/${seed}/480/640`}
+                        alt={p.label}
+                        loading="lazy"
+                        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,4,2,0.78) 0%, rgba(10,4,2,0.18) 55%, transparent 100%)" }} />
+                      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 14px" }}>
+                        <div style={{ fontSize: 13.5, fontWeight: 700, color: "#FFF8EC", marginBottom: 4, fontFamily: serif }}>{p.label}</div>
+                        <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                          {p.tags.map(t => (
+                            <span key={t} style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,248,236,0.85)", background: "rgba(0,0,0,0.32)", borderRadius: 100, padding: "2px 7px", backdropFilter: "blur(6px)" }}>{t}</span>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             <p style={{ textAlign: "center", fontSize: 12.5, color: muted, marginTop: 20, fontStyle: "italic" }}>
               These are representative portfolio samples. Actual work photos will appear when vendors upload their portfolio.
