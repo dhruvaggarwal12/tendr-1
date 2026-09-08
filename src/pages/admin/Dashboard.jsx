@@ -4852,6 +4852,34 @@ const AdminDashboard = () => {
                   {ghSampleMsg && <span style={{ fontSize: 12, color: ghSampleMsg.includes("fail") || ghSampleMsg.includes("Error") ? "#ef4444" : "#15803d", fontWeight: 600 }}>{ghSampleMsg}</span>}
                 </div>
 
+                {/* Auto-tag button */}
+                {(() => {
+                  const [autoTagging, setAutoTagging] = React.useState(false);
+                  const [autoTagMsg, setAutoTagMsg] = React.useState("");
+                  return (
+                    <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14, padding:"10px 14px", borderRadius:10, background:"rgba(196,122,46,0.05)", border:"1px solid rgba(196,122,46,0.15)" }}>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:12.5, fontWeight:700, color:"#2C1A0E" }}>Auto-tag all photos with AI</div>
+                        <div style={{ fontSize:11, color:"#9B7450", marginTop:1 }}>Analyses each untagged photo and sets category, occasion & vibe — makes quiz recommendations accurate</div>
+                      </div>
+                      <button
+                        disabled={autoTagging}
+                        onClick={async () => {
+                          setAutoTagging(true); setAutoTagMsg("");
+                          try {
+                            const r = await fetch(`${BASE_URL}/admin/gift-hamper-samples/auto-tag-all`, { method:"POST", headers:{ Authorization:`Bearer ${token}`, "Content-Type":"application/json" }, credentials:"include" });
+                            const d = await r.json();
+                            setAutoTagMsg(d.success ? `✓ Tagged ${d.updated} of ${d.total} photos` : (d.error || "Failed"));
+                          } catch(e) { setAutoTagMsg("Error: " + e.message); }
+                          finally { setAutoTagging(false); }
+                        }}
+                        style={{ padding:"8px 16px", borderRadius:8, border:"none", background:autoTagging?"#e5e7eb":"#2C1A0E", color:autoTagging?"#9ca3af":"#CCAB4A", fontSize:12.5, fontWeight:700, cursor:autoTagging?"not-allowed":"pointer", fontFamily:"'Outfit',sans-serif", whiteSpace:"nowrap", flexShrink:0 }}
+                      >{autoTagging ? "Tagging…" : "🤖 Auto-tag All"}</button>
+                      {autoTagMsg && <span style={{ fontSize:11.5, fontWeight:600, color: autoTagMsg.startsWith("✓") ? "#15803d" : "#ef4444", whiteSpace:"nowrap" }}>{autoTagMsg}</span>}
+                    </div>
+                  );
+                })()}
+
                 {/* Samples grid */}
                 {(() => {
                   const vendors = ["All", ...Array.from(new Set(ghSamples.map(s => s.vendorName).filter(Boolean)))];
