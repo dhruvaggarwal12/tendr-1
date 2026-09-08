@@ -2069,6 +2069,7 @@ export default function VendorDashboard() {
 
   // Work tab sub-tab
   const [workSubTab, setWorkSubTab] = useState('tendr'); // 'tendr' | 'outside' | 'calendar' | 'quotes'
+  const [moneySubTab, setMoneySubTab] = useState('pl'); // 'pl' | 'stats'
 
   // Calendar month navigation
   const [calMonth, setCalMonth] = useState(() => new Date().getMonth());
@@ -2223,6 +2224,9 @@ export default function VendorDashboard() {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const thisMonthOutside = outsideOrders.filter(o => new Date(o.createdAt) >= monthStart).length;
   const thisMonthRevenue = outsideOrders.filter(o => new Date(o.createdAt) >= monthStart).reduce((s, o) => s + (o.amount || 0), 0);
+  const thisMonthCollected = outsideOrders.filter(o => new Date(o.createdAt) >= monthStart).reduce((s, o) => s + (o.paidAmount || 0), 0);
+  const thisMonthExpenses = outsideOrders.filter(o => new Date(o.createdAt) >= monthStart).reduce((s, o) => s + (o.expenses||[]).reduce((ss,e) => ss+(Number(e.amount)||0),0), 0);
+  const thisMonthProfit = thisMonthCollected - thisMonthExpenses;
 
   // Outside orders: filter + search
   const visibleOutside = outsideOrders
@@ -2441,16 +2445,13 @@ export default function VendorDashboard() {
 
   // ── Render ───────────────────────────────────────────────────────────────────
   const NAV_ITEMS = [
-    { key: 'home',        label: t('navHome'),                                        icon: dsic(<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>) },
-    { key: 'work',        label: isArtist ? t(terms==='Shows'?'navShows':'navGigs') : t('navWork'), icon: dsic(<><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>) },
-    { key: 'earnings',    label: t('navEarnings'),                                    icon: dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>) },
-    { key: 'performance', label: t('navStats'),                                       icon: dsic(<><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>) },
-    { key: 'inventory',   label: typeConfig.invLabel,                                 icon: dsic(<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>) },
-    { key: 'profile',     label: t('navPage'),                                        icon: dsic(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>) },
-    { key: 'clients',     label: t('navClients'),                                     icon: dsic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>) },
-    { key: 'calendar',    label: t('navAvail'),                                       icon: dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>) },
-    { key: 'flyer',       label: 'Flyer',                                             icon: dsic(<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></>) },
-    { key: 'linktree',    label: 'Link Hub',                                          icon: dsic(<><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></>) },
+    { key: 'home',      group: 'EVENTS',   label: t('navHome'),                                                         icon: dsic(<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>) },
+    { key: 'work',      group: 'EVENTS',   label: isArtist ? t(terms==='Shows'?'navShows':'navGigs') : t('navWork'), icon: dsic(<><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>) },
+    { key: 'money',     group: 'MONEY',    label: 'Money',                                                              icon: dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>) },
+    { key: 'inventory', group: 'MANAGE',   label: typeConfig.invLabel,                                                  icon: dsic(<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>) },
+    { key: 'profile',   group: 'MANAGE',   label: t('navPage'),                                                         icon: dsic(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>) },
+    { key: 'calendar',  group: 'SCHEDULE', label: 'Availability',                                                       icon: dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>) },
+    { key: 'market',    group: 'GROW',     label: 'Grow',                                                               icon: dsic(<><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></>) },
   ];
   const sideW = 220;
 
@@ -2474,16 +2475,10 @@ export default function VendorDashboard() {
       content: 'All your bookings in one place — Tendr bookings, outside gigs, a combined calendar, quote builder, and client list. Manage invoices and contracts right from each order.',
     },
     {
-      target: '#tour-nav-earnings',
+      target: '#tour-nav-money',
       placement: isMobile ? 'top' : 'right',
-      title: 'Earnings',
-      content: 'Track every rupee. View monthly P&L, collected vs pending amounts, expense tracking, and your overall profit across all bookings.',
-    },
-    {
-      target: '#tour-nav-performance',
-      placement: isMobile ? 'top' : 'right',
-      title: 'Stats',
-      content: 'Your business analytics — gig volume over 12 months, average gig value, collection rate, net profit, repeat client percentage, and top event types.',
+      title: 'Money',
+      content: 'Track every rupee. P&L by month, collected vs pending, expense tracking, profit, and your 12-month gig volume trend — all in one place.',
     },
     {
       target: '#tour-nav-inventory',
@@ -2498,28 +2493,16 @@ export default function VendorDashboard() {
       content: 'Preview your public profile exactly as clients see it. Share your Tendr link or a direct tracking link with a single tap.',
     },
     {
-      target: '#tour-nav-clients',
-      placement: isMobile ? 'top' : 'right',
-      title: 'Clients',
-      content: 'Your built-in CRM. Every client you\'ve worked with — booking count, total paid, pending balance, and last event date — automatically compiled from your orders.',
-    },
-    {
       target: '#tour-nav-calendar',
       placement: isMobile ? 'top' : 'right',
       title: 'Availability',
       content: 'Mark your available and blocked dates so Tendr customers only see you for events you can actually take.',
     },
     {
-      target: '#tour-nav-flyer',
+      target: '#tour-nav-market',
       placement: isMobile ? 'top' : 'right',
-      title: 'Flyer Builder',
-      content: 'Generate a ready-to-share marketing flyer for WhatsApp, Instagram, or print — branded with your name and service — in seconds.',
-    },
-    {
-      target: '#tour-nav-linktree',
-      placement: isMobile ? 'top' : 'right',
-      title: 'Link Hub',
-      content: "Your personal mini link page — share your portfolio, showreel, Instagram, and booking link all from one URL. Great for your bio or WhatsApp status.",
+      title: 'Grow',
+      content: 'Your marketing toolkit — generate a shareable flyer for WhatsApp or Instagram, and build your personal link hub with your portfolio, showreel, and booking link.',
     },
   ];
 
@@ -2538,9 +2521,17 @@ export default function VendorDashboard() {
             {serviceType && <div style={{ fontSize:11, color:gold, fontWeight:600, marginTop:2 }}>{serviceType}</div>}
           </div>
           <nav style={{ padding:'10px 10px', flex:1, overflowY:'auto' }}>
-            {NAV_ITEMS.map(item => {
+            {NAV_ITEMS.reduce((acc, item, idx) => {
+              const prevGroup = idx > 0 ? NAV_ITEMS[idx-1].group : null;
+              if (item.group !== prevGroup) {
+                acc.push(
+                  <div key={`grp-${item.group}`} style={{ fontSize:9.5, fontWeight:800, color:'#BDA282', letterSpacing:'0.14em', textTransform:'uppercase', padding:'14px 12px 4px', marginTop: idx > 0 ? 6 : 0 }}>
+                    {item.group}
+                  </div>
+                );
+              }
               const active = tab === item.key;
-              return (
+              acc.push(
                 <button key={item.key} id={`tour-nav-${item.key}`} onClick={() => setTab(item.key)}
                   style={{ width:'100%', padding:'9px 12px', borderRadius:10, border:'none', background:active?'rgba(196,122,46,0.09)':'transparent', color:active?gold:'#9B7450', cursor:'pointer', fontFamily:font, fontSize:13.5, fontWeight:active?700:500, display:'flex', alignItems:'center', gap:10, marginBottom:2, transition:'all 0.15s', textAlign:'left' }}>
                   <span style={{ color:active?gold:'#BDA282', display:'flex', flexShrink:0 }}>{item.icon}</span>
@@ -2550,7 +2541,8 @@ export default function VendorDashboard() {
                   {item.key==='inventory' && inventory.filter(i=>i.condition==='Needs Service'||i.condition==='Out of Order').length>0 && <span style={{ fontSize:10, fontWeight:700, background:'rgba(220,38,38,0.1)', color:'#DC2626', borderRadius:100, padding:'1px 6px' }}>!</span>}
                 </button>
               );
-            })}
+              return acc;
+            }, [])}
           </nav>
           <div style={{ padding:'8px 10px 16px', borderTop:'1px solid rgba(196,122,46,0.08)' }}>
             <button onClick={toggleLang} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'1px solid rgba(196,122,46,0.22)', background:'rgba(196,122,46,0.06)', color:gold, cursor:'pointer', fontFamily:font, fontSize:12.5, fontWeight:700, display:'flex', alignItems:'center', gap:10, marginBottom:6, letterSpacing:'0.01em' }}>
@@ -2636,15 +2628,23 @@ export default function VendorDashboard() {
           {/* ── HOME ── */}
           {tab === 'home' && (
             <>
-              {/* Greeting + this-month snapshot */}
+              {/* Greeting + compact month stat row */}
               <div style={{ marginBottom:18 }}>
-                <div style={{ fontSize:isMobile?20:24, fontWeight:800, color:ink }}>
+                <div style={{ fontSize:isMobile?20:24, fontWeight:800, color:ink, marginBottom:12 }}>
                   {new Date().getHours()<12?t('greetMorning'):new Date().getHours()<17?t('greetAfternoon'):t('greetEvening')}, {vendorName.split(' ')[0]}
                 </div>
-                <div style={{ fontSize:13, color:'#9B7450', marginTop:3 }}>
-                  {thisMonthOutside>0
-                    ? t('gigsMonth').replace('{n}',thisMonthOutside).replace('{t}',thisMonthOutside===1?term.toLowerCase():terms.toLowerCase()).replace('{a}',thisMonthRevenue.toLocaleString('en-IN'))
-                    : t('noGigsMonth').replace('{t}',terms.toLowerCase())}
+                {/* 3-stat compact row: This Month */}
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
+                  {[
+                    { label: new Date().toLocaleDateString('en-IN',{month:'short'})+' gigs', value: thisMonthOutside, color: gold },
+                    { label: 'Collected', value: thisMonthCollected > 0 ? `₹${thisMonthCollected >= 1000 ? (thisMonthCollected/1000).toFixed(1)+'k' : thisMonthCollected.toLocaleString('en-IN')}` : '₹0', color: '#16A34A' },
+                    { label: 'Profit', value: thisMonthProfit > 0 ? `₹${thisMonthProfit >= 1000 ? (thisMonthProfit/1000).toFixed(1)+'k' : thisMonthProfit.toLocaleString('en-IN')}` : '₹0', color: thisMonthProfit > 0 ? '#16A34A' : '#9B7450' },
+                  ].map(({ label, value, color }) => (
+                    <div key={label} style={{ background:'#fff', borderRadius:12, padding:'10px 12px', border:'1px solid rgba(196,122,46,0.1)', textAlign:'center' }}>
+                      <div style={{ fontSize:isMobile?15:17, fontWeight:800, color, fontVariantNumeric:'tabular-nums' }}>{value}</div>
+                      <div style={{ fontSize:10.5, color:'#9B7450', fontWeight:600, marginTop:2, textTransform:'uppercase', letterSpacing:'0.04em' }}>{label}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -2737,6 +2737,33 @@ export default function VendorDashboard() {
                     <div style={{ fontSize:12.5, color:'rgba(255,255,255,0.78)' }}>{t('logGigSub')}</div>
                   </div>
                 </button>
+              )}
+
+              {/* Today's Gigs — events happening today */}
+              {todaysGigs.length > 0 && (
+                <div style={{ background:'#fff', borderRadius:18, padding:'16px 20px', border:'1.5px solid rgba(22,163,74,0.18)', marginBottom:18 }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+                    <div style={{ fontSize:14, fontWeight:800, color:ink }}>
+                      Today's {todaysGigs.length === 1 ? term : terms}
+                      <span style={{ fontSize:11, fontWeight:700, background:'rgba(22,163,74,0.1)', color:'#16A34A', borderRadius:100, padding:'2px 7px', marginLeft:8 }}>{todaysGigs.length}</span>
+                    </div>
+                  </div>
+                  <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                    {todaysGigs.map((g, i) => (
+                      <div key={g._id||i} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 12px', background:'rgba(22,163,74,0.04)', borderRadius:12, border:'1px solid rgba(22,163,74,0.1)' }}>
+                        <div style={{ width:36, height:36, borderRadius:'50%', background:'rgba(22,163,74,0.1)', display:'flex', alignItems:'center', justifyContent:'center', color:'#16A34A', fontWeight:800, fontSize:14, flexShrink:0 }}>{g.customerName?.charAt(0)?.toUpperCase()||g.clientName?.charAt(0)?.toUpperCase()||'?'}</div>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontSize:13, fontWeight:700, color:ink, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{g.customerName||g.clientName||'Client'}</div>
+                          <div style={{ fontSize:11.5, color:'#9B7450' }}>{[g.eventType, g.startTime&&`${g.startTime}${g.endTime?`–${g.endTime}`:''}`].filter(Boolean).join(' · ')}</div>
+                        </div>
+                        <div style={{ textAlign:'right', flexShrink:0 }}>
+                          {(g.amount||0) > 0 && <div style={{ fontSize:13, fontWeight:700, color:ink }}>₹{Number(g.amount).toLocaleString('en-IN')}</div>}
+                          <div style={{ fontSize:10, fontWeight:700, color:'#16A34A' }}>TODAY</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
 
               {/* Pending payments — shown only when money is owed */}
@@ -3239,7 +3266,7 @@ export default function VendorDashboard() {
           )}
 
           {/* ── EARNINGS / P&L ── */}
-          {tab === 'earnings' && (() => {
+          {tab === 'money' && (() => {
             const earnNow = new Date();
             const plMonths = Array.from({ length: 6 }, (_, i) => {
               const d = new Date(earnNow.getFullYear(), earnNow.getMonth() - (5 - i), 1);
@@ -3279,6 +3306,16 @@ export default function VendorDashboard() {
             const maxBar = Math.max(...plMonths.map(m => m.revenue), 1);
             return (
               <div>
+                {/* Money sub-tab: P&L | Stats */}
+                <div style={{ display:'flex', gap:2, marginBottom:18, borderBottom:'2px solid rgba(196,122,46,0.1)' }}>
+                  {[['pl','P&L'],['stats','Stats']].map(([key,label]) => (
+                    <button key={key} onClick={() => setMoneySubTab(key)}
+                      style={{ padding:'8px 18px', border:'none', background:'transparent', fontFamily:font, fontSize:13, fontWeight:moneySubTab===key?700:500, color:moneySubTab===key?gold:'#9B7450', cursor:'pointer', borderBottom:moneySubTab===key?`2.5px solid ${gold}`:'2.5px solid transparent', marginBottom:-2, transition:'all 0.15s', whiteSpace:'nowrap' }}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {moneySubTab === 'pl' && <>
                 {/* Top stats */}
                 <div style={{ display:'flex', gap:12, marginBottom:20, flexWrap:'wrap' }}>
                   <Stat label="Total Revenue"  value={totalRevenue>=1000?`₹${(totalRevenue/1000).toFixed(1)}k`:`₹${totalRevenue}`} sub={tendrRevenue>0?`incl. ₹${tendrRevenue.toLocaleString('en-IN')} Tendr`:'all time billed'} icon={dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>)} accent="rgba(196,122,46,0.1)" />
@@ -3416,12 +3453,13 @@ export default function VendorDashboard() {
                     </div>
                   </div>
                 )}
+                </>}
               </div>
             );
           })()}
 
-          {/* ── PERFORMANCE STATS ── */}
-          {tab === 'performance' && (() => {
+          {/* ── STATS (inside Money tab) ── */}
+          {tab === 'money' && moneySubTab === 'stats' && (() => {
             const totalGigs      = allGigs.length;
             const completedGigs  = allGigs.filter(g => g.status === 'Completed').length;
             const tendrCount     = bookings.length;
@@ -3921,8 +3959,8 @@ export default function VendorDashboard() {
             );
           })()}
 
-          {/* ── CLIENT CRM ── */}
-          {tab === 'clients' && (() => {
+          {/* ── CLIENT CRM (now inside Work tab → clients sub-tab) ── */}
+          {tab === '_clients_removed' && (() => {
             const fmtAmt = n => n > 0 ? `₹${n.toLocaleString('en-IN')}` : '₹0';
             const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '—';
             const pending = (c) => Math.max(0, (c.totalAmount||0) - (c.paidAmount||0));
@@ -4017,21 +4055,27 @@ export default function VendorDashboard() {
             </div>
           )}
 
-          {/* ── FLYER BUILDER ── */}
-          {tab === 'flyer' && (
-            <div style={{ background:'#fff', borderRadius:18, padding:'24px 20px', border:'1px solid rgba(196,122,46,0.12)' }}>
-              <Suspense fallback={<div style={{ color:'#9B7450', fontSize:13 }}>Loading flyer builder…</div>}>
-                <FlyerBuilderLazy vendorName={vendorName} serviceType={serviceType} />
-              </Suspense>
-            </div>
-          )}
-
-          {/* ── LINK HUB (Linktree) ── */}
-          {tab === 'linktree' && (
-            <div style={{ background:'#fff', borderRadius:18, padding:'24px 20px', border:'1px solid rgba(196,122,46,0.12)' }}>
-              <Suspense fallback={<div style={{ color:'#9B7450', fontSize:13 }}>Loading Link Hub…</div>}>
-                <LinktreeBuilderLazy token={token} vendorId={vendorId} vendorName={vendorName} />
-              </Suspense>
+          {/* ── GROW (Flyer Builder + Link Hub) ── */}
+          {tab === 'market' && (
+            <div style={{ display:'flex', flexDirection:'column', gap:24 }}>
+              {/* Flyer Builder */}
+              <div>
+                <div style={{ fontSize:11, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.12em', marginBottom:12 }}>Flyer Builder</div>
+                <div style={{ background:'#fff', borderRadius:18, padding:'24px 20px', border:'1px solid rgba(196,122,46,0.12)' }}>
+                  <Suspense fallback={<div style={{ color:'#9B7450', fontSize:13 }}>Loading flyer builder…</div>}>
+                    <FlyerBuilderLazy vendorName={vendorName} serviceType={serviceType} />
+                  </Suspense>
+                </div>
+              </div>
+              {/* Link Hub */}
+              <div>
+                <div style={{ fontSize:11, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.12em', marginBottom:12 }}>Link Hub</div>
+                <div style={{ background:'#fff', borderRadius:18, padding:'24px 20px', border:'1px solid rgba(196,122,46,0.12)' }}>
+                  <Suspense fallback={<div style={{ color:'#9B7450', fontSize:13 }}>Loading Link Hub…</div>}>
+                    <LinktreeBuilderLazy token={token} vendorId={vendorId} vendorName={vendorName} />
+                  </Suspense>
+                </div>
+              </div>
             </div>
           )}
         </div>
