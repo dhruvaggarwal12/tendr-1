@@ -43,26 +43,37 @@ const CAT_TO_FILLING = {
   'Drinkware':           'drinkware',
   'Spiritual & Pooja':   'pooja',
   'Decorative Boxes':    'decor',
-  'Tokri & Hampers':     null, // base container — neutral
+  'Tokri & Hampers':     null, // base container — scored via BASE_TO_CAT
 };
 
-function scoreSample(sample, chosenFillings) {
-  if (!chosenFillings || chosenFillings.length === 0) return 0;
-  // Normalise category to array of strings
+// Quiz base id → photo category that signals this base type
+const BASE_TO_CAT = {
+  'tokri': 'Tokri & Hampers',
+  'box':   'Decorative Boxes',
+  'thali': 'Spiritual & Pooja',
+};
+
+function scoreSample(sample, chosenFillings, chosenBase) {
   const rawCat = sample.category || [];
   const cats   = (Array.isArray(rawCat) ? rawCat : [rawCat]).map(c => (c || '').trim());
   const name   = (sample.name || '').toLowerCase();
-  const vibe   = (sample.vibe || '').toLowerCase();
 
   let score = 0;
 
-  // Exact category match — highest signal (5 pts each)
+  // Base match: +3 if the photo's category matches the chosen base type
+  if (chosenBase && BASE_TO_CAT[chosenBase]) {
+    if (cats.includes(BASE_TO_CAT[chosenBase])) score += 3;
+  }
+
+  if (!chosenFillings || chosenFillings.length === 0) return score;
+
+  // Exact category → filling match: +5 per match (highest signal)
   for (const cat of cats) {
     const fillingId = CAT_TO_FILLING[cat];
     if (fillingId && chosenFillings.includes(fillingId)) score += 5;
   }
 
-  // Keyword fallback on name (2 pts) — handles untagged photos
+  // Keyword fallback on name: +2 per matched filling (handles untagged photos)
   for (const id of chosenFillings) {
     const filling = FILLINGS.find(f => f.id === id);
     if (!filling) continue;
@@ -169,12 +180,11 @@ export default function GiftQuiz({ samples, onSelect, onClose }) {
   const photoResults = useMemo(() => {
     if (step !== total) return [];
     const all = samples || [];
-    const scored = all.map(s => ({ ...s, _score: scoreSample(s, answers.fillings) }));
-    // Sort: matched items first, then unmatched — both groups shuffled so it feels fresh
+    const scored = all.map(s => ({ ...s, _score: scoreSample(s, answers.fillings, answers.base) }));
     const matched   = scored.filter(s => s._score > 0).sort((a,b) => b._score - a._score);
     const unmatched = scored.filter(s => s._score === 0);
     return [...matched, ...unmatched].slice(0, 12);
-  }, [step, samples, answers.fillings]);
+  }, [step, samples, answers.fillings, answers.base]);
 
   const progress = Math.round((step / total) * 100);
   const isResult = step === total;
