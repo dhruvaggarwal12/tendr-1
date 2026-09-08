@@ -36,23 +36,41 @@ const FILLINGS = [
   { id:'flowers',     emoji:'🌸', label:'Dried / Artificial Flowers', cats:['flowers','floral','dried flowers'] },
 ];
 
-// Score a sample against chosen filling ids — higher = better match
+// Exact category → filling id map (mirrors AI tagger's GH_CATEGORIES)
+const CAT_TO_FILLING = {
+  'Dry Fruits & Nuts':   'dryfruits',
+  'Chocolates & Sweets': 'chocolates',
+  'Drinkware':           'drinkware',
+  'Spiritual & Pooja':   'pooja',
+  'Decorative Boxes':    'decor',
+  'Tokri & Hampers':     null, // base container — neutral
+};
+
 function scoreSample(sample, chosenFillings) {
   if (!chosenFillings || chosenFillings.length === 0) return 0;
-  const rawCat = sample.category || sample.categories || '';
-  const catStr = (Array.isArray(rawCat) ? rawCat.join(' ') : rawCat).toLowerCase();
+  // Normalise category to array of strings
+  const rawCat = sample.category || [];
+  const cats   = (Array.isArray(rawCat) ? rawCat : [rawCat]).map(c => (c || '').trim());
   const name   = (sample.name || '').toLowerCase();
+  const vibe   = (sample.vibe || '').toLowerCase();
+
   let score = 0;
+
+  // Exact category match — highest signal (5 pts each)
+  for (const cat of cats) {
+    const fillingId = CAT_TO_FILLING[cat];
+    if (fillingId && chosenFillings.includes(fillingId)) score += 5;
+  }
+
+  // Keyword fallback on name (2 pts) — handles untagged photos
   for (const id of chosenFillings) {
     const filling = FILLINGS.find(f => f.id === id);
     if (!filling) continue;
     for (const kw of filling.cats) {
-      if (catStr.includes(kw.toLowerCase()) || name.includes(kw.toLowerCase())) {
-        score += 3;
-        break;
-      }
+      if (name.includes(kw.toLowerCase())) { score += 2; break; }
     }
   }
+
   return score;
 }
 
