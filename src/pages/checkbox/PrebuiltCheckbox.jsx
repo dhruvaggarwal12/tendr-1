@@ -208,7 +208,7 @@ export default function CheckBox() {
 
   return (
     <div className="min-h-screen bg-white w-full p-4 sm:p-8 md:p-12">
-      <SEO title="Event Checklist — Tendr" description="Your personalised event checklist." path="/prebuilt-checklist" noIndex />
+      <SEO title="Event Checklist — Tendr" description="Your personalised event checklist." path="/prebuilt-checklist" noIndex={false} />
       <BasicSpeedDial />
       <HamburgerNav title="Event Checklist" />
 

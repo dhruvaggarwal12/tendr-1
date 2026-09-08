@@ -161,7 +161,7 @@ export default function CheckboxPicker() {
   // ── Steps 1–5 ─────────────────────────────────────────────────────────────
   const content = (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
-      <SEO title="Event Checklist — Personalize Your Plan" description="Create a personalized event checklist based on your event type, date, and services." path="/checklist-picker" noIndex />
+      <SEO title="Event Checklist — Personalize Your Plan" description="Create a personalized event checklist based on your event type, date, and services." path="/checklist-picker" noIndex={false} />
       <ToolNav title="Event Checklist" />
 
       {/* Progress bar */}
