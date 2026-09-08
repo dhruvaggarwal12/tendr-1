@@ -5911,23 +5911,23 @@ export default function OccasionHub({ occasion }) {
   const occConfetti = occTheme.confetti;
   // Text + surface colors derived from dark/light mode
   const T = {
-    main:      isDark ? "rgba(255,255,255,0.90)" : "#2C1A0E",
-    sub:       isDark ? "rgba(255,255,255,0.50)" : "rgba(44,26,14,0.50)",
-    muted:     isDark ? "rgba(255,255,255,0.30)" : "rgba(44,26,14,0.30)",
+    main:      isDark ? "#FFFFFF" : "#2C1A0E",
+    sub:       isDark ? "rgba(255,255,255,0.72)" : "rgba(44,26,14,0.68)",
+    muted:     isDark ? "rgba(255,255,255,0.50)" : "rgba(44,26,14,0.52)",
     cardBg:    isDark ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.78)",
     cardBd:    isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
     rowBd:     isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
-    navBg:     isDark ? "rgba(14,12,18,0.96)"   : "rgba(255,255,255,0.92)",
-    navInact:  isDark ? "rgba(255,255,255,0.38)" : "rgba(44,26,14,0.45)",
-    backBtn:   isDark ? { background:"rgba(255,255,255,0.08)", color:"rgba(255,255,255,0.7)" } : { background:"rgba(255,255,255,0.85)", color:"rgba(44,26,14,0.7)" },
+    navBg:     isDark ? "rgba(14,12,18,0.96)"   : "rgba(255,255,255,0.95)",
+    navInact:  isDark ? "rgba(255,255,255,0.58)" : "rgba(44,26,14,0.60)",
+    backBtn:   isDark ? { background:"rgba(255,255,255,0.08)", color:"rgba(255,255,255,0.85)" } : { background:"rgba(255,255,255,0.85)", color:"rgba(44,26,14,0.75)" },
     joinCard:  isDark ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.85)",
     joinBd:    isDark ? "rgba(255,255,255,0.10)" : "rgba(0,0,0,0.07)",
-    sectionLbl:isDark ? "rgba(255,255,255,0.88)" : "#2C1A0E",
-    sectionLn: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
+    sectionLbl:isDark ? "#FFFFFF" : "#2C1A0E",
+    sectionLn: isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.10)",
   };
   const PH = { violet: occAccent, blue: occAccent, gold: occAccent, pink: occAccent, bg: pageBg, surface: isDark ? "#1A1520" : "#F0E8DF",
-    txt: isDark?"#fff":"#1C1410", sub: isDark?"rgba(255,255,255,0.58)":"rgba(28,9,0,0.55)",
-    dim: isDark?"rgba(255,255,255,0.30)":"rgba(28,9,0,0.35)", bd: isDark?"rgba(255,255,255,0.10)":"rgba(0,0,0,0.08)",
+    txt: isDark?"#fff":"#1C1410", sub: isDark?"rgba(255,255,255,0.75)":"rgba(28,9,0,0.70)",
+    dim: isDark?"rgba(255,255,255,0.50)":"rgba(28,9,0,0.55)", bd: isDark?"rgba(255,255,255,0.10)":"rgba(0,0,0,0.08)",
     inputBg: isDark?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.04)", dotLine: isDark?"rgba(255,255,255,0.15)":"rgba(0,0,0,0.10)" };
   const tabAccentMap = { lobby: occAccent, play: occAccent, people: occAccent, plan: occAccent, moments: occAccent };
   const ta = occAccent;
@@ -6843,7 +6843,7 @@ export default function OccasionHub({ occasion }) {
             return (
               <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:3, padding:"4px 0 2px", border:"none", background:"transparent", cursor:"pointer" }}>
                 <div style={{ color:isActive?tColor:T.navInact, transition:"color 0.18s" }}>{t.icon}</div>
-                <div style={{ fontSize:9, fontWeight:isActive?700:500, color:isActive?tColor:T.navInact, letterSpacing:"0.08em", textTransform:"uppercase", transition:"color 0.18s" }}>{t.label}</div>
+                <div style={{ fontSize:10.5, fontWeight:isActive?700:600, color:isActive?tColor:T.navInact, letterSpacing:"0.06em", textTransform:"uppercase", transition:"color 0.18s" }}>{t.label}</div>
                 <div style={{ width:isActive?16:0, height:2, borderRadius:1, background:tColor, transition:"width 0.22s cubic-bezier(0.22,1,0.36,1)" }} />
               </button>
             );

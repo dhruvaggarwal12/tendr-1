@@ -2792,7 +2792,7 @@ const Home = () => {
       <TipsByTendrSection />
 
       {/* Become a Partner — vendor strip */}
-      <section style={{ background: "#1C0E04", padding: "72px 28px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+      <section style={{ background: "#1C0E04", padding: "28px 28px 30px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
         <style>{`
           @keyframes vt { from { transform: translateX(0); } to { transform: translateX(-50%); } }
           .vd-ticker { display: flex; gap: 8px; width: max-content; animation: vt 26s linear infinite; }
