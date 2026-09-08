@@ -1420,7 +1420,7 @@ function QuoteModal({ initial, onSave, onClose }) {
 }
 
 // ── Booking card (Tendr) ───────────────────────────────────────────────────────
-function BookingCard({ b, font: fnt }) {
+function BookingCard({ b, font: fnt, onDispute }) {
   const sc = STATUS_COLOR[b.status] || STATUS_COLOR.Pending;
   const [expanded, setExpanded] = useState(false);
   const [note, setNote] = useState(() => {
@@ -1474,7 +1474,7 @@ function BookingCard({ b, font: fnt }) {
               style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1.5px solid rgba(196,122,46,0.22)', fontSize: 12, fontFamily: fnt, resize: 'vertical', boxSizing: 'border-box', outline: 'none', color: ink }}
             />
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap:'wrap' }}>
             <button
               onClick={() => {
                 try { const stored = JSON.parse(localStorage.getItem('tendr:bookingNotes') || '{}'); stored[b._id||b.id] = note; localStorage.setItem('tendr:bookingNotes', JSON.stringify(stored)); setNoteSaved(true); } catch {}
@@ -1483,6 +1483,12 @@ function BookingCard({ b, font: fnt }) {
             >
               {noteSaved ? '✓ Saved' : 'Save Note'}
             </button>
+            {onDispute && (
+              <button onClick={() => onDispute(b)}
+                style={{ padding:'6px 14px', borderRadius:8, border:'1.5px solid rgba(220,38,38,0.3)', background:'rgba(220,38,38,0.05)', color:'#DC2626', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:fnt }}>
+                ⚑ Dispute
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -2127,6 +2133,33 @@ export default function VendorDashboard() {
     } catch {}
   };
 
+  // Reviews
+  const [vendorReviews, setVendorReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewReply, setReviewReply] = useState({});
+  const [replyPending, setReplyPending] = useState(null);
+
+  // Packages (localStorage MVP)
+  const PKG_KEY = `tendr:pkgs:${vendorId||'v'}`;
+  const [packages, setPackages] = useState(() => { try { return JSON.parse(localStorage.getItem(`tendr:pkgs:${vendorId||'v'}`) || '[]'); } catch { return []; } });
+  const [pkgModal, setPkgModal] = useState(null); // null | {} (new) | existing obj
+  const [pkgDraft, setPkgDraft] = useState({ name:'', description:'', price:'', unit:'per event', items:'' });
+  const savePackages = (updated) => { setPackages(updated); try { localStorage.setItem(PKG_KEY, JSON.stringify(updated)); } catch {} };
+
+  // Dispute
+  const [disputeModal, setDisputeModal] = useState(null); // null | booking obj
+  const [disputeText, setDisputeText] = useState('');
+  const [disputeReason, setDisputeReason] = useState('Payment issue');
+
+  // GST / business info
+  const [gstDraft, setGstDraft] = useState('');
+  const [gstSaving, setGstSaving] = useState(false);
+
+  // Performance details (artists)
+  const [perfDraft, setPerfDraft] = useState({ genres:'', instruments:'', setlist:'', showreel:'', instagram:'', youtube:'' });
+  const [perfSaving, setPerfSaving] = useState(false);
+  const [perfLoaded, setPerfLoaded] = useState(false);
+
   // Milestone tracking (localStorage)
   const MILESTONE_KEY = `tendr_milestone_${vendorId||'v'}`;
   const [lastMilestone, setLastMilestone] = useState(() => { try { return Number(localStorage.getItem(MILESTONE_KEY)||0); } catch { return 0; } });
@@ -2193,6 +2226,37 @@ export default function VendorDashboard() {
     fetch(`${BASE}/vendors/me/dashboard`, { headers: authHeaders(token) })
       .then(r => r.ok ? r.json() : null).then(d => { if (d?.vendor?.upiId) setVendorUPI(d.vendor.upiId); }).catch(() => {});
   }, [token]); // eslint-disable-line
+
+  // Lazy-load reviews when tab opened
+  useEffect(() => {
+    if (tab !== 'reviews' || !token || !vendorId || vendorReviews.length > 0) return;
+    setReviewsLoading(true);
+    fetch(`${BASE}/vendors/${vendorId}/reviews`, { headers: authHeaders(token) })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setVendorReviews(d.reviews || d || []); })
+      .catch(() => {})
+      .finally(() => setReviewsLoading(false));
+  }, [tab, token, vendorId]); // eslint-disable-line
+
+  // Seed performance draft from user profile when tab opened
+  useEffect(() => {
+    if (tab !== 'gig-profile' || perfLoaded || !user) return;
+    setPerfDraft({
+      genres: (user.genres || []).join(', '),
+      instruments: (user.instruments || []).join(', '),
+      setlist: user.setlist || '',
+      showreel: user.showreel || user.showreelUrl || '',
+      instagram: user.instagram || '',
+      youtube: user.youtube || '',
+    });
+    setGstDraft(user.gstNumber || '');
+    setPerfLoaded(true);
+  }, [tab, user, perfLoaded]); // eslint-disable-line
+
+  // Seed GST from user when profile tab opened
+  useEffect(() => {
+    if (tab === 'profile' && user?.gstNumber && !gstDraft) setGstDraft(user.gstNumber);
+  }, [tab, user]); // eslint-disable-line
 
   // Lazy-load CRM clients when the tab is first opened
   useEffect(() => {
@@ -2445,13 +2509,16 @@ export default function VendorDashboard() {
 
   // ── Render ───────────────────────────────────────────────────────────────────
   const NAV_ITEMS = [
-    { key: 'home',      group: 'EVENTS',   label: t('navHome'),                                                         icon: dsic(<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>) },
-    { key: 'work',      group: 'EVENTS',   label: isArtist ? t(terms==='Shows'?'navShows':'navGigs') : t('navWork'), icon: dsic(<><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>) },
-    { key: 'money',     group: 'MONEY',    label: 'Money',                                                              icon: dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>) },
-    { key: 'inventory', group: 'MANAGE',   label: typeConfig.invLabel,                                                  icon: dsic(<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>) },
-    { key: 'profile',   group: 'MANAGE',   label: t('navPage'),                                                         icon: dsic(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>) },
-    { key: 'calendar',  group: 'SCHEDULE', label: 'Availability',                                                       icon: dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>) },
-    { key: 'market',    group: 'GROW',     label: 'Grow',                                                               icon: dsic(<><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></>) },
+    { key: 'home',        group: 'EVENTS',   label: t('navHome'),                                                         icon: dsic(<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>) },
+    { key: 'work',        group: 'EVENTS',   label: isArtist ? t(terms==='Shows'?'navShows':'navGigs') : t('navWork'), icon: dsic(<><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>) },
+    { key: 'money',       group: 'MONEY',    label: 'Money',                                                              icon: dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>) },
+    { key: 'packages',    group: 'MANAGE',   label: 'Packages',                                                           icon: dsic(<><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></>) },
+    { key: 'reviews',     group: 'MANAGE',   label: 'Reviews',                                                            icon: dsic(<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>) },
+    { key: 'inventory',   group: 'MANAGE',   label: typeConfig.invLabel,                                                  icon: dsic(<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>) },
+    { key: 'profile',     group: 'MANAGE',   label: t('navPage'),                                                         icon: dsic(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>) },
+    ...(isArtist ? [{ key: 'gig-profile', group: 'ARTIST', label: 'Performance', icon: dsic(<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>) }] : []),
+    { key: 'calendar',    group: 'SCHEDULE', label: 'Availability',                                                       icon: dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>) },
+    { key: 'market',      group: 'GROW',     label: 'Grow',                                                               icon: dsic(<><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></>) },
   ];
   const sideW = 220;
 
@@ -2537,7 +2604,8 @@ export default function VendorDashboard() {
                   <span style={{ color:active?gold:'#BDA282', display:'flex', flexShrink:0 }}>{item.icon}</span>
                   <span style={{ flex:1 }}>{item.label}</span>
                   {item.key==='home' && todaysGigs.length>0 && <span style={{ fontSize:10, fontWeight:700, background:'rgba(22,163,74,0.12)', color:'#16A34A', borderRadius:100, padding:'1px 6px' }}>{todaysGigs.length} today</span>}
-                  {item.key==='work' && pendingCount>0 && <span style={{ fontSize:10, fontWeight:700, background:'rgba(217,119,6,0.15)', color:'#D97706', borderRadius:100, padding:'1px 6px' }}>{pendingCount}</span>}
+                  {item.key==='work' && (pendingCount>0||bookings.filter(b=>b.status==='Pending').length>0) && <span style={{ fontSize:10, fontWeight:700, background:'rgba(220,38,38,0.12)', color:'#DC2626', borderRadius:100, padding:'1px 6px' }}>{pendingCount+bookings.filter(b=>b.status==='Pending').length}</span>}
+                  {item.key==='reviews' && vendorReviews.filter(r=>!r.vendorResponse).length>0 && <span style={{ fontSize:10, fontWeight:700, background:'rgba(196,122,46,0.15)', color:gold, borderRadius:100, padding:'1px 6px' }}>{vendorReviews.filter(r=>!r.vendorResponse).length}</span>}
                   {item.key==='inventory' && inventory.filter(i=>i.condition==='Needs Service'||i.condition==='Out of Order').length>0 && <span style={{ fontSize:10, fontWeight:700, background:'rgba(220,38,38,0.1)', color:'#DC2626', borderRadius:100, padding:'1px 6px' }}>!</span>}
                 </button>
               );
@@ -3091,7 +3159,7 @@ export default function VendorDashboard() {
                     </div>
                   ) : (
                     <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                      {bookings.filter(b => !oSearch||b.customerName?.toLowerCase().includes(oSearch.toLowerCase())||b.eventType?.toLowerCase().includes(oSearch.toLowerCase())).map((b,i) => <BookingCard key={b.id||b._id||i} b={b} font={font} />)}
+                      {bookings.filter(b => !oSearch||b.customerName?.toLowerCase().includes(oSearch.toLowerCase())||b.eventType?.toLowerCase().includes(oSearch.toLowerCase())).map((b,i) => <BookingCard key={b.id||b._id||i} b={b} font={font} onDispute={bk => { setDisputeModal(bk); setDisputeText(''); setDisputeReason('Payment issue'); }} />)}
                     </div>
                   )}
                 </div>
@@ -3949,11 +4017,37 @@ export default function VendorDashboard() {
                   );
                 })()}
 
-                {/* Reviews */}
-                <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.12)' }}>
+                {/* Reviews shortcut */}
+                <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.12)', marginBottom:20 }}>
                   <div style={{ fontSize:14, fontWeight:800, color:ink, marginBottom:4 }}>Reviews</div>
-                  <div style={{ fontSize:12, color:'#9B7450', marginBottom:12 }}>Customers who book you through Tendr can leave reviews visible on your profile.</div>
-                  <a href={profileUrl} target="_blank" rel="noopener noreferrer" style={{ display:'inline-block', padding:'9px 16px', borderRadius:10, border:`1.5px solid ${gold}`, color:gold, fontFamily:font, fontSize:13, fontWeight:700, textDecoration:'none' }}>View Public Profile →</a>
+                  <div style={{ fontSize:12, color:'#9B7450', marginBottom:12 }}>Customers who book through Tendr can leave reviews on your profile. Respond to build trust.</div>
+                  <div style={{ display:'flex', gap:8 }}>
+                    <a href={profileUrl} target="_blank" rel="noopener noreferrer" style={{ padding:'9px 16px', borderRadius:10, border:`1.5px solid ${gold}`, color:gold, fontFamily:font, fontSize:13, fontWeight:700, textDecoration:'none' }}>View Public Profile →</a>
+                    <button onClick={() => setTab('reviews')} style={{ padding:'9px 16px', borderRadius:10, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:13, fontWeight:700, cursor:'pointer' }}>Manage Reviews</button>
+                  </div>
+                </div>
+
+                {/* GST & Business Info */}
+                <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.12)' }}>
+                  <div style={{ fontSize:14, fontWeight:800, color:ink, marginBottom:4 }}>GST & Business Info</div>
+                  <div style={{ fontSize:12, color:'#9B7450', marginBottom:14 }}>Your GST number appears on invoices. Clients can claim input credit if you're GST registered.</div>
+                  <div style={{ marginBottom:12 }}>
+                    <label style={{ fontSize:12, fontWeight:700, color:'#6B3A1F', display:'block', marginBottom:5 }}>GST Number (optional)</label>
+                    <input value={gstDraft} onChange={e => setGstDraft(e.target.value.toUpperCase())} placeholder="e.g. 07AABCU9603R1ZP"
+                      style={{ width:'100%', padding:'9px 12px', borderRadius:9, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13, color:ink, outline:'none', boxSizing:'border-box', letterSpacing:'0.04em' }} />
+                  </div>
+                  <button
+                    onClick={async () => {
+                      setGstSaving(true);
+                      try {
+                        await fetch(`${BASE}/vendors/${vendorId}`, { method:'PATCH', headers:authHeaders(token), body:JSON.stringify({ gstNumber: gstDraft }) });
+                        showToast('GST number saved!');
+                      } catch { showToast('Could not save', false); }
+                      setGstSaving(false);
+                    }}
+                    style={{ padding:'9px 20px', borderRadius:9, border:'none', background:gold, color:'#fff', fontFamily:font, fontSize:13, fontWeight:700, cursor:gstSaving?'default':'pointer', opacity:gstSaving?0.7:1 }}>
+                    {gstSaving ? 'Saving…' : 'Save'}
+                  </button>
                 </div>
               </div>
             );
@@ -4055,6 +4149,257 @@ export default function VendorDashboard() {
             </div>
           )}
 
+          {/* ── REVIEWS ── */}
+          {tab === 'reviews' && (
+            <div>
+              {reviewsLoading ? (
+                <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                  {[1,2,3].map(i => <div key={i} style={{ height:100, borderRadius:16, background:'linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)', backgroundSize:'200% 100%', animation:'shimmer 1.4s infinite' }} />)}
+                </div>
+              ) : vendorReviews.length === 0 ? (
+                <div style={{ textAlign:'center', padding:'56px 24px', background:'#fff', borderRadius:18, border:'1.5px dashed rgba(196,122,46,0.18)' }}>
+                  <div style={{ fontSize:40, marginBottom:12 }}>⭐</div>
+                  <div style={{ fontSize:15, fontWeight:700, color:ink, marginBottom:6 }}>No reviews yet</div>
+                  <div style={{ fontSize:13, color:'#9B7450', maxWidth:300, margin:'0 auto' }}>After completing a Tendr booking, customers can leave a review. Share your profile to get more bookings.</div>
+                  <button onClick={() => setTab('profile')} style={{ marginTop:16, padding:'9px 20px', borderRadius:10, border:`1.5px solid ${gold}`, background:'transparent', color:gold, fontFamily:font, fontSize:13, fontWeight:700, cursor:'pointer' }}>View My Profile →</button>
+                </div>
+              ) : (
+                <div>
+                  {/* Rating summary */}
+                  {(() => {
+                    const avg = vendorReviews.reduce((s,r) => s+(r.rating||0), 0) / vendorReviews.length;
+                    const dist = [5,4,3,2,1].map(n => ({ n, count: vendorReviews.filter(r=>Math.round(r.rating)===n).length }));
+                    return (
+                      <div style={{ background:`linear-gradient(135deg,${ink},#3D2510)`, borderRadius:20, padding:'20px 22px', marginBottom:18, color:'#fff', display:'flex', gap:24, alignItems:'center' }}>
+                        <div style={{ textAlign:'center', flexShrink:0 }}>
+                          <div style={{ fontSize:44, fontWeight:800, lineHeight:1 }}>{avg.toFixed(1)}</div>
+                          <div style={{ display:'flex', gap:2, justifyContent:'center', margin:'6px 0 2px' }}>
+                            {[1,2,3,4,5].map(s => <span key={s} style={{ fontSize:14, color:s<=Math.round(avg)?'#CCAB4A':'rgba(255,255,255,0.25)' }}>★</span>)}
+                          </div>
+                          <div style={{ fontSize:11, color:'rgba(255,255,255,0.5)' }}>{vendorReviews.length} review{vendorReviews.length!==1?'s':''}</div>
+                        </div>
+                        <div style={{ flex:1, display:'flex', flexDirection:'column', gap:5 }}>
+                          {dist.map(({ n, count }) => (
+                            <div key={n} style={{ display:'flex', alignItems:'center', gap:8 }}>
+                              <span style={{ fontSize:11, color:'rgba(255,255,255,0.5)', width:12, textAlign:'right' }}>{n}</span>
+                              <span style={{ fontSize:11, color:'#CCAB4A' }}>★</span>
+                              <div style={{ flex:1, height:5, background:'rgba(255,255,255,0.1)', borderRadius:100, overflow:'hidden' }}>
+                                <div style={{ height:'100%', width:vendorReviews.length>0?`${(count/vendorReviews.length)*100}%`:'0%', background:'#CCAB4A', borderRadius:100 }} />
+                              </div>
+                              <span style={{ fontSize:11, color:'rgba(255,255,255,0.4)', width:16 }}>{count}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  {/* Review cards */}
+                  <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                    {vendorReviews.map((r, i) => (
+                      <div key={r._id||i} style={{ background:'#fff', borderRadius:16, padding:'16px 18px', border:'1px solid rgba(196,122,46,0.12)' }}>
+                        <div style={{ display:'flex', alignItems:'flex-start', gap:12, marginBottom:10 }}>
+                          <div style={{ width:38, height:38, borderRadius:'50%', background:`linear-gradient(135deg,${gold},${goldLt})`, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:15, flexShrink:0 }}>
+                            {(r.customerName||r.reviewerName||'?').charAt(0).toUpperCase()}
+                          </div>
+                          <div style={{ flex:1, minWidth:0 }}>
+                            <div style={{ fontSize:13.5, fontWeight:700, color:ink }}>{r.customerName||r.reviewerName||'Customer'}</div>
+                            <div style={{ display:'flex', gap:2, margin:'3px 0' }}>
+                              {[1,2,3,4,5].map(s => <span key={s} style={{ fontSize:13, color:s<=(r.rating||0)?'#CCAB4A':'#D1C5BB' }}>★</span>)}
+                              <span style={{ fontSize:11, color:'#9B7450', marginLeft:6 }}>{r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : ''}</span>
+                            </div>
+                          </div>
+                        </div>
+                        {r.comment && <div style={{ fontSize:13, color:'#4B2E1A', lineHeight:1.6, marginBottom:10 }}>{r.comment}</div>}
+                        {/* Vendor response */}
+                        {r.vendorResponse ? (
+                          <div style={{ background:'rgba(196,122,46,0.06)', borderRadius:10, padding:'10px 14px', borderLeft:`3px solid ${gold}` }}>
+                            <div style={{ fontSize:11, fontWeight:700, color:gold, marginBottom:3 }}>Your response</div>
+                            <div style={{ fontSize:12.5, color:'#4B2E1A', lineHeight:1.5 }}>{r.vendorResponse}</div>
+                          </div>
+                        ) : (
+                          <div>
+                            {reviewReply[r._id] !== undefined ? (
+                              <div>
+                                <textarea value={reviewReply[r._id]} onChange={e => setReviewReply(prev => ({...prev, [r._id]: e.target.value}))}
+                                  rows={3} placeholder="Write a professional, helpful response…"
+                                  style={{ width:'100%', padding:'9px 12px', borderRadius:9, border:`1.5px solid rgba(196,122,46,0.22)`, fontFamily:font, fontSize:12.5, color:ink, outline:'none', resize:'vertical', boxSizing:'border-box' }} />
+                                <div style={{ display:'flex', gap:8, marginTop:6 }}>
+                                  <button
+                                    disabled={replyPending===r._id}
+                                    onClick={async () => {
+                                      setReplyPending(r._id);
+                                      try {
+                                        const res = await fetch(`${BASE}/vendors/reviews/${r._id}/respond`, { method:'POST', headers:authHeaders(token), body:JSON.stringify({ response: reviewReply[r._id] }) });
+                                        if (res.ok) {
+                                          setVendorReviews(prev => prev.map(rv => rv._id===r._id ? {...rv, vendorResponse: reviewReply[r._id]} : rv));
+                                          setReviewReply(prev => { const n={...prev}; delete n[r._id]; return n; });
+                                          showToast('Response posted!');
+                                        } else showToast('Could not post', false);
+                                      } catch { showToast('Error', false); }
+                                      setReplyPending(null);
+                                    }}
+                                    style={{ padding:'7px 16px', borderRadius:8, border:'none', background:gold, color:'#fff', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:font, opacity:replyPending===r._id?0.7:1 }}>
+                                    {replyPending===r._id ? 'Posting…' : 'Post Response'}
+                                  </button>
+                                  <button onClick={() => setReviewReply(prev => { const n={...prev}; delete n[r._id]; return n; })}
+                                    style={{ padding:'7px 14px', borderRadius:8, border:'1.5px solid rgba(196,122,46,0.2)', background:'transparent', color:'#9B7450', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:font }}>Cancel</button>
+                                </div>
+                              </div>
+                            ) : (
+                              <button onClick={() => setReviewReply(prev => ({...prev, [r._id]: ''}))}
+                                style={{ padding:'6px 14px', borderRadius:8, border:`1.5px solid ${gold}`, background:'transparent', color:gold, fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:font }}>Reply →</button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── PACKAGES ── */}
+          {tab === 'packages' && (
+            <div>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
+                <div>
+                  <div style={{ fontSize:15, fontWeight:800, color:ink }}>Your Packages</div>
+                  <div style={{ fontSize:12, color:'#9B7450', marginTop:2 }}>Clients see these on your profile. Helps them understand your offerings and pricing upfront.</div>
+                </div>
+                <button onClick={() => { setPkgDraft({ name:'', description:'', price:'', unit:'per event', items:'' }); setPkgModal('new'); }}
+                  style={{ padding:'9px 16px', borderRadius:10, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:13, fontWeight:700, cursor:'pointer', flexShrink:0, boxShadow:'0 3px 12px rgba(196,122,46,0.3)' }}>
+                  + Add Package
+                </button>
+              </div>
+              {packages.length === 0 ? (
+                <div style={{ textAlign:'center', padding:'56px 24px', background:'#fff', borderRadius:18, border:'1.5px dashed rgba(196,122,46,0.18)' }}>
+                  <div style={{ fontSize:40, marginBottom:12 }}>🏷️</div>
+                  <div style={{ fontSize:15, fontWeight:700, color:ink, marginBottom:6 }}>No packages yet</div>
+                  <div style={{ fontSize:13, color:'#9B7450', marginBottom:16, maxWidth:300, margin:'0 auto 16px' }}>Create packages so clients know exactly what to expect — Bronze, Silver, Gold or whatever fits your service.</div>
+                  <button onClick={() => { setPkgDraft({ name:'', description:'', price:'', unit:'per event', items:'' }); setPkgModal('new'); }}
+                    style={{ padding:'10px 22px', borderRadius:10, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:13.5, fontWeight:700, cursor:'pointer' }}>
+                    + Create First Package
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                  {packages.map((pkg, i) => (
+                    <div key={i} style={{ background:'#fff', borderRadius:16, padding:'16px 18px', border:'1px solid rgba(196,122,46,0.12)', display:'flex', alignItems:'flex-start', gap:14 }}>
+                      <div style={{ width:44, height:44, borderRadius:12, background:`linear-gradient(135deg,${gold},${goldLt})`, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:18, flexShrink:0 }}>
+                        {['🥉','🥈','🥇','💎'][Math.min(i,3)]}
+                      </div>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontSize:14, fontWeight:800, color:ink, marginBottom:2 }}>{pkg.name}</div>
+                        {pkg.description && <div style={{ fontSize:12.5, color:'#9B7450', marginBottom:6, lineHeight:1.5 }}>{pkg.description}</div>}
+                        {pkg.items && <div style={{ fontSize:11.5, color:'#6B3A1F', lineHeight:1.6 }}>
+                          {pkg.items.split('\n').filter(Boolean).map((it,j) => <div key={j}>• {it}</div>)}
+                        </div>}
+                      </div>
+                      <div style={{ textAlign:'right', flexShrink:0 }}>
+                        {pkg.price && <div style={{ fontSize:16, fontWeight:800, color:gold }}>₹{Number(pkg.price).toLocaleString('en-IN')}</div>}
+                        {pkg.unit && <div style={{ fontSize:11, color:'#9B7450' }}>{pkg.unit}</div>}
+                        <div style={{ display:'flex', gap:6, marginTop:8, justifyContent:'flex-end' }}>
+                          <button onClick={() => { setPkgDraft({...pkg}); setPkgModal(i); }}
+                            style={{ padding:'5px 12px', borderRadius:7, border:`1.5px solid ${gold}`, background:'transparent', color:gold, fontSize:11.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>Edit</button>
+                          <button onClick={() => { const updated = packages.filter((_,j)=>j!==i); savePackages(updated); showToast('Package removed'); }}
+                            style={{ padding:'5px 12px', borderRadius:7, border:'1.5px solid rgba(220,38,38,0.25)', background:'rgba(220,38,38,0.05)', color:'#DC2626', fontSize:11.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>Remove</button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Package modal */}
+              {pkgModal !== null && (
+                <div style={{ position:'fixed', inset:0, background:'rgba(28,10,4,0.55)', zIndex:2000, display:'flex', alignItems:'center', justifyContent:'center', padding:16 }} onClick={e => { if (e.target===e.currentTarget) setPkgModal(null); }}>
+                  <div style={{ background:'#fff', borderRadius:20, padding:'24px 22px', width:'100%', maxWidth:440, boxShadow:'0 20px 60px rgba(28,10,4,0.25)' }}>
+                    <div style={{ fontSize:16, fontWeight:800, color:ink, marginBottom:16 }}>{pkgModal==='new' ? 'New Package' : 'Edit Package'}</div>
+                    {[
+                      { label:'Package Name *', key:'name', placeholder:'e.g. Gold Package' },
+                      { label:'Short Description', key:'description', placeholder:'What the client gets at a glance' },
+                      { label:'Price (₹)', key:'price', placeholder:'e.g. 15000', type:'number' },
+                      { label:'Pricing Unit', key:'unit', placeholder:'per event / per hour / per day' },
+                    ].map(({ label, key, placeholder, type }) => (
+                      <div key={key} style={{ marginBottom:12 }}>
+                        <label style={{ fontSize:12, fontWeight:700, color:'#6B3A1F', display:'block', marginBottom:4 }}>{label}</label>
+                        <input type={type||'text'} value={pkgDraft[key]} onChange={e => setPkgDraft(p => ({...p, [key]:e.target.value}))} placeholder={placeholder}
+                          style={{ width:'100%', padding:'9px 12px', borderRadius:9, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13, color:ink, outline:'none', boxSizing:'border-box' }} />
+                      </div>
+                    ))}
+                    <div style={{ marginBottom:16 }}>
+                      <label style={{ fontSize:12, fontWeight:700, color:'#6B3A1F', display:'block', marginBottom:4 }}>What's Included (one item per line)</label>
+                      <textarea value={pkgDraft.items} onChange={e => setPkgDraft(p => ({...p, items:e.target.value}))} rows={4} placeholder={"Sound system setup\nWireless microphone\n4-hour coverage"}
+                        style={{ width:'100%', padding:'9px 12px', borderRadius:9, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:12.5, color:ink, outline:'none', resize:'vertical', boxSizing:'border-box' }} />
+                    </div>
+                    <div style={{ display:'flex', gap:8 }}>
+                      <button onClick={() => {
+                        if (!pkgDraft.name.trim()) { showToast('Name is required', false); return; }
+                        let updated;
+                        if (pkgModal === 'new') updated = [...packages, pkgDraft];
+                        else { updated = [...packages]; updated[pkgModal] = pkgDraft; }
+                        savePackages(updated); setPkgModal(null); showToast(pkgModal==='new'?'Package added!':'Package updated!');
+                      }} style={{ flex:1, padding:'11px', borderRadius:10, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:14, fontWeight:700, cursor:'pointer' }}>
+                        {pkgModal === 'new' ? 'Add Package' : 'Save Changes'}
+                      </button>
+                      <button onClick={() => setPkgModal(null)} style={{ padding:'11px 18px', borderRadius:10, border:'1.5px solid rgba(196,122,46,0.2)', background:'transparent', color:'#9B7450', fontFamily:font, fontSize:13, fontWeight:600, cursor:'pointer' }}>Cancel</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── PERFORMANCE DETAILS (artists only) ── */}
+          {tab === 'gig-profile' && isArtist && (
+            <div>
+              <div style={{ fontSize:15, fontWeight:800, color:ink, marginBottom:4 }}>Performance Details</div>
+              <div style={{ fontSize:12, color:'#9B7450', marginBottom:18 }}>This info shows on your public profile — helps event planners understand your act before reaching out.</div>
+              <div style={{ background:'#fff', borderRadius:18, padding:'20px 20px', border:'1px solid rgba(196,122,46,0.12)', display:'flex', flexDirection:'column', gap:14 }}>
+                {[
+                  { label:'Genres / Styles', key:'genres', placeholder:'e.g. Bollywood, Sufi, Classical, EDX, Hip-hop' },
+                  { label:'Instruments Played', key:'instruments', placeholder:'e.g. Guitar, Tabla, Keyboard, Violin' },
+                  { label:'Showreel / Demo Link', key:'showreel', placeholder:'YouTube or Instagram reel URL' },
+                  { label:'Instagram Handle', key:'instagram', placeholder:'@yourusername' },
+                  { label:'YouTube Channel', key:'youtube', placeholder:'YouTube channel or video URL' },
+                ].map(({ label, key, placeholder }) => (
+                  <div key={key}>
+                    <label style={{ fontSize:12, fontWeight:700, color:'#6B3A1F', display:'block', marginBottom:5 }}>{label}</label>
+                    <input value={perfDraft[key]} onChange={e => setPerfDraft(p => ({...p, [key]:e.target.value}))} placeholder={placeholder}
+                      style={{ width:'100%', padding:'9px 12px', borderRadius:9, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13, color:ink, outline:'none', boxSizing:'border-box' }} />
+                  </div>
+                ))}
+                <div>
+                  <label style={{ fontSize:12, fontWeight:700, color:'#6B3A1F', display:'block', marginBottom:5 }}>Setlist / Repertoire (optional)</label>
+                  <textarea value={perfDraft.setlist} onChange={e => setPerfDraft(p => ({...p, setlist:e.target.value}))} rows={4} placeholder="List the songs, sets, or themes you perform — helps clients shortlist you faster"
+                    style={{ width:'100%', padding:'9px 12px', borderRadius:9, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:12.5, color:ink, outline:'none', resize:'vertical', boxSizing:'border-box' }} />
+                </div>
+                <button
+                  disabled={perfSaving}
+                  onClick={async () => {
+                    setPerfSaving(true);
+                    try {
+                      const payload = {
+                        genres: perfDraft.genres.split(',').map(s=>s.trim()).filter(Boolean),
+                        instruments: perfDraft.instruments.split(',').map(s=>s.trim()).filter(Boolean),
+                        setlist: perfDraft.setlist,
+                        showreel: perfDraft.showreel,
+                        instagram: perfDraft.instagram,
+                        youtube: perfDraft.youtube,
+                      };
+                      await fetch(`${BASE}/vendors/${vendorId}`, { method:'PATCH', headers:authHeaders(token), body:JSON.stringify(payload) });
+                      showToast('Performance details saved!');
+                    } catch { showToast('Could not save', false); }
+                    setPerfSaving(false);
+                  }}
+                  style={{ padding:'11px', borderRadius:10, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:14, fontWeight:700, cursor:perfSaving?'default':'pointer', opacity:perfSaving?0.7:1 }}>
+                  {perfSaving ? 'Saving…' : 'Save Performance Details'}
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* ── GROW (Flyer Builder + Link Hub) ── */}
           {tab === 'market' && (
             <div style={{ display:'flex', flexDirection:'column', gap:24 }}>
@@ -4102,6 +4447,37 @@ export default function VendorDashboard() {
 
       {/* Toast */}
       {toast && <div style={{ position:'fixed', top:16, right:16, zIndex:9999, padding:'12px 20px', borderRadius:12, background:toast.ok?'#166534':'#991B1B', color:'#fff', fontSize:14, fontWeight:600, boxShadow:'0 4px 20px rgba(0,0,0,0.2)' }}>{toast.ok?'✓':'✕'} {toast.msg}</div>}
+
+      {/* Dispute Modal */}
+      {disputeModal && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(28,10,4,0.6)', zIndex:2000, display:'flex', alignItems:'center', justifyContent:'center', padding:16 }} onClick={e => { if (e.target===e.currentTarget) setDisputeModal(null); }}>
+          <div style={{ background:'#fff', borderRadius:20, padding:'24px 22px', width:'100%', maxWidth:420, boxShadow:'0 20px 60px rgba(28,10,4,0.25)' }}>
+            <div style={{ fontSize:16, fontWeight:800, color:'#DC2626', marginBottom:4 }}>⚑ Raise a Dispute</div>
+            <div style={{ fontSize:12, color:'#9B7450', marginBottom:16 }}>Booking: {disputeModal.customerName||'Customer'} · {disputeModal.eventType||''}</div>
+            <div style={{ marginBottom:12 }}>
+              <label style={{ fontSize:12, fontWeight:700, color:'#6B3A1F', display:'block', marginBottom:5 }}>Reason</label>
+              <select value={disputeReason} onChange={e => setDisputeReason(e.target.value)}
+                style={{ width:'100%', padding:'9px 12px', borderRadius:9, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13, color:ink, outline:'none', background:'#fff' }}>
+                {['Payment issue','Booking cancelled unfairly','Incorrect booking details','Client no-show','Other'].map(r => <option key={r} value={r}>{r}</option>)}
+              </select>
+            </div>
+            <div style={{ marginBottom:16 }}>
+              <label style={{ fontSize:12, fontWeight:700, color:'#6B3A1F', display:'block', marginBottom:5 }}>Describe the issue *</label>
+              <textarea value={disputeText} onChange={e => setDisputeText(e.target.value)} rows={4} placeholder="Provide as much detail as possible — amounts, dates, what happened…"
+                style={{ width:'100%', padding:'9px 12px', borderRadius:9, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:12.5, color:ink, outline:'none', resize:'vertical', boxSizing:'border-box' }} />
+            </div>
+            <div style={{ display:'flex', gap:8 }}>
+              <a href={`https://wa.me/919999999999?text=${encodeURIComponent(`DISPUTE REQUEST\nVendor: ${vendorName}\nBooking: ${disputeModal.customerName||''} (${disputeModal._id||disputeModal.id||''})\nReason: ${disputeReason}\n\n${disputeText}`)}`}
+                target="_blank" rel="noopener noreferrer"
+                onClick={() => { showToast('Dispute sent via WhatsApp'); setDisputeModal(null); }}
+                style={{ flex:1, padding:'11px', borderRadius:10, border:'none', background:'#DC2626', color:'#fff', fontFamily:font, fontSize:13.5, fontWeight:700, textDecoration:'none', textAlign:'center', display:'block' }}>
+                Send to Support
+              </a>
+              <button onClick={() => setDisputeModal(null)} style={{ padding:'11px 18px', borderRadius:10, border:'1.5px solid rgba(196,122,46,0.2)', background:'transparent', color:'#9B7450', fontFamily:font, fontSize:13, fontWeight:600, cursor:'pointer' }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Order Modal */}
       {modal && (

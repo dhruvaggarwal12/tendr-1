@@ -475,15 +475,24 @@ const DEMOS = {
       { label: "Birthday Roast", tags: ["Birthday", "Comedy"], gradient: "linear-gradient(135deg,#BF360C,#FF8A65)" },
     ],
     testimonials: [
-      { name: "Ananya & Karan Wedding", event: "Wedding + Sangeet, Apr 2025", rating: 5, text: "Rahul made our wedding feel like a Bollywood film. He knew exactly when to be emotional and when to get the crowd laughing. Every family member loved him — especially the dadis!" },
-      { name: "HDFC Life Insurance", event: "Annual Award Night, Feb 2025", rating: 5, text: "Hosted our 800-pax national award night with complete professionalism. His energy was electric. We've already rebooked him for our next quarter summit." },
-      { name: "Meghna Patel", event: "30th Birthday, Jan 2025", rating: 5, text: "He turned a party into an experience. The roast segment had everyone in tears laughing. He spent time beforehand to understand our group — it showed." },
+      { name: "Ananya & Karan Wedding", event: "Wedding + Sangeet, Apr 2025", rating: 5, text: "Rahul made our wedding feel like a Bollywood film. He knew exactly when to be emotional and when to get the crowd laughing. Every family member loved him — especially the dadis!", response: "Thank you so much Ananya & Karan — this was one of my favourite weddings of 2025. Wishing you both a lifetime of happiness! 🥂" },
+      { name: "HDFC Life Insurance", event: "Annual Award Night, Feb 2025", rating: 5, text: "Hosted our 800-pax national award night with complete professionalism. His energy was electric. We've already rebooked him for our next quarter summit.", response: "Truly an honour to host HDFC Life — what a fantastic team and audience. Looking forward to the Q3 summit!" },
+      { name: "Meghna Patel", event: "30th Birthday, Jan 2025", rating: 5, text: "He turned a party into an experience. The roast segment had everyone in tears laughing. He spent time beforehand to understand our group — it showed.", response: "Meghna — your friends were the best crowd! The prep call really helped me tailor the roast perfectly. Thank you for trusting me with your big 3-0! 🎉" },
     ],
+    gst: "07AABKU1234R1Z5",
+    performance: {
+      genres: ["Bollywood", "Corporate Hosting", "Comedy Roast", "Bilingual (Hindi + English)", "Punjabi"],
+      instruments: [],
+      showreel: "https://youtube.com/watch?v=demo-anchor-reel",
+      instagram: "@rahulkhanna.mc",
+      youtube: "youtube.com/@rahulkhannaMC",
+      setlist: "Opening ceremony address\nInteractive icebreaker games (6 variations)\nAward presentation scripts\nSangeet games & fun rounds\nCouple Q&A segment\nGuest shoutout moments\nComedic roast format (birthday / farewell)\nMulti-language transitions",
+    },
   },
 };
 
 const TYPES = Object.keys(DEMOS);
-const TABS  = ["Portfolio", "Packages", "About", "Reviews"];
+const TABS  = ["Portfolio", "Packages", "About", "Reviews", "Performance"];
 
 // ── Star renderer ─────────────────────────────────────────────────────────────
 function Stars({ rating, size = 14 }) {
@@ -510,7 +519,7 @@ function Check({ size = 14, color = gold }) {
 // ── Main component ────────────────────────────────────────────────────────────
 export default function VendorDemo() {
   const navigate    = useNavigate();
-  const [type, setType] = useState("Decorator");
+  const [type, setType] = useState("Anchor");
   const [tab, setTab]   = useState("Portfolio");
   const d = DEMOS[type];
 
@@ -636,8 +645,8 @@ export default function VendorDemo() {
         </div>
 
         {/* ── Tab nav ── */}
-        <div style={{ display: "flex", gap: 0, borderBottom: `1px solid rgba(196,122,46,0.12)`, marginBottom: 28, background: "#fff", borderRadius: "12px 12px 0 0", overflow: "hidden", boxShadow: "0 2px 8px rgba(28,10,4,0.04)" }}>
-          {TABS.map(t => (
+        <div style={{ display: "flex", gap: 0, borderBottom: `1px solid rgba(196,122,46,0.12)`, marginBottom: 28, background: "#fff", borderRadius: "12px 12px 0 0", overflow: "hidden", boxShadow: "0 2px 8px rgba(28,10,4,0.04)", overflowX: "auto" }}>
+          {TABS.filter(t => t !== "Performance" || !!d.performance).map(t => (
             <button key={t} className={`vd-tab${tab === t ? " active" : ""}`} onClick={() => setTab(t)}>{t}</button>
           ))}
         </div>
@@ -823,6 +832,17 @@ export default function VendorDemo() {
                     <Stars rating={r.rating} size={13} />
                   </div>
                   <p style={{ fontSize: 13.5, color: "#4A3020", lineHeight: 1.7 }}>"{r.text}"</p>
+                  {r.response && (
+                    <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(196,122,46,0.12)", display: "flex", gap: 10 }}>
+                      <div style={{ width: 30, height: 30, borderRadius: "50%", background: `linear-gradient(135deg, ${gold}, ${goldLt})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 11.5, fontWeight: 700, color: gold, marginBottom: 4 }}>Vendor Response</div>
+                        <p style={{ fontSize: 13, color: "#4A3020", lineHeight: 1.65, margin: 0 }}>{r.response}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -830,6 +850,87 @@ export default function VendorDemo() {
             <p style={{ textAlign: "center", fontSize: 12, color: muted, marginTop: 20, fontStyle: "italic" }}>
               Live reviews are pulled from verified bookings on Tendr. These are demo samples.
             </p>
+          </div>
+        )}
+
+        {/* ══ PERFORMANCE TAB ══ */}
+        {tab === "Performance" && d.performance && (
+          <div>
+            {/* Showreel */}
+            {d.performance.showreel && (
+              <div style={{ background: ink, borderRadius: 20, padding: "24px 28px", marginBottom: 20, display: "flex", alignItems: "center", gap: 20 }}>
+                <div style={{ width: 52, height: 52, borderRadius: "50%", background: `rgba(196,122,46,0.15)`, border: `1px solid rgba(196,122,46,0.3)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={goldLt} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,248,236,0.45)", marginBottom: 4 }}>Showreel</div>
+                  <div style={{ fontFamily: serif, fontSize: "1.1rem", fontWeight: 500, color: "#FFF8EC", marginBottom: 6 }}>Watch {d.name.split(" ")[0]} in action</div>
+                  <a href={d.performance.showreel} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12.5, color: goldLt, textDecoration: "none", fontWeight: 600 }}>▶ Open Showreel →</a>
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+              {/* Genres */}
+              {d.performance.genres?.length > 0 && (
+                <div style={{ background: "#fff", borderRadius: 16, padding: "20px", border: "1px solid rgba(196,122,46,0.1)", gridColumn: d.performance.instruments?.length ? "auto" : "1 / -1" }}>
+                  <h3 style={{ fontSize: 13, fontWeight: 700, color: ink, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>Genres / Styles</h3>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                    {d.performance.genres.map(g => (
+                      <span key={g} style={{ background: cream, border: `1px solid rgba(196,122,46,0.2)`, borderRadius: 100, padding: "5px 13px", fontSize: 12.5, fontWeight: 600, color: "#4A3020" }}>{g}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Instruments */}
+              {d.performance.instruments?.length > 0 && (
+                <div style={{ background: "#fff", borderRadius: 16, padding: "20px", border: "1px solid rgba(196,122,46,0.1)" }}>
+                  <h3 style={{ fontSize: 13, fontWeight: 700, color: ink, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>Instruments / Gear</h3>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                    {d.performance.instruments.map(inst => (
+                      <span key={inst} style={{ background: cream, border: `1px solid rgba(196,122,46,0.2)`, borderRadius: 100, padding: "5px 13px", fontSize: 12.5, fontWeight: 600, color: "#4A3020" }}>{inst}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Social links */}
+            {(d.performance.instagram || d.performance.youtube) && (
+              <div style={{ background: "#fff", borderRadius: 16, padding: "20px", border: "1px solid rgba(196,122,46,0.1)", marginBottom: 16 }}>
+                <h3 style={{ fontSize: 13, fontWeight: 700, color: ink, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>Social & Links</h3>
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                  {d.performance.instagram && (
+                    <a href={`https://instagram.com/${d.performance.instagram.replace("@", "")}`} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 100, background: "linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366)", color: "#fff", textDecoration: "none", fontSize: 13, fontWeight: 600 }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                      {d.performance.instagram}
+                    </a>
+                  )}
+                  {d.performance.youtube && (
+                    <a href={`https://${d.performance.youtube}`} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 100, background: "#FF0000", color: "#fff", textDecoration: "none", fontSize: 13, fontWeight: 600 }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                      YouTube
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Setlist */}
+            {d.performance.setlist && (
+              <div style={{ background: "#fff", borderRadius: 16, padding: "20px", border: "1px solid rgba(196,122,46,0.1)" }}>
+                <h3 style={{ fontSize: 13, fontWeight: 700, color: ink, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>Sample Set / Rundown</h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {d.performance.setlist.split("\n").filter(Boolean).map((line, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                      <span style={{ width: 22, height: 22, borderRadius: "50%", background: cream, border: `1px solid rgba(196,122,46,0.2)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: gold, flexShrink: 0, marginTop: 1 }}>{i + 1}</span>
+                      <span style={{ fontSize: 13.5, color: "#4A3020", lineHeight: 1.5 }}>{line}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
