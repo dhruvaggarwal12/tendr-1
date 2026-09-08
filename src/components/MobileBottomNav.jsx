@@ -212,7 +212,21 @@ function BottomNavInner() {
               </div>
             </div>
             <button
-              onClick={() => { setMyEventModal(null); navigate('/plan-event/form'); }}
+              onClick={() => {
+                setMyEventModal(null);
+                // If an OccasionDetail plan is in progress, return to that page
+                let slug = null;
+                try {
+                  for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i);
+                    if (k && k.startsWith('tendr-plan-')) {
+                      const d = JSON.parse(localStorage.getItem(k) || 'null');
+                      if (d && d.step > 0) { slug = k.replace('tendr-plan-', ''); break; }
+                    }
+                  }
+                } catch {}
+                navigate(slug ? `/occasions/${slug}` : '/plan-event/form');
+              }}
               style={{width:'100%',padding:'13px 0',borderRadius:14,background:'linear-gradient(135deg,#C47A2E,#CCAB4A)',color:'#fff',fontSize:14,fontWeight:700,border:'none',cursor:'pointer',fontFamily:font,boxShadow:'0 4px 16px rgba(196,122,46,0.35)'}}
             >
               Continue Planning →

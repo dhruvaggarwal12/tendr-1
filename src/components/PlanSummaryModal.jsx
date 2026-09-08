@@ -814,7 +814,20 @@ export function MyEventFloatDesktop() {
               </div>
             </div>
             <button
-              onClick={() => { setModal(false); navigate('/plan-event/form'); }}
+              onClick={() => {
+                setModal(false);
+                let slug = null;
+                try {
+                  for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i);
+                    if (k && k.startsWith('tendr-plan-')) {
+                      const d = JSON.parse(localStorage.getItem(k) || 'null');
+                      if (d && d.step > 0) { slug = k.replace('tendr-plan-', ''); break; }
+                    }
+                  }
+                } catch {}
+                navigate(slug ? `/occasions/${slug}` : '/plan-event/form');
+              }}
               style={{ width: '100%', padding: '11px 0', borderRadius: 12, background: GOLD, color: '#fff', fontSize: 13.5, fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 4px 14px rgba(196,122,46,0.3)' }}
             >
               Continue Planning →
