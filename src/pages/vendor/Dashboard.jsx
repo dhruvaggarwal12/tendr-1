@@ -482,6 +482,59 @@ const TYPE_CONFIG = {
     quickTips:['Wedding invitation designs are your portfolio anchors — keep them updated monthly','Quote by quantity — price breaks at 50, 100, 200, 500 cards keep clients on the phone','Always get content approved in writing before printing — saves disputes every time'],
     emptyGigMsg:'No stationery orders yet — log your first design order to start tracking.',
   },
+  // ── Key-alias fixes: match exact registration values ──
+  'Tent & Furniture': {
+    isArtist:false, emoji:'⛺', term:'Job', terms:'Jobs', invLabel:'Inventory', invEmoji:'🏕️',
+    invCats:['Shamiana / Tent','Mandap Structure','Chairs (folding)','Chairs (banquet/cushioned)','Tables (round)','Tables (rectangular)','Stage / Platform','Red Carpet','Draping Fabric','Basic Lighting','Generator','Cooler / AC Unit','Other'],
+    invPlaceholder:'e.g. 40×60 ft shamiana tent',
+    profileTools:[
+      { label:'Setup Photos',             sub:'Past weddings, tent & mandap setups',   icon:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+      { label:'Setup Types & Capacity',   sub:'Wedding, reception, corporate pavilion', icon:<><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/></> },
+      { label:'Delivery Radius',          sub:'Areas you cover & outstation charges',  icon:<><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></> },
+      { label:'Social Links',             sub:'WhatsApp, Facebook, Instagram',         icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['Show your largest setup — it anchors client expectations and upsells naturally','List your delivery radius clearly — saves you from unworkable bookings','Always do a site visit before finalising — venue constraints change pricing'],
+    emptyGigMsg:'No tent or furniture jobs yet — log your first event to start tracking.',
+  },
+  'Gift & Favours': {
+    isArtist:false, emoji:'🎁', term:'Order', terms:'Orders', invLabel:'Stock', invEmoji:'🎁',
+    invCats:['Baskets / Boxes','Tissue Paper & Filler','Ribbons & Bows','Gift Tags','Customised Printed Items','Dry Fruits / Nuts','Chocolates','Candles','Skincare Products','Drinkware / Mugs','Packing Tape & Scissors','Other'],
+    invPlaceholder:'e.g. Premium wicker basket, medium',
+    profileTools:[
+      { label:'Hamper Gallery',           sub:'Themes, occasions, unboxing photos',    icon:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+      { label:'Occasion Specialities',    sub:'Wedding, corporate, Diwali, baby shower', icon:<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></> },
+      { label:'Customisation Options',    sub:'Branding, personalised items, themes',  icon:<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></> },
+      { label:'Social Links',             sub:'Instagram, WhatsApp catalogue',         icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['Diwali & wedding hampers sell out early — take advance orders in bulk','Show the unboxing experience — reels work brilliantly for hampers','Offer bulk corporate pricing — one corporate client equals 50+ orders'],
+    emptyGigMsg:'No gift orders yet — log your first order to start tracking.',
+  },
+  'Transportation': {
+    isArtist:false, emoji:'🚗', term:'Job', terms:'Jobs', invLabel:'Fleet', invEmoji:'🚗',
+    invCats:['Sedan / Car','SUV / Luxury Car','Vintage / Classic Car','Mini Bus (18-seater)','Bus (32-seater)','Tempo Traveller','Truck / Goods Vehicle','Bike / Two-wheeler','Decoration Kit','Driver Uniform','Other'],
+    invPlaceholder:'e.g. Mercedes E-Class, 2023',
+    profileTools:[
+      { label:'Fleet Photos',             sub:'Vehicle photos, decorated & clean',     icon:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+      { label:'Vehicle Types',            sub:'Luxury car, vintage, bus, tempo…',      icon:<><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></> },
+      { label:'Service Areas',            sub:'Routes, outstation, airport transfers', icon:<><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></> },
+      { label:'Social Links',             sub:'WhatsApp, Instagram, website',          icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['Decorated bridal car photos get the most enquiries — always have them ready','State your outstation rate clearly — per km or flat package per day','Confirm driver licensing & insurance before every booking — clients always ask'],
+    emptyGigMsg:'No transport jobs yet — log your first event booking to start tracking.',
+  },
+  'Security': {
+    isArtist:false, emoji:'🛡️', term:'Job', terms:'Jobs', invLabel:'Equipment', invEmoji:'🛡️',
+    invCats:['Uniform Set','Walkie-Talkie','Baton / Lathi','Metal Detector (handheld)','Door Frame Metal Detector','Barricades','Hi-Viz Vest','Torch / Flashlight','First Aid Kit','Vehicle','Other'],
+    invPlaceholder:'e.g. Handheld metal detector (10 units)',
+    profileTools:[
+      { label:'Past Event Photos',        sub:'Crowd management, event security',      icon:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+      { label:'Services Offered',         sub:'Crowd management, VIP escort, patrol',  icon:<><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/></> },
+      { label:'Team & Licensing',         sub:'Guard count, certifications, PSARA',    icon:<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></> },
+      { label:'Social Links',             sub:'LinkedIn, WhatsApp, website',           icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['Always confirm the guard-to-guest ratio before quoting — 1:50 is standard for events','List your PSARA licence prominently — it\'s the first thing organisers check','Metal detector availability is an upsell — quote it separately'],
+    emptyGigMsg:'No security jobs yet — log your first event to start tracking.',
+  },
   // Default fallback for any unlisted type
   'default': {
     isArtist:false, emoji:'💼', term:'Order', terms:'Orders', invLabel:'Inventory', invEmoji:'📦',

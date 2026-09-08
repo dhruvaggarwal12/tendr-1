@@ -17,7 +17,7 @@ const SERVICE_TYPE_LABELS = {
   Performer: "Performer", Musician: "Musician", Singer: "Singer", Comedian: "Comedian",
 };
 
-const GIG_PRO_TYPES = ['DJ', 'Emcee', 'Anchor', 'Band', 'Choreographer', 'Performer', 'Musician', 'Singer', 'Comedian'];
+const GIG_PRO_TYPES = ['DJ', 'Emcee/Host', 'Anchor', 'Band', 'Choreographer', 'Performer', 'Musician', 'Singer', 'Stand-up Comedian', 'Magician', 'AV Setup'];
 
 const GIG_GENRE_OPTIONS = ['Bollywood', 'EDM', 'Classical', 'Hip-Hop', 'Sufi', 'Punjabi', 'Jazz', 'Rock', 'Pop', 'Folk', 'Ghazal', 'Devotional'];
 const GIG_LANG_OPTIONS = ['Hindi', 'English', 'Punjabi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam', 'Bengali', 'Gujarati', 'Marathi'];
