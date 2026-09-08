@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
@@ -20,6 +20,7 @@ const GH_HERO_FALLBACK = [
 
 const GiftHampersCakes = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { token } = useSelector(s => s.auth);
   const { openExistingChat } = useChatOverlay();
   const [samples, setSamples] = useState([]);
@@ -46,6 +47,12 @@ const GiftHampersCakes = () => {
   const [similarSheetOpen, setSimilarSheetOpen] = useState(false);
   const [heroIdx, setHeroIdx] = useState(0);
   const [quizOpen, setQuizOpen] = useState(false);
+  // Auto-open quiz when navigated with ?quiz=true
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get("quiz") === "true") {
+      setQuizOpen(true);
+    }
+  }, [location.search]);
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState({}); // productId → qty
   const [checkoutOpen, setCheckoutOpen] = useState(false);

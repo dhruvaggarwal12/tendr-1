@@ -2300,9 +2300,9 @@ const Home = () => {
                 onClick={() => navigate("/gift-hampers-cakes")}
                 style={{ background: "#C47A2E", color: "#fff", fontSize: 14, fontWeight: 600, padding: "13px 28px", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", letterSpacing: "0.01em" }}
               >Browse Hampers →</button>
-              <button onClick={() => navigate("/hamper-builder")}
+              <button onClick={() => navigate("/gift-hampers-cakes?quiz=true")}
                 style={{ background: "transparent", color: "rgba(204,171,74,0.75)", fontSize: 13, fontWeight: 600, padding: 0, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", textDecoration: "underline", textDecorationColor: "rgba(204,171,74,0.3)", textUnderlineOffset: "4px" }}>
-                Build your own
+                🎁 Find Your Gift
               </button>
             </div>
           </motion.div>
