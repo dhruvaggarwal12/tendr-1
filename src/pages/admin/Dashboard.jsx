@@ -4865,9 +4865,9 @@ const AdminDashboard = () => {
                     onClick={async () => {
                       setGhAutoTagging(true); setGhAutoTagMsg("");
                       try {
-                        const r = await fetch(`${BASE_URL}/admin/gift-hamper-samples/auto-tag-all`, { method:"POST", headers:{ Authorization:`Bearer ${token}`, "Content-Type":"application/json" }, credentials:"include" });
+                        const r = await fetch(`${BASE_URL}/admin/gift-hamper-samples/auto-tag-all`, { method:"POST", headers:{ Authorization:`Bearer ${token}`, "Content-Type":"application/json" }, credentials:"include", body: JSON.stringify({ force: true }) });
                         const d = await r.json();
-                        setGhAutoTagMsg(d.success ? `✓ Tagged ${d.updated} of ${d.total} photos` : (d.error || "Failed"));
+                        setGhAutoTagMsg(d.success ? `✓ Tagged ${d.updated} of ${d.total} photos${d.failed ? ` (${d.failed} failed)` : ""}` : (d.error || "Failed"));
                       } catch(e) { setGhAutoTagMsg("Error: " + e.message); }
                       finally { setGhAutoTagging(false); }
                     }}
