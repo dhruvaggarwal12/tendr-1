@@ -693,32 +693,35 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
   return (
     <div style={{ overflowX: "hidden", width: "100%" }}>
       {/* Mobile-only: full-width portrait with all info overlaid */}
-      <div className="gp-mobile-hero-portrait" style={{ display: "none", position: "relative", width: "100%", height: 480, overflow: "hidden" }}>
+      <div className="gp-mobile-hero-portrait" style={{ display: "none", position: "relative", width: "100%", height: 500, overflow: "hidden" }}>
         <img src={portraitSrc} alt={d.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }} />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(28,10,4,0.08) 0%, transparent 30%, rgba(28,10,4,0.72) 65%, rgba(28,10,4,0.88) 100%)" }} />
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px 20px 24px" }}>
+        {/* Subtle top vignette */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(28,10,4,0.18) 0%, transparent 28%)" }} />
+        {/* Cloud-shaped dark zone — rounded top, fades to parch at very bottom */}
+        <div style={{ position: "absolute", bottom: 0, left: "-12%", right: "-12%", height: "72%", borderRadius: "50% 50% 0 0 / 30% 30% 0 0", background: "linear-gradient(to bottom, transparent 0%, rgba(28,10,4,0.54) 22%, rgba(28,10,4,0.88) 58%, rgba(28,10,4,0.82) 82%, rgba(240,232,220,0.65) 96%, rgba(240,232,220,1) 100%)" }} />
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 20px 28px" }}>
           {d.available && (
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(34,197,94,0.2)", color: "#7BF5A0", borderRadius: 100, padding: "4px 11px", fontSize: 11, fontWeight: 700, marginBottom: 10, border: "1px solid rgba(34,197,94,0.3)" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(34,197,94,0.22)", color: "#7BF5A0", borderRadius: 100, padding: "4px 11px", fontSize: 11, fontWeight: 700, marginBottom: 10, border: "1px solid rgba(34,197,94,0.3)" }}>
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", display: "inline-block" }} />
               Available for Bookings
             </div>
           )}
-          <h1 style={{ fontFamily: serif, fontSize: "2rem", fontWeight: 500, color: "#FFF8EC", lineHeight: 1.1, marginBottom: 8 }}>{d.name}</h1>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-            {d.verified && <span style={{ fontSize: 11, fontWeight: 700, color: "#7BF5A0" }}>✓ Verified</span>}
-            <span style={{ fontSize: 12.5, color: "rgba(255,248,236,0.75)" }}>Professional {d.serviceType}</span>
+          <h1 style={{ fontFamily: serif, fontSize: "1.85rem", fontWeight: 500, color: "#FFF8EC", lineHeight: 1.1, marginBottom: 7, textShadow: "0 2px 12px rgba(28,10,4,0.6)" }}>{d.name}</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 7 }}>
+            {d.verified && <span style={{ fontSize: 11, fontWeight: 700, color: "#7BF5A0", textShadow: "0 1px 6px rgba(28,10,4,0.5)" }}>✓ Verified</span>}
+            <span style={{ fontSize: 12, color: "rgba(255,248,236,0.8)" }}>Professional {d.serviceType}</span>
             <span style={{ color: "rgba(255,248,236,0.35)" }}>|</span>
-            <span style={{ fontSize: 12, color: "rgba(255,248,236,0.75)", display: "flex", alignItems: "center", gap: 3 }}>
+            <span style={{ fontSize: 11.5, color: "rgba(255,248,236,0.8)", display: "flex", alignItems: "center", gap: 3 }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               {d.city}
             </span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 7 }}>
             <Stars rating={d.rating} size={13} />
             <span style={{ fontSize: 13, fontWeight: 700, color: goldLt }}>{d.rating}</span>
-            <span style={{ fontSize: 12, color: "rgba(255,248,236,0.65)" }}>({d.reviews} reviews)</span>
+            <span style={{ fontSize: 11.5, color: "rgba(255,248,236,0.65)" }}>({d.reviews} reviews)</span>
           </div>
-          <p style={{ fontFamily: serif, fontSize: "0.9rem", fontStyle: "italic", color: "rgba(255,248,236,0.8)", lineHeight: 1.5 }}>"{d.tagline}"</p>
+          <p style={{ fontFamily: serif, fontSize: "0.88rem", fontStyle: "italic", color: "rgba(255,248,236,0.82)", lineHeight: 1.5, textShadow: "0 1px 8px rgba(28,10,4,0.5)" }}>"{d.tagline}"</p>
         </div>
       </div>
 
@@ -752,9 +755,9 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
         </div>
 
         {/* RIGHT col: all scrollable content */}
-        <div className="gp-content-col">
+        <div className="gp-content-col" style={{ minWidth: 0, overflowX: "hidden" }}>
           {/* Info section */}
-          <div style={{ background: parch, borderBottom: "1px solid rgba(196,122,46,0.1)", padding: "36px 32px 28px" }}>
+          <div className="gp-info-header" style={{ background: parch, borderBottom: "1px solid rgba(196,122,46,0.1)", padding: "36px 32px 28px" }}>
             <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
               {/* Name / rating / CTAs */}
               <div style={{ flex: 1 }}>
@@ -832,7 +835,7 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
           </div>
 
           {/* Stats bar */}
-          <div style={{ background: cream, padding: "20px 32px 0" }}>
+          <div className="gp-stats-bar" style={{ background: cream, padding: "20px 32px 0" }}>
             <div className="gp-stats-row" style={{ background: "#fff", borderRadius: 16, display: "flex", flexWrap: "wrap", border: "1px solid rgba(196,122,46,0.1)", overflow: "hidden", boxShadow: "0 2px 12px rgba(28,10,4,0.05)" }}>
               {[
                 { label: "Events Done",   value: `${d.events}+`,    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
@@ -1220,9 +1223,12 @@ export default function VendorDemo() {
         @media (max-width: 768px) {
           .gp-mobile-hero-portrait { display: block !important; }
           .gp-portrait-col { display: none !important; }
-          .gp-page-layout { grid-template-columns: 1fr !important; }
+          .gp-page-layout { grid-template-columns: 1fr !important; width: 100% !important; overflow-x: hidden !important; }
+          .gp-content-col { min-width: 0 !important; max-width: 100vw !important; overflow-x: hidden !important; }
           .gp-hero-col-right { display: none !important; }
           .gp-hero-info-box { display: none !important; }
+          .gp-info-header { padding: 20px 16px 20px !important; }
+          .gp-stats-bar { padding: 14px 16px 0 !important; }
           .gp-desktop-ctas { display: none !important; }
           .gp-mobile-ctas { display: flex !important; }
           .gp-stats-row > div { flex: 0 0 50% !important; border-right: none !important; border-bottom: 1px solid rgba(196,122,46,0.1) !important; }
