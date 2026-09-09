@@ -277,12 +277,12 @@ const DEMOS = {
   },
 
   Anchor: {
-    name: "Rahul Khanna",
+    name: "Rohan Mehta",
     tagline: "Every event needs a voice. Let's make it unforgettable.",
     serviceType: "Anchor",
-    city: "Delhi",
-    locations: ["Delhi","Noida","Gurgaon","All India (outstation)"],
-    rating: 4.8, reviews: 54, events: 430, responseTime: "< 2 hrs", years: 10, teamSize: 1,
+    city: "Delhi NCR",
+    locations: ["Delhi NCR","Noida","Gurgaon","All India (outstation)"],
+    rating: 4.8, reviews: 154, events: 430, responseTime: "< 2 hrs", years: 10, teamSize: 1,
     verified: true,
     phone: "+91 98765 43210",
     available: true,
@@ -664,8 +664,8 @@ function PerformanceContent({ d }) {
 }
 
 // ── GigProProfile — magazine layout for Anchor / DJ / Band ───────────────────
-// Deterministic randomuser.me portrait IDs per vendor type
-const PORTRAIT_IDS = { Anchor: 45, DJ: 32, Band: 67 };
+// Portrait sources per vendor type (Anchor uses local asset)
+const PORTRAIT_IDS = { Anchor: null, DJ: 32, Band: 67 };
 // Pool of randomuser.me IDs for portfolio grid photos (alternating men/women)
 const PORTFOLIO_POOL = [
   { g: "men",   id: 24 }, { g: "women", id: 15 }, { g: "men",   id: 37 },
@@ -678,7 +678,9 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
   const [activeCategory, setActiveCategory] = useState("All");
 
   const visibleTabs = TABS.filter(t => t !== "Performance" || !!d.performance);
-  const portraitSrc = `https://randomuser.me/api/portraits/men/${PORTRAIT_IDS[d.serviceType] || 45}.jpg`;
+  const portraitSrc = PORTRAIT_IDS[d.serviceType] === null
+    ? "/anchor-portrait.png"
+    : `https://randomuser.me/api/portraits/men/${PORTRAIT_IDS[d.serviceType] || 45}.jpg`;
   const portfolioImgSrc = (idx) => {
     const p = PORTFOLIO_POOL[idx % PORTFOLIO_POOL.length];
     return `https://randomuser.me/api/portraits/${p.g}/${p.id}.jpg`;
@@ -708,12 +710,12 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
           </div>
         </div>
 
-        <div className="gp-hero-grid" style={{ maxWidth: 1100, margin: "0 auto", padding: "36px 28px 40px", display: "grid", gridTemplateColumns: "260px 1fr 210px", gap: 32, alignItems: "center" }}>
+        <div className="gp-hero-grid" style={{ maxWidth: 1100, margin: "0 auto", padding: "36px 28px 40px", display: "grid", gridTemplateColumns: "300px 1fr 210px", gap: 32, alignItems: "center" }}>
 
           {/* Col 1: decorative strip + arch portrait + card */}
           <div className="gp-hero-col-left" style={{ position: "relative" }}>
             {/* Warm blob behind portrait */}
-            <div style={{ position: "absolute", top: 10, left: "50%", transform: "translateX(-40%)", width: 200, height: 220, borderRadius: "50%", background: "rgba(196,122,46,0.1)", zIndex: 0 }} />
+            <div style={{ position: "absolute", top: 10, left: "50%", transform: "translateX(-40%)", width: 260, height: 290, borderRadius: "50%", background: "rgba(196,122,46,0.12)", zIndex: 0 }} />
 
             {/* People · Events · Stories strip */}
             <div style={{ display: "flex", gap: 10, position: "absolute", left: 0, top: 40, zIndex: 2 }}>
@@ -726,7 +728,7 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
             </div>
 
             {/* Arch portrait */}
-            <div style={{ width: 190, height: 265, borderRadius: "95px 95px 18px 18px", overflow: "hidden", marginLeft: "auto", marginRight: 0, position: "relative", zIndex: 1, boxShadow: "0 16px 48px rgba(28,10,4,0.18)" }}>
+            <div style={{ width: 240, height: 340, borderRadius: "120px 120px 20px 20px", overflow: "hidden", marginLeft: "auto", marginRight: 0, position: "relative", zIndex: 1, boxShadow: "0 20px 56px rgba(28,10,4,0.22)" }}>
               <img
                 src={portraitSrc}
                 alt={d.name}
