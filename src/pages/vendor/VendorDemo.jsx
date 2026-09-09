@@ -692,36 +692,45 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
 
   return (
     <div style={{ overflowX: "hidden", width: "100%" }}>
-      {/* Mobile-only: full-width portrait with all info overlaid */}
-      <div className="gp-mobile-hero-portrait" style={{ display: "none", position: "relative", width: "100%", height: 500, overflow: "hidden" }}>
-        <img src={portraitSrc} alt={d.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }} />
-        {/* Subtle top vignette */}
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(28,10,4,0.18) 0%, transparent 28%)" }} />
-        {/* Cloud-shaped dark zone — rounded top, fades to parch at very bottom */}
-        <div style={{ position: "absolute", bottom: 0, left: "-12%", right: "-12%", height: "72%", borderRadius: "50% 50% 0 0 / 30% 30% 0 0", background: "linear-gradient(to bottom, transparent 0%, rgba(28,10,4,0.54) 22%, rgba(28,10,4,0.88) 58%, rgba(28,10,4,0.82) 82%, rgba(240,232,220,0.65) 96%, rgba(240,232,220,1) 100%)" }} />
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 20px 28px" }}>
+      {/* Mobile-only: portrait + organic parch info blob */}
+      <div className="gp-mobile-hero-portrait" style={{ display: "none", background: parch }}>
+        {/* Photo area */}
+        <div style={{ position: "relative", width: "100%", height: 340, overflow: "hidden" }}>
+          <img src={portraitSrc} alt={d.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }} />
+          {/* Subtle top vignette only */}
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(28,10,4,0.2) 0%, transparent 35%, transparent 60%, rgba(240,232,220,0.5) 88%, rgba(240,232,220,1) 100%)" }} />
+        </div>
+        {/* Organic parch blob — overlaps bottom of photo */}
+        <div style={{ marginTop: -56, position: "relative", zIndex: 2, background: parch, borderRadius: "58% 42% 0 0 / 44% 36% 0 0", paddingTop: 32, paddingLeft: 22, paddingRight: 22, paddingBottom: 8 }}>
           {d.available && (
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(34,197,94,0.22)", color: "#7BF5A0", borderRadius: 100, padding: "4px 11px", fontSize: 11, fontWeight: 700, marginBottom: 10, border: "1px solid rgba(34,197,94,0.3)" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(34,197,94,0.12)", color: "#16A34A", borderRadius: 100, padding: "4px 12px", fontSize: 11, fontWeight: 700, marginBottom: 10, border: "1px solid rgba(34,197,94,0.22)" }}>
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", display: "inline-block" }} />
               Available for Bookings
             </div>
           )}
-          <h1 style={{ fontFamily: serif, fontSize: "1.85rem", fontWeight: 500, color: "#FFF8EC", lineHeight: 1.1, marginBottom: 7, textShadow: "0 2px 12px rgba(28,10,4,0.6)" }}>{d.name}</h1>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 7 }}>
-            {d.verified && <span style={{ fontSize: 11, fontWeight: 700, color: "#7BF5A0", textShadow: "0 1px 6px rgba(28,10,4,0.5)" }}>✓ Verified</span>}
-            <span style={{ fontSize: 12, color: "rgba(255,248,236,0.8)" }}>Professional {d.serviceType}</span>
-            <span style={{ color: "rgba(255,248,236,0.35)" }}>|</span>
-            <span style={{ fontSize: 11.5, color: "rgba(255,248,236,0.8)", display: "flex", alignItems: "center", gap: 3 }}>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
+            <h1 style={{ fontFamily: serif, fontSize: "1.95rem", fontWeight: 500, color: ink, lineHeight: 1.1 }}>{d.name}</h1>
+            {d.verified && (
+              <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 3, background: "rgba(34,197,94,0.1)", color: "#16A34A", borderRadius: 100, padding: "3px 8px", fontSize: 11, fontWeight: 700, marginTop: 6 }}>
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Verified
+              </span>
+            )}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap", marginBottom: 8 }}>
+            <span style={{ fontSize: 13, color: muted, fontWeight: 500 }}>Professional {d.serviceType}</span>
+            <span style={{ color: "rgba(155,116,80,0.4)" }}>·</span>
+            <span style={{ fontSize: 12.5, color: muted, display: "flex", alignItems: "center", gap: 3 }}>
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               {d.city}
             </span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 7 }}>
-            <Stars rating={d.rating} size={13} />
-            <span style={{ fontSize: 13, fontWeight: 700, color: goldLt }}>{d.rating}</span>
-            <span style={{ fontSize: 11.5, color: "rgba(255,248,236,0.65)" }}>({d.reviews} reviews)</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+            <Stars rating={d.rating} size={14} />
+            <span style={{ fontSize: 13.5, fontWeight: 700, color: ink }}>{d.rating}</span>
+            <span style={{ fontSize: 12, color: muted }}>({d.reviews} reviews)</span>
           </div>
-          <p style={{ fontFamily: serif, fontSize: "0.88rem", fontStyle: "italic", color: "rgba(255,248,236,0.82)", lineHeight: 1.5, textShadow: "0 1px 8px rgba(28,10,4,0.5)" }}>"{d.tagline}"</p>
+          <p style={{ fontFamily: serif, fontSize: "0.92rem", fontStyle: "italic", color: "#6B4B2A", lineHeight: 1.55 }}>"{d.tagline}"</p>
         </div>
       </div>
 
@@ -1213,6 +1222,7 @@ export default function VendorDemo() {
         .vd-type-pill.active { background: ${ink}; color: ${goldLt}; border-color: ${ink}; }
         .vd-tab { padding: 10px 20px; font-size: 14px; font-weight: 600; border: none; background: none; cursor: pointer; color: #9B7450; border-bottom: 2.5px solid transparent; transition: all 0.15s; font-family: ${font}; white-space: nowrap; }
         .vd-tab.active { color: ${ink}; border-color: ${gold}; }
+        .gp-content-grid > div { min-width: 0; }
         @media (max-width: 900px) {
           .gp-content-grid { grid-template-columns: 1fr !important; }
           .gp-cat-grid { grid-template-columns: repeat(2, 1fr) !important; }
@@ -1221,7 +1231,7 @@ export default function VendorDemo() {
           .gp-hero-col-right { display: none !important; }
         }
         @media (max-width: 768px) {
-          .gp-mobile-hero-portrait { display: block !important; }
+          .gp-mobile-hero-portrait { display: block !important; overflow: hidden; }
           .gp-portrait-col { display: none !important; }
           .gp-page-layout { grid-template-columns: 1fr !important; width: 100% !important; overflow-x: hidden !important; }
           .gp-content-col { min-width: 0 !important; max-width: 100vw !important; overflow-x: hidden !important; }
