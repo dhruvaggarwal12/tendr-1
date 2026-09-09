@@ -716,7 +716,7 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
           {/* Col 1: decorative strip + arch portrait + card */}
           <div className="gp-hero-col-left" style={{ position: "relative" }}>
             {/* Warm blob behind portrait */}
-            <div style={{ position: "absolute", top: 20, left: "50%", transform: "translateX(-35%)", width: 390, height: 450, borderRadius: "50%", background: "rgba(196,122,46,0.13)", zIndex: 0 }} />
+            <div style={{ position: "absolute", top: 10, left: "50%", transform: "translateX(-30%)", width: 440, height: 540, borderRadius: "50%", background: "rgba(196,122,46,0.12)", zIndex: 0 }} />
 
             {/* People · Events · Stories strip */}
             <div style={{ display: "flex", gap: 10, position: "absolute", left: 0, top: 40, zIndex: 2 }}>
@@ -729,7 +729,7 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
             </div>
 
             {/* Arch portrait */}
-            <div style={{ width: 370, height: 510, borderRadius: "185px 185px 22px 22px", overflow: "hidden", marginLeft: "auto", marginRight: 0, position: "relative", zIndex: 1, boxShadow: "0 24px 64px rgba(28,10,4,0.24)" }}>
+            <div style={{ width: 400, height: 600, borderRadius: "200px 200px 24px 24px", overflow: "hidden", marginLeft: "auto", marginRight: 0, position: "relative", zIndex: 1, boxShadow: "0 28px 72px rgba(28,10,4,0.28)" }}>
               <img
                 src={portraitSrc}
                 alt={d.name}
@@ -926,42 +926,48 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
                         { g: "women", id: 44 }, { g: "men", id: 55 }, { g: "women", id: 22 },
                         { g: "men", id: 33 }, { g: "women", id: 66 }, { g: "men", id: 11 },
                       ];
+                      const relTime = ["2 weeks ago", "1 month ago", "3 weeks ago", "2 months ago"];
                       const r = d.testimonials[testimonialIdx % d.testimonials.length];
                       const av = avatarPool[testimonialIdx % avatarPool.length];
                       const total = d.testimonials.length;
+                      const eventLabel = r.event.split(/[,+]/)[0].trim();
                       return (
                         <div style={{ background: "#fff", borderRadius: 16, padding: "20px 22px", border: "1px solid rgba(196,122,46,0.1)", boxShadow: "0 2px 10px rgba(28,10,4,0.04)", position: "relative" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
                             <img
                               src={`https://randomuser.me/api/portraits/${av.g}/${av.id}.jpg`}
                               alt={r.name}
                               style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: `2px solid ${goldLt}` }}
                             />
                             <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: 14, fontWeight: 700, color: ink }}>{r.name}</div>
-                              <div style={{ fontSize: 12, color: muted }}>{r.event}</div>
+                              <div style={{ fontSize: 14, fontWeight: 700, color: ink, marginBottom: 3 }}>{r.name}</div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                <span style={{ fontSize: 11, fontWeight: 600, color: gold, background: "rgba(196,122,46,0.1)", borderRadius: 20, padding: "2px 8px" }}>{eventLabel}</span>
+                                <span style={{ fontSize: 11, color: muted }}>· {d.city}</span>
+                              </div>
                             </div>
                           </div>
                           <Stars rating={r.rating} size={13} />
                           <p style={{ fontSize: 13, color: "#4A3020", lineHeight: 1.75, marginTop: 10, fontStyle: "italic" }}>"{r.text.slice(0, 180)}{r.text.length > 180 ? "…" : ""}"</p>
+                          <div style={{ fontSize: 11, color: muted, marginTop: 6 }}>{relTime[testimonialIdx % relTime.length]}</div>
                           {/* Carousel controls */}
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 16 }}>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 14 }}>
                             <button
                               onClick={() => setTestimonialIdx(i => (i - 1 + total) % total)}
-                              style={{ width: 32, height: 32, borderRadius: "50%", border: `1.5px solid ${gold}`, background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: gold, fontSize: 16 }}
+                              style={{ width: 32, height: 32, borderRadius: "50%", border: `1.5px solid ${gold}`, background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: gold, fontSize: 18, lineHeight: 1 }}
                             >‹</button>
                             <div style={{ display: "flex", gap: 6 }}>
                               {d.testimonials.map((_, dotIdx) => (
                                 <button
                                   key={dotIdx}
                                   onClick={() => setTestimonialIdx(dotIdx)}
-                                  style={{ width: dotIdx === testimonialIdx % total ? 18 : 7, height: 7, borderRadius: 4, border: "none", cursor: "pointer", background: dotIdx === testimonialIdx % total ? gold : "rgba(196,122,46,0.25)", transition: "all 0.2s", padding: 0 }}
+                                  style={{ width: dotIdx === testimonialIdx % total ? 20 : 7, height: 7, borderRadius: 4, border: "none", cursor: "pointer", background: dotIdx === testimonialIdx % total ? gold : "rgba(196,122,46,0.25)", transition: "all 0.2s", padding: 0 }}
                                 />
                               ))}
                             </div>
                             <button
                               onClick={() => setTestimonialIdx(i => (i + 1) % total)}
-                              style={{ width: 32, height: 32, borderRadius: "50%", border: `1.5px solid ${gold}`, background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: gold, fontSize: 16 }}
+                              style={{ width: 32, height: 32, borderRadius: "50%", border: `1.5px solid ${gold}`, background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: gold, fontSize: 18, lineHeight: 1 }}
                             >›</button>
                           </div>
                         </div>
