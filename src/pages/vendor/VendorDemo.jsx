@@ -710,12 +710,12 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
           </div>
         </div>
 
-        <div className="gp-hero-grid" style={{ maxWidth: 1100, margin: "0 auto", padding: "36px 28px 40px", display: "grid", gridTemplateColumns: "300px 1fr 210px", gap: 32, alignItems: "center" }}>
+        <div className="gp-hero-grid" style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 28px 0", display: "grid", gridTemplateColumns: "320px 1fr 210px", gap: 32, alignItems: "flex-start" }}>
 
           {/* Col 1: decorative strip + arch portrait + card */}
           <div className="gp-hero-col-left" style={{ position: "relative" }}>
             {/* Warm blob behind portrait */}
-            <div style={{ position: "absolute", top: 10, left: "50%", transform: "translateX(-40%)", width: 260, height: 290, borderRadius: "50%", background: "rgba(196,122,46,0.12)", zIndex: 0 }} />
+            <div style={{ position: "absolute", top: 20, left: "50%", transform: "translateX(-35%)", width: 310, height: 360, borderRadius: "50%", background: "rgba(196,122,46,0.13)", zIndex: 0 }} />
 
             {/* People · Events · Stories strip */}
             <div style={{ display: "flex", gap: 10, position: "absolute", left: 0, top: 40, zIndex: 2 }}>
@@ -728,7 +728,7 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
             </div>
 
             {/* Arch portrait */}
-            <div style={{ width: 240, height: 340, borderRadius: "120px 120px 20px 20px", overflow: "hidden", marginLeft: "auto", marginRight: 0, position: "relative", zIndex: 1, boxShadow: "0 20px 56px rgba(28,10,4,0.22)" }}>
+            <div style={{ width: 290, height: 420, borderRadius: "145px 145px 20px 20px", overflow: "hidden", marginLeft: "auto", marginRight: 0, position: "relative", zIndex: 1, boxShadow: "0 24px 64px rgba(28,10,4,0.24)" }}>
               <img
                 src={portraitSrc}
                 alt={d.name}
@@ -744,7 +744,7 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
           </div>
 
           {/* Col 2: profile info */}
-          <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", paddingTop: 40, paddingBottom: 36 }}>
             {d.available && (
               <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(34,197,94,0.12)", color: "#16A34A", borderRadius: 100, padding: "5px 13px", fontSize: 12, fontWeight: 700, marginBottom: 16, alignSelf: "flex-start", border: "1px solid rgba(34,197,94,0.2)" }}>
                 <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22C55E", display: "inline-block" }} />
@@ -805,7 +805,7 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
           </div>
 
           {/* Col 3: selling points */}
-          <div className="gp-hero-col-right" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div className="gp-hero-col-right" style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 48, paddingBottom: 36 }}>
             {(d.sellingPoints || []).map((sp, i) => (
               <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                 <div style={{ width: 42, height: 42, borderRadius: "50%", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 8px rgba(28,10,4,0.08)", border: "1px solid rgba(196,122,46,0.12)" }}>
