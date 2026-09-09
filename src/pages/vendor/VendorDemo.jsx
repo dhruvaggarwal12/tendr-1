@@ -682,10 +682,9 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
   const portraitSrc = PORTRAIT_IDS[d.serviceType] === null
     ? "/anchor-portrait.png"
     : `https://randomuser.me/api/portraits/men/${PORTRAIT_IDS[d.serviceType] || 45}.jpg`;
-  const portfolioImgSrc = (idx) => {
-    const p = PORTFOLIO_POOL[idx % PORTFOLIO_POOL.length];
-    return `https://randomuser.me/api/portraits/${p.g}/${p.id}.jpg`;
-  };
+  const PORTFOLIO_OBJ_POS = ["center top", "20% top", "80% top", "center 25%", "10% top", "90% top", "50% 15%", "40% top"];
+  const portfolioImgSrc = () => portraitSrc;
+  const portfolioObjPos = (idx) => PORTFOLIO_OBJ_POS[idx % PORTFOLIO_OBJ_POS.length];
 
   const filteredPortfolio = activeCategory === "All"
     ? (d.portfolioCategories || [])
@@ -872,11 +871,11 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
                 <div className="gp-cat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 28 }}>
                   {filteredPortfolio.map((cat, i) => {
                     return (
-                      <div key={i} style={{ borderRadius: 14, overflow: "hidden", position: "relative", cursor: "pointer", aspectRatio: "3/4", boxShadow: "0 4px 14px rgba(28,10,4,0.12)", transition: "transform 0.2s, box-shadow 0.2s" }}
-                        onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 14px 32px rgba(28,10,4,0.22)"; }}
-                        onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(28,10,4,0.12)"; }}
+                      <div key={i} style={{ borderRadius: 16, overflow: "hidden", position: "relative", cursor: "pointer", aspectRatio: "3/4", transition: "transform 0.2s" }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = "none"; }}
                       >
-                        <img src={portfolioImgSrc(i)} alt={cat.label} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }} />
+                        <img src={portfolioImgSrc(i)} alt={cat.label} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: portfolioObjPos(i) }} />
                         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,4,2,0.85) 0%, rgba(10,4,2,0.15) 50%, transparent 100%)" }} />
                         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 14px" }}>
                           <div style={{ fontSize: 14.5, fontWeight: 700, color: "#FFF8EC", fontFamily: serif, marginBottom: 4 }}>{cat.label}</div>
