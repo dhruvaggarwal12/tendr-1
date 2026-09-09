@@ -691,22 +691,39 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
     : (d.portfolioCategories || []).filter(c => c.label === activeCategory);
 
   return (
-    <>
+    <div style={{ overflowX: "hidden", width: "100%" }}>
       {/* ── Hero ── */}
       <div style={{ background: parch, borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
 
-        {/* Mobile-only: full-width portrait with overlay script text */}
-        <div className="gp-mobile-hero-portrait" style={{ display: "none", position: "relative", width: "100%", height: 320, overflow: "hidden" }}>
-          <img
-            src={portraitSrc}
-            alt={d.name}
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
-          />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 35%, rgba(28,10,4,0.78) 100%)" }} />
-          <div style={{ position: "absolute", bottom: 22, left: 20, right: 20 }}>
-            <div style={{ fontFamily: dance, fontSize: 26, color: "#FFF8EC", lineHeight: 1.4, textShadow: "0 2px 12px rgba(0,0,0,0.5)" }}>
-              Let's make your<br/>event unforgettable.
+        {/* Mobile-only: full-width portrait with all info overlaid */}
+        <div className="gp-mobile-hero-portrait" style={{ display: "none", position: "relative", width: "100%", height: 480, overflow: "hidden" }}>
+          <img src={portraitSrc} alt={d.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(28,10,4,0.08) 0%, transparent 30%, rgba(28,10,4,0.72) 65%, rgba(28,10,4,0.88) 100%)" }} />
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px 20px 24px" }}>
+            {d.available && (
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(34,197,94,0.2)", color: "#7BF5A0", borderRadius: 100, padding: "4px 11px", fontSize: 11, fontWeight: 700, marginBottom: 10, border: "1px solid rgba(34,197,94,0.3)" }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", display: "inline-block" }} />
+                Available for Bookings
+              </div>
+            )}
+            <h1 style={{ fontFamily: serif, fontSize: "2rem", fontWeight: 500, color: "#FFF8EC", lineHeight: 1.1, marginBottom: 8 }}>{d.name}</h1>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+              {d.verified && (
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#7BF5A0" }}>✓ Verified</span>
+              )}
+              <span style={{ fontSize: 12.5, color: "rgba(255,248,236,0.75)" }}>Professional {d.serviceType}</span>
+              <span style={{ color: "rgba(255,248,236,0.35)" }}>|</span>
+              <span style={{ fontSize: 12, color: "rgba(255,248,236,0.75)", display: "flex", alignItems: "center", gap: 3 }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                {d.city}
+              </span>
             </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+              <Stars rating={d.rating} size={13} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: goldLt }}>{d.rating}</span>
+              <span style={{ fontSize: 12, color: "rgba(255,248,236,0.65)" }}>({d.reviews} reviews)</span>
+            </div>
+            <p style={{ fontFamily: serif, fontSize: "0.9rem", fontStyle: "italic", color: "rgba(255,248,236,0.8)", lineHeight: 1.5 }}>"{d.tagline}"</p>
           </div>
         </div>
 
@@ -744,34 +761,36 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
           </div>
 
           {/* Col 2: profile info */}
-          <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", paddingTop: 40, paddingBottom: 36 }}>
-            {d.available && (
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(34,197,94,0.12)", color: "#16A34A", borderRadius: 100, padding: "5px 13px", fontSize: 12, fontWeight: 700, marginBottom: 16, alignSelf: "flex-start", border: "1px solid rgba(34,197,94,0.2)" }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22C55E", display: "inline-block" }} />
-                Available for Bookings
-              </div>
-            )}
-            <h1 style={{ fontFamily: serif, fontSize: "clamp(1.9rem, 3.5vw, 2.7rem)", fontWeight: 500, color: ink, lineHeight: 1.05, marginBottom: 10 }}>{d.name}</h1>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
-              {d.verified && (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(34,197,94,0.1)", color: "#16A34A", borderRadius: 100, padding: "3px 9px", fontSize: 11, fontWeight: 700 }}>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  Verified
-                </span>
+          <div className="gp-hero-col-center" style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", paddingTop: 40, paddingBottom: 36 }}>
+            <div className="gp-hero-info-box">
+              {d.available && (
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(34,197,94,0.12)", color: "#16A34A", borderRadius: 100, padding: "5px 13px", fontSize: 12, fontWeight: 700, marginBottom: 16, alignSelf: "flex-start", border: "1px solid rgba(34,197,94,0.2)" }}>
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22C55E", display: "inline-block" }} />
+                  Available for Bookings
+                </div>
               )}
-              <span style={{ fontSize: 13.5, color: muted, fontWeight: 500 }}>Professional {d.serviceType}</span>
-              <span style={{ color: "rgba(155,116,80,0.4)" }}>|</span>
-              <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, color: muted }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                {d.city}
-              </span>
+              <h1 style={{ fontFamily: serif, fontSize: "clamp(1.9rem, 3.5vw, 2.7rem)", fontWeight: 500, color: ink, lineHeight: 1.05, marginBottom: 10 }}>{d.name}</h1>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+                {d.verified && (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(34,197,94,0.1)", color: "#16A34A", borderRadius: 100, padding: "3px 9px", fontSize: 11, fontWeight: 700 }}>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Verified
+                  </span>
+                )}
+                <span style={{ fontSize: 13.5, color: muted, fontWeight: 500 }}>Professional {d.serviceType}</span>
+                <span style={{ color: "rgba(155,116,80,0.4)" }}>|</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, color: muted }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  {d.city}
+                </span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                <Stars rating={d.rating} size={16} />
+                <span style={{ fontSize: 14, fontWeight: 700, color: ink }}>{d.rating}</span>
+                <span style={{ fontSize: 13, color: muted }}>({d.reviews} reviews)</span>
+              </div>
+              <p style={{ fontFamily: serif, fontSize: "1.05rem", fontStyle: "italic", color: "#6B4B2A", lineHeight: 1.6, marginBottom: 28 }}>"{d.tagline}"</p>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-              <Stars rating={d.rating} size={16} />
-              <span style={{ fontSize: 14, fontWeight: 700, color: ink }}>{d.rating}</span>
-              <span style={{ fontSize: 13, color: muted }}>({d.reviews} reviews)</span>
-            </div>
-            <p style={{ fontFamily: serif, fontSize: "1.05rem", fontStyle: "italic", color: "#6B4B2A", lineHeight: 1.6, marginBottom: 28 }}>"{d.tagline}"</p>
 
             {/* Desktop CTAs */}
             <div className="gp-desktop-ctas" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -1059,7 +1078,7 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -1211,14 +1230,17 @@ export default function VendorDemo() {
           .gp-mobile-hero-portrait { display: block !important; }
           .gp-hero-col-left { display: none !important; }
           .gp-hero-col-right { display: none !important; }
+          .gp-hero-info-box { display: none !important; }
+          .gp-hero-col-center { padding-top: 12px !important; padding-bottom: 16px !important; }
           .gp-desktop-ctas { display: none !important; }
           .gp-mobile-ctas { display: flex !important; }
-          .gp-hero-grid { padding: 20px 16px 24px !important; }
+          .gp-hero-grid { padding: 0 16px 4px !important; }
           .gp-stats-row > div { flex: 0 0 50% !important; border-right: none !important; border-bottom: 1px solid rgba(196,122,46,0.1) !important; }
           .gp-stats-row > div:nth-child(odd) { border-right: 1px solid rgba(196,122,46,0.1) !important; }
           .gp-stats-row > div:last-child { border-bottom: none !important; }
           .gp-sidebar { display: none !important; }
-          .gp-content-grid { padding: 16px 16px 32px !important; }
+          .gp-content-grid { padding: 16px 16px 32px !important; overflow-x: hidden !important; }
+          .gp-about-love > div { min-width: 0 !important; overflow-x: hidden !important; }
         }
       `}</style>
 
