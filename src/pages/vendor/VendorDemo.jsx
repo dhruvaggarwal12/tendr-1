@@ -664,8 +664,7 @@ function PerformanceContent({ d }) {
 }
 
 // ── GigProProfile — magazine layout for Anchor / DJ / Band ───────────────────
-function GigProProfile({ d, tab, setTab }) {
-  const [showBook, setShowBook] = useState(false);
+function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
   const [activeCategory, setActiveCategory] = useState("All");
 
   const visibleTabs = TABS.filter(t => t !== "Performance" || !!d.performance);
@@ -677,36 +676,50 @@ function GigProProfile({ d, tab, setTab }) {
 
   return (
     <>
-      {showBook && <BookModal vendor={d} onClose={() => setShowBook(false)} />}
-
       {/* ── Hero ── */}
-      <div style={{ background: "#fff", borderBottom: "1px solid rgba(196,122,46,0.08)" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 36px", display: "grid", gridTemplateColumns: "200px 1fr 220px", gap: 36, alignItems: "center" }}>
+      <div style={{ background: parch, borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+        <div className="gp-hero-grid" style={{ maxWidth: 1100, margin: "0 auto", padding: "36px 28px 40px", display: "grid", gridTemplateColumns: "260px 1fr 210px", gap: 32, alignItems: "center" }}>
 
-          {/* Col 1: arch portrait */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0 }}>
-            <div style={{ width: "100%", borderRadius: "100px 100px 18px 18px", overflow: "hidden", height: 270, position: "relative", boxShadow: "0 12px 36px rgba(28,10,4,0.18)" }}>
+          {/* Col 1: decorative strip + arch portrait + card */}
+          <div style={{ position: "relative" }}>
+            {/* Warm blob behind portrait */}
+            <div style={{ position: "absolute", top: 10, left: "50%", transform: "translateX(-40%)", width: 200, height: 220, borderRadius: "50%", background: "rgba(196,122,46,0.1)", zIndex: 0 }} />
+
+            {/* People · Events · Stories strip */}
+            <div style={{ display: "flex", gap: 10, position: "absolute", left: 0, top: 40, zIndex: 2 }}>
+              <div style={{ width: 2, borderRadius: 2, background: `rgba(196,122,46,0.35)`, minHeight: 100 }} />
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {["People", "Events", "Stories"].map(w => (
+                  <span key={w} style={{ fontFamily: dance, fontSize: 17, color: muted, lineHeight: 1.55 }}>{w}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Arch portrait */}
+            <div style={{ width: 190, height: 265, borderRadius: "95px 95px 18px 18px", overflow: "hidden", marginLeft: "auto", marginRight: 0, position: "relative", zIndex: 1, boxShadow: "0 16px 48px rgba(28,10,4,0.18)" }}>
               <img
-                src={`https://picsum.photos/seed/${encodeURIComponent(d.serviceType + "-portrait")}/400/540`}
+                src={`https://picsum.photos/seed/${encodeURIComponent(d.serviceType + "-portrait")}/380/530`}
                 alt={d.name}
                 style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
               />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,4,0.72) 0%, rgba(28,10,4,0.05) 50%, transparent 100%)" }} />
-              <div style={{ position: "absolute", bottom: 16, left: 0, right: 0, textAlign: "center" }}>
-                <span style={{ fontFamily: dance, fontSize: 20, color: "rgba(255,248,236,0.9)", letterSpacing: "0.02em" }}>People · Events · Stories</span>
-              </div>
+            </div>
+
+            {/* "Real moments. Real me." card */}
+            <div style={{ background: "#fff", borderRadius: 12, padding: "10px 16px", boxShadow: "0 6px 24px rgba(28,10,4,0.1)", display: "inline-block", marginTop: 12, marginLeft: 16, position: "relative", zIndex: 2 }}>
+              <div style={{ fontFamily: dance, fontSize: 15, color: muted, lineHeight: 1.5 }}>Real moments.</div>
+              <div style={{ fontFamily: dance, fontSize: 15, color: muted, lineHeight: 1.5 }}>Real me.</div>
             </div>
           </div>
 
           {/* Col 2: profile info */}
           <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
             {d.available && (
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(34,197,94,0.1)", color: "#16A34A", borderRadius: 100, padding: "5px 13px", fontSize: 12, fontWeight: 700, marginBottom: 16, alignSelf: "flex-start" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(34,197,94,0.12)", color: "#16A34A", borderRadius: 100, padding: "5px 13px", fontSize: 12, fontWeight: 700, marginBottom: 16, alignSelf: "flex-start", border: "1px solid rgba(34,197,94,0.2)" }}>
                 <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22C55E", display: "inline-block" }} />
                 Available for Bookings
               </div>
             )}
-            <h1 style={{ fontFamily: serif, fontSize: "clamp(1.8rem, 3.5vw, 2.6rem)", fontWeight: 500, color: ink, lineHeight: 1.1, marginBottom: 12 }}>{d.name}</h1>
+            <h1 style={{ fontFamily: serif, fontSize: "clamp(1.9rem, 3.5vw, 2.7rem)", fontWeight: 500, color: ink, lineHeight: 1.05, marginBottom: 10 }}>{d.name}</h1>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
               {d.verified && (
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(34,197,94,0.1)", color: "#16A34A", borderRadius: 100, padding: "3px 9px", fontSize: 11, fontWeight: 700 }}>
@@ -714,18 +727,19 @@ function GigProProfile({ d, tab, setTab }) {
                   Verified
                 </span>
               )}
-              <span style={{ background: "rgba(196,122,46,0.1)", color: gold, borderRadius: 100, padding: "3px 10px", fontSize: 12, fontWeight: 700 }}>{d.serviceType}</span>
+              <span style={{ fontSize: 13.5, color: muted, fontWeight: 500 }}>Professional {d.serviceType}</span>
+              <span style={{ color: "rgba(155,116,80,0.4)" }}>|</span>
               <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, color: muted }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 {d.city}
               </span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              <Stars rating={d.rating} size={15} />
-              <span style={{ fontSize: 13.5, fontWeight: 700, color: ink }}>{d.rating}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+              <Stars rating={d.rating} size={16} />
+              <span style={{ fontSize: 14, fontWeight: 700, color: ink }}>{d.rating}</span>
               <span style={{ fontSize: 13, color: muted }}>({d.reviews} reviews)</span>
             </div>
-            <p style={{ fontFamily: serif, fontSize: "1.05rem", fontStyle: "italic", color: "#6B4B2A", lineHeight: 1.55, marginBottom: 24 }}>"{d.tagline}"</p>
+            <p style={{ fontFamily: serif, fontSize: "1.05rem", fontStyle: "italic", color: "#6B4B2A", lineHeight: 1.6, marginBottom: 28 }}>"{d.tagline}"</p>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <button onClick={() => setShowBook(true)} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 28px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: font, boxShadow: `0 6px 20px rgba(196,122,46,0.38)` }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -736,7 +750,7 @@ function GigProProfile({ d, tab, setTab }) {
                 Chat
               </a>
               {d.phone && (
-                <a href={`tel:${d.phone.replace(/\s/g,"")}`} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 20px", borderRadius: 100, background: "rgba(34,197,94,0.08)", color: "#16A34A", fontSize: 14, fontWeight: 600, border: "1.5px solid rgba(34,197,94,0.2)", cursor: "pointer", fontFamily: font, textDecoration: "none" }}>
+                <a href={`tel:${d.phone.replace(/\s/g,"")}`} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 20px", borderRadius: 100, background: "rgba(28,10,4,0.04)", color: ink, fontSize: 14, fontWeight: 600, border: "1.5px solid rgba(28,10,4,0.12)", cursor: "pointer", fontFamily: font, textDecoration: "none" }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.38 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.08 6.08l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/></svg>
                   Call
                 </a>
@@ -745,13 +759,13 @@ function GigProProfile({ d, tab, setTab }) {
           </div>
 
           {/* Col 3: selling points */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {(d.sellingPoints || []).map((sp, i) => (
-              <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "12px 14px", background: i % 2 === 0 ? cream : "#fff", borderRadius: 14, border: "1px solid rgba(196,122,46,0.1)" }}>
-                <div style={{ width: 38, height: 38, borderRadius: 10, background: "rgba(196,122,46,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <div style={{ width: 42, height: 42, borderRadius: "50%", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 8px rgba(28,10,4,0.08)", border: "1px solid rgba(196,122,46,0.12)" }}>
                   <SpIcon index={i} />
                 </div>
-                <div>
+                <div style={{ paddingTop: 2 }}>
                   <div style={{ fontSize: 13.5, fontWeight: 700, color: ink, lineHeight: 1.2 }}>{sp.title}</div>
                   <div style={{ fontSize: 11.5, color: muted, marginTop: 3 }}>{sp.sub}</div>
                 </div>
@@ -799,54 +813,87 @@ function GigProProfile({ d, tab, setTab }) {
             {tab === "Portfolio" && (
               <div>
                 {/* Category filter chips */}
-                <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 20 }}>
+                <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 18, overflowX: "auto", paddingBottom: 2 }}>
                   {["All", ...(d.portfolioCategories || []).map(c => c.label)].map(cat => (
-                    <button key={cat} onClick={() => setActiveCategory(cat)} style={{ padding: "6px 14px", borderRadius: 100, border: `1.5px solid ${activeCategory === cat ? gold : "rgba(196,122,46,0.2)"}`, background: activeCategory === cat ? gold : "#fff", color: activeCategory === cat ? "#fff" : muted, fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
+                    <button key={cat} onClick={() => setActiveCategory(cat)} style={{ padding: "6px 16px", borderRadius: 100, border: `1.5px solid ${activeCategory === cat ? ink : "rgba(196,122,46,0.2)"}`, background: activeCategory === cat ? ink : "#fff", color: activeCategory === cat ? goldLt : muted, fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "all 0.15s", whiteSpace: "nowrap", flexShrink: 0 }}>
                       {cat}
                     </button>
                   ))}
                 </div>
 
-                {/* Category photo grid */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 24 }}>
+                {/* Category photo grid — 4 columns */}
+                <div className="gp-cat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 28 }}>
                   {filteredPortfolio.map((cat, i) => {
                     const seed = photoSeed(cat.label);
                     return (
-                      <div key={i} style={{ borderRadius: 16, overflow: "hidden", position: "relative", cursor: "pointer", aspectRatio: "4/3", boxShadow: "0 4px 16px rgba(28,10,4,0.12)", transition: "transform 0.2s, box-shadow 0.2s" }}
-                        onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(28,10,4,0.2)"; }}
-                        onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(28,10,4,0.12)"; }}
+                      <div key={i} style={{ borderRadius: 14, overflow: "hidden", position: "relative", cursor: "pointer", aspectRatio: "3/4", boxShadow: "0 4px 14px rgba(28,10,4,0.12)", transition: "transform 0.2s, box-shadow 0.2s" }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 14px 32px rgba(28,10,4,0.22)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(28,10,4,0.12)"; }}
                       >
-                        <img src={`https://picsum.photos/seed/${seed}/480/360`} alt={cat.label} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,4,2,0.82) 0%, rgba(10,4,2,0.2) 55%, transparent 100%)" }} />
-                        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "14px 16px" }}>
-                          <div style={{ fontSize: 15, fontWeight: 700, color: "#FFF8EC", fontFamily: serif }}>{cat.label}</div>
-                          <div style={{ fontSize: 11, color: goldLt, fontWeight: 600, marginTop: 3 }}>{cat.count} events</div>
+                        <img src={`https://picsum.photos/seed/${seed}/300/400`} alt={cat.label} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,4,2,0.85) 0%, rgba(10,4,2,0.15) 50%, transparent 100%)" }} />
+                        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 14px" }}>
+                          <div style={{ fontSize: 14.5, fontWeight: 700, color: "#FFF8EC", fontFamily: serif, marginBottom: 4 }}>{cat.label}</div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={goldLt} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            <span style={{ fontSize: 11, color: goldLt, fontWeight: 600 }}>{cat.count}</span>
+                          </div>
                         </div>
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Sample portfolio strip */}
-                <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 20 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: muted, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14 }}>Sample Moments</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
-                    {d.portfolio.map((p, i) => {
-                      const seed = encodeURIComponent((d.serviceType + "-" + p.label).toLowerCase().replace(/\s+/g,"-"));
-                      return (
-                        <div key={i} style={{ borderRadius: 12, overflow: "hidden", position: "relative", aspectRatio: i % 3 === 0 ? "3/4" : "4/3" }}>
-                          <img src={`https://picsum.photos/seed/${seed}/480/640`} alt={p.label} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,4,2,0.75) 0%, transparent 55%)" }} />
-                          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "10px 12px" }}>
-                            <div style={{ fontSize: 12.5, fontWeight: 700, color: "#FFF8EC", fontFamily: serif }}>{p.label}</div>
+                {/* About Me + Client Love side by side */}
+                <div className="gp-about-love" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 28 }}>
+                  {/* About Me */}
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                      <h3 style={{ fontFamily: serif, fontSize: "1.35rem", fontWeight: 500, color: ink }}>About Me</h3>
+                      <button onClick={() => {}} style={{ fontSize: 13, fontWeight: 600, color: gold, background: "none", border: "none", cursor: "pointer", fontFamily: font }}>Read More →</button>
+                    </div>
+                    <p style={{ fontSize: 13.5, color: "#4A3020", lineHeight: 1.8 }}>
+                      {d.bio.slice(0, 220)}…
+                    </p>
+                    {(d.sellingPoints || []).length > 0 && (
+                      <div style={{ display: "flex", gap: 16, marginTop: 18, flexWrap: "wrap" }}>
+                        {(d.sellingPoints || []).map((sp, i) => (
+                          <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, textAlign: "center", minWidth: 60 }}>
+                            <div style={{ width: 40, height: 40, borderRadius: "50%", background: parch, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(196,122,46,0.15)" }}>
+                              <SpIcon index={i} />
+                            </div>
+                            <span style={{ fontSize: 10.5, fontWeight: 600, color: muted, lineHeight: 1.3, maxWidth: 64 }}>{sp.title}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Client Love */}
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                      <h3 style={{ fontFamily: serif, fontSize: "1.35rem", fontWeight: 500, color: ink }}>Client Love</h3>
+                      <button onClick={() => setTab("Reviews")} style={{ fontSize: 13, fontWeight: 600, color: gold, background: "none", border: "none", cursor: "pointer", fontFamily: font }}>View All →</button>
+                    </div>
+                    {d.testimonials.slice(0, 1).map((r, i) => (
+                      <div key={i} style={{ background: "#fff", borderRadius: 16, padding: "18px 20px", border: "1px solid rgba(196,122,46,0.1)", boxShadow: "0 2px 10px rgba(28,10,4,0.04)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                          <div style={{ width: 36, height: 36, borderRadius: "50%", background: `linear-gradient(135deg,${gold},${goldLt})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <span style={{ fontSize: 14, fontFamily: serif, color: "#fff", fontWeight: 500 }}>{r.name[0]}</span>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 13.5, fontWeight: 700, color: ink }}>{r.name}</div>
+                            <div style={{ fontSize: 11.5, color: muted }}>{r.event}</div>
                           </div>
                         </div>
-                      );
-                    })}
+                        <Stars rating={r.rating} size={13} />
+                        <p style={{ fontSize: 13, color: "#4A3020", lineHeight: 1.7, marginTop: 10, fontStyle: "italic" }}>"{r.text.slice(0, 160)}{r.text.length > 160 ? "…" : ""}"</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                <p style={{ textAlign: "center", fontSize: 12, color: muted, marginTop: 16, fontStyle: "italic" }}>
+                <p style={{ textAlign: "center", fontSize: 12, color: muted, marginTop: 20, fontStyle: "italic" }}>
                   Representative samples. Actual work photos appear when vendors upload their portfolio.
                 </p>
               </div>
@@ -859,54 +906,67 @@ function GigProProfile({ d, tab, setTab }) {
           </div>
 
           {/* Sidebar */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16, position: "sticky", top: 20 }}>
-            {/* Connect */}
-            <div style={{ background: "#fff", borderRadius: 16, padding: "20px", border: "1px solid rgba(196,122,46,0.1)", boxShadow: "0 2px 10px rgba(28,10,4,0.04)" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: muted, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14 }}>Connect with me</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14, position: "sticky", top: 20 }}>
+            {/* Connect with me — icon row */}
+            <div style={{ background: "#fff", borderRadius: 16, padding: "18px 20px", border: "1px solid rgba(196,122,46,0.1)", boxShadow: "0 2px 10px rgba(28,10,4,0.04)" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: muted, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14 }}>Connect with me</div>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {d.social?.instagram && (
-                  <a href={`https://instagram.com/${d.social.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 12, background: "rgba(240,148,51,0.08)", textDecoration: "none" }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e6683c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "#4A3020" }}>{d.social.instagram}</span>
+                  <a href={`https://instagram.com/${d.social.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer" title={d.social.instagram} style={{ width: 40, height: 40, borderRadius: 12, background: parch, display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", border: "1px solid rgba(196,122,46,0.12)", transition: "background 0.15s" }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C62B6D" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
                   </a>
                 )}
                 {d.social?.youtube && (
-                  <a href={`https://youtube.com`} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 12, background: "rgba(255,0,0,0.06)", textDecoration: "none" }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#FF0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "#4A3020" }}>YouTube Channel</span>
-                  </a>
-                )}
-                {d.social?.website && (
-                  <a href={`https://${d.social.website}`} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 12, background: "rgba(196,122,46,0.06)", textDecoration: "none" }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "#4A3020" }}>{d.social.website}</span>
+                  <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" title="YouTube" style={{ width: 40, height: 40, borderRadius: 12, background: parch, display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", border: "1px solid rgba(196,122,46,0.12)" }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#FF0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                   </a>
                 )}
                 {d.phone && (
-                  <a href={`tel:${d.phone.replace(/\s/g,"")}`} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 12, background: "rgba(34,197,94,0.06)", textDecoration: "none" }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.38 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.08 6.08l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/></svg>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "#4A3020" }}>{d.phone}</span>
+                  <a href={`https://wa.me/${(d.phone).replace(/\D/g,"")}`} target="_blank" rel="noopener noreferrer" title="WhatsApp" style={{ width: 40, height: 40, borderRadius: 12, background: parch, display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", border: "1px solid rgba(196,122,46,0.12)" }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+                  </a>
+                )}
+                {d.social?.website && (
+                  <a href={`https://${d.social.website}`} target="_blank" rel="noopener noreferrer" title={d.social.website} style={{ width: 40, height: 40, borderRadius: 12, background: parch, display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", border: "1px solid rgba(196,122,46,0.12)" }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  </a>
+                )}
+                {d.phone && (
+                  <a href={`tel:${d.phone.replace(/\s/g,"")}`} title="Call" style={{ width: 40, height: 40, borderRadius: 12, background: parch, display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", border: "1px solid rgba(196,122,46,0.12)" }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={muted} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.38 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.08 6.08l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/></svg>
                   </a>
                 )}
               </div>
             </div>
 
-            {/* Featured testimonial */}
-            {d.testimonials?.[0] && (
-              <div style={{ background: cream, borderRadius: 16, padding: "20px", border: "1px solid rgba(196,122,46,0.12)" }}>
-                <div style={{ fontSize: 28, color: gold, fontFamily: serif, lineHeight: 1, marginBottom: 8 }}>"</div>
-                <p style={{ fontSize: 13, color: "#4A3020", lineHeight: 1.7, fontStyle: "italic", margin: 0 }}>{d.testimonials[0].text.slice(0, 140)}…</p>
-                <div style={{ marginTop: 12, fontSize: 11.5, fontWeight: 700, color: muted }}>— {d.testimonials[0].name}</div>
-                <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>{d.testimonials[0].event}</div>
-              </div>
-            )}
+            {/* Quote card */}
+            <div style={{ background: cream, borderRadius: 16, padding: "22px 20px", border: "1px solid rgba(196,122,46,0.1)" }}>
+              <div style={{ fontFamily: serif, fontSize: 42, color: gold, lineHeight: 0.6, marginBottom: 14, opacity: 0.7 }}>"</div>
+              <p style={{ fontFamily: serif, fontSize: "1.05rem", fontStyle: "italic", color: "#5A3820", lineHeight: 1.65, margin: 0 }}>
+                Let's create an experience your guests will talk about.
+              </p>
+              <div style={{ width: 36, height: 2.5, background: gold, marginTop: 16, borderRadius: 2 }} />
+            </div>
 
             {/* Dark stat card */}
-            <div style={{ background: ink, borderRadius: 16, padding: "22px 20px", textAlign: "center" }}>
-              <div style={{ fontFamily: serif, fontSize: "2.8rem", fontWeight: 400, color: goldLt, lineHeight: 1 }}>{d.events}+</div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,248,236,0.5)", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 6, marginBottom: 16 }}>Events Hosted</div>
-              <button onClick={() => setShowBook(true)} style={{ width: "100%", padding: "11px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                Check Availability →
+            <div style={{ background: ink, borderRadius: 16, padding: "24px 20px", textAlign: "center" }}>
+              <p style={{ fontFamily: serif, fontSize: "1.5rem", fontWeight: 400, color: "#FFF8EC", lineHeight: 1.25, marginBottom: 20 }}>
+                Great Events<br/>Start with<br/>a Great Host.
+              </p>
+              <div style={{ display: "flex", justifyContent: "space-around", marginBottom: 20, padding: "12px 0", borderTop: "1px solid rgba(255,248,236,0.08)", borderBottom: "1px solid rgba(255,248,236,0.08)" }}>
+                {[
+                  { val: `${d.events}+`, label: "Events" },
+                  { val: `${d.years}`, label: "Years" },
+                  { val: `${d.rating}★`, label: "Rating" },
+                ].map((s, i) => (
+                  <div key={i} style={{ textAlign: "center" }}>
+                    <div style={{ fontFamily: serif, fontSize: "1.4rem", fontWeight: 500, color: goldLt, lineHeight: 1 }}>{s.val}</div>
+                    <div style={{ fontSize: 10, color: "rgba(255,248,236,0.45)", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 4 }}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => setShowBook(true)} style={{ width: "100%", padding: "12px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                Book Now →
               </button>
             </div>
           </div>
@@ -1036,15 +1096,16 @@ function StandardProfile({ d, tab, setTab }) {
 // ── Main dispatcher ───────────────────────────────────────────────────────────
 export default function VendorDemo() {
   const navigate = useNavigate();
-  const [type, setType]   = useState("Anchor");
-  const [tab, setTab]     = useState("Portfolio");
+  const [type, setType]     = useState("Anchor");
+  const [tab, setTab]       = useState("Portfolio");
+  const [showBook, setShowBook] = useState(false);
   const d = DEMOS[type];
   const isGigPro = GIG_PROS.includes(type);
 
   const handleTypeChange = (t) => { setType(t); setTab("Portfolio"); };
 
   return (
-    <div style={{ minHeight: "100vh", background: isGigPro ? cream : cream, fontFamily: font }}>
+    <div style={{ minHeight: "100vh", background: cream, fontFamily: font }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Outfit:wght@400;500;600;700&family=Dancing+Script:wght@600&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1052,16 +1113,20 @@ export default function VendorDemo() {
         .vd-type-pill.active { background: ${ink}; color: ${goldLt}; border-color: ${ink}; }
         .vd-tab { padding: 10px 20px; font-size: 14px; font-weight: 600; border: none; background: none; cursor: pointer; color: #9B7450; border-bottom: 2.5px solid transparent; transition: all 0.15s; font-family: ${font}; white-space: nowrap; }
         .vd-tab.active { color: ${ink}; border-color: ${gold}; }
-        @media (max-width: 800px) {
+        @media (max-width: 900px) {
           .gp-hero-grid { grid-template-columns: 1fr !important; }
           .gp-content-grid { grid-template-columns: 1fr !important; }
-          .gp-stats-bar { flex-direction: row !important; flex-wrap: wrap; }
           .gp-cat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .gp-about-love { grid-template-columns: 1fr !important; }
+          .gp-top-btns { display: none !important; }
         }
       `}</style>
 
+      {/* BookModal rendered at top level */}
+      {showBook && <BookModal vendor={d} onClose={() => setShowBook(false)} />}
+
       {/* Top bar */}
-      <div style={{ background: ink, padding: "14px 20px", display: "flex", alignItems: "center", gap: 14 }}>
+      <div style={{ background: ink, padding: "13px 20px", display: "flex", alignItems: "center", gap: 14 }}>
         <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", color: "rgba(255,248,236,0.55)", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, fontFamily: font }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
           Back
@@ -1069,7 +1134,21 @@ export default function VendorDemo() {
         <div style={{ flex: 1, textAlign: "center" }}>
           <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: goldLt, fontFamily: font }}>Demo Vendor Portfolio</span>
         </div>
-        <div style={{ width: 50 }} />
+        {/* Share Profile + Book Now — only for gig pros */}
+        {isGigPro ? (
+          <div className="gp-top-btns" style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <button style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 16px", borderRadius: 100, background: "rgba(255,248,236,0.08)", border: "1.5px solid rgba(255,248,236,0.18)", color: "rgba(255,248,236,0.75)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Share Profile
+            </button>
+            <button onClick={() => setShowBook(true)} style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 18px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, border: "none", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.4)" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Book Now
+            </button>
+          </div>
+        ) : (
+          <div style={{ width: 50 }} />
+        )}
       </div>
 
       {/* Type switcher */}
@@ -1086,7 +1165,7 @@ export default function VendorDemo() {
 
       {/* Profile */}
       {isGigPro
-        ? <GigProProfile d={d} tab={tab} setTab={setTab} />
+        ? <GigProProfile d={d} tab={tab} setTab={setTab} showBook={showBook} setShowBook={setShowBook} />
         : <StandardProfile d={d} tab={tab} setTab={setTab} />
       }
     </div>
