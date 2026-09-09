@@ -11,7 +11,7 @@ const font   = "'Outfit', sans-serif";
 const serif  = "'Cormorant Garamond', Georgia, serif";
 const dance  = "'Dancing Script', cursive";
 
-const GIG_PROS = ["Anchor", "DJ", "Band"];
+const GIG_PROS = ["Anchor", "DJ", "Band", "Coordinator"];
 
 const DEMOS = {
   Decorator: {
@@ -335,6 +335,58 @@ const DEMOS = {
       youtube: "youtube.com/@rahulkhannaMC",
       setlist: "Opening ceremony address\nInteractive icebreaker games (6 variations)\nAward presentation scripts\nSangeet games & fun rounds\nCouple Q&A segment\nGuest shoutout moments\nComedic roast format (birthday / farewell)\nMulti-language transitions",
     },
+  },
+
+  Coordinator: {
+    name: "Nisha Verma",
+    tagline: "Every detail planned. Every moment magical.",
+    serviceType: "Coordinator",
+    city: "Mumbai",
+    locations: ["Mumbai","Pune","Goa","Delhi","Destination (Pan-India)"],
+    rating: 4.9, reviews: 187, events: 310, responseTime: "< 1 hr", years: 8, teamSize: 4,
+    verified: true,
+    phone: "+91 99887 76655",
+    available: true,
+    bio: "Nisha Verma is a Tendr-certified event coordinator with 8 years of experience orchestrating 310+ events across India. From intimate home ceremonies to 1,500-guest destination banquets, her meticulous timelines, curated vendor network of 200+ professionals, and calm-under-pressure approach have earned her a 4.9 rating. She handles everything — venues, vendors, budgets, decor, catering, music — so you show up and enjoy.",
+    specialties: ["Full Wedding Planning","Day-Of Coordination","Destination Weddings","Corporate Galas","Vendor Management","Budget Planning","Venue Sourcing","Decor Direction"],
+    eventTypes: ["Wedding","Sangeet","Reception","Corporate","Destination","Engagement","Anniversary"],
+    genres: [], instruments: [], performingStyle: [],
+    social: { instagram: "@nisha.events.in", youtube: "", linkedin: "nishaverma-events", website: "nishaevents.in" },
+    showreel: "",
+    sellingPoints: [
+      { title: "200+ Vendor Network", sub: "Best vendors, pre-vetted" },
+      { title: "Minute-by-Minute Timeline", sub: "Nothing left to chance" },
+      { title: "Budget Guardians", sub: "Not a rupee wasted" },
+      { title: "Tendr Certified", sub: "Background-verified & trained" },
+    ],
+    portfolioCategories: [
+      { label: "Wedding", count: 84 },
+      { label: "Sangeet", count: 52 },
+      { label: "Destination", count: 28 },
+      { label: "Corporate", count: 36 },
+      { label: "Reception", count: 64 },
+      { label: "Engagement", count: 46 },
+    ],
+    packages: [
+      { name: "Day-Of Coordination", price: "₹25,000", unit: "1 day", color: "#F0E8DC", accent: gold, items: ["Full day coordination (12 hrs)","Vendor check-in & briefing","Master timeline management","Runsheet for all vendors","Emergency toolkit on-site","Dedicated team of 2"], bestFor: "Couples who planned themselves but want a pro on the day" },
+      { name: "Month-Of Planning", price: "₹55,000", unit: "4 weeks", color: ink, accent: goldLt, badge: "Most Popular", items: ["4-week pre-event coordination","Vendor confirmation & follow-ups","Detailed runsheet & timeline","Budget reconciliation","Full day-of execution team","Payment tracker & wrap-up report"], bestFor: "Weddings, galas, destination events" },
+      { name: "Full Event Planning", price: "₹1,50,000+", unit: "end-to-end", color: "#2C1208", accent: goldLt, items: ["Venue sourcing & negotiation","Complete vendor curation (200+ network)","Budget planning & tracking","Decor direction & concept","All pre-event meetings","Destination event logistics","Legal & contract review","Day-of team of 4","Post-event guest survey"], bestFor: "Couples who want everything handled, start to finish" },
+    ],
+    portfolio: [
+      { label: "Grand Wedding Ceremony", tags: ["Wedding","Luxury"] },
+      { label: "Sangeet Night Setup", tags: ["Sangeet","Decor"] },
+      { label: "Destination Goa Wedding", tags: ["Destination","Beach"] },
+      { label: "Corporate Gala Dinner", tags: ["Corporate","Formal"] },
+      { label: "Grand Reception Banquet", tags: ["Reception","Grand"] },
+      { label: "Intimate Engagement", tags: ["Engagement","Intimate"] },
+    ],
+    testimonials: [
+      { name: "Priya & Rohit Sharma", event: "Full Wedding Planning, Mar 2025", rating: 5, text: "Nisha coordinated our 3-day Goa wedding flawlessly — 240 guests, 18 vendors, multiple venues. We didn't stress once. She's an absolute magician.", response: "Priya & Rohit, your Goa wedding was a dream to plan. Three days, eighteen vendors, one perfect memory. Thank you for trusting me!" },
+      { name: "TechCorp India Pvt Ltd", event: "Leadership Summit, Jan 2025", rating: 5, text: "Nisha managed our 600-person corporate gala end-to-end. The AV, catering, programme flow — everything was flawless. Our CEO personally complimented the event design.", response: "Loved working with the TechCorp team — the award segment was spectacular. Looking forward to your next event!" },
+      { name: "Ananya & Dev Mehra", event: "Destination Wedding, Feb 2025", rating: 5, text: "Guests flying in from 5 countries, hotel blocks, airport pickups, 3 events across 2 days. We were sipping cocktails while Nisha handled everything.", response: "International weddings are my favourite challenge! Ananya & Dev, wishing you a lifetime of adventures together!" },
+    ],
+    gst: "27AAJCA1234K1Z3",
+    performance: null,
   },
 };
 
@@ -665,7 +717,7 @@ function PerformanceContent({ d }) {
 
 // ── GigProProfile — magazine layout for Anchor / DJ / Band ───────────────────
 // Portrait sources per vendor type (Anchor uses local asset)
-const PORTRAIT_IDS = { Anchor: null, DJ: 32, Band: 67 };
+const PORTRAIT_IDS = { Anchor: null, DJ: { g: "men", id: 32 }, Band: { g: "men", id: 67 }, Coordinator: { g: "women", id: 44 } };
 // Pool of randomuser.me IDs for portfolio grid photos (alternating men/women)
 const PORTFOLIO_POOL = [
   { g: "men",   id: 24 }, { g: "women", id: 15 }, { g: "men",   id: 37 },
@@ -679,9 +731,10 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
   const [testimonialIdx, setTestimonialIdx] = useState(0);
 
   const visibleTabs = TABS.filter(t => t !== "Performance" || !!d.performance);
-  const portraitSrc = PORTRAIT_IDS[d.serviceType] === null
+  const _pid = PORTRAIT_IDS[d.serviceType];
+  const portraitSrc = _pid === null || _pid === undefined
     ? "/anchor-portrait.png"
-    : `https://randomuser.me/api/portraits/men/${PORTRAIT_IDS[d.serviceType] || 45}.jpg`;
+    : `https://randomuser.me/api/portraits/${_pid.g}/${_pid.id}.jpg`;
   const PORTFOLIO_OBJ_POS = ["center top", "20% top", "80% top", "center 25%", "10% top", "90% top", "50% 15%", "40% top"];
   const portfolioImgSrc = () => portraitSrc;
   const portfolioObjPos = (idx) => PORTFOLIO_OBJ_POS[idx % PORTFOLIO_OBJ_POS.length];
@@ -816,6 +869,12 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
                     </a>
                   )}
                 </div>
+                {d.serviceType === "Coordinator" && (
+                  <button onClick={() => navigate("/vendor/coordinator-dash")} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 100, background: "rgba(28,10,4,0.06)", color: ink, fontSize: 13, fontWeight: 700, border: "1.5px solid rgba(28,10,4,0.16)", cursor: "pointer", fontFamily: font, marginTop: 10 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    View Coordinator Dashboard
+                  </button>
+                )}
                 {/* Mobile CTAs */}
                 <div className="gp-mobile-ctas" style={{ display: "none", flexDirection: "column", gap: 10 }}>
                   <button onClick={() => setShowBook(true)} style={{ width: "100%", padding: "15px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", fontSize: 15, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: font, boxShadow: `0 6px 20px rgba(196,122,46,0.38)` }}>Book Now</button>

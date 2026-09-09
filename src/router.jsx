@@ -115,7 +115,8 @@ const VendorHowToUse     = lazy(() => import("./pages/vendor/HowToUse"));
 const VendorPricing      = lazy(() => import("./pages/vendor/Pricing"));
 const VendorLogin        = lazy(() => import("./pages/vendor/VendorLogin"));
 const VendorDemo         = lazy(() => import("./pages/vendor/VendorDemo"));
-const DemoDashboard      = lazy(() => import("./pages/vendor/DemoDashboard"));
+const DemoDashboard         = lazy(() => import("./pages/vendor/DemoDashboard"));
+const CoordinatorDemoDash   = lazy(() => import("./pages/vendor/CoordinatorDemoDash"));
 const CorporateLogin      = lazy(() => import("./pages/corporate/Login"));
 const CorporateSignup     = lazy(() => import("./pages/corporate/SignUp.jsx"));
 const CorporateBooking    = lazy(() => import("./pages/corporate/Booking"));
@@ -359,7 +360,8 @@ const router = createBrowserRouter([
       { path: "pricing",   element: <VendorPricing /> },
       { path: "login",     element: <VendorLogin /> },
       { path: "demo",      element: <VendorDemo /> },
-      { path: "demo-dashboard", element: <DemoDashboard /> },
+      { path: "demo-dashboard",    element: <DemoDashboard /> },
+      { path: "coordinator-dash",  element: <CoordinatorDemoDash /> },
     ],
   },
 
