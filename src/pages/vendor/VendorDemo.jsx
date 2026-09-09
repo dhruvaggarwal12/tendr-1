@@ -676,6 +676,7 @@ const PORTFOLIO_POOL = [
 
 function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
   const [activeCategory, setActiveCategory] = useState("All");
+  const [testimonialIdx, setTestimonialIdx] = useState(0);
 
   const visibleTabs = TABS.filter(t => t !== "Performance" || !!d.performance);
   const portraitSrc = PORTRAIT_IDS[d.serviceType] === null
@@ -710,12 +711,12 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
           </div>
         </div>
 
-        <div className="gp-hero-grid" style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 28px 0", display: "grid", gridTemplateColumns: "320px 1fr 210px", gap: 32, alignItems: "flex-start" }}>
+        <div className="gp-hero-grid" style={{ maxWidth: 1160, margin: "0 auto", padding: "28px 28px 0", display: "grid", gridTemplateColumns: "420px 1fr 210px", gap: 28, alignItems: "flex-start" }}>
 
           {/* Col 1: decorative strip + arch portrait + card */}
           <div className="gp-hero-col-left" style={{ position: "relative" }}>
             {/* Warm blob behind portrait */}
-            <div style={{ position: "absolute", top: 20, left: "50%", transform: "translateX(-35%)", width: 310, height: 360, borderRadius: "50%", background: "rgba(196,122,46,0.13)", zIndex: 0 }} />
+            <div style={{ position: "absolute", top: 20, left: "50%", transform: "translateX(-35%)", width: 390, height: 450, borderRadius: "50%", background: "rgba(196,122,46,0.13)", zIndex: 0 }} />
 
             {/* People · Events · Stories strip */}
             <div style={{ display: "flex", gap: 10, position: "absolute", left: 0, top: 40, zIndex: 2 }}>
@@ -728,7 +729,7 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
             </div>
 
             {/* Arch portrait */}
-            <div style={{ width: 290, height: 420, borderRadius: "145px 145px 20px 20px", overflow: "hidden", marginLeft: "auto", marginRight: 0, position: "relative", zIndex: 1, boxShadow: "0 24px 64px rgba(28,10,4,0.24)" }}>
+            <div style={{ width: 370, height: 510, borderRadius: "185px 185px 22px 22px", overflow: "hidden", marginLeft: "auto", marginRight: 0, position: "relative", zIndex: 1, boxShadow: "0 24px 64px rgba(28,10,4,0.24)" }}>
               <img
                 src={portraitSrc}
                 alt={d.name}
@@ -920,21 +921,52 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
                       <h3 style={{ fontFamily: serif, fontSize: "1.35rem", fontWeight: 500, color: ink }}>Client Love</h3>
                       <button onClick={() => setTab("Reviews")} style={{ fontSize: 13, fontWeight: 600, color: gold, background: "none", border: "none", cursor: "pointer", fontFamily: font }}>View All →</button>
                     </div>
-                    {d.testimonials.slice(0, 1).map((r, i) => (
-                      <div key={i} style={{ background: "#fff", borderRadius: 16, padding: "18px 20px", border: "1px solid rgba(196,122,46,0.1)", boxShadow: "0 2px 10px rgba(28,10,4,0.04)" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                          <div style={{ width: 36, height: 36, borderRadius: "50%", background: `linear-gradient(135deg,${gold},${goldLt})`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                            <span style={{ fontSize: 14, fontFamily: serif, color: "#fff", fontWeight: 500 }}>{r.name[0]}</span>
+                    {(() => {
+                      const avatarPool = [
+                        { g: "women", id: 44 }, { g: "men", id: 55 }, { g: "women", id: 22 },
+                        { g: "men", id: 33 }, { g: "women", id: 66 }, { g: "men", id: 11 },
+                      ];
+                      const r = d.testimonials[testimonialIdx % d.testimonials.length];
+                      const av = avatarPool[testimonialIdx % avatarPool.length];
+                      const total = d.testimonials.length;
+                      return (
+                        <div style={{ background: "#fff", borderRadius: 16, padding: "20px 22px", border: "1px solid rgba(196,122,46,0.1)", boxShadow: "0 2px 10px rgba(28,10,4,0.04)", position: "relative" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+                            <img
+                              src={`https://randomuser.me/api/portraits/${av.g}/${av.id}.jpg`}
+                              alt={r.name}
+                              style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: `2px solid ${goldLt}` }}
+                            />
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: 14, fontWeight: 700, color: ink }}>{r.name}</div>
+                              <div style={{ fontSize: 12, color: muted }}>{r.event}</div>
+                            </div>
                           </div>
-                          <div>
-                            <div style={{ fontSize: 13.5, fontWeight: 700, color: ink }}>{r.name}</div>
-                            <div style={{ fontSize: 11.5, color: muted }}>{r.event}</div>
+                          <Stars rating={r.rating} size={13} />
+                          <p style={{ fontSize: 13, color: "#4A3020", lineHeight: 1.75, marginTop: 10, fontStyle: "italic" }}>"{r.text.slice(0, 180)}{r.text.length > 180 ? "…" : ""}"</p>
+                          {/* Carousel controls */}
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 16 }}>
+                            <button
+                              onClick={() => setTestimonialIdx(i => (i - 1 + total) % total)}
+                              style={{ width: 32, height: 32, borderRadius: "50%", border: `1.5px solid ${gold}`, background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: gold, fontSize: 16 }}
+                            >‹</button>
+                            <div style={{ display: "flex", gap: 6 }}>
+                              {d.testimonials.map((_, dotIdx) => (
+                                <button
+                                  key={dotIdx}
+                                  onClick={() => setTestimonialIdx(dotIdx)}
+                                  style={{ width: dotIdx === testimonialIdx % total ? 18 : 7, height: 7, borderRadius: 4, border: "none", cursor: "pointer", background: dotIdx === testimonialIdx % total ? gold : "rgba(196,122,46,0.25)", transition: "all 0.2s", padding: 0 }}
+                                />
+                              ))}
+                            </div>
+                            <button
+                              onClick={() => setTestimonialIdx(i => (i + 1) % total)}
+                              style={{ width: 32, height: 32, borderRadius: "50%", border: `1.5px solid ${gold}`, background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: gold, fontSize: 16 }}
+                            >›</button>
                           </div>
                         </div>
-                        <Stars rating={r.rating} size={13} />
-                        <p style={{ fontSize: 13, color: "#4A3020", lineHeight: 1.7, marginTop: 10, fontStyle: "italic" }}>"{r.text.slice(0, 160)}{r.text.length > 160 ? "…" : ""}"</p>
-                      </div>
-                    ))}
+                      );
+                    })()}
                   </div>
                 </div>
 
