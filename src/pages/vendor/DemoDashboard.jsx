@@ -1,5 +1,8 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const gold   = "#C47A2E";
@@ -189,6 +192,39 @@ export default function DemoDashboard() {
   useEffect(() => {
     setGigDraft({ genres: (profile.genres || []).join(", "), showreel: profile.showreel || "", instagram: profile.instagram || "", youtube: profile.youtube || "", setlist: profile.setlist || "" });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Real vendor API sync ───────────────────────────────────────────────────
+  const { user: authUser, token: authToken } = useSelector(s => s.auth);
+  const vendorId = authUser?._id || authUser?.id;
+  const isGigProVendor = !!(authToken && vendorId && ['Anchor', 'Band', 'Choreographer'].includes(authUser?.serviceType));
+
+  function syncToApi(overProfile = profile, overPkgs = pkgs, overSetlist = setlist) {
+    if (!isGigProVendor) return;
+    const payload = {
+      bio:    overProfile.bio || '',
+      genres: Array.isArray(overProfile.genres) ? overProfile.genres : (overProfile.genres || '').split(',').map(g => g.trim()).filter(Boolean),
+      social: {
+        instagram: overProfile.instagram || '',
+        youtube:   overProfile.youtube   || '',
+        showreel:  overProfile.showreel  || '',
+      },
+      packages: (overPkgs || []).map(p => ({
+        name:    p.name    || '',
+        price:   Number(p.price) || 0,
+        unit:    p.unit    || 'per event',
+        badge:   p.badge   || '',
+        bestFor: p.bestFor || '',
+        items:   typeof p.items === 'string' ? p.items.split('\n').filter(s => s.trim()) : (p.items || []),
+      })),
+      setlist: overSetlist || [],
+    };
+    fetch(`${BASE_URL}/vendors/${vendorId}/gigpro`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    }).catch(() => {});
+  }
 
   function handleReset() {
     lsClear();
@@ -537,7 +573,7 @@ export default function DemoDashboard() {
                 </ul>
                 <div style={{ display: "flex", gap: 8 }}>
                   <button onClick={() => { setPkgDraft({ ...pkg }); setPkgModal(pkg); }} style={{ padding: "7px 16px", borderRadius: 100, background: cream, border: "1px solid rgba(196,122,46,0.15)", color: muted, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Edit</button>
-                  <button onClick={() => setPkgs(p => p.filter(x => x.id !== pkg.id))} style={{ padding: "7px 16px", borderRadius: 100, background: "#FEF2F2", border: "1px solid #FECACA", color: "#DC2626", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Delete</button>
+                  <button onClick={() => { const np = pkgs.filter(x => x.id !== pkg.id); setPkgs(np); syncToApi(profile, np, setlist); }} style={{ padding: "7px 16px", borderRadius: 100, background: "#FEF2F2", border: "1px solid #FECACA", color: "#DC2626", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Delete</button>
                 </div>
               </div>
             ))}
@@ -565,9 +601,12 @@ export default function DemoDashboard() {
                 </div>
                 <div style={{ display: "flex", gap: 10 }}>
                   <button onClick={() => {
-                    if (pkgModal === "new") setPkgs(p => [...p, { ...pkgDraft, id: Date.now(), price: Number(pkgDraft.price) }]);
-                    else setPkgs(p => p.map(x => x.id === pkgModal.id ? { ...pkgDraft, id: pkgModal.id, price: Number(pkgDraft.price) } : x));
+                    let newPkgs;
+                    if (pkgModal === "new") newPkgs = [...pkgs, { ...pkgDraft, id: Date.now(), price: Number(pkgDraft.price) }];
+                    else newPkgs = pkgs.map(x => x.id === pkgModal.id ? { ...pkgDraft, id: pkgModal.id, price: Number(pkgDraft.price) } : x);
+                    setPkgs(newPkgs);
                     setPkgModal(null);
+                    syncToApi(profile, newPkgs, setlist);
                   }} style={{ flex: 1, padding: "12px", borderRadius: 100, background: `linear-gradient(135deg, ${gold}, ${goldLt})`, color: "#fff", border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Save Package</button>
                   <button onClick={() => setPkgModal(null)} style={{ padding: "12px 20px", borderRadius: 100, background: cream, border: "none", color: muted, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Cancel</button>
                 </div>
@@ -679,14 +718,14 @@ export default function DemoDashboard() {
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 0", borderBottom: i < setlist.length - 1 ? "1px solid rgba(196,122,46,0.08)" : "none" }}>
                 <span style={{ width: 24, height: 24, borderRadius: "50%", background: cream, border: `1px solid rgba(196,122,46,0.2)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10.5, fontWeight: 700, color: gold, flexShrink: 0 }}>{i + 1}</span>
                 <span style={{ flex: 1, fontSize: 14, color: ink }}>{item}</span>
-                <button onClick={() => setSetlist(p => p.filter((_, j) => j !== i))} style={{ background: "none", border: "none", color: "#DC2626", cursor: "pointer", fontSize: 16, padding: "4px", lineHeight: 1 }}>×</button>
+                <button onClick={() => { const nl = setlist.filter((_, j) => j !== i); setSetlist(nl); syncToApi(profile, pkgs, nl); }} style={{ background: "none", border: "none", color: "#DC2626", cursor: "pointer", fontSize: 16, padding: "4px", lineHeight: 1 }}>×</button>
               </div>
             ))}
           </div>
 
           <div style={{ display: "flex", gap: 10 }}>
-            <input value={newItem} onChange={e => setNewItem(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && newItem.trim()) { setSetlist(p => [...p, newItem.trim()]); setNewItem(""); } }} placeholder="Add new segment..." style={{ flex: 1, padding: "10px 16px", borderRadius: 100, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13.5, fontFamily: font, color: ink, background: "#fff" }} />
-            <button onClick={() => { if (newItem.trim()) { setSetlist(p => [...p, newItem.trim()]); setNewItem(""); } }} style={{ padding: "10px 22px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Add</button>
+            <input value={newItem} onChange={e => setNewItem(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && newItem.trim()) { const nl = [...setlist, newItem.trim()]; setSetlist(nl); setNewItem(""); syncToApi(profile, pkgs, nl); } }} placeholder="Add new segment..." style={{ flex: 1, padding: "10px 16px", borderRadius: 100, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13.5, fontFamily: font, color: ink, background: "#fff" }} />
+            <button onClick={() => { if (newItem.trim()) { const nl = [...setlist, newItem.trim()]; setSetlist(nl); setNewItem(""); syncToApi(profile, pkgs, nl); } }} style={{ padding: "10px 22px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Add</button>
           </div>
         </div>
       );
@@ -702,7 +741,7 @@ export default function DemoDashboard() {
               <button onClick={() => { setProfDraft({ ...profile }); setProfEdit(true); }} style={{ padding: "10px 20px", borderRadius: 100, background: cream, border: "1px solid rgba(196,122,46,0.2)", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Edit Profile</button>
             ) : (
               <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => { setProfile(profDraft); setProfEdit(false); }} style={{ padding: "10px 20px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Save</button>
+                <button onClick={() => { setProfile(profDraft); setProfEdit(false); syncToApi(profDraft, pkgs, setlist); }} style={{ padding: "10px 20px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Save</button>
                 <button onClick={() => setProfEdit(false)} style={{ padding: "10px 16px", borderRadius: 100, background: cream, border: "none", color: muted, fontSize: 13, cursor: "pointer", fontFamily: font }}>Cancel</button>
               </div>
             )}
@@ -761,7 +800,7 @@ export default function DemoDashboard() {
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
             <h2 style={{ fontFamily: serif, fontSize: "1.7rem", fontWeight: 400, color: ink }}>Performance Profile</h2>
-            <button onClick={() => { setProfile(p => ({ ...p, genres: gigDraft.genres.split(",").map(g => g.trim()).filter(Boolean), showreel: gigDraft.showreel, instagram: gigDraft.instagram, youtube: gigDraft.youtube, setlist: gigDraft.setlist })); setGigSaved(true); setTimeout(() => setGigSaved(false), 2000); }} style={{ padding: "10px 20px", borderRadius: 100, background: gigSaved ? "#16A34A" : `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, transition: "background 0.2s" }}>
+            <button onClick={() => { const newGenres = gigDraft.genres.split(",").map(g => g.trim()).filter(Boolean); const newProf = { ...profile, genres: newGenres, showreel: gigDraft.showreel, instagram: gigDraft.instagram, youtube: gigDraft.youtube, setlist: gigDraft.setlist }; setProfile(newProf); setGigSaved(true); setTimeout(() => setGigSaved(false), 2000); syncToApi(newProf, pkgs, setlist); }} style={{ padding: "10px 20px", borderRadius: 100, background: gigSaved ? "#16A34A" : `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, transition: "background 0.2s" }}>
               {gigSaved ? "✓ Saved!" : "Save Changes"}
             </button>
           </div>
