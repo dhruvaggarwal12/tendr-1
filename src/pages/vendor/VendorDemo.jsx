@@ -11,7 +11,7 @@ const font   = "'Outfit', sans-serif";
 const serif  = "'Cormorant Garamond', Georgia, serif";
 const dance  = "'Dancing Script', cursive";
 
-const GIG_PROS = ["Anchor", "DJ", "Band", "Coordinator"];
+const GIG_PROS = ["Anchor", "DJ", "Band", "Coordinator", "Choreographer"];
 
 const DEMOS = {
   Decorator: {
@@ -388,6 +388,65 @@ const DEMOS = {
     gst: "27AAJCA1234K1Z3",
     performance: null,
   },
+
+  Choreographer: {
+    name: "Riya Kapoor",
+    tagline: "Your story, told through movement.",
+    serviceType: "Choreographer",
+    city: "Delhi",
+    locations: ["Delhi","Noida","Gurgaon","Jaipur","Mumbai","Destination"],
+    rating: 4.9, reviews: 214, events: 280, responseTime: "< 2 hrs", years: 9, teamSize: 6,
+    verified: true,
+    phone: "+91 98765 43200",
+    available: true,
+    bio: "Riya Kapoor is one of Delhi's most sought-after choreographers with 9 years of experience turning stages into stories. From bridal solos and flash mobs to multi-generational family performances and corporate group acts, her choreography blends Bollywood, contemporary, and folk styles into performances that audiences remember for years. She works with beginners and seasoned dancers alike — her signature 'learn-in-5-sessions' method guarantees a polished performance every time.",
+    specialties: ["Bridal Choreography","Sangeet Performances","Family Group Acts","Flash Mobs","Corporate Team Events","Kids Dance Workshops","Bollywood Fusion","Contemporary Choreography"],
+    eventTypes: ["Sangeet","Wedding","Reception","Corporate","Birthday","Anniversary","Engagement"],
+    genres: ["Bollywood","Contemporary","Kathak Fusion","Hip-Hop","Garba/Dandiya","Western","Sufi"],
+    instruments: [], performingStyle: ["Group Choreography","Solo Coaching","Flash Mob Direction","Stage Direction"],
+    social: { instagram: "@riya.dances", youtube: "RiyaKapoorChoreography", linkedin: "", website: "riyadances.in" },
+    showreel: "",
+    sellingPoints: [
+      { title: "Learn in 5 Sessions", sub: "Beginner-friendly method" },
+      { title: "On-Stage Backup", sub: "Riya performs alongside you" },
+      { title: "Custom Soundtrack", sub: "Music edits included" },
+      { title: "280+ Performances", sub: "Every event a standing ovation" },
+    ],
+    portfolioCategories: [
+      { label: "Sangeet", count: 96 },
+      { label: "Bridal Solo", count: 48 },
+      { label: "Family Group", count: 62 },
+      { label: "Flash Mob", count: 24 },
+      { label: "Corporate", count: 34 },
+      { label: "Kids Shows", count: 16 },
+    ],
+    packages: [
+      { name: "Solo / Couple", price: "₹18,000", unit: "5 sessions", color: "#F0E8DC", accent: gold, items: ["5 one-hour rehearsal sessions","Custom song edit & mix","Costume styling guidance","Rehearsal venue coordination","1 backup dancer on stage","Final run-through on event day"], bestFor: "Bride, groom, or couple sangeet performance" },
+      { name: "Family Group Act", price: "₹35,000", unit: "6 sessions", color: ink, accent: goldLt, badge: "Most Popular", items: ["Up to 15 family members","6 group rehearsal sessions","2 choreographers on the floor","Custom medley composition","Costume colour coordination","Riya performs alongside group","Full day-of stage direction"], bestFor: "Sangeet group acts, multi-family performances" },
+      { name: "Full Sangeet Show", price: "₹75,000+", unit: "end-to-end", color: "#2C1208", accent: goldLt, items: ["Complete sangeet show direction","All acts — solo, couple, family, kids","Unlimited rehearsal sessions","Professional soundtrack production","LED backdrop & stage concept","Anchor briefing & show script","Live DJ coordination","Team of 6 choreographers on day","Post-event highlight reel"], bestFor: "Families who want a Bollywood-level sangeet night" },
+    ],
+    portfolio: [
+      { label: "Bride's Sangeet Solo", tags: ["Sangeet","Bridal"] },
+      { label: "Family Flash Mob Surprise", tags: ["Flash Mob","Family"] },
+      { label: "Corporate Team Bollywood Act", tags: ["Corporate","Bollywood"] },
+      { label: "Kids Garba Performance", tags: ["Kids","Garba"] },
+      { label: "Couple's First Dance", tags: ["Couple","Contemporary"] },
+      { label: "Grand Sangeet Finale", tags: ["Sangeet","Group"] },
+    ],
+    testimonials: [
+      { name: "Sneha & Arjun Malhotra", event: "Full Sangeet Show, Apr 2025", rating: 5, text: "Riya choreographed 6 acts for our sangeet — bride solo, groom solo, couple act, family group, kids number, and a flash mob surprise. Every single one got a standing ovation. Our guests thought it was a Bollywood show.", response: "Sneha & Arjun, your sangeet was the most fun stage I've ever directed! The flash mob moment had everyone in tears. Wishing you both a beautiful life ahead!" },
+      { name: "Priya Bhatia", event: "Bridal Choreography, Feb 2025", rating: 5, text: "I had zero dancing experience. Riya's 5-session method had me doing a full 4-minute Bollywood routine with confidence. My relatives couldn't believe it was me on stage.", response: "Priya, watching you own that stage after just 5 sessions was everything! You were absolutely stunning." },
+      { name: "TechNova India", event: "Corporate Team Act, Jan 2025", rating: 5, text: "We had 40 employees with no dance background. Riya pulled off a 7-minute medley in 3 rehearsals. The energy in the room when they performed was electric.", response: "Corporate flash mobs are so special — when colleagues cheer each other on like that, it's magic. Thank you TechNova for trusting us!" },
+    ],
+    gst: "07AAAJK5678L1Z9",
+    performance: {
+      events: [
+        { date: "2025-11-08", venue: "ITC Maurya, Delhi", type: "Sangeet Night", status: "upcoming" },
+        { date: "2025-10-26", venue: "Jai Mahal Palace, Jaipur", type: "Royal Sangeet", status: "upcoming" },
+        { date: "2025-10-12", venue: "Leela Ambience, Gurugram", type: "Corporate Gala", status: "past" },
+      ],
+    },
+  },
 };
 
 const TYPES = Object.keys(DEMOS);
@@ -717,7 +776,7 @@ function PerformanceContent({ d }) {
 
 // ── GigProProfile — magazine layout for Anchor / DJ / Band ───────────────────
 // Portrait sources per vendor type (Anchor uses local asset)
-const PORTRAIT_IDS = { Anchor: null, DJ: { g: "men", id: 32 }, Band: { g: "men", id: 67 }, Coordinator: { g: "women", id: 44 } };
+const PORTRAIT_IDS = { Anchor: null, DJ: { g: "men", id: 32 }, Band: { g: "men", id: 67 }, Coordinator: { g: "women", id: 44 }, Choreographer: { g: "women", id: 26 } };
 // Pool of randomuser.me IDs for portfolio grid photos (alternating men/women)
 const PORTFOLIO_POOL = [
   { g: "men",   id: 24 }, { g: "women", id: 15 }, { g: "men",   id: 37 },
