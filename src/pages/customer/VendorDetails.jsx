@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { addToShortlist, isInShortlist } from "../../components/ShortlistFloat";
 import SEO, { vendorPageTitle, vendorPageDescription } from "../../components/SEO";
+import GigProProfileView from "../../components/GigProProfileView";
 
 import ListingsNav from "../../components/ListingsNav";
 import CompareModal from "../../components/CompareModal";
@@ -80,6 +81,7 @@ const VendorDetailsPage = () => {
   const [similarVendors, setSimilarVendors] = useState([]);
   const [checkingAvail, setCheckingAvail] = useState(false);
   const [unavailModal, setUnavailModal] = useState(null); // { date, alternatives[] }
+  const [gigProReviews, setGigProReviews] = useState([]);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -291,6 +293,14 @@ const VendorDetailsPage = () => {
     return () => window.removeEventListener("keydown", onKey);
   }, [chatFormOpen]);
 
+  useEffect(() => {
+    if (!vendor?._id || !['Anchor', 'Band', 'Choreographer'].includes(vendor?.serviceType)) return;
+    fetch(`${BASE_URL}/vendors/${vendor._id}/reviews`)
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setGigProReviews(Array.isArray(data) ? data : (data?.reviews || [])))
+      .catch(() => {});
+  }, [vendor?._id, vendor?.serviceType]);
+
   const primaryCity = vendor?.address?.city || vendor?.location || vendor?.locations?.[0] || "Location";
   const stateName = vendor?.address?.state || "";
   const serviceType = vendor?.serviceType || "Service";
@@ -401,6 +411,28 @@ const VendorDetailsPage = () => {
     setChatEventForm({ eventType: "", guests: "", date: "", location: "" });
     setChatFormOpen(true);
   };
+
+  if (['Anchor', 'Band', 'Choreographer'].includes(vendor?.serviceType)) {
+    return (
+      <>
+        <SEO
+          title={vendorPageTitle(vendor)}
+          description={vendorPageDescription(vendor)}
+          path={`/vendor/${vendor._id}`}
+        />
+        <GigProProfileView
+          vendor={vendor}
+          reviews={gigProReviews}
+          onBook={() => {
+            if (!token) { setAuthModalOpen(true); return; }
+            openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+          }}
+          onChat={openGigHeroChat}
+        />
+        <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
+      </>
+    );
+  }
 
   const CATEGORY_SECTIONS = {
     Caterer: [
