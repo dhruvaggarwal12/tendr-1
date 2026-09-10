@@ -612,6 +612,47 @@ const AdminDashboard = () => {
   const [eventPlans, setEventPlans] = useState([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [chatRequests, setChatRequests] = useState([]);
+
+  // ── Coordinator picker modal ────────────────────────────────────────────────
+  const [coordModal, setCoordModal] = useState(null); // null | { mode: 'booking'|'chat', payload: any }
+  const [approvedCoords, setApprovedCoords] = useState([]);
+  const [coordsLoading, setCoordsLoading] = useState(false);
+  const [coordSearch, setCoordSearch] = useState("");
+  const [transferring, setTransferring] = useState(false);
+
+  const openCoordPicker = async (mode, payload) => {
+    setCoordModal({ mode, payload });
+    setCoordSearch("");
+    if (!approvedCoords.length) {
+      setCoordsLoading(true);
+      try {
+        const r = await fetch(`${BASE_URL}/admin/coordinators/approved`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" });
+        if (r.ok) setApprovedCoords(await r.json());
+      } finally { setCoordsLoading(false); }
+    }
+  };
+
+  const doTransfer = async (coord) => {
+    const { mode, payload } = coordModal;
+    setTransferring(true);
+    try {
+      if (mode === 'booking') {
+        const body = { ...payload, coordinatorId: coord._id };
+        const r = await fetch(`${BASE_URL}/admin/coordinators/assign-lead`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, credentials: 'include', body: JSON.stringify(body) });
+        const d = await r.json();
+        alert(d.message || d.error || 'Lead sent to coordinator');
+      } else {
+        const r = await fetch(`${BASE_URL}/admin/transfer/chat/${payload.chatId}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, credentials: 'include', body: JSON.stringify({ coordinatorId: coord._id }) });
+        const d = await r.json();
+        if (r.ok) {
+          setChatRequests(prev => prev.map(c => c._id === payload.chatId ? { ...c, coordinatorId: coord._id, coordinatorName: coord.name } : c));
+          alert(`Chat transferred to ${coord.name}`);
+        } else { alert(d.error || 'Transfer failed'); }
+      }
+      setCoordModal(null);
+    } finally { setTransferring(false); }
+  };
+
   const [ghOrders, setGhOrders]         = useState([]);
   const [ghLoading, setGhLoading]       = useState(false);
   const [rakhiOrders, setRakhiOrders]   = useState([]);
@@ -1650,6 +1691,18 @@ const AdminDashboard = () => {
                             📲 Re-send Notification
                           </button>
                         )}
+                        {/* Transfer to Coordinator */}
+                        {req.coordinatorId ? (
+                          <span style={{ padding: "7px 12px", borderRadius: 8, background: "rgba(99,102,241,0.08)", color: "#4F46E5", fontWeight: 600, fontSize: 11, border: "1.5px solid rgba(99,102,241,0.3)", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                            🎯 {req.coordinatorName || 'Coordinator assigned'}
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => openCoordPicker('chat', { chatId: req._id, customerName: req.customerName })}
+                            style={{ padding: "7px 12px", borderRadius: 8, border: "1.5px solid rgba(99,102,241,0.4)", background: "rgba(99,102,241,0.08)", color: "#4F46E5", fontWeight: 600, fontSize: 11, cursor: "pointer", fontFamily: "'Outfit', sans-serif", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                            🎯 Assign Coordinator
+                          </button>
+                        )}
                         {/* Delete — available for all request states */}
                         <button
                           onClick={() => {
@@ -2075,11 +2128,7 @@ const AdminDashboard = () => {
                                           💬 {plan.isBaatKaro ? "Baat Karo ✓" : "Baat Karo"}
                                         </button>
                                         <button
-                                          onClick={() => {
-                                            const payload = { eventPlanId: plan._id, customerName: plan.customerId?.name, eventType: plan.eventType, eventDate: plan.date, location: plan.location, guests: plan.guests, budget: plan.totalAmount || plan.amount, phone: plan.customerId?.phoneNumber, notes: `Booking from ${plan.customerId?.name} — ${plan.eventType}` };
-                                            fetch(`${BASE_URL}/admin/coordinators/assign-lead`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, credentials: 'include', body: JSON.stringify(payload) })
-                                              .then(r => r.json()).then(d => alert(d.message || d.error || 'Lead sent to coordinator')).catch(() => alert('Failed to send lead'));
-                                          }}
+                                          onClick={() => openCoordPicker('booking', { eventPlanId: plan._id, customerName: plan.customerId?.name, eventType: plan.eventType, eventDate: plan.date, location: plan.location, guests: plan.guests, budget: plan.totalAmount || plan.amount, phone: plan.customerId?.phoneNumber, notes: `Booking from ${plan.customerId?.name} — ${plan.eventType}` })}
                                           style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "1.5px solid rgba(99,102,241,0.4)", background: "rgba(99,102,241,0.08)", color: "#4F46E5", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
                                           🎯 Send to Coordinator
                                         </button>
@@ -2142,11 +2191,7 @@ const AdminDashboard = () => {
                                         💬 {plan.isBaatKaro ? "Baat Karo ✓" : "Baat Karo"}
                                       </button>
                                       <button
-                                        onClick={() => {
-                                          const payload = { eventPlanId: plan._id, customerName: plan.customerId?.name, eventType: plan.eventType, eventDate: plan.date, location: plan.location, guests: plan.guests, budget: plan.totalAmount || plan.amount, phone: plan.customerId?.phoneNumber, notes: `Confirmed booking — ${plan.customerId?.name} · ${plan.eventType}` };
-                                          fetch(`${BASE_URL}/admin/coordinators/assign-lead`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, credentials: 'include', body: JSON.stringify(payload) })
-                                            .then(r => r.json()).then(d => alert(d.message || d.error || 'Lead sent to coordinator')).catch(() => alert('Failed to send lead'));
-                                        }}
+                                        onClick={() => openCoordPicker('booking', { eventPlanId: plan._id, customerName: plan.customerId?.name, eventType: plan.eventType, eventDate: plan.date, location: plan.location, guests: plan.guests, budget: plan.totalAmount || plan.amount, phone: plan.customerId?.phoneNumber, notes: `Confirmed booking — ${plan.customerId?.name} · ${plan.eventType}` })}
                                         style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "1.5px solid rgba(99,102,241,0.4)", background: "rgba(99,102,241,0.08)", color: "#4F46E5", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
                                         🎯 Send to Coordinator
                                       </button>
@@ -3758,6 +3803,14 @@ const AdminDashboard = () => {
                         </span>
                       ) : null; })()}
                       {isClosed(c) && <span style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", background: "#f3f4f6", border: "1px solid #d1d5db", borderRadius: 6, padding: "2px 7px", marginTop: 2 }}>🔒 Closed</span>}
+                      {/* Assign Coordinator */}
+                      {c.coordinatorId ? (
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#4F46E5", background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.3)", borderRadius: 6, padding: "2px 7px", marginTop: 2 }}>🎯 Coordinator</span>
+                      ) : (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); openCoordPicker('chat', { chatId: c._id, customerName: c.customerId?.name || c.customerName }); }}
+                          style={{ fontSize: 10, fontWeight: 700, color: "#4F46E5", background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.25)", borderRadius: 6, padding: "2px 7px", cursor: "pointer", marginTop: 2 }}>🎯 Assign</button>
+                      )}
                       {/* Delete button */}
                       <button
                         onClick={(e) => handleDeleteChat(e, c._id)}
@@ -6543,6 +6596,71 @@ const AdminDashboard = () => {
               style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
               Close
             </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* ── Coordinator Picker Modal ─────────────────────────────────────────── */}
+    {coordModal && (
+      <div style={{ position: "fixed", inset: 0, background: "rgba(28,10,4,0.55)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+        <div style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 520, maxHeight: "80vh", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(28,10,4,0.3)", overflow: "hidden" }}>
+          {/* Header */}
+          <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid rgba(196,122,46,0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "#1C0A04", fontFamily: "'Outfit', sans-serif" }}>
+                {coordModal.mode === 'booking' ? '🎯 Assign to Coordinator' : '💬 Transfer Chat to Coordinator'}
+              </div>
+              <div style={{ fontSize: 12, color: "#9B7450", marginTop: 3, fontFamily: "'Outfit', sans-serif" }}>
+                {coordModal.mode === 'booking'
+                  ? `Event plan for ${coordModal.payload?.customerName || 'customer'} · ${coordModal.payload?.eventType || ''}`
+                  : `Chat from ${coordModal.payload?.customerName || 'customer'}`}
+              </div>
+            </div>
+            <button onClick={() => setCoordModal(null)} style={{ background: "none", border: "none", fontSize: 20, color: "#9B7450", cursor: "pointer", lineHeight: 1 }}>✕</button>
+          </div>
+          {/* Search */}
+          <div style={{ padding: "12px 24px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+            <input
+              value={coordSearch} onChange={e => setCoordSearch(e.target.value)}
+              placeholder="Search by name or city…"
+              style={{ width: "100%", padding: "9px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit', sans-serif", outline: "none", boxSizing: "border-box", color: "#1C0A04" }}
+              autoFocus
+            />
+          </div>
+          {/* List */}
+          <div style={{ flex: 1, overflowY: "auto", padding: "10px 16px" }}>
+            {coordsLoading ? (
+              <div style={{ textAlign: "center", padding: "32px", color: "#9B7450", fontFamily: "'Outfit', sans-serif" }}>Loading coordinators…</div>
+            ) : approvedCoords.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "32px", color: "#9B7450", fontFamily: "'Outfit', sans-serif" }}>No approved coordinators found.</div>
+            ) : (
+              approvedCoords
+                .filter(c => !coordSearch || c.name.toLowerCase().includes(coordSearch.toLowerCase()) || c.city.toLowerCase().includes(coordSearch.toLowerCase()))
+                .map(c => (
+                  <div key={c._id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 14px", borderRadius: 12, marginBottom: 8, border: "1px solid rgba(196,122,46,0.15)", background: "#FFFCF5", cursor: "pointer" }}
+                    onClick={() => !transferring && doTransfer(c)}>
+                    <div style={{ width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, color: "#fff", flexShrink: 0, fontFamily: "'Outfit', sans-serif" }}>
+                      {c.name[0]}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "#1C0A04", fontFamily: "'Outfit', sans-serif" }}>{c.name}</div>
+                      <div style={{ fontSize: 12, color: "#9B7450", fontFamily: "'Outfit', sans-serif" }}>📍 {c.city} · {c.activeLeads} active lead{c.activeLeads !== 1 ? 's' : ''}</div>
+                    </div>
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 100, padding: "3px 10px", fontFamily: "'Outfit', sans-serif" }}>{c.referralCode}</div>
+                      <button style={{ marginTop: 6, padding: "5px 14px", borderRadius: 100, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif", opacity: transferring ? 0.6 : 1 }}>
+                        {transferring ? "Transferring…" : "Assign →"}
+                      </button>
+                    </div>
+                  </div>
+                ))
+            )}
+          </div>
+          {/* Footer */}
+          <div style={{ padding: "12px 24px", borderTop: "1px solid rgba(196,122,46,0.1)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#9B7450", fontFamily: "'Outfit', sans-serif" }}>{approvedCoords.length} approved coordinator{approvedCoords.length !== 1 ? 's' : ''}</span>
+            <button onClick={() => setCoordModal(null)} style={{ padding: "7px 18px", borderRadius: 100, background: "#F0E8DC", color: "#5A3820", fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>Cancel</button>
           </div>
         </div>
       </div>

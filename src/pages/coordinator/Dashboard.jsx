@@ -256,15 +256,31 @@ export default function CoordinatorDashboard() {
 
             {/* Referral code */}
             {coordinator.referralCode && (
-              <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 16, padding: "24px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
-                <div>
-                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(204,171,74,0.7)", margin: "0 0 6px" }}>Your Referral Code</p>
-                  <p style={{ fontSize: 28, fontWeight: 900, color: "#CCAB4A", margin: "0 0 4px", letterSpacing: "0.05em", fontFamily: font }}>{coordinator.referralCode}</p>
-                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", margin: 0 }}>Share this code — you earn 20% of every booking that uses it</p>
+              <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 16, padding: "24px 28px" }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 16 }}>
+                  <div>
+                    <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(204,171,74,0.7)", margin: "0 0 6px" }}>✦ Your Referral Code</p>
+                    <p style={{ fontSize: 36, fontWeight: 900, color: "#CCAB4A", margin: "0 0 4px", letterSpacing: "0.1em", fontFamily: font }}>{coordinator.referralCode}</p>
+                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", margin: 0 }}>Earn 20% of every booking that uses your code</p>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <button onClick={copyReferral} style={{ background: referralCopied ? "#15803D" : gold, color: "#fff", border: "none", borderRadius: 10, padding: "10px 22px", fontFamily: font, fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "background 0.2s", whiteSpace: "nowrap" }}>
+                      {referralCopied ? "✓ Copied!" : "📋 Copy Code"}
+                    </button>
+                    <a
+                      href={`https://wa.me/?text=${encodeURIComponent(`Hey! 👋 Use my referral code *${coordinator.referralCode}* on Tendr to book event services — tendr.co.in 🎉`)}`}
+                      target="_blank" rel="noopener noreferrer"
+                      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "10px 16px", borderRadius: 10, background: "#25D366", color: "#fff", fontFamily: font, fontWeight: 700, fontSize: 12, textDecoration: "none", whiteSpace: "nowrap" }}>
+                      💬 Share via WhatsApp
+                    </a>
+                  </div>
                 </div>
-                <button onClick={copyReferral} style={{ background: referralCopied ? "#15803D" : gold, color: "#fff", border: "none", borderRadius: 10, padding: "10px 22px", fontFamily: font, fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "background 0.2s" }}>
-                  {referralCopied ? "✓ Copied!" : "Copy Code"}
-                </button>
+                <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: "10px 14px", display: "flex", gap: 20, flexWrap: "wrap" }}>
+                  <div><span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: font }}>How it works:</span></div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", fontFamily: font }}>1. Share your code with clients</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", fontFamily: font }}>2. They enter it at checkout on Tendr</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", fontFamily: font }}>3. ₹ credited to your wallet automatically</div>
+                </div>
               </div>
             )}
 
