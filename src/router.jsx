@@ -106,7 +106,7 @@ const AdminDashboard      = lazy(() => import("./pages/admin/Dashboard"));
 const VendorRegistration  = lazy(() => import("./pages/vendor/Registration"));
 const ApplicationStatus   = lazy(() => import("./pages/vendor/ApplicationStatus"));
 const VendorOnboarding    = lazy(() => import("./pages/vendor/Onboarding"));
-const VendorDashboard     = lazy(() => import("./pages/vendor/Dashboard"));
+const VendorDashboard     = lazy(() => import("./pages/vendor/VendorDashboardNew"));
 const VendorProfile       = lazy(() => import("./pages/vendor/Profile"));
 const VendorBookings      = lazy(() => import("./pages/vendor/Bookings"));
 const VendorChatList      = lazy(() => import("./pages/vendor/ChatList"));
