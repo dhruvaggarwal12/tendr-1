@@ -928,6 +928,12 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
                     </a>
                   )}
                 </div>
+                {d.serviceType === "Anchor" && (
+                  <button onClick={() => navigate("/vendor/demo-dashboard")} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 100, background: "rgba(28,10,4,0.06)", color: ink, fontSize: 13, fontWeight: 700, border: "1.5px solid rgba(28,10,4,0.16)", cursor: "pointer", fontFamily: font, marginTop: 10 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    View Vendor Dashboard
+                  </button>
+                )}
                 {d.serviceType === "Coordinator" && (
                   <button onClick={() => navigate("/vendor/coordinator-dash")} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 18px", borderRadius: 100, background: "rgba(28,10,4,0.06)", color: ink, fontSize: 13, fontWeight: 700, border: "1.5px solid rgba(28,10,4,0.16)", cursor: "pointer", fontFamily: font, marginTop: 10 }}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>

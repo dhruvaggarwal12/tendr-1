@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
@@ -136,27 +136,70 @@ function Badge({ count, color = "#DC2626" }) {
   return <span style={{ background: color, color: "#fff", borderRadius: 100, padding: "1px 6px", fontSize: 10, fontWeight: 800, marginLeft: 6 }}>{count}</span>;
 }
 
+// ── localStorage helpers ───────────────────────────────────────────────────────
+const LS_KEY = "tendr_demo_dash_v1";
+function lsGet(key, fallback) {
+  try { const s = localStorage.getItem(`${LS_KEY}:${key}`); return s ? JSON.parse(s) : fallback; } catch { return fallback; }
+}
+function lsSet(key, val) {
+  try { localStorage.setItem(`${LS_KEY}:${key}`, JSON.stringify(val)); } catch {}
+}
+function lsClear() {
+  try { Object.keys(localStorage).filter(k => k.startsWith(LS_KEY)).forEach(k => localStorage.removeItem(k)); } catch {}
+}
+
+// ── Persisted state hook ───────────────────────────────────────────────────────
+function usePersisted(key, init) {
+  const [val, setVal] = useState(() => lsGet(key, init));
+  const setAndPersist = (v) => {
+    const next = typeof v === "function" ? v(val) : v;
+    setVal(next);
+    lsSet(key, next);
+  };
+  return [val, setAndPersist];
+}
+
 // ══ MAIN COMPONENT ════════════════════════════════════════════════════════════
 export default function DemoDashboard() {
   const nav = useNavigate();
   const [tab, setTab]         = useState("home");
-  const [profile, setProfile] = useState(INIT_PROFILE);
-  const [profEdit, setProfEdit] = useState(false);
+
+  // All key state is persisted to localStorage so changes survive refresh
+  const [profile, setProfile]   = usePersisted("profile", INIT_PROFILE);
+  const [tendr,   setTendr]     = usePersisted("tendr",   INIT_TENDR);
+  const [reviews, setReviews]   = usePersisted("reviews", INIT_REVIEWS);
+  const [pkgs,    setPkgs]      = usePersisted("pkgs",    INIT_PACKAGES);
+  const [setlist, setSetlist]   = usePersisted("setlist", INIT_SETLIST);
+  const [outside]               = useState(INIT_OUTSIDE); // outside orders: read-only mock
+
+  const [profEdit, setProfEdit]   = useState(false);
   const [profDraft, setProfDraft] = useState({});
-  const [tendr, setTendr]     = useState(INIT_TENDR);
-  const [outside]             = useState(INIT_OUTSIDE);
-  const [reviews, setReviews] = useState(INIT_REVIEWS);
   const [replyDraft, setReplyDraft] = useState({});
-  const [pkgs, setPkgs]       = useState(INIT_PACKAGES);
-  const [pkgModal, setPkgModal] = useState(null); // null | 'new' | pkg object
-  const [pkgDraft, setPkgDraft] = useState({});
-  const [setlist, setSetlist] = useState(INIT_SETLIST);
-  const [newItem, setNewItem] = useState("");
-  const [moneyView, setMoneyView] = useState("pl"); // pl | stats
-  const [workView, setWorkView] = useState("tendr"); // tendr | outside
-  const [gigDraft, setGigDraft] = useState({ genres: profile.genres.join(", "), showreel: profile.showreel, instagram: profile.instagram, youtube: profile.youtube, setlist: profile.setlist });
-  const [gigSaved, setGigSaved] = useState(false);
+  const [pkgModal, setPkgModal]   = useState(null);
+  const [pkgDraft, setPkgDraft]   = useState({});
+  const [newItem, setNewItem]     = useState("");
+  const [moneyView, setMoneyView] = useState("pl");
+  const [workView, setWorkView]   = useState("tendr");
+  const [gigDraft, setGigDraft]   = useState({ genres: profile.genres.join(", "), showreel: profile.showreel, instagram: profile.instagram, youtube: profile.youtube, setlist: profile.setlist });
+  const [gigSaved, setGigSaved]   = useState(false);
   const [dispModal, setDispModal] = useState(null);
+  const [resetConfirm, setResetConfirm] = useState(false);
+
+  // Keep gigDraft in sync when profile loads from localStorage
+  useEffect(() => {
+    setGigDraft({ genres: (profile.genres || []).join(", "), showreel: profile.showreel || "", instagram: profile.instagram || "", youtube: profile.youtube || "", setlist: profile.setlist || "" });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function handleReset() {
+    lsClear();
+    setProfile(INIT_PROFILE); lsSet("profile", INIT_PROFILE);
+    setTendr(INIT_TENDR);     lsSet("tendr",   INIT_TENDR);
+    setReviews(INIT_REVIEWS); lsSet("reviews", INIT_REVIEWS);
+    setPkgs(INIT_PACKAGES);   lsSet("pkgs",    INIT_PACKAGES);
+    setSetlist(INIT_SETLIST); lsSet("setlist", INIT_SETLIST);
+    setGigDraft({ genres: INIT_PROFILE.genres.join(", "), showreel: INIT_PROFILE.showreel, instagram: INIT_PROFILE.instagram, youtube: INIT_PROFILE.youtube, setlist: INIT_PROFILE.setlist });
+    setResetConfirm(false);
+  }
 
   // Derived counts for badges
   const pendingTendr = tendr.filter(b => b.status === "Pending").length;
@@ -203,7 +246,7 @@ export default function DemoDashboard() {
 
         {/* Profile footer */}
         <div style={{ padding: "16px 20px", borderTop: "1px solid rgba(204,171,74,0.1)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
             <div style={{ width: 34, height: 34, borderRadius: "50%", background: `linear-gradient(135deg, ${gold}, ${goldLt})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontFamily: serif, color: "#fff", fontWeight: 400 }}>
               {profile.name[0]}
             </div>
@@ -212,6 +255,17 @@ export default function DemoDashboard() {
               <div style={{ fontSize: 10.5, color: "rgba(255,248,236,0.35)" }}>{profile.type}</div>
             </div>
           </div>
+          {resetConfirm ? (
+            <div>
+              <div style={{ fontSize: 11, color: "rgba(255,248,236,0.55)", marginBottom: 6, fontFamily: font }}>Reset all demo data?</div>
+              <div style={{ display: "flex", gap: 6 }}>
+                <button onClick={handleReset} style={{ flex: 1, padding: "5px 0", borderRadius: 8, background: "#BE123C", color: "#fff", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: font }}>Yes, Reset</button>
+                <button onClick={() => setResetConfirm(false)} style={{ flex: 1, padding: "5px 0", borderRadius: 8, background: "rgba(255,255,255,0.08)", color: "rgba(255,248,236,0.6)", fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: font }}>Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => setResetConfirm(true)} style={{ width: "100%", padding: "6px 0", borderRadius: 8, background: "rgba(255,255,255,0.05)", color: "rgba(255,248,236,0.3)", fontSize: 10.5, fontWeight: 600, border: "1px solid rgba(255,255,255,0.08)", cursor: "pointer", fontFamily: font }}>↺ Reset demo data</button>
+          )}
         </div>
       </div>
     );
@@ -854,8 +908,8 @@ export default function DemoDashboard() {
         {/* Demo notice */}
         <div style={{ background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 12, padding: "10px 16px", marginBottom: 24, display: "flex", alignItems: "center", gap: 10, fontSize: 12.5, color: gold, fontWeight: 600 }}>
           <span>🎭</span>
-          <span>Demo mode — all data is sample data. Changes are local to this session.</span>
-          <button onClick={() => nav("/vendor/demo")} style={{ marginLeft: "auto", background: "none", border: "none", color: gold, fontSize: 12, fontWeight: 700, cursor: "pointer", textDecoration: "underline", fontFamily: font }}>View Public Profile →</button>
+          <span>Demo mode — explore freely. <strong>Changes you make are saved</strong> and survive refresh. Use "↺ Reset demo data" in the sidebar to start fresh.</span>
+          <button onClick={() => nav("/vendor/demo?type=Anchor")} style={{ marginLeft: "auto", background: "none", border: "none", color: gold, fontSize: 12, fontWeight: 700, cursor: "pointer", textDecoration: "underline", fontFamily: font, whiteSpace: "nowrap" }}>View Public Profile →</button>
         </div>
 
         {content}
