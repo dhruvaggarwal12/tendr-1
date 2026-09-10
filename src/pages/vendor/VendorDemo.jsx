@@ -1332,7 +1332,73 @@ export default function VendorDemo() {
   const [type, setType]     = useState("Anchor");
   const [tab, setTab]       = useState("Portfolio");
   const [showBook, setShowBook] = useState(false);
-  const d = DEMOS[type];
+  // Merge localStorage edits (from DemoDashboard) into the Anchor profile
+  let d = DEMOS[type];
+  if (type === "Anchor") {
+    try {
+      const LS_KEY = "tendr_demo_dash_v1";
+      const lsGet = (k) => { try { const s = localStorage.getItem(`${LS_KEY}:${k}`); return s ? JSON.parse(s) : null; } catch { return null; } };
+      const lsProfile = lsGet("profile");
+      const lsPkgs    = lsGet("pkgs");
+      const lsReviews = lsGet("reviews");
+      const lsSetlist = lsGet("setlist");
+
+      const base = DEMOS.Anchor;
+      const merged = { ...base };
+
+      if (lsProfile) {
+        if (lsProfile.name)  merged.name   = lsProfile.name;
+        if (lsProfile.bio)   merged.bio    = lsProfile.bio;
+        if (lsProfile.city)  merged.city   = lsProfile.city;
+        if (lsProfile.rating) merged.rating = lsProfile.rating;
+        if (lsProfile.genres?.length) merged.genres = lsProfile.genres;
+        merged.social = {
+          ...base.social,
+          instagram: lsProfile.instagram || base.social.instagram,
+          youtube:   lsProfile.youtube   || base.social.youtube,
+        };
+        merged.performance = {
+          ...base.performance,
+          genres:    lsProfile.genres?.length ? lsProfile.genres : base.performance.genres,
+          instagram: lsProfile.instagram || base.performance.instagram,
+          youtube:   lsProfile.youtube   || base.performance.youtube,
+          showreel:  lsProfile.showreel  || base.performance.showreel,
+        };
+      }
+
+      if (lsPkgs?.length) {
+        const PKG_COLORS  = ["#F0E8DC", ink, "#2C1208"];
+        const PKG_ACCENTS = [gold, goldLt, goldLt];
+        merged.packages = lsPkgs.map((p, i) => ({
+          name:    p.name,
+          price:   "₹" + Number(p.price).toLocaleString("en-IN"),
+          unit:    p.unit,
+          color:   PKG_COLORS[i]  ?? "#2C1208",
+          accent:  PKG_ACCENTS[i] ?? goldLt,
+          badge:   p.badge || undefined,
+          items:   typeof p.items === "string" ? p.items.split("\n").filter(s => s.trim()) : (p.items || []),
+          bestFor: p.bestFor || "",
+        }));
+      }
+
+      if (lsReviews?.length) {
+        merged.testimonials = lsReviews.map(r => ({
+          name:     r.name,
+          event:    r.event,
+          rating:   r.rating,
+          text:     r.text,
+          response: r.response || null,
+        }));
+      }
+
+      if (lsSetlist?.length) {
+        merged.specialties = lsSetlist;
+        merged.performance = { ...merged.performance, setlist: lsSetlist.join("\n") };
+      }
+
+      d = merged;
+    } catch {}
+  }
   const isGigPro = GIG_PROS.includes(type);
 
   const handleTypeChange = (t) => { setType(t); setTab("Portfolio"); };
