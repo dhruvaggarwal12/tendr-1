@@ -53,7 +53,10 @@ export default function VendorLogin() {
       // Update Redux state inline (bypassing the consumer-only login action)
       dispatch({ type: 'auth/login/fulfilled', payload: { consumer: userObj, token } });
 
-      navigate('/vendor/dashboard');
+      const dest = ['Anchor', 'Band', 'Choreographer'].includes(userObj.serviceType)
+        ? '/vendor/demo-dashboard'
+        : '/vendor/dashboard';
+      navigate(dest);
     } catch (err) {
       setError('Network error — please try again');
     } finally {
