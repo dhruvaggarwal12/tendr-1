@@ -56,60 +56,54 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
 .ls{background:#FAF7F2;overflow-y:auto;overflow-x:hidden;
   align-items:stretch;justify-content:flex-start;position:relative;}
 
-.ls-cph{position:absolute;border-radius:50%;z-index:1;pointer-events:none;}
-.ls-cph-tr{width:120px;height:120px;top:10px;right:-24px;
-  background:
-    radial-gradient(circle at 25% 28%,rgba(255,248,200,.95) 0%,transparent 38%),
-    radial-gradient(circle at 68% 55%,rgba(255,205,80,.7) 0%,transparent 32%),
-    radial-gradient(circle at 42% 75%,rgba(220,130,40,.55) 0%,transparent 35%),
-    radial-gradient(ellipse at 52% 42%,#F0C060 0%,#C47A2E 70%,#7A3A10 100%);
-  box-shadow:0 6px 28px rgba(196,122,46,.28);}
-.ls-cph-bl{width:96px;height:96px;bottom:88px;left:-20px;
-  background:
-    radial-gradient(circle at 50% 38%,rgba(255,242,228,.9) 0%,transparent 38%),
-    radial-gradient(circle at 72% 65%,rgba(240,170,130,.6) 0%,transparent 30%),
-    radial-gradient(ellipse at 48% 52%,#F5C0A0 0%,#D06840 65%,#8B3A18 100%);
-  box-shadow:0 6px 24px rgba(196,122,46,.18);}
+.ls-cph{position:absolute;z-index:1;pointer-events:none;overflow:hidden;}
+.ls-cph-tr{width:190px;height:190px;top:-12px;right:-12px;
+  border-radius:12px 0 0 80% / 12px 0 0 65%;
+  background:url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&q=82&fit=crop') center/cover no-repeat;
+  box-shadow:0 8px 32px rgba(196,122,46,.22);}
+.ls-cph-bl{width:178px;height:218px;bottom:-14px;left:-14px;
+  border-radius:0 80% 12px 0 / 0 65% 12px 0;
+  background:url('https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400&q=82&fit=crop') center/cover no-repeat;
+  box-shadow:0 8px 28px rgba(196,122,46,.16);}
 
 .ls-inner{position:relative;z-index:2;display:flex;flex-direction:column;
-  padding:24px 28px 28px;min-height:100%;}
+  padding:20px 26px 24px;min-height:100%;}
 
-.ls-hw-top{font-family:'Dancing Script',cursive;font-size:18px;color:#C47A2E;
-  opacity:.85;line-height:1.4;padding-right:86px;margin-bottom:10px;}
+.ls-hw-top{font-family:'Dancing Script',cursive;font-size:19px;color:#C47A2E;
+  opacity:.9;line-height:1.45;padding-right:110px;margin-bottom:14px;font-weight:600;}
 
-.ls-brand{text-align:center;margin-bottom:4px;}
-.ls-wm{font-family:'Cormorant Garamond',Georgia,serif;font-size:36px;font-weight:600;
-  letter-spacing:.42em;color:#1C0A04;display:block;text-transform:uppercase;
-  padding-left:.42em;}
+.ls-brand{text-align:center;margin-bottom:16px;}
+.ls-wm{font-family:'Cormorant Garamond',Georgia,serif;font-size:38px;font-weight:400;
+  letter-spacing:.48em;color:#1C0A04;display:block;text-transform:uppercase;
+  padding-left:.48em;}
 .ls-btag{font-family:'Outfit',sans-serif;font-size:10px;font-weight:600;
-  letter-spacing:.18em;color:#9B7450;text-transform:uppercase;display:block;
-  margin-top:4px;}
+  letter-spacing:.2em;color:#C47A2E;text-transform:uppercase;display:block;
+  margin-top:5px;}
 
-.ls-rule{width:44px;height:1px;
-  background:linear-gradient(90deg,transparent,#C47A2E,transparent);
-  margin:14px auto;}
-
-.ls-hero{text-align:center;margin-bottom:16px;}
+.ls-hero{text-align:center;margin-bottom:18px;}
 .ls-h1{font-family:'Cormorant Garamond',Georgia,serif;
-  font-size:clamp(26px,7.5vw,34px);font-weight:600;line-height:1.22;
-  color:#1C0A04;margin-bottom:10px;text-wrap:balance;}
-.ls-h1 em{font-style:italic;color:#C47A2E;}
-.ls-desc{font-family:'Outfit',sans-serif;font-size:13.5px;color:#9B7450;
+  font-size:clamp(44px,12vw,58px);font-weight:700;line-height:1.12;
+  color:#1C0A04;margin-bottom:12px;text-wrap:balance;}
+.ls-h1 em{font-style:italic;color:#C47A2E;font-weight:600;}
+.ls-desc{font-family:'Outfit',sans-serif;font-size:15px;color:#9B7450;
   line-height:1.7;max-width:300px;margin:0 auto;}
 
-.ls-stats{display:flex;gap:8px;margin:14px 0;}
-.ls-stt{display:flex;flex-direction:column;align-items:center;gap:5px;
-  flex:1;text-align:center;padding:11px 4px;
-  background:rgba(196,122,46,.05);border-radius:12px;
-  border:1px solid rgba(196,122,46,.14);}
-.ls-sti{font-size:16px;line-height:1;}
-.ls-stl{font-family:'Outfit',sans-serif;font-size:10.5px;color:#9B7450;line-height:1.4;}
+.ls-stats{display:flex;gap:0;margin:18px 0;
+  border-top:1px solid rgba(196,122,46,.16);
+  border-bottom:1px solid rgba(196,122,46,.16);
+  padding:16px 0;}
+.ls-stt{display:flex;flex-direction:column;align-items:center;gap:10px;
+  flex:1;text-align:center;padding:0 8px;}
+.ls-stt:not(:last-child){border-right:1px solid rgba(196,122,46,.2);}
+.ls-sti{width:40px;height:40px;border-radius:50%;background:rgba(196,122,46,.1);
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.ls-stl{font-family:'Outfit',sans-serif;font-size:11px;color:#9B7450;line-height:1.45;}
 
 .ls-lbl{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;
-  letter-spacing:.2em;text-transform:uppercase;color:#9B7450;
-  text-align:center;margin:2px 0 11px;}
+  letter-spacing:.22em;text-transform:uppercase;color:#9B7450;
+  text-align:center;margin:0 0 12px;}
 
-.ls-llist{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+.ls-llist{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
 .ls-lb{display:flex;align-items:center;gap:14px;padding:15px 18px;
   background:#FFFFFF;border:1.5px solid rgba(28,10,4,.1);border-radius:16px;
   cursor:pointer;font-family:'Outfit',sans-serif;text-align:left;
@@ -117,7 +111,9 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
   transition:border-color .2s,box-shadow .2s,transform .15s;}
 .ls-lb:hover{border-color:rgba(196,122,46,.4);box-shadow:0 4px 20px rgba(196,122,46,.1);}
 .ls-lb:active{transform:scale(.98);}
-.ls-lbf{font-size:24px;flex-shrink:0;}
+.ls-flag{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.ls-lbf{width:36px;height:36px;border-radius:50%;background:rgba(196,122,46,.1);
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
 .ls-lbt{flex:1;}
 .ls-lbn{font-size:15px;font-weight:600;color:#1C0A04;display:block;}
 .ls-lbs{font-size:12px;color:#9B7450;display:block;margin-top:1px;}
@@ -125,8 +121,8 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
 
 .ls-foot{display:flex;justify-content:flex-end;margin-top:auto;
   padding-top:8px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 8px);}
-.ls-hw-bot{font-family:'Dancing Script',cursive;font-size:16px;color:#9B7450;
-  opacity:.7;text-align:right;line-height:1.5;padding-left:72px;}
+.ls-hw-bot{font-family:'Dancing Script',cursive;font-size:18px;color:#C47A2E;
+  opacity:.75;text-align:right;line-height:1.5;padding-left:60px;}
 
 /* ── QUESTION SCREEN (light cream) ── */
 .qs{background:#FAF7F2;position:relative;}
@@ -770,20 +766,19 @@ function langScreen(){
         <span class="ls-wm">TENDR</span>
         <span class="ls-btag">PEOPLE · PLACES · EXPERIENCES</span>
       </div>
-      <div class="ls-rule"></div>
       <div class="ls-hero">
-        <div class="ls-h1">A quick <strong>chat</strong><br><em>with you</em></div>
+        <div class="ls-h1">A quick chat <em>with you</em></div>
         <p class="ls-desc">Just 4 questions. Takes 30 seconds. Helps us create a better experience for you.</p>
       </div>
       <div class="ls-stats">
         <div class="ls-stt"><div class="ls-sti">⚡</div><div class="ls-stl">4 quick questions</div></div>
-        <div class="ls-stt"><div class="ls-sti">🕐</div><div class="ls-stl">Takes only 30 sec</div></div>
-        <div class="ls-stt"><div class="ls-sti">♡</div><div class="ls-stl">More relevant suggestions</div></div>
+        <div class="ls-stt"><div class="ls-sti">🕐</div><div class="ls-stl">Takes only 30 seconds</div></div>
+        <div class="ls-stt"><div class="ls-sti">♡</div><div class="ls-stl">More relevant suggestions for you</div></div>
       </div>
       <div class="ls-lbl">CHOOSE YOUR LANGUAGE</div>
       <div class="ls-llist">
-        <button class="ls-lb" onclick="setLang('en')"><div class="ls-lbf">🇬🇧</div><div class="ls-lbt"><span class="ls-lbn">English</span><span class="ls-lbs">Continue in English</span></div><div class="ls-lbc">›</div></button>
-        <button class="ls-lb" onclick="setLang('hi')"><div class="ls-lbf">🇮🇳</div><div class="ls-lbt"><span class="ls-lbn">हिन्दी</span><span class="ls-lbs">हिंदी में चलते हैं</span></div><div class="ls-lbc">›</div></button>
+        <button class="ls-lb" onclick="setLang('en')"><img src="https://flagcdn.com/w40/gb.png" class="ls-flag"><div class="ls-lbt"><span class="ls-lbn">English</span><span class="ls-lbs">Continue in English</span></div><div class="ls-lbc">›</div></button>
+        <button class="ls-lb" onclick="setLang('hi')"><img src="https://flagcdn.com/w40/in.png" class="ls-flag"><div class="ls-lbt"><span class="ls-lbn">हिन्दी</span><span class="ls-lbs">हिंदी में जारी रखें</span></div><div class="ls-lbc">›</div></button>
         <button class="ls-lb" onclick="setLang('hl')"><div class="ls-lbf">✌️</div><div class="ls-lbt"><span class="ls-lbn">Hinglish</span><span class="ls-lbs">Mix karke chalte hain bhai</span></div><div class="ls-lbc">›</div></button>
       </div>
       <div class="ls-foot"><div class="ls-hw-bot">Let's create<br>something special</div></div>
