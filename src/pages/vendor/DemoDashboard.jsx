@@ -171,7 +171,7 @@ const PACKAGES_BY_TYPE = {
   Band:[
     {id:1,name:"1-Hour Set",price:40000,unit:"1 hour",icon:"🥉",items:"1 hr live performance\n6 musicians\nSound system included\n10-song set"},
     {id:2,name:"2-Hour Evening",price:70000,unit:"2 hours",icon:"🥇",badge:"Most Popular",items:"2 hr live performance\nFull 6-piece band\nCustom setlist planning\nSoundcheck + rehearsal\n20-song mixed set"},
-    {id:3,name:"Full Wedding Package",price:1,20000,unit:"full event",icon:"💎",items:"4 hrs coverage\nFull band + PA\nCustom medleys\nDedicatory songs\nIntermission playlist\nPost-event recording"},
+    {id:3,name:"Full Wedding Package",price:120000,unit:"full event",icon:"💎",items:"4 hrs coverage\nFull band + PA\nCustom medleys\nDedicatory songs\nIntermission playlist\nPost-event recording"},
   ],
   Singer:[
     {id:1,name:"10-Song Set",price:18000,unit:"45 min",icon:"🥉",items:"10 pre-selected songs\nPersonal mic + in-ear\nBacktrack included"},
