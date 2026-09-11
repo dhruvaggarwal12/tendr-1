@@ -17,27 +17,12 @@
   --bdr:rgba(255,255,255,.07);--bdg:rgba(200,155,60,.2);
   --grn:#3ECF8E;--grng:rgba(62,207,142,.1);--grnb:rgba(62,207,142,.32);
 }
-html,body{height:100%;background:var(--bg);color:var(--txt);
+html,body{height:100%;background:#F9F6F1;color:#1C0A04;
   font-family:-apple-system,'SF Pro Display','Helvetica Neue',Arial,sans-serif;
   overflow:hidden;}
 
-/* ── AMBIENT ── */
-#amb{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
-.orb{position:absolute;border-radius:50%;filter:blur(80px);
-  animation:orbf 14s ease-in-out infinite;}
-.o1{width:380px;height:380px;background:radial-gradient(#C89B3C,transparent);
-  top:-80px;left:-90px;opacity:.18;animation-delay:0s;}
-.o2{width:300px;height:300px;background:radial-gradient(#6C3FC7,transparent);
-  bottom:40px;right:-70px;opacity:.14;animation-delay:-6s;}
-.o3{width:220px;height:220px;background:radial-gradient(#C89B3C,transparent);
-  bottom:35%;left:15%;opacity:.1;animation-delay:-10s;}
-@keyframes orbf{0%,100%{transform:translate(0,0) scale(1);}
-  33%{transform:translate(16px,-20px) scale(1.07);}
-  66%{transform:translate(-10px,13px) scale(.95);}}
-.ptcl{position:absolute;border-radius:50%;background:var(--gold);
-  opacity:0;animation:ptf linear infinite;}
-@keyframes ptf{0%{opacity:0;transform:translateY(0);}
-  12%{opacity:.55;}90%{opacity:.15;}100%{opacity:0;transform:translateY(-120px);}}
+/* ── AMBIENT (hidden — light theme) ── */
+#amb{display:none;}
 
 /* ── SHELL ── */
 #app{position:relative;z-index:1;height:100vh;height:100dvh;
@@ -91,99 +76,75 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
 .ls-lbs{font-size:12px;color:#9B7450;display:block;margin-top:1px;}
 .ls-lbc{font-size:20px;color:#C47A2E;opacity:.5;flex-shrink:0;line-height:1;font-weight:300;}
 
-/* ── QUESTION SCREEN (light cream) ── */
-.qs{background:#FAF7F2;position:relative;}
+/* ── QUESTION SCREEN (redesigned — editorial cream) ── */
+.qs{background:#F9F6F1;position:relative;}
 
-.q-top{padding:calc(env(safe-area-inset-top,0px)+14px) 24px 0;flex-shrink:0;}
-.q-wm-line{text-align:center;margin-bottom:12px;}
-.q-wm{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:600;
-  letter-spacing:.4em;color:#1C0A04;display:block;text-transform:uppercase;
-  padding-left:.4em;}
-.q-wtag{font-family:'Outfit',sans-serif;font-size:9px;font-weight:600;
-  letter-spacing:.18em;color:#9B7450;text-transform:uppercase;display:block;
-  margin-top:2px;}
-.q-prog-row{display:flex;align-items:center;gap:10px;}
-.q-segs{display:flex;gap:5px;flex:1;}
-.q-seg{height:4px;border-radius:2px;flex:1;background:rgba(28,10,4,.12);
-  transition:background .3s;}
-.q-seg.on{background:#C47A2E;}
-.q-seg.dn{background:#C47A2E;opacity:.4;}
-.q-cnt{font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;
-  color:#9B7450;flex-shrink:0;white-space:nowrap;}
+.q-top{padding:calc(env(safe-area-inset-top,0px)+18px) 22px 0;flex-shrink:0;}
 
-.q-body{flex:1;display:flex;flex-direction:column;padding:14px 24px 0;
-  padding-bottom:calc(env(safe-area-inset-bottom,0px)+148px);overflow-y:auto;}
-.q-cat{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;
-  letter-spacing:.16em;text-transform:uppercase;color:#C47A2E;margin-bottom:12px;
-  animation:fu .3s ease both;}
-.q-head{font-family:'Cormorant Garamond',Georgia,serif;
-  font-size:clamp(23px,6.5vw,29px);font-weight:600;line-height:1.22;
-  color:#1C0A04;margin-bottom:9px;animation:fu .3s .04s ease both;}
-.q-head em{font-style:italic;color:#C47A2E;}
-.q-sub{font-family:'Outfit',sans-serif;font-size:13.5px;color:#9B7450;
-  line-height:1.65;margin-bottom:15px;animation:fu .3s .08s ease both;}
+/* Dot progress row */
+.q-dot-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:0;}
+.q-dots{display:flex;gap:7px;align-items:center;}
+.q-dot{width:9px;height:9px;border-radius:50%;
+  background:rgba(28,10,4,.12);transition:background .3s,transform .3s;}
+.q-dot.on{background:#C47A2E;transform:scale(1.15);}
+.q-dot.dn{background:#C47A2E;opacity:.32;}
+.q-cnt{font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;
+  color:#9B7450;letter-spacing:.04em;}
 
-.q-cards{display:flex;flex-direction:column;gap:10px;margin-bottom:13px;
-  animation:fu .3s .12s ease both;}
-.q-ch{display:flex;align-items:center;gap:13px;padding:14px 16px;
-  background:#FFFFFF;border:1.5px solid rgba(28,10,4,.1);border-radius:18px;
+.q-body{flex:1;display:flex;flex-direction:column;
+  padding:24px 22px calc(env(safe-area-inset-bottom,0px)+28px);overflow-y:auto;
+  background:#FFFFFF;border-radius:28px 28px 0 0;
+  margin:12px 0 0;box-shadow:0 -2px 20px rgba(28,10,4,.05);}
+
+/* Category eyebrow with extending rule */
+.q-eyebrow{display:flex;align-items:center;gap:13px;margin-bottom:16px;
+  animation:fu .28s ease both;}
+.q-eyebrow-lbl{font-family:'Outfit',sans-serif;font-size:10px;font-weight:800;
+  letter-spacing:.22em;text-transform:uppercase;color:#C47A2E;white-space:nowrap;}
+.q-eyebrow-rule{flex:1;height:1px;background:linear-gradient(90deg,rgba(196,122,46,.35),transparent);}
+
+/* Heading — large Outfit bold with em=gold non-italic */
+.q-head{font-family:'Outfit',sans-serif;
+  font-size:clamp(26px,7vw,33px);font-weight:800;line-height:1.18;
+  color:#1C0A04;margin-bottom:10px;animation:fu .28s .05s ease both;}
+.q-head em{font-style:normal;font-weight:900;color:#C47A2E;}
+
+/* Subtle subtext */
+.q-sub{font-family:'Outfit',sans-serif;font-size:13px;color:#9B7450;
+  line-height:1.65;margin-bottom:24px;animation:fu .28s .09s ease both;}
+
+/* Answer cards */
+.q-cards{display:flex;flex-direction:column;gap:12px;
+  animation:fu .28s .13s ease both;}
+.q-ch{display:flex;align-items:center;gap:15px;padding:17px 18px;
+  background:#FFFFFF;border:1.5px solid rgba(28,10,4,.07);border-radius:20px;
   cursor:pointer;font-family:'Outfit',sans-serif;text-align:left;
   touch-action:manipulation;width:100%;
-  transition:border-color .2s,box-shadow .2s,transform .15s,opacity .3s;
-  -webkit-user-select:none;user-select:none;}
+  transition:border-color .2s,background .2s,transform .15s,opacity .3s;
+  -webkit-user-select:none;user-select:none;
+  box-shadow:0 1px 8px rgba(28,10,4,.04);}
 .q-ch:active{transform:scale(.98);}
-.q-ico{width:44px;height:44px;border-radius:50%;background:rgba(196,122,46,.08);
+.q-ico{width:50px;height:50px;border-radius:50%;background:rgba(196,122,46,.07);
   display:flex;align-items:center;justify-content:center;
-  font-size:22px;flex-shrink:0;transition:background .2s;}
+  font-size:26px;flex-shrink:0;transition:background .2s;}
 .q-txt{flex:1;}
-.q-ct{font-size:14.5px;font-weight:600;color:#1C0A04;line-height:1.28;display:block;
+.q-ct{font-size:15px;font-weight:700;color:#1C0A04;line-height:1.3;display:block;
   transition:color .2s;}
-.q-cs{font-size:11.5px;color:#9B7450;margin-top:2px;display:block;}
-.q-rad{width:22px;height:22px;border-radius:50%;
-  border:2px solid rgba(28,10,4,.18);flex-shrink:0;
-  transition:border-color .2s,background .2s,box-shadow .2s;}
+.q-cs{font-size:12px;color:#9B7450;margin-top:3px;display:block;}
+.q-rad{display:none;}
 
-/* selected YES — gold */
-.q-ch.cy{border-color:#C47A2E;border-width:2px;
-  box-shadow:0 4px 20px rgba(196,122,46,.16);}
-.q-ch.cy .q-ico{background:rgba(196,122,46,.13);}
-.q-ch.cy .q-ct{color:#C47A2E;}
-.q-ch.cy .q-rad{border-color:#C47A2E;background:#C47A2E;
-  box-shadow:inset 0 0 0 4px #FAF7F2;}
+/* selected YES — soft sage green */
+.q-ch.cy{background:rgba(74,222,128,.09);border-color:rgba(52,211,153,.28);}
+.q-ch.cy .q-ico{background:rgba(52,211,153,.14);}
+.q-ch.cy .q-ct{color:#15803D;}
 
-/* selected NO — ink */
-.q-ch.cn{border-color:rgba(28,10,4,.32);border-width:2px;
-  box-shadow:0 4px 12px rgba(28,10,4,.05);}
-.q-ch.cn .q-ico{background:rgba(28,10,4,.05);}
-.q-ch.cn .q-rad{border-color:#1C0A04;background:#1C0A04;
-  box-shadow:inset 0 0 0 4px #FAF7F2;}
+/* selected NO — soft ink */
+.q-ch.cn{background:rgba(28,10,4,.03);border-color:rgba(28,10,4,.18);}
+.q-ch.cn .q-ico{background:rgba(28,10,4,.06);}
+.q-ch.cn .q-ct{color:#1C0A04;}
 
 /* unchosen faded */
-.q-ch.fd{opacity:.14;pointer-events:none;}
-
-/* Next button */
-.q-next{width:100%;padding:16px 24px;border-radius:50px;
-  background:#C47A2E;border:none;
-  font-family:'Outfit',sans-serif;font-size:15.5px;font-weight:600;
-  color:#FFF;cursor:pointer;touch-action:manipulation;letter-spacing:.02em;
-  transition:opacity .25s,transform .15s,box-shadow .2s;
-  animation:fu .3s .16s ease both;}
-.q-next:not([disabled]):hover{box-shadow:0 6px 24px rgba(196,122,46,.32);}
-.q-next:not([disabled]):active{transform:scale(.98);}
-.q-next[disabled]{opacity:.22;cursor:default;}
-
-/* bottom decor — corner photo + handwriting */
-.q-cp-br{position:absolute;width:148px;height:148px;
-  border-radius:50% 12% 50% 50% / 50% 50% 50% 12%;
-  right:-18px;bottom:28px;pointer-events:none;z-index:1;
-  background:
-    radial-gradient(circle at 50% 40%,rgba(255,242,228,.88) 0%,transparent 38%),
-    radial-gradient(circle at 68% 60%,rgba(235,165,120,.55) 0%,transparent 30%),
-    radial-gradient(ellipse at 50% 52%,#EFC0A0 0%,#C06030 58%,#8A3A18 100%);
-  box-shadow:0 6px 28px rgba(196,122,46,.16);}
-.q-hw-bl{position:absolute;bottom:26px;left:18px;
-  font-family:'Dancing Script',cursive;font-size:14.5px;color:#C47A2E;
-  opacity:.58;line-height:1.6;pointer-events:none;z-index:1;}
+.q-ch.fd{opacity:.13;pointer-events:none;}
 
 /* empathy overlay — light theme overrides for .qs context */
 .qs .eov[data-s="fade"]{background:linear-gradient(180deg,rgba(250,247,242,.95),#FAF7F2);}
@@ -470,32 +431,32 @@ const L={
 en:{
   skip:['Keep going →','Next →','Show me →','And? →'],
   qs:[
-    {badge:'Let\'s start simple',
-     head:'You have a birthday to plan. You open your phone. You stare at a blank note.',
+    {badge:'Planning',
+     head:'You have a <em>birthday</em> to plan. You open your phone. You stare at a <em>blank note</em>.',
      sub:'Close it. Open it again. Sound familiar?',
      y:{em:'😅',t:'Every. Single. Time.',s:'You\'re in good company.'},
      n:{em:'🗂️',t:'I actually start with a list.',s:'Genuinely, teach us.'},
      oy:{icon:'😮‍💨',t:'<b>That blank-page paralysis is real.</b>',b:'Tendr walks you through every step — all in one place. No more staring at empty notes.'},
      on:{icon:'✨',t:'<b>That clarity is genuinely rare.</b>',b:'Tendr makes even the organised ones faster. One more.'},
     },
-    {badge:'Pulling it together',
-     head:'You\'ve had 6 tabs open, 3 apps, 2 WhatsApp groups — and still forgot something.',
+    {badge:'Coordination',
+     head:'You\'ve had 6 tabs open, 3 apps, 2 WhatsApp groups — and still <em>forgot something</em>.',
      sub:'Every event. Always something slipping through.',
      y:{em:'😭',t:'The cake. Always the cake.',s:'We\'ve been there.'},
      n:{em:'🧘',t:'I have a system, actually.',s:'Teach us.'},
      oy:{icon:'🤯',t:'<b>The scattering is the problem.</b>',b:'Vendors, gifts, budget, guests — Tendr puts it all in one place. Tabs closed.'},
      on:{icon:'😄',t:'<b>A system person. Rare.</b>',b:'Tendr will feel like a superpower for you. One more.'},
     },
-    {badge:'A week before',
-     head:'You stop being a guest. You become everyone\'s unpaid coordinator.',
+    {badge:'Organisation',
+     head:'You stop being a <em>guest</em>. You become everyone\'s <em>unpaid coordinator</em>.',
      sub:'Chasing caterers. Confirming decorators. Calling the same person twice.',
      y:{em:'😤',t:'I become a completely different person.',s:'Exhausting. We know.'},
      n:{em:'👌',t:'Mine just... runs itself.',s:'Genuinely rare.'},
      oy:{icon:'📋',t:'<b>That hidden labour is real.</b>',b:'Nobody talks about it. Tendr absorbs it so you don\'t have to be the coordinator anymore.'},
      on:{icon:'✨',t:'<b>That\'s a rare setup.</b>',b:'Tendr keeps it that way with even less effort. Last one.'},
     },
-    {badge:'Finding the right one',
-     head:'You\'ve looked at 10 vendor profiles and somehow feel less sure than when you started.',
+    {badge:'Vendors',
+     head:'You\'ve looked at 10 vendor profiles and somehow feel <em>less sure</em> than when you started.',
      sub:'"Contact for quote." No real photos. Suspicious reviews. You still don\'t know.',
      y:{em:'😩',t:'Always feels like a gamble.',s:'We know.'},
      n:{em:'🤝',t:'I have people I actually trust.',s:'That took years to build.'},
@@ -536,32 +497,32 @@ en:{
 hi:{
   skip:['देखते हैं →','आगे →','और? →','चलो →'],
   qs:[
-    {badge:'पहला सवाल',
-     head:'Birthday plan करनी है। Phone उठाया। Notes खोला। बस screen देखते रहे।',
+    {badge:'Planning',
+     head:'Birthday plan करनी है। Phone उठाया। Notes खोला। बस <em>screen देखते</em> रहे।',
      sub:'Close किया। फिर open किया। यही हुआ ना?',
      y:{em:'😅',t:'हर बार। बिल्कुल हर बार।',s:'आप अकेले नहीं हैं।'},
      n:{em:'🗂️',t:'मैं list बनाकर शुरू करता/करती हूँ।',s:'सच में बताइए कैसे।'},
      oy:{icon:'😮‍💨',t:'<b>वो blank-page वाला feel real है।</b>',b:'Tendr हर step में guide करता है — सब एक जगह। Notes का वो खाली पन्ना बंद हो जाता है।'},
      on:{icon:'✨',t:'<b>यह clarity genuinely rare है।</b>',b:'Tendr organised लोगों को और fast बनाता है। एक और।'},
     },
-    {badge:'सब जोड़ना',
-     head:'6 tabs, 3 apps, 2 WhatsApp groups — फिर भी कुछ न कुछ रह ही गया।',
+    {badge:'Coordination',
+     head:'6 tabs, 3 apps, 2 WhatsApp groups — फिर भी <em>कुछ न कुछ</em> रह ही गया।',
      sub:'हर event में। कुछ न कुछ slip हो ही जाता है।',
      y:{em:'😭',t:'Cake। हमेशा cake।',s:'हम जानते हैं।'},
      n:{em:'🧘',t:'मेरा एक system है।',s:'बताइए।'},
      oy:{icon:'🤯',t:'<b>यह बिखराव ही problem है।</b>',b:'Vendors, gifts, budget, guests — Tendr सब एक जगह। Tabs बंद।'},
      on:{icon:'😄',t:'<b>System वाले लोग rare होते हैं।</b>',b:'Tendr आपके लिए superpower जैसा होगा।'},
     },
-    {badge:'एक हफ्ते पहले',
-     head:'आप guest नहीं रहते। सबके unpaid coordinator बन जाते हैं।',
+    {badge:'Organisation',
+     head:'आप <em>guest</em> नहीं रहते। सबके <em>unpaid coordinator</em> बन जाते हैं।',
      sub:'Caterer chase। Decorator confirm। एक ही इंसान को दो बार call।',
      y:{em:'😤',t:'मैं एक अलग ही इंसान बन जाता/जाती हूँ।',s:'Exhausting। हम जानते हैं।'},
      n:{em:'👌',t:'मेरा खुद चल जाता है।',s:'Genuinely rare।'},
      oy:{icon:'📋',t:'<b>यह hidden labour real है।</b>',b:'कोई नहीं बोलता इसके बारे में। Tendr इसे absorb करता है ताकि आपको coordinator न बनना पड़े।'},
      on:{icon:'✨',t:'<b>यह rare setup है।</b>',b:'Tendr इसे और आसान रखता है। आखिरी सवाल।'},
     },
-    {badge:'सही vendor ढूंढना',
-     head:'10 profiles देखे। और अब पहले से ज्यादा confuse हैं।',
+    {badge:'Vendors',
+     head:'10 profiles देखे। और अब पहले से <em>ज्यादा confuse</em> हैं।',
      sub:'"Quote के लिए contact करें।" Real photos नहीं। Fake reviews। Trust नहीं बनता।',
      y:{em:'😩',t:'हमेशा एक जुआ लगता है।',s:'हम जानते हैं।'},
      n:{em:'🤝',t:'मेरे trusted लोग हैं।',s:'वो trust बनाने में साल लगे।'},
@@ -602,32 +563,32 @@ hi:{
 hl:{
   skip:['Aage →','Keep going →','Dikhao →','Aur? →'],
   qs:[
-    {badge:'Pehla sawaal',
-     head:'Birthday plan karni hai. Phone uthaya. Notes khola. Bas screen ko ghoorte rahe.',
+    {badge:'Planning',
+     head:'Birthday plan karni hai. Phone uthaya. Notes khola. Bas <em>screen</em> ko ghoorte rahe.',
      sub:'Close kiya. Phir open kiya. Yahi hua na?',
      y:{em:'😅',t:'Har baar. Bilkul har baar.',s:'Tum akele nahi ho.'},
      n:{em:'🗂️',t:'Main list bana ke shuru karta/karti hoon.',s:'Sach mein batao kaise.'},
      oy:{icon:'😮‍💨',t:'<b>Woh blank-page wala feel real hai.</b>',b:'Tendr har step mein guide karta hai — sab ek jagah. Notes ka woh empty page band ho jaata hai.'},
      on:{icon:'✨',t:'<b>Yeh clarity genuinely rare hai.</b>',b:'Tendr organised logon ko aur fast banata hai. Ek aur.'},
     },
-    {badge:'Sab jodhna',
-     head:'6 tabs, 3 apps, 2 WhatsApp groups — aur phir bhi kuch na kuch reh gaya.',
+    {badge:'Coordination',
+     head:'6 tabs, 3 apps, 2 WhatsApp groups — aur phir bhi <em>kuch na kuch</em> reh gaya.',
      sub:'Har event mein. Kuch slip ho hi jaata hai.',
      y:{em:'😭',t:'Cake. Hamesha cake.',s:'Hum jaante hain.'},
      n:{em:'🧘',t:'Mera ek system hai actually.',s:'Batao.'},
      oy:{icon:'🤯',t:'<b>Yeh bikharaav hi problem hai.</b>',b:'Vendors, gifts, budget, guests — Tendr sab ek jagah. Tabs band.'},
      on:{icon:'😄',t:'<b>System waale log rare hote hain.</b>',b:'Tendr tumhare liye superpower jaisa hoga. Ek aur.'},
     },
-    {badge:'Ek hafte pehle',
-     head:'Tum guest nahi rehte. Sab ke unpaid coordinator ban jaate ho.',
+    {badge:'Organisation',
+     head:'Tum <em>guest</em> nahi rehte. Sab ke <em>unpaid coordinator</em> ban jaate ho.',
      sub:'Caterer chase. Decorator confirm. Ek hi insaan ko do baar call.',
      y:{em:'😤',t:'Main ek alag hi insaan ban jaata/jaati hoon.',s:'Exhausting. Hum jaante hain.'},
      n:{em:'👌',t:'Mera khud chal jaata hai.',s:'Genuinely rare.'},
      oy:{icon:'📋',t:'<b>Yeh hidden labour real hai.</b>',b:'Koi baat nahi karta iske baare mein. Tendr ise absorb karta hai taaki tumhe coordinator na banna pade.'},
      on:{icon:'✨',t:'<b>Yeh rare setup hai.</b>',b:'Tendr ise aur aasaan rakhta hai. Aakhri sawaal.'},
     },
-    {badge:'Sahi vendor dhundhna',
-     head:'10 profiles dekhe. Aur ab pehle se zyada confuse ho.',
+    {badge:'Vendors',
+     head:'10 profiles dekhe. Aur ab pehle se <em>zyada confuse</em> ho.',
      sub:'"Quote ke liye contact karo." Real photos nahi. Suspicious reviews. Trust nahi banta.',
      y:{em:'😩',t:'Hamesha ek juaa lagta hai.',s:'Hum jaante hain.'},
      n:{em:'🤝',t:'Mere trusted log hain.',s:'Woh trust banane mein saal lage.'},
@@ -748,31 +709,26 @@ function setLang(l){lang=l;yCount=0;renderQ(0);}
 function renderQ(idx){
   const q=L[lang].qs[idx];
   prog(PROG[idx+1]);
-  const segs=[0,1,2,3].map(i=>`<div class="q-seg${i===idx?' on':i<idx?' dn':''}"></div>`).join('');
+  const dots=[0,1,2,3].map(i=>`<div class="q-dot${i===idx?' on':i<idx?' dn':''}"></div>`).join('');
   go(`<div class="screen qs">
     <div class="q-top">
-      <div class="q-wm-line"><span class="q-wm">TENDR</span><span class="q-wtag">PEOPLE · PLACES · EXPERIENCES</span></div>
-      <div class="q-prog-row"><div class="q-segs">${segs}</div><div class="q-cnt">${idx+1} of 4</div></div>
+      <div class="q-dot-row"><div class="q-dots">${dots}</div><div class="q-cnt">${idx+1} of 4</div></div>
     </div>
     <div class="q-body">
-      <div class="q-cat">${q.badge}</div>
+      <div class="q-eyebrow"><span class="q-eyebrow-lbl">${q.badge}</span><div class="q-eyebrow-rule"></div></div>
       <div class="q-head">${q.head}</div>
       <p class="q-sub">${q.sub}</p>
       <div class="q-cards">
         <button class="q-ch" id="by" onclick="ans('y',${idx})">
           <div class="q-ico">${q.y.em}</div>
           <div class="q-txt"><span class="q-ct">${q.y.t}</span><span class="q-cs">${q.y.s}</span></div>
-          <div class="q-rad"></div>
         </button>
         <button class="q-ch" id="bn" onclick="ans('n',${idx})">
           <div class="q-ico">${q.n.em}</div>
           <div class="q-txt"><span class="q-ct">${q.n.t}</span><span class="q-cs">${q.n.s}</span></div>
-          <div class="q-rad"></div>
         </button>
       </div>
     </div>
-    <div class="q-cp-br"></div>
-    <div class="q-hw-bl">Great events<br>start with<br>great people</div>
   </div>`);
 }
 
