@@ -79,7 +79,7 @@ html,body{height:100%;background:#F9F6F1;color:#1C0A04;
 /* ── QUESTION SCREEN (redesigned — editorial cream) ── */
 .qs{background:#F9F6F1;position:relative;}
 
-.q-top{padding:calc(env(safe-area-inset-top,0px)+18px) 26px 0;flex-shrink:0;}
+.q-top{padding:calc(env(safe-area-inset-top,0px)+18px) 22px 0;flex-shrink:0;}
 
 /* Dot progress row */
 .q-dot-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:0;}
@@ -92,7 +92,9 @@ html,body{height:100%;background:#F9F6F1;color:#1C0A04;
   color:#9B7450;letter-spacing:.04em;}
 
 .q-body{flex:1;display:flex;flex-direction:column;
-  padding:22px 26px calc(env(safe-area-inset-bottom,0px)+28px);overflow-y:auto;}
+  padding:24px 22px calc(env(safe-area-inset-bottom,0px)+28px);overflow-y:auto;
+  background:#FFFFFF;border-radius:28px 28px 0 0;
+  margin:12px 0 0;box-shadow:0 -2px 20px rgba(28,10,4,.05);}
 
 /* Category eyebrow with extending rule */
 .q-eyebrow{display:flex;align-items:center;gap:13px;margin-bottom:16px;
@@ -430,7 +432,7 @@ en:{
   skip:['Keep going →','Next →','Show me →','And? →'],
   qs:[
     {badge:'Planning',
-     head:'You have a birthday to plan. You open your phone. You stare at a blank note.',
+     head:'You have a <em>birthday</em> to plan. You open your phone. You stare at a <em>blank note</em>.',
      sub:'Close it. Open it again. Sound familiar?',
      y:{em:'😅',t:'Every. Single. Time.',s:'You\'re in good company.'},
      n:{em:'🗂️',t:'I actually start with a list.',s:'Genuinely, teach us.'},
@@ -438,7 +440,7 @@ en:{
      on:{icon:'✨',t:'<b>That clarity is genuinely rare.</b>',b:'Tendr makes even the organised ones faster. One more.'},
     },
     {badge:'Coordination',
-     head:'You\'ve had 6 tabs open, 3 apps, 2 WhatsApp groups — and still forgot something.',
+     head:'You\'ve had 6 tabs open, 3 apps, 2 WhatsApp groups — and still <em>forgot something</em>.',
      sub:'Every event. Always something slipping through.',
      y:{em:'😭',t:'The cake. Always the cake.',s:'We\'ve been there.'},
      n:{em:'🧘',t:'I have a system, actually.',s:'Teach us.'},
@@ -446,7 +448,7 @@ en:{
      on:{icon:'😄',t:'<b>A system person. Rare.</b>',b:'Tendr will feel like a superpower for you. One more.'},
     },
     {badge:'Organisation',
-     head:'You stop being a guest. You become everyone\'s unpaid coordinator.',
+     head:'You stop being a <em>guest</em>. You become everyone\'s <em>unpaid coordinator</em>.',
      sub:'Chasing caterers. Confirming decorators. Calling the same person twice.',
      y:{em:'😤',t:'I become a completely different person.',s:'Exhausting. We know.'},
      n:{em:'👌',t:'Mine just... runs itself.',s:'Genuinely rare.'},
@@ -454,7 +456,7 @@ en:{
      on:{icon:'✨',t:'<b>That\'s a rare setup.</b>',b:'Tendr keeps it that way with even less effort. Last one.'},
     },
     {badge:'Vendors',
-     head:'You\'ve looked at 10 vendor profiles and somehow feel less sure than when you started.',
+     head:'You\'ve looked at 10 vendor profiles and somehow feel <em>less sure</em> than when you started.',
      sub:'"Contact for quote." No real photos. Suspicious reviews. You still don\'t know.',
      y:{em:'😩',t:'Always feels like a gamble.',s:'We know.'},
      n:{em:'🤝',t:'I have people I actually trust.',s:'That took years to build.'},
@@ -496,7 +498,7 @@ hi:{
   skip:['देखते हैं →','आगे →','और? →','चलो →'],
   qs:[
     {badge:'Planning',
-     head:'Birthday plan करनी है। Phone उठाया। Notes खोला। बस screen देखते रहे।',
+     head:'Birthday plan करनी है। Phone उठाया। Notes खोला। बस <em>screen देखते</em> रहे।',
      sub:'Close किया। फिर open किया। यही हुआ ना?',
      y:{em:'😅',t:'हर बार। बिल्कुल हर बार।',s:'आप अकेले नहीं हैं।'},
      n:{em:'🗂️',t:'मैं list बनाकर शुरू करता/करती हूँ।',s:'सच में बताइए कैसे।'},
@@ -504,7 +506,7 @@ hi:{
      on:{icon:'✨',t:'<b>यह clarity genuinely rare है।</b>',b:'Tendr organised लोगों को और fast बनाता है। एक और।'},
     },
     {badge:'Coordination',
-     head:'6 tabs, 3 apps, 2 WhatsApp groups — फिर भी कुछ न कुछ रह ही गया।',
+     head:'6 tabs, 3 apps, 2 WhatsApp groups — फिर भी <em>कुछ न कुछ</em> रह ही गया।',
      sub:'हर event में। कुछ न कुछ slip हो ही जाता है।',
      y:{em:'😭',t:'Cake। हमेशा cake।',s:'हम जानते हैं।'},
      n:{em:'🧘',t:'मेरा एक system है।',s:'बताइए।'},
@@ -512,7 +514,7 @@ hi:{
      on:{icon:'😄',t:'<b>System वाले लोग rare होते हैं।</b>',b:'Tendr आपके लिए superpower जैसा होगा।'},
     },
     {badge:'Organisation',
-     head:'आप guest नहीं रहते। सबके unpaid coordinator बन जाते हैं।',
+     head:'आप <em>guest</em> नहीं रहते। सबके <em>unpaid coordinator</em> बन जाते हैं।',
      sub:'Caterer chase। Decorator confirm। एक ही इंसान को दो बार call।',
      y:{em:'😤',t:'मैं एक अलग ही इंसान बन जाता/जाती हूँ।',s:'Exhausting। हम जानते हैं।'},
      n:{em:'👌',t:'मेरा खुद चल जाता है।',s:'Genuinely rare।'},
@@ -520,7 +522,7 @@ hi:{
      on:{icon:'✨',t:'<b>यह rare setup है।</b>',b:'Tendr इसे और आसान रखता है। आखिरी सवाल।'},
     },
     {badge:'Vendors',
-     head:'10 profiles देखे। और अब पहले से ज्यादा confuse हैं।',
+     head:'10 profiles देखे। और अब पहले से <em>ज्यादा confuse</em> हैं।',
      sub:'"Quote के लिए contact करें।" Real photos नहीं। Fake reviews। Trust नहीं बनता।',
      y:{em:'😩',t:'हमेशा एक जुआ लगता है।',s:'हम जानते हैं।'},
      n:{em:'🤝',t:'मेरे trusted लोग हैं।',s:'वो trust बनाने में साल लगे।'},
@@ -562,7 +564,7 @@ hl:{
   skip:['Aage →','Keep going →','Dikhao →','Aur? →'],
   qs:[
     {badge:'Planning',
-     head:'Birthday plan karni hai. Phone uthaya. Notes khola. Bas screen ko ghoorte rahe.',
+     head:'Birthday plan karni hai. Phone uthaya. Notes khola. Bas <em>screen</em> ko ghoorte rahe.',
      sub:'Close kiya. Phir open kiya. Yahi hua na?',
      y:{em:'😅',t:'Har baar. Bilkul har baar.',s:'Tum akele nahi ho.'},
      n:{em:'🗂️',t:'Main list bana ke shuru karta/karti hoon.',s:'Sach mein batao kaise.'},
@@ -570,7 +572,7 @@ hl:{
      on:{icon:'✨',t:'<b>Yeh clarity genuinely rare hai.</b>',b:'Tendr organised logon ko aur fast banata hai. Ek aur.'},
     },
     {badge:'Coordination',
-     head:'6 tabs, 3 apps, 2 WhatsApp groups — aur phir bhi kuch na kuch reh gaya.',
+     head:'6 tabs, 3 apps, 2 WhatsApp groups — aur phir bhi <em>kuch na kuch</em> reh gaya.',
      sub:'Har event mein. Kuch slip ho hi jaata hai.',
      y:{em:'😭',t:'Cake. Hamesha cake.',s:'Hum jaante hain.'},
      n:{em:'🧘',t:'Mera ek system hai actually.',s:'Batao.'},
@@ -578,7 +580,7 @@ hl:{
      on:{icon:'😄',t:'<b>System waale log rare hote hain.</b>',b:'Tendr tumhare liye superpower jaisa hoga. Ek aur.'},
     },
     {badge:'Organisation',
-     head:'Tum guest nahi rehte. Sab ke unpaid coordinator ban jaate ho.',
+     head:'Tum <em>guest</em> nahi rehte. Sab ke <em>unpaid coordinator</em> ban jaate ho.',
      sub:'Caterer chase. Decorator confirm. Ek hi insaan ko do baar call.',
      y:{em:'😤',t:'Main ek alag hi insaan ban jaata/jaati hoon.',s:'Exhausting. Hum jaante hain.'},
      n:{em:'👌',t:'Mera khud chal jaata hai.',s:'Genuinely rare.'},
@@ -586,7 +588,7 @@ hl:{
      on:{icon:'✨',t:'<b>Yeh rare setup hai.</b>',b:'Tendr ise aur aasaan rakhta hai. Aakhri sawaal.'},
     },
     {badge:'Vendors',
-     head:'10 profiles dekhe. Aur ab pehle se zyada confuse ho.',
+     head:'10 profiles dekhe. Aur ab pehle se <em>zyada confuse</em> ho.',
      sub:'"Quote ke liye contact karo." Real photos nahi. Suspicious reviews. Trust nahi banta.',
      y:{em:'😩',t:'Hamesha ek juaa lagta hai.',s:'Hum jaante hain.'},
      n:{em:'🤝',t:'Mere trusted log hain.',s:'Woh trust banane mein saal lage.'},
