@@ -237,6 +237,45 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
 .qs .epbar{background:rgba(28,10,4,.08);}
 .qs .epfill{background:linear-gradient(90deg,#C47A2E,#CCAB4A);box-shadow:none;}
 
+/* ── EMPATHY SCREEN (full-screen post-answer) ── */
+.eq{background:#FAF7F2;position:relative;align-items:stretch;}
+.eq-blob-tl{position:absolute;top:-22px;left:-22px;width:128px;height:128px;
+  background:rgba(196,122,46,.07);pointer-events:none;z-index:0;
+  border-radius:30% 70% 58% 42% / 46% 42% 58% 54%;}
+.eq-blob-br{position:absolute;bottom:-16px;right:-16px;width:160px;height:160px;
+  background:rgba(196,122,46,.06);pointer-events:none;z-index:0;
+  border-radius:58% 42% 46% 54% / 42% 58% 54% 46%;}
+.eq-body{flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:12px 32px calc(env(safe-area-inset-bottom,0px)+32px);
+  text-align:center;position:relative;z-index:2;}
+.eq-ico-wrap{position:relative;margin-bottom:26px;}
+.eq-ico-bg{width:152px;height:152px;border-radius:50%;
+  background:rgba(28,10,4,.06);display:flex;align-items:center;
+  justify-content:center;font-size:66px;
+  animation:ipop .45s cubic-bezier(.15,1.6,.35,1) both;}
+.eq-sparks{position:absolute;top:4px;right:-4px;width:34px;height:54px;pointer-events:none;}
+.eq-sparks::before{content:'';position:absolute;width:20px;height:2px;
+  background:#C47A2E;border-radius:2px;top:6px;right:2px;opacity:.5;
+  transform:rotate(-44deg);}
+.eq-sparks::after{content:'';position:absolute;width:13px;height:2px;
+  background:#C47A2E;border-radius:2px;top:24px;right:-1px;opacity:.4;
+  transform:rotate(-10deg);}
+.eq-head{font-family:'Cormorant Garamond',Georgia,serif;
+  font-size:clamp(26px,8vw,34px);font-weight:600;line-height:1.2;
+  color:#1C0A04;margin-bottom:14px;animation:fu .35s .1s ease both;}
+.eq-head em{font-style:italic;color:#C47A2E;}
+.eq-sub{font-family:'Outfit',sans-serif;font-size:14.5px;color:#9B7450;
+  line-height:1.72;max-width:300px;margin:0 auto 26px;
+  animation:fu .35s .15s ease both;}
+.eq-btn{padding:17px 52px;border-radius:50px;
+  background:#C47A2E;border:none;
+  font-family:'Outfit',sans-serif;font-size:16px;font-weight:600;
+  color:#FFF;cursor:pointer;touch-action:manipulation;letter-spacing:.02em;
+  transition:box-shadow .2s,transform .15s;
+  animation:fu .35s .2s ease both;}
+.eq-btn:hover{box-shadow:0 6px 24px rgba(196,122,46,.32);}
+.eq-btn:active{transform:scale(.98);}
+
 /* ── EMPATHY OVERLAY ── */
 .eov{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;
   align-items:center;justify-content:center;padding:48px 32px 80px;
@@ -738,17 +777,9 @@ function renderQ(idx){
           <div class="q-rad"></div>
         </button>
       </div>
-      <button class="q-next" id="qnext" disabled onclick="advance(${idx})">Next →</button>
     </div>
     <div class="q-cp-br"></div>
     <div class="q-hw-bl">Great events<br>start with<br>great people</div>
-    <div class="eov" id="eov" data-s="${STYLES[idx]}" onclick="advance(${idx})">
-      <div class="ei" id="ei"></div>
-      <div class="et" id="et"></div>
-      <div class="eb" id="eb"></div>
-      <div class="epbar"><div class="epfill" id="epf"></div></div>
-      <div class="eskip">${L[lang].skip[idx]}</div>
-    </div>
   </div>`);
 }
 
@@ -769,19 +800,37 @@ function ans(w,idx){
   } else {
     bn.classList.add('cn');by.classList.add('fd');
   }
-  const nxt=document.getElementById('qnext');
-  if(nxt) nxt.removeAttribute('disabled');
-  const el=document.getElementById('eov');
-  document.getElementById('ei').textContent=ov.icon;
-  document.getElementById('et').innerHTML=ov.t;
-  document.getElementById('eb').innerHTML=ov.b;
-  const st=el.dataset.s;
-  setTimeout(()=>el.classList.add('show'),st==='card'||st==='wipe'?55:120);
-  setTimeout(()=>{
-    const f=document.getElementById('epf');
-    if(f) requestAnimationFrame(()=>requestAnimationFrame(()=>f.style.width='100%'));
-  },360);
-  adv=setTimeout(()=>advance(idx),3400);
+  clearTimeout(adv);
+  adv=setTimeout(()=>showEmpathy(ov,idx),380);
+}
+
+function splitHead(t){
+  const plain=t.replace(/<[^>]+>/g,'').trim();
+  const words=plain.split(/\s+/);
+  const n=words.length;
+  if(n<=2)return`<em>${plain}</em>`;
+  const take=n>=7?3:2;
+  return`${words.slice(0,-take).join(' ')} <em>${words.slice(-take).join(' ')}</em>`;
+}
+
+function showEmpathy(ov,idx){
+  go(`<div class="screen eq">
+    <div class="eq-blob-tl"></div>
+    <div class="eq-blob-br"></div>
+    <div class="q-top" style="z-index:2;position:relative;">
+      <div class="q-wm-line"><span class="q-wm">TENDR</span><span class="q-wtag">PEOPLE · PLACES · EXPERIENCES</span></div>
+    </div>
+    <div class="eq-body">
+      <div class="eq-ico-wrap">
+        <div class="eq-ico-bg">${ov.icon}</div>
+        <div class="eq-sparks"></div>
+      </div>
+      <div class="eq-head">${splitHead(ov.t)}</div>
+      <p class="eq-sub">${ov.b}</p>
+      <button class="eq-btn" onclick="advance(${idx})">Continue →</button>
+    </div>
+    <div class="q-hw-bl" style="z-index:2;">Great events<br>start with<br>great people</div>
+  </div>`);
 }
 
 // ── FINAL Q ──
