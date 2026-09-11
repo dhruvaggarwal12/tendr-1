@@ -453,6 +453,30 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
   animation:sh 2.8s 1.2s infinite;}
 @keyframes sh{0%,44%{transform:translateX(-200%);}100%{transform:translateX(200%);}}
 
+/* ── REVEAL PHASE 1 (cream) ── */
+.rv1{background:#FAF7F2;position:relative;overflow:hidden;align-items:stretch;justify-content:flex-start;}
+.rv1-hw-tr{position:absolute;top:18px;right:18px;font-family:'Dancing Script',cursive;font-size:13px;color:#C47A2E;opacity:.7;text-align:right;line-height:1.45;pointer-events:none;z-index:1;}
+.rv1-blob-br{position:absolute;bottom:-20px;right:-20px;width:170px;height:170px;background:rgba(196,122,46,.06);pointer-events:none;z-index:0;border-radius:58% 42% 46% 54% / 42% 58% 54% 46%;}
+.rv1-inner{position:relative;z-index:2;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px)+14px) 24px calc(env(safe-area-inset-bottom,0px)+24px);flex:1;overflow-y:auto;}
+.rv1-top{flex-shrink:0;}
+.rv1-wm{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:600;letter-spacing:.4em;color:#1C0A04;text-transform:uppercase;padding-left:.4em;}
+.rv1-wtag{font-family:'Outfit',sans-serif;font-size:9px;font-weight:600;letter-spacing:.18em;color:#9B7450;text-transform:uppercase;display:block;margin-top:2px;}
+.rv1-stat{display:flex;align-items:baseline;gap:6px;margin:24px 0 6px;}
+.rv1-num{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(80px,22vw,108px);font-weight:600;line-height:.9;color:#C47A2E;position:relative;}
+.rv1-num::after{content:'';position:absolute;top:6px;right:-18px;width:22px;height:2.5px;background:#C47A2E;border-radius:2px;opacity:.5;transform:rotate(-44deg);}
+.rv1-num::before{content:'';position:absolute;top:26px;right:-22px;width:14px;height:2px;background:#C47A2E;border-radius:2px;opacity:.38;transform:rotate(-10deg);}
+.rv1-in10{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(28px,7vw,36px);font-weight:600;color:#1C0A04;line-height:1.1;align-self:flex-end;padding-bottom:8px;}
+.rv1-body{font-family:'Outfit',sans-serif;font-size:15px;color:#1C0A04;line-height:1.7;margin:4px 0 6px;}
+.rv1-body em{font-style:normal;color:#C47A2E;font-weight:600;}
+.rv1-qs{font-family:'Outfit',sans-serif;font-size:13px;color:#9B7450;margin-bottom:14px;}
+.rv1-lbl{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#9B7450;margin-bottom:10px;}
+.rv1-pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+.rv1-pill{padding:10px 16px;border-radius:30px;background:#FFFFFF;border:1.5px solid rgba(28,10,4,.12);font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#1C0A04;cursor:pointer;touch-action:manipulation;transition:border-color .2s,box-shadow .2s;}
+.rv1-pill.sel{border-color:#C47A2E;border-width:2px;box-shadow:0 3px 14px rgba(196,122,46,.18);color:#C47A2E;}
+.rv1-cont{width:100%;padding:16px;border-radius:50px;background:#C47A2E;border:none;font-family:'Outfit',sans-serif;font-size:16px;font-weight:600;color:#FFF;cursor:pointer;touch-action:manipulation;letter-spacing:.02em;transition:box-shadow .2s,transform .15s;margin-bottom:16px;}
+.rv1-cont:active{transform:scale(.97);}
+.rv1-hw-bl{font-family:'Dancing Script',cursive;font-size:15px;color:#C47A2E;opacity:.6;text-align:left;}
+
 /* ── UTILS ── */
 @keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
 </style>
@@ -513,7 +537,7 @@ en:{
   },
   rev:{
     spre:'people planning events in India',
-    ssub:'...say it feels scattered, stressful, and takes way more effort than it should.',
+    ssub:'...say it feels <em>scattered, stressful,</em> and takes far more effort than it should.',
     pills:['🔍 Google','📸 Instagram','💬 WhatsApp','🎂 Cake site','🎁 Gift site','📝 Notes','📞 Calls'],
     pvbigs:[
       'We built Tendr for people <em>exactly like you.</em>',
@@ -579,7 +603,7 @@ hi:{
   },
   rev:{
     spre:'India में event plan करने वाले',
-    ssub:'...कहते हैं यह scattered, stressful और जरूरत से ज्यादा मेहनत वाला है।',
+    ssub:'...कहते हैं यह <em>scattered, stressful</em> और जरूरत से ज्यादा मेहनत वाला है।',
     pills:['🔍 Google','📸 Instagram','💬 WhatsApp','🎂 Cake site','🎁 Gift site','📝 Notes','📞 Calls'],
     pvbigs:[
       'Tendr ऐसे लोगों के लिए बनाया है — <em>बिल्कुल आप जैसे।</em>',
@@ -645,7 +669,7 @@ hl:{
   },
   rev:{
     spre:'India mein event plan karne waale',
-    ssub:'...kehte hain yeh scattered, stressful aur zaroorat se zyada mushkil lagta hai.',
+    ssub:'...kehte hain yeh <em>scattered, stressful</em> aur zaroorat se zyada mushkil lagta hai.',
     pills:['🔍 Google','📸 Instagram','💬 WhatsApp','🎂 Cake site','🎁 Gift site','📝 Notes','📞 Calls'],
     pvbigs:[
       'Tendr aise logon ke liye banaya hai — <em>bilkul tumhare jaisa.</em>',
@@ -868,22 +892,40 @@ function ansFQ(c){
 // ── REVEAL ──
 function showReveal(){
   const r=L[lang].rev;
-  const opener=L[lang].fq.opts[fqc]?.o||L[lang].fq.opts[0].o;
   prog(100);
+  go(`<div class="screen rv1">
+    <div class="rv1-hw-tr">Real People<br>Real Occasions</div>
+    <div class="rv1-blob-br"></div>
+    <div class="rv1-inner">
+      <div class="rv1-top">
+        <span class="rv1-wm">TENDR</span>
+        <span class="rv1-wtag">PEOPLE · PLACES · EXPERIENCES</span>
+      </div>
+      <div class="rv1-stat">
+        <div class="rv1-num">8</div>
+        <div class="rv1-in10">in 10</div>
+      </div>
+      <p class="rv1-body">${r.ssub}</p>
+      <p class="rv1-qs">Where do you usually start planning your event?</p>
+      <div class="rv1-lbl">TAP ALL THAT APPLY</div>
+      <div class="rv1-pills">${r.pills.map((p,i)=>`<button class="rv1-pill" id="rp${i}" onclick="togglePill(${i})">${p}</button>`).join('')}</div>
+      <button class="rv1-cont" onclick="showRevealDark()">Continue →</button>
+      <div class="rv1-hw-bl">Better events<br>start here</div>
+    </div>
+  </div>`);
+}
 
-  // Branch pvbig based on how many "Yes" answers they gave
+function togglePill(i){
+  document.getElementById('rp'+i)?.classList.toggle('sel');
+}
+
+function showRevealDark(){
+  const r=L[lang].rev;
+  const opener=L[lang].fq.opts[fqc]?.o||L[lang].fq.opts[0].o;
   let pvIdx = yCount >= 3 ? 0 : yCount >= 1 ? 1 : 2;
   const pvbig = r.pvbigs[pvIdx];
 
   go(`<div class="screen ws">
-    <div class="wp" id="ph1">
-      <div class="sblk">
-        <div class="spre">${r.spre}</div>
-        <div class="snum">8<span style="font-size:.45em;vertical-align:middle"> in </span>10</div>
-        <div class="ssub">${r.ssub}</div>
-      </div>
-      <div class="pills">${r.pills.map((p,i)=>`<div class="pill" id="pl${i}">${p}</div>`).join('')}</div>
-    </div>
     <div class="wp" id="ph2">
       <div class="pvpre">${opener}</div>
       <div class="pvbig">${pvbig}</div>
@@ -898,14 +940,7 @@ function showReveal(){
     </div>
   </div>`);
 
-  setTimeout(()=>document.getElementById('ph1')?.classList.add('in'),100);
-  r.pills.forEach((_,i)=>setTimeout(()=>document.getElementById('pl'+i)?.classList.add('in'),800+i*110));
-
-  setTimeout(()=>{
-    const p=document.getElementById('ph1');
-    if(p){p.classList.remove('in');p.classList.add('out');}
-    setTimeout(()=>document.getElementById('ph2')?.classList.add('in'),480);
-  },3800);
+  setTimeout(()=>document.getElementById('ph2')?.classList.add('in'),100);
 
   setTimeout(()=>{
     const p=document.getElementById('ph2');
@@ -915,7 +950,7 @@ function showReveal(){
       r.feats.forEach((_,i)=>setTimeout(()=>document.getElementById('wf'+i)?.classList.add('in'),300+i*140));
       setTimeout(()=>document.getElementById('wcta')?.classList.add('in'),1000);
     },480);
-  },7000);
+  },3200);
 }
 
 langScreen();
