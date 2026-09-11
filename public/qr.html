@@ -477,33 +477,22 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
 .rv1-cont:active{transform:scale(.97);}
 .rv1-hw-bl{font-family:'Dancing Script',cursive;font-size:15px;color:#C47A2E;opacity:.6;text-align:left;}
 
-/* ── FEATURE SLIDES ── */
-.fs{background:#FAF7F2;position:relative;overflow:hidden;}
-.fs-wv{position:absolute;pointer-events:none;z-index:0;}
-.fs-wv-tl{top:-8px;left:-8px;width:115px;height:185px;}
-.fs-wv-br{bottom:-8px;right:-8px;width:115px;height:185px;transform:rotate(180deg);}
-.fs-inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;padding:calc(env(safe-area-inset-top,0px)+16px) 28px calc(env(safe-area-inset-bottom,0px)+20px);flex:1;text-align:center;}
-.fs-hd{flex-shrink:0;}
-.fs-wm{font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;font-weight:600;letter-spacing:.45em;color:#1C0A04;text-transform:uppercase;padding-left:.45em;display:block;}
-.fs-wtag{font-family:'Outfit',sans-serif;font-size:10px;font-weight:600;letter-spacing:.2em;color:#C47A2E;text-transform:uppercase;display:block;margin-top:3px;}
-.fs-cnt{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;letter-spacing:.22em;color:#9B7450;text-transform:uppercase;margin-top:18px;}
-.fs-segs{display:flex;gap:7px;margin-top:8px;justify-content:center;}
-.fs-seg{height:3px;width:38px;border-radius:2px;background:rgba(28,10,4,.1);}
-.fs-seg.on{background:#C47A2E;}
-.fs-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0;}
-.fs-ico-wrap{position:relative;margin-bottom:18px;}
-.fs-ico{width:152px;height:152px;border-radius:50%;background:rgba(196,122,46,.06);display:flex;align-items:center;justify-content:center;font-size:76px;animation:ipop .45s cubic-bezier(.15,1.6,.35,1) both;}
-.fs-sk{position:absolute;background:#C47A2E;border-radius:2px;}
-.fs-sk1{width:18px;height:2.5px;top:24px;left:-8px;opacity:.44;transform:rotate(135deg);}
-.fs-sk2{width:13px;height:2px;top:50px;left:-15px;opacity:.3;transform:rotate(150deg);}
-.fs-sk3{width:10px;height:2px;top:12px;left:8px;opacity:.22;transform:rotate(118deg);}
-.fs-h{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(46px,12.5vw,60px);font-weight:700;line-height:1.05;color:#1C0A04;}
-.fs-h em{font-style:italic;color:#C47A2E;font-weight:600;}
-.fs-sub{font-family:'Outfit',sans-serif;font-size:16px;color:#9B7450;line-height:1.7;max-width:260px;margin:10px auto 0;white-space:pre-line;}
-.fs-foot{width:100%;display:flex;align-items:flex-end;justify-content:space-between;flex-shrink:0;padding-top:16px;}
-.fs-hw-bl{font-family:'Dancing Script',cursive;font-size:15px;color:#C47A2E;opacity:.65;line-height:1.5;text-align:left;}
-.fs-next{padding:13px 26px;border-radius:50px;background:#C47A2E;border:none;font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;color:#FFF;cursor:pointer;touch-action:manipulation;transition:transform .15s,box-shadow .2s;}
-.fs-next:active{transform:scale(.96);}
+/* ── FEATURE GRID ── */
+.fg{background:#FAF7F2;position:relative;overflow:hidden;}
+.fg-wv{position:absolute;pointer-events:none;z-index:0;}
+.fg-wv-tl{top:-8px;left:-8px;width:115px;height:185px;}
+.fg-wv-br{bottom:-8px;right:-8px;width:115px;height:185px;transform:rotate(180deg);}
+.fg-sk{position:absolute;z-index:1;pointer-events:none;}
+.fg-sk-tr{top:50%;right:12px;transform:translateY(-70%);}
+.fg-sk-bl{bottom:50%;left:12px;transform:translateY(70%);}
+.fg-dash{position:absolute;background:#C47A2E;border-radius:2px;}
+.fg-inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top,0px)+32px) 20px calc(env(safe-area-inset-bottom,0px)+28px);flex:1;}
+.fg-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:380px;}
+.fg-card{background:#FFFFFF;border-radius:22px;padding:22px 14px 18px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 2px 18px rgba(28,10,4,.055);}
+.fg-ico{width:96px;height:96px;border-radius:50%;background:rgba(196,122,46,.07);display:flex;align-items:center;justify-content:center;font-size:48px;flex-shrink:0;}
+.fg-lbl{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(18px,4.8vw,22px);font-weight:700;color:#1C0A04;line-height:1.2;text-align:center;}
+.fg-cta{margin-top:22px;padding:16px 44px;border-radius:50px;background:#C47A2E;border:none;font-family:'Outfit',sans-serif;font-size:16px;font-weight:600;color:#FFF;cursor:pointer;touch-action:manipulation;transition:transform .15s;}
+.fg-cta:active{transform:scale(.97);}
 
 /* ── UTILS ── */
 @keyframes fu{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
@@ -573,10 +562,10 @@ en:{
       '<em>One app</em> to replace all of that.',
     ],
     slides:[
-      {i:'🎉',h:'Plan <em>anything</em>',sub:'From birthdays to offsites,\nwe\'ve got you covered.'},
-      {i:'🎁',h:'Gift <em>hampers</em>',sub:'Curated for every budget\nand every mood.'},
-      {i:'🤝',h:'Verified <em>vendors</em>',sub:'Real quotes. No chasing.\nNo guesswork.'},
-      {i:'✨',h:'We\'ve got <em>you</em>',sub:'Something slips? Our team\nsteps in, every time.'},
+      {i:'🎉',gl:'Plan anything.',h:'Plan <em>anything</em>',sub:'From birthdays to offsites,\nwe\'ve got you covered.'},
+      {i:'🎁',gl:'Gifts for every budget.',h:'Gift <em>hampers</em>',sub:'Curated for every budget\nand every mood.'},
+      {i:'🤝',gl:'Trusted vendors.',h:'Verified <em>vendors</em>',sub:'Real quotes. No chasing.\nNo guesswork.'},
+      {i:'🫂',gl:'A team behind you.',h:'We\'ve got <em>you</em>',sub:'Something slips? Our team\nsteps in, every time.'},
     ],
     cta:'Open Tendr →',
   },
@@ -639,10 +628,10 @@ hi:{
       'यह सब — <em>एक app में।</em>',
     ],
     slides:[
-      {i:'🎉',h:'Plan करें <em>कुछ भी</em>',sub:'Birthday से wedding तक,\nTendr के साथ।'},
-      {i:'🎁',h:'Gift <em>hampers</em>',sub:'हर budget और mood के लिए\ncurated।'},
-      {i:'🤝',h:'Verified <em>vendors</em>',sub:'Real quotes। No chasing।\nNo guesswork।'},
-      {i:'✨',h:'हम हैं <em>आपके साथ</em>',sub:'कुछ गलत हो?\nहमारी team खड़ी है।'},
+      {i:'🎉',gl:'कुछ भी plan करें।',h:'Plan करें <em>कुछ भी</em>',sub:'Birthday से wedding तक,\nTendr के साथ।'},
+      {i:'🎁',gl:'हर budget के लिए gifts।',h:'Gift <em>hampers</em>',sub:'हर budget और mood के लिए\ncurated।'},
+      {i:'🤝',gl:'Trusted vendors।',h:'Verified <em>vendors</em>',sub:'Real quotes। No chasing।\nNo guesswork।'},
+      {i:'🫂',gl:'एक team आपके साथ।',h:'हम हैं <em>आपके साथ</em>',sub:'कुछ गलत हो?\nहमारी team खड़ी है।'},
     ],
     cta:'Tendr खोलें →',
   },
@@ -705,10 +694,10 @@ hl:{
       'Yeh sab — <em>ek app mein.</em>',
     ],
     slides:[
-      {i:'🎉',h:'Plan <em>anything</em>',sub:'Birthday se offsites tak,\nhum hain tumhare saath.'},
-      {i:'🎁',h:'Gift <em>hampers</em>',sub:'Har budget aur mood ke liye\ncurated.'},
-      {i:'🤝',h:'Verified <em>vendors</em>',sub:'Real quotes. No chasing.\nNo guesswork.'},
-      {i:'✨',h:'We\'ve got <em>you</em>',sub:'Kuch galat ho?\nHamari team hai.'},
+      {i:'🎉',gl:'Plan anything.',h:'Plan <em>anything</em>',sub:'Birthday se offsites tak,\nhum hain tumhare saath.'},
+      {i:'🎁',gl:'Har budget ke liye gifts.',h:'Gift <em>hampers</em>',sub:'Har budget aur mood ke liye\ncurated.'},
+      {i:'🤝',gl:'Trusted vendors.',h:'Verified <em>vendors</em>',sub:'Real quotes. No chasing.\nNo guesswork.'},
+      {i:'🫂',gl:'Team tumhare saath.',h:'We\'ve got <em>you</em>',sub:'Kuch galat ho?\nHamari team hai.'},
     ],
     cta:'Tendr Kholo →',
   },
@@ -961,41 +950,29 @@ function showRevealDark(){
   </div>`);
 
   setTimeout(()=>document.getElementById('ph2')?.classList.add('in'),100);
-  setTimeout(()=>showSlide(0),3200);
+  setTimeout(()=>showFeatureGrid(),3200);
 }
 
-const WAVE_SVG=`<svg class="fs-wv fs-wv-tl" viewBox="0 0 110 185" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M68 4C52 26 24 42 27 74C30 107 60 120 52 154C48 177 22 190 14 198" stroke="#C8B490" stroke-width="1.5" fill="none" opacity="0.6"/><path d="M90 0C72 30 42 50 46 88C50 126 80 138 70 174" stroke="#C8B490" stroke-width="1" fill="none" opacity="0.32"/></svg><svg class="fs-wv fs-wv-br" viewBox="0 0 110 185" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M68 4C52 26 24 42 27 74C30 107 60 120 52 154C48 177 22 190 14 198" stroke="#C8B490" stroke-width="1.5" fill="none" opacity="0.6"/><path d="M90 0C72 30 42 50 46 88C50 126 80 138 70 174" stroke="#C8B490" stroke-width="1" fill="none" opacity="0.32"/></svg>`;
+const WAVE_SVG=`<svg class="fg-wv fg-wv-tl" viewBox="0 0 110 185" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M68 4C52 26 24 42 27 74C30 107 60 120 52 154C48 177 22 190 14 198" stroke="#C8B490" stroke-width="1.5" fill="none" opacity="0.6"/><path d="M90 0C72 30 42 50 46 88C50 126 80 138 70 174" stroke="#C8B490" stroke-width="1" fill="none" opacity="0.32"/></svg><svg class="fg-wv fg-wv-br" viewBox="0 0 110 185" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M68 4C52 26 24 42 27 74C30 107 60 120 52 154C48 177 22 190 14 198" stroke="#C8B490" stroke-width="1.5" fill="none" opacity="0.6"/><path d="M90 0C72 30 42 50 46 88C50 126 80 138 70 174" stroke="#C8B490" stroke-width="1" fill="none" opacity="0.32"/></svg>`;
 
-function showSlide(idx){
+function showFeatureGrid(){
   const r=L[lang].rev;
-  const s=r.slides[idx];
-  const total=r.slides.length;
-  const segs=Array.from({length:total},(_,i)=>`<div class="fs-seg${i<=idx?' on':''}"></div>`).join('');
-  const isLast=idx===total-1;
   prog(100);
-  go(`<div class="screen fs">
+  go(`<div class="screen fg">
     ${WAVE_SVG}
-    <div class="fs-inner">
-      <div class="fs-hd">
-        <span class="fs-wm">TENDR</span>
-        <span class="fs-wtag">PEOPLE · PLACES · EXPERIENCES</span>
+    <div class="fg-sk fg-sk-tr">
+      <div class="fg-dash" style="width:18px;height:2.5px;top:0;right:4px;opacity:.48;transform:rotate(-42deg);"></div>
+      <div class="fg-dash" style="width:13px;height:2px;top:16px;right:-2px;opacity:.32;transform:rotate(-18deg);"></div>
+    </div>
+    <div class="fg-sk fg-sk-bl">
+      <div class="fg-dash" style="width:18px;height:2.5px;bottom:0;left:4px;opacity:.48;transform:rotate(-42deg);"></div>
+      <div class="fg-dash" style="width:13px;height:2px;bottom:16px;left:-2px;opacity:.32;transform:rotate(-18deg);"></div>
+    </div>
+    <div class="fg-inner">
+      <div class="fg-grid">
+        ${r.slides.map(s=>`<div class="fg-card"><div class="fg-ico">${s.i}</div><div class="fg-lbl">${s.gl}</div></div>`).join('')}
       </div>
-      <div class="fs-cnt">${idx+1} OF ${total}</div>
-      <div class="fs-segs">${segs}</div>
-      <div class="fs-mid">
-        <div class="fs-ico-wrap">
-          <div class="fs-ico">${s.i}</div>
-          <div class="fs-sk fs-sk1"></div>
-          <div class="fs-sk fs-sk2"></div>
-          <div class="fs-sk fs-sk3"></div>
-        </div>
-        <div class="fs-h">${s.h}</div>
-        <p class="fs-sub">${s.sub}</p>
-      </div>
-      <div class="fs-foot">
-        <div class="fs-hw-bl">Better events<br>start here</div>
-        <button class="fs-next" onclick="${isLast?'showCTA()':'showSlide('+(idx+1)+')'}">${isLast?r.cta:'Next →'}</button>
-      </div>
+      <button class="fg-cta" onclick="showCTA()">${r.cta}</button>
     </div>
   </div>`);
 }
