@@ -24,6 +24,13 @@ const OPT={
   Caterer:{cuisine:["North Indian","South Indian","Snacks","Chinese Starters","Punjabi","Desserts","Italian","Other"],serviceStyle:["Buffet","Food Stations","Live Counters","Family Style"],menuType:["Veg","Non Veg","Jain"]},
   Decorator:{typesOfDecoration:["Floral","Balloon","Lighting","Fabric Draping","Backdrop","Prop-Based","Minimalist"],venueCoverage:["Interior","Exterior","Full","Backdrop Stage Setup","Extreme Focus"],themes:["Floral Focused","Balloon Dominant","Lighting Emphasis","Fabric Draping","Mixed Media","Prop Centered","Minimalist Touch"]},
   Photographer:{services:["Photographer","Videographer","Both"],photographyType:["Candid","Drone","Traditional","Cinematic"],hoursIncluded:["2","4","8","Full day"],editingTimeDays:["2","5","7","10+"]},
+  Videographer:{services:["Highlights Reel","Documentary Style","Cinematic Film","Live Streaming","Social Reels"],style:["Cinematic","Traditional","Vlog Style","Short Film"],editingDays:["5","10","15","21+"]},
+  "Makeup Artist":{specialisation:["Bridal Makeup","Party Makeup","Editorial","Airbrush","HD Makeup","Engagement Look"],products:["MAC","Huda Beauty","Kryolan","Fenty Beauty","Mixed Professional Brands"]},
+  Florist:{arrangementTypes:["Centrepieces","Bouquets","Mandap Décor","Entrance Arch","Garlands","Stage Backdrop"],flowerPreference:["Roses","Orchids","Lilies","Seasonal Mix","Exotic","Marigolds"]},
+  "Mehendi Artist":{styles:["Rajasthani","Arabic","Indo-Arabic","Bridal Full Arm","Modern / Minimalist","Glitter Mehendi"],occasions:["Bridal Ceremony","Pre-Wedding","Karva Chauth","Teej","Corporate Events"]},
+  "Wedding Planner":{planningType:["Full Planning","Partial Planning","Day-of Coordination","Virtual Planning"],eventSize:["Intimate (< 50)","Mid-size (50–200)","Grand (200+)","Destination Wedding"]},
+  Bartender:{barType:["Open Bar","Mocktail Bar","Craft Cocktail","Flair Bartending","Beer & Wine Station"],beverageTypes:["Spirits","Wines","Craft Beers","Mocktails","Signature Cocktails"]},
+  "Tent House":{tentTypes:["Shamiyana","Pagoda Tent","German Shed","Clear Span","Stretch Tent"],furniture:["Banquet Chairs","Chiavari Chairs","Round Tables","Rectangle Tables","High-top Cocktail Tables","Loungers & Sofas"]},
 };
 
 const TYPE_TAB={
@@ -31,6 +38,13 @@ const TYPE_TAB={
   Caterer:{key:"menu",icon:"M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"},
   Decorator:{key:"decor",icon:"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"},
   Photographer:{key:"services",icon:"M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"},
+  Videographer:{key:"services",icon:"M23 7l-7 5 7 5V7zM1 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H1V5z"},
+  "Makeup Artist":{key:"services",icon:"M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"},
+  Florist:{key:"services",icon:"M12 22V12M12 12C12 12 8 9 8 5a4 4 0 0 1 8 0c0 4-4 7-4 7zM12 12s-4-3-4-7"},
+  "Mehendi Artist":{key:"services",icon:"M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"},
+  "Wedding Planner":{key:"services",icon:"M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"},
+  Bartender:{key:"services",icon:"M8 22h8M7 10h10M12 15V5M5 5l2 15h10L19 5H5z"},
+  "Tent House":{key:"services",icon:"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"},
 };
 
 // ── Micro components ──────────────────────────────────────────────────────────
@@ -139,9 +153,10 @@ export default function VendorDashboardNew(){
   const vId=user?._id||user?.id||"";
   const vName=user?.name||"Vendor";
 
-  // Redirect GigPro types to their dashboard
+  // Redirect performer/GigPro types to their dashboard
+  const GIG_PRO=["DJ","Anchor","Emcee/Host","Band","Singer","Musician","Performer","Stand-up Comedian","Magician","AV Setup","Choreographer"];
   useEffect(()=>{
-    if(["Anchor","Band","Choreographer"].includes(sType)) navigate("/vendor/demo-dashboard",{replace:true});
+    if(GIG_PRO.includes(sType)) navigate("/vendor/demo-dashboard",{replace:true});
   },[sType]); // eslint-disable-line
 
   // ── Language ─────────────────────────────────────────────────────────────────

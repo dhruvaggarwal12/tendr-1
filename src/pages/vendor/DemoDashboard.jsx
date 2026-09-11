@@ -13,37 +13,111 @@ const muted  = "#9B7450";
 const font   = "'Outfit', sans-serif";
 const serif  = "'Cormorant Garamond', Georgia, serif";
 
-// ── Mock vendor profile ────────────────────────────────────────────────────────
-const INIT_PROFILE = {
-  name: "Rahul Khanna",
-  type: "Anchor",
-  city: "Delhi",
-  phone: "+91 98765 43210",
-  email: "rahul@rahulkhanna.mc",
-  bio: "Delhi-based bilingual anchor & corporate emcee with 10+ years of experience hosting 430+ events — from intimate weddings to 1,000-pax corporate galas. Known for my signature comedy-roast style and seamless Hindi–English hosting.",
-  gstNumber: "07AABKU1234R1Z5",
-  rating: 4.8,
-  reviewCount: 54,
-  events: 430,
-  responseTime: "< 2 hrs",
-  teamSize: 1,
-  years: 10,
-  instagram: "@rahulkhanna.mc",
-  youtube: "youtube.com/@rahulkhannaMC",
-  showreel: "https://youtube.com/watch?v=demo-anchor-reel",
-  genres: ["Bollywood", "Corporate Hosting", "Comedy Roast", "Bilingual (Hindi + English)", "Punjabi"],
-  instruments: [],
-  setlist: "Opening ceremony address\nInteractive icebreaker games\nAwards & recognition ceremony\nLive audience Q&A moderation\nEvening entertainment & comedy set\nClosing vote of thanks",
+// ── GigPro type list ──────────────────────────────────────────────────────────
+const GIG_PRO_TYPES = ["DJ","Anchor","Emcee/Host","Band","Singer","Musician","Performer","Stand-up Comedian","Magician","AV Setup","Choreographer"];
+
+// ── Inventory tab label per type ──────────────────────────────────────────────
+const INVENTORY_LABELS = {
+  DJ:"Set List", Band:"Song List", Singer:"Repertoire", Musician:"Repertoire",
+  Choreographer:"Routines", "Stand-up Comedian":"Material", Magician:"Act List",
+  "AV Setup":"Equipment", Performer:"Act List", Anchor:"Setlist", "Emcee/Host":"Setlist",
 };
 
-// ── Mock Tendr bookings ────────────────────────────────────────────────────────
-const INIT_TENDR = [
-  { id: "TND001", client: "Mehta Wedding", event: "Wedding Reception", date: "2026-09-20", venue: "The Grand, Delhi", budget: "₹35,000", status: "Pending", message: "Looking for a bilingual MC for our reception. 200 guests, 6 pm onwards." },
-  { id: "TND002", client: "HDFC Life Insurance", event: "Annual Awards Night", date: "2026-09-28", venue: "Taj Palace, Delhi", budget: "₹75,000", status: "Confirmed", message: "Corporate awards night for 400 employees. Formal + fun tone." },
-  { id: "TND003", client: "Priya Kapoor", event: "30th Birthday Bash", date: "2026-10-05", venue: "Rosewood Club, Gurgaon", budget: "₹20,000", status: "Pending", message: "Fun, energetic MC for a birthday party. 80 close friends." },
-  { id: "TND004", client: "Startup Delhi Summit", event: "Investor Demo Day", date: "2026-10-14", venue: "India Habitat Centre", budget: "₹50,000", status: "Pending", message: "Hosting a demo day for 20 startups + 50 VCs. Professional tone." },
-  { id: "TND005", client: "Sharma Family", event: "25th Anniversary", date: "2026-10-22", venue: "ITC Maurya, Delhi", budget: "₹30,000", status: "Declined", message: "Silver jubilee anniversary party, ~120 guests." },
-];
+// ── Profiles per type ─────────────────────────────────────────────────────────
+const PROFILES_BY_TYPE = {
+  Anchor:{name:"Rahul Khanna",type:"Anchor",city:"Delhi",phone:"+91 98765 43210",email:"rahul@rahulkhanna.mc",bio:"Delhi-based bilingual anchor & corporate emcee with 10+ years hosting 430+ events — from intimate weddings to 1,000-pax galas. Known for my comedy-roast style and seamless Hindi–English hosting.",rating:4.8,reviewCount:54,events:430,responseTime:"< 2 hrs",teamSize:1,years:10,instagram:"@rahulkhanna.mc",youtube:"youtube.com/@rahulkhannaMC",showreel:"https://youtube.com/watch?v=demo-anchor",genres:["Bollywood","Corporate Hosting","Comedy Roast","Bilingual (Hindi + English)","Punjabi"],instruments:[],setlist:"Opening ceremony address\nInteractive icebreaker games\nAwards & recognition ceremony\nLive audience Q&A moderation\nEvening entertainment & comedy set\nClosing vote of thanks"},
+  "Emcee/Host":{name:"Sonali Verma",type:"Emcee/Host",city:"Bengaluru",phone:"+91 99887 22110",email:"sonali@sonaliverma.host",bio:"Bengaluru-based trilingual emcee (English · Hindi · Kannada) with 6 years and 200+ events. Specialist in product launches, award nights, and corporate galas.",rating:4.7,reviewCount:38,events:204,responseTime:"< 3 hrs",teamSize:1,years:6,instagram:"@sonaliverma.host",youtube:"youtube.com/@SonaliVHost",showreel:"https://youtube.com/watch?v=demo-emcee",genres:["Corporate Hosting","Product Launches","Award Nights","Trilingual","Fashion Shows"],instruments:[],setlist:"Welcome address & housekeeping\nSpeaker introductions\nProduct / brand reveal moment\nLive polling & audience Q&A\nAward ceremony hosting\nClosing & vote of thanks"},
+  DJ:{name:"Arjun Mehta",type:"DJ",city:"Mumbai",phone:"+91 98000 11234",email:"arjun@arjunmehta.dj",bio:"Mumbai-based DJ with 8+ years spinning at 312+ events — clubs, weddings, and corporate nights. Known for seamless Bollywood-to-deep-house blending.",rating:4.9,reviewCount:67,events:312,responseTime:"< 1 hr",teamSize:1,years:8,instagram:"@arjunmehta.dj",youtube:"youtube.com/@ArjunMehtaDJ",showreel:"https://youtube.com/watch?v=demo-dj",genres:["Deep House","Bollywood Remixes","EDM","Hip-Hop","Techno","Afrobeats"],instruments:["Pioneer CDJ-3000","Allen & Heath Xone 96","Pioneer DJM-900NXS2"],setlist:"Warm-up — Deep House / Afrobeats\nPre-peak Bollywood anthems\nEDM / Progressive build + drop\nBollywood peak-hour block\nHip-Hop / trap room hour\nSlow closer / last dance set"},
+  Band:{name:"The Velvet Collective",type:"Band",city:"Bengaluru",phone:"+91 98123 55678",email:"booking@velvetcollective.in",bio:"6-piece versatile live band from Bengaluru. 280+ events from intimate sangeet soirées to 1,000-guest receptions. Signature sound: Bollywood meets Sufi meets retro gold.",rating:4.8,reviewCount:49,events:280,responseTime:"< 4 hrs",teamSize:6,years:7,instagram:"@thevelvetcollective",youtube:"youtube.com/@VelvetCollectiveBand",showreel:"https://youtube.com/watch?v=demo-band",genres:["Bollywood","Sufi","Punjabi Folk","Classic Retro","Semi-Classical","Pop"],instruments:["Vocals (2)","Guitar","Keyboard","Drums","Bass","Tabla / Percussion"],setlist:"Sufi opening medley\nClassic Bollywood 70s–80s set\nPunjabi wedding anthems\nRetro Rock Bollywood fusion\nContemporary Bollywood peak hour\nFolk & Sufi wind-down set"},
+  Singer:{name:"Priya Sharma",type:"Singer",city:"Delhi",phone:"+91 97654 33221",email:"priya@priyasharma.singer",bio:"Delhi-based playback and live singer, 5 years at 160+ events. Trained in Hindustani classical, known for soulful Bollywood covers and ghazals.",rating:4.9,reviewCount:44,events:160,responseTime:"< 2 hrs",teamSize:1,years:5,instagram:"@priyasharma.sings",youtube:"youtube.com/@PriyaSharmaOfficial",showreel:"https://youtube.com/watch?v=demo-singer",genres:["Bollywood","Ghazals","Sufi","Devotional","Hindustani Classical","Pop"],instruments:[],setlist:"Ghazal opening medley (3 songs)\nBollywood 2010s wedding hits\nSufi classics block\nDevotional aarti set (on request)\nContemporary Bollywood chartbusters\nSlowing-down romantic finale"},
+  Musician:{name:"Vikram Nair",type:"Musician",city:"Chennai",phone:"+91 94456 78900",email:"vikram@vikramnair.music",bio:"Multi-instrumentalist from Chennai — guitar, keyboard, bass. 9 years, 220+ events from ambient cocktail hours to full concert experiences.",rating:4.7,reviewCount:31,events:220,responseTime:"< 3 hrs",teamSize:1,years:9,instagram:"@vikramnair.music",youtube:"youtube.com/@VikramNairMusic",showreel:"https://youtube.com/watch?v=demo-musician",genres:["Instrumental Jazz","Bollywood Acoustic","Carnatic Classical","Ambient / Lo-fi","Fusion"],instruments:["Acoustic Guitar","Electric Guitar","Piano / Keyboard","Bass Guitar"],setlist:"Ambient cocktail set (acoustic Bollywood)\nJazz standard trio set\nCarnatic fusion interlude\nBollywood acoustic medley\nContemporary instrumental pop\nFull concert finale piece"},
+  Performer:{name:"Ankit Sharma",type:"Performer",city:"Jaipur",phone:"+91 95678 44332",email:"ankit@ankitsharma.perform",bio:"Jaipur-based live performer — fire shows, LED acts, Rajasthani folk. 7 years, 190+ events bringing visual spectacle to weddings and corporate nights.",rating:4.8,reviewCount:36,events:190,responseTime:"< 2 hrs",teamSize:3,years:7,instagram:"@ankitsharma.perform",youtube:"youtube.com/@AnkitPerforms",showreel:"https://youtube.com/watch?v=demo-performer",genres:["Fire Show","LED Performance","Rajasthani Folk","Aerial Hoop","Juggling & Props"],instruments:[],setlist:"Grand entrance fire welcome act\nLED dance interlude\nRajasthani folk performance set\nAerial hoop showcase\nFire finale & grand close"},
+  "Stand-up Comedian":{name:"Kabir Sinha",type:"Stand-up Comedian",city:"Mumbai",phone:"+91 96543 21098",email:"kabir@kabirsinha.comedy",bio:"Mumbai-based stand-up comedian, 240+ shows since 2018 — corporates, weddings, and open mics. Clean, relatable humour in Hindi and English.",rating:4.8,reviewCount:52,events:240,responseTime:"< 2 hrs",teamSize:1,years:7,instagram:"@kabir.sinha.comedy",youtube:"youtube.com/@KabirSinhaComedy",showreel:"https://youtube.com/watch?v=demo-comedy",genres:["Corporate Clean Comedy","Hindi Stand-up","Wedding Comedy","English Stand-up","Observational"],instruments:[],setlist:"Crowd warm-up & icebreaker (5 min)\nObservational opener set (10 min)\nRelationship & wedding material (10 min)\nCrowd work & personalization (5 min)\nBig closer / punchline finale (5 min)"},
+  Magician:{name:"Arav The Mystic",type:"Magician",city:"Hyderabad",phone:"+91 93456 78901",email:"arav@aravthemystic.com",bio:"Hyderabad-based professional magician, 6 years and 175+ events. Close-up magic, stage illusions, and jaw-dropping mentalism for corporates, weddings, and private parties.",rating:4.9,reviewCount:41,events:175,responseTime:"< 2 hrs",teamSize:1,years:6,instagram:"@aravthemystic",youtube:"youtube.com/@AravMystic",showreel:"https://youtube.com/watch?v=demo-magic",genres:["Close-up Magic","Stage Illusions","Mentalism","Kids' Magic","Corporate Magic"],instruments:[],setlist:"Strolling close-up table magic (during dinner)\nOpening mind-reading reveal (stage)\nLarge-scale card illusion sequence\nAudience volunteer levitation act\nMind-reading finale & grand illusion"},
+  "AV Setup":{name:"SoundPro Events",type:"AV Setup",city:"Delhi",phone:"+91 98001 55443",email:"ops@soundproevent.in",bio:"Delhi's premier AV company, 12 years and 500+ events. Full-service sound, lighting, LED walls, truss, and live streaming — from intimate boardrooms to 2,000-pax arenas.",rating:4.7,reviewCount:89,events:512,responseTime:"< 1 hr",teamSize:12,years:12,instagram:"@soundproevent",youtube:"youtube.com/@SoundProEvents",showreel:"https://youtube.com/watch?v=demo-av",genres:["Line Array Sound","LED Video Walls","Concert Lighting","Truss & Rigging","Live Streaming"],instruments:[],setlist:"Site survey & acoustic assessment\nEquipment load-in & rigging\nSound check & line check\nLighting cue programming\nLive event operation\nPost-event teardown & load-out"},
+  Choreographer:{name:"Neha Kapoor",type:"Choreographer",city:"Delhi",phone:"+91 95000 33221",email:"neha@nehakaporchoreography.in",bio:"Delhi's go-to wedding choreographer since 2019. 145+ groups trained — from couple first dances to 25-person sangeet flash mobs. Bollywood, Sufi, Bhangra, and contemporary.",rating:4.9,reviewCount:38,events:145,responseTime:"< 3 hrs",teamSize:2,years:6,instagram:"@nehakaporchoreography",youtube:"youtube.com/@NehaKapoorDance",showreel:"https://youtube.com/watch?v=demo-choreo",genres:["Bollywood","Bhangra / Giddha","Contemporary","Wedding Sangeet","Couple Dance","Hip-Hop"],instruments:[],setlist:"Sangeet opening group Bollywood number\nCouple's first dance choreography\nBridesmaids' surprise number\nBest men Bhangra set\nFamily group medley (all-ages)\nGrand finale flash mob"},
+};
+
+// ── Tendr bookings per type ───────────────────────────────────────────────────
+const TENDR_BY_TYPE = {
+  Anchor:[
+    {id:"TND001",client:"Mehta Wedding",event:"Wedding Reception",date:"2026-09-20",venue:"The Grand, Delhi",budget:"₹35,000",status:"Pending",message:"Looking for a bilingual MC for our reception. 200 guests, 6 pm onwards."},
+    {id:"TND002",client:"HDFC Life Insurance",event:"Annual Awards Night",date:"2026-09-28",venue:"Taj Palace, Delhi",budget:"₹75,000",status:"Confirmed",message:"Corporate awards night for 400 employees. Formal + fun tone."},
+    {id:"TND003",client:"Priya Kapoor",event:"30th Birthday Bash",date:"2026-10-05",venue:"Rosewood Club, Gurgaon",budget:"₹20,000",status:"Pending",message:"Fun, energetic MC for a birthday party. 80 close friends."},
+    {id:"TND004",client:"Startup Delhi Summit",event:"Investor Demo Day",date:"2026-10-14",venue:"India Habitat Centre",budget:"₹50,000",status:"Pending",message:"Hosting a demo day for 20 startups + 50 VCs. Professional tone."},
+    {id:"TND005",client:"Sharma Family",event:"25th Anniversary",date:"2026-10-22",venue:"ITC Maurya, Delhi",budget:"₹30,000",status:"Declined",message:"Silver jubilee anniversary party, ~120 guests."},
+  ],
+  "Emcee/Host":[
+    {id:"TND001",client:"Adobe India",event:"Annual Product Summit",date:"2026-09-22",venue:"JW Marriott, Bengaluru",budget:"₹60,000",status:"Confirmed",message:"Trilingual emcee for 300-pax tech summit. English primary, Hindi/Kannada for breaks."},
+    {id:"TND002",client:"Tata Motors",event:"National Dealer Awards",date:"2026-09-30",venue:"The Lalit, Bengaluru",budget:"₹85,000",status:"Pending",message:"High-energy awards night host for 500 dealers. Bilingual."},
+    {id:"TND003",client:"Nykaa",event:"D2C Fashion Show",date:"2026-10-08",venue:"Conrad Hotel, Bengaluru",budget:"₹40,000",status:"Pending",message:"Runway fashion show host — energetic, style-savvy."},
+    {id:"TND004",client:"Ananya Mehta",event:"Engagement Ceremony",date:"2026-10-18",venue:"Taj West End",budget:"₹25,000",status:"Pending",message:"Elegant engagement ceremony host, 150 guests."},
+    {id:"TND005",client:"IIM Bangalore",event:"Convocation 2026",date:"2026-11-02",venue:"IIM Campus, Bengaluru",budget:"₹45,000",status:"Declined",message:"Academic convocation host. Formal, dignified tone required."},
+  ],
+  DJ:[
+    {id:"TND001",client:"Sharma Wedding",event:"Wedding Reception",date:"2026-09-20",venue:"Leela Palace, Delhi",budget:"₹28,000",status:"Pending",message:"DJ for wedding reception, 300 guests, 9 pm. Mix of Bollywood and EDM."},
+    {id:"TND002",client:"StartupFest 2026",event:"Corporate After-Party",date:"2026-09-27",venue:"The Clubhouse, BKC",budget:"₹55,000",status:"Confirmed",message:"High-energy DJ for startup conference after-party. 150 attendees, house + commercial."},
+    {id:"TND003",client:"Riya Kapoor",event:"25th Birthday Pool Party",date:"2026-10-05",venue:"Juhu Beach Club",budget:"₹22,000",status:"Pending",message:"DJ for pool party birthday. ~60 friends, EDM and hip-hop."},
+    {id:"TND004",client:"Taj Hotels",event:"New Year's Eve Gala",date:"2026-12-31",venue:"Taj Mahal Palace, Mumbai",budget:"₹90,000",status:"Pending",message:"Premium NYE gala DJ for 400 guests. Luxury hotel experience required."},
+    {id:"TND005",client:"IndiGo Airlines",event:"Employee Awards Night",date:"2026-10-18",venue:"Hyatt Regency, Mumbai",budget:"₹35,000",status:"Declined",message:"Corporate DJ, clean mix, no explicit content."},
+  ],
+  Band:[
+    {id:"TND001",client:"Gupta Wedding",event:"Sangeet Ceremony",date:"2026-09-19",venue:"Leela Palace, Bengaluru",budget:"₹80,000",status:"Confirmed",message:"Full live band for sangeet night. 250 guests. Bollywood, Sufi, Punjabi."},
+    {id:"TND002",client:"Infosys Ltd",event:"Foundation Day Gala",date:"2026-09-26",venue:"Taj Vivanta, Bengaluru",budget:"₹1,20,000",status:"Pending",message:"Live band for annual foundation day dinner. 600 employees. Corporate + Bollywood mix."},
+    {id:"TND003",client:"Priya & Karan",event:"Wedding Reception",date:"2026-10-10",venue:"ITC Gardenia",budget:"₹95,000",status:"Pending",message:"6-hr reception with live band. 400 guests. Contemporary + retro."},
+    {id:"TND004",client:"Hard Rock Café",event:"Saturday Night Live",date:"2026-10-19",venue:"Hard Rock Café, Bengaluru",budget:"₹45,000",status:"Pending",message:"Live band for restaurant gig. 3-hr set, rock + Bollywood crowd pleasers."},
+    {id:"TND005",client:"Meghna Patel",event:"30th Birthday Bash",date:"2026-11-02",venue:"Conrad Hotel Rooftop",budget:"₹60,000",status:"Declined",message:"Live band for intimate rooftop birthday. 80 guests."},
+  ],
+  Singer:[
+    {id:"TND001",client:"Verma Wedding",event:"Sangeet Night",date:"2026-09-21",venue:"The Grand, Delhi",budget:"₹30,000",status:"Confirmed",message:"Live singer for sangeet, 2-hr set. Bollywood + Sufi. 180 guests."},
+    {id:"TND002",client:"Diwali Corporate Night",event:"Festive Gala",date:"2026-10-02",venue:"Trident Hotel, Delhi",budget:"₹40,000",status:"Pending",message:"Live singer for Diwali corporate party. 300 guests. Festive + Bollywood."},
+    {id:"TND003",client:"Kavya Reddy",event:"25th Birthday",date:"2026-10-12",venue:"The Piano Man, Delhi",budget:"₹18,000",status:"Pending",message:"Intimate birthday performance. 40 guests. Romantic Bollywood."},
+    {id:"TND004",client:"Radio City",event:"Live Concert Recording",date:"2026-10-25",venue:"Kingdom of Dreams, Gurgaon",budget:"₹55,000",status:"Pending",message:"Live concert for radio station event. 500 audience. 45-min set."},
+    {id:"TND005",client:"Navratri Committee",event:"Navratri Celebration",date:"2026-10-08",venue:"Community Ground, Delhi",budget:"₹25,000",status:"Declined",message:"Devotional + Navratri folk singer for 1,000-person community event."},
+  ],
+  Musician:[
+    {id:"TND001",client:"Ahuja Wedding",event:"Cocktail Hour",date:"2026-09-18",venue:"Taj Coromandel, Chennai",budget:"₹22,000",status:"Confirmed",message:"Ambient acoustic set for cocktail hour. 150 guests. Soft Bollywood + jazz."},
+    {id:"TND002",client:"Taj Hotels",event:"Sunday Jazz Brunch",date:"2026-09-28",venue:"Taj Fisherman's Cove",budget:"₹18,000",status:"Pending",message:"Weekly jazz brunch musician. 3-hr set. Jazz standards + bossa nova."},
+    {id:"TND003",client:"Anand Shankar",event:"House Concert",date:"2026-10-06",venue:"Private Villa, Adyar",budget:"₹30,000",status:"Pending",message:"Intimate house concert for 30 music lovers. Carnatic fusion."},
+    {id:"TND004",client:"Alliance Française",event:"French Music Evening",date:"2026-10-20",venue:"Alliance Française, Chennai",budget:"₹25,000",status:"Pending",message:"French chansons + jazz. Bilingual audience. 80 guests."},
+    {id:"TND005",client:"Chennai Schools",event:"Annual Day Performance",date:"2026-11-10",venue:"Music Academy, Chennai",budget:"₹15,000",status:"Declined",message:"Classical Carnatic performance for school annual day."},
+  ],
+  Performer:[
+    {id:"TND001",client:"Kapoor Wedding",event:"Wedding Sangeet",date:"2026-09-22",venue:"Rambagh Palace, Jaipur",budget:"₹45,000",status:"Confirmed",message:"Fire show + Rajasthani folk act for sangeet night. 300 guests. 45 min."},
+    {id:"TND002",client:"Rajasthan Tourism",event:"Tourism Festival",date:"2026-10-03",venue:"Nahargarh Fort, Jaipur",budget:"₹80,000",status:"Pending",message:"Grand folk performance showcase for international tourists. 2 hrs."},
+    {id:"TND003",client:"Amazon India",event:"Diwali Corporate Party",date:"2026-10-22",venue:"JW Marriott, Delhi",budget:"₹55,000",status:"Pending",message:"LED performance + fire show for Diwali corporate night. 400 employees."},
+    {id:"TND004",client:"Park Hotel",event:"New Year Countdown",date:"2026-12-31",venue:"Park Hotel, Jaipur",budget:"₹65,000",status:"Pending",message:"Fire show finale at NYE countdown. Outdoor poolside. 600 guests."},
+    {id:"TND005",client:"Shivani Mehta",event:"30th Birthday Bash",date:"2026-10-15",venue:"Home Garden, Jaipur",budget:"₹20,000",status:"Declined",message:"Fun LED and juggling act for birthday party. 60 guests."},
+  ],
+  "Stand-up Comedian":[
+    {id:"TND001",client:"Zomato",event:"Quarterly All-Hands",date:"2026-09-25",venue:"Zomato HQ, Gurugram",budget:"₹50,000",status:"Confirmed",message:"Clean corporate comedy for 400-person all-hands. 30-min set. Relatable tech humour."},
+    {id:"TND002",client:"Vikram & Pooja",event:"Wedding Night",date:"2026-10-04",venue:"Sofitel, Mumbai",budget:"₹35,000",status:"Pending",message:"Wedding comedian for reception. 200 guests. Family-friendly, mix of Hindi-English."},
+    {id:"TND003",client:"BookMyShow",event:"Comedy Night",date:"2026-10-18",venue:"Canvas Laugh Club, Mumbai",budget:"₹25,000",status:"Pending",message:"45-min headliner slot at ticketed comedy night. 150 audience."},
+    {id:"TND004",client:"Wipro",event:"Annual Day Comedy Night",date:"2026-11-05",venue:"JW Marriott, Bengaluru",budget:"₹70,000",status:"Pending",message:"Corporate comedy for 800 employees. 1-hr set. Diverse audience, clean material."},
+    {id:"TND005",client:"Neha Joshi",event:"Bachelorette Night",date:"2026-10-10",venue:"The Bar Stock Exchange",budget:"₹18,000",status:"Declined",message:"Roast-style comedy for bachelorette party. 25 guests."},
+  ],
+  Magician:[
+    {id:"TND001",client:"Patil Wedding",event:"Wedding Cocktail Hour",date:"2026-09-23",venue:"Novotel, Hyderabad",budget:"₹25,000",status:"Confirmed",message:"Strolling close-up magic during cocktail dinner. 200 guests. 90 min."},
+    {id:"TND002",client:"Microsoft India",event:"Annual Kids' Day",date:"2026-10-06",venue:"Microsoft Campus, Hyderabad",budget:"₹40,000",status:"Pending",message:"Kids' magic show for employee family day. 150 kids + parents. 45 min stage show."},
+    {id:"TND003",client:"Siddharth Rao",event:"7th Birthday Party",date:"2026-10-15",venue:"Home, Jubilee Hills",budget:"₹15,000",status:"Pending",message:"Fun birthday magic show for 40 kids. Interactive, comedy-magic style."},
+    {id:"TND004",client:"Hyatt Hotel",event:"New Year Gala",date:"2026-12-31",venue:"Hyatt Regency, Hyderabad",budget:"₹60,000",status:"Pending",message:"Stage magic show + strolling magic. NYE gala, 500 guests. 30 min stage + 2 hr roaming."},
+    {id:"TND005",client:"Cyberabad Police",event:"Community Event",date:"2026-11-14",venue:"Community Hall, Hyderabad",budget:"₹8,000",status:"Declined",message:"Public community magic show. Free event, 300 audience."},
+  ],
+  "AV Setup":[
+    {id:"TND001",client:"Samsung India",event:"Product Launch Delhi",date:"2026-09-26",venue:"Aerocity Arena, Delhi",budget:"₹3,50,000",status:"Confirmed",message:"Full AV production for flagship product launch. LED wall, line array, lighting. 800 attendees."},
+    {id:"TND002",client:"Kapoor Wedding",event:"Wedding Ceremony + Reception",date:"2026-10-05",venue:"Leela Palace, Delhi",budget:"₹2,20,000",status:"Pending",message:"Full sound, lights, LED backdrop for 2-day wedding. 500 guests per function."},
+    {id:"TND003",client:"FICCI",event:"Annual Conference",date:"2026-10-14",venue:"Vigyan Bhavan, Delhi",budget:"₹4,50,000",status:"Pending",message:"Conference-grade AV, 3 halls, live streaming, simultaneous translation booths. 1,200 delegates."},
+    {id:"TND004",client:"Times Now",event:"Debate Night",date:"2026-10-22",venue:"Times Now Studio, Delhi",budget:"₹1,80,000",status:"Pending",message:"Broadcast-quality AV for live TV debate event. 200 audience + broadcast feed."},
+    {id:"TND005",client:"Gupta Birthday",event:"50th Birthday Party",date:"2026-11-01",venue:"Home Farmhouse, Delhi NCR",budget:"₹60,000",status:"Declined",message:"Basic sound + lights for farmhouse birthday. 150 guests."},
+  ],
+  Choreographer:[
+    {id:"TND001",client:"Sharma Wedding",event:"Sangeet Choreography",date:"2026-09-20",venue:"ITC Maurya, Delhi",budget:"₹40,000",status:"Confirmed",message:"Choreography for 3 groups + couple's first dance. 6 weeks of classes. 220 guests at event."},
+    {id:"TND002",client:"Mehta Family",event:"Mehndi & Sangeet",date:"2026-10-03",venue:"Taj Palace, Delhi",budget:"₹55,000",status:"Pending",message:"Full sangeet choreography — 4 groups, 25 people total. Hindi + Punjabi songs."},
+    {id:"TND003",client:"Nisha Kapoor",event:"Bachelorette Flash Mob",date:"2026-10-12",venue:"DLF Mall of India",budget:"₹22,000",status:"Pending",message:"Surprise flash mob choreography for 12 bridesmaids. 4 rehearsals, 3-min Bollywood number."},
+    {id:"TND004",client:"Delhi Corporate League",event:"Annual Sports Day Dance",date:"2026-10-25",venue:"Siri Fort Auditorium",budget:"₹35,000",status:"Pending",message:"Group dance for 20 corporate employees. Contemporary Bollywood. 2-week prep."},
+    {id:"TND005",client:"St. Thomas School",event:"Annual Day Performance",date:"2026-11-08",venue:"School Auditorium, Delhi",budget:"₹18,000",status:"Declined",message:"Choreography for school annual day. 30 students, 4 performances."},
+  ],
+};
 
 // ── Mock outside orders ────────────────────────────────────────────────────────
 const INIT_OUTSIDE = [
@@ -77,22 +151,79 @@ const INIT_REVIEWS = [
   { id: 6, name: "Samsung India", event: "Product Launch, Jul 2025", rating: 5, text: "Phenomenal hosting. Perfect balance of hype and information. The 1,500-person crowd was engaged the whole time.", response: "Samsung events are always special — the scale and energy are unmatched. Thank you for having me! 🙏" },
 ];
 
-// ── Mock packages ──────────────────────────────────────────────────────────────
-const INIT_PACKAGES = [
-  { id: 1, name: "Half Day", price: 25000, unit: "4 hours", icon: "🥉", items: "Pre-event briefing call\nBilingual hosting (Hindi + English)\nUp to 4 hrs coverage\nScript + cue card prep" },
-  { id: 2, name: "Full Day", price: 45000, unit: "full event", icon: "🥇", badge: "Most Popular", items: "Pre-event strategy call\nBilingual hosting\nFull-day coverage (10 hrs)\nCustom script writing\nLive audience games\nEmcee standby between segments" },
-  { id: 3, name: "Premium Corporate", price: 85000, unit: "full event", icon: "💎", items: "2 planning calls + site visit\nCorporate-grade scripting\nAwards & recognition hosting\nPanel moderation\nLive crowd interaction design\nPost-event highlight video intro" },
-];
+// ── Packages per type ─────────────────────────────────────────────────────────
+const PACKAGES_BY_TYPE = {
+  Anchor:[
+    {id:1,name:"Half Day",price:25000,unit:"4 hours",icon:"🥉",items:"Pre-event briefing call\nBilingual hosting\nUp to 4 hrs coverage\nScript + cue card prep"},
+    {id:2,name:"Full Day",price:45000,unit:"full event",icon:"🥇",badge:"Most Popular",items:"Pre-event strategy call\nBilingual hosting\nFull-day coverage (10 hrs)\nCustom script writing\nLive audience games\nEmcee standby between segments"},
+    {id:3,name:"Premium Corporate",price:85000,unit:"full event",icon:"💎",items:"2 planning calls + site visit\nCorporate-grade scripting\nAwards & recognition hosting\nPanel moderation\nLive crowd interaction design"},
+  ],
+  "Emcee/Host":[
+    {id:1,name:"Half Day Host",price:20000,unit:"4 hours",icon:"🥉",items:"Pre-event briefing\nTrilingual hosting\n4 hrs coverage\nCue card prep"},
+    {id:2,name:"Full Event",price:38000,unit:"full event",icon:"🥇",badge:"Most Popular",items:"Planning call + site check\nFull-day hosting\nCustom script\nAward ceremony facilitation\nLive audience interaction"},
+    {id:3,name:"Corporate Premium",price:70000,unit:"full event",icon:"💎",items:"2 strategy calls\nConference scripting\nPanel moderation\nSpeaker coaching\nLive Q&A management\nPost-event recap"},
+  ],
+  DJ:[
+    {id:1,name:"2-Hour Mix",price:15000,unit:"2 hours",icon:"🥉",items:"2 hrs live DJing\nBasic sound system\nBollywood + commercial set"},
+    {id:2,name:"4-Hour Party",price:28000,unit:"4 hours",icon:"🥇",badge:"Most Popular",items:"4 hrs live DJing\nProfessional PA + subwoofers\nCustom playlist consultation\nWireless mic included\nSmoke machine"},
+    {id:3,name:"Full Night Production",price:55000,unit:"6-8 hours",icon:"💎",items:"6–8 hrs DJing\nLine-array speaker system\nFull LED lighting rig\nLaser show\nCustom event mix prep"},
+  ],
+  Band:[
+    {id:1,name:"1-Hour Set",price:40000,unit:"1 hour",icon:"🥉",items:"1 hr live performance\n6 musicians\nSound system included\n10-song set"},
+    {id:2,name:"2-Hour Evening",price:70000,unit:"2 hours",icon:"🥇",badge:"Most Popular",items:"2 hr live performance\nFull 6-piece band\nCustom setlist planning\nSoundcheck + rehearsal\n20-song mixed set"},
+    {id:3,name:"Full Wedding Package",price:1,20000,unit:"full event",icon:"💎",items:"4 hrs coverage\nFull band + PA\nCustom medleys\nDedicatory songs\nIntermission playlist\nPost-event recording"},
+  ],
+  Singer:[
+    {id:1,name:"10-Song Set",price:18000,unit:"45 min",icon:"🥉",items:"10 pre-selected songs\nPersonal mic + in-ear\nBacktrack included"},
+    {id:2,name:"20-Song Evening",price:32000,unit:"90 min",icon:"🥇",badge:"Most Popular",items:"Custom 20-song list\nFull rehearsal call\nMix of Bollywood & Sufi\nDedication requests (3)"},
+    {id:3,name:"Concert Experience",price:58000,unit:"2+ hours",icon:"💎",items:"Full 2+ hr performance\nCurated custom setlist\nLive band option (+cost)\nBackstage meet & greet\nPersonalised intro for client"},
+  ],
+  Musician:[
+    {id:1,name:"Cocktail Set",price:15000,unit:"2 hours",icon:"🥉",items:"2 hrs ambient solo performance\nAcoustic guitar or keyboard\nSoft Bollywood + jazz mix"},
+    {id:2,name:"Event Performance",price:28000,unit:"3 hours",icon:"🥇",badge:"Most Popular",items:"3 hrs mixed performance\nInstrument of choice\nCustom genre consultation\nWireless setup included"},
+    {id:3,name:"Concert Set",price:50000,unit:"full evening",icon:"💎",items:"Full evening 4+ hrs\nMulti-instrument showcase\nCustom compositions\nLive looping included\nPost-show recording"},
+  ],
+  Performer:[
+    {id:1,name:"Fire Welcome Act",price:20000,unit:"20 min",icon:"🥉",items:"Grand entrance fire act\n2 performers\nBasic props included\nOutdoor venues only"},
+    {id:2,name:"Full Show Package",price:45000,unit:"45 min",icon:"🥇",badge:"Most Popular",items:"Fire + LED combined show\n3 performers\nRajasthani folk segment\nCustom choreography\nProp setup included"},
+    {id:3,name:"Grand Production",price:80000,unit:"90 min",icon:"💎",items:"Fire + LED + aerial acts\n5 performers\nCustom theme integration\nFull rehearsal walk-through\nOutdoor / indoor flexible"},
+  ],
+  "Stand-up Comedian":[
+    {id:1,name:"20-Min Set",price:20000,unit:"20 min",icon:"🥉",items:"Clean 20-min stand-up\nHindi + English\nBasic crowd interaction"},
+    {id:2,name:"40-Min Show",price:38000,unit:"40 min",icon:"🥇",badge:"Most Popular",items:"40-min full show\nCustom crowd roast material\nInteractive segment\nPre-show briefing call"},
+    {id:3,name:"Full Hour Corporate",price:70000,unit:"60 min",icon:"💎",items:"60-min headliner set\nCompany-specific jokes\nPre-event research call\nVideo recording rights\nPost-show meet & greet"},
+  ],
+  Magician:[
+    {id:1,name:"Table Magic (90 min)",price:18000,unit:"90 min",icon:"🥉",items:"Strolling close-up magic\nCovers 15–20 tables\nCard + coin routines"},
+    {id:2,name:"Stage Show (45 min)",price:35000,unit:"45 min",icon:"🥇",badge:"Most Popular",items:"Full stage magic show\nAudience volunteers\nLevitation act\nMentalism segment\nCustom reveal for client"},
+    {id:3,name:"Grand Experience",price:60000,unit:"full event",icon:"💎",items:"Stage show + roaming magic\nMindreading finale\nCustom-branded reveals\nPre-event personalisation\nPhoto opportunities included"},
+  ],
+  "AV Setup":[
+    {id:1,name:"Basic Sound & Light",price:35000,unit:"per day",icon:"🥉",items:"2 column speakers + subwoofer\nWireless mics (2)\nBasic wash lighting\nTechnician included"},
+    {id:2,name:"Event Production",price:1,20000,unit:"full event",icon:"🥇",badge:"Most Popular",items:"Line array PA system\nLED moving heads (12)\nLED backdrop 10×6 ft\nWireless mics (6)\nFOH engineer + tech crew"},
+    {id:3,name:"Full AV Production",price:3,50000,unit:"full event",icon:"💎",items:"Concert-grade line array\nLED video wall 20×12 ft\nFull concert lighting rig\nLive streaming setup\nBroadcast-quality cameras (3)\nFull crew + project manager"},
+  ],
+  Choreographer:[
+    {id:1,name:"Couple's Dance",price:15000,unit:"5 sessions",icon:"🥉",items:"5 rehearsal sessions\nCouple first dance\nSong selection help\nDay-of guidance"},
+    {id:2,name:"Group Sangeet",price:35000,unit:"10 sessions",icon:"🥇",badge:"Most Popular",items:"10 group sessions\nUp to 15 performers\n2 choreography numbers\nCostume & prop guidance\nDay-of rehearsal included"},
+    {id:3,name:"Full Wedding Package",price:65000,unit:"full event",icon:"💎",items:"Unlimited sessions (3 weeks)\nAll groups covered\n4+ performance numbers\nFlash mob option\nFilming of final performance\nDay-of coordination"},
+  ],
+};
 
-// ── Mock setlist / inventory ───────────────────────────────────────────────────
-const INIT_SETLIST = [
-  "Opening ceremony address",
-  "Interactive icebreaker games",
-  "Awards & recognition ceremony",
-  "Live audience Q&A moderation",
-  "Evening entertainment & comedy set",
-  "Closing vote of thanks",
-];
+// ── Setlist / inventory per type ──────────────────────────────────────────────
+const SETLIST_BY_TYPE = {
+  Anchor:["Opening ceremony address","Interactive icebreaker games","Awards & recognition ceremony","Live audience Q&A moderation","Evening entertainment & comedy set","Closing vote of thanks"],
+  "Emcee/Host":["Welcome address & housekeeping","Speaker introductions","Product / brand reveal moment","Live polling & audience Q&A","Award ceremony hosting","Closing & vote of thanks"],
+  DJ:["Warm-up — Deep House / Afrobeats","Pre-peak Bollywood anthems","EDM / Progressive build + drop","Bollywood peak-hour block","Hip-Hop / trap room hour","Slow closer / last dance set"],
+  Band:["Sufi opening medley","Classic Bollywood 70s–80s set","Punjabi wedding anthems","Retro Rock Bollywood fusion","Contemporary Bollywood peak hour","Folk & Sufi wind-down set"],
+  Singer:["Ghazal opening medley (3 songs)","Bollywood 2010s wedding hits","Sufi classics block","Devotional aarti set (on request)","Contemporary Bollywood chartbusters","Slow romantic finale"],
+  Musician:["Ambient cocktail set (acoustic Bollywood)","Jazz standard trio set","Carnatic fusion interlude","Bollywood acoustic medley","Contemporary instrumental pop","Full concert finale piece"],
+  Performer:["Grand entrance fire welcome act","LED dance interlude","Rajasthani folk performance set","Aerial hoop showcase","Fire finale & grand close"],
+  "Stand-up Comedian":["Crowd warm-up & icebreaker (5 min)","Observational opener set (10 min)","Relationship & wedding material (10 min)","Crowd work & personalization (5 min)","Big closer / punchline finale (5 min)"],
+  Magician:["Strolling close-up table magic (during dinner)","Opening mind-reading reveal (stage)","Large-scale card illusion sequence","Audience volunteer levitation act","Mind-reading finale & grand illusion"],
+  "AV Setup":["Site survey & acoustic assessment","Equipment load-in & rigging","Sound check & line check","Lighting cue programming","Live event operation","Post-event teardown & load-out"],
+  Choreographer:["Sangeet opening group Bollywood number","Couple's first dance choreography","Bridesmaids' surprise number","Best men Bhangra set","Family group medley (all-ages)","Grand finale flash mob"],
+};
 
 // ── Booked dates for calendar ─────────────────────────────────────────────────
 const BOOKED_DATES = new Set(["2026-09-15", "2026-09-20", "2026-09-28", "2026-09-30", "2026-10-05", "2026-10-14", "2026-10-22"]);
@@ -165,14 +296,24 @@ function usePersisted(key, init) {
 // ══ MAIN COMPONENT ════════════════════════════════════════════════════════════
 export default function DemoDashboard() {
   const nav = useNavigate();
-  const [tab, setTab]         = useState("home");
+  const [tab, setTab] = useState("home");
+
+  // Auth first — needed to select type-specific initial data
+  const { user: authUser, token: authToken } = useSelector(s => s.auth);
+  const vendorId = authUser?._id || authUser?.id;
+  const sType = authUser?.serviceType || "Anchor";
+  const initProfile = PROFILES_BY_TYPE[sType] || PROFILES_BY_TYPE.Anchor;
+  const initTendr   = TENDR_BY_TYPE[sType]    || TENDR_BY_TYPE.Anchor;
+  const initPkgs    = PACKAGES_BY_TYPE[sType] || PACKAGES_BY_TYPE.Anchor;
+  const initSetlist = SETLIST_BY_TYPE[sType]  || SETLIST_BY_TYPE.Anchor;
+  const inventoryLabel = INVENTORY_LABELS[sType] || "Setlist";
 
   // All key state is persisted to localStorage so changes survive refresh
-  const [profile, setProfile]   = usePersisted("profile", INIT_PROFILE);
-  const [tendr,   setTendr]     = usePersisted("tendr",   INIT_TENDR);
+  const [profile, setProfile]   = usePersisted("profile", initProfile);
+  const [tendr,   setTendr]     = usePersisted("tendr",   initTendr);
   const [reviews, setReviews]   = usePersisted("reviews", INIT_REVIEWS);
-  const [pkgs,    setPkgs]      = usePersisted("pkgs",    INIT_PACKAGES);
-  const [setlist, setSetlist]   = usePersisted("setlist", INIT_SETLIST);
+  const [pkgs,    setPkgs]      = usePersisted("pkgs",    initPkgs);
+  const [setlist, setSetlist]   = usePersisted("setlist", initSetlist);
   const [outside]               = useState(INIT_OUTSIDE); // outside orders: read-only mock
 
   const [profEdit, setProfEdit]   = useState(false);
@@ -194,9 +335,7 @@ export default function DemoDashboard() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Real vendor API sync ───────────────────────────────────────────────────
-  const { user: authUser, token: authToken } = useSelector(s => s.auth);
-  const vendorId = authUser?._id || authUser?.id;
-  const isGigProVendor = !!(authToken && vendorId && ['Anchor', 'Band', 'Choreographer'].includes(authUser?.serviceType));
+  const isGigProVendor = !!(authToken && vendorId && GIG_PRO_TYPES.includes(authUser?.serviceType));
 
   function syncToApi(overProfile = profile, overPkgs = pkgs, overSetlist = setlist) {
     if (!isGigProVendor) return;
@@ -228,12 +367,12 @@ export default function DemoDashboard() {
 
   function handleReset() {
     lsClear();
-    setProfile(INIT_PROFILE); lsSet("profile", INIT_PROFILE);
-    setTendr(INIT_TENDR);     lsSet("tendr",   INIT_TENDR);
+    setProfile(initProfile); lsSet("profile", initProfile);
+    setTendr(initTendr);     lsSet("tendr",   initTendr);
     setReviews(INIT_REVIEWS); lsSet("reviews", INIT_REVIEWS);
-    setPkgs(INIT_PACKAGES);   lsSet("pkgs",    INIT_PACKAGES);
-    setSetlist(INIT_SETLIST); lsSet("setlist", INIT_SETLIST);
-    setGigDraft({ genres: INIT_PROFILE.genres.join(", "), showreel: INIT_PROFILE.showreel, instagram: INIT_PROFILE.instagram, youtube: INIT_PROFILE.youtube, setlist: INIT_PROFILE.setlist });
+    setPkgs(initPkgs);       lsSet("pkgs",    initPkgs);
+    setSetlist(initSetlist); lsSet("setlist", initSetlist);
+    setGigDraft({ genres: (initProfile.genres||[]).join(", "), showreel: initProfile.showreel, instagram: initProfile.instagram, youtube: initProfile.youtube, setlist: initProfile.setlist });
     setResetConfirm(false);
   }
 
@@ -271,7 +410,7 @@ export default function DemoDashboard() {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d={item.icon} />
                   </svg>
-                  {item.label}
+                  {item.key === "inventory" ? inventoryLabel : item.label}
                   {item.key === "work" && <Badge count={pendingTendr} />}
                   {item.key === "reviews" && <Badge count={unrespondedReviews} color={gold} />}
                 </button>

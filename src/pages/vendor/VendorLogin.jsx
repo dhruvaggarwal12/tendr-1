@@ -53,7 +53,8 @@ export default function VendorLogin() {
       // Update Redux state inline (bypassing the consumer-only login action)
       dispatch({ type: 'auth/login/fulfilled', payload: { consumer: userObj, token } });
 
-      const dest = ['Anchor', 'Band', 'Choreographer'].includes(userObj.serviceType)
+      const GIG_PRO = ['DJ','Anchor','Emcee/Host','Band','Singer','Musician','Performer','Stand-up Comedian','Magician','AV Setup','Choreographer'];
+      const dest = GIG_PRO.includes(userObj.serviceType)
         ? '/vendor/demo-dashboard'
         : '/vendor/dashboard';
       navigate(dest);
