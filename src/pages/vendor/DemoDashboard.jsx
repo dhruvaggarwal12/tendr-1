@@ -200,8 +200,8 @@ const PACKAGES_BY_TYPE = {
   ],
   "AV Setup":[
     {id:1,name:"Basic Sound & Light",price:35000,unit:"per day",icon:"🥉",items:"2 column speakers + subwoofer\nWireless mics (2)\nBasic wash lighting\nTechnician included"},
-    {id:2,name:"Event Production",price:1,20000,unit:"full event",icon:"🥇",badge:"Most Popular",items:"Line array PA system\nLED moving heads (12)\nLED backdrop 10×6 ft\nWireless mics (6)\nFOH engineer + tech crew"},
-    {id:3,name:"Full AV Production",price:3,50000,unit:"full event",icon:"💎",items:"Concert-grade line array\nLED video wall 20×12 ft\nFull concert lighting rig\nLive streaming setup\nBroadcast-quality cameras (3)\nFull crew + project manager"},
+    {id:2,name:"Event Production",price:120000,unit:"full event",icon:"🥇",badge:"Most Popular",items:"Line array PA system\nLED moving heads (12)\nLED backdrop 10×6 ft\nWireless mics (6)\nFOH engineer + tech crew"},
+    {id:3,name:"Full AV Production",price:350000,unit:"full event",icon:"💎",items:"Concert-grade line array\nLED video wall 20×12 ft\nFull concert lighting rig\nLive streaming setup\nBroadcast-quality cameras (3)\nFull crew + project manager"},
   ],
   Choreographer:[
     {id:1,name:"Couple's Dance",price:15000,unit:"5 sessions",icon:"🥉",items:"5 rehearsal sessions\nCouple first dance\nSong selection help\nDay-of guidance"},
