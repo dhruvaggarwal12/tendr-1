@@ -128,104 +128,114 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
 .ls-hw-bot{font-family:'Dancing Script',cursive;font-size:16px;color:#9B7450;
   opacity:.7;text-align:right;line-height:1.5;padding-left:72px;}
 
-/* ── QUESTION ── */
-.qs{background:transparent;}
-.qh{padding:calc(env(safe-area-inset-top,0px) + 20px) 24px 0;
-  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.qdots{display:flex;gap:8px;align-items:center;}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--sf2);
-  transition:all .4s cubic-bezier(.08,.9,.22,1);}
-.dot.on{background:var(--gold);width:26px;border-radius:5px;box-shadow:0 0 12px var(--gg);}
-.dot.dn{background:var(--gold);opacity:.35;}
-.qnum{font-size:12px;font-weight:700;letter-spacing:2px;color:var(--muted);}
+/* ── QUESTION SCREEN (light cream) ── */
+.qs{background:#FAF7F2;position:relative;}
 
-/* Shifted higher: extra padding-bottom pushes center upward */
-.qmid{flex:1;display:flex;flex-direction:column;justify-content:center;
-  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 100px);}
+.q-top{padding:calc(env(safe-area-inset-top,0px)+14px) 24px 0;flex-shrink:0;}
+.q-wm-line{text-align:center;margin-bottom:12px;}
+.q-wm{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:600;
+  letter-spacing:.4em;color:#1C0A04;display:block;text-transform:uppercase;
+  padding-left:.4em;}
+.q-wtag{font-family:'Outfit',sans-serif;font-size:9px;font-weight:600;
+  letter-spacing:.18em;color:#9B7450;text-transform:uppercase;display:block;
+  margin-top:2px;}
+.q-prog-row{display:flex;align-items:center;gap:10px;}
+.q-segs{display:flex;gap:5px;flex:1;}
+.q-seg{height:4px;border-radius:2px;flex:1;background:rgba(28,10,4,.12);
+  transition:background .3s;}
+.q-seg.on{background:#C47A2E;}
+.q-seg.dn{background:#C47A2E;opacity:.4;}
+.q-cnt{font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;
+  color:#9B7450;flex-shrink:0;white-space:nowrap;}
 
-.qb{display:flex;flex-direction:column;padding:10px 28px 24px;}
-.qbadge{display:inline-flex;align-items:center;padding:6px 14px;border-radius:30px;
-  background:var(--gls);border:1px solid var(--bdg);
-  font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
-  color:var(--gold);margin-bottom:20px;align-self:center;
-  animation:fu .4s .05s ease both;}
-.qhead{font-size:clamp(22px,5.8vw,28px);font-weight:900;color:var(--txt);
-  line-height:1.25;margin-bottom:14px;text-align:center;animation:fu .4s .1s ease both;}
-.qhead em{color:var(--gl);font-style:normal;}
-.qsub{font-size:15px;color:var(--dim);line-height:1.8;text-align:center;animation:fu .4s .15s ease both;}
+.q-body{flex:1;display:flex;flex-direction:column;padding:14px 24px 0;
+  padding-bottom:calc(env(safe-area-inset-bottom,0px)+148px);overflow-y:auto;}
+.q-cat{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:.16em;text-transform:uppercase;color:#C47A2E;margin-bottom:12px;
+  animation:fu .3s ease both;}
+.q-head{font-family:'Cormorant Garamond',Georgia,serif;
+  font-size:clamp(23px,6.5vw,29px);font-weight:600;line-height:1.22;
+  color:#1C0A04;margin-bottom:9px;animation:fu .3s .04s ease both;}
+.q-head em{font-style:italic;color:#C47A2E;}
+.q-sub{font-family:'Outfit',sans-serif;font-size:13.5px;color:#9B7450;
+  line-height:1.65;margin-bottom:15px;animation:fu .3s .08s ease both;}
 
-.qc{padding:0 20px 0;
-  display:flex;flex-direction:column;gap:14px;flex-shrink:0;
-  animation:fu .4s .22s ease both;}
-
-/* ── CHOICE CARDS — 35% larger, spring-pop on select ── */
-.ch{display:flex;align-items:center;gap:16px;padding:22px 24px;border-radius:20px;
-  border:1.5px solid;cursor:pointer;font-family:inherit;text-align:left;
-  transition:transform .3s cubic-bezier(.15,1.5,.35,1),
-             opacity .3s ease,
-             border-color .2s ease,
-             background .2s ease,
-             box-shadow .3s ease;
-  position:relative;overflow:hidden;touch-action:manipulation;
+.q-cards{display:flex;flex-direction:column;gap:10px;margin-bottom:13px;
+  animation:fu .3s .12s ease both;}
+.q-ch{display:flex;align-items:center;gap:13px;padding:14px 16px;
+  background:#FFFFFF;border:1.5px solid rgba(28,10,4,.1);border-radius:18px;
+  cursor:pointer;font-family:'Outfit',sans-serif;text-align:left;
+  touch-action:manipulation;width:100%;
+  transition:border-color .2s,box-shadow .2s,transform .15s,opacity .3s;
   -webkit-user-select:none;user-select:none;}
-.ch:active{transform:scale(.97);}
-.ce{font-size:28px;flex-shrink:0;transition:transform .35s cubic-bezier(.15,1.5,.35,1);}
-.ct{font-size:18px;font-weight:800;color:var(--txt);line-height:1.3;}
-.cs{font-size:13px;color:var(--dim);margin-top:3px;display:block;line-height:1.5;}
+.q-ch:active{transform:scale(.98);}
+.q-ico{width:44px;height:44px;border-radius:50%;background:rgba(196,122,46,.08);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;transition:background .2s;}
+.q-txt{flex:1;}
+.q-ct{font-size:14.5px;font-weight:600;color:#1C0A04;line-height:1.28;display:block;
+  transition:color .2s;}
+.q-cs{font-size:11.5px;color:#9B7450;margin-top:2px;display:block;}
+.q-rad{width:22px;height:22px;border-radius:50%;
+  border:2px solid rgba(28,10,4,.18);flex-shrink:0;
+  transition:border-color .2s,background .2s,box-shadow .2s;}
 
-.yo{background:var(--grng);border-color:var(--grnb);}
-.yo:hover{background:rgba(62,207,142,.15);border-color:rgba(62,207,142,.45);}
-.no{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.09);}
-.no:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.2);}
+/* selected YES — gold */
+.q-ch.cy{border-color:#C47A2E;border-width:2px;
+  box-shadow:0 4px 20px rgba(196,122,46,.16);}
+.q-ch.cy .q-ico{background:rgba(196,122,46,.13);}
+.q-ch.cy .q-ct{color:#C47A2E;}
+.q-ch.cy .q-rad{border-color:#C47A2E;background:#C47A2E;
+  box-shadow:inset 0 0 0 4px #FAF7F2;}
 
-/* Selected YES — obvious, spring-pop, glow */
-.ch.cy{
-  background:rgba(62,207,142,.18);
-  border-color:var(--grn);
-  border-width:2px;
-  box-shadow:0 0 0 1px rgba(62,207,142,.3),0 10px 40px rgba(62,207,142,.2);
-  transform:scale(1.02) translateY(-3px);
-}
-.ch.cy .ct{color:var(--grn);}
-.ch.cy .ce{transform:scale(1.3);}
-.ch.cy::before{
-  content:'✓';position:absolute;right:20px;top:50%;
-  width:30px;height:30px;border-radius:50%;
-  background:var(--grn);color:#09081A;
-  font-size:14px;font-weight:900;
-  display:grid;place-items:center;
-  transform:translateY(-50%) scale(1);
-  animation:chkpop .3s cubic-bezier(.15,1.5,.35,1) both;
-}
-@keyframes chkpop{from{transform:translateY(-50%) scale(0);}to{transform:translateY(-50%) scale(1);}}
+/* selected NO — ink */
+.q-ch.cn{border-color:rgba(28,10,4,.32);border-width:2px;
+  box-shadow:0 4px 12px rgba(28,10,4,.05);}
+.q-ch.cn .q-ico{background:rgba(28,10,4,.05);}
+.q-ch.cn .q-rad{border-color:#1C0A04;background:#1C0A04;
+  box-shadow:inset 0 0 0 4px #FAF7F2;}
 
-/* Selected NO */
-.ch.cn{
-  background:rgba(255,255,255,.09);
-  border-color:rgba(255,255,255,.5);
-  border-width:2px;
-  box-shadow:0 0 0 1px rgba(255,255,255,.12),0 10px 40px rgba(255,255,255,.04);
-  transform:scale(1.02) translateY(-3px);
-}
-.ch.cn::before{
-  content:'✓';position:absolute;right:20px;top:50%;
-  width:30px;height:30px;border-radius:50%;
-  background:rgba(255,255,255,.8);color:#09081A;
-  font-size:14px;font-weight:900;
-  display:grid;place-items:center;
-  transform:translateY(-50%) scale(1);
-  animation:chkpop .3s cubic-bezier(.15,1.5,.35,1) both;
-}
+/* unchosen faded */
+.q-ch.fd{opacity:.14;pointer-events:none;}
 
-/* Faded (unchosen) — much more aggressive */
-.ch.fd{opacity:.07;transform:scale(0.97);pointer-events:none;}
+/* Next button */
+.q-next{width:100%;padding:16px 24px;border-radius:50px;
+  background:#C47A2E;border:none;
+  font-family:'Outfit',sans-serif;font-size:15.5px;font-weight:600;
+  color:#FFF;cursor:pointer;touch-action:manipulation;letter-spacing:.02em;
+  transition:opacity .25s,transform .15s,box-shadow .2s;
+  animation:fu .3s .16s ease both;}
+.q-next:not([disabled]):hover{box-shadow:0 6px 24px rgba(196,122,46,.32);}
+.q-next:not([disabled]):active{transform:scale(.98);}
+.q-next[disabled]{opacity:.22;cursor:default;}
 
-/* ripple */
-.ch::after{content:'';position:absolute;width:220px;height:220px;border-radius:50%;
-  background:rgba(255,255,255,.08);transform:scale(0);opacity:1;
-  pointer-events:none;transition:transform .55s ease,opacity .55s ease;
-  left:50%;top:50%;translate:-50% -50%;}
-.ch.rp::after{transform:scale(2.4);opacity:0;}
+/* bottom decor — corner photo + handwriting */
+.q-cp-br{position:absolute;width:148px;height:148px;
+  border-radius:50% 12% 50% 50% / 50% 50% 50% 12%;
+  right:-18px;bottom:28px;pointer-events:none;z-index:1;
+  background:
+    radial-gradient(circle at 50% 40%,rgba(255,242,228,.88) 0%,transparent 38%),
+    radial-gradient(circle at 68% 60%,rgba(235,165,120,.55) 0%,transparent 30%),
+    radial-gradient(ellipse at 50% 52%,#EFC0A0 0%,#C06030 58%,#8A3A18 100%);
+  box-shadow:0 6px 28px rgba(196,122,46,.16);}
+.q-hw-bl{position:absolute;bottom:26px;left:18px;
+  font-family:'Dancing Script',cursive;font-size:14.5px;color:#C47A2E;
+  opacity:.58;line-height:1.6;pointer-events:none;z-index:1;}
+
+/* empathy overlay — light theme overrides for .qs context */
+.qs .eov[data-s="fade"]{background:linear-gradient(180deg,rgba(250,247,242,.95),#FAF7F2);}
+.qs .eov[data-s="card"]{background:#FFFCF9;border-top:1.5px solid rgba(196,122,46,.2);
+  box-shadow:0 -18px 56px rgba(28,10,4,.1);}
+.qs .eov[data-s="wipe"]{background:#FFFCF9;border-bottom:1.5px solid rgba(196,122,46,.2);
+  box-shadow:0 18px 56px rgba(28,10,4,.1);}
+.qs .eov[data-s="punch"]{background:radial-gradient(ellipse 60% 50% at 50% 44%,
+  rgba(196,122,46,.09),rgba(250,247,242,.96));}
+.qs .et{color:#1C0A04;font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;}
+.qs .et b{color:#C47A2E;}
+.qs .eb{color:#9B7450;font-family:'Outfit',sans-serif;}
+.qs .eskip{color:#9B7450;}
+.qs .epbar{background:rgba(28,10,4,.08);}
+.qs .epfill{background:linear-gradient(90deg,#C47A2E,#CCAB4A);box-shadow:none;}
 
 /* ── EMPATHY OVERLAY ── */
 .eov{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;
@@ -277,42 +287,57 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
   transition:opacity .4s .5s;touch-action:manipulation;}
 .eov.show .eskip{opacity:1;}
 
-/* ── FINAL Q ── */
-.fqs{background:transparent;}
-.fqb{flex:1;display:flex;flex-direction:column;justify-content:center;
-  padding:12px 28px 20px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 80px);}
-.fqbadge{display:inline-flex;align-items:center;padding:6px 14px;border-radius:30px;
-  background:var(--gls);border:1px solid var(--bdg);
-  font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
-  color:var(--gold);margin-bottom:18px;align-self:center;animation:fu .4s .05s ease both;}
-.fqh{font-size:clamp(20px,5.2vw,26px);font-weight:900;color:var(--txt);
-  line-height:1.28;margin-bottom:20px;text-align:center;animation:fu .4s .1s ease both;}
-.fqlist{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;
-  animation:fu .4s .15s ease both;}
-.fqi{display:flex;align-items:center;gap:14px;font-size:15px;font-weight:600;color:var(--dim);
-  line-height:1.5;}
-.fqchk{width:22px;height:22px;border-radius:50%;background:var(--gls);
-  border:1.5px solid var(--bdg);display:flex;align-items:center;justify-content:center;
-  font-size:11px;color:var(--gold);flex-shrink:0;}
-.fqend{text-align:center;font-size:16px;color:var(--dim);line-height:1.65;margin-bottom:18px;
-  animation:fu .4s .2s ease both;}
-.fqend strong{font-size:22px;font-weight:900;color:var(--txt);display:block;margin-top:6px;}
-.fqopts{display:flex;flex-direction:column;gap:12px;animation:fu .4s .25s ease both;}
-.fqbtn{width:100%;padding:19px 24px;border-radius:20px;
-  border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);
-  cursor:pointer;font-family:inherit;font-size:16px;font-weight:700;
-  color:var(--txt);transition:all .2s;text-align:center;touch-action:manipulation;}
-.fqbtn:hover{border-color:var(--bdg);background:var(--gls);}
-.fqbtn:active{transform:scale(.97);}
-.fqbtn.ch{background:var(--gls);border-color:var(--gold);border-width:2px;color:var(--gl);}
-.fqbtn.fd{opacity:.12;pointer-events:none;}
-.fqresp{margin-top:16px;padding:20px 22px;
-  background:linear-gradient(135deg,rgba(200,155,60,.12),rgba(200,155,60,.04));
-  border:1.5px solid var(--gold);border-radius:18px;
-  font-size:16px;font-weight:600;color:var(--txt);line-height:1.65;
-  display:none;animation:fu .3s ease both;text-align:center;
-  box-shadow:0 4px 28px rgba(200,155,60,.18);}
-.fqresp b{color:var(--gl);font-weight:900;}
+/* ── FINAL Q (light cream) ── */
+.fqs{background:#FAF7F2;position:relative;}
+.fq-top{padding:calc(env(safe-area-inset-top,0px)+14px) 24px 0;flex-shrink:0;}
+.fq-wm-line{text-align:center;margin-bottom:12px;}
+.fq-wm{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:600;
+  letter-spacing:.4em;color:#1C0A04;display:block;text-transform:uppercase;
+  padding-left:.4em;}
+.fq-wtag{font-family:'Outfit',sans-serif;font-size:9px;font-weight:600;
+  letter-spacing:.18em;color:#9B7450;text-transform:uppercase;display:block;
+  margin-top:2px;}
+.fq-segs-row{display:flex;align-items:center;gap:10px;}
+.fq-segs{display:flex;gap:5px;flex:1;}
+.fq-seg{height:4px;border-radius:2px;flex:1;background:#C47A2E;opacity:.38;}
+.fq-lbl{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;
+  color:#9B7450;flex-shrink:0;}
+
+.fqb{flex:1;display:flex;flex-direction:column;
+  padding:14px 24px calc(env(safe-area-inset-bottom,0px)+24px);overflow-y:auto;}
+.fqbadge{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:.16em;text-transform:uppercase;color:#C47A2E;
+  margin-bottom:12px;animation:fu .3s ease both;display:block;}
+.fqh{font-family:'Cormorant Garamond',Georgia,serif;
+  font-size:clamp(22px,6vw,28px);font-weight:600;line-height:1.22;
+  color:#1C0A04;margin-bottom:16px;animation:fu .3s .05s ease both;}
+.fqlist{display:flex;flex-direction:column;gap:9px;margin-bottom:16px;
+  animation:fu .3s .1s ease both;}
+.fqi{display:flex;align-items:flex-start;gap:12px;
+  font-family:'Outfit',sans-serif;font-size:14px;color:#9B7450;line-height:1.55;}
+.fqchk{width:20px;height:20px;border-radius:50%;background:rgba(196,122,46,.1);
+  border:1.5px solid rgba(196,122,46,.3);display:flex;align-items:center;justify-content:center;
+  font-size:10px;color:#C47A2E;flex-shrink:0;margin-top:1px;}
+.fqend{font-family:'Outfit',sans-serif;font-size:15px;color:#9B7450;
+  line-height:1.65;margin-bottom:14px;animation:fu .3s .15s ease both;}
+.fqend strong{font-family:'Cormorant Garamond',Georgia,serif;
+  font-size:20px;font-weight:600;color:#1C0A04;display:block;margin-top:5px;}
+.fqopts{display:flex;flex-direction:column;gap:10px;animation:fu .3s .2s ease both;}
+.fqbtn{width:100%;padding:16px 20px;border-radius:16px;
+  border:1.5px solid rgba(28,10,4,.1);background:#FFFFFF;
+  cursor:pointer;font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;
+  color:#1C0A04;transition:border-color .2s,background .2s,transform .15s;
+  text-align:left;touch-action:manipulation;}
+.fqbtn:hover{border-color:rgba(196,122,46,.35);background:rgba(196,122,46,.04);}
+.fqbtn:active{transform:scale(.98);}
+.fqbtn.ch{background:rgba(196,122,46,.08);border-color:#C47A2E;border-width:2px;color:#C47A2E;}
+.fqbtn.fd{opacity:.13;pointer-events:none;}
+.fqresp{margin-top:14px;padding:18px 20px;
+  background:rgba(196,122,46,.06);border:1.5px solid rgba(196,122,46,.25);
+  border-radius:16px;font-family:'Outfit',sans-serif;
+  font-size:15px;font-weight:500;color:#1C0A04;line-height:1.65;
+  display:none;animation:fu .3s ease both;text-align:center;}
+.fqresp b{color:#C47A2E;font-weight:700;}
 .fqresp.show{display:block;}
 
 /* ── REVEAL ── */
@@ -691,28 +716,32 @@ function setLang(l){lang=l;yCount=0;renderQ(0);}
 function renderQ(idx){
   const q=L[lang].qs[idx];
   prog(PROG[idx+1]);
+  const segs=[0,1,2,3].map(i=>`<div class="q-seg${i===idx?' on':i<idx?' dn':''}"></div>`).join('');
   go(`<div class="screen qs">
-    <div class="qh">
-      <div class="qdots">${dots(idx)}</div>
-      <div class="qnum">${idx+1} of 4</div>
+    <div class="q-top">
+      <div class="q-wm-line"><span class="q-wm">TENDR</span><span class="q-wtag">PEOPLE · PLACES · EXPERIENCES</span></div>
+      <div class="q-prog-row"><div class="q-segs">${segs}</div><div class="q-cnt">${idx+1} of 4</div></div>
     </div>
-    <div class="qmid">
-      <div class="qb">
-        <div class="qbadge">${q.badge}</div>
-        <div class="qhead">${q.head}</div>
-        <div class="qsub">${q.sub}</div>
-      </div>
-      <div class="qc">
-        <button class="ch yo" id="by" onclick="ans('y',${idx})">
-          <span class="ce">${q.y.em}</span>
-          <div><div class="ct">${q.y.t}</div><span class="cs">${q.y.s}</span></div>
+    <div class="q-body">
+      <div class="q-cat">${q.badge}</div>
+      <div class="q-head">${q.head}</div>
+      <p class="q-sub">${q.sub}</p>
+      <div class="q-cards">
+        <button class="q-ch" id="by" onclick="ans('y',${idx})">
+          <div class="q-ico">${q.y.em}</div>
+          <div class="q-txt"><span class="q-ct">${q.y.t}</span><span class="q-cs">${q.y.s}</span></div>
+          <div class="q-rad"></div>
         </button>
-        <button class="ch no" id="bn" onclick="ans('n',${idx})">
-          <span class="ce">${q.n.em}</span>
-          <div><div class="ct">${q.n.t}</div><span class="cs">${q.n.s}</span></div>
+        <button class="q-ch" id="bn" onclick="ans('n',${idx})">
+          <div class="q-ico">${q.n.em}</div>
+          <div class="q-txt"><span class="q-ct">${q.n.t}</span><span class="q-cs">${q.n.s}</span></div>
+          <div class="q-rad"></div>
         </button>
       </div>
+      <button class="q-next" id="qnext" disabled onclick="advance(${idx})">Next →</button>
     </div>
+    <div class="q-cp-br"></div>
+    <div class="q-hw-bl">Great events<br>start with<br>great people</div>
     <div class="eov" id="eov" data-s="${STYLES[idx]}" onclick="advance(${idx})">
       <div class="ei" id="ei"></div>
       <div class="et" id="et"></div>
@@ -732,8 +761,6 @@ function ans(w,idx){
   const by=document.getElementById('by'),bn=document.getElementById('bn');
   if(by.disabled)return;
   by.disabled=true;bn.disabled=true;
-  const btn=w==='y'?by:bn;
-  btn.classList.add('rp');setTimeout(()=>btn.classList.remove('rp'),600);
   const q=L[lang].qs[idx];
   const ov=w==='y'?q.oy:q.on;
   if(w==='y'){
@@ -742,18 +769,18 @@ function ans(w,idx){
   } else {
     bn.classList.add('cn');by.classList.add('fd');
   }
+  const nxt=document.getElementById('qnext');
+  if(nxt) nxt.removeAttribute('disabled');
   const el=document.getElementById('eov');
   document.getElementById('ei').textContent=ov.icon;
   document.getElementById('et').innerHTML=ov.t;
   document.getElementById('eb').innerHTML=ov.b;
   const st=el.dataset.s;
   setTimeout(()=>el.classList.add('show'),st==='card'||st==='wipe'?55:120);
-  // fill bar triggers after show
   setTimeout(()=>{
     const f=document.getElementById('epf');
     if(f) requestAnimationFrame(()=>requestAnimationFrame(()=>f.style.width='100%'));
   },360);
-  // auto-advance at 3.4s — enough time to read the empathy overlay
   adv=setTimeout(()=>advance(idx),3400);
 }
 
@@ -761,15 +788,16 @@ function ans(w,idx){
 function showFQ(){
   const fq=L[lang].fq;
   prog(PROG[5]);
+  const allDone='<div class="fq-seg" style="opacity:1"></div>'.repeat(4);
   go(`<div class="screen fqs">
-    <div class="qh">
-      <div class="qdots">${[0,1,2,3].map(()=>'<div class="dot dn"></div>').join('')}</div>
-      <div class="qnum">Final</div>
+    <div class="fq-top">
+      <div class="fq-wm-line"><span class="fq-wm">TENDR</span><span class="fq-wtag">PEOPLE · PLACES · EXPERIENCES</span></div>
+      <div class="fq-segs-row"><div class="fq-segs">${allDone}</div><div class="fq-lbl">Final</div></div>
     </div>
     <div class="fqb">
-      <div class="fqbadge">✦ ${fq.badge}</div>
+      <div class="fqbadge">${fq.badge}</div>
       <div class="fqh">${fq.head}</div>
-      <div class="fqlist">${fq.items.map(it=>`<div class="fqi"><div class="fqchk">✓</div>${it}</div>`).join('')}</div>
+      <div class="fqlist">${fq.items.map(it=>`<div class="fqi"><div class="fqchk">✓</div><span>${it}</span></div>`).join('')}</div>
       <div class="fqend">${fq.end}<strong></strong></div>
       <div class="fqopts">${fq.opts.map((o,i)=>`<button class="fqbtn" id="fo${i}" onclick="ansFQ(${i})">${o.l}</button>`).join('')}</div>
       <div class="fqresp" id="fqr"></div>
