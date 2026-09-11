@@ -1337,7 +1337,8 @@ export default function VendorDemo() {
   if (type === "Anchor") {
     try {
       const LS_KEY = "tendr_demo_dash_v1";
-      const lsGet = (k) => { try { const s = localStorage.getItem(`${LS_KEY}:${k}`); return s ? JSON.parse(s) : null; } catch { return null; } };
+      // Keys are now type-prefixed: tendr_demo_dash_v1:Anchor:profile
+      const lsGet = (k) => { try { const s = localStorage.getItem(`${LS_KEY}:Anchor:${k}`); return s ? JSON.parse(s) : null; } catch { return null; } };
       const lsProfile = lsGet("profile");
       const lsPkgs    = lsGet("pkgs");
       const lsReviews = lsGet("reviews");

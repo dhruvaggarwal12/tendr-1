@@ -1,4 +1,4 @@
-import { createBrowserRouter, Outlet, ScrollRestoration, Navigate, useLocation } from "react-router-dom";
+import { createBrowserRouter, Outlet, ScrollRestoration, Navigate, useLocation, useSearchParams } from "react-router-dom";
 import { lazy, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
@@ -191,6 +191,16 @@ const PartyPlaceProfile   = lazy(() => import("./pages/party-places/PartyPlacePr
 
 import LaunchLivePage from "./pages/LaunchLivePage";
 
+// Wrapper: force remount when ?type changes so hooks reinitialise with correct mock data
+function DemoDashboardKeyed() {
+  const [p] = useSearchParams();
+  return <DemoDashboard key={p.get("type") || "Anchor"} />;
+}
+function ServiceDemoKeyed() {
+  const [p] = useSearchParams();
+  return <ServiceDemoDashboard key={p.get("type") || "Caterer"} />;
+}
+
 const router = createBrowserRouter([
   {
     path: "/launch-live",
@@ -361,8 +371,8 @@ const router = createBrowserRouter([
       { path: "pricing",   element: <VendorPricing /> },
       { path: "login",     element: <VendorLogin /> },
       { path: "demo",      element: <VendorDemo /> },
-      { path: "demo-dashboard",    element: <DemoDashboard /> },
-      { path: "service-demo",      element: <ServiceDemoDashboard /> },
+      { path: "demo-dashboard",    element: <DemoDashboardKeyed /> },
+      { path: "service-demo",      element: <ServiceDemoKeyed /> },
       { path: "coordinator-dash",  element: <CoordinatorDemoDash /> },
     ],
   },

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const gold="#C47A2E",goldLt="#CCAB4A",ink="#1C0A04",cream="#FAF7F2",muted="#9B7450";
@@ -143,8 +143,10 @@ const TYPE_CONFIG = {
 // ════════════════════════════════════════════════════════════════════════════════
 export default function ServiceDemoDashboard() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user: authUser } = useSelector(s => s.auth);
-  const sType = authUser?.serviceType || "Caterer";
+  // URL param ?type=Decorator overrides auth — allows no-login demo browsing
+  const sType = searchParams.get("type") || authUser?.serviceType || "Caterer";
   const cfg = TYPE_CONFIG[sType] || TYPE_CONFIG.Caterer;
 
   const [tab, setTab] = useState("home");
@@ -224,12 +226,27 @@ export default function ServiceDemoDashboard() {
             );
           })}
         </div>
+        {/* Type switcher — browse all service types without login */}
+        <div style={{padding:"10px 16px",borderTop:"1px solid rgba(204,171,74,0.1)"}}>
+          <div style={{fontSize:9,fontWeight:700,letterSpacing:"0.14em",color:"rgba(204,171,74,0.4)",textTransform:"uppercase",marginBottom:7}}>Switch Type</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+            {Object.keys(PROFILES).map(t=>(
+              <button key={t} onClick={()=>setSearchParams({type:t})}
+                style={{padding:"3px 8px",borderRadius:100,fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:font,border:"1px solid",transition:"all 0.12s",
+                  background:sType===t?goldLt:"transparent",
+                  color:sType===t?ink:"rgba(204,171,74,0.5)",
+                  borderColor:sType===t?goldLt:"rgba(204,171,74,0.2)"}}>
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
         <div style={{padding:"16px 20px",borderTop:"1px solid rgba(204,171,74,0.1)"}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
             <div style={{width:34,height:34,borderRadius:"50%",background:`linear-gradient(135deg,${gold},${goldLt})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontFamily:serif,color:"#fff"}}>{(profile.name||"V")[0]}</div>
             <div><div style={{fontSize:12,fontWeight:700,color:"rgba(255,248,236,0.85)"}}>{profile.name}</div><div style={{fontSize:10,color:"rgba(255,248,236,0.35)"}}>{profile.type}</div></div>
           </div>
-          <button onClick={()=>navigate("/vendor/demo")} style={{width:"100%",padding:"6px 0",borderRadius:8,background:"rgba(204,171,74,0.12)",color:goldLt,fontSize:11,fontWeight:600,border:`1px solid rgba(204,171,74,0.2)`,cursor:"pointer",fontFamily:font}}>View Public Profile →</button>
+          <button onClick={()=>navigate(`/vendor/demo?type=${sType}`)} style={{width:"100%",padding:"6px 0",borderRadius:8,background:"rgba(204,171,74,0.12)",color:goldLt,fontSize:11,fontWeight:600,border:`1px solid rgba(204,171,74,0.2)`,cursor:"pointer",fontFamily:font}}>View Public Profile →</button>
         </div>
       </div>
     );

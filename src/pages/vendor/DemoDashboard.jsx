@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -297,23 +297,25 @@ function usePersisted(key, init) {
 export default function DemoDashboard() {
   const nav = useNavigate();
   const [tab, setTab] = useState("home");
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Auth first — needed to select type-specific initial data
   const { user: authUser, token: authToken } = useSelector(s => s.auth);
   const vendorId = authUser?._id || authUser?.id;
-  const sType = authUser?.serviceType || "Anchor";
+  // URL param ?type=DJ overrides auth serviceType — allows no-login demo browsing
+  const sType = searchParams.get("type") || authUser?.serviceType || "Anchor";
   const initProfile = PROFILES_BY_TYPE[sType] || PROFILES_BY_TYPE.Anchor;
   const initTendr   = TENDR_BY_TYPE[sType]    || TENDR_BY_TYPE.Anchor;
   const initPkgs    = PACKAGES_BY_TYPE[sType] || PACKAGES_BY_TYPE.Anchor;
   const initSetlist = SETLIST_BY_TYPE[sType]  || SETLIST_BY_TYPE.Anchor;
   const inventoryLabel = INVENTORY_LABELS[sType] || "Setlist";
 
-  // All key state is persisted to localStorage so changes survive refresh
-  const [profile, setProfile]   = usePersisted("profile", initProfile);
-  const [tendr,   setTendr]     = usePersisted("tendr",   initTendr);
-  const [reviews, setReviews]   = usePersisted("reviews", INIT_REVIEWS);
-  const [pkgs,    setPkgs]      = usePersisted("pkgs",    initPkgs);
-  const [setlist, setSetlist]   = usePersisted("setlist", initSetlist);
+  // Keys are type-prefixed so each performer type has its own isolated state
+  const [profile, setProfile]   = usePersisted(`${sType}:profile`, initProfile);
+  const [tendr,   setTendr]     = usePersisted(`${sType}:tendr`,   initTendr);
+  const [reviews, setReviews]   = usePersisted(`${sType}:reviews`, INIT_REVIEWS);
+  const [pkgs,    setPkgs]      = usePersisted(`${sType}:pkgs`,    initPkgs);
+  const [setlist, setSetlist]   = usePersisted(`${sType}:setlist`, initSetlist);
   const [outside]               = useState(INIT_OUTSIDE); // outside orders: read-only mock
 
   const [profEdit, setProfEdit]   = useState(false);
@@ -367,11 +369,11 @@ export default function DemoDashboard() {
 
   function handleReset() {
     lsClear();
-    setProfile(initProfile); lsSet("profile", initProfile);
-    setTendr(initTendr);     lsSet("tendr",   initTendr);
-    setReviews(INIT_REVIEWS); lsSet("reviews", INIT_REVIEWS);
-    setPkgs(initPkgs);       lsSet("pkgs",    initPkgs);
-    setSetlist(initSetlist); lsSet("setlist", initSetlist);
+    setProfile(initProfile); lsSet(`${sType}:profile`, initProfile);
+    setTendr(initTendr);     lsSet(`${sType}:tendr`,   initTendr);
+    setReviews(INIT_REVIEWS); lsSet(`${sType}:reviews`, INIT_REVIEWS);
+    setPkgs(initPkgs);       lsSet(`${sType}:pkgs`,    initPkgs);
+    setSetlist(initSetlist); lsSet(`${sType}:setlist`, initSetlist);
     setGigDraft({ genres: (initProfile.genres||[]).join(", "), showreel: initProfile.showreel, instagram: initProfile.instagram, youtube: initProfile.youtube, setlist: initProfile.setlist });
     setResetConfirm(false);
   }
@@ -417,6 +419,22 @@ export default function DemoDashboard() {
               </React.Fragment>
             );
           })}
+        </div>
+
+        {/* Type switcher — browse all performer types without login */}
+        <div style={{ padding: "10px 16px", borderTop: "1px solid rgba(204,171,74,0.1)" }}>
+          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", color: "rgba(204,171,74,0.4)", textTransform: "uppercase", marginBottom: 7 }}>Switch Type</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+            {GIG_PRO_TYPES.map(t => (
+              <button key={t} onClick={() => setSearchParams({ type: t })}
+                style={{ padding: "3px 8px", borderRadius: 100, fontSize: 10, fontWeight: 600, cursor: "pointer", fontFamily: font, border: "1px solid", transition: "all 0.12s",
+                  background: sType === t ? goldLt : "transparent",
+                  color: sType === t ? ink : "rgba(204,171,74,0.5)",
+                  borderColor: sType === t ? goldLt : "rgba(204,171,74,0.2)" }}>
+                {t}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Profile footer */}
