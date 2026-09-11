@@ -471,6 +471,16 @@ export default function DemoDashboard() {
               <div style={{ fontSize: 11, color: "rgba(255,248,236,0.45)" }}>{profile.type}</div>
             </div>
           </div>
+          <div style={{ display: "flex", gap: 7, marginBottom: 10 }}>
+            <button onClick={() => { nav(`/vendor/demo?type=${sType}`); setSidebarOpen(false); }} style={{ flex: 1, padding: "7px 0", borderRadius: 8, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              View Profile
+            </button>
+            <button onClick={() => { setProfDraft({ ...profile }); setProfEdit(true); setTab("profile"); setSidebarOpen(false); }} style={{ flex: 1, padding: "7px 0", borderRadius: 8, background: "rgba(204,171,74,0.12)", color: goldLt, fontSize: 11, fontWeight: 700, border: "1px solid rgba(204,171,74,0.25)", cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>
+              Edit Profile
+            </button>
+          </div>
           {resetConfirm ? (
             <div>
               <div style={{ fontSize: 11, color: "rgba(255,248,236,0.55)", marginBottom: 6, fontFamily: font }}>Reset all demo data?</div>
@@ -1203,14 +1213,14 @@ export default function DemoDashboard() {
               </button>
             </div>
             <div style={{ background: cream, borderRadius: 12, padding: "12px 16px", fontSize: 13, color: gold, fontFamily: "monospace", marginBottom: 12, wordBreak: "break-all" }}>
-              tendr.in/@{(gig.name || "vendor").toLowerCase().replace(/\s+/g, "")}
+              tendr.in/@{(profile.name || "vendor").toLowerCase().replace(/\s+/g, "")}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {[
-                { label: "Book Me", url: `tendr.in/book/${(gig.name || "vendor").toLowerCase().replace(/\s+/g, "")}` },
+                { label: "Book Me", url: `tendr.in/book/${(profile.name || "vendor").toLowerCase().replace(/\s+/g, "")}` },
                 { label: "View Portfolio", url: `tendr.in/vendor/demo?type=${sType}` },
-                { label: "Instagram", url: gig.instagram ? gig.instagram.replace("@", "instagram.com/") : "instagram.com/" },
-                { label: "YouTube", url: gig.youtube || "youtube.com/" },
+                { label: "Instagram", url: profile.instagram ? profile.instagram.replace("@", "instagram.com/") : "instagram.com/" },
+                { label: "YouTube", url: profile.youtube || "youtube.com/" },
               ].map((link, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: cream, borderRadius: 10, border: "1px solid rgba(196,122,46,0.1)" }}>
                   <span style={{ fontSize: 13.5, fontWeight: 600, color: ink }}>{link.label}</span>
@@ -1442,19 +1452,19 @@ export default function DemoDashboard() {
             {/* Profile row */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 20, textAlign: "center" }}>
               <div style={{ width: 64, height: 64, borderRadius: "50%", background: `linear-gradient(135deg,${gold},${goldLt})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, marginBottom: 10 }}>
-                {(gig.name || sType)[0]}
+                {(profile.name || sType)[0]}
               </div>
-              <div style={{ fontSize: 17, fontWeight: 700, color: ink }}>{gig.name || sType}</div>
-              <div style={{ fontSize: 12.5, color: muted }}>{gig.type || sType} · {gig.city || "India"}</div>
-              <div style={{ fontSize: 12, color: gold, marginTop: 4, fontFamily: "monospace" }}>tendr.in/@{(gig.name || "vendor").toLowerCase().replace(/\s+/g, "")}</div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: ink }}>{profile.name || sType}</div>
+              <div style={{ fontSize: 12.5, color: muted }}>{profile.type || sType} · {profile.city || "India"}</div>
+              <div style={{ fontSize: 12, color: gold, marginTop: 4, fontFamily: "monospace" }}>tendr.in/@{(profile.name || "vendor").toLowerCase().replace(/\s+/g, "")}</div>
             </div>
             {/* Links */}
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
               {[
-                { label: "📅 Book Me", url: `tendr.in/book/${(gig.name || "vendor").toLowerCase().replace(/\s+/g, "")}`, primary: true },
+                { label: "📅 Book Me", url: `tendr.in/book/${(profile.name || "vendor").toLowerCase().replace(/\s+/g, "")}`, primary: true },
                 { label: "🖼️ View Portfolio", url: `tendr.in/vendor/demo?type=${sType}`, primary: false },
-                { label: "📸 Instagram", url: gig.instagram ? gig.instagram.replace("@", "instagram.com/") : "instagram.com/", primary: false },
-                { label: "▶️ YouTube", url: gig.youtube || "youtube.com/", primary: false },
+                { label: "📸 Instagram", url: profile.instagram ? profile.instagram.replace("@", "instagram.com/") : "instagram.com/", primary: false },
+                { label: "▶️ YouTube", url: profile.youtube || "youtube.com/", primary: false },
               ].map((l, i) => (
                 <div key={i} style={{ padding: "12px 16px", borderRadius: 12, background: l.primary ? `linear-gradient(135deg,${gold},${goldLt})` : cream, border: l.primary ? "none" : "1px solid rgba(196,122,46,0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontSize: 13.5, fontWeight: 700, color: l.primary ? "#fff" : ink }}>{l.label}</span>
@@ -1464,8 +1474,8 @@ export default function DemoDashboard() {
             </div>
             {/* Share buttons */}
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => { navigator.clipboard.writeText(`Check out my tendr link hub: tendr.in/@${(gig.name || "vendor").toLowerCase().replace(/\s+/g, "")}`); }} style={{ flex: 1, padding: "11px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Copy Link</button>
-              <button onClick={() => { window.open(`https://wa.me/?text=Check%20out%20my%20tendr%20profile%3A%20tendr.in%2F%40${(gig.name || "vendor").toLowerCase().replace(/\s+/g, "")}`); }} style={{ flex: 1, padding: "11px", borderRadius: 100, background: "#25D366", color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>WhatsApp</button>
+              <button onClick={() => { navigator.clipboard.writeText(`Check out my tendr link hub: tendr.in/@${(profile.name || "vendor").toLowerCase().replace(/\s+/g, "")}`); }} style={{ flex: 1, padding: "11px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Copy Link</button>
+              <button onClick={() => { window.open(`https://wa.me/?text=Check%20out%20my%20tendr%20profile%3A%20tendr.in%2F%40${(profile.name || "vendor").toLowerCase().replace(/\s+/g, "")}`); }} style={{ flex: 1, padding: "11px", borderRadius: 100, background: "#25D366", color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>WhatsApp</button>
               <button onClick={() => setLinkHubPreview(false)} style={{ padding: "11px 16px", borderRadius: 100, background: cream, border: "none", color: muted, fontSize: 13, cursor: "pointer", fontFamily: font }}>✕</button>
             </div>
           </div>
