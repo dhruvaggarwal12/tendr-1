@@ -54,8 +54,11 @@ export default function VendorLogin() {
       dispatch({ type: 'auth/login/fulfilled', payload: { consumer: userObj, token } });
 
       const GIG_PRO = ['DJ','Anchor','Emcee/Host','Band','Singer','Musician','Performer','Stand-up Comedian','Magician','AV Setup','Choreographer'];
+      const SERVICE_DEMO = ['Caterer','Decorator','Photographer'];
       const dest = GIG_PRO.includes(userObj.serviceType)
         ? '/vendor/demo-dashboard'
+        : SERVICE_DEMO.includes(userObj.serviceType)
+        ? '/vendor/service-demo'
         : '/vendor/dashboard';
       navigate(dest);
     } catch (err) {

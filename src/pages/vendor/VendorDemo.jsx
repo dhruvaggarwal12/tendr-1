@@ -1399,6 +1399,42 @@ export default function VendorDemo() {
       d = merged;
     } catch {}
   }
+  // Overlay localStorage edits from ServiceDemoDashboard for service vendor types
+  if (["Caterer", "Decorator", "Photographer"].includes(type)) {
+    try {
+      const pubProfile = JSON.parse(localStorage.getItem(`tendr_pub_demo_${type}`) || "null");
+      const savedPkgs  = JSON.parse(localStorage.getItem(`sdemo_${type}_packages`) || "null");
+      const base = DEMOS[type];
+      const merged = { ...base };
+      if (pubProfile) {
+        if (pubProfile.name)   merged.name    = pubProfile.name;
+        if (pubProfile.bio)    merged.bio     = pubProfile.bio;
+        if (pubProfile.city)   merged.city    = pubProfile.city;
+        if (pubProfile.rating) merged.rating  = pubProfile.rating;
+        merged.social = {
+          ...base.social,
+          instagram: pubProfile.instagram || base.social?.instagram || "",
+          website:   pubProfile.website   || base.social?.website   || "",
+        };
+      }
+      if (savedPkgs?.length) {
+        const PKG_COLORS  = ["#F0E8DC", ink, "#2C1208"];
+        const PKG_ACCENTS = [gold, goldLt, goldLt];
+        merged.packages = savedPkgs.map((p, i) => ({
+          name:    p.name,
+          price:   typeof p.price === "number" ? "₹" + Number(p.price).toLocaleString("en-IN") : String(p.price),
+          unit:    p.unit,
+          color:   PKG_COLORS[i]  ?? "#2C1208",
+          accent:  PKG_ACCENTS[i] ?? goldLt,
+          badge:   p.badge || undefined,
+          items:   typeof p.items === "string" ? p.items.split("\n").filter(s => s.trim()) : (p.items || []),
+          bestFor: p.bestFor || "",
+        }));
+      }
+      d = merged;
+    } catch {}
+  }
+
   const isGigPro = GIG_PROS.includes(type);
 
   const handleTypeChange = (t) => { setType(t); setTab("Portfolio"); };

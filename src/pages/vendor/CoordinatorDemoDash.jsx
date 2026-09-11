@@ -48,6 +48,11 @@ const VENDORS = [
   { id: "V12", name: "Goa Travels & Transfers",cat: "Transport",    city: "Goa",    rating: 4.7, events: 9,  status: "Active",    phone: "+91 98001 22444" },
 ];
 
+// ── LocalStorage helpers ───────────────────────────────────────────────────────
+const LS = (k, fb) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch { return fb; } };
+const LSSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+const COORD_KEY = "tendr_coord_transfers";
+
 // ── Master checklist template ──────────────────────────────────────────────────
 const CHECKLIST_PHASES = [
   { phase: "6 Months Before", items: [
@@ -136,6 +141,7 @@ const NAV = [
   { key: "money",     group: "MANAGE",    label: "Budget",     icon: "M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" },
   { key: "reviews",   group: "MANAGE",    label: "Reviews",    icon: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" },
   { key: "profile",   group: "MANAGE",    label: "Profile",    icon: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" },
+  { key: "transfers", group: "INBOX",     label: "Transfers",  icon: "M16 3h5m0 0v5m0-5l-6 6M5 3a2 2 0 0 0-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 0 0 2-2v-3.28a1 1 0 0 0-.684-.948l-4.493-1.498a1 1 0 0 0-1.21.502l-1.13 2.257a11.042 11.042 0 0 1-5.516-5.517l2.257-1.128a1 1 0 0 0 .502-1.21L9.228 3.683A1 1 0 0 0 8.279 3H5z" },
 ];
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -177,6 +183,23 @@ export default function CoordinatorDemoDash() {
   const [replyText, setReplyText] = useState("");
   const [calMonth] = useState({ y: 2026, m: 9 });
   const [moneyView, setMoneyView] = useState("chart");
+  const [transfers, setTransfers] = useState(() => LS(COORD_KEY, []));
+  const [toast, setToast] = useState(null);
+
+  const pendingTransfers = transfers.filter(t => t.coordStatus === "Pending");
+
+  function showToast(msg) { setToast(msg); setTimeout(() => setToast(null), 3000); }
+
+  function acceptTransfer(id, vendorType) {
+    const updated = transfers.map(t => (t.id === id && t.vendorType === vendorType) ? { ...t, coordStatus: "Accepted" } : t);
+    setTransfers(updated); LSSet(COORD_KEY, updated);
+    showToast("Booking accepted — added to your events");
+  }
+  function declineTransfer(id, vendorType) {
+    const updated = transfers.map(t => (t.id === id && t.vendorType === vendorType) ? { ...t, coordStatus: "Declined" } : t);
+    setTransfers(updated); LSSet(COORD_KEY, updated);
+    showToast("Booking declined");
+  }
 
   const totalRevenue = MONTHLY.reduce((s, m) => s + m.revenue, 0);
   const totalExpenses = MONTHLY.reduce((s, m) => s + m.expenses, 0);
@@ -226,6 +249,9 @@ export default function CoordinatorDemoDash() {
               <button key={item.key} onClick={() => setNav(item.key)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 20px", background: nav === item.key ? "rgba(196,122,46,0.18)" : "none", border: "none", cursor: "pointer", color: nav === item.key ? goldLt : "rgba(255,248,236,0.6)", fontSize: 13, fontWeight: nav === item.key ? 700 : 500, fontFamily: font, textAlign: "left", borderLeft: nav === item.key ? `2.5px solid ${gold}` : "2.5px solid transparent" }}>
                 <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d={item.icon} /></svg>
                 {item.label}
+                {item.key === "transfers" && pendingTransfers.length > 0 && (
+                  <span style={{ marginLeft: "auto", background: "#DC2626", color: "#fff", borderRadius: 100, padding: "1px 7px", fontSize: 10, fontWeight: 800 }}>{pendingTransfers.length}</span>
+                )}
               </button>
             ))}
           </div>
@@ -667,8 +693,72 @@ export default function CoordinatorDemoDash() {
             </div>
           )}
 
+          {/* ── TRANSFERS ──────────────────────────────────────────────────── */}
+          {nav === "transfers" && (
+            <div>
+              <div style={{ marginBottom: 22 }}>
+                <h2 style={{ fontFamily: serif, fontSize: "1.5rem", color: ink, fontWeight: 400, marginBottom: 4 }}>Vendor Transfers</h2>
+                <p style={{ fontSize: 13, color: muted }}>Bookings sent to you from service vendors for coordination. Accept to add them to your events.</p>
+              </div>
+
+              {transfers.length === 0 ? (
+                <div style={{ background: "#fff", borderRadius: 16, padding: "48px 28px", textAlign: "center", border: "1px solid rgba(196,122,46,0.1)" }}>
+                  <div style={{ fontSize: 36, marginBottom: 12 }}>📬</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: ink, marginBottom: 6 }}>No transfers yet</div>
+                  <div style={{ fontSize: 13, color: muted }}>When a vendor transfers a booking to you, it will appear here. Try going to a <strong>Service Vendor Dashboard</strong> and clicking "Transfer to Coordinator" on a booking.</div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  {transfers.map((t, i) => {
+                    const isPending = t.coordStatus === "Pending";
+                    const isAccepted = t.coordStatus === "Accepted";
+                    const statusBg = isPending ? "#FEF9C3" : isAccepted ? "#F0FDF4" : "#FEF2F2";
+                    const statusColor = isPending ? "#CA8A04" : isAccepted ? "#16A34A" : "#DC2626";
+                    return (
+                      <div key={`${t.id}-${t.vendorType}-${i}`} style={{ background: "#fff", borderRadius: 16, padding: "20px 22px", border: "1px solid rgba(196,122,46,0.1)", boxShadow: "0 2px 8px rgba(28,10,4,0.04)" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
+                          <div style={{ flex: 1, minWidth: 220 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                              <span style={{ background: statusBg, color: statusColor, borderRadius: 100, padding: "2px 10px", fontSize: 11, fontWeight: 700 }}>{t.coordStatus}</span>
+                              <span style={{ fontSize: 11, color: muted, background: "rgba(196,122,46,0.08)", borderRadius: 100, padding: "2px 8px" }}>{t.vendorType}</span>
+                            </div>
+                            <div style={{ fontSize: 15, fontWeight: 700, color: ink, marginBottom: 3 }}>{t.client}</div>
+                            <div style={{ fontSize: 13, color: muted, marginBottom: 3 }}>{t.event}</div>
+                            <div style={{ fontSize: 12, color: muted }}>{t.date} · {t.venue || "—"}</div>
+                            {t.note && <div style={{ fontSize: 12, color: muted, marginTop: 6, fontStyle: "italic" }}>"{t.note}"</div>}
+                            <div style={{ fontSize: 11, color: muted, marginTop: 6 }}>From: <strong>{t.vendorName}</strong> · Transferred {t.transferredAt ? new Date(t.transferredAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "—"}</div>
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+                            <div style={{ fontSize: 18, fontWeight: 800, color: ink }}>
+                              ₹{Number(t.amount || 0).toLocaleString("en-IN")}
+                            </div>
+                            {isPending && (
+                              <div style={{ display: "flex", gap: 8 }}>
+                                <button onClick={() => acceptTransfer(t.id, t.vendorType)} style={{ padding: "7px 16px", borderRadius: 100, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Accept</button>
+                                <button onClick={() => declineTransfer(t.id, t.vendorType)} style={{ padding: "7px 16px", borderRadius: 100, background: "#FEF2F2", border: "1.5px solid #FECACA", color: "#DC2626", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Decline</button>
+                              </div>
+                            )}
+                            {isAccepted && <div style={{ fontSize: 12, color: "#16A34A", fontWeight: 600 }}>✓ Added to your events</div>}
+                            {!isPending && !isAccepted && <div style={{ fontSize: 12, color: "#DC2626", fontWeight: 600 }}>✗ Declined</div>}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
       </div>
+
+      {/* Toast */}
+      {toast && (
+        <div style={{ position: "fixed", bottom: 24, right: 24, background: ink, color: "#FAF7F2", borderRadius: 12, padding: "12px 20px", fontSize: 13, fontWeight: 600, zIndex: 999, boxShadow: "0 8px 24px rgba(0,0,0,0.2)", fontFamily: font }}>
+          {toast}
+        </div>
+      )}
     </div>
   );
 }
