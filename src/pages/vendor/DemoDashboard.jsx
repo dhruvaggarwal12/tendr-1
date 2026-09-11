@@ -404,7 +404,7 @@ export default function DemoDashboard() {
   function Sidebar() {
     let prevGroup = null;
     return (
-      <div style={{ width: 214, background: ink, display: "flex", flexDirection: "column", minHeight: "100vh", flexShrink: 0 }}>
+      <div style={{ width: 214, background: ink, display: "flex", flexDirection: "column", height: "100%", flexShrink: 0 }}>
         {/* Logo + close button (close only visible on mobile) */}
         <div style={{ padding: "22px 20px 16px", borderBottom: "1px solid rgba(204,171,74,0.15)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
