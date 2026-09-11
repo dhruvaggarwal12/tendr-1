@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const gold   = "#C47A2E";
 const goldLt = "#CCAB4A";
@@ -1551,7 +1551,9 @@ function StandardProfile({ d, tab, setTab }) {
 // ── Main dispatcher ───────────────────────────────────────────────────────────
 export default function VendorDemo() {
   const navigate = useNavigate();
-  const [type, setType]     = useState("Anchor");
+  const [searchParams] = useSearchParams();
+  const urlType = searchParams.get("type") || "Anchor";
+  const [type, setType]     = useState(urlType);
   const [tab, setTab]       = useState("Portfolio");
   const [showBook, setShowBook] = useState(false);
   // Merge localStorage edits (from DemoDashboard) into any GigPro profile
