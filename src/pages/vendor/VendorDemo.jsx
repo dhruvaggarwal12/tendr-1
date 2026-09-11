@@ -11,7 +11,32 @@ const font   = "'Outfit', sans-serif";
 const serif  = "'Cormorant Garamond', Georgia, serif";
 const dance  = "'Dancing Script', cursive";
 
-const GIG_PROS = ["Anchor", "DJ", "Band", "Coordinator", "Choreographer"];
+const GIG_PROS = ["Anchor", "Band", "Coordinator", "Choreographer"];
+const SERVICE_VENDORS = ["Caterer", "Decorator", "Photographer", "DJ"];
+
+const CATEGORY_SECTIONS = {
+  Caterer: [
+    { key: "cuisine",           title: "Cuisine Types" },
+    { key: "serviceStyle",      title: "Service Style" },
+    { key: "menuType",          title: "Menu Type" },
+    { key: "beveragesIncluded", title: "Beverages Included", bool: true },
+  ],
+  Decorator: [
+    { key: "typesOfDecoration", title: "Types of Decoration" },
+    { key: "venueCoverage",     title: "Venue Coverage" },
+  ],
+  Photographer: [
+    { key: "services",          title: "Services Offered" },
+    { key: "photographyType",   title: "Photography Style" },
+    { key: "hoursIncluded",     title: "Hours Included", single: true },
+    { key: "editingTimeDays",   title: "Editing Time (days)", single: true },
+  ],
+  DJ: [
+    { key: "setup",             title: "Setup Type" },
+    { key: "lightsIncluded",    title: "Lights Included", bool: true },
+    { key: "eventTypes",        title: "Event Types" },
+  ],
+};
 
 const DEMOS = {
   Decorator: {
@@ -25,6 +50,8 @@ const DEMOS = {
     bio: "We are a full-service decoration studio specialising in luxury floral arrangements, themed draping, balloon art, and ambient lighting for weddings, corporate events, and intimate celebrations. Every setup is custom-designed — no two events look alike. Our team of 14 professional decorators has transformed 380+ venues across Delhi NCR.",
     specialties: ["Floral Arch & Mandap","Balloon Canopy","LED Backdrop","Draping & Valance","Table Centrepieces","Fairy Light Ceiling","Photobooth Setup","Stage Décor"],
     eventTypes: ["Wedding","Engagement","Birthday","Baby Shower","Corporate","Anniversary","Sangeet"],
+    typesOfDecoration: ["Floral Arch","Balloon Canopy","LED Backdrop","Draping & Valance","Fairy Light Ceiling","Stage Décor"],
+    venueCoverage: ["Indoor","Outdoor","Farmhouse","Banquet Hall","Rooftop"],
     genres: [], instruments: [], performingStyle: [],
     social: { instagram: "@bloomsandbeyond", youtube: "", website: "bloomsandbeyond.in" },
     showreel: "",
@@ -63,6 +90,10 @@ const DEMOS = {
     bio: "Kabir & team are candid wedding and portrait photographers based in Noida. With 6 years of experience and 220+ events, we specialise in natural-light storytelling — capturing the real laughs, the tears, the stolen glances. We shoot on Sony mirrorless + drone for aerial coverage. Delivery: 400 edited photos in 21 days.",
     specialties: ["Candid Wedding","Pre-Wedding Shoot","Maternity & Newborn","Corporate Headshots","Drone Coverage","Same-Day Edit Reel"],
     eventTypes: ["Wedding","Pre-Wedding","Engagement","Birthday","Baby Shower","Corporate"],
+    services: ["Wedding Photography","Pre-Wedding Shoot","Drone Coverage","Maternity","Corporate Headshots"],
+    photographyType: ["Candid","Traditional","Cinematic"],
+    hoursIncluded: 10,
+    editingTimeDays: 21,
     genres: [], instruments: [], performingStyle: [],
     social: { instagram: "@framesbyKabir", youtube: "Frames by Kabir", website: "" },
     showreel: "",
@@ -104,6 +135,8 @@ const DEMOS = {
     genres: ["Bollywood","EDM","Sufi","Punjabi","Hip-Hop","House"],
     instruments: ["Pioneer CDJ-3000","Pioneer DJM-A9 Mixer","Pioneer RMX-1000"],
     performingStyle: ["Indoor","Outdoor","Wedding","Corporate","Club"],
+    setup: ["Pioneer CDJ-3000 Deck","JBL Line-Array Speakers","Full Stage Lighting","Fog Machine","LED Dance Floor"],
+    lightsIncluded: true,
     social: { instagram: "@djanmolsingh_official", youtube: "DJ Anmol Live", website: "" },
     showreel: "youtube.com/djanmol-showreel",
     sellingPoints: [
@@ -159,6 +192,10 @@ const DEMOS = {
     bio: "Royal Feast is a Delhi-based premium catering company with 12 years of experience and 560+ events served. We specialise in multi-cuisine buffets, live counters, plated dinners, and corporate lunch boxes. Our kitchen is FSSAI certified and we source fresh local produce daily. Min. order: 50 pax.",
     specialties: ["Multi-Cuisine Buffet","Live Counters (Chaat, BBQ, Pasta)","North Indian Thali","Continental Breakfast","Corporate Lunch Boxes","Dessert Station","Custom Wedding Menu","Jain & Vegan Options"],
     eventTypes: ["Wedding","Birthday","Corporate","Baby Shower","Pooja","Get-together","Office Lunch"],
+    cuisine: ["North Indian","Continental","Pan-Asian","Mughlai","Jain Options"],
+    serviceStyle: ["Live Counters","Buffet","Plated Dinner","Corporate Box"],
+    menuType: ["Veg","Non-Veg","Mixed","Jain"],
+    beveragesIncluded: false,
     genres: [], instruments: [], performingStyle: [],
     social: { instagram: "@royalfeastcaterers", youtube: "", website: "royalfeastcaterers.com" },
     showreel: "",
@@ -1209,7 +1246,192 @@ function GigProProfile({ d, tab, setTab, showBook, setShowBook }) {
   );
 }
 
-// ── StandardProfile — existing card layout for service vendors ────────────────
+// ── ServiceVendorProfile — gallery-first layout matching VendorDetails.jsx ────
+function ServiceVendorProfile({ d, tab, setTab }) {
+  const [galleryIdx, setGalleryIdx] = React.useState(0);
+  const galleryRef = React.useRef(null);
+
+  const sections = CATEGORY_SECTIONS[d.serviceType] || [];
+  const gallerySeeds = (d.portfolio || []).slice(0, 5).map((p, i) =>
+    encodeURIComponent((d.serviceType + "-gallery-" + i).toLowerCase().replace(/\s+/g, "-"))
+  );
+  if (gallerySeeds.length === 0) gallerySeeds.push(encodeURIComponent(d.serviceType + "-cover"));
+
+  const scrollGallery = (dir) => {
+    if (!galleryRef.current) return;
+    const w = galleryRef.current.offsetWidth * 0.6;
+    galleryRef.current.scrollBy({ left: dir * w, behavior: "smooth" });
+    setGalleryIdx(i => Math.max(0, Math.min(gallerySeeds.length - 1, i + dir)));
+  };
+
+  const renderAttrValue = (sec) => {
+    const val = d[sec.key];
+    if (sec.bool) {
+      return (
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px", borderRadius: 100, fontSize: 12, fontWeight: 700, background: val ? "rgba(22,163,74,0.1)" : "rgba(196,122,46,0.08)", color: val ? "#16A34A" : muted }}>
+          {val ? "✓ Yes" : "✕ No"}
+        </span>
+      );
+    }
+    if (sec.single) {
+      return val != null ? (
+        <span style={{ padding: "3px 10px", borderRadius: 100, fontSize: 12, fontWeight: 700, background: "rgba(196,122,46,0.1)", color: gold }}>{val}</span>
+      ) : null;
+    }
+    if (Array.isArray(val) && val.length > 0) {
+      return (
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {val.map(v => <span key={v} style={{ padding: "3px 10px", borderRadius: 100, fontSize: 12, fontWeight: 600, background: "rgba(196,122,46,0.08)", color: muted }}>{v}</span>)}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const visibleTabs = TABS.filter(t => t !== "Performance" || !!d.performance);
+
+  return (
+    <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 20px 48px" }}>
+      {/* Vendor identity */}
+      <div style={{ padding: "28px 0 16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, padding: "4px 14px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", letterSpacing: "0.06em", textTransform: "uppercase" }}>{d.serviceType}</span>
+          {d.verified && (
+            <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 11px", borderRadius: 100, background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0", display: "inline-flex", alignItems: "center", gap: 4 }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Verified
+            </span>
+          )}
+        </div>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 16, flexWrap: "wrap", marginBottom: 10 }}>
+          <h1 style={{ fontFamily: serif, fontSize: "clamp(1.8rem,4vw,2.6rem)", fontWeight: 300, color: ink, margin: 0, lineHeight: 1.1, letterSpacing: "0.01em", flex: 1 }}>{d.name}</h1>
+          <div style={{ display: "flex", gap: 10, flexShrink: 0, paddingTop: 6 }}>
+            <button style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 28px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: font, boxShadow: `0 4px 18px rgba(196,122,46,0.35)` }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Book Now
+            </button>
+            <button style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "12px 20px", borderRadius: 100, background: "#fff", color: ink, fontSize: 14, fontWeight: 600, border: `1.5px solid rgba(28,10,4,0.14)`, cursor: "pointer", fontFamily: font }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Chat
+            </button>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 14, color: muted }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            {d.city}
+          </span>
+          {d.years != null && <span style={{ fontSize: 14, color: muted }}>🗓️ {d.years} yrs in business</span>}
+          <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 700, color: "#15803d", background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: 100, padding: "3px 10px" }}>✓ Verified</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 14, color: muted }}>
+            <Stars rating={d.rating} size={13} /> {d.rating} ({d.reviews} reviews)
+          </span>
+        </div>
+      </div>
+
+      {/* Horizontal gallery */}
+      <div style={{ position: "relative", marginBottom: 32 }}>
+        {gallerySeeds.length > 1 && (
+          <button onClick={() => scrollGallery(-1)} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", zIndex: 10, width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.92)", border: "1.5px solid rgba(196,122,46,0.2)", boxShadow: "0 2px 10px rgba(0,0,0,0.14)", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", color: gold, fontWeight: 700 }}>‹</button>
+        )}
+        <div ref={galleryRef} style={{ display: "flex", gap: 10, overflowX: "auto", scrollSnapType: "x mandatory", borderRadius: 20, scrollbarWidth: "none", msOverflowStyle: "none", cursor: "grab" }}>
+          {gallerySeeds.map((seed, idx) => (
+            <div key={idx} style={{ flex: "0 0 auto", width: gallerySeeds.length === 1 ? "100%" : "calc(60% - 4px)", minWidth: gallerySeeds.length === 1 ? "100%" : 260, height: 300, borderRadius: 16, overflow: "hidden", scrollSnapAlign: "start" }}>
+              <img src={`https://picsum.photos/seed/${seed}/800/600`} alt={`${d.name} photo ${idx + 1}`} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            </div>
+          ))}
+        </div>
+        {gallerySeeds.length > 1 && (
+          <button onClick={() => scrollGallery(1)} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", zIndex: 10, width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.92)", border: "1.5px solid rgba(196,122,46,0.2)", boxShadow: "0 2px 10px rgba(0,0,0,0.14)", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", color: gold, fontWeight: 700 }}>›</button>
+        )}
+        {gallerySeeds.length > 1 && (
+          <div style={{ display: "flex", justifyContent: "center", gap: 5, marginTop: 10 }}>
+            {gallerySeeds.map((_, i) => (
+              <div key={i} style={{ width: i === galleryIdx ? 18 : 6, height: 5, borderRadius: 100, background: i === galleryIdx ? gold : "rgba(196,122,46,0.2)", transition: "width 0.2s" }} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Category-specific attributes */}
+      {sections.length > 0 && (
+        <div style={{ background: "#fff", borderRadius: 16, border: "1px solid rgba(196,122,46,0.12)", padding: "20px 24px", marginBottom: 28, boxShadow: "0 2px 12px rgba(28,10,4,0.05)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "18px 28px" }}>
+            {sections.map(sec => {
+              const rendered = renderAttrValue(sec);
+              if (!rendered) return null;
+              return (
+                <div key={sec.key}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{sec.title}</div>
+                  {rendered}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Stats bar */}
+      <div style={{ display: "flex", gap: 0, background: "#fff", borderRadius: 16, border: "1px solid rgba(196,122,46,0.12)", overflow: "hidden", marginBottom: 24, boxShadow: "0 2px 12px rgba(28,10,4,0.06)", flexWrap: "wrap" }}>
+        {[
+          { label: "Events Done", value: `${d.events}+` },
+          { label: "Years Active", value: d.years },
+          { label: "Team Size", value: d.teamSize },
+          { label: "Response Time", value: d.responseTime },
+          { label: "Rating", value: d.rating },
+        ].map((s, i) => (
+          <div key={i} style={{ flex: 1, minWidth: 80, padding: "14px 12px", textAlign: "center", borderRight: i < 4 ? "1px solid rgba(196,122,46,0.1)" : "none" }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: ink, fontFamily: font }}>{s.value}</div>
+            <div style={{ fontSize: 10.5, color: muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 2 }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: "flex", gap: 0, borderBottom: "1px solid rgba(196,122,46,0.12)", marginBottom: 28, background: "#fff", borderRadius: "12px 12px 0 0", overflow: "hidden", boxShadow: "0 2px 8px rgba(28,10,4,0.04)", overflowX: "auto" }}>
+        {visibleTabs.map(t => (
+          <button key={t} className={`vd-tab${tab === t ? " active" : ""}`} onClick={() => setTab(t)}>{t}</button>
+        ))}
+      </div>
+
+      {tab === "Portfolio" && (
+        <div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
+            {d.eventTypes.map(e => <span key={e} style={{ display: "inline-flex", padding: "3px 9px", borderRadius: 100, fontSize: 10.5, fontWeight: 700, background: "rgba(196,122,46,0.1)", color: gold }}>{e}</span>)}
+          </div>
+          <div style={{ columns: "3 180px", columnGap: 10 }}>
+            {d.portfolio.map((p, i) => {
+              const seed = encodeURIComponent((d.serviceType + "-" + p.label).toLowerCase().replace(/\s+/g, "-"));
+              const ar = i % 3 === 0 ? "3/4" : "4/3";
+              return (
+                <div key={i} style={{ borderRadius: 14, overflow: "hidden", breakInsideAvoid: "column", marginBottom: 10, position: "relative", cursor: "pointer", boxShadow: "0 2px 10px rgba(28,10,4,0.1)" }}>
+                  <div style={{ aspectRatio: ar, position: "relative", overflow: "hidden" }}>
+                    <img src={`https://picsum.photos/seed/${seed}/480/640`} alt={p.label} loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,4,2,0.78) 0%, rgba(10,4,2,0.18) 55%, transparent 100%)" }} />
+                    <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 14px" }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 700, color: "#FFF8EC", marginBottom: 4, fontFamily: serif }}>{p.label}</div>
+                      <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                        {p.tags.map(t => <span key={t} style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,248,236,0.85)", background: "rgba(0,0,0,0.32)", borderRadius: 100, padding: "2px 7px" }}>{t}</span>)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <p style={{ textAlign: "center", fontSize: 12.5, color: muted, marginTop: 20, fontStyle: "italic" }}>
+            Representative portfolio samples. Actual work photos appear when vendors upload their portfolio.
+          </p>
+        </div>
+      )}
+      {tab === "Packages"  && <PackagesContent d={d} />}
+      {tab === "About"     && <AboutContent d={d} />}
+      {tab === "Reviews"   && <ReviewsContent d={d} />}
+    </div>
+  );
+}
+
+// ── StandardProfile — existing card layout for remaining vendor types ─────────
 function StandardProfile({ d, tab, setTab }) {
   const visibleTabs = TABS.filter(t => t !== "Performance" || !!d.performance);
 
@@ -1332,38 +1554,37 @@ export default function VendorDemo() {
   const [type, setType]     = useState("Anchor");
   const [tab, setTab]       = useState("Portfolio");
   const [showBook, setShowBook] = useState(false);
-  // Merge localStorage edits (from DemoDashboard) into the Anchor profile
+  // Merge localStorage edits (from DemoDashboard) into any GigPro profile
   let d = DEMOS[type];
-  if (type === "Anchor") {
+  if (GIG_PROS.includes(type) && DEMOS[type]) {
     try {
       const LS_KEY = "tendr_demo_dash_v1";
-      // Keys are now type-prefixed: tendr_demo_dash_v1:Anchor:profile
-      const lsGet = (k) => { try { const s = localStorage.getItem(`${LS_KEY}:Anchor:${k}`); return s ? JSON.parse(s) : null; } catch { return null; } };
+      const lsGet = (k) => { try { const s = localStorage.getItem(`${LS_KEY}:${type}:${k}`); return s ? JSON.parse(s) : null; } catch { return null; } };
       const lsProfile = lsGet("profile");
       const lsPkgs    = lsGet("pkgs");
       const lsReviews = lsGet("reviews");
       const lsSetlist = lsGet("setlist");
 
-      const base = DEMOS.Anchor;
+      const base = DEMOS[type];
       const merged = { ...base };
 
       if (lsProfile) {
-        if (lsProfile.name)  merged.name   = lsProfile.name;
-        if (lsProfile.bio)   merged.bio    = lsProfile.bio;
-        if (lsProfile.city)  merged.city   = lsProfile.city;
+        if (lsProfile.name)   merged.name   = lsProfile.name;
+        if (lsProfile.bio)    merged.bio    = lsProfile.bio;
+        if (lsProfile.city)   merged.city   = lsProfile.city;
         if (lsProfile.rating) merged.rating = lsProfile.rating;
         if (lsProfile.genres?.length) merged.genres = lsProfile.genres;
         merged.social = {
-          ...base.social,
-          instagram: lsProfile.instagram || base.social.instagram,
-          youtube:   lsProfile.youtube   || base.social.youtube,
+          ...(base.social || {}),
+          instagram: lsProfile.instagram || base.social?.instagram || "",
+          youtube:   lsProfile.youtube   || base.social?.youtube   || "",
         };
         merged.performance = {
-          ...base.performance,
-          genres:    lsProfile.genres?.length ? lsProfile.genres : base.performance.genres,
-          instagram: lsProfile.instagram || base.performance.instagram,
-          youtube:   lsProfile.youtube   || base.performance.youtube,
-          showreel:  lsProfile.showreel  || base.performance.showreel,
+          ...(base.performance || {}),
+          genres:    lsProfile.genres?.length ? lsProfile.genres : base.performance?.genres,
+          instagram: lsProfile.instagram || base.performance?.instagram || "",
+          youtube:   lsProfile.youtube   || base.performance?.youtube   || "",
+          showreel:  lsProfile.showreel  || base.performance?.showreel  || "",
         };
       }
 
@@ -1401,7 +1622,7 @@ export default function VendorDemo() {
     } catch {}
   }
   // Overlay localStorage edits from ServiceDemoDashboard for service vendor types
-  if (["Caterer", "Decorator", "Photographer"].includes(type)) {
+  if (SERVICE_VENDORS.includes(type)) {
     try {
       const pubProfile = JSON.parse(localStorage.getItem(`tendr_pub_demo_${type}`) || "null");
       const savedPkgs  = JSON.parse(localStorage.getItem(`sdemo_${type}_packages`) || "null");
@@ -1437,6 +1658,7 @@ export default function VendorDemo() {
   }
 
   const isGigPro = GIG_PROS.includes(type);
+  const isServiceVendor = SERVICE_VENDORS.includes(type);
 
   const handleTypeChange = (t) => { setType(t); setTab("Portfolio"); };
 
@@ -1521,7 +1743,9 @@ export default function VendorDemo() {
       {/* Profile */}
       {isGigPro
         ? <GigProProfile d={d} tab={tab} setTab={setTab} showBook={showBook} setShowBook={setShowBook} />
-        : <StandardProfile d={d} tab={tab} setTab={setTab} />
+        : isServiceVendor
+          ? <ServiceVendorProfile d={d} tab={tab} setTab={setTab} />
+          : <StandardProfile d={d} tab={tab} setTab={setTab} />
       }
     </div>
   );

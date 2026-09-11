@@ -233,6 +233,8 @@ const NAV = [
   { key: "home",        group: "EVENTS",   label: "Home",        icon: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" },
   { key: "work",        group: "EVENTS",   label: "Work",        icon: "M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" },
   { key: "money",       group: "MONEY",    label: "Money",       icon: "M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" },
+  { key: "invoice",     group: "MONEY",    label: "Invoices",    icon: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8" },
+  { key: "contract",    group: "MONEY",    label: "Contracts",   icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z" },
   { key: "packages",    group: "MANAGE",   label: "Packages",    icon: "M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" },
   { key: "reviews",     group: "MANAGE",   label: "Reviews",     icon: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" },
   { key: "inventory",   group: "MANAGE",   label: "Setlist",     icon: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
@@ -330,6 +332,22 @@ export default function DemoDashboard() {
   const [gigSaved, setGigSaved]   = useState(false);
   const [dispModal, setDispModal] = useState(null);
   const [resetConfirm, setResetConfirm] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [outsideModal, setOutsideModal] = useState(false);
+  const [outsideDraft, setOutsideDraft] = useState({ client: "", event: "", date: "", amount: "", status: "Upcoming" });
+  const [outsideGigs, setOutsideGigs] = useState(INIT_OUTSIDE);
+  const [invoiceModal, setInvoiceModal] = useState(false);
+  const [invoiceDraft, setInvoiceDraft] = useState({ client: "", event: "", date: "", amount: "", notes: "" });
+  const [invoices, setInvoices] = usePersisted(`${sType}:invoices`, []);
+  const [linkHubPreview, setLinkHubPreview] = useState(false);
+  const [profileCopied, setProfileCopied] = useState(false);
+  const today = new Date();
+  const [calYear,  setCalYear]  = useState(today.getFullYear());
+  const [calMonth, setCalMonth] = useState(today.getMonth() + 1); // 1-indexed
+  const [blockedDates, setBlockedDates] = usePersisted(`${sType}:blockedDates`, []);
+  const [contracts, setContracts] = usePersisted(`${sType}:contracts`, []);
+  const [contractModal, setContractModal] = useState(false);
+  const [contractDraft, setContractDraft] = useState({ client: "", event: "", date: "", amount: "", terms: "50% advance before event. Balance due on completion. Cancellation within 7 days: full advance forfeited." });
 
   // Keep gigDraft in sync when profile loads from localStorage
   useEffect(() => {
@@ -386,11 +404,16 @@ export default function DemoDashboard() {
   function Sidebar() {
     let prevGroup = null;
     return (
-      <div style={{ width: 200, background: ink, display: "flex", flexDirection: "column", minHeight: "100vh", flexShrink: 0 }}>
-        {/* Logo */}
-        <div style={{ padding: "22px 20px 16px", borderBottom: "1px solid rgba(204,171,74,0.12)" }}>
-          <div style={{ fontFamily: serif, fontSize: "1.45rem", color: goldLt, fontWeight: 400, letterSpacing: "0.02em" }}>tendr</div>
-          <div style={{ fontSize: 10.5, color: "rgba(255,248,236,0.35)", marginTop: 2, fontWeight: 600, letterSpacing: "0.12em" }}>VENDOR DEMO</div>
+      <div style={{ width: 214, background: ink, display: "flex", flexDirection: "column", minHeight: "100vh", flexShrink: 0 }}>
+        {/* Logo + close button (close only visible on mobile) */}
+        <div style={{ padding: "22px 20px 16px", borderBottom: "1px solid rgba(204,171,74,0.15)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontFamily: serif, fontSize: "1.5rem", color: goldLt, fontWeight: 400, letterSpacing: "0.02em" }}>tendr</div>
+            <div style={{ fontSize: 10, color: "rgba(204,171,74,0.6)", marginTop: 2, fontWeight: 700, letterSpacing: "0.15em" }}>VENDOR DEMO</div>
+          </div>
+          <button className="sidebar-close-btn" onClick={() => setSidebarOpen(false)} style={{ background: "none", border: "none", color: "rgba(255,248,236,0.45)", cursor: "pointer", padding: 4, display: "none" }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
         </div>
 
         {/* Nav */}
@@ -401,15 +424,15 @@ export default function DemoDashboard() {
             return (
               <React.Fragment key={item.key}>
                 {showDivider && (
-                  <div style={{ padding: "14px 20px 4px", fontSize: 9.5, fontWeight: 700, letterSpacing: "0.16em", color: "rgba(204,171,74,0.35)", textTransform: "uppercase" }}>
+                  <div style={{ padding: "14px 20px 5px", fontSize: 9.5, fontWeight: 700, letterSpacing: "0.16em", color: "rgba(204,171,74,0.6)", textTransform: "uppercase" }}>
                     {item.group}
                   </div>
                 )}
                 <button
-                  onClick={() => setTab(item.key)}
-                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 20px", background: tab === item.key ? "rgba(204,171,74,0.12)" : "none", border: "none", cursor: "pointer", color: tab === item.key ? goldLt : "rgba(255,248,236,0.55)", fontSize: 13, fontWeight: tab === item.key ? 700 : 500, fontFamily: font, textAlign: "left", borderLeft: tab === item.key ? `3px solid ${goldLt}` : "3px solid transparent", transition: "all 0.15s" }}
+                  onClick={() => { setTab(item.key); setSidebarOpen(false); }}
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 11, padding: "11px 20px", background: tab === item.key ? "rgba(204,171,74,0.14)" : "none", border: "none", cursor: "pointer", color: tab === item.key ? goldLt : "rgba(255,248,236,0.82)", fontSize: 14, fontWeight: tab === item.key ? 700 : 500, fontFamily: font, textAlign: "left", borderLeft: tab === item.key ? `3px solid ${goldLt}` : "3px solid transparent", transition: "all 0.15s" }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d={item.icon} />
                   </svg>
                   {item.key === "inventory" ? inventoryLabel : item.label}
@@ -421,16 +444,16 @@ export default function DemoDashboard() {
           })}
         </div>
 
-        {/* Type switcher — browse all performer types without login */}
-        <div style={{ padding: "10px 16px", borderTop: "1px solid rgba(204,171,74,0.1)" }}>
-          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", color: "rgba(204,171,74,0.4)", textTransform: "uppercase", marginBottom: 7 }}>Switch Type</div>
+        {/* Type switcher */}
+        <div style={{ padding: "10px 16px", borderTop: "1px solid rgba(204,171,74,0.12)" }}>
+          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", color: "rgba(204,171,74,0.55)", textTransform: "uppercase", marginBottom: 7 }}>Switch Type</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
             {GIG_PRO_TYPES.map(t => (
-              <button key={t} onClick={() => setSearchParams({ type: t })}
+              <button key={t} onClick={() => { setSearchParams({ type: t }); setSidebarOpen(false); }}
                 style={{ padding: "3px 8px", borderRadius: 100, fontSize: 10, fontWeight: 600, cursor: "pointer", fontFamily: font, border: "1px solid", transition: "all 0.12s",
                   background: sType === t ? goldLt : "transparent",
-                  color: sType === t ? ink : "rgba(204,171,74,0.5)",
-                  borderColor: sType === t ? goldLt : "rgba(204,171,74,0.2)" }}>
+                  color: sType === t ? ink : "rgba(204,171,74,0.6)",
+                  borderColor: sType === t ? goldLt : "rgba(204,171,74,0.25)" }}>
                 {t}
               </button>
             ))}
@@ -438,14 +461,14 @@ export default function DemoDashboard() {
         </div>
 
         {/* Profile footer */}
-        <div style={{ padding: "16px 20px", borderTop: "1px solid rgba(204,171,74,0.1)" }}>
+        <div style={{ padding: "16px 20px", borderTop: "1px solid rgba(204,171,74,0.12)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-            <div style={{ width: 34, height: 34, borderRadius: "50%", background: `linear-gradient(135deg, ${gold}, ${goldLt})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontFamily: serif, color: "#fff", fontWeight: 400 }}>
+            <div style={{ width: 36, height: 36, borderRadius: "50%", background: `linear-gradient(135deg, ${gold}, ${goldLt})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontFamily: serif, color: "#fff", fontWeight: 400, flexShrink: 0 }}>
               {profile.name[0]}
             </div>
-            <div>
-              <div style={{ fontSize: 12.5, fontWeight: 700, color: "rgba(255,248,236,0.85)", fontFamily: font }}>{profile.name}</div>
-              <div style={{ fontSize: 10.5, color: "rgba(255,248,236,0.35)" }}>{profile.type}</div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,248,236,0.92)", fontFamily: font, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{profile.name}</div>
+              <div style={{ fontSize: 11, color: "rgba(255,248,236,0.45)" }}>{profile.type}</div>
             </div>
           </div>
           {resetConfirm ? (
@@ -457,7 +480,7 @@ export default function DemoDashboard() {
               </div>
             </div>
           ) : (
-            <button onClick={() => setResetConfirm(true)} style={{ width: "100%", padding: "6px 0", borderRadius: 8, background: "rgba(255,255,255,0.05)", color: "rgba(255,248,236,0.3)", fontSize: 10.5, fontWeight: 600, border: "1px solid rgba(255,255,255,0.08)", cursor: "pointer", fontFamily: font }}>↺ Reset demo data</button>
+            <button onClick={() => setResetConfirm(true)} style={{ width: "100%", padding: "6px 0", borderRadius: 8, background: "rgba(255,255,255,0.05)", color: "rgba(255,248,236,0.4)", fontSize: 10.5, fontWeight: 600, border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer", fontFamily: font }}>↺ Reset demo data</button>
           )}
         </div>
       </div>
@@ -527,9 +550,58 @@ export default function DemoDashboard() {
             ))}
           </div>
 
+          {/* Quick actions */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10, marginTop: 18 }}>
+            {[
+              { label: "View Public Profile", icon: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z", action: () => nav(`/vendor/demo?type=${sType}`), accent: gold },
+              { label: "Share Profile", icon: "M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13", action: () => { navigator.clipboard.writeText(`${window.location.origin}/vendor/demo?type=${sType}`).catch(()=>{}); setProfileCopied(true); setTimeout(()=>setProfileCopied(false), 2500); }, accent: "#16A34A" },
+              { label: "Create Invoice", icon: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M12 18v-6M9 15h6", action: () => { setInvoiceDraft({ client: "", event: "", date: "", amount: "", notes: "" }); setInvoiceModal(true); }, accent: "#7C3AED" },
+              { label: "Edit Profile", icon: "M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z", action: () => { setProfDraft({ ...profile }); setProfEdit(true); setTab("profile"); }, accent: muted },
+            ].map((a, i) => (
+              <button key={i} onClick={a.action} style={{ padding: "12px 14px", borderRadius: 14, background: "#fff", border: "1px solid rgba(196,122,46,0.12)", display: "flex", alignItems: "center", gap: 10, cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(28,10,4,0.04)", textAlign: "left" }}>
+                <div style={{ width: 34, height: 34, borderRadius: 10, background: `${a.accent}18`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={a.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={a.icon}/></svg>
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 600, color: ink }}>{i === 1 && profileCopied ? "✓ Link copied!" : a.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Smart Reminders */}
+          <div style={{ background: "#fff", borderRadius: 16, padding: "18px 20px", border: "1px solid rgba(196,122,46,0.1)", marginTop: 18, boxShadow: "0 2px 10px rgba(28,10,4,0.04)" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>🔔 Smart Reminders</div>
+            {[
+              { text: `Follow up with ${tendr.filter(b=>b.status==="Pending")[0]?.client || "pending clients"} — request pending for 3 days`, type: "warn" },
+              { text: "Send invoice for HDFC Life Insurance event (Confirmed)", type: "warn" },
+              { text: "Update availability calendar for October", type: "info" },
+              { text: "Reply to 2 unanswered reviews to maintain response rate", type: "info" },
+            ].map((r, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "9px 0", borderTop: i > 0 ? "1px solid rgba(196,122,46,0.06)" : "none" }}>
+                <div style={{ width: 7, height: 7, borderRadius: "50%", background: r.type === "warn" ? "#F59E0B" : gold, marginTop: 6, flexShrink: 0 }} />
+                <span style={{ fontSize: 13, color: "#4A3020", lineHeight: 1.5 }}>{r.text}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Conflict Alerts */}
+          {(() => {
+            const confirmed = tendr.filter(b => b.status === "Confirmed").map(b => b.date);
+            const conflicts = tendr.filter(b => b.status === "Pending" && confirmed.includes(b.date));
+            return conflicts.length > 0 ? (
+              <div style={{ background: "#FEF2F2", border: "1.5px solid #FECACA", borderRadius: 14, padding: "16px 18px", marginTop: 14 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#DC2626", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>⚡ Conflict Alerts</div>
+                {conflicts.map((c, i) => (
+                  <div key={i} style={{ fontSize: 13, color: "#B91C1C", marginBottom: 4 }}>
+                    <strong>{c.client}</strong> ({c.date}) overlaps with a confirmed booking — review before accepting.
+                  </div>
+                ))}
+              </div>
+            ) : null;
+          })()}
+
           {/* Pending requests alert */}
           {pendingTendr > 0 && (
-            <div onClick={() => setTab("work")} style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 14, padding: "14px 18px", marginTop: 16, display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
+            <div onClick={() => setTab("work")} style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 14, padding: "14px 18px", marginTop: 14, display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
               <span style={{ fontSize: 20 }}>🔔</span>
               <div>
                 <div style={{ fontSize: 13.5, fontWeight: 700, color: "#DC2626" }}>{pendingTendr} new booking request{pendingTendr > 1 ? "s" : ""} waiting</div>
@@ -545,7 +617,14 @@ export default function DemoDashboard() {
     if (tab === "work") {
       return (
         <div>
-          <h2 style={{ fontFamily: serif, fontSize: "1.7rem", fontWeight: 400, color: ink, marginBottom: 18 }}>Work</h2>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18, gap: 10, flexWrap: "wrap" }}>
+            <h2 style={{ fontFamily: serif, fontSize: "1.7rem", fontWeight: 400, color: ink }}>Work</h2>
+            {workView === "outside" && (
+              <button onClick={() => { setOutsideDraft({ client: "", event: "", date: "", amount: "", status: "Upcoming" }); setOutsideModal(true); }} style={{ padding: "9px 18px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                + Log Outside Gig
+              </button>
+            )}
+          </div>
           {/* Sub-nav */}
           <div style={{ display: "flex", gap: 8, marginBottom: 22 }}>
             {[["tendr", "Tendr Requests"], ["outside", "Direct / Outside"]].map(([k, l]) => (
@@ -592,22 +671,48 @@ export default function DemoDashboard() {
 
           {workView === "outside" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              {outside.map(o => (
+              {outsideGigs.map(o => (
                 <div key={o.id} style={{ background: "#fff", borderRadius: 16, padding: "18px 20px", border: "1px solid rgba(196,122,46,0.1)", boxShadow: "0 2px 10px rgba(28,10,4,0.04)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <div>
                       <div style={{ fontSize: 15, fontWeight: 700, color: ink }}>{o.client}</div>
                       <div style={{ fontSize: 12.5, color: muted }}>{o.event} · {o.date}</div>
                     </div>
-                    <span style={{ background: o.status === "Completed" ? "rgba(34,197,94,0.1)" : "rgba(196,122,46,0.1)", color: o.status === "Completed" ? "#16A34A" : gold, borderRadius: 100, padding: "3px 12px", fontSize: 11, fontWeight: 700 }}>{o.status}</span>
+                    <span style={{ background: o.status === "Completed" ? "rgba(34,197,94,0.1)" : "rgba(196,122,46,0.1)", color: o.status === "Completed" ? "#16A34A" : gold, borderRadius: 100, padding: "3px 12px", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{o.status}</span>
                   </div>
                   <div style={{ display: "flex", gap: 24, marginTop: 12 }}>
                     <div><div style={{ fontSize: 10, color: muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Total</div><div style={{ fontSize: 14, fontWeight: 700, color: ink }}>{fmt(o.amount)}</div></div>
-                    <div><div style={{ fontSize: 10, color: muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Collected</div><div style={{ fontSize: 14, fontWeight: 700, color: "#16A34A" }}>{fmt(o.paidAmount)}</div></div>
-                    {o.paidAmount < o.amount && <div><div style={{ fontSize: 10, color: muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Pending</div><div style={{ fontSize: 14, fontWeight: 700, color: "#DC2626" }}>{fmt(o.amount - o.paidAmount)}</div></div>}
+                    <div><div style={{ fontSize: 10, color: muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Collected</div><div style={{ fontSize: 14, fontWeight: 700, color: "#16A34A" }}>{fmt(o.paidAmount || o.amount)}</div></div>
+                    {(o.paidAmount || 0) < o.amount && <div><div style={{ fontSize: 10, color: muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Pending</div><div style={{ fontSize: 14, fontWeight: 700, color: "#DC2626" }}>{fmt(o.amount - (o.paidAmount || 0))}</div></div>}
                   </div>
                 </div>
               ))}
+              {outsideGigs.length === 0 && <p style={{ fontSize: 13, color: muted, textAlign: "center", padding: "24px 0" }}>No outside gigs logged yet. Tap "+ Log Outside Gig" to add one.</p>}
+            </div>
+          )}
+
+          {/* Add outside gig modal */}
+          {outsideModal && (
+            <div style={{ position: "fixed", inset: 0, background: "rgba(28,10,4,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+              <div style={{ background: "#fff", borderRadius: 20, padding: "28px", width: "100%", maxWidth: 440, boxShadow: "0 20px 60px rgba(28,10,4,0.25)" }}>
+                <h3 style={{ fontFamily: serif, fontSize: "1.3rem", fontWeight: 500, color: ink, marginBottom: 20 }}>Log Outside Gig</h3>
+                {[["client","Client Name","text"],["event","Event Type","text"],["date","Date","date"],["amount","Amount (₹)","number"]].map(([k,l,t]) => (
+                  <div key={k} style={{ marginBottom: 14 }}>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>{l}</label>
+                    <input type={t} value={outsideDraft[k] || ""} onChange={e => setOutsideDraft(p => ({ ...p, [k]: e.target.value }))} style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(196,122,46,0.2)", fontSize: 14, fontFamily: font, color: ink, background: cream, boxSizing: "border-box" }} />
+                  </div>
+                ))}
+                <div style={{ marginBottom: 18 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Status</label>
+                  <select value={outsideDraft.status} onChange={e => setOutsideDraft(p => ({ ...p, status: e.target.value }))} style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(196,122,46,0.2)", fontSize: 14, fontFamily: font, color: ink, background: cream }}>
+                    {["Upcoming", "Completed"].map(s => <option key={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button onClick={() => { setOutsideGigs(p => [{ ...outsideDraft, id: `OUT${Date.now()}`, amount: Number(outsideDraft.amount), paidAmount: outsideDraft.status === "Completed" ? Number(outsideDraft.amount) : 0, expenses: [] }, ...p]); setOutsideModal(false); }} style={{ flex: 1, padding: "12px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Save Gig</button>
+                  <button onClick={() => setOutsideModal(false)} style={{ padding: "12px 20px", borderRadius: 100, background: cream, border: "none", color: muted, fontSize: 14, cursor: "pointer", fontFamily: font }}>Cancel</button>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -984,31 +1089,53 @@ export default function DemoDashboard() {
 
     // ── CALENDAR ──────────────────────────────────────────────────────────────
     if (tab === "calendar") {
-      const year = 2026, month = 9;
-      const firstDay = new Date(year, month - 1, 1).getDay();
-      const daysInMonth = new Date(year, month, 0).getDate();
+      const firstDay = new Date(calYear, calMonth - 1, 1).getDay();
+      const daysInMonth = new Date(calYear, calMonth, 0).getDate();
       const cells = Array.from({ length: firstDay }, () => null).concat(Array.from({ length: daysInMonth }, (_, i) => i + 1));
       while (cells.length % 7 !== 0) cells.push(null);
+      const todayStr = new Date().toISOString().slice(0, 10);
+      // Confirmed bookings from tendr
+      const confirmedDates = new Set(tendr.filter(b => b.status === "Confirmed").map(b => b.date));
+      const blockedSet = new Set(blockedDates);
+      const monthName = new Date(calYear, calMonth - 1, 1).toLocaleString("default", { month: "long" });
+
+      const prevMonth = () => { if (calMonth === 1) { setCalMonth(12); setCalYear(y => y - 1); } else setCalMonth(m => m - 1); };
+      const nextMonth = () => { if (calMonth === 12) { setCalMonth(1); setCalYear(y => y + 1); } else setCalMonth(m => m + 1); };
+      const toggleBlocked = (dateStr) => {
+        if (confirmedDates.has(dateStr)) return; // can't unblock a confirmed booking
+        setBlockedDates(prev => prev.includes(dateStr) ? prev.filter(d => d !== dateStr) : [...prev, dateStr]);
+      };
 
       return (
         <div>
-          <h2 style={{ fontFamily: serif, fontSize: "1.7rem", fontWeight: 400, color: ink, marginBottom: 6 }}>Availability</h2>
-          <p style={{ fontSize: 13, color: muted, marginBottom: 22 }}>September 2026 — booked dates shown in gold.</p>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+            <h2 style={{ fontFamily: serif, fontSize: "1.7rem", fontWeight: 400, color: ink }}>Availability</h2>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <button onClick={prevMonth} style={{ background: cream, border: "1px solid rgba(196,122,46,0.2)", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: muted }}>‹</button>
+              <span style={{ fontSize: 14, fontWeight: 600, color: ink, minWidth: 120, textAlign: "center" }}>{monthName} {calYear}</span>
+              <button onClick={nextMonth} style={{ background: cream, border: "1px solid rgba(196,122,46,0.2)", borderRadius: 8, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: muted }}>›</button>
+            </div>
+          </div>
+          <p style={{ fontSize: 12.5, color: muted, marginBottom: 18 }}>Tap any available date to mark it as blocked/unavailable. Confirmed bookings are locked.</p>
 
-          <div style={{ background: "#fff", borderRadius: 16, padding: "20px", border: "1px solid rgba(196,122,46,0.1)", boxShadow: "0 2px 10px rgba(28,10,4,0.04)" }}>
+          <div style={{ background: "#fff", borderRadius: 16, padding: "18px 16px", border: "1px solid rgba(196,122,46,0.1)", boxShadow: "0 2px 10px rgba(28,10,4,0.04)" }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 8 }}>
-              {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d => (
-                <div key={d} style={{ textAlign: "center", fontSize: 10.5, fontWeight: 700, color: muted, padding: "6px 0", textTransform: "uppercase", letterSpacing: "0.06em" }}>{d}</div>
+              {["S","M","T","W","T","F","S"].map((d, i) => (
+                <div key={i} style={{ textAlign: "center", fontSize: 10.5, fontWeight: 700, color: muted, padding: "4px 0", textTransform: "uppercase", letterSpacing: "0.06em" }}>{d}</div>
               ))}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
               {cells.map((day, i) => {
                 if (!day) return <div key={i} />;
-                const dateStr = `${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-                const isBooked = BOOKED_DATES.has(dateStr);
-                const isToday = dateStr === new Date().toISOString().slice(0, 10);
+                const dateStr = `${calYear}-${String(calMonth).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+                const isConfirmed = confirmedDates.has(dateStr);
+                const isBlocked   = blockedSet.has(dateStr);
+                const isToday     = dateStr === todayStr;
+                const bg = isConfirmed ? `linear-gradient(135deg,${gold},${goldLt})` : isBlocked ? "rgba(220,38,38,0.12)" : isToday ? cream : "transparent";
+                const color = isConfirmed ? "#fff" : isBlocked ? "#DC2626" : ink;
+                const border = isToday && !isConfirmed && !isBlocked ? `1.5px solid ${gold}` : isBlocked ? "1.5px solid rgba(220,38,38,0.3)" : "none";
                 return (
-                  <div key={i} style={{ aspectRatio: "1", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8, background: isBooked ? `linear-gradient(135deg,${gold},${goldLt})` : isToday ? cream : "transparent", color: isBooked ? "#fff" : ink, fontSize: 13, fontWeight: isBooked || isToday ? 700 : 400, border: isToday && !isBooked ? `1.5px solid ${gold}` : "none", cursor: "pointer" }}>
+                  <div key={i} onClick={() => toggleBlocked(dateStr)} style={{ aspectRatio: "1", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8, background: bg, color, fontSize: 13, fontWeight: isConfirmed || isToday || isBlocked ? 700 : 400, border, cursor: isConfirmed ? "default" : "pointer", userSelect: "none" }}>
                     {day}
                   </div>
                 );
@@ -1016,17 +1143,34 @@ export default function DemoDashboard() {
             </div>
           </div>
 
-          <div style={{ marginTop: 18, display: "flex", gap: 16, flexWrap: "wrap" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: muted }}>
-              <div style={{ width: 14, height: 14, borderRadius: 4, background: `linear-gradient(135deg,${gold},${goldLt})` }} /> Booked
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: muted }}>
-              <div style={{ width: 14, height: 14, borderRadius: 4, background: cream, border: `1.5px solid ${gold}` }} /> Today
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: muted }}>
-              <div style={{ width: 14, height: 14, borderRadius: 4, background: "#F3F4F6" }} /> Available
-            </div>
+          <div style={{ marginTop: 16, display: "flex", gap: 16, flexWrap: "wrap" }}>
+            {[
+              { bg: `linear-gradient(135deg,${gold},${goldLt})`, label: "Booked (confirmed)" },
+              { bg: "rgba(220,38,38,0.12)", border: "1.5px solid rgba(220,38,38,0.3)", color: "#DC2626", label: "Blocked (unavailable)" },
+              { bg: cream, border: `1.5px solid ${gold}`, label: "Today" },
+              { bg: "#F3F4F6", label: "Available" },
+            ].map((l, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12, color: muted }}>
+                <div style={{ width: 13, height: 13, borderRadius: 3, background: l.bg, border: l.border || "none", flexShrink: 0 }} />
+                {l.label}
+              </div>
+            ))}
           </div>
+
+          {confirmedDates.size > 0 && (
+            <div style={{ marginTop: 18, background: "#fff", borderRadius: 14, padding: "16px 18px", border: "1px solid rgba(196,122,46,0.1)" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Confirmed Bookings This Month</div>
+              {tendr.filter(b => b.status === "Confirmed" && b.date.startsWith(`${calYear}-${String(calMonth).padStart(2,"0")}`)).map(b => (
+                <div key={b.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid rgba(196,122,46,0.06)" }}>
+                  <div>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: ink }}>{b.client}</div>
+                    <div style={{ fontSize: 12, color: muted }}>{b.event}</div>
+                  </div>
+                  <div style={{ fontSize: 12, color: gold, fontWeight: 600 }}>{b.date}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       );
     }
@@ -1045,26 +1189,32 @@ export default function DemoDashboard() {
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: serif, fontSize: "1.15rem", fontWeight: 500, color: "#FFF8EC", marginBottom: 4 }}>Flyer Builder</div>
               <div style={{ fontSize: 12.5, color: "rgba(255,248,236,0.45)", marginBottom: 12 }}>Create branded promo flyers for Instagram, WhatsApp, and print in seconds.</div>
-              <button style={{ padding: "9px 20px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Open Builder →</button>
+              <button onClick={() => nav('/vendor/flyer-builder')} style={{ padding: "9px 20px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Open Builder →</button>
             </div>
           </div>
 
           {/* Link Hub */}
           <div style={{ background: "#fff", borderRadius: 20, padding: "24px 26px", border: "1px solid rgba(196,122,46,0.1)", marginBottom: 18 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>Your Link Hub</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.1em" }}>Your Link Hub</div>
+              <button onClick={() => setLinkHubPreview(true)} style={{ padding: "7px 16px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 6 }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                Share
+              </button>
+            </div>
             <div style={{ background: cream, borderRadius: 12, padding: "12px 16px", fontSize: 13, color: gold, fontFamily: "monospace", marginBottom: 12, wordBreak: "break-all" }}>
-              tendr.in/@rahulkhanna
+              tendr.in/@{(gig.name || "vendor").toLowerCase().replace(/\s+/g, "")}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {[
-                { label: "Book Me", url: "tendr.in/book/rahulkhanna" },
-                { label: "View Portfolio", url: "tendr.in/vendor/demo" },
-                { label: "Instagram", url: "instagram.com/rahulkhanna.mc" },
-                { label: "YouTube", url: "youtube.com/@rahulkhannaMC" },
+                { label: "Book Me", url: `tendr.in/book/${(gig.name || "vendor").toLowerCase().replace(/\s+/g, "")}` },
+                { label: "View Portfolio", url: `tendr.in/vendor/demo?type=${sType}` },
+                { label: "Instagram", url: gig.instagram ? gig.instagram.replace("@", "instagram.com/") : "instagram.com/" },
+                { label: "YouTube", url: gig.youtube || "youtube.com/" },
               ].map((link, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: cream, borderRadius: 10, border: "1px solid rgba(196,122,46,0.1)" }}>
                   <span style={{ fontSize: 13.5, fontWeight: 600, color: ink }}>{link.label}</span>
-                  <span style={{ fontSize: 11.5, color: muted, fontFamily: "monospace" }}>{link.url}</span>
+                  <span style={{ fontSize: 11.5, color: muted, fontFamily: "monospace", maxWidth: "55%", textAlign: "right", wordBreak: "break-all" }}>{link.url}</span>
                 </div>
               ))}
             </div>
@@ -1086,6 +1236,102 @@ export default function DemoDashboard() {
       );
     }
 
+    if (tab === "contract") {
+      return (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18, gap: 10, flexWrap: "wrap" }}>
+            <h2 style={{ fontFamily: serif, fontSize: "1.7rem", fontWeight: 400, color: ink }}>Contracts</h2>
+            <button onClick={() => { setContractDraft({ client: "", event: "", date: "", amount: "", terms: "50% advance before event. Balance due on completion. Cancellation within 7 days: full advance forfeited." }); setContractModal(true); }} style={{ padding: "9px 18px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>+ New Contract</button>
+          </div>
+
+          {contracts.length === 0 ? (
+            <div style={{ background: "#fff", borderRadius: 20, padding: "40px 24px", textAlign: "center", border: "1px solid rgba(196,122,46,0.1)" }}>
+              <div style={{ fontSize: 36, marginBottom: 12 }}>📝</div>
+              <p style={{ fontSize: 14, color: muted, marginBottom: 18 }}>No contracts yet. Create one to protect yourself legally and set clear expectations.</p>
+              <button onClick={() => { setContractDraft({ client: "", event: "", date: "", amount: "", terms: "50% advance before event. Balance due on completion. Cancellation within 7 days: full advance forfeited." }); setContractModal(true); }} style={{ padding: "11px 24px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Create Contract</button>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {contracts.map((c, i) => (
+                <div key={i} style={{ background: "#fff", borderRadius: 16, padding: "18px 20px", border: "1px solid rgba(196,122,46,0.1)", boxShadow: "0 2px 10px rgba(28,10,4,0.04)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 10 }}>
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: ink }}>{c.client}</div>
+                      <div style={{ fontSize: 12.5, color: muted }}>{c.event} · {c.date}</div>
+                    </div>
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: ink }}>{fmt(c.amount)}</div>
+                      <span style={{ background: c.signed ? "rgba(34,197,94,0.1)" : "rgba(196,122,46,0.1)", color: c.signed ? "#16A34A" : gold, borderRadius: 100, padding: "3px 12px", fontSize: 11, fontWeight: 700, display: "inline-block", marginTop: 4 }}>{c.signed ? "Signed" : "Draft"}</span>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 12.5, color: muted, lineHeight: 1.6, borderTop: "1px solid rgba(196,122,46,0.07)", paddingTop: 10, marginBottom: 10, fontStyle: "italic" }}>{c.terms}</div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={() => setContracts(p => p.map((x, j) => j === i ? { ...x, signed: !x.signed } : x))} style={{ fontSize: 12, padding: "6px 14px", borderRadius: 100, border: `1px solid ${c.signed ? "rgba(34,197,94,0.3)" : "rgba(196,122,46,0.25)"}`, background: "transparent", color: c.signed ? "#16A34A" : gold, cursor: "pointer", fontFamily: font, fontWeight: 600 }}>{c.signed ? "Mark Unsigned" : "Mark Signed"}</button>
+                    <button onClick={() => { const txt = `CONTRACT\nClient: ${c.client}\nEvent: ${c.event}\nDate: ${c.date}\nAmount: ${fmt(c.amount)}\n\nTERMS:\n${c.terms}\n\nStatus: ${c.signed ? "Signed" : "Draft"}`; navigator.clipboard.writeText(txt); }} style={{ fontSize: 12, padding: "6px 14px", borderRadius: 100, border: "1px solid rgba(196,122,46,0.15)", background: "transparent", color: muted, cursor: "pointer", fontFamily: font }}>Copy Text</button>
+                    <button onClick={() => { const wa = `CONTRACT%0AClient%3A%20${encodeURIComponent(c.client)}%0AEvent%3A%20${encodeURIComponent(c.event)}%0ADate%3A%20${c.date}%0AAmount%3A%20${encodeURIComponent(fmt(c.amount))}%0A%0ATerms%3A%20${encodeURIComponent(c.terms)}`; window.open(`https://wa.me/?text=${wa}`); }} style={{ fontSize: 12, padding: "6px 14px", borderRadius: 100, border: "none", background: "rgba(37,211,102,0.08)", color: "#25D366", cursor: "pointer", fontFamily: font, fontWeight: 600 }}>Send via WA</button>
+                    <button onClick={() => setContracts(p => p.filter((_, j) => j !== i))} style={{ fontSize: 12, padding: "6px 14px", borderRadius: 100, border: "none", background: "rgba(220,38,38,0.06)", color: "#DC2626", cursor: "pointer", fontFamily: font }}>Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (tab === "invoice") {
+      const totalEarned = invoices.filter(i => i.status === "Paid").reduce((s, i) => s + Number(i.amount), 0);
+      const totalPending = invoices.filter(i => i.status !== "Paid").reduce((s, i) => s + Number(i.amount), 0);
+      return (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18, gap: 10, flexWrap: "wrap" }}>
+            <h2 style={{ fontFamily: serif, fontSize: "1.7rem", fontWeight: 400, color: ink }}>Invoices</h2>
+            <button onClick={() => { setInvoiceDraft({ client: "", event: "", date: "", amount: "", notes: "" }); setInvoiceModal(true); }} style={{ padding: "9px 18px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>+ New Invoice</button>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 14, marginBottom: 22 }}>
+            {[{ label: "Total Earned", value: fmt(totalEarned), color: "#16A34A" }, { label: "Pending", value: fmt(totalPending), color: gold }, { label: "Invoices Sent", value: invoices.length, color: ink }].map((s, i) => (
+              <div key={i} style={{ background: "#fff", borderRadius: 16, padding: "18px", border: "1px solid rgba(196,122,46,0.1)" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>{s.label}</div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: s.color, fontFamily: font }}>{s.value}</div>
+              </div>
+            ))}
+          </div>
+
+          {invoices.length === 0 ? (
+            <div style={{ background: "#fff", borderRadius: 20, padding: "40px 24px", textAlign: "center", border: "1px solid rgba(196,122,46,0.1)" }}>
+              <div style={{ fontSize: 36, marginBottom: 12 }}>🧾</div>
+              <p style={{ fontSize: 14, color: muted, marginBottom: 18 }}>No invoices yet. Create your first invoice to get paid professionally.</p>
+              <button onClick={() => { setInvoiceDraft({ client: "", event: "", date: "", amount: "", notes: "" }); setInvoiceModal(true); }} style={{ padding: "11px 24px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Create Invoice</button>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {invoices.map((inv, i) => (
+                <div key={i} style={{ background: "#fff", borderRadius: 16, padding: "18px 20px", border: "1px solid rgba(196,122,46,0.1)", boxShadow: "0 2px 10px rgba(28,10,4,0.04)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+                    <div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: ink }}>{inv.client}</div>
+                      <div style={{ fontSize: 12.5, color: muted }}>{inv.event} · {inv.date}</div>
+                      {inv.notes && <div style={{ fontSize: 12, color: muted, marginTop: 4, fontStyle: "italic" }}>{inv.notes}</div>}
+                    </div>
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: ink }}>{fmt(inv.amount)}</div>
+                      <span style={{ background: inv.status === "Paid" ? "rgba(34,197,94,0.1)" : "rgba(196,122,46,0.1)", color: inv.status === "Paid" ? "#16A34A" : gold, borderRadius: 100, padding: "3px 12px", fontSize: 11, fontWeight: 700, display: "inline-block", marginTop: 4 }}>{inv.status || "Sent"}</span>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                    <button onClick={() => setInvoices(p => p.map((x, j) => j === i ? { ...x, status: x.status === "Paid" ? "Sent" : "Paid" } : x))} style={{ fontSize: 12, padding: "6px 14px", borderRadius: 100, border: `1px solid ${inv.status === "Paid" ? "rgba(34,197,94,0.3)" : "rgba(196,122,46,0.25)"}`, background: "transparent", color: inv.status === "Paid" ? "#16A34A" : gold, cursor: "pointer", fontFamily: font, fontWeight: 600 }}>{inv.status === "Paid" ? "Mark Unpaid" : "Mark Paid"}</button>
+                    <button onClick={() => { const txt = `INVOICE\nClient: ${inv.client}\nEvent: ${inv.event}\nDate: ${inv.date}\nAmount: ${fmt(inv.amount)}\nNotes: ${inv.notes || "-"}\nStatus: ${inv.status || "Sent"}`; navigator.clipboard.writeText(txt); }} style={{ fontSize: 12, padding: "6px 14px", borderRadius: 100, border: "1px solid rgba(196,122,46,0.15)", background: "transparent", color: muted, cursor: "pointer", fontFamily: font }}>Copy</button>
+                    <button onClick={() => setInvoices(p => p.filter((_, j) => j !== i))} style={{ fontSize: 12, padding: "6px 14px", borderRadius: 100, border: "none", background: "rgba(220,38,38,0.06)", color: "#DC2626", cursor: "pointer", fontFamily: font }}>Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
     return null;
   })();
 
@@ -1096,20 +1342,135 @@ export default function DemoDashboard() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
         input:focus, textarea:focus { outline: 2px solid ${gold}; outline-offset: 1px; }
         ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(196,122,46,0.25); border-radius: 100px; }
+        .dash-sidebar { position: sticky; top: 0; height: 100vh; }
+        @media (max-width: 768px) {
+          .dash-sidebar { position: fixed !important; left: 0; top: 0; height: 100vh; z-index: 300; transform: translateX(-100%); transition: transform 0.25s ease; }
+          .dash-sidebar.open { transform: translateX(0); }
+          .dash-mobile-topbar { display: flex !important; }
+          .sidebar-close-btn { display: flex !important; }
+          .dash-main { padding: 16px 16px 80px !important; }
+        }
       `}</style>
 
-      <Sidebar />
+      {/* Mobile sidebar backdrop */}
+      {sidebarOpen && (
+        <div onClick={() => setSidebarOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(28,10,4,0.55)", zIndex: 299, backdropFilter: "blur(2px)" }} />
+      )}
 
-      <div style={{ flex: 1, overflowY: "auto", padding: "32px 28px" }}>
-        {/* Demo notice */}
-        <div style={{ background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 12, padding: "10px 16px", marginBottom: 24, display: "flex", alignItems: "center", gap: 10, fontSize: 12.5, color: gold, fontWeight: 600 }}>
-          <span>🎭</span>
-          <span>Demo mode — explore freely. <strong>Changes you make are saved</strong> and survive refresh. Use "↺ Reset demo data" in the sidebar to start fresh.</span>
-          <button onClick={() => nav("/vendor/demo?type=Anchor")} style={{ marginLeft: "auto", background: "none", border: "none", color: gold, fontSize: 12, fontWeight: 700, cursor: "pointer", textDecoration: "underline", fontFamily: font, whiteSpace: "nowrap" }}>View Public Profile →</button>
+      {/* Sidebar */}
+      <div className={`dash-sidebar${sidebarOpen ? " open" : ""}`}>
+        <Sidebar />
+      </div>
+
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+        {/* Mobile top bar */}
+        <div className="dash-mobile-topbar" style={{ display: "none", background: ink, padding: "13px 18px", alignItems: "center", gap: 14, position: "sticky", top: 0, zIndex: 100, flexShrink: 0 }}>
+          <button onClick={() => setSidebarOpen(true)} style={{ background: "none", border: "none", color: goldLt, cursor: "pointer", padding: 0, display: "flex", alignItems: "center" }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <span style={{ fontFamily: serif, fontSize: "1.3rem", color: goldLt, flex: 1 }}>tendr</span>
+          <button onClick={() => nav(`/vendor/demo?type=${sType}`)} style={{ background: `linear-gradient(135deg,${gold},${goldLt})`, border: "none", color: "#fff", fontSize: 11.5, fontWeight: 700, borderRadius: 100, padding: "6px 14px", cursor: "pointer", fontFamily: font }}>View Profile</button>
         </div>
 
-        {content}
+        <div className="dash-main" style={{ flex: 1, overflowY: "auto", padding: "32px 28px" }}>
+          {/* Demo notice */}
+          <div style={{ background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 12, padding: "10px 16px", marginBottom: 24, display: "flex", alignItems: "center", gap: 10, fontSize: 12.5, color: gold, fontWeight: 600, flexWrap: "wrap" }}>
+            <span>🎭</span>
+            <span style={{ flex: 1 }}>Demo mode — explore freely. <strong>Changes you make are saved</strong> and survive refresh.</span>
+            <button onClick={() => nav(`/vendor/demo?type=${sType}`)} style={{ background: "none", border: "none", color: gold, fontSize: 12, fontWeight: 700, cursor: "pointer", textDecoration: "underline", fontFamily: font, whiteSpace: "nowrap" }}>View Public Profile →</button>
+          </div>
+
+          {content}
+        </div>
       </div>
+
+      {/* Contract modal */}
+      {contractModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(28,10,4,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div style={{ background: "#fff", borderRadius: 20, padding: "28px", width: "100%", maxWidth: 480, boxShadow: "0 20px 60px rgba(28,10,4,0.25)", maxHeight: "90vh", overflowY: "auto" }}>
+            <h3 style={{ fontFamily: serif, fontSize: "1.3rem", fontWeight: 500, color: ink, marginBottom: 20 }}>New Contract</h3>
+            {[["client","Client Name","text"],["event","Event / Service","text"],["date","Event Date","date"],["amount","Contract Amount (₹)","number"]].map(([k,l,t]) => (
+              <div key={k} style={{ marginBottom: 14 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>{l}</label>
+                <input type={t} value={contractDraft[k] || ""} onChange={e => setContractDraft(p => ({ ...p, [k]: e.target.value }))} style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(196,122,46,0.2)", fontSize: 14, fontFamily: font, color: ink, background: cream, boxSizing: "border-box" }} />
+              </div>
+            ))}
+            <div style={{ marginBottom: 18 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Terms & Conditions</label>
+              <textarea rows={5} value={contractDraft.terms || ""} onChange={e => setContractDraft(p => ({ ...p, terms: e.target.value }))} style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13, fontFamily: font, color: ink, background: cream, resize: "vertical", lineHeight: 1.6, boxSizing: "border-box" }} />
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => { if (!contractDraft.client || !contractDraft.amount) return; setContracts(p => [{ ...contractDraft, id: `CTR${Date.now()}`, amount: Number(contractDraft.amount), signed: false }, ...p]); setContractModal(false); setTab("contract"); }} style={{ flex: 1, padding: "12px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Create Contract</button>
+              <button onClick={() => setContractModal(false)} style={{ padding: "12px 20px", borderRadius: 100, background: cream, border: "none", color: muted, fontSize: 14, cursor: "pointer", fontFamily: font }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Invoice modal */}
+      {invoiceModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(28,10,4,0.5)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div style={{ background: "#fff", borderRadius: 20, padding: "28px", width: "100%", maxWidth: 460, boxShadow: "0 20px 60px rgba(28,10,4,0.25)" }}>
+            <h3 style={{ fontFamily: serif, fontSize: "1.3rem", fontWeight: 500, color: ink, marginBottom: 20 }}>New Invoice</h3>
+            {[["client","Client Name","text"],["event","Event / Service","text"],["date","Date","date"],["amount","Amount (₹)","number"]].map(([k,l,t]) => (
+              <div key={k} style={{ marginBottom: 14 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>{l}</label>
+                <input type={t} value={invoiceDraft[k] || ""} onChange={e => setInvoiceDraft(p => ({ ...p, [k]: e.target.value }))} style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(196,122,46,0.2)", fontSize: 14, fontFamily: font, color: ink, background: cream, boxSizing: "border-box" }} />
+              </div>
+            ))}
+            <div style={{ marginBottom: 18 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Notes (optional)</label>
+              <textarea rows={2} value={invoiceDraft.notes || ""} onChange={e => setInvoiceDraft(p => ({ ...p, notes: e.target.value }))} placeholder="Payment details, terms, etc." style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13, fontFamily: font, color: ink, background: cream, resize: "vertical", boxSizing: "border-box" }} />
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => { if (!invoiceDraft.client || !invoiceDraft.amount) return; setInvoices(p => [{ ...invoiceDraft, id: `INV${Date.now()}`, amount: Number(invoiceDraft.amount), status: "Sent" }, ...p]); setInvoiceModal(false); setTab("invoice"); }} style={{ flex: 1, padding: "12px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Create Invoice</button>
+              <button onClick={() => setInvoiceModal(false)} style={{ padding: "12px 20px", borderRadius: 100, background: cream, border: "none", color: muted, fontSize: 14, cursor: "pointer", fontFamily: font }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Link Hub Share Preview */}
+      {linkHubPreview && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(28,10,4,0.6)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setLinkHubPreview(false)}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 24, padding: "28px 24px", width: "100%", maxWidth: 360, boxShadow: "0 24px 80px rgba(28,10,4,0.3)" }}>
+            {/* Slip header */}
+            <div style={{ textAlign: "center", marginBottom: 24 }}>
+              <div style={{ fontFamily: serif, fontSize: "1.6rem", color: gold, marginBottom: 2 }}>tendr</div>
+              <div style={{ fontSize: 12, color: muted, letterSpacing: "0.06em" }}>YOUR LINK HUB</div>
+            </div>
+            {/* Profile row */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 20, textAlign: "center" }}>
+              <div style={{ width: 64, height: 64, borderRadius: "50%", background: `linear-gradient(135deg,${gold},${goldLt})`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, marginBottom: 10 }}>
+                {(gig.name || sType)[0]}
+              </div>
+              <div style={{ fontSize: 17, fontWeight: 700, color: ink }}>{gig.name || sType}</div>
+              <div style={{ fontSize: 12.5, color: muted }}>{gig.type || sType} · {gig.city || "India"}</div>
+              <div style={{ fontSize: 12, color: gold, marginTop: 4, fontFamily: "monospace" }}>tendr.in/@{(gig.name || "vendor").toLowerCase().replace(/\s+/g, "")}</div>
+            </div>
+            {/* Links */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
+              {[
+                { label: "📅 Book Me", url: `tendr.in/book/${(gig.name || "vendor").toLowerCase().replace(/\s+/g, "")}`, primary: true },
+                { label: "🖼️ View Portfolio", url: `tendr.in/vendor/demo?type=${sType}`, primary: false },
+                { label: "📸 Instagram", url: gig.instagram ? gig.instagram.replace("@", "instagram.com/") : "instagram.com/", primary: false },
+                { label: "▶️ YouTube", url: gig.youtube || "youtube.com/", primary: false },
+              ].map((l, i) => (
+                <div key={i} style={{ padding: "12px 16px", borderRadius: 12, background: l.primary ? `linear-gradient(135deg,${gold},${goldLt})` : cream, border: l.primary ? "none" : "1px solid rgba(196,122,46,0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 700, color: l.primary ? "#fff" : ink }}>{l.label}</span>
+                  <span style={{ fontSize: 10.5, color: l.primary ? "rgba(255,255,255,0.75)" : muted, fontFamily: "monospace" }}>{l.url}</span>
+                </div>
+              ))}
+            </div>
+            {/* Share buttons */}
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => { navigator.clipboard.writeText(`Check out my tendr link hub: tendr.in/@${(gig.name || "vendor").toLowerCase().replace(/\s+/g, "")}`); }} style={{ flex: 1, padding: "11px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Copy Link</button>
+              <button onClick={() => { window.open(`https://wa.me/?text=Check%20out%20my%20tendr%20profile%3A%20tendr.in%2F%40${(gig.name || "vendor").toLowerCase().replace(/\s+/g, "")}`); }} style={{ flex: 1, padding: "11px", borderRadius: 100, background: "#25D366", color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>WhatsApp</button>
+              <button onClick={() => setLinkHubPreview(false)} style={{ padding: "11px 16px", borderRadius: 100, background: cream, border: "none", color: muted, fontSize: 13, cursor: "pointer", fontFamily: font }}>✕</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Dispute modal */}
       {dispModal && (
