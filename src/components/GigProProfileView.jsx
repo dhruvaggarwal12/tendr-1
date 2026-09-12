@@ -621,7 +621,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           </div>
         )}
 
-        </div>{/* /left column */}
+        </div>
 
         {/* SIDEBAR */}
         <aside className="gp-sidebar">
@@ -714,8 +714,8 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           </div>
         </aside>
 
-        </div>{/* /content-grid */}
-        )}{/* /non-portfolio condition */}
+        </div>
+        )}
 
       </div>
 
