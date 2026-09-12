@@ -246,7 +246,22 @@ export default function ServiceDemoDashboard() {
             <div style={{width:34,height:34,borderRadius:"50%",background:`linear-gradient(135deg,${gold},${goldLt})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontFamily:serif,color:"#fff"}}>{(profile.name||"V")[0]}</div>
             <div><div style={{fontSize:12,fontWeight:700,color:"rgba(255,248,236,0.85)"}}>{profile.name}</div><div style={{fontSize:10,color:"rgba(255,248,236,0.35)"}}>{profile.type}</div></div>
           </div>
-          <button onClick={()=>navigate(`/vendor/demo?type=${sType}`)} style={{width:"100%",padding:"6px 0",borderRadius:8,background:"rgba(204,171,74,0.12)",color:goldLt,fontSize:11,fontWeight:600,border:`1px solid rgba(204,171,74,0.2)`,cursor:"pointer",fontFamily:font}}>View Public Profile →</button>
+          <button onClick={()=>{
+            const extras = sType==='Photographer'
+              ? {services:profile.specialties,editingTimeDays:profile.editingDays}
+              : sType==='Caterer'
+              ? {cuisine:profile.specialties}
+              : {};
+            navigate('/VendorDetails',{state:{vendor:{
+              _id:`demo_${sType}`,
+              avgReviewScore:profile.rating,
+              verified:true,
+              portfolioPhotos:[],
+              serviceType:sType,
+              ...profile,
+              ...extras,
+            }}});
+          }} style={{width:"100%",padding:"6px 0",borderRadius:8,background:"rgba(204,171,74,0.12)",color:goldLt,fontSize:11,fontWeight:600,border:`1px solid rgba(204,171,74,0.2)`,cursor:"pointer",fontFamily:font}}>View Public Profile →</button>
         </div>
       </div>
     );

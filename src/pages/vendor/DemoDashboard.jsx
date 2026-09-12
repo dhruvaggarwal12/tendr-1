@@ -472,7 +472,35 @@ export default function DemoDashboard() {
             </div>
           </div>
           <div style={{ display: "flex", gap: 7, marginBottom: 10 }}>
-            <button onClick={() => { nav(`/vendor/demo?type=${sType}`); setSidebarOpen(false); }} style={{ flex: 1, padding: "7px 0", borderRadius: 8, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+            <button onClick={() => {
+              const genresArr = Array.isArray(profile.genres) ? profile.genres : (profile.genres || "").split(",").map(g => g.trim()).filter(Boolean);
+              nav("/VendorDetails", { state: { vendor: {
+                _id: `demo_${sType}`,
+                name: profile.name,
+                serviceType: sType,
+                location: profile.city,
+                bio: profile.bio,
+                avgReviewScore: profile.rating,
+                verified: true,
+                portfolioPhotos: profile.portfolioPhotos || [],
+                yearsOfExperience: profile.years,
+                teamSize: profile.teamSize,
+                totalEventsCompleted: profile.events,
+                genres: genresArr,
+                showreel: profile.showreel,
+                socialLink: profile.instagram,
+                youtube: profile.youtube,
+                social: { instagram: profile.instagram, youtube: profile.youtube, showreel: profile.showreel },
+                setlist: setlist,
+                packages: pkgs,
+                ...profile,
+                location: profile.city,
+                avgReviewScore: profile.rating,
+                yearsOfExperience: profile.years,
+                totalEventsCompleted: profile.events,
+              }}});
+              setSidebarOpen(false);
+            }} style={{ flex: 1, padding: "7px 0", borderRadius: 8, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               View Profile
             </button>
@@ -1029,38 +1057,33 @@ export default function DemoDashboard() {
             </div>
           </div>
 
+          {/* About Me */}
           <div style={{ background: "#fff", borderRadius: 16, padding: "20px", border: "1px solid rgba(196,122,46,0.1)", marginBottom: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 16 }}>Basic Info</div>
-            {[["name","Name"],["phone","Phone"],["email","Email"],["city","City"]].map(([k, l]) => (
+            <div style={{ fontSize: 12, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>About Me</div>
+            {profEdit ? (
+              <textarea value={profDraft.bio || ""} onChange={e => setProfDraft(p => ({ ...p, bio: e.target.value }))} rows={5} placeholder="Write a short bio that'll appear on your public profile..." style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13.5, fontFamily: font, color: ink, background: cream, resize: "vertical", boxSizing: "border-box", lineHeight: 1.65 }} />
+            ) : (
+              <div style={{ fontSize: 13.5, color: "#4A3020", lineHeight: 1.75 }}>{profile.bio || <span style={{ color: muted, fontStyle: "italic" }}>No bio yet — click Edit Profile to add one.</span>}</div>
+            )}
+          </div>
+
+          {/* Social handles */}
+          <div style={{ background: "#fff", borderRadius: 16, padding: "20px", border: "1px solid rgba(196,122,46,0.1)" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 16 }}>Social & Links</div>
+            {[
+              ["instagram","Instagram Handle","@yourhandle"],
+              ["youtube","YouTube Channel","youtube.com/@yourchannel"],
+              ["showreel","Showreel URL","https://youtube.com/watch?v=..."],
+            ].map(([k, l, ph]) => (
               <div key={k} style={{ marginBottom: 14 }}>
                 <label style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 5 }}>{l}</label>
                 {profEdit ? (
-                  <input value={profDraft[k] || ""} onChange={e => setProfDraft(p => ({ ...p, [k]: e.target.value }))} style={{ width: "100%", padding: "9px 13px", borderRadius: 10, border: "1px solid rgba(196,122,46,0.2)", fontSize: 14, fontFamily: font, color: ink, background: cream, boxSizing: "border-box" }} />
+                  <input value={profDraft[k] || ""} onChange={e => setProfDraft(p => ({ ...p, [k]: e.target.value }))} placeholder={ph} style={{ width: "100%", padding: "9px 13px", borderRadius: 10, border: "1px solid rgba(196,122,46,0.2)", fontSize: 14, fontFamily: font, color: ink, background: cream, boxSizing: "border-box" }} />
                 ) : (
-                  <div style={{ fontSize: 14, color: ink, padding: "9px 0" }}>{profile[k]}</div>
+                  <div style={{ fontSize: 14, color: profile[k] ? ink : muted, fontStyle: profile[k] ? "normal" : "italic", padding: "9px 0" }}>{profile[k] || "Not set"}</div>
                 )}
               </div>
             ))}
-            <div style={{ marginBottom: 4 }}>
-              <label style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 5 }}>Bio</label>
-              {profEdit ? (
-                <textarea value={profDraft.bio || ""} onChange={e => setProfDraft(p => ({ ...p, bio: e.target.value }))} rows={4} style={{ width: "100%", padding: "9px 13px", borderRadius: 10, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13, fontFamily: font, color: ink, background: cream, resize: "vertical", boxSizing: "border-box" }} />
-              ) : (
-                <div style={{ fontSize: 13.5, color: "#4A3020", lineHeight: 1.7 }}>{profile.bio}</div>
-              )}
-            </div>
-          </div>
-
-          <div style={{ background: "#fff", borderRadius: 16, padding: "20px", border: "1px solid rgba(196,122,46,0.1)" }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 16 }}>GST & Business</div>
-            <div style={{ marginBottom: 4 }}>
-              <label style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 5 }}>GST Number</label>
-              {profEdit ? (
-                <input value={profDraft.gstNumber || ""} onChange={e => setProfDraft(p => ({ ...p, gstNumber: e.target.value }))} placeholder="e.g. 07AABKU1234R1Z5" style={{ width: "100%", padding: "9px 13px", borderRadius: 10, border: "1px solid rgba(196,122,46,0.2)", fontSize: 14, fontFamily: font, color: ink, background: cream, boxSizing: "border-box" }} />
-              ) : (
-                <div style={{ fontSize: 14, color: ink, padding: "9px 0", fontFamily: "monospace" }}>{profile.gstNumber || <span style={{ color: muted, fontStyle: "italic" }}>Not set</span>}</div>
-              )}
-            </div>
           </div>
         </div>
       );
@@ -1458,18 +1481,58 @@ export default function DemoDashboard() {
               <div style={{ fontSize: 12.5, color: muted }}>{profile.type || sType} · {profile.city || "India"}</div>
               <div style={{ fontSize: 12, color: gold, marginTop: 4, fontFamily: "monospace" }}>tendr.in/@{(profile.name || "vendor").toLowerCase().replace(/\s+/g, "")}</div>
             </div>
-            {/* Links */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
+            {/* Links — 4 icon buttons */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 22 }}>
               {[
-                { label: "📅 Book Me", url: `tendr.in/book/${(profile.name || "vendor").toLowerCase().replace(/\s+/g, "")}`, primary: true },
-                { label: "🖼️ View Portfolio", url: `tendr.in/vendor/demo?type=${sType}`, primary: false },
-                { label: "📸 Instagram", url: profile.instagram ? profile.instagram.replace("@", "instagram.com/") : "instagram.com/", primary: false },
-                { label: "▶️ YouTube", url: profile.youtube || "youtube.com/", primary: false },
+                {
+                  label: "Book Me",
+                  href: `https://tendr.in/book/${(profile.name || "vendor").toLowerCase().replace(/\s+/g, "")}`,
+                  icon: (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  ),
+                  primary: true,
+                },
+                {
+                  label: "Portfolio",
+                  href: null,
+                  onClick: () => { nav("/VendorDetails", { state: { vendor: { _id:`demo_${sType}`, name:profile.name, serviceType:sType, location:profile.city, bio:profile.bio, avgReviewScore:profile.rating, verified:true, portfolioPhotos:profile.portfolioPhotos||[], yearsOfExperience:profile.years, teamSize:profile.teamSize, totalEventsCompleted:profile.events, genres:profile.genres||[], showreel:profile.showreel, social:{instagram:profile.instagram,youtube:profile.youtube,showreel:profile.showreel}, setlist, packages:pkgs, ...profile, location:profile.city, avgReviewScore:profile.rating } }}); setLinkHubPreview(false); },
+                  icon: (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                  ),
+                  primary: false,
+                },
+                {
+                  label: "Instagram",
+                  href: profile.instagram ? `https://instagram.com/${profile.instagram.replace("@","")}` : "https://instagram.com",
+                  icon: (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" strokeWidth="2.5"/></svg>
+                  ),
+                  primary: false,
+                  color: "#C62B6D",
+                },
+                {
+                  label: "YouTube",
+                  href: profile.youtube ? `https://${profile.youtube.replace(/^https?:\/\//,"")}` : "https://youtube.com",
+                  icon: (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                  ),
+                  primary: false,
+                  color: "#FF0000",
+                },
               ].map((l, i) => (
-                <div key={i} style={{ padding: "12px 16px", borderRadius: 12, background: l.primary ? `linear-gradient(135deg,${gold},${goldLt})` : cream, border: l.primary ? "none" : "1px solid rgba(196,122,46,0.15)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 13.5, fontWeight: 700, color: l.primary ? "#fff" : ink }}>{l.label}</span>
-                  <span style={{ fontSize: 10.5, color: l.primary ? "rgba(255,255,255,0.75)" : muted, fontFamily: "monospace" }}>{l.url}</span>
-                </div>
+                l.href !== null ? (
+                  <a key={i} href={l.href} target="_blank" rel="noopener noreferrer"
+                    style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:8, padding:"20px 12px", borderRadius:16, background:l.primary?`linear-gradient(135deg,${gold},${goldLt})`:"#FAF7F2", border:l.primary?"none":"1.5px solid rgba(196,122,46,0.15)", textDecoration:"none", color:l.primary?"#fff":(l.color||ink), cursor:"pointer" }}>
+                    {l.icon}
+                    <span style={{ fontSize:12.5, fontWeight:700, letterSpacing:"0.02em" }}>{l.label}</span>
+                  </a>
+                ) : (
+                  <button key={i} onClick={l.onClick}
+                    style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:8, padding:"20px 12px", borderRadius:16, background:"#FAF7F2", border:"1.5px solid rgba(196,122,46,0.15)", color:ink, cursor:"pointer", fontFamily:font }}>
+                    {l.icon}
+                    <span style={{ fontSize:12.5, fontWeight:700, letterSpacing:"0.02em" }}>{l.label}</span>
+                  </button>
+                )
               ))}
             </div>
             {/* Share buttons */}
