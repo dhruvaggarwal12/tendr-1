@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 
 // ── Tokens ────────────────────────────────────────────────────────────────────
-const BG      = "#221610";   // brighter espresso
-const SURF    = "#2C1F13";
-const CARD    = "#261A0F";
-const INK     = "#F2E8D0";   // brighter warm white
-const MUTED   = "rgba(242,232,208,0.65)";
-const DIM     = "rgba(242,232,208,0.38)";
+const BG      = "#2E1F12";   // warm sienna — lighter, less AI-brown
+const SURF    = "#3A271A";
+const CARD    = "#2A1C10";
+const INK     = "#F5EDD8";
+const MUTED   = "rgba(245,237,216,0.68)";
+const DIM     = "rgba(245,237,216,0.4)";
+// photo card width — used to align tabs
+const PHOTO_W = 400;
 const GOLD    = "#C49B30";
 const GOLD_D  = "rgba(196,155,48,0.22)";
 const font    = "'DM Sans', system-ui, sans-serif";
@@ -84,111 +86,68 @@ function StatCircle({ type }) {
   );
 }
 
-function Grain() {
-  return (
-    <svg style={{ position:"fixed", inset:0, width:"100%", height:"100%", pointerEvents:"none", zIndex:200, opacity:0.032 }}>
-      <filter id="grain-f">
-        <feTurbulence type="fractalNoise" baseFrequency="0.76" numOctaves="4" stitchTiles="stitch"/>
-        <feColorMatrix type="saturate" values="0"/>
-      </filter>
-      <rect width="100%" height="100%" filter="url(#grain-f)"/>
-    </svg>
-  );
-}
+// Removed heavy grain — replaced by background gradient variation
 
 function BgDecor({ serviceType = "" }) {
-  const isBand   = /band|singer|musician/i.test(serviceType);
-  const isDance  = /choreograph|dancer/i.test(serviceType);
-  const isPhoto  = /photograph/i.test(serviceType);
+  const isBand  = /band|singer|musician/i.test(serviceType);
+  const isDance = /choreograph|dancer/i.test(serviceType);
+  const isPhoto = /photograph/i.test(serviceType);
 
   return (
     <div style={{ position:"absolute", inset:0, overflow:"hidden", pointerEvents:"none", zIndex:0 }}>
-      {/* Warm radial glows */}
-      <div style={{ position:"absolute", top:"-12%", right:"8%", width:560, height:560, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(196,155,48,0.09) 0%, transparent 65%)" }}/>
-      <div style={{ position:"absolute", bottom:0, left:"30%", width:320, height:320, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(160,100,20,0.06) 0%, transparent 70%)" }}/>
+      {/* Directional light wash — from upper-right, warm amber */}
+      <div style={{ position:"absolute", top:0, right:0, width:"55%", height:"100%", background:"linear-gradient(210deg, rgba(200,140,50,0.10) 0%, rgba(180,110,30,0.05) 40%, transparent 72%)", pointerEvents:"none" }}/>
+      {/* Single soft warm glow — top-right focal point */}
+      <div style={{ position:"absolute", top:"-8%", right:"12%", width:420, height:420, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(196,145,40,0.11) 0%, transparent 60%)", pointerEvents:"none" }}/>
 
-      {/* Bokeh dust */}
-      {[
-        { r:18, t:"8%",  l:"64%", op:0.13, bl:9  },
-        { r:10, t:"42%", l:"90%", op:0.10, bl:5  },
-        { r:7,  t:"70%", l:"80%", op:0.08, bl:3  },
-        { r:13, t:"22%", l:"76%", op:0.11, bl:6  },
-        { r:5,  t:"58%", l:"58%", op:0.07, bl:3  },
-        { r:8,  t:"15%", l:"50%", op:0.08, bl:4  },
-      ].map((d,i) => (
-        <div key={i} style={{ position:"absolute", top:d.t, left:d.l, width:d.r*2, height:d.r*2, borderRadius:"50%", background:GOLD, opacity:d.op, filter:`blur(${d.bl}px)` }}/>
-      ))}
-
-      {/* ── Microphone prop (all performer types) */}
-      <svg style={{ position:"absolute", right:"9%", top:"4%", opacity:0.07 }} width="110" height="220" viewBox="0 0 110 220">
-        <rect x="32" y="0" width="46" height="90" rx="23" fill={GOLD}/>
-        <path d="M10 80 Q10 130 55 130 Q100 130 100 80" fill="none" stroke={GOLD} strokeWidth="5"/>
-        <line x1="55" y1="130" x2="55" y2="170" stroke={GOLD} strokeWidth="5"/>
-        <line x1="30" y1="170" x2="80" y2="170" stroke={GOLD} strokeWidth="5"/>
-        <line x1="40" y1="25" x2="70" y2="25" stroke="rgba(0,0,0,0.3)" strokeWidth="2"/>
-        <line x1="40" y1="40" x2="70" y2="40" stroke="rgba(0,0,0,0.3)" strokeWidth="2"/>
-        <line x1="40" y1="55" x2="70" y2="55" stroke="rgba(0,0,0,0.3)" strokeWidth="2"/>
+      {/* ── Microphone silhouette — right side, very faint */}
+      <svg style={{ position:"absolute", right:"7%", top:"6%", opacity:0.055 }} width="90" height="180" viewBox="0 0 90 180">
+        <rect x="25" y="0"  width="40" height="76" rx="20" fill={GOLD}/>
+        <path d="M8 66 Q8 110 45 110 Q82 110 82 66" fill="none" stroke={GOLD} strokeWidth="5" strokeLinecap="round"/>
+        <line x1="45" y1="110" x2="45" y2="145" stroke={GOLD} strokeWidth="5"/>
+        <line x1="24" y1="145" x2="66" y2="145" stroke={GOLD} strokeWidth="5" strokeLinecap="round"/>
+        <line x1="33" y1="22" x2="57" y2="22" stroke="rgba(0,0,0,0.25)" strokeWidth="2"/>
+        <line x1="33" y1="36" x2="57" y2="36" stroke="rgba(0,0,0,0.25)" strokeWidth="2"/>
+        <line x1="33" y1="50" x2="57" y2="50" stroke="rgba(0,0,0,0.25)" strokeWidth="2"/>
       </svg>
 
-      {/* ── Sparkle stars */}
+      {/* ── 4-point sparkle stars — minimal, only 3 */}
       {[
-        { x:72, y:18,  s:14, op:0.18 },
-        { x:88, y:52,  s:9,  op:0.12 },
-        { x:62, y:78,  s:7,  op:0.10 },
-        { x:94, y:72,  s:11, op:0.14 },
-        { x:78, y:38,  s:6,  op:0.09 },
+        { x:"74%", y:"12%", s:12, op:0.15 },
+        { x:"91%", y:"44%", s:8,  op:0.10 },
+        { x:"68%", y:"68%", s:7,  op:0.08 },
       ].map((d,i) => (
-        <svg key={i} style={{ position:"absolute", left:`${d.x}%`, top:`${d.y}%`, opacity:d.op }} width={d.s} height={d.s} viewBox="0 0 24 24">
-          <path d="M12 2 L13.5 10.5 L22 12 L13.5 13.5 L12 22 L10.5 13.5 L2 12 L10.5 10.5 Z" fill={GOLD}/>
+        <svg key={i} style={{ position:"absolute", left:d.x, top:d.y, opacity:d.op }} width={d.s} height={d.s} viewBox="0 0 24 24">
+          <path d="M12 2v20M2 12h20" stroke={GOLD} strokeWidth="1.5" strokeLinecap="round"/>
+          <path d="M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4" stroke={GOLD} strokeWidth="0.7" strokeLinecap="round"/>
         </svg>
       ))}
 
-      {/* ── Music notes (for band/singer) or camera (photographer) or ribbons (dance) */}
+      {/* ── Type-specific prop */}
       {isBand && (
-        <>
-          <svg style={{ position:"absolute", left:"3%", top:"15%", opacity:0.08 }} width="60" height="60" viewBox="0 0 60 60">
-            <circle cx="14" cy="46" r="10" fill={GOLD}/>
-            <line x1="24" y1="46" x2="24" y2="10" stroke={GOLD} strokeWidth="4"/>
-            <line x1="24" y1="10" x2="50" y2="4" stroke={GOLD} strokeWidth="4"/>
-            <line x1="50" y1="4" x2="50" y2="40" stroke={GOLD} strokeWidth="4"/>
-            <circle cx="40" cy="40" r="10" fill={GOLD}/>
-          </svg>
-          <svg style={{ position:"absolute", left:"7%", top:"55%", opacity:0.06 }} width="40" height="40" viewBox="0 0 60 60">
-            <circle cx="14" cy="46" r="10" fill={GOLD}/>
-            <line x1="24" y1="46" x2="24" y2="10" stroke={GOLD} strokeWidth="4"/>
-            <line x1="24" y1="10" x2="50" y2="4" stroke={GOLD} strokeWidth="4"/>
-            <line x1="50" y1="4" x2="50" y2="40" stroke={GOLD} strokeWidth="4"/>
-            <circle cx="40" cy="40" r="10" fill={GOLD}/>
-          </svg>
-        </>
+        <svg style={{ position:"absolute", left:"4%", top:"22%", opacity:0.06 }} width="52" height="52" viewBox="0 0 60 60">
+          <circle cx="12" cy="46" r="10" fill={GOLD}/>
+          <line x1="22" y1="46" x2="22" y2="8" stroke={GOLD} strokeWidth="4"/>
+          <line x1="22" y1="8"  x2="48" y2="3" stroke={GOLD} strokeWidth="4"/>
+          <line x1="48" y1="3"  x2="48" y2="41" stroke={GOLD} strokeWidth="4"/>
+          <circle cx="38" cy="41" r="10" fill={GOLD}/>
+        </svg>
       )}
       {isDance && (
-        <svg style={{ position:"absolute", left:"4%", top:"20%", opacity:0.07 }} width="70" height="100" viewBox="0 0 70 100">
-          <path d="M35 5 C20 15 10 35 20 55 C30 75 50 70 55 55 C60 40 50 20 35 5Z" fill={GOLD}/>
-          <path d="M20 55 C10 70 5 85 15 95" fill="none" stroke={GOLD} strokeWidth="3"/>
-          <path d="M55 55 C65 70 68 85 58 95" fill="none" stroke={GOLD} strokeWidth="3"/>
+        <svg style={{ position:"absolute", left:"5%", top:"18%", opacity:0.06 }} width="48" height="72" viewBox="0 0 48 72">
+          <ellipse cx="24" cy="28" rx="16" ry="22" fill="none" stroke={GOLD} strokeWidth="3"/>
+          <path d="M14 48 C6 58 4 68 10 72" fill="none" stroke={GOLD} strokeWidth="3" strokeLinecap="round"/>
+          <path d="M34 48 C42 58 44 68 38 72" fill="none" stroke={GOLD} strokeWidth="3" strokeLinecap="round"/>
         </svg>
       )}
       {isPhoto && (
-        <svg style={{ position:"absolute", left:"4%", top:"20%", opacity:0.07 }} width="80" height="68" viewBox="0 0 80 68">
-          <rect x="0" y="12" width="80" height="56" rx="8" fill={GOLD}/>
-          <circle cx="40" cy="38" r="18" fill="none" stroke="#1A1209" strokeWidth="4"/>
-          <circle cx="40" cy="38" r="10" fill="none" stroke="#1A1209" strokeWidth="3"/>
-          <rect x="52" y="4" width="16" height="12" rx="4" fill={GOLD}/>
-          <circle cx="14" cy="20" r="4" fill="#1A1209"/>
+        <svg style={{ position:"absolute", left:"4%", top:"18%", opacity:0.06 }} width="72" height="58" viewBox="0 0 72 58">
+          <rect x="0" y="10" width="72" height="48" rx="7" fill="none" stroke={GOLD} strokeWidth="3"/>
+          <circle cx="36" cy="32" r="14" fill="none" stroke={GOLD} strokeWidth="3"/>
+          <circle cx="36" cy="32" r="6"  fill="none" stroke={GOLD} strokeWidth="2"/>
+          <path d="M44 2 L52 10 L44 10Z" fill={GOLD}/>
         </svg>
       )}
-
-      {/* ── Spotlight cone from top-right */}
-      <svg style={{ position:"absolute", top:0, right:"14%", opacity:0.05 }} width="200" height="380" viewBox="0 0 200 380">
-        <defs>
-          <linearGradient id="spot" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={GOLD} stopOpacity="0.9"/>
-            <stop offset="100%" stopColor={GOLD} stopOpacity="0"/>
-          </linearGradient>
-        </defs>
-        <polygon points="100,0 0,380 200,380" fill="url(#spot)"/>
-      </svg>
     </div>
   );
 }
@@ -243,8 +202,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
   ];
 
   return (
-    <div style={{ minHeight:"100vh", background:BG, fontFamily:font, color:INK, overflowX:"hidden" }}>
-      <Grain/>
+    <div style={{ minHeight:"100vh", background:`linear-gradient(165deg, #3A2515 0%, ${BG} 38%, #261608 100%)`, fontFamily:font, color:INK, overflowX:"hidden" }}>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700;1,800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&family=Dancing+Script:wght@500;600;700&display=swap');
@@ -263,7 +221,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
         .gp-hero{position:relative;display:flex;align-items:center;padding:28px 56px 40px;gap:48px;min-height:520px}
 
-        .gp-photo-card{flex-shrink:0;width:340px;height:490px;border-radius:16px;overflow:hidden;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.6),0 0 0 1px rgba(196,155,48,.08)}
+        .gp-photo-card{flex-shrink:0;width:${PHOTO_W}px;height:568px;border-radius:16px;overflow:hidden;position:relative;box-shadow:0 28px 70px rgba(0,0,0,.55),0 0 0 1px rgba(196,155,48,.1)}
         .gp-photo-card img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
         .gp-photo-gradient{position:absolute;bottom:0;left:0;right:0;height:55%;background:linear-gradient(to top,rgba(15,8,2,.9) 0%,transparent 100%)}
         .gp-photo-cursive{position:absolute;bottom:48px;right:14px;font-family:'Dancing Script',cursive;font-size:17px;font-weight:500;color:rgba(237,224,197,.72);line-height:1.5;text-align:right;pointer-events:none;transform:rotate(-2deg)}
@@ -284,21 +242,20 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
         .gp-v-divider{width:1px;align-self:stretch;background:linear-gradient(to bottom,transparent 5%,rgba(196,155,48,.22) 30%,rgba(196,155,48,.22) 70%,transparent 95%);flex-shrink:0;margin:24px 0}
 
-        .gp-stats-panel{display:flex;align-items:center;gap:52px;flex-shrink:0}
-        .gp-v-stats{display:flex;flex-direction:column;gap:24px}
+        .gp-stats-panel{display:flex;align-items:center;gap:56px;flex-shrink:0}
+        .gp-v-stats{display:flex;flex-direction:column;gap:26px}
         .gp-stat-row{display:flex;align-items:center;gap:14px}
-        @keyframes shimmer{0%{background-position:-300% center}100%{background-position:300% center}}
-        .gp-stat-val{font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:800;line-height:1.1;background:linear-gradient(90deg,#C49B30 20%,#F5DC88 45%,#E8C060 55%,#C49B30 80%);background-size:300% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 4s linear infinite}
-        .gp-stat-label{font-size:10.5px;color:${MUTED};font-weight:500;margin-top:2px;text-transform:uppercase;letter-spacing:.06em}
-        .gp-script-tagline{font-family:'Dancing Script',cursive;font-size:32px;font-weight:700;line-height:1.25;white-space:nowrap;background:linear-gradient(160deg,#C49B30 0%,#F5DC88 35%,#E0B840 55%,#C49B30 85%);background-size:300% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 5s linear infinite;animation-delay:.8s}
+        .gp-stat-val{font-family:'Playfair Display',Georgia,serif;font-size:23px;font-weight:800;line-height:1.1;color:${GOLD}}
+        .gp-stat-label{font-size:10px;color:${MUTED};font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:.1em}
+        .gp-script-tagline{font-family:'Dancing Script',cursive;font-size:33px;font-weight:700;line-height:1.25;white-space:nowrap;color:rgba(245,220,136,0.68)}
 
-        .gp-tabs{background:rgba(22,14,6,.95);border-bottom:1px solid rgba(196,155,48,.1);display:flex;padding:14px 56px;gap:10px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:50}
+        .gp-tabs{background:rgba(28,18,8,.96);border-bottom:1px solid rgba(196,155,48,.1);display:flex;padding:14px 56px 14px ${56+PHOTO_W+48}px;gap:10px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:50}
         .gp-tabs::-webkit-scrollbar{display:none}
         .gp-tab{padding:9px 22px;border-radius:100px;background:transparent;border:1px solid rgba(196,155,48,.28);cursor:pointer;color:rgba(242,232,208,.45);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .18s;flex-shrink:0}
         .gp-tab.on{color:${INK};background:rgba(196,155,48,.12);border-color:${GOLD};font-weight:600}
         .gp-tab:hover:not(.on){color:rgba(242,232,208,.72);border-color:rgba(196,155,48,.5);background:rgba(196,155,48,.05)}
 
-        .gp-content{background:${BG};padding:48px 56px 80px;filter:brightness(1.06)}
+        .gp-content{background:${BG};padding:48px 56px 80px}
 
         .gp-port-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
         .gp-port-tile{position:relative;overflow:hidden;cursor:pointer;background:#0E0A06}
@@ -321,7 +278,8 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         @media(max-width:999px){
           .gp-nav{padding:0 24px}
           .gp-hero{flex-direction:column;align-items:flex-start;padding:20px 24px 28px;gap:24px;min-height:auto}
-          .gp-photo-card{width:100%;height:56vw;max-height:340px}
+          .gp-photo-card{width:100%;height:60vw;max-height:380px}
+          .gp-tabs{padding:12px 24px!important}
           .gp-v-divider,.gp-script-tagline{display:none}
           .gp-tabs{padding:0 24px}
           .gp-content{padding:28px 24px 80px}
