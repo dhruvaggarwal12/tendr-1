@@ -473,151 +473,183 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         <div className="gp-content-grid">
         <div> {/* left main column */}
 
-        {/* ABOUT */}
+        {/* ── ABOUT ── */}
         {tab === "About" && (
           <div>
+            {/* Bio — large editorial prose, no label needed */}
             {vendor.bio && (
-              <p style={{ fontSize:16, color:MUTED, lineHeight:1.95, marginBottom:44, fontWeight:300, fontStyle:"italic" }}>
+              <p style={{ fontFamily:serif, fontSize:"1.15rem", fontStyle:"italic", fontWeight:400, color:"rgba(245,237,216,0.78)", lineHeight:2, marginBottom:52, borderLeft:`2px solid rgba(196,155,48,0.3)`, paddingLeft:24 }}>
                 {vendor.bio}
               </p>
             )}
-            {highlights.length > 0 && (
-              <div>
-                <div style={{ fontSize:10, fontWeight:600, color:GOLD, textTransform:"uppercase", letterSpacing:"0.2em", marginBottom:24, opacity:0.7 }}>
-                  What Sets Me Apart
-                </div>
+
+            {/* Highlights — plain text list, no icons */}
+            {highlights.filter(h=>h.label).length > 0 && (
+              <div style={{ marginBottom:48 }}>
                 {highlights.filter(h => h.label).map((h, i) => (
-                  <div key={i} className="gp-highlight-row">
-                    <div style={{ color:GOLD, flexShrink:0, marginTop:1, opacity:0.7 }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                        <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <div style={{ fontSize:14, fontWeight:600, color:INK, marginBottom:4 }}>{h.label}</div>
-                      <div style={{ fontSize:13, color:MUTED, lineHeight:1.65 }}>{h.desc}</div>
-                    </div>
+                  <div key={i} style={{ display:"grid", gridTemplateColumns:"180px 1fr", gap:"0 32px", paddingBlock:20, borderBottom:`1px solid rgba(196,155,48,0.1)` }}>
+                    <div style={{ fontFamily:serif, fontSize:"1rem", fontWeight:700, color:INK, paddingTop:1 }}>{h.label}</div>
+                    <div style={{ fontSize:13.5, color:MUTED, lineHeight:1.7 }}>{h.desc}</div>
                   </div>
                 ))}
               </div>
             )}
-            {(genres.length > 0 || instr.length > 0) && (
-              <div style={{ marginTop:40 }}>
-                <div style={{ fontSize:10, fontWeight:600, color:GOLD, textTransform:"uppercase", letterSpacing:"0.2em", marginBottom:16, opacity:0.7 }}>
-                  {genres.length > 0 ? "Genres & Styles" : "Instruments"}
+
+            {/* Genres — inline, no card */}
+            {([...genres,...instr]).length > 0 && (
+              <div>
+                <div style={{ fontSize:11, color:DIM, letterSpacing:"0.12em", marginBottom:14, textTransform:"uppercase" }}>
+                  {genres.length > 0 ? "Genres" : "Instruments"}
                 </div>
                 <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
-                  {[...genres,...instr].map(g => <span key={g} className="gp-tag">{g}</span>)}
+                  {[...genres,...instr].map(g => (
+                    <span key={g} style={{ padding:"6px 16px", borderRadius:4, background:"rgba(196,155,48,0.08)", border:`1px solid rgba(196,155,48,0.18)`, fontSize:13, color:MUTED, fontWeight:400 }}>
+                      {g}
+                    </span>
+                  ))}
                 </div>
               </div>
             )}
+
+            {/* Social links — plain text */}
             {(social.showreel || social.instagram || social.youtube) && (
-              <div style={{ marginTop:40 }}>
-                <div style={{ fontSize:10, fontWeight:600, color:GOLD, textTransform:"uppercase", letterSpacing:"0.2em", marginBottom:16, opacity:0.7 }}>
-                  Find Me Online
-                </div>
-                <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
-                  {social.showreel && (
-                    <a href={social.showreel} target="_blank" rel="noopener noreferrer"
-                      style={{ display:"flex", alignItems:"center", gap:8, padding:"9px 18px", borderRadius:100, background:SURF, border:`1px solid ${GOLD_D}`, color:INK, textDecoration:"none", fontSize:13, fontWeight:500 }}>
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                      Watch Showreel
-                    </a>
-                  )}
-                  {social.instagram && (
-                    <a href={`https://instagram.com/${social.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer"
-                      style={{ display:"flex", alignItems:"center", gap:8, padding:"9px 18px", borderRadius:100, background:SURF, border:`1px solid ${GOLD_D}`, color:"#E1306C", textDecoration:"none", fontSize:13, fontWeight:500 }}>
-                      Instagram
-                    </a>
-                  )}
-                  {social.youtube && (
-                    <a href={`https://${social.youtube.replace(/^https?:\/\//,"")}`} target="_blank" rel="noopener noreferrer"
-                      style={{ display:"flex", alignItems:"center", gap:8, padding:"9px 18px", borderRadius:100, background:SURF, border:`1px solid ${GOLD_D}`, color:"#FF4444", textDecoration:"none", fontSize:13, fontWeight:500 }}>
-                      YouTube
-                    </a>
-                  )}
-                </div>
+              <div style={{ marginTop:44, display:"flex", gap:24, flexWrap:"wrap" }}>
+                {social.showreel && (
+                  <a href={social.showreel} target="_blank" rel="noopener noreferrer"
+                    style={{ fontSize:13.5, color:GOLD, textDecoration:"none", borderBottom:`1px solid rgba(196,155,48,0.4)`, paddingBottom:2 }}>
+                    Watch Showreel →
+                  </a>
+                )}
+                {social.instagram && (
+                  <a href={`https://instagram.com/${social.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer"
+                    style={{ fontSize:13.5, color:MUTED, textDecoration:"none", borderBottom:`1px solid rgba(242,232,208,0.2)`, paddingBottom:2 }}>
+                    {social.instagram}
+                  </a>
+                )}
+                {social.youtube && (
+                  <a href={`https://${social.youtube.replace(/^https?:\/\//,"")}`} target="_blank" rel="noopener noreferrer"
+                    style={{ fontSize:13.5, color:MUTED, textDecoration:"none", borderBottom:`1px solid rgba(242,232,208,0.2)`, paddingBottom:2 }}>
+                    YouTube
+                  </a>
+                )}
               </div>
             )}
           </div>
         )}
 
-        {/* SETLIST */}
+        {/* ── SETLIST ── */}
         {tab === "Setlist" && (
           <div>
-            <div style={{ fontSize:10, fontWeight:600, color:GOLD, textTransform:"uppercase", letterSpacing:"0.2em", marginBottom:28, opacity:0.7 }}>
-              Performance Rundown
+            <div style={{ fontSize:12, color:DIM, letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:36 }}>
+              {setlistArr.length} items
             </div>
-            {setlistArr.map((line, i) => (
-              <div key={i} className="gp-setlist-row">
-                <span style={{ fontSize:11, fontWeight:700, color:GOLD, opacity:0.55, minWidth:26, paddingTop:2, fontFamily:"monospace", letterSpacing:"0.04em", flexShrink:0 }}>
-                  {String(i+1).padStart(2,"0")}
-                </span>
-                <span style={{ fontSize:14.5, color:"rgba(237,224,197,0.72)", lineHeight:1.6 }}>{line}</span>
-              </div>
-            ))}
+            <div style={{ borderLeft:`2px solid rgba(196,155,48,0.2)`, paddingLeft:28 }}>
+              {setlistArr.map((line, i) => (
+                <div key={i} style={{ display:"flex", alignItems:"baseline", gap:20, paddingBlock:14 }}>
+                  <span style={{ fontSize:12, color:DIM, minWidth:18, flexShrink:0, fontVariantNumeric:"tabular-nums" }}>{i+1}</span>
+                  <span style={{ fontSize:15.5, color:"rgba(245,237,216,0.8)", lineHeight:1.55, fontWeight:400 }}>{line}</span>
+                </div>
+              ))}
+            </div>
             {(social.showreel || vendor.showreel) && (
-              <div style={{ marginTop:36 }}>
+              <div style={{ marginTop:40 }}>
                 <a href={social.showreel || vendor.showreel} target="_blank" rel="noopener noreferrer"
-                  style={{ display:"inline-flex", alignItems:"center", gap:10, padding:"12px 26px", borderRadius:100, background:"linear-gradient(135deg,#D4A940,#B07E1A)", color:"#1A1209", textDecoration:"none", fontSize:13.5, fontWeight:700, boxShadow:"0 4px 18px rgba(196,155,48,.22)" }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                  Watch Full Showreel
+                  style={{ fontSize:13.5, color:GOLD, textDecoration:"none", borderBottom:`1px solid rgba(196,155,48,0.4)`, paddingBottom:2 }}>
+                  Watch Showreel →
                 </a>
               </div>
             )}
           </div>
         )}
 
-        {/* PACKAGES */}
+        {/* ── PACKAGES ── */}
         {tab === "Packages" && (
-          <div style={{ display:"flex", flexDirection:"column" }}>
+          <div style={{ display:"flex", flexDirection:"column", gap:2 }}>
             {pkgs.map((pkg, i) => (
-              <div key={i} className="gp-pkg-card" style={{
-                background: i===1 ? "#221A10" : SURF,
-                border: i===1 ? `1px solid rgba(196,155,48,0.3)` : `1px solid ${GOLD_D}`,
+              <div key={i} style={{
+                borderTop: `1px solid ${GOLD_D}`,
+                paddingBlock: 36,
+                paddingInline: i===1 ? 28 : 0,
+                background: i===1 ? "rgba(196,155,48,0.05)" : "transparent",
+                borderRadius: i===1 ? 8 : 0,
+                borderLeft: i===1 ? `2px solid ${GOLD}` : "none",
               }}>
-                {pkg.badge && <div style={{ fontSize:9.5, fontWeight:700, color:GOLD, textTransform:"uppercase", letterSpacing:"0.18em", marginBottom:10, opacity:0.8 }}>{pkg.badge}</div>}
-                <div style={{ fontFamily:serif, fontSize:"1.35rem", fontWeight:700, color:INK, marginBottom:6 }}>{pkg.name}</div>
-                <div style={{ display:"flex", alignItems:"baseline", gap:8, marginBottom:18 }}>
-                  <span style={{ fontFamily:serif, fontSize:"1.9rem", fontWeight:800, fontStyle:"italic", color:GOLD }}>{fmt(pkg.price)}</span>
-                  {pkg.unit && <span style={{ fontSize:12, color:MUTED }}>{pkg.unit}</span>}
+                <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", flexWrap:"wrap", gap:8, marginBottom:8 }}>
+                  <div style={{ fontFamily:serif, fontSize:"1.5rem", fontWeight:700, color:INK }}>{pkg.name}</div>
+                  {pkg.badge && (
+                    <span style={{ fontSize:11, color:GOLD, fontWeight:600, border:`1px solid rgba(196,155,48,0.4)`, borderRadius:4, padding:"3px 10px", letterSpacing:"0.06em" }}>
+                      {pkg.badge}
+                    </span>
+                  )}
                 </div>
-                {pkg.bestFor && <div style={{ fontSize:12.5, color:MUTED, marginBottom:16, fontStyle:"italic" }}>Best for: {pkg.bestFor}</div>}
-                {pkg.items.map((item, j) => (
-                  <div key={j} style={{ display:"flex", alignItems:"flex-start", gap:12, marginTop:10 }}>
-                    <div style={{ width:1, borderRight:`1px solid ${GOLD}`, alignSelf:"stretch", opacity:0.35, flexShrink:0, marginTop:3 }}/>
-                    <span style={{ fontSize:13.5, color:MUTED, lineHeight:1.5 }}>{item}</span>
-                  </div>
-                ))}
+                <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:pkg.bestFor ? 8 : 24 }}>
+                  <span style={{ fontFamily:serif, fontSize:"2.1rem", fontWeight:800, fontStyle:"italic", color:GOLD }}>{fmt(pkg.price)}</span>
+                  {pkg.unit && <span style={{ fontSize:13, color:DIM }}>{pkg.unit}</span>}
+                </div>
+                {pkg.bestFor && (
+                  <div style={{ fontSize:12.5, color:DIM, marginBottom:20 }}>Best for: {pkg.bestFor}</div>
+                )}
+                <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                  {pkg.items.map((item, j) => (
+                    <div key={j} style={{ display:"flex", alignItems:"center", gap:12 }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="2.5" strokeLinecap="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      <span style={{ fontSize:14, color:MUTED, lineHeight:1.5 }}>{item}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
+            {pkgs.length > 0 && <div style={{ borderTop:`1px solid ${GOLD_D}` }}/>}
           </div>
         )}
 
-        {/* REVIEWS */}
+        {/* ── REVIEWS ── */}
         {tab === "Reviews" && (
           <div>
+            {/* Rating summary — minimal */}
             {rating > 0 && (
-              <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:40, paddingBottom:28, borderBottom:`1px solid ${GOLD_D}` }}>
-                <div style={{ fontFamily:serif, fontSize:"3rem", fontWeight:800, fontStyle:"italic", color:INK, lineHeight:1 }}>{rating.toFixed(1)}</div>
+              <div style={{ display:"flex", alignItems:"center", gap:20, marginBottom:52 }}>
+                <div style={{ fontFamily:serif, fontSize:"4rem", fontWeight:800, fontStyle:"italic", color:INK, lineHeight:1 }}>{rating.toFixed(1)}</div>
                 <div>
-                  <Stars r={rating} sz={15}/>
-                  <div style={{ fontSize:12, color:MUTED, marginTop:4 }}>{reviews.length} {reviews.length===1?"review":"reviews"}</div>
+                  <Stars r={rating} sz={14}/>
+                  <div style={{ fontSize:12.5, color:DIM, marginTop:6 }}>{reviews.length} {reviews.length===1?"review":"reviews"}</div>
                 </div>
               </div>
             )}
-            {reviews.map((r, i) => (
-              <div key={i} style={{ paddingBlock:28, borderBottom:`1px solid ${GOLD_D}` }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
-                  <div>
-                    <div style={{ fontSize:14.5, fontWeight:600, color:INK }}>{r.consumerName || "Client"}</div>
-                    <div style={{ fontSize:12, color:MUTED, marginTop:3 }}>{r.eventType || "Event"}</div>
+            {/* Review cards — quote-first, name below */}
+            {reviews.map((r, i) => {
+              const name = r.consumerName || "Client";
+              const initials = name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+              const rev = r.averageRating || r.ratings?.overall || 5;
+              return (
+                <div key={i} style={{ marginBottom:40 }}>
+                  {/* Large opening quote */}
+                  <div style={{ fontFamily:serif, fontSize:"4rem", lineHeight:0.6, color:GOLD, opacity:0.3, marginBottom:12, userSelect:"none" }}>&ldquo;</div>
+                  <p style={{ fontFamily:serif, fontSize:"1.05rem", fontStyle:"italic", color:"rgba(245,237,216,0.82)", lineHeight:1.9, margin:"0 0 20px", fontWeight:400 }}>
+                    {r.reviewText}
+                  </p>
+                  {/* Reviewer row */}
+                  <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+                    {/* Initial avatar */}
+                    <div style={{ width:36, height:36, borderRadius:"50%", background:"rgba(196,155,48,0.14)", border:`1px solid rgba(196,155,48,0.3)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:GOLD, flexShrink:0 }}>
+                      {initials}
+                    </div>
+                    <div>
+                      <div style={{ fontSize:14, fontWeight:600, color:INK }}>{name}</div>
+                      <div style={{ fontSize:12, color:DIM, marginTop:2 }}>{r.eventType || "Event"}</div>
+                    </div>
+                    <div style={{ marginLeft:"auto" }}>
+                      <Stars r={rev} sz={12}/>
+                    </div>
                   </div>
-                  <Stars r={r.averageRating || r.ratings?.overall || 5} sz={12}/>
+                  {i < reviews.length - 1 && (
+                    <div style={{ borderTop:`1px solid rgba(196,155,48,0.1)`, marginTop:36 }}/>
+                  )}
                 </div>
-                <p style={{ fontSize:14, color:MUTED, lineHeight:1.85, margin:0, fontStyle:"italic" }}>{r.reviewText}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
