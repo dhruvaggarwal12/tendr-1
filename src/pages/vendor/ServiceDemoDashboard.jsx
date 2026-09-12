@@ -252,7 +252,7 @@ export default function ServiceDemoDashboard() {
               : sType==='Caterer'
               ? {cuisine:profile.specialties}
               : {};
-            navigate('/VendorDetails',{state:{vendor:{
+            navigate(`/vendor/demo_${sType}`,{state:{vendor:{
               _id:`demo_${sType}`,
               avgReviewScore:profile.rating,
               verified:true,

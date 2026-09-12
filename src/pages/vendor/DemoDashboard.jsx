@@ -474,7 +474,7 @@ export default function DemoDashboard() {
           <div style={{ display: "flex", gap: 7, marginBottom: 10 }}>
             <button onClick={() => {
               const genresArr = Array.isArray(profile.genres) ? profile.genres : (profile.genres || "").split(",").map(g => g.trim()).filter(Boolean);
-              nav("/VendorDetails", { state: { vendor: {
+              nav(`/vendor/demo_${sType}`, { state: { vendor: {
                 _id: `demo_${sType}`,
                 name: profile.name,
                 serviceType: sType,
@@ -1495,7 +1495,7 @@ export default function DemoDashboard() {
                 {
                   label: "Portfolio",
                   href: null,
-                  onClick: () => { nav("/VendorDetails", { state: { vendor: { _id:`demo_${sType}`, name:profile.name, serviceType:sType, location:profile.city, bio:profile.bio, avgReviewScore:profile.rating, verified:true, portfolioPhotos:profile.portfolioPhotos||[], yearsOfExperience:profile.years, teamSize:profile.teamSize, totalEventsCompleted:profile.events, genres:profile.genres||[], showreel:profile.showreel, social:{instagram:profile.instagram,youtube:profile.youtube,showreel:profile.showreel}, setlist, packages:pkgs, ...profile, location:profile.city, avgReviewScore:profile.rating } }}); setLinkHubPreview(false); },
+                  onClick: () => { nav(`/vendor/demo_${sType}`, { state: { vendor: { _id:`demo_${sType}`, name:profile.name, serviceType:sType, location:profile.city, bio:profile.bio, avgReviewScore:profile.rating, verified:true, portfolioPhotos:profile.portfolioPhotos||[], yearsOfExperience:profile.years, teamSize:profile.teamSize, totalEventsCompleted:profile.events, genres:profile.genres||[], showreel:profile.showreel, social:{instagram:profile.instagram,youtube:profile.youtube,showreel:profile.showreel}, setlist, packages:pkgs, ...profile, location:profile.city, avgReviewScore:profile.rating } }}); setLinkHubPreview(false); },
                   icon: (
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
                   ),
