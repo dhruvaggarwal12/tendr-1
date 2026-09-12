@@ -225,6 +225,21 @@ const SETLIST_BY_TYPE = {
   Choreographer:["Sangeet opening group Bollywood number","Couple's first dance choreography","Bridesmaids' surprise number","Best men Bhangra set","Family group medley (all-ages)","Grand finale flash mob"],
 };
 
+// ── Default highlights per type ───────────────────────────────────────────────
+const HIGHLIGHTS_BY_TYPE = {
+  Anchor:           [{label:"Engaging & Energetic",desc:"Keeps every crowd involved"},{label:"Customized Scripts",desc:"Tailored to your event"},{label:"Bilingual EN / HI",desc:"Connects with every audience"},{label:"Punctual & Professional",desc:"On time, every time"}],
+  "Emcee/Host":     [{label:"Trilingual Host",desc:"English · Hindi · Kannada"},{label:"Sharp & Witty",desc:"Keeps the room laughing"},{label:"Corporate Specialist",desc:"Product launches & award nights"},{label:"Punctual & Prepared",desc:"Always on time"}],
+  DJ:               [{label:"Seamless Mixing",desc:"Zero dead air, all night"},{label:"Reads the Crowd",desc:"Adapts setlist in real time"},{label:"Premium Setup",desc:"Pioneer CDJ + Allen & Heath"},{label:"All Genres",desc:"Bollywood to techno & beyond"}],
+  Band:             [{label:"Live & Versatile",desc:"Full 6-piece live sound"},{label:"Wide Repertoire",desc:"Bollywood, Sufi, retro & more"},{label:"Crowd-Driven Sets",desc:"Adapts to your vibe"},{label:"Professional Sound",desc:"Full PA & sound engineer"}],
+  Singer:           [{label:"Soulful Voice",desc:"Trained in multiple genres"},{label:"Custom Setlist",desc:"Your favourite songs, live"},{label:"Stage Presence",desc:"Captivating every audience"},{label:"Live Accompaniment",desc:"Band or backing track"}],
+  Musician:         [{label:"Studio Quality",desc:"Concert-grade sound"},{label:"Genre Versatile",desc:"Classical to contemporary"},{label:"Live Feel",desc:"Every performance is unique"},{label:"Collaborative",desc:"Works with your vision"}],
+  Choreographer:    [{label:"Cinematic Routines",desc:"Wow your guests"},{label:"Quick Learners",desc:"Teach your family in 1 session"},{label:"All Styles",desc:"Bollywood, Latin, contemporary"},{label:"Event Specialist",desc:"Sangeet, receptions & more"}],
+  "Stand-up Comedian":[{label:"Clean & Inclusive",desc:"Appropriate for all audiences"},{label:"Crowd Work Pro",desc:"Improvises on the spot"},{label:"Corporate Safe",desc:"Office-friendly material"},{label:"High Energy",desc:"Keeps the laughter going"}],
+  Magician:         [{label:"Mind-Blowing Illusions",desc:"Leaves crowds speechless"},{label:"Interactive Acts",desc:"Volunteers from the crowd"},{label:"All Ages",desc:"Kids & adults both love it"},{label:"Close-Up & Stage",desc:"Versatile show formats"}],
+  Performer:        [{label:"High Energy",desc:"Crowd always entertained"},{label:"Versatile Acts",desc:"Adapts to any event theme"},{label:"Professional Setup",desc:"Full costumes & props"},{label:"Reliable & Punctual",desc:"Always delivers"}],
+  "AV Setup":       [{label:"Premium Equipment",desc:"Latest audio-visual gear"},{label:"Quick Setup",desc:"Ready before your guests arrive"},{label:"Tech Support",desc:"On-site throughout the event"},{label:"Scalable",desc:"Small rooms to large arenas"}],
+};
+
 // ── Booked dates for calendar ─────────────────────────────────────────────────
 const BOOKED_DATES = new Set(["2026-09-15", "2026-09-20", "2026-09-28", "2026-09-30", "2026-10-05", "2026-10-14", "2026-10-22"]);
 
@@ -307,7 +322,7 @@ export default function DemoDashboard() {
   const vendorId = authUser?._id || authUser?.id;
   // URL param ?type=DJ overrides auth serviceType — allows no-login demo browsing
   const sType = searchParams.get("type") || authUser?.serviceType || "Anchor";
-  const initProfile = PROFILES_BY_TYPE[sType] || PROFILES_BY_TYPE.Anchor;
+  const initProfile = { ...(PROFILES_BY_TYPE[sType] || PROFILES_BY_TYPE.Anchor), highlights: HIGHLIGHTS_BY_TYPE[sType] || HIGHLIGHTS_BY_TYPE.Anchor };
   const initTendr   = TENDR_BY_TYPE[sType]    || TENDR_BY_TYPE.Anchor;
   const initPkgs    = PACKAGES_BY_TYPE[sType] || PACKAGES_BY_TYPE.Anchor;
   const initSetlist = SETLIST_BY_TYPE[sType]  || SETLIST_BY_TYPE.Anchor;
@@ -320,12 +335,16 @@ export default function DemoDashboard() {
   const [pkgs,    setPkgs]      = usePersisted(`${sType}:pkgs`,    initPkgs);
   const [setlist, setSetlist]   = usePersisted(`${sType}:setlist`, initSetlist);
   const [portfolioPhotos, setPortfolioPhotos] = usePersisted(`${sType}:photos`, []);
+  const [mainPhotoUrl, setMainPhotoUrl]       = usePersisted(`${sType}:photoMain`, "");
   const [outside]               = useState(INIT_OUTSIDE); // outside orders: read-only mock
 
   const [profEdit, setProfEdit]   = useState(false);
   const [profDraft, setProfDraft] = useState({});
   const [replyDraft, setReplyDraft] = useState({});
-  const [newPhotoUrl, setNewPhotoUrl] = useState("");
+  const [newPhotoUrl, setNewPhotoUrl]   = useState("");
+  const [photoCategory, setPhotoCategory] = useState("Wedding");
+  const [photoCatFilter, setPhotoCatFilter] = useState("All");
+  const [dragOver, setDragOver]         = useState(false);
   const [pkgModal, setPkgModal]   = useState(null);
   const [pkgDraft, setPkgDraft]   = useState({});
   const [newItem, setNewItem]     = useState("");
@@ -396,6 +415,7 @@ export default function DemoDashboard() {
     setPkgs(initPkgs);       lsSet(`${sType}:pkgs`,    initPkgs);
     setSetlist(initSetlist); lsSet(`${sType}:setlist`, initSetlist);
     setPortfolioPhotos([]);  lsSet(`${sType}:photos`,  []);
+    setMainPhotoUrl("");     lsSet(`${sType}:photoMain`,"");
     setGigDraft({ genres: (initProfile.genres||[]).join(", "), showreel: initProfile.showreel, instagram: initProfile.instagram, youtube: initProfile.youtube, setlist: initProfile.setlist });
     setResetConfirm(false);
   }
@@ -485,6 +505,7 @@ export default function DemoDashboard() {
                 eventType: r.event,
                 createdAt: null,
               }));
+              const normPhotos = portfolioPhotos.map(p => typeof p === "string" ? { url: p, category: "All" } : p);
               nav(`/vendor/demo_${sType}`, { state: { vendor: {
                 _id: `demo_${sType}`,
                 name: profile.name,
@@ -493,7 +514,8 @@ export default function DemoDashboard() {
                 bio: profile.bio,
                 avgReviewScore: profile.rating,
                 verified: true,
-                portfolioPhotos: portfolioPhotos,
+                portfolioPhotos: normPhotos,
+                mainPhotoUrl: mainPhotoUrl || normPhotos[0]?.url || "",
                 yearsOfExperience: profile.years,
                 teamSize: profile.teamSize,
                 totalEventsCompleted: profile.events,
@@ -505,12 +527,14 @@ export default function DemoDashboard() {
                 setlist: setlist,
                 packages: pkgs,
                 reviews: mappedReviews,
+                highlights: profile.highlights || [],
                 ...profile,
                 location: profile.city,
                 avgReviewScore: profile.rating,
                 yearsOfExperience: profile.years,
                 totalEventsCompleted: profile.events,
-                portfolioPhotos: portfolioPhotos,
+                portfolioPhotos: normPhotos,
+                mainPhotoUrl: mainPhotoUrl || normPhotos[0]?.url || "",
               }}});
               setSidebarOpen(false);
             }} style={{ flex: 1, padding: "7px 0", borderRadius: 8, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
@@ -1046,66 +1070,129 @@ export default function DemoDashboard() {
 
     // ── PHOTOS & VIDEOS ───────────────────────────────────────────────────────
     if (tab === "photos") {
+      const CATS = ["Wedding","Corporate","Birthday","Sangeet","Concert","Other"];
+      const normalizeP = arr => (arr || []).map(p => typeof p === "string" ? { url: p, category: "All" } : p);
+      const normPhotos = normalizeP(portfolioPhotos);
+      const allCats = ["All", ...Array.from(new Set(normPhotos.map(p => p.category).filter(c => c && c !== "All")))];
+      const filtered = photoCatFilter === "All" ? normPhotos : normPhotos.filter(p => p.category === photoCatFilter);
+
       const isValidUrl = u => { try { return !!new URL(u); } catch { return false; } };
-      const addPhoto = () => {
+
+      const addByUrl = () => {
         const url = newPhotoUrl.trim();
         if (!url || !isValidUrl(url)) return;
-        setPortfolioPhotos(p => [...p, url]);
+        setPortfolioPhotos(p => [...normalizeP(p), { url, category: photoCategory }]);
         setNewPhotoUrl("");
       };
+
+      const handleFiles = files => {
+        Array.from(files).forEach(file => {
+          if (!file.type.startsWith("image/")) return;
+          if (file.size > 1.5 * 1024 * 1024) { alert(`"${file.name}" is over 1.5 MB — use a smaller image.`); return; }
+          const reader = new FileReader();
+          reader.onload = e => setPortfolioPhotos(p => [...normalizeP(p), { url: e.target.result, category: photoCategory }]);
+          reader.readAsDataURL(file);
+        });
+      };
+
+      const removePhoto = idx => {
+        const orig = normPhotos[idx];
+        if (mainPhotoUrl && orig.url === mainPhotoUrl) setMainPhotoUrl("");
+        setPortfolioPhotos(normPhotos.filter((_, j) => j !== idx));
+      };
+
+      const setMain = url => setMainPhotoUrl(prev => prev === url ? "" : url);
+
       return (
         <div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
             <h2 style={{ fontFamily: serif, fontSize: "1.7rem", fontWeight: 400, color: ink }}>Photos & Videos</h2>
-            <span style={{ fontSize: 12, color: muted }}>{portfolioPhotos.length} added</span>
-          </div>
-          <p style={{ fontSize: 13, color: muted, marginBottom: 22, lineHeight: 1.6 }}>
-            Add direct image URLs. These appear in your public profile's Portfolio tab.
-            Use links from Google Drive, Cloudinary, Imgur, or any public image host.
-          </p>
-
-          {/* Add URL input */}
-          <div style={{ background: "#fff", borderRadius: 16, padding: "18px 20px", border: "1px solid rgba(196,122,46,0.1)", marginBottom: 20 }}>
-            <label style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 10 }}>Add Photo / Video URL</label>
-            <div style={{ display: "flex", gap: 10 }}>
-              <input
-                value={newPhotoUrl}
-                onChange={e => setNewPhotoUrl(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && addPhoto()}
-                placeholder="https://i.imgur.com/your-photo.jpg"
-                style={{ flex: 1, padding: "10px 16px", borderRadius: 100, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13.5, fontFamily: font, color: ink, background: cream }}
-              />
-              <button onClick={addPhoto} style={{ padding: "10px 22px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Add</button>
-            </div>
-            <div style={{ fontSize: 11.5, color: muted, marginTop: 8 }}>
-              Tip: for video thumbnails paste a YouTube thumbnail URL like{" "}
-              <span style={{ fontFamily: "monospace", color: gold }}>https://img.youtube.com/vi/VIDEO_ID/0.jpg</span>
-            </div>
+            <span style={{ fontSize: 12, color: muted }}>{normPhotos.length} photo{normPhotos.length !== 1 ? "s" : ""}</span>
           </div>
 
-          {/* Photo grid */}
-          {portfolioPhotos.length > 0 ? (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              {portfolioPhotos.map((url, i) => (
-                <div key={i} style={{ position: "relative", borderRadius: 14, overflow: "hidden", aspectRatio: "4/3", background: cream }}>
-                  <img src={url} alt={`Photo ${i+1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    onError={e => { e.currentTarget.style.display = "none"; e.currentTarget.nextSibling.style.display = "flex"; }} />
-                  <div style={{ display: "none", position: "absolute", inset: 0, alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 6, color: muted, fontSize: 12 }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                    Invalid URL
-                  </div>
-                  <button onClick={() => setPortfolioPhotos(p => p.filter((_, j) => j !== i))}
-                    style={{ position: "absolute", top: 8, right: 8, width: 28, height: 28, borderRadius: "50%", background: "rgba(28,10,4,0.65)", color: "#fff", border: "none", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
-                    ×
-                  </button>
-                </div>
+          {/* Drag-drop / upload zone */}
+          <div
+            onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={e => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
+            style={{ background: dragOver ? "rgba(196,122,46,0.07)" : "#fff", border: `2px dashed ${dragOver ? gold : "rgba(196,122,46,0.2)"}`, borderRadius: 16, padding: "22px 20px", marginBottom: 16, transition: "all 0.15s" }}>
+            <div style={{ textAlign: "center", marginBottom: 14 }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={dragOver ? gold : muted} strokeWidth="1.5" strokeLinecap="round" style={{ display:"block",margin:"0 auto 8px" }}><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: ink, marginBottom: 4 }}>Drag & drop photos here</div>
+              <div style={{ fontSize: 12, color: muted, marginBottom: 12 }}>or upload from device · max 1.5 MB per photo</div>
+              <label style={{ display:"inline-block", padding:"9px 22px", borderRadius:100, background:`linear-gradient(135deg,${gold},${goldLt})`, color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer" }}>
+                Choose from Device
+                <input type="file" accept="image/*" multiple style={{ display:"none" }} onChange={e => handleFiles(e.target.files)} />
+              </label>
+            </div>
+            {/* Category for new upload */}
+            <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap", justifyContent:"center" }}>
+              <span style={{ fontSize:12, color:muted }}>Tag as:</span>
+              {CATS.map(c => (
+                <button key={c} onClick={() => setPhotoCategory(c)}
+                  style={{ padding:"4px 12px", borderRadius:100, border:`1.5px solid ${photoCategory===c?gold:"rgba(196,122,46,0.18)"}`, background:photoCategory===c?gold:"transparent", color:photoCategory===c?"#fff":muted, fontSize:11.5, fontWeight:600, cursor:"pointer", fontFamily:font }}>
+                  {c}
+                </button>
               ))}
             </div>
+          </div>
+
+          {/* URL paste */}
+          <div style={{ background:"#fff", borderRadius:14, padding:"14px 18px", border:"1px solid rgba(196,122,46,0.1)", marginBottom:20, display:"flex", gap:10 }}>
+            <input value={newPhotoUrl} onChange={e => setNewPhotoUrl(e.target.value)} onKeyDown={e => e.key==="Enter" && addByUrl()}
+              placeholder="Or paste an image URL…"
+              style={{ flex:1, padding:"9px 14px", borderRadius:100, border:"1px solid rgba(196,122,46,0.18)", fontSize:13, fontFamily:font, color:ink, background:cream }} />
+            <button onClick={addByUrl} style={{ padding:"9px 20px", borderRadius:100, background:`linear-gradient(135deg,${gold},${goldLt})`, color:"#fff", border:"none", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:font }}>Add</button>
+          </div>
+
+          {/* Filter tabs */}
+          {allCats.length > 1 && (
+            <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:16 }}>
+              {allCats.map(c => (
+                <button key={c} onClick={() => setPhotoCatFilter(c)}
+                  style={{ padding:"5px 14px", borderRadius:100, border:`1.5px solid ${photoCatFilter===c?gold:"rgba(196,122,46,0.18)"}`, background:photoCatFilter===c?gold:"transparent", color:photoCatFilter===c?"#fff":muted, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:font }}>
+                  {c}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Photo grid */}
+          {filtered.length > 0 ? (
+            <div>
+              {mainPhotoUrl && <div style={{ fontSize:11.5, color:gold, fontWeight:700, marginBottom:10 }}>★ Main portrait photo selected — appears on left in profile view</div>}
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+                {filtered.map((p, i) => {
+                  const url = p.url;
+                  const origIdx = normPhotos.findIndex(x => x.url === url);
+                  const isMain = mainPhotoUrl === url;
+                  return (
+                    <div key={i} style={{ position:"relative", borderRadius:14, overflow:"hidden", aspectRatio:"4/3", background:cream, border:isMain?`2px solid ${gold}`:"2px solid transparent" }}>
+                      <img src={url} alt={`Photo ${i+1}`} style={{ width:"100%", height:"100%", objectFit:"cover" }}
+                        onError={e => { e.currentTarget.style.display="none"; }} />
+                      {p.category && p.category !== "All" && (
+                        <span style={{ position:"absolute", bottom:8, left:8, background:"rgba(28,10,4,0.65)", color:"#fff", fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:100 }}>{p.category}</span>
+                      )}
+                      {isMain && <span style={{ position:"absolute", top:8, left:8, background:gold, color:"#fff", fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:100 }}>★ Main</span>}
+                      <div style={{ position:"absolute", top:8, right:8, display:"flex", gap:5 }}>
+                        <button onClick={() => setMain(url)} title="Set as main photo"
+                          style={{ width:26, height:26, borderRadius:"50%", background:isMain?"rgba(196,122,46,0.9)":"rgba(28,10,4,0.6)", color:"#fff", border:"none", fontSize:13, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                          ★
+                        </button>
+                        <button onClick={() => removePhoto(origIdx)}
+                          style={{ width:26, height:26, borderRadius:"50%", background:"rgba(28,10,4,0.65)", color:"#fff", border:"none", fontSize:16, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", lineHeight:1 }}>
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           ) : (
-            <div style={{ textAlign: "center", padding: "60px 20px", color: muted }}>
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.25" style={{ display: "block", margin: "0 auto 16px" }}><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-              <div style={{ fontFamily: serif, fontSize: "1.1rem", color: ink, marginBottom: 6 }}>No photos yet</div>
-              <div style={{ fontSize: 13 }}>Paste an image URL above to add your first portfolio photo.</div>
+            <div style={{ textAlign:"center", padding:"50px 20px", color:muted }}>
+              <div style={{ fontFamily:serif, fontSize:"1.1rem", color:ink, marginBottom:6 }}>No photos yet</div>
+              <div style={{ fontSize:13 }}>Upload from device or paste a URL above.</div>
             </div>
           )}
         </div>
@@ -1146,6 +1233,45 @@ export default function DemoDashboard() {
             ) : (
               <div style={{ fontSize: 13.5, color: "#4A3020", lineHeight: 1.75 }}>{profile.bio || <span style={{ color: muted, fontStyle: "italic" }}>No bio yet — click Edit Profile to add one.</span>}</div>
             )}
+          </div>
+
+          {/* Stats — shown on profile strip */}
+          <div style={{ background: "#fff", borderRadius: 16, padding: "20px", border: "1px solid rgba(196,122,46,0.1)", marginBottom: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 16 }}>Profile Stats Strip</div>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              {[["events","Events Done","430"],["years","Years Experience","10"],["city","Based In","Delhi"]].map(([k, l, ph]) => (
+                <div key={k} style={{ flex: 1, minWidth: 120 }}>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 5 }}>{l}</label>
+                  {profEdit ? (
+                    <input value={profDraft[k] || ""} onChange={e => setProfDraft(p => ({ ...p, [k]: e.target.value }))} placeholder={ph} style={{ width: "100%", padding: "9px 13px", borderRadius: 10, border: "1px solid rgba(196,122,46,0.2)", fontSize: 14, fontFamily: font, color: ink, background: cream, boxSizing: "border-box" }} />
+                  ) : (
+                    <div style={{ fontSize: 14, fontWeight: 700, color: ink, padding: "9px 0" }}>{profile[k] || <span style={{ color: muted, fontStyle: "italic", fontWeight: 400 }}>Not set</span>}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Highlights — 4 USP cards shown in About tab */}
+          <div style={{ background: "#fff", borderRadius: 16, padding: "20px", border: "1px solid rgba(196,122,46,0.1)", marginBottom: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Profile Highlights</div>
+            <div style={{ fontSize: 12, color: muted, marginBottom: 16 }}>These 4 items appear in your About tab on the public profile.</div>
+            {(profEdit ? (profDraft.highlights || []) : (profile.highlights || [])).map((h, i) => (
+              <div key={i} style={{ display: "flex", gap: 10, marginBottom: 12, alignItems: "flex-start" }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(196,122,46,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: gold, fontSize: 13, fontWeight: 700, flexShrink: 0, marginTop: 2 }}>{i+1}</div>
+                {profEdit ? (
+                  <div style={{ flex: 1, display: "flex", gap: 8 }}>
+                    <input value={h.label || ""} onChange={e => setProfDraft(p => { const hl = [...(p.highlights||[])]; hl[i] = { ...hl[i], label: e.target.value }; return { ...p, highlights: hl }; })} placeholder="Feature title" style={{ flex: 1, padding: "8px 12px", borderRadius: 10, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13, fontFamily: font, color: ink, background: cream }} />
+                    <input value={h.desc || ""} onChange={e => setProfDraft(p => { const hl = [...(p.highlights||[])]; hl[i] = { ...hl[i], desc: e.target.value }; return { ...p, highlights: hl }; })} placeholder="Short description" style={{ flex: 1.5, padding: "8px 12px", borderRadius: 10, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13, fontFamily: font, color: ink, background: cream }} />
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: ink }}>{h.label || <span style={{ color: muted, fontStyle: "italic" }}>No title</span>}</div>
+                    <div style={{ fontSize: 12.5, color: muted, marginTop: 2 }}>{h.desc}</div>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
 
           {/* Social handles */}
