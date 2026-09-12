@@ -256,6 +256,17 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         .gp-tab:hover:not(.on){color:rgba(242,232,208,.72);border-color:rgba(196,155,48,.5);background:rgba(196,155,48,.05)}
 
         .gp-content{background:${BG};padding:48px 56px 80px}
+        .gp-content-grid{display:grid;grid-template-columns:1fr 296px;gap:48px;align-items:start}
+        .gp-sidebar{position:sticky;top:80px;display:flex;flex-direction:column;gap:16px}
+        .gp-sb-card{background:${SURF};border:1px solid ${GOLD_D};border-radius:14px;padding:26px 24px}
+        .gp-sb-btn-book{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:13px;border-radius:100px;background:linear-gradient(135deg,#D4A940,#B07E1A);color:#1A1209;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:10px;transition:filter .15s}
+        .gp-sb-btn-book:hover{filter:brightness(1.07)}
+        .gp-sb-btn-msg{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:12px;border-radius:100px;background:transparent;border:1px solid rgba(196,155,48,.3);color:${MUTED};font-size:13.5px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+        .gp-sb-btn-msg:hover{background:rgba(196,155,48,.07);border-color:rgba(196,155,48,.48)}
+        .gp-sb-divider{border:none;border-top:1px solid ${GOLD_D};margin:18px 0}
+        .gp-sb-row{display:flex;align-items:center;gap:9px;margin-bottom:11px;font-size:13px;color:${MUTED}}
+        .gp-sb-row:last-child{margin-bottom:0}
+        .gp-sb-icon{flex-shrink:0;opacity:.65}
 
         .gp-port-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
         .gp-port-tile{position:relative;overflow:hidden;cursor:pointer;background:#0E0A06}
@@ -281,8 +292,9 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           .gp-photo-card{width:100%;height:60vw;max-height:380px}
           .gp-tabs{padding:12px 24px!important}
           .gp-v-divider,.gp-script-tagline{display:none}
-          .gp-tabs{padding:0 24px}
           .gp-content{padding:28px 24px 80px}
+          .gp-content-grid{grid-template-columns:1fr;gap:28px}
+          .gp-sidebar{position:static;display:none}
           .gp-port-grid{grid-template-columns:repeat(2,1fr)}
           .gp-mob-footer{display:flex!important}
         }
@@ -411,7 +423,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
       {/* CONTENT */}
       <div className="gp-content">
 
-        {/* PORTFOLIO */}
+        {/* PORTFOLIO — full width, no sidebar */}
         {tab === "Portfolio" && (
           allPhotos.length > 0 ? (
             <div>
@@ -456,9 +468,14 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           )
         )}
 
+        {/* NON-PORTFOLIO: two-column layout with sticky sidebar */}
+        {tab !== "Portfolio" && (
+        <div className="gp-content-grid">
+        <div> {/* left main column */}
+
         {/* ABOUT */}
         {tab === "About" && (
-          <div style={{ maxWidth:620 }}>
+          <div>
             {vendor.bio && (
               <p style={{ fontSize:16, color:MUTED, lineHeight:1.95, marginBottom:44, fontWeight:300, fontStyle:"italic" }}>
                 {vendor.bio}
@@ -527,7 +544,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
         {/* SETLIST */}
         {tab === "Setlist" && (
-          <div style={{ maxWidth:600 }}>
+          <div>
             <div style={{ fontSize:10, fontWeight:600, color:GOLD, textTransform:"uppercase", letterSpacing:"0.2em", marginBottom:28, opacity:0.7 }}>
               Performance Rundown
             </div>
@@ -553,7 +570,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
         {/* PACKAGES */}
         {tab === "Packages" && (
-          <div style={{ display:"flex", flexDirection:"column", maxWidth:620 }}>
+          <div style={{ display:"flex", flexDirection:"column" }}>
             {pkgs.map((pkg, i) => (
               <div key={i} className="gp-pkg-card" style={{
                 background: i===1 ? "#221A10" : SURF,
@@ -579,7 +596,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
         {/* REVIEWS */}
         {tab === "Reviews" && (
-          <div style={{ maxWidth:620 }}>
+          <div>
             {rating > 0 && (
               <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:40, paddingBottom:28, borderBottom:`1px solid ${GOLD_D}` }}>
                 <div style={{ fontFamily:serif, fontSize:"3rem", fontWeight:800, fontStyle:"italic", color:INK, lineHeight:1 }}>{rating.toFixed(1)}</div>
@@ -603,6 +620,102 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
             ))}
           </div>
         )}
+
+        </div>{/* /left column */}
+
+        {/* SIDEBAR */}
+        <aside className="gp-sidebar">
+          <div className="gp-sb-card">
+            {/* Starting price */}
+            {pkgs.length > 0 && (() => {
+              const min = Math.min(...pkgs.map(p=>Number(p.price)||0).filter(p=>p>0));
+              return min > 0 ? (
+                <div style={{ marginBottom:20 }}>
+                  <div style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.14em", color:MUTED, marginBottom:5 }}>Starting from</div>
+                  <div style={{ fontFamily:serif, fontSize:"1.75rem", fontWeight:800, fontStyle:"italic", color:GOLD, lineHeight:1 }}>
+                    ₹{min.toLocaleString("en-IN")}
+                  </div>
+                </div>
+              ) : null;
+            })()}
+            <button className="gp-sb-btn-book" onClick={onBook}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              Book Now
+            </button>
+            <button className="gp-sb-btn-msg" onClick={onChat}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              Message
+            </button>
+
+            <hr className="gp-sb-divider"/>
+
+            {rating > 0 && (
+              <div className="gp-sb-row">
+                <Stars r={rating} sz={13}/>
+                <span style={{ fontWeight:700, color:INK, marginLeft:2 }}>{rating.toFixed(1)}</span>
+                <span style={{ color:DIM }}>({reviews.length} reviews)</span>
+              </div>
+            )}
+            <div className="gp-sb-row">
+              <span className="gp-sb-icon"><div style={{ width:7, height:7, borderRadius:"50%", background:"#3CCA6B" }}/></span>
+              Available for bookings
+            </div>
+            <div className="gp-sb-row">
+              <span className="gp-sb-icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="2" strokeLinecap="round">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </span>
+              Replies in &lt; 2 hrs
+            </div>
+            {events > 0 && (
+              <div className="gp-sb-row">
+                <span className="gp-sb-icon">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="2" strokeLinecap="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                </span>
+                {events}+ events completed
+              </div>
+            )}
+            {city && (
+              <div className="gp-sb-row">
+                <span className="gp-sb-icon">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="2.2" strokeLinecap="round">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                  </svg>
+                </span>
+                {city}
+              </div>
+            )}
+
+            <hr className="gp-sb-divider"/>
+
+            <div style={{ fontSize:11, color:DIM, textAlign:"center", lineHeight:1.7 }}>
+              Secure booking &nbsp;·&nbsp; No hidden fees<br/>
+              <span style={{ color:GOLD, opacity:0.6 }}>Tendr</span> verified performer
+            </div>
+          </div>
+
+          {/* Quick share */}
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10 }}>
+            <button onClick={() => navigator.clipboard?.writeText(window.location.href)} style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 18px", borderRadius:100, background:"transparent", border:`1px solid ${GOLD_D}`, color:MUTED, fontSize:12.5, fontWeight:500, cursor:"pointer", fontFamily:font }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+              Share Profile
+            </button>
+          </div>
+        </aside>
+
+        </div>{/* /content-grid */}
+        )}{/* /non-portfolio condition */}
 
       </div>
 
