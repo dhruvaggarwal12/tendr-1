@@ -57,9 +57,10 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
     ? vendor.setlist.split("\n").filter(Boolean)
     : [];
 
-  const tabs = ["Portfolio", "About", "Packages", "Reviews"].filter(t => {
+  const tabs = ["Portfolio", "About", "Setlist", "Packages", "Reviews"].filter(t => {
     if (t === "Packages") return pkgs.length > 0;
     if (t === "Reviews")  return reviews.length > 0;
+    if (t === "Setlist")  return setlistArr.length > 0;
     return true;
   });
 
@@ -230,19 +231,6 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
                     </div>
                   </div>
                 )}
-                {setlistArr.length > 0 && (
-                  <div>
-                    <div style={{ fontSize:10.5, fontWeight:700, color:muted, textTransform:"uppercase", letterSpacing:"0.13em", marginBottom:16 }}>Sample Set</div>
-                    <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-                      {setlistArr.map((line, i) => (
-                        <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:16 }}>
-                          <span style={{ fontSize:11, fontWeight:800, color:gold, minWidth:22, paddingTop:2, fontFamily:"monospace" }}>{String(i+1).padStart(2,"0")}</span>
-                          <span style={{ fontSize:14, color:"#4A3020", lineHeight:1.55 }}>{line}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
                 {(social.showreel || social.instagram || social.youtube) && (
                   <div>
                     <div style={{ fontSize:10.5, fontWeight:700, color:muted, textTransform:"uppercase", letterSpacing:"0.13em", marginBottom:12 }}>Find Me Online</div>
@@ -269,6 +257,36 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
                         </a>
                       )}
                     </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── SETLIST ── */}
+            {tab === "Setlist" && (
+              <div style={{ maxWidth:600 }}>
+                <div style={{ fontSize:10.5, fontWeight:700, color:muted, textTransform:"uppercase", letterSpacing:"0.13em", marginBottom:24 }}>
+                  {vendor.serviceType === "Band" || vendor.serviceType === "Singer" || vendor.serviceType === "Musician"
+                    ? "Song List / Repertoire"
+                    : vendor.serviceType === "Choreographer"
+                    ? "Routines & Performances"
+                    : "Performance Rundown"}
+                </div>
+                <div style={{ display:"flex", flexDirection:"column", gap:0 }}>
+                  {setlistArr.map((line, i) => (
+                    <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:18, paddingBlock:"16px", borderBottom: i < setlistArr.length - 1 ? "1px solid rgba(196,122,46,0.07)" : "none" }}>
+                      <span style={{ fontSize:12, fontWeight:800, color:gold, minWidth:26, paddingTop:2, fontFamily:"monospace", flexShrink:0 }}>{String(i+1).padStart(2,"0")}</span>
+                      <span style={{ fontSize:14.5, color:"#4A3020", lineHeight:1.6 }}>{line}</span>
+                    </div>
+                  ))}
+                </div>
+                {vendor.showreel && (
+                  <div style={{ marginTop:32 }}>
+                    <a href={vendor.showreel} target="_blank" rel="noopener noreferrer"
+                      style={{ display:"inline-flex", alignItems:"center", gap:10, padding:"12px 24px", borderRadius:100, background:`linear-gradient(135deg,${gold},${goldLt})`, color:"#fff", textDecoration:"none", fontSize:13.5, fontWeight:700, boxShadow:"0 4px 18px rgba(196,122,46,0.3)" }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                      Watch Full Showreel
+                    </a>
                   </div>
                 )}
               </div>
