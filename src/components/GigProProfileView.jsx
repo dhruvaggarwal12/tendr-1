@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { MapPin, Clock, CalendarCheck, Share2, CheckCircle2 } from "lucide-react";
+import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 
 // ── Tokens ────────────────────────────────────────────────────────────────────
 const BG      = "#2E1F12";   // warm sienna — lighter, less AI-brown
@@ -264,13 +265,8 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
       {/* NAV */}
       <nav className="gp-nav">
-        <span className="gp-nav-logo">T E N D R</span>
+        <img src={tendrLogo} alt="Tendr" style={{ height:32, objectFit:"contain", marginRight:"auto" }}/>
         <div className="gp-nav-actions">
-          <button className="gp-search-btn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-          </button>
           <button className="gp-plan-btn">Plan Your Event</button>
         </div>
       </nav>
