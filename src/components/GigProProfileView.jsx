@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { MapPin, Clock, CalendarCheck, Share2, CheckCircle2 } from "lucide-react";
 
 // ── Tokens ────────────────────────────────────────────────────────────────────
 const BG      = "#2E1F12";   // warm sienna — lighter, less AI-brown
@@ -44,10 +45,8 @@ function Stars({ r = 0, sz = 13 }) {
 
 function VerifiedBadge() {
   return (
-    <span style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", width:26, height:26, borderRadius:"50%", background:GOLD, flexShrink:0, marginLeft:8, verticalAlign:"middle" }}>
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1A1209" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="20 6 9 17 4 12"/>
-      </svg>
+    <span style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginLeft:6, verticalAlign:"middle", color:GOLD }}>
+      <CheckCircle2 size={24} strokeWidth={2} fill={GOLD} color="#1A1209"/>
     </span>
   );
 }
@@ -189,9 +188,9 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
         .gp-info{flex:1;min-width:0;display:flex;flex-direction:column}
         .gp-eyebrow{font-size:10.5px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:${MUTED};margin-bottom:14px}
-        .gp-name{font-family:'Playfair Display',Georgia,serif;font-size:clamp(2.4rem,3.2vw,3.4rem);font-weight:800;color:${INK};line-height:.95;margin-bottom:16px;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+        .gp-name{font-family:'Playfair Display',Georgia,serif;font-size:clamp(2.6rem,3.4vw,3.8rem);font-weight:800;color:${INK};line-height:.92;margin-bottom:16px;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
         .gp-meta-row{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
-        .gp-bio{font-size:14px;color:${MUTED};line-height:1.85;margin-bottom:26px;max-width:460px;font-weight:400}
+        .gp-bio{font-size:15px;color:rgba(245,237,216,0.75);line-height:1.9;margin-bottom:26px;max-width:460px;font-weight:300}
         .gp-ctas{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
         .gp-btn-book{display:flex;align-items:center;gap:9px;padding:14px 28px;border-radius:100px;background:linear-gradient(135deg,#D4A940 0%,#B07E1A 100%);color:#1A1209;font-size:14.5px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 4px 20px rgba(196,155,48,.22);white-space:nowrap;transition:filter .15s}
         .gp-btn-book:hover{filter:brightness(1.07)}
@@ -208,11 +207,11 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         .gp-stat-label{font-size:10px;color:${MUTED};font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:.1em}
         .gp-script-tagline{font-family:'Dancing Script',cursive;font-size:33px;font-weight:700;line-height:1.25;white-space:nowrap;color:rgba(245,220,136,0.68)}
 
-        .gp-tabs{background:rgba(28,18,8,.96);border-bottom:1px solid rgba(196,155,48,.1);display:flex;padding:14px 56px 14px ${56+PHOTO_W+48}px;gap:10px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:50}
+        .gp-tabs{background:${CBG};border-bottom:1px solid ${CGOLD_D};display:flex;padding:14px 56px 14px ${56+PHOTO_W+48}px;gap:10px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:50}
         .gp-tabs::-webkit-scrollbar{display:none}
-        .gp-tab{padding:9px 22px;border-radius:100px;background:transparent;border:1px solid rgba(196,155,48,.28);cursor:pointer;color:rgba(242,232,208,.45);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .18s;flex-shrink:0}
-        .gp-tab.on{color:${INK};background:rgba(196,155,48,.12);border-color:${GOLD};font-weight:600}
-        .gp-tab:hover:not(.on){color:rgba(242,232,208,.72);border-color:rgba(196,155,48,.5);background:rgba(196,155,48,.05)}
+        .gp-tab{padding:9px 22px;border-radius:100px;background:transparent;border:1px solid ${CGOLD_D};cursor:pointer;color:${CDIM};font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .18s;flex-shrink:0}
+        .gp-tab.on{color:${CINK};background:rgba(196,155,48,.12);border-color:${GOLD};font-weight:600}
+        .gp-tab:hover:not(.on){color:${CMUTED};border-color:rgba(196,155,48,.45);background:rgba(196,155,48,.06)}
 
         .gp-content{background:${CBG};padding:48px 56px 80px;position:relative}
         .gp-content-grid{display:grid;grid-template-columns:1fr 296px;gap:48px;align-items:start}
@@ -278,10 +277,18 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
       {/* HERO */}
       <section className="gp-hero">
-        {/* Cinematic performer backdrop — blurred portrait at very low brightness */}
+        {/* Stage atmosphere backdrop */}
         <div style={{ position:"absolute", inset:0, zIndex:0, overflow:"hidden" }}>
-          <img src={portrait} alt="" aria-hidden="true" style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 20%", filter:"blur(38px) brightness(0.13) saturate(0.3)", transform:"scale(1.12)", pointerEvents:"none" }}/>
-          <div style={{ position:"absolute", inset:0, background:"linear-gradient(160deg, rgba(58,37,21,0.52) 0%, rgba(46,31,18,0.6) 45%, rgba(38,22,8,0.76) 100%)" }}/>
+          {/* Blurred portrait — barely visible, gives texture */}
+          <img src={portrait} alt="" aria-hidden="true" style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%", filter:"blur(28px) brightness(0.22) saturate(0.45)", transform:"scale(1.08)", pointerEvents:"none" }}/>
+          {/* Base dark veil */}
+          <div style={{ position:"absolute", inset:0, background:"rgba(22,13,5,0.72)" }}/>
+          {/* Stage light — warm amber from lower-left, like a spotlight from the floor */}
+          <div style={{ position:"absolute", bottom:"-10%", left:"18%", width:600, height:500, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(200,130,20,0.18) 0%, rgba(180,100,10,0.08) 40%, transparent 70%)", pointerEvents:"none" }}/>
+          {/* Secondary cool-warm fill — right side depth */}
+          <div style={{ position:"absolute", top:"5%", right:"8%", width:400, height:600, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(180,110,30,0.10) 0%, transparent 60%)", pointerEvents:"none" }}/>
+          {/* Thin top vignette */}
+          <div style={{ position:"absolute", top:0, left:0, right:0, height:"35%", background:"linear-gradient(to bottom, rgba(10,5,2,0.45) 0%, transparent 100%)", pointerEvents:"none" }}/>
         </div>
         <BgDecor serviceType={vendor.serviceType || ""}/>
 
@@ -333,10 +340,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
           <div className="gp-ctas">
             <button className="gp-btn-book" onClick={onBook}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <rect x="3" y="4" width="18" height="18" rx="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
+              <CalendarCheck size={16} strokeWidth={2.2}/>
               Book Now
             </button>
             <button className="gp-btn-msg" onClick={onChat}>
@@ -356,12 +360,12 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         {/* Vertical divider */}
         <div className="gp-v-divider" style={{ zIndex:1 }}/>
 
-        {/* Stats — clean data, no circles, no tagline */}
-        <div style={{ display:"flex", flexDirection:"column", gap:28, flexShrink:0, zIndex:1 }}>
+        {/* Stats — large, clear, editorial */}
+        <div style={{ display:"flex", flexDirection:"column", gap:32, flexShrink:0, zIndex:1, minWidth:130 }}>
           {stats.map(s => (
             <div key={s.label}>
-              <div style={{ fontFamily:serif, fontSize:"1.5rem", fontWeight:700, color:INK, lineHeight:1.05 }}>{s.val}</div>
-              <div style={{ fontSize:10, fontWeight:500, color:"rgba(245,237,216,0.4)", textTransform:"uppercase", letterSpacing:"0.16em", marginTop:5 }}>{s.label}</div>
+              <div style={{ fontFamily:serif, fontSize:"2.4rem", fontWeight:800, color:INK, lineHeight:1, letterSpacing:"-0.01em" }}>{s.val}</div>
+              <div style={{ fontSize:10.5, fontWeight:500, color:"rgba(245,237,216,0.45)", textTransform:"uppercase", letterSpacing:"0.18em", marginTop:6 }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -645,10 +649,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               ) : null;
             })()}
             <button className="gp-sb-btn-book" onClick={onBook}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                <rect x="3" y="4" width="18" height="18" rx="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
+              <CalendarCheck size={15} strokeWidth={2.2}/>
               Book Now
             </button>
             <button className="gp-sb-btn-msg" onClick={onChat}>
@@ -668,34 +669,22 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               </div>
             )}
             <div className="gp-sb-row">
-              <span className="gp-sb-icon"><div style={{ width:7, height:7, borderRadius:"50%", background:"#28A85A" }}/></span>
+              <span className="gp-sb-icon"><div style={{ width:7, height:7, borderRadius:"50%", background:"#28A85A", boxShadow:"0 0 6px rgba(40,168,90,0.5)" }}/></span>
               Available for bookings
             </div>
             <div className="gp-sb-row">
-              <span className="gp-sb-icon">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="2" strokeLinecap="round">
-                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                </svg>
-              </span>
+              <span className="gp-sb-icon"><Clock size={13} color={GOLD} strokeWidth={1.8}/></span>
               Replies in &lt; 2 hrs
             </div>
             {events > 0 && (
               <div className="gp-sb-row">
-                <span className="gp-sb-icon">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="2" strokeLinecap="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/>
-                  </svg>
-                </span>
+                <span className="gp-sb-icon"><CalendarCheck size={13} color={GOLD} strokeWidth={1.8}/></span>
                 {events}+ events completed
               </div>
             )}
             {city && (
               <div className="gp-sb-row">
-                <span className="gp-sb-icon">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="2.2" strokeLinecap="round">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-                  </svg>
-                </span>
+                <span className="gp-sb-icon"><MapPin size={12} color={GOLD} strokeWidth={1.8}/></span>
                 {city}
               </div>
             )}
@@ -711,10 +700,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           {/* Quick share */}
           <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10 }}>
             <button onClick={() => navigator.clipboard?.writeText(window.location.href)} style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 18px", borderRadius:100, background:"transparent", border:`1px solid ${CGOLD_D}`, color:CMUTED, fontSize:12.5, fontWeight:500, cursor:"pointer", fontFamily:font }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-              </svg>
+              <Share2 size={12} strokeWidth={1.8}/>
               Share Profile
             </button>
           </div>
