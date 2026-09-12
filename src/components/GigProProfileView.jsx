@@ -188,9 +188,9 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
         .gp-info{flex:1;min-width:0;display:flex;flex-direction:column}
         .gp-eyebrow{font-size:10.5px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:${MUTED};margin-bottom:14px}
-        .gp-name{font-family:'Playfair Display',Georgia,serif;font-size:clamp(2.6rem,3.4vw,3.8rem);font-weight:800;color:${INK};line-height:.92;margin-bottom:16px;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
-        .gp-meta-row{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
-        .gp-bio{font-size:15px;color:rgba(245,237,216,0.75);line-height:1.9;margin-bottom:26px;max-width:460px;font-weight:300}
+        .gp-name{font-family:'Playfair Display',Georgia,serif;font-size:clamp(3.2rem,4.5vw,5.2rem);font-weight:800;color:${INK};line-height:.88;margin-bottom:20px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;letter-spacing:-0.01em}
+        .gp-meta-row{display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap}
+        .gp-bio{font-size:16.5px;color:rgba(245,237,216,0.8);line-height:1.85;margin-bottom:28px;max-width:460px;font-weight:400}
         .gp-ctas{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
         .gp-btn-book{display:flex;align-items:center;gap:9px;padding:14px 28px;border-radius:100px;background:linear-gradient(135deg,#D4A940 0%,#B07E1A 100%);color:#1A1209;font-size:14.5px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 4px 20px rgba(196,155,48,.22);white-space:nowrap;transition:filter .15s}
         .gp-btn-book:hover{filter:brightness(1.07)}
@@ -279,16 +279,20 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
       <section className="gp-hero">
         {/* Stage atmosphere backdrop */}
         <div style={{ position:"absolute", inset:0, zIndex:0, overflow:"hidden" }}>
-          {/* Blurred portrait — barely visible, gives texture */}
-          <img src={portrait} alt="" aria-hidden="true" style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%", filter:"blur(28px) brightness(0.22) saturate(0.45)", transform:"scale(1.08)", pointerEvents:"none" }}/>
-          {/* Base dark veil */}
-          <div style={{ position:"absolute", inset:0, background:"rgba(22,13,5,0.72)" }}/>
-          {/* Stage light — warm amber from lower-left, like a spotlight from the floor */}
-          <div style={{ position:"absolute", bottom:"-10%", left:"18%", width:600, height:500, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(200,130,20,0.18) 0%, rgba(180,100,10,0.08) 40%, transparent 70%)", pointerEvents:"none" }}/>
-          {/* Secondary cool-warm fill — right side depth */}
-          <div style={{ position:"absolute", top:"5%", right:"8%", width:400, height:600, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(180,110,30,0.10) 0%, transparent 60%)", pointerEvents:"none" }}/>
-          {/* Thin top vignette */}
-          <div style={{ position:"absolute", top:0, left:0, right:0, height:"35%", background:"linear-gradient(to bottom, rgba(10,5,2,0.45) 0%, transparent 100%)", pointerEvents:"none" }}/>
+          {/* Blurred portrait — visible enough to add performer-specific texture */}
+          <img src={portrait} alt="" aria-hidden="true" style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 15%", filter:"blur(22px) brightness(0.35) saturate(0.55)", transform:"scale(1.06)", pointerEvents:"none" }}/>
+          {/* Base warm veil — less opaque so portrait shows through */}
+          <div style={{ position:"absolute", inset:0, background:"rgba(18,10,3,0.55)" }}/>
+          {/* Stage floor light — strong warm amber sweep from bottom-center */}
+          <div style={{ position:"absolute", bottom:"-15%", left:"10%", right:"10%", height:"70%", background:"radial-gradient(ellipse at 50% 100%, rgba(210,140,20,0.28) 0%, rgba(180,100,10,0.14) 38%, transparent 65%)", pointerEvents:"none" }}/>
+          {/* Left fill — warm copper from the photo side */}
+          <div style={{ position:"absolute", top:"10%", left:0, width:"45%", height:"80%", background:"radial-gradient(ellipse at 0% 50%, rgba(180,105,25,0.18) 0%, transparent 60%)", pointerEvents:"none" }}/>
+          {/* Right warmth — keeps it from going cold on the stats side */}
+          <div style={{ position:"absolute", top:"5%", right:"4%", width:320, height:520, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(165,100,20,0.13) 0%, transparent 60%)", pointerEvents:"none" }}/>
+          {/* Grain texture overlay for depth and richness */}
+          <div style={{ position:"absolute", inset:0, backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E")`, backgroundRepeat:"repeat", mixBlendMode:"soft-light", opacity:0.6, pointerEvents:"none" }}/>
+          {/* Top vignette to keep nav readable */}
+          <div style={{ position:"absolute", top:0, left:0, right:0, height:"28%", background:"linear-gradient(to bottom, rgba(8,4,1,0.55) 0%, transparent 100%)", pointerEvents:"none" }}/>
         </div>
         <BgDecor serviceType={vendor.serviceType || ""}/>
 
@@ -447,20 +451,20 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         {tab === "About" && (
           <div>
             {vendor.bio && (
-              <p style={{ fontSize:15.5, color:CMUTED, lineHeight:1.9, marginBottom:52, fontWeight:300 }}>
+              <p style={{ fontSize:17, color:CMUTED, lineHeight:1.85, marginBottom:52, fontWeight:400 }}>
                 {vendor.bio}
               </p>
             )}
 
             {highlights.filter(h=>h.label).length > 0 && (
               <div style={{ marginBottom:52 }}>
-                <div style={{ fontFamily:serif, fontSize:"1.05rem", fontWeight:700, color:CINK, marginBottom:32 }}>
+                <div style={{ fontFamily:serif, fontSize:"1.25rem", fontWeight:700, color:CINK, marginBottom:32 }}>
                   Why people book {vendor.name?.split(" ")[0] || "this performer"}
                 </div>
                 {highlights.filter(h => h.label).map((h, i) => (
                   <div key={i} style={{ marginBottom:28 }}>
-                    <div style={{ fontSize:14.5, fontWeight:600, color:CINK, marginBottom:5 }}>{h.label}</div>
-                    {h.desc && <div style={{ fontSize:13.5, color:CMUTED, lineHeight:1.7, fontWeight:300 }}>{h.desc}</div>}
+                    <div style={{ fontSize:16, fontWeight:700, color:CINK, marginBottom:6 }}>{h.label}</div>
+                    {h.desc && <div style={{ fontSize:15, color:CMUTED, lineHeight:1.75, fontWeight:400 }}>{h.desc}</div>}
                   </div>
                 ))}
               </div>
@@ -470,7 +474,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               <div>
                 <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
                   {[...genres,...instr].map(g => (
-                    <span key={g} style={{ padding:"5px 14px", borderRadius:20, background:"rgba(196,155,48,0.08)", border:`1px solid rgba(196,155,48,0.22)`, fontSize:12.5, color:CMUTED, fontWeight:400 }}>
+                    <span key={g} style={{ padding:"7px 18px", borderRadius:20, background:"rgba(196,155,48,0.08)", border:`1px solid rgba(196,155,48,0.22)`, fontSize:14, color:CMUTED, fontWeight:500 }}>
                       {g}
                     </span>
                   ))}
@@ -506,16 +510,16 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         {/* ── SETLIST ── */}
         {tab === "Setlist" && (
           <div>
-            <div style={{ fontFamily:serif, fontSize:"1.35rem", fontWeight:700, color:CINK, marginBottom:8 }}>The Experience</div>
-            <p style={{ fontSize:13.5, color:CMUTED, lineHeight:1.75, marginBottom:44, fontWeight:300, maxWidth:460 }}>
+            <div style={{ fontFamily:serif, fontSize:"1.5rem", fontWeight:700, color:CINK, marginBottom:8 }}>The Experience</div>
+            <p style={{ fontSize:15, color:CMUTED, lineHeight:1.75, marginBottom:44, fontWeight:400, maxWidth:460 }}>
               Here's how the performance unfolds — from setting the tone to leaving the room energised.
             </p>
 
             <div>
               {setlistArr.map((line, i) => (
-                <div key={i} style={{ display:"grid", gridTemplateColumns:"28px 1fr", gap:"0 20px", marginBottom:32 }}>
-                  <div style={{ fontSize:11, color:CDIM, fontVariantNumeric:"tabular-nums", paddingTop:4 }}>{String(i+1).padStart(2,"0")}</div>
-                  <div style={{ fontSize:15.5, color:CINK, fontWeight:500, lineHeight:1.5 }}>{line}</div>
+                <div key={i} style={{ display:"grid", gridTemplateColumns:"32px 1fr", gap:"0 20px", marginBottom:32 }}>
+                  <div style={{ fontSize:12, color:CDIM, fontVariantNumeric:"tabular-nums", paddingTop:4, fontWeight:500 }}>{String(i+1).padStart(2,"0")}</div>
+                  <div style={{ fontSize:17.5, color:CINK, fontWeight:600, lineHeight:1.45 }}>{line}</div>
                 </div>
               ))}
             </div>
@@ -535,7 +539,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         {/* ── PACKAGES ── */}
         {tab === "Packages" && (
           <div>
-            <p style={{ fontSize:13.5, color:CMUTED, lineHeight:1.75, marginBottom:44, fontWeight:300 }}>
+            <p style={{ fontSize:15.5, color:CMUTED, lineHeight:1.75, marginBottom:44, fontWeight:400 }}>
               Choose the kind of experience you want for your event.
             </p>
             {pkgs.map((pkg, i) => {
@@ -550,24 +554,24 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
                   borderLeft: featured ? `3px solid ${GOLD}` : "none",
                   paddingLeft: featured ? 28 : 0,
                 }}>
-                  <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:4, flexWrap:"wrap", gap:8 }}>
-                    <div style={{ fontFamily:serif, fontSize:"1.4rem", fontWeight:700, color:CINK }}>{pkg.name}</div>
+                  <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:6, flexWrap:"wrap", gap:8 }}>
+                    <div style={{ fontFamily:serif, fontSize:"1.65rem", fontWeight:700, color:CINK }}>{pkg.name}</div>
                     {(pkg.badge || featured) && (
-                      <span style={{ fontSize:10.5, color:GOLD, fontWeight:500, letterSpacing:"0.08em", paddingTop:6 }}>
+                      <span style={{ fontSize:11.5, color:GOLD, fontWeight:600, letterSpacing:"0.08em", paddingTop:8 }}>
                         {pkg.badge || "Recommended"}
                       </span>
                     )}
                   </div>
-                  <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:pkg.bestFor ? 6 : 16 }}>
-                    <span style={{ fontFamily:serif, fontSize:"2rem", fontWeight:800, fontStyle:"italic", color:GOLD }}>{fmt(pkg.price)}</span>
-                    {pkg.unit && <span style={{ fontSize:13, color:CDIM }}>{pkg.unit}</span>}
+                  <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:pkg.bestFor ? 8 : 20 }}>
+                    <span style={{ fontFamily:serif, fontSize:"2.3rem", fontWeight:800, fontStyle:"italic", color:GOLD }}>{fmt(pkg.price)}</span>
+                    {pkg.unit && <span style={{ fontSize:14, color:CDIM }}>{pkg.unit}</span>}
                   </div>
                   {pkg.bestFor && (
-                    <div style={{ fontSize:12.5, color:CDIM, marginBottom:18, fontStyle:"italic" }}>Ideal for {pkg.bestFor}</div>
+                    <div style={{ fontSize:14, color:CDIM, marginBottom:20, fontStyle:"italic" }}>Ideal for {pkg.bestFor}</div>
                   )}
-                  <div style={{ marginBottom:20 }}>
+                  <div style={{ marginBottom:22 }}>
                     {pkg.items.map((item, j) => (
-                      <div key={j} style={{ fontSize:13.5, color:CMUTED, lineHeight:1.6, paddingBlock:3, fontWeight:300 }}>
+                      <div key={j} style={{ fontSize:15, color:CMUTED, lineHeight:1.7, paddingBlock:4, fontWeight:400 }}>
                         — {item}
                       </div>
                     ))}
@@ -609,20 +613,20 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               const rev = r.averageRating || r.ratings?.overall || 5;
               const featured = i === 0;
               return (
-                <div key={i} style={{ marginBottom: featured ? 48 : 32, paddingBottom: featured ? 48 : 28, borderBottom:`1px solid rgba(196,155,48,0.14)` }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
-                    <div style={{ width:featured ? 42 : 34, height:featured ? 42 : 34, borderRadius:"50%", background:"rgba(196,155,48,0.1)", border:`1px solid rgba(196,155,48,0.28)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:featured?13:11, fontWeight:700, color:"rgba(150,100,15,0.8)", flexShrink:0 }}>
+                <div key={i} style={{ marginBottom: featured ? 52 : 36, paddingBottom: featured ? 52 : 32, borderBottom:`1px solid rgba(196,155,48,0.14)` }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:16 }}>
+                    <div style={{ width:featured ? 46 : 38, height:featured ? 46 : 38, borderRadius:"50%", background:"rgba(196,155,48,0.1)", border:`1px solid rgba(196,155,48,0.28)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:featured?14:12, fontWeight:700, color:"rgba(150,100,15,0.85)", flexShrink:0 }}>
                       {initials}
                     </div>
                     <div style={{ flex:1 }}>
-                      <div style={{ fontSize:featured?15:13.5, fontWeight:600, color:CINK }}>{name}</div>
-                      <div style={{ fontSize:11.5, color:CDIM, marginTop:2 }}>
+                      <div style={{ fontSize:featured?16.5:15, fontWeight:700, color:CINK }}>{name}</div>
+                      <div style={{ fontSize:13, color:CDIM, marginTop:3 }}>
                         {r.eventType || "Event"}{r.date ? ` · ${r.date}` : ""}
                       </div>
                     </div>
-                    <Stars r={rev} sz={featured?13:11}/>
+                    <Stars r={rev} sz={featured?14:12}/>
                   </div>
-                  <p style={{ fontSize:featured?15:13.5, color:featured?CMUTED:CDIM, lineHeight:featured?1.85:1.7, margin:0, fontWeight:featured?400:300, paddingLeft: 54 }}>
+                  <p style={{ fontSize:featured?16.5:15, color:CMUTED, lineHeight:1.85, margin:0, fontWeight:featured?400:400, paddingLeft:60 }}>
                     {r.reviewText}
                   </p>
                 </div>
