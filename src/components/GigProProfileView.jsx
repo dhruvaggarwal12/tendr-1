@@ -178,16 +178,16 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         .gp-plan-btn{padding:10px 22px;border-radius:100px;border:1px solid rgba(196,155,48,.55);background:transparent;color:${GOLD};font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;transition:background .15s}
         .gp-plan-btn:hover{background:rgba(196,155,48,.1)}
 
-        .gp-hero{position:relative;display:flex;align-items:center;padding:28px 56px 40px;gap:48px;min-height:520px}
+        .gp-hero{position:relative;display:flex;align-items:stretch;padding:40px 56px 72px;gap:44px;min-height:580px}
 
-        .gp-photo-card{flex-shrink:0;width:${PHOTO_W}px;height:568px;border-radius:16px;overflow:hidden;position:relative;box-shadow:0 28px 70px rgba(0,0,0,.55),0 0 0 1px rgba(196,155,48,.1)}
+        .gp-photo-card{flex-shrink:0;width:440px;align-self:stretch;min-height:500px;border-radius:16px;overflow:hidden;position:relative;box-shadow:0 28px 70px rgba(0,0,0,.55),0 0 0 1px rgba(196,155,48,.1)}
         .gp-photo-card img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
         .gp-photo-gradient{position:absolute;bottom:0;left:0;right:0;height:55%;background:linear-gradient(to top,rgba(15,8,2,.9) 0%,transparent 100%)}
         .gp-photo-cursive{position:absolute;bottom:48px;right:14px;font-family:'Dancing Script',cursive;font-size:17px;font-weight:500;color:rgba(237,224,197,.72);line-height:1.5;text-align:right;pointer-events:none;transform:rotate(-2deg)}
         .gp-avail-badge{position:absolute;bottom:14px;left:14px;display:flex;align-items:center;gap:6px;background:rgba(20,13,5,.82);backdrop-filter:blur(8px);border-radius:100px;padding:6px 12px;font-size:11.5px;font-weight:500;color:${INK};white-space:nowrap}
         .gp-green-dot{width:7px;height:7px;border-radius:50%;background:#3CCA6B;flex-shrink:0}
 
-        .gp-info{flex:1;min-width:0;display:flex;flex-direction:column}
+        .gp-info{flex:0 0 310px;min-width:0;display:flex;flex-direction:column;justify-content:center;padding-left:22px;border-left:2px solid rgba(196,155,48,0.28);position:relative;overflow:hidden}
         .gp-eyebrow{font-size:10.5px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:${MUTED};margin-bottom:14px}
         .gp-name{font-family:'Playfair Display',Georgia,serif;font-size:clamp(3.2rem,4.5vw,5.2rem);font-weight:800;color:${INK};line-height:.88;margin-bottom:20px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;letter-spacing:-0.01em}
         .gp-meta-row{display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap}
@@ -208,7 +208,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         .gp-stat-label{font-size:10px;color:${MUTED};font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:.1em}
         .gp-script-tagline{font-family:'Dancing Script',cursive;font-size:33px;font-weight:700;line-height:1.25;white-space:nowrap;color:rgba(245,220,136,0.68)}
 
-        .gp-tabs{background:${CBG};border-bottom:1px solid ${CGOLD_D};display:flex;padding:14px 56px 14px ${56+PHOTO_W+48}px;gap:10px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:50}
+        .gp-tabs{background:${CBG};border-bottom:1px solid ${CGOLD_D};display:flex;padding:14px 56px;gap:10px;overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:50}
         .gp-tabs::-webkit-scrollbar{display:none}
         .gp-tab{padding:9px 22px;border-radius:100px;background:transparent;border:1px solid ${CGOLD_D};cursor:pointer;color:${CDIM};font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .18s;flex-shrink:0}
         .gp-tab.on{color:${CINK};background:rgba(196,155,48,.12);border-color:${GOLD};font-weight:600}
@@ -247,8 +247,9 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
         @media(max-width:999px){
           .gp-nav{padding:0 24px}
-          .gp-hero{flex-direction:column;align-items:flex-start;padding:20px 24px 28px;gap:24px;min-height:auto}
-          .gp-photo-card{width:100%;height:60vw;max-height:380px}
+          .gp-hero{flex-direction:column;align-items:stretch;padding:20px 24px 56px;gap:20px;min-height:auto}
+          .gp-info{flex:1 1 auto;border-left:none;border-top:2px solid rgba(196,155,48,0.28);padding-left:0;padding-top:20px}
+          .gp-photo-card{width:100%;min-height:auto;height:62vw;max-height:420px;align-self:auto}
           .gp-tabs{padding:12px 24px!important}
           .gp-v-divider,.gp-script-tagline{display:none}
           .gp-content{padding:28px 24px 80px}
@@ -292,19 +293,22 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         </div>
         <BgDecor serviceType={vendor.serviceType || ""}/>
 
-        {/* Photo card */}
-        <div className="gp-photo-card" style={{ zIndex:1 }}>
-          <img src={portrait} alt={vendor.name}/>
-          <div className="gp-photo-gradient"/>
-          <div className="gp-photo-cursive">Turning Moments<br/>Into Memories</div>
-          <div className="gp-avail-badge">
-            <div className="gp-green-dot"/>
-            Available for Bookings
-          </div>
-        </div>
-
-        {/* Info */}
+        {/* INFO — LEFT, editorial block */}
         <div className="gp-info" style={{ zIndex:1 }}>
+          {/* Subtle cross-mark texture behind info */}
+          <svg style={{ position:"absolute", inset:0, width:"100%", height:"100%", opacity:0.05, pointerEvents:"none" }} aria-hidden="true">
+            <defs>
+              <pattern id="cgx" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
+                <line x1="14" y1="10" x2="14" y2="18" stroke={INK} strokeWidth="0.9"/>
+                <line x1="10" y1="14" x2="18" y2="14" stroke={INK} strokeWidth="0.9"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#cgx)"/>
+          </svg>
+
+          {/* Opening bracket — editorial accent */}
+          <span style={{ display:"block", fontFamily:serif, fontSize:"2.8rem", fontWeight:400, color:GOLD, opacity:0.5, lineHeight:0.7, marginBottom:10 }}>[</span>
+
           <div className="gp-eyebrow">Professional {vendor.serviceType || "Performer"}</div>
 
           <h1 className="gp-name">
@@ -312,14 +316,13 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
             {(vendor.phoneVerified || vendor.verified) && <VerifiedBadge/>}
           </h1>
 
+          {/* Gold accent rule */}
+          <div style={{ width:52, height:2, background:`linear-gradient(to right, ${GOLD}, transparent)`, marginBottom:20, flexShrink:0 }}/>
+
           <div className="gp-meta-row">
             {city && (
               <span style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:13.5, color:MUTED }}>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                  <circle cx="12" cy="10" r="3"/>
-                </svg>
-                {city}
+                <MapPin size={11} strokeWidth={2.5}/>{city}
               </span>
             )}
             {city && rating > 0 && <span style={{ color:"rgba(196,155,48,0.3)", fontSize:13 }}>|</span>}
@@ -327,14 +330,14 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               <span style={{ display:"inline-flex", alignItems:"center", gap:6 }}>
                 <Stars r={rating} sz={13}/>
                 <span style={{ fontSize:14, fontWeight:700, color:INK }}>{rating.toFixed(1)}</span>
-                {reviews.length > 0 && <span style={{ fontSize:13, color:MUTED }}>({reviews.length} reviews)</span>}
+                {reviews.length > 0 && <span style={{ fontSize:13, color:MUTED }}>({reviews.length})</span>}
               </span>
             )}
           </div>
 
           {vendor.bio && (
             <p className="gp-bio">
-              {vendor.bio.length > 240 ? vendor.bio.slice(0,240)+"…" : vendor.bio}
+              {vendor.bio.length > 200 ? vendor.bio.slice(0,200)+"…" : vendor.bio}
             </p>
           )}
 
@@ -357,17 +360,51 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           </div>
         </div>
 
+        {/* Photo card — CENTER */}
+        <div className="gp-photo-card" style={{ zIndex:1 }}>
+          <img src={portrait} alt={vendor.name}/>
+          <div className="gp-photo-gradient"/>
+          <div className="gp-photo-cursive">Turning Moments<br/>Into Memories</div>
+          <div className="gp-avail-badge">
+            <div className="gp-green-dot"/>
+            Available for Bookings
+          </div>
+        </div>
+
         {/* Vertical divider */}
         <div className="gp-v-divider" style={{ zIndex:1 }}/>
 
-        {/* Stats — large, clear, editorial */}
-        <div style={{ display:"flex", flexDirection:"column", gap:32, flexShrink:0, zIndex:1, minWidth:130 }}>
+        {/* Stats — RIGHT */}
+        <div style={{ display:"flex", flexDirection:"column", gap:32, flexShrink:0, zIndex:1, minWidth:130, justifyContent:"center" }}>
           {stats.map(s => (
             <div key={s.label}>
               <div style={{ fontFamily:serif, fontSize:"2.4rem", fontWeight:800, color:INK, lineHeight:1, letterSpacing:"-0.01em" }}>{s.val}</div>
               <div style={{ fontSize:10.5, fontWeight:500, color:"rgba(245,237,216,0.45)", textTransform:"uppercase", letterSpacing:"0.18em", marginTop:6 }}>{s.label}</div>
             </div>
           ))}
+        </div>
+
+        {/* Suggestion slip — discover more performers */}
+        <div style={{
+          position:"absolute", bottom:18, right:56, zIndex:2,
+          display:"flex", alignItems:"center", gap:10,
+          background:"rgba(12,7,2,0.9)", backdropFilter:"blur(16px) saturate(1.2)",
+          border:"1px solid rgba(196,155,48,0.22)", borderRadius:12,
+          padding:"8px 14px 8px 16px",
+          boxShadow:"0 8px 28px rgba(0,0,0,0.4)",
+        }}>
+          <span style={{ fontSize:10, fontWeight:700, color:DIM, textTransform:"uppercase", letterSpacing:"0.13em", whiteSpace:"nowrap" }}>Also on Tendr</span>
+          <div style={{ display:"flex", flexShrink:0 }}>
+            {[FALLBACK.Band, FALLBACK.Choreographer, FALLBACK.Anchor].map((av, i) => (
+              <div key={i} style={{ width:26, height:26, borderRadius:"50%", border:"1.5px solid rgba(20,10,2,0.75)", overflow:"hidden", marginLeft: i===0 ? 0 : -7, flexShrink:0, background:SURF }}>
+                <img src={av} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
+              </div>
+            ))}
+          </div>
+          <span style={{ fontSize:11.5, color:MUTED }}>DJs · Bands · Photographers</span>
+          <button style={{ padding:"5px 13px", borderRadius:100, border:`1px solid rgba(196,155,48,0.38)`, background:"transparent", color:GOLD, fontSize:11, fontWeight:700, fontFamily:font, cursor:"pointer", whiteSpace:"nowrap", marginLeft:4 }}>
+            Browse →
+          </button>
         </div>
       </section>
 
