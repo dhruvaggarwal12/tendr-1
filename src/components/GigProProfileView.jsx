@@ -476,34 +476,31 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         {/* ── ABOUT ── */}
         {tab === "About" && (
           <div>
-            {/* Bio — large editorial prose, no label needed */}
             {vendor.bio && (
-              <p style={{ fontFamily:serif, fontSize:"1.15rem", fontStyle:"italic", fontWeight:400, color:"rgba(245,237,216,0.78)", lineHeight:2, marginBottom:52, borderLeft:`2px solid rgba(196,155,48,0.3)`, paddingLeft:24 }}>
+              <p style={{ fontSize:15.5, color:MUTED, lineHeight:1.9, marginBottom:52, fontWeight:300 }}>
                 {vendor.bio}
               </p>
             )}
 
-            {/* Highlights — plain text list, no icons */}
             {highlights.filter(h=>h.label).length > 0 && (
-              <div style={{ marginBottom:48 }}>
+              <div style={{ marginBottom:52 }}>
+                <div style={{ fontFamily:serif, fontSize:"1.05rem", fontWeight:700, color:INK, marginBottom:32 }}>
+                  Why people book {vendor.name?.split(" ")[0] || "this performer"}
+                </div>
                 {highlights.filter(h => h.label).map((h, i) => (
-                  <div key={i} style={{ display:"grid", gridTemplateColumns:"180px 1fr", gap:"0 32px", paddingBlock:20, borderBottom:`1px solid rgba(196,155,48,0.1)` }}>
-                    <div style={{ fontFamily:serif, fontSize:"1rem", fontWeight:700, color:INK, paddingTop:1 }}>{h.label}</div>
-                    <div style={{ fontSize:13.5, color:MUTED, lineHeight:1.7 }}>{h.desc}</div>
+                  <div key={i} style={{ marginBottom:28 }}>
+                    <div style={{ fontSize:14.5, fontWeight:600, color:INK, marginBottom:5 }}>{h.label}</div>
+                    {h.desc && <div style={{ fontSize:13.5, color:MUTED, lineHeight:1.7, fontWeight:300 }}>{h.desc}</div>}
                   </div>
                 ))}
               </div>
             )}
 
-            {/* Genres — inline, no card */}
             {([...genres,...instr]).length > 0 && (
               <div>
-                <div style={{ fontSize:11, color:DIM, letterSpacing:"0.12em", marginBottom:14, textTransform:"uppercase" }}>
-                  {genres.length > 0 ? "Genres" : "Instruments"}
-                </div>
                 <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
                   {[...genres,...instr].map(g => (
-                    <span key={g} style={{ padding:"6px 16px", borderRadius:4, background:"rgba(196,155,48,0.08)", border:`1px solid rgba(196,155,48,0.18)`, fontSize:13, color:MUTED, fontWeight:400 }}>
+                    <span key={g} style={{ padding:"5px 14px", borderRadius:20, background:"rgba(196,155,48,0.07)", border:`1px solid rgba(196,155,48,0.15)`, fontSize:12.5, color:"rgba(245,237,216,0.6)", fontWeight:400 }}>
                       {g}
                     </span>
                   ))}
@@ -511,24 +508,23 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               </div>
             )}
 
-            {/* Social links — plain text */}
             {(social.showreel || social.instagram || social.youtube) && (
-              <div style={{ marginTop:44, display:"flex", gap:24, flexWrap:"wrap" }}>
+              <div style={{ marginTop:44, display:"flex", gap:28, flexWrap:"wrap" }}>
                 {social.showreel && (
                   <a href={social.showreel} target="_blank" rel="noopener noreferrer"
-                    style={{ fontSize:13.5, color:GOLD, textDecoration:"none", borderBottom:`1px solid rgba(196,155,48,0.4)`, paddingBottom:2 }}>
+                    style={{ fontSize:13.5, color:GOLD, textDecoration:"none", borderBottom:`1px solid rgba(196,155,48,0.35)`, paddingBottom:2 }}>
                     Watch Showreel →
                   </a>
                 )}
                 {social.instagram && (
                   <a href={`https://instagram.com/${social.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer"
-                    style={{ fontSize:13.5, color:MUTED, textDecoration:"none", borderBottom:`1px solid rgba(242,232,208,0.2)`, paddingBottom:2 }}>
+                    style={{ fontSize:13.5, color:"rgba(245,237,216,0.5)", textDecoration:"none" }}>
                     {social.instagram}
                   </a>
                 )}
                 {social.youtube && (
                   <a href={`https://${social.youtube.replace(/^https?:\/\//,"")}`} target="_blank" rel="noopener noreferrer"
-                    style={{ fontSize:13.5, color:MUTED, textDecoration:"none", borderBottom:`1px solid rgba(242,232,208,0.2)`, paddingBottom:2 }}>
+                    style={{ fontSize:13.5, color:"rgba(245,237,216,0.5)", textDecoration:"none" }}>
                     YouTube
                   </a>
                 )}
@@ -540,22 +536,26 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         {/* ── SETLIST ── */}
         {tab === "Setlist" && (
           <div>
-            <div style={{ fontSize:12, color:DIM, letterSpacing:"0.12em", textTransform:"uppercase", marginBottom:36 }}>
-              {setlistArr.length} items
-            </div>
-            <div style={{ borderLeft:`2px solid rgba(196,155,48,0.2)`, paddingLeft:28 }}>
+            <div style={{ fontFamily:serif, fontSize:"1.35rem", fontWeight:700, color:INK, marginBottom:8 }}>The Experience</div>
+            <p style={{ fontSize:13.5, color:MUTED, lineHeight:1.75, marginBottom:44, fontWeight:300, maxWidth:460 }}>
+              Here's how the performance unfolds — from setting the tone to leaving the room energised.
+            </p>
+
+            <div>
               {setlistArr.map((line, i) => (
-                <div key={i} style={{ display:"flex", alignItems:"baseline", gap:20, paddingBlock:14 }}>
-                  <span style={{ fontSize:12, color:DIM, minWidth:18, flexShrink:0, fontVariantNumeric:"tabular-nums" }}>{i+1}</span>
-                  <span style={{ fontSize:15.5, color:"rgba(245,237,216,0.8)", lineHeight:1.55, fontWeight:400 }}>{line}</span>
+                <div key={i} style={{ display:"grid", gridTemplateColumns:"28px 1fr", gap:"0 20px", marginBottom:32 }}>
+                  <div style={{ fontSize:11, color:DIM, fontVariantNumeric:"tabular-nums", paddingTop:4 }}>{String(i+1).padStart(2,"0")}</div>
+                  <div style={{ fontSize:15.5, color:INK, fontWeight:500, lineHeight:1.5 }}>{line}</div>
                 </div>
               ))}
             </div>
+
             {(social.showreel || vendor.showreel) && (
-              <div style={{ marginTop:40 }}>
+              <div style={{ marginTop:52 }}>
                 <a href={social.showreel || vendor.showreel} target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize:13.5, color:GOLD, textDecoration:"none", borderBottom:`1px solid rgba(196,155,48,0.4)`, paddingBottom:2 }}>
-                  Watch Showreel →
+                  style={{ display:"inline-flex", alignItems:"center", gap:12, padding:"14px 32px", borderRadius:100, background:`linear-gradient(135deg,${GOLD},#9A7010)`, color:"#1A1000", textDecoration:"none", fontSize:14.5, fontWeight:700 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Watch Full Showreel
                 </a>
               </div>
             )}
@@ -564,89 +564,99 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
         {/* ── PACKAGES ── */}
         {tab === "Packages" && (
-          <div style={{ display:"flex", flexDirection:"column", gap:2 }}>
-            {pkgs.map((pkg, i) => (
-              <div key={i} style={{
-                borderTop: `1px solid ${GOLD_D}`,
-                paddingBlock: 36,
-                paddingInline: i===1 ? 28 : 0,
-                background: i===1 ? "rgba(196,155,48,0.05)" : "transparent",
-                borderRadius: i===1 ? 8 : 0,
-                borderLeft: i===1 ? `2px solid ${GOLD}` : "none",
-              }}>
-                <div style={{ display:"flex", alignItems:"baseline", justifyContent:"space-between", flexWrap:"wrap", gap:8, marginBottom:8 }}>
-                  <div style={{ fontFamily:serif, fontSize:"1.5rem", fontWeight:700, color:INK }}>{pkg.name}</div>
-                  {pkg.badge && (
-                    <span style={{ fontSize:11, color:GOLD, fontWeight:600, border:`1px solid rgba(196,155,48,0.4)`, borderRadius:4, padding:"3px 10px", letterSpacing:"0.06em" }}>
-                      {pkg.badge}
-                    </span>
+          <div>
+            <p style={{ fontSize:13.5, color:MUTED, lineHeight:1.75, marginBottom:44, fontWeight:300 }}>
+              Choose the kind of experience you want for your event.
+            </p>
+            {pkgs.map((pkg, i) => {
+              const featured = i === 1 || pkg.badge;
+              return (
+                <div key={i} style={{
+                  marginBottom: 36,
+                  padding: featured ? "32px 28px" : "28px 0",
+                  borderTop: featured ? "none" : `1px solid ${GOLD_D}`,
+                  background: featured ? "rgba(196,155,48,0.06)" : "transparent",
+                  borderRadius: featured ? 10 : 0,
+                  borderLeft: featured ? `3px solid ${GOLD}` : "none",
+                  paddingLeft: featured ? 28 : 0,
+                }}>
+                  <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:4, flexWrap:"wrap", gap:8 }}>
+                    <div style={{ fontFamily:serif, fontSize:"1.4rem", fontWeight:700, color:INK }}>{pkg.name}</div>
+                    {(pkg.badge || featured) && (
+                      <span style={{ fontSize:10.5, color:GOLD, fontWeight:500, letterSpacing:"0.08em", paddingTop:6 }}>
+                        {pkg.badge || "Recommended"}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:pkg.bestFor ? 6 : 16 }}>
+                    <span style={{ fontFamily:serif, fontSize:"2rem", fontWeight:800, fontStyle:"italic", color:GOLD }}>{fmt(pkg.price)}</span>
+                    {pkg.unit && <span style={{ fontSize:13, color:DIM }}>{pkg.unit}</span>}
+                  </div>
+                  {pkg.bestFor && (
+                    <div style={{ fontSize:12.5, color:DIM, marginBottom:18, fontStyle:"italic" }}>Ideal for {pkg.bestFor}</div>
                   )}
+                  <div style={{ marginBottom:20 }}>
+                    {pkg.items.map((item, j) => (
+                      <div key={j} style={{ fontSize:13.5, color:MUTED, lineHeight:1.6, paddingBlock:3, fontWeight:300 }}>
+                        — {item}
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={onBook} style={{ padding:"10px 22px", borderRadius:100, background: featured ? `linear-gradient(135deg,${GOLD},#9A7010)` : "transparent", border: featured ? "none" : `1px solid ${GOLD_D}`, color: featured ? "#1A1000" : MUTED, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:font }}>
+                    {featured ? "Book this package" : "Enquire"}
+                  </button>
                 </div>
-                <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:pkg.bestFor ? 8 : 24 }}>
-                  <span style={{ fontFamily:serif, fontSize:"2.1rem", fontWeight:800, fontStyle:"italic", color:GOLD }}>{fmt(pkg.price)}</span>
-                  {pkg.unit && <span style={{ fontSize:13, color:DIM }}>{pkg.unit}</span>}
-                </div>
-                {pkg.bestFor && (
-                  <div style={{ fontSize:12.5, color:DIM, marginBottom:20 }}>Best for: {pkg.bestFor}</div>
-                )}
-                <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                  {pkg.items.map((item, j) => (
-                    <div key={j} style={{ display:"flex", alignItems:"center", gap:12 }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="2.5" strokeLinecap="round">
-                        <polyline points="20 6 9 17 4 12"/>
-                      </svg>
-                      <span style={{ fontSize:14, color:MUTED, lineHeight:1.5 }}>{item}</span>
-                    </div>
-                  ))}
+              );
+            })}
+            {pkgs.length > 0 && (
+              <div style={{ paddingTop:20, borderTop:`1px solid ${GOLD_D}` }}>
+                <div style={{ fontSize:13, color:DIM }}>
+                  Need something different?&nbsp;
+                  <button onClick={onChat} style={{ background:"none", border:"none", color:GOLD, fontSize:13, cursor:"pointer", fontFamily:font, textDecoration:"underline", textDecorationColor:"rgba(196,155,48,0.4)", padding:0 }}>
+                    Ask about a custom package
+                  </button>
                 </div>
               </div>
-            ))}
-            {pkgs.length > 0 && <div style={{ borderTop:`1px solid ${GOLD_D}` }}/>}
+            )}
           </div>
         )}
 
         {/* ── REVIEWS ── */}
         {tab === "Reviews" && (
           <div>
-            {/* Rating summary — minimal */}
             {rating > 0 && (
-              <div style={{ display:"flex", alignItems:"center", gap:20, marginBottom:52 }}>
-                <div style={{ fontFamily:serif, fontSize:"4rem", fontWeight:800, fontStyle:"italic", color:INK, lineHeight:1 }}>{rating.toFixed(1)}</div>
+              <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:48, paddingBottom:32, borderBottom:`1px solid ${GOLD_D}` }}>
+                <div style={{ fontFamily:serif, fontSize:"3rem", fontWeight:800, fontStyle:"italic", color:INK, lineHeight:1 }}>{rating.toFixed(1)}</div>
                 <div>
                   <Stars r={rating} sz={14}/>
-                  <div style={{ fontSize:12.5, color:DIM, marginTop:6 }}>{reviews.length} {reviews.length===1?"review":"reviews"}</div>
+                  <div style={{ fontSize:12.5, color:DIM, marginTop:5 }}>{reviews.length} {reviews.length===1?"review":"reviews"}</div>
                 </div>
               </div>
             )}
-            {/* Review cards — quote-first, name below */}
             {reviews.map((r, i) => {
               const name = r.consumerName || "Client";
               const initials = name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
               const rev = r.averageRating || r.ratings?.overall || 5;
+              const featured = i === 0;
               return (
-                <div key={i} style={{ marginBottom:40 }}>
-                  {/* Large opening quote */}
-                  <div style={{ fontFamily:serif, fontSize:"4rem", lineHeight:0.6, color:GOLD, opacity:0.3, marginBottom:12, userSelect:"none" }}>&ldquo;</div>
-                  <p style={{ fontFamily:serif, fontSize:"1.05rem", fontStyle:"italic", color:"rgba(245,237,216,0.82)", lineHeight:1.9, margin:"0 0 20px", fontWeight:400 }}>
-                    {r.reviewText}
-                  </p>
-                  {/* Reviewer row */}
-                  <div style={{ display:"flex", alignItems:"center", gap:14 }}>
-                    {/* Initial avatar */}
-                    <div style={{ width:36, height:36, borderRadius:"50%", background:"rgba(196,155,48,0.14)", border:`1px solid rgba(196,155,48,0.3)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:GOLD, flexShrink:0 }}>
+                <div key={i} style={{ marginBottom: featured ? 48 : 32, paddingBottom: featured ? 48 : 28, borderBottom:`1px solid rgba(196,155,48,0.08)` }}>
+                  {/* Reviewer row first */}
+                  <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
+                    <div style={{ width:featured ? 42 : 34, height:featured ? 42 : 34, borderRadius:"50%", background:"rgba(196,155,48,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:featured?13:11, fontWeight:700, color:"rgba(196,155,48,0.7)", flexShrink:0 }}>
                       {initials}
                     </div>
-                    <div>
-                      <div style={{ fontSize:14, fontWeight:600, color:INK }}>{name}</div>
-                      <div style={{ fontSize:12, color:DIM, marginTop:2 }}>{r.eventType || "Event"}</div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:featured?15:13.5, fontWeight:600, color:INK }}>{name}</div>
+                      <div style={{ fontSize:11.5, color:DIM, marginTop:2 }}>
+                        {r.eventType || "Event"}{r.date ? ` · ${r.date}` : ""}
+                      </div>
                     </div>
-                    <div style={{ marginLeft:"auto" }}>
-                      <Stars r={rev} sz={12}/>
-                    </div>
+                    <Stars r={rev} sz={featured?13:11}/>
                   </div>
-                  {i < reviews.length - 1 && (
-                    <div style={{ borderTop:`1px solid rgba(196,155,48,0.1)`, marginTop:36 }}/>
-                  )}
+                  {/* Review text — no decorative quote mark */}
+                  <p style={{ fontSize:featured?15:13.5, color:featured?"rgba(245,237,216,0.85)":MUTED, lineHeight:featured?1.85:1.7, margin:0, fontWeight:featured?400:300, paddingLeft: 54 }}>
+                    {r.reviewText}
+                  </p>
                 </div>
               );
             })}
