@@ -336,6 +336,7 @@ export default function DemoDashboard() {
   const [setlist, setSetlist]   = usePersisted(`${sType}:setlist`, initSetlist);
   const [portfolioPhotos, setPortfolioPhotos] = usePersisted(`${sType}:photos`, []);
   const [mainPhotoUrl, setMainPhotoUrl]       = usePersisted(`${sType}:photoMain`, "");
+  const [heroUrlDraft, setHeroUrlDraft]       = useState("");
   const [outside]               = useState(INIT_OUTSIDE); // outside orders: read-only mock
 
   const [profEdit, setProfEdit]   = useState(false);
@@ -1222,6 +1223,47 @@ export default function DemoDashboard() {
               <div style={{ fontSize: 18, fontFamily: serif, fontWeight: 500, color: ink }}>{profile.name}</div>
               <div style={{ fontSize: 13, color: muted }}>{profile.type} · {profile.city}</div>
               <Stars r={profile.rating} /> <span style={{ fontSize: 12, color: muted, marginLeft: 4 }}>{profile.rating} ({profile.reviewCount} reviews)</span>
+            </div>
+          </div>
+
+          {/* Hero Photo */}
+          <div style={{ background: "#fff", borderRadius: 16, padding: "20px", border: "1px solid rgba(196,122,46,0.1)", marginBottom: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Hero Photo</div>
+            <div style={{ fontSize: 12, color: muted, marginBottom: 14 }}>Large portrait shown on the left of your public profile.</div>
+            {(mainPhotoUrl || portfolioPhotos[0]) && (
+              <div style={{ marginBottom: 16, display: "flex", gap: 14, alignItems: "flex-start" }}>
+                <div style={{ width: 100, height: 134, borderRadius: 12, overflow: "hidden", flexShrink: 0, border: `2px solid ${gold}` }}>
+                  <img src={mainPhotoUrl || (typeof portfolioPhotos[0] === "string" ? portfolioPhotos[0] : portfolioPhotos[0]?.url)} alt="Hero" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}/>
+                </div>
+                <div style={{ fontSize: 12, color: muted, lineHeight: 1.6 }}>
+                  <div style={{ fontWeight: 700, color: gold, marginBottom: 4 }}>Current hero photo</div>
+                  {mainPhotoUrl ? "Manually set via upload or URL." : "Auto-selected from portfolio (set a custom one below)."}
+                  {mainPhotoUrl && (
+                    <button onClick={() => setMainPhotoUrl("")} style={{ display: "block", marginTop: 10, padding: "6px 14px", borderRadius: 100, background: "rgba(196,122,46,0.08)", color: muted, fontSize: 11.5, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: font }}>
+                      Reset to auto
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+              <label style={{ padding: "9px 18px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 7 }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Upload from Device
+                <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > 2 * 1024 * 1024) { alert("Photo must be under 2 MB"); return; }
+                  const reader = new FileReader();
+                  reader.onload = ev => setMainPhotoUrl(ev.target.result);
+                  reader.readAsDataURL(file);
+                  e.target.value = "";
+                }}/>
+              </label>
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input value={heroUrlDraft} onChange={e => setHeroUrlDraft(e.target.value)} placeholder="Or paste photo URL here..." style={{ flex: 1, padding: "9px 14px", borderRadius: 100, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13, fontFamily: font, color: ink, background: cream, boxSizing: "border-box" }}/>
+              <button onClick={() => { if (heroUrlDraft.trim()) { setMainPhotoUrl(heroUrlDraft.trim()); setHeroUrlDraft(""); }}} style={{ padding: "9px 18px", borderRadius: 100, background: "rgba(196,122,46,0.1)", color: gold, fontSize: 13, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: font }}>Set</button>
             </div>
           </div>
 
