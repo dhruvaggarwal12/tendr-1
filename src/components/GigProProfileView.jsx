@@ -13,6 +13,13 @@ const GOLD    = "#C49B30";
 const GOLD_D  = "rgba(196,155,48,0.22)";
 const font    = "'DM Sans', system-ui, sans-serif";
 const serif   = "'Playfair Display', Georgia, serif";
+// Light content area tokens
+const CINK    = "#1C1205";
+const CMUTED  = "rgba(28,18,5,0.58)";
+const CDIM    = "rgba(28,18,5,0.36)";
+const CBG     = "#F4EFE4";
+const CSURF   = "#EBE5D7";
+const CGOLD_D = "rgba(196,155,48,0.28)";
 
 const FALLBACK = {
   Anchor:        "https://randomuser.me/api/portraits/men/45.jpg",
@@ -89,65 +96,17 @@ function StatCircle({ type }) {
 // Removed heavy grain — replaced by background gradient variation
 
 function BgDecor({ serviceType = "" }) {
-  const isBand  = /band|singer|musician/i.test(serviceType);
-  const isDance = /choreograph|dancer/i.test(serviceType);
-  const isPhoto = /photograph/i.test(serviceType);
-
   return (
     <div style={{ position:"absolute", inset:0, overflow:"hidden", pointerEvents:"none", zIndex:0 }}>
-      {/* Directional light wash — from upper-right, warm amber */}
-      <div style={{ position:"absolute", top:0, right:0, width:"55%", height:"100%", background:"linear-gradient(210deg, rgba(200,140,50,0.10) 0%, rgba(180,110,30,0.05) 40%, transparent 72%)", pointerEvents:"none" }}/>
-      {/* Single soft warm glow — top-right focal point */}
-      <div style={{ position:"absolute", top:"-8%", right:"12%", width:420, height:420, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(196,145,40,0.11) 0%, transparent 60%)", pointerEvents:"none" }}/>
-
-      {/* ── Microphone silhouette — right side, very faint */}
-      <svg style={{ position:"absolute", right:"7%", top:"6%", opacity:0.055 }} width="90" height="180" viewBox="0 0 90 180">
-        <rect x="25" y="0"  width="40" height="76" rx="20" fill={GOLD}/>
-        <path d="M8 66 Q8 110 45 110 Q82 110 82 66" fill="none" stroke={GOLD} strokeWidth="5" strokeLinecap="round"/>
-        <line x1="45" y1="110" x2="45" y2="145" stroke={GOLD} strokeWidth="5"/>
-        <line x1="24" y1="145" x2="66" y2="145" stroke={GOLD} strokeWidth="5" strokeLinecap="round"/>
-        <line x1="33" y1="22" x2="57" y2="22" stroke="rgba(0,0,0,0.25)" strokeWidth="2"/>
-        <line x1="33" y1="36" x2="57" y2="36" stroke="rgba(0,0,0,0.25)" strokeWidth="2"/>
-        <line x1="33" y1="50" x2="57" y2="50" stroke="rgba(0,0,0,0.25)" strokeWidth="2"/>
+      {/* Directional light wash — from upper-right */}
+      <div style={{ position:"absolute", top:0, right:0, width:"50%", height:"100%", background:"linear-gradient(210deg, rgba(200,140,50,0.07) 0%, transparent 65%)", pointerEvents:"none" }}/>
+      {/* Barely-visible microphone — structural, not decorative */}
+      <svg style={{ position:"absolute", right:"6%", bottom:"10%", opacity:0.018 }} width="80" height="160" viewBox="0 0 90 180">
+        <rect x="25" y="0" width="40" height="76" rx="20" fill={INK}/>
+        <path d="M8 66 Q8 110 45 110 Q82 110 82 66" fill="none" stroke={INK} strokeWidth="5" strokeLinecap="round"/>
+        <line x1="45" y1="110" x2="45" y2="145" stroke={INK} strokeWidth="5"/>
+        <line x1="24" y1="145" x2="66" y2="145" stroke={INK} strokeWidth="5" strokeLinecap="round"/>
       </svg>
-
-      {/* ── 4-point sparkle stars — minimal, only 3 */}
-      {[
-        { x:"74%", y:"12%", s:12, op:0.15 },
-        { x:"91%", y:"44%", s:8,  op:0.10 },
-        { x:"68%", y:"68%", s:7,  op:0.08 },
-      ].map((d,i) => (
-        <svg key={i} style={{ position:"absolute", left:d.x, top:d.y, opacity:d.op }} width={d.s} height={d.s} viewBox="0 0 24 24">
-          <path d="M12 2v20M2 12h20" stroke={GOLD} strokeWidth="1.5" strokeLinecap="round"/>
-          <path d="M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4" stroke={GOLD} strokeWidth="0.7" strokeLinecap="round"/>
-        </svg>
-      ))}
-
-      {/* ── Type-specific prop */}
-      {isBand && (
-        <svg style={{ position:"absolute", left:"4%", top:"22%", opacity:0.06 }} width="52" height="52" viewBox="0 0 60 60">
-          <circle cx="12" cy="46" r="10" fill={GOLD}/>
-          <line x1="22" y1="46" x2="22" y2="8" stroke={GOLD} strokeWidth="4"/>
-          <line x1="22" y1="8"  x2="48" y2="3" stroke={GOLD} strokeWidth="4"/>
-          <line x1="48" y1="3"  x2="48" y2="41" stroke={GOLD} strokeWidth="4"/>
-          <circle cx="38" cy="41" r="10" fill={GOLD}/>
-        </svg>
-      )}
-      {isDance && (
-        <svg style={{ position:"absolute", left:"5%", top:"18%", opacity:0.06 }} width="48" height="72" viewBox="0 0 48 72">
-          <ellipse cx="24" cy="28" rx="16" ry="22" fill="none" stroke={GOLD} strokeWidth="3"/>
-          <path d="M14 48 C6 58 4 68 10 72" fill="none" stroke={GOLD} strokeWidth="3" strokeLinecap="round"/>
-          <path d="M34 48 C42 58 44 68 38 72" fill="none" stroke={GOLD} strokeWidth="3" strokeLinecap="round"/>
-        </svg>
-      )}
-      {isPhoto && (
-        <svg style={{ position:"absolute", left:"4%", top:"18%", opacity:0.06 }} width="72" height="58" viewBox="0 0 72 58">
-          <rect x="0" y="10" width="72" height="48" rx="7" fill="none" stroke={GOLD} strokeWidth="3"/>
-          <circle cx="36" cy="32" r="14" fill="none" stroke={GOLD} strokeWidth="3"/>
-          <circle cx="36" cy="32" r="6"  fill="none" stroke={GOLD} strokeWidth="2"/>
-          <path d="M44 2 L52 10 L44 10Z" fill={GOLD}/>
-        </svg>
-      )}
     </div>
   );
 }
@@ -255,18 +214,18 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         .gp-tab.on{color:${INK};background:rgba(196,155,48,.12);border-color:${GOLD};font-weight:600}
         .gp-tab:hover:not(.on){color:rgba(242,232,208,.72);border-color:rgba(196,155,48,.5);background:rgba(196,155,48,.05)}
 
-        .gp-content{background:${BG};padding:48px 56px 80px}
+        .gp-content{background:${CBG};padding:48px 56px 80px;position:relative}
         .gp-content-grid{display:grid;grid-template-columns:1fr 296px;gap:48px;align-items:start}
         .gp-sidebar{position:sticky;top:80px;display:flex;flex-direction:column;gap:16px}
-        .gp-sb-card{background:${SURF};border:1px solid ${GOLD_D};border-radius:14px;padding:26px 24px}
+        .gp-sb-card{background:${CSURF};border:1px solid ${CGOLD_D};border-radius:14px;padding:26px 24px}
         .gp-sb-btn-book{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:13px;border-radius:100px;background:linear-gradient(135deg,#D4A940,#B07E1A);color:#1A1209;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:10px;transition:filter .15s}
         .gp-sb-btn-book:hover{filter:brightness(1.07)}
-        .gp-sb-btn-msg{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:12px;border-radius:100px;background:transparent;border:1px solid rgba(196,155,48,.3);color:${MUTED};font-size:13.5px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
-        .gp-sb-btn-msg:hover{background:rgba(196,155,48,.07);border-color:rgba(196,155,48,.48)}
-        .gp-sb-divider{border:none;border-top:1px solid ${GOLD_D};margin:18px 0}
-        .gp-sb-row{display:flex;align-items:center;gap:9px;margin-bottom:11px;font-size:13px;color:${MUTED}}
+        .gp-sb-btn-msg{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:12px;border-radius:100px;background:transparent;border:1px solid ${CGOLD_D};color:${CMUTED};font-size:13.5px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+        .gp-sb-btn-msg:hover{background:rgba(196,155,48,.08);border-color:rgba(196,155,48,.45)}
+        .gp-sb-divider{border:none;border-top:1px solid ${CGOLD_D};margin:18px 0}
+        .gp-sb-row{display:flex;align-items:center;gap:9px;margin-bottom:11px;font-size:13px;color:${CMUTED}}
         .gp-sb-row:last-child{margin-bottom:0}
-        .gp-sb-icon{flex-shrink:0;opacity:.65}
+        .gp-sb-icon{flex-shrink:0;opacity:.7}
 
         .gp-port-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
         .gp-port-tile{position:relative;overflow:hidden;cursor:pointer;background:#0E0A06}
@@ -284,7 +243,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         .gp-setlist-row{display:flex;align-items:flex-start;gap:20px;padding:17px 0;border-bottom:1px solid ${GOLD_D}}
         .gp-pkg-card{border-radius:6px;padding:30px 34px;margin-bottom:12px}
 
-        .gp-mob-footer{display:none;position:fixed;bottom:0;left:0;right:0;padding:12px 20px;background:rgba(20,12,4,.97);backdrop-filter:blur(16px);border-top:1px solid ${GOLD_D};gap:10px;z-index:200}
+        .gp-mob-footer{display:none;position:fixed;bottom:0;left:0;right:0;padding:12px 20px;background:${CSURF};backdrop-filter:blur(16px);border-top:1px solid ${CGOLD_D};gap:10px;z-index:200}
 
         @media(max-width:999px){
           .gp-nav{padding:0 24px}
@@ -319,6 +278,11 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
       {/* HERO */}
       <section className="gp-hero">
+        {/* Cinematic performer backdrop — blurred portrait at very low brightness */}
+        <div style={{ position:"absolute", inset:0, zIndex:0, overflow:"hidden" }}>
+          <img src={portrait} alt="" aria-hidden="true" style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 20%", filter:"blur(38px) brightness(0.13) saturate(0.3)", transform:"scale(1.12)", pointerEvents:"none" }}/>
+          <div style={{ position:"absolute", inset:0, background:"linear-gradient(160deg, rgba(58,37,21,0.52) 0%, rgba(46,31,18,0.6) 45%, rgba(38,22,8,0.76) 100%)" }}/>
+        </div>
         <BgDecor serviceType={vendor.serviceType || ""}/>
 
         {/* Photo card */}
@@ -392,22 +356,14 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         {/* Vertical divider */}
         <div className="gp-v-divider" style={{ zIndex:1 }}/>
 
-        {/* Stats + tagline */}
-        <div className="gp-stats-panel" style={{ zIndex:1 }}>
-          <div className="gp-v-stats">
-            {stats.map(s => (
-              <div key={s.label} className="gp-stat-row">
-                <StatCircle type={s.type}/>
-                <div>
-                  <div className="gp-stat-val">{s.val}</div>
-                  <div className="gp-stat-label">{s.label}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="gp-script-tagline">
-            Good<br/>People<br/>Great<br/>Events
-          </div>
+        {/* Stats — clean data, no circles, no tagline */}
+        <div style={{ display:"flex", flexDirection:"column", gap:28, flexShrink:0, zIndex:1 }}>
+          {stats.map(s => (
+            <div key={s.label}>
+              <div style={{ fontFamily:serif, fontSize:"1.5rem", fontWeight:700, color:INK, lineHeight:1.05 }}>{s.val}</div>
+              <div style={{ fontSize:10, fontWeight:500, color:"rgba(245,237,216,0.4)", textTransform:"uppercase", letterSpacing:"0.16em", marginTop:5 }}>{s.label}</div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -422,6 +378,16 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
       {/* CONTENT */}
       <div className="gp-content">
+        {/* Faint performer prop — content area watermark */}
+        <svg aria-hidden="true" style={{ position:"absolute", right:48, bottom:120, opacity:0.04, pointerEvents:"none", zIndex:0 }} width="100" height="180" viewBox="0 0 90 180">
+          <rect x="25" y="0" width="40" height="76" rx="20" fill={CINK}/>
+          <path d="M8 66 Q8 110 45 110 Q82 110 82 66" fill="none" stroke={CINK} strokeWidth="6" strokeLinecap="round"/>
+          <line x1="45" y1="110" x2="45" y2="145" stroke={CINK} strokeWidth="6"/>
+          <line x1="24" y1="145" x2="66" y2="145" stroke={CINK} strokeWidth="6" strokeLinecap="round"/>
+          <line x1="33" y1="22" x2="57" y2="22" stroke={CINK} strokeWidth="2.5"/>
+          <line x1="33" y1="36" x2="57" y2="36" stroke={CINK} strokeWidth="2.5"/>
+          <line x1="33" y1="50" x2="57" y2="50" stroke={CINK} strokeWidth="2.5"/>
+        </svg>
 
         {/* PORTFOLIO — full width, no sidebar */}
         {tab === "Portfolio" && (
@@ -477,20 +443,20 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         {tab === "About" && (
           <div>
             {vendor.bio && (
-              <p style={{ fontSize:15.5, color:MUTED, lineHeight:1.9, marginBottom:52, fontWeight:300 }}>
+              <p style={{ fontSize:15.5, color:CMUTED, lineHeight:1.9, marginBottom:52, fontWeight:300 }}>
                 {vendor.bio}
               </p>
             )}
 
             {highlights.filter(h=>h.label).length > 0 && (
               <div style={{ marginBottom:52 }}>
-                <div style={{ fontFamily:serif, fontSize:"1.05rem", fontWeight:700, color:INK, marginBottom:32 }}>
+                <div style={{ fontFamily:serif, fontSize:"1.05rem", fontWeight:700, color:CINK, marginBottom:32 }}>
                   Why people book {vendor.name?.split(" ")[0] || "this performer"}
                 </div>
                 {highlights.filter(h => h.label).map((h, i) => (
                   <div key={i} style={{ marginBottom:28 }}>
-                    <div style={{ fontSize:14.5, fontWeight:600, color:INK, marginBottom:5 }}>{h.label}</div>
-                    {h.desc && <div style={{ fontSize:13.5, color:MUTED, lineHeight:1.7, fontWeight:300 }}>{h.desc}</div>}
+                    <div style={{ fontSize:14.5, fontWeight:600, color:CINK, marginBottom:5 }}>{h.label}</div>
+                    {h.desc && <div style={{ fontSize:13.5, color:CMUTED, lineHeight:1.7, fontWeight:300 }}>{h.desc}</div>}
                   </div>
                 ))}
               </div>
@@ -500,7 +466,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               <div>
                 <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
                   {[...genres,...instr].map(g => (
-                    <span key={g} style={{ padding:"5px 14px", borderRadius:20, background:"rgba(196,155,48,0.07)", border:`1px solid rgba(196,155,48,0.15)`, fontSize:12.5, color:"rgba(245,237,216,0.6)", fontWeight:400 }}>
+                    <span key={g} style={{ padding:"5px 14px", borderRadius:20, background:"rgba(196,155,48,0.08)", border:`1px solid rgba(196,155,48,0.22)`, fontSize:12.5, color:CMUTED, fontWeight:400 }}>
                       {g}
                     </span>
                   ))}
@@ -518,13 +484,13 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
                 )}
                 {social.instagram && (
                   <a href={`https://instagram.com/${social.instagram.replace("@","")}`} target="_blank" rel="noopener noreferrer"
-                    style={{ fontSize:13.5, color:"rgba(245,237,216,0.5)", textDecoration:"none" }}>
+                    style={{ fontSize:13.5, color:CDIM, textDecoration:"none" }}>
                     {social.instagram}
                   </a>
                 )}
                 {social.youtube && (
                   <a href={`https://${social.youtube.replace(/^https?:\/\//,"")}`} target="_blank" rel="noopener noreferrer"
-                    style={{ fontSize:13.5, color:"rgba(245,237,216,0.5)", textDecoration:"none" }}>
+                    style={{ fontSize:13.5, color:CDIM, textDecoration:"none" }}>
                     YouTube
                   </a>
                 )}
@@ -536,16 +502,16 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         {/* ── SETLIST ── */}
         {tab === "Setlist" && (
           <div>
-            <div style={{ fontFamily:serif, fontSize:"1.35rem", fontWeight:700, color:INK, marginBottom:8 }}>The Experience</div>
-            <p style={{ fontSize:13.5, color:MUTED, lineHeight:1.75, marginBottom:44, fontWeight:300, maxWidth:460 }}>
+            <div style={{ fontFamily:serif, fontSize:"1.35rem", fontWeight:700, color:CINK, marginBottom:8 }}>The Experience</div>
+            <p style={{ fontSize:13.5, color:CMUTED, lineHeight:1.75, marginBottom:44, fontWeight:300, maxWidth:460 }}>
               Here's how the performance unfolds — from setting the tone to leaving the room energised.
             </p>
 
             <div>
               {setlistArr.map((line, i) => (
                 <div key={i} style={{ display:"grid", gridTemplateColumns:"28px 1fr", gap:"0 20px", marginBottom:32 }}>
-                  <div style={{ fontSize:11, color:DIM, fontVariantNumeric:"tabular-nums", paddingTop:4 }}>{String(i+1).padStart(2,"0")}</div>
-                  <div style={{ fontSize:15.5, color:INK, fontWeight:500, lineHeight:1.5 }}>{line}</div>
+                  <div style={{ fontSize:11, color:CDIM, fontVariantNumeric:"tabular-nums", paddingTop:4 }}>{String(i+1).padStart(2,"0")}</div>
+                  <div style={{ fontSize:15.5, color:CINK, fontWeight:500, lineHeight:1.5 }}>{line}</div>
                 </div>
               ))}
             </div>
@@ -565,7 +531,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         {/* ── PACKAGES ── */}
         {tab === "Packages" && (
           <div>
-            <p style={{ fontSize:13.5, color:MUTED, lineHeight:1.75, marginBottom:44, fontWeight:300 }}>
+            <p style={{ fontSize:13.5, color:CMUTED, lineHeight:1.75, marginBottom:44, fontWeight:300 }}>
               Choose the kind of experience you want for your event.
             </p>
             {pkgs.map((pkg, i) => {
@@ -574,14 +540,14 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
                 <div key={i} style={{
                   marginBottom: 36,
                   padding: featured ? "32px 28px" : "28px 0",
-                  borderTop: featured ? "none" : `1px solid ${GOLD_D}`,
-                  background: featured ? "rgba(196,155,48,0.06)" : "transparent",
+                  borderTop: featured ? "none" : `1px solid ${CGOLD_D}`,
+                  background: featured ? "rgba(196,155,48,0.07)" : "transparent",
                   borderRadius: featured ? 10 : 0,
                   borderLeft: featured ? `3px solid ${GOLD}` : "none",
                   paddingLeft: featured ? 28 : 0,
                 }}>
                   <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:4, flexWrap:"wrap", gap:8 }}>
-                    <div style={{ fontFamily:serif, fontSize:"1.4rem", fontWeight:700, color:INK }}>{pkg.name}</div>
+                    <div style={{ fontFamily:serif, fontSize:"1.4rem", fontWeight:700, color:CINK }}>{pkg.name}</div>
                     {(pkg.badge || featured) && (
                       <span style={{ fontSize:10.5, color:GOLD, fontWeight:500, letterSpacing:"0.08em", paddingTop:6 }}>
                         {pkg.badge || "Recommended"}
@@ -590,27 +556,27 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
                   </div>
                   <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:pkg.bestFor ? 6 : 16 }}>
                     <span style={{ fontFamily:serif, fontSize:"2rem", fontWeight:800, fontStyle:"italic", color:GOLD }}>{fmt(pkg.price)}</span>
-                    {pkg.unit && <span style={{ fontSize:13, color:DIM }}>{pkg.unit}</span>}
+                    {pkg.unit && <span style={{ fontSize:13, color:CDIM }}>{pkg.unit}</span>}
                   </div>
                   {pkg.bestFor && (
-                    <div style={{ fontSize:12.5, color:DIM, marginBottom:18, fontStyle:"italic" }}>Ideal for {pkg.bestFor}</div>
+                    <div style={{ fontSize:12.5, color:CDIM, marginBottom:18, fontStyle:"italic" }}>Ideal for {pkg.bestFor}</div>
                   )}
                   <div style={{ marginBottom:20 }}>
                     {pkg.items.map((item, j) => (
-                      <div key={j} style={{ fontSize:13.5, color:MUTED, lineHeight:1.6, paddingBlock:3, fontWeight:300 }}>
+                      <div key={j} style={{ fontSize:13.5, color:CMUTED, lineHeight:1.6, paddingBlock:3, fontWeight:300 }}>
                         — {item}
                       </div>
                     ))}
                   </div>
-                  <button onClick={onBook} style={{ padding:"10px 22px", borderRadius:100, background: featured ? `linear-gradient(135deg,${GOLD},#9A7010)` : "transparent", border: featured ? "none" : `1px solid ${GOLD_D}`, color: featured ? "#1A1000" : MUTED, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:font }}>
+                  <button onClick={onBook} style={{ padding:"10px 22px", borderRadius:100, background: featured ? `linear-gradient(135deg,${GOLD},#9A7010)` : "transparent", border: featured ? "none" : `1px solid ${CGOLD_D}`, color: featured ? "#1A1000" : CMUTED, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:font }}>
                     {featured ? "Book this package" : "Enquire"}
                   </button>
                 </div>
               );
             })}
             {pkgs.length > 0 && (
-              <div style={{ paddingTop:20, borderTop:`1px solid ${GOLD_D}` }}>
-                <div style={{ fontSize:13, color:DIM }}>
+              <div style={{ paddingTop:20, borderTop:`1px solid ${CGOLD_D}` }}>
+                <div style={{ fontSize:13, color:CDIM }}>
                   Need something different?&nbsp;
                   <button onClick={onChat} style={{ background:"none", border:"none", color:GOLD, fontSize:13, cursor:"pointer", fontFamily:font, textDecoration:"underline", textDecorationColor:"rgba(196,155,48,0.4)", padding:0 }}>
                     Ask about a custom package
@@ -625,11 +591,11 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         {tab === "Reviews" && (
           <div>
             {rating > 0 && (
-              <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:48, paddingBottom:32, borderBottom:`1px solid ${GOLD_D}` }}>
-                <div style={{ fontFamily:serif, fontSize:"3rem", fontWeight:800, fontStyle:"italic", color:INK, lineHeight:1 }}>{rating.toFixed(1)}</div>
+              <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:48, paddingBottom:32, borderBottom:`1px solid ${CGOLD_D}` }}>
+                <div style={{ fontFamily:serif, fontSize:"3rem", fontWeight:800, fontStyle:"italic", color:CINK, lineHeight:1 }}>{rating.toFixed(1)}</div>
                 <div>
                   <Stars r={rating} sz={14}/>
-                  <div style={{ fontSize:12.5, color:DIM, marginTop:5 }}>{reviews.length} {reviews.length===1?"review":"reviews"}</div>
+                  <div style={{ fontSize:12.5, color:CDIM, marginTop:5 }}>{reviews.length} {reviews.length===1?"review":"reviews"}</div>
                 </div>
               </div>
             )}
@@ -639,22 +605,20 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               const rev = r.averageRating || r.ratings?.overall || 5;
               const featured = i === 0;
               return (
-                <div key={i} style={{ marginBottom: featured ? 48 : 32, paddingBottom: featured ? 48 : 28, borderBottom:`1px solid rgba(196,155,48,0.08)` }}>
-                  {/* Reviewer row first */}
+                <div key={i} style={{ marginBottom: featured ? 48 : 32, paddingBottom: featured ? 48 : 28, borderBottom:`1px solid rgba(196,155,48,0.14)` }}>
                   <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
-                    <div style={{ width:featured ? 42 : 34, height:featured ? 42 : 34, borderRadius:"50%", background:"rgba(196,155,48,0.1)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:featured?13:11, fontWeight:700, color:"rgba(196,155,48,0.7)", flexShrink:0 }}>
+                    <div style={{ width:featured ? 42 : 34, height:featured ? 42 : 34, borderRadius:"50%", background:"rgba(196,155,48,0.1)", border:`1px solid rgba(196,155,48,0.28)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:featured?13:11, fontWeight:700, color:"rgba(150,100,15,0.8)", flexShrink:0 }}>
                       {initials}
                     </div>
                     <div style={{ flex:1 }}>
-                      <div style={{ fontSize:featured?15:13.5, fontWeight:600, color:INK }}>{name}</div>
-                      <div style={{ fontSize:11.5, color:DIM, marginTop:2 }}>
+                      <div style={{ fontSize:featured?15:13.5, fontWeight:600, color:CINK }}>{name}</div>
+                      <div style={{ fontSize:11.5, color:CDIM, marginTop:2 }}>
                         {r.eventType || "Event"}{r.date ? ` · ${r.date}` : ""}
                       </div>
                     </div>
                     <Stars r={rev} sz={featured?13:11}/>
                   </div>
-                  {/* Review text — no decorative quote mark */}
-                  <p style={{ fontSize:featured?15:13.5, color:featured?"rgba(245,237,216,0.85)":MUTED, lineHeight:featured?1.85:1.7, margin:0, fontWeight:featured?400:300, paddingLeft: 54 }}>
+                  <p style={{ fontSize:featured?15:13.5, color:featured?CMUTED:CDIM, lineHeight:featured?1.85:1.7, margin:0, fontWeight:featured?400:300, paddingLeft: 54 }}>
                     {r.reviewText}
                   </p>
                 </div>
@@ -673,7 +637,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               const min = Math.min(...pkgs.map(p=>Number(p.price)||0).filter(p=>p>0));
               return min > 0 ? (
                 <div style={{ marginBottom:20 }}>
-                  <div style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.14em", color:MUTED, marginBottom:5 }}>Starting from</div>
+                  <div style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.14em", color:CMUTED, marginBottom:5 }}>Starting from</div>
                   <div style={{ fontFamily:serif, fontSize:"1.75rem", fontWeight:800, fontStyle:"italic", color:GOLD, lineHeight:1 }}>
                     ₹{min.toLocaleString("en-IN")}
                   </div>
@@ -699,12 +663,12 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
             {rating > 0 && (
               <div className="gp-sb-row">
                 <Stars r={rating} sz={13}/>
-                <span style={{ fontWeight:700, color:INK, marginLeft:2 }}>{rating.toFixed(1)}</span>
-                <span style={{ color:DIM }}>({reviews.length} reviews)</span>
+                <span style={{ fontWeight:700, color:CINK, marginLeft:2 }}>{rating.toFixed(1)}</span>
+                <span style={{ color:CDIM }}>({reviews.length} reviews)</span>
               </div>
             )}
             <div className="gp-sb-row">
-              <span className="gp-sb-icon"><div style={{ width:7, height:7, borderRadius:"50%", background:"#3CCA6B" }}/></span>
+              <span className="gp-sb-icon"><div style={{ width:7, height:7, borderRadius:"50%", background:"#28A85A" }}/></span>
               Available for bookings
             </div>
             <div className="gp-sb-row">
@@ -738,15 +702,15 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
             <hr className="gp-sb-divider"/>
 
-            <div style={{ fontSize:11, color:DIM, textAlign:"center", lineHeight:1.7 }}>
+            <div style={{ fontSize:11, color:CDIM, textAlign:"center", lineHeight:1.7 }}>
               Secure booking &nbsp;·&nbsp; No hidden fees<br/>
-              <span style={{ color:GOLD, opacity:0.6 }}>Tendr</span> verified performer
+              <span style={{ color:GOLD, opacity:0.7 }}>Tendr</span> verified performer
             </div>
           </div>
 
           {/* Quick share */}
           <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10 }}>
-            <button onClick={() => navigator.clipboard?.writeText(window.location.href)} style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 18px", borderRadius:100, background:"transparent", border:`1px solid ${GOLD_D}`, color:MUTED, fontSize:12.5, fontWeight:500, cursor:"pointer", fontFamily:font }}>
+            <button onClick={() => navigator.clipboard?.writeText(window.location.href)} style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 18px", borderRadius:100, background:"transparent", border:`1px solid ${CGOLD_D}`, color:CMUTED, fontSize:12.5, fontWeight:500, cursor:"pointer", fontFamily:font }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
                 <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
