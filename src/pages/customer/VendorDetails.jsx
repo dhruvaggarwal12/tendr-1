@@ -295,6 +295,11 @@ const VendorDetailsPage = () => {
 
   useEffect(() => {
     if (!vendor?._id || !['Anchor', 'Band', 'Choreographer'].includes(vendor?.serviceType)) return;
+    // Demo vendors carry their reviews in the state object — skip the API call
+    if (String(vendor._id).startsWith("demo_") && Array.isArray(vendor.reviews)) {
+      setGigProReviews(vendor.reviews);
+      return;
+    }
     fetch(`${BASE_URL}/vendors/${vendor._id}/reviews`)
       .then(r => r.ok ? r.json() : [])
       .then(data => setGigProReviews(Array.isArray(data) ? data : (data?.reviews || [])))

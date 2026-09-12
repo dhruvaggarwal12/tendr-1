@@ -238,6 +238,7 @@ const NAV = [
   { key: "packages",    group: "MANAGE",   label: "Packages",    icon: "M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" },
   { key: "reviews",     group: "MANAGE",   label: "Reviews",     icon: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" },
   { key: "inventory",   group: "MANAGE",   label: "Setlist",     icon: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
+  { key: "photos",      group: "MANAGE",   label: "Photos & Videos", icon: "M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14m-6-6h.01M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" },
   { key: "profile",     group: "MANAGE",   label: "Profile",     icon: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" },
   { key: "gig",         group: "ARTIST",   label: "Performance", icon: "M9 18V5l12-2v13M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" },
   { key: "calendar",    group: "SCHEDULE", label: "Availability",icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" },
@@ -318,11 +319,13 @@ export default function DemoDashboard() {
   const [reviews, setReviews]   = usePersisted(`${sType}:reviews`, INIT_REVIEWS);
   const [pkgs,    setPkgs]      = usePersisted(`${sType}:pkgs`,    initPkgs);
   const [setlist, setSetlist]   = usePersisted(`${sType}:setlist`, initSetlist);
+  const [portfolioPhotos, setPortfolioPhotos] = usePersisted(`${sType}:photos`, []);
   const [outside]               = useState(INIT_OUTSIDE); // outside orders: read-only mock
 
   const [profEdit, setProfEdit]   = useState(false);
   const [profDraft, setProfDraft] = useState({});
   const [replyDraft, setReplyDraft] = useState({});
+  const [newPhotoUrl, setNewPhotoUrl] = useState("");
   const [pkgModal, setPkgModal]   = useState(null);
   const [pkgDraft, setPkgDraft]   = useState({});
   const [newItem, setNewItem]     = useState("");
@@ -392,6 +395,7 @@ export default function DemoDashboard() {
     setReviews(INIT_REVIEWS); lsSet(`${sType}:reviews`, INIT_REVIEWS);
     setPkgs(initPkgs);       lsSet(`${sType}:pkgs`,    initPkgs);
     setSetlist(initSetlist); lsSet(`${sType}:setlist`, initSetlist);
+    setPortfolioPhotos([]);  lsSet(`${sType}:photos`,  []);
     setGigDraft({ genres: (initProfile.genres||[]).join(", "), showreel: initProfile.showreel, instagram: initProfile.instagram, youtube: initProfile.youtube, setlist: initProfile.setlist });
     setResetConfirm(false);
   }
@@ -474,6 +478,13 @@ export default function DemoDashboard() {
           <div style={{ display: "flex", gap: 7, marginBottom: 10 }}>
             <button onClick={() => {
               const genresArr = Array.isArray(profile.genres) ? profile.genres : (profile.genres || "").split(",").map(g => g.trim()).filter(Boolean);
+              const mappedReviews = reviews.map(r => ({
+                consumerName: r.name,
+                reviewText: r.text,
+                averageRating: r.rating,
+                eventType: r.event,
+                createdAt: null,
+              }));
               nav(`/vendor/demo_${sType}`, { state: { vendor: {
                 _id: `demo_${sType}`,
                 name: profile.name,
@@ -482,7 +493,7 @@ export default function DemoDashboard() {
                 bio: profile.bio,
                 avgReviewScore: profile.rating,
                 verified: true,
-                portfolioPhotos: profile.portfolioPhotos || [],
+                portfolioPhotos: portfolioPhotos,
                 yearsOfExperience: profile.years,
                 teamSize: profile.teamSize,
                 totalEventsCompleted: profile.events,
@@ -493,11 +504,13 @@ export default function DemoDashboard() {
                 social: { instagram: profile.instagram, youtube: profile.youtube, showreel: profile.showreel },
                 setlist: setlist,
                 packages: pkgs,
+                reviews: mappedReviews,
                 ...profile,
                 location: profile.city,
                 avgReviewScore: profile.rating,
                 yearsOfExperience: profile.years,
                 totalEventsCompleted: profile.events,
+                portfolioPhotos: portfolioPhotos,
               }}});
               setSidebarOpen(false);
             }} style={{ flex: 1, padding: "7px 0", borderRadius: 8, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
@@ -1027,6 +1040,74 @@ export default function DemoDashboard() {
             <input value={newItem} onChange={e => setNewItem(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && newItem.trim()) { const nl = [...setlist, newItem.trim()]; setSetlist(nl); setNewItem(""); syncToApi(profile, pkgs, nl); } }} placeholder="Add new segment..." style={{ flex: 1, padding: "10px 16px", borderRadius: 100, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13.5, fontFamily: font, color: ink, background: "#fff" }} />
             <button onClick={() => { if (newItem.trim()) { const nl = [...setlist, newItem.trim()]; setSetlist(nl); setNewItem(""); syncToApi(profile, pkgs, nl); } }} style={{ padding: "10px 22px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Add</button>
           </div>
+        </div>
+      );
+    }
+
+    // ── PHOTOS & VIDEOS ───────────────────────────────────────────────────────
+    if (tab === "photos") {
+      const isValidUrl = u => { try { return !!new URL(u); } catch { return false; } };
+      const addPhoto = () => {
+        const url = newPhotoUrl.trim();
+        if (!url || !isValidUrl(url)) return;
+        setPortfolioPhotos(p => [...p, url]);
+        setNewPhotoUrl("");
+      };
+      return (
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+            <h2 style={{ fontFamily: serif, fontSize: "1.7rem", fontWeight: 400, color: ink }}>Photos & Videos</h2>
+            <span style={{ fontSize: 12, color: muted }}>{portfolioPhotos.length} added</span>
+          </div>
+          <p style={{ fontSize: 13, color: muted, marginBottom: 22, lineHeight: 1.6 }}>
+            Add direct image URLs. These appear in your public profile's Portfolio tab.
+            Use links from Google Drive, Cloudinary, Imgur, or any public image host.
+          </p>
+
+          {/* Add URL input */}
+          <div style={{ background: "#fff", borderRadius: 16, padding: "18px 20px", border: "1px solid rgba(196,122,46,0.1)", marginBottom: 20 }}>
+            <label style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 10 }}>Add Photo / Video URL</label>
+            <div style={{ display: "flex", gap: 10 }}>
+              <input
+                value={newPhotoUrl}
+                onChange={e => setNewPhotoUrl(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && addPhoto()}
+                placeholder="https://i.imgur.com/your-photo.jpg"
+                style={{ flex: 1, padding: "10px 16px", borderRadius: 100, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13.5, fontFamily: font, color: ink, background: cream }}
+              />
+              <button onClick={addPhoto} style={{ padding: "10px 22px", borderRadius: 100, background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Add</button>
+            </div>
+            <div style={{ fontSize: 11.5, color: muted, marginTop: 8 }}>
+              Tip: for video thumbnails paste a YouTube thumbnail URL like{" "}
+              <span style={{ fontFamily: "monospace", color: gold }}>https://img.youtube.com/vi/VIDEO_ID/0.jpg</span>
+            </div>
+          </div>
+
+          {/* Photo grid */}
+          {portfolioPhotos.length > 0 ? (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              {portfolioPhotos.map((url, i) => (
+                <div key={i} style={{ position: "relative", borderRadius: 14, overflow: "hidden", aspectRatio: "4/3", background: cream }}>
+                  <img src={url} alt={`Photo ${i+1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    onError={e => { e.currentTarget.style.display = "none"; e.currentTarget.nextSibling.style.display = "flex"; }} />
+                  <div style={{ display: "none", position: "absolute", inset: 0, alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 6, color: muted, fontSize: 12 }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    Invalid URL
+                  </div>
+                  <button onClick={() => setPortfolioPhotos(p => p.filter((_, j) => j !== i))}
+                    style={{ position: "absolute", top: 8, right: 8, width: 28, height: 28, borderRadius: "50%", background: "rgba(28,10,4,0.65)", color: "#fff", border: "none", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlign: "center", padding: "60px 20px", color: muted }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.25" style={{ display: "block", margin: "0 auto 16px" }}><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <div style={{ fontFamily: serif, fontSize: "1.1rem", color: ink, marginBottom: 6 }}>No photos yet</div>
+              <div style={{ fontSize: 13 }}>Paste an image URL above to add your first portfolio photo.</div>
+            </div>
+          )}
         </div>
       );
     }
