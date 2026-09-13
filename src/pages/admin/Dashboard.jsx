@@ -6349,6 +6349,7 @@ const AdminDashboard = () => {
             BASE_URL={BASE_URL}
             vendorStats={vendorStats}
             chatRequests={chatRequests}
+            vendorApplications={vendorApplications}
           />
         )}
 
