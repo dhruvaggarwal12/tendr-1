@@ -52,6 +52,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const [pendingCartAction, setPendingCartAction] = useState(null);
   const [addOnsOpen, setAddOnsOpen] = useState(false);
   const [showPayPopup, setShowPayPopup] = useState(false);
+  const [showPayHint, setShowPayHint] = useState(false);
   const dispatch = useDispatch();
   const { chatState, expandChat, openExistingChat, openConciergeChat } = useChatOverlay();
   const { cartCount: stCartCount, openCart: openStCart } = useStationeryCart();
@@ -320,14 +321,14 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(90vw,360px)", background: "#FFFCF5", borderRadius: 20, zIndex: 1301, padding: "28px 24px", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", fontFamily: font, textAlign: "center" }}>
             <button onClick={() => setShowPayPopup(false)} style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, borderRadius: "50%", border: "none", background: "rgba(155,116,80,0.12)", color: "#9B7450", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
             <div style={{ fontSize: 36, marginBottom: 12 }}>🎉</div>
-            <h3 style={{ fontSize: 18, fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px" }}>Ready to book?</h3>
-            <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 24px", lineHeight: 1.5 }}>Head to Review & Pay to confirm your booking, or keep exploring.</p>
+            <h3 style={{ fontSize: 18, fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px" }}>Vendor added!</h3>
+            <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 24px", lineHeight: 1.5 }}>Ready to confirm, or want to add more vendors first?</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <button onClick={() => { setShowPayPopup(false); router.navigate("/booking/review"); }}
+              <button onClick={() => { setShowPayPopup(false); setShowPayHint(false); router.navigate("/booking/review"); }}
                 style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(44,26,14,0.3)" }}>
-                Continue to Booking →
+                Continue to Payment →
               </button>
-              <button onClick={() => setShowPayPopup(false)}
+              <button onClick={() => { setShowPayPopup(false); setShowPayHint(true); }}
                 style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#9B7450", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
                 Book Other Things
               </button>
@@ -939,25 +940,48 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         return ((showPay || ghConfirmed || stConfirmed || funConfirmed) && (
           <div className="chat-row-left">
             {showPay && (
-              <button
-                onClick={() => {
-                  if (!Object.keys(finalisedVendors).length && hasBackendPrice) {
-                    vendorChats
-                      .filter(c => (c.vendorPrice?.amount > 0) && c.chatApproved)
-                      .forEach(c => {
-                        const vid = typeof c.vendorId === 'object' ? c.vendorId?._id : c.vendorId;
-                        dispatch(setFinalisedVendor({ _id: vid || null, name: c.vendorName || "Tendr Team", serviceType: c.serviceType, primaryService: c.serviceType }));
-                      });
-                  }
-                  setShowPayPopup(true);
-                }}
-                title="Review & Pay"
-                style={{ position: "relative", borderRadius: 100, padding: "0 16px", height: 44, width: "auto", minWidth: 54, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900, color: "#CCAB4A", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", boxShadow: "0 4px 14px rgba(44,26,14,0.35)", flexShrink: 0, fontFamily: font }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px) scale(1.04)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; }}
-              >
-                Pay
-              </button>
+              <div style={{ position: "relative", flexShrink: 0 }}>
+                {/* Hint callout shown after "Book Other Things" */}
+                {showPayHint && (
+                  <div style={{
+                    position: "absolute", bottom: "calc(100% + 10px)", right: 0,
+                    background: "#2C1A0E", color: "#CCAB4A", borderRadius: 10,
+                    padding: "10px 14px", width: 190, boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
+                    fontFamily: font, fontSize: 12, fontWeight: 600, lineHeight: 1.5,
+                    zIndex: 1400, textAlign: "left",
+                  }}>
+                    <button
+                      onClick={() => setShowPayHint(false)}
+                      style={{ position: "absolute", top: 6, right: 8, background: "none", border: "none", color: "rgba(204,171,74,0.5)", fontSize: 13, cursor: "pointer", lineHeight: 1, padding: 0 }}
+                    >×</button>
+                    👆 Tap <strong>Pay</strong> here when you're ready to confirm your booking.
+                    {/* Downward arrow */}
+                    <div style={{ position: "absolute", bottom: -7, right: 18, width: 0, height: 0, borderLeft: "7px solid transparent", borderRight: "7px solid transparent", borderTop: "7px solid #2C1A0E" }} />
+                  </div>
+                )}
+                <button
+                  onClick={() => {
+                    if (!Object.keys(finalisedVendors).length && hasBackendPrice) {
+                      vendorChats
+                        .filter(c => (c.vendorPrice?.amount > 0) && c.chatApproved)
+                        .forEach(c => {
+                          const vid = typeof c.vendorId === 'object' ? c.vendorId?._id : c.vendorId;
+                          dispatch(setFinalisedVendor({ _id: vid || null, name: c.vendorName || "Tendr Team", serviceType: c.serviceType, primaryService: c.serviceType }));
+                        });
+                    }
+                    setShowPayHint(false);
+                    setShowPayPopup(true);
+                  }}
+                  title="Review & Pay"
+                  style={{ position: "relative", borderRadius: 100, padding: "0 16px", height: 44, width: "auto", minWidth: 54, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900, color: "#CCAB4A", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", boxShadow: "0 4px 14px rgba(44,26,14,0.35)", fontFamily: font,
+                    ...(showPayHint ? { outline: "2.5px solid #CCAB4A", outlineOffset: 2 } : {}),
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px) scale(1.04)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; }}
+                >
+                  Pay
+                </button>
+              </div>
             )}
             {(ghConfirmed || stConfirmed || funConfirmed) && (
             <button
