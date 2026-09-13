@@ -71,13 +71,24 @@ export default function PeopleHubTab({
   };
 
   // --- Derived data ---
-  const performers        = vendorStats.filter(v => PERFORMER_TYPES.includes(v.serviceType));
+  const performers         = vendorStats.filter(v => PERFORMER_TYPES.includes(v.serviceType));
   const coordAssignedChats = chatRequests.filter(c => c.coordinatorId);
 
   // Artist applications: VendorApplication entries with an artist serviceType (or untyped)
   const artistApplications = vendorApplications.filter(a =>
     ARTIST_SERVICE_TYPES.includes(a.serviceType) || !a.serviceType
   );
+
+  // Unified applications list: coordinator pending registrations + artist applications
+  // Tag each entry with _kind so the renderer knows which API to call
+  const coordApplications = coords
+    .filter(c => ["pending", "rejected"].includes(c.status))
+    .map(c => ({ ...c, _kind: "coordinator" }));
+
+  const allApplications = [
+    ...coordApplications,
+    ...artistApplications.map(a => ({ ...a, _kind: "artist" })),
+  ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const pendingCoords  = coords.filter(c => c.status === "pending").length;
   const pendingArtists = artistApplications.filter(a => ["pending", "form_sent"].includes(a.status)).length;
@@ -100,12 +111,18 @@ export default function PeopleHubTab({
     return matchFilter && matchSearch;
   });
 
-  const filteredApps = artistApplications.filter(a => {
-    const matchFilter = appFilter === "all" || a.status === appFilter;
+  // appFilter: "all" | "pending" | "form_sent" | "approved" | "rejected" | "coordinator" | "artist"
+  const filteredApps = allApplications.filter(a => {
+    const curStatus = appStatusOverrides[a._id] ?? a.status;
+    let matchFilter = true;
+    if (appFilter === "coordinator") matchFilter = a._kind === "coordinator";
+    else if (appFilter === "artist")  matchFilter = a._kind === "artist";
+    else if (appFilter !== "all")     matchFilter = curStatus === appFilter;
     const matchSearch = !appSearch ||
       a.name?.toLowerCase().includes(appSearch.toLowerCase()) ||
-      a.serviceType?.toLowerCase().includes(appSearch.toLowerCase()) ||
-      a.performerArtForm?.toLowerCase().includes(appSearch.toLowerCase()) ||
+      (a._kind === "artist" ? a.serviceType?.toLowerCase().includes(appSearch.toLowerCase()) : false) ||
+      (a._kind === "artist" ? a.performerArtForm?.toLowerCase().includes(appSearch.toLowerCase()) : false) ||
+      a.city?.toLowerCase().includes(appSearch.toLowerCase()) ||
       a.address?.toLowerCase().includes(appSearch.toLowerCase());
     return matchFilter && matchSearch;
   });
@@ -199,8 +216,7 @@ export default function PeopleHubTab({
       {subTab === "applications" && (
         <div>
           <p style={{ fontSize: 13, color: "#9B7450", fontFamily: F, marginBottom: 16 }}>
-            New registrations from artists and performers who applied via the join page.
-            Coordinator applications appear in the <strong style={{ color: "#2C1A0E" }}>Coordinators</strong> tab.
+            All new registrations — event coordinators and artists/performers — in one queue, newest first.
           </p>
 
           {/* Filters */}
@@ -211,92 +227,142 @@ export default function PeopleHubTab({
               placeholder="Search by name, type, art form, city…"
               style={{ flex: "1 1 220px", padding: "8px 14px", borderRadius: 100, border: "1.5px solid #E5D5C0", fontFamily: F, fontSize: 13, color: "#2C1A0E", background: CARD, outline: "none" }}
             />
-            {[["all","All"],["pending","⏳ Pending"],["form_sent","📤 Form Sent"],["approved","✅ Approved"],["rejected","❌ Rejected"]].map(([val, lbl]) => {
-              const cnt = val === "all" ? artistApplications.length : artistApplications.filter(a => a.status === val).length;
-              return (
-                <button
-                  key={val} onClick={() => setAppFilter(val)}
-                  style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 700, fontFamily: F, cursor: "pointer", background: appFilter === val ? GOLD : "#fff", color: appFilter === val ? "#fff" : "#9B7450", border: appFilter === val ? "none" : "1.5px solid #E5D5C0", display: "flex", alignItems: "center", gap: 5 }}
-                >
-                  {lbl}
-                  <span style={{ fontSize: 10, background: appFilter === val ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)", color: appFilter === val ? "#fff" : GOLD, borderRadius: 100, padding: "1px 6px" }}>{cnt}</span>
-                </button>
-              );
-            })}
+            {[
+              ["all",         "All",              allApplications.length],
+              ["pending",     "⏳ Pending",        allApplications.filter(a => (appStatusOverrides[a._id] ?? a.status) === "pending").length],
+              ["form_sent",   "📤 Form Sent",      artistApplications.filter(a => (appStatusOverrides[a._id] ?? a.status) === "form_sent").length],
+              ["coordinator", "🎯 Coordinators",   coordApplications.length],
+              ["artist",      "🎤 Artists",        artistApplications.length],
+              ["rejected",    "❌ Rejected",       allApplications.filter(a => (appStatusOverrides[a._id] ?? a.status) === "rejected").length],
+            ].map(([val, lbl, cnt]) => (
+              <button
+                key={val} onClick={() => setAppFilter(val)}
+                style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 700, fontFamily: F, cursor: "pointer", background: appFilter === val ? GOLD : "#fff", color: appFilter === val ? "#fff" : "#9B7450", border: appFilter === val ? "none" : "1.5px solid #E5D5C0", display: "flex", alignItems: "center", gap: 5 }}
+              >
+                {lbl}
+                <span style={{ fontSize: 10, background: appFilter === val ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)", color: appFilter === val ? "#fff" : GOLD, borderRadius: 100, padding: "1px 6px" }}>{cnt}</span>
+              </button>
+            ))}
           </div>
 
           {filteredApps.length === 0 ? (
             <div style={{ textAlign: "center", padding: "56px 0", color: "#9B7450", fontFamily: F }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
-              <p style={{ fontWeight: 700, color: "#2C1A0E", marginBottom: 4 }}>No artist applications {appFilter !== "all" ? `with status "${appFilter}"` : ""}</p>
-              <p style={{ fontSize: 13 }}>Applications from artists and performers appear here when they sign up via the join page.</p>
+              <p style={{ fontWeight: 700, color: "#2C1A0E", marginBottom: 4 }}>No applications found</p>
+              <p style={{ fontSize: 13 }}>New coordinator and artist registrations appear here automatically.</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {filteredApps.map(app => {
+                const isCoord = app._kind === "coordinator";
                 const GOOGLE_FORM_URL = "https://forms.gle/9DLeMdJiMdLNsTmbA";
                 const waNum = app.whatsappNumber || app.phoneNumber;
-
                 const artEmoji = app.performerArtForm ? (ART_FORM_EMOJI[app.performerArtForm] || "🎨") : null;
 
                 const updateAppStatus = (newStatus) => {
-                  fetch(`${BASE_URL}/vendor-applications/${app._id}/status`, {
+                  const url = isCoord
+                    ? `${BASE_URL}/admin/coordinators/${app._id}/status`
+                    : `${BASE_URL}/vendor-applications/${app._id}/status`;
+                  fetch(url, {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                     credentials: "include",
                     body: JSON.stringify({ status: newStatus }),
                   })
                     .then(r => r.json())
-                    .then(() => setAppStatusOverrides(prev => ({ ...prev, [app._id]: newStatus })))
+                    .then(d => {
+                      setAppStatusOverrides(prev => ({ ...prev, [app._id]: newStatus }));
+                      // Also keep the coords list in sync for the Coordinators tab
+                      if (isCoord && d.coordinator) {
+                        setCoords(prev => prev.map(c => c._id === app._id ? d.coordinator : c));
+                      }
+                    })
                     .catch(() => {});
                 };
 
                 const curStatus = appStatusOverrides[app._id] ?? app.status;
-                const curStyle  = {
+                const STATUS_STYLES = {
                   pending:    { bg: "#fffbeb", color: "#b45309", border: "#fde68a",  label: "Pending" },
                   form_sent:  { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe",  label: "Form Sent" },
                   approved:   { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0",  label: "Approved" },
                   registered: { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0",  label: "Registered ✓" },
                   rejected:   { bg: "#fff5f5", color: "#c0392b", border: "#fca5a5",  label: "Rejected" },
-                }[curStatus] || statusStyle;
+                };
+                const curStyle = STATUS_STYLES[curStatus] || STATUS_STYLES.pending;
 
                 return (
-                  <div key={app._id} style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.2)", padding: "16px 20px", boxShadow: "0 2px 10px rgba(139,69,19,0.05)", fontFamily: F }}>
+                  <div key={app._id} style={{ background: "#fff", borderRadius: 14, border: isCoord ? "1.5px solid rgba(99,102,241,0.25)" : "1.5px solid rgba(196,122,46,0.2)", padding: "16px 20px", boxShadow: "0 2px 10px rgba(139,69,19,0.05)", fontFamily: F }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14, flexWrap: "wrap", marginBottom: 12 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
                           <span style={{ fontWeight: 800, fontSize: 16, color: "#2C1A0E" }}>{app.name}</span>
-                          {/* Service type chip */}
-                          {app.serviceType && (
-                            <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(196,122,46,0.1)", color: GOLD, border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "2px 10px" }}>
-                              {app.serviceType}
-                            </span>
-                          )}
-                          {/* Art form chip */}
-                          {app.performerArtForm && (
+
+                          {/* Kind badge */}
+                          <span style={{ fontSize: 11, fontWeight: 700, background: isCoord ? "rgba(99,102,241,0.1)" : "rgba(196,122,46,0.1)", color: isCoord ? "#4F46E5" : GOLD, border: isCoord ? "1.5px solid rgba(99,102,241,0.25)" : "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "2px 10px" }}>
+                            {isCoord ? "🎯 Event Coordinator" : `🎤 ${app.serviceType || "Artist"}`}
+                          </span>
+
+                          {/* Art form chip (artists only) */}
+                          {!isCoord && app.performerArtForm && (
                             <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(99,102,241,0.07)", color: "#4F46E5", border: "1.5px solid rgba(99,102,241,0.2)", borderRadius: 100, padding: "2px 10px" }}>
                               {artEmoji} {app.performerArtForm}
                             </span>
                           )}
+
                           {/* Status badge */}
                           <span style={{ fontSize: 12, fontWeight: 600, padding: "2px 10px", borderRadius: 100, background: curStyle.bg, color: curStyle.color, border: `1px solid ${curStyle.border}` }}>
                             {curStyle.label}
                           </span>
                         </div>
+
                         <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "#5a3a1a" }}>
                           <span>📞 {app.phoneNumber}</span>
-                          {app.whatsappNumber && <span>💬 {app.whatsappNumber}</span>}
+                          {app.whatsappNumber && app.whatsappNumber !== app.phoneNumber && <span>💬 {app.whatsappNumber}</span>}
                           {app.email && <span>✉️ {app.email}</span>}
                         </div>
+
                         <div style={{ fontSize: 12, color: "#9B7450", marginTop: 4 }}>
-                          📍 {app.address} · {new Date(app.createdAt).toLocaleDateString("en-IN")}
+                          📍 {app.city || app.address || "—"} · {app.createdAt ? new Date(app.createdAt).toLocaleDateString("en-IN") : "—"}
+                          {isCoord && app.experience && ` · ${app.experience}`}
+                          {isCoord && app.eventsPerMonth && ` · ${app.eventsPerMonth} events/mo`}
                         </div>
+
+                        {/* Coordinator specializations */}
+                        {isCoord && app.specializations?.length > 0 && (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 8 }}>
+                            {app.specializations.map(s => (
+                              <span key={s} style={{ background: "#F3F4FF", border: "1.5px solid rgba(99,102,241,0.2)", borderRadius: 100, padding: "2px 9px", fontSize: 11, fontWeight: 600, color: "#4F46E5" }}>{s}</span>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Coordinator bio */}
+                        {isCoord && app.bio && (
+                          <p style={{ fontSize: 12.5, color: "#5A3A1A", lineHeight: 1.6, margin: "8px 0 0", background: "#FFF8EE", borderRadius: 8, padding: "8px 12px", borderLeft: "3px solid #4F46E5" }}>
+                            {app.bio}
+                          </p>
+                        )}
                       </div>
                     </div>
 
                     {/* Action buttons */}
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", borderTop: "1px solid rgba(204,171,74,0.15)", paddingTop: 10 }}>
-                      {curStatus === "pending" && (
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", borderTop: "1px solid rgba(204,171,74,0.12)", paddingTop: 10 }}>
+                      {/* Coordinator flow: pending → approve or reject directly */}
+                      {isCoord && curStatus === "pending" && (
+                        <>
+                          <Btn onClick={() => updateAppStatus("approved")} bg="#15803D" color="#fff">✅ Approve</Btn>
+                          <Btn onClick={() => updateAppStatus("rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">❌ Reject</Btn>
+                        </>
+                      )}
+                      {isCoord && curStatus === "approved" && (
+                        <span style={{ fontSize: 12, color: "#15803D", fontWeight: 700 }}>✅ Active coordinator</span>
+                      )}
+                      {isCoord && curStatus === "rejected" && (
+                        <Btn onClick={() => updateAppStatus("pending")} bg="#FEF3C7" color="#D97706" border="#FDE68A">↩ Move to Pending</Btn>
+                      )}
+
+                      {/* Artist flow: pending → send form → approve */}
+                      {!isCoord && curStatus === "pending" && (
                         <a
                           href={`https://wa.me/91${waNum}?text=${encodeURIComponent(`Hi ${app.name}! 👋 Thank you for your interest in joining Tendr. Please fill in this form to complete your registration: ${GOOGLE_FORM_URL}`)}`}
                           target="_blank" rel="noopener noreferrer"
@@ -306,16 +372,16 @@ export default function PeopleHubTab({
                           📤 Send Registration Form
                         </a>
                       )}
-                      {curStatus === "form_sent" && (
+                      {!isCoord && curStatus === "form_sent" && (
                         <Btn onClick={() => updateAppStatus("approved")} bg="#15803D" color="#fff">✅ Mark Approved</Btn>
                       )}
-                      {(curStatus === "pending" || curStatus === "form_sent") && (
+                      {!isCoord && (curStatus === "pending" || curStatus === "form_sent") && (
                         <Btn onClick={() => updateAppStatus("rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">❌ Reject</Btn>
                       )}
-                      {curStatus === "rejected" && (
+                      {!isCoord && curStatus === "rejected" && (
                         <Btn onClick={() => updateAppStatus("pending")} bg="#FEF3C7" color="#D97706" border="#FDE68A">↩ Move to Pending</Btn>
                       )}
-                      {curStatus === "approved" && (
+                      {!isCoord && curStatus === "approved" && (
                         <span style={{ fontSize: 12, color: "#15803D", fontWeight: 700 }}>✅ Approved — onboarding complete</span>
                       )}
                     </div>
