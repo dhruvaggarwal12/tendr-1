@@ -255,7 +255,6 @@ export default function PeopleHubTab({
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {filteredApps.map(app => {
                 const isCoord = app._kind === "coordinator";
-                const GOOGLE_FORM_URL = "https://forms.gle/9DLeMdJiMdLNsTmbA";
                 const waNum = app.whatsappNumber || app.phoneNumber;
                 const artEmoji = app.performerArtForm ? (ART_FORM_EMOJI[app.performerArtForm] || "🎨") : null;
 
@@ -361,28 +360,39 @@ export default function PeopleHubTab({
                         <Btn onClick={() => updateAppStatus("pending")} bg="#FEF3C7" color="#D97706" border="#FDE68A">↩ Move to Pending</Btn>
                       )}
 
-                      {/* Artist flow: pending → send form → approve */}
+                      {/* Artist flow: pending → invite to register on platform → registered */}
                       {!isCoord && curStatus === "pending" && (
-                        <a
-                          href={`https://wa.me/91${waNum}?text=${encodeURIComponent(`Hi ${app.name}! 👋 Thank you for your interest in joining Tendr. Please fill in this form to complete your registration: ${GOOGLE_FORM_URL}`)}`}
-                          target="_blank" rel="noopener noreferrer"
-                          onClick={() => setTimeout(() => updateAppStatus("form_sent"), 500)}
-                          style={{ padding: "7px 14px", borderRadius: 8, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5 }}
-                        >
-                          📤 Send Registration Form
-                        </a>
+                        <>
+                          <a
+                            href={`https://wa.me/91${waNum}?text=${encodeURIComponent(`Hi ${app.name}! 🎉 Your interest in joining Tendr as a ${app.serviceType || "performer"} has been reviewed.\n\nPlease complete your profile registration here:\n${window.location.origin}/vendor/register\n\nOnce you register, you'll be live on the platform. Welcome to Tendr! 🙌`)}`}
+                            target="_blank" rel="noopener noreferrer"
+                            onClick={() => setTimeout(() => updateAppStatus("form_sent"), 500)}
+                            style={{ padding: "7px 14px", borderRadius: 8, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5 }}
+                          >
+                            📲 Invite to Register on Tendr
+                          </a>
+                          <Btn onClick={() => updateAppStatus("rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">❌ Reject</Btn>
+                        </>
                       )}
                       {!isCoord && curStatus === "form_sent" && (
-                        <Btn onClick={() => updateAppStatus("approved")} bg="#15803D" color="#fff">✅ Mark Approved</Btn>
-                      )}
-                      {!isCoord && (curStatus === "pending" || curStatus === "form_sent") && (
-                        <Btn onClick={() => updateAppStatus("rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">❌ Reject</Btn>
+                        <>
+                          <span style={{ fontSize: 12, color: "#0369a1", fontWeight: 600 }}>📲 Invite sent — waiting for them to register</span>
+                          <a
+                            href={`https://wa.me/91${waNum}?text=${encodeURIComponent(`Hi ${app.name}! 👋 Just a reminder to complete your Tendr registration:\n${window.location.origin}/vendor/register`)}`}
+                            target="_blank" rel="noopener noreferrer"
+                            style={{ padding: "6px 12px", borderRadius: 8, background: "#EFF6FF", color: "#0369a1", fontSize: 12, fontWeight: 700, textDecoration: "none", border: "1.5px solid #BFDBFE" }}
+                          >
+                            🔁 Resend Link
+                          </a>
+                          <Btn onClick={() => updateAppStatus("registered")} bg="#15803D" color="#fff">✅ Mark Registered</Btn>
+                          <Btn onClick={() => updateAppStatus("rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">❌ Reject</Btn>
+                        </>
                       )}
                       {!isCoord && curStatus === "rejected" && (
                         <Btn onClick={() => updateAppStatus("pending")} bg="#FEF3C7" color="#D97706" border="#FDE68A">↩ Move to Pending</Btn>
                       )}
-                      {!isCoord && curStatus === "approved" && (
-                        <span style={{ fontSize: 12, color: "#15803D", fontWeight: 700 }}>✅ Approved — onboarding complete</span>
+                      {!isCoord && (curStatus === "approved" || curStatus === "registered") && (
+                        <span style={{ fontSize: 12, color: "#15803D", fontWeight: 700 }}>✅ Registered on platform</span>
                       )}
                     </div>
                   </div>
