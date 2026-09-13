@@ -14,6 +14,8 @@ import { setFinalisedVendor } from "../../redux/listingFiltersSlice";
 import { generateReferralCode, formatCode, DISCOUNT_PERCENT } from "../../utils/referral";
 import { useChatOverlay } from "../../context/ChatContext";
 import { generateInvoicePDF, generateEventDetailsPDF, generateTimelinePDF, generateInvitationPDF } from "../../utils/pdfGenerator";
+import PageTour from "../../components/PageTour";
+import DashboardAssistant, { CUSTOMER_TOUR_STEPS } from "../../components/DashboardAssistant";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -128,6 +130,7 @@ export default function CustomerDashboard() {
     navigate("/booking");
   };
 
+  const [tourKey, setTourKey] = useState(0); // increment to force-restart the tour
   const [changeReqState, setChangeReqState] = useState({}); // { [planId]: { open, message, submitting, done } }
   const [cancelState, setCancelState] = useState({}); // { [planId]: { open, reason, submitting, done } }
   const [expandedPinned, setExpandedPinned] = useState({}); // { [planId]: bool }
@@ -560,7 +563,7 @@ export default function CustomerDashboard() {
       {/* Main Navbar */}
       <HamburgerNav />
 
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "clamp(16px,4vw,40px) clamp(14px,3vw,32px) 80px" }}>
+      <div data-tour="dash-header" style={{ maxWidth: 1100, margin: "0 auto", padding: "clamp(16px,4vw,40px) clamp(14px,3vw,32px) 80px" }}>
 
         {/* Install App Banner — shown once per session, dismissible */}
         {showInstallBanner && (
@@ -598,7 +601,7 @@ export default function CustomerDashboard() {
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-end" }}>
-            <button onClick={() => navigate("/booking")}
+            <button data-tour="dash-new-event" onClick={() => navigate("/booking")}
               style={{ fontSize: 13, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", borderRadius: 10, padding: "9px 20px", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}>
               + Plan New Event
             </button>
@@ -1008,9 +1011,10 @@ export default function CustomerDashboard() {
           </h3>
 
           {/* Tabs */}
-          <div className="cust-tab-row" style={{ display: "flex", gap: 6, marginBottom: 20, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 2 }}>
+          <div data-tour="dash-tabs" className="cust-tab-row" style={{ display: "flex", gap: 6, marginBottom: 20, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 2 }}>
             {TABS.map((tab) => (
               <button key={tab}
+                data-tour={`tab-${tab}`}
                 onClick={() => {
                   setActiveTab(tab);
                   if (tab === "Chats") {
@@ -1940,6 +1944,20 @@ export default function CustomerDashboard() {
           </div>
         </div>
       )}
+
+      {/* Guided tour */}
+      <PageTour
+        key={tourKey}
+        pageKey="customer-dashboard"
+        steps={CUSTOMER_TOUR_STEPS}
+        condition={true}
+      />
+
+      {/* Dashboard assistant bot */}
+      <DashboardAssistant
+        onTabChange={(tab) => setActiveTab(tab)}
+        onStartTour={() => { localStorage.removeItem("tendr_tour_customer-dashboard"); setTourKey(k => k + 1); }}
+      />
 
       <Footer />
     </div>
