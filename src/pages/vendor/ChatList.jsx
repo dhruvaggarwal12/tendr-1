@@ -1,268 +1,216 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import logo from "../../assets/logos/tendr-logo-secondary.png";
-import ChatIcon from '@mui/icons-material/Chat';
-import SearchIcon from '@mui/icons-material/Search';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
-// Fetch vendor chats from project backend
-const fetchAllVendorChats = async () => {
-  try {
-    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/vendor/chats`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-    });
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-    if (!response.ok) {
-      throw new Error("Failed to fetch chats");
-    }
+function relativeTime(ts) {
+  if (!ts) return '';
+  const diff = Date.now() - new Date(ts).getTime();
+  if (diff < 60000) return 'just now';
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+  return new Date(ts).toLocaleDateString();
+}
 
-    const result = await response.json();
-    return result.data || result || [];
-  } catch (error) {
-    console.error("Error fetching vendor chats:", error);
-    return [];
-  }
-};
-
-const VendorChatList = () => {
-  const navigate = useNavigate();
-  const [chats, setChats] = useState([]);
-  const [filteredChats, setFilteredChats] = useState([]);
+// ── Tendr Bookings tab (platform chats via admin-approved flow) ──────────────
+function TendrBookingsTab({ token }) {
+  const [chats, setChats]     = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [showFilters, setShowFilters] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const loadChats = async () => {
-      try {
-        const chatsData = await fetchAllVendorChats();
-        setChats(chatsData);
-        setFilteredChats(chatsData);
-      } catch (error) {
-        console.error('Error loading chats:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (!token) return;
+    fetch(`${BASE_URL}/vendor/chats`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: 'include',
+    })
+      .then(r => r.ok ? r.json() : Promise.resolve({ data: [] }))
+      .then(d => setChats(d.data || d || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [token]);
 
-    loadChats();
-  }, []);
-
-  useEffect(() => {
-    let filtered = chats;
-
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(chat =>
-        chat.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        chat.eventType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        chat.lastMessage.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Filter by status
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(chat => chat.status === statusFilter);
-    }
-
-    setFilteredChats(filtered);
-  }, [chats, searchTerm, statusFilter]);
-
-  const handleChatClick = (chat) => {
-    navigate('/vendor/chat', { 
-      state: { 
-        chatId: chat.id,
-        customerName: chat.customerName,
-        customerImage: chat.customerImage,
-        eventType: chat.eventType,
-        eventDate: chat.eventDate,
-        guestCount: chat.guestCount,
-        customerPhone: chat.customerPhone
-      } 
-    });
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'active': return 'bg-green-500';
-      case 'pending': return 'bg-yellow-500';
-      case 'completed': return 'bg-gray-400';
-      default: return 'bg-gray-400';
-    }
-  };
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'active': return 'Active';
-      case 'pending': return 'Pending';
-      case 'completed': return 'Completed';
-      default: return 'Unknown';
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-2xl font-semibold text-gray-600">Loading chats...</div>
-      </div>
-    );
-  }
+  if (loading) return <Empty text="Loading…" />;
+  if (!chats.length) return <Empty icon="💬" text="No Tendr bookings yet" sub="When a customer's chat request is approved, it appears here." />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-rose-100">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      {chats.map((chat) => (
+        <ChatRow
+          key={chat.id || chat._id}
+          name={chat.customerName || 'Customer'}
+          sub={chat.eventType || chat.serviceType || ''}
+          time={relativeTime(chat.updatedAt || chat.timestamp)}
+          badge={chat.status === 'active' ? '●' : null}
+          badgeColor="#4caf80"
+          onClick={() => navigate('/vendor/chat', {
+            state: {
+              chatId:        chat.id || chat._id,
+              customerName:  chat.customerName,
+              customerImage: chat.customerImage,
+              eventType:     chat.eventType,
+              eventDate:     chat.eventDate,
+              guestCount:    chat.guestCount,
+              customerPhone: chat.customerPhone,
+            }
+          })}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── Direct Messages tab (vendor-direct / profile-share chats) ─────────────
+function DirectMessagesTab({ token }) {
+  const [chats, setChats]     = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${BASE_URL}/vendors/me/direct-chats`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: 'include',
+    })
+      .then(r => r.ok ? r.json() : Promise.resolve({ conversations: [] }))
+      .then(d => setChats(d.conversations || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [token]);
+
+  if (loading) return <Empty text="Loading…" />;
+  if (!chats.length) return (
+    <Empty
+      icon="🔗"
+      text="No direct messages yet"
+      sub="When someone chats via your shared profile link, it appears here. Tendr is not involved in these chats."
+    />
+  );
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      {chats.map((convo) => (
+        <ChatRow
+          key={convo._id}
+          name={convo.visitorName || 'Guest'}
+          sub={convo.serviceType || 'Direct enquiry'}
+          time={relativeTime(convo.updatedAt)}
+          preview={convo.lastMessage?.content || ''}
+          badge={null}
+          pill="Direct"
+          onClick={() => navigate(`/chat/direct/${convo._id}`)}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── Shared presentational bits ────────────────────────────────────────────────
+function ChatRow({ name, sub, time, preview, badge, badgeColor, pill, onClick }) {
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px',
+        background: '#fff', cursor: 'pointer', borderBottom: '1px solid #f0f0f0',
+        transition: 'background 0.12s',
+      }}
+      onMouseEnter={e => e.currentTarget.style.background = '#fdf6ee'}
+      onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+    >
+      <div style={{
+        width: 44, height: 44, borderRadius: '50%', background: '#fef3e2',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 18, fontWeight: 700, color: '#c49b30', flexShrink: 0,
+      }}>
+        {name.charAt(0).toUpperCase()}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+          <span style={{ fontWeight: 700, fontSize: 14, color: '#1a1207', maxWidth: '60%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {name}
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {pill && (
+              <span style={{ fontSize: 10, fontWeight: 600, background: '#fff8e7', color: '#c49b30', border: '1px solid rgba(196,155,48,0.3)', borderRadius: 4, padding: '1px 6px', letterSpacing: '0.05em' }}>
+                {pill}
+              </span>
+            )}
+            <span style={{ fontSize: 11, color: '#999', whiteSpace: 'nowrap' }}>{time}</span>
+          </div>
+        </div>
+        <div style={{ fontSize: 12, color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {badge && <span style={{ color: badgeColor, marginRight: 5, fontSize: 10 }}>{badge}</span>}
+          {preview || sub}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Empty({ icon, text, sub }) {
+  return (
+    <div style={{ textAlign: 'center', padding: '60px 24px' }}>
+      {icon && <div style={{ fontSize: 40, marginBottom: 12 }}>{icon}</div>}
+      <div style={{ fontWeight: 700, fontSize: 16, color: '#333', marginBottom: 8 }}>{text}</div>
+      {sub && <div style={{ fontSize: 13, color: '#999', maxWidth: 280, margin: '0 auto', lineHeight: 1.6 }}>{sub}</div>}
+    </div>
+  );
+}
+
+// ── Main component ─────────────────────────────────────────────────────────────
+const VendorChatList = () => {
+  const navigate      = useNavigate();
+  const { token }     = useSelector(s => s.auth);
+  const [tab, setTab] = useState('tendr'); // 'tendr' | 'direct'
+
+  const TABS = [
+    { key: 'tendr',  label: 'Tendr Bookings' },
+    { key: 'direct', label: 'Direct Messages' },
+  ];
+
+  return (
+    <div style={{ minHeight: '100dvh', background: '#f8f3ed', fontFamily: "'DM Sans',sans-serif" }}>
       {/* Header */}
-      <div className="bg-white shadow-sm px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+      <div style={{ background: '#fff', borderBottom: '1px solid #e8e0d5', padding: '0 20px' }}>
+        <div style={{ maxWidth: 640, margin: '0 auto', display: 'flex', alignItems: 'center', padding: '14px 0', gap: 12 }}>
+          <button onClick={() => navigate('/vendor/dashboard')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, borderRadius: '50%', display: 'flex' }}>
+            <ArrowBackIcon style={{ color: '#555', fontSize: 22 }} />
+          </button>
+          <img src={logo} alt="Tendr" style={{ height: 32, cursor: 'pointer' }} onClick={() => navigate('/')} />
+          <span style={{ fontWeight: 800, fontSize: 18, color: '#1a1207' }}>Chats</span>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ maxWidth: 640, margin: '0 auto', display: 'flex', gap: 0 }}>
+          {TABS.map(t => (
             <button
-              onClick={() => navigate("/vendor/dashboard")}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              style={{
+                flex: 1, padding: '12px 0', border: 'none', background: 'none', cursor: 'pointer',
+                fontWeight: tab === t.key ? 700 : 500,
+                fontSize: 13, color: tab === t.key ? '#c49b30' : '#888',
+                borderBottom: `2.5px solid ${tab === t.key ? '#c49b30' : 'transparent'}`,
+                transition: 'all 0.15s', fontFamily: 'inherit',
+              }}
             >
-              <ArrowBackIcon className="text-gray-600" />
+              {t.label}
             </button>
-            <div className="flex items-center space-x-2">
-              <img
-                src={logo}
-                alt="tendr logo"
-                className="h-10 cursor-pointer"
-                onClick={() => navigate("/")}
-              />
-              <span className="text-xl font-bold text-gray-800">Chats</span>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <FilterListIcon className="text-gray-600" />
-            </button>
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* Search and Filters */}
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          {/* Search Bar */}
-          <div className="relative mb-4">
-            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search by customer name, event type, or message..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            />
-          </div>
-
-          {/* Filters */}
-          {showFilters && (
-            <div className="mb-4 p-4 bg-gray-50 rounded-xl">
-              <h3 className="font-semibold text-gray-800 mb-3">Filter by Status</h3>
-              <div className="flex flex-wrap gap-2">
-                {['all', 'active', 'pending', 'completed'].map((status) => (
-                  <button
-                    key={status}
-                    onClick={() => setStatusFilter(status)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                      statusFilter === status
-                        ? 'bg-orange-500 text-white'
-                        : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-                    }`}
-                  >
-                    {status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1)}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Chat List */}
-          <div className="space-y-4">
-            {filteredChats.length === 0 ? (
-              <div className="text-center py-12">
-                <ChatIcon className="text-gray-400 text-6xl mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">No chats found</h3>
-                <p className="text-gray-500">
-                  {searchTerm || statusFilter !== 'all' 
-                    ? 'Try adjusting your search or filters'
-                    : 'You don\'t have any conversations yet'
-                  }
-                </p>
-              </div>
-            ) : (
-              filteredChats.map((chat) => (
-                <div
-                  key={chat.id}
-                  onClick={() => handleChatClick(chat)}
-                  className="flex items-center space-x-4 p-4 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors border border-gray-100"
-                >
-                  <div className="relative">
-                    <img
-                      src={chat.customerImage}
-                      alt={chat.customerName}
-                      className="w-14 h-14 rounded-full object-cover"
-                    />
-                    {chat.unreadCount > 0 && (
-                      <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-semibold">
-                        {chat.unreadCount}
-                      </div>
-                    )}
-                    <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${getStatusColor(chat.status)}`}></div>
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="font-semibold text-gray-800 truncate">{chat.customerName}</h3>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs text-gray-500">{chat.timestamp}</span>
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          chat.status === 'active' ? 'bg-green-100 text-green-800' :
-                          chat.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {getStatusText(chat.status)}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <p className="text-sm text-gray-600 truncate mb-2">{chat.lastMessage}</p>
-                    
-                    <div className="flex items-center space-x-3 text-xs text-gray-500">
-                      <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
-                        {chat.eventType}
-                      </span>
-                      <span>{chat.eventDate}</span>
-                      <span>•</span>
-                      <span>{chat.guestCount} guests</span>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* Summary */}
-          <div className="mt-6 pt-4 border-t border-gray-200">
-            <div className="flex items-center justify-between text-sm text-gray-600">
-              <span>Total conversations: {filteredChats.length}</span>
-              <span>
-                Unread: {filteredChats.filter(chat => chat.unreadCount > 0).length}
-              </span>
-            </div>
-          </div>
-        </div>
+      {/* Tab content */}
+      <div style={{ maxWidth: 640, margin: '0 auto', background: '#fff', minHeight: 'calc(100dvh - 110px)' }}>
+        {tab === 'tendr'  && <TendrBookingsTab  token={token} />}
+        {tab === 'direct' && <DirectMessagesTab token={token} />}
       </div>
     </div>
   );
 };
 
-export default VendorChatList; 
+export default VendorChatList;

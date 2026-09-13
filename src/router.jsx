@@ -111,6 +111,7 @@ const VendorProfile       = lazy(() => import("./pages/vendor/Profile"));
 const VendorBookings      = lazy(() => import("./pages/vendor/Bookings"));
 const VendorChatList      = lazy(() => import("./pages/vendor/ChatList"));
 const VendorChat          = lazy(() => import("./pages/vendor/Chat"));
+const DirectChat          = lazy(() => import("./pages/guest/DirectChat"));
 const VendorHowToUse     = lazy(() => import("./pages/vendor/HowToUse"));
 const VendorPricing      = lazy(() => import("./pages/vendor/Pricing"));
 const VendorLogin        = lazy(() => import("./pages/vendor/VendorLogin"));
@@ -377,11 +378,18 @@ const router = createBrowserRouter([
     ],
   },
 
+  // Guest direct chat (no auth required — vendor-direct conversations)
+  {
+    path: "/chat/direct/:conversationId",
+    element: <DirectChat />,
+    errorElement: <ErrorPage />
+  },
+
   // Customer chat list (you-do-it)
-  { 
-    path: "/chats", 
-    element: <CustomerChatList />, 
-    errorElement: <ErrorPage /> 
+  {
+    path: "/chats",
+    element: <CustomerChatList />,
+    errorElement: <ErrorPage />
   },
 
   // Booking entry
