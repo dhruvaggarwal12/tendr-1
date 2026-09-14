@@ -178,9 +178,9 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         .gp-plan-btn{padding:10px 22px;border-radius:100px;border:1px solid rgba(196,155,48,.55);background:transparent;color:${GOLD};font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;transition:background .15s}
         .gp-plan-btn:hover{background:rgba(196,155,48,.1)}
 
-        .gp-hero{position:relative;display:flex;align-items:stretch;padding:40px 56px 72px;gap:32px;min-height:580px}
+        .gp-hero{position:relative;display:flex;align-items:stretch;padding:40px 56px 72px;gap:32px;min-height:640px}
 
-        .gp-photo-card{flex-shrink:0;width:420px;align-self:stretch;min-height:500px;border-radius:16px;overflow:hidden;position:relative;box-shadow:0 28px 70px rgba(0,0,0,.55),0 0 0 1px rgba(196,155,48,.1)}
+        .gp-photo-card{flex-shrink:0;width:420px;align-self:stretch;min-height:580px;border-radius:16px;overflow:hidden;position:relative;box-shadow:0 28px 70px rgba(0,0,0,.55),0 0 0 1px rgba(196,155,48,.1)}
         .gp-photo-card img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
         .gp-photo-gradient{position:absolute;bottom:0;left:0;right:0;height:55%;background:linear-gradient(to top,rgba(15,8,2,.9) 0%,transparent 100%)}
         .gp-photo-cursive{position:absolute;bottom:48px;right:14px;font-family:'Dancing Script',cursive;font-size:17px;font-weight:500;color:rgba(237,224,197,.72);line-height:1.5;text-align:right;pointer-events:none;transform:rotate(-2deg)}
@@ -375,11 +375,11 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         <div className="gp-v-divider" style={{ zIndex:1 }}/>
 
         {/* Stats — RIGHT */}
-        <div style={{ display:"flex", flexDirection:"column", gap:28, flexShrink:0, zIndex:1, minWidth:150, justifyContent:"flex-end", paddingBottom:72 }}>
+        <div style={{ display:"flex", flexDirection:"column", gap:36, flexShrink:0, zIndex:1, minWidth:160, justifyContent:"center", alignItems:"flex-start" }}>
           {stats.map(s => (
             <div key={s.label}>
-              <div style={{ fontFamily:serif, fontSize:"3.2rem", fontWeight:800, color:INK, lineHeight:1, letterSpacing:"-0.02em" }}>{s.val}</div>
-              <div style={{ fontSize:11.5, fontWeight:600, color:"rgba(245,237,216,0.5)", textTransform:"uppercase", letterSpacing:"0.18em", marginTop:7 }}>{s.label}</div>
+              <div style={{ fontFamily:serif, fontSize:"3.8rem", fontWeight:800, color:INK, lineHeight:1, letterSpacing:"-0.02em" }}>{s.val}</div>
+              <div style={{ fontSize:13, fontWeight:600, color:"rgba(245,237,216,0.5)", textTransform:"uppercase", letterSpacing:"0.18em", marginTop:8 }}>{s.label}</div>
             </div>
           ))}
         </div>
