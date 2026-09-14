@@ -9,30 +9,31 @@ const muted = "#7A5535";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
+const _s = (d) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{d}</svg>;
 const ARTIST_TYPES = [
-  { value: "DJ",               label: "DJ",               sub: "Open format, commercial, wedding" },
-  { value: "Anchor",           label: "Anchor / Emcee",   sub: "Wedding, corporate, award nights" },
-  { value: "Emcee/Host",       label: "Emcee / Host",     sub: "Stage hosting & live shows" },
-  { value: "Band",             label: "Band",             sub: "Live music — Bollywood, jazz, rock" },
-  { value: "Singer",           label: "Singer",           sub: "Solo vocalist, all genres" },
-  { value: "Musician",         label: "Musician",         sub: "Instrumentalist — piano, tabla, violin" },
-  { value: "Performer",        label: "Solo Performer",   sub: "Dancer, acrobat, circus & specialty act", hasArtForm: true },
-  { value: "Stand-up Comedian",label: "Stand-up Comedian",sub: "Corporate & private shows" },
-  { value: "Magician",         label: "Magician",         sub: "Close-up & stage magic" },
-  { value: "AV Setup",         label: "AV Setup",         sub: "Projector, LED wall, live streaming" },
+  { value: "DJ",               label: "DJ",               sub: "Open format, commercial, wedding",                        icon: _s(<><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></>) },
+  { value: "Anchor",           label: "Anchor / Emcee",   sub: "Weddings, corporate, award nights",                       icon: _s(<><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></>) },
+  { value: "Emcee/Host",       label: "Emcee / Host",     sub: "Stage hosting & live shows",                              icon: _s(<><line x1="5" y1="3" x2="5" y2="21"/><line x1="19" y1="3" x2="19" y2="21"/><line x1="2" y1="5" x2="22" y2="5"/><line x1="2" y1="19" x2="22" y2="19"/></>) },
+  { value: "Band",             label: "Band",             sub: "Live music — Bollywood, jazz, rock",                      icon: _s(<><path d="M2 18a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v2z"/><path d="M2 18C2 13 7 8 12 8s10 5 10 10"/><line x1="9" y1="5" x2="12" y2="8"/><line x1="15" y1="5" x2="12" y2="8"/></>) },
+  { value: "Singer",           label: "Singer",           sub: "Solo vocalist, all genres",                               icon: _s(<><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></>) },
+  { value: "Musician",         label: "Musician",         sub: "Instrumentalist — piano, tabla, violin",                  icon: _s(<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>) },
+  { value: "Performer",        label: "Solo Performer",   sub: "Dancer, acrobat, circus & specialty act", hasArtForm: true, icon: _s(<><circle cx="12" cy="4" r="2"/><path d="M7 22l5-8 5 8"/><path d="M9 14l-2 4"/><path d="M15 14l2 4"/><path d="M9 10l3-4 3 4"/></>) },
+  { value: "Stand-up Comedian",label: "Stand-up Comedian",sub: "Corporate & private shows",                               icon: _s(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>) },
+  { value: "Magician",         label: "Magician",         sub: "Close-up & stage magic",                                  icon: _s(<><path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/><path d="M17.8 11.8L19 13"/><path d="M15 9h.01"/><path d="M17.8 6.2L19 5"/><path d="M3 21l9-9"/><path d="M12.2 6.2L11 5"/></>) },
+  { value: "AV Setup",         label: "AV Setup",         sub: "Projector, LED wall, live streaming",                     icon: _s(<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>) },
 ];
 
 const VENDOR_TYPES = [
-  { value: "Decorator",        label: "Decorator",        sub: "Floral, balloon, draping, lighting" },
-  { value: "Caterer",          label: "Caterer",          sub: "Food service, live counters, buffet" },
-  { value: "Photographer",     label: "Photographer",     sub: "Candid, traditional, pre-wedding" },
-  { value: "Videographer",     label: "Videographer",     sub: "Cinematic, reels, drone coverage" },
-  { value: "Makeup Artist",    label: "Makeup Artist",    sub: "Bridal, party, editorial looks" },
-  { value: "Tent & Furniture", label: "Tent & Furniture", sub: "Shamiyana, chairs, stage, tables" },
-  { value: "Gift & Favours",   label: "Gift & Favours",   sub: "Return gifts, hampers, packaging" },
-  { value: "Transportation",   label: "Transportation",   sub: "Wedding cars, buses, logistics" },
-  { value: "Security",         label: "Security",         sub: "Event security & crowd management" },
-  { value: "Other",            label: "Other",            sub: "Describe your service below" },
+  { value: "Decorator",        label: "Decorator",        sub: "Floral, balloon, draping, lighting",  icon: _s(<><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></>) },
+  { value: "Caterer",          label: "Caterer",          sub: "Food service, live counters, buffet", icon: _s(<><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></>) },
+  { value: "Photographer",     label: "Photographer",     sub: "Candid, traditional, pre-wedding",   icon: _s(<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></>) },
+  { value: "Videographer",     label: "Videographer",     sub: "Cinematic, reels, drone coverage",   icon: _s(<><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></>) },
+  { value: "Makeup Artist",    label: "Makeup Artist",    sub: "Bridal, party, editorial looks",     icon: _s(<><path d="M2 22l10-10"/><path d="M17 17l4-4a3 3 0 0 0-4-4L7 15a5 5 0 0 0 7 7z"/></>) },
+  { value: "Tent & Furniture", label: "Tent & Furniture", sub: "Shamiyana, chairs, stage, tables",   icon: _s(<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>) },
+  { value: "Gift & Favours",   label: "Gift & Favours",   sub: "Return gifts, hampers, packaging",   icon: _s(<><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></>) },
+  { value: "Transportation",   label: "Transportation",   sub: "Wedding cars, buses, logistics",     icon: _s(<><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></>) },
+  { value: "Security",         label: "Security",         sub: "Event security & crowd management",  icon: _s(<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>) },
+  { value: "Other",            label: "Other",            sub: "Describe your service below",        icon: _s(<><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></>) },
 ];
 
 const PERFORMER_ART_FORMS = [
@@ -579,12 +580,14 @@ export default function VendorRegistration() {
               onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = `0 6px 24px rgba(196,122,46,0.14)`; e.currentTarget.style.transform = "translateY(-2px)"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.1)"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; e.currentTarget.style.transform = ""; }}
             >
-              <div style={{ flexShrink: 0 }}>{c.icon}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: ink, marginBottom: 4 }}>{c.title}</div>
-                <div style={{ fontSize: 11.5, color: muted, lineHeight: 1.5 }}>{c.sub}</div>
+              <div style={{ flexShrink: 0, width: 48, height: 48, borderRadius: "50%", background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.16)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {c.icon}
               </div>
-              <div style={{ fontSize: 16, color: gold, flexShrink: 0 }}>→</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: ink, marginBottom: 4 }}>{c.title}</div>
+                <div style={{ fontSize: 12, color: muted, lineHeight: 1.55 }}>{c.sub}</div>
+              </div>
+              <div style={{ fontSize: 18, color: gold, flexShrink: 0 }}>→</div>
             </button>
           ))}
         </div>
@@ -593,18 +596,6 @@ export default function VendorRegistration() {
           Already listed?{" "}
           <span onClick={() => navigate("/login")} style={{ color: gold, fontWeight: 600, cursor: "pointer" }}>Sign in</span>
         </p>
-
-        <div style={{ marginTop: 36, paddingTop: 24, borderTop: "1px solid rgba(28,14,4,0.07)" }}>
-          <div style={{ display: "flex", justifyContent: "space-around", gap: 8 }}>
-            {TRUST.map(t => (
-              <div key={t.n} style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 18, fontWeight: 700, color: gold, marginBottom: 2 }}>{t.n}</div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: ink }}>{t.label}</div>
-                <div style={{ fontSize: 10, color: muted, lineHeight: 1.4 }}>{t.sub}</div>
-              </div>
-            ))}
-          </div>
-        </div>
       </Shell>
     );
   }
@@ -626,27 +617,30 @@ export default function VendorRegistration() {
           <p style={{ fontSize: 14, color: muted, margin: 0 }}>Choose your service type — your profile will be tailored for you.</p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 12 }}>
           {types.map(t => (
             <button
               key={t.value}
               onClick={() => {
                 setForm(f => ({ ...f, serviceType: t.value }));
                 if (t.hasArtForm) {
-                  setStep("artform"); // go to art form picker
+                  setStep("artform");
                 } else {
-                  setArtForm(""); // clear any previous art form selection
+                  setArtForm("");
                   setStep(3);
                 }
               }}
-              style={{ padding: "14px 14px", borderRadius: 12, border: "1.5px solid rgba(28,14,4,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 3px rgba(28,14,4,0.04)", position: "relative" }}
+              style={{ padding: "18px 16px", borderRadius: 14, border: "1.5px solid rgba(28,14,4,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 3px rgba(28,14,4,0.04)", position: "relative", display: "flex", flexDirection: "column", alignItems: "flex-start" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.background = "rgba(196,122,46,0.03)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.12)"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.1)"; e.currentTarget.style.background = "#fff"; e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 1px 3px rgba(28,14,4,0.04)"; }}
             >
-              <div style={{ fontSize: 13, fontWeight: 700, color: ink, marginBottom: 3 }}>{t.label}</div>
-              <div style={{ fontSize: 11, color: muted, lineHeight: 1.45 }}>{t.sub}</div>
+              <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.16)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12, flexShrink: 0 }}>
+                {t.icon}
+              </div>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: ink, marginBottom: 4 }}>{t.label}</div>
+              <div style={{ fontSize: 11, color: muted, lineHeight: 1.5 }}>{t.sub}</div>
               {t.hasArtForm && (
-                <div style={{ fontSize: 10, color: gold, fontWeight: 600, marginTop: 6, letterSpacing: "0.04em" }}>Choose art form →</div>
+                <div style={{ fontSize: 10.5, color: gold, fontWeight: 600, marginTop: 8, letterSpacing: "0.04em" }}>Choose art form →</div>
               )}
             </button>
           ))}
