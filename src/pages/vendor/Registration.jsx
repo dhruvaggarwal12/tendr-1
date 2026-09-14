@@ -98,7 +98,10 @@ function StepBar({ step, steps = ["Category", "Specialty", "Details"] }) {
 
 // ─── Shell layout ─────────────────────────────────────────────────────────────
 
-function Shell({ children, step, steps, narrow = true, sideTitle, sideSub }) {
+const FREE_FEATS = ["Profile & portfolio", "Discovered by clients", "Receive leads", "15% only on Tendr bookings", "Always free to list"];
+const PAID_FEATS = ["Bookings & availability calendar", "Client CRM & reviews", "Quotes, invoices & contracts", "Payments & profit tracking", "Smart reminders & alerts", "Business insights & analytics", "Flyer builder & link hub", "Hindi & English support", "0% commission on outside bookings"];
+
+function Shell({ children, step, steps, narrow = true, sideTitle, sideSub, sideTiers }) {
   return (
     <div style={{ minHeight: "100vh", background: "#F9F6F1", fontFamily: font }}>
       <style>{`
@@ -118,21 +121,52 @@ function Shell({ children, step, steps, narrow = true, sideTitle, sideSub }) {
             <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.6rem,2.5vw,2.2rem)", fontWeight: 500, color: "#F5ECD8", lineHeight: 1.2, margin: "0 0 16px", fontStyle: "italic" }}>
               {sideTitle || "Get discovered by thousands of event planners in Delhi NCR."}
             </h2>
-            <p style={{ fontSize: 14, color: "rgba(245,236,216,0.55)", lineHeight: 1.7, margin: 0 }}>
+            <p style={{ fontSize: 14, color: "rgba(245,236,216,0.55)", lineHeight: 1.7, margin: "0 0 28px" }}>
               {sideSub || "Join Tendr's verified network — real clients, real bookings, 15% platform fee."}
             </p>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            {TRUST.map(t => (
-              <div key={t.n} style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-                <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 22, fontWeight: 400, color: gold, flexShrink: 0, lineHeight: 1 }}>{t.n}</div>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#F5ECD8", marginBottom: 2 }}>{t.label}</div>
-                  <div style={{ fontSize: 12, color: "rgba(245,236,216,0.45)", lineHeight: 1.5 }}>{t.sub}</div>
-                </div>
+
+          {sideTiers ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {/* Free tier summary */}
+              <div style={{ borderRadius: 12, border: "1px solid rgba(196,122,46,0.22)", padding: "14px 16px" }}>
+                <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(196,122,46,0.65)", marginBottom: 5 }}>Free listing</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: "#F5ECD8", marginBottom: 10 }}>₹0 forever</div>
+                {FREE_FEATS.map(f => (
+                  <div key={f} style={{ fontSize: 11.5, color: "rgba(245,236,216,0.48)", display: "flex", gap: 7, alignItems: "flex-start", marginBottom: 5 }}>
+                    <span style={{ color: gold, flexShrink: 0, lineHeight: 1.5 }}>✓</span>{f}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+              {/* Paid tier summary */}
+              <div style={{ borderRadius: 12, border: `1.5px solid ${gold}`, padding: "14px 16px", background: "rgba(196,122,46,0.07)" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 5 }}>
+                  <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold }}>Dashboard</div>
+                  <div style={{ fontSize: 9.5, fontWeight: 800, color: "#1C0E04", background: gold, padding: "2px 8px", borderRadius: 100 }}>7 days free</div>
+                </div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: "#F5ECD8" }}>₹399 <span style={{ fontSize: 11, fontWeight: 400, color: "rgba(245,236,216,0.45)" }}>+ GST / month</span></div>
+                <div style={{ fontSize: 10.5, color: "rgba(245,236,216,0.38)", marginBottom: 10 }}>after free trial · no card needed</div>
+                {PAID_FEATS.slice(0, 5).map(f => (
+                  <div key={f} style={{ fontSize: 11.5, color: "rgba(245,236,216,0.48)", display: "flex", gap: 7, alignItems: "flex-start", marginBottom: 5 }}>
+                    <span style={{ color: gold, flexShrink: 0, lineHeight: 1.5 }}>✓</span>{f}
+                  </div>
+                ))}
+                <div style={{ fontSize: 11, color: "rgba(196,122,46,0.6)", marginTop: 6 }}>+{PAID_FEATS.length - 5} more features</div>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              {TRUST.map(t => (
+                <div key={t.n} style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+                  <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 22, fontWeight: 400, color: gold, flexShrink: 0, lineHeight: 1 }}>{t.n}</div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#F5ECD8", marginBottom: 2 }}>{t.label}</div>
+                    <div style={{ fontSize: 12, color: "rgba(245,236,216,0.45)", lineHeight: 1.5 }}>{t.sub}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Right content */}
@@ -452,9 +486,10 @@ export default function VendorRegistration() {
   const navigate = useNavigate();
 
   // Navigation state
-  const [step, setStep]         = useState(1);       // 1 | 2 | 3 | "artform"
+  const [step, setStep]         = useState(1);       // 1 | "plan" | 2 | 3 | "artform"
   const [category, setCategory] = useState("");      // "artist" | "vendor" | "coordinator"
   const [artForm, setArtForm]   = useState("");      // for Performer sub-step
+  const [plan, setPlan]         = useState("free");  // "free" | "paid"
 
   // Contact form (steps 2→3 for artist/vendor)
   const [form, setForm]   = useState({ name: "", phoneNumber: "", whatsappNumber: "", email: "", address: "", serviceType: "" });
@@ -564,7 +599,7 @@ export default function VendorRegistration() {
     ];
 
     return (
-      <Shell step={1} steps={["Category", "Specialty", "Details"]}>
+      <Shell step={1} steps={["Category", "Plan", "Specialty", "Details"]}>
         <div style={{ marginBottom: 28 }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 8 }}>Partner with Tendr</p>
           <h1 style={{ fontSize: "clamp(1.6rem,3.5vw,2.2rem)", fontWeight: 800, color: ink, letterSpacing: "-0.02em", margin: "0 0 8px", lineHeight: 1.2 }}>How do you earn?</h1>
@@ -575,7 +610,7 @@ export default function VendorRegistration() {
           {OPTIONS.map(c => (
             <button
               key={c.key}
-              onClick={() => { setCategory(c.key); if (c.key !== "coordinator") setStep(2); }}
+              onClick={() => { setCategory(c.key); if (c.key !== "coordinator") setStep("plan"); }}
               style={{ padding: "18px 18px", borderRadius: 14, border: "1.5px solid rgba(28,14,4,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)", display: "flex", alignItems: "center", gap: 16 }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = `0 6px 24px rgba(196,122,46,0.14)`; e.currentTarget.style.transform = "translateY(-2px)"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.1)"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; e.currentTarget.style.transform = ""; }}
@@ -600,12 +635,89 @@ export default function VendorRegistration() {
     );
   }
 
+  // ── Step "plan": Choose Free or Paid tier ──────────────────────────────────
+  if (step === "plan") {
+    return (
+      <Shell step={2} steps={["Category", "Plan", "Specialty", "Details"]} sideTiers>
+        <button onClick={() => { setStep(1); setCategory(""); }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
+          ← Back
+        </button>
+
+        <div style={{ marginBottom: 28 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 8 }}>Choose your plan</p>
+          <h1 style={{ fontSize: "clamp(1.5rem,3.5vw,2rem)", fontWeight: 800, color: ink, letterSpacing: "-0.02em", margin: "0 0 8px", lineHeight: 1.2 }}>Start free, upgrade anytime</h1>
+          <p style={{ fontSize: 14, color: muted, margin: 0 }}>No card needed to start. Switch plans whenever you're ready.</p>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {/* Free tier card */}
+          <button
+            onClick={() => { setPlan("free"); setStep(2); }}
+            style={{ padding: "22px 20px", borderRadius: 16, border: plan === "free" ? `2px solid ${gold}` : "1.5px solid rgba(28,14,4,0.1)", background: plan === "free" ? "rgba(196,122,46,0.04)" : "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.12)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = plan === "free" ? gold : "rgba(28,14,4,0.1)"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; }}
+          >
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(196,122,46,0.65)", marginBottom: 4 }}>Free listing</div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: ink }}>₹0 <span style={{ fontSize: 13, fontWeight: 500, color: muted }}>forever</span></div>
+              </div>
+              <div style={{ width: 22, height: 22, borderRadius: "50%", border: `2px solid ${plan === "free" ? gold : "rgba(28,14,4,0.2)"}`, background: plan === "free" ? gold : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+                {plan === "free" && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+              </div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              {FREE_FEATS.map(f => (
+                <div key={f} style={{ fontSize: 12.5, color: muted, display: "flex", gap: 8, alignItems: "flex-start" }}>
+                  <span style={{ color: gold, flexShrink: 0, lineHeight: 1.6 }}>✓</span>{f}
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: 14, padding: "8px 14px", borderRadius: 8, background: "rgba(196,122,46,0.07)", fontSize: 12, color: "#7a4d1b", fontWeight: 600 }}>
+              15% commission only on bookings made through Tendr
+            </div>
+          </button>
+
+          {/* Paid Dashboard card */}
+          <button
+            onClick={() => { setPlan("paid"); setStep(2); }}
+            style={{ padding: "22px 20px", borderRadius: 16, border: plan === "paid" ? `2px solid ${gold}` : "1.5px solid rgba(28,14,4,0.1)", background: plan === "paid" ? "rgba(196,122,46,0.04)" : "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)", position: "relative" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.12)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = plan === "paid" ? gold : "rgba(28,14,4,0.1)"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; }}
+          >
+            <div style={{ position: "absolute", top: -1, right: 16, background: gold, color: "#fff", fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: "0 0 8px 8px", letterSpacing: "0.06em", textTransform: "uppercase" }}>7 days free</div>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 4 }}>Paid Dashboard</div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: ink }}>₹399 <span style={{ fontSize: 13, fontWeight: 500, color: muted }}>+ GST / month</span></div>
+                <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>after free trial · no card needed to start</div>
+              </div>
+              <div style={{ width: 22, height: 22, borderRadius: "50%", border: `2px solid ${plan === "paid" ? gold : "rgba(28,14,4,0.2)"}`, background: plan === "paid" ? gold : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+                {plan === "paid" && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 12px" }}>
+              {PAID_FEATS.map(f => (
+                <div key={f} style={{ fontSize: 12, color: muted, display: "flex", gap: 6, alignItems: "flex-start" }}>
+                  <span style={{ color: gold, flexShrink: 0, lineHeight: 1.65 }}>✓</span>{f}
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: 14, padding: "8px 14px", borderRadius: 8, background: "rgba(196,122,46,0.07)", fontSize: 12, color: "#7a4d1b", fontWeight: 600 }}>
+              0% commission on bookings made outside Tendr
+            </div>
+          </button>
+        </div>
+      </Shell>
+    );
+  }
+
   // ── Step 2: Pick specific type ─────────────────────────────────────────────
   if (step === 2) {
     const types = category === "artist" ? ARTIST_TYPES : VENDOR_TYPES;
     return (
-      <Shell step={2} steps={["Category", "Specialty", "Details"]} narrow={false}>
-        <button onClick={() => { setStep(1); setCategory(""); }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
+      <Shell step={3} steps={["Category", "Plan", "Specialty", "Details"]} narrow={false}>
+        <button onClick={() => { setStep("plan"); }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
           ← Back
         </button>
 
@@ -652,7 +764,7 @@ export default function VendorRegistration() {
   // ── Step "artform": Performer art form picker ──────────────────────────────
   if (step === "artform") {
     return (
-      <Shell step={2} steps={["Category", "Specialty", "Details"]} narrow={false}>
+      <Shell step={3} steps={["Category", "Plan", "Specialty", "Details"]} narrow={false}>
         <button onClick={() => { setStep(2); setArtForm(""); }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
           ← Back
         </button>
@@ -687,7 +799,7 @@ export default function VendorRegistration() {
   const artFormLabel = PERFORMER_ART_FORMS.find(a => a.value === artForm);
 
   return (
-    <Shell step={3} steps={["Category", "Specialty", "Details"]}>
+    <Shell step={4} steps={["Category", "Plan", "Specialty", "Details"]}>
       <button onClick={() => { setStep(artForm ? "artform" : 2); }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 20, padding: 0 }}>
         ← Back
       </button>
