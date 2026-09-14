@@ -599,7 +599,7 @@ export default function VendorRegistration() {
     ];
 
     return (
-      <Shell step={1} steps={["Category", "Plan", "Specialty", "Details"]}>
+      <Shell step={1} steps={["Category", "Specialty", "Plan", "Details"]}>
         <div style={{ marginBottom: 28 }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 8 }}>Partner with Tendr</p>
           <h1 style={{ fontSize: "clamp(1.6rem,3.5vw,2.2rem)", fontWeight: 800, color: ink, letterSpacing: "-0.02em", margin: "0 0 8px", lineHeight: 1.2 }}>How do you earn?</h1>
@@ -610,7 +610,7 @@ export default function VendorRegistration() {
           {OPTIONS.map(c => (
             <button
               key={c.key}
-              onClick={() => { setCategory(c.key); if (c.key !== "coordinator") setStep("plan"); }}
+              onClick={() => { setCategory(c.key); if (c.key !== "coordinator") setStep(2); }}
               style={{ padding: "18px 18px", borderRadius: 14, border: "1.5px solid rgba(28,14,4,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)", display: "flex", alignItems: "center", gap: 16 }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = `0 6px 24px rgba(196,122,46,0.14)`; e.currentTarget.style.transform = "translateY(-2px)"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.1)"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; e.currentTarget.style.transform = ""; }}
@@ -638,8 +638,8 @@ export default function VendorRegistration() {
   // ── Step "plan": Choose Free or Paid tier ──────────────────────────────────
   if (step === "plan") {
     return (
-      <Shell step={2} steps={["Category", "Plan", "Specialty", "Details"]} sideTiers>
-        <button onClick={() => { setStep(1); setCategory(""); }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
+      <Shell step={3} steps={["Category", "Specialty", "Plan", "Details"]} sideTiers>
+        <button onClick={() => setStep(2)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
           ← Back
         </button>
 
@@ -652,7 +652,7 @@ export default function VendorRegistration() {
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {/* Free tier card */}
           <button
-            onClick={() => { setPlan("free"); setStep(2); }}
+            onClick={() => { setPlan("free"); setStep(3); }}
             style={{ padding: "22px 20px", borderRadius: 16, border: plan === "free" ? `2px solid ${gold}` : "1.5px solid rgba(28,14,4,0.1)", background: plan === "free" ? "rgba(196,122,46,0.04)" : "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)" }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.12)"; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = plan === "free" ? gold : "rgba(28,14,4,0.1)"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; }}
@@ -680,7 +680,7 @@ export default function VendorRegistration() {
 
           {/* Paid Dashboard card */}
           <button
-            onClick={() => { setPlan("paid"); setStep(2); }}
+            onClick={() => { setPlan("paid"); setStep(3); }}
             style={{ padding: "22px 20px", borderRadius: 16, border: plan === "paid" ? `2px solid ${gold}` : "1.5px solid rgba(28,14,4,0.1)", background: plan === "paid" ? "rgba(196,122,46,0.04)" : "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)", position: "relative" }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.12)"; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = plan === "paid" ? gold : "rgba(28,14,4,0.1)"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; }}
@@ -717,8 +717,8 @@ export default function VendorRegistration() {
   if (step === 2) {
     const types = category === "artist" ? ARTIST_TYPES : VENDOR_TYPES;
     return (
-      <Shell step={3} steps={["Category", "Plan", "Specialty", "Details"]} narrow={false}>
-        <button onClick={() => { setStep("plan"); }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
+      <Shell step={2} steps={["Category", "Specialty", "Plan", "Details"]} narrow={false}>
+        <button onClick={() => { setStep(1); setCategory(""); }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
           ← Back
         </button>
 
@@ -740,7 +740,7 @@ export default function VendorRegistration() {
                   setStep("artform");
                 } else {
                   setArtForm("");
-                  setStep(3);
+                  setStep("plan");
                 }
               }}
               style={{ padding: "18px 16px", borderRadius: 14, border: "1.5px solid rgba(28,14,4,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 3px rgba(28,14,4,0.04)", position: "relative", display: "flex", flexDirection: "column", alignItems: "flex-start" }}
@@ -765,7 +765,7 @@ export default function VendorRegistration() {
   // ── Step "artform": Performer art form picker ──────────────────────────────
   if (step === "artform") {
     return (
-      <Shell step={3} steps={["Category", "Plan", "Specialty", "Details"]} narrow={false}>
+      <Shell step={2} steps={["Category", "Specialty", "Plan", "Details"]} narrow={false}>
         <button onClick={() => { setStep(2); setArtForm(""); }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
           ← Back
         </button>
@@ -780,7 +780,7 @@ export default function VendorRegistration() {
           {PERFORMER_ART_FORMS.map(af => (
             <button
               key={af.value}
-              onClick={() => { setArtForm(af.value); setStep(3); }}
+              onClick={() => { setArtForm(af.value); setStep("plan"); }}
               style={{ padding: "18px 16px", borderRadius: 14, border: "1.5px solid rgba(28,14,4,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 3px rgba(28,14,4,0.04)" }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.background = "rgba(196,122,46,0.04)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(196,122,46,0.12)"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.1)"; e.currentTarget.style.background = "#fff"; e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 1px 3px rgba(28,14,4,0.04)"; }}
@@ -800,8 +800,8 @@ export default function VendorRegistration() {
   const artFormLabel = PERFORMER_ART_FORMS.find(a => a.value === artForm);
 
   return (
-    <Shell step={4} steps={["Category", "Plan", "Specialty", "Details"]}>
-      <button onClick={() => { setStep(artForm ? "artform" : 2); }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 20, padding: 0 }}>
+    <Shell step={4} steps={["Category", "Specialty", "Plan", "Details"]}>
+      <button onClick={() => setStep("plan")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 20, padding: 0 }}>
         ← Back
       </button>
 

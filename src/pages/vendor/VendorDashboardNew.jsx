@@ -373,7 +373,7 @@ export default function VendorDashboardNew(){
           return(
             <React.Fragment key={item.key}>
               {showDiv&&<div style={{padding:"12px 20px 3px",fontSize:9.5,fontWeight:700,letterSpacing:"0.16em",color:"rgba(204,171,74,0.3)",textTransform:"uppercase"}}>{item.group}</div>}
-              <button onClick={()=>setTab(item.key)} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"9px 20px",background:tab===item.key?"rgba(204,171,74,0.12)":"none",border:"none",cursor:"pointer",color:tab===item.key?goldLt:"rgba(255,248,236,0.5)",fontSize:12.5,fontWeight:tab===item.key?700:500,fontFamily:font,textAlign:"left",borderLeft:tab===item.key?`3px solid ${goldLt}`:"3px solid transparent"}}>
+              <button onClick={()=>{setTab(item.key);window.scrollTo(0,0);}} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"9px 20px",background:tab===item.key?"rgba(204,171,74,0.12)":"none",border:"none",cursor:"pointer",color:tab===item.key?goldLt:"rgba(255,248,236,0.5)",fontSize:12.5,fontWeight:tab===item.key?700:500,fontFamily:font,textAlign:"left",borderLeft:tab===item.key?`3px solid ${goldLt}`:"3px solid transparent"}}>
                 <Ico d={item.icon} sz={15} c="currentColor"/>
                 {item.label}
                 {!!item.badge&&<span style={{background:item.badgeColor||"#CA8A04",color:"#fff",borderRadius:100,padding:"1px 6px",fontSize:10,fontWeight:800,marginLeft:"auto"}}>{item.badge}</span>}
@@ -412,7 +412,7 @@ export default function VendorDashboardNew(){
       {alertBanner}
       <h2 style={{fontFamily:serif,fontSize:"1.8rem",fontWeight:400,color:ink,marginBottom:4}}>{t("greeting")}, {vName.split(" ")[0]} 👋</h2>
       <p style={{color:muted,fontSize:13.5,marginBottom:22}}>Here's your business at a glance</p>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
+      <div className="vd-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
         {[{label:t("confirmed"),value:confirmed.length,sub:"Tendr bookings"},{label:t("pending"),value:pendingBkgs.length,sub:"awaiting reply"},{label:"Earned",value:fmt(outsideRev),sub:"outside orders"},{label:"Rating",value:rating?`${rating.toFixed(1)} ★`:"—",sub:"avg score"}].map((s,i)=>(
           <Card key={i}><div style={{fontSize:22,fontWeight:800,color:ink}}>{s.value}</div><div style={{fontSize:11,color:muted,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",marginTop:3}}>{s.label}</div><div style={{fontSize:11,color:"rgba(155,116,80,0.6)",marginTop:1}}>{s.sub}</div></Card>
         ))}
@@ -942,13 +942,40 @@ export default function VendorDashboardNew(){
   const TABS={home:homeTab,calendar:calTab,clients:crmTab,quotes:quotesTab,money:moneyTab,reviews:reviewsTab,insights:insightsTab,flyer:flyerTab,profile:profileTab,packages:packagesTab,grow:growTab,...(typeTabKey?{[typeTabKey]:typeSpecTab}:{})};
 
   // ════════════ RENDER ══════════════════════════════════════════════════════════
+  const BOTTOM_NAV=[
+    {key:"home",    label:t("home"),    icon:"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"},
+    {key:"work",    label:t("work"),    icon:"M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2",badge:pendingBkgs.length},
+    {key:"calendar",label:t("calendar"),icon:"M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z",badge:conflicts.length,badgeColor:"#DC2626"},
+    {key:"clients", label:t("clients"), icon:"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"},
+    {key:"profile", label:t("profile"), icon:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"},
+  ];
+
+  const mobileBottomNav=(
+    <div className="vd-mobile-nav" style={{display:"none",position:"fixed",bottom:0,left:0,right:0,background:ink,borderTop:`1px solid rgba(204,171,74,0.18)`,zIndex:200,paddingBottom:"env(safe-area-inset-bottom,0px)"}}>
+      <div style={{display:"flex",justifyContent:"space-around",padding:"6px 0"}}>
+        {BOTTOM_NAV.map(item=>(
+          <button key={item.key} onClick={()=>{setTab(item.key);window.scrollTo(0,0);}} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"6px 10px",background:"none",border:"none",cursor:"pointer",color:tab===item.key?goldLt:"rgba(255,248,236,0.4)",fontFamily:font,position:"relative",minWidth:56}}>
+            <div style={{position:"relative"}}>
+              <Ico d={item.icon} sz={20} c="currentColor"/>
+              {!!item.badge&&<span style={{position:"absolute",top:-4,right:-6,background:item.badgeColor||"#CA8A04",color:"#fff",borderRadius:100,padding:"0px 4px",fontSize:9,fontWeight:800,lineHeight:"14px",minWidth:14,textAlign:"center"}}>{item.badge}</span>}
+            </div>
+            <span style={{fontSize:9.5,fontWeight:tab===item.key?700:500,letterSpacing:"0.02em"}}>{item.label}</span>
+            {tab===item.key&&<div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",width:28,height:2,background:goldLt,borderRadius:"0 0 2px 2px"}}/>}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   return(
     <div style={{display:"flex",minHeight:"100dvh",fontFamily:font,background:cream}}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@400;500&display=swap');*{box-sizing:border-box;}input,textarea,select{outline:none;}`}</style>
-      {sidebar}
-      <div style={{flex:1,padding:"32px 36px",overflowY:"auto",maxWidth:920}}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@400;500&display=swap');*{box-sizing:border-box;}input,textarea,select{outline:none;}
+@media(max-width:768px){.vd-sidebar{display:none!important;}.vd-main{padding:20px 16px 90px!important;}.vd-mobile-nav{display:block!important;}.vd-stat-grid{grid-template-columns:repeat(2,1fr)!important;}}`}</style>
+      <div className="vd-sidebar">{sidebar}</div>
+      <div className="vd-main" style={{flex:1,padding:"32px 36px",overflowY:"auto",maxWidth:920}}>
         {tab==="work"?<WorkTab bookings={bookings} outside={outside} loading={loading} lang={lang}/>:TABS[tab]||homeTab}
       </div>
+      {mobileBottomNav}
       {toast&&<div style={{position:"fixed",bottom:28,right:28,background:toast.ok?ink:"#BE123C",color:"#fff",borderRadius:12,padding:"12px 20px",fontSize:13.5,fontWeight:600,fontFamily:font,boxShadow:"0 8px 30px rgba(0,0,0,0.2)",zIndex:999}}>{toast.msg}</div>}
     </div>
   );

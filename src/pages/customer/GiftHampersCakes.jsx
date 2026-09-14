@@ -267,16 +267,18 @@ const GiftHampersCakes = () => {
         .gh-chip.active { background:#1C0A04 !important; border-color:#1C0A04 !important; color:#CCAB4A !important; }
         .gh-btn-gold:hover { box-shadow:0 10px 36px rgba(196,122,46,0.55) !important; transform:translateY(-1px); }
         .gh-btn-gold:active { transform:scale(0.97) !important; }
-        .gh-hero-3col { display:grid; grid-template-columns:2fr 1.8fr 1.2fr; background:#1C0A04; min-height:480px; }
-        .gh-hero-left { padding:clamp(36px,5vw,64px) clamp(20px,3.5vw,52px); display:flex; flex-direction:column; justify-content:center; position:relative; overflow:hidden; }
+        .gh-hero-3col { display:grid; grid-template-columns:2fr 1fr 1.4fr; background:#1C0A04; min-height:520px; position:relative; }
+        .gh-hero-bg { position:absolute; inset:0; z-index:0; }
+        .gh-hero-bg img { width:100%; height:100%; object-fit:cover; display:block; opacity:0.28; }
+        .gh-hero-bg::after { content:''; position:absolute; inset:0; background:linear-gradient(110deg, rgba(20,8,2,0.97) 0%, rgba(20,8,2,0.88) 38%, rgba(20,8,2,0.65) 68%, rgba(20,8,2,0.45) 100%); }
+        .gh-hero-left { padding:clamp(36px,5vw,64px) clamp(20px,3.5vw,52px); display:flex; flex-direction:column; justify-content:center; position:relative; z-index:1; overflow:hidden; }
         .gh-hero-left::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 60% at -10% 50%, rgba(196,122,46,0.1) 0%, transparent 65%); pointer-events:none; }
-        .gh-hero-center { overflow:hidden; position:relative; }
+        .gh-hero-center { overflow:hidden; position:relative; z-index:1; }
         .gh-hero-center img { width:100%; height:100%; object-fit:cover; display:block; animation:ghFade 0.8s ease forwards; }
-        .gh-hero-right { display:flex; flex-direction:column; gap:2px; }
-        .gh-hero-right-card { flex:1; position:relative; overflow:hidden; cursor:pointer; }
-        .gh-hero-right-card img { width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.4s; }
-        .gh-hero-right-card:hover img { transform:scale(1.06); }
-        .gh-hero-right-card-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(28,10,4,0.82) 0%, rgba(28,10,4,0.2) 55%, transparent 100%); display:flex; flex-direction:column; justify-content:flex-end; padding:16px 14px; }
+        .gh-hero-right { display:flex; flex-direction:column; gap:0; padding:clamp(28px,4vw,52px) clamp(16px,2.5vw,28px) clamp(28px,4vw,52px) 0; justify-content:center; position:relative; z-index:1; }
+        .gh-hero-step { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; background:rgba(255,248,236,0.06); border:1px solid rgba(196,122,46,0.22); border-radius:14px; backdrop-filter:blur(6px); cursor:pointer; transition:background 0.18s,border-color 0.18s; margin-bottom:10px; }
+        .gh-hero-step:hover { background:rgba(196,122,46,0.12) !important; border-color:rgba(196,122,46,0.4) !important; }
+        .gh-hero-step:last-child { margin-bottom:0; }
         .gh-value-strip { background:#F0E8DC; border-top:1px solid rgba(196,122,46,0.12); border-bottom:1px solid rgba(196,122,46,0.12); padding:14px clamp(16px,4vw,52px); display:flex; overflow-x:auto; gap:0; scrollbar-width:none; }
         .gh-value-strip::-webkit-scrollbar { display:none; }
         .gh-value-item { flex:1; min-width:148px; display:flex; align-items:center; gap:11px; padding:5px 18px 5px 0; }
@@ -299,8 +301,8 @@ const GiftHampersCakes = () => {
         .gh-process::before { content:''; position:absolute; top:21px; left:calc(100%/6); right:calc(100%/6); height:1px; background:rgba(196,122,46,0.18); z-index:0; }
         @media(max-width:960px) {
           .gh-hero-3col { grid-template-columns:1fr; min-height:unset; }
-          .gh-hero-center { height:260px; }
-          .gh-hero-right { flex-direction:row; height:160px; }
+          .gh-hero-center { height:240px; }
+          .gh-hero-right { padding:0 20px 28px; }
           .gh-quiz-inner { flex-direction:column; }
           .gh-process { grid-template-columns:1fr; gap:28px; }
           .gh-process::before { display:none; }
@@ -308,8 +310,9 @@ const GiftHampersCakes = () => {
           .gh-process-num { margin:0 !important; flex-shrink:0; }
         }
         @media(max-width:560px) {
-          .gh-hero-center { height:220px; }
-          .gh-hero-right { height:130px; }
+          .gh-hero-center { height:200px; }
+          .gh-hero-right { padding:0 16px 24px; }
+          .gh-hero-step { padding:12px 14px; }
           .gh-masonry { columns:2 140px; column-gap:8px; }
           .gh-masonry-card { margin-bottom:8px; }
           .gh-island { left:16px !important; right:16px !important; transform:none !important; border-radius:20px !important; animation-name:ghIslandInMobile !important; bottom:calc(72px + env(safe-area-inset-bottom,0px)) !important; }
@@ -324,8 +327,12 @@ const GiftHampersCakes = () => {
         <div style={{ flex:1, height:1, background:"rgba(28,10,4,0.12)" }} />
       </div>
 
-      {/* ── HERO (3-col: text | main photo | 2 stacked cards) ── */}
+      {/* ── HERO (text | photo | step cards) ── */}
       <section className="gh-hero-3col">
+        {/* Background photo */}
+        <div className="gh-hero-bg">
+          {heroPhotos[1]?.url && <img src={heroPhotos[1].url} alt="" aria-hidden />}
+        </div>
         {/* Left: text panel */}
         <div className="gh-hero-left">
           {/* Live badge */}
@@ -381,25 +388,25 @@ const GiftHampersCakes = () => {
           <img src={heroPhotos[0]?.url} alt={heroPhotos[0]?.name || "Gift hamper"} />
         </div>
 
-        {/* Right: 2 stacked photo cards */}
+        {/* Right: 3 step cards */}
         <div className="gh-hero-right">
+          <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", textTransform:"uppercase", color:"#CCAB4A", marginBottom:14, fontFamily:font }}>Gift Finder — 3 Steps</div>
           {[
-            { photo: heroPhotos[1] || heroPhotos[0], title:"Timeless Traditions", sub:"For your loved ones" },
-            { photo: heroPhotos[2] || heroPhotos[0], title:"Personalised Just for You", sub:"Make it truly theirs" },
-          ].map((card, i) => (
-            <div
-              key={i}
-              className="gh-hero-right-card"
-              onClick={() => document.getElementById("gh-grid")?.scrollIntoView({ behavior:"smooth" })}
-            >
-              <img src={card.photo?.url} alt={card.title} />
-              <div className="gh-hero-right-card-overlay">
-                <div style={{ fontSize:13, fontWeight:700, color:"#FFF8EC", fontFamily:serif, lineHeight:1.25, marginBottom:4 }}>{card.title}</div>
-                <div style={{ fontSize:11, color:"rgba(255,248,236,0.58)", fontFamily:font, marginBottom:10 }}>{card.sub}</div>
-                <div style={{ width:28, height:28, borderRadius:"50%", border:"1px solid rgba(255,248,236,0.25)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,248,236,0.7)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            { n:"1", icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>, label:"Choose a base", sub:"Tokri, Gift Box, Wooden Tray…" },
+            { n:"2", icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>, label:"What goes inside?", sub:"Chocolates, Dry Fruits, Drinkware…" },
+            { n:"3", icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, label:"Finishing touches", sub:"Ribbons, Wax Seal, Gift Card…" },
+          ].map(s => (
+            <div key={s.n} className="gh-hero-step" onClick={() => setQuizOpen(true)}>
+              <div style={{ display:"flex", alignItems:"center", gap:12, minWidth:0 }}>
+                <div style={{ width:34, height:34, borderRadius:"50%", background:"rgba(196,122,46,0.2)", border:"1px solid rgba(204,171,74,0.3)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  {s.icon}
+                </div>
+                <div style={{ minWidth:0 }}>
+                  <div style={{ fontSize:13, fontWeight:600, color:"#FFF8EC", fontFamily:font }}>{s.label}</div>
+                  <div style={{ fontSize:11, color:"rgba(196,164,130,0.6)", marginTop:2, fontFamily:font, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.sub}</div>
                 </div>
               </div>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(196,164,130,0.45)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}><path d="M9 18l6-6-6-6"/></svg>
             </div>
           ))}
         </div>
@@ -422,69 +429,6 @@ const GiftHampersCakes = () => {
           </div>
         ))}
       </div>
-
-      {/* ── QUIZ BAND (with background photo) ── */}
-      <section className="gh-quiz-band">
-        {/* Background photo with overlay */}
-        <div className="gh-quiz-bg">
-          {heroPhotos[1]?.url && <img src={heroPhotos[1].url} alt="" aria-hidden />}
-        </div>
-        <div className="gh-quiz-inner">
-          {/* Left: text + CTA */}
-          <div style={{ flex:"1 1 260px", minWidth:0 }}>
-            <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", textTransform:"uppercase", color:"#CCAB4A", marginBottom:14, fontFamily:font }}>Gift Finder — 3 Steps</div>
-            <h2 style={{ fontFamily:serif, fontSize:"clamp(2.2rem,4.5vw,3.2rem)", fontWeight:400, color:"#FFF8EC", lineHeight:1.12, textWrap:"balance", margin:"0 0 14px" }}>
-              Not sure what to get? <em style={{ fontStyle:"italic", color:"#CCAB4A" }}>We'll help.</em>
-            </h2>
-            <p style={{ fontSize:14, color:"rgba(196,164,130,0.72)", lineHeight:1.72, maxWidth:360, margin:"0 0 28px", fontFamily:font }}>
-              Tell us the base, what goes inside, and the finishing touches — we'll show you hampers that match.
-            </p>
-            <div style={{ display:"flex", gap:14, alignItems:"center", flexWrap:"wrap" }}>
-              <button
-                className="gh-btn-gold"
-                onClick={() => setQuizOpen(true)}
-                style={{ display:"inline-flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:14, fontWeight:700, padding:"13px 28px", borderRadius:100, border:"none", cursor:"pointer", fontFamily:font, boxShadow:"0 6px 24px rgba(196,122,46,0.45)", letterSpacing:"0.02em", transition:"box-shadow 0.18s,transform 0.12s" }}
-              >
-                Start Finding →
-              </button>
-              <button
-                onClick={() => document.getElementById("gh-grid")?.scrollIntoView({ behavior:"smooth" })}
-                style={{ display:"inline-flex", alignItems:"center", gap:7, background:"none", border:"none", color:"rgba(255,248,236,0.5)", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:font }}
-              >
-                <span style={{ width:24, height:24, borderRadius:"50%", border:"1px solid rgba(255,248,236,0.22)", display:"inline-flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                  <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
-                </span>
-                Watch how it works
-              </button>
-            </div>
-            <div style={{ fontFamily:"'Dancing Script', cursive", fontSize:"1.3rem", color:"rgba(196,164,130,0.32)", marginTop:32, lineHeight:1.3 }}>
-              Thoughtful gifts for every occasion
-            </div>
-          </div>
-          {/* Right: step cards */}
-          <div style={{ display:"flex", flexDirection:"column", gap:10, flex:"0 0 auto", minWidth:220, width:"min(100%,340px)" }}>
-            {[
-              { n:"1", icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>, label:"Choose a base", sub:"Tokri, Gift Box, Wooden Tray, Pooja Thali…" },
-              { n:"2", icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>, label:"What goes inside?", sub:"Chocolates, Dry Fruits, Drinkware, Spiritual…" },
-              { n:"3", icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, label:"Finishing touches", sub:"Ribbons, Dried Flowers, Wax Seal, Gift Card…" },
-            ].map(s => (
-              <div key={s.n} className="gh-quiz-step" onClick={() => setQuizOpen(true)}>
-                <div style={{ display:"flex", alignItems:"center", gap:12, minWidth:0 }}>
-                  <div style={{ width:34, height:34, borderRadius:"50%", background:"rgba(196,122,46,0.2)", border:"1px solid rgba(204,171,74,0.3)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                    {s.icon}
-                  </div>
-                  <div style={{ minWidth:0 }}>
-                    <div style={{ fontSize:13, fontWeight:600, color:"#FFF8EC", fontFamily:font }}>{s.label}</div>
-                    <div style={{ fontSize:11, color:"rgba(196,164,130,0.6)", marginTop:2, fontFamily:font, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{s.sub}</div>
-                  </div>
-                </div>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(196,164,130,0.45)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}><path d="M9 18l6-6-6-6"/></svg>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
 
       {/* ── Checkout modal ── */}
       {checkoutOpen && (
@@ -659,10 +603,12 @@ const GiftHampersCakes = () => {
                     </div>
                     {(s.name || s.priceRange || (Array.isArray(s.category)?s.category:[s.category||""]).filter(Boolean).length>0) && (
                       <div style={{ padding:"10px 12px 12px" }}>
-                        {(Array.isArray(s.category)?s.category:[s.category||""]).filter(Boolean).map(c=>(
-                          <span key={c} style={{ fontSize:9.5, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color:"#C47A2E", marginRight:6, fontFamily:font }}>{c}</span>
-                        ))}
-                        {s.name && <div style={{ fontSize:12, fontWeight:700, color:"#2C1A0E", marginTop:3, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", fontFamily:font }}>{s.name}</div>}
+                        <div style={{ display:"flex", flexDirection:"column", gap:4, marginBottom:s.name?5:0 }}>
+                          {(Array.isArray(s.category)?s.category:[s.category||""]).filter(Boolean).map(c=>(
+                            <span key={c} style={{ display:"inline-flex", alignSelf:"flex-start", fontSize:9.5, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color:"#C47A2E", background:"rgba(196,122,46,0.1)", border:"1px solid rgba(196,122,46,0.22)", borderRadius:100, padding:"3px 8px", fontFamily:font, whiteSpace:"nowrap" }}>{c}</span>
+                          ))}
+                        </div>
+                        {s.name && <div style={{ fontSize:12, fontWeight:700, color:"#2C1A0E", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", fontFamily:font }}>{s.name}</div>}
                         {s.priceRange && <div style={{ fontSize:11, fontWeight:700, color:"#C47A2E", marginTop:2, fontFamily:font }}>{s.priceRange}</div>}
                       </div>
                     )}
