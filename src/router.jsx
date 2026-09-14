@@ -69,7 +69,6 @@ const ChooseBooking       = lazy(() => import("./pages/customer/ChooseBooking"))
 const BaatKaro            = lazy(() => import("./pages/customer/BaatKaro"));
 const ServiceChat         = lazy(() => import("./pages/customer/ServiceChat"));
 const GiftHampersCakes    = lazy(() => import('./pages/customer/GiftHampersCakes'));
-const RakhiGiftHub        = lazy(() => import('./pages/customer/RakhiGiftHub'));
 const GiftingHub          = lazy(() => import('./pages/customer/GiftingHub'));
 const CheckboxPicker         = lazy(() => import('./pages/checkbox/CheckboxPicker'));
 const PrebuiltCheckbox       = lazy(() => import('./pages/checkbox/PrebuiltCheckbox'));
@@ -304,11 +303,6 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />
   },
   {
-    path: "/rakhi-hampers/chat",
-    element: <ServiceChat serviceType="Rakhi Hampers" />,
-    errorElement: <ErrorPage />
-  },
-  {
     path: "/occasions/chat",
     element: <ServiceChat serviceType="Occasions" />,
     errorElement: <ErrorPage />
@@ -432,11 +426,6 @@ const router = createBrowserRouter([
   {
     path: '/gift-hampers-cakes',
     element: <GiftHampersCakes />,
-    errorElement: <ErrorPage />,
-  },
-  {
-    path: '/rakhi-hampers',
-    element: <RakhiGiftHub />,
     errorElement: <ErrorPage />,
   },
   {
