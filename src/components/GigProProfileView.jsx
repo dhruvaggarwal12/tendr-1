@@ -178,16 +178,16 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         .gp-plan-btn{padding:10px 22px;border-radius:100px;border:1px solid rgba(196,155,48,.55);background:transparent;color:${GOLD};font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;transition:background .15s}
         .gp-plan-btn:hover{background:rgba(196,155,48,.1)}
 
-        .gp-hero{position:relative;display:flex;align-items:stretch;padding:40px 56px 72px;gap:44px;min-height:580px}
+        .gp-hero{position:relative;display:flex;align-items:stretch;padding:40px 56px 72px;gap:32px;min-height:580px}
 
-        .gp-photo-card{flex-shrink:0;width:440px;align-self:stretch;min-height:500px;border-radius:16px;overflow:hidden;position:relative;box-shadow:0 28px 70px rgba(0,0,0,.55),0 0 0 1px rgba(196,155,48,.1)}
+        .gp-photo-card{flex-shrink:0;width:340px;align-self:stretch;min-height:500px;border-radius:16px;overflow:hidden;position:relative;box-shadow:0 28px 70px rgba(0,0,0,.55),0 0 0 1px rgba(196,155,48,.1)}
         .gp-photo-card img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
         .gp-photo-gradient{position:absolute;bottom:0;left:0;right:0;height:55%;background:linear-gradient(to top,rgba(15,8,2,.9) 0%,transparent 100%)}
         .gp-photo-cursive{position:absolute;bottom:48px;right:14px;font-family:'Dancing Script',cursive;font-size:17px;font-weight:500;color:rgba(237,224,197,.72);line-height:1.5;text-align:right;pointer-events:none;transform:rotate(-2deg)}
         .gp-avail-badge{position:absolute;bottom:14px;left:14px;display:flex;align-items:center;gap:6px;background:rgba(20,13,5,.82);backdrop-filter:blur(8px);border-radius:100px;padding:6px 12px;font-size:11.5px;font-weight:500;color:${INK};white-space:nowrap}
         .gp-green-dot{width:7px;height:7px;border-radius:50%;background:#3CCA6B;flex-shrink:0}
 
-        .gp-info{flex:0 0 310px;min-width:0;display:flex;flex-direction:column;justify-content:center;padding-left:22px;border-left:2px solid rgba(196,155,48,0.28);position:relative;overflow:hidden}
+        .gp-info{flex:1 1 auto;min-width:320px;max-width:520px;display:flex;flex-direction:column;justify-content:center;padding-left:22px;border-left:2px solid rgba(196,155,48,0.28);position:relative;overflow:hidden}
         .gp-eyebrow{font-size:10.5px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:${MUTED};margin-bottom:14px}
         .gp-name{font-family:'Playfair Display',Georgia,serif;font-size:clamp(3.2rem,4.5vw,5.2rem);font-weight:800;color:${INK};line-height:.88;margin-bottom:20px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;letter-spacing:-0.01em}
         .gp-meta-row{display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap}
