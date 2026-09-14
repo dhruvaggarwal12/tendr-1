@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { MapPin, Clock, CalendarCheck, Share2, CheckCircle2 } from "lucide-react";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 
@@ -115,6 +116,8 @@ function BgDecor({ serviceType = "" }) {
 export default function GigProProfileView({ vendor, reviews = [], onBook, onChat }) {
   const [tab, setTab] = useState("Portfolio");
   const [catFilter, setCatFilter] = useState("All");
+  const [reviewIdx, setReviewIdx] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
 
   const rawPhotos  = vendor.portfolioPhotos || [];
   const allPhotos  = rawPhotos.map(p => typeof p === "string" ? { url:p, category:"All" } : p);
@@ -182,7 +185,8 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
         .gp-photo-card{flex-shrink:0;width:420px;align-self:stretch;min-height:580px;border-radius:16px;overflow:hidden;position:relative;box-shadow:0 28px 70px rgba(0,0,0,.55),0 0 0 1px rgba(196,155,48,.1)}
         .gp-photo-card img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
-        .gp-photo-gradient{position:absolute;bottom:0;left:0;right:0;height:55%;background:linear-gradient(to top,rgba(15,8,2,.9) 0%,transparent 100%)}
+        .gp-photo-gradient{position:absolute;inset:0;background:linear-gradient(to top,rgba(15,8,2,.96) 0%,rgba(15,8,2,.58) 22%,rgba(15,8,2,.22) 44%,rgba(15,8,2,.06) 64%,transparent 80%)}
+        .gp-photo-blur-bot{position:absolute;bottom:0;left:0;right:0;height:40%;backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px)}
         .gp-photo-cursive{position:absolute;bottom:48px;right:14px;font-family:'Dancing Script',cursive;font-size:17px;font-weight:500;color:rgba(237,224,197,.72);line-height:1.5;text-align:right;pointer-events:none;transform:rotate(-2deg)}
         .gp-avail-badge{position:absolute;bottom:14px;left:14px;display:flex;align-items:center;gap:6px;background:rgba(20,13,5,.82);backdrop-filter:blur(8px);border-radius:100px;padding:6px 12px;font-size:11.5px;font-weight:500;color:${INK};white-space:nowrap}
         .gp-green-dot{width:7px;height:7px;border-radius:50%;background:#3CCA6B;flex-shrink:0}
@@ -364,6 +368,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         <div className="gp-photo-card" style={{ zIndex:1 }}>
           <img src={portrait} alt={vendor.name}/>
           <div className="gp-photo-gradient"/>
+          <div className="gp-photo-blur-bot"/>
           <div className="gp-photo-cursive">Turning Moments<br/>Into Memories</div>
           <div className="gp-avail-badge">
             <div className="gp-green-dot"/>
@@ -632,7 +637,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         {tab === "Reviews" && (
           <div>
             {rating > 0 && (
-              <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:48, paddingBottom:32, borderBottom:`1px solid ${CGOLD_D}` }}>
+              <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:36, paddingBottom:28, borderBottom:`1px solid ${CGOLD_D}` }}>
                 <div style={{ fontFamily:serif, fontSize:"3rem", fontWeight:800, fontStyle:"italic", color:CINK, lineHeight:1 }}>{rating.toFixed(1)}</div>
                 <div>
                   <Stars r={rating} sz={14}/>
@@ -640,31 +645,77 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
                 </div>
               </div>
             )}
-            {reviews.map((r, i) => {
-              const name = r.consumerName || "Client";
-              const initials = name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
-              const rev = r.averageRating || r.ratings?.overall || 5;
-              const featured = i === 0;
-              return (
-                <div key={i} style={{ marginBottom: featured ? 52 : 36, paddingBottom: featured ? 52 : 32, borderBottom:`1px solid rgba(196,155,48,0.14)` }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:16 }}>
-                    <div style={{ width:featured ? 46 : 38, height:featured ? 46 : 38, borderRadius:"50%", background:"rgba(196,155,48,0.1)", border:`1px solid rgba(196,155,48,0.28)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:featured?14:12, fontWeight:700, color:"rgba(150,100,15,0.85)", flexShrink:0 }}>
-                      {initials}
+
+            {/* Stacked carousel — inspired by 21st.dev Reviews Carousel */}
+            <div style={{ position:"relative", height:260, overflow:"visible" }}>
+              {reviews.map((r, i) => {
+                const offsetIndex = i - reviewIdx;
+                const isBehind = offsetIndex < 0;
+                const scale = prefersReducedMotion ? 1 : Math.min(Math.max(1 - offsetIndex * 0.07, 0.08), 2);
+                const yVal  = prefersReducedMotion ? 0 : Math.max(offsetIndex * -28, -84);
+                const name = r.consumerName || "Client";
+                const initials = name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+                const rev = r.averageRating || r.ratings?.overall || 5;
+                return (
+                  <motion.div
+                    key={i}
+                    animate={{ y: yVal, scale, opacity: isBehind ? 0 : 1, filter: isBehind ? "blur(3px)" : "blur(0px)" }}
+                    transition={{ type:"spring", stiffness:260, damping:22, mass:0.5, duration:0.25 }}
+                    initial={false}
+                    style={{
+                      position:"absolute", top:0, left:0, right:0, boxSizing:"border-box",
+                      zIndex: reviews.length - i,
+                      pointerEvents: i === reviewIdx ? "auto" : "none",
+                      background:"#FFFFFF",
+                      borderRadius:18,
+                      border:"1.5px solid rgba(196,155,48,0.16)",
+                      padding:"20px 22px 18px",
+                      boxShadow:"0 4px 24px rgba(28,18,5,0.07)",
+                    }}
+                  >
+                    <div style={{ position:"relative", marginBottom:16 }}>
+                      <div style={{ position:"absolute", top:-8, left:-4, fontSize:44, lineHeight:.8, color:"rgba(196,155,48,0.14)", fontFamily:"Georgia", pointerEvents:"none", userSelect:"none" }}>"</div>
+                      <p style={{ fontSize:15, color:CMUTED, lineHeight:1.82, margin:0 }}>{r.reviewText}</p>
                     </div>
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontSize:featured?16.5:15, fontWeight:700, color:CINK }}>{name}</div>
-                      <div style={{ fontSize:13, color:CDIM, marginTop:3 }}>
-                        {r.eventType || "Event"}{r.date ? ` · ${r.date}` : ""}
+                    <div style={{ display:"flex", alignItems:"center", gap:12, borderTop:"1px solid rgba(196,155,48,0.12)", paddingTop:14 }}>
+                      <div style={{ width:34, height:34, borderRadius:"50%", background:"rgba(196,155,48,0.1)", border:"1px solid rgba(196,155,48,0.28)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"rgba(150,100,15,0.85)", flexShrink:0 }}>
+                        {initials}
                       </div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:14, fontWeight:700, color:CINK }}>{name}</div>
+                        <div style={{ fontSize:12, color:CDIM, marginTop:2 }}>{r.eventType || "Event"}{r.date ? ` · ${r.date}` : ""}</div>
+                      </div>
+                      <Stars r={rev} sz={13}/>
                     </div>
-                    <Stars r={rev} sz={featured?14:12}/>
-                  </div>
-                  <p style={{ fontSize:featured?16.5:15, color:CMUTED, lineHeight:1.85, margin:0, fontWeight:featured?400:400, paddingLeft:60 }}>
-                    {r.reviewText}
-                  </p>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Navigation */}
+            {reviews.length > 1 && (
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, marginTop:18 }}>
+                <button
+                  onClick={() => setReviewIdx(i => Math.max(0, i - 1))}
+                  disabled={reviewIdx === 0}
+                  style={{ width:28, height:28, borderRadius:"50%", border:`1px solid ${CGOLD_D}`, background:"rgba(244,239,228,0.8)", display:"flex", alignItems:"center", justifyContent:"center", cursor:reviewIdx===0?"default":"pointer", opacity:reviewIdx===0?.3:1, backdropFilter:"blur(8px)", transition:"opacity .15s", flexShrink:0 }}
+                >
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={CINK} strokeWidth="2.5" strokeLinecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <div style={{ display:"flex", gap:6 }}>
+                  {reviews.map((_, i) => (
+                    <button key={i} onClick={() => setReviewIdx(i)} style={{ padding:0, border:"none", cursor:"pointer", width: i===reviewIdx ? 22 : 8, height:8, borderRadius:100, background: i===reviewIdx ? GOLD : "rgba(196,155,48,0.3)", transition:"all .2s" }}/>
+                  ))}
                 </div>
-              );
-            })}
+                <button
+                  onClick={() => setReviewIdx(i => Math.min(reviews.length - 1, i + 1))}
+                  disabled={reviewIdx === reviews.length - 1}
+                  style={{ width:28, height:28, borderRadius:"50%", border:`1px solid ${CGOLD_D}`, background:"rgba(244,239,228,0.8)", display:"flex", alignItems:"center", justifyContent:"center", cursor:reviewIdx===reviews.length-1?"default":"pointer", opacity:reviewIdx===reviews.length-1?.3:1, backdropFilter:"blur(8px)", transition:"opacity .15s", flexShrink:0 }}
+                >
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={CINK} strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+              </div>
+            )}
           </div>
         )}
 
