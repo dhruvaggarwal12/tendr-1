@@ -426,7 +426,7 @@ html,body{height:100%;background:#EDE9DF;color:#1C0A04;
 .rv1-pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;justify-content:center;}
 .rv1-pill{padding:10px 16px;border-radius:30px;background:#FFFFFF;border:1.5px solid rgba(28,10,4,.12);font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;color:#1C0A04;cursor:pointer;touch-action:manipulation;transition:border-color .2s,box-shadow .2s;}
 .rv1-pill.sel{border-color:#C47A2E;border-width:2px;box-shadow:0 3px 14px rgba(196,122,46,.18);color:#C47A2E;}
-.rv1-cont{width:100%;padding:16px;border-radius:50px;background:linear-gradient(135deg,#C47A2E,#CCAB4A);border:none;font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;color:#FFF;cursor:pointer;touch-action:manipulation;letter-spacing:.02em;box-shadow:0 4px 20px rgba(196,122,46,.3);transition:box-shadow .2s,transform .15s;margin-bottom:16px;}
+.rv1-cont{width:auto;padding:12px 44px;border-radius:50px;background:linear-gradient(135deg,#C47A2E,#CCAB4A);border:none;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:#FFF;cursor:pointer;touch-action:manipulation;letter-spacing:.04em;box-shadow:0 4px 16px rgba(196,122,46,.28);transition:box-shadow .2s,transform .15s;margin-bottom:16px;}
 .rv1-cont:hover{box-shadow:0 8px 28px rgba(196,122,46,.42);}
 .rv1-cont:active{transform:scale(.97);}
 .rv1-hw-bl{font-family:'Dancing Script',cursive;font-size:15px;color:#C47A2E;opacity:.6;text-align:center;}
@@ -783,7 +783,7 @@ function ans(w,idx){
     bn.classList.add('cn');by.classList.add('fd');
   }
   clearTimeout(adv);
-  adv=setTimeout(()=>showEmpathy(ov,idx),380);
+  adv=setTimeout(()=>showEmpathy(ov,idx),240);
 }
 
 function splitHead(t){
@@ -838,7 +838,7 @@ function ansFQ(c){
   const r=document.getElementById('fqr');
   r.innerHTML=L[lang].fq.resp[c];r.style.display='block';
   setTimeout(()=>r.classList.add('show'),30);
-  setTimeout(showReveal,3000);
+  setTimeout(showReveal,1800);
 }
 
 // ── REVEAL ──
@@ -879,7 +879,7 @@ function showRevealDark(){
   </div>`);
 
   setTimeout(()=>document.getElementById('ph2')?.classList.add('in'),100);
-  setTimeout(()=>showFeatureGrid(),3200);
+  setTimeout(()=>showFeatureGrid(),2200);
 }
 
 const WAVE_SVG=`<svg class="fg-wv fg-wv-tl" viewBox="0 0 110 185" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M68 4C52 26 24 42 27 74C30 107 60 120 52 154C48 177 22 190 14 198" stroke="#C8B490" stroke-width="1.5" fill="none" opacity="0.6"/><path d="M90 0C72 30 42 50 46 88C50 126 80 138 70 174" stroke="#C8B490" stroke-width="1" fill="none" opacity="0.32"/></svg><svg class="fg-wv fg-wv-br" viewBox="0 0 110 185" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M68 4C52 26 24 42 27 74C30 107 60 120 52 154C48 177 22 190 14 198" stroke="#C8B490" stroke-width="1.5" fill="none" opacity="0.6"/><path d="M90 0C72 30 42 50 46 88C50 126 80 138 70 174" stroke="#C8B490" stroke-width="1" fill="none" opacity="0.32"/></svg>`;
