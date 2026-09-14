@@ -532,7 +532,7 @@ export default function VendorRegistration() {
     setLoading(true);
     setApiError("");
     try {
-      const payload = { ...form };
+      const payload = { ...form, plan };
       if (artForm) payload.performerArtForm = artForm;
       const res = await fetch(`${BASE_URL}/vendor-applications`, {
         method: "POST",
@@ -685,17 +685,18 @@ export default function VendorRegistration() {
             onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.12)"; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = plan === "paid" ? gold : "rgba(28,14,4,0.1)"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; }}
           >
-            <div style={{ position: "absolute", top: -1, right: 16, background: gold, color: "#fff", fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: "0 0 8px 8px", letterSpacing: "0.06em", textTransform: "uppercase" }}>7 days free</div>
+            <div style={{ position: "absolute", top: -1, right: 16, background: gold, color: "#fff", fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: "0 0 8px 8px", letterSpacing: "0.06em", textTransform: "uppercase" }}>7-day free trial</div>
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
               <div>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 4 }}>Paid Dashboard</div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 4 }}>Listing + Dashboard</div>
                 <div style={{ fontSize: 22, fontWeight: 800, color: ink }}>₹399 <span style={{ fontSize: 13, fontWeight: 500, color: muted }}>+ GST / month</span></div>
-                <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>after free trial · no card needed to start</div>
+                <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>after 7-day trial · no card needed to start</div>
               </div>
               <div style={{ width: 22, height: 22, borderRadius: "50%", border: `2px solid ${plan === "paid" ? gold : "rgba(28,14,4,0.2)"}`, background: plan === "paid" ? gold : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
                 {plan === "paid" && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
               </div>
             </div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: muted, marginBottom: 6, letterSpacing: "0.08em", textTransform: "uppercase" }}>Everything in Free, plus:</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 12px" }}>
               {PAID_FEATS.map(f => (
                 <div key={f} style={{ fontSize: 12, color: muted, display: "flex", gap: 6, alignItems: "flex-start" }}>
@@ -859,18 +860,38 @@ export default function VendorRegistration() {
             <FieldError msg={errors.address} />
           </div>
 
-          {/* Summary chip */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 10, background: "#F9F6F1", border: "1px solid rgba(28,14,4,0.09)" }}>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>
-                {typeLabel?.label || form.serviceType}
-                {artFormLabel ? ` · ${artFormLabel.label}` : ""}
+          {/* Summary chips */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 10, background: "#F9F6F1", border: "1px solid rgba(28,14,4,0.09)" }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>
+                  {typeLabel?.label || form.serviceType}
+                  {artFormLabel ? ` · ${artFormLabel.label}` : ""}
+                </div>
+                <div style={{ fontSize: 11, color: muted }}>Your service type</div>
               </div>
-              <div style={{ fontSize: 11, color: muted }}>Your service type</div>
+              <button type="button" onClick={() => { setStep(artForm ? "artform" : 2); }} style={{ fontSize: 12, fontWeight: 600, color: gold, background: "none", border: "none", cursor: "pointer", fontFamily: font }}>
+                Change
+              </button>
             </div>
-            <button type="button" onClick={() => { setStep(artForm ? "artform" : 2); }} style={{ fontSize: 12, fontWeight: 600, color: gold, background: "none", border: "none", cursor: "pointer", fontFamily: font }}>
-              Change
-            </button>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 10, background: plan === "paid" ? "rgba(196,122,46,0.06)" : "#F9F6F1", border: plan === "paid" ? `1px solid rgba(196,122,46,0.28)` : "1px solid rgba(28,14,4,0.09)" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>
+                    {plan === "paid" ? "Listing + Dashboard" : "Free Listing"}
+                  </div>
+                  {plan === "paid" && (
+                    <div style={{ fontSize: 10, fontWeight: 800, background: gold, color: "#fff", padding: "2px 7px", borderRadius: 100, letterSpacing: "0.05em" }}>7-day trial</div>
+                  )}
+                </div>
+                <div style={{ fontSize: 11, color: muted, marginTop: 1 }}>
+                  {plan === "paid" ? "₹399 + GST/month after trial · 0% outside commission" : "₹0 forever · 15% on Tendr bookings"}
+                </div>
+              </div>
+              <button type="button" onClick={() => setStep("plan")} style={{ fontSize: 12, fontWeight: 600, color: gold, background: "none", border: "none", cursor: "pointer", fontFamily: font }}>
+                Change
+              </button>
+            </div>
           </div>
 
           <FieldError msg={errors.serviceType} />
@@ -882,7 +903,9 @@ export default function VendorRegistration() {
         </form>
       </div>
 
-      <p style={{ textAlign: "center", fontSize: 12, color: muted, marginTop: 16 }}>Free to register · No monthly fee · No commission</p>
+      <p style={{ textAlign: "center", fontSize: 12, color: muted, marginTop: 16 }}>
+        {plan === "paid" ? "7-day free trial · No card needed · Cancel anytime" : "Free to list · 15% only on Tendr bookings · Upgrade anytime"}
+      </p>
       <p style={{ textAlign: "center", fontSize: 13, color: muted, marginTop: 6 }}>
         Already a partner?{" "}
         <span onClick={() => navigate("/login")} style={{ color: gold, fontWeight: 600, cursor: "pointer" }}>Sign in</span>
