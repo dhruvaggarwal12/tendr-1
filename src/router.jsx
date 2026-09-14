@@ -99,6 +99,7 @@ import CustomerChatList from "./pages/customer/Chats";
 const CoordinatorRegister = lazy(() => import("./pages/coordinator/Register"));
 const CoordinatorLogin    = lazy(() => import("./pages/coordinator/Login"));
 const CoordinatorDashboard= lazy(() => import("./pages/coordinator/Dashboard"));
+const CoordinatorLanding  = lazy(() => import("./pages/coordinator/CoordinatorLanding"));
 const WeddingApp          = lazy(() => import("./wedding-stationery/WeddingApp"));
 const EventPlanningForm   = lazy(() => import("./pages/customer/EventPlanning.jsx"));
 const EventPlanning       = lazy(() => import("./pages/customer/EventPlanning.jsx"));
@@ -247,6 +248,7 @@ const router = createBrowserRouter([
     element: <CorporateBooking />,
     errorElement: <ErrorPage />
   },
+  { path: '/become-coordinator',     element: <CoordinatorLanding />,  errorElement: <ErrorPage /> },
   { path: '/coordinator/register',  element: <CoordinatorRegister />, errorElement: <ErrorPage /> },
   { path: '/coordinator/login',     element: <CoordinatorLogin />,    errorElement: <ErrorPage /> },
   { path: '/coordinator/dashboard', element: <CoordinatorDashboard />,errorElement: <ErrorPage /> },

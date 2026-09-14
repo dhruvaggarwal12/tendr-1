@@ -297,8 +297,9 @@ const Navbar = ({
     {
       label: "Company",
       items: [
-        { label: "About Us",   href: "/about-us" },
-        { label: "Contact Us", href: "/contact-us" },
+        { label: "About Us",            href: "/about-us" },
+        { label: "Contact Us",          href: "/contact-us" },
+        { label: "Event Coordinators",  href: "/become-coordinator" },
       ],
     },
   ];
