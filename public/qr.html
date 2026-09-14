@@ -112,6 +112,8 @@ html,body{height:100%;background:#EDE9DF;color:#1C0A04;
   box-shadow:0 8px 48px rgba(28,10,4,.11),0 2px 10px rgba(28,10,4,.05);
   overflow-y:auto;
 }
+/* Wrapper below dots — centres question content vertically */
+.q-content-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;}
 
 /* Category eyebrow with extending rule */
 .q-eyebrow{display:flex;align-items:center;gap:12px;margin-bottom:14px;
@@ -293,7 +295,7 @@ html,body{height:100%;background:#EDE9DF;color:#1C0A04;
 .fq-lbl{font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;
   color:#9B7450;flex-shrink:0;}
 
-.fqb{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;
+.fqb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
   padding:14px 28px calc(env(safe-area-inset-bottom,0px)+24px);overflow-y:auto;}
 .fqbadge{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;
   letter-spacing:.16em;text-transform:uppercase;color:#C47A2E;
@@ -408,7 +410,7 @@ html,body{height:100%;background:#EDE9DF;color:#1C0A04;
 .rv1{background:#FAF7F2;position:relative;overflow:hidden;align-items:stretch;justify-content:flex-start;}
 .rv1-hw-tr{position:absolute;top:18px;right:18px;font-family:'Dancing Script',cursive;font-size:13px;color:#C47A2E;opacity:.7;text-align:right;line-height:1.45;pointer-events:none;z-index:1;}
 .rv1-blob-br{position:absolute;bottom:-20px;right:-20px;width:170px;height:170px;background:rgba(196,122,46,.06);pointer-events:none;z-index:0;border-radius:58% 42% 46% 54% / 42% 58% 54% 46%;}
-.rv1-inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;padding:calc(env(safe-area-inset-top,0px)+32px) 32px calc(env(safe-area-inset-bottom,0px)+28px);flex:1;overflow-y:auto;}
+.rv1-inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:calc(env(safe-area-inset-top,0px)+32px) 32px calc(env(safe-area-inset-bottom,0px)+28px);flex:1;overflow-y:auto;}
 .rv1-top{flex-shrink:0;width:100%;}
 .rv1-wm{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:600;letter-spacing:.4em;color:#1C0A04;text-transform:uppercase;padding-left:.4em;}
 .rv1-wtag{font-family:'Outfit',sans-serif;font-size:9px;font-weight:600;letter-spacing:.18em;color:#9B7450;text-transform:uppercase;display:block;margin-top:2px;}
@@ -744,18 +746,20 @@ function renderQ(idx){
       <div class="q-top">
         <div class="q-dot-row"><div class="q-dots">${dots}</div><div class="q-cnt">${idx+1} of 4</div></div>
       </div>
-      <div class="q-eyebrow"><span class="q-eyebrow-lbl">${q.badge}</span><div class="q-eyebrow-rule"></div></div>
-      <div class="q-head">${q.head}</div>
-      <p class="q-sub">${q.sub}</p>
-      <div class="q-cards">
-        <button class="q-ch" id="by" onclick="ans('y',${idx})">
-          <div class="q-ico">${q.y.em}</div>
-          <div class="q-txt"><span class="q-ct">${q.y.t}</span><span class="q-cs">${q.y.s}</span></div>
-        </button>
-        <button class="q-ch" id="bn" onclick="ans('n',${idx})">
-          <div class="q-ico">${q.n.em}</div>
-          <div class="q-txt"><span class="q-ct">${q.n.t}</span><span class="q-cs">${q.n.s}</span></div>
-        </button>
+      <div class="q-content-wrap">
+        <div class="q-eyebrow"><span class="q-eyebrow-lbl">${q.badge}</span><div class="q-eyebrow-rule"></div></div>
+        <div class="q-head">${q.head}</div>
+        <p class="q-sub">${q.sub}</p>
+        <div class="q-cards">
+          <button class="q-ch" id="by" onclick="ans('y',${idx})">
+            <div class="q-ico">${q.y.em}</div>
+            <div class="q-txt"><span class="q-ct">${q.y.t}</span><span class="q-cs">${q.y.s}</span></div>
+          </button>
+          <button class="q-ch" id="bn" onclick="ans('n',${idx})">
+            <div class="q-ico">${q.n.em}</div>
+            <div class="q-txt"><span class="q-ct">${q.n.t}</span><span class="q-cs">${q.n.s}</span></div>
+          </button>
+        </div>
       </div>
     </div>
   </div>`);
@@ -819,8 +823,7 @@ function showFQ(){
     <div class="fqb">
       <div class="fqbadge">${fq.badge}</div>
       <div class="fqh">${fq.head}</div>
-      <div class="fqlist">${fq.items.map(it=>`<div class="fqi"><div class="fqchk">✓</div><span>${it}</span></div>`).join('')}</div>
-      <div class="fqend">${fq.end}<strong></strong></div>
+      <div class="fqlist">${fq.items.slice(0,3).map(it=>`<div class="fqi"><div class="fqchk">✓</div><span>${it}</span></div>`).join('')}</div>
       <div class="fqopts">${fq.opts.map((o,i)=>`<button class="fqbtn" id="fo${i}" onclick="ansFQ(${i})">${o.l}</button>`).join('')}</div>
       <div class="fqresp" id="fqr"></div>
     </div>
