@@ -325,6 +325,36 @@ const DECOR_ITEMS = {
 };
 const DECOR_CATEGORIES = Object.keys(DECOR_ITEMS);
 
+/* ── Suggested decor quick-picks per occasion ── */
+const SUGGESTED_DECOR = {
+  default:          [["Backdrop & Wall","Welcome signboard / easel"],["Balloons","Balloon arch at entry"],["Balloons","Table centrepiece balloons"],["Photo Corner","Photo booth setup"],["Lighting","String lights overhead"],["Table & Seating","Table runner"],["Flowers","Table floral centrepieces"],["Theme Items","Personalized name boards"],["Entry & Walkway","Entrance arch"],["Balloons","Foil number / letter balloons"]],
+  "birthday-party": [["Backdrop & Wall","Welcome signboard / easel"],["Balloons","Balloon arch at entry"],["Balloons","Foil number / letter balloons"],["Photo Corner","Photo booth setup"],["Balloons","Table centrepiece balloons"],["Lighting","String lights overhead"],["Theme Items","Personalized name boards"],["Photo Corner","Props box"],["Entry & Walkway","Entrance arch"],["Lighting","Warm Edison bulbs"]],
+  "first-birthday": [["Backdrop & Wall","Welcome signboard / easel"],["Balloons","Balloon arch at entry"],["Balloons","Foil number / letter balloons"],["Theme Items","Character cutouts / standees"],["Photo Corner","Photo booth setup"],["Balloons","Ceiling balloons"],["Theme Items","Themed banners"],["Lighting","Fairy light curtain"],["Table & Seating","Table runner"],["Flowers","Table floral centrepieces"]],
+  "baby-shower":    [["Backdrop & Wall","Flower wall"],["Backdrop & Wall","Welcome signboard / easel"],["Photo Corner","Photo booth setup"],["Balloons","Balloon arch at backdrop"],["Flowers","Table floral centrepieces"],["Lighting","Fairy light curtain"],["Photo Corner","Props box"],["Table & Seating","Table runner"],["Balloons","Foil number / letter balloons"],["Entry & Walkway","Welcome signboard / easel"]],
+  "anniversary":    [["Backdrop & Wall","Flower wall"],["Lighting","Fairy light curtain"],["Flowers","Table floral centrepieces"],["Lighting","Candle clusters"],["Photo Corner","Photo booth setup"],["Backdrop & Wall","Welcome signboard / easel"],["Lighting","String lights overhead"],["Flowers","Floral arch at entrance"],["Table & Seating","Candle holders"],["Table & Seating","Chair bows or sashes"]],
+  "housewarming":   [["Entry & Walkway","Floral arch at entrance"],["Flowers","Marigold garlands"],["Flowers","Flower petals on pathway"],["Backdrop & Wall","Welcome signboard / easel"],["Lighting","Lanterns along pathway"],["Lighting","String lights overhead"],["Table & Seating","Table runner"],["Flowers","Table floral centrepieces"],["Photo Corner","Photo booth setup"],["Entry & Walkway","Ribbon / floral gate"]],
+  "get-together":   [["Backdrop & Wall","Welcome signboard / easel"],["Balloons","Balloon arch at entry"],["Lighting","String lights overhead"],["Photo Corner","Photo booth setup"],["Table & Seating","Table runner"],["Balloons","Table centrepiece balloons"],["Lighting","Uplighting on walls"],["Photo Corner","Props box"],["Entry & Walkway","Entrance arch"],["Balloons","Chrome / metallic balloons"]],
+  "naming-ceremony":[["Entry & Walkway","Floral arch at entrance"],["Flowers","Marigold garlands"],["Backdrop & Wall","Welcome signboard / easel"],["Flowers","Table floral centrepieces"],["Lighting","Fairy light curtain"],["Balloons","Balloon arch at backdrop"],["Photo Corner","Photo booth setup"],["Table & Seating","Table runner"],["Theme Items","Personalized name boards"],["Lighting","String lights overhead"]],
+  "office-party":   [["Backdrop & Wall","Welcome signboard / easel"],["Lighting","Uplighting on walls"],["Lighting","String lights overhead"],["Photo Corner","Photo booth setup"],["Table & Seating","Table runner"],["Balloons","Balloon arch at entry"],["Photo Corner","Props box"],["Theme Items","Custom bunting"],["Entry & Walkway","Entrance arch"],["Lighting","Warm Edison bulbs"]],
+};
+
+function getSuggestedDecor(occasionId) {
+  return SUGGESTED_DECOR[occasionId] || SUGGESTED_DECOR.default;
+}
+
+/* ── Suggested food quick-picks per occasion ── */
+const SUGGESTED_FOOD = {
+  default:          ["Mini sandwiches","Pasta","Fruit platter","Cupcakes","Cookies","Mocktails","Juices","Tea & coffee","Fries","Brownies"],
+  "birthday-party": ["Mini burgers","Pizza bites","Pasta","Fruit cups","Cupcakes","Cookies","Mocktails","Fries","Brownie bites","Popcorn"],
+  "first-birthday": ["Mini sandwiches","Fruit cups","Cupcakes","Cookies","Juices","Fries","Mini pizza","Cake pops","Milkshakes","Veggie sticks"],
+  "baby-shower":    ["Mini sandwiches","Fruit cups","Mocktails","Juices","Tea & coffee","Cupcakes","Cookies","Pastries","Brownie bites","Fruit platter"],
+  "anniversary":    ["Welcome mocktail","Soup","Pasta","Grilled items","Salad","Dessert platter","Cake slices","Tea & coffee","Bread rolls","Fruit platter"],
+  "housewarming":   ["Puri sabzi","Halwa","Mithai","Chaat","Tea & coffee","Fruit platter","Juices","Lassi","Samosa","Cookies"],
+  "get-together":   ["Chaat counter","Mini sliders","Pasta","Mocktails","Fruit cups","Cookies","Fries","Tea & coffee","Brownie bites","Popcorn"],
+  "naming-ceremony":["Puri sabzi","Halwa","Mithai","Kheer","Tea & coffee","Fruit platter","Juices","Lassi","Sweets box","Prasad"],
+  "office-party":   ["Sandwiches","Wraps","Salad bar","Mocktail bar","Tea & coffee","Mini desserts","Cookies","Fries","Pasta","Fruit platter"],
+};
+
 /* ── 3 personalised catering style options ── */
 function getCateringOptions(occasion, {guests=20, venueType="", ageGroups=[], budget=0}) {
   const id     = occasion?.id||"";
@@ -1251,11 +1281,8 @@ export default function OccasionDetail(){
   const cardRef=useRef(null);
   const planRef=useRef(null);
 
-  // Initialise from URL so ?planMode=with skips straight to step 1 without a flash of step 0
-  const _initPm = searchParams.get("planMode");
-  const _validPm = (_initPm==="with"||_initPm==="without") ? _initPm : null;
-  const [planMode,setPlanMode]=useState(_validPm);
-  const [step,setStep]=useState(_validPm ? 1 : 0);
+  const [planMode,setPlanMode]=useState("without");
+  const [step,setStep]=useState(1);
   const [guests,setGuests]=useState(20);
   const [date,setDate]=useState("");
   const [budget,setBudget]=useState("");
@@ -1287,6 +1314,9 @@ export default function OccasionDetail(){
   const [showDecorBuilder,setShowDecorBuilder]=useState(false);
   const [customDecor,setCustomDecor]=useState({}); // {category:[items]}
   const [editedPackageItems,setEditedPackageItems]=useState(null); // null | string[] — package item editing
+
+  /* suggested quick-picks */
+  const [suggestedFood,setSuggestedFood]=useState([]); // string[]
 
   /* fun activities */
   const [selectedActivities,setSelectedActivities]=useState([]); // array of activity ids
@@ -1457,8 +1487,7 @@ export default function OccasionDetail(){
     setStep(s=>Math.min(s+1,6));
   };
   const back=()=>{
-    if(step===0){navigate(-1);return;}
-    if(step===1){setStep(0);return;}
+    if(step===1){navigate(-1);return;}
     if(step===2){setStep(1);return;}
     if(step===3&&withTheme){setStep(2);return;}
     if(step===3&&!withTheme){setStep(1);return;}
@@ -1571,92 +1600,6 @@ export default function OccasionDetail(){
               style={{width:"100%",padding:"14px",borderRadius:14,background:customEventName.trim()?gold:"rgba(196,122,46,0.25)",color:"#fff",fontFamily:font,fontWeight:800,fontSize:15,border:"none",cursor:customEventName.trim()?"pointer":"not-allowed",transition:"background 0.2s"}}>
               Start planning →
             </button>
-          </div>
-        )}
-
-        {/* ══ STEP 0: mode choice ══ */}
-        {step===0&&!isCustomOccasion&&(
-          <div className="os" style={{paddingBottom:0}}>
-            {/* Occasion hero — photo backdrop */}
-            <div style={{position:"relative",borderRadius:24,overflow:"hidden",marginBottom:24,height:180}}>
-              <img src={occasion.coverImage} alt={occasion.name} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
-              <div style={{position:"absolute",inset:0,background:`linear-gradient(160deg,${ink}CC 0%,${ink}88 55%,${ink}44 100%)`}}/>
-              <div style={{position:"absolute",inset:0,padding:"22px 22px 20px",display:"flex",flexDirection:"column",justifyContent:"flex-end"}}>
-                <div style={{fontSize:36,marginBottom:8,lineHeight:1}}>{occasion.icon}</div>
-                <div style={{fontFamily:serif,fontSize:"clamp(1.4rem,4vw,1.8rem)",fontWeight:500,color:"#fff",lineHeight:1.2,letterSpacing:"-0.02em"}}>{occasion.name}</div>
-                <div style={{fontSize:12,color:"rgba(255,255,255,0.6)",marginTop:4}}>{occasion.tagline}</div>
-              </div>
-            </div>
-
-            {/* saved plan banner */}
-            {savedPlan&&(
-              <div style={{background:"rgba(196,122,46,0.06)",border:`1.5px solid rgba(196,122,46,0.18)`,borderRadius:16,padding:"14px 16px",marginBottom:20}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
-                  <div style={{width:32,height:32,borderRadius:10,background:"rgba(196,122,46,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>📋</div>
-                  <div>
-                    <div style={{fontSize:12,fontWeight:700,color:gold}}>Saved plan · {timeAgo(savedPlan.savedAt)}</div>
-                    <div style={{fontSize:11,color:muted,marginTop:1}}>{savedPlan.guests} guests{savedPlan.date?` · ${new Date(savedPlan.date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short"})}`:""}
-                    {savedPlan.city?` · ${savedPlan.city}`:""}</div>
-                  </div>
-                </div>
-                <div style={{display:"flex",gap:8}}>
-                  <button onClick={()=>restorePlan(savedPlan)} style={{flex:1,padding:"10px 0",borderRadius:10,border:"none",background:gold,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font}}>Continue plan</button>
-                  <button onClick={()=>{setSavedPlan(null);localStorage.removeItem(PLAN_KEY);}} style={{padding:"10px 14px",borderRadius:10,border:`1px solid rgba(196,122,46,0.18)`,background:"transparent",color:muted,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font,whiteSpace:"nowrap"}}>Start fresh</button>
-                </div>
-              </div>
-            )}
-
-            <p style={{fontSize:12,fontWeight:600,color:"rgba(28,9,0,0.45)",textTransform:"uppercase",letterSpacing:"0.08em",margin:"0 0 8px",fontFamily:font}}>How would you like to plan?</p>
-            <p style={{fontFamily:serif,fontSize:"clamp(1.5rem,4vw,1.9rem)",color:ink,lineHeight:1.2,margin:"0 0 22px",letterSpacing:"-0.02em",fontWeight:400}}>Choose your approach</p>
-
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {/* ── With Theme ── */}
-              <button onClick={()=>{setPlanMode("with");setStep(1);}}
-                style={{padding:"22px 20px",borderRadius:12,textAlign:"left",cursor:"pointer",border:`1.5px solid rgba(196,122,46,0.28)`,
-                  background:"rgba(196,122,46,0.04)",
-                  fontFamily:font,transition:"border-color 0.16s,background 0.16s"}}
-                onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(196,122,46,0.55)";e.currentTarget.style.background="rgba(196,122,46,0.07)";}}
-                onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(196,122,46,0.28)";e.currentTarget.style.background="rgba(196,122,46,0.04)";}}>
-                <div style={{display:"flex",alignItems:"flex-start",gap:14}}>
-                  <div style={{width:44,height:44,borderRadius:10,background:gold,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>🎨</div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:5}}>
-                      <div style={{fontFamily:serif,fontSize:18,fontWeight:500,color:ink}}>Plan with a Theme</div>
-                      <span style={{fontSize:10,fontWeight:700,color:"#fff",background:gold,borderRadius:4,padding:"2px 7px",letterSpacing:"0.04em",textTransform:"uppercase",flexShrink:0}}>Recommended</span>
-                    </div>
-                    <p style={{fontSize:14,color:muted,margin:"0 0 12px",lineHeight:1.55}}>Pick a look — we'll customise vendors, décor, gifts and the full plan around it.</p>
-                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                      {["Theme picker","Tailored vendors","Full blueprint"].map(t=>(
-                        <span key={t} style={{fontSize:11,fontWeight:600,color:gold,background:"rgba(196,122,46,0.08)",border:"1px solid rgba(196,122,46,0.18)",borderRadius:6,padding:"3px 9px"}}>{t}</span>
-                      ))}
-                    </div>
-                  </div>
-                  <svg style={{flexShrink:0,marginTop:14}} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </div>
-              </button>
-
-              {/* ── Jump straight in ── */}
-              <button onClick={()=>{setPlanMode("without");setStep(1);}}
-                style={{padding:"22px 20px",borderRadius:12,textAlign:"left",cursor:"pointer",
-                  border:`1px solid rgba(28,9,0,0.10)`,background:"#fff",
-                  fontFamily:font,transition:"border-color 0.16s"}}
-                onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(196,122,46,0.30)";}}
-                onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(28,9,0,0.10)";}}>
-                <div style={{display:"flex",alignItems:"flex-start",gap:14}}>
-                  <div style={{width:44,height:44,borderRadius:10,background:"rgba(28,9,0,0.05)",border:"1px solid rgba(28,9,0,0.08)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>⚡</div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontFamily:serif,fontSize:18,fontWeight:500,color:ink,marginBottom:5}}>Jump straight in</div>
-                    <p style={{fontSize:14,color:muted,margin:"0 0 12px",lineHeight:1.55}}>Skip the theme — go straight to vendors, timeline and budget.</p>
-                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                      {["Faster","Direct to vendors"].map(t=>(
-                        <span key={t} style={{fontSize:11,fontWeight:600,color:"rgba(28,9,0,0.42)",background:"rgba(28,9,0,0.04)",border:"1px solid rgba(28,9,0,0.08)",borderRadius:6,padding:"3px 9px"}}>{t}</span>
-                      ))}
-                    </div>
-                  </div>
-                  <svg style={{flexShrink:0,marginTop:14}} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(28,9,0,0.25)" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </div>
-              </button>
-            </div>
           </div>
         )}
 
@@ -2066,7 +2009,6 @@ export default function OccasionDetail(){
                                     {sel&&<span style={{fontSize:7.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"1px 5px"}}>✓</span>}
                                   </div>
                                   <div style={{fontSize:11.5,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{opt.style}</div>
-                                  <div style={{fontSize:10,fontWeight:700,color:"rgba(196,122,46,0.65)"}}>{opt.priceHint}</div>
                                   <div style={{display:"flex",flexDirection:"column",gap:2}}>
                                     {opt.dishes.map((d,di)=><div key={di} style={{fontSize:10,color:muted,lineHeight:1.4}}>· {d}</div>)}
                                   </div>
@@ -2079,6 +2021,28 @@ export default function OccasionDetail(){
                             })}
                           </div>
                         </div>
+
+                        {/* Suggested food items */}
+                        {(()=>{
+                          const suggestions=SUGGESTED_FOOD[id]||SUGGESTED_FOOD.default;
+                          return(
+                            <div style={{padding:"8px 14px 4px",borderTop:`1px solid rgba(196,122,46,0.06)`}}>
+                              <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:8}}>Suggested dishes — tap to add</div>
+                              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                                {suggestions.map(item=>{
+                                  const isSel=suggestedFood.includes(item);
+                                  return(
+                                    <button key={item}
+                                      onClick={()=>setSuggestedFood(prev=>isSel?prev.filter(x=>x!==item):[...prev,item])}
+                                      style={{padding:"5px 12px",borderRadius:100,border:`1.5px solid ${isSel?gold:"rgba(196,122,46,0.18)"}`,background:isSel?"rgba(196,122,46,0.1)":"transparent",color:isSel?gold:ink,fontSize:12,fontWeight:isSel?700:400,cursor:"pointer",fontFamily:font,transition:"all 0.15s",minHeight:30}}>
+                                      {item}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })()}
 
                         {/* Fix your menu yourself option */}
                         <div style={{padding:"10px 14px 12px"}}>
@@ -2214,7 +2178,6 @@ export default function OccasionDetail(){
                                     {sel&&<span style={{fontSize:7.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"1px 5px"}}>✓</span>}
                                   </div>
                                   <div style={{fontSize:11.5,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{opt.style}</div>
-                                  <div style={{fontSize:10,fontWeight:700,color:"rgba(196,122,46,0.65)"}}>{opt.priceHint}</div>
                                   <div style={{display:"flex",flexDirection:"column",gap:2}}>
                                     {(sel&&editedPackageItems!==null?editedPackageItems:opt.items).map((it,ii)=>(
                                       <div key={ii} style={{fontSize:11,color:muted,lineHeight:1.45,display:"flex",alignItems:"flex-start",gap:3}}>
@@ -2231,6 +2194,29 @@ export default function OccasionDetail(){
                             })}
                           </div>
                         </div>
+
+                        {/* Suggested decor items */}
+                        {(()=>{
+                          const suggestions=getSuggestedDecor(id);
+                          return(
+                            <div style={{padding:"8px 14px 4px",borderTop:`1px solid rgba(196,122,46,0.06)`}}>
+                              <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:8}}>Suggested items — tap to add</div>
+                              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                                {suggestions.map(([cat,item])=>{
+                                  const picked=customDecor[cat]||[];
+                                  const isSel=picked.includes(item);
+                                  return(
+                                    <button key={`${cat}__${item}`}
+                                      onClick={()=>setCustomDecor(prev=>({...prev,[cat]:isSel?picked.filter(x=>x!==item):[...picked,item]}))}
+                                      style={{padding:"5px 12px",borderRadius:100,border:`1.5px solid ${isSel?gold:"rgba(196,122,46,0.18)"}`,background:isSel?"rgba(196,122,46,0.1)":"transparent",color:isSel?gold:ink,fontSize:12,fontWeight:isSel?700:400,cursor:"pointer",fontFamily:font,transition:"all 0.15s",minHeight:30}}>
+                                      {item}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })()}
 
                         {/* Fix the things required option */}
                         <div style={{padding:"10px 14px 12px"}}>
