@@ -64,6 +64,7 @@ const Auth = () => {
   const [formData, setFormData] = useState({ name: "", email: "", password: "", phoneNumber: "", location: "", companyName: "", gstNumber: "", businessName: "", serviceType: "" });
   const [accountType, setAccountType] = useState("personal");
   const [signupStep, setSignupStep] = useState("role"); // "role" | "form"
+  const [loginType, setLoginType] = useState("personal"); // "personal" | "corporate"
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState("");
@@ -119,6 +120,7 @@ const Auth = () => {
     setShowPassword(false);
     setSignupStep("role");
     setLocalError("");
+    setLoginType("personal");
   };
 
   const handleChange = (e) => {
@@ -493,7 +495,10 @@ const Auth = () => {
               })}
               <button
                 type="button"
-                onClick={() => setSignupStep("form")}
+                onClick={() => {
+                  if (accountType === "company") { navigate("/corporate-signup"); return; }
+                  setSignupStep("form");
+                }}
                 style={{
                   marginTop: 4, width: "100%", padding: "13px",
                   background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",
@@ -502,7 +507,7 @@ const Auth = () => {
                   boxShadow: "0 4px 14px rgba(196,122,46,0.35)", transition: "all 0.2s",
                 }}
               >
-                Continue as {accountType === "vendor" ? "Vendor" : accountType === "company" ? "Professional" : "Personal"} →
+                Continue as {accountType === "vendor" ? "Vendor" : accountType === "company" ? "Corporate" : "Personal"} →
               </button>
             </div>
           ) : isSignup ? (
@@ -655,6 +660,56 @@ const Auth = () => {
               </button>
             </form>
           ) : (
+            <>
+            {/* ── Login type selector ── */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+              {["personal", "corporate"].map(type => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => setLoginType(type)}
+                  style={{
+                    flex: 1, padding: "10px 0", borderRadius: 10, cursor: "pointer", fontFamily: font,
+                    fontSize: 13, fontWeight: 700, transition: "all 0.15s",
+                    border: loginType === type ? "2px solid #C47A2E" : "1.5px solid rgba(139,69,19,0.18)",
+                    background: loginType === type ? "rgba(196,122,46,0.07)" : "#fff",
+                    color: loginType === type ? "#C47A2E" : "#9B7450",
+                  }}
+                >
+                  {type === "personal" ? "Personal" : "Corporate"}
+                </button>
+              ))}
+            </div>
+
+            {loginType === "corporate" ? (
+              <div style={{ textAlign: "center", padding: "12px 0 4px" }}>
+                <p style={{ fontSize: 13.5, color: "#7A5535", marginBottom: 20, lineHeight: 1.55, fontFamily: font }}>
+                  Corporate accounts have a dedicated login portal with email-based authentication.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate("/corporate/login")}
+                  style={{
+                    width: "100%", padding: "13px", background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",
+                    color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: font,
+                    border: "none", borderRadius: 12, cursor: "pointer",
+                    boxShadow: "0 4px 14px rgba(196,122,46,0.35)",
+                  }}
+                >
+                  Go to Corporate Login →
+                </button>
+                <p style={{ marginTop: 14, fontSize: 12.5, color: "#9B7450", fontFamily: font }}>
+                  Don't have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => navigate("/corporate-signup")}
+                    style={{ background: "none", border: "none", color: "#C47A2E", fontWeight: 700, fontSize: 12.5, cursor: "pointer", fontFamily: font, textDecoration: "underline" }}
+                  >
+                    Register your company
+                  </button>
+                </p>
+              </div>
+            ) : (
             <form onSubmit={handleLoginSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
               <div>
                 <label style={labelStyle}>Phone Number</label>
@@ -703,10 +758,12 @@ const Auth = () => {
                 {isBusy ? "Signing in..." : "Sign In"}
               </button>
             </form>
+            )}
+            </>
           )}
 
-          {/* Google Sign-In — only for personal accounts (not vendor/company signup form) */}
-          {!(isSignup && signupStep === "form" && accountType !== "personal") && (
+          {/* Google Sign-In — personal only; hidden for vendor/company signup and corporate login */}
+          {!(isSignup && signupStep === "form" && accountType !== "personal") && !(!isSignup && loginType === "corporate") && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0 4px" }}>
                 <div style={{ flex: 1, height: 1, background: "rgba(139,69,19,0.15)" }} />
