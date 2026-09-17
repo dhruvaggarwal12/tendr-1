@@ -365,9 +365,6 @@ function getCateringOptions(occasion, {guests=20, venueType="", ageGroups=[], bu
   const isBig  = guests>50;
   const isFormal= venue.includes("banquet")||venue.includes("hall");
   const isOutdoor= venue.includes("garden")||venue.includes("outdoor")||venue.includes("rooftop")||venue.includes("farmhouse");
-  const ph = b>0 ? Math.round(b*0.3/guests) : null;
-  const fmt = n => `≈₹${n.toLocaleString("en-IN")}/head`;
-
   /* occasion-specific overrides */
   const isOffice    = id==="office-party";
   const isAnniv     = id==="anniversary";
@@ -375,27 +372,27 @@ function getCateringOptions(occasion, {guests=20, venueType="", ageGroups=[], bu
   const isHouse     = id==="housewarming";
 
   if(isOffice) return [
-    { style:"Corporate Buffet", tagline:"Professional, clean — works for all teams", priceHint: ph?fmt(ph):"₹450–650/head", icon:"🍽️", dishes:["Sandwiches & wraps station","Salad bar","1 veg + 1 non-veg main","Dal + rice","Dessert corner"] },
-    { style:"Buffet + Live Counters", tagline:"Popular for office dos — interactive and fun", priceHint: ph?fmt(Math.round(ph*1.2)):"₹600–800/head", icon:"🧑‍🍳", popular:true, dishes:["Waiter-served starters","Live pasta / pizza counter","2 mains","Mocktail bar","Dessert table"] },
-    { style:"Full Service Dinner", tagline:"Awards night or annual party — premium feel", priceHint: ph?fmt(Math.round(ph*1.6)):"₹800–1,200/head", icon:"✨", dishes:["Welcome drink + starters","Plated main course","Live dessert station","Custom menu cards","Dedicated service staff"] },
+    { style:"Corporate Buffet", tagline:"Professional, clean — works for all teams", tier:"Budget-friendly", icon:"🍽️", dishes:["Sandwiches & wraps station","Salad bar","1 veg + 1 non-veg main","Dal + rice","Dessert corner"] },
+    { style:"Buffet + Live Counters", tagline:"Popular for office dos — interactive and fun", tier:"Mid-range", icon:"🧑‍🍳", popular:true, dishes:["Waiter-served starters","Live pasta / pizza counter","2 mains","Mocktail bar","Dessert table"] },
+    { style:"Full Service Dinner", tagline:"Awards night or annual party — premium feel", tier:"Premium", icon:"✨", dishes:["Welcome drink + starters","Plated main course","Live dessert station","Custom menu cards","Dedicated service staff"] },
   ];
 
   if(isAnniv) return [
-    { style:"Intimate Dinner Setup", tagline:"Romantic plating, courses served at the table", priceHint: ph?fmt(ph):"₹550–750/head", icon:"🍽️", dishes:["Welcome champagne mocktail","Soup + salad","Plated main with 2 sides","Candle-lit dessert presentation"] },
-    { style:"Buffet + Live Counter", tagline:"Great for a larger anniversary with family & friends", priceHint: ph?fmt(Math.round(ph*1.1)):"₹600–800/head", icon:"🧑‍🍳", popular:true, dishes:["Starter round by waiter","3 mains + live pasta/chaat counter","Salad bar","Dessert table with couple's cake"] },
-    { style:"Full Waiter Service", tagline:"Formal, sophisticated — a true celebration dinner", priceHint: ph?fmt(Math.round(ph*1.5)):"₹800–1,200/head", icon:"✨", dishes:["Multi-course plated meal","4+ mains with accompaniments","Custom anniversary cake served","Personalised menu cards"] },
+    { style:"Intimate Dinner Setup", tagline:"Romantic plating, courses served at the table", tier:"Budget-friendly", icon:"🍽️", dishes:["Welcome champagne mocktail","Soup + salad","Plated main with 2 sides","Candle-lit dessert presentation"] },
+    { style:"Buffet + Live Counter", tagline:"Great for a larger anniversary with family & friends", tier:"Mid-range", icon:"🧑‍🍳", popular:true, dishes:["Starter round by waiter","3 mains + live pasta/chaat counter","Salad bar","Dessert table with couple's cake"] },
+    { style:"Full Waiter Service", tagline:"Formal, sophisticated — a true celebration dinner", tier:"Premium", icon:"✨", dishes:["Multi-course plated meal","4+ mains with accompaniments","Custom anniversary cake served","Personalised menu cards"] },
   ];
 
   if(isBabyEvent) return [
-    { style:"Light Snacks & High Tea", tagline:"Ideal for daytime baby events — easy, elegant", priceHint: ph?fmt(Math.round(ph*0.7)):"₹300–450/head", icon:"☕", dishes:["Sandwiches & wraps","Mini pastries & biscuits","Juice / mocktail bar","Fruit platter","Cake station"] },
-    { style:"Buffet with Kids Corner", tagline:"Feeds all ages — most popular for baby events", priceHint: ph?fmt(ph):"₹450–650/head", icon:"🍽️", popular:true, dishes:["1 veg + 1 non-veg main","Dal + rice + roti","Kids corner: mini pizza & fries","Dessert table","Juice station (no aerated drinks)"] },
-    { style:"Finger Food & Live Counters", tagline:"Fun and casual — great if guests will be standing", priceHint: ph?fmt(Math.round(ph*1.1)):"₹450–650/head", icon:"🧆", dishes:["Live chaat counter","Mini sandwiches & sliders","Healthy fruit skewers","Cake + dessert table","Mocktails"] },
+    { style:"Light Snacks & High Tea", tagline:"Ideal for daytime baby events — easy, elegant", tier:"Budget-friendly", icon:"☕", dishes:["Sandwiches & wraps","Mini pastries & biscuits","Juice / mocktail bar","Fruit platter","Cake station"] },
+    { style:"Buffet with Kids Corner", tagline:"Feeds all ages — most popular for baby events", tier:"Mid-range", icon:"🍽️", popular:true, dishes:["1 veg + 1 non-veg main","Dal + rice + roti","Kids corner: mini pizza & fries","Dessert table","Juice station (no aerated drinks)"] },
+    { style:"Finger Food & Live Counters", tagline:"Fun and casual — great if guests will be standing", tier:"Mid-range", icon:"🧆", dishes:["Live chaat counter","Mini sandwiches & sliders","Healthy fruit skewers","Cake + dessert table","Mocktails"] },
   ];
 
   if(isHouse) return [
-    { style:"Traditional Thali", tagline:"Warm, homely, auspicious — perfect for housewarming", priceHint: ph?fmt(ph):"₹350–500/head", icon:"🍛", dishes:["Puja prasad (halwa/puri)","Full North/South Indian thali","Dal + rice + roti","Sweet mithai plate","Aam panna / chaas"] },
-    { style:"Buffet with Live Starters", tagline:"Traditional + a touch of fun — crowd pleaser", priceHint: ph?fmt(Math.round(ph*1.2)):"₹500–700/head", icon:"🧑‍🍳", popular:true, dishes:["Live chaat / samosa counter","Thali-style mains","Dessert platter","Fresh juices + mocktails"] },
-    { style:"Full Buffet & Service", tagline:"If you want to go all out for the housewarming", priceHint: ph?fmt(Math.round(ph*1.5)):"₹700–1,000/head", icon:"✨", dishes:["Welcome sherbet + starters","4 mains + dal + rice + breads","Live dessert counter","Service staff throughout"] },
+    { style:"Traditional Thali", tagline:"Warm, homely, auspicious — perfect for housewarming", tier:"Budget-friendly", icon:"🍛", dishes:["Puja prasad (halwa/puri)","Full North/South Indian thali","Dal + rice + roti","Sweet mithai plate","Aam panna / chaas"] },
+    { style:"Buffet with Live Starters", tagline:"Traditional + a touch of fun — crowd pleaser", tier:"Mid-range", icon:"🧑‍🍳", popular:true, dishes:["Live chaat / samosa counter","Thali-style mains","Dessert platter","Fresh juices + mocktails"] },
+    { style:"Full Buffet & Service", tagline:"If you want to go all out for the housewarming", tier:"Premium", icon:"✨", dishes:["Welcome sherbet + starters","4 mains + dal + rice + breads","Live dessert counter","Service staff throughout"] },
   ];
 
   /* default (birthday-party, get-together, etc.) */
@@ -403,7 +400,7 @@ function getCateringOptions(occasion, {guests=20, venueType="", ageGroups=[], bu
     {
       style: isOutdoor ? "Finger Food & Live Counters" : "Simple Buffet",
       tagline: isOutdoor ? "Great for outdoor, casual events" : "Self-serve, easy for any size",
-      priceHint: ph ? fmt(Math.round(ph*0.75)) : (isOutdoor?"₹350–500/head":"₹300–450/head"),
+      tier:"Budget-friendly",
       icon:"🍽️",
       dishes: isOutdoor
         ? ["Live chaat counter","Mini sandwiches & sliders","Grilled section",hasKids?"Kids snack corner":"Mocktail bar"]
@@ -412,7 +409,7 @@ function getCateringOptions(occasion, {guests=20, venueType="", ageGroups=[], bu
     {
       style: (isFormal||isBig) ? "Buffet + Waiter Service" : "Buffet + Live Counter",
       tagline: (isFormal||isBig) ? "Most popular for halls & big events" : "Fun, interactive — guests love it",
-      priceHint: ph?fmt(ph):"₹500–700/head", icon:"🧑‍🍳", popular:true,
+      tier:"Mid-range", icon:"🧑‍🍳", popular:true,
       dishes: (isFormal||isBig)
         ? ["Waiter-served starters","3 mains + live counter",hasKids?"Kids corner":"Salad bar","Dessert table"]
         : ["Live chaat / pav bhaji counter","2–3 mains",hasKids?"Kids corner":"Salad bar","Dessert station"],
@@ -420,7 +417,7 @@ function getCateringOptions(occasion, {guests=20, venueType="", ageGroups=[], bu
     {
       style:"Full Waiter Service",
       tagline:"Elegant, course-by-course dining",
-      priceHint: ph?fmt(Math.round(ph*1.5)):"₹750–1,200/head",
+      tier:"Premium",
       icon:"✨",
       dishes:["Welcome drink + amuse-bouche","Plated starters","4+ mains with sides","Curated dessert table","Custom menu cards"],
     },
@@ -440,29 +437,29 @@ function getDecorOptions(occasion, {guests=20, venueType="", theme=null, ageGrou
   const isHouse= id==="housewarming";
 
   if(isBaby) return [
-    { style:"Soft & Sweet",       tagline:"Pastel setup — gentle, airy, baby-perfect",       priceHint:outdoor?"₹8K–14K":"₹5K–9K",   icon:"🍼", items:["Pastel balloon clusters at entry","Soft backdrop with baby motifs","Table centrepieces","Cradle / highchair decor"] },
-    { style:"Full Baby Setup",    tagline:"Full venue coverage — most popular for baby events",priceHint:outdoor?"₹18K–32K":"₹12K–22K",icon:"🎀",popular:true, items:["Balloon arch at entry","Themed backdrop + name board","All table décor",id==="gender-reveal"?"Pink & Blue reveal corner":"Dedicated cake/gift table area"] },
-    { style:"Premium Baby Event", tagline:"Every corner styled, photo-ready throughout",      priceHint:outdoor?"₹40K+":"₹28K+",       icon:"✨", items:["Custom floral installation","Balloon ceiling or canopy","Personalised name / age banner","Photo corner with full props","Cake table centrepiece"] },
+    { style:"Soft & Sweet",       tagline:"Pastel setup — gentle, airy, baby-perfect",       tier:"Budget-friendly", icon:"🍼", items:["Pastel balloon clusters at entry","Soft backdrop with baby motifs","Table centrepieces","Cradle / highchair decor"] },
+    { style:"Full Baby Setup",    tagline:"Full venue coverage — most popular for baby events",tier:"Mid-range",      icon:"🎀",popular:true, items:["Balloon arch at entry","Themed backdrop + name board","All table décor",id==="gender-reveal"?"Pink & Blue reveal corner":"Dedicated cake/gift table area"] },
+    { style:"Premium Baby Event", tagline:"Every corner styled, photo-ready throughout",      tier:"Premium",         icon:"✨", items:["Custom floral installation","Balloon ceiling or canopy","Personalised name / age banner","Photo corner with full props","Cake table centrepiece"] },
   ];
   if(isAnniv) return [
-    { style:"Romantic Essentials",tagline:"Intimate candle-lit setup — couple-focused",       priceHint:outdoor?"₹10K–18K":"₹7K–14K", icon:"🕯️",items:["Fairy light backdrop","Rose & candle centrepieces","Couple photo timeline wall","Welcome garland at entry"] },
-    { style:"Full Celebration",   tagline:"Guests + couple — full venue dressed beautifully", priceHint:outdoor?"₹22K–40K":"₹15K–28K",icon:"💍",popular:true,items:["Floral arch at entry","Backdrop + couple photos","All table décor (candles + flowers)",outdoor?"String lights overhead":"Balloon ceiling or draping"] },
-    { style:"Grand Anniversary",  tagline:"Golden or silver jubilee — nothing held back",     priceHint:outdoor?"₹55K+":"₹38K+",       icon:"👑", items:["Floral wall or floral arch installation","Custom milestone backdrop (25/50 years)","Lighting setup included","Photo corner + memory wall","Floating candles or lantern arrangement"] },
+    { style:"Romantic Essentials",tagline:"Intimate candle-lit setup — couple-focused",       tier:"Budget-friendly", icon:"🕯️",items:["Fairy light backdrop","Rose & candle centrepieces","Couple photo timeline wall","Welcome garland at entry"] },
+    { style:"Full Celebration",   tagline:"Guests + couple — full venue dressed beautifully", tier:"Mid-range",       icon:"💍",popular:true,items:["Floral arch at entry","Backdrop + couple photos","All table décor (candles + flowers)",outdoor?"String lights overhead":"Balloon ceiling or draping"] },
+    { style:"Grand Anniversary",  tagline:"Golden or silver jubilee — nothing held back",     tier:"Premium",         icon:"👑", items:["Floral wall or floral arch installation","Custom milestone backdrop (25/50 years)","Lighting setup included","Photo corner + memory wall","Floating candles or lantern arrangement"] },
   ];
   if(isOffice) return [
-    { style:"Corporate Clean",    tagline:"Professional branded setup — minimal & sharp",     priceHint:"₹8K–15K",  icon:"🏢", items:["Company branding backdrop","Branded table signage","Clean floral centrepieces","Award / recognition display area"] },
-    { style:"Corporate Festive",  tagline:"Professional + a warm festive feel",              priceHint:"₹18K–32K", icon:"🎊",popular:true,items:["Branded backdrop + balloon columns","Themed table décor","Recognition board / award wall","Photo corner with company branding"] },
-    { style:"Premium Office Event",tagline:"Awards night or big team party — full setup",    priceHint:"₹35K+",    icon:"✨", items:["Full venue branding","Stage décor for awards ceremony","LED lighting + ambience","Photo wall + step & repeat backdrop","Custom table naming"] },
+    { style:"Corporate Clean",    tagline:"Professional branded setup — minimal & sharp",     tier:"Budget-friendly", icon:"🏢", items:["Company branding backdrop","Branded table signage","Clean floral centrepieces","Award / recognition display area"] },
+    { style:"Corporate Festive",  tagline:"Professional + a warm festive feel",               tier:"Mid-range",       icon:"🎊",popular:true,items:["Branded backdrop + balloon columns","Themed table décor","Recognition board / award wall","Photo corner with company branding"] },
+    { style:"Premium Office Event",tagline:"Awards night or big team party — full setup",     tier:"Premium",         icon:"✨", items:["Full venue branding","Stage décor for awards ceremony","LED lighting + ambience","Photo wall + step & repeat backdrop","Custom table naming"] },
   ];
   if(isHouse) return [
-    { style:"Auspicious & Warm",  tagline:"Traditional feel — flowers, diyas, warm tones",  priceHint:outdoor?"₹8K–15K":"₹5K–10K",  icon:"🪔", items:["Marigold garlands at entry","Diya clusters on tables","Traditional flower centrepieces","Welcome rangoli at door"] },
-    { style:"Full House Décor",   tagline:"Entire home / venue dressed — most popular",      priceHint:outdoor?"₹18K–32K":"₹12K–22K",icon:"🏠",popular:true,items:["Flower arch at main entrance","Table centrepieces for all areas","Living room focal point (arch or wall)",outdoor?"String lights in garden":"Fairy light interior setup"] },
-    { style:"Grand Housewarming", tagline:"Statement event — every room styled",             priceHint:outdoor?"₹40K+":"₹28K+",       icon:"✨", items:["Full venue transformation","Outdoor lighting setup","Custom welcome board","Flower wall installation","Puja area decorated separately"] },
+    { style:"Auspicious & Warm",  tagline:"Traditional feel — flowers, diyas, warm tones",   tier:"Budget-friendly", icon:"🪔", items:["Marigold garlands at entry","Diya clusters on tables","Traditional flower centrepieces","Welcome rangoli at door"] },
+    { style:"Full House Décor",   tagline:"Entire home / venue dressed — most popular",       tier:"Mid-range",       icon:"🏠",popular:true,items:["Flower arch at main entrance","Table centrepieces for all areas","Living room focal point (arch or wall)",outdoor?"String lights in garden":"Fairy light interior setup"] },
+    { style:"Grand Housewarming", tagline:"Statement event — every room styled",              tier:"Premium",         icon:"✨", items:["Full venue transformation","Outdoor lighting setup","Custom welcome board","Flower wall installation","Puja area decorated separately"] },
   ];
   return [
-    { style:"Simple & Sweet",   tagline:"Looks great, stays within budget", priceHint:outdoor?"₹8K–15K":"₹5K–10K",   icon:"🎈", items:["Balloon clusters at entry","Simple backdrop wall","Table centrepieces",tags.includes("floral")?"Floral accents":"Colour-matched props"] },
-    { style:"Full Venue Setup", tagline:"Covers the whole venue — most popular", priceHint:outdoor?"₹20K–38K":"₹14K–26K",icon:"🎨",popular:true,items:[outdoor?"String lights overhead":"Balloon ceiling","Themed backdrop + arch","All table décor",hasKids?"Character balloons & props":tags.includes("floral")?"Fresh floral centrepieces":"Premium centrepieces"] },
-    { style:"Showstopper",      tagline:"Every corner transformed, fully custom", priceHint:outdoor?"₹50K+":"₹35K+",     icon:"👑", items:[tags.includes("neon")?"Custom neon sign":tags.includes("floral")?"Floor-to-ceiling floral wall":"Full venue transformation","Themed entry arch","Custom backdrop + photo corner","Lighting setup included"] },
+    { style:"Simple & Sweet",   tagline:"Looks great, stays within budget", tier:"Budget-friendly", icon:"🎈", items:["Balloon clusters at entry","Simple backdrop wall","Table centrepieces",tags.includes("floral")?"Floral accents":"Colour-matched props"] },
+    { style:"Full Venue Setup", tagline:"Covers the whole venue — most popular", tier:"Mid-range",    icon:"🎨",popular:true,items:[outdoor?"String lights overhead":"Balloon ceiling","Themed backdrop + arch","All table décor",hasKids?"Character balloons & props":tags.includes("floral")?"Fresh floral centrepieces":"Premium centrepieces"] },
+    { style:"Showstopper",      tagline:"Every corner transformed, fully custom", tier:"Premium",     icon:"👑", items:[tags.includes("neon")?"Custom neon sign":tags.includes("floral")?"Floor-to-ceiling floral wall":"Full venue transformation","Themed entry arch","Custom backdrop + photo corner","Lighting setup included"] },
   ];
 }
 
@@ -612,13 +609,12 @@ function getVendorTips(type, {theme, venueType, ageGroups, cateringType, budget,
     if(ages.includes("Kids")||ages.includes("Toddlers")) {
       items.push("Character-themed balloons","Colourful streamers","Soft safe props (no sharp edges)");
     }
-    const decorBudget = budget&&guests ? Math.round(Number(budget)*0.28) : null;
     return {
       heading:"Ask your decorator for",
       items:[...new Set(items)].slice(0,7),
-      tip: decorBudget
-        ? `~28% of your budget (≈₹${decorBudget.toLocaleString("en-IN")}) for décor. ${venueType?`Tell them it's a ${venueType} — setup time changes.`:"Share reference photos and venue size before finalising."}`
-        : venueType?`Tip: Tell the decorator it's a ${venueType} — setup time and equipment change significantly.`:"Tip: Share reference photos and the venue size before finalising quotes.",
+      tip: venueType
+        ? `Décor typically takes the largest share of your budget. Tell them it's a ${venueType} — setup time and equipment change significantly.`
+        : "Décor typically takes the largest share of your budget. Share reference photos and venue size before finalising.",
     };
   }
 
@@ -647,13 +643,10 @@ function getVendorTips(type, {theme, venueType, ageGroups, cateringType, budget,
     }
     if(ages.includes("Teens")) menu.push("Live pizza/pasta counter","Mocktail bar");
     if(ages.includes("Seniors")) menu.push("Soft/easy options + low-spice section");
-    const foodBudget = budget&&guests ? Math.round(Number(budget)*0.3/guests) : null;
     return {
       heading:"Menu to plan with caterer",
       items:[...new Set(menu)].slice(0,8),
-      tip: foodBudget
-        ? `~30% of your budget = ₹${foodBudget}/head for food. Share service style, guest count, veg/non-veg split and venue upfront — they'll size everything correctly.`
-        : "Tip: Tell the caterer your service style, guest count, veg/non-veg split, and venue type upfront — they'll size everything correctly.",
+      tip:"Catering is usually the biggest cost in any event. Share your service style, guest count, veg/non-veg split and venue upfront — they'll size everything correctly.",
     };
   }
 
@@ -2009,6 +2002,7 @@ export default function OccasionDetail(){
                                     {sel&&<span style={{fontSize:7.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"1px 5px"}}>✓</span>}
                                   </div>
                                   <div style={{fontSize:11.5,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{opt.style}</div>
+                                  {opt.tier&&<span style={{fontSize:9,fontWeight:700,color:opt.tier==="Premium"?"#7C3AED":opt.tier==="Mid-range"?gold:"#16a34a",background:opt.tier==="Premium"?"rgba(124,58,237,0.08)":opt.tier==="Mid-range"?"rgba(196,122,46,0.08)":"rgba(22,163,74,0.08)",borderRadius:100,padding:"2px 7px",alignSelf:"flex-start"}}>{opt.tier}</span>}
                                   <div style={{display:"flex",flexDirection:"column",gap:2}}>
                                     {opt.dishes.map((d,di)=><div key={di} style={{fontSize:10,color:muted,lineHeight:1.4}}>· {d}</div>)}
                                   </div>
@@ -2178,6 +2172,7 @@ export default function OccasionDetail(){
                                     {sel&&<span style={{fontSize:7.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"1px 5px"}}>✓</span>}
                                   </div>
                                   <div style={{fontSize:11.5,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{opt.style}</div>
+                                  {opt.tier&&<span style={{fontSize:9,fontWeight:700,color:opt.tier==="Premium"?"#7C3AED":opt.tier==="Mid-range"?gold:"#16a34a",background:opt.tier==="Premium"?"rgba(124,58,237,0.08)":opt.tier==="Mid-range"?"rgba(196,122,46,0.08)":"rgba(22,163,74,0.08)",borderRadius:100,padding:"2px 7px",alignSelf:"flex-start"}}>{opt.tier}</span>}
                                   <div style={{display:"flex",flexDirection:"column",gap:2}}>
                                     {(sel&&editedPackageItems!==null?editedPackageItems:opt.items).map((it,ii)=>(
                                       <div key={ii} style={{fontSize:11,color:muted,lineHeight:1.45,display:"flex",alignItems:"flex-start",gap:3}}>
@@ -2701,18 +2696,21 @@ export default function OccasionDetail(){
             {/* budget split */}
             {budgetSplit&&(
               <div style={{marginBottom:24}}>
-                <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:14,fontFamily:font}}>Budget breakdown · {fmtNum(Number(budget))}</div>
+                <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:14,fontFamily:font}}>How budgets are typically split</div>
                 {budgetSplit.map(c=>(
                   <div key={c.label} style={{marginBottom:10}}>
                     <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
                       <span style={{fontSize:12,fontWeight:600,color:ink}}>{c.label}</span>
-                      <span style={{fontSize:12,fontWeight:700,color:gold}}>{fmtNum(c.amt)}</span>
+                      <span style={{fontSize:12,fontWeight:700,color:gold}}>{c.pct}%</span>
                     </div>
                     <div style={{height:6,borderRadius:3,background:"rgba(196,122,46,0.1)",overflow:"hidden"}}>
                       <div style={{height:"100%",width:`${c.pct}%`,background:c.color,borderRadius:3,transition:"width 0.8s ease"}}/>
                     </div>
                   </div>
                 ))}
+                <div style={{fontSize:11,color:muted,marginTop:12,lineHeight:1.6,padding:"10px 12px",background:"rgba(196,122,46,0.04)",borderRadius:8,border:`1px solid rgba(196,122,46,0.12)`}}>
+                  Exact pricing will be shared by your Tendr coordinator once you connect.
+                </div>
               </div>
             )}
 
