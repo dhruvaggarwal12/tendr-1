@@ -185,7 +185,28 @@ function BottomNavInner() {
         setMyEventModal(p._draft ? 'mini' : 'full');
       }},
     { label: "Tips", paths: ["/guides","/community"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setPlanOpen(false); setTipsOpen(o => !o); } },
-    { label: "Profile",  paths: ["/dashboard","/AdminDashboard"],     onTap: () => navigate(token ? (user?.isAdmin ? "/AdminDashboard" : "/dashboard") : "/login") },
+    { label: "Profile",
+      paths: ["/dashboard","/AdminDashboard","/vendor/dashboard","/vendor/demo-dashboard","/vendor/service-demo","/vendor/coordinator-dash","/coordinator/dashboard"],
+      onTap: () => {
+        // Coordinator: separate localStorage-based auth (not in Redux)
+        if (!token) {
+          try {
+            if (localStorage.getItem("tendr_coordinator_token")) { navigate("/coordinator/dashboard"); return; }
+          } catch {}
+          navigate("/login");
+          return;
+        }
+        if (user?.isAdmin) { navigate("/AdminDashboard"); return; }
+        // Vendor: Redux user has serviceType
+        if (user?.serviceType) {
+          const GIG_PRO = ["DJ","Anchor","Emcee/Host","Band","Singer","Musician","Performer","Stand-up Comedian","Magician","AV Setup","Choreographer"];
+          const SVC_DEMO = ["Caterer","Decorator","Photographer"];
+          navigate(GIG_PRO.includes(user.serviceType) ? "/vendor/demo-dashboard" : SVC_DEMO.includes(user.serviceType) ? "/vendor/service-demo" : "/vendor/dashboard");
+          return;
+        }
+        navigate("/dashboard");
+      }
+    },
   ];
 
   return (

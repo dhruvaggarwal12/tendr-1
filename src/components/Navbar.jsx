@@ -674,13 +674,22 @@ const Navbar = ({
                           </div>
                         </>
                       ) : (
-                        /* ── Regular user dropdown ── */
+                        /* ── Regular user / Vendor dropdown ── */
                         <>
-                          <button onClick={() => { navigate("/dashboard"); setShowProfileMenu(false); }}
+                          <button onClick={() => {
+                            setShowProfileMenu(false);
+                            if (user?.serviceType) {
+                              const GIG_PRO = ["DJ","Anchor","Emcee/Host","Band","Singer","Musician","Performer","Stand-up Comedian","Magician","AV Setup","Choreographer"];
+                              const SVC_DEMO = ["Caterer","Decorator","Photographer"];
+                              navigate(GIG_PRO.includes(user.serviceType) ? "/vendor/demo-dashboard" : SVC_DEMO.includes(user.serviceType) ? "/vendor/service-demo" : "/vendor/dashboard");
+                            } else {
+                              navigate("/dashboard");
+                            }
+                          }}
                             style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#3B2F2F", cursor: "pointer", fontFamily: font }}
                             onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
                             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                          >Dashboard</button>
+                          >{user?.serviceType ? "Vendor Dashboard" : "Dashboard"}</button>
                         </>
                       )}
 
@@ -866,7 +875,17 @@ const Navbar = ({
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{user.name}</div>
                   {user.email && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</div>}
                 </div>
-                <button onClick={() => { navigate("/dashboard"); setMenuOpen(false); }}
+                <button onClick={() => {
+                  setMenuOpen(false);
+                  if (user?.isAdmin) { navigate("/AdminDashboard"); return; }
+                  if (user?.serviceType) {
+                    const GIG_PRO = ["DJ","Anchor","Emcee/Host","Band","Singer","Musician","Performer","Stand-up Comedian","Magician","AV Setup","Choreographer"];
+                    const SVC_DEMO = ["Caterer","Decorator","Photographer"];
+                    navigate(GIG_PRO.includes(user.serviceType) ? "/vendor/demo-dashboard" : SVC_DEMO.includes(user.serviceType) ? "/vendor/service-demo" : "/vendor/dashboard");
+                    return;
+                  }
+                  navigate("/dashboard");
+                }}
                   style={{ flexShrink: 0, padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.12)", color: "#CCAB4A", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
                   Dashboard
                 </button>

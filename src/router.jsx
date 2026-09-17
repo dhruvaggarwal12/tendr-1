@@ -258,16 +258,22 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />
   },
 
-  { 
-    path: "/AdminDashboard", 
+  {
+    path: "/AdminDashboard",
     element: <AdminDashboard />,
-    errorElement: <ErrorPage /> 
+    errorElement: <ErrorPage />
   },
-  { 
-    path: "/CorporateDashboard", 
-    element: <CorporateDashboard />, 
-    errorElement: <ErrorPage /> 
+  // lowercase alias so /admin/dashboard also works
+  { path: "/admin/dashboard", element: <Navigate to="/AdminDashboard" replace /> },
+  {
+    path: "/CorporateDashboard",
+    element: <CorporateDashboard />,
+    errorElement: <ErrorPage />
   },
+  // Corporate Login navigates to /corporate/dashboard — route it here
+  { path: "/corporate/dashboard", element: <CorporateDashboard />, errorElement: <ErrorPage /> },
+  // Friendly alias for corporate login (was /corporateEventPlanning)
+  { path: "/corporate/login", element: <CorporateLogin />, errorElement: <ErrorPage /> },
   {
     path: '/otp',
     element: <OtpVerification />,
@@ -304,11 +310,8 @@ const router = createBrowserRouter([
   //   errorElement: <ErrorPage />
   // },
 
-  { 
-    path: "/VendorRegistration", 
-    element: <VendorRegistration />, 
-    errorElement: <ErrorPage /> 
-  },
+  // Old PascalCase registration URL — redirect to the current onboarding flow
+  { path: "/VendorRegistration", element: <Navigate to="/vendor/register" replace /> },
   { 
     path: '/plan-event/form', 
     element: <EventPlanning />, 

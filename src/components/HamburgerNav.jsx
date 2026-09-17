@@ -414,7 +414,16 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 </div>
               </div>
               <div style={{ display: "flex", gap: 7 }}>
-                <button onClick={() => navigate("/dashboard")} style={{ flex: 1, padding: "6px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.1)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Dashboard</button>
+                <button onClick={() => {
+                  if (user?.isAdmin) { navigate("/AdminDashboard"); return; }
+                  if (user?.serviceType) {
+                    const GIG_PRO = ["DJ","Anchor","Emcee/Host","Band","Singer","Musician","Performer","Stand-up Comedian","Magician","AV Setup","Choreographer"];
+                    const SVC_DEMO = ["Caterer","Decorator","Photographer"];
+                    navigate(GIG_PRO.includes(user.serviceType) ? "/vendor/demo-dashboard" : SVC_DEMO.includes(user.serviceType) ? "/vendor/service-demo" : "/vendor/dashboard");
+                    return;
+                  }
+                  navigate("/dashboard");
+                }} style={{ flex: 1, padding: "6px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.1)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Dashboard</button>
               </div>
               {/* Review & Pay if vendors finalised */}
               {!isHomePage && finalisedCount > 0 && (
@@ -778,7 +787,16 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={() => { navigate("/dashboard"); close(); }}
+                    <button onClick={() => {
+                      if (user?.isAdmin) { navigate("/AdminDashboard"); close(); return; }
+                      if (user?.serviceType) {
+                        const GIG_PRO = ["DJ","Anchor","Emcee/Host","Band","Singer","Musician","Performer","Stand-up Comedian","Magician","AV Setup","Choreographer"];
+                        const SVC_DEMO = ["Caterer","Decorator","Photographer"];
+                        navigate(GIG_PRO.includes(user.serviceType) ? "/vendor/demo-dashboard" : SVC_DEMO.includes(user.serviceType) ? "/vendor/service-demo" : "/vendor/dashboard");
+                        close(); return;
+                      }
+                      navigate("/dashboard"); close();
+                    }}
                       style={{ flex: 1, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.12)", color: "#CCAB4A", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
                       Dashboard
                     </button>
