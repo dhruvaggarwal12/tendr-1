@@ -4474,12 +4474,33 @@ export default function VendorDashboard() {
                 style={{ width:'100%', padding:'9px 12px', borderRadius:9, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:12.5, color:ink, outline:'none', resize:'vertical', boxSizing:'border-box' }} />
             </div>
             <div style={{ display:'flex', gap:8 }}>
-              <a href={`https://wa.me/919999999999?text=${encodeURIComponent(`DISPUTE REQUEST\nVendor: ${vendorName}\nBooking: ${disputeModal.customerName||''} (${disputeModal._id||disputeModal.id||''})\nReason: ${disputeReason}\n\n${disputeText}`)}`}
-                target="_blank" rel="noopener noreferrer"
-                onClick={() => { showToast('Dispute sent via WhatsApp'); setDisputeModal(null); }}
-                style={{ flex:1, padding:'11px', borderRadius:10, border:'none', background:'#DC2626', color:'#fff', fontFamily:font, fontSize:13.5, fontWeight:700, textDecoration:'none', textAlign:'center', display:'block' }}>
+              <button
+                onClick={async () => {
+                  if (!disputeText.trim()) { showToast('Please describe the issue'); return; }
+                  try {
+                    const res = await fetch(`${BASE_URL}/vendor/disputes`, {
+                      method: 'POST',
+                      headers: authHeaders(token),
+                      body: JSON.stringify({
+                        bookingId: disputeModal._id || disputeModal.id || '',
+                        customerName: disputeModal.customerName || '',
+                        reason: disputeReason,
+                        details: disputeText,
+                      }),
+                    });
+                    if (res.ok) {
+                      showToast('Dispute submitted. Our team will contact you shortly.');
+                      setDisputeModal(null);
+                      setDisputeText('');
+                      setDisputeReason('Payment issue');
+                    } else {
+                      showToast('Failed to submit dispute. Please try again.');
+                    }
+                  } catch { showToast('Network error. Please try again.'); }
+                }}
+                style={{ flex:1, padding:'11px', borderRadius:10, border:'none', background:'#DC2626', color:'#fff', fontFamily:font, fontSize:13.5, fontWeight:700, cursor:'pointer' }}>
                 Send to Support
-              </a>
+              </button>
               <button onClick={() => setDisputeModal(null)} style={{ padding:'11px 18px', borderRadius:10, border:'1.5px solid rgba(196,122,46,0.2)', background:'transparent', color:'#9B7450', fontFamily:font, fontSize:13, fontWeight:600, cursor:'pointer' }}>Cancel</button>
             </div>
           </div>
