@@ -327,7 +327,7 @@ export function FunCartDrawer({ onClose }) {
     return sum + item.price * qty;
   }, 0);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!valid) return;
     cartItems.forEach(item => {
       const qty = item.perUnit ? (qtyMap[item.id] || 1) : 1;
@@ -335,6 +335,29 @@ export function FunCartDrawer({ onClose }) {
       dispatch(saveActivityForm({ id: item.id, form: { ...form, qty }, totalPrice }));
     });
     dispatch(setFunConfirmed(true));
+    try {
+      const BASE_URL = import.meta.env.VITE_BASE_URL;
+      await fetch(`${BASE_URL}/stationery/cart-orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'fun-activity',
+          customerName: form.name,
+          customerPhone: form.phone,
+          address: form.address,
+          eventDate: form.date,
+          items: cartItems.map(item => ({
+            name: item.name,
+            quantity: item.perUnit ? (qtyMap[item.id] || 1) : 1,
+            price: item.price,
+            unit: item.unitLabel || 'unit',
+            category: 'Fun Activity',
+          })),
+          details: { eventType: form.eventType, guests: form.guests, time: form.time, notes: form.notes },
+          totalEstimate: cartTotal,
+        }),
+      });
+    } catch { /* non-blocking */ }
     setStep(2);
   };
 

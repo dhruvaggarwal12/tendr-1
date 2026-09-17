@@ -307,6 +307,7 @@ const sidebar_arr = [
   { label: "🚀 Launch",            icon: <span style={{ fontSize: 16 }}>🚀</span>,  key: "Launch" },
   { label: "Coordinators",         icon: <span style={{ fontSize: 16 }}>🎯</span>,  key: "Coordinators" },
   { label: "People Hub",           icon: <span style={{ fontSize: 16 }}>👥</span>,  key: "PeopleHub" },
+  { label: "Cart Orders",          icon: <span style={{ fontSize: 16 }}>🛒</span>,  key: "CartOrders" },
 ];
 
 // Simple inline markdown renderer — handles *bold*, _italic_, line breaks, [img:...] images
@@ -463,6 +464,154 @@ function EventDayTab({ token, BASE_URL }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+const CART_TYPE_LABELS = { stationery: 'Stationery', 'puja-kit': 'Puja Kit', 'fun-activity': 'Fun Activity', invitation: 'Invitation' };
+const CART_STATUS_COLORS = { pending: '#e67e22', confirmed: '#2980b9', in_progress: '#8e44ad', completed: '#27ae60', cancelled: '#c0392b' };
+
+function CartOrdersTab({ token, BASE_URL }) {
+  const [orders, setOrders] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [filterType, setFilterType] = React.useState('all');
+  const [filterStatus, setFilterStatus] = React.useState('all');
+  const [expanded, setExpanded] = React.useState(null);
+  const [editing, setEditing] = React.useState({}); // { [id]: { status, adminNote } }
+  const [saving, setSaving] = React.useState({});
+
+  const fetchOrders = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (filterType !== 'all') params.set('type', filterType);
+      if (filterStatus !== 'all') params.set('status', filterStatus);
+      const res = await fetch(`${BASE_URL}/admin/cart-orders?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setOrders(data.orders || []);
+    } catch { setOrders([]); }
+    setLoading(false);
+  }, [BASE_URL, token, filterType, filterStatus]);
+
+  React.useEffect(() => { fetchOrders(); }, [fetchOrders]);
+
+  const handleSave = async (id) => {
+    const patch = editing[id];
+    if (!patch) return;
+    setSaving(s => ({ ...s, [id]: true }));
+    try {
+      await fetch(`${BASE_URL}/admin/cart-orders/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(patch),
+      });
+      await fetchOrders();
+      setEditing(e => { const n = { ...e }; delete n[id]; return n; });
+      setExpanded(null);
+    } catch {}
+    setSaving(s => ({ ...s, [id]: false }));
+  };
+
+  const fmt = (iso) => iso ? new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+
+  return (
+    <div style={{ fontFamily: 'inherit' }}>
+      <h2 style={{ fontSize: 22, fontWeight: 800, color: '#5C3D11', marginBottom: 16 }}>Cart Orders</h2>
+
+      {/* Filters */}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
+        <select value={filterType} onChange={e => setFilterType(e.target.value)}
+          style={{ padding: '7px 12px', borderRadius: 8, border: '1.5px solid #CCAB4A', background: '#fff', fontSize: 13, color: '#5C3D11' }}>
+          <option value="all">All Types</option>
+          {Object.entries(CART_TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+        </select>
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+          style={{ padding: '7px 12px', borderRadius: 8, border: '1.5px solid #CCAB4A', background: '#fff', fontSize: 13, color: '#5C3D11' }}>
+          <option value="all">All Statuses</option>
+          {['pending','confirmed','in_progress','completed','cancelled'].map(s => (
+            <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1).replace('_',' ')}</option>
+          ))}
+        </select>
+        <button onClick={fetchOrders}
+          style={{ padding: '7px 16px', borderRadius: 8, border: '1.5px solid #CCAB4A', background: '#CCAB4A', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+          Refresh
+        </button>
+      </div>
+
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: 40, color: '#9B7450' }}>Loading...</div>
+      ) : orders.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: 40, color: '#9B7450' }}>No cart orders found.</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {orders.map(order => {
+            const isExp = expanded === order._id;
+            const ed = editing[order._id] || {};
+            return (
+              <div key={order._id}
+                style={{ background: '#fff', border: '1.5px solid rgba(196,122,46,0.2)', borderRadius: 12, padding: '14px 16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+                  <div>
+                    <span style={{ fontWeight: 700, fontSize: 14, color: '#5C3D11', marginRight: 8 }}>
+                      {CART_TYPE_LABELS[order.type] || order.type}
+                    </span>
+                    <span style={{ fontSize: 12, background: CART_STATUS_COLORS[order.status] || '#888', color: '#fff', borderRadius: 6, padding: '2px 8px', fontWeight: 600 }}>
+                      {(order.status || 'pending').replace('_', ' ')}
+                    </span>
+                  </div>
+                  <span style={{ fontSize: 12, color: '#9B7450' }}>{fmt(order.createdAt)}</span>
+                </div>
+                <div style={{ fontSize: 13, color: '#7A5535', marginTop: 6 }}>
+                  <strong>{order.customerName}</strong> · {order.customerPhone}
+                  {order.eventDate && <span style={{ marginLeft: 8 }}>📅 {order.eventDate}</span>}
+                  {order.totalEstimate > 0 && <span style={{ marginLeft: 8, fontWeight: 700, color: '#C47A2E' }}>₹{order.totalEstimate.toLocaleString('en-IN')}</span>}
+                </div>
+                <button onClick={() => setExpanded(isExp ? null : order._id)}
+                  style={{ marginTop: 8, fontSize: 12, color: '#C47A2E', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, padding: 0 }}>
+                  {isExp ? '▲ Less' : '▼ Details'}
+                </button>
+
+                {isExp && (
+                  <div style={{ marginTop: 10, borderTop: '1px solid rgba(196,122,46,0.15)', paddingTop: 10 }}>
+                    {/* Items */}
+                    {order.items && order.items.length > 0 && (
+                      <div style={{ marginBottom: 10 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#5C3D11', marginBottom: 4 }}>Items</div>
+                        {order.items.map((it, i) => (
+                          <div key={i} style={{ fontSize: 12, color: '#7A5535', display: 'flex', justifyContent: 'space-between' }}>
+                            <span>{it.name} × {it.quantity} {it.unit}</span>
+                            {it.price > 0 && <span>₹{(it.price * it.quantity).toLocaleString('en-IN')}</span>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {order.address && <div style={{ fontSize: 12, color: '#7A5535', marginBottom: 6 }}>📍 {order.address}</div>}
+                    {/* Admin controls */}
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
+                      <select value={ed.status || order.status}
+                        onChange={e => setEditing(prev => ({ ...prev, [order._id]: { ...ed, status: e.target.value } }))}
+                        style={{ padding: '5px 8px', borderRadius: 6, border: '1.5px solid #CCAB4A', fontSize: 12 }}>
+                        {['pending','confirmed','in_progress','completed','cancelled'].map(s => (
+                          <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1).replace('_',' ')}</option>
+                        ))}
+                      </select>
+                      <input placeholder="Admin note..." value={ed.adminNote !== undefined ? ed.adminNote : (order.adminNote || '')}
+                        onChange={e => setEditing(prev => ({ ...prev, [order._id]: { ...ed, adminNote: e.target.value } }))}
+                        style={{ flex: 1, minWidth: 120, padding: '5px 8px', borderRadius: 6, border: '1.5px solid rgba(196,122,46,0.3)', fontSize: 12 }} />
+                      <button onClick={() => handleSave(order._id)} disabled={saving[order._id]}
+                        style={{ padding: '5px 14px', borderRadius: 6, background: '#CCAB4A', color: '#fff', border: 'none', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                        {saving[order._id] ? 'Saving…' : 'Save'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -5901,6 +6050,13 @@ const AdminDashboard = () => {
         {activeDropdown === "stationery" && (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] overflow-y-auto">
             <StationeryAdminTab />
+          </div>
+        )}
+
+        {/* ── Cart Orders ── */}
+        {activeDropdown === "cartorders" && (
+          <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 py-4 overflow-y-auto">
+            <CartOrdersTab token={token} BASE_URL={BASE_URL} />
           </div>
         )}
 

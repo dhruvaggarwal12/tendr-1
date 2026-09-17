@@ -58,17 +58,26 @@ const CustomTemplateRequest = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
-      // In a real application, this would send the data to your backend
-      console.log('Custom Template Request:', formData);
-      
-      // Show success message and redirect
-      alert('Thank you for your request! We will get back to you with your choice of templates within 24-48 hours.');
-      navigate(`/invitation/templates/${eventType}`);
-    }, 2000);
+    try {
+      const BASE_URL = import.meta.env.VITE_BASE_URL;
+      await fetch(`${BASE_URL}/stationery/cart-orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'invitation',
+          customerName: formData.clientName,
+          customerPhone: formData.phone,
+          address: formData.eventLocation || '',
+          eventDate: formData.eventDate || '',
+          items: [{ name: `${currentEvent?.name || eventType} Invitation`, quantity: 1, unit: 'design', category: 'Invitation' }],
+          details: { ...formData, eventType },
+          totalEstimate: 0,
+        }),
+      });
+    } catch { /* non-blocking */ }
+    setIsSubmitting(false);
+    alert('Thank you for your request! We will get back to you with your choice of templates within 24-48 hours.');
+    navigate(`/invitation/templates/${eventType}`);
   };
 
   if (!currentEvent) {

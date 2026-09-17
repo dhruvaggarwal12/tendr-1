@@ -3,6 +3,8 @@ import { useDispatch } from "react-redux";
 import { useStationeryCart } from "../context/StationeryCartContext";
 import { setStBooking } from "../redux/stationeryBookingSlice";
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 const font = "'Outfit', sans-serif";
 const WA_NUMBER = "919211668427";
 const GOLD = "#C47A2E";
@@ -86,7 +88,7 @@ export default function GlobalStationeryCartDrawer() {
   }, 0);
   const hasUnpriced = cart.some((c) => c.item.priceOnRequest);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setErr("");
     if (!form.name.trim())    { setErr("Name is required"); return; }
     if (!form.phone.trim())   { setErr("Phone number is required"); return; }
@@ -95,6 +97,30 @@ export default function GlobalStationeryCartDrawer() {
 
     const cartSnapshot = cart.map(({ item, quantity }) => ({ item, quantity }));
     dispatch(setStBooking({ form: { ...form }, cartSnapshot }));
+
+    // Save to backend so admin can see the order
+    try {
+      await fetch(`${BASE_URL}/stationery/cart-orders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "stationery",
+          customerName:  form.name,
+          customerPhone: form.phone,
+          address:       form.address,
+          eventDate:     form.date,
+          items: cart.map(({ item, quantity }) => ({
+            name:     item.name,
+            quantity,
+            price:    item.startingPrice || 0,
+            unit:     item.unit || "pcs",
+            category: item.category || "",
+          })),
+          totalEstimate: pricedTotal,
+        }),
+      });
+    } catch { /* non-blocking — order still saved locally */ }
+
     clearCart();
     closeCart();
     setStep(2);

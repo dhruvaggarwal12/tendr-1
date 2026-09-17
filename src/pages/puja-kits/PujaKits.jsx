@@ -919,8 +919,25 @@ export default function PujaKits() {
                 kitId={kitType}
                 addons={addons}
                 onBack={() => { setStep(3); scrollTop(); }}
-                onOrder={() => {
-                  window.open(`https://wa.me/919211668427?text=Hi! I'd like to order a Tendr Puja Kit:%0A%0APuja: ${selectedPuja.name}%0AKit: ${KIT_TYPES.find(k => k.id === kitType)?.name}%0AGuests: ${details.guests}%0ADate: ${details.date}%0ACity: ${details.city}${addons.length ? `%0AAdd-ons: ${addons.join(", ")}` : ""}`, "_blank");
+                onOrder={async () => {
+                  const kitName = KIT_TYPES.find(k => k.id === kitType)?.name || kitType || '';
+                  // Save to backend
+                  try {
+                    const BASE_URL = import.meta.env.VITE_BASE_URL;
+                    await fetch(`${BASE_URL}/stationery/cart-orders`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        type: 'puja-kit',
+                        customerName:  details.name || 'Customer',
+                        customerPhone: details.phone || '',
+                        address:       details.city  || '',
+                        eventDate:     details.date  || '',
+                        items: [{ name: `${selectedPuja.name} — ${kitName}`, quantity: 1, unit: 'kit', category: 'Puja Kit' }],
+                        details: { puja: selectedPuja.name, kit: kitName, guests: details.guests, city: details.city, addons },
+                      }),
+                    });
+                  } catch { /* non-blocking */ }
                   setOrdered(true);
                 }}
               />
