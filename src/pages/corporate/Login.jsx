@@ -4,6 +4,8 @@ import loginbackground from "../../assets/backgrounds/login-bg.png";
 import logo from "../../assets/logos/tendr-logo-secondary.png";
 import Footer from "../../components/Footer";
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 const CorporateLogin = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -54,31 +56,26 @@ const CorporateLogin = () => {
     setError("");
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Check if corporate data exists in localStorage
-      const corporateData = localStorage.getItem("corporatePlan");
-      if (corporateData) {
-        const parsedData = JSON.parse(corporateData);
-        if (parsedData.email === formData.email) {
-          // Store login state
-          localStorage.setItem("corporateLogin", JSON.stringify({
-            ...formData,
-            loginTime: new Date().toISOString()
-          }));
-          
-          // Navigate to corporate dashboard
-          navigate("/corporate/dashboard");
-        } else {
-          setError("Invalid email or password");
-        }
-      } else {
-        setError("No corporate account found. Please sign up first.");
+      const res = await fetch(`${BASE_URL}/auth/corporate/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email, password: formData.password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Invalid email or password.");
+        return;
       }
-    } catch (error) {
-      setError("Login failed. Please try again.");
-      console.error("Login error:", error);
+
+      localStorage.setItem("corporate_token", data.token);
+      localStorage.setItem("corporate_consumer", JSON.stringify(data.consumer));
+
+      navigate("/corporate/dashboard");
+    } catch (err) {
+      setError("Network error. Please check your connection and try again.");
+      console.error("Login error:", err);
     } finally {
       setLoading(false);
     }

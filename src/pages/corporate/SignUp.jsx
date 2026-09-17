@@ -4,6 +4,16 @@ import logo from "../../assets/logos/tendr-logo-secondary.png";
 // import TendrPremiumBanner from "../../components/TendrPremiumBanner";
 import PricingPlans from "../../components/PricingPlans";
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+const TEAM_SIZE_TO_COMPANY_SIZE = {
+  "1-10": "SMALL",
+  "11-50": "MEDIUM",
+  "51-100": "MEDIUM",
+  "101-500": "LARGE",
+  "500+": "ENTERPRISE",
+};
+
 export default function CorporateSignup() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -57,6 +67,8 @@ export default function CorporateSignup() {
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [submitted, setSubmitted] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -96,38 +108,96 @@ export default function CorporateSignup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+    setSubmitError("");
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const coupon = selectedPlan?.isPaid
-        ? `TENDR-CORP-${Math.floor(1000 + Math.random() * 9000)}`
-        : null;
-      
-      localStorage.setItem("corporatePlan", JSON.stringify({ 
-        ...formData, 
-        plan: selectedPlan?.title, 
-        planId: selectedPlan?.id,
-        coupon,
-        signupDate: new Date().toISOString()
+      const payload = {
+        email: formData.email,
+        password: formData.password,
+        companyName: formData.companyName,
+        gstNumber: formData.gstNumber,
+        companySize: TEAM_SIZE_TO_COMPANY_SIZE[formData.teamSize] || "SMALL",
+        contactPerson: {
+          name: formData.personName,
+          phone: formData.phone,
+          designation: formData.designation,
+        },
+      };
+
+      const res = await fetch(`${BASE_URL}/auth/corporate/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setSubmitError(data.message || "Registration failed. Please try again.");
+        return;
+      }
+
+      // Store extra fields not in the backend schema in localStorage
+      localStorage.setItem("corporatePlan", JSON.stringify({
+        plan: formData.plan,
+        industry: formData.industry,
+        annualEvents: formData.annualEvents,
+        location: formData.location,
+        gstRegistrationType: formData.gstRegistrationType,
+        signupDate: new Date().toISOString(),
       }));
-      
-      navigate("/otp", { state: { plan: selectedPlan, formData } });
-    } catch (error) {
-      console.error("Signup error:", error);
+
+      // Store JWT for subsequent login
+      if (data.token) {
+        localStorage.setItem("corporate_token", data.token);
+        localStorage.setItem("corporate_consumer", JSON.stringify(data.consumer));
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      console.error("Signup error:", err);
+      setSubmitError("Network error. Please check your connection and try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (submitted) {
+    return (
+      <div className="w-screen min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: '#FFF8DC' }}>
+        <div className="bg-white p-10 rounded-2xl shadow-xl w-full max-w-md border border-gray-100 text-center">
+          <img src={logo} alt="tendr logo" className="w-36 h-auto mx-auto mb-6" />
+          <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-3">Request Received!</h2>
+          <p className="text-gray-600 mb-2">
+            Thank you for signing up with Tendr Corporate.
+          </p>
+          <p className="text-gray-500 text-sm mb-6">
+            Our team will verify your details and reach out within 1–2 business days to get you set up.
+          </p>
+          <button
+            onClick={() => navigate("/corporate/login")}
+            className="bg-gradient-to-r from-amber-500 to-yellow-600 text-white font-semibold rounded-xl px-8 py-3 hover:from-amber-600 hover:to-yellow-700 transition-all"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="w-screen min-h-screen flex flex-col bg-cover bg-center relative"
-      style={{ 
+      style={{
         backgroundColor: '#FFF8DC'
       }}
     >
@@ -213,6 +283,11 @@ export default function CorporateSignup() {
 
             {/* Right Column - Signup Form */}
             <div>
+              {submitError && (
+                <div className="text-red-500 text-sm bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
+                  {submitError}
+                </div>
+              )}
               <form onSubmit={handleSubmit} className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -515,7 +590,7 @@ export default function CorporateSignup() {
                         : 'bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 hover:scale-[1.02]'
                     }`}
                   >
-                    {isSubmitting ? 'Processing...' : 'Proceed to OTP'}
+                    {isSubmitting ? 'Submitting...' : 'Submit Registration'}
                   </button>
                 </div>
               </form>
