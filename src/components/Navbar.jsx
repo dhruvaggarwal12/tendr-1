@@ -674,22 +674,46 @@ const Navbar = ({
                           </div>
                         </>
                       ) : (
-                        /* ── Regular user / Vendor dropdown ── */
+                        /* ── Regular user / Vendor / Coordinator dropdown ── */
                         <>
-                          <button onClick={() => {
-                            setShowProfileMenu(false);
-                            if (user?.serviceType) {
-                              const GIG_PRO = ["DJ","Anchor","Emcee/Host","Band","Singer","Musician","Performer","Stand-up Comedian","Magician","AV Setup","Choreographer"];
-                              const SVC_DEMO = ["Caterer","Decorator","Photographer"];
-                              navigate(GIG_PRO.includes(user.serviceType) ? "/vendor/demo-dashboard" : SVC_DEMO.includes(user.serviceType) ? "/vendor/service-demo" : "/vendor/dashboard");
-                            } else {
-                              navigate("/dashboard");
-                            }
-                          }}
-                            style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#3B2F2F", cursor: "pointer", fontFamily: font }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
-                            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                          >{user?.serviceType ? "Vendor Dashboard" : "Dashboard"}</button>
+                          {user?.role === "coordinator" ? (
+                            <>
+                              <button onClick={() => { navigate("/coordinator/dashboard"); setShowProfileMenu(false); }}
+                                style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 600, color: "#C47A2E", cursor: "pointer", fontFamily: font }}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.08)")}
+                                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                              >Professional Dashboard</button>
+                              <button onClick={() => { navigate("/"); setShowProfileMenu(false); }}
+                                style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#3B2F2F", cursor: "pointer", fontFamily: font }}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
+                                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                              >Normal Dashboard</button>
+                            </>
+                          ) : user?.serviceType || user?.role === "vendor" ? (
+                            <>
+                              <button onClick={() => {
+                                setShowProfileMenu(false);
+                                const GIG_PRO = ["DJ","Anchor","Emcee/Host","Band","Singer","Musician","Performer","Stand-up Comedian","Magician","AV Setup","Choreographer"];
+                                const SVC_DEMO = ["Caterer","Decorator","Photographer"];
+                                navigate(GIG_PRO.includes(user.serviceType) ? "/vendor/demo-dashboard" : SVC_DEMO.includes(user.serviceType) ? "/vendor/service-demo" : "/vendor/dashboard");
+                              }}
+                                style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 600, color: "#C47A2E", cursor: "pointer", fontFamily: font }}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.08)")}
+                                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                              >Professional Dashboard</button>
+                              <button onClick={() => { navigate("/"); setShowProfileMenu(false); }}
+                                style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#3B2F2F", cursor: "pointer", fontFamily: font }}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
+                                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                              >Normal Dashboard</button>
+                            </>
+                          ) : (
+                            <button onClick={() => { navigate("/dashboard"); setShowProfileMenu(false); }}
+                              style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#3B2F2F", cursor: "pointer", fontFamily: font }}
+                              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
+                              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                            >Dashboard</button>
+                          )}
                         </>
                       )}
 
@@ -878,7 +902,8 @@ const Navbar = ({
                 <button onClick={() => {
                   setMenuOpen(false);
                   if (user?.isAdmin) { navigate("/AdminDashboard"); return; }
-                  if (user?.serviceType) {
+                  if (user?.role === "coordinator") { navigate("/coordinator/dashboard"); return; }
+                  if (user?.serviceType || user?.role === "vendor") {
                     const GIG_PRO = ["DJ","Anchor","Emcee/Host","Band","Singer","Musician","Performer","Stand-up Comedian","Magician","AV Setup","Choreographer"];
                     const SVC_DEMO = ["Caterer","Decorator","Photographer"];
                     navigate(GIG_PRO.includes(user.serviceType) ? "/vendor/demo-dashboard" : SVC_DEMO.includes(user.serviceType) ? "/vendor/service-demo" : "/vendor/dashboard");
@@ -887,7 +912,7 @@ const Navbar = ({
                   navigate("/dashboard");
                 }}
                   style={{ flexShrink: 0, padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.12)", color: "#CCAB4A", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                  Dashboard
+                  {user?.role === "coordinator" || user?.serviceType || user?.role === "vendor" ? "Pro Dashboard" : "Dashboard"}
                 </button>
               </div>
             ) : (

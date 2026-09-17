@@ -64,7 +64,7 @@ const Auth = () => {
   const [formData, setFormData] = useState({ name: "", email: "", password: "", phoneNumber: "", location: "", companyName: "", gstNumber: "", businessName: "", serviceType: "" });
   const [accountType, setAccountType] = useState("personal");
   const [signupStep, setSignupStep] = useState("role"); // "role" | "form"
-  const [loginType, setLoginType] = useState("personal"); // "personal" | "corporate"
+  const [loginType, setLoginType] = useState("customer"); // "customer" | "vendor" | "coordinator"
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState("");
@@ -120,7 +120,7 @@ const Auth = () => {
     setShowPassword(false);
     setSignupStep("role");
     setLocalError("");
-    setLoginType("personal");
+    setLoginType("customer");
   };
 
   const handleChange = (e) => {
@@ -211,7 +211,41 @@ const Auth = () => {
     if (formData.password.length < 8) { setPasswordError("Minimum 8 characters"); return; }
     setLocalLoading(true);
     setLocalError("");
+    const BASE_URL_LOGIN = import.meta.env.VITE_BASE_URL;
     try {
+      if (loginType === "vendor") {
+        const res = await fetch(`${BASE_URL_LOGIN}/auth/vlogin`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phoneNumber: formData.phoneNumber, password: formData.password }),
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setLocalError(data.error || "Login failed. Check your credentials.");
+          return;
+        }
+        dispatch({ type: "auth/login/fulfilled", payload: { consumer: { ...data.vendor, role: "vendor" }, token: data.token } });
+        navigate("/vendor/dashboard");
+        return;
+      }
+      if (loginType === "coordinator") {
+        const res = await fetch(`${BASE_URL_LOGIN}/coordinators/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phoneNumber: formData.phoneNumber, password: formData.password }),
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setLocalError(data.error || "Login failed. Check your credentials.");
+          return;
+        }
+        dispatch({ type: "auth/login/fulfilled", payload: { consumer: { ...data.coordinator, role: "coordinator" }, token: data.token } });
+        navigate("/coordinator/dashboard");
+        return;
+      }
+      // customer login
       const result = await dispatch(login({
         phoneNumber: formData.phoneNumber,
         password: formData.password,
@@ -220,7 +254,6 @@ const Auth = () => {
         const loggedUser = result.payload?.consumer;
         const token = result.payload?.token;
         if (token) { dispatch(fetchEventData(token)); syncProgressOnLogin(token); }
-        // Extend discovery session TTL to event date on login
         try {
           const raw = JSON.parse(localStorage.getItem("tendr:session:discovery") || "null");
           if (raw?.date) {
@@ -454,6 +487,16 @@ const Auth = () => {
                   label: "Vendor / Service Provider",
                   sub: "DJ, photographer, caterer, decorator, or other event professional",
                 },
+                {
+                  value: "coordinator",
+                  icon: (
+                    <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+                    </svg>
+                  ),
+                  label: "Event Coordinator",
+                  sub: "Manage bookings, leads, and events as a professional coordinator",
+                },
               ].map(({ value, icon, label, sub }) => {
                 const active = accountType === value;
                 return (
@@ -496,6 +539,7 @@ const Auth = () => {
               <button
                 type="button"
                 onClick={() => {
+                  if (accountType === "coordinator") { navigate("/coordinator/register"); return; }
                   if (accountType === "company") { navigate("/corporate-signup"); return; }
                   setSignupStep("form");
                 }}
@@ -507,7 +551,7 @@ const Auth = () => {
                   boxShadow: "0 4px 14px rgba(196,122,46,0.35)", transition: "all 0.2s",
                 }}
               >
-                Continue as {accountType === "vendor" ? "Vendor" : accountType === "company" ? "Corporate" : "Personal"} →
+                Continue as {accountType === "coordinator" ? "Coordinator" : accountType === "vendor" ? "Vendor" : accountType === "company" ? "Corporate" : "Personal"} →
               </button>
             </div>
           ) : isSignup ? (
@@ -516,7 +560,7 @@ const Auth = () => {
               {/* Role pill + back */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 12px", background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 10 }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E" }}>
-                  {accountType === "vendor" ? "🎤 Vendor account" : accountType === "company" ? "🏢 Professional / Corporate" : "👤 Personal account"}
+                  {accountType === "coordinator" ? "🗓 Event Coordinator" : accountType === "vendor" ? "🎤 Vendor account" : accountType === "company" ? "🏢 Professional / Corporate" : "👤 Personal account"}
                 </span>
                 <button type="button" onClick={() => setSignupStep("role")} style={{ background: "none", border: "none", fontSize: 12, color: "#9B7450", cursor: "pointer", fontFamily: font, fontWeight: 600, padding: 0 }}>
                   Change
@@ -661,55 +705,37 @@ const Auth = () => {
             </form>
           ) : (
             <>
-            {/* ── Login type selector ── */}
-            <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-              {["personal", "corporate"].map(type => (
+            {/* ── Login role selector ── */}
+            <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
+              {[
+                { type: "customer", label: "Plan Event" },
+                { type: "vendor",   label: "Vendor" },
+                { type: "coordinator", label: "Coordinator" },
+              ].map(({ type, label }) => (
                 <button
                   key={type}
                   type="button"
                   onClick={() => setLoginType(type)}
                   style={{
-                    flex: 1, padding: "10px 0", borderRadius: 10, cursor: "pointer", fontFamily: font,
-                    fontSize: 13, fontWeight: 700, transition: "all 0.15s",
+                    flex: 1, padding: "9px 4px", borderRadius: 10, cursor: "pointer", fontFamily: font,
+                    fontSize: 12.5, fontWeight: 700, transition: "all 0.15s",
                     border: loginType === type ? "2px solid #C47A2E" : "1.5px solid rgba(139,69,19,0.18)",
                     background: loginType === type ? "rgba(196,122,46,0.07)" : "#fff",
                     color: loginType === type ? "#C47A2E" : "#9B7450",
                   }}
                 >
-                  {type === "personal" ? "Personal" : "Corporate"}
+                  {label}
                 </button>
               ))}
             </div>
+            <div style={{ textAlign: "center", marginBottom: 18, fontSize: 12, color: "#9B7450", fontFamily: font }}>
+              Corporate account?{" "}
+              <button type="button" onClick={() => navigate("/corporate/login")}
+                style={{ background: "none", border: "none", color: "#C47A2E", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: font, textDecoration: "underline" }}>
+                Login here →
+              </button>
+            </div>
 
-            {loginType === "corporate" ? (
-              <div style={{ textAlign: "center", padding: "12px 0 4px" }}>
-                <p style={{ fontSize: 13.5, color: "#7A5535", marginBottom: 20, lineHeight: 1.55, fontFamily: font }}>
-                  Corporate accounts have a dedicated login portal with email-based authentication.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => navigate("/corporate/login")}
-                  style={{
-                    width: "100%", padding: "13px", background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",
-                    color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: font,
-                    border: "none", borderRadius: 12, cursor: "pointer",
-                    boxShadow: "0 4px 14px rgba(196,122,46,0.35)",
-                  }}
-                >
-                  Go to Corporate Login →
-                </button>
-                <p style={{ marginTop: 14, fontSize: 12.5, color: "#9B7450", fontFamily: font }}>
-                  Don't have an account?{" "}
-                  <button
-                    type="button"
-                    onClick={() => navigate("/corporate-signup")}
-                    style={{ background: "none", border: "none", color: "#C47A2E", fontWeight: 700, fontSize: 12.5, cursor: "pointer", fontFamily: font, textDecoration: "underline" }}
-                  >
-                    Register your company
-                  </button>
-                </p>
-              </div>
-            ) : (
             <form onSubmit={handleLoginSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
               <div>
                 <label style={labelStyle}>Phone Number</label>
@@ -758,12 +784,11 @@ const Auth = () => {
                 {isBusy ? "Signing in..." : "Sign In"}
               </button>
             </form>
-            )}
             </>
           )}
 
-          {/* Google Sign-In — personal only; hidden for vendor/company signup and corporate login */}
-          {!(isSignup && signupStep === "form" && accountType !== "personal") && !(!isSignup && loginType === "corporate") && (
+          {/* Google Sign-In — customer only; hidden for vendor/coordinator login and non-personal signup */}
+          {!(isSignup && signupStep === "form" && accountType !== "personal") && !(!isSignup && loginType !== "customer") && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0 4px" }}>
                 <div style={{ flex: 1, height: 1, background: "rgba(139,69,19,0.15)" }} />
