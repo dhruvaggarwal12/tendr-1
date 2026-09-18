@@ -21,6 +21,12 @@ const ARTIST_TYPES = [
   { value: "Stand-up Comedian",label: "Stand-up Comedian",sub: "Corporate & private shows",                               icon: _s(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>) },
   { value: "Magician",         label: "Magician",         sub: "Close-up & stage magic",                                  icon: _s(<><path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/><path d="M17.8 11.8L19 13"/><path d="M15 9h.01"/><path d="M17.8 6.2L19 5"/><path d="M3 21l9-9"/><path d="M12.2 6.2L11 5"/></>) },
   { value: "AV Setup",         label: "AV Setup",         sub: "Projector, LED wall, live streaming",                     icon: _s(<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>) },
+  { value: "Choreographer",   label: "Choreographer",    sub: "Sangeet, wedding & group choreography",                   icon: _s(<><path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"/><path d="M7 22l3-8-2-3 4-4 4 4-2 3 3 8"/></>) },
+  { value: "Makeup Artist",   label: "Makeup Artist",    sub: "Bridal, party, editorial looks",                          icon: _s(<><path d="M2 22l10-10"/><path d="M17 17l4-4a3 3 0 0 0-4-4L7 15a5 5 0 0 0 7 7z"/></>) },
+  { value: "Mehendi Artist",  label: "Mehendi Artist",   sub: "Bridal, bridesmaid & guest mehendi",                      icon: _s(<><path d="M12 22s-6-3-6-9V6l6-3 6 3v7c0 6-6 9-6 9z"/></>) },
+  { value: "Hair Stylist",    label: "Hair Stylist",     sub: "Bridal updo, extensions, styling",                        icon: _s(<><circle cx="6" cy="6" r="3"/><path d="M8.12 8.12L12 12"/><path d="M20 4l-8.12 8.12"/><circle cx="20" cy="4" r="2"/><path d="M14.8 14.8L20 20"/></>) },
+  { value: "Cake Artist",     label: "Cake Artist",      sub: "Custom cakes, wedding & fondant",                         icon: _s(<><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 1.5-2 3-2 2.5 2 4 2 2-1 2-1"/><path d="M2 21h20"/><path d="M7 8v3"/><path d="M12 8v3"/><path d="M17 8v3"/><path d="M7 4h.01"/><path d="M12 4h.01"/><path d="M17 4h.01"/></>) },
+  { value: "Bartender",       label: "Bartender",        sub: "Cocktails, mocktails, bar setup",                         icon: _s(<><path d="M8 22h8"/><path d="M12 11v11"/><path d="m19 3-7 8-7-8z"/></>) },
 ];
 
 const VENDOR_TYPES = [
@@ -28,8 +34,10 @@ const VENDOR_TYPES = [
   { value: "Caterer",          label: "Caterer",          sub: "Food service, live counters, buffet", icon: _s(<><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></>) },
   { value: "Photographer",     label: "Photographer",     sub: "Candid, traditional, pre-wedding",   icon: _s(<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></>) },
   { value: "Videographer",     label: "Videographer",     sub: "Cinematic, reels, drone coverage",   icon: _s(<><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></>) },
-  { value: "Makeup Artist",    label: "Makeup Artist",    sub: "Bridal, party, editorial looks",     icon: _s(<><path d="M2 22l10-10"/><path d="M17 17l4-4a3 3 0 0 0-4-4L7 15a5 5 0 0 0 7 7z"/></>) },
-  { value: "Tent & Furniture", label: "Tent & Furniture", sub: "Shamiyana, chairs, stage, tables",   icon: _s(<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>) },
+  { value: "Food Truck",       label: "Food Truck",       sub: "Live counters, chaat, dosa, pizza",  icon: _s(<><path d="M14 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3"/><path d="M18 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M10 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M14 5h4l3 4.5V17h-7V5z"/></>) },
+  { value: "Wedding Planner",  label: "Wedding Planner",  sub: "Full planning, day coordination",    icon: _s(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></>) },
+  { value: "Live Streaming",   label: "Live Streaming",   sub: "YouTube, Zoom, multi-camera events", icon: _s(<><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></>) },
+  { value: "Photo Booth",      label: "Photo Booth",      sub: "360, open-air, prints & GIF booths", icon: _s(<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><line x1="12" y1="9" x2="12.01" y2="9"/><circle cx="12" cy="15" r="3"/></>) },
   { value: "Gift & Favours",   label: "Gift & Favours",   sub: "Return gifts, hampers, packaging",   icon: _s(<><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></>) },
   { value: "Transportation",   label: "Transportation",   sub: "Wedding cars, buses, logistics",     icon: _s(<><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></>) },
   { value: "Security",         label: "Security",         sub: "Event security & crowd management",  icon: _s(<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>) },
@@ -581,13 +589,13 @@ export default function VendorRegistration() {
       {
         key: "artist",
         title: "Individual Artist",
-        sub: "DJ · Anchor · Singer · Band · Musician · Solo Performer · Comedian · Magician",
+        sub: "DJ · Singer · Choreographer · Makeup Artist · Mehendi · Cake Artist · Bartender · and more",
         icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
       },
       {
         key: "vendor",
         title: "Business / Vendor",
-        sub: "Decorator · Caterer · Photographer · Videographer · Makeup · Tent · Gifts · Transport",
+        sub: "Decorator · Caterer · Photographer · Videographer · Wedding Planner · Photo Booth · Transport · and more",
         icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
       },
       {

@@ -58,9 +58,38 @@ export default function VendorProfile() {
     setupType: "", lightsIncluded: "",
   });
   const [svcForm, setSvcForm] = useState({
+    // Photographer
     photoServices: "", photographyType: [], hoursIncluded: "", editingTime: "",
+    // Caterer
     cuisineTypes: [], cateringServiceType: [], menuType: [], beverage: "",
+    // Decorator
     decorTypes: [], venueCoverage: [],
+    // Makeup Artist
+    makeupSpecialisations: [], makeupBrands: [], makeupAudience: [], makeupTrialAvailable: "",
+    // Mehendi Artist
+    mehendiStyles: [], mehendiCoverage: [], mehendiConeType: "", mehendiGroupBooking: "",
+    // Hair Stylist
+    hairServices: [], hairTypes: [], hairTravelAvailable: "",
+    // Cake Artist
+    cakeStyles: [], cakeFlavours: [], cakeMinOrder: "", cakeLeadTime: "",
+    // Bartender
+    bartenderServices: [], bartenderBarEquipment: "", bartenderEventTypes: [], bartenderCertified: "",
+    // Videographer
+    videoStyle: [], videoPackages: [], videoDroneAvailable: "", videoDeliveryDays: "",
+    // Food Truck
+    foodCounterTypes: [], foodMinPax: "", foodSpaceNeeded: "", foodPowerNeeded: "",
+    // Wedding Planner
+    plannerServices: [], plannerBudgetRange: [], plannerEventTypes: [],
+    // Live Streaming
+    streamPlatforms: [], streamCameraCount: "", streamResolution: "", streamBackupInternet: "",
+    // Photo Booth
+    boothTypes: [], boothPrints: "", boothBrandedOverlay: "", boothPropBox: "",
+    // Gift & Favours
+    giftOccasions: [], giftCustomisation: [], giftMinOrder: "", giftDelivery: "",
+    // Transportation
+    transportVehicles: [], transportDecoration: "", transportServiceArea: [],
+    // Security
+    securityServices: [], securityTeamSize: "", securityCertified: "", securityArmed: "",
   });
   const [locations, setLocations] = useState([]);
   const [locInput, setLocInput]   = useState("");
@@ -109,6 +138,55 @@ export default function VendorProfile() {
           beverage:             v.beverage || "",
           decorTypes:           v.decorTypes || [],
           venueCoverage:        v.venueCoverage || [],
+          makeupSpecialisations: v.makeupSpecialisations || [],
+          makeupBrands:         v.makeupBrands || [],
+          makeupAudience:       v.makeupAudience || [],
+          makeupTrialAvailable: v.makeupTrialAvailable || "",
+          mehendiStyles:        v.mehendiStyles || [],
+          mehendiCoverage:      v.mehendiCoverage || [],
+          mehendiConeType:      v.mehendiConeType || "",
+          mehendiGroupBooking:  v.mehendiGroupBooking || "",
+          hairServices:         v.hairServices || [],
+          hairTypes:            v.hairTypes || [],
+          hairTravelAvailable:  v.hairTravelAvailable || "",
+          cakeStyles:           v.cakeStyles || [],
+          cakeFlavours:         v.cakeFlavours || [],
+          cakeMinOrder:         v.cakeMinOrder || "",
+          cakeLeadTime:         v.cakeLeadTime || "",
+          bartenderServices:    v.bartenderServices || [],
+          bartenderBarEquipment:v.bartenderBarEquipment || "",
+          bartenderEventTypes:  v.bartenderEventTypes || [],
+          bartenderCertified:   v.bartenderCertified || "",
+          videoStyle:           v.videoStyle || [],
+          videoPackages:        v.videoPackages || [],
+          videoDroneAvailable:  v.videoDroneAvailable || "",
+          videoDeliveryDays:    v.videoDeliveryDays || "",
+          foodCounterTypes:     v.foodCounterTypes || [],
+          foodMinPax:           v.foodMinPax || "",
+          foodSpaceNeeded:      v.foodSpaceNeeded || "",
+          foodPowerNeeded:      v.foodPowerNeeded || "",
+          plannerServices:      v.plannerServices || [],
+          plannerBudgetRange:   v.plannerBudgetRange || [],
+          plannerEventTypes:    v.plannerEventTypes || [],
+          streamPlatforms:      v.streamPlatforms || [],
+          streamCameraCount:    v.streamCameraCount || "",
+          streamResolution:     v.streamResolution || "",
+          streamBackupInternet: v.streamBackupInternet || "",
+          boothTypes:           v.boothTypes || [],
+          boothPrints:          v.boothPrints || "",
+          boothBrandedOverlay:  v.boothBrandedOverlay || "",
+          boothPropBox:         v.boothPropBox || "",
+          giftOccasions:        v.giftOccasions || [],
+          giftCustomisation:    v.giftCustomisation || [],
+          giftMinOrder:         v.giftMinOrder || "",
+          giftDelivery:         v.giftDelivery || "",
+          transportVehicles:    v.transportVehicles || [],
+          transportDecoration:  v.transportDecoration || "",
+          transportServiceArea: v.transportServiceArea || [],
+          securityServices:     v.securityServices || [],
+          securityTeamSize:     v.securityTeamSize || "",
+          securityCertified:    v.securityCertified || "",
+          securityArmed:        v.securityArmed || "",
         });
         setLocations(v.locations || []);
       })
@@ -122,7 +200,8 @@ export default function VendorProfile() {
     setSaving(true);
     try {
       const isGig = GIG_PRO_TYPES.includes(profile?.serviceType);
-      const isSvc = ['Photographer','Caterer','Decorator'].includes(profile?.serviceType);
+      const SVC_TYPES = ['Photographer','Caterer','Decorator','Makeup Artist','Mehendi Artist','Hair Stylist','Cake Artist','Bartender','Videographer','Food Truck','Wedding Planner','Live Streaming','Photo Booth','Gift & Favours','Transportation','Security'];
+      const isSvc = SVC_TYPES.includes(profile?.serviceType);
       const body = {
         name: form.name,
         yearsOfExperience: Number(form.yearsOfExperience) || 0,
@@ -144,18 +223,7 @@ export default function VendorProfile() {
           setupType:       gigForm.setupType,
           lightsIncluded:  gigForm.lightsIncluded,
         } : {}),
-        ...(isSvc ? {
-          photoServices:       svcForm.photoServices,
-          photographyType:     svcForm.photographyType,
-          hoursIncluded:       svcForm.hoursIncluded,
-          editingTime:         svcForm.editingTime,
-          cuisineTypes:        svcForm.cuisineTypes,
-          cateringServiceType: svcForm.cateringServiceType,
-          menuType:            svcForm.menuType,
-          beverage:            svcForm.beverage,
-          decorTypes:          svcForm.decorTypes,
-          venueCoverage:       svcForm.venueCoverage,
-        } : {}),
+        ...(isSvc ? { ...svcForm } : {}),
       };
       const r = await fetch(`${BASE_URL}/vendors/${vendorId}`, {
         method: "PATCH",
@@ -254,7 +322,7 @@ export default function VendorProfile() {
           {[
             ["info", "Business Info"],
             ...(GIG_PRO_TYPES.includes(profile?.serviceType) ? [["gig", "Performance Details"]] : []),
-            ...(['Photographer','Caterer','Decorator'].includes(profile?.serviceType) ? [["service", "Service Details"]] : []),
+            ...(['Photographer','Caterer','Decorator','Makeup Artist','Mehendi Artist','Hair Stylist','Cake Artist','Bartender','Videographer','Food Truck','Wedding Planner','Live Streaming','Photo Booth','Gift & Favours','Transportation','Security'].includes(profile?.serviceType) ? [["service", "Service Details"]] : []),
             ["portfolio", "Portfolio Photos"],
             ["bank", "Bank & Payments"],
           ].map(([id, label]) => (
@@ -455,8 +523,8 @@ export default function VendorProfile() {
           );
         })()}
 
-        {/* ── Service Details Tab (Photographer / Caterer / Decorator) ── */}
-        {tab === "service" && ['Photographer','Caterer','Decorator'].includes(profile?.serviceType) && (() => {
+        {/* ── Service Details Tab ── */}
+        {tab === "service" && ['Photographer','Caterer','Decorator','Makeup Artist','Mehendi Artist','Hair Stylist','Cake Artist','Bartender','Videographer','Food Truck','Wedding Planner','Live Streaming','Photo Booth','Gift & Favours','Transportation','Security'].includes(profile?.serviceType) && (() => {
           const svc = profile.serviceType;
           const setSvc = (k, v) => setSvcForm(f => ({ ...f, [k]: v }));
           const toggleSvc = (k, val) => setSvcForm(f => ({ ...f, [k]: f[k].includes(val) ? f[k].filter(x => x !== val) : [...f[k], val] }));
@@ -517,6 +585,94 @@ export default function VendorProfile() {
               {svc === 'Decorator' && (<>
                 <ChipMulti label="Decoration Types" field="decorTypes" options={['Themed','Floral','Lighting','Balloon Art','Traditional','Modern','Rustic','Minimalist','Other']} />
                 <ChipMulti label="Venue Coverage" field="venueCoverage" options={['Interior','Exterior','Full Venue','Stage Setup','Entrance Focus','Backdrop']} />
+              </>)}
+
+              {svc === 'Makeup Artist' && (<>
+                <ChipMulti label="Specialisations" field="makeupSpecialisations" options={['Bridal','HD Airbrush','Party Makeup','Editorial','Stage / Theatre','Grooming']} />
+                <ChipMulti label="Brands Used" field="makeupBrands" options={['MAC','Huda Beauty','Kryolan','Armani','L\'Oréal','Charlotte Tilbury','NARS','Other']} />
+                <ChipMulti label="Who Do You Serve" field="makeupAudience" options={['Bride','Bridesmaids','Groom Grooming','Group Bookings']} />
+                <ChipSingle label="Trial Booking Available?" field="makeupTrialAvailable" options={['Yes','No']} />
+              </>)}
+
+              {svc === 'Mehendi Artist' && (<>
+                <ChipMulti label="Design Styles" field="mehendiStyles" options={['Arabic','Indian Traditional','Fusion','Moroccan','Pakistani','Minimalist']} />
+                <ChipMulti label="Coverage Offered" field="mehendiCoverage" options={['Full Hands','Half Hands','Feet','Back of Hand','Arms']} />
+                <ChipSingle label="Cone Type" field="mehendiConeType" options={['Natural Only','Chemical','Both']} />
+                <ChipSingle label="Group Bookings?" field="mehendiGroupBooking" options={['Yes','No']} />
+              </>)}
+
+              {svc === 'Hair Stylist' && (<>
+                <ChipMulti label="Services Offered" field="hairServices" options={['Bridal Updo','Extensions','Highlights / Colour','Blowout','Party Style','Braids & Accessories']} />
+                <ChipMulti label="Hair Types Handled" field="hairTypes" options={['Straight','Wavy','Curly','Thick','Fine','Coloured / Treated']} />
+                <ChipSingle label="Travel to Venue?" field="hairTravelAvailable" options={['Yes','No']} />
+              </>)}
+
+              {svc === 'Cake Artist' && (<>
+                <ChipMulti label="Cake Styles" field="cakeStyles" options={['Fondant','Fresh Cream','Drip Cake','Naked Cake','Floral','Sculpted / 3D']} />
+                <ChipMulti label="Flavours" field="cakeFlavours" options={['Vanilla','Chocolate','Butterscotch','Red Velvet','Fruit','Blueberry','Custom']} />
+                <ChipSingle label="Minimum Order" field="cakeMinOrder" options={['500g','1 kg','2 kg','3 kg+']} />
+                <ChipSingle label="Lead Time Needed" field="cakeLeadTime" options={['1 day','2 days','3–5 days','7+ days']} />
+              </>)}
+
+              {svc === 'Bartender' && (<>
+                <ChipMulti label="Drink Services" field="bartenderServices" options={['Cocktails','Mocktails','Wine Service','Beer Service','Shots & LIIT','BYOB Setup']} />
+                <ChipMulti label="Event Types" field="bartenderEventTypes" options={['Wedding','House Party','Corporate','Pool Party','Club Night']} />
+                <ChipSingle label="Bring Own Bar Counter?" field="bartenderBarEquipment" options={['Yes','No']} />
+                <ChipSingle label="Certified Mixologist?" field="bartenderCertified" options={['Yes','No']} />
+              </>)}
+
+              {svc === 'Videographer' && (<>
+                <ChipMulti label="Filming Style" field="videoStyle" options={['Cinematic','Documentary','Highlight Reel','Short Reels','Live Event']} />
+                <ChipMulti label="Packages" field="videoPackages" options={['2 hrs','4 hrs','Full Day','Multi-Day','Pre-Wedding']} />
+                <ChipSingle label="Drone Available?" field="videoDroneAvailable" options={['Yes','No']} />
+                <ChipSingle label="Delivery Timeline" field="videoDeliveryDays" options={['3 days','7 days','14 days','30 days']} />
+              </>)}
+
+              {svc === 'Food Truck' && (<>
+                <ChipMulti label="Counter Types" field="foodCounterTypes" options={['Chaat','Dosa / South Indian','Pizza','Biryani','Chinese','Desserts','Beverages','BBQ','Other']} />
+                <ChipSingle label="Minimum Pax" field="foodMinPax" options={['25','50','100','200+']} />
+                <ChipSingle label="Space Needed" field="foodSpaceNeeded" options={['10×10 ft','15×15 ft','20×20 ft','Flexible']} />
+                <ChipSingle label="Power Requirement" field="foodPowerNeeded" options={['Self-sufficient','5 kW','10 kW','15 kW+']} />
+              </>)}
+
+              {svc === 'Wedding Planner' && (<>
+                <ChipMulti label="Services Offered" field="plannerServices" options={['Full Planning','Partial Planning','Day-of Coordination','Destination Weddings','Pre-Wedding Events']} />
+                <ChipMulti label="Budget Range Handled" field="plannerBudgetRange" options={['Under ₹5L','₹5–15L','₹15–50L','₹50L+']} />
+                <ChipMulti label="Event Types" field="plannerEventTypes" options={['Hindu','Muslim','Christian','Sikh','Destination','Corporate','Private Party']} />
+              </>)}
+
+              {svc === 'Live Streaming' && (<>
+                <ChipMulti label="Platforms Supported" field="streamPlatforms" options={['YouTube','Zoom','Facebook','Instagram Live','Custom RTMP']} />
+                <ChipSingle label="Camera Count" field="streamCameraCount" options={['1','2','3','4+']} />
+                <ChipSingle label="Max Resolution" field="streamResolution" options={['720p','1080p','4K']} />
+                <ChipSingle label="Backup Internet?" field="streamBackupInternet" options={['Yes','No']} />
+              </>)}
+
+              {svc === 'Photo Booth' && (<>
+                <ChipMulti label="Booth Types" field="boothTypes" options={['Open Booth','360 Booth','Mirror Booth','Enclosed','GIF Booth','Selfie Pod']} />
+                <ChipSingle label="On-site Prints?" field="boothPrints" options={['Yes','No']} />
+                <ChipSingle label="Branded Overlay?" field="boothBrandedOverlay" options={['Yes','No']} />
+                <ChipSingle label="Prop Box Included?" field="boothPropBox" options={['Yes','No']} />
+              </>)}
+
+              {svc === 'Gift & Favours' && (<>
+                <ChipMulti label="Occasion Specialities" field="giftOccasions" options={['Wedding','Corporate','Diwali','Birthday','Baby Shower','Anniversary','Farewell']} />
+                <ChipMulti label="Customisation Options" field="giftCustomisation" options={['Branding / Logo','Personalised Message','Custom Packaging','Monogramming','Edible Items']} />
+                <ChipSingle label="Minimum Order Qty" field="giftMinOrder" options={['1','10','25','50','100+']} />
+                <ChipSingle label="Delivery" field="giftDelivery" options={['Pickup Only','Local Delivery','Pan India']} />
+              </>)}
+
+              {svc === 'Transportation' && (<>
+                <ChipMulti label="Vehicle Types" field="transportVehicles" options={['Sedan','SUV / Luxury','Vintage / Classic','Mini Bus (18-seater)','Bus / Coach','Tempo Traveller','Decorated Bridal Car']} />
+                <ChipMulti label="Service Areas" field="transportServiceArea" options={['Local City','Outstation','Airport Transfers','Pan India']} />
+                <ChipSingle label="Decoration Available?" field="transportDecoration" options={['Yes','No']} />
+              </>)}
+
+              {svc === 'Security' && (<>
+                <ChipMulti label="Services Offered" field="securityServices" options={['Crowd Management','VIP Escort','Door Supervision','Patrol','Metal Detection','Parking Management']} />
+                <ChipSingle label="Team Size" field="securityTeamSize" options={['1–5','5–10','10–20','20+']} />
+                <ChipSingle label="PSARA Certified?" field="securityCertified" options={['Yes','No']} />
+                <ChipSingle label="Armed Guards?" field="securityArmed" options={['Available','Not Available']} />
               </>)}
 
               <div className="mt-6 flex justify-end">

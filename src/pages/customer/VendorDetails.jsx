@@ -613,6 +613,81 @@ const VendorDetailsPage = () => {
       { key: "pricesNegotiable",  title: "Prices Negotiable", bool: true },
       { key: "deliveryOptions",   title: "Delivery Options" },
     ],
+    'Makeup Artist': [
+      { key: "makeupSpecialisations", title: "Specialisations" },
+      { key: "makeupBrands",          title: "Brands Used" },
+      { key: "makeupAudience",        title: "Who They Serve" },
+      { key: "makeupTrialAvailable",  title: "Trial Booking", single: true },
+    ],
+    'Mehendi Artist': [
+      { key: "mehendiStyles",       title: "Design Styles" },
+      { key: "mehendiCoverage",     title: "Coverage Options" },
+      { key: "mehendiConeType",     title: "Cone Type", single: true },
+      { key: "mehendiGroupBooking", title: "Group Bookings", single: true },
+    ],
+    'Hair Stylist': [
+      { key: "hairServices",        title: "Services Offered" },
+      { key: "hairTypes",           title: "Hair Types Handled" },
+      { key: "hairTravelAvailable", title: "Travel to Venue", single: true },
+    ],
+    'Cake Artist': [
+      { key: "cakeStyles",   title: "Cake Styles" },
+      { key: "cakeFlavours", title: "Flavours" },
+      { key: "cakeMinOrder", title: "Minimum Order", single: true },
+      { key: "cakeLeadTime", title: "Lead Time Needed", single: true },
+    ],
+    Bartender: [
+      { key: "bartenderServices",     title: "Drink Services" },
+      { key: "bartenderEventTypes",   title: "Event Types" },
+      { key: "bartenderBarEquipment", title: "Brings Own Bar Counter", single: true },
+      { key: "bartenderCertified",    title: "Certified Mixologist", single: true },
+    ],
+    Videographer: [
+      { key: "videoStyle",          title: "Filming Style" },
+      { key: "videoPackages",       title: "Packages" },
+      { key: "videoDroneAvailable", title: "Drone Available", single: true },
+      { key: "videoDeliveryDays",   title: "Delivery Timeline", single: true },
+    ],
+    'Food Truck': [
+      { key: "foodCounterTypes", title: "Counter Types" },
+      { key: "foodMinPax",       title: "Minimum Pax", single: true },
+      { key: "foodSpaceNeeded",  title: "Space Needed", single: true },
+      { key: "foodPowerNeeded",  title: "Power Requirement", single: true },
+    ],
+    'Wedding Planner': [
+      { key: "plannerServices",    title: "Services Offered" },
+      { key: "plannerBudgetRange", title: "Budget Range Handled" },
+      { key: "plannerEventTypes",  title: "Event Types" },
+    ],
+    'Live Streaming': [
+      { key: "streamPlatforms",      title: "Platforms Supported" },
+      { key: "streamCameraCount",    title: "Camera Count", single: true },
+      { key: "streamResolution",     title: "Max Resolution", single: true },
+      { key: "streamBackupInternet", title: "Backup Internet", single: true },
+    ],
+    'Photo Booth': [
+      { key: "boothTypes",         title: "Booth Types" },
+      { key: "boothPrints",        title: "On-site Prints", single: true },
+      { key: "boothBrandedOverlay",title: "Branded Overlay", single: true },
+      { key: "boothPropBox",       title: "Prop Box Included", single: true },
+    ],
+    'Gift & Favours': [
+      { key: "giftOccasions",    title: "Occasion Specialities" },
+      { key: "giftCustomisation",title: "Customisation Options" },
+      { key: "giftMinOrder",     title: "Minimum Order Qty", single: true },
+      { key: "giftDelivery",     title: "Delivery", single: true },
+    ],
+    Transportation: [
+      { key: "transportVehicles",   title: "Vehicle Types" },
+      { key: "transportServiceArea",title: "Service Areas" },
+      { key: "transportDecoration", title: "Decoration Available", single: true },
+    ],
+    Security: [
+      { key: "securityServices",  title: "Services Offered" },
+      { key: "securityTeamSize",  title: "Team Size", single: true },
+      { key: "securityCertified", title: "PSARA Certified", single: true },
+      { key: "securityArmed",     title: "Armed Guards", single: true },
+    ],
   };
 
   const normalised = serviceType?.toLowerCase();
@@ -656,6 +731,68 @@ const VendorDetailsPage = () => {
     languages:            fic(<><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></>),
     danceStyles:          fic(<><path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2 2 6.48 2 12s4.48 10 10 10z"/><path d="m8 14 2-4 4 4 2-4"/></>),
     performanceType:      fic(<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>),
+    // Makeup Artist
+    makeupSpecialisations:fic(<><path d="M2 22l10-10"/><path d="M17 17l4-4a3 3 0 0 0-4-4L7 15a5 5 0 0 0 7 7z"/></>),
+    makeupBrands:         fic(<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>),
+    makeupAudience:       fic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>),
+    makeupTrialAvailable: fic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>),
+    // Mehendi Artist
+    mehendiStyles:        fic(<><path d="M12 22s-6-3-6-9V6l6-3 6 3v7c0 6-6 9-6 9z"/></>),
+    mehendiCoverage:      fic(<><path d="M18 11V6l-6-3-6 3v5c0 6 6 9 6 9s6-3 6-9z"/></>),
+    mehendiConeType:      fic(<><path d="M2 22l10-10M17 17l4-4a3 3 0 0 0-4-4L7 15a5 5 0 0 0 7 7z"/></>),
+    mehendiGroupBooking:  fic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>),
+    // Hair Stylist
+    hairServices:         fic(<><circle cx="6" cy="6" r="3"/><path d="M8.12 8.12L12 12"/><path d="M20 4l-8.12 8.12"/><circle cx="20" cy="4" r="2"/><path d="M14.8 14.8L20 20"/></>),
+    hairTypes:            fic(<><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>),
+    hairTravelAvailable:  fic(<><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 13 8 13s8-7.75 8-13a8 8 0 0 0-8-8z"/></>),
+    // Cake Artist
+    cakeStyles:           fic(<><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 1.5-2 3-2 2.5 2 4 2 2-1 2-1"/><path d="M2 21h20"/><path d="M7 8v3"/><path d="M12 8v3"/><path d="M17 8v3"/></>),
+    cakeFlavours:         fic(<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>),
+    cakeMinOrder:         fic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>),
+    cakeLeadTime:         fic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>),
+    // Bartender
+    bartenderServices:    fic(<><path d="M8 22h8"/><path d="M12 11v11"/><path d="m19 3-7 8-7-8z"/></>),
+    bartenderEventTypes:  fic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>),
+    bartenderBarEquipment:fic(<><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>),
+    bartenderCertified:   fic(<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>),
+    // Videographer
+    videoStyle:           fic(<><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></>),
+    videoPackages:        fic(<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></>),
+    videoDroneAvailable:  fic(<><path d="M12 2l1.5 3h3L18 7l-1.5 2.5L18 12l-4.5-1L12 14l-1.5-3L6 12l1.5-2.5L6 7l1.5-2h3z"/></>),
+    videoDeliveryDays:    fic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>),
+    // Food Truck
+    foodCounterTypes:     fic(<><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></>),
+    foodMinPax:           fic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></>),
+    foodSpaceNeeded:      fic(<><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></>),
+    foodPowerNeeded:      fic(<><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></>),
+    // Wedding Planner
+    plannerServices:      fic(<><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>),
+    plannerBudgetRange:   fic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>),
+    plannerEventTypes:    fic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>),
+    // Live Streaming
+    streamPlatforms:      fic(<><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></>),
+    streamCameraCount:    fic(<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></>),
+    streamResolution:     fic(<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>),
+    streamBackupInternet: fic(<><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/></>),
+    // Photo Booth
+    boothTypes:           fic(<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><line x1="12" y1="9" x2="12.01" y2="9"/><circle cx="12" cy="15" r="3"/></>),
+    boothPrints:          fic(<><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></>),
+    boothBrandedOverlay:  fic(<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></>),
+    boothPropBox:         fic(<><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/></>),
+    // Gift & Favours
+    giftOccasions:        fic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>),
+    giftCustomisation:    fic(<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>),
+    giftMinOrder:         fic(<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>),
+    giftDelivery:         fic(<><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></>),
+    // Transportation
+    transportVehicles:    fic(<><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></>),
+    transportServiceArea: fic(<><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 13 8 13s8-7.75 8-13a8 8 0 0 0-8-8z"/></>),
+    transportDecoration:  fic(<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>),
+    // Security
+    securityServices:     fic(<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>),
+    securityTeamSize:     fic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>),
+    securityCertified:    fic(<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></>),
+    securityArmed:        fic(<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>),
   };
 
   return (
@@ -1167,6 +1304,19 @@ const VendorDetailsPage = () => {
                 Decorator: ["Can you do a walkthrough of our venue before quoting?", "Do you handle setup, breakdown and cleanup?", "Can you accommodate our colour scheme or theme ideas?", "What is your cancellation policy if we need to make changes?", "Do you provide artificial flowers, fresh flowers or both?", "Have you done decor at this venue before?", "What is the latest time you can finish setup before guests arrive?", "Do you have photos of past events at a similar budget?"],
                 Caterer: ["Is your quote per plate or a flat fee?", "Can we do a tasting before confirming?", "Do you handle service staff on the day?", "What is included — crockery, cutlery, chafing dishes?", "Are there vegetarian-only options available?", "How do you handle dietary restrictions or allergies?", "What is your minimum and maximum guest count?", "Is the kitchen set up on-site or is food brought pre-cooked?"],
                 DJ: ["Do you have a playlist planning session before the event?", "Can you take specific song requests from guests?", "What happens if your equipment fails during the event?", "Do you provide your own sound and lighting, or just the DJ service?", "How early do you arrive to set up?", "Have you performed at our venue size before?", "Do you MC the event or just play music?", "What is your overtime rate if the event runs longer?"],
+                'Makeup Artist': ["Can I see a full bridal portfolio from a recent wedding?", "Do you offer a trial session before the wedding day?", "What brands do you use — are they long-wear and photo-ready?", "How many clients do you take on the same day?", "Do you travel to the venue or do we come to you?", "How early will you arrive on the wedding morning?", "Can you accommodate sensitive skin or allergies?", "Do you charge extra for touch-up kits left with the bride?"],
+                'Mehendi Artist': ["Can I see your latest bridal portfolio?", "Do you use natural henna or chemical cones?", "How many hands can you cover in an hour?", "What is the darkest colour your mehendi achieves?", "Do you cover the back of the hand as well?", "How far in advance should we book for peak season?", "Do you travel to the venue?", "How long should we leave the mehendi on before washing?"],
+                'Hair Stylist': ["Do you specialise in bridal updos or all hair types?", "Can I see your portfolio for hair similar to mine?", "Do you offer a hair trial before the wedding day?", "Do you bring your own products and tools?", "How many bridesmaids or guests can you handle in a session?", "Do you travel to the venue?", "Can you work with extensions or added hair?", "How do you ensure the style holds through a long day?"],
+                'Cake Artist': ["Can I do a tasting before placing the order?", "What is your minimum order size?", "How far in advance do you need the order confirmed?", "Can you match a specific design or theme?", "Do you handle delivery and setup at the venue?", "What's the shelf life of your cakes?", "Do you offer both eggless and egg options?", "What happens if there's a last-minute change in guest count?"],
+                Bartender: ["Do you bring your own bar counter and equipment?", "Is the alcohol included in your pricing or do we supply it?", "Can you create a custom cocktail menu for our event?", "Do you have mocktail options for non-drinkers?", "Are you certified or trained as a mixologist?", "How many guests can you serve per hour?", "Do you handle ice, glassware and garnishes yourself?", "What is your cancellation policy?"],
+                Videographer: ["Can I see a full wedding film, not just the trailer?", "Do you have drone footage available?", "How many cameras will you use on the day?", "What is your editing style — cinematic or documentary?", "How long after the event will I receive the final video?", "Will you personally be there or will it be a second shooter?", "Do you capture audio separately for ceremonies?", "What is included — highlight reel, full-day edit, drone add-on?"],
+                'Food Truck': ["What types of live counters do you offer?", "What is your minimum guest count?", "How much space and power do you need at the venue?", "Do you bring your own generator?", "Can we customise the menu for dietary restrictions?", "Do you handle setup, service and cleanup yourself?", "What is your per-head or flat pricing?", "How early do you arrive to set up before the event starts?"],
+                'Wedding Planner': ["Do you offer full planning, partial or day-of coordination only?", "How many weddings do you manage in the same month?", "Can you work within our specific budget?", "Do you have a vendor network or will we source vendors ourselves?", "What does your day-of coordination include exactly?", "Have you handled events at our chosen venue before?", "How do you manage unexpected issues on the day?", "Can we see a sample timeline or run-of-show document?"],
+                'Live Streaming': ["Which platforms can you stream to simultaneously?", "How many cameras will you set up?", "Do you have a backup internet connection?", "What resolution do you stream at?", "Can you add lower-thirds, overlays or graphics?", "Do you record a local copy as backup?", "How do you handle poor venue internet?", "What is included — just streaming or editing of the recording too?"],
+                'Photo Booth': ["What type of booth do you offer — 360, open, mirror or enclosed?", "Do you print photos on-site?", "Can you add our names, logo or event date to the prints?", "Is a prop box included in your package?", "How much space does the booth need?", "How long does it take to set up?", "Can guests download digital copies instantly?", "Do you provide an attendant to run the booth throughout the event?"],
+                'Gift & Favours': ["Can I see samples before placing a bulk order?", "What is your minimum order quantity?", "Can items be personalised with names or messages?", "What is your lead time for bulk orders?", "Do you offer delivery, or is it pickup only?", "Can you create a corporate or branded hamper?", "What is your return policy if items are damaged?", "Can you work within a specific per-item budget?"],
+                Transportation: ["What vehicle models are available?", "Can the vehicle be decorated for the wedding?", "Is a trained, uniformed chauffeur included?", "What is your outstation or per-km rate?", "How many hours are included in the base price?", "What is your contingency if the primary vehicle breaks down?", "Do you handle airport pickups and drops?", "Is the vehicle fully insured?"],
+                Security: ["Are your guards PSARA licensed?", "How many guards do you provide and what is their training?", "Do you supply metal detectors and crowd control barriers?", "What is the ratio of guards to expected guest count?", "Have you worked at events of this size before?", "How do you handle a medical emergency?", "Do you coordinate with local police if needed?", "What is your overtime rate if the event runs late?"],
               };
               const questions = QA[serviceType];
               if (!questions) return null;
