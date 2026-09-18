@@ -2738,7 +2738,7 @@ function MenuPlannerModal({ onClose }) {
       if (!ci.length) return '';
       return `${c.label}:\n${ci.map(it=>`  • ${it.name}${it.person?' ('+it.person+')':''}${it.diet==='nonveg'?' 🔴':it.diet==='jain'?' 🟡':''}`).join('\n')}`;
     }).filter(Boolean).join('\n\n');
-    window.open(`https://wa.me/?text=${encodeURIComponent('🍽️ Party Menu\n\n'+lines)}`, '_blank');
+    window.open(`https://wa.me/?text=${encodeURIComponent('Party Menu\n\n'+lines.replace(/[🔴🟡]/gu,'').trim())}`, '_blank');
   };
 
   return (
@@ -2859,7 +2859,7 @@ function DayTimelineModal({ onClose }) {
 
   const shareTimeline = () => {
     const txt = entries.map(e=>`${e.time} — ${e.event}${e.note?' ('+e.note+')':''}`).join('\n');
-    window.open(`https://wa.me/?text=${encodeURIComponent('📅 Party Timeline:\n\n'+txt)}`, '_blank');
+    window.open(`https://wa.me/?text=${encodeURIComponent('Party Timeline:\n\n'+txt)}`, '_blank');
   };
 
   return (
@@ -2949,13 +2949,13 @@ function VenueNotesModal({ onClose }) {
   };
   const shareWA = () => {
     const parts = [];
-    if (data.address) parts.push(`📍 *Address:* ${data.address}`);
-    if (data.parking) parts.push(`🅿️ *Parking:* ${data.parking}`);
-    if (data.contact) parts.push(`📞 *Contact:* ${data.contact}`);
-    if (data.entry)   parts.push(`🚪 *Entry:* ${data.entry}`);
-    if (data.notes)   parts.push(`📝 *Note:* ${data.notes}`);
+    if (data.address) parts.push(`*Address:* ${data.address}`);
+    if (data.parking) parts.push(`*Parking:* ${data.parking}`);
+    if (data.contact) parts.push(`*Contact:* ${data.contact}`);
+    if (data.entry)   parts.push(`*Entry:* ${data.entry}`);
+    if (data.notes)   parts.push(`*Note:* ${data.notes}`);
     if (!parts.length) return;
-    window.open(`https://wa.me/?text=${encodeURIComponent('🎉 Venue Info\n\n'+parts.join('\n\n'))}`, '_blank');
+    window.open(`https://wa.me/?text=${encodeURIComponent('Venue Info\n\n'+parts.join('\n\n'))}`, '_blank');
   };
 
   return (
@@ -3023,7 +3023,7 @@ function SeatingChartModal({ onClose }) {
       return `${t.name} (${seated.length}/${t.cap}):\n${seated.map(n=>'  • '+n).join('\n')||'  (empty)'}`;
     });
     if (unassigned.length) lines.push(`\nUnassigned (${unassigned.length}):\n${unassigned.map(g=>'  • '+g.name).join('\n')}`);
-    window.open(`https://wa.me/?text=${encodeURIComponent('🪑 Seating Chart\n\n'+lines.join('\n\n'))}`, '_blank');
+    window.open(`https://wa.me/?text=${encodeURIComponent('Seating Chart\n\n'+lines.join('\n\n'))}`, '_blank');
   };
 
   return (

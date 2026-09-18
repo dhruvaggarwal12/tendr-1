@@ -277,7 +277,7 @@ function BillSplitter({ onClose, accent }) {
             </div>
           ))}
           {txns.length > 0 && (
-            <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`💸 *Split Summary*\nTotal: ₹${total}\n\n` + txns.map(t => `• ${t.from} → ${t.to}: ₹${t.amount}`).join("\n"))}`, "_blank")} style={{ ...lBtn("#25D366"), marginTop: 12 }}>
+            <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`*Split Summary*\nTotal: Rs ${total}\n\n` + txns.map(t => `• ${t.from} -> ${t.to}: Rs ${t.amount}`).join("\n"))}`, "_blank")} style={{ ...lBtn("#25D366"), marginTop: 12 }}>
               📤 Share on WhatsApp
             </button>
           )}
@@ -349,7 +349,7 @@ function PlaylistBuilder({ onClose, accent }) {
       {songs.length>0&&(
         <div style={{display:"flex",gap:8,marginTop:12}}>
           <button onClick={()=>copyLink(playlistText)} style={{...lBtn("rgba(0,0,0,0.08)"),flex:1,color:"#1C1410"}}>📋 Copy List</button>
-          <button onClick={()=>window.open(`https://wa.me/?text=${encodeURIComponent("🎵 *Tonight's Playlist*\n\n"+playlistText)}`,"_blank")} style={{...lBtn("#25D366"),flex:1}}>📤 WhatsApp</button>
+          <button onClick={()=>window.open(`https://wa.me/?text=${encodeURIComponent("Tonight's Playlist\n\n"+playlistText)}`,"_blank")} style={{...lBtn("#25D366"),flex:1}}>Share WhatsApp</button>
         </div>
       )}
     </LightFormModal>
@@ -468,7 +468,7 @@ function ThemePicker({ onClose, accent, themes }) {
           </div>
           <div style={{display:"flex",gap:10}}>
             <button onClick={()=>setShowWinner(false)} style={{...lBtn("rgba(0,0,0,0.07)"),flex:1,color:"#1C1410"}}>← Back</button>
-            <button onClick={()=>window.open(`https://wa.me/?text=${encodeURIComponent(`🎨 Tonight's party theme: *${winner}*! 🎉`)}`,"_blank")} style={{...lBtn("#25D366"),flex:1}}>📤 Share</button>
+            <button onClick={()=>window.open(`https://wa.me/?text=${encodeURIComponent(`Tonight's party theme: *${winner}*`)}`,"_blank")} style={{...lBtn("#25D366"),flex:1}}>Share</button>
           </div>
         </div>
       </LightFormModal>
@@ -2451,7 +2451,7 @@ function LuckyDraw({ onClose, accent }) {
         <div style={{ textAlign: "center", padding: "18px 16px", background: `linear-gradient(135deg, ${accent}22, ${accent}08)`, borderRadius: 16, marginBottom: 14, border: `2px solid ${accent}50` }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: accent, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>🎉 Winner!</div>
           <div style={{ fontSize: 28, fontWeight: 900, color: "#1C1410", marginBottom: 10 }}>{winner}</div>
-          <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`🎰 Lucky Draw Result!\n\n🎉 The winner is *${winner}*!`)}`, "_blank")} style={{ ...lBtn("#25D366"), padding: "8px 18px", width: "auto", fontSize: 13 }}>📤 Announce Winner</button>
+          <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`Lucky Draw Result!\n\nThe winner is *${winner}*!`)}`, "_blank")} style={{ ...lBtn("#25D366"), padding: "8px 18px", width: "auto", fontSize: 13 }}>Announce Winner</button>
         </div>
       )}
 
@@ -2711,7 +2711,7 @@ function NameSuggestions({ onClose, accent }) {
           <button onClick={copyResults} style={{ flex: 1, padding: "9px", borderRadius: 10, border: "1.5px solid rgba(0,0,0,0.09)", background: "transparent", color: copied ? "#059669" : "rgba(28,9,0,0.60)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
             {copied ? "✓ Copied!" : "📋 Copy Results"}
           </button>
-          <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent("🌸 Name Suggestions\n\n" + sorted.map((e, i) => `${i === 0 && e.votes.length > 0 ? "🏆" : `${i + 1}.`} ${e.name}${e.meaning ? ` — ${e.meaning}` : ""} (${e.votes.length} ❤️)`).join("\n"))}`, "_blank")} style={{ ...lBtn("#25D366"), width: "auto", padding: "9px 14px" }}>📤 Share</button>
+          <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent("Name Suggestions\n\n" + sorted.map((e, i) => `${i + 1}. ${e.name}${e.meaning ? ` - ${e.meaning}` : ""} (${e.votes.length} votes)`).join("\n"))}`, "_blank")} style={{ ...lBtn("#25D366"), width: "auto", padding: "9px 14px" }}>Share</button>
           <button onClick={() => { setPhase("name"); setVoterName(""); }} style={{ padding: "9px 14px", borderRadius: 10, border: "1.5px solid rgba(0,0,0,0.09)", background: "transparent", color: "rgba(28,9,0,0.40)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Switch</button>
         </div>
       )}
@@ -3030,10 +3030,54 @@ function TwoTruthsOneLie({ onClose, accent }) {
 
 // ── Rapid Fire ────────────────────────────────────────────────────────────────
 const RF_DECKS = {
-  "🍕 Food & Vibes": ["Pizza ya Biryani?","Tea ya Coffee?","Dosa ya Idli?","Butter Chicken ya Paneer?","Maggi ya Ramen?","Rajma Chawal ya Chole Bhature?","Kulfi ya Ice Cream?","Pani Puri ya Bhel Puri?","Gol Gappe ya Samosa?","Litti Chokha ya Dal Baati?"],
-  "🧠 Personality":  ["Introvert ya Extrovert?","Planner ya Spontaneous?","Morning ya Night person?","Leader ya Follower?","Heart ya Head?","Spender ya Saver?","Risk-taker ya Safe player?","Talker ya Listener?","Perfectionist ya Chill?","Clean room ya Organized chaos?"],
-  "✈️ Travel & Life": ["Mountains ya Beach?","Solo trip ya Group trip?","Hotel ya Homestay?","Road trip ya Flight?","City ya Village?","Summer ya Winter?","Budget trip ya Luxury?","Local food ya Safe food?","Early bird ya Last minute?","Planned itinerary ya Wing it?"],
-  "🎬 Entertainment": ["Movies ya Web series?","Bollywood ya Hollywood?","Comedy ya Thriller?","Netflix ya YouTube?","Music ya Podcasts?","Reading ya Watching?","Classic ya New release?","Concert ya House party?","OTT ya Theatre?","Gaming ya Sports?"],
+  "Food & Trivia": [
+    "Which city in India is famous for biryani the most?",
+    "What is the national fruit of India?",
+    "Name one ingredient always found in chai masala.",
+    "Which Indian state is paneer most associated with?",
+    "What is the English name for imli?",
+    "Which city is famous for vada pav?",
+    "Name a dish served at almost every Indian wedding.",
+    "What flour is used to make poori?",
+    "Name the world's hottest spice category.",
+    "What is rabri made from?",
+  ],
+  "Bollywood & Pop": [
+    "Name Shah Rukh Khan's debut Bollywood film.",
+    "Who sang Kesariya from Brahmastra?",
+    "Which actor played Bajrangi in Bajrangi Bhaijaan?",
+    "Who directed Dangal?",
+    "Name a 2023 Bollywood film starring Shah Rukh Khan.",
+    "Which city is Bollywood based in?",
+    "Who plays Tiger in the Tiger franchise?",
+    "Name the iconic song from DDLJ.",
+    "What year did Dil Chahta Hai release?",
+    "Who sang Jai Ho from Slumdog Millionaire?",
+  ],
+  "Know Your Crew": [
+    "Who in this group has the most siblings?",
+    "Who in this room was born first?",
+    "Who here has travelled to the most countries?",
+    "Who in this group wakes up earliest every day?",
+    "Who here has the longest full name?",
+    "Who was the last to get a haircut in this room?",
+    "Who here uses their phone the most?",
+    "Who in this group is the best cook?",
+    "Who here has the loudest laugh?",
+    "Who in this group has the most saved photos on their phone?",
+  ],
+  "Quick Facts": [
+    "How many players are in a cricket team?",
+    "What is the capital of Australia?",
+    "Name a planet closer to the sun than Earth.",
+    "What is the boiling point of water in Celsius?",
+    "What year did India become independent?",
+    "How many sides does a hexagon have?",
+    "What is the full form of ISRO?",
+    "Name the longest river in India.",
+    "What is the currency of Japan?",
+    "How many bones are in the adult human body?",
+  ],
 };
 
 function RapidFire({ onClose, accent }) {
@@ -3084,7 +3128,7 @@ function RapidFire({ onClose, accent }) {
           const cols=[["#EA580C","#FB923C"],["#7C3AED","#A78BFA"],["#0369A1","#38BDF8"],["#B45309","#FCD34D"]];
           const [c1,c2]=cols[i%cols.length];
           return (
-            <button key={d} onClick={() => start(d)} style={{ padding:"20px 12px", borderRadius:16, background:`linear-gradient(145deg,${c1}22,${c2}11)`, border:`2px solid ${c1}44`, color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:font, textAlign:"center", lineHeight:1.5, transition:"all 0.15s", boxShadow:`0 4px 20px ${c1}22` }}
+            <button key={d} onClick={() => start(d)} style={{ padding:"20px 12px", borderRadius:16, background:`linear-gradient(145deg,${c1}18,${c2}0d)`, border:`2px solid ${c1}55`, color:c1, fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:font, textAlign:"center", lineHeight:1.5, transition:"all 0.15s", boxShadow:`0 4px 20px ${c1}22` }}
               onMouseEnter={e=>{e.currentTarget.style.background=`linear-gradient(145deg,${c1}44,${c2}22)`;e.currentTarget.style.transform="scale(1.03)";}}
               onMouseLeave={e=>{e.currentTarget.style.background=`linear-gradient(145deg,${c1}22,${c2}11)`;e.currentTarget.style.transform="scale(1)";}}>
               {d}
@@ -3096,14 +3140,14 @@ function RapidFire({ onClose, accent }) {
   );
 
   if (done) {
-    const answered = answers.filter(a => a.a !== "–").length;
-    const speed = answered >= 8 ? "🚀 Lightning fast!" : answered >= 5 ? "⚡ Pretty quick!" : "🐢 Take your time…";
+    const gotIt = answers.filter(a => a.a === "Got It").length;
+    const speed = gotIt >= 8 ? "Lightning fast!" : gotIt >= 5 ? "Pretty good!" : "Keep practicing!";
     return (
       <LightFormModal onClose={onClose} accent={accent} emoji="⚡" title="Rapid Fire" wide>
         <div style={{ marginBottom:16, borderRadius:16, background:"linear-gradient(180deg,#1A0A00,#2D1000)", border:"2px solid rgba(251,146,60,0.35)", padding:"22px 16px", textAlign:"center" }}>
           <div style={{ fontSize:11, fontWeight:900, letterSpacing:"0.2em", color:"rgba(251,146,60,0.8)", textTransform:"uppercase", marginBottom:10 }}>ROUND COMPLETE</div>
-          <div style={{ fontSize:56, fontWeight:900, color:"#FB923C", fontVariantNumeric:"tabular-nums", lineHeight:1 }}>{answered}</div>
-          <div style={{ fontSize:13, color:"rgba(255,255,255,0.5)", marginTop:4 }}>out of {answers.length} answered</div>
+          <div style={{ fontSize:56, fontWeight:900, color:"#FB923C", fontVariantNumeric:"tabular-nums", lineHeight:1 }}>{gotIt}</div>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,0.5)", marginTop:4 }}>out of {answers.length} got right</div>
           <div style={{ fontSize:14, marginTop:10, color:"rgba(255,255,255,0.8)", fontWeight:700 }}>{speed}</div>
           <div style={{ height:6, background:"rgba(255,255,255,0.08)", borderRadius:3, overflow:"hidden", margin:"14px 0 0" }}>
             <div style={{ height:"100%", width:`${(answered/answers.length)*100}%`, background:"linear-gradient(90deg,#EA580C,#FB923C)", borderRadius:3 }} />
@@ -3113,7 +3157,7 @@ function RapidFire({ onClose, accent }) {
           {answers.map((a, i) => (
             <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 12px", background:"rgba(0,0,0,0.04)", borderRadius:10, marginBottom:5 }}>
               <span style={{ fontSize:12, color:"rgba(28,9,0,0.55)", flex:1, marginRight:8 }}>{a.q}</span>
-              <span style={{ fontSize:12, fontWeight:700, color:a.a==="–"?"rgba(28,9,0,0.30)":"#FB923C", flexShrink:0 }}>{a.a}</span>
+              <span style={{ fontSize:12, fontWeight:700, color:a.a==="Got It"?"#22c55e":a.a==="–"?"rgba(28,9,0,0.30)":"#FB923C", flexShrink:0 }}>{a.a==="Got It"?"Got It":a.a==="–"?"Skipped":a.a}</span>
             </div>
           ))}
         </div>
@@ -3122,8 +3166,6 @@ function RapidFire({ onClose, accent }) {
     );
   }
 
-  const parts = questions[idx].replace("?","").split(" ya ");
-  const [optA,optB]=[parts[0],parts[1]||"B"];
   const isUrgent = timeLeft <= 7;
   const isCritical = timeLeft <= 3;
   return (
@@ -3131,6 +3173,7 @@ function RapidFire({ onClose, accent }) {
       <style>{`
         @keyframes rf-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
         @keyframes rf-urgent{0%,100%{background:rgba(239,68,68,0.07)}50%{background:rgba(239,68,68,0.18)}}
+        @keyframes rf-pop{0%{transform:scale(0.95);opacity:0}100%{transform:scale(1);opacity:1}}
       `}</style>
       {/* Timer row */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16, padding:"8px 12px", borderRadius:12, background:isUrgent?"rgba(239,68,68,0.08)":"rgba(0,0,0,0.04)", animation:isCritical?"rf-urgent 0.6s ease-in-out infinite":undefined, transition:"background 0.3s" }}>
@@ -3144,30 +3187,26 @@ function RapidFire({ onClose, accent }) {
           </svg>
           <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, fontWeight:900, color:timerColor, fontVariantNumeric:"tabular-nums", transition:"color 0.3s", animation:isCritical?"rf-shake 0.3s ease-in-out infinite":undefined }}>{timeLeft}</div>
         </div>
-        <div style={{ fontSize:11, color:timerColor, fontWeight:700 }}>{deck.split(" ")[0]}</div>
+        <div style={{ fontSize:11, color:timerColor, fontWeight:700 }}>{deck}</div>
       </div>
-      {/* Question */}
-      <div style={{ background:"linear-gradient(180deg,#0A0A1A,#141428)", borderRadius:14, padding:"18px 16px", marginBottom:14, border:`2px solid ${isUrgent?"rgba(239,68,68,0.35)":"rgba(255,255,255,0.08)"}`, textAlign:"center", transition:"border-color 0.3s", boxShadow:isUrgent?"0 0 30px rgba(239,68,68,0.15)":"none" }}>
-        <div style={{ fontSize:11, fontWeight:900, color:"rgba(255,165,0,0.6)", letterSpacing:"0.15em", textTransform:"uppercase", marginBottom:8 }}>CHOOSE ONE</div>
-        <div style={{ fontSize:16, fontWeight:800, color:"#fff", lineHeight:1.4 }}>{optA} <span style={{ color:"rgba(255,255,255,0.3)", fontWeight:400 }}>ya</span> {optB}?</div>
+      {/* Question card */}
+      <div key={idx} style={{ background:"linear-gradient(180deg,#1A0800,#2D1200)", borderRadius:16, padding:"24px 20px", marginBottom:16, border:`2px solid ${isUrgent?"rgba(239,68,68,0.4)":"rgba(251,146,60,0.25)"}`, textAlign:"center", transition:"border-color 0.3s", animation:"rf-pop 0.22s ease-out" }}>
+        <div style={{ fontSize:10, fontWeight:900, color:"rgba(251,146,60,0.55)", letterSpacing:"0.18em", textTransform:"uppercase", marginBottom:12 }}>QUESTION</div>
+        <div style={{ fontSize:18, fontWeight:700, color:"#FFF8EC", lineHeight:1.5 }}>{questions[idx]}</div>
       </div>
-      {/* VS buttons */}
-      <div style={{ display:"flex", gap:0, marginBottom:10, alignItems:"stretch", borderRadius:16, overflow:"hidden" }}>
-        <button onClick={() => answer(optA)} style={{ flex:1, padding:"22px 14px", background:`linear-gradient(145deg,${isUrgent?"#7F1D1D":"#1E40AF"},${isUrgent?"#B91C1C":"#3B82F6"})`, border:"none", color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", textAlign:"center", fontFamily:font, lineHeight:1.3, transition:"all 0.2s" }}
-          onMouseEnter={e=>e.currentTarget.style.filter="brightness(1.1)"}
+      {/* Got It / Skip */}
+      <div style={{ display:"flex", gap:10, marginBottom:6 }}>
+        <button onClick={() => answer("Got It")} style={{ flex:1, padding:"16px 14px", borderRadius:14, background:`linear-gradient(135deg,#22c55e,#16a34a)`, border:"none", color:"#fff", fontSize:15, fontWeight:800, cursor:"pointer", fontFamily:font, transition:"all 0.15s", boxShadow:"0 4px 16px rgba(34,197,94,0.3)" }}
+          onMouseEnter={e=>e.currentTarget.style.filter="brightness(1.08)"}
           onMouseLeave={e=>e.currentTarget.style.filter="brightness(1)"}>
-          {optA}
+          Got It!
         </button>
-        <div style={{ width:38, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,0.5)", borderLeft:"1px solid rgba(255,255,255,0.06)", borderRight:"1px solid rgba(255,255,255,0.06)" }}>
-          <span style={{ fontSize:9, fontWeight:900, color:"rgba(255,255,255,0.3)", letterSpacing:"0.08em", textTransform:"uppercase", writingMode:"vertical-rl" }}>ya</span>
-        </div>
-        <button onClick={() => answer(optB)} style={{ flex:1, padding:"22px 14px", background:`linear-gradient(145deg,${isUrgent?"#4A1D96":"#5B21B6"},${isUrgent?"#7C3AED":"#A855F7"})`, border:"none", color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", textAlign:"center", fontFamily:font, lineHeight:1.3, transition:"all 0.2s" }}
-          onMouseEnter={e=>e.currentTarget.style.filter="brightness(1.1)"}
-          onMouseLeave={e=>e.currentTarget.style.filter="brightness(1)"}>
-          {optB}
+        <button onClick={() => answer("–")} style={{ padding:"16px 20px", borderRadius:14, background:"rgba(0,0,0,0.06)", border:"1.5px solid rgba(0,0,0,0.10)", color:"rgba(28,9,0,0.45)", fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:font, transition:"all 0.15s" }}
+          onMouseEnter={e=>e.currentTarget.style.background="rgba(0,0,0,0.10)"}
+          onMouseLeave={e=>e.currentTarget.style.background="rgba(0,0,0,0.06)"}>
+          Skip
         </button>
       </div>
-      <button onClick={() => answer("–")} style={{ ...lBtn("rgba(0,0,0,0.06)"), fontSize:12, color:"rgba(28,9,0,0.40)" }}>Skip</button>
     </LightFormModal>
   );
 }
@@ -3572,7 +3611,7 @@ function OccMenuPlannerModal({ onClose, occasion, accent }) {
   const arranged = items.filter(it=>it.status!=='pending').length;
   const shareMenu = () => {
     const lines = cats.map(c => { const ci = items.filter(it=>it.cat===c.id); if (!ci.length) return ''; return `${c.label}:\n${ci.map(it=>`  • ${it.name}${it.person?' ('+it.person+')':''}${it.diet==='nonveg'?' 🔴':it.diet==='jain'?' 🟡':''}`).join('\n')}`; }).filter(Boolean).join('\n\n');
-    window.open(`https://wa.me/?text=${encodeURIComponent('🍽️ Menu Plan\n\n'+lines)}`, '_blank');
+    window.open(`https://wa.me/?text=${encodeURIComponent('Menu Plan\n\n'+lines.replace(/[🔴🟡]/gu,'').trim())}`, '_blank');
   };
   return (
     <LightFormModal onClose={onClose} accent={accent} title="Menu Planner" emoji="🍽️" wide>
@@ -3621,54 +3660,130 @@ function OccMenuPlannerModal({ onClose, occasion, accent }) {
   );
 }
 
+const TIMELINE_TEMPLATES = {
+  default: [
+    { time:'13:00', event:'Vendor setup begins' },
+    { time:'15:00', event:'Decoration complete — final check' },
+    { time:'16:00', event:'Guests start arriving' },
+    { time:'16:30', event:'Welcome drinks & snacks' },
+    { time:'17:30', event:'Games & entertainment' },
+    { time:'18:30', event:'Main event / ceremony' },
+    { time:'19:30', event:'Dinner service' },
+    { time:'21:00', event:'Cake cutting / desserts' },
+    { time:'22:00', event:'Wind down & wrap up' },
+  ],
+  morning: [
+    { time:'08:00', event:'Venue opens — vendor access' },
+    { time:'09:00', event:'Decoration setup' },
+    { time:'10:00', event:'Guests arrive' },
+    { time:'10:30', event:'Welcome breakfast / brunch' },
+    { time:'11:30', event:'Main event / activity' },
+    { time:'13:00', event:'Lunch service' },
+    { time:'14:30', event:'Wrap up & send-off' },
+  ],
+};
+
 function OccDayTimelineModal({ onClose, occasion, accent }) {
   const SK = `tendr-occ-${occasion}-timeline`;
   const [entries, setEntries] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || '[]'); } catch { return []; } });
   const [time, setTime] = useState('');
   const [event, setEvent] = useState('');
   const [now, setNow] = useState(new Date());
+  const [showTemplates, setShowTemplates] = useState(false);
   useEffect(() => { const t = setInterval(() => setNow(new Date()), 30000); return () => clearInterval(t); }, []);
   const saveEntries = (e) => { setEntries(e); try { localStorage.setItem(SK, JSON.stringify(e)); } catch {} };
-  const add = () => { if (!time||!event.trim()) return; saveEntries([...entries,{id:Date.now(),time,event:event.trim(),done:false}].sort((a,b)=>a.time.localeCompare(b.time))); setTime(''); setEvent(''); };
+  const add = () => {
+    if (!time||!event.trim()) return;
+    saveEntries([...entries,{id:Date.now(),time,event:event.trim(),done:false}].sort((a,b)=>a.time.localeCompare(b.time)));
+    setTime(''); setEvent('');
+  };
+  const loadTemplate = (tpl) => {
+    const tplEntries = TIMELINE_TEMPLATES[tpl].map((e,i) => ({ id:Date.now()+i, time:e.time, event:e.event, done:false }));
+    saveEntries([...entries, ...tplEntries].sort((a,b)=>a.time.localeCompare(b.time)));
+    setShowTemplates(false);
+  };
   const toggle = (id) => saveEntries(entries.map(e=>e.id===id?{...e,done:!e.done}:e));
   const nowStr = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
   const currentIdx = entries.reduce((found,e,i)=>e.time<=nowStr?i:found, -1);
   const nextEntry = entries.find(e=>e.time>nowStr);
+  const doneCount = entries.filter(e=>e.done).length;
   let countdown = '';
   if (nextEntry) { const [nh,nm]=nextEntry.time.split(':').map(Number); const diff=nh*60+nm-now.getHours()*60-now.getMinutes(); if (diff>0) countdown=diff>=60?`${Math.floor(diff/60)}h ${diff%60}m`:`${diff}m`; }
-  const shareTimeline = () => { const txt = entries.map(e=>`${e.time} — ${e.event}`).join('\n'); window.open(`https://wa.me/?text=${encodeURIComponent('📅 Day Plan:\n\n'+txt)}`, '_blank'); };
+  const shareTimeline = () => { const txt = entries.map(e=>`${e.time} - ${e.event}${e.done?' (done)':''}`).join('\n'); window.open(`https://wa.me/?text=${encodeURIComponent('Day Schedule:\n\n'+txt)}`, '_blank'); };
   return (
     <LightFormModal onClose={onClose} accent={accent} title="Day Timeline" emoji="🗓️">
+      {/* Next up banner */}
       {entries.length>0 && countdown && (
         <div style={{ background:`${accent}18`, border:`1px solid ${accent}40`, borderRadius:10, padding:'10px 14px', marginBottom:14, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          <div><div style={{ fontSize:9.5, fontWeight:700, color:'rgba(28,9,0,0.45)', textTransform:'uppercase', letterSpacing:'0.1em' }}>Next Up</div><div style={{ fontSize:14, fontWeight:700, color:accent }}>{nextEntry.event}</div></div>
-          <div style={{ textAlign:'right' }}><div style={{ fontSize:9.5, fontWeight:700, color:'rgba(28,9,0,0.45)', textTransform:'uppercase', letterSpacing:'0.1em' }}>In</div><div style={{ fontSize:20, fontWeight:900, color:accent }}>{countdown}</div></div>
+          <div><div style={{ fontSize:9.5, fontWeight:700, color:'rgba(28,9,0,0.45)', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:2 }}>Next Up</div><div style={{ fontSize:14, fontWeight:700, color:accent }}>{nextEntry.event}</div></div>
+          <div style={{ textAlign:'right' }}><div style={{ fontSize:9.5, fontWeight:700, color:'rgba(28,9,0,0.45)', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:2 }}>In</div><div style={{ fontSize:20, fontWeight:900, color:accent, fontVariantNumeric:'tabular-nums' }}>{countdown}</div></div>
         </div>
       )}
-      <div style={{ display:'flex', gap:8, marginBottom:14 }}>
+      {/* Progress bar */}
+      {entries.length>0 && (
+        <div style={{ marginBottom:14 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:5 }}>
+            <span style={{ fontSize:11, color:'rgba(28,9,0,0.45)', fontWeight:600 }}>{doneCount} of {entries.length} done</span>
+            <span style={{ fontSize:11, color:'rgba(28,9,0,0.35)' }}>{entries.length - doneCount} remaining</span>
+          </div>
+          <div style={{ height:5, background:'rgba(0,0,0,0.07)', borderRadius:100, overflow:'hidden' }}>
+            <div style={{ height:'100%', width:`${entries.length?doneCount/entries.length*100:0}%`, background:`linear-gradient(90deg,${accent},${accent}cc)`, borderRadius:100, transition:'width 0.4s ease' }} />
+          </div>
+        </div>
+      )}
+      {/* Add entry row */}
+      <div style={{ display:'flex', gap:8, marginBottom:10 }}>
         <input type="time" value={time} onChange={e=>setTime(e.target.value)} style={{ ...linp, width:100, flexShrink:0, colorScheme:'light', fontSize:13.5 }} />
         <input value={event} onChange={e=>setEvent(e.target.value)} onKeyDown={e=>e.key==='Enter'&&add()} placeholder="What happens?" style={{ ...linp, flex:1, fontSize:13.5 }} />
         <button onClick={add} disabled={!time||!event.trim()} style={{ background:time&&event.trim()?accent:'rgba(0,0,0,0.05)', border:'none', borderRadius:9, padding:'9px 14px', color:time&&event.trim()?'#fff':'rgba(28,9,0,0.35)', fontSize:18, fontWeight:700, cursor:'pointer', opacity:time&&event.trim()?1:0.4 }}>+</button>
       </div>
-      {entries.length>0 && <button onClick={shareTimeline} style={{ width:'100%', marginBottom:14, padding:'9px', borderRadius:9, border:'none', background:'linear-gradient(135deg,#25D366,#128C7E)', color:'#fff', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:font }}>Share Timeline on WhatsApp</button>}
+      {/* Template / action buttons */}
+      <div style={{ display:'flex', gap:8, marginBottom:14 }}>
+        <button onClick={() => setShowTemplates(!showTemplates)} style={{ flex:1, padding:'8px', borderRadius:9, border:'1.5px dashed rgba(0,0,0,0.15)', background:'transparent', color:'rgba(28,9,0,0.55)', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:font }}>
+          Load template
+        </button>
+        {entries.length>0 && <button onClick={shareTimeline} style={{ flex:1, padding:'8px', borderRadius:9, border:'none', background:'linear-gradient(135deg,#25D366,#128C7E)', color:'#fff', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:font }}>Share on WhatsApp</button>}
+      </div>
+      {/* Template picker */}
+      {showTemplates && (
+        <div style={{ marginBottom:14, padding:'12px', borderRadius:10, background:'rgba(0,0,0,0.03)', border:'1px solid rgba(0,0,0,0.08)' }}>
+          <div style={{ fontSize:11, fontWeight:700, color:'rgba(28,9,0,0.45)', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:10 }}>Choose a starting template</div>
+          <div style={{ display:'flex', gap:8 }}>
+            <button onClick={() => loadTemplate('default')} style={{ flex:1, padding:'10px 8px', borderRadius:8, border:`1.5px solid ${accent}44`, background:`${accent}10`, color:accent, fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:font }}>
+              Afternoon / Evening
+              <div style={{ fontSize:10, fontWeight:400, color:'rgba(28,9,0,0.45)', marginTop:3 }}>1 PM – 10 PM</div>
+            </button>
+            <button onClick={() => loadTemplate('morning')} style={{ flex:1, padding:'10px 8px', borderRadius:8, border:`1.5px solid ${accent}44`, background:`${accent}10`, color:accent, fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:font }}>
+              Morning / Brunch
+              <div style={{ fontSize:10, fontWeight:400, color:'rgba(28,9,0,0.45)', marginTop:3 }}>8 AM – 3 PM</div>
+            </button>
+          </div>
+        </div>
+      )}
+      {/* Timeline entries */}
       {entries.length===0 ? (
-        <div style={{ textAlign:'center', color:'rgba(28,9,0,0.35)', fontSize:13, padding:'28px 0' }}>Add time slots to build the day's schedule!</div>
+        <div style={{ textAlign:'center', color:'rgba(28,9,0,0.35)', fontSize:13, padding:'24px 0' }}>
+          <div style={{ fontSize:28, marginBottom:8, opacity:0.5 }}>🗓️</div>
+          Add your first slot above, or load a template to get started quickly.
+        </div>
       ) : (
         <div style={{ position:'relative' }}>
-          <div style={{ position:'absolute', left:44, top:0, bottom:0, width:2, background:'rgba(0,0,0,0.08)', zIndex:0 }} />
+          <div style={{ position:'absolute', left:44, top:0, bottom:0, width:2, background:'rgba(0,0,0,0.07)', zIndex:0 }} />
           {entries.map((e,i) => {
             const isNow = i===currentIdx && e.time<=nowStr;
+            const isPast = e.time<nowStr && !isNow;
             return (
               <div key={e.id} style={{ display:'flex', gap:10, alignItems:'flex-start', padding:'9px 0', position:'relative', zIndex:1 }}>
-                <div style={{ minWidth:44, fontSize:11, fontWeight:800, color:isNow?accent:e.done?'rgba(28,9,0,0.25)':'rgba(28,9,0,0.55)', textAlign:'right', paddingTop:3, flexShrink:0 }}>{e.time}</div>
-                <button onClick={()=>toggle(e.id)} style={{ width:18, height:18, borderRadius:'50%', border:`2px solid ${e.done?'#22c55e':isNow?accent:'rgba(0,0,0,0.20)'}`, background:isNow?accent+'28':e.done?'#22c55e28':'transparent', cursor:'pointer', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', marginTop:2 }}>
-                  {e.done && <span style={{ color:'#22c55e', fontSize:9, fontWeight:900 }}>✓</span>}
+                <div style={{ minWidth:44, fontSize:11, fontWeight:800, color:isNow?accent:e.done||isPast?'rgba(28,9,0,0.25)':'rgba(28,9,0,0.55)', textAlign:'right', paddingTop:3, flexShrink:0, fontVariantNumeric:'tabular-nums' }}>{e.time}</div>
+                <button onClick={()=>toggle(e.id)} style={{ width:20, height:20, borderRadius:'50%', border:`2px solid ${e.done?'#22c55e':isNow?accent:'rgba(0,0,0,0.18)'}`, background:isNow?accent+'28':e.done?'#22c55e':'transparent', cursor:'pointer', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', marginTop:1, transition:'all 0.2s' }}>
+                  {e.done && <span style={{ color:'#fff', fontSize:10, fontWeight:900, lineHeight:1 }}>✓</span>}
+                  {isNow && !e.done && <span style={{ width:8, height:8, borderRadius:'50%', background:accent, display:'block' }} />}
                 </button>
-                <div style={{ flex:1, paddingTop:1, display:'flex', alignItems:'center', gap:6 }}>
+                <div style={{ flex:1, paddingTop:2, display:'flex', alignItems:'center', gap:6, flexWrap:'wrap' }}>
                   <span style={{ fontSize:14, color:e.done?'rgba(28,9,0,0.30)':'#1C1410', textDecoration:e.done?'line-through':'none', fontFamily:font, lineHeight:1.4 }}>{e.event}</span>
-                  {isNow && <span style={{ fontSize:9, fontWeight:800, color:accent, background:`${accent}28`, padding:'2px 7px', borderRadius:100, textTransform:'uppercase', letterSpacing:'0.08em', flexShrink:0 }}>NOW</span>}
+                  {isNow && <span style={{ fontSize:9, fontWeight:800, color:accent, background:`${accent}20`, padding:'2px 7px', borderRadius:100, textTransform:'uppercase', letterSpacing:'0.08em', flexShrink:0 }}>NOW</span>}
                 </div>
-                <button onClick={()=>saveEntries(entries.filter(x=>x.id!==e.id))} style={{ background:'none', border:'none', color:'rgba(28,9,0,0.25)', cursor:'pointer', fontSize:18, lineHeight:1, paddingTop:2 }}>×</button>
+                <button onClick={()=>saveEntries(entries.filter(x=>x.id!==e.id))} style={{ background:'none', border:'none', color:'rgba(28,9,0,0.22)', cursor:'pointer', fontSize:18, lineHeight:1, paddingTop:1 }}>×</button>
               </div>
             );
           })}
@@ -3693,13 +3808,13 @@ function OccVenueNotesModal({ onClose, occasion }) {
   const openMaps = () => { if (data.address) window.open(`https://maps.google.com/?q=${encodeURIComponent(data.address)}`, '_blank'); };
   const shareWA = () => {
     const parts = [];
-    if (data.address) parts.push(`📍 *Address:* ${data.address}`);
-    if (data.parking) parts.push(`🅿️ *Parking:* ${data.parking}`);
-    if (data.contact) parts.push(`📞 *Contact:* ${data.contact}`);
-    if (data.entry)   parts.push(`🚪 *Entry:* ${data.entry}`);
-    if (data.notes)   parts.push(`📝 *Note:* ${data.notes}`);
+    if (data.address) parts.push(`*Address:* ${data.address}`);
+    if (data.parking) parts.push(`*Parking:* ${data.parking}`);
+    if (data.contact) parts.push(`*Contact:* ${data.contact}`);
+    if (data.entry)   parts.push(`*Entry:* ${data.entry}`);
+    if (data.notes)   parts.push(`*Note:* ${data.notes}`);
     if (!parts.length) return;
-    window.open(`https://wa.me/?text=${encodeURIComponent('🎉 Venue Info\n\n'+parts.join('\n\n'))}`, '_blank');
+    window.open(`https://wa.me/?text=${encodeURIComponent('Venue Info\n\n'+parts.join('\n\n'))}`, '_blank');
   };
   const ACC = "#C4973A";
   return (
@@ -3748,7 +3863,7 @@ function OccSeatingChartModal({ onClose, occasion, accent }) {
   const totalSeated = guests.filter(g=>g.table).length;
   const shareChart = () => {
     const lines = tables.map(t => { const s = guests.filter(g=>g.table===t.id).map(g=>g.name); return `${t.name} (${s.length}/${t.cap}):\n${s.map(n=>'  • '+n).join('\n')||'  (empty)'}`; });
-    window.open(`https://wa.me/?text=${encodeURIComponent('🪑 Seating Chart\n\n'+lines.join('\n\n'))}`, '_blank');
+    window.open(`https://wa.me/?text=${encodeURIComponent('Seating Chart\n\n'+lines.join('\n\n'))}`, '_blank');
   };
   return (
     <LightFormModal onClose={onClose} accent={accent} title="Seating Chart" emoji="🪑" wide>
@@ -4272,7 +4387,7 @@ function AwardsCeremony({ onClose, accent }) {
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           <button onClick={() => { setPhase("setup"); setDone(false); setCurrent(0); setRevealed(false); }} style={{ ...lBtn("rgba(0,0,0,0.07)"), color:"#1C1410", flex: 1 }}>Edit & Rerun</button>
-          <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent("🏆 *Tonight's Award Winners*\n\n" + awards.map(a => `• ${a.cat}: *${a.winner}*`).join("\n") + "\n\nCongratulations to everyone! 🎉")}`, "_blank")} style={{ ...lBtn("#25D366"), flex: 1 }}>📤 Share on WhatsApp</button>
+          <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent("Tonight's Award Winners\n\n" + awards.map(a => `• ${a.cat}: *${a.winner}*`).join("\n") + "\n\nCongratulations to everyone!")}`, "_blank")} style={{ ...lBtn("#25D366"), flex: 1 }}>Share on WhatsApp</button>
         </div>
       </div>
     </LightFormModal>
@@ -4447,7 +4562,7 @@ function RunOfShow({ onClose, accent }) {
       )}
 
       {items.length > 0 && (
-        <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent("🎬 *Run of Show*\n\n" + items.map(it => `${it.time ? it.time + "  " : ""}${it.label}${it.owner ? ` (${it.owner})` : ""}`).join("\n"))}`, "_blank")} style={{ ...lBtn("#25D366"), marginTop: 4 }}>📤 Share with Team</button>
+        <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent("Run of Show\n\n" + items.map(it => `${it.time ? it.time + "  " : ""}${it.label}${it.owner ? ` (${it.owner})` : ""}`).join("\n"))}`, "_blank")} style={{ ...lBtn("#25D366"), marginTop: 4 }}>Share with Team</button>
       )}
     </LightFormModal>
   );

@@ -159,7 +159,7 @@ function TipsByTendrSection() {
   const tertiary  = rest[1];
 
   return (
-    <section style={{ background: "#0D0700", fontFamily: sans }}>
+    <section style={{ background: "#FFFCF5", fontFamily: sans }}>
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "72px 24px 80px" }}>
 
         {/* ── Header ── */}
@@ -170,29 +170,29 @@ function TipsByTendrSection() {
           transition={{ duration: 0.48, ease: [0.25, 0.46, 0.45, 0.94] }}
           style={{ marginBottom: 40 }}
         >
-          <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(204,171,74,0.42)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 18, fontFamily: sans }}>
+          <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(180,83,9,0.55)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 18, fontFamily: sans }}>
             Tendr Journal
           </div>
           <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 24, flexWrap: "wrap", marginBottom: 12 }}>
-            <h2 style={{ fontFamily: serif, fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#FFF8EC", letterSpacing: "-0.01em", lineHeight: 1.08, margin: 0 }}>
+            <h2 style={{ fontFamily: serif, fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", letterSpacing: "-0.01em", lineHeight: 1.08, margin: 0 }}>
               Free Event Planning Guides
             </h2>
             <button
               onClick={() => navigate("/guides")}
-              style={{ background: "none", border: "none", color: "rgba(204,171,74,0.52)", fontSize: 13, cursor: "pointer", fontFamily: sans, padding: 0, whiteSpace: "nowrap", flexShrink: 0, transition: "color 0.15s" }}
-              onMouseEnter={e => e.currentTarget.style.color = "#CCAB4A"}
-              onMouseLeave={e => e.currentTarget.style.color = "rgba(204,171,74,0.52)"}
+              style={{ background: "none", border: "none", color: "#C47A2E", fontSize: 13, cursor: "pointer", fontFamily: sans, padding: 0, whiteSpace: "nowrap", flexShrink: 0, transition: "color 0.15s" }}
+              onMouseEnter={e => e.currentTarget.style.color = "#9A5E1E"}
+              onMouseLeave={e => e.currentTarget.style.color = "#C47A2E"}
             >
               View all guides →
             </button>
           </div>
-          <p style={{ fontSize: 14, color: "rgba(255,248,236,0.35)", margin: 0, lineHeight: 1.7, maxWidth: 400 }}>
+          <p style={{ fontSize: 14, color: "rgba(44,26,14,0.55)", margin: 0, lineHeight: 1.7, maxWidth: 400 }}>
             Practical guides for budgeting, decorating, and planning better events.
           </p>
         </motion.div>
 
         {/* ── Hairline ── */}
-        <div style={{ height: 1, background: "rgba(255,248,236,0.07)", marginBottom: 2 }} />
+        <div style={{ height: 1, background: "rgba(44,26,14,0.10)", marginBottom: 2 }} />
 
         {/* ── Photo grid — featured + secondary ── */}
         <motion.div

@@ -711,6 +711,7 @@ function InfoRow({ icon, label, value }) {
 export function MyEventFloatDesktop() {
   const [plan, setPlan] = useState(null);
   const [modal, setModal] = useState(false);  // null | 'mini' | 'full'
+  const [minimized, setMinimized] = useState(false);
   const reduxFormData = useSelector(s => s.eventPlanning?.formData);
 
   const HIDE = ['/login', '/signup', '/otp', '/vendor/register', '/booking/payment'];
@@ -727,7 +728,7 @@ export function MyEventFloatDesktop() {
     return () => { window.removeEventListener('storage', refresh); window.removeEventListener('tendr:plan-confirmed', refresh); };
   }, [refresh]);
 
-  if (!plan || hidden) return null;
+  if (!plan || hidden || minimized) return null;
 
   const isDraft = plan._draft === true;
   const hasChat = !!(plan.conversationId);
@@ -786,6 +787,12 @@ export function MyEventFloatDesktop() {
           animation: 'myevent-pulse 2s infinite',
           flexShrink: 0,
         }} />
+        {/* Dismiss × */}
+        <span
+          onClick={e => { e.stopPropagation(); setMinimized(true); }}
+          style={{ marginLeft: 2, paddingLeft: 8, borderLeft: '1px solid rgba(255,255,255,0.22)', fontSize: 17, lineHeight: 1, opacity: 0.7, cursor: 'pointer', flexShrink: 0 }}
+          title="Hide"
+        >×</span>
         <style>{`@keyframes myevent-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.25)} }`}</style>
       </button>
 
