@@ -55,6 +55,12 @@ export default function VendorProfile() {
     performingStyle: [], genres: [], languages: [],
     instruments: [], danceStyles: [], eventTypes: [],
     bandSize: "", bio: "", socialLink: "", showreel: "",
+    setupType: "", lightsIncluded: "",
+  });
+  const [svcForm, setSvcForm] = useState({
+    photoServices: "", photographyType: [], hoursIncluded: "", editingTime: "",
+    cuisineTypes: [], cateringServiceType: [], menuType: [], beverage: "",
+    decorTypes: [], venueCoverage: [],
   });
   const [locations, setLocations] = useState([]);
   const [locInput, setLocInput]   = useState("");
@@ -89,6 +95,20 @@ export default function VendorProfile() {
           bio:             v.bio || "",
           socialLink:      v.socialLink || "",
           showreel:        v.showreel || "",
+          setupType:       v.setupType || "",
+          lightsIncluded:  v.lightsIncluded || "",
+        });
+        setSvcForm({
+          photoServices:        v.photoServices || "",
+          photographyType:      v.photographyType || [],
+          hoursIncluded:        v.hoursIncluded || "",
+          editingTime:          v.editingTime || "",
+          cuisineTypes:         v.cuisineTypes || [],
+          cateringServiceType:  v.cateringServiceType || [],
+          menuType:             v.menuType || [],
+          beverage:             v.beverage || "",
+          decorTypes:           v.decorTypes || [],
+          venueCoverage:        v.venueCoverage || [],
         });
         setLocations(v.locations || []);
       })
@@ -102,6 +122,7 @@ export default function VendorProfile() {
     setSaving(true);
     try {
       const isGig = GIG_PRO_TYPES.includes(profile?.serviceType);
+      const isSvc = ['Photographer','Caterer','Decorator'].includes(profile?.serviceType);
       const body = {
         name: form.name,
         yearsOfExperience: Number(form.yearsOfExperience) || 0,
@@ -120,6 +141,20 @@ export default function VendorProfile() {
           bio:             gigForm.bio,
           socialLink:      gigForm.socialLink,
           showreel:        gigForm.showreel,
+          setupType:       gigForm.setupType,
+          lightsIncluded:  gigForm.lightsIncluded,
+        } : {}),
+        ...(isSvc ? {
+          photoServices:       svcForm.photoServices,
+          photographyType:     svcForm.photographyType,
+          hoursIncluded:       svcForm.hoursIncluded,
+          editingTime:         svcForm.editingTime,
+          cuisineTypes:        svcForm.cuisineTypes,
+          cateringServiceType: svcForm.cateringServiceType,
+          menuType:            svcForm.menuType,
+          beverage:            svcForm.beverage,
+          decorTypes:          svcForm.decorTypes,
+          venueCoverage:       svcForm.venueCoverage,
         } : {}),
       };
       const r = await fetch(`${BASE_URL}/vendors/${vendorId}`, {
@@ -219,6 +254,7 @@ export default function VendorProfile() {
           {[
             ["info", "Business Info"],
             ...(GIG_PRO_TYPES.includes(profile?.serviceType) ? [["gig", "Performance Details"]] : []),
+            ...(['Photographer','Caterer','Decorator'].includes(profile?.serviceType) ? [["service", "Service Details"]] : []),
             ["portfolio", "Portfolio Photos"],
             ["bank", "Bank & Payments"],
           ].map(([id, label]) => (
@@ -369,6 +405,32 @@ export default function VendorProfile() {
               <ChipPicker label="Suitable For" field="eventTypes"
                 options={['Wedding', 'Birthday', 'Corporate', 'Festival', 'College Event', 'Private Party', 'Sangeet', 'Anniversary', 'Award Night']} />
 
+              {/* DJ-specific setup questions */}
+              {svc === 'DJ' && (<>
+                <div className="mb-5">
+                  <label className="block text-sm font-semibold text-gray-600 mb-2">Setup Type</label>
+                  <div className="flex gap-2 flex-wrap">
+                    {['Basic Setup','Full Production'].map(opt => (
+                      <button key={opt} type="button" onClick={() => setGig("setupType", gigForm.setupType === opt ? "" : opt)}
+                        className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${gigForm.setupType === opt ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="mb-5">
+                  <label className="block text-sm font-semibold text-gray-600 mb-2">Lights Included?</label>
+                  <div className="flex gap-2">
+                    {['Yes','No'].map(opt => (
+                      <button key={opt} type="button" onClick={() => setGig("lightsIncluded", gigForm.lightsIncluded === opt ? "" : opt)}
+                        className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${gigForm.lightsIncluded === opt ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>)}
+
               {/* Social / showreel */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2">
                 <div>
@@ -387,6 +449,80 @@ export default function VendorProfile() {
                 <button onClick={saveInfo} disabled={saving}
                   className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-bold text-sm transition-colors disabled:opacity-60">
                   {saving ? "Saving…" : "Save Performance Details"}
+                </button>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* ── Service Details Tab (Photographer / Caterer / Decorator) ── */}
+        {tab === "service" && ['Photographer','Caterer','Decorator'].includes(profile?.serviceType) && (() => {
+          const svc = profile.serviceType;
+          const setSvc = (k, v) => setSvcForm(f => ({ ...f, [k]: v }));
+          const toggleSvc = (k, val) => setSvcForm(f => ({ ...f, [k]: f[k].includes(val) ? f[k].filter(x => x !== val) : [...f[k], val] }));
+
+          const ChipSingle = ({ label, field, options }) => (
+            <div className="mb-5">
+              <label className="block text-sm font-semibold text-gray-600 mb-2">{label}</label>
+              <div className="flex flex-wrap gap-2">
+                {options.map(opt => {
+                  const active = svcForm[field] === opt;
+                  return (
+                    <button key={opt} type="button" onClick={() => setSvc(field, active ? "" : opt)}
+                      className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${active ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+
+          const ChipMulti = ({ label, field, options }) => (
+            <div className="mb-5">
+              <label className="block text-sm font-semibold text-gray-600 mb-2">{label}</label>
+              <div className="flex flex-wrap gap-2">
+                {options.map(opt => {
+                  const active = svcForm[field]?.includes(opt);
+                  return (
+                    <button key={opt} type="button" onClick={() => toggleSvc(field, opt)}
+                      className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${active ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+
+          return (
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <h2 className="text-xl font-bold text-gray-800 mb-1">Service Details</h2>
+              <p className="text-sm text-gray-500 mb-6">These details appear on your public profile and help customers choose you.</p>
+
+              {svc === 'Photographer' && (<>
+                <ChipSingle label="Services Offered" field="photoServices" options={['Photographer','Videographer','Both']} />
+                <ChipMulti label="Photography Style" field="photographyType" options={['Candid','Drone','Traditional','Cinematic']} />
+                <ChipSingle label="Hours Included" field="hoursIncluded" options={['2 hrs','4 hrs','8 hrs','Full day']} />
+                <ChipSingle label="Editing Time (days)" field="editingTime" options={['2','5','7','10+']} />
+              </>)}
+
+              {svc === 'Caterer' && (<>
+                <ChipMulti label="Cuisine Types" field="cuisineTypes" options={['North Indian','South Indian','Snacks','Chinese Starters','Punjabi','Sweets','Italian','Continental','Other']} />
+                <ChipMulti label="Service Style" field="cateringServiceType" options={['Buffet','Food Stations','Live Counter','Family Style']} />
+                <ChipMulti label="Menu Type" field="menuType" options={['Veg','Non Veg','Jain']} />
+                <ChipSingle label="Beverages Included?" field="beverage" options={['Yes','No']} />
+              </>)}
+
+              {svc === 'Decorator' && (<>
+                <ChipMulti label="Decoration Types" field="decorTypes" options={['Themed','Floral','Lighting','Balloon Art','Traditional','Modern','Rustic','Minimalist','Other']} />
+                <ChipMulti label="Venue Coverage" field="venueCoverage" options={['Interior','Exterior','Full Venue','Stage Setup','Entrance Focus','Backdrop']} />
+              </>)}
+
+              <div className="mt-6 flex justify-end">
+                <button onClick={saveInfo} disabled={saving}
+                  className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-bold text-sm transition-colors disabled:opacity-60">
+                  {saving ? "Saving…" : "Save Service Details"}
                 </button>
               </div>
             </div>

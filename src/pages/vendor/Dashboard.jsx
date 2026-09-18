@@ -3929,16 +3929,17 @@ const [tab, setTab] = useState('home');
                   </div>
                 </div>
 
-                {/* Completeness */}
+                {/* Profile Completeness + Tools — merged card */}
                 <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.12)', marginBottom:20 }}>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+                  {/* Completeness bar */}
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
                     <div style={{ fontSize:14, fontWeight:800, color:ink }}>Profile Completeness</div>
                     <div style={{ fontSize:13, fontWeight:800, color:donePct===100?'#16A34A':gold }}>{donePct}%</div>
                   </div>
-                  <div style={{ height:6, borderRadius:3, background:'rgba(196,122,46,0.1)', marginBottom:14, overflow:'hidden' }}>
+                  <div style={{ height:5, borderRadius:3, background:'rgba(196,122,46,0.1)', marginBottom:12, overflow:'hidden' }}>
                     <div style={{ height:'100%', borderRadius:3, background:donePct===100?'#16A34A':`linear-gradient(90deg,${gold},${goldLt})`, width:`${donePct}%`, transition:'width 0.5s ease' }} />
                   </div>
-                  <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
+                  <div style={{ display:'flex', flexDirection:'column', gap:6, marginBottom:14 }}>
                     {checks.map(c => (
                       <div key={c.label} style={{ display:'flex', alignItems:'center', gap:9 }}>
                         <div style={{ width:18, height:18, borderRadius:'50%', background:c.done?'rgba(22,163,74,0.1)':'rgba(196,122,46,0.07)', border:`1.5px solid ${c.done?'#16A34A':'rgba(196,122,46,0.2)'}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
@@ -3949,37 +3950,23 @@ const [tab, setTab] = useState('home');
                       </div>
                     ))}
                   </div>
-                  {donePct<100 && <button onClick={() => navigate('/vendor/profile')} style={{ marginTop:14, width:'100%', padding:'10px', borderRadius:10, border:`1.5px solid ${gold}`, background:'transparent', color:gold, fontFamily:font, fontSize:13, fontWeight:700, cursor:'pointer' }}>Complete Profile →</button>}
-                </div>
 
-                {/* Type-specific profile tools */}
-                <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.12)', marginBottom:20 }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:14 }}>
-                    <span style={{ fontSize:20 }}>{typeConfig.emoji}</span>
-                    <div style={{ fontSize:14, fontWeight:800, color:ink }}>{serviceType || 'Your'} Profile Tools</div>
-                  </div>
-                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-                    {typeConfig.profileTools.map(a => (
-                      <button key={a.label} onClick={() => navigate('/vendor/profile')}
-                        style={{ padding:'14px', borderRadius:12, border:'1.5px solid rgba(196,122,46,0.15)', background:'#FFFCF5', color:ink, textAlign:'left', cursor:'pointer', fontFamily:font, transition:'all 0.15s' }}>
-                        <div style={{ color:gold, marginBottom:6 }}>{dsic(a.icon)}</div>
-                        <div style={{ fontSize:13, fontWeight:700 }}>{a.label}</div>
-                        <div style={{ fontSize:11, color:'#9B7450', marginTop:2 }}>{a.sub}</div>
-                      </button>
-                    ))}
-                  </div>
-                  {/* Quick tips for this type */}
-                  {typeConfig.quickTips?.length > 0 && (
-                    <div style={{ marginTop:14, borderTop:'1px solid rgba(196,122,46,0.08)', paddingTop:12 }}>
-                      <div style={{ fontSize:11, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:8 }}>Tips for {serviceType||'your business'}</div>
-                      {typeConfig.quickTips.map((tip,i) => (
-                        <div key={i} style={{ display:'flex', gap:8, alignItems:'flex-start', marginBottom:i<typeConfig.quickTips.length-1?6:0 }}>
-                          <span style={{ color:gold, fontSize:12, flexShrink:0, marginTop:1 }}>→</span>
-                          <span style={{ fontSize:12, color:'#6B3A1F' }}>{tip}</span>
-                        </div>
+                  {/* Profile Tools — same card, divider */}
+                  <div style={{ borderTop:'1px solid rgba(196,122,46,0.1)', paddingTop:14 }}>
+                    <div style={{ fontSize:12, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:10 }}>Profile Tools</div>
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+                      {typeConfig.profileTools.filter(a => a.label !== 'Social Links').map(a => (
+                        <button key={a.label} onClick={() => navigate('/vendor/profile')}
+                          style={{ padding:'12px', borderRadius:12, border:'1.5px solid rgba(196,122,46,0.15)', background:'#FFFCF5', color:ink, textAlign:'left', cursor:'pointer', fontFamily:font, transition:'all 0.15s' }}>
+                          <div style={{ color:gold, marginBottom:5 }}>{dsic(a.icon)}</div>
+                          <div style={{ fontSize:12.5, fontWeight:700 }}>{a.label}</div>
+                          <div style={{ fontSize:11, color:'#9B7450', marginTop:1 }}>{a.sub}</div>
+                        </button>
                       ))}
                     </div>
-                  )}
+                  </div>
+
+                  {donePct<100 && <button onClick={() => navigate('/vendor/profile')} style={{ marginTop:12, width:'100%', padding:'10px', borderRadius:10, border:`1.5px solid ${gold}`, background:'transparent', color:gold, fontFamily:font, fontSize:13, fontWeight:700, cursor:'pointer' }}>Complete Profile →</button>}
                 </div>
 
                 {/* My Plan */}
