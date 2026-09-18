@@ -2192,7 +2192,7 @@ export default function OccasionDetail(){
 
                         {/* Suggested decor items */}
                         {(()=>{
-                          const suggestions=getSuggestedDecor(id);
+                          const suggestions=getSuggestedDecor(occasion.id);
                           return(
                             <div style={{padding:"8px 14px 4px",borderTop:`1px solid rgba(196,122,46,0.06)`}}>
                               <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:8}}>Suggested items — tap to add</div>
