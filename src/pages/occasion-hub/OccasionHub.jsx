@@ -5935,7 +5935,7 @@ const SLUG_FOR_OCC = {
 
 export default function OccasionHub({ occasion }) {
   const [open, setOpen]         = useState(null);
-  const [activeTab, setActiveTab] = useState("lobby");
+  const [activeTab, setActiveTab] = useState("plan");
   const [showSplash, setShowSplash] = useState(() => {
     try { return !localStorage.getItem(`tendr-splash-${occasion}`); } catch { return true; }
   });
@@ -6147,14 +6147,12 @@ export default function OccasionHub({ occasion }) {
   const ta = occAccent;
 
   const TAB_CFG = [
-    { id: "lobby",   label: "LOBBY",
-      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
+    { id: "plan",    label: "MANAGE",
+      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> },
     { id: "play",    label: "PLAY",
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> },
     { id: "people",  label: "PEOPLE",
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
-    { id: "plan",    label: "PLAN",
-      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> },
     { id: "moments", label: "MOMENTS",
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> },
   ];
@@ -6276,7 +6274,7 @@ export default function OccasionHub({ occasion }) {
       {showTour && !showSplash && (() => {
         const steps = [
           { icon:"👆", title:"Tap any tool",    body:"Each card opens a party tool — planner, game, or memory maker." },
-          { icon:"◈",  title:"Browse by tab",   body:"PLAY for games, PLAN for logistics, MOMENTS to capture memories." },
+          { icon:"◈",  title:"Browse by tab",   body:"MANAGE for logistics, PLAY for games, MOMENTS to capture memories." },
           { icon:"🎮", title:"Play together",   body:"Hit HOST to start a live room and play with your whole group." },
         ];
         const step = steps[tourStep];
@@ -6795,8 +6793,8 @@ export default function OccasionHub({ occasion }) {
       <div className="occ-scroll-area" style={{ flex:1, overflowY:"auto", padding:"14px 16px 110px", maxWidth:800, margin:"0 auto", width:"100%", boxSizing:"border-box", position:"relative", zIndex:1, background: pageBg }}>
 
 
-        {/* LOBBY */}
-        {activeTab === "lobby" && (
+        {/* LOBBY — removed */}
+        {activeTab === "lobby_removed" && (
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
 
             {/* Host / Join strip */}
