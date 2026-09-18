@@ -2588,18 +2588,18 @@ export default function VendorDashboard() {
 
       {/* ── Sidebar (desktop) ── */}
       {!isMobile && (
-        <div style={{ width:sideW, background:'#fff', borderRight:'1px solid rgba(196,122,46,0.1)', position:'fixed', top:0, left:0, bottom:0, display:'flex', flexDirection:'column', zIndex:100 }}>
-          <div style={{ padding:'18px 16px 14px', borderBottom:'1px solid rgba(196,122,46,0.08)', cursor:'pointer' }} onClick={() => navigate('/')}>
-            <img src={logo} alt="Tendr" style={{ height:28, display:'block', marginBottom:10 }} />
-            <div style={{ fontSize:13.5, fontWeight:800, color:ink, lineHeight:1.2 }}>{vendorName}</div>
-            {serviceType && <div style={{ fontSize:11, color:gold, fontWeight:600, marginTop:2 }}>{serviceType}</div>}
+        <div style={{ width:sideW, background:'#1C0A04', borderRight:'none', position:'fixed', top:0, left:0, bottom:0, display:'flex', flexDirection:'column', zIndex:100 }}>
+          <div style={{ padding:'18px 16px 14px', borderBottom:'1px solid rgba(204,171,74,0.15)', cursor:'pointer' }} onClick={() => navigate('/')}>
+            <img src={logo} alt="Tendr" style={{ height:28, display:'block', marginBottom:10, filter:'brightness(1.6)' }} />
+            <div style={{ fontSize:13.5, fontWeight:800, color:'rgba(255,248,236,0.92)', lineHeight:1.2 }}>{vendorName}</div>
+            {serviceType && <div style={{ fontSize:11, color:goldLt, fontWeight:600, marginTop:2 }}>{serviceType}</div>}
           </div>
           <nav style={{ padding:'10px 10px', flex:1, overflowY:'auto' }}>
             {NAV_ITEMS.reduce((acc, item, idx) => {
               const prevGroup = idx > 0 ? NAV_ITEMS[idx-1].group : null;
               if (item.group !== prevGroup) {
                 acc.push(
-                  <div key={`grp-${item.group}`} style={{ fontSize:9.5, fontWeight:800, color:'#BDA282', letterSpacing:'0.14em', textTransform:'uppercase', padding:'14px 12px 4px', marginTop: idx > 0 ? 6 : 0 }}>
+                  <div key={`grp-${item.group}`} style={{ fontSize:9.5, fontWeight:800, color:'rgba(204,171,74,0.6)', letterSpacing:'0.14em', textTransform:'uppercase', padding:'14px 12px 4px', marginTop: idx > 0 ? 6 : 0 }}>
                     {item.group}
                   </div>
                 );
@@ -2607,8 +2607,8 @@ export default function VendorDashboard() {
               const active = tab === item.key;
               acc.push(
                 <button key={item.key} id={`tour-nav-${item.key}`} onClick={() => setTab(item.key)}
-                  style={{ width:'100%', padding:'9px 12px', borderRadius:10, border:'none', background:active?'rgba(196,122,46,0.09)':'transparent', color:active?gold:'#9B7450', cursor:'pointer', fontFamily:font, fontSize:13.5, fontWeight:active?700:500, display:'flex', alignItems:'center', gap:10, marginBottom:2, transition:'all 0.15s', textAlign:'left' }}>
-                  <span style={{ color:active?gold:'#BDA282', display:'flex', flexShrink:0 }}>{item.icon}</span>
+                  style={{ width:'100%', padding:'9px 12px', paddingLeft:active?'9px':'12px', borderRadius:10, border:'none', borderLeft:active?`3px solid ${goldLt}`:'3px solid transparent', background:active?'rgba(204,171,74,0.14)':'transparent', color:active?goldLt:'rgba(255,248,236,0.82)', cursor:'pointer', fontFamily:font, fontSize:13.5, fontWeight:active?700:500, display:'flex', alignItems:'center', gap:10, marginBottom:2, transition:'all 0.15s', textAlign:'left' }}>
+                  <span style={{ color:active?goldLt:'rgba(255,248,236,0.45)', display:'flex', flexShrink:0 }}>{item.icon}</span>
                   <span style={{ flex:1 }}>{item.label}</span>
                   {item.key==='home' && todaysGigs.length>0 && <span style={{ fontSize:10, fontWeight:700, background:'rgba(22,163,74,0.12)', color:'#16A34A', borderRadius:100, padding:'1px 6px' }}>{todaysGigs.length} today</span>}
                   {item.key==='work' && (pendingCount>0||bookings.filter(b=>b.status==='Pending').length>0) && <span style={{ fontSize:10, fontWeight:700, background:'rgba(220,38,38,0.12)', color:'#DC2626', borderRadius:100, padding:'1px 6px' }}>{pendingCount+bookings.filter(b=>b.status==='Pending').length}</span>}
@@ -2619,18 +2619,18 @@ export default function VendorDashboard() {
               return acc;
             }, [])}
           </nav>
-          <div style={{ padding:'8px 10px 16px', borderTop:'1px solid rgba(196,122,46,0.08)' }}>
-            <button onClick={toggleLang} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'1px solid rgba(196,122,46,0.22)', background:'rgba(196,122,46,0.06)', color:gold, cursor:'pointer', fontFamily:font, fontSize:12.5, fontWeight:700, display:'flex', alignItems:'center', gap:10, marginBottom:6, letterSpacing:'0.01em' }}>
+          <div style={{ padding:'8px 10px 16px', borderTop:'1px solid rgba(204,171,74,0.12)' }}>
+            <button onClick={toggleLang} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'1px solid rgba(204,171,74,0.25)', background:'rgba(204,171,74,0.08)', color:goldLt, cursor:'pointer', fontFamily:font, fontSize:12.5, fontWeight:700, display:'flex', alignItems:'center', gap:10, marginBottom:6, letterSpacing:'0.01em' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
               {t('langToggle')}
             </button>
-            <button onClick={() => navigate('/vendor/chats')} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'none', background:'transparent', color:'#9B7450', cursor:'pointer', fontFamily:font, fontSize:13, display:'flex', alignItems:'center', gap:10, marginBottom:1 }}>
+            <button onClick={() => navigate('/vendor/chats')} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'none', background:'transparent', color:'rgba(255,248,236,0.55)', cursor:'pointer', fontFamily:font, fontSize:13, display:'flex', alignItems:'center', gap:10, marginBottom:1 }}>
               {dsic(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>)} {t('navChats')}
             </button>
-            <button onClick={() => navigate('/vendor/profile')} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'none', background:'transparent', color:'#9B7450', cursor:'pointer', fontFamily:font, fontSize:13, display:'flex', alignItems:'center', gap:10, marginBottom:1 }}>
+            <button onClick={() => navigate('/vendor/profile')} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'none', background:'transparent', color:'rgba(255,248,236,0.55)', cursor:'pointer', fontFamily:font, fontSize:13, display:'flex', alignItems:'center', gap:10, marginBottom:1 }}>
               {dsic(<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>)} {t('navEditProfile')}
             </button>
-            <button onClick={() => dispatch(logout()).then(() => navigate('/'))} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'none', background:'transparent', color:'#DC2626', cursor:'pointer', fontFamily:font, fontSize:13, display:'flex', alignItems:'center', gap:10 }}>
+            <button onClick={() => dispatch(logout()).then(() => navigate('/'))} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'none', background:'transparent', color:'rgba(239,68,68,0.75)', cursor:'pointer', fontFamily:font, fontSize:13, display:'flex', alignItems:'center', gap:10 }}>
               {dsic(<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>)} {t('navSignOut')}
             </button>
           </div>
@@ -2721,6 +2721,23 @@ export default function VendorDashboard() {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Quick actions */}
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:18 }}>
+                {[
+                  { label:'View Public Profile', icon:'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z', action:() => window.open(`${window.location.origin}/vendor/${vendorId}`, '_blank'), accent:gold },
+                  { label:'Share Profile', icon:'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13', action:() => { navigator.clipboard?.writeText(`${window.location.origin}/vendor/${vendorId}`).then(() => showToast(t('profileLinkCopied'))); }, accent:'#16A34A' },
+                  { label:'Create Invoice', icon:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M12 18v-6M9 15h6', action:() => { setEditQuote(null); setQuoteModal(true); }, accent:'#7C3AED' },
+                  { label:'Edit Profile', icon:'M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z', action:() => setTab('profile'), accent:'#9B7450' },
+                ].map((a, i) => (
+                  <button key={i} onClick={a.action} style={{ padding:'12px 14px', borderRadius:14, background:'#fff', border:'1px solid rgba(196,122,46,0.12)', display:'flex', alignItems:'center', gap:10, cursor:'pointer', fontFamily:font, boxShadow:'0 2px 8px rgba(28,10,4,0.04)', textAlign:'left' }}>
+                    <div style={{ width:34, height:34, borderRadius:10, background:`${a.accent}18`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={a.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={a.icon}/></svg>
+                    </div>
+                    <span style={{ fontSize:13, fontWeight:600, color:ink }}>{a.label}</span>
+                  </button>
+                ))}
               </div>
 
               {/* Milestone banner */}
