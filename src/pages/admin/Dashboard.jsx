@@ -770,6 +770,10 @@ const AdminDashboard = () => {
   const [coordSearch, setCoordSearch] = useState("");
   const [transferring, setTransferring] = useState(false);
 
+  // ── Per-booking coordinator assignment state ─────────────────────────────
+  // { [planId]: { coordinatorId, coordinatorName, referredByCoordinator, services: [] } }
+  const [bookingCoordMap, setBookingCoordMap] = useState({});
+
   const openCoordPicker = async (mode, payload) => {
     setCoordModal({ mode, payload });
     setCoordSearch("");
@@ -2222,8 +2226,87 @@ const AdminDashboard = () => {
                                 {/* Unpaid: Event Details WA + View Pinned + Mark Payment Done */}
                                 {(plan.status === "submitted" || plan.status === "draft") && (() => {
                                   const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
+                                  const coordAssign = bookingCoordMap[plan._id] || {};
+                                  const COORD_SERVICES = ['Chat Support', 'Home Visit', 'Venue Visit', 'Event Day'];
+                                  const toggleService = (svc) => {
+                                    const cur = coordAssign.services || [];
+                                    const next = cur.includes(svc) ? cur.filter(s => s !== svc) : [...cur, svc];
+                                    setBookingCoordMap(prev => ({ ...prev, [plan._id]: { ...prev[plan._id], services: next } }));
+                                  };
                                   return (
                                     <>
+                                      {/* Coordinator assignment panel */}
+                                      <div style={{ background: "#F8F4EF", borderRadius: 8, padding: "10px 12px", marginBottom: 6, border: "1px solid rgba(196,122,46,0.2)", fontSize: 11, fontFamily: "'Outfit', sans-serif" }}>
+                                        <div style={{ fontWeight: 700, color: "#2C1A0E", marginBottom: 7 }}>🎯 Coordinator Assignment</div>
+                                        {/* Coordinator picker */}
+                                        <div style={{ marginBottom: 7 }}>
+                                          <select
+                                            value={coordAssign.coordinatorId || ""}
+                                            onChange={e => {
+                                              const sel = approvedCoords.find(c => c._id === e.target.value);
+                                              setBookingCoordMap(prev => ({ ...prev, [plan._id]: { ...prev[plan._id], coordinatorId: e.target.value, coordinatorName: sel?.name || "" } }));
+                                            }}
+                                            onFocus={async () => {
+                                              if (!approvedCoords.length) {
+                                                try { const r = await fetch(`${BASE_URL}/admin/coordinators/approved`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" }); if (r.ok) setApprovedCoords(await r.json()); } catch {}
+                                              }
+                                            }}
+                                            style={{ width: "100%", padding: "5px 8px", borderRadius: 6, border: "1.5px solid #E5D5C0", fontSize: 11, fontFamily: "'Outfit', sans-serif", background: "#fff", color: "#2C1A0E", cursor: "pointer" }}
+                                          >
+                                            <option value="">— No coordinator —</option>
+                                            {approvedCoords.map(c => (
+                                              <option key={c._id} value={c._id}>{c.name} ({c.city}){c.capabilityTags?.length ? ` · ${c.capabilityTags.join(', ')}` : ''}</option>
+                                            ))}
+                                          </select>
+                                        </div>
+                                        {/* Referred toggle */}
+                                        <label style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 7, cursor: "pointer", userSelect: "none" }}>
+                                          <input type="checkbox" checked={!!coordAssign.referredByCoordinator}
+                                            onChange={e => setBookingCoordMap(prev => ({ ...prev, [plan._id]: { ...prev[plan._id], referredByCoordinator: e.target.checked } }))}
+                                            style={{ width: 14, height: 14, accentColor: "#C47A2E" }} />
+                                          <span style={{ color: "#5A3A1A", fontWeight: 600 }}>Coordinator referred this customer</span>
+                                        </label>
+                                        {/* Services for this booking */}
+                                        <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                                          {COORD_SERVICES.map(svc => {
+                                            const on = (coordAssign.services || []).includes(svc);
+                                            return (
+                                              <button key={svc} onClick={() => toggleService(svc)} style={{ padding: "3px 9px", borderRadius: 100, fontSize: 10, fontWeight: 700, cursor: "pointer", background: on ? "#C47A2E" : "#fff", color: on ? "#fff" : "#9B7450", border: on ? "none" : "1.5px solid #E5D5C0", fontFamily: "'Outfit', sans-serif" }}>{svc}</button>
+                                            );
+                                          })}
+                                        </div>
+                                        {/* Payout preview */}
+                                        {coordAssign.coordinatorId && (() => {
+                                          const services = coordAssign.services || [];
+                                          const referred = !!coordAssign.referredByCoordinator;
+                                          const hasChat = services.includes('Chat Support');
+                                          const hasHome = services.includes('Home Visit');
+                                          const hasVenue = services.includes('Venue Visit');
+                                          const hasED = services.includes('Event Day');
+                                          let pct = 0;
+                                          if (referred) {
+                                            if (hasED && (hasHome || hasVenue) && hasChat) pct = 35;
+                                            else if (hasED && hasChat) pct = 30;
+                                            else if ((hasHome || hasVenue) && hasChat) pct = 30;
+                                            else if (hasChat) pct = 30;
+                                            else pct = 20;
+                                          } else {
+                                            if (hasED && (hasHome || hasVenue)) pct = 30;
+                                            else if (hasED) pct = 20;
+                                            else if (hasHome || hasVenue) pct = 20;
+                                            else if (hasChat) pct = 10;
+                                          }
+                                          const amt = plan.totalAmount || plan.amount || 0;
+                                          const platformFee = Math.round(amt * 0.15);
+                                          const payout = Math.round(platformFee * pct / 100);
+                                          if (!pct) return null;
+                                          return (
+                                            <div style={{ marginTop: 6, padding: "5px 8px", background: "#FFF8EE", borderRadius: 6, border: "1px solid rgba(196,122,46,0.2)", color: "#C47A2E", fontWeight: 700, fontSize: 10 }}>
+                                              Payout: {pct}% of ₹{platformFee.toLocaleString('en-IN')} = ₹{payout.toLocaleString('en-IN')} to {coordAssign.coordinatorName}
+                                            </div>
+                                          );
+                                        })()}
+                                      </div>
                                       <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                                         {phone && (
                                           <a href={`https://wa.me/91${phone}?text=${encodeURIComponent(`Hi ${plan.customerId?.name || "there"}! We have received your event planning request. Your payment is currently pending — our team will confirm and process your booking shortly. — Team Tendr`)}`} target="_blank" rel="noopener noreferrer"
@@ -2233,8 +2316,16 @@ const AdminDashboard = () => {
                                         )}
                                         <button
                                           onClick={() => {
+                                            const coordData = bookingCoordMap[plan._id] || {};
                                             fetch(`${BASE_URL}/admin/event-plans/${plan._id}/mark-payment`, {
-                                              method: 'PATCH', headers: { Authorization: `Bearer ${token}` }, credentials: 'include',
+                                              method: 'PATCH',
+                                              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                              credentials: 'include',
+                                              body: JSON.stringify({
+                                                coordinatorId: coordData.coordinatorId || null,
+                                                referredByCoordinator: !!coordData.referredByCoordinator,
+                                                coordinatorServices: coordData.services || [],
+                                              }),
                                             }).then(r => { if (r.ok) setEventPlans(prev => prev.map(p => p._id === plan._id ? { ...p, status: 'in_progress' } : p)); }).catch(() => {});
                                           }}
                                           style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "none", background: "#0369a1", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
@@ -6351,6 +6442,13 @@ const AdminDashboard = () => {
           const [coords, setCoords] = React.useState([]);
           const [coordsLoaded, setCoordsLoaded] = React.useState(false);
           const [coordFilter, setCoordFilter] = React.useState("pending");
+          const [coordSubTab, setCoordSubTab] = React.useState("applications"); // "applications" | "earnings"
+          const [allEarnings, setAllEarnings] = React.useState([]);
+          const [earningsLoaded, setEarningsLoaded] = React.useState(false);
+          const [expandedEarnings, setExpandedEarnings] = React.useState({}); // { [coordId]: { entries, loaded } }
+          const [addEarningState, setAddEarningState] = React.useState({}); // { [coordId]: { amount, desc, saving } }
+          const [tagEditState, setTagEditState] = React.useState({}); // { [coordId]: { editing, tags } }
+          const CAPABILITY_TAGS = ['Chat Support', 'Home Visit', 'Venue Visit', 'Event Day'];
 
           React.useEffect(() => {
             if (coordsLoaded) return;
@@ -6358,9 +6456,49 @@ const AdminDashboard = () => {
               .then(r => r.json()).then(d => { setCoords(Array.isArray(d) ? d : d.coordinators || []); setCoordsLoaded(true); }).catch(() => setCoordsLoaded(true));
           }, []);
 
+          React.useEffect(() => {
+            if (coordSubTab !== "earnings" || earningsLoaded) return;
+            fetch(`${BASE_URL}/admin/coordinators/all-earnings`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' })
+              .then(r => r.json()).then(d => { setAllEarnings(Array.isArray(d) ? d : []); setEarningsLoaded(true); }).catch(() => setEarningsLoaded(true));
+          }, [coordSubTab]);
+
           const updateStatus = (id, status) => {
             fetch(`${BASE_URL}/admin/coordinators/${id}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, credentials: 'include', body: JSON.stringify({ status }) })
               .then(r => r.json()).then(d => { if (d.coordinator) setCoords(prev => prev.map(c => c._id === id ? d.coordinator : c)); else alert(d.error || 'Failed'); }).catch(() => alert('Network error'));
+          };
+
+          const saveTags = (id) => {
+            const ts = tagEditState[id]?.tags || [];
+            fetch(`${BASE_URL}/admin/coordinators/${id}/tags`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, credentials: 'include', body: JSON.stringify({ tags: ts }) })
+              .then(r => r.json()).then(d => {
+                if (d.coordinator) {
+                  setCoords(prev => prev.map(c => c._id === id ? { ...c, capabilityTags: d.coordinator.capabilityTags } : c));
+                  setTagEditState(prev => ({ ...prev, [id]: { editing: false, tags: d.coordinator.capabilityTags || [] } }));
+                } else alert(d.error || 'Failed');
+              }).catch(() => alert('Network error'));
+          };
+
+          const loadEarningEntries = (id) => {
+            if (expandedEarnings[id]?.loaded) {
+              setExpandedEarnings(prev => ({ ...prev, [id]: { ...prev[id], open: !prev[id].open } }));
+              return;
+            }
+            fetch(`${BASE_URL}/admin/coordinators/${id}/earnings`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' })
+              .then(r => r.json()).then(d => setExpandedEarnings(prev => ({ ...prev, [id]: { entries: d.entries || [], loaded: true, open: true, wallet: d.wallet } }))).catch(() => {});
+          };
+
+          const addEarning = (id) => {
+            const s = addEarningState[id] || {};
+            if (!s.amount || isNaN(Number(s.amount))) return;
+            setAddEarningState(prev => ({ ...prev, [id]: { ...prev[id], saving: true } }));
+            fetch(`${BASE_URL}/admin/coordinators/${id}/add-earning`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, credentials: 'include', body: JSON.stringify({ amount: Number(s.amount), description: s.desc || '' }) })
+              .then(r => r.json()).then(d => {
+                if (d.wallet !== undefined) {
+                  setCoords(prev => prev.map(c => c._id === id ? { ...c, wallet: d.wallet } : c));
+                  setExpandedEarnings(prev => ({ ...prev, [id]: { ...prev[id], loaded: false } })); // force reload
+                  setAddEarningState(prev => ({ ...prev, [id]: { amount: '', desc: '', saving: false } }));
+                } else { alert(d.error || 'Failed'); setAddEarningState(prev => ({ ...prev, [id]: { ...prev[id], saving: false } })); }
+              }).catch(() => setAddEarningState(prev => ({ ...prev, [id]: { ...prev[id], saving: false } })));
           };
 
           const filtered = coords.filter(c => coordFilter === "all" ? true : c.status === coordFilter);
@@ -6368,79 +6506,227 @@ const AdminDashboard = () => {
           return (
             <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-6 overflow-y-auto">
               <h2 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", fontFamily: F, marginBottom: 4 }}>🎯 Event Coordinators</h2>
-              <p style={{ fontSize: 13, color: "#9B7450", fontFamily: F, marginBottom: 20 }}>Review and approve coordinator applications. Approved coordinators get a dashboard + referral code.</p>
+              <p style={{ fontSize: 13, color: "#9B7450", fontFamily: F, marginBottom: 16 }}>Manage coordinator applications, capability tags, and earnings.</p>
 
-              {/* Filter tabs */}
-              <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
-                {[["pending", "⏳ Pending"], ["approved", "✅ Approved"], ["rejected", "❌ Rejected"], ["all", "All"]].map(([val, label]) => {
-                  const count = val === "all" ? coords.length : coords.filter(c => c.status === val).length;
-                  return (
-                    <button key={val} onClick={() => setCoordFilter(val)} style={{ padding: "7px 16px", borderRadius: 100, fontSize: 12, fontWeight: 700, fontFamily: F, cursor: "pointer", background: coordFilter === val ? "#C47A2E" : "#fff", color: coordFilter === val ? "#fff" : "#9B7450", border: coordFilter === val ? "none" : "1.5px solid #E5D5C0" }}>
-                      {label} <span style={{ marginLeft: 4, fontSize: 11, background: coordFilter === val ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)", color: coordFilter === val ? "#fff" : "#C47A2E", borderRadius: 100, padding: "1px 7px" }}>{count}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {!coordsLoaded && <p style={{ color: "#9B7450", fontFamily: F, fontSize: 13 }}>Loading…</p>}
-              {coordsLoaded && filtered.length === 0 && (
-                <div style={{ textAlign: "center", padding: "60px 0", color: "#9B7450", fontFamily: F }}>
-                  <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
-                  <p style={{ fontWeight: 700, color: "#2C1A0E" }}>No {coordFilter === "all" ? "" : coordFilter} applications</p>
-                </div>
-              )}
-
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                {filtered.map(c => (
-                  <div key={c._id} style={{ background: "#FFFCF5", borderRadius: 14, padding: "20px", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 2px 10px rgba(44,26,14,0.04)", fontFamily: F }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 14 }}>
-                      <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                        <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{c.name?.[0]?.toUpperCase()}</div>
-                        <div>
-                          <p style={{ margin: 0, fontWeight: 800, color: "#2C1A0E", fontSize: 16 }}>{c.name}</p>
-                          <p style={{ margin: "2px 0 0", fontSize: 12, color: "#9B7450" }}>{c.city} · {c.experience} yrs exp · {c.eventsPerMonth} events/mo</p>
-                        </div>
-                      </div>
-                      <span style={{ fontSize: 11, fontWeight: 700, borderRadius: 100, padding: "4px 12px", background: c.status === "approved" ? "#F0FDF4" : c.status === "rejected" ? "#FFF1F2" : "#FEF3C7", color: c.status === "approved" ? "#15803D" : c.status === "rejected" ? "#BE123C" : "#D97706" }}>
-                        {c.status === "approved" ? "✅ Approved" : c.status === "rejected" ? "❌ Rejected" : "⏳ Pending"}
-                      </span>
-                    </div>
-
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 8, marginBottom: 12 }}>
-                      {[["📞 Phone", c.phoneNumber], ["📧 Email", c.email], ["📅 Applied", c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN") : "—"]].map(([k, v]) => (
-                        <div key={k} style={{ background: "#F8F4EF", borderRadius: 8, padding: "7px 10px" }}>
-                          <p style={{ margin: 0, fontSize: 10, color: "#9B7450", fontWeight: 600 }}>{k}</p>
-                          <p style={{ margin: "2px 0 0", fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{v || "—"}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {c.specializations?.length > 0 && (
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
-                        {c.specializations.map(s => <span key={s} style={{ background: "#FFF8EE", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "3px 10px", fontSize: 11, fontWeight: 600, color: "#C47A2E" }}>{s}</span>)}
-                      </div>
-                    )}
-                    {c.bio && <p style={{ fontSize: 13, color: "#5A3A1A", lineHeight: 1.6, margin: "0 0 12px", background: "#FFF8EE", borderRadius: 8, padding: "8px 12px", borderLeft: "3px solid #C47A2E" }}>{c.bio}</p>}
-
-                    {c.referralCode && <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 12px" }}>Referral Code: <strong style={{ color: "#C47A2E", letterSpacing: "0.05em" }}>{c.referralCode}</strong></p>}
-
-                    {c.status === "pending" && (
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <button onClick={() => updateStatus(c._id, "approved")} style={{ padding: "8px 20px", borderRadius: 8, border: "none", background: "#15803D", color: "#fff", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>✅ Approve</button>
-                        <button onClick={() => updateStatus(c._id, "rejected")} style={{ padding: "8px 20px", borderRadius: 8, border: "1.5px solid #FCA5A5", background: "#FFF1F2", color: "#BE123C", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>❌ Reject</button>
-                      </div>
-                    )}
-                    {c.status === "approved" && (
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <button onClick={() => updateStatus(c._id, "rejected")} style={{ padding: "7px 16px", borderRadius: 8, border: "1.5px solid #FCA5A5", background: "#FFF1F2", color: "#BE123C", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Revoke Access</button>
-                      </div>
-                    )}
-                    {c.status === "rejected" && (
-                      <button onClick={() => updateStatus(c._id, "approved")} style={{ padding: "7px 16px", borderRadius: 8, border: "none", background: "#15803D", color: "#fff", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Re-Approve</button>
-                    )}
-                  </div>
+              {/* Sub-tabs */}
+              <div style={{ display: "flex", gap: 0, marginBottom: 20, borderBottom: "1.5px solid rgba(196,122,46,0.2)" }}>
+                {[["applications", "Applications"], ["earnings", "💰 Earnings"]].map(([val, label]) => (
+                  <button key={val} onClick={() => setCoordSubTab(val)} style={{ padding: "10px 20px", fontFamily: F, fontSize: 13, fontWeight: 700, background: "none", border: "none", cursor: "pointer", color: coordSubTab === val ? "#C47A2E" : "#9B7450", borderBottom: coordSubTab === val ? "2.5px solid #C47A2E" : "2.5px solid transparent", marginBottom: -1.5 }}>{label}</button>
                 ))}
               </div>
+
+              {/* ── Applications sub-tab ── */}
+              {coordSubTab === "applications" && (
+                <>
+                  {/* Filter tabs */}
+                  <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+                    {[["pending", "⏳ Pending"], ["approved", "✅ Approved"], ["rejected", "❌ Rejected"], ["all", "All"]].map(([val, label]) => {
+                      const count = val === "all" ? coords.length : coords.filter(c => c.status === val).length;
+                      return (
+                        <button key={val} onClick={() => setCoordFilter(val)} style={{ padding: "7px 16px", borderRadius: 100, fontSize: 12, fontWeight: 700, fontFamily: F, cursor: "pointer", background: coordFilter === val ? "#C47A2E" : "#fff", color: coordFilter === val ? "#fff" : "#9B7450", border: coordFilter === val ? "none" : "1.5px solid #E5D5C0" }}>
+                          {label} <span style={{ marginLeft: 4, fontSize: 11, background: coordFilter === val ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)", color: coordFilter === val ? "#fff" : "#C47A2E", borderRadius: 100, padding: "1px 7px" }}>{count}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {!coordsLoaded && <p style={{ color: "#9B7450", fontFamily: F, fontSize: 13 }}>Loading…</p>}
+                  {coordsLoaded && filtered.length === 0 && (
+                    <div style={{ textAlign: "center", padding: "60px 0", color: "#9B7450", fontFamily: F }}>
+                      <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
+                      <p style={{ fontWeight: 700, color: "#2C1A0E" }}>No {coordFilter === "all" ? "" : coordFilter} applications</p>
+                    </div>
+                  )}
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    {filtered.map(c => {
+                      const tags = tagEditState[c._id]?.editing ? tagEditState[c._id].tags : (c.capabilityTags || []);
+                      const isEditingTags = !!tagEditState[c._id]?.editing;
+                      const earningsExp = expandedEarnings[c._id];
+                      const addEs = addEarningState[c._id] || {};
+                      return (
+                        <div key={c._id} style={{ background: "#FFFCF5", borderRadius: 14, padding: "20px", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 2px 10px rgba(44,26,14,0.04)", fontFamily: F }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 14 }}>
+                            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                              <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{c.name?.[0]?.toUpperCase()}</div>
+                              <div>
+                                <p style={{ margin: 0, fontWeight: 800, color: "#2C1A0E", fontSize: 16 }}>{c.name}</p>
+                                <p style={{ margin: "2px 0 0", fontSize: 12, color: "#9B7450" }}>{c.city} · {c.experience} yrs exp · {c.eventsPerMonth} events/mo</p>
+                              </div>
+                            </div>
+                            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                              {c.status === "approved" && <span style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E" }}>💰 ₹{(c.wallet || 0).toLocaleString('en-IN')}</span>}
+                              <span style={{ fontSize: 11, fontWeight: 700, borderRadius: 100, padding: "4px 12px", background: c.status === "approved" ? "#F0FDF4" : c.status === "rejected" ? "#FFF1F2" : "#FEF3C7", color: c.status === "approved" ? "#15803D" : c.status === "rejected" ? "#BE123C" : "#D97706" }}>
+                                {c.status === "approved" ? "✅ Approved" : c.status === "rejected" ? "❌ Rejected" : "⏳ Pending"}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 8, marginBottom: 12 }}>
+                            {[["📞 Phone", c.phoneNumber], ["📧 Email", c.email], ["📅 Applied", c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN") : "—"]].map(([k, v]) => (
+                              <div key={k} style={{ background: "#F8F4EF", borderRadius: 8, padding: "7px 10px" }}>
+                                <p style={{ margin: 0, fontSize: 10, color: "#9B7450", fontWeight: 600 }}>{k}</p>
+                                <p style={{ margin: "2px 0 0", fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{v || "—"}</p>
+                              </div>
+                            ))}
+                          </div>
+
+                          {c.specializations?.length > 0 && (
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+                              {c.specializations.map(s => <span key={s} style={{ background: "#FFF8EE", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "3px 10px", fontSize: 11, fontWeight: 600, color: "#C47A2E" }}>{s}</span>)}
+                            </div>
+                          )}
+                          {c.bio && <p style={{ fontSize: 13, color: "#5A3A1A", lineHeight: 1.6, margin: "0 0 12px", background: "#FFF8EE", borderRadius: 8, padding: "8px 12px", borderLeft: "3px solid #C47A2E" }}>{c.bio}</p>}
+                          {c.referralCode && <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 12px" }}>Referral Code: <strong style={{ color: "#C47A2E", letterSpacing: "0.05em" }}>{c.referralCode}</strong></p>}
+
+                          {/* ── Capability Tags ── */}
+                          {c.status === "approved" && (
+                            <div style={{ marginBottom: 12 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                                <span style={{ fontSize: 11, fontWeight: 700, color: "#5A3A1A" }}>Capability Tags:</span>
+                                {!isEditingTags ? (
+                                  <button onClick={() => setTagEditState(prev => ({ ...prev, [c._id]: { editing: true, tags: [...(c.capabilityTags || [])] } }))} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 6, border: "1px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", cursor: "pointer", fontFamily: F, fontWeight: 600 }}>Edit</button>
+                                ) : (
+                                  <div style={{ display: "flex", gap: 5 }}>
+                                    <button onClick={() => saveTags(c._id)} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 6, border: "none", background: "#C47A2E", color: "#fff", cursor: "pointer", fontFamily: F, fontWeight: 600 }}>Save</button>
+                                    <button onClick={() => setTagEditState(prev => ({ ...prev, [c._id]: { editing: false, tags: c.capabilityTags || [] } }))} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 6, border: "1px solid #E5D5C0", background: "transparent", color: "#9B7450", cursor: "pointer", fontFamily: F }}>Cancel</button>
+                                  </div>
+                                )}
+                              </div>
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                                {CAPABILITY_TAGS.map(tag => {
+                                  const on = tags.includes(tag);
+                                  return (
+                                    <button key={tag} onClick={() => {
+                                      if (!isEditingTags) return;
+                                      const cur = tagEditState[c._id]?.tags || [];
+                                      const next = cur.includes(tag) ? cur.filter(t => t !== tag) : [...cur, tag];
+                                      setTagEditState(prev => ({ ...prev, [c._id]: { ...prev[c._id], tags: next } }));
+                                    }} style={{ padding: "3px 10px", borderRadius: 100, fontSize: 11, fontWeight: 700, cursor: isEditingTags ? "pointer" : "default", background: on ? "#C47A2E" : "#F8F4EF", color: on ? "#fff" : "#9B7450", border: on ? "none" : "1.5px solid #E5D5C0", fontFamily: F }}>{tag}</button>
+                                  );
+                                })}
+                                {!tags.length && !isEditingTags && <span style={{ fontSize: 11, color: "#9B7450", fontStyle: "italic" }}>No tags set</span>}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* ── Earnings for approved coordinators ── */}
+                          {c.status === "approved" && (
+                            <div style={{ marginBottom: 12 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                                <span style={{ fontSize: 11, fontWeight: 700, color: "#5A3A1A" }}>Wallet: <strong style={{ color: "#C47A2E" }}>₹{(c.wallet || 0).toLocaleString('en-IN')}</strong></span>
+                                <button onClick={() => loadEarningEntries(c._id)} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 6, border: "1px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", cursor: "pointer", fontFamily: F, fontWeight: 600 }}>
+                                  {earningsExp?.open ? "Hide History" : "View History"}
+                                </button>
+                              </div>
+
+                              {/* Manual add earning */}
+                              <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 6 }}>
+                                <input type="number" placeholder="Amount ₹" value={addEs.amount || ''} onChange={e => setAddEarningState(prev => ({ ...prev, [c._id]: { ...prev[c._id], amount: e.target.value } }))}
+                                  style={{ width: 90, padding: "5px 8px", borderRadius: 6, border: "1.5px solid #E5D5C0", fontFamily: F, fontSize: 11, color: "#2C1A0E", background: "#fff" }} />
+                                <input type="text" placeholder="Description (optional)" value={addEs.desc || ''} onChange={e => setAddEarningState(prev => ({ ...prev, [c._id]: { ...prev[c._id], desc: e.target.value } }))}
+                                  style={{ flex: 1, padding: "5px 8px", borderRadius: 6, border: "1.5px solid #E5D5C0", fontFamily: F, fontSize: 11, color: "#2C1A0E", background: "#fff" }} />
+                                <button onClick={() => addEarning(c._id)} disabled={addEs.saving} style={{ padding: "5px 12px", borderRadius: 6, border: "none", background: "#15803D", color: "#fff", fontFamily: F, fontWeight: 700, fontSize: 11, cursor: "pointer" }}>
+                                  {addEs.saving ? "…" : "+ Add"}
+                                </button>
+                              </div>
+
+                              {/* Earning entries */}
+                              {earningsExp?.open && earningsExp?.entries && (
+                                <div style={{ background: "#F8F4EF", borderRadius: 8, padding: "8px 10px", maxHeight: 180, overflowY: "auto" }}>
+                                  {earningsExp.entries.length === 0 && <p style={{ fontSize: 11, color: "#9B7450", margin: 0 }}>No earnings yet</p>}
+                                  {earningsExp.entries.map(e => (
+                                    <div key={e._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "6px 0", borderBottom: "1px solid rgba(196,122,46,0.1)", fontSize: 11, fontFamily: F }}>
+                                      <div>
+                                        <span style={{ fontWeight: 700, color: "#2C1A0E" }}>{e.type === 'manual' ? '🔧 Manual' : '📋 Booking'}</span>
+                                        {e.type === 'booking' && e.coordinatorPct && <span style={{ color: "#9B7450", marginLeft: 5 }}>{e.coordinatorPct}% of ₹{(e.platformFee || 0).toLocaleString('en-IN')} fee</span>}
+                                        {e.services?.length > 0 && <div style={{ color: "#9B7450", fontSize: 10 }}>{e.services.join(' · ')}{e.referredByCoordinator ? ' · Referred' : ''}</div>}
+                                        {e.description && <div style={{ color: "#9B7450", fontSize: 10, marginTop: 1 }}>{e.description}</div>}
+                                        <div style={{ color: "#9B7450", fontSize: 10 }}>{e.createdAt ? new Date(e.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}</div>
+                                      </div>
+                                      <span style={{ fontWeight: 800, color: "#15803D", whiteSpace: "nowrap", marginLeft: 8 }}>+₹{(e.amount || 0).toLocaleString('en-IN')}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Status buttons */}
+                          {c.status === "pending" && (
+                            <div style={{ display: "flex", gap: 8 }}>
+                              <button onClick={() => updateStatus(c._id, "approved")} style={{ padding: "8px 20px", borderRadius: 8, border: "none", background: "#15803D", color: "#fff", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>✅ Approve</button>
+                              <button onClick={() => updateStatus(c._id, "rejected")} style={{ padding: "8px 20px", borderRadius: 8, border: "1.5px solid #FCA5A5", background: "#FFF1F2", color: "#BE123C", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>❌ Reject</button>
+                            </div>
+                          )}
+                          {c.status === "approved" && (
+                            <div style={{ display: "flex", gap: 8 }}>
+                              <button onClick={() => updateStatus(c._id, "rejected")} style={{ padding: "7px 16px", borderRadius: 8, border: "1.5px solid #FCA5A5", background: "#FFF1F2", color: "#BE123C", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Revoke Access</button>
+                            </div>
+                          )}
+                          {c.status === "rejected" && (
+                            <button onClick={() => updateStatus(c._id, "approved")} style={{ padding: "7px 16px", borderRadius: 8, border: "none", background: "#15803D", color: "#fff", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Re-Approve</button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+
+              {/* ── Earnings sub-tab ── */}
+              {coordSubTab === "earnings" && (
+                <>
+                  {!earningsLoaded && <p style={{ color: "#9B7450", fontFamily: F, fontSize: 13 }}>Loading earnings…</p>}
+                  {earningsLoaded && allEarnings.length === 0 && (
+                    <div style={{ textAlign: "center", padding: "60px 0", color: "#9B7450", fontFamily: F }}>
+                      <div style={{ fontSize: 40, marginBottom: 12 }}>💸</div>
+                      <p style={{ fontWeight: 700, color: "#2C1A0E" }}>No earnings recorded yet</p>
+                    </div>
+                  )}
+                  {earningsLoaded && allEarnings.length > 0 && (
+                    <div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, marginBottom: 20 }}>
+                        {[
+                          ["Total Paid Out", `₹${allEarnings.reduce((s, c) => s + (c.wallet || 0), 0).toLocaleString('en-IN')}`],
+                          ["Active Coordinators", allEarnings.length],
+                          ["Total Booking Credits", allEarnings.reduce((s, c) => s + (c.bookingCount || 0), 0)],
+                          ["Total Manual Credits", allEarnings.reduce((s, c) => s + (c.manualCount || 0), 0)],
+                        ].map(([k, v]) => (
+                          <div key={k} style={{ background: "#FFFCF5", borderRadius: 10, padding: "14px 16px", border: "1.5px solid rgba(196,122,46,0.15)", fontFamily: F }}>
+                            <p style={{ margin: 0, fontSize: 11, color: "#9B7450", fontWeight: 600 }}>{k}</p>
+                            <p style={{ margin: "4px 0 0", fontSize: 20, fontWeight: 800, color: "#2C1A0E" }}>{v}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ overflowX: "auto" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: F, fontSize: 12 }}>
+                          <thead>
+                            <tr style={{ background: "#FFF8EE", borderBottom: "1.5px solid rgba(196,122,46,0.2)" }}>
+                              {["Coordinator", "City", "Ref Code", "Wallet Balance", "Booking Credits", "Manual Credits", "Last Activity"].map(h => (
+                                <th key={h} style={{ padding: "9px 12px", textAlign: "left", fontWeight: 700, color: "#5A3A1A", whiteSpace: "nowrap" }}>{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {allEarnings.sort((a, b) => (b.wallet || 0) - (a.wallet || 0)).map((c, i) => (
+                              <tr key={c._id} style={{ background: i % 2 === 0 ? "#FFFCF5" : "#fff", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+                                <td style={{ padding: "9px 12px", fontWeight: 700, color: "#2C1A0E" }}>{c.name}</td>
+                                <td style={{ padding: "9px 12px", color: "#5A3A1A" }}>{c.city || "—"}</td>
+                                <td style={{ padding: "9px 12px", color: "#C47A2E", fontWeight: 600, letterSpacing: "0.05em" }}>{c.referralCode || "—"}</td>
+                                <td style={{ padding: "9px 12px", fontWeight: 800, color: "#15803D" }}>₹{(c.wallet || 0).toLocaleString('en-IN')}</td>
+                                <td style={{ padding: "9px 12px", color: "#5A3A1A" }}>{c.bookingCount || 0}</td>
+                                <td style={{ padding: "9px 12px", color: "#5A3A1A" }}>{c.manualCount || 0}</td>
+                                <td style={{ padding: "9px 12px", color: "#9B7450", fontSize: 11 }}>{c.lastEntry ? new Date(c.lastEntry.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : "—"}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           );
         })()}

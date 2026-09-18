@@ -10,8 +10,8 @@ const ink = "#2C1A0E";
 const cream = "#FFFCF5";
 const muted = "#9B7450";
 
-const TABS = ["Overview", "Leads", "Bookings", "Chats", "Profile"];
-const TAB_ICONS = { Overview: "📊", Leads: "🎯", Bookings: "📅", Chats: "💬", Profile: "👤" };
+const TABS = ["Overview", "Leads", "Bookings", "Chats", "Earnings", "Profile"];
+const TAB_ICONS = { Overview: "📊", Leads: "🎯", Bookings: "📅", Chats: "💬", Earnings: "💰", Profile: "👤" };
 
 const LEAD_STATUS_COLORS = {
   assigned: { bg: "#EFF6FF", color: "#1D4ED8", label: "Assigned" },
@@ -67,6 +67,8 @@ export default function CoordinatorDashboard() {
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
   const [bookingFilter, setBookingFilter] = useState("All");
+  const [earnings, setEarnings] = useState(null); // { wallet, entries }
+  const [earningsLoading, setEarningsLoading] = useState(false);
   const socketRef = useRef(null);
   const chatEndRef = useRef(null);
 
@@ -94,6 +96,15 @@ export default function CoordinatorDashboard() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    if (activeTab !== "Earnings" || !token || earnings) return;
+    setEarningsLoading(true);
+    fetch(`${BASE}/coordinators/earnings`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setEarnings(d); })
+      .finally(() => setEarningsLoading(false));
+  }, [activeTab, token]);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -559,6 +570,96 @@ export default function CoordinatorDashboard() {
                 )}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ── EARNINGS ── */}
+        {!loading && activeTab === "Earnings" && (
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 800, color: ink, margin: 0 }}>💰 Your Earnings</h2>
+            </div>
+
+            {earningsLoading && <div style={{ textAlign: "center", padding: "40px 0", color: muted }}>Loading earnings…</div>}
+
+            {!earningsLoading && earnings && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                {/* Wallet balance */}
+                <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 16, padding: "24px 28px" }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(204,171,74,0.7)", margin: "0 0 6px" }}>Total Wallet Balance</p>
+                  <p style={{ fontSize: 40, fontWeight: 900, color: "#CCAB4A", margin: "0 0 4px", fontFamily: font }}>₹{Number(earnings.wallet || 0).toLocaleString("en-IN")}</p>
+                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: 0 }}>{(earnings.entries || []).filter(e => e.type === 'booking').length} booking credits · {(earnings.entries || []).filter(e => e.type === 'manual').length} manual credits</p>
+                </div>
+
+                {/* Payout structure reference */}
+                <div style={{ background: cream, borderRadius: 14, padding: "18px 20px", border: "1.5px solid rgba(196,122,46,0.15)" }}>
+                  <SectionHead>📊 How Your Payout is Calculated</SectionHead>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                    <div>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: gold, margin: "0 0 8px" }}>You Bring the Customer</p>
+                      {[["Referral only", "20%"], ["+ Chat Support", "30%"], ["+ Chat + Home/Venue Visit", "30%"], ["+ Chat + Event Day", "30%"], ["+ Chat + Visit + Event Day", "35%"]].map(([k, v]) => (
+                        <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid rgba(196,122,46,0.08)", fontSize: 12, fontFamily: font }}>
+                          <span style={{ color: muted }}>{k}</span>
+                          <span style={{ fontWeight: 700, color: ink }}>{v}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: gold, margin: "0 0 8px" }}>Tendr Gives You the Customer</p>
+                      {[["Chat Support only", "10%"], ["+ Home/Venue Visit", "20%"], ["+ Event Day", "20%"], ["+ Visit + Event Day", "30%"]].map(([k, v]) => (
+                        <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid rgba(196,122,46,0.08)", fontSize: 12, fontFamily: font }}>
+                          <span style={{ color: muted }}>{k}</span>
+                          <span style={{ fontWeight: 700, color: ink }}>{v}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <p style={{ fontSize: 11, color: muted, margin: "10px 0 0", fontStyle: "italic" }}>Payout = % × 15% of total booking value</p>
+                </div>
+
+                {/* Earnings history */}
+                <div>
+                  <SectionHead>📋 Earnings History</SectionHead>
+                  {(earnings.entries || []).length === 0 && (
+                    <div style={{ textAlign: "center", padding: "40px 0", color: muted }}>
+                      <div style={{ fontSize: 36, marginBottom: 10 }}>📭</div>
+                      <p style={{ fontWeight: 700, color: ink }}>No earnings yet</p>
+                      <p style={{ fontSize: 13 }}>Your credits will appear here once bookings are confirmed</p>
+                    </div>
+                  )}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {(earnings.entries || []).map(e => (
+                      <div key={e._id} style={{ background: cream, borderRadius: 12, padding: "14px 16px", border: "1.5px solid rgba(196,122,46,0.12)", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: e.type === 'manual' ? '#7C3AED' : gold }}>
+                              {e.type === 'manual' ? '🔧 Manual Credit' : '📋 Booking Credit'}
+                            </span>
+                            {e.referredByCoordinator && <span style={{ fontSize: 10, padding: "1px 7px", borderRadius: 100, background: "#F0FDF4", color: "#15803D", fontWeight: 700 }}>You referred</span>}
+                          </div>
+                          {e.type === 'booking' && e.coordinatorPct && (
+                            <p style={{ margin: "0 0 3px", fontSize: 12, color: muted }}>
+                              {e.coordinatorPct}% of ₹{(e.platformFee || 0).toLocaleString('en-IN')} platform fee
+                              {e.bookingValue ? ` (booking: ₹${Number(e.bookingValue).toLocaleString('en-IN')})` : ''}
+                            </p>
+                          )}
+                          {e.services?.length > 0 && (
+                            <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 3 }}>
+                              {e.services.map(s => <span key={s} style={{ fontSize: 10, padding: "1px 7px", borderRadius: 100, background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontWeight: 600 }}>{s}</span>)}
+                            </div>
+                          )}
+                          {e.description && <p style={{ margin: 0, fontSize: 11, color: muted, fontStyle: "italic" }}>{e.description}</p>}
+                          <p style={{ margin: "4px 0 0", fontSize: 11, color: muted }}>{e.createdAt ? new Date(e.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : ""}</p>
+                        </div>
+                        <div style={{ textAlign: "right", flexShrink: 0 }}>
+                          <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#15803D" }}>+₹{(e.amount || 0).toLocaleString("en-IN")}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
