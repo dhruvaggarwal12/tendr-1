@@ -2018,7 +2018,7 @@ export default function OccasionDetail(){
 
                         {/* Suggested food items */}
                         {(()=>{
-                          const suggestions=SUGGESTED_FOOD[id]||SUGGESTED_FOOD.default;
+                          const suggestions=SUGGESTED_FOOD[occasion.id]||SUGGESTED_FOOD.default;
                           return(
                             <div style={{padding:"8px 14px 4px",borderTop:`1px solid rgba(196,122,46,0.06)`}}>
                               <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:8}}>Suggested dishes — tap to add</div>
