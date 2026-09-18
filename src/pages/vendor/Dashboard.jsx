@@ -1983,14 +1983,7 @@ export default function VendorDashboard() {
   const vendorName = user?.name || 'Vendor';
   const initial = vendorName.charAt(0).toUpperCase();
 
-  // GigPro vendors (Anchor / Band / Choreographer) have their own dashboard
-  useEffect(() => {
-    if (['Anchor', 'Band', 'Choreographer'].includes(user?.serviceType)) {
-      navigate('/vendor/demo-dashboard', { replace: true });
-    }
-  }, [user?.serviceType]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const [tab, setTab] = useState('home');
+const [tab, setTab] = useState('home');
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
 

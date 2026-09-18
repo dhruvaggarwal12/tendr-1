@@ -693,9 +693,7 @@ const Navbar = ({
                             <>
                               <button onClick={() => {
                                 setShowProfileMenu(false);
-                                const GIG_PRO = ["DJ","Anchor","Emcee/Host","Band","Singer","Musician","Performer","Stand-up Comedian","Magician","AV Setup","Choreographer"];
-                                const SVC_DEMO = ["Caterer","Decorator","Photographer"];
-                                navigate(GIG_PRO.includes(user.serviceType) ? "/vendor/demo-dashboard" : SVC_DEMO.includes(user.serviceType) ? "/vendor/service-demo" : "/vendor/dashboard");
+                                navigate("/vendor/dashboard");
                               }}
                                 style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 600, color: "#C47A2E", cursor: "pointer", fontFamily: font }}
                                 onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.08)")}
@@ -904,9 +902,7 @@ const Navbar = ({
                   if (user?.isAdmin) { navigate("/AdminDashboard"); return; }
                   if (user?.role === "coordinator") { navigate("/coordinator/dashboard"); return; }
                   if (user?.serviceType || user?.role === "vendor") {
-                    const GIG_PRO = ["DJ","Anchor","Emcee/Host","Band","Singer","Musician","Performer","Stand-up Comedian","Magician","AV Setup","Choreographer"];
-                    const SVC_DEMO = ["Caterer","Decorator","Photographer"];
-                    navigate(GIG_PRO.includes(user.serviceType) ? "/vendor/demo-dashboard" : SVC_DEMO.includes(user.serviceType) ? "/vendor/service-demo" : "/vendor/dashboard");
+                    navigate("/vendor/dashboard");
                     return;
                   }
                   navigate("/dashboard");

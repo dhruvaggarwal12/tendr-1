@@ -53,14 +53,7 @@ export default function VendorLogin() {
       // Update Redux state inline (bypassing the consumer-only login action)
       dispatch({ type: 'auth/login/fulfilled', payload: { consumer: userObj, token } });
 
-      const GIG_PRO = ['DJ','Anchor','Emcee/Host','Band','Singer','Musician','Performer','Stand-up Comedian','Magician','AV Setup','Choreographer'];
-      const SERVICE_DEMO = ['Caterer','Decorator','Photographer'];
-      const dest = GIG_PRO.includes(userObj.serviceType)
-        ? '/vendor/demo-dashboard'
-        : SERVICE_DEMO.includes(userObj.serviceType)
-        ? '/vendor/service-demo'
-        : '/vendor/dashboard';
-      navigate(dest);
+      navigate('/vendor/dashboard');
     } catch (err) {
       setError('Network error — please try again');
     } finally {

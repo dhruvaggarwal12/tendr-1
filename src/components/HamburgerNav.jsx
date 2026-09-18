@@ -417,9 +417,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 <button onClick={() => {
                   if (user?.isAdmin) { navigate("/AdminDashboard"); return; }
                   if (user?.serviceType) {
-                    const GIG_PRO = ["DJ","Anchor","Emcee/Host","Band","Singer","Musician","Performer","Stand-up Comedian","Magician","AV Setup","Choreographer"];
-                    const SVC_DEMO = ["Caterer","Decorator","Photographer"];
-                    navigate(GIG_PRO.includes(user.serviceType) ? "/vendor/demo-dashboard" : SVC_DEMO.includes(user.serviceType) ? "/vendor/service-demo" : "/vendor/dashboard");
+                    navigate("/vendor/dashboard");
                     return;
                   }
                   navigate("/dashboard");
@@ -790,9 +788,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                     <button onClick={() => {
                       if (user?.isAdmin) { navigate("/AdminDashboard"); close(); return; }
                       if (user?.serviceType) {
-                        const GIG_PRO = ["DJ","Anchor","Emcee/Host","Band","Singer","Musician","Performer","Stand-up Comedian","Magician","AV Setup","Choreographer"];
-                        const SVC_DEMO = ["Caterer","Decorator","Photographer"];
-                        navigate(GIG_PRO.includes(user.serviceType) ? "/vendor/demo-dashboard" : SVC_DEMO.includes(user.serviceType) ? "/vendor/service-demo" : "/vendor/dashboard");
+                        navigate("/vendor/dashboard");
                         close(); return;
                       }
                       navigate("/dashboard"); close();

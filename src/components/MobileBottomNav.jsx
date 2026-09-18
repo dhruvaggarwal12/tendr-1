@@ -199,9 +199,7 @@ function BottomNavInner() {
         if (user?.isAdmin) { navigate("/AdminDashboard"); return; }
         // Vendor: Redux user has serviceType
         if (user?.serviceType) {
-          const GIG_PRO = ["DJ","Anchor","Emcee/Host","Band","Singer","Musician","Performer","Stand-up Comedian","Magician","AV Setup","Choreographer"];
-          const SVC_DEMO = ["Caterer","Decorator","Photographer"];
-          navigate(GIG_PRO.includes(user.serviceType) ? "/vendor/demo-dashboard" : SVC_DEMO.includes(user.serviceType) ? "/vendor/service-demo" : "/vendor/dashboard");
+          navigate("/vendor/dashboard");
           return;
         }
         navigate("/dashboard");
