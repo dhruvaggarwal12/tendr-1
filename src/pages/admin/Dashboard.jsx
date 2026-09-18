@@ -479,6 +479,12 @@ function CartOrdersTab({ token, BASE_URL }) {
   const [expanded, setExpanded] = React.useState(null);
   const [editing, setEditing] = React.useState({}); // { [id]: { status, adminNote } }
   const [saving, setSaving] = React.useState({});
+  const [coordPicker, setCoordPicker] = React.useState(null); // { orderId, customerName, orderType, phone }
+  const [approvedCoords, setApprovedCoords] = React.useState([]);
+  const [coordsLoading, setCoordsLoading] = React.useState(false);
+  const [coordSearch, setCoordSearch] = React.useState('');
+  const [assigning, setAssigning] = React.useState(false);
+  const [assignedCoords, setAssignedCoords] = React.useState({}); // { [orderId]: { name, id, tags } }
 
   const fetchOrders = React.useCallback(async () => {
     setLoading(true);
@@ -512,6 +518,39 @@ function CartOrdersTab({ token, BASE_URL }) {
       setExpanded(null);
     } catch {}
     setSaving(s => ({ ...s, [id]: false }));
+  };
+
+  const openCoordPicker = async (order) => {
+    setCoordSearch('');
+    setCoordPicker({ orderId: order._id, customerName: order.customerName, orderType: order.type, phone: order.customerPhone });
+    if (!approvedCoords.length) {
+      setCoordsLoading(true);
+      try {
+        const r = await fetch(`${BASE_URL}/admin/coordinators/approved`, { headers: { Authorization: `Bearer ${token}` } });
+        if (r.ok) setApprovedCoords(await r.json());
+      } finally { setCoordsLoading(false); }
+    }
+  };
+
+  const assignCoord = async (coord) => {
+    if (assigning || !coordPicker) return;
+    setAssigning(true);
+    try {
+      await fetch(`${BASE_URL}/admin/coordinators/assign-lead`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          coordinatorId: coord._id,
+          customerName: coordPicker.customerName,
+          eventType: CART_TYPE_LABELS[coordPicker.orderType] || coordPicker.orderType,
+          phone: coordPicker.phone,
+          notes: `Cart order – ${CART_TYPE_LABELS[coordPicker.orderType] || coordPicker.orderType}`,
+        }),
+      });
+      setAssignedCoords(prev => ({ ...prev, [coordPicker.orderId]: { name: coord.name, id: coord._id, tags: coord.capabilityTags || [] } }));
+      setCoordPicker(null);
+    } catch { alert('Assignment failed — please try again.'); }
+    finally { setAssigning(false); }
   };
 
   const fmt = (iso) => iso ? new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
@@ -605,12 +644,358 @@ function CartOrdersTab({ token, BASE_URL }) {
                         {saving[order._id] ? 'Saving…' : 'Save'}
                       </button>
                     </div>
+                    {/* Coordinator assignment */}
+                    <div style={{ marginTop: 8 }}>
+                      {assignedCoords[order._id] ? (
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', background: 'rgba(99,102,241,0.08)', borderRadius: 8, border: '1.5px solid rgba(99,102,241,0.3)', fontSize: 11, fontWeight: 600, color: '#4F46E5' }}>
+                          🎯 {assignedCoords[order._id].name}
+                          {(assignedCoords[order._id].tags || []).map(t => (
+                            <span key={t} style={{ fontSize: 10, padding: '2px 7px', background: 'rgba(99,102,241,0.12)', borderRadius: 100 }}>{t}</span>
+                          ))}
+                        </div>
+                      ) : (
+                        <button onClick={() => openCoordPicker(order)}
+                          style={{ padding: '5px 12px', borderRadius: 8, border: '1.5px solid rgba(99,102,241,0.4)', background: 'rgba(99,102,241,0.08)', color: '#4F46E5', fontWeight: 600, fontSize: 11, cursor: 'pointer' }}>
+                          🎯 Assign Coordinator
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
             );
           })}
         </div>
+      )}
+
+      {/* ── Coordinator Picker Modal ── */}
+      {coordPicker && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(28,10,4,0.55)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 500, maxHeight: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(28,10,4,0.3)', overflow: 'hidden' }}>
+            <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid rgba(196,122,46,0.15)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: '#1C0A04', fontFamily: "'Outfit',sans-serif" }}>🎯 Assign Coordinator</div>
+                <div style={{ fontSize: 12, color: '#9B7450', marginTop: 3, fontFamily: "'Outfit',sans-serif" }}>
+                  {CART_TYPE_LABELS[coordPicker.orderType] || coordPicker.orderType} · {coordPicker.customerName}
+                </div>
+              </div>
+              <button onClick={() => setCoordPicker(null)} style={{ background: 'none', border: 'none', fontSize: 20, color: '#9B7450', cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ padding: '12px 24px', borderBottom: '1px solid rgba(196,122,46,0.1)' }}>
+              <input value={coordSearch} onChange={e => setCoordSearch(e.target.value)} placeholder="Search by name or city…" autoFocus
+                style={{ width: '100%', padding: '9px 14px', borderRadius: 10, border: '1.5px solid rgba(196,122,46,0.25)', fontSize: 13, fontFamily: "'Outfit',sans-serif", outline: 'none', boxSizing: 'border-box', color: '#1C0A04' }} />
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '10px 16px' }}>
+              {coordsLoading ? (
+                <div style={{ textAlign: 'center', padding: 32, color: '#9B7450', fontFamily: "'Outfit',sans-serif" }}>Loading coordinators…</div>
+              ) : approvedCoords.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: 32, color: '#9B7450', fontFamily: "'Outfit',sans-serif" }}>No approved coordinators found.</div>
+              ) : (
+                approvedCoords
+                  .filter(c => !coordSearch || c.name.toLowerCase().includes(coordSearch.toLowerCase()) || (c.city || '').toLowerCase().includes(coordSearch.toLowerCase()))
+                  .map(c => (
+                    <div key={c._id} onClick={() => !assigning && assignCoord(c)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, marginBottom: 8, border: '1px solid rgba(196,122,46,0.15)', background: '#FFFCF5', cursor: assigning ? 'not-allowed' : 'pointer' }}>
+                      <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,#C47A2E,#CCAB4A)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, color: '#fff', flexShrink: 0 }}>{c.name[0]}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: '#1C0A04', fontFamily: "'Outfit',sans-serif" }}>{c.name}</div>
+                        <div style={{ fontSize: 11, color: '#9B7450', fontFamily: "'Outfit',sans-serif" }}>📍 {c.city} · {c.activeLeads} active lead{c.activeLeads !== 1 ? 's' : ''}</div>
+                        {(c.capabilityTags || []).length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+                            {c.capabilityTags.map(t => (
+                              <span key={t} style={{ fontSize: 10, padding: '2px 8px', background: 'rgba(99,102,241,0.1)', color: '#4F46E5', borderRadius: 100, fontWeight: 600, fontFamily: "'Outfit',sans-serif" }}>{t}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <button style={{ padding: '5px 14px', borderRadius: 100, background: 'linear-gradient(135deg,#C47A2E,#CCAB4A)', color: '#fff', fontSize: 12, fontWeight: 700, border: 'none', cursor: 'pointer', opacity: assigning ? 0.6 : 1, fontFamily: "'Outfit',sans-serif" }}>
+                        {assigning ? '…' : 'Assign →'}
+                      </button>
+                    </div>
+                  ))
+              )}
+            </div>
+            <div style={{ padding: '12px 24px', borderTop: '1px solid rgba(196,122,46,0.1)', display: 'flex', justifyContent: 'flex-end' }}>
+              <button onClick={() => setCoordPicker(null)} style={{ padding: '7px 18px', borderRadius: 100, background: '#F0E8DC', color: '#5A3820', fontSize: 12, fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: "'Outfit',sans-serif" }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CoordinatorsTab({ token, BASE_URL }) {
+  const F = "'Outfit', sans-serif";
+  const [coords, setCoords] = React.useState([]);
+  const [coordsLoaded, setCoordsLoaded] = React.useState(false);
+  const [coordFilter, setCoordFilter] = React.useState("pending");
+  const [coordSubTab, setCoordSubTab] = React.useState("applications");
+  const [allEarnings, setAllEarnings] = React.useState([]);
+  const [earningsLoaded, setEarningsLoaded] = React.useState(false);
+  const [expandedEarnings, setExpandedEarnings] = React.useState({});
+  const [addEarningState, setAddEarningState] = React.useState({});
+  const [tagEditState, setTagEditState] = React.useState({});
+  const CAPABILITY_TAGS = ['Chat Support', 'Home Visit', 'Venue Visit', 'Event Day'];
+
+  React.useEffect(() => {
+    if (coordsLoaded) return;
+    fetch(`${BASE_URL}/admin/coordinators`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' })
+      .then(r => r.json()).then(d => { setCoords(Array.isArray(d) ? d : d.coordinators || []); setCoordsLoaded(true); }).catch(() => setCoordsLoaded(true));
+  }, []);
+
+  React.useEffect(() => {
+    if (coordSubTab !== "earnings" || earningsLoaded) return;
+    fetch(`${BASE_URL}/admin/coordinators/all-earnings`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' })
+      .then(r => r.json()).then(d => { setAllEarnings(Array.isArray(d) ? d : []); setEarningsLoaded(true); }).catch(() => setEarningsLoaded(true));
+  }, [coordSubTab]);
+
+  const updateStatus = (id, status) => {
+    fetch(`${BASE_URL}/admin/coordinators/${id}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, credentials: 'include', body: JSON.stringify({ status }) })
+      .then(r => r.json()).then(d => { if (d.coordinator) setCoords(prev => prev.map(c => c._id === id ? d.coordinator : c)); else alert(d.error || 'Failed'); }).catch(() => alert('Network error'));
+  };
+
+  const saveTags = (id) => {
+    const ts = tagEditState[id]?.tags || [];
+    fetch(`${BASE_URL}/admin/coordinators/${id}/tags`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, credentials: 'include', body: JSON.stringify({ tags: ts }) })
+      .then(r => r.json()).then(d => {
+        if (d.coordinator) {
+          setCoords(prev => prev.map(c => c._id === id ? { ...c, capabilityTags: d.coordinator.capabilityTags } : c));
+          setTagEditState(prev => ({ ...prev, [id]: { editing: false, tags: d.coordinator.capabilityTags || [] } }));
+        } else alert(d.error || 'Failed');
+      }).catch(() => alert('Network error'));
+  };
+
+  const loadEarningEntries = (id) => {
+    if (expandedEarnings[id]?.loaded) {
+      setExpandedEarnings(prev => ({ ...prev, [id]: { ...prev[id], open: !prev[id].open } }));
+      return;
+    }
+    fetch(`${BASE_URL}/admin/coordinators/${id}/earnings`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' })
+      .then(r => r.json()).then(d => setExpandedEarnings(prev => ({ ...prev, [id]: { entries: d.entries || [], loaded: true, open: true, wallet: d.wallet } }))).catch(() => {});
+  };
+
+  const addEarning = (id) => {
+    const s = addEarningState[id] || {};
+    if (!s.amount || isNaN(Number(s.amount))) return;
+    setAddEarningState(prev => ({ ...prev, [id]: { ...prev[id], saving: true } }));
+    fetch(`${BASE_URL}/admin/coordinators/${id}/add-earning`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, credentials: 'include', body: JSON.stringify({ amount: Number(s.amount), description: s.desc || '' }) })
+      .then(r => r.json()).then(d => {
+        if (d.wallet !== undefined) {
+          setCoords(prev => prev.map(c => c._id === id ? { ...c, wallet: d.wallet } : c));
+          setExpandedEarnings(prev => ({ ...prev, [id]: { ...prev[id], loaded: false } }));
+          setAddEarningState(prev => ({ ...prev, [id]: { amount: '', desc: '', saving: false } }));
+        } else { alert(d.error || 'Failed'); setAddEarningState(prev => ({ ...prev, [id]: { ...prev[id], saving: false } })); }
+      }).catch(() => setAddEarningState(prev => ({ ...prev, [id]: { ...prev[id], saving: false } })));
+  };
+
+  const filtered = coords.filter(c => coordFilter === "all" ? true : c.status === coordFilter);
+
+  return (
+    <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-6 overflow-y-auto">
+      <h2 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", fontFamily: F, marginBottom: 4 }}>🎯 Event Coordinators</h2>
+      <p style={{ fontSize: 13, color: "#9B7450", fontFamily: F, marginBottom: 16 }}>Manage coordinator applications, capability tags, and earnings.</p>
+
+      <div style={{ display: "flex", gap: 0, marginBottom: 20, borderBottom: "1.5px solid rgba(196,122,46,0.2)" }}>
+        {[["applications", "Applications"], ["earnings", "💰 Earnings"]].map(([val, label]) => (
+          <button key={val} onClick={() => setCoordSubTab(val)} style={{ padding: "10px 20px", fontFamily: F, fontSize: 13, fontWeight: 700, background: "none", border: "none", cursor: "pointer", color: coordSubTab === val ? "#C47A2E" : "#9B7450", borderBottom: coordSubTab === val ? "2.5px solid #C47A2E" : "2.5px solid transparent", marginBottom: -1.5 }}>{label}</button>
+        ))}
+      </div>
+
+      {coordSubTab === "applications" && (
+        <>
+          <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+            {[["pending", "⏳ Pending"], ["approved", "✅ Approved"], ["rejected", "❌ Rejected"], ["all", "All"]].map(([val, label]) => {
+              const count = val === "all" ? coords.length : coords.filter(c => c.status === val).length;
+              return (
+                <button key={val} onClick={() => setCoordFilter(val)} style={{ padding: "7px 16px", borderRadius: 100, fontSize: 12, fontWeight: 700, fontFamily: F, cursor: "pointer", background: coordFilter === val ? "#C47A2E" : "#fff", color: coordFilter === val ? "#fff" : "#9B7450", border: coordFilter === val ? "none" : "1.5px solid #E5D5C0" }}>
+                  {label} <span style={{ marginLeft: 4, fontSize: 11, background: coordFilter === val ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)", color: coordFilter === val ? "#fff" : "#C47A2E", borderRadius: 100, padding: "1px 7px" }}>{count}</span>
+                </button>
+              );
+            })}
+          </div>
+          {!coordsLoaded && <p style={{ color: "#9B7450", fontFamily: F, fontSize: 13 }}>Loading…</p>}
+          {coordsLoaded && filtered.length === 0 && (
+            <div style={{ textAlign: "center", padding: "60px 0", color: "#9B7450", fontFamily: F }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
+              <p style={{ fontWeight: 700, color: "#2C1A0E" }}>No {coordFilter === "all" ? "" : coordFilter} applications</p>
+            </div>
+          )}
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {filtered.map(c => {
+              const tags = tagEditState[c._id]?.editing ? tagEditState[c._id].tags : (c.capabilityTags || []);
+              const isEditingTags = !!tagEditState[c._id]?.editing;
+              const earningsExp = expandedEarnings[c._id];
+              const addEs = addEarningState[c._id] || {};
+              return (
+                <div key={c._id} style={{ background: "#FFFCF5", borderRadius: 14, padding: "20px", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 2px 10px rgba(44,26,14,0.04)", fontFamily: F }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12, marginBottom: 14 }}>
+                    <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                      <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{c.name?.[0]?.toUpperCase()}</div>
+                      <div>
+                        <p style={{ margin: 0, fontWeight: 800, color: "#2C1A0E", fontSize: 16 }}>{c.name}</p>
+                        <p style={{ margin: "2px 0 0", fontSize: 12, color: "#9B7450" }}>{c.city} · {c.experience} yrs exp · {c.eventsPerMonth} events/mo</p>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                      {c.status === "approved" && <span style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E" }}>💰 ₹{(c.wallet || 0).toLocaleString('en-IN')}</span>}
+                      <span style={{ fontSize: 11, fontWeight: 700, borderRadius: 100, padding: "4px 12px", background: c.status === "approved" ? "#F0FDF4" : c.status === "rejected" ? "#FFF1F2" : "#FEF3C7", color: c.status === "approved" ? "#15803D" : c.status === "rejected" ? "#BE123C" : "#D97706" }}>
+                        {c.status === "approved" ? "✅ Approved" : c.status === "rejected" ? "❌ Rejected" : "⏳ Pending"}
+                      </span>
+                    </div>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 8, marginBottom: 12 }}>
+                    {[["📞 Phone", c.phoneNumber], ["📧 Email", c.email], ["📅 Applied", c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN") : "—"]].map(([k, v]) => (
+                      <div key={k} style={{ background: "#F8F4EF", borderRadius: 8, padding: "7px 10px" }}>
+                        <p style={{ margin: 0, fontSize: 10, color: "#9B7450", fontWeight: 600 }}>{k}</p>
+                        <p style={{ margin: "2px 0 0", fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{v || "—"}</p>
+                      </div>
+                    ))}
+                  </div>
+                  {c.specializations?.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+                      {c.specializations.map(s => <span key={s} style={{ background: "#FFF8EE", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "3px 10px", fontSize: 11, fontWeight: 600, color: "#C47A2E" }}>{s}</span>)}
+                    </div>
+                  )}
+                  {c.bio && <p style={{ fontSize: 13, color: "#5A3A1A", lineHeight: 1.6, margin: "0 0 12px", background: "#FFF8EE", borderRadius: 8, padding: "8px 12px", borderLeft: "3px solid #C47A2E" }}>{c.bio}</p>}
+                  {c.referralCode && <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 12px" }}>Referral Code: <strong style={{ color: "#C47A2E", letterSpacing: "0.05em" }}>{c.referralCode}</strong></p>}
+                  {c.status === "approved" && (
+                    <div style={{ marginBottom: 12 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#5A3A1A" }}>Capability Tags:</span>
+                        {!isEditingTags ? (
+                          <button onClick={() => setTagEditState(prev => ({ ...prev, [c._id]: { editing: true, tags: [...(c.capabilityTags || [])] } }))} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 6, border: "1px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", cursor: "pointer", fontFamily: F, fontWeight: 600 }}>Edit</button>
+                        ) : (
+                          <div style={{ display: "flex", gap: 5 }}>
+                            <button onClick={() => saveTags(c._id)} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 6, border: "none", background: "#C47A2E", color: "#fff", cursor: "pointer", fontFamily: F, fontWeight: 600 }}>Save</button>
+                            <button onClick={() => setTagEditState(prev => ({ ...prev, [c._id]: { editing: false, tags: c.capabilityTags || [] } }))} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 6, border: "1px solid #E5D5C0", background: "transparent", color: "#9B7450", cursor: "pointer", fontFamily: F }}>Cancel</button>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                        {CAPABILITY_TAGS.map(tag => {
+                          const on = tags.includes(tag);
+                          return (
+                            <button key={tag} onClick={() => {
+                              if (!isEditingTags) return;
+                              const cur = tagEditState[c._id]?.tags || [];
+                              const next = cur.includes(tag) ? cur.filter(t => t !== tag) : [...cur, tag];
+                              setTagEditState(prev => ({ ...prev, [c._id]: { ...prev[c._id], tags: next } }));
+                            }} style={{ padding: "3px 10px", borderRadius: 100, fontSize: 11, fontWeight: 700, cursor: isEditingTags ? "pointer" : "default", background: on ? "#C47A2E" : "#F8F4EF", color: on ? "#fff" : "#9B7450", border: on ? "none" : "1.5px solid #E5D5C0", fontFamily: F }}>{tag}</button>
+                          );
+                        })}
+                        {!tags.length && !isEditingTags && <span style={{ fontSize: 11, color: "#9B7450", fontStyle: "italic" }}>No tags set</span>}
+                      </div>
+                    </div>
+                  )}
+                  {c.status === "approved" && (
+                    <div style={{ marginBottom: 12 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#5A3A1A" }}>Wallet: <strong style={{ color: "#C47A2E" }}>₹{(c.wallet || 0).toLocaleString('en-IN')}</strong></span>
+                        <button onClick={() => loadEarningEntries(c._id)} style={{ fontSize: 10, padding: "2px 8px", borderRadius: 6, border: "1px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", cursor: "pointer", fontFamily: F, fontWeight: 600 }}>
+                          {earningsExp?.open ? "Hide History" : "View History"}
+                        </button>
+                      </div>
+                      <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 6 }}>
+                        <input type="number" placeholder="Amount ₹" value={addEs.amount || ''} onChange={e => setAddEarningState(prev => ({ ...prev, [c._id]: { ...prev[c._id], amount: e.target.value } }))}
+                          style={{ width: 90, padding: "5px 8px", borderRadius: 6, border: "1.5px solid #E5D5C0", fontFamily: F, fontSize: 11, color: "#2C1A0E", background: "#fff" }} />
+                        <input type="text" placeholder="Description (optional)" value={addEs.desc || ''} onChange={e => setAddEarningState(prev => ({ ...prev, [c._id]: { ...prev[c._id], desc: e.target.value } }))}
+                          style={{ flex: 1, padding: "5px 8px", borderRadius: 6, border: "1.5px solid #E5D5C0", fontFamily: F, fontSize: 11, color: "#2C1A0E", background: "#fff" }} />
+                        <button onClick={() => addEarning(c._id)} disabled={addEs.saving} style={{ padding: "5px 12px", borderRadius: 6, border: "none", background: "#15803D", color: "#fff", fontFamily: F, fontWeight: 700, fontSize: 11, cursor: "pointer" }}>
+                          {addEs.saving ? "…" : "+ Add"}
+                        </button>
+                      </div>
+                      {earningsExp?.open && earningsExp?.entries && (
+                        <div style={{ background: "#F8F4EF", borderRadius: 8, padding: "8px 10px", maxHeight: 180, overflowY: "auto" }}>
+                          {earningsExp.entries.length === 0 && <p style={{ fontSize: 11, color: "#9B7450", margin: 0 }}>No earnings yet</p>}
+                          {earningsExp.entries.map(e => (
+                            <div key={e._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "6px 0", borderBottom: "1px solid rgba(196,122,46,0.1)", fontSize: 11, fontFamily: F }}>
+                              <div>
+                                <span style={{ fontWeight: 700, color: "#2C1A0E" }}>{e.type === 'manual' ? '🔧 Manual' : '📋 Booking'}</span>
+                                {e.type === 'booking' && e.coordinatorPct && <span style={{ color: "#9B7450", marginLeft: 5 }}>{e.coordinatorPct}% of ₹{(e.platformFee || 0).toLocaleString('en-IN')} fee</span>}
+                                {e.services?.length > 0 && <div style={{ color: "#9B7450", fontSize: 10 }}>{e.services.join(' · ')}{e.referredByCoordinator ? ' · Referred' : ''}</div>}
+                                {e.description && <div style={{ color: "#9B7450", fontSize: 10, marginTop: 1 }}>{e.description}</div>}
+                                <div style={{ color: "#9B7450", fontSize: 10 }}>{e.createdAt ? new Date(e.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}</div>
+                              </div>
+                              <span style={{ fontWeight: 800, color: "#15803D", whiteSpace: "nowrap", marginLeft: 8 }}>+₹{(e.amount || 0).toLocaleString('en-IN')}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {c.status === "pending" && (
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button onClick={() => updateStatus(c._id, "approved")} style={{ padding: "8px 20px", borderRadius: 8, border: "none", background: "#15803D", color: "#fff", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>✅ Approve</button>
+                      <button onClick={() => updateStatus(c._id, "rejected")} style={{ padding: "8px 20px", borderRadius: 8, border: "1.5px solid #FCA5A5", background: "#FFF1F2", color: "#BE123C", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>❌ Reject</button>
+                    </div>
+                  )}
+                  {c.status === "approved" && (
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button onClick={() => updateStatus(c._id, "rejected")} style={{ padding: "7px 16px", borderRadius: 8, border: "1.5px solid #FCA5A5", background: "#FFF1F2", color: "#BE123C", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Revoke Access</button>
+                    </div>
+                  )}
+                  {c.status === "rejected" && (
+                    <button onClick={() => updateStatus(c._id, "approved")} style={{ padding: "7px 16px", borderRadius: 8, border: "none", background: "#15803D", color: "#fff", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Re-Approve</button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {coordSubTab === "earnings" && (
+        <>
+          {!earningsLoaded && <p style={{ color: "#9B7450", fontFamily: F, fontSize: 13 }}>Loading earnings…</p>}
+          {earningsLoaded && allEarnings.length === 0 && (
+            <div style={{ textAlign: "center", padding: "60px 0", color: "#9B7450", fontFamily: F }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>💸</div>
+              <p style={{ fontWeight: 700, color: "#2C1A0E" }}>No earnings recorded yet</p>
+            </div>
+          )}
+          {earningsLoaded && allEarnings.length > 0 && (
+            <div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, marginBottom: 20 }}>
+                {[
+                  ["Total Paid Out", `₹${allEarnings.reduce((s, c) => s + (c.wallet || 0), 0).toLocaleString('en-IN')}`],
+                  ["Active Coordinators", allEarnings.length],
+                  ["Total Booking Credits", allEarnings.reduce((s, c) => s + (c.bookingCount || 0), 0)],
+                  ["Total Manual Credits", allEarnings.reduce((s, c) => s + (c.manualCount || 0), 0)],
+                ].map(([k, v]) => (
+                  <div key={k} style={{ background: "#FFFCF5", borderRadius: 10, padding: "14px 16px", border: "1.5px solid rgba(196,122,46,0.15)", fontFamily: F }}>
+                    <p style={{ margin: 0, fontSize: 11, color: "#9B7450", fontWeight: 600 }}>{k}</p>
+                    <p style={{ margin: "4px 0 0", fontSize: 20, fontWeight: 800, color: "#2C1A0E" }}>{v}</p>
+                  </div>
+                ))}
+              </div>
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: F, fontSize: 12 }}>
+                  <thead>
+                    <tr style={{ background: "#FFF8EE", borderBottom: "1.5px solid rgba(196,122,46,0.2)" }}>
+                      {["Coordinator", "City", "Ref Code", "Wallet Balance", "Booking Credits", "Manual Credits", "Last Activity"].map(h => (
+                        <th key={h} style={{ padding: "9px 12px", textAlign: "left", fontWeight: 700, color: "#5A3A1A", whiteSpace: "nowrap" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allEarnings.sort((a, b) => (b.wallet || 0) - (a.wallet || 0)).map((c, i) => (
+                      <tr key={c._id} style={{ background: i % 2 === 0 ? "#FFFCF5" : "#fff", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+                        <td style={{ padding: "9px 12px", fontWeight: 700, color: "#2C1A0E" }}>{c.name}</td>
+                        <td style={{ padding: "9px 12px", color: "#5A3A1A" }}>{c.city || "—"}</td>
+                        <td style={{ padding: "9px 12px", color: "#C47A2E", fontWeight: 600, letterSpacing: "0.05em" }}>{c.referralCode || "—"}</td>
+                        <td style={{ padding: "9px 12px", fontWeight: 800, color: "#15803D" }}>₹{(c.wallet || 0).toLocaleString('en-IN')}</td>
+                        <td style={{ padding: "9px 12px", color: "#5A3A1A" }}>{c.bookingCount || 0}</td>
+                        <td style={{ padding: "9px 12px", color: "#5A3A1A" }}>{c.manualCount || 0}</td>
+                        <td style={{ padding: "9px 12px", color: "#9B7450", fontSize: 11 }}>{c.lastEntry ? new Date(c.lastEntry.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -6437,17 +6822,12 @@ const AdminDashboard = () => {
         )}
 
         {/* ── COORDINATORS TAB ── */}
-        {activeDropdown === "coordinators" && (() => {
+        {activeDropdown === "coordinators" && (
+          <CoordinatorsTab token={token} BASE_URL={BASE_URL} />
+        )}
+
+        {false && (() => {
           const F = "'Outfit', sans-serif";
-          const [coords, setCoords] = React.useState([]);
-          const [coordsLoaded, setCoordsLoaded] = React.useState(false);
-          const [coordFilter, setCoordFilter] = React.useState("pending");
-          const [coordSubTab, setCoordSubTab] = React.useState("applications"); // "applications" | "earnings"
-          const [allEarnings, setAllEarnings] = React.useState([]);
-          const [earningsLoaded, setEarningsLoaded] = React.useState(false);
-          const [expandedEarnings, setExpandedEarnings] = React.useState({}); // { [coordId]: { entries, loaded } }
-          const [addEarningState, setAddEarningState] = React.useState({}); // { [coordId]: { amount, desc, saving } }
-          const [tagEditState, setTagEditState] = React.useState({}); // { [coordId]: { editing, tags } }
           const CAPABILITY_TAGS = ['Chat Support', 'Home Visit', 'Venue Visit', 'Event Day'];
 
           React.useEffect(() => {
