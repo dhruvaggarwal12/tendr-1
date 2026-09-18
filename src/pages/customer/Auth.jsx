@@ -26,6 +26,92 @@ const EyeIcon = ({ open }) => (
   </svg>
 );
 
+const HAS_GOOGLE = !!import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+function GoogleAuthBtn({ accountType, isBusy }) {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [loading, setLoading] = useState(false);
+  const [gError, setGError] = useState("");
+
+  const handleAuth = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setLoading(true);
+      setGError("");
+      try {
+        const BASE_URL = import.meta.env.VITE_BASE_URL;
+        const res = await fetch(`${BASE_URL}/auth/google`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: tokenResponse.access_token, accountType }),
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (!res.ok) { setGError(data.message || "Google sign-in failed. Please try again."); return; }
+        dispatch({ type: "auth/login/fulfilled", payload: data });
+        const loggedUser = data.consumer;
+        if (loggedUser?.isAdmin) { navigate("/AdminDashboard"); return; }
+        if (loggedUser?.accountType === "vendor") { navigate("/vendor/register"); return; }
+        if (loggedUser?.accountType === "company") { navigate("/dashboard"); return; }
+        window.dispatchEvent(new CustomEvent("tendr:show-pwa-prompt", { detail: { source: "signup" } }));
+        navigate(location.state?.returnTo || "/");
+        setTimeout(() => window.scrollTo({ top: 0, behavior: "instant" }), 0);
+      } catch {
+        setGError("Google sign-in failed. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: () => setGError("Google sign-in was cancelled or failed."),
+  });
+
+  return (
+    <>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0 4px" }}>
+        <div style={{ flex: 1, height: 1, background: "rgba(139,69,19,0.15)" }} />
+        <span style={{ fontSize: 12, color: "#9B7450", fontFamily: font, fontWeight: 500, whiteSpace: "nowrap" }}>or continue with</span>
+        <div style={{ flex: 1, height: 1, background: "rgba(139,69,19,0.15)" }} />
+      </div>
+      {gError && (
+        <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.2)", borderRadius: 10, padding: "10px 14px", marginBottom: 10, fontSize: 13, color: "#C0392B", textAlign: "center", fontFamily: font }}>
+          {gError}
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={() => { setGError(""); handleAuth(); }}
+        disabled={loading || isBusy}
+        style={{
+          width: "100%", padding: "11px 16px", borderRadius: 12,
+          border: "1.5px solid rgba(139,69,19,0.2)", background: "#fff",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+          cursor: loading || isBusy ? "not-allowed" : "pointer",
+          fontFamily: font, fontSize: 14.5, fontWeight: 600, color: "#2C1A0E",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.07)", transition: "all 0.18s",
+          opacity: loading || isBusy ? 0.6 : 1,
+        }}
+      >
+        {loading ? (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83">
+              <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite"/>
+            </path>
+          </svg>
+        ) : (
+          <svg width="18" height="18" viewBox="0 0 48 48">
+            <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.5 6.5 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/>
+            <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.5 6.5 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+            <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.3 35.3 26.8 36 24 36c-5.3 0-9.7-3.3-11.3-8H6.3C9.7 35.7 16.3 40 24 40v4z" transform="translate(0,-2)"/>
+            <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.6l6.2 5.2C41 36.5 44 31 44 24c0-1.3-.1-2.6-.4-3.9z"/>
+          </svg>
+        )}
+        {loading ? "Signing in…" : "Continue with Google"}
+      </button>
+    </>
+  );
+}
+
 const inputStyle = {
   width: "100%",
   padding: "11px 14px",
@@ -69,44 +155,6 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState("");
   const [slowMsg, setSlowMsg] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [googleError, setGoogleError] = useState("");
-
-  const handleGoogleAuth = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      setGoogleLoading(true);
-      setGoogleError("");
-      try {
-        const BASE_URL = import.meta.env.VITE_BASE_URL;
-        const res = await fetch(`${BASE_URL}/auth/google`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: tokenResponse.access_token, accountType }),
-          credentials: "include",
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          setGoogleError(data.message || "Google sign-in failed. Please try again.");
-          return;
-        }
-        dispatch({ type: "auth/login/fulfilled", payload: data });
-        const loggedUser = data.consumer;
-        if (loggedUser?.isAdmin) { navigate("/AdminDashboard"); return; }
-        if (loggedUser?.accountType === "vendor") { navigate("/vendor/register"); return; }
-        if (loggedUser?.accountType === "company") { navigate("/dashboard"); return; }
-        window.dispatchEvent(new CustomEvent("tendr:show-pwa-prompt", { detail: { source: "signup" } }));
-        const returnTo = location.state?.returnTo;
-        navigate(returnTo || "/");
-        setTimeout(() => window.scrollTo({ top: 0, behavior: "instant" }), 0);
-      } catch {
-        setGoogleError("Google sign-in failed. Please try again.");
-      } finally {
-        setGoogleLoading(false);
-      }
-    },
-    onError: () => setGoogleError("Google sign-in was cancelled or failed."),
-  });
-
   useEffect(() => {
     setIsSignup(location.pathname === "/signup");
     dispatch(clearError());
@@ -788,49 +836,8 @@ const Auth = () => {
           )}
 
           {/* Google Sign-In — customer only; hidden for vendor/coordinator login and non-personal signup */}
-          {!(isSignup && signupStep === "form" && accountType !== "personal") && !(!isSignup && loginType !== "customer") && (
-            <>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0 4px" }}>
-                <div style={{ flex: 1, height: 1, background: "rgba(139,69,19,0.15)" }} />
-                <span style={{ fontSize: 12, color: "#9B7450", fontFamily: font, fontWeight: 500, whiteSpace: "nowrap" }}>or continue with</span>
-                <div style={{ flex: 1, height: 1, background: "rgba(139,69,19,0.15)" }} />
-              </div>
-              {googleError && (
-                <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.2)", borderRadius: 10, padding: "10px 14px", marginBottom: 10, fontSize: 13, color: "#C0392B", textAlign: "center", fontFamily: font }}>
-                  {googleError}
-                </div>
-              )}
-              <button
-                type="button"
-                onClick={() => { setGoogleError(""); handleGoogleAuth(); }}
-                disabled={googleLoading || isBusy}
-                style={{
-                  width: "100%", padding: "11px 16px", borderRadius: 12,
-                  border: "1.5px solid rgba(139,69,19,0.2)", background: "#fff",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-                  cursor: googleLoading || isBusy ? "not-allowed" : "pointer",
-                  fontFamily: font, fontSize: 14.5, fontWeight: 600, color: "#2C1A0E",
-                  boxShadow: "0 1px 4px rgba(0,0,0,0.07)", transition: "all 0.18s",
-                  opacity: googleLoading || isBusy ? 0.6 : 1,
-                }}
-              >
-                {googleLoading ? (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2.5" strokeLinecap="round">
-                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83">
-                      <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite"/>
-                    </path>
-                  </svg>
-                ) : (
-                  <svg width="18" height="18" viewBox="0 0 48 48">
-                    <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.5 6.5 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/>
-                    <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.5 6.5 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
-                    <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.3 35.3 26.8 36 24 36c-5.3 0-9.7-3.3-11.3-8H6.3C9.7 35.7 16.3 40 24 40v4z" transform="translate(0,-2)"/>
-                    <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.6l6.2 5.2C41 36.5 44 31 44 24c0-1.3-.1-2.6-.4-3.9z"/>
-                  </svg>
-                )}
-                {googleLoading ? "Signing in…" : "Continue with Google"}
-              </button>
-            </>
+          {!(isSignup && signupStep === "form" && accountType !== "personal") && !(!isSignup && loginType !== "customer") && HAS_GOOGLE && (
+            <GoogleAuthBtn accountType={accountType} isBusy={isBusy} />
           )}
 
           {/* Toggle */}
