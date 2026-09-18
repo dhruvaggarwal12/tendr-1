@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -75,6 +75,8 @@ export default function LinktreeBuilder({ token, vendorId, vendorName }) {
   const [copied,     setCopied]     = useState(false);
   const [loading,    setLoading]    = useState(true);
   const [tab,        setTab]        = useState('links'); // 'links' | 'preview' (mobile)
+  const [downloading, setDownloading] = useState(false);
+  const previewRef = useRef(null);
 
   const theme = THEMES.find(t => t.id === data.theme) || THEMES[0];
   const publicUrl = `${window.location.origin}/links/${vendorId}`;
@@ -118,6 +120,30 @@ export default function LinktreeBuilder({ token, vendorId, vendorName }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const download = async () => {
+    if (!previewRef.current || downloading) return;
+    setDownloading(true);
+    try {
+      if (!window.html2canvas) {
+        await new Promise((res, rej) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+          s.onload = res; s.onerror = rej;
+          document.head.appendChild(s);
+        });
+      }
+      const canvas = await window.html2canvas(previewRef.current, { useCORS: true, scale: 2, backgroundColor: theme.bg });
+      const a = document.createElement('a');
+      a.download = `${(data.title || vendorName || 'link-hub').replace(/\s+/g, '-')}-linkhub.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    } catch {
+      alert('Download failed — try again');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   if (loading) return <div style={{ padding: 32, textAlign: 'center', color: '#9B7450', fontFamily: font }}>Loading…</div>;
 
   const isMobile = window.innerWidth < 768;
@@ -133,6 +159,9 @@ export default function LinktreeBuilder({ token, vendorId, vendorName }) {
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <button onClick={copy} style={{ padding: '8px 14px', borderRadius: 10, border: `1.5px solid ${gold}`, background: copied ? '#dcfce7' : '#fff', color: copied ? '#16a34a' : gold, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>
             {copied ? '✓ Copied!' : '🔗 Copy Link'}
+          </button>
+          <button onClick={download} disabled={downloading} style={{ padding: '8px 14px', borderRadius: 10, border: `1.5px solid rgba(196,122,46,0.4)`, background: '#fff', color: gold, fontSize: 12.5, fontWeight: 700, cursor: downloading ? 'default' : 'pointer', fontFamily: font, opacity: downloading ? 0.7 : 1 }}>
+            {downloading ? 'Downloading…' : '⬇ Download'}
           </button>
           <button onClick={save} disabled={saving} style={{ padding: '8px 16px', borderRadius: 10, border: 'none', background: saved ? '#16a34a' : `linear-gradient(135deg,${gold},#CCAB4A)`, color: '#fff', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>
             {saving ? 'Saving…' : saved ? '✓ Saved' : 'Save'}
@@ -241,7 +270,7 @@ export default function LinktreeBuilder({ token, vendorId, vendorName }) {
         {(!isMobile || tab === 'preview') && (
           <div style={{ position: isMobile ? 'static' : 'sticky', top: 20 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: '#9B7450', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em', textAlign: 'center' }}>Live Preview</div>
-            <div style={{ border: '1.5px solid rgba(196,122,46,0.15)', borderRadius: 20, overflow: 'hidden' }}>
+            <div ref={previewRef} style={{ border: '1.5px solid rgba(196,122,46,0.15)', borderRadius: 20, overflow: 'hidden' }}>
               <Preview data={data} vendorName={vendorName} photo={apiPhoto} theme={theme} />
             </div>
           </div>
