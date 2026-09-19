@@ -143,12 +143,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
     ? vendor.setlist.split("\n").filter(Boolean)
     : [];
 
-  const tabs = ["Portfolio","About","Setlist","Packages","Reviews"].filter(t => {
-    if (t === "Packages") return pkgs.length > 0;
-    if (t === "Reviews")  return reviews.length > 0;
-    if (t === "Setlist")  return setlistArr.length > 0;
-    return true;
-  });
+  const tabs = ["Portfolio","About","Setlist","Packages","Reviews"];
 
   const stats = [
     events > 0 && { type:"events",     val:`${events}+`,  label:"Events Done" },
@@ -553,14 +548,21 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               Here's how the performance unfolds — from setting the tone to leaving the room energised.
             </p>
 
-            <div>
-              {setlistArr.map((line, i) => (
-                <div key={i} style={{ display:"grid", gridTemplateColumns:"32px 1fr", gap:"0 20px", marginBottom:32 }}>
-                  <div style={{ fontSize:12, color:CDIM, fontVariantNumeric:"tabular-nums", paddingTop:4, fontWeight:500 }}>{String(i+1).padStart(2,"0")}</div>
-                  <div style={{ fontSize:17.5, color:CINK, fontWeight:600, lineHeight:1.45 }}>{line}</div>
-                </div>
-              ))}
-            </div>
+            {setlistArr.length > 0 ? (
+              <div>
+                {setlistArr.map((line, i) => (
+                  <div key={i} style={{ display:"grid", gridTemplateColumns:"32px 1fr", gap:"0 20px", marginBottom:32 }}>
+                    <div style={{ fontSize:12, color:CDIM, fontVariantNumeric:"tabular-nums", paddingTop:4, fontWeight:500 }}>{String(i+1).padStart(2,"0")}</div>
+                    <div style={{ fontSize:17.5, color:CINK, fontWeight:600, lineHeight:1.45 }}>{line}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ padding:"60px 0", textAlign:"center" }}>
+                <div style={{ fontFamily:serif, fontSize:"1.2rem", fontStyle:"italic", color:CMUTED, marginBottom:10 }}>Setlist coming soon</div>
+                <p style={{ fontSize:13.5, color:CDIM, lineHeight:1.7 }}>The performer's signature segments will appear here.</p>
+              </div>
+            )}
 
             {(social.showreel || vendor.showreel) && (
               <div style={{ marginTop:52 }}>
@@ -580,6 +582,13 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
             <p style={{ fontSize:15.5, color:CMUTED, lineHeight:1.75, marginBottom:44, fontWeight:400 }}>
               Choose the kind of experience you want for your event.
             </p>
+            {pkgs.length === 0 && (
+              <div style={{ padding:"60px 0", textAlign:"center" }}>
+                <div style={{ fontFamily:serif, fontSize:"1.2rem", fontStyle:"italic", color:CMUTED, marginBottom:10 }}>No packages listed yet</div>
+                <p style={{ fontSize:13.5, color:CDIM, lineHeight:1.7 }}>Contact the performer for pricing and availability.</p>
+                <button onClick={onBook} style={{ marginTop:24, padding:"12px 28px", borderRadius:100, background:`linear-gradient(135deg,${GOLD},#9A7010)`, color:"#1A1000", border:"none", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:font }}>Request a Quote</button>
+              </div>
+            )}
             {pkgs.map((pkg, i) => {
               const featured = i === 1 || pkg.badge;
               return (
@@ -636,6 +645,13 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         {/* ── REVIEWS ── */}
         {tab === "Reviews" && (
           <div>
+            {reviews.length === 0 && (
+              <div style={{ padding:"60px 0", textAlign:"center" }}>
+                <div style={{ fontFamily:serif, fontSize:"1.2rem", fontStyle:"italic", color:CMUTED, marginBottom:10 }}>No reviews yet</div>
+                <p style={{ fontSize:13.5, color:CDIM, lineHeight:1.7 }}>Be the first to book and leave a review.</p>
+                <button onClick={onBook} style={{ marginTop:24, padding:"12px 28px", borderRadius:100, background:`linear-gradient(135deg,${GOLD},#9A7010)`, color:"#1A1000", border:"none", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:font }}>Book Now</button>
+              </div>
+            )}
             {rating > 0 && (
               <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:36, paddingBottom:28, borderBottom:`1px solid ${CGOLD_D}` }}>
                 <div style={{ fontFamily:serif, fontSize:"3rem", fontWeight:800, fontStyle:"italic", color:CINK, lineHeight:1 }}>{rating.toFixed(1)}</div>

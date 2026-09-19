@@ -227,11 +227,34 @@ export default function VendorProfile() {
       };
       const r = await fetch(`${BASE_URL}/vendors/${vendorId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         credentials: "include",
         body: JSON.stringify(body),
       });
       if (!r.ok) throw new Error();
+
+      if (isGig) {
+        const gigBody = {
+          bio:            gigForm.bio,
+          genres:         gigForm.genres,
+          performingStyle:gigForm.performingStyle,
+          instruments:    gigForm.instruments,
+          languages:      gigForm.languages,
+          danceStyles:    gigForm.danceStyles,
+          bandSize:       gigForm.bandSize,
+          showreel:       gigForm.showreel,
+          socialLink:     gigForm.socialLink,
+          eventTypes:     gigForm.eventTypes,
+        };
+        const rGig = await fetch(`${BASE_URL}/vendors/${vendorId}/gigpro`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+          credentials: "include",
+          body: JSON.stringify(gigBody),
+        });
+        if (!rGig.ok) throw new Error();
+      }
+
       showToast("Profile saved!");
     } catch {
       showToast("Failed to save. Try again.", false);
@@ -253,7 +276,7 @@ export default function VendorProfile() {
     Array.from(files).forEach(f => fd.append("photos", f));
     try {
       const r = await fetch(`${BASE_URL}/vendors/${vendorId}/portfolio-photos`, {
-        method: "POST", credentials: "include", body: fd,
+        method: "POST", credentials: "include", headers: { "Authorization": `Bearer ${token}` }, body: fd,
       });
       const json = await r.json();
       if (!r.ok) throw new Error(json.error || "Upload failed");
@@ -271,7 +294,7 @@ export default function VendorProfile() {
     const publicId = url.split("/").pop().split(".")[0];
     try {
       const r = await fetch(`${BASE_URL}/vendors/${vendorId}/portfolio-photos/${publicId}`, {
-        method: "DELETE", credentials: "include",
+        method: "DELETE", credentials: "include", headers: { "Authorization": `Bearer ${token}` },
       });
       if (!r.ok) throw new Error();
       setProfile(p => ({ ...p, portfolioPhotos: p.portfolioPhotos.filter(u => u !== url) }));
