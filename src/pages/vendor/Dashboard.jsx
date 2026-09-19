@@ -2156,7 +2156,11 @@ const [tab, setTab] = useState('home');
   const [gstSaving, setGstSaving] = useState(false);
 
   // Performance details (artists)
-  const [perfDraft, setPerfDraft] = useState({ genres:'', instruments:'', setlist:'', showreel:'', instagram:'', youtube:'' });
+  const [perfDraft, setPerfDraft] = useState({
+    genresArr:[], styleArr:[], langsArr:[], danceStylesArr:[], showTypeArr:[], equipmentArr:[],
+    instruments:'', bandSize:'', setupType:'', lightsIncluded:'', propsNeeded:'',
+    setlist:'', showreel:'', instagram:'', youtube:'',
+  });
   const [perfSaving, setPerfSaving] = useState(false);
   const [perfLoaded, setPerfLoaded] = useState(false);
 
@@ -2242,12 +2246,21 @@ const [tab, setTab] = useState('home');
   useEffect(() => {
     if (tab !== 'gig-profile' || perfLoaded || !user) return;
     setPerfDraft({
-      genres: (user.genres || []).join(', '),
-      instruments: (user.instruments || []).join(', '),
-      setlist: user.setlist || '',
-      showreel: user.showreel || user.showreelUrl || '',
-      instagram: user.instagram || '',
-      youtube: user.youtube || '',
+      genresArr:      Array.isArray(user.genres) ? user.genres : [],
+      styleArr:       Array.isArray(user.performingStyle) ? user.performingStyle : [],
+      langsArr:       Array.isArray(user.languages) ? user.languages : [],
+      danceStylesArr: Array.isArray(user.danceStyles) ? user.danceStyles : [],
+      showTypeArr:    Array.isArray(user.showType) ? user.showType : [],
+      equipmentArr:   Array.isArray(user.equipment) ? user.equipment : [],
+      instruments:    (user.instruments || []).join(', '),
+      bandSize:       String(user.bandSize || ''),
+      setupType:      user.setupType || '',
+      lightsIncluded: user.lightsIncluded || '',
+      propsNeeded:    user.propsNeeded || '',
+      setlist:        user.setlist || '',
+      showreel:       user.showreel || user.showreelUrl || '',
+      instagram:      user.instagram || user.social?.instagram || '',
+      youtube:        user.youtube || user.social?.youtube || '',
     });
     setGstDraft(user.gstNumber || '');
     setPerfLoaded(true);
@@ -4356,53 +4369,160 @@ const [tab, setTab] = useState('home');
           )}
 
           {/* ── PERFORMANCE DETAILS (artists only) ── */}
-          {tab === 'gig-profile' && isArtist && (
-            <div>
-              <div style={{ fontSize:15, fontWeight:800, color:ink, marginBottom:4 }}>Performance Details</div>
-              <div style={{ fontSize:12, color:'#9B7450', marginBottom:18 }}>This info shows on your public profile — helps event planners understand your act before reaching out.</div>
-              <div style={{ background:'#fff', borderRadius:18, padding:'20px 20px', border:'1px solid rgba(196,122,46,0.12)', display:'flex', flexDirection:'column', gap:14 }}>
-                {[
-                  { label:'Genres / Styles', key:'genres', placeholder:'e.g. Bollywood, Sufi, Classical, EDX, Hip-hop' },
-                  { label:'Instruments Played', key:'instruments', placeholder:'e.g. Guitar, Tabla, Keyboard, Violin' },
-                  { label:'Showreel / Demo Link', key:'showreel', placeholder:'YouTube or Instagram reel URL' },
-                  { label:'Instagram Handle', key:'instagram', placeholder:'@yourusername' },
-                  { label:'YouTube Channel', key:'youtube', placeholder:'YouTube channel or video URL' },
-                ].map(({ label, key, placeholder }) => (
-                  <div key={key}>
-                    <label style={{ fontSize:12, fontWeight:700, color:'#6B3A1F', display:'block', marginBottom:5 }}>{label}</label>
-                    <input value={perfDraft[key]} onChange={e => setPerfDraft(p => ({...p, [key]:e.target.value}))} placeholder={placeholder}
-                      style={{ width:'100%', padding:'9px 12px', borderRadius:9, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13, color:ink, outline:'none', boxSizing:'border-box' }} />
-                  </div>
-                ))}
-                <div>
-                  <label style={{ fontSize:12, fontWeight:700, color:'#6B3A1F', display:'block', marginBottom:5 }}>Setlist / Repertoire (optional)</label>
-                  <textarea value={perfDraft.setlist} onChange={e => setPerfDraft(p => ({...p, setlist:e.target.value}))} rows={4} placeholder="List the songs, sets, or themes you perform — helps clients shortlist you faster"
-                    style={{ width:'100%', padding:'9px 12px', borderRadius:9, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:12.5, color:ink, outline:'none', resize:'vertical', boxSizing:'border-box' }} />
-                </div>
-                <button
-                  disabled={perfSaving}
-                  onClick={async () => {
-                    setPerfSaving(true);
-                    try {
-                      const payload = {
-                        genres: perfDraft.genres.split(',').map(s=>s.trim()).filter(Boolean),
-                        instruments: perfDraft.instruments.split(',').map(s=>s.trim()).filter(Boolean),
-                        setlist: perfDraft.setlist,
-                        showreel: perfDraft.showreel,
-                        instagram: perfDraft.instagram,
-                        youtube: perfDraft.youtube,
-                      };
-                      await fetch(`${BASE}/vendors/${vendorId}`, { method:'PATCH', headers:authHeaders(token), body:JSON.stringify(payload) });
-                      showToast('Performance details saved!');
-                    } catch { showToast('Could not save', false); }
-                    setPerfSaving(false);
-                  }}
-                  style={{ padding:'11px', borderRadius:10, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:14, fontWeight:700, cursor:perfSaving?'default':'pointer', opacity:perfSaving?0.7:1 }}>
-                  {perfSaving ? 'Saving…' : 'Save Performance Details'}
-                </button>
+          {tab === 'gig-profile' && isArtist && (() => {
+            const svc = serviceType;
+
+            const GENRES = ['Bollywood','EDM','Classical','Hip-Hop','Sufi','Punjabi','Jazz','Rock','Pop','Folk','Ghazal','Devotional'];
+            const LANGS  = ['Hindi','English','Punjabi','Tamil','Telugu','Kannada','Malayalam','Bengali','Gujarati','Marathi'];
+            const DANCE  = ['Bollywood','Classical','Contemporary','Hip-Hop','Salsa','Couple Dance','Group','Kathak','Bharatnatyam','Garba'];
+
+            const TYPE_CFG = {
+              DJ:                  { label:'DJ Profile',           sub:'Music, setup, and demo reel', styleOpts:['Indoor','Outdoor','Wedding','Corporate','Club','Festival'], showGenres:true, showDJ:true },
+              'Emcee/Host':        { label:'Hosting Profile',      sub:'Languages, style, and script samples', styleOpts:['Formal','Casual','Bilingual','Interactive','High-energy'], showLangs:true },
+              Anchor:              { label:'Anchoring Profile',    sub:'Languages, delivery style, and sample scripts', styleOpts:['Formal','Casual','Bilingual','Scripted','Improvised'], showLangs:true },
+              Band:                { label:'Band Profile',         sub:'Lineup, genres, and setlist', styleOpts:['Live Band','Cover Songs','Original Compositions','Jazz Set','Bollywood Night','Sufi Night'], showGenres:true, showBand:true },
+              Singer:              { label:'Vocalist Profile',     sub:'Vocal genres, languages, and repertoire', styleOpts:['Solo Vocals','Duet','Background Vocals','Live Looping','Classical','Ghazal'], showGenres:true, showLangs:true },
+              Musician:            { label:'Musician Profile',     sub:'Instruments, genres, and performance style', styleOpts:['Solo','Duo','Ensemble','Classical','Fusion','Acoustic'], showGenres:true, showInstr:true },
+              Choreographer:       { label:'Choreographer Profile',sub:'Dance styles, specialties, and portfolio', styleOpts:['Group Choreography','Solo Coaching','Flash Mob','Stage Direction','Sangeet Specialist'], showDance:true },
+              Performer:           { label:'Performer Profile',    sub:'Act type, style, and showcase links', styleOpts:['Stage Act','Walk Act','Flash Mob','Stunt','Dance','Comedy','Circus'] },
+              'Stand-up Comedian': { label:'Comedy Profile',       sub:'Comedy style, set material, and socials', styleOpts:['Stand-Up','Roast','Mimicry','Improv','Corporate Safe','Open Mic'], showLangs:true },
+              Magician:            { label:'Magic Show Profile',   sub:'Show type and demo reel', showMagic:true },
+              'AV Setup':          { label:'AV Setup Profile',     sub:'Equipment inventory and setup capabilities', showAV:true },
+            };
+            const cfg = TYPE_CFG[svc] || { label:'Performance Profile', sub:'Tell event planners about your act' };
+
+            const toggleChip = (field, val) => setPerfDraft(p => {
+              const arr = p[field] || [];
+              return { ...p, [field]: arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val] };
+            });
+
+            const cs = { padding:'6px 14px', borderRadius:100, fontSize:12.5, fontWeight:600, fontFamily:font, cursor:'pointer', transition:'all 0.15s', border:'1.5px solid' };
+            const ChipRow = ({ field, opts }) => (
+              <div style={{ display:'flex', flexWrap:'wrap', gap:7 }}>
+                {opts.map(opt => {
+                  const on = (perfDraft[field] || []).includes(opt);
+                  return <button key={opt} onClick={() => toggleChip(field, opt)}
+                    style={{ ...cs, background:on?gold:'#fff', color:on?'#fff':'#6B3A1F', borderColor:on?gold:'rgba(196,122,46,0.22)' }}>{opt}</button>;
+                })}
               </div>
-            </div>
-          )}
+            );
+            const ToggleRow = ({ field, opts }) => (
+              <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
+                {opts.map(opt => {
+                  const on = perfDraft[field] === opt;
+                  return <button key={opt} onClick={() => setPerfDraft(p => ({ ...p, [field]: p[field] === opt ? '' : opt }))}
+                    style={{ ...cs, background:on?gold:'#fff', color:on?'#fff':'#6B3A1F', borderColor:on?gold:'rgba(196,122,46,0.22)' }}>{opt}</button>;
+                })}
+              </div>
+            );
+            const lbl = (text) => <label style={{ fontSize:12, fontWeight:700, color:'#6B3A1F', display:'block', marginBottom:6 }}>{text}</label>;
+            const inp = (field, placeholder) => (
+              <input value={perfDraft[field] || ''} onChange={e => setPerfDraft(p => ({ ...p, [field]: e.target.value }))} placeholder={placeholder}
+                style={{ width:'100%', padding:'9px 12px', borderRadius:9, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13, color:ink, outline:'none', boxSizing:'border-box' }} />
+            );
+            const row = (label, children) => <div>{lbl(label)}{children}</div>;
+
+            const setlistLabel = svc === 'DJ' ? 'Typical Set / Playlist Theme' : svc === 'Magician' ? 'Show Description' : svc === 'AV Setup' ? 'Notes & Specialities' : ['Emcee/Host','Anchor'].includes(svc) ? 'Script Outline / Typical Segments' : svc === 'Choreographer' ? 'Routine Description' : svc === 'Stand-up Comedian' ? 'Set Material / Topics' : 'Setlist / Repertoire';
+            const setlistPlaceholder = svc === 'Magician' ? 'Describe your show — acts included, duration, audience interaction...' : svc === 'AV Setup' ? 'Describe special capabilities, past big events, typical setup notes...' : ['Emcee/Host','Anchor'].includes(svc) ? 'e.g. Welcome address, Games, Couple Q&A, Award rounds, Closing...' : 'List songs, sets, or themes you perform — helps event planners book you faster';
+
+            const savePerfDetails = async () => {
+              setPerfSaving(true);
+              try {
+                const payload = {
+                  genres:         perfDraft.genresArr,
+                  performingStyle:perfDraft.styleArr,
+                  languages:      perfDraft.langsArr,
+                  danceStyles:    perfDraft.danceStylesArr,
+                  showType:       perfDraft.showTypeArr,
+                  equipment:      perfDraft.equipmentArr,
+                  instruments:    perfDraft.instruments.split(',').map(s => s.trim()).filter(Boolean),
+                  bandSize:       perfDraft.bandSize,
+                  setupType:      perfDraft.setupType,
+                  lightsIncluded: perfDraft.lightsIncluded,
+                  propsNeeded:    perfDraft.propsNeeded,
+                  setlist:        perfDraft.setlist,
+                  showreel:       perfDraft.showreel,
+                  social:         { instagram: perfDraft.instagram, youtube: perfDraft.youtube },
+                };
+                await fetch(`${BASE}/vendors/${vendorId}/gigpro`, { method:'PATCH', headers:authHeaders(token), body:JSON.stringify(payload) });
+                showToast('Performance details saved!');
+              } catch { showToast('Could not save', false); }
+              setPerfSaving(false);
+            };
+
+            return (
+              <div>
+                <div style={{ fontSize:15, fontWeight:800, color:ink, marginBottom:4 }}>{cfg.label}</div>
+                <div style={{ fontSize:12, color:'#9B7450', marginBottom:18 }}>{cfg.sub}</div>
+                <div style={{ background:'#fff', borderRadius:18, padding:'20px', border:'1px solid rgba(196,122,46,0.12)', display:'flex', flexDirection:'column', gap:16 }}>
+
+                  {/* Performing Style */}
+                  {cfg.styleOpts && row('Performing Style', <ChipRow field="styleArr" opts={cfg.styleOpts}/>)}
+
+                  {/* Music Genres */}
+                  {cfg.showGenres && row('Music Genres', <ChipRow field="genresArr" opts={GENRES}/>)}
+
+                  {/* Languages */}
+                  {cfg.showLangs && row('Languages', <ChipRow field="langsArr" opts={LANGS}/>)}
+
+                  {/* Band: size + instruments */}
+                  {cfg.showBand && (<>
+                    <div>
+                      {lbl('Number of Members')}
+                      <input type="number" min="1" value={perfDraft.bandSize || ''} onChange={e => setPerfDraft(p => ({ ...p, bandSize: e.target.value }))} placeholder="e.g. 5"
+                        style={{ width:110, padding:'9px 12px', borderRadius:9, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13, color:ink, outline:'none' }}/>
+                    </div>
+                    {row('Instruments (comma-separated)', inp('instruments', 'e.g. Guitar, Tabla, Keyboard, Violin'))}
+                  </>)}
+
+                  {/* Musician: instruments only */}
+                  {cfg.showInstr && !cfg.showBand && row('Instruments (comma-separated)', inp('instruments', 'e.g. Violin, Tabla, Flute, Sitar'))}
+
+                  {/* Dance Styles */}
+                  {cfg.showDance && row('Dance Styles', <ChipRow field="danceStylesArr" opts={DANCE}/>)}
+
+                  {/* DJ: Setup + Lights */}
+                  {cfg.showDJ && (<>
+                    {row('Setup Type', <ToggleRow field="setupType" opts={['Basic Setup','Full Production','Mobile DJ']}/>)}
+                    {row('Lights Included?', <ToggleRow field="lightsIncluded" opts={['Yes','No']}/>)}
+                  </>)}
+
+                  {/* Magician: Show Type + Props */}
+                  {cfg.showMagic && (<>
+                    {row('Show Type', <ChipRow field="showTypeArr" opts={['Close-up Magic','Stage Illusions','Mentalism',"Children's Show",'Corporate Magic','Escape Act']}/>)}
+                    {row('Props / Stage Setup Needed?', <ToggleRow field="propsNeeded" opts={['Yes','No']}/>)}
+                  </>)}
+
+                  {/* AV Setup: Equipment + Scale */}
+                  {cfg.showAV && (<>
+                    {row('Equipment Available', <ChipRow field="equipmentArr" opts={['Projectors','LED Screen','LED Wall','Sound System','Stage Lighting','Truss Structure','Live Streaming','Video Mixing']}/>)}
+                    {row('Setup Scale', <ToggleRow field="setupType" opts={['Basic','Standard','Premium','Full Production']}/>)}
+                  </>)}
+
+                  {/* Setlist / description */}
+                  <div>
+                    {lbl(setlistLabel)}
+                    <textarea value={perfDraft.setlist || ''} onChange={e => setPerfDraft(p => ({ ...p, setlist: e.target.value }))} rows={4} placeholder={setlistPlaceholder}
+                      style={{ width:'100%', padding:'9px 12px', borderRadius:9, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:12.5, color:ink, outline:'none', resize:'vertical', boxSizing:'border-box' }}/>
+                  </div>
+
+                  {/* Showreel */}
+                  {row('Showreel / Demo Link', inp('showreel', 'YouTube, Instagram Reel, or SoundCloud URL'))}
+
+                  {/* Social */}
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                    {row('Instagram Handle', inp('instagram', '@yourhandle'))}
+                    {row(svc === 'AV Setup' ? 'Website' : 'YouTube Channel', inp('youtube', svc === 'AV Setup' ? 'yourwebsite.com' : 'YouTube channel URL'))}
+                  </div>
+
+                  <button disabled={perfSaving} onClick={savePerfDetails}
+                    style={{ padding:'11px', borderRadius:10, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:14, fontWeight:700, cursor:perfSaving?'default':'pointer', opacity:perfSaving?0.7:1 }}>
+                    {perfSaving ? 'Saving…' : 'Save Performance Details'}
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* ── GROW (Flyer Builder + Link Hub) ── */}
           {tab === 'market' && (

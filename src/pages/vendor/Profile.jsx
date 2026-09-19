@@ -22,15 +22,17 @@ const GIG_PRO_TYPES = ['DJ', 'Emcee/Host', 'Anchor', 'Band', 'Choreographer', 'P
 const GIG_GENRE_OPTIONS = ['Bollywood', 'EDM', 'Classical', 'Hip-Hop', 'Sufi', 'Punjabi', 'Jazz', 'Rock', 'Pop', 'Folk', 'Ghazal', 'Devotional'];
 const GIG_LANG_OPTIONS = ['Hindi', 'English', 'Punjabi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam', 'Bengali', 'Gujarati', 'Marathi'];
 const GIG_STYLE_OPTIONS = {
-  DJ:           ['Indoor', 'Outdoor', 'Wedding', 'Corporate', 'Club', 'Festival'],
-  Emcee:        ['Formal', 'Casual', 'Bilingual', 'Interactive', 'High-energy'],
-  Anchor:       ['Formal', 'Casual', 'Bilingual', 'Scripted', 'Improvised'],
-  Band:         ['Live Band', 'Cover Songs', 'Original Compositions', 'Jazz Set', 'Bollywood Night', 'Sufi Night'],
-  Choreographer:['Bollywood', 'Contemporary', 'Hip-Hop', 'Classical', 'Wedding Sangeet', 'Couple Dance', 'Group Choreography'],
-  Performer:    ['Stage Act', 'Walk Act', 'Flash Mob', 'Stunt', 'Dance', 'Comedy'],
-  Musician:     ['Solo', 'Duo', 'Ensemble', 'Classical', 'Fusion', 'Acoustic'],
-  Singer:       ['Solo Vocals', 'Duet', 'Background Vocals', 'Live Looping', 'Classical', 'Ghazal'],
-  Comedian:     ['Stand-Up', 'Roast', 'Mimicry', 'Improv', 'Corporate Safe'],
+  DJ:                  ['Indoor', 'Outdoor', 'Wedding', 'Corporate', 'Club', 'Festival'],
+  'Emcee/Host':        ['Formal', 'Casual', 'Bilingual', 'Interactive', 'High-energy'],
+  Anchor:              ['Formal', 'Casual', 'Bilingual', 'Scripted', 'Improvised'],
+  Band:                ['Live Band', 'Cover Songs', 'Original Compositions', 'Jazz Set', 'Bollywood Night', 'Sufi Night'],
+  Choreographer:       ['Bollywood', 'Contemporary', 'Hip-Hop', 'Classical', 'Wedding Sangeet', 'Couple Dance', 'Group Choreography'],
+  Performer:           ['Stage Act', 'Walk Act', 'Flash Mob', 'Stunt', 'Dance', 'Comedy', 'Circus'],
+  Musician:            ['Solo', 'Duo', 'Ensemble', 'Classical', 'Fusion', 'Acoustic'],
+  Singer:              ['Solo Vocals', 'Duet', 'Background Vocals', 'Live Looping', 'Classical', 'Ghazal'],
+  'Stand-up Comedian': ['Stand-Up', 'Roast', 'Mimicry', 'Improv', 'Corporate Safe', 'Open Mic'],
+  Magician:            ['Close-up Magic', 'Stage Illusions', 'Mentalism', "Children's Show", 'Corporate Magic', 'Escape Act'],
+  'AV Setup':          ['Basic', 'Standard', 'Premium', 'Full Production'],
 };
 
 export default function VendorProfile() {
@@ -489,8 +491,8 @@ export default function VendorProfile() {
                 <ChipPicker label="Dance Styles" field="danceStyles" options={['Bollywood', 'Classical', 'Contemporary', 'Hip-Hop', 'Salsa', 'Couple Dance', 'Group']} />
               )}
 
-              {/* Languages — Emcee, Anchor, Singer, Comedian */}
-              {['Emcee', 'Anchor', 'Singer', 'Comedian'].includes(svc) && <ChipPicker label="Languages" field="languages" options={GIG_LANG_OPTIONS} />}
+              {/* Languages — Emcee/Host, Anchor, Singer, Stand-up Comedian */}
+              {['Emcee/Host', 'Anchor', 'Singer', 'Stand-up Comedian'].includes(svc) && <ChipPicker label="Languages" field="languages" options={GIG_LANG_OPTIONS} />}
 
               {/* Suitable event types */}
               <ChipPicker label="Suitable For" field="eventTypes"
