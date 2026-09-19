@@ -262,15 +262,17 @@ const Auth = () => {
     const BASE_URL_LOGIN = import.meta.env.VITE_BASE_URL;
     try {
       if (loginType === "vendor") {
+        const cleanPhone = formData.phoneNumber.replace(/\D/g, "").slice(-10);
         const res = await fetch(`${BASE_URL_LOGIN}/auth/vlogin`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phoneNumber: formData.phoneNumber, password: formData.password }),
+          body: JSON.stringify({ phoneNumber: cleanPhone, password: formData.password }),
           credentials: "include",
         });
         const data = await res.json();
         if (!res.ok) {
-          setLocalError(data.error || "Login failed. Check your credentials.");
+          const errMsg = data.error || (data.errors?.[0]?.msg) || data.message || "Login failed. Check your credentials.";
+          setLocalError(errMsg);
           return;
         }
         dispatch({ type: "auth/login/fulfilled", payload: { consumer: { ...data.vendor, role: "vendor" }, token: data.token } });
@@ -278,15 +280,17 @@ const Auth = () => {
         return;
       }
       if (loginType === "coordinator") {
+        const cleanPhone = formData.phoneNumber.replace(/\D/g, "").slice(-10);
         const res = await fetch(`${BASE_URL_LOGIN}/coordinators/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phoneNumber: formData.phoneNumber, password: formData.password }),
+          body: JSON.stringify({ phoneNumber: cleanPhone, password: formData.password }),
           credentials: "include",
         });
         const data = await res.json();
         if (!res.ok) {
-          setLocalError(data.error || "Login failed. Check your credentials.");
+          const errMsg = data.error || (data.errors?.[0]?.msg) || data.message || "Login failed. Check your credentials.";
+          setLocalError(errMsg);
           return;
         }
         dispatch({ type: "auth/login/fulfilled", payload: { consumer: { ...data.coordinator, role: "coordinator" }, token: data.token } });
