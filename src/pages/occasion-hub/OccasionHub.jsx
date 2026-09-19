@@ -357,18 +357,18 @@ function PlaylistBuilder({ onClose, accent }) {
 }
 
 function Countdown({ onClose, accent }) {
-  const [target, setTarget] = useState("");
-  const [eventName, setEventName] = useState("");
+  const CD_KEY_T = "tendr-occ-countdown-target";
+  const CD_KEY_N = "tendr-occ-countdown-name";
+  const [target, setTarget] = useState(() => { try { return localStorage.getItem(CD_KEY_T) || ""; } catch { return ""; } });
+  const [eventName, setEventName] = useState(() => { try { return localStorage.getItem(CD_KEY_N) || ""; } catch { return ""; } });
   const [timeLeft, setTimeLeft] = useState(null);
-  const [started, setStarted] = useState(false);
+  const [started, setStarted] = useState(() => { try { return !!localStorage.getItem(CD_KEY_T); } catch { return false; } });
   const ref = useRef(null);
   const pad = n => String(n).padStart(2, "0");
-  const start = () => {
-    if (!target) return;
-    setStarted(true);
+  const startTick = (t) => {
     clearInterval(ref.current);
     ref.current = setInterval(() => {
-      const diff = new Date(target) - Date.now();
+      const diff = new Date(t) - Date.now();
       if (diff <= 0) { setTimeLeft(null); clearInterval(ref.current); return; }
       const d = Math.floor(diff / 86400000);
       const h = Math.floor((diff % 86400000) / 3600000);
@@ -377,23 +377,28 @@ function Countdown({ onClose, accent }) {
       setTimeLeft({ d, h, m, s });
     }, 1000);
   };
-  useEffect(() => () => clearInterval(ref.current), []);
+  const start = () => {
+    if (!target) return;
+    try { localStorage.setItem(CD_KEY_T, target); localStorage.setItem(CD_KEY_N, eventName); } catch {}
+    setStarted(true);
+    startTick(target);
+  };
+  // Resume if previously started
+  useEffect(() => {
+    if (started && target) startTick(target);
+    return () => clearInterval(ref.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const units = timeLeft ? (timeLeft.d > 0
     ? [{ v: timeLeft.d, l: "days" }, { v: timeLeft.h, l: "hrs" }, { v: timeLeft.m, l: "min" }, { v: timeLeft.s, l: "sec" }]
     : [{ v: timeLeft.h, l: "hrs" }, { v: timeLeft.m, l: "min" }, { v: timeLeft.s, l: "sec" }]) : [];
-  // Flip-clock digit pair
-  const FlipDigit = ({ val }) => (
-    <div style={{ position: "relative", display: "inline-flex", flexDirection: "column", gap: 2 }}>
-      {/* Top half */}
-      <div style={{ background: "#1a1a2e", borderRadius: "8px 8px 0 0", padding: "12px 18px 6px", fontSize: 40, fontWeight: 900, color: "#fff", fontVariantNumeric: "tabular-nums", lineHeight: 1, fontFamily: "monospace", borderBottom: "1px solid rgba(0,0,0,0.4)" }}>
-        {val}
+  // Clean tile digit
+  const DigitTile = ({ val, unit }) => (
+    <div style={{ textAlign:"center" }}>
+      <div style={{ background:`${accent}12`, border:`2px solid ${accent}30`, borderRadius:14, padding:"14px 18px", minWidth:60, display:"inline-block" }}>
+        <div style={{ fontSize:44, fontWeight:900, color:accent, fontVariantNumeric:"tabular-nums", lineHeight:1, fontFamily:"monospace", letterSpacing:"-0.02em" }}>{val}</div>
       </div>
-      {/* Bottom half */}
-      <div style={{ background: "#15152a", borderRadius: "0 0 8px 8px", padding: "6px 18px 12px", fontSize: 40, fontWeight: 900, color: "rgba(255,255,255,0.7)", fontVariantNumeric: "tabular-nums", lineHeight: 1, fontFamily: "monospace" }}>
-        {val}
-      </div>
-      {/* Hinge line */}
-      <div aria-hidden style={{ position: "absolute", top: "50%", left: 0, right: 0, height: "2px", background: "rgba(0,0,0,0.6)", zIndex: 2 }} />
+      <div style={{ fontSize:10, color:"rgba(28,9,0,0.45)", marginTop:7, textTransform:"uppercase", letterSpacing:"0.1em", fontWeight:700 }}>{unit}</div>
     </div>
   );
   return (
@@ -408,12 +413,11 @@ function Countdown({ onClose, accent }) {
         <div style={{ textAlign: "center" }}>
           {eventName && <div style={{ fontSize: 15, fontWeight: 800, color: accent, marginBottom: 20, letterSpacing: "0.01em" }}>{eventName}</div>}
           {timeLeft ? (
-            <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginBottom: 24, alignItems: "flex-end" }}>
-              {units.map(({ v, l },i) => (
-                <div key={l} style={{ textAlign: "center" }}>
-                  <FlipDigit val={pad(v)} />
-                  <div style={{ fontSize: 10, color: l === "sec" ? accent : "rgba(28,9,0,0.40)", marginTop: 8, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600 }}>{l}</div>
-                  {i < units.length - 1 && <span style={{ fontSize: 28, fontWeight: 900, color: "rgba(28,9,0,0.25)", position: "relative", top: -30, margin: "0 -2px" }}>:</span>}
+            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 24, alignItems: "flex-end" }}>
+              {units.map(({ v, l }, i) => (
+                <div key={l} style={{ display:"flex", alignItems:"center", gap: i < units.length - 1 ? 4 : 0 }}>
+                  <DigitTile val={pad(v)} unit={l} />
+                  {i < units.length - 1 && <span style={{ fontSize:28, fontWeight:900, color:accent, opacity:0.4, position:"relative", top:-14 }}>:</span>}
                 </div>
               ))}
             </div>
@@ -423,7 +427,7 @@ function Countdown({ onClose, accent }) {
               <div style={{ fontSize: 26, fontWeight: 900, color: "#D97706" }}>It's time!</div>
             </div>
           )}
-          <button onClick={() => { setStarted(false); setTimeLeft(null); clearInterval(ref.current); }} style={{ ...lBtn("rgba(0,0,0,0.07)"), color:"#1C1410" }}>↺ Reset</button>
+          <button onClick={() => { setStarted(false); setTimeLeft(null); clearInterval(ref.current); try { localStorage.removeItem(CD_KEY_T); localStorage.removeItem(CD_KEY_N); } catch {} setTarget(""); setEventName(""); }} style={{ ...lBtn("rgba(0,0,0,0.07)"), color:"#1C1410" }}>↺ Reset</button>
         </div>
       )}
     </LightFormModal>
@@ -525,8 +529,8 @@ function Checklist({ onClose, accent, checklistItems, initialGuests }) {
   const addCustom = () => { if (newCustom.trim()) { setCustom(c => [...c, { name: newCustom.trim(), qty: "1" }]); setNewCustom(""); } };
   const toggle = (name) => setChecked(c => ({ ...c, [name]: !c[name] }));
   return (
-    <LightFormModal onClose={onClose} emoji="📋" title="Checklist" subtitle="Guest count → auto buy list" accent={accent} wide>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+    <LightFormModal onClose={onClose} emoji="📋" title="Checklist" subtitle="Set guest count → quantities auto-calculate" accent={accent} wide>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
         <div>
           <label style={{ ...llbl, marginBottom: 4 }}>Guests</label>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -538,6 +542,13 @@ function Checklist({ onClose, accent, checklistItems, initialGuests }) {
         <div style={{ textAlign: "right" }}>
           <div style={{ fontSize: 26, fontWeight: 900, color: doneCount === allKeys.length && allKeys.length > 0 ? "#16A34A" : accent }}>{doneCount}<span style={{ fontSize: 14, color: "rgba(28,20,16,0.30)", fontWeight: 400 }}>/{allKeys.length}</span></div>
           <div style={{ fontSize: 11, color: "rgba(28,20,16,0.40)" }}>bought</div>
+        </div>
+      </div>
+      {/* Formula explanation */}
+      <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:12, padding:"7px 12px", background:`${accent}0d`, borderRadius:8, border:`1px solid ${accent}22` }}>
+        <span style={{ fontSize:14 }}>📐</span>
+        <div style={{ fontSize:11, color:"rgba(28,9,0,0.50)", lineHeight:1.5 }}>
+          <strong style={{ color:accent }}>How quantities are calculated:</strong> Base amount + per-person rate × {guests} guests. E.g. drinks = 0.8 bottles × guests, plates = 5 base + 1.5 × guests.
         </div>
       </div>
       <div style={{ height: 5, background: "rgba(0,0,0,0.07)", borderRadius: 4, marginBottom: 18, overflow: "hidden" }}>
@@ -969,15 +980,35 @@ function WouldYouRather({ onClose, accent }) {
   const [votes, setVotes] = useState({ a: 0, b: 0 });
   const [myPick, setMyPick] = useState(null);
   const [round, setRound] = useState(1);
+  const [debateTimer, setDebateTimer] = useState(90);
+  const [timerActive, setTimerActive] = useState(false);
+  const wyrTimerRef = useRef(null);
   const totalVotes = votes.a + votes.b;
   const pctA = totalVotes ? Math.round((votes.a / totalVotes) * 100) : 50;
   const pctB = 100 - pctA;
+  useEffect(() => {
+    if (!timerActive) return;
+    wyrTimerRef.current = setInterval(() => {
+      setDebateTimer(t => { if (t <= 1) { clearInterval(wyrTimerRef.current); setTimerActive(false); return 0; } return t - 1; });
+    }, 1000);
+    return () => clearInterval(wyrTimerRef.current);
+  }, [timerActive]);
   const pick = (side) => {
     if (myPick) return;
     setMyPick(side);
     setVotes(v => ({ ...v, [side]: v[side] + 1 }));
+    setDebateTimer(90);
+    setTimerActive(true);
   };
-  const next = () => { setPair(rand(WOULD_YOU_RATHER)); setMyPick(null); setVotes({ a: 0, b: 0 }); setRound(r => r + 1); };
+  const next = () => {
+    clearInterval(wyrTimerRef.current);
+    setTimerActive(false);
+    setPair(rand(WOULD_YOU_RATHER));
+    setMyPick(null);
+    setVotes({ a: 0, b: 0 });
+    setRound(r => r + 1);
+    setDebateTimer(90);
+  };
   const debatePrompts = ["Defend your choice!", "Convince the other side!", "Why would anyone pick the other?!", "No backtracking now!", "Explain yourself!"];
   return (
     <LightFormModal onClose={onClose} emoji="🤷" title="Would You Rather" accent={accent}>
@@ -1022,7 +1053,20 @@ function WouldYouRather({ onClose, accent }) {
           <div style={{width:32,height:32,borderRadius:"50%",background:"rgba(0,0,0,0.06)",border:"1.5px solid rgba(0,0,0,0.12)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:900,color:"rgba(28,9,0,0.50)",letterSpacing:"0.01em"}}>VS</div>
         </div>
       </div>
-      {myPick&&<div style={{textAlign:"center",background:accent+"15",borderRadius:12,padding:"10px 14px",marginBottom:14,fontSize:14,color:accent,fontWeight:700}}>{rand(debatePrompts)}</div>}
+      {myPick&&(
+        <>
+          {/* 90-second debate timer */}
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+            <div style={{flex:1,height:5,background:"rgba(0,0,0,0.07)",borderRadius:3,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${(debateTimer/90)*100}%`,background:debateTimer>30?"#22c55e":debateTimer>10?"#f59e0b":"#ef4444",transition:"width 1s linear",borderRadius:3}}/>
+            </div>
+            <div style={{fontSize:13,fontWeight:900,color:debateTimer>30?"#22c55e":debateTimer>10?"#f59e0b":"#ef4444",minWidth:36,textAlign:"right",fontVariantNumeric:"tabular-nums"}}>{debateTimer}s</div>
+          </div>
+          <div style={{textAlign:"center",background:accent+"15",borderRadius:12,padding:"10px 14px",marginBottom:14,fontSize:14,color:accent,fontWeight:700}}>
+            {debateTimer>0?rand(debatePrompts):"⏰ Time's up — vote on the winner!"}
+          </div>
+        </>
+      )}
       <button onClick={next} style={lBtn(myPick?accent:"rgba(0,0,0,0.07)")}>{myPick?"Next Question →":<span style={{color:"#1C1410"}}>Skip</span>}</button>
     </LightFormModal>
   );
@@ -2328,6 +2372,9 @@ function LuckyDraw({ onClose, accent }) {
   const [drumAngle, setDrumAngle] = useState(0);
   const [ballOut, setBallOut] = useState(null);
   const [past, setPast] = useState([]);
+  const [mode, setMode] = useState("drum"); // "drum" | "chit"
+  const [chitPulling, setChitPulling] = useState(false);
+  const [pulledChit, setPulledChit] = useState(null);
   const spinRef = useRef(null);
   const drumRef = useRef(null);
 
@@ -2368,6 +2415,18 @@ function LuckyDraw({ onClose, accent }) {
 
   const drumSlots = Math.min(members.length, 8);
 
+  const pullChit = () => {
+    if (members.length < 1 || chitPulling) return;
+    setChitPulling(true); setPulledChit(null); setWinner(null);
+    setTimeout(() => {
+      const w = rand(members);
+      setPulledChit(w);
+      setWinner(w);
+      setPast(p => [...p, { name: w, date: new Date().toLocaleDateString("en-IN") }]);
+      setChitPulling(false);
+    }, 1200);
+  };
+
   return (
     <LightFormModal onClose={onClose} accent={accent} emoji="🎰" title="Lucky Draw">
       {/* Add members */}
@@ -2377,7 +2436,7 @@ function LuckyDraw({ onClose, accent }) {
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 14 }}>
         {members.map((m, i) => (
-          <span key={m} style={{ background: BALL_COLORS[i % BALL_COLORS.length] + "33", border: `1px solid ${BALL_COLORS[i % BALL_COLORS.length]}55`, color: "#fff", padding: "4px 10px", borderRadius: 20, fontSize: 12, display: "flex", alignItems: "center", gap: 5 }}>
+          <span key={m} style={{ background: BALL_COLORS[i % BALL_COLORS.length] + "20", border: `1px solid ${BALL_COLORS[i % BALL_COLORS.length]}55`, color: BALL_COLORS[i % BALL_COLORS.length], padding: "4px 10px", borderRadius: 20, fontSize: 12, display: "flex", alignItems: "center", gap: 5 }}>
             <span style={{ width: 8, height: 8, borderRadius: "50%", background: BALL_COLORS[i % BALL_COLORS.length], display: "inline-block", flexShrink: 0 }} />
             {m}
             <span onClick={() => setMembers(ms => ms.filter(x => x !== m))} style={{ cursor: "pointer", opacity: 0.5, fontSize: 11 }}>✕</span>
@@ -2385,7 +2444,68 @@ function LuckyDraw({ onClose, accent }) {
         ))}
       </div>
 
+      {/* Mode toggle */}
+      <div style={{ display:"flex", gap:0, marginBottom:16, borderRadius:12, overflow:"hidden", border:"1.5px solid rgba(0,0,0,0.10)", background:"rgba(0,0,0,0.03)" }}>
+        {[["drum","🎰 Drum Draw"],["chit","🗃️ Pull a Chit"]].map(([m,lbl])=>(
+          <button key={m} onClick={()=>{setMode(m);setWinner(null);setPulledChit(null);setBallOut(null);}} style={{ flex:1, padding:"9px 0", background:mode===m?accent:"transparent", color:mode===m?"#fff":"rgba(28,9,0,0.50)", fontSize:12, fontWeight:700, border:"none", cursor:"pointer", fontFamily:font, transition:"all 0.15s" }}>{lbl}</button>
+        ))}
+      </div>
+
+      {/* Chit Box Visual */}
+      {mode === "chit" && (
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"center", marginBottom:16 }}>
+          {/* Chit box */}
+          <div style={{ position:"relative", width:180, height:140, marginBottom:12 }}>
+            <svg width="180" height="140" viewBox="0 0 180 140">
+              {/* Box body */}
+              <rect x="20" y="55" width="140" height="75" rx="10" fill="#5C2D0E" stroke={accent} strokeWidth="2.5" />
+              {/* Box lid */}
+              <rect x="10" y="40" width="160" height="22" rx="8" fill="#7A3F12" stroke={accent} strokeWidth="2.5" />
+              {/* Box shine */}
+              <rect x="25" y="44" width="60" height="6" rx="3" fill="rgba(255,255,255,0.1)" />
+              {/* Paper chits peeking out */}
+              {members.slice(0,5).map((m,i)=>{
+                const cx = 52 + i*20, cy = 30;
+                const rot = (i-2)*15;
+                return (
+                  <g key={m} transform={`translate(${cx},${cy}) rotate(${rot})`}>
+                    <rect x="-12" y="-8" width="24" height="16" rx="2" fill="#FFFBF0" stroke="rgba(196,122,46,0.4)" strokeWidth="1" />
+                    <text x="0" y="4" textAnchor="middle" fontSize="7" fill="#5C2D0E" fontFamily="Georgia,serif">{m.slice(0,4)}</text>
+                  </g>
+                );
+              })}
+              {/* Hand icon */}
+              {chitPulling && (
+                <text x="90" y="20" textAnchor="middle" fontSize="24" style={{ animation:"pull-chit 1.2s ease-out" }}>🤚</text>
+              )}
+              {/* Label */}
+              <text x="90" y="100" textAnchor="middle" fontSize="11" fill="rgba(255,255,255,0.5)" fontFamily="Georgia,serif">Chit Box</text>
+              <text x="90" y="116" textAnchor="middle" fontSize="9" fill="rgba(255,255,255,0.3)" fontFamily="Georgia,serif">{members.length} chit{members.length!==1?"s":""} inside</text>
+            </svg>
+          </div>
+          {/* Pulled chit reveal */}
+          {pulledChit && (
+            <div style={{ background:"#FFFBF0", border:"2px solid rgba(196,122,46,0.4)", borderRadius:12, padding:"14px 24px", textAlign:"center", marginBottom:8, boxShadow:"0 4px 20px rgba(0,0,0,0.15)" }}>
+              <div style={{ fontSize:9, fontWeight:800, color:"rgba(196,122,46,0.7)", letterSpacing:"0.2em", textTransform:"uppercase", marginBottom:6 }}>✦ Drawn Chit ✦</div>
+              <div style={{ fontSize:24, fontWeight:900, color:"#3D1F08", fontFamily:"Georgia,serif" }}>{pulledChit}</div>
+            </div>
+          )}
+          {chitPulling && <div style={{ fontSize:13, color:accent, fontWeight:700, letterSpacing:"0.06em" }}>Pulling a chit…</div>}
+          {/* Winner reveal */}
+          {winner && !chitPulling && (
+            <div style={{ textAlign:"center", padding:"14px 16px", background:`${accent}18`, borderRadius:14, marginBottom:10, border:`2px solid ${accent}40`, width:"100%" }}>
+              <div style={{ fontSize:11, fontWeight:700, color:accent, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:4 }}>🎉 Winner!</div>
+              <div style={{ fontSize:26, fontWeight:900, color:"#1C1410" }}>{winner}</div>
+            </div>
+          )}
+          <button onClick={pullChit} disabled={members.length < 1 || chitPulling} style={{ ...lBtn(accent), opacity:members.length<1?0.5:1, marginBottom:10 }}>
+            {chitPulling?"Pulling…":winner?"🗃️ Pull Another Chit":"🗃️ Pull a Chit!"}
+          </button>
+        </div>
+      )}
+
       {/* Lottery Drum Visual */}
+      {mode === "drum" && (<>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 16 }}>
         {/* Drum machine */}
         <div style={{ position: "relative", width: 200, height: 160, marginBottom: 8 }}>
@@ -2446,7 +2566,7 @@ function LuckyDraw({ onClose, accent }) {
         </div>
       </div>
 
-      {/* Winner reveal */}
+      {/* Drum: Winner reveal */}
       {winner && !spinning && (
         <div style={{ textAlign: "center", padding: "18px 16px", background: `linear-gradient(135deg, ${accent}22, ${accent}08)`, borderRadius: 16, marginBottom: 14, border: `2px solid ${accent}50` }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: accent, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>🎉 Winner!</div>
@@ -2458,6 +2578,7 @@ function LuckyDraw({ onClose, accent }) {
       <button onClick={draw} disabled={members.length < 2 || spinning} style={{ ...lBtn(accent), opacity: members.length < 2 ? 0.5 : 1, marginBottom: 14 }}>
         {spinning ? "Drum spinning…" : winner ? "🎰 Draw Again" : "🎰 Start Draw"}
       </button>
+      </>)} {/* end mode === "drum" */}
 
       {past.length > 0 && (
         <div>
@@ -2730,7 +2851,7 @@ function BlessingsWall({ onClose, accent, placeholder }) {
     setBlessings(b=>[...b,{id:Date.now(),name:from.trim()||"Anonymous",text:blessing.trim()}]);
     setFrom("");setBlessing("");
   };
-  if (showWall) return <DesignerWall onClose={()=>setShowWall(false)} items={blessings} title="Blessings Wall" wallEmoji="🙏" />;
+  if (showWall) return <DesignerWall onClose={()=>setShowWall(false)} items={blessings} title="Blessings Wall" wallEmoji="🙏" light={true} />;
   return (
     <LightFormModal onClose={onClose} accent={accent} emoji="🙏" title="Blessings Wall" wide>
       {/* View wall button */}
@@ -3150,7 +3271,7 @@ function RapidFire({ onClose, accent }) {
           <div style={{ fontSize:13, color:"rgba(255,255,255,0.5)", marginTop:4 }}>out of {answers.length} got right</div>
           <div style={{ fontSize:14, marginTop:10, color:"rgba(255,255,255,0.8)", fontWeight:700 }}>{speed}</div>
           <div style={{ height:6, background:"rgba(255,255,255,0.08)", borderRadius:3, overflow:"hidden", margin:"14px 0 0" }}>
-            <div style={{ height:"100%", width:`${(answered/answers.length)*100}%`, background:"linear-gradient(90deg,#EA580C,#FB923C)", borderRadius:3 }} />
+            <div style={{ height:"100%", width:`${(gotIt/answers.length)*100}%`, background:"linear-gradient(90deg,#EA580C,#FB923C)", borderRadius:3 }} />
           </div>
         </div>
         <div style={{ maxHeight:220, overflowY:"auto", marginBottom:14 }}>
@@ -3212,6 +3333,14 @@ function RapidFire({ onClose, accent }) {
 }
 
 // ── Mood Meter ────────────────────────────────────────────────────────────────
+const MOOD_SUGGESTIONS = {
+  "🔥": ["The music is FIRE! 🎵","Can't stop dancing! 💃","Best night ever!","Living my best life rn!","This energy is incredible!"],
+  "😄": ["Having the absolute best time!","So happy to be here! 🎉","The food is incredible!","Great company tonight ✨","Loving every moment!"],
+  "😎": ["Just vibing and taking it in","Good people, perfect energy","Low key the best party","Keeping it cool 😎","Nothing better than this crew"],
+  "🤔": ["Still warming up to the vibe","The night is young!","Getting into the groove slowly","Not sure what I expected but ok","It's growing on me!"],
+  "😴": ["Someone bring me coffee ☕","It's been a very long day","The drive here wiped me out","DJ please save me 🙏","Trying my best here!"],
+};
+
 const MOOD_OPTIONS_OCC = [
   { emoji: "🔥", label: "On Fire",  color: "#EF4444", temp: 100 },
   { emoji: "😄", label: "Happy",    color: "#22C55E", temp: 70  },
@@ -3223,11 +3352,13 @@ const MOOD_OPTIONS_OCC = [
 function MoodMeter({ onClose, accent }) {
   const [myMood, setMyMood] = useState(null);
   const [name, setName] = useState("");
+  const [noteText, setNoteText] = useState("");
   const [allMoods, setAllMoods] = useState([]);
   const [submitted, setSubmitted] = useState(false);
   const submit = () => {
     if (myMood === null || !name.trim()) return;
-    setAllMoods(m => [...m, { name: name.trim(), emoji: myMood.emoji, label: myMood.label, color: myMood.color, temp: myMood.temp }]);
+    setAllMoods(m => [...m, { name: name.trim(), emoji: myMood.emoji, label: myMood.label, color: myMood.color, temp: myMood.temp, note: noteText.trim() }]);
+    setNoteText("");
     setSubmitted(true);
   };
 
@@ -3273,7 +3404,22 @@ function MoodMeter({ onClose, accent }) {
               </button>
             ))}
           </div>
-          {myMood && name.trim() && <button onClick={submit} style={lBtn(accent)}>Submit Vibe 🌡️</button>}
+          {myMood && (
+            <>
+              <div style={{ marginTop:12, marginBottom:6 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:"rgba(28,9,0,0.50)", marginBottom:6 }}>
+                  Share what's on your mind <span style={{ fontWeight:400, color:"rgba(28,9,0,0.30)" }}>(optional)</span>
+                </div>
+                <textarea value={noteText} onChange={e=>setNoteText(e.target.value)} placeholder={MOOD_SUGGESTIONS[myMood.emoji]?.[0]||"What's making you feel this way?"} style={{...linp,minHeight:62,resize:"none",lineHeight:1.6}} />
+                <div style={{ display:"flex", flexWrap:"wrap", gap:5, marginTop:7 }}>
+                  {(MOOD_SUGGESTIONS[myMood.emoji]||[]).map((s,i)=>(
+                    <button key={i} onClick={()=>setNoteText(s)} style={{ fontSize:11, padding:"4px 10px", borderRadius:100, border:`1px solid ${myMood.color}44`, background:noteText===s?`${myMood.color}22`:"rgba(0,0,0,0.03)", color:myMood.color, cursor:"pointer", fontFamily:font, fontWeight:600, transition:"all 0.12s" }}>{s}</button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+          {myMood && name.trim() && <button onClick={submit} style={{...lBtn(accent),marginTop:8}}>Submit Vibe 🌡️</button>}
         </>
       ) : (
         <div style={{ textAlign: "center", padding: "10px 0 6px" }}>
@@ -3373,6 +3519,8 @@ function GiftTracker({ onClose, accent }) {
   const [gifts, setGifts]   = useState([]);
   const [form, setForm]     = useState({ from:"", gift:"", value:"" });
   const [view, setView]     = useState("add");
+  const [postcardGift, setPostcardGift] = useState(null);
+  const postcardRef = useRef(null);
 
   const add = () => {
     if (!form.from.trim()||!form.gift.trim()) return;
@@ -3381,12 +3529,76 @@ function GiftTracker({ onClose, accent }) {
   };
   const toggleThanked = (id) => setGifts(g=>g.map(x=>x.id===id?{...x,thanked:!x.thanked}:x));
   const remove = (id) => setGifts(g=>g.filter(x=>x.id!==id));
+  const openPostcard = (g) => {
+    if (g.thanked) { toggleThanked(g.id); return; }
+    setPostcardGift(g);
+    toggleThanked(g.id);
+  };
+  const downloadPostcard = async () => {
+    if (!postcardRef.current) return;
+    try {
+      const h2c = (await import("html2canvas")).default;
+      const canvas = await h2c(postcardRef.current, { backgroundColor:"#FFFBF0", scale:2, useCORS:true, logging:false });
+      const link = document.createElement("a");
+      link.download = `thank-you-${postcardGift?.from?.replace(/\s+/g,"-").toLowerCase()||"card"}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } catch(e) { console.error("Postcard download failed", e); }
+  };
+  const sharePostcard = () => {
+    if (!postcardGift) return;
+    const msg = encodeURIComponent(`Dear ${postcardGift.from},\n\nThank you so much for the beautiful gift — ${postcardGift.gift}! 🎁 Your thoughtfulness means the world to us. We're so grateful to have you celebrate with us. 💕\n\nWith lots of love,\nThe Host ✨`);
+    const ph = "";
+    window.open(`https://wa.me/${ph}?text=${msg}`, "_blank");
+  };
 
   const total     = gifts.reduce((s,g)=>s+(Number(g.value)||0),0);
   const unthanked = gifts.filter(g=>!g.thanked).length;
 
   const BOX_COLORS = ["#EF4444","#F59E0B","#10B981","#3B82F6","#8B5CF6","#EC4899","#F97316","#06B6D4"];
   const BOX_PATTERNS = ["🎀","🎗️","✨","🌟","💫","🎊","🎈","🎁"];
+
+  if (postcardGift) return (
+    <LightFormModal onClose={()=>setPostcardGift(null)} accent={accent} emoji="💌" title="Thank You Postcard" wide>
+      {/* Postcard preview */}
+      <div ref={postcardRef} style={{ background:"linear-gradient(135deg,#FFFBF0,#FFF6E0)", borderRadius:16, padding:"28px 24px 24px", border:"2px solid rgba(196,122,46,0.3)", position:"relative", overflow:"hidden", marginBottom:16 }}>
+        {/* Decorative corner flourishes */}
+        {[{top:8,left:8},{top:8,right:8},{bottom:8,left:8},{bottom:8,right:8}].map((pos,i)=>(
+          <div key={i} style={{ position:"absolute", ...pos, fontSize:20, opacity:0.25 }}>✿</div>
+        ))}
+        {/* Postmark top */}
+        <div style={{ textAlign:"center", marginBottom:18 }}>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(196,122,46,0.08)", border:"1px solid rgba(196,122,46,0.2)", borderRadius:8, padding:"4px 14px" }}>
+            <span style={{ fontSize:9, fontWeight:800, color:"rgba(196,122,46,0.7)", letterSpacing:"0.18em", textTransform:"uppercase" }}>✦ Thank You Card ✦</span>
+          </div>
+        </div>
+        {/* Main message */}
+        <div style={{ textAlign:"center", marginBottom:20 }}>
+          <div style={{ fontSize:36, marginBottom:10 }}>🎁</div>
+          <div style={{ fontSize:22, fontWeight:900, color:"#3D1F08", fontFamily:"Georgia,serif", marginBottom:6, letterSpacing:"-0.01em" }}>
+            Dear {postcardGift.from},
+          </div>
+          <div style={{ height:1.5, background:"rgba(196,122,46,0.25)", margin:"0 auto 14px", maxWidth:120, borderRadius:2 }} />
+          <div style={{ fontSize:14, color:"#5C3010", lineHeight:1.75, fontFamily:"Georgia,serif", fontStyle:"italic", maxWidth:280, margin:"0 auto" }}>
+            Thank you so much for the wonderful gift — <strong style={{ fontStyle:"normal", color:accent }}>{postcardGift.gift}</strong>. Your thoughtfulness and love means everything to us. We're truly blessed to have you celebrate this special occasion with us. 💕
+          </div>
+          {postcardGift.value && <div style={{ marginTop:10, fontSize:12, color:"rgba(92,48,16,0.55)" }}>Gift value: ₹{postcardGift.value}</div>}
+        </div>
+        {/* Signature */}
+        <div style={{ textAlign:"center", borderTop:"1.5px dashed rgba(196,122,46,0.25)", paddingTop:14 }}>
+          <div style={{ fontSize:12, color:"rgba(92,48,16,0.55)", fontFamily:"Georgia,serif", fontStyle:"italic" }}>With love & gratitude</div>
+          <div style={{ fontSize:14, fontWeight:700, color:"#3D1F08", fontFamily:"Georgia,serif", marginTop:4 }}>— The Host ✨</div>
+        </div>
+        {/* Stamp */}
+        <div style={{ position:"absolute", bottom:20, right:20, width:48, height:48, borderRadius:6, border:`2px solid ${accent}40`, background:`${accent}10`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, transform:"rotate(8deg)" }}>💌</div>
+      </div>
+      <div style={{ display:"flex", gap:10 }}>
+        <button onClick={downloadPostcard} style={{ ...lBtn(accent), flex:2 }}>⬇ Download Postcard</button>
+        <button onClick={sharePostcard} style={{ ...lBtn("#25D366"), flex:1 }}>WhatsApp 💬</button>
+      </div>
+      <button onClick={()=>setPostcardGift(null)} style={{ ...lBtn("rgba(0,0,0,0.07)"), marginTop:8, color:"#1C1410" }}>← Back to Gifts</button>
+    </LightFormModal>
+  );
 
   return (
     <LightFormModal onClose={onClose} accent={accent} emoji="🎁" title="Gift Tracker" wide>
@@ -3465,7 +3677,7 @@ function GiftTracker({ onClose, accent }) {
                 <div style={{ fontSize:13, fontWeight:600, color:g.thanked?"rgba(28,9,0,0.45)":"#1C1410", textDecoration:g.thanked?"line-through":"none" }}>{g.gift}</div>
                 <div style={{ fontSize:11, color:"rgba(28,9,0,0.45)" }}>from <span style={{ color:"rgba(28,9,0,0.65)", fontWeight:600 }}>{g.from}</span>{g.value?<span style={{ color:accent }}> · ₹{g.value}</span>:""}</div>
               </div>
-              <button onClick={()=>toggleThanked(g.id)} style={{ fontSize:10, padding:"4px 10px", borderRadius:100, border:`1.5px solid ${g.thanked?"#059669":"rgba(0,0,0,0.10)"}`, background:g.thanked?"rgba(5,150,105,0.15)":"transparent", color:g.thanked?"#059669":"rgba(28,9,0,0.40)", cursor:"pointer", fontFamily:"inherit", fontWeight:700 }}>{g.thanked?"✓ Thanked":"Say Thanks"}</button>
+              <button onClick={()=>openPostcard(g)} style={{ fontSize:10, padding:"4px 10px", borderRadius:100, border:`1.5px solid ${g.thanked?"#059669":"rgba(0,0,0,0.10)"}`, background:g.thanked?"rgba(5,150,105,0.15)":accent+"10", color:g.thanked?"#059669":accent, cursor:"pointer", fontFamily:"inherit", fontWeight:700 }}>{g.thanked?"✓ Thanked":"💌 Say Thanks"}</button>
               <button onClick={()=>remove(g.id)} style={{ background:"none", border:"none", color:"rgba(28,9,0,0.30)", cursor:"pointer", fontSize:16 }}>×</button>
             </div>
           ))}
@@ -5521,6 +5733,156 @@ const BIRTHDAY_BINGO = [
   "Venue too small", "Playlist argument", "Surprise guest", "Forgot lighter", "Bad backdrop", "Flight delay", "Unexpected song", "Candles won't light",
 ];
 
+// ── Naming Ceremony Digital Invite ───────────────────────────────────────────
+function NamingCeremonyInvite({ onClose, accent, celebrantName }) {
+  const SK = "tendr-naming-invite-rsvps";
+  const [step, setStep] = useState("form"); // "form" | "preview" | "rsvps"
+  const [details, setDetails] = useState({ babyName:"", parents:"", date:"", time:"", venue:"", note:"" });
+  const [rsvps, setRsvps] = useState(() => { try { return JSON.parse(localStorage.getItem(SK)||"[]"); } catch { return []; } });
+  const [rsvpForm, setRsvpForm] = useState({ name:"", response:"yes", message:"" });
+  const [rsvpDone, setRsvpDone] = useState(false);
+  const previewRef = useRef(null);
+
+  const saveRsvp = () => {
+    if (!rsvpForm.name.trim()) return;
+    const entry = { ...rsvpForm, name: rsvpForm.name.trim(), at: new Date().toLocaleDateString("en-IN") };
+    const updated = [...rsvps, entry];
+    setRsvps(updated);
+    try { localStorage.setItem(SK, JSON.stringify(updated)); } catch {}
+    setRsvpDone(true);
+  };
+
+  const downloadInvite = async () => {
+    if (!previewRef.current) return;
+    try {
+      const h2c = (await import("html2canvas")).default;
+      const canvas = await h2c(previewRef.current, { backgroundColor:"#FFF8F0", scale:2, useCORS:true, logging:false });
+      const link = document.createElement("a");
+      link.download = `naming-ceremony-invite.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } catch(e) { console.error(e); }
+  };
+
+  if (step === "rsvps") return (
+    <LightFormModal onClose={()=>setStep("preview")} accent={accent} emoji="🌸" title="RSVP Responses" wide>
+      <div style={{ marginBottom:14 }}>
+        <div style={{ fontSize:11, fontWeight:700, color:"rgba(28,9,0,0.45)", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:10 }}>
+          {rsvps.length} Response{rsvps.length!==1?"s":""} Received
+        </div>
+        {rsvps.length === 0 ? (
+          <div style={{ textAlign:"center", padding:"30px 0", color:"rgba(28,9,0,0.35)", fontSize:13 }}>No RSVPs yet. Share the invite to get responses.</div>
+        ) : rsvps.map((r,i)=>(
+          <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", padding:"10px 12px", background:r.response==="yes"?"rgba(5,150,105,0.06)":"rgba(0,0,0,0.03)", borderRadius:10, marginBottom:6, borderLeft:`3px solid ${r.response==="yes"?"#059669":"rgba(0,0,0,0.10)"}` }}>
+            <div>
+              <div style={{ fontSize:13, fontWeight:700, color:"#1C1410" }}>{r.name}</div>
+              {r.message && <div style={{ fontSize:11, color:"rgba(28,9,0,0.55)", marginTop:3, fontStyle:"italic" }}>"{r.message}"</div>}
+              <div style={{ fontSize:10, color:"rgba(28,9,0,0.35)", marginTop:3 }}>{r.at}</div>
+            </div>
+            <span style={{ fontSize:11, fontWeight:700, color:r.response==="yes"?"#059669":r.response==="maybe"?"#D97706":"#DC2626", background:r.response==="yes"?"#05966912":r.response==="maybe"?"#D9770612":"#DC262612", padding:"3px 10px", borderRadius:100 }}>{r.response==="yes"?"✓ Coming":r.response==="maybe"?"~ Maybe":"✗ Can't Come"}</span>
+          </div>
+        ))}
+      </div>
+      <button onClick={()=>setStep("preview")} style={{ ...lBtn("rgba(0,0,0,0.07)"), color:"#1C1410" }}>← Back to Invite</button>
+    </LightFormModal>
+  );
+
+  if (step === "preview") return (
+    <LightFormModal onClose={onClose} accent={accent} emoji="🌸" title="Naming Ceremony Invite" wide>
+      {/* Decorative invite card */}
+      <div ref={previewRef} style={{ position:"relative", background:"linear-gradient(135deg,#FFF8F0,#FFF4E0)", border:"3px solid rgba(196,122,46,0.35)", borderRadius:20, padding:"28px 22px 24px", marginBottom:14, overflow:"hidden" }}>
+        {/* Decorative floral border top */}
+        <div style={{ textAlign:"center", fontSize:18, letterSpacing:8, marginBottom:8, opacity:0.6 }}>🪷 🌸 🪷 🌸 🪷</div>
+        <div style={{ height:2, background:"linear-gradient(to right,transparent,rgba(196,122,46,0.5),transparent)", marginBottom:16 }} />
+        {/* Top ornamental header */}
+        <div style={{ textAlign:"center", marginBottom:16 }}>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(196,122,46,0.10)", border:"1px solid rgba(196,122,46,0.30)", borderRadius:8, padding:"4px 16px", marginBottom:12 }}>
+            <span style={{ fontSize:16 }}>🪔</span>
+            <span style={{ fontSize:9, fontWeight:800, color:"rgba(139,69,20,0.80)", letterSpacing:"0.22em", textTransform:"uppercase" }}>Naming Ceremony</span>
+            <span style={{ fontSize:16 }}>🪔</span>
+          </div>
+          <div style={{ fontSize:24, fontWeight:900, color:"#3D1F08", fontFamily:"Georgia,serif", letterSpacing:"0.01em", marginBottom:6 }}>
+            {details.babyName || celebrantName || "Baby's Name"}
+          </div>
+          <div style={{ fontSize:12, color:"rgba(92,48,16,0.65)", fontFamily:"Georgia,serif", fontStyle:"italic" }}>
+            is being named in the presence of God and family
+          </div>
+        </div>
+        {/* Divider */}
+        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
+          <div style={{ flex:1, height:1, background:"rgba(196,122,46,0.25)" }} />
+          <span style={{ fontSize:16 }}>✨</span>
+          <div style={{ flex:1, height:1, background:"rgba(196,122,46,0.25)" }} />
+        </div>
+        {/* Details */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:16 }}>
+          {[["👨‍👩‍👦 Parents", details.parents||"—"],["📅 Date",details.date||"—"],["⏰ Time",details.time||"—"],["📍 Venue",details.venue||"—"]].map(([label,val])=>(
+            <div key={label} style={{ background:"rgba(255,255,255,0.7)", borderRadius:10, padding:"10px 12px", border:"1px solid rgba(196,122,46,0.18)" }}>
+              <div style={{ fontSize:10, color:"rgba(92,48,16,0.55)", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:4 }}>{label}</div>
+              <div style={{ fontSize:12, fontWeight:700, color:"#3D1F08" }}>{val}</div>
+            </div>
+          ))}
+        </div>
+        {details.note && <div style={{ textAlign:"center", fontSize:12, color:"rgba(92,48,16,0.65)", fontStyle:"italic", fontFamily:"Georgia,serif", marginBottom:12 }}>"{details.note}"</div>}
+        {/* RSVP note */}
+        <div style={{ textAlign:"center", background:"rgba(196,122,46,0.08)", borderRadius:10, padding:"10px 14px" }}>
+          <div style={{ fontSize:11, color:"rgba(139,69,20,0.75)", fontWeight:700 }}>Please confirm your attendance 🙏</div>
+        </div>
+        {/* Bottom floral */}
+        <div style={{ height:2, background:"linear-gradient(to right,transparent,rgba(196,122,46,0.5),transparent)", marginTop:16, marginBottom:8 }} />
+        <div style={{ textAlign:"center", fontSize:18, letterSpacing:8, opacity:0.6 }}>🌺 🌼 🌺 🌼 🌺</div>
+      </div>
+      {/* Action buttons */}
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:10 }}>
+        <button onClick={downloadInvite} style={lBtn(accent)}>⬇ Download</button>
+        <button onClick={()=>window.open(`https://wa.me/?text=${encodeURIComponent(`You're invited to the Naming Ceremony of ${details.babyName||"our little one"} 🌸\n\n📅 ${details.date||""} ⏰ ${details.time||""}\n📍 ${details.venue||""}\n\nPlease join us in blessing the little one 🙏`)}`, "_blank")} style={lBtn("#25D366")}>📲 Share</button>
+      </div>
+      {/* RSVP section */}
+      <div style={{ background:"rgba(0,0,0,0.03)", borderRadius:14, padding:"14px 16px", marginBottom:10, border:"1px solid rgba(0,0,0,0.07)" }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+          <div style={{ fontSize:13, fontWeight:700, color:"#1C1410" }}>📋 RSVP</div>
+          <button onClick={()=>setStep("rsvps")} style={{ fontSize:11, fontWeight:700, color:accent, background:"transparent", border:`1px solid ${accent}44`, borderRadius:8, padding:"4px 10px", cursor:"pointer", fontFamily:font }}>View All ({rsvps.length})</button>
+        </div>
+        {rsvpDone ? (
+          <div style={{ textAlign:"center", padding:"8px 0" }}>
+            <div style={{ fontSize:15, color:"#059669", fontWeight:700 }}>✓ Response Recorded!</div>
+            <button onClick={()=>{setRsvpDone(false);setRsvpForm({name:"",response:"yes",message:""});}} style={{ fontSize:12, color:accent, background:"none", border:"none", cursor:"pointer", marginTop:6, fontFamily:font }}>Add another response</button>
+          </div>
+        ) : (
+          <>
+            <input value={rsvpForm.name} onChange={e=>setRsvpForm(f=>({...f,name:e.target.value}))} placeholder="Your name" style={{ ...linp, marginBottom:8 }} />
+            <div style={{ display:"flex", gap:6, marginBottom:8 }}>
+              {[["yes","✓ Coming"],["maybe","~ Maybe"],["no","✗ Can't Come"]].map(([v,l])=>(
+                <button key={v} onClick={()=>setRsvpForm(f=>({...f,response:v}))} style={{ flex:1, fontSize:11, padding:"7px 4px", borderRadius:10, border:`1.5px solid ${rsvpForm.response===v?accent:"rgba(0,0,0,0.10)"}`, background:rsvpForm.response===v?accent+"18":"transparent", color:rsvpForm.response===v?accent:"rgba(28,9,0,0.50)", cursor:"pointer", fontFamily:font, fontWeight:700 }}>{l}</button>
+              ))}
+            </div>
+            <input value={rsvpForm.message} onChange={e=>setRsvpForm(f=>({...f,message:e.target.value}))} placeholder="Leave a blessing or note (optional)" style={{ ...linp, marginBottom:8 }} />
+            <button onClick={saveRsvp} disabled={!rsvpForm.name.trim()} style={{ ...lBtn(accent), opacity:rsvpForm.name.trim()?1:0.45 }}>Send RSVP 🙏</button>
+          </>
+        )}
+      </div>
+      <button onClick={()=>setStep("form")} style={{ ...lBtn("rgba(0,0,0,0.07)"), color:"#1C1410" }}>← Edit Details</button>
+    </LightFormModal>
+  );
+
+  return (
+    <LightFormModal onClose={onClose} accent={accent} emoji="🌸" title="Naming Ceremony Invite" wide>
+      {/* Decorative header */}
+      <div style={{ textAlign:"center", background:"linear-gradient(135deg,rgba(196,122,46,0.10),rgba(196,122,46,0.05))", borderRadius:14, padding:"14px 16px", marginBottom:16, border:"1px solid rgba(196,122,46,0.20)" }}>
+        <div style={{ fontSize:9, fontWeight:800, color:"rgba(139,69,20,0.70)", letterSpacing:"0.22em", textTransform:"uppercase", marginBottom:4 }}>🌸 Naming Ceremony Invite Maker</div>
+        <div style={{ fontSize:13, color:"rgba(92,48,16,0.65)" }}>Fill in the details to create a beautiful invite</div>
+      </div>
+      {[["babyName","Child's Name","e.g. Aarav / Baby Girl"],["parents","Parents' Names","e.g. Rahul & Priya Sharma"],["date","Ceremony Date","e.g. Sunday, 12 Oct 2025"],["time","Ceremony Time","e.g. 11:00 AM"],["venue","Venue","e.g. Sharma Residence, Noida"],["note","Special Note","e.g. Blessed with your presence 🙏"]].map(([k,lbl,ph])=>(
+        <div key={k} style={{ marginBottom:10 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:"rgba(28,9,0,0.45)", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>{lbl}</div>
+          <input value={details[k]} onChange={e=>setDetails(d=>({...d,[k]:e.target.value}))} placeholder={ph} style={linp} />
+        </div>
+      ))}
+      <button onClick={()=>setStep("preview")} style={{ ...lBtn(accent), marginTop:4 }}>Preview Invite ✨</button>
+    </LightFormModal>
+  );
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ════════════════════════════════════════════════════════════════════════════
@@ -5946,6 +6308,31 @@ export default function OccasionHub({ occasion }) {
   const [splashOut, setSplashOut]   = useState(false);
   const [planData, setPlanData]     = useState(null);
 
+  // Celebrant name (person/couple the occasion is about)
+  const OCC_CELEBRANT_LABEL = {
+    "anniversary":     { label:"Couple's Names", ph:"e.g. Rahul & Priya" },
+    "birthday-party":  { label:"Birthday Person", ph:"e.g. Aarav" },
+    "first-birthday":  { label:"Birthday Baby", ph:"e.g. Baby Rohan" },
+    "naming-ceremony": { label:"Child's Name", ph:"e.g. Aarav" },
+    "baby-shower":     { label:"Mom-to-be", ph:"e.g. Priya" },
+    "newborn-welcome": { label:"Baby's Name", ph:"e.g. Baby Ananya" },
+    "wedding":         { label:"Couple's Names", ph:"e.g. Raj & Simran" },
+    "graduation":      { label:"Graduate's Name", ph:"e.g. Rahul" },
+    "retirement":      { label:"Retiree's Name", ph:"e.g. Suresh Ji" },
+    "bachelorette":    { label:"Bride's Name", ph:"e.g. Neha" },
+    "housewarming":    { label:"Family Name", ph:"e.g. The Sharma Family" },
+    "farewell":        { label:"Who's Leaving?", ph:"e.g. Priya" },
+    "get-together":    { label:"Group / Occasion Name", ph:"e.g. College Reunion 2026" },
+  };
+  const celebrantMeta = OCC_CELEBRANT_LABEL[occasion] || { label:"Occasion Name", ph:"e.g. Our Special Day" };
+  const [celebrantName, setCelebrantName] = useState(() => {
+    try { return localStorage.getItem(`tendr-occ-${occasion}-celebrant`) || ""; } catch { return ""; }
+  });
+  const saveCelebrant = (v) => {
+    setCelebrantName(v);
+    try { localStorage.setItem(`tendr-occ-${occasion}-celebrant`, v); } catch {}
+  };
+
   // Room modal flow states
   const [roomModal, setRoomModal]   = useState(null); // "host" | "join" | "players"
   const [hostName,  setHostName]    = useState("");
@@ -6045,7 +6432,9 @@ export default function OccasionHub({ occasion }) {
       case "checklist":      return <Checklist onClose={close} accent={accent} initialGuests={planGuests} />;
       case "reportcard":     return <PartyReportCard onClose={close} accent={accent} />;
       case "potluck":        return <ShareableTool onClose={close} accent={accent} emoji="🥘" title="Potluck Planner" description="Create a potluck room. Share the link — friends claim what they'll bring." path="/house-party/potluck" fields={[{ key: "partyName", label: "Event Name", placeholder: "Our Get Together", required: true }, { key: "hostName", label: "Your Name", placeholder: "Priya", required: true }, { key: "items", label: "Items (comma-separated)", placeholder: "Chips, Coke, Cake, Plates", required: true }]} />;
-      case "invite":         return <ShareableTool onClose={close} accent={accent} emoji="📨" title="Digital Invite & RSVP" description="Create an invite. Share the link — guests RSVP instantly." path="/house-party/invite" fields={[{ key: "partyName", label: "Event Name", placeholder: "Meera's Birthday Bash", required: true }, { key: "hostName", label: "Host Name", placeholder: "Meera", required: true }, { key: "date", label: "Date", placeholder: "19 July 2026" }, { key: "time", label: "Time", placeholder: "7:00 PM" }, { key: "location", label: "Location", placeholder: "Aman's place, Noida" }, { key: "note", label: "Note (optional)", placeholder: "Dress code: yellow!" }]} />;
+      case "invite":         return occasion === "naming-ceremony"
+          ? <NamingCeremonyInvite onClose={close} accent={accent} celebrantName={celebrantName} />
+          : <ShareableTool onClose={close} accent={accent} emoji="📨" title="Digital Invite & RSVP" description="Create an invite. Share the link — guests RSVP instantly." path="/house-party/invite" fields={[{ key: "partyName", label: "Event Name", placeholder: "Meera's Birthday Bash", required: true }, { key: "hostName", label: "Host Name", placeholder: "Meera", required: true }, { key: "date", label: "Date", placeholder: "19 July 2026" }, { key: "time", label: "Time", placeholder: "7:00 PM" }, { key: "location", label: "Location", placeholder: "Aman's place, Noida" }, { key: "note", label: "Note (optional)", placeholder: "Dress code: yellow!" }]} />;
       case "photowall":      return <ShareableTool onClose={close} accent={accent} emoji="📸" title="Shared Photo Wall" description="Create a photo wall. Share the link — everyone uploads their photos." path="/house-party/photo-wall" fields={[{ key: "partyName", label: "Event Name", placeholder: "Priya's Baby Shower 🎀", required: true }]} />;
       case "truthordare":    return <TruthOrDare onClose={close} accent={accent} />;
       case "neverhavei":     return <NeverHaveI onClose={close} accent={accent} />;
@@ -6207,7 +6596,9 @@ export default function OccasionHub({ occasion }) {
             <div style={{ fontSize:18, fontWeight:700, color:T.main, marginBottom:4 }}>Host a Room</div>
             <div style={{ fontSize:13, color:T.sub, marginBottom:22 }}>Start a live party room for your crew</div>
             <input value={hostName} onChange={e=>setHostName(e.target.value)} placeholder="Your name" style={{ ...inpStyle, marginBottom:10 }} />
-            <input value={partyName} onChange={e=>setPartyName(e.target.value)} placeholder={`Party name (e.g. ${occ.name} Bash)`} style={{ ...inpStyle, marginBottom:14 }} />
+            <input value={partyName} onChange={e=>setPartyName(e.target.value)} placeholder={`Party name (e.g. ${occ.name} Bash)`} style={{ ...inpStyle, marginBottom:10 }} />
+            <div style={{ fontSize:11, fontWeight:700, color:T.sub, letterSpacing:"0.06em", textTransform:"uppercase", marginBottom:6 }}>{celebrantMeta.label}</div>
+            <input value={celebrantName} onChange={e=>saveCelebrant(e.target.value)} placeholder={celebrantMeta.ph} style={{ ...inpStyle, marginBottom:14 }} />
             <button onClick={handleHostCreate} disabled={!hostName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:hostName.trim()?PH.violet:"rgba(44,26,14,0.1)", color:hostName.trim()?"#fff":"rgba(44,26,14,0.35)", fontSize:14, fontWeight:700, cursor:hostName.trim()?"pointer":"not-allowed" }}>
               {roomLoading ? "Creating…" : "Create Room →"}
             </button>
@@ -6432,6 +6823,11 @@ export default function OccasionHub({ occasion }) {
                 {occ.emoji} {occ.name}
                 {room && <span style={{ color:occAccent, fontSize:11, fontWeight:600, marginLeft:8 }}>{room.code}</span>}
               </div>
+              {celebrantName && (
+                <div style={{ fontSize:11, color:occAccent, fontWeight:700, letterSpacing:"0.01em", marginTop:2 }}>
+                  ✦ {celebrantName} ✦
+                </div>
+              )}
               <div style={{ flex:1, maxWidth:60, height:1, background:`linear-gradient(to left, transparent, ${occAccent}50)` }} />
             </div>
           </div>

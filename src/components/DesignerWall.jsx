@@ -13,7 +13,7 @@ const CARD_STYLES = [
 ];
 const PINS = ["📌", "⭐", "🌸", "💫", "✨", "📍"];
 
-export default function DesignerWall({ onClose, items = [], title, wallEmoji = "✨" }) {
+export default function DesignerWall({ onClose, items = [], title, wallEmoji = "✨", light = false }) {
   const wallRef = useRef(null);
   const [downloading, setDownloading] = useState(false);
 
@@ -23,7 +23,7 @@ export default function DesignerWall({ onClose, items = [], title, wallEmoji = "
     try {
       const h2c = (await import("html2canvas")).default;
       const canvas = await h2c(wallRef.current, {
-        backgroundColor: "#140D04",
+        backgroundColor: light ? "#FFF8F0" : "#140D04",
         scale: 2,
         useCORS: true,
         allowTaint: true,
@@ -40,10 +40,24 @@ export default function DesignerWall({ onClose, items = [], title, wallEmoji = "
     }
   };
 
+  const L = light; // light theme shorthand
+  const topBarBg = L ? "rgba(255,252,245,0.98)" : "rgba(10,6,2,0.96)";
+  const topBarBd = L ? "rgba(196,122,46,0.22)" : "rgba(196,122,46,0.18)";
+  const backBtnStyle = L
+    ? { background: "rgba(61,31,8,0.07)", border: "1px solid rgba(196,122,46,0.25)", color: "rgba(61,31,8,0.75)" }
+    : { background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(245,236,216,0.7)" };
+  const wallBg = L
+    ? "linear-gradient(160deg, #FFF8F0 0%, #FFF4E6 55%, #FFF9F4 100%)"
+    : "linear-gradient(160deg, #1C1007 0%, #130C04 55%, #1A1208 100%)";
+  const headerTitleColor = L ? "#3D1F08" : "#F5ECD8";
+  const headerSubColor = L ? "rgba(61,31,8,0.55)" : "rgba(245,236,216,0.65)";
+  const emptyColor = L ? "rgba(61,31,8,0.30)" : "rgba(245,236,216,0.25)";
+  const eyebrowColor = L ? `${GOLD}cc` : `${GOLD}90`;
+
   return (
     <div style={{
       position: "fixed", inset: 0, zIndex: 10000,
-      background: "rgba(5,3,1,0.95)",
+      background: L ? "rgba(255,248,240,0.99)" : "rgba(5,3,1,0.95)",
       display: "flex", flexDirection: "column",
       fontFamily: font,
     }}>
@@ -51,14 +65,14 @@ export default function DesignerWall({ onClose, items = [], title, wallEmoji = "
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "10px 16px",
-        background: "rgba(10,6,2,0.96)",
-        borderBottom: `1px solid rgba(196,122,46,0.18)`,
+        background: topBarBg,
+        borderBottom: `1px solid ${topBarBd}`,
         backdropFilter: "blur(10px)",
         flexShrink: 0,
       }}>
         <button onClick={onClose} style={{
-          background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)",
-          color: "rgba(245,236,216,0.7)", padding: "7px 16px", borderRadius: 10,
+          ...backBtnStyle,
+          padding: "7px 16px", borderRadius: 10,
           cursor: "pointer", fontSize: 13, fontFamily: font, fontWeight: 600, letterSpacing: "0.02em",
         }}>← Back</button>
 
@@ -82,26 +96,36 @@ export default function DesignerWall({ onClose, items = [], title, wallEmoji = "
         {/* Captured area */}
         <div ref={wallRef} style={{
           minHeight: "100%",
-          background: "linear-gradient(160deg, #1C1007 0%, #130C04 55%, #1A1208 100%)",
+          background: wallBg,
           padding: "44px 24px 64px",
           position: "relative",
           overflow: "hidden",
         }}>
-          {/* Ambient glow */}
-          <div aria-hidden style={{
-            position: "absolute", inset: 0, pointerEvents: "none",
-            backgroundImage: `
-              radial-gradient(ellipse 60% 40% at 20% 15%, rgba(196,122,46,0.08) 0%, transparent 70%),
-              radial-gradient(ellipse 50% 35% at 80% 85%, rgba(196,122,46,0.05) 0%, transparent 70%)
-            `,
-          }} />
+          {/* Ambient glow / floral decoration */}
+          {L ? (
+            <>
+              <div aria-hidden style={{ position:"absolute", inset:0, pointerEvents:"none", backgroundImage:`radial-gradient(ellipse 60% 40% at 20% 15%, rgba(196,122,46,0.10) 0%, transparent 70%), radial-gradient(ellipse 50% 35% at 80% 85%, rgba(255,182,108,0.10) 0%, transparent 70%)` }} />
+              {/* Floral corner decorations */}
+              {[{top:8,left:8},{top:8,right:8},{bottom:8,left:8},{bottom:8,right:8}].map((pos,i)=>(
+                <div key={i} aria-hidden style={{ position:"absolute", ...pos, fontSize:28, opacity:0.12, pointerEvents:"none", userSelect:"none" }}>🌸</div>
+              ))}
+            </>
+          ) : (
+            <div aria-hidden style={{
+              position: "absolute", inset: 0, pointerEvents: "none",
+              backgroundImage: `
+                radial-gradient(ellipse 60% 40% at 20% 15%, rgba(196,122,46,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 35% at 80% 85%, rgba(196,122,46,0.05) 0%, transparent 70%)
+              `,
+            }} />
+          )}
 
           {/* Header */}
           <div style={{ textAlign: "center", marginBottom: 44, position: "relative" }}>
             <div style={{ marginBottom: 8 }}>
               <span style={{
                 fontSize: 10, fontWeight: 800, letterSpacing: "0.32em",
-                color: `${GOLD}90`, textTransform: "uppercase",
+                color: eyebrowColor, textTransform: "uppercase",
               }}>TENDR · EVENT PLANNING</span>
             </div>
 
@@ -115,14 +139,14 @@ export default function DesignerWall({ onClose, items = [], title, wallEmoji = "
             </div>
 
             <h1 style={{
-              fontSize: 30, fontWeight: 700, color: "#F5ECD8",
+              fontSize: 30, fontWeight: 700, color: headerTitleColor,
               margin: "0 0 8px", letterSpacing: "0.015em",
-              textShadow: `0 2px 24px rgba(196,122,46,0.25)`,
+              textShadow: L ? "none" : `0 2px 24px rgba(196,122,46,0.25)`,
               fontFamily: font,
             }}>{title}</h1>
 
             <p style={{
-              color: "rgba(245,236,216,0.3)", fontSize: 11,
+              color: headerSubColor, fontSize: 11,
               letterSpacing: "0.14em", textTransform: "uppercase", margin: 0,
             }}>
               {items.length} note{items.length !== 1 ? "s" : ""} · made with Tendr
@@ -132,7 +156,7 @@ export default function DesignerWall({ onClose, items = [], title, wallEmoji = "
           {/* Empty state */}
           {items.length === 0 && (
             <div style={{
-              textAlign: "center", color: "rgba(245,236,216,0.25)",
+              textAlign: "center", color: emptyColor,
               fontSize: 15, padding: "60px 0",
             }}>
               No notes yet — go back and add some!
@@ -213,7 +237,7 @@ export default function DesignerWall({ onClose, items = [], title, wallEmoji = "
           {/* Bottom watermark */}
           <div style={{
             textAlign: "center", marginTop: 56,
-            color: `rgba(196,122,46,0.25)`, fontSize: 10,
+            color: L ? `rgba(196,122,46,0.45)` : `rgba(196,122,46,0.25)`, fontSize: 10,
             letterSpacing: "0.22em", textTransform: "uppercase",
           }}>
             tendr · your event, elevated · tendr.in
