@@ -295,17 +295,26 @@ function TipsByTendrSection() {
                 onClick={() => navigate(`/guides/${tertiary.slug}`)}
                 style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between",
-                  padding: "30px 32px", borderBottom: "1px solid rgba(196,122,46,0.10)",
-                  cursor: "pointer", transition: "background 0.18s", gap: 24,
+                  padding: "36px 40px", borderBottom: "1px solid rgba(196,122,46,0.10)",
+                  cursor: "pointer", transition: "background 0.18s", gap: 32,
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.05)"}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.04)"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}
               >
-                <div>
-                  <div style={{ fontSize: 9, color: "rgba(196,151,74,0.55)", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: 7, fontFamily: sans }}>{tertiary.tags[0]}</div>
-                  <h3 style={{ fontFamily: serif, fontSize: "clamp(1.1rem,2vw,1.5rem)", fontWeight: 400, color: "rgba(255,248,236,0.88)", margin: 0, lineHeight: 1.2 }}>{tertiary.title}</h3>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(196,151,74,0.60)", letterSpacing: "0.26em", textTransform: "uppercase", marginBottom: 10, fontFamily: sans }}>{tertiary.tags[0]}</div>
+                  <h3 style={{ fontFamily: serif, fontSize: "clamp(1.5rem,2.6vw,2.1rem)", fontWeight: 400, color: "rgba(255,248,236,0.92)", margin: "0 0 10px", lineHeight: 1.15 }}>{tertiary.title}</h3>
+                  {tertiary.subtitle && (
+                    <p style={{ fontSize: 13.5, color: "rgba(255,248,236,0.42)", margin: 0, lineHeight: 1.65, fontFamily: sans, maxWidth: 500 }}>{tertiary.subtitle}</p>
+                  )}
                 </div>
-                <span style={{ fontSize: 12.5, color: "rgba(196,151,58,0.70)", flexShrink: 0, fontFamily: sans }}>Read guide →</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
+                  <span style={{ fontSize: 13, color: "rgba(196,151,58,0.75)", fontFamily: sans, whiteSpace: "nowrap" }}>Read guide →</span>
+                  <div style={{ width: 38, height: 38, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.45)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(196,151,58,0.80)", fontSize: 16, flexShrink: 0, transition: "all 0.18s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.15)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.7)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.45)"; }}
+                  >→</div>
+                </div>
               </motion.div>
             )}
 
@@ -315,27 +324,35 @@ function TipsByTendrSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
               transition={{ duration: 0.45, delay: 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
-              style={{ padding: "34px 32px 38px" }}
+              style={{ padding: "36px 40px 44px" }}
             >
               <div style={{ height: 1, background: "rgba(204,171,74,0.08)", marginBottom: 32 }} />
-              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
-                <div>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(204,171,74,0.50)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 16, fontFamily: sans }}>From the Tendr Community</div>
-                  <h3 style={{ fontFamily: serif, fontSize: "clamp(1.3rem,2.6vw,2rem)", fontWeight: 400, color: "rgba(255,248,236,0.82)", margin: "0 0 8px", lineHeight: 1.2 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(204,171,74,0.55)", textTransform: "uppercase", letterSpacing: "0.26em", marginBottom: 12, fontFamily: sans }}>From the Tendr Community</div>
+                  <h3 style={{ fontFamily: serif, fontSize: "clamp(1.5rem,2.8vw,2.2rem)", fontWeight: 400, color: "rgba(255,248,236,0.90)", margin: "0 0 10px", lineHeight: 1.15 }}>
                     Real events. Real setups.
                   </h3>
-                  <p style={{ fontSize: 14, color: "rgba(255,248,236,0.38)", margin: 0, lineHeight: 1.6, fontFamily: sans }}>
+                  <p style={{ fontSize: 13.5, color: "rgba(255,248,236,0.40)", margin: 0, lineHeight: 1.65, fontFamily: sans }}>
                     Real ideas from people planning them.
                   </p>
                 </div>
-                <button
-                  onClick={() => navigate("/community")}
-                  style={{ background: "none", border: "none", color: "rgba(204,171,74,0.60)", fontSize: 13, cursor: "pointer", fontFamily: sans, padding: 0, whiteSpace: "nowrap", flexShrink: 0, transition: "color 0.15s", marginBottom: 2 }}
-                  onMouseEnter={e => e.currentTarget.style.color = "#CCAB4A"}
-                  onMouseLeave={e => e.currentTarget.style.color = "rgba(204,171,74,0.60)"}
-                >
-                  Explore community →
-                </button>
+                <div style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
+                  <button
+                    onClick={() => navigate("/community")}
+                    style={{ background: "none", border: "none", color: "rgba(204,171,74,0.65)", fontSize: 13, cursor: "pointer", fontFamily: sans, padding: 0, whiteSpace: "nowrap", transition: "color 0.15s" }}
+                    onMouseEnter={e => e.currentTarget.style.color = "#CCAB4A"}
+                    onMouseLeave={e => e.currentTarget.style.color = "rgba(204,171,74,0.65)"}
+                  >
+                    Explore community →
+                  </button>
+                  <div
+                    onClick={() => navigate("/community")}
+                    style={{ width: 38, height: 38, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.45)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(196,151,58,0.80)", fontSize: 16, flexShrink: 0, cursor: "pointer", transition: "all 0.18s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.15)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.7)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.45)"; }}
+                  >→</div>
+                </div>
               </div>
             </motion.div>
           </div>
