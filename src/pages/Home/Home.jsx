@@ -215,20 +215,27 @@ function TipsByTendrSection() {
                 onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"}
                 onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
               />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.86) 0%, rgba(0,0,0,0.24) 55%, transparent 100%)" }} />
-              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "28px 26px" }}>
-                <div style={{ fontSize: 8.5, color: "rgba(196,151,58,0.72)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 10, fontFamily: sans }}>Featured</div>
-                <h3 style={{ fontFamily: serif, fontSize: "clamp(1.4rem,2.2vw,1.9rem)", fontWeight: 400, color: "#FFF8EC", margin: "0 0 10px", lineHeight: 1.15, letterSpacing: "0.01em" }}>
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.30) 55%, transparent 100%)" }} />
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "32px 30px" }}>
+                <div style={{ fontSize: 8.5, color: "rgba(196,151,58,0.72)", textTransform: "uppercase", letterSpacing: "0.26em", marginBottom: 12, fontFamily: sans }}>Featured</div>
+                <h3 style={{ fontFamily: serif, fontSize: "clamp(1.55rem,2.4vw,2.1rem)", fontWeight: 400, color: "#FFF8EC", margin: "0 0 10px", lineHeight: 1.12, letterSpacing: "0.01em" }}>
                   {featured.title}
                 </h3>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-                  <span style={{ fontSize: 11, color: "rgba(255,248,236,0.42)", fontFamily: sans }}>{featured.readTime}</span>
-                  {featured.pages && <>
-                    <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
-                    <span style={{ fontSize: 11, color: "rgba(255,248,236,0.42)", fontFamily: sans }}>{featured.pages} pages</span>
-                  </>}
+                {featured.subtitle && (
+                  <p style={{ fontSize: 13, color: "rgba(255,248,236,0.58)", margin: "0 0 16px", lineHeight: 1.55, fontFamily: sans }}>
+                    {featured.subtitle}
+                  </p>
+                )}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 11, color: "rgba(255,248,236,0.40)", fontFamily: sans }}>{featured.readTime}</span>
+                    {featured.pages && <>
+                      <span style={{ color: "rgba(255,255,255,0.18)", fontSize: 11 }}>|</span>
+                      <span style={{ fontSize: 11, color: "rgba(255,248,236,0.40)", fontFamily: sans }}>{featured.pages} pages</span>
+                    </>}
+                  </div>
+                  <span style={{ fontSize: 12.5, color: "rgba(196,151,58,0.85)", fontFamily: sans }}>Read guide →</span>
                 </div>
-                <span style={{ fontSize: 12.5, color: "rgba(196,151,58,0.82)", fontFamily: sans }}>Read guide →</span>
               </div>
             </div>
           )}
@@ -246,13 +253,18 @@ function TipsByTendrSection() {
                 onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"}
                 onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
               />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.86) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)" }} />
-              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "22px 20px" }}>
-                <div style={{ fontSize: 8.5, color: "rgba(196,151,58,0.62)", textTransform: "uppercase", letterSpacing: "0.2em", marginBottom: 8, fontFamily: sans }}>{secondary.tags[0]}</div>
-                <h3 style={{ fontFamily: serif, fontSize: "clamp(1.1rem,1.6vw,1.4rem)", fontWeight: 400, color: "#FFF8EC", margin: "0 0 10px", lineHeight: 1.2, letterSpacing: "0.01em" }}>
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.32) 52%, transparent 100%)" }} />
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "28px 24px" }}>
+                <div style={{ fontSize: 8.5, color: "rgba(196,151,58,0.65)", textTransform: "uppercase", letterSpacing: "0.22em", marginBottom: 10, fontFamily: sans }}>{secondary.tags[0]}</div>
+                <h3 style={{ fontFamily: serif, fontSize: "clamp(1.2rem,1.8vw,1.55rem)", fontWeight: 400, color: "#FFF8EC", margin: "0 0 8px", lineHeight: 1.15, letterSpacing: "0.01em" }}>
                   {secondary.title}
                 </h3>
-                <span style={{ fontSize: 12, color: "rgba(196,151,58,0.78)", fontFamily: sans }}>Read guide →</span>
+                {secondary.subtitle && (
+                  <p style={{ fontSize: 12.5, color: "rgba(255,248,236,0.50)", margin: "0 0 14px", lineHeight: 1.55, fontFamily: sans }}>
+                    {secondary.subtitle}
+                  </p>
+                )}
+                <span style={{ fontSize: 12, color: "rgba(196,151,58,0.82)", fontFamily: sans }}>Read guide →</span>
               </div>
             </div>
           )}
