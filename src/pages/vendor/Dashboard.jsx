@@ -1420,7 +1420,7 @@ function QuoteModal({ initial, onSave, onClose }) {
 }
 
 // ── Booking card (Tendr) ───────────────────────────────────────────────────────
-function BookingCard({ b, font: fnt, onDispute }) {
+function BookingCard({ b, font: fnt, onDispute, vendorName: bVendorName }) {
   const sc = STATUS_COLOR[b.status] || STATUS_COLOR.Pending;
   const [expanded, setExpanded] = useState(false);
   const [note, setNote] = useState(() => {
@@ -1482,6 +1482,11 @@ function BookingCard({ b, font: fnt, onDispute }) {
               style={{ padding: '6px 16px', borderRadius: 8, border: 'none', background: gold, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: fnt }}
             >
               {noteSaved ? '✓ Saved' : 'Save Note'}
+            </button>
+            <button
+              onClick={() => generateInvoice({ ...b, clientName: b.customerName, clientPhone: b.customerPhone }, bVendorName || '')}
+              style={{ padding:'6px 14px', borderRadius:8, border:'1.5px solid rgba(196,122,46,0.28)', background:'rgba(196,122,46,0.07)', color:'#7A4F1E', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:fnt }}>
+              Invoice ↗
             </button>
             {onDispute && (
               <button onClick={() => onDispute(b)}
@@ -2734,7 +2739,7 @@ const [tab, setTab] = useState('home');
                 {[
                   { label:'View Public Profile', icon:'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z', action:() => window.open(`${window.location.origin}/vendor/${vendorId}`, '_blank'), accent:gold },
                   { label:'Share Profile', icon:'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13', action:() => { navigator.clipboard?.writeText(`${window.location.origin}/vendor/${vendorId}`).then(() => showToast(t('profileLinkCopied'))); }, accent:'#16A34A' },
-                  { label:'Create Invoice', icon:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M12 18v-6M9 15h6', action:() => { setEditQuote(null); setQuoteModal(true); }, accent:'#7C3AED' },
+                  { label:'New Quote', icon:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8', action:() => { setEditQuote(null); setQuoteModal(true); }, accent:'#7C3AED' },
                   { label:'Edit Profile', icon:'M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z', action:() => setTab('profile'), accent:'#9B7450' },
                 ].map((a, i) => (
                   <button key={i} onClick={a.action} style={{ padding:'12px 14px', borderRadius:14, background:'#fff', border:'1px solid rgba(196,122,46,0.12)', display:'flex', alignItems:'center', gap:10, cursor:'pointer', fontFamily:font, boxShadow:'0 2px 8px rgba(28,10,4,0.04)', textAlign:'left' }}>
@@ -2744,6 +2749,29 @@ const [tab, setTab] = useState('home');
                     <span style={{ fontSize:13, fontWeight:600, color:ink }}>{a.label}</span>
                   </button>
                 ))}
+              </div>
+
+              {/* Business Tools */}
+              <div style={{ marginBottom: 18 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Business Tools</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                  {[
+                    { label: 'Quote Builder', sub: 'Create estimates', icon: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8', accent: '#7C3AED', action: () => { setEditQuote(null); setQuoteModal(true); } },
+                    { label: 'Invoice Maker', sub: 'Bill your clients', icon: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M12 18v-6M9 15h6', accent: gold, action: () => { setTab('work'); setWorkSubTab('outside'); } },
+                    { label: 'Contracts', sub: 'Terms per booking', icon: 'M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z', accent: '#0EA5E9', action: () => { setTab('work'); setWorkSubTab('outside'); } },
+                  ].map((tool, ti) => (
+                    <button key={ti} onClick={tool.action}
+                      style={{ padding: '14px 12px', borderRadius: 14, background: '#fff', border: '1.5px solid rgba(196,122,46,0.12)', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, cursor: 'pointer', fontFamily: font, boxShadow: '0 2px 8px rgba(28,10,4,0.04)', textAlign: 'left' }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 10, background: `${tool.accent}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={tool.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={tool.icon}/></svg>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>{tool.label}</div>
+                        <div style={{ fontSize: 11, color: '#9B7450', marginTop: 1 }}>{tool.sub}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Milestone banner */}
@@ -2989,7 +3017,7 @@ const [tab, setTab] = useState('home');
                   ['tendr',   lang==='hi'?'Tendr':'Tendr',                                      tendrCount>0?tendrCount:''],
                   ['outside', lang==='hi'?'बाहरी':'Outside',                                   outsideCount>0?outsideCount:''],
                   ['calendar',lang==='hi'?'कैलेंडर':'Calendar',                                ''],
-                  ['quotes',  lang==='hi'?'कोटेशन':'Quotes',                                   quotes.length>0?quotes.length:''],
+                  ['quotes',  lang==='hi'?'कोटेशन':'Quotes',                                   quotes.length > 0 ? String(quotes.length) : '+'],
                   ['clients', lang==='hi'?'क्लाइंट':'Clients',                                 clientList.length>0?clientList.length:''],
                 ].map(([key,label,badge]) => (
                   <button key={key} onClick={() => { setWorkSubTab(key); setOSearch(''); setOFilter('all'); }}
@@ -3189,7 +3217,7 @@ const [tab, setTab] = useState('home');
                     </div>
                   ) : (
                     <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                      {bookings.filter(b => !oSearch||b.customerName?.toLowerCase().includes(oSearch.toLowerCase())||b.eventType?.toLowerCase().includes(oSearch.toLowerCase())).map((b,i) => <BookingCard key={b.id||b._id||i} b={b} font={font} onDispute={bk => { setDisputeModal(bk); setDisputeText(''); setDisputeReason('Payment issue'); }} />)}
+                      {bookings.filter(b => !oSearch||b.customerName?.toLowerCase().includes(oSearch.toLowerCase())||b.eventType?.toLowerCase().includes(oSearch.toLowerCase())).map((b,i) => <BookingCard key={b.id||b._id||i} b={b} font={font} vendorName={vendorName} onDispute={bk => { setDisputeModal(bk); setDisputeText(''); setDisputeReason('Payment issue'); }} />)}
                     </div>
                   )}
                 </div>
