@@ -258,59 +258,88 @@ function TipsByTendrSection() {
           )}
         </motion.div>
 
-        {/* ── Tertiary guide — text row ── */}
-        {tertiary && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
-            onClick={() => navigate(`/guides/${tertiary.slug}`)}
-            style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "26px 0", borderBottom: "1px solid rgba(255,248,236,0.07)",
-              cursor: "pointer", transition: "opacity 0.15s", gap: 24,
-            }}
-            onMouseEnter={e => e.currentTarget.style.opacity = "0.72"}
-            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-          >
-            <div>
-              <div style={{ fontSize: 9, color: "rgba(196,151,74,0.42)", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: 6, fontFamily: sans }}>{tertiary.tags[0]}</div>
-              <h3 style={{ fontFamily: serif, fontSize: "clamp(1.1rem,2vw,1.45rem)", fontWeight: 400, color: "#FFF8EC", margin: 0, lineHeight: 1.2 }}>{tertiary.title}</h3>
-            </div>
-            <span style={{ fontSize: 12.5, color: "rgba(196,151,58,0.62)", flexShrink: 0, fontFamily: sans }}>Read guide →</span>
-          </motion.div>
-        )}
+        {/* ── Tertiary guide + Community — shared dark textured block ── */}
+        <div style={{ position: "relative", marginTop: 2, overflow: "hidden", borderRadius: 0 }}>
+          {/* Dark warm base */}
+          <div style={{
+            position: "absolute", inset: 0,
+            background: "linear-gradient(160deg, #1C0E05 0%, #150A02 55%, #1A0D04 100%)",
+          }} />
+          {/* Grain texture overlay */}
+          <div style={{
+            position: "absolute", inset: 0, opacity: 0.045,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+            backgroundSize: "200px 200px",
+          }} />
+          {/* Warm amber glow top-left */}
+          <div style={{
+            position: "absolute", top: 0, left: 0, width: "55%", height: "60%",
+            background: "radial-gradient(ellipse at 20% 20%, rgba(196,122,46,0.09) 0%, transparent 65%)",
+            pointerEvents: "none",
+          }} />
+          {/* Subtle warm glow bottom-right */}
+          <div style={{
+            position: "absolute", bottom: 0, right: 0, width: "45%", height: "50%",
+            background: "radial-gradient(ellipse at 80% 80%, rgba(120,55,12,0.12) 0%, transparent 65%)",
+            pointerEvents: "none",
+          }} />
 
-        {/* ── Community — separate visual block ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.45, delay: 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
-          style={{ padding: "52px 0 0" }}
-        >
-          <div style={{ height: 1, background: "rgba(204,171,74,0.06)", marginBottom: 40 }} />
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
-            <div>
-              <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(204,171,74,0.35)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 16 }}>From the Tendr Community</div>
-              <h3 style={{ fontFamily: serif, fontSize: "clamp(1.3rem,2.6vw,2rem)", fontWeight: 400, color: "rgba(255,248,236,0.62)", margin: "0 0 8px", lineHeight: 1.2 }}>
-                Real events. Real setups.
-              </h3>
-              <p style={{ fontSize: 14, color: "rgba(255,248,236,0.28)", margin: 0, lineHeight: 1.6 }}>
-                Real ideas from people planning them.
-              </p>
-            </div>
-            <button
-              onClick={() => navigate("/community")}
-              style={{ background: "none", border: "none", color: "rgba(204,171,74,0.5)", fontSize: 13, cursor: "pointer", fontFamily: sans, padding: 0, whiteSpace: "nowrap", flexShrink: 0, transition: "color 0.15s", marginBottom: 2 }}
-              onMouseEnter={e => e.currentTarget.style.color = "#CCAB4A"}
-              onMouseLeave={e => e.currentTarget.style.color = "rgba(204,171,74,0.5)"}
+          <div style={{ position: "relative", zIndex: 1, padding: "0 0 0" }}>
+            {/* Tertiary guide row */}
+            {tertiary && (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
+                onClick={() => navigate(`/guides/${tertiary.slug}`)}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "30px 32px", borderBottom: "1px solid rgba(196,122,46,0.10)",
+                  cursor: "pointer", transition: "background 0.18s", gap: 24,
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.05)"}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+              >
+                <div>
+                  <div style={{ fontSize: 9, color: "rgba(196,151,74,0.55)", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: 7, fontFamily: sans }}>{tertiary.tags[0]}</div>
+                  <h3 style={{ fontFamily: serif, fontSize: "clamp(1.1rem,2vw,1.5rem)", fontWeight: 400, color: "rgba(255,248,236,0.88)", margin: 0, lineHeight: 1.2 }}>{tertiary.title}</h3>
+                </div>
+                <span style={{ fontSize: 12.5, color: "rgba(196,151,58,0.70)", flexShrink: 0, fontFamily: sans }}>Read guide →</span>
+              </motion.div>
+            )}
+
+            {/* Community block */}
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.45, delay: 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
+              style={{ padding: "34px 32px 38px" }}
             >
-              Explore community →
-            </button>
+              <div style={{ height: 1, background: "rgba(204,171,74,0.08)", marginBottom: 32 }} />
+              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
+                <div>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(204,171,74,0.50)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 16, fontFamily: sans }}>From the Tendr Community</div>
+                  <h3 style={{ fontFamily: serif, fontSize: "clamp(1.3rem,2.6vw,2rem)", fontWeight: 400, color: "rgba(255,248,236,0.82)", margin: "0 0 8px", lineHeight: 1.2 }}>
+                    Real events. Real setups.
+                  </h3>
+                  <p style={{ fontSize: 14, color: "rgba(255,248,236,0.38)", margin: 0, lineHeight: 1.6, fontFamily: sans }}>
+                    Real ideas from people planning them.
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate("/community")}
+                  style={{ background: "none", border: "none", color: "rgba(204,171,74,0.60)", fontSize: 13, cursor: "pointer", fontFamily: sans, padding: 0, whiteSpace: "nowrap", flexShrink: 0, transition: "color 0.15s", marginBottom: 2 }}
+                  onMouseEnter={e => e.currentTarget.style.color = "#CCAB4A"}
+                  onMouseLeave={e => e.currentTarget.style.color = "rgba(204,171,74,0.60)"}
+                >
+                  Explore community →
+                </button>
+              </div>
+            </motion.div>
           </div>
-        </motion.div>
+        </div>
 
       </div>
     </section>
