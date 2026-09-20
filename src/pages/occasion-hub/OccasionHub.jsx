@@ -174,6 +174,69 @@ const llbl = { fontSize:11, fontWeight:700, color:"rgba(28,20,16,0.50)", marginB
 const lBtn = (color = "#C4973A") => ({ padding:"12px 18px", borderRadius:12, border:"none", background:color, color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:font, width:"100%" });
 const lcrd = { background:"rgba(0,0,0,0.04)", borderRadius:12, padding:"12px 14px", marginBottom:8, color:"#1C1410", fontSize:14 };
 
+// ── Live player presence rail (shown inside any tool when a room is active) ───
+function PlayerRail({ room, players = [], myName, accent, checked = {} }) {
+  if (!room) return null;
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:5, marginBottom:12, padding:"6px 10px", background:`${accent}0d`, borderRadius:10, border:`1px solid ${accent}22`, overflowX:"auto", scrollbarWidth:"none", flexShrink:0 }}>
+      <span style={{ fontSize:8.5, fontWeight:900, color:"#22c55e", letterSpacing:"0.12em", whiteSpace:"nowrap", marginRight:3, textTransform:"uppercase" }}>● Live</span>
+      {players.map(p => (
+        <div key={p} style={{ display:"flex", alignItems:"center", gap:3, background: p===myName?`${accent}1e`:"rgba(0,0,0,0.04)", borderRadius:20, padding:"3px 8px 3px 4px", border:`1px solid ${p===myName?accent+"40":"rgba(0,0,0,0.06)"}`, whiteSpace:"nowrap", flexShrink:0 }}>
+          <div style={{ width:16, height:16, borderRadius:"50%", background:checked[p]?"#22c55e":accent, display:"flex", alignItems:"center", justifyContent:"center", fontSize:8.5, fontWeight:900, color:"#fff", flexShrink:0 }}>
+            {checked[p] ? "✓" : (p[0]?.toUpperCase() || "?")}
+          </div>
+          <span style={{ fontSize:11, color: p===myName?accent:"rgba(28,9,0,0.65)", fontWeight: p===myName?700:500 }}>{p===myName?"you":p}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── IDs of tools that are live-wired (need a room to play together) ──────────
+const LIVE_GAME_IDS = new Set([
+  "truthordare","neverhavei","wouldyou","hottakes","mostlikelyto",
+  "moodmeter","wishwall","lovenotes","blessingswall","blessings","secretmessage",
+]);
+
+const GAME_DESCRIPTIONS = {
+  "truthordare":   "Take turns picking Truth or Dare — the hot seat rotates around the room.",
+  "neverhavei":    "Raise your hand if you've done it — everyone's score updates live.",
+  "wouldyou":      "Pick a side on wild either/or dilemmas — see how your group splits.",
+  "hottakes":      "React with emojis to spicy takes — find out who really agrees with you.",
+  "mostlikelyto":  "Vote on who's most likely — the results lovingly roast everyone.",
+  "moodmeter":     "Everyone drops their vibe — see the group's collective energy live.",
+  "wishwall":      "Pin wishes to a shared board — all visible in real time as they arrive.",
+  "lovenotes":     "Hang love notes together — tap each envelope to reveal the message.",
+  "blessingswall": "Share blessings on a shared wall — everyone sees them appear live.",
+  "blessings":     "Share blessings on a shared wall — everyone sees them appear live.",
+  "secretmessage": "Seal messages in envelopes — the group opens them one by one.",
+};
+
+function RoomGate({ onClose, onHost, onJoin, onSoloPreview, toolTitle, toolId, accent }) {
+  const desc = GAME_DESCRIPTIONS[toolId] || "Play this game live with your friends in a shared room.";
+  return (
+    <LightFormModal onClose={onClose} emoji="🎮" title={toolTitle} accent={accent}>
+      <div style={{ textAlign:"center", padding:"8px 0 18px" }}>
+        <div style={{ fontSize:13, color:"rgba(28,9,0,0.55)", lineHeight:1.75, marginBottom:14 }}>{desc}</div>
+        <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:`${accent}12`, border:`1px solid ${accent}28`, borderRadius:100, padding:"5px 14px", fontSize:11.5, fontWeight:700, color:accent }}>
+          👥 Live multiplayer — everyone plays together
+        </div>
+      </div>
+      <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+        <button onClick={onHost} style={{ ...lBtn(accent), padding:"15px", fontSize:15 }}>
+          🎉 Host a Room
+        </button>
+        <button onClick={onJoin} style={{ ...lBtn("rgba(0,0,0,0.06)"), padding:"14px", color:"rgba(28,9,0,0.7)" }}>
+          🚪 Join a Room
+        </button>
+      </div>
+      <button onClick={onSoloPreview} style={{ display:"block", width:"100%", background:"none", border:"none", color:"rgba(28,9,0,0.30)", fontSize:12, cursor:"pointer", padding:"10px 0 0", fontFamily:font }}>
+        Solo preview →
+      </button>
+    </LightFormModal>
+  );
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // SHARED TOOLS
 // ════════════════════════════════════════════════════════════════════════════
@@ -755,7 +818,9 @@ function ShareableTool({ onClose, emoji, title, description, path, fields, accen
 // GAMES
 // ════════════════════════════════════════════════════════════════════════════
 
-function TruthOrDare({ onClose, accent }) {
+function TruthOrDare({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'truth-dare') setGame?.('truth-dare', {}); }, [live, isHost]); // eslint-disable-line
   const [players, setPlayers] = useState([]);
   const [newP, setNewP] = useState("");
   const [phase, setPhase] = useState("setup"); // setup | spinning | mode | card
@@ -766,6 +831,21 @@ function TruthOrDare({ onClose, accent }) {
   const [completedBy, setCompletedBy] = useState({});
   const [spinIdx, setSpinIdx] = useState(0);
   const spinRef = useRef(null);
+
+  // Live derived
+  const activePlayers = live ? livePlayers : players;
+  const liveCardIdx = live ? (gameState?.cardIdx || 0) : null;
+  const liveMode = live ? (gameState?.mode || null) : mode;
+  const liveCard = live && liveMode ? (liveMode === 'truth' ? TRUTHS : DARES)[liveCardIdx % (liveMode === 'truth' ? TRUTHS : DARES).length] : card;
+  const liveCurrent = live && activePlayers.length ? activePlayers[liveCardIdx % activePlayers.length] : current;
+  const liveLastDone = live ? (gameState?.lastDone || null) : null;
+
+  // Sync live phase
+  useEffect(() => {
+    if (!live) return;
+    if (liveMode && liveCardIdx !== null) setPhase("card");
+    else if (activePlayers.length > 0) setPhase("mode");
+  }, [live, liveMode, liveCardIdx, activePlayers.length]);
 
   const addP = () => { if (newP.trim() && !players.includes(newP.trim())) { setPlayers(p => [...p, newP.trim()]); setNewP(""); } };
   const pickPlayer = () => {
@@ -788,21 +868,28 @@ function TruthOrDare({ onClose, accent }) {
   };
   useEffect(() => () => clearTimeout(spinRef.current), []);
   const pickMode = (m) => {
+    if (live) { sendAction('pick', { mode: m }); return; }
     setMode(m);
     setCard(rand(m === "truth" ? TRUTHS : DARES));
     setFlipping(true);
     setTimeout(() => setFlipping(false), 400);
     setPhase("card");
   };
-  const done = () => { if (current) setCompletedBy(c => ({ ...c, [current]: (c[current] || 0) + 1 })); goNext(); };
-  const skip = () => goNext();
+  const done = () => {
+    if (live) { sendAction(liveMode === 'truth' ? 'truth-done' : 'dare-done', {}); sendAction('next', {}); return; }
+    if (current) setCompletedBy(c => ({ ...c, [current]: (c[current] || 0) + 1 })); goNext();
+  };
+  const skip = () => {
+    if (live) { sendAction('next', {}); return; }
+    goNext();
+  };
   const goNext = () => {
     if (players.length > 0) pickPlayer();
     else { setCard(rand(mode === "truth" ? TRUTHS : DARES)); setFlipping(true); setTimeout(() => setFlipping(false), 400); }
   };
   const totalDone = Object.values(completedBy).reduce((a, b) => a + b, 0);
 
-  if (phase === "setup") return (
+  if (phase === "setup" && !live) return (
     <LightFormModal onClose={onClose} emoji="🎯" title="Truth or Dare" accent={accent}>
       <p style={{ fontSize: 13, color: "rgba(28,9,0,0.50)", marginBottom: 14 }}>Add players for turn-based, or skip straight to cards.</p>
       <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
@@ -823,56 +910,63 @@ function TruthOrDare({ onClose, accent }) {
       <div style={{ textAlign: "center", padding: "12px 0" }}>
         <div style={{ fontSize: 13, color: "rgba(28,9,0,0.40)", marginBottom: 20 }}>Picking who goes next…</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
-          {players.map((p, i) => (
+          {activePlayers.map((p, i) => (
             <div key={p} style={{ padding: "10px 18px", borderRadius: 12, background: i === spinIdx ? accent + "18" : "rgba(0,0,0,0.04)", border: `2px solid ${i === spinIdx ? accent : "transparent"}`, color: i === spinIdx ? accent : "rgba(28,9,0,0.30)", fontSize: 15, fontWeight: i === spinIdx ? 900 : 400, transition: "all 0.06s", transform: i === spinIdx ? "scale(1.12)" : "scale(1)" }}>{p}</div>
           ))}
         </div>
       </div>
     </LightFormModal>
   );
+  const displayPlayer = live ? liveCurrent : current;
   if (phase === "mode") return (
     <LightFormModal onClose={onClose} emoji="🎯" title="Truth or Dare" accent={accent}>
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
       <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <div style={{ fontSize: 32, fontWeight: 900, color: "#1C1410", letterSpacing: "-0.02em" }}>{current}</div>
-        <div style={{ fontSize: 13, color: "rgba(28,9,0,0.40)", marginTop: 4 }}>it's your turn · round {totalDone + 1}</div>
-        {completedBy[current] > 0 && <div style={{ fontSize: 12, color: accent, marginTop: 6, fontWeight: 700 }}>✓ {completedBy[current]} completed</div>}
+        <div style={{ fontSize: 32, fontWeight: 900, color: "#1C1410", letterSpacing: "-0.02em" }}>{displayPlayer}</div>
+        <div style={{ fontSize: 13, color: "rgba(28,9,0,0.40)", marginTop: 4 }}>
+          {live && liveName === displayPlayer ? "it's your turn!" : live ? `waiting for ${displayPlayer}…` : `it's your turn · round ${totalDone + 1}`}
+        </div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <button onClick={() => pickMode("truth")} style={{ ...lBtn("#1D4ED8"), padding: "22px 20px", fontSize: 20, borderRadius: 16, letterSpacing: "0.01em" }}>🤔 Truth</button>
-        <button onClick={() => pickMode("dare")} style={{ ...lBtn("#DC2626"), padding: "22px 20px", fontSize: 20, borderRadius: 16, letterSpacing: "0.01em" }}>🔥 Dare</button>
+        <button onClick={() => pickMode("truth")} disabled={live && liveName !== displayPlayer} style={{ ...lBtn("#1D4ED8"), padding: "22px 20px", fontSize: 20, borderRadius: 16, letterSpacing: "0.01em", opacity: live && liveName !== displayPlayer ? 0.45 : 1 }}>🤔 Truth</button>
+        <button onClick={() => pickMode("dare")} disabled={live && liveName !== displayPlayer} style={{ ...lBtn("#DC2626"), padding: "22px 20px", fontSize: 20, borderRadius: 16, letterSpacing: "0.01em", opacity: live && liveName !== displayPlayer ? 0.45 : 1 }}>🔥 Dare</button>
       </div>
     </LightFormModal>
   );
+  const activeMode = live ? liveMode : mode;
+  const activeCard = live ? liveCard : card;
+  const isMyTurn = !live || liveName === displayPlayer;
   return (
     <LightFormModal onClose={onClose} emoji="🎯" title="Truth or Dare" accent={accent}>
-      {current&&<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-        <div style={{fontSize:13,fontWeight:700,color:accent}}>{current}'s turn</div>
-        <div style={{fontSize:12,color:"rgba(28,9,0,0.30)"}}>Round {totalDone+1}</div>
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
+      {displayPlayer && <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+        <div style={{fontSize:13,fontWeight:700,color:accent}}>{live && liveName === displayPlayer ? "Your turn!" : `${displayPlayer}'s turn`}</div>
+        {!live && <div style={{fontSize:12,color:"rgba(28,9,0,0.30)"}}>Round {totalDone+1}</div>}
       </div>}
       {/* Physical playing card */}
       <div style={{
-        background:mode==="truth"?"linear-gradient(145deg,#1E3A8A,#1D4ED8)":"linear-gradient(145deg,#7F1D1D,#DC2626)",
+        background:activeMode==="truth"?"linear-gradient(145deg,#1E3A8A,#1D4ED8)":"linear-gradient(145deg,#7F1D1D,#DC2626)",
         borderRadius:24,padding:"38px 24px 32px",textAlign:"center",marginBottom:18,
-        border:`1.5px solid ${mode==="truth"?"rgba(96,165,250,0.3)":"rgba(248,113,113,0.3)"}`,
-        boxShadow:`0 14px 50px ${mode==="truth"?"rgba(29,78,216,0.5)":"rgba(220,38,38,0.5)"},inset 0 1px 0 rgba(255,255,255,0.1)`,
+        border:`1.5px solid ${activeMode==="truth"?"rgba(96,165,250,0.3)":"rgba(248,113,113,0.3)"}`,
+        boxShadow:`0 14px 50px ${activeMode==="truth"?"rgba(29,78,216,0.5)":"rgba(220,38,38,0.5)"},inset 0 1px 0 rgba(255,255,255,0.1)`,
         animation:flipping?"card-flip 0.35s ease-out":"none",
         position:"relative",overflow:"hidden",
       }}>
-        <div aria-hidden style={{position:"absolute",top:12,left:14,fontSize:24,opacity:0.18,pointerEvents:"none"}}>{mode==="truth"?"🤔":"🔥"}</div>
-        <div aria-hidden style={{position:"absolute",top:12,right:14,fontSize:24,opacity:0.18,pointerEvents:"none"}}>{mode==="truth"?"🤔":"🔥"}</div>
-        <div aria-hidden style={{position:"absolute",bottom:12,left:14,fontSize:24,opacity:0.18,transform:"rotate(180deg)",pointerEvents:"none"}}>{mode==="truth"?"🤔":"🔥"}</div>
-        <div aria-hidden style={{position:"absolute",bottom:12,right:14,fontSize:24,opacity:0.18,transform:"rotate(180deg)",pointerEvents:"none"}}>{mode==="truth"?"🤔":"🔥"}</div>
+        <div aria-hidden style={{position:"absolute",top:12,left:14,fontSize:24,opacity:0.18,pointerEvents:"none"}}>{activeMode==="truth"?"🤔":"🔥"}</div>
+        <div aria-hidden style={{position:"absolute",top:12,right:14,fontSize:24,opacity:0.18,pointerEvents:"none"}}>{activeMode==="truth"?"🤔":"🔥"}</div>
+        <div aria-hidden style={{position:"absolute",bottom:12,left:14,fontSize:24,opacity:0.18,transform:"rotate(180deg)",pointerEvents:"none"}}>{activeMode==="truth"?"🤔":"🔥"}</div>
+        <div aria-hidden style={{position:"absolute",bottom:12,right:14,fontSize:24,opacity:0.18,transform:"rotate(180deg)",pointerEvents:"none"}}>{activeMode==="truth"?"🤔":"🔥"}</div>
         <div style={{fontSize:10,fontWeight:800,color:"rgba(255,255,255,0.5)",marginBottom:18,textTransform:"uppercase",letterSpacing:"0.2em",position:"relative"}}>
-          {mode==="truth"?"— T R U T H —":"— D A R E —"}
+          {activeMode==="truth"?"— T R U T H —":"— D A R E —"}
         </div>
-        <div style={{fontSize:17,color:"#fff",lineHeight:1.78,fontWeight:500,position:"relative"}}>{card}</div>
+        <div style={{fontSize:17,color:"#fff",lineHeight:1.78,fontWeight:500,position:"relative"}}>{activeCard}</div>
       </div>
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-        <button onClick={done} style={{...lBtn("#059669"),flex:2,fontSize:14}}>✓ Done</button>
-        <button onClick={skip} style={{...lBtn("rgba(0,0,0,0.07)"),flex:1,fontSize:13,color:"#1C1410"}}>Skip</button>
-        <button onClick={()=>pickMode(mode==="truth"?"dare":"truth")} style={{...lBtn(mode==="truth"?"#DC2626":"#1D4ED8"),flex:1,fontSize:13}}>{mode==="truth"?"🔥":"🤔"}</button>
+        <button onClick={done} disabled={!isMyTurn} style={{...lBtn("#059669"),flex:2,fontSize:14,opacity:isMyTurn?1:0.45}}>✓ Done</button>
+        <button onClick={skip} disabled={!isMyTurn} style={{...lBtn("rgba(0,0,0,0.07)"),flex:1,fontSize:13,color:"#1C1410",opacity:isMyTurn?1:0.45}}>Skip</button>
+        {!live && <button onClick={()=>pickMode(activeMode==="truth"?"dare":"truth")} style={{...lBtn(activeMode==="truth"?"#DC2626":"#1D4ED8"),flex:1,fontSize:13}}>{activeMode==="truth"?"🔥":"🤔"}</button>}
       </div>
-      {Object.keys(completedBy).length>0&&(
+      {!live && Object.keys(completedBy).length>0&&(
         <div style={{marginTop:14,display:"flex",flexWrap:"wrap",gap:6}}>
           {Object.entries(completedBy).sort(([,a],[,b])=>b-a).map(([p,c])=>(
             <span key={p} style={{background:"#05966918",color:"#059669",padding:"4px 10px",borderRadius:10,fontSize:12,fontWeight:700}}>✓ {p} {c>1?`×${c}`:""}</span>
@@ -883,21 +977,51 @@ function TruthOrDare({ onClose, accent }) {
   );
 }
 
-function NeverHaveI({ onClose, accent }) {
+function NeverHaveI({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'never-have-i') setGame?.('never-have-i', {}); }, [live, isHost]); // eslint-disable-line
   const [idx, setIdx] = useState(() => Math.floor(Math.random() * NEVER_HAVE_I.length));
   const [scores, setScores] = useState({});
   const [players, setPlayers] = useState([]);
   const [newP, setNewP] = useState("");
-  const [roundHave, setRoundHave] = useState({});
+  const [roundHave, setRoundHave] = useState({});  // local per-round marks
   const [revealed, setRevealed] = useState(false);
 
+  // Live derived
+  const liveIdx = live ? (gameState?.idx || 0) : idx;
+  const liveScores = live ? (gameState?.scores || {}) : scores;
+  const activePlayers = live ? livePlayers : players;
+  const activeIdx = liveIdx;
+
+  // Reset local round state when live question changes
+  const prevLiveIdx = useRef(liveIdx);
+  useEffect(() => {
+    if (live && liveIdx !== prevLiveIdx.current) {
+      prevLiveIdx.current = liveIdx;
+      setRoundHave({});
+      setRevealed(false);
+    }
+  }, [liveIdx, live]);
+
   const add = () => { if (newP.trim() && !players.includes(newP.trim())) { setPlayers(p => [...p, newP.trim()]); setNewP(""); } };
-  const toggleHave = (name) => { if (!revealed) setRoundHave(r => ({ ...r, [name]: !r[name] })); };
+  const toggleHave = (name) => {
+    if (revealed) return;
+    if (live && name !== liveName) return; // can only mark yourself in live mode
+    setRoundHave(r => ({ ...r, [name]: !r[name] }));
+  };
   const reveal = () => {
     setRevealed(true);
-    Object.entries(roundHave).forEach(([name, has]) => { if (has) setScores(s => ({ ...s, [name]: (s[name] || 0) + 1 })); });
+    if (live) {
+      if (roundHave[liveName]) sendAction('mark', {});
+    } else {
+      Object.entries(roundHave).forEach(([name, has]) => { if (has) setScores(s => ({ ...s, [name]: (s[name] || 0) + 1 })); });
+    }
   };
-  const next = () => { setIdx(i => (i + 1) % NEVER_HAVE_I.length); setRoundHave({}); setRevealed(false); };
+  const next = () => {
+    if (live) { sendAction('next', {}); }
+    else { setIdx(i => (i + 1) % NEVER_HAVE_I.length); }
+    setRoundHave({}); setRevealed(false);
+  };
 
   const tablePositions = (count) => {
     const r = 88;
@@ -907,7 +1031,7 @@ function NeverHaveI({ onClose, accent }) {
     });
   };
 
-  if (players.length < 2) return (
+  if (!live && players.length < 2) return (
     <LightFormModal onClose={onClose} emoji="🙅" title="Never Have I Ever" accent={accent}>
       <p style={{ color: "rgba(28,9,0,0.50)", marginBottom: 14, fontSize: 13, textAlign: "center" }}>Sit in a circle — add everyone playing</p>
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
@@ -921,36 +1045,39 @@ function NeverHaveI({ onClose, accent }) {
     </LightFormModal>
   );
 
-  const positions = tablePositions(players.length);
+  const positions = tablePositions(activePlayers.length);
   const haveCount = Object.values(roundHave).filter(Boolean).length;
 
   return (
     <LightFormModal onClose={onClose} emoji="🙅" title="Never Have I Ever" accent={accent}>
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={revealed ? Object.fromEntries(Object.entries(roundHave).filter(([,v])=>v).map(([n])=>[n,true])) : {}} />
       {/* Statement card */}
       <div style={{ background: "#fff", border: `1.5px solid ${accent}30`, borderRadius: 18, padding: "20px 18px", textAlign: "center", marginBottom: 6, boxShadow: `0 4px 20px ${accent}10` }}>
         <div style={{ fontSize: 10, fontWeight: 800, color: accent, textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 10 }}>Never Have I Ever…</div>
-        <div style={{ fontSize: 17, color: "#1C1410", lineHeight: 1.5, fontWeight: 600 }}>{NEVER_HAVE_I[idx]}</div>
+        <div style={{ fontSize: 17, color: "#1C1410", lineHeight: 1.5, fontWeight: 600 }}>{NEVER_HAVE_I[activeIdx % NEVER_HAVE_I.length]}</div>
       </div>
+      {live && <div style={{ fontSize:11, color:"rgba(28,9,0,0.45)", textAlign:"center", marginBottom:8 }}>Tap your token if you <strong>have</strong> done this — then hit Reveal</div>}
 
       {/* Virtual round table */}
       <div style={{ position: "relative", width: "100%", paddingBottom: "70%", marginBottom: 10, overflow: "visible" }}>
         {/* Table surface */}
         <div style={{ position: "absolute", left: "15%", top: "10%", width: "70%", height: "80%", borderRadius: "50%", background: `radial-gradient(ellipse,${accent}12,${accent}04)`, border: `2px solid ${accent}22` }} />
         {/* Player tokens around table */}
-        {players.map((p, i) => {
+        {activePlayers.map((p, i) => {
           const pos = positions[i];
           const has = roundHave[p];
           const raised = revealed && has;
           const notHave = revealed && !has;
+          const canTap = !revealed && (!live || p === liveName);
           return (
-            <div key={p} onClick={() => toggleHave(p)}
-              style={{ position: "absolute", left: `${pos.x}%`, top: `${pos.y}%`, transform: "translate(-50%,-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: revealed ? "default" : "pointer", userSelect: "none" }}>
+            <div key={p} onClick={() => canTap && toggleHave(p)}
+              style={{ position: "absolute", left: `${pos.x}%`, top: `${pos.y}%`, transform: "translate(-50%,-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: canTap ? "pointer" : "default", userSelect: "none" }}>
               <div style={{ width: 44, height: 44, borderRadius: "50%", background: has ? `${accent}25` : "rgba(0,0,0,0.05)", border: `2.5px solid ${has ? accent : "rgba(0,0,0,0.12)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 900, color: has ? accent : "#1C1410", transition: "all 0.2s", transform: raised ? "translateY(-8px) scale(1.15)" : notHave ? "scale(0.9)" : "scale(1)", boxShadow: raised ? `0 8px 20px ${accent}40` : "none" }}>
                 {has && !revealed ? "✋" : p[0].toUpperCase()}
               </div>
               {raised && <div style={{ fontSize: 14 }}>✋</div>}
-              <div style={{ fontSize: 9, fontWeight: 700, color: has ? accent : "rgba(28,9,0,0.40)", textTransform: "uppercase", letterSpacing: "0.04em", maxWidth: 52, textAlign: "center", lineHeight: 1.1 }}>{p}</div>
-              {revealed && <div style={{ fontSize: 10, fontWeight: 800, color: has ? accent : "rgba(28,9,0,0.30)" }}>{scores[p] || 0} pts</div>}
+              <div style={{ fontSize: 9, fontWeight: 700, color: has ? accent : "rgba(28,9,0,0.40)", textTransform: "uppercase", letterSpacing: "0.04em", maxWidth: 52, textAlign: "center", lineHeight: 1.1 }}>{p}{live && p===liveName ? " (you)" : ""}</div>
+              {revealed && <div style={{ fontSize: 10, fontWeight: 800, color: has ? accent : "rgba(28,9,0,0.30)" }}>{liveScores[p] || 0} pts</div>}
             </div>
           );
         })}
@@ -975,17 +1102,43 @@ function NeverHaveI({ onClose, accent }) {
   );
 }
 
-function WouldYouRather({ onClose, accent }) {
-  const [pair, setPair] = useState(() => rand(WOULD_YOU_RATHER));
-  const [votes, setVotes] = useState({ a: 0, b: 0 });
-  const [myPick, setMyPick] = useState(null);
+function WouldYouRather({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'would-you') setGame?.('would-you', {}); }, [live, isHost]); // eslint-disable-line
+  // Local state (solo mode)
+  const [localPairIdx, setLocalPairIdx] = useState(0);
+  const [localVotes, setLocalVotes] = useState({ a: 0, b: 0 });
+  const [localMyPick, setLocalMyPick] = useState(null);
   const [round, setRound] = useState(1);
   const [debateTimer, setDebateTimer] = useState(90);
   const [timerActive, setTimerActive] = useState(false);
   const wyrTimerRef = useRef(null);
-  const totalVotes = votes.a + votes.b;
-  const pctA = totalVotes ? Math.round((votes.a / totalVotes) * 100) : 50;
+
+  // Derived — live overrides local
+  const pairIdx = live ? (gameState?.pairIdx || 0) : localPairIdx;
+  const pair = WOULD_YOU_RATHER[pairIdx % WOULD_YOU_RATHER.length];
+  const liveVotesMap = live ? (gameState?.votes || {}) : null;
+  const myPick = live ? (liveVotesMap?.[liveName] || null) : localMyPick;
+  const aCount = live ? Object.values(liveVotesMap || {}).filter(v => v === 'a').length : localVotes.a;
+  const bCount = live ? Object.values(liveVotesMap || {}).filter(v => v === 'b').length : localVotes.b;
+  const totalVotes = aCount + bCount;
+  const pctA = totalVotes ? Math.round((aCount / totalVotes) * 100) : 50;
   const pctB = 100 - pctA;
+  // Who voted for each side (live only)
+  const aVoters = live ? Object.entries(liveVotesMap || {}).filter(([,v]) => v === 'a').map(([n]) => n) : [];
+  const bVoters = live ? Object.entries(liveVotesMap || {}).filter(([,v]) => v === 'b').map(([n]) => n) : [];
+
+  // Reset timer when question changes in live mode
+  const prevPairIdx = useRef(pairIdx);
+  useEffect(() => {
+    if (live && pairIdx !== prevPairIdx.current) {
+      prevPairIdx.current = pairIdx;
+      clearInterval(wyrTimerRef.current);
+      setTimerActive(false);
+      setDebateTimer(90);
+    }
+  }, [pairIdx, live]);
+
   useEffect(() => {
     if (!timerActive) return;
     wyrTimerRef.current = setInterval(() => {
@@ -993,25 +1146,26 @@ function WouldYouRather({ onClose, accent }) {
     }, 1000);
     return () => clearInterval(wyrTimerRef.current);
   }, [timerActive]);
+
   const pick = (side) => {
     if (myPick) return;
-    setMyPick(side);
-    setVotes(v => ({ ...v, [side]: v[side] + 1 }));
+    if (live) { sendAction('vote', { choice: side }); }
+    else { setLocalMyPick(side); setLocalVotes(v => ({ ...v, [side]: v[side] + 1 })); }
     setDebateTimer(90);
     setTimerActive(true);
   };
   const next = () => {
     clearInterval(wyrTimerRef.current);
     setTimerActive(false);
-    setPair(rand(WOULD_YOU_RATHER));
-    setMyPick(null);
-    setVotes({ a: 0, b: 0 });
-    setRound(r => r + 1);
     setDebateTimer(90);
+    if (live) { sendAction('next', {}); }
+    else { setLocalPairIdx(i => i + 1); setLocalMyPick(null); setLocalVotes({ a: 0, b: 0 }); }
+    setRound(r => r + 1);
   };
   const debatePrompts = ["Defend your choice!", "Convince the other side!", "Why would anyone pick the other?!", "No backtracking now!", "Explain yourself!"];
   return (
     <LightFormModal onClose={onClose} emoji="🤷" title="Would You Rather" accent={accent}>
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={Object.fromEntries(Object.keys(liveVotesMap || {}).map(n => [n, true]))} />
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
         <div style={{fontSize:12,fontWeight:700,color:"rgba(28,9,0,0.40)"}}>Round {round}</div>
         {totalVotes>0&&<div style={{fontSize:12,color:accent}}>{totalVotes} vote{totalVotes!==1?"s":""}</div>}
@@ -1024,6 +1178,7 @@ function WouldYouRather({ onClose, accent }) {
           const GRADS=["linear-gradient(145deg,#1E40AF,#3B82F6)","linear-gradient(145deg,#6D28D9,#A855F7)"];
           const GLOWS=["rgba(59,130,246,0.4)","rgba(168,85,247,0.4)"];
           const PCTS=["#60A5FA","#C084FC"];
+          const sideVoters = side === 'a' ? aVoters : bVoters;
           return (
             <div key={side} onClick={()=>pick(side)} style={{
               flex:1,padding:"22px 14px 18px",
@@ -1044,6 +1199,14 @@ function WouldYouRather({ onClose, accent }) {
                 </div>
                 <div style={{fontSize:13.5,color:isChosen?"#fff":"#1C1410",lineHeight:1.6,fontWeight:isChosen?700:400}}>{pair[side]}</div>
                 {myPick&&<div style={{fontSize:20,fontWeight:900,color:isChosen?PCTS[si]:"rgba(28,9,0,0.25)",marginTop:10}}>{pct}%</div>}
+                {/* Voter chips in live mode */}
+                {live && sideVoters.length > 0 && (
+                  <div style={{display:"flex",flexWrap:"wrap",gap:3,marginTop:8,justifyContent:"center"}}>
+                    {sideVoters.map(n => (
+                      <span key={n} style={{fontSize:9,background:"rgba(255,255,255,0.18)",borderRadius:10,padding:"2px 6px",color:n===liveName?"#fff":"rgba(255,255,255,0.85)",fontWeight:n===liveName?800:400}}>{n===liveName?"you":n}</span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -1072,16 +1235,34 @@ function WouldYouRather({ onClose, accent }) {
   );
 }
 
-function HotTakes({ onClose, accent }) {
+function HotTakes({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'hot-takes') setGame?.('hot-takes', {}); }, [live, isHost]); // eslint-disable-line
   const [takes, setTakes] = useState([{ id: Date.now(), text: rand(HOT_TAKES), reactions: {} }]);
   const [agreed, setAgreed] = useState({});
   const [temp, setTemp] = useState(0);
 
+  // In live mode derive the current take from gameState
+  const liveIdx = live ? (gameState?.idx || 0) : null;
+  const liveVotesMap = live ? (gameState?.votes || {}) : null;
+  const liveTakeText = live ? HOT_TAKES[liveIdx % HOT_TAKES.length] : null;
+  // Reaction counts from live votes
+  const liveReactions = live ? Object.values(liveVotesMap || {}).reduce((acc, e) => { acc[e] = (acc[e] || 0) + 1; return acc; }, {}) : null;
+  // Who voted which emoji in live mode
+  const myLiveVote = live ? liveVotesMap?.[liveName] : null;
+
   const addTake = () => {
+    if (live) { sendAction('next', {}); return; }
     const t = rand(HOT_TAKES);
     setTakes(ts => [{ id: Date.now(), text: t, reactions: {} }, ...ts]);
   };
   const react = (id, emoji) => {
+    if (live) {
+      if (myLiveVote) return;
+      sendAction('vote', { choice: emoji });
+      setTemp(v => Math.max(-100, Math.min(100, v + (emoji === "🔥" ? 12 : emoji === "💀" ? 8 : -10))));
+      return;
+    }
     const key = `${id}-${emoji}`;
     if (agreed[key]) return;
     setTakes(ts => ts.map(t => t.id === id ? { ...t, reactions: { ...t.reactions, [emoji]: (t.reactions[emoji] || 0) + 1 } } : t));
@@ -1092,8 +1273,17 @@ function HotTakes({ onClose, accent }) {
   const tempColor = temp > 40 ? "#EF4444" : temp > 0 ? "#F97316" : temp < -40 ? "#3B82F6" : "#A3A3A3";
   const tempLabel = temp > 60 ? "🔥 CHAOS" : temp > 20 ? "🌶️ Spicy" : temp < -60 ? "🧊 Dead Crowd" : temp < -20 ? "😐 Lukewarm" : "🌡️ Warming Up";
 
+  // Who voted for each emoji
+  const emojiVoters = live ? [["🔥","#EF4444"],["💀","#8B5CF6"],["👎","#3B82F6"]].reduce((acc,[e]) => {
+    acc[e] = Object.entries(liveVotesMap||{}).filter(([,v])=>v===e).map(([n])=>n);
+    return acc;
+  }, {}) : {};
+
+  const currentTake = live ? { id: liveIdx, text: liveTakeText, reactions: liveReactions || {} } : takes[0];
+
   return (
     <LightFormModal onClose={onClose} emoji="🌶️" title="Hot Takes" accent={accent} wide>
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={Object.fromEntries(Object.keys(liveVotesMap||{}).map(n=>[n,true]))} />
       {/* Room temperature meter */}
       <div style={{ background: "rgba(0,0,0,0.03)", borderRadius: 14, padding: "12px 16px", marginBottom: 14, display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ flex: 1, height: 8, borderRadius: 4, background: "rgba(0,0,0,0.07)", overflow: "hidden", position: "relative" }}>
@@ -1102,20 +1292,45 @@ function HotTakes({ onClose, accent }) {
         <div style={{ fontSize: 13, fontWeight: 800, color: tempColor, minWidth: 110, textAlign: "right" }}>{tempLabel}</div>
       </div>
 
-      {/* Takes as speech bubbles stacked like a debate stage */}
-      {takes.slice(0, 3).map((take, idx) => (
-        <div key={take.id} style={{ background: idx === 0 ? `linear-gradient(135deg,${accent}18,${accent}08)` : "rgba(0,0,0,0.03)", border: `1.5px solid ${idx === 0 ? accent + "50" : "rgba(0,0,0,0.07)"}`, borderRadius: 18, padding: "18px 16px", marginBottom: 10, position: "relative" }}>
-          {idx === 0 && <div style={{ position: "absolute", bottom: -8, left: 20, width: 0, height: 0, borderLeft: "8px solid transparent", borderRight: "8px solid transparent", borderTop: `8px solid ${accent}50` }} />}
-          <div style={{ fontSize: idx === 0 ? 16 : 13, color: idx === 0 ? "#1C1410" : "rgba(28,9,0,0.50)", lineHeight: 1.45, marginBottom: 12, fontWeight: idx === 0 ? 600 : 400 }}>{take.text}</div>
+      {/* Current take */}
+      {live ? (
+        <div style={{ background: `linear-gradient(135deg,${accent}18,${accent}08)`, border: `1.5px solid ${accent}50`, borderRadius: 18, padding: "18px 16px", marginBottom: 10, position: "relative" }}>
+          <div style={{ fontSize: 16, color: "#1C1410", lineHeight: 1.45, marginBottom: 12, fontWeight: 600 }}>{currentTake.text}</div>
           <div style={{ display: "flex", gap: 6 }}>
-            {[["🔥", "#EF4444"], ["💀", "#8B5CF6"], ["👎", "#3B82F6"]].map(([emoji, col]) => (
-              <button key={emoji} onClick={() => react(take.id, emoji)} style={{ padding: "5px 12px", borderRadius: 100, border: `1.5px solid ${agreed[`${take.id}-${emoji}`] ? col : "rgba(0,0,0,0.10)"}`, background: agreed[`${take.id}-${emoji}`] ? col + "20" : "transparent", color: agreed[`${take.id}-${emoji}`] ? col : "rgba(28,9,0,0.40)", fontSize: 13, cursor: agreed[`${take.id}-${emoji}`] ? "default" : "pointer", fontFamily: font, fontWeight: 700 }}>
-                {emoji} {take.reactions[emoji] || 0}
-              </button>
-            ))}
+            {[["🔥","#EF4444"],["💀","#8B5CF6"],["👎","#3B82F6"]].map(([emoji, col]) => {
+              const myVoted = myLiveVote === emoji;
+              const count = (liveReactions||{})[emoji] || 0;
+              const voters = emojiVoters[emoji] || [];
+              return (
+                <div key={emoji} style={{ flex:1 }}>
+                  <button onClick={()=>react(null,emoji)} style={{ width:"100%", padding:"6px 8px", borderRadius:12, border:`1.5px solid ${myVoted?col:"rgba(0,0,0,0.10)"}`, background:myVoted?col+"20":"transparent", color:myVoted?col:"rgba(28,9,0,0.40)", fontSize:13, cursor:myLiveVote?"default":"pointer", fontFamily:font, fontWeight:700 }}>
+                    {emoji} {count}
+                  </button>
+                  {voters.length > 0 && (
+                    <div style={{display:"flex",flexWrap:"wrap",gap:2,marginTop:4,justifyContent:"center"}}>
+                      {voters.map(n=><span key={n} style={{fontSize:8.5,background:`${col}15`,color:col,borderRadius:8,padding:"1px 5px",fontWeight:n===liveName?800:400}}>{n===liveName?"you":n}</span>)}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
-      ))}
+      ) : (
+        takes.slice(0, 3).map((take, idx) => (
+          <div key={take.id} style={{ background: idx === 0 ? `linear-gradient(135deg,${accent}18,${accent}08)` : "rgba(0,0,0,0.03)", border: `1.5px solid ${idx === 0 ? accent + "50" : "rgba(0,0,0,0.07)"}`, borderRadius: 18, padding: "18px 16px", marginBottom: 10, position: "relative" }}>
+            {idx === 0 && <div style={{ position: "absolute", bottom: -8, left: 20, width: 0, height: 0, borderLeft: "8px solid transparent", borderRight: "8px solid transparent", borderTop: `8px solid ${accent}50` }} />}
+            <div style={{ fontSize: idx === 0 ? 16 : 13, color: idx === 0 ? "#1C1410" : "rgba(28,9,0,0.50)", lineHeight: 1.45, marginBottom: 12, fontWeight: idx === 0 ? 600 : 400 }}>{take.text}</div>
+            <div style={{ display: "flex", gap: 6 }}>
+              {[["🔥", "#EF4444"], ["💀", "#8B5CF6"], ["👎", "#3B82F6"]].map(([emoji, col]) => (
+                <button key={emoji} onClick={() => react(take.id, emoji)} style={{ padding: "5px 12px", borderRadius: 100, border: `1.5px solid ${agreed[`${take.id}-${emoji}`] ? col : "rgba(0,0,0,0.10)"}`, background: agreed[`${take.id}-${emoji}`] ? col + "20" : "transparent", color: agreed[`${take.id}-${emoji}`] ? col : "rgba(28,9,0,0.40)", fontSize: 13, cursor: agreed[`${take.id}-${emoji}`] ? "default" : "pointer", fontFamily: font, fontWeight: 700 }}>
+                  {emoji} {take.reactions[emoji] || 0}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))
+      )}
 
       <button onClick={addTake} style={lBtn(accent)}>🌶️ Next Hot Take</button>
     </LightFormModal>
@@ -1416,14 +1631,21 @@ const WallPost = PolaroidCard;
 const OCC_STICKY_COLORS = ["#FEF08A","#86EFAC","#FDA4AF","#93C5FD","#FCA5A5","#C4B5FD","#FCD34D","#6EE7B7"];
 const OCC_STICKY_ROTATES = ["-2deg","1.5deg","-1deg","2.5deg","-3deg","1deg","-1.8deg","2deg"];
 
-function WishWall({ onClose, accent, celebrant, placeholder }) {
-  const [wishes, setWishes] = useState([]);
+function WishWall({ onClose, accent, celebrant, placeholder, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'wish-wall') setGame?.('wish-wall', {}); }, [live, isHost]); // eslint-disable-line
+  const [localWishes, setLocalWishes] = useState([]);
   const [name, setName] = useState("");
   const [wish, setWish] = useState("");
   const [showWall, setShowWall] = useState(false);
+  const wishes = live ? (gameState?.items || []) : localWishes;
   const post = () => {
     if (!wish.trim()) return;
-    setWishes(w=>[...w,{id:Date.now(),name:name.trim()||"Anonymous",text:wish.trim()}]);
+    if (live) {
+      sendAction('add', { text: wish.trim(), emoji: '⭐' });
+    } else {
+      setLocalWishes(w=>[...w,{id:Date.now(),name:name.trim()||"Anonymous",text:wish.trim()}]);
+    }
     setName("");setWish("");
   };
   if (showWall) return <DesignerWall onClose={()=>setShowWall(false)} items={wishes} title={`Wish Wall${celebrant?` for ${celebrant}`:""}`} wallEmoji="⭐" />;
@@ -1432,6 +1654,7 @@ function WishWall({ onClose, accent, celebrant, placeholder }) {
 
   return (
     <LightFormModal onClose={onClose} emoji="⭐" title={`Wish Wall${celebrant?` for ${celebrant}`:""}`} subtitle="Pin a wish on the board — everyone can see it" accent={accent} wide>
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
       {/* Corkboard mini preview */}
       <div style={{ background: "linear-gradient(135deg,#8B6914,#A0782A,#7A5C0E)", borderRadius: 18, padding: "20px 14px 16px", marginBottom: 16, minHeight: 140, position: "relative", boxShadow: "inset 0 2px 8px rgba(0,0,0,0.4), 0 4px 20px rgba(0,0,0,0.5)", border: "4px solid #5C4308" }}>
         <div style={{ position: "absolute", top: 14, left: 10, right: 10, height: 2, background: "rgba(0,0,0,0.25)", borderRadius: 1 }} />
@@ -1460,7 +1683,7 @@ function WishWall({ onClose, accent, celebrant, placeholder }) {
         </button>
       )}
 
-      <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name (optional)" style={{...linp,marginBottom:8}}/>
+      {!live && <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name (optional)" style={{...linp,marginBottom:8}}/>}
       <textarea value={wish} onChange={e=>setWish(e.target.value)} placeholder={placeholder||`Write a wish for ${celebrant||"them"}…`} style={{...linp,minHeight:72,resize:"vertical",marginBottom:10}}/>
       <button onClick={post} style={{...lBtn(accent)}}>📌 Pin Wish</button>
     </LightFormModal>
@@ -1648,15 +1871,22 @@ function BirthdayQuiz({ onClose, accent, celebrant }) {
 // Anniversary: Love Notes Wall
 const OCC_ENVELOPE_COLORS = ["#F43F5E","#EC4899","#8B5CF6","#F97316","#EF4444","#D946EF","#FB7185","#E879F9"];
 
-function LoveNotes({ onClose, accent }) {
-  const [notes, setNotes] = useState([]);
+function LoveNotes({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'love-notes') setGame?.('love-notes', {}); }, [live, isHost]); // eslint-disable-line
+  const [localNotes, setLocalNotes] = useState([]);
   const [from, setFrom] = useState("");
   const [note, setNote] = useState("");
   const [showWall, setShowWall] = useState(false);
   const [openedIds, setOpenedIds] = useState(new Set());
+  const notes = live ? (gameState?.items || []) : localNotes;
   const post = () => {
     if (!note.trim()) return;
-    setNotes(n=>[...n,{id:Date.now(),name:from.trim()||"Anonymous",text:note.trim()}]);
+    if (live) {
+      sendAction('add', { text: note.trim(), emoji: '💌' });
+    } else {
+      setLocalNotes(n=>[...n,{id:Date.now(),name:from.trim()||"Anonymous",text:note.trim()}]);
+    }
     setFrom("");setNote("");
   };
   const toggleOpen = (id) => setOpenedIds(s => { const ns = new Set(s); ns.has(id) ? ns.delete(id) : ns.add(id); return ns; });
@@ -1667,6 +1897,7 @@ function LoveNotes({ onClose, accent }) {
   return (
     <LightFormModal onClose={onClose} emoji="💌" title="Love Notes Wall" subtitle="Hang a love note — everyone can read them" accent={accent} wide>
       <style>{`@keyframes occ-swing{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}} @keyframes occ-sway{0%,100%{transform:rotate(1.5deg)}50%{transform:rotate(-1.5deg)}}`}</style>
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
 
       {/* Hanging string display */}
       <div style={{ background: "linear-gradient(180deg,#110308,#080204)", borderRadius: 18, padding: "0 0 16px", marginBottom: 16, overflow: "hidden", border: "1px solid rgba(244,63,94,0.2)", minHeight: 180 }}>
@@ -1712,7 +1943,7 @@ function LoveNotes({ onClose, accent }) {
         </button>
       )}
 
-      <input value={from} onChange={e=>setFrom(e.target.value)} placeholder="Your name" style={{...linp,marginBottom:8}}/>
+      {!live && <input value={from} onChange={e=>setFrom(e.target.value)} placeholder="Your name" style={{...linp,marginBottom:8}}/>}
       <textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="Write a note for the couple…" style={{...linp,minHeight:72,resize:"vertical",marginBottom:10}}/>
       <button onClick={post} style={{...lBtn(accent)}}>Post Note 💌</button>
     </LightFormModal>
@@ -2841,19 +3072,27 @@ function NameSuggestions({ onClose, accent }) {
 }
 
 // Blessings Wall
-function BlessingsWall({ onClose, accent, placeholder }) {
-  const [blessings, setBlessings] = useState([]);
+function BlessingsWall({ onClose, accent, placeholder, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'wish-wall') setGame?.('wish-wall', {}); }, [live, isHost]); // eslint-disable-line
+  const [localBlessings, setLocalBlessings] = useState([]);
   const [from, setFrom] = useState("");
   const [blessing, setBlessing] = useState("");
   const [showWall, setShowWall] = useState(false);
+  const blessings = live ? (gameState?.items || []) : localBlessings;
   const post = () => {
     if (!blessing.trim()) return;
-    setBlessings(b=>[...b,{id:Date.now(),name:from.trim()||"Anonymous",text:blessing.trim()}]);
+    if (live) {
+      sendAction('add', { text: blessing.trim(), emoji: '🙏' });
+    } else {
+      setLocalBlessings(b=>[...b,{id:Date.now(),name:from.trim()||"Anonymous",text:blessing.trim()}]);
+    }
     setFrom("");setBlessing("");
   };
   if (showWall) return <DesignerWall onClose={()=>setShowWall(false)} items={blessings} title="Blessings Wall" wallEmoji="🙏" light={true} />;
   return (
     <LightFormModal onClose={onClose} accent={accent} emoji="🙏" title="Blessings Wall" wide>
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
       {/* View wall button */}
       <button onClick={()=>setShowWall(true)} style={{...lBtn(blessings.length?accent:"rgba(0,0,0,0.07)"),color:blessings.length?"#fff":"#1C1410",marginBottom:16,display:"flex",alignItems:"center",justifyContent:"center",gap:8,border:`1px solid ${blessings.length?accent+"44":"rgba(0,0,0,0.09)"}`}}>
         <span>✨ View Wall</span>
@@ -2870,7 +3109,7 @@ function BlessingsWall({ onClose, accent, placeholder }) {
           <div style={{textAlign:"center",marginBottom:12}}>
             <div style={{fontSize:10,color:"rgba(120,80,20,0.6)",fontWeight:800,letterSpacing:"0.25em",textTransform:"uppercase",fontFamily:"Georgia,serif"}}>— A Blessing —</div>
           </div>
-          <input value={from} onChange={e=>setFrom(e.target.value)} placeholder="Your name" style={{width:"100%",background:"transparent",border:"none",borderBottom:"1px solid rgba(120,80,20,0.2)",padding:"6px 2px",color:"#3D2008",fontSize:13,fontFamily:"Georgia,serif",outline:"none",boxSizing:"border-box",marginBottom:10,fontStyle:"italic"}}/>
+          {!live && <input value={from} onChange={e=>setFrom(e.target.value)} placeholder="Your name" style={{width:"100%",background:"transparent",border:"none",borderBottom:"1px solid rgba(120,80,20,0.2)",padding:"6px 2px",color:"#3D2008",fontSize:13,fontFamily:"Georgia,serif",outline:"none",boxSizing:"border-box",marginBottom:10,fontStyle:"italic"}}/>}
           <textarea value={blessing} onChange={e=>setBlessing(e.target.value)} placeholder={placeholder||"Write your blessing or wish…"} style={{width:"100%",background:"transparent",border:"none",padding:"4px 2px",color:"#3D2008",fontSize:13,fontFamily:"Georgia,serif",outline:"none",resize:"none",minHeight:72,lineHeight:1.8,boxSizing:"border-box",fontStyle:"italic",backgroundImage:"repeating-linear-gradient(transparent,transparent 27px,rgba(120,80,20,0.08) 27px,rgba(120,80,20,0.08) 28px)"}}/>
           <div style={{textAlign:"right",marginTop:4}}>
             <div style={{display:"inline-block",width:40,height:1,background:"rgba(120,80,20,0.2)"}} />
@@ -2898,27 +3137,61 @@ const MLT_PROMPTS = shuffle([
   "Most likely to become a chef 🍳","Most likely to move abroad 🌍","Most likely to still be using the same phone in 5 years 📱",
 ]);
 
-function MostLikelyTo({ onClose, accent }) {
+function MostLikelyTo({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'most-likely') setGame?.('most-likely', {}); }, [live, isHost]); // eslint-disable-line
   const [players, setPlayers] = useState([]);
   const [input, setInput] = useState("");
   const [promptIdx, setPromptIdx] = useState(0);
-  const [votes, setVotes] = useState({}); // { playerName: voteCount }
+  const [localVotes, setLocalVotes] = useState({});
   const [phase, setPhase] = useState("setup");
   const [revealed, setRevealed] = useState(false);
   const [history, setHistory] = useState([]);
 
-  const prompt = MLT_PROMPTS[promptIdx % MLT_PROMPTS.length];
+  // Live derived
+  const livePromptIdx = live ? (gameState?.idx || 0) : promptIdx;
+  const liveVotesMap = live ? (gameState?.votes || {}) : null;
+  const activePlayers = live ? livePlayers : players;
+  const votes = live ? (() => {
+    const counts = {};
+    Object.values(liveVotesMap || {}).forEach(n => { counts[n] = (counts[n] || 0) + 1; });
+    return counts;
+  })() : localVotes;
+
+  const prompt = MLT_PROMPTS[livePromptIdx % MLT_PROMPTS.length];
   const addPlayer = () => { const n = input.trim(); if (n && !players.includes(n)) { setPlayers(p => [...p, n]); setInput(""); } };
-  const castVote = (name) => { if (!revealed) setVotes(v => ({ ...v, [name]: (v[name] || 0) + 1 })); };
+  const castVote = (name) => {
+    if (revealed) return;
+    if (live) {
+      if (liveVotesMap?.[liveName]) return; // already voted
+      sendAction('vote', { name });
+    } else {
+      setLocalVotes(v => ({ ...v, [name]: (v[name] || 0) + 1 }));
+    }
+  };
   const totalVotes = Object.values(votes).reduce((s, n) => s + n, 0);
   const maxVotes = Math.max(...Object.values(votes), 0);
-  const winner = maxVotes > 0 ? players.find(p => (votes[p] || 0) === maxVotes) : null;
+  const winner = maxVotes > 0 ? activePlayers.find(p => (votes[p] || 0) === maxVotes) : null;
   const reveal = () => { setRevealed(true); if (winner) setHistory(h => [...h, { prompt, winner }]); };
-  const next = () => { setPromptIdx(i => i + 1); setVotes({}); setRevealed(false); };
+  const next = () => {
+    if (live) { sendAction('next', {}); }
+    else { setPromptIdx(i => i + 1); }
+    setLocalVotes({}); setRevealed(false);
+  };
+
+  // Voter name lookup in live mode: who voted for each player
+  const votersFor = live ? activePlayers.reduce((acc, p) => {
+    acc[p] = Object.entries(liveVotesMap || {}).filter(([,v]) => v === p).map(([n]) => n);
+    return acc;
+  }, {}) : {};
+
+  // In live mode, jump straight to voting (room players are already known)
+  const effectivePhase = live ? "voting" : phase;
 
   return (
     <LightFormModal onClose={onClose} accent={accent} emoji="🏆" title="Most Likely To" wide>
-      {phase === "setup" && (<>
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={liveVotesMap ? Object.fromEntries(Object.keys(liveVotesMap).map(n=>[n,true])) : {}} />
+      {effectivePhase === "setup" && (<>
         <div style={{ ...lcrd, textAlign: "center", marginBottom: 16 }}>
           <div style={{ fontSize: 13, color: "rgba(28,9,0,0.55)" }}>Add everyone playing. Everyone taps the person they think fits — votes pile up!</div>
         </div>
@@ -2940,7 +3213,7 @@ function MostLikelyTo({ onClose, accent }) {
         }
       </>)}
 
-      {phase === "voting" && (<>
+      {effectivePhase === "voting" && (<>
         {/* Central stage prompt */}
         <div style={{ background: "linear-gradient(145deg,#0a0018,#140024)", borderRadius: 20, padding: "24px 20px", textAlign: "center", marginBottom: 18, border: `2px solid ${accent}40`, boxShadow: `0 0 60px ${accent}18, inset 0 1px 0 ${accent}20`, position: "relative", overflow: "hidden" }}>
           <div aria-hidden style={{ position: "absolute", top: -60, left: "50%", transform: "translateX(-50%)", width: 200, height: 160, background: `radial-gradient(ellipse, ${accent}22 0%, transparent 70%)`, pointerEvents: "none" }} />
@@ -2951,13 +3224,15 @@ function MostLikelyTo({ onClose, accent }) {
 
         {/* Player avatars with vote piles */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 14, justifyContent: "center", marginBottom: 18 }}>
-          {players.map(p => {
+          {activePlayers.map(p => {
             const pVotes = votes[p] || 0;
             const isWinner = revealed && p === winner;
             const isLoser = revealed && !isWinner;
+            const myVotedFor = live ? liveVotesMap?.[liveName] === p : false;
+            const pVoters = votersFor[p] || [];
             return (
               <div key={p} onClick={() => castVote(p)}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, cursor: revealed ? "default" : "pointer", userSelect: "none", transition: "all 0.3s", opacity: isLoser ? 0.28 : 1, transform: isWinner ? "scale(1.14)" : "scale(1)" }}>
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, cursor: (revealed || (live && liveVotesMap?.[liveName])) ? "default" : "pointer", userSelect: "none", transition: "all 0.3s", opacity: isLoser ? 0.28 : 1, transform: isWinner ? "scale(1.14)" : "scale(1)" }}>
                 {/* Vote chips stacked above avatar */}
                 <div style={{ height: 24, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 3, minWidth: 56 }}>
                   {Array.from({ length: Math.min(pVotes, 7) }).map((_, ci) => (
@@ -2966,12 +3241,19 @@ function MostLikelyTo({ onClose, accent }) {
                   {pVotes > 7 && <div style={{ fontSize: 9, color: accent, fontWeight: 900, lineHeight: "8px" }}>+{pVotes - 7}</div>}
                 </div>
                 {/* Avatar with spotlight on winner */}
-                <div style={{ width: 52, height: 52, borderRadius: "50%", background: pVotes > 0 ? `${accent}25` : "rgba(0,0,0,0.07)", border: `2.5px solid ${isWinner ? accent : pVotes > 0 ? accent + "88" : "rgba(0,0,0,0.12)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 900, color: pVotes > 0 ? accent : "#1C1410", transition: "all 0.25s", boxShadow: isWinner ? `0 0 40px ${accent}99, 0 0 10px ${accent}` : pVotes > 0 ? `0 4px 12px ${accent}44` : "none", position: "relative" }}>
+                <div style={{ width: 52, height: 52, borderRadius: "50%", background: pVotes > 0 ? `${accent}25` : "rgba(0,0,0,0.07)", border: `2.5px solid ${isWinner ? accent : myVotedFor ? accent : pVotes > 0 ? accent + "88" : "rgba(0,0,0,0.12)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 900, color: pVotes > 0 ? accent : "#1C1410", transition: "all 0.25s", boxShadow: isWinner ? `0 0 40px ${accent}99, 0 0 10px ${accent}` : pVotes > 0 ? `0 4px 12px ${accent}44` : "none", position: "relative" }}>
                   {isWinner ? "👑" : p[0].toUpperCase()}
                   {isWinner && <div style={{ position: "absolute", inset: -10, borderRadius: "50%", background: `radial-gradient(ellipse, ${accent}35 0%, transparent 65%)`, pointerEvents: "none" }} />}
+                  {myVotedFor && !isWinner && <div style={{ position:"absolute", bottom:-2, right:-2, width:14, height:14, borderRadius:"50%", background:"#22c55e", display:"flex", alignItems:"center", justifyContent:"center", fontSize:8, color:"#fff", fontWeight:900 }}>✓</div>}
                 </div>
-                <div style={{ fontSize: 11, color: isWinner ? accent : pVotes > 0 ? "rgba(28,9,0,0.75)" : "rgba(28,9,0,0.40)", fontWeight: isWinner ? 800 : 500, textAlign: "center", maxWidth: 64, lineHeight: 1.2 }}>{p}</div>
+                <div style={{ fontSize: 11, color: isWinner ? accent : pVotes > 0 ? "rgba(28,9,0,0.75)" : "rgba(28,9,0,0.40)", fontWeight: isWinner ? 800 : 500, textAlign: "center", maxWidth: 64, lineHeight: 1.2 }}>{p}{live && p===liveName ? " (you)" : ""}</div>
                 {pVotes > 0 && <div style={{ fontSize: 10, fontWeight: 800, color: accent }}>{pVotes}v</div>}
+                {/* Voter names in live mode */}
+                {live && pVoters.length > 0 && (
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:2, justifyContent:"center", maxWidth:80 }}>
+                    {pVoters.map(n => <span key={n} style={{ fontSize:8, background:`${accent}15`, color:accent, borderRadius:8, padding:"1px 5px", fontWeight:n===liveName?800:400 }}>{n===liveName?"you":n}</span>)}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -3349,17 +3631,42 @@ const MOOD_OPTIONS_OCC = [
   { emoji: "😴", label: "Sleepy",   color: "#8B5CF6", temp: 5   },
 ];
 
-function MoodMeter({ onClose, accent }) {
+function MoodMeter({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'mood-meter') setGame?.('mood-meter', {}); }, [live, isHost]); // eslint-disable-line
   const [myMood, setMyMood] = useState(null);
   const [name, setName] = useState("");
   const [noteText, setNoteText] = useState("");
-  const [allMoods, setAllMoods] = useState([]);
+  const [localMoods, setLocalMoods] = useState([]);
   const [submitted, setSubmitted] = useState(false);
+
+  // When live, moods come from gameState.moods keyed by player name
+  const liveMoodsMap = live ? (gameState?.moods || {}) : null;
+  const allMoods = live
+    ? Object.entries(liveMoodsMap).map(([pName, m]) => ({
+        name: pName,
+        emoji: m.mood,
+        label: MOOD_OPTIONS_OCC.find(o => o.emoji === m.mood)?.label || m.label || "",
+        color: MOOD_OPTIONS_OCC.find(o => o.emoji === m.mood)?.color || accent,
+        temp: MOOD_OPTIONS_OCC.find(o => o.emoji === m.mood)?.temp || 30,
+        note: "",
+      }))
+    : localMoods;
+
+  const myLiveMood = live ? liveMoodsMap?.[liveName] : null;
+  const alreadySubmittedLive = live && !!myLiveMood;
+
   const submit = () => {
-    if (myMood === null || !name.trim()) return;
-    setAllMoods(m => [...m, { name: name.trim(), emoji: myMood.emoji, label: myMood.label, color: myMood.color, temp: myMood.temp, note: noteText.trim() }]);
-    setNoteText("");
-    setSubmitted(true);
+    if (myMood === null) return;
+    if (live) {
+      sendAction('set-mood', { mood: myMood.emoji, label: myMood.label });
+      setSubmitted(true);
+    } else {
+      if (!name.trim()) return;
+      setLocalMoods(m => [...m, { name: name.trim(), emoji: myMood.emoji, label: myMood.label, color: myMood.color, temp: myMood.temp, note: noteText.trim() }]);
+      setNoteText("");
+      setSubmitted(true);
+    }
   };
 
   const total = allMoods.length;
@@ -3373,6 +3680,7 @@ function MoodMeter({ onClose, accent }) {
 
   return (
     <LightFormModal onClose={onClose} emoji="🌡️" title="Mood Meter" accent={accent} wide>
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={Object.fromEntries(Object.keys(liveMoodsMap||{}).map(n=>[n,true]))} />
       {/* Giant Mood Orb */}
       {total > 0 && (
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
@@ -3393,9 +3701,15 @@ function MoodMeter({ onClose, accent }) {
       )}
 
       {/* Mood selector */}
-      {!submitted ? (
+      {alreadySubmittedLive ? (
+        <div style={{ textAlign: "center", padding: "10px 0 6px" }}>
+          <div style={{ fontSize: 32, marginBottom: 4 }}>{myLiveMood.mood}</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#059669", marginBottom: 8 }}>Your vibe is live!</div>
+          <button onClick={() => sendAction('set-mood', { mood: myMood?.emoji || myLiveMood.mood, label: myMood?.label || myLiveMood.label })} style={lBtn(accent)}>Change Vibe</button>
+        </div>
+      ) : !submitted ? (
         <>
-          <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name…" style={{ ...linp, marginBottom: 12 }} />
+          {!live && <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name…" style={{ ...linp, marginBottom: 12 }} />}
           <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
             {MOOD_OPTIONS_OCC.map(opt => (
               <button key={opt.emoji} onClick={() => setMyMood(opt)} style={{ flex: 1, padding: "12px 4px", borderRadius: 14, border: `2px solid ${myMood?.emoji === opt.emoji ? opt.color : "rgba(0,0,0,0.08)"}`, background: myMood?.emoji === opt.emoji ? opt.color + "22" : "rgba(0,0,0,0.03)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, transform: myMood?.emoji === opt.emoji ? "scale(1.1)" : "scale(1)", transition: "all 0.18s", fontFamily: font }}>
@@ -3404,7 +3718,7 @@ function MoodMeter({ onClose, accent }) {
               </button>
             ))}
           </div>
-          {myMood && (
+          {!live && myMood && (
             <>
               <div style={{ marginTop:12, marginBottom:6 }}>
                 <div style={{ fontSize:11, fontWeight:700, color:"rgba(28,9,0,0.50)", marginBottom:6 }}>
@@ -3419,12 +3733,12 @@ function MoodMeter({ onClose, accent }) {
               </div>
             </>
           )}
-          {myMood && name.trim() && <button onClick={submit} style={{...lBtn(accent),marginTop:8}}>Submit Vibe 🌡️</button>}
+          {myMood && (live || name.trim()) && <button onClick={submit} style={{...lBtn(accent),marginTop:8}}>Submit Vibe 🌡️</button>}
         </>
       ) : (
         <div style={{ textAlign: "center", padding: "10px 0 6px" }}>
           <div style={{ fontSize: 16, fontWeight: 700, color: "#059669", marginBottom: 12 }}>✓ Your vibe is live!</div>
-          <button onClick={() => { setSubmitted(false); setMyMood(null); setName(""); }} style={lBtn(accent)}>Add Another</button>
+          {!live && <button onClick={() => { setSubmitted(false); setMyMood(null); setName(""); }} style={lBtn(accent)}>Add Another</button>}
         </div>
       )}
 
@@ -3444,20 +3758,29 @@ function MoodMeter({ onClose, accent }) {
 }
 
 // ── Secret Messages — real envelope cards with seal ───────────────────────────
-function SecretMessage({ onClose, accent }) {
+function SecretMessage({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'secret-messages') setGame?.('secret-messages', {}); }, [live, isHost]); // eslint-disable-line
   const [msg, setMsg] = useState("");
   const [name, setName] = useState("");
+  const [toPlayer, setToPlayer] = useState("");
   const [submitted, setSubmitted] = useState(false);
-  const [messages, setMessages] = useState([]);
+  const [localMessages, setLocalMessages] = useState([]);
   const [mode, setMode] = useState("send");
   const [revealed, setRevealed] = useState([]);
+  const messages = live ? (gameState?.messages || []) : localMessages;
   const send = () => {
     if (!msg.trim()) return;
-    setMessages(m=>[...m,{from:name.trim()||"Anonymous 🎭",text:msg.trim()}]);
-    setMsg("");setName("");setSubmitted(true);setTimeout(()=>setSubmitted(false),2500);
+    if (live) {
+      sendAction('send', { text: msg.trim(), to: toPlayer });
+    } else {
+      setLocalMessages(m=>[...m,{from:name.trim()||"Anonymous 🎭",text:msg.trim()}]);
+    }
+    setMsg("");setName("");setToPlayer("");setSubmitted(true);setTimeout(()=>setSubmitted(false),2500);
   };
   return (
     <LightFormModal onClose={onClose} emoji="💌" title="Secret Messages" accent={accent} wide>
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={Object.fromEntries((messages).map(m=>[m.from,true]))} />
       <div style={{display:"flex",gap:8,marginBottom:16}}>
         {["send","reveal"].map(v=>(
           <button key={v} onClick={()=>setMode(v)} style={{...lBtn(mode===v?accent:"rgba(0,0,0,0.06)"),flex:1,padding:"10px",fontSize:13,color:mode===v?"#fff":"#1C1410"}}>
@@ -3468,7 +3791,13 @@ function SecretMessage({ onClose, accent }) {
 
       {mode==="send"&&(<>
         <div style={{background:'rgba(0,0,0,0.04)',border:'1px solid rgba(0,0,0,0.07)',borderRadius:12,padding:'12px 16px',fontSize:12,color:'rgba(28,9,0,0.50)',textAlign:'center',marginBottom:14}}>Your message is sealed 🕵️ — only the guest of honour opens it</div>
-        <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name (blank = Anonymous 🎭)" style={{...linp,marginBottom:10}}/>
+        {!live && <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name (blank = Anonymous 🎭)" style={{...linp,marginBottom:10}}/>}
+        {live && livePlayers.length > 1 && (
+          <select value={toPlayer} onChange={e=>setToPlayer(e.target.value)} style={{...linp,marginBottom:10,cursor:"pointer"}}>
+            <option value="">📬 To everyone (or pick someone…)</option>
+            {livePlayers.filter(p=>p!==liveName).map(p=><option key={p} value={p}>To {p}</option>)}
+          </select>
+        )}
         <textarea value={msg} onChange={e=>setMsg(e.target.value)} placeholder="Write your secret message…" style={{...linp,minHeight:88,resize:"vertical",marginBottom:14}}/>
         {submitted
           ?<div style={{textAlign:"center",padding:"14px",background:accent+"18",borderRadius:12,color:accent,fontWeight:700}}>✓ Sealed! Your envelope is hidden 💌</div>
@@ -6297,6 +6626,7 @@ const SLUG_FOR_OCC = {
 
 export default function OccasionHub({ occasion }) {
   const [open, setOpen]         = useState(null);
+  const [forceSoloOpen, setForceSoloOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("plan");
   const [showSplash, setShowSplash] = useState(() => {
     try { return !localStorage.getItem(`tendr-splash-${occasion}`); } catch { return true; }
@@ -6347,8 +6677,45 @@ export default function OccasionHub({ occasion }) {
   const [entryMode, setEntryMode]   = useState(null);
   const [entryView, setEntryView]   = useState("pick"); // "pick" | "host" | "join"
 
-  const { room, connected, error: roomError, myName, createRoom, joinRoom, leaveRoom } = usePartyRoom();
+  const { room, connected, error: roomError, myName, players: roomPlayers, gameState, currentGame, isHost, effect, createRoom, joinRoom, leaveRoom, closeRoom, sendAction, sendEffect, setGame, clearError } = usePartyRoom();
+  const liveProps = room ? { room, myName, players: roomPlayers, gameState, currentGame, sendAction, sendEffect, isHost, setGame } : {};
   const navigate = useNavigate();
+
+  // ── Back navigation: push history entries at each depth level ──────────────
+  const stateRef = useRef({ open: null, entryMode: null });
+  stateRef.current = { open, entryMode };
+
+  // Push a history entry when entering the hub (entryMode goes null → non-null)
+  const prevEntryMode = useRef(null);
+  useEffect(() => {
+    if (entryMode && !prevEntryMode.current) window.history.pushState({ _occ: 'hub' }, '');
+    prevEntryMode.current = entryMode;
+  }, [entryMode]);
+
+  // Push a history entry when opening a tool (open goes null → non-null)
+  const prevOpen = useRef(null);
+  useEffect(() => {
+    if (open && !prevOpen.current) window.history.pushState({ _occ: 'modal' }, '');
+    if (!open) setForceSoloOpen(false); // reset solo bypass when modal closes
+    prevOpen.current = open;
+  }, [open]);
+
+  // Intercept browser/device back button
+  useEffect(() => {
+    const handler = () => {
+      const { open: o, entryMode: e } = stateRef.current;
+      if (o) { setOpen(null); window.history.pushState({ _occ: 'hub' }, ''); return; }
+      if (e) { setEntryMode(null); return; }
+    };
+    window.addEventListener('popstate', handler);
+    return () => window.removeEventListener('popstate', handler);
+  }, []);
+
+  const handleBack = () => {
+    if (open) { setOpen(null); return; }
+    if (entryMode) { setEntryMode(null); return; }
+    navigate(-1);
+  };
 
   // Load plan from localStorage
   useEffect(() => {
@@ -6424,6 +6791,23 @@ export default function OccasionHub({ occasion }) {
   const renderModal = () => {
     const close = () => setOpen(null);
     const planGuests = planData?.guests || 10;
+
+    // Explore gate: live games without a room show a preview + Host/Join CTA
+    if (open && LIVE_GAME_IDS.has(open) && !room && !forceSoloOpen) {
+      const toolConfig = allTools.find(t => t.id === open);
+      return (
+        <RoomGate
+          onClose={close}
+          onHost={() => { close(); setRoomModal("host-setup"); }}
+          onJoin={() => { close(); setRoomModal("join"); }}
+          onSoloPreview={() => setForceSoloOpen(true)}
+          toolTitle={toolConfig?.title || open}
+          toolId={open}
+          accent={accent}
+        />
+      );
+    }
+
     switch (open) {
       case "bills":          return <BillSplitter onClose={close} accent={accent} />;
       case "playlist":       return <PlaylistBuilder onClose={close} accent={accent} />;
@@ -6436,21 +6820,21 @@ export default function OccasionHub({ occasion }) {
           ? <NamingCeremonyInvite onClose={close} accent={accent} celebrantName={celebrantName} />
           : <ShareableTool onClose={close} accent={accent} emoji="📨" title="Digital Invite & RSVP" description="Create an invite. Share the link — guests RSVP instantly." path="/house-party/invite" fields={[{ key: "partyName", label: "Event Name", placeholder: "Meera's Birthday Bash", required: true }, { key: "hostName", label: "Host Name", placeholder: "Meera", required: true }, { key: "date", label: "Date", placeholder: "19 July 2026" }, { key: "time", label: "Time", placeholder: "7:00 PM" }, { key: "location", label: "Location", placeholder: "Aman's place, Noida" }, { key: "note", label: "Note (optional)", placeholder: "Dress code: yellow!" }]} />;
       case "photowall":      return <ShareableTool onClose={close} accent={accent} emoji="📸" title="Shared Photo Wall" description="Create a photo wall. Share the link — everyone uploads their photos." path="/house-party/photo-wall" fields={[{ key: "partyName", label: "Event Name", placeholder: "Priya's Baby Shower 🎀", required: true }]} />;
-      case "truthordare":    return <TruthOrDare onClose={close} accent={accent} />;
-      case "neverhavei":     return <NeverHaveI onClose={close} accent={accent} />;
-      case "wouldyou":       return <WouldYouRather onClose={close} accent={accent} />;
-      case "hottakes":       return <HotTakes onClose={close} accent={accent} />;
+      case "truthordare":    return <TruthOrDare onClose={close} accent={accent} {...liveProps} />;
+      case "neverhavei":     return <NeverHaveI onClose={close} accent={accent} {...liveProps} />;
+      case "wouldyou":       return <WouldYouRather onClose={close} accent={accent} {...liveProps} />;
+      case "hottakes":       return <HotTakes onClose={close} accent={accent} {...liveProps} />;
       case "spin":           return <SpinBottle onClose={close} accent={accent} />;
       case "charades":       return <Charades onClose={close} accent={accent} />;
       case "bingo":          return <Bingo onClose={close} accent={accent} squares={occasion === "birthday" ? BIRTHDAY_BINGO : occasion === "office-party" ? OFFICE_BINGO : undefined} />;
       case "awardsceremony": return <AwardsCeremony onClose={close} accent={accent} />;
       case "runofshow":      return <RunOfShow onClose={close} accent={accent} />;
       case "appreciationwall": return <AppreciationWall onClose={close} accent={accent} />;
-      case "wishwall":       return <WishWall onClose={close} accent={accent} />;
+      case "wishwall":       return <WishWall onClose={close} accent={accent} celebrant={celebrantName} {...liveProps} />;
       case "birthdayquiz":   return <BirthdayQuiz onClose={close} accent={accent} />;
-      case "lovenotes":      return <LoveNotes onClose={close} accent={accent} />;
+      case "lovenotes":      return <LoveNotes onClose={close} accent={accent} {...liveProps} />;
       case "couplequiz":     return <CoupleQuiz onClose={close} accent={accent} />;
-      case "blessingswall":  return <BlessingsWall onClose={close} accent={accent} placeholder="Share your blessings and wishes for the couple…" />;
+      case "blessingswall":  return <BlessingsWall onClose={close} accent={accent} placeholder="Share your blessings and wishes for the couple…" {...liveProps} />;
       case "babynamevote":   return <BabyNameVote onClose={close} accent={accent} />;
       case "genderpoll":     return <GenderPoll onClose={close} accent={accent} />;
       case "advicecards":    return <AdviceCards onClose={close} accent={accent} />;
@@ -6458,12 +6842,12 @@ export default function OccasionHub({ occasion }) {
       case "luckydraw":      return <LuckyDraw onClose={close} accent={accent} />;
       case "kittyfund":      return <KittyFund onClose={close} accent={accent} />;
       case "namesuggestions":return <NameSuggestions onClose={close} accent={accent} />;
-      case "blessings":      return <BlessingsWall onClose={close} accent={accent} placeholder="Share a blessing for the child's journey ahead…" />;
-      case "mostlikelyto":   return <MostLikelyTo onClose={close} accent={accent} />;
+      case "blessings":      return <BlessingsWall onClose={close} accent={accent} placeholder="Share a blessing for the child's journey ahead…" {...liveProps} />;
+      case "mostlikelyto":   return <MostLikelyTo onClose={close} accent={accent} {...liveProps} />;
       case "t2l":            return <TwoTruthsOneLie onClose={close} accent={accent} />;
       case "rapidfire":      return <RapidFire onClose={close} accent={accent} />;
-      case "moodmeter":      return <MoodMeter onClose={close} accent={accent} />;
-      case "secretmessage":  return <SecretMessage onClose={close} accent={accent} />;
+      case "moodmeter":      return <MoodMeter onClose={close} accent={accent} {...liveProps} />;
+      case "secretmessage":  return <SecretMessage onClose={close} accent={accent} {...liveProps} />;
       case "gifttracker":    return <GiftTracker onClose={close} accent={accent} />;
       case "guestlist":      return <OccGuestListModal onClose={close} occasion={occasion} accent={accent} />;
       case "menu":           return <OccMenuPlannerModal onClose={close} occasion={occasion} accent={accent} />;
@@ -6807,7 +7191,7 @@ export default function OccasionHub({ occasion }) {
       <div style={{ flexShrink:0, padding:"max(14px, env(safe-area-inset-top)) 16px 10px", background:"transparent", position:"relative", zIndex:2 }}>
         <div style={{ display:"flex", alignItems:"center", maxWidth:800, margin:"0 auto", position:"relative" }}>
           {/* Back button */}
-          <button onClick={()=>navigate(-1)} style={{ width:36, height:36, borderRadius:"50%", border:"none", ...T.backBtn, boxShadow:"0 2px 8px rgba(0,0,0,0.1)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, zIndex:1 }}>
+          <button onClick={handleBack} style={{ width:36, height:36, borderRadius:"50%", border:"none", ...T.backBtn, boxShadow:"0 2px 8px rgba(0,0,0,0.1)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, zIndex:1 }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           {/* Center */}
@@ -7304,7 +7688,12 @@ export default function OccasionHub({ occasion }) {
             ) : (
               <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }}>
                 {playTools.map(t => (
-                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:T.cardBg, border:`1.5px solid ${T.cardBd}`, borderRadius:14, padding:"16px 8px 14px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:10, textAlign:"center" }}>
+                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:T.cardBg, border:`1.5px solid ${LIVE_GAME_IDS.has(t.id) && room ? occAccent+"50" : T.cardBd}`, borderRadius:14, padding:"16px 8px 14px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:6, textAlign:"center", position:"relative" }}>
+                    {LIVE_GAME_IDS.has(t.id) && (
+                      <div style={{ position:"absolute", top:5, right:5, fontSize:7.5, fontWeight:800, color: room ? "#22c55e" : "rgba(28,9,0,0.28)", letterSpacing:"0.05em", textTransform:"uppercase", background: room ? "rgba(34,197,94,0.12)" : "rgba(0,0,0,0.05)", borderRadius:100, padding:"2px 5px" }}>
+                        {room ? "● Live" : "👥"}
+                      </div>
+                    )}
                     <div style={{ color:PH.violet }}>{TOOL_ICONS[t.id]||occic(<polygon points="5 3 19 12 5 21 5 3"/>)}</div>
                     <div style={{ fontSize:11.5, fontWeight:600, color:T.main, lineHeight:1.35 }}>{t.title}</div>
                   </div>
