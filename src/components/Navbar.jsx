@@ -414,7 +414,7 @@ const Navbar = ({
             onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.04)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.22)"; }}
           >
             <FaSearch size={12} style={{ color: "#C47A2E", flexShrink: 0 }} />
-            <span style={{ fontSize: 13, color: "#A07850", whiteSpace: "nowrap", flex: 1, letterSpacing: "0.01em" }}>Search vendors, services…</span>
+            <span style={{ fontSize: 13, color: "#A07850", whiteSpace: "nowrap", flex: 1, letterSpacing: "0.01em" }}>Search vendors, services, occasions...</span>
             <span style={{ fontSize: 9.5, color: "rgba(160,120,80,0.45)", border: "1px solid rgba(160,120,80,0.18)", borderRadius: 5, padding: "2px 6px", whiteSpace: "nowrap", fontFamily: "monospace", letterSpacing: "0.04em" }}>⌘K</span>
           </button>
           {/* Primary nav links */}
@@ -581,6 +581,7 @@ const Navbar = ({
 
           {/* ── Right action cluster (desktop) ── */}
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }} className="desktop-nav">
+          <div style={{ width: 1, height: 20, background: "rgba(139,69,19,0.16)", flexShrink: 0 }} />
 
           {/* Right cluster: conditional buttons + profile — always together */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
@@ -728,13 +729,13 @@ const Navbar = ({
               </div>
             ) : (
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <a href="/vendor/register" style={{ fontSize: 13, fontWeight: 600, color: "#7A4A1E", padding: "9px 16px", borderRadius: 9, textDecoration: "none", border: "1.5px solid rgba(196,122,46,0.45)", background: "linear-gradient(135deg,rgba(255,244,224,0.95),rgba(255,237,195,0.9))", transition: "all 0.18s", whiteSpace: "nowrap", fontFamily: font, boxShadow: "0 1px 4px rgba(196,122,46,0.12)" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "linear-gradient(135deg,rgba(255,234,190,0.98),rgba(255,220,155,0.95))"; e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.boxShadow = "0 3px 10px rgba(196,122,46,0.22)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "linear-gradient(135deg,rgba(255,244,224,0.95),rgba(255,237,195,0.9))"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.45)"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(196,122,46,0.12)"; }}
-                >List Your Service</a>
-                <a href="/login" data-tour="signin-btn" style={{ fontSize: 13, fontWeight: 700, color: "#fff", padding: "9px 20px", borderRadius: 9, textDecoration: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", boxShadow: "0 3px 12px rgba(196,122,46,0.3)", transition: "opacity 0.2s", whiteSpace: "nowrap", fontFamily: font }}
-                  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
-                  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                <a href="/vendor/register" style={{ fontSize: 13, fontWeight: 700, color: "#fff", padding: "9px 20px", borderRadius: 100, textDecoration: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", boxShadow: "0 3px 12px rgba(196,122,46,0.28)", transition: "all 0.18s", whiteSpace: "nowrap", fontFamily: font, display: "flex", alignItems: "center", gap: 6 }}
+                  onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.42)"; e.currentTarget.style.opacity = "0.92"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "0 3px 12px rgba(196,122,46,0.28)"; e.currentTarget.style.opacity = "1"; }}
+                >List Your Service <span style={{ fontSize: 14 }}>→</span></a>
+                <a href="/login" data-tour="signin-btn" style={{ fontSize: 13, fontWeight: 600, color: "#3B2F2F", padding: "8px 18px", borderRadius: 100, textDecoration: "none", border: "1.5px solid rgba(44,26,14,0.22)", background: "transparent", transition: "all 0.18s", whiteSpace: "nowrap", fontFamily: font }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(44,26,14,0.05)"; e.currentTarget.style.borderColor = "rgba(44,26,14,0.38)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(44,26,14,0.22)"; }}
                 >Sign In</a>
               </div>
             )}
