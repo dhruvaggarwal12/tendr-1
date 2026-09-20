@@ -503,17 +503,59 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               </div>
             )}
 
-            {([...genres,...instr]).length > 0 && (
-              <div>
-                <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
-                  {[...genres,...instr].map(g => (
-                    <span key={g} style={{ padding:"7px 18px", borderRadius:20, background:"rgba(196,155,48,0.08)", border:`1px solid rgba(196,155,48,0.22)`, fontSize:14, color:CMUTED, fontWeight:500 }}>
-                      {g}
-                    </span>
-                  ))}
+            {(() => {
+              const svc = vendor.serviceType;
+              const chipStyle = { padding:"7px 18px", borderRadius:20, background:"rgba(196,155,48,0.08)", border:`1px solid rgba(196,155,48,0.22)`, fontSize:14, color:CMUTED, fontWeight:500 };
+              const sectionStyle = { marginBottom:36 };
+              const labelStyle = { fontSize:12, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:CDIM, marginBottom:12 };
+              const chipsStyle = { display:"flex", flexWrap:"wrap", gap:8 };
+
+              const ChipGroup = ({ label, items }) => items?.length > 0 ? (
+                <div style={sectionStyle}>
+                  <div style={labelStyle}>{label}</div>
+                  <div style={chipsStyle}>
+                    {items.map(g => <span key={g} style={chipStyle}>{g}</span>)}
+                  </div>
                 </div>
-              </div>
-            )}
+              ) : null;
+
+              const genres2     = vendor.genres || [];
+              const instr2      = vendor.instruments || [];
+              const languages   = vendor.languages || [];
+              const danceStyles = vendor.danceStyles || [];
+              const perfStyle   = vendor.performingStyle ? [vendor.performingStyle] : (Array.isArray(vendor.performingStyle) ? vendor.performingStyle : []);
+              const suitableFor = vendor.eventTypes || vendor.suitableFor || [];
+              const bandSize    = vendor.bandSize;
+              const setupType   = vendor.setupType;
+              const lightsIncl  = vendor.lightsIncluded;
+
+              return (
+                <div>
+                  <ChipGroup label="Music Genres" items={genres2} />
+                  <ChipGroup label="Instruments" items={instr2} />
+                  <ChipGroup label="Dance Styles" items={danceStyles} />
+                  <ChipGroup label="Performing Style" items={Array.isArray(vendor.performingStyle) ? vendor.performingStyle : (vendor.performingStyle ? [vendor.performingStyle] : [])} />
+                  <ChipGroup label="Languages" items={languages} />
+                  <ChipGroup label="Suitable For" items={suitableFor} />
+                  {bandSize && (
+                    <div style={sectionStyle}>
+                      <div style={labelStyle}>Band Size</div>
+                      <span style={chipStyle}>{bandSize} members</span>
+                    </div>
+                  )}
+                  {(setupType || lightsIncl) && (
+                    <div style={sectionStyle}>
+                      <div style={labelStyle}>Setup</div>
+                      <div style={chipsStyle}>
+                        {setupType && <span style={chipStyle}>{setupType}</span>}
+                        {lightsIncl === 'Yes' && <span style={chipStyle}>Lights Included</span>}
+                        {lightsIncl === 'No' && <span style={{ ...chipStyle, opacity:0.6 }}>Lights Not Included</span>}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {(social.showreel || social.instagram || social.youtube) && (
               <div style={{ marginTop:44, display:"flex", gap:28, flexWrap:"wrap" }}>

@@ -57,7 +57,7 @@ export default function VendorProfile() {
     performingStyle: [], genres: [], languages: [],
     instruments: [], danceStyles: [], eventTypes: [],
     bandSize: "", bio: "", socialLink: "", showreel: "",
-    setupType: "", lightsIncluded: "",
+    setupType: "", lightsIncluded: "", setlist: "",
   });
   const [svcForm, setSvcForm] = useState({
     // Photographer
@@ -128,6 +128,7 @@ export default function VendorProfile() {
           showreel:        v.showreel || "",
           setupType:       v.setupType || "",
           lightsIncluded:  v.lightsIncluded || "",
+          setlist:         v.setlist || "",
         });
         setSvcForm({
           photoServices:        v.photoServices || "",
@@ -247,6 +248,7 @@ export default function VendorProfile() {
           showreel:       gigForm.showreel,
           socialLink:     gigForm.socialLink,
           eventTypes:     gigForm.eventTypes,
+          setlist:        gigForm.setlist,
         };
         const rGig = await fetch(`${BASE_URL}/vendors/${vendorId}/gigpro`, {
           method: "PATCH",
@@ -349,6 +351,7 @@ export default function VendorProfile() {
             ...(GIG_PRO_TYPES.includes(profile?.serviceType) ? [["gig", "Performance Details"]] : []),
             ...(['Photographer','Caterer','Decorator','Makeup Artist','Mehendi Artist','Hair Stylist','Cake Artist','Bartender','Videographer','Food Truck','Wedding Planner','Live Streaming','Photo Booth','Gift & Favours','Transportation','Security'].includes(profile?.serviceType) ? [["service", "Service Details"]] : []),
             ["portfolio", "Portfolio Photos"],
+            ...(GIG_PRO_TYPES.includes(profile?.serviceType) ? [["setlist", "Setlist"]] : []),
             ["bank", "Bank & Payments"],
           ].map(([id, label]) => (
             <button key={id} onClick={() => setTab(id)} className={`px-5 py-2.5 text-sm font-semibold rounded-t-lg transition-colors whitespace-nowrap ${tab === id ? "bg-yellow-500 text-white" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"}`}>
@@ -762,6 +765,86 @@ export default function VendorProfile() {
             )}
           </div>
         )}
+
+        {/* ── Setlist Tab (gig pros only) ── */}
+        {tab === "setlist" && GIG_PRO_TYPES.includes(profile?.serviceType) && (() => {
+          const svc = profile?.serviceType;
+          const setlistLabel = svc === 'DJ' ? 'Typical Set / Playlist Theme'
+            : ['Emcee/Host','Anchor'].includes(svc) ? 'Script Outline / Typical Segments'
+            : svc === 'Stand-up Comedian' ? 'Set Material / Topics'
+            : svc === 'Choreographer' ? 'Routine Description'
+            : svc === 'Magician' ? 'Show Description / Acts'
+            : 'Setlist / Repertoire';
+          const setlistPlaceholder = ['Emcee/Host','Anchor'].includes(svc)
+            ? 'e.g.\n• Welcome address & intro\n• Couple Q&A / fun games\n• Award or milestone rounds\n• Dance floor / entertainment segments\n• Closing & vote of thanks'
+            : svc === 'DJ'
+            ? 'e.g.\n• Ceremony: Soft Hindi classics (Arijit, Jubin)\n• Cocktail hour: Lounge / EDM mix\n• Reception: Bollywood party anthems\n• Late night: Punjabi & Hip-Hop'
+            : svc === 'Choreographer'
+            ? 'e.g.\n• Couple first dance — 1 min choreographed routine\n• Bride\'s sisters group performance — 3 songs\n• Sangeet flash mob — 12 participants, 6 sessions'
+            : svc === 'Singer'
+            ? 'e.g.\n• Ghazals: Jagjit Singh classics\n• Bollywood romantic: Tum Hi Ho, Kesariya\n• Sufi set: Kun Faya Kun, Arziyan\n• Crowd requests: open to suggestions'
+            : 'List your acts, songs, sets, or signature segments — helps event planners understand exactly what you deliver';
+          const QUICK_ITEMS = {
+            DJ:               ['Bollywood Party Mix (2 hrs)','EDM Drop Set','Sufi Night Set','Retro Classics','Cocktail Hour Lounge','Punjabi Wedding Bangers','Late Night High Energy'],
+            Singer:           ['Ghazal Set (30 min)','Bollywood Romantic Set','Sufi / Devotional Set','Live Unplugged Session','Custom Song Requests','Title Song Medley'],
+            Musician:         ['Classical Raag Performance','Fusion Set','Instrumental Background Music','Solo Recital','Jugalbandi / Duet'],
+            Band:             ['Bollywood Live Set (90 min)','Retro Classics Set','Sufi Night','Jazz Lounge Set','Rock / Fusion Set'],
+            Choreographer:    ['Couple First Dance','Group Sangeet Performance','Flash Mob Coordination','Kids Dance Act','Bridal Entry Choreography'],
+            Anchor:           ['Welcome & Introductions','Couple Q&A Game','Audience Fun Games','Award / Felicitation Rounds','Closing Ceremony'],
+            'Emcee/Host':     ['High-Energy Opening','Brand Activation Segment','Audience Interaction Games','Product Launch Script','Closing & Thank You'],
+            'Stand-up Comedian': ['Clean Corporate Set','Wedding Roast (family-friendly)','Open Mic Material','Crowd Work Segment','Mimicry & Impressions'],
+            Magician:         ['Close-Up Card Magic','Stage Illusion Act','Mentalism / Mind Reading','Children\'s Show Set','Corporate Branded Finale'],
+            Performer:        ['Stage Act (20 min)','Walk-Around Meet & Greet','Flash Mob Surprise','Stunt / Fire Act','Comedy Sketch'],
+          };
+          const quickItems = QUICK_ITEMS[svc] || [];
+          return (
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <h2 className="text-xl font-bold text-gray-800 mb-1">{setlistLabel}</h2>
+              <p className="text-sm text-gray-500 mb-6">This appears on your public profile's Setlist tab — give event planners a clear picture of what you perform.</p>
+
+              {/* Quick-add chips */}
+              {quickItems.length > 0 && (
+                <div className="mb-6">
+                  <div className="text-xs font-bold text-yellow-600 uppercase tracking-wider mb-3">⚡ Quick Add — {svc} Segments</div>
+                  <div className="flex flex-wrap gap-2">
+                    {quickItems.map((item, i) => (
+                      <button key={i} type="button"
+                        onClick={() => {
+                          const current = gigForm.setlist || '';
+                          const line = `• ${item}`;
+                          if (!current.includes(line)) {
+                            setGigForm(f => ({ ...f, setlist: current ? current + '\n' + line : line }));
+                          }
+                        }}
+                        className="px-3 py-1.5 rounded-full text-xs font-semibold bg-yellow-50 border border-yellow-200 text-yellow-700 hover:bg-yellow-100 transition-colors">
+                        + {item}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-600 mb-2">Your {setlistLabel}</label>
+                <textarea
+                  value={gigForm.setlist}
+                  onChange={e => setGigForm(f => ({ ...f, setlist: e.target.value }))}
+                  rows={10}
+                  placeholder={setlistPlaceholder}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm resize-y font-mono"
+                />
+                <p className="text-xs text-gray-400 mt-1.5">Use bullet points (•) or numbered lines for best display on your public profile.</p>
+              </div>
+
+              <div className="flex justify-end">
+                <button onClick={saveInfo} disabled={saving}
+                  className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-bold text-sm transition-colors disabled:opacity-60">
+                  {saving ? "Saving…" : "Save Setlist"}
+                </button>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── Bank & Payments Tab ── */}
         {tab === "bank" && (

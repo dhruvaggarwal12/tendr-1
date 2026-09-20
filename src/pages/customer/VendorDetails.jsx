@@ -297,7 +297,9 @@ const VendorDetailsPage = () => {
   }, [chatFormOpen]);
 
   useEffect(() => {
-    if (!vendor?._id || !['Anchor', 'Band', 'Choreographer'].includes(vendor?.serviceType)) return;
+    const GIG_PRO_TYPES_LOCAL = ['DJ', 'Emcee', 'Anchor', 'Band', 'Choreographer', 'Performer', 'LiveBand', 'Musician', 'Singer', 'Comedian', 'Magician'];
+    const isGigProType = GIG_PRO_TYPES_LOCAL.some(t => vendor?.serviceType?.toLowerCase() === t.toLowerCase() || vendor?.serviceType?.toLowerCase().includes(t.toLowerCase()));
+    if (!vendor?._id || !isGigProType) return;
     // Demo vendors carry their reviews in the state object — skip the API call
     if (String(vendor._id).startsWith("demo_") && Array.isArray(vendor.reviews)) {
       setGigProReviews(vendor.reviews);
@@ -458,7 +460,7 @@ const VendorDetailsPage = () => {
     }
   };
 
-  if (['Anchor', 'Band', 'Choreographer'].includes(vendor?.serviceType)) {
+  if (isGigPro) {
     return (
       <>
         <SEO
