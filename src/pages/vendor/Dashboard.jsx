@@ -85,7 +85,7 @@ const ENTERTAINMENT_TYPES = ['DJ', 'Emcee/Host', 'Anchor', 'AV Setup', 'Band', '
 // Per-type dashboard config
 const TYPE_CONFIG = {
   'DJ': {
-    isArtist:true, emoji:'🎧', term:'Gig', terms:'Gigs', invLabel:'Equipment', invEmoji:'🎛️',
+    isArtist:true, modules:['performance','equipment'], emoji:'🎧', term:'Gig', terms:'Gigs', invLabel:'Equipment', invEmoji:'🎛️',
     invCats:['DJ Console','Mixer','Speaker','Subwoofer','Amplifier','Microphone','Lighting','Effect Lights','Cables','Stand','Generator','Other'],
     invPlaceholder:'e.g. Pioneer CDJ-3000',
     profileTools:[
@@ -124,7 +124,7 @@ const TYPE_CONFIG = {
     emptyGigMsg:'No shows yet — log your first anchoring gig to start tracking income.',
   },
   'Band': {
-    isArtist:true, emoji:'🎸', term:'Gig', terms:'Gigs', invLabel:'Equipment', invEmoji:'🎸',
+    isArtist:true, modules:['performance','equipment'], emoji:'🎸', term:'Gig', terms:'Gigs', invLabel:'Equipment', invEmoji:'🎸',
     invCats:['Guitar','Drum Kit','Keyboard / Piano','Bass Guitar','Violin','Trumpet','Saxophone','PA System','Microphone','Cables & Snakes','Stand','Other'],
     invPlaceholder:'e.g. Yamaha Stage Custom Drum Kit',
     profileTools:[
@@ -137,7 +137,7 @@ const TYPE_CONFIG = {
     emptyGigMsg:'No gigs yet — start logging band bookings to track your collective income.',
   },
   'Singer': {
-    isArtist:true, emoji:'🎤', term:'Performance', terms:'Performances', invLabel:'Equipment', invEmoji:'🎵',
+    isArtist:true, modules:['performance','equipment'], emoji:'🎤', term:'Performance', terms:'Performances', invLabel:'Equipment', invEmoji:'🎵',
     invCats:['Microphone','Wireless Mic','IEM / In-Ear Monitor','Speaker','Karaoke / Backing Track Player','Cables','Mic Stand','Other'],
     invPlaceholder:'e.g. Shure SM58 Wireless Mic',
     profileTools:[
@@ -150,7 +150,7 @@ const TYPE_CONFIG = {
     emptyGigMsg:'No performances yet — log your first singing gig to start tracking income.',
   },
   'Musician': {
-    isArtist:true, emoji:'🎻', term:'Performance', terms:'Performances', invLabel:'Equipment', invEmoji:'🎼',
+    isArtist:true, modules:['performance','equipment'], emoji:'🎻', term:'Performance', terms:'Performances', invLabel:'Equipment', invEmoji:'🎼',
     invCats:['Primary Instrument','Secondary Instrument','Amp / Amplifier','Effects Pedal','Cables','Mic / DI Box','Stand','Case / Bag','Other'],
     invPlaceholder:'e.g. Yamaha P-125 Digital Piano',
     profileTools:[
@@ -202,7 +202,7 @@ const TYPE_CONFIG = {
     emptyGigMsg:'No shows logged yet — start tracking your magic bookings.',
   },
   'AV Setup': {
-    isArtist:true, emoji:'📽️', term:'Job', terms:'Jobs', invLabel:'Equipment', invEmoji:'📽️',
+    isArtist:false, modules:['equipment'], emoji:'📽️', term:'Job', terms:'Jobs', invLabel:'Equipment', invEmoji:'📽️',
     invCats:['Projector','LED Screen','PA Speaker','Amplifier','Mixer','Microphone','Laptop','HDMI / Cables','Truss / Stand','Generator','Other'],
     invPlaceholder:'e.g. Christie 12000L Projector',
     profileTools:[
@@ -550,6 +550,11 @@ const TYPE_CONFIG = {
     emptyGigMsg:'No orders yet — log your first booking to start tracking.',
   },
 };
+
+// Auto-assign modules for any type that doesn't explicitly declare them
+Object.values(TYPE_CONFIG).forEach(cfg => {
+  if (!cfg.modules) cfg.modules = cfg.isArtist ? ['performance'] : ['equipment'];
+});
 
 const BLANK_MILESTONE = { label: 'Advance', amount: '', dueDate: '', paid: false, paidDate: '' };
 const MILESTONE_LABELS = ['Advance', '50% Pre-event', 'Final Payment', 'Custom'];
@@ -2331,7 +2336,8 @@ const [tab, setTab] = useState('home');
   // Artist/vendor branching
   const serviceType   = user?.serviceType || '';
   const typeConfig    = TYPE_CONFIG[serviceType] || TYPE_CONFIG['default'];
-  const isArtist      = typeConfig.isArtist;
+  const modules       = typeConfig.modules;
+  const isArtist      = modules.includes('performance');
   const term          = typeConfig.term;
   const terms         = typeConfig.terms;
 
@@ -2532,9 +2538,9 @@ const [tab, setTab] = useState('home');
     { key: 'money',       group: 'MONEY',    label: 'Money',                                                              icon: dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>) },
     { key: 'packages',    group: 'MANAGE',   label: 'Packages',                                                           icon: dsic(<><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></>) },
     { key: 'reviews',     group: 'MANAGE',   label: 'Reviews',                                                            icon: dsic(<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>) },
-    ...(!isArtist ? [{ key: 'inventory', group: 'MANAGE', label: typeConfig.invLabel, icon: dsic(<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>) }] : []),
+    ...(modules.includes('equipment') ? [{ key: 'inventory', group: 'MANAGE', label: typeConfig.invLabel, icon: dsic(<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>) }] : []),
     { key: 'profile',     group: 'MANAGE',   label: t('navPage'),                                                         icon: dsic(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>) },
-    ...(isArtist ? [{ key: 'gig-profile', group: 'ARTIST', label: 'Performance', icon: dsic(<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>) }] : []),
+    ...(modules.includes('performance') ? [{ key: 'gig-profile', group: 'ARTIST', label: 'Performance', icon: dsic(<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>) }] : []),
     { key: 'calendar',    group: 'SCHEDULE', label: 'Availability',                                                       icon: dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>) },
     { key: 'market',      group: 'GROW',     label: 'Grow',                                                               icon: dsic(<><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></>) },
   ];
@@ -4397,7 +4403,7 @@ const [tab, setTab] = useState('home');
           )}
 
           {/* ── PERFORMANCE DETAILS (artists only) ── */}
-          {tab === 'gig-profile' && isArtist && (() => {
+          {tab === 'gig-profile' && modules.includes('performance') && (() => {
             const svc = serviceType;
 
             const GENRES = ['Bollywood','EDM','Classical','Hip-Hop','Sufi','Punjabi','Jazz','Rock','Pop','Folk','Ghazal','Devotional'];
