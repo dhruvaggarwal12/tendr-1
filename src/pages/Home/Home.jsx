@@ -1629,8 +1629,11 @@ const Home = () => {
               onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.04)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(28,14,4,0.18)"; }}
               onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 2px 8px rgba(28,14,4,0.1)"; }}
             >
-              <img src="/anchor-portrait.png" alt="Artists & Performers" loading="lazy"
-                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              <picture style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+                <source media="(min-width: 900px)" srcSet="/occasions/desktop/Artists.png" />
+                <img src="/occasions/mobile/Artists.png" alt="Artists & Performers" loading="lazy"
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              </picture>
               <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent, rgba(28,14,4,0.72))", padding: "18px 6px 7px", display: "flex", justifyContent: "center" }}>
                 <span style={{ fontSize: 10, fontWeight: 800, color: "#fff", letterSpacing: "0.02em", textAlign: "center", lineHeight: 1.2 }}>Artists</span>
               </div>

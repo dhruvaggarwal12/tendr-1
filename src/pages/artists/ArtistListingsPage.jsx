@@ -52,7 +52,7 @@ export default function ArtistListingsPage() {
   useEffect(() => {
     setLoading(true);
     setCurrentIdx(0);
-    getVendors({ serviceTypes: [activeType.type], limit: 30, sortBy: 'rankingScore', sortOrder: 'desc' })
+    getVendors({ serviceTypes: [activeType.type], limit: 30, sortBy: 'rankingScore', sortOrder: 'desc', includeDemo: true })
       .then(r => { setVendors(r?.vendors || []); })
       .catch(() => setVendors([]))
       .finally(() => setLoading(false));
