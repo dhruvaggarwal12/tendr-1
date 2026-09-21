@@ -27,7 +27,7 @@ export default function ArtistsPage() {
     if (cached !== null) { setAvailable(cached); setLoading(false); return; }
     Promise.all(
       PERFORMER_TYPES.map(p =>
-        getVendors({ serviceTypes: [p.type], limit: 1 })
+        getVendors({ serviceTypes: [p.type], limit: 1, includeDemo: true })
           .then(r => ({ type: p.type, has: (r?.vendors || []).length > 0 }))
           .catch(() => ({ type: p.type, has: false }))
       )

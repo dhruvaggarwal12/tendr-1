@@ -14,6 +14,11 @@ import BudgetPopup from "./BudgetPopup";
 
 const font = "'Outfit', sans-serif";
 const STEPS = ["Plan", "Browse", "Chat", "Pay"];
+const PERFORMER_SERVICE_TYPES = new Set(['Singer', 'Band', 'Anchor', 'Choreographer', 'Musician', 'Emcee']);
+const vendorPath = (svc, fromPlan) =>
+  PERFORMER_SERVICE_TYPES.has(svc)
+    ? `/artists/${encodeURIComponent(svc)}`
+    : `/listings?serviceType=${encodeURIComponent(svc)}${fromPlan ? '&fromPlan=1' : ''}`;
 const SIDEBAR_W = 220; // px
 
 const BASE_SPLITS = {
@@ -451,7 +456,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                     </div>
                     <span style={{ flex: 1, fontSize: 12, color: isBooked ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.55)", fontWeight: isBooked ? 700 : 400 }}>{svc}</span>
                     <button
-                      onClick={() => navigate(`/listings?serviceType=${encodeURIComponent(svc)}${bookingType === 'you-do-it' ? '&fromPlan=1' : ''}`)}
+                      onClick={() => navigate(vendorPath(svc, bookingType === 'you-do-it'))}
                       style={{ flexShrink: 0, padding: "3px 10px", borderRadius: 6, border: "none", background: isBooked ? "rgba(34,197,94,0.18)" : "rgba(196,122,46,0.22)", color: isBooked ? "#4ade80" : "#CCAB4A", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: font }}
                     >
                       {isBooked ? "✓ Done" : "Browse →"}
@@ -819,7 +824,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                           {isBooked ? "✓" : ""}
                         </div>
                         <span style={{ flex: 1, fontSize: 13, color: "#2C1A0E", fontWeight: 600 }}>{svc}</span>
-                        <button onClick={() => { navigate(`/listings?serviceType=${encodeURIComponent(svc)}${bookingType === 'you-do-it' ? '&fromPlan=1' : ''}`); close(); }}
+                        <button onClick={() => { navigate(vendorPath(svc, bookingType === 'you-do-it')); close(); }}
                           style={{ flexShrink: 0, padding: "4px 11px", borderRadius: 7, border: "none", background: isBooked ? "rgba(34,197,94,0.15)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: isBooked ? "#15803d" : "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
                           {isBooked ? "✓ Browse" : "Browse"}
                         </button>

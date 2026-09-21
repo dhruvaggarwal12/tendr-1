@@ -1701,7 +1701,7 @@ const Home = () => {
                 ) : (
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
                     {PERFORMER_TYPES.filter(p => availablePerformers.includes(p.type)).map(p => (
-                      <a key={p.type} href={`/listings?serviceType=${encodeURIComponent(p.type)}`}
+                      <a key={p.type} href={`/artists/${p.type}`}
                         onClick={() => setShowPerformerModal(false)}
                         style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "14px 6px", borderRadius: 12, background: "#fff", border: "1.5px solid rgba(196,122,46,0.18)", textDecoration: "none", transition: "all 0.15s", boxShadow: "0 2px 8px rgba(28,14,4,0.04)" }}
                         onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.4)"; }}
