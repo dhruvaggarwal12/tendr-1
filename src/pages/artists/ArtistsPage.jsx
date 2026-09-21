@@ -107,7 +107,7 @@ export default function ArtistsPage() {
                         </div>
                       </div>
                       <button
-                        onClick={() => navigate(`/listings?serviceType=${encodeURIComponent(p.type)}`)}
+                        onClick={() => navigate(`/artists/${p.type}`)}
                         style={{ width: '100%', padding: '11px', borderRadius: 12, background: `linear-gradient(135deg, ${info.color}dd, ${info.color}aa)`, color: '#fff', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'Outfit', sans-serif", transition: 'opacity 0.15s', letterSpacing: '0.01em' }}
                         onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
                         onMouseLeave={e => e.currentTarget.style.opacity = '1'}
