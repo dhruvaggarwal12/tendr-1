@@ -41,7 +41,7 @@ export default function VendorBookings() {
   };
 
   useEffect(() => {
-    fetch(`${BASE_URL}/vendor/bookings`, { credentials: "include" })
+    fetch(`${BASE_URL}/vendors/bookings`, { credentials: "include" })
       .then(r => r.json())
       .then(d => setBookings(Array.isArray(d) ? d : d.data || []))
       .catch(() => showToast("Failed to load bookings", false))
@@ -51,7 +51,7 @@ export default function VendorBookings() {
   const action = async (id, act) => {
     setActing(id);
     try {
-      const r = await fetch(`${BASE_URL}/vendor/bookings/${id}/${act}`, {
+      const r = await fetch(`${BASE_URL}/vendors/bookings/${id}/${act}`, {
         method: "PATCH", credentials: "include",
         headers: { "Content-Type": "application/json" },
       });

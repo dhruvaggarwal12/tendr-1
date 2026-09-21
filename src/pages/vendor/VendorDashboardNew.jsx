@@ -251,7 +251,7 @@ export default function VendorDashboardNew(){
   // ── Data fetch ────────────────────────────────────────────────────────────────
   useEffect(()=>{
     const h=token?{Authorization:`Bearer ${token}`}:{};
-    fetch(`${BASE}/vendor/bookings`,{credentials:"include",headers:h})
+    fetch(`${BASE}/vendors/bookings`,{credentials:"include",headers:h})
       .then(r=>r.ok?r.json():{data:[]})
       .then(d=>setBookings(Array.isArray(d)?d:d.data||[]))
       .catch(()=>{}).finally(()=>setLoading(false));

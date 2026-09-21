@@ -2275,7 +2275,7 @@ const [tab, setTab] = useState('home');
 
   // Load Tendr bookings
   useEffect(() => {
-    fetch(`${BASE}/vendor/bookings`, { credentials: 'include', headers: token ? { Authorization: `Bearer ${token}` } : {} })
+    fetch(`${BASE}/vendors/bookings`, { credentials: 'include', headers: token ? { Authorization: `Bearer ${token}` } : {} })
       .then(r => r.ok ? r.json() : { data: [] })
       .then(d => setBookings(Array.isArray(d) ? d : d.data || []))
       .catch(() => {})
@@ -3279,7 +3279,8 @@ const [tab, setTab] = useState('home');
                     <div style={{ textAlign:'center', padding:'36px 24px', background:'#fff', borderRadius:16, border:'1.5px dashed rgba(196,122,46,0.18)' }}>
                       <div style={{ fontSize:36, marginBottom:10 }}>🔍</div>
                       <div style={{ fontSize:14, fontWeight:700, color:ink, marginBottom:6 }}>No Tendr bookings yet</div>
-                      <div style={{ fontSize:13, color:'#9B7450', maxWidth:280, margin:'0 auto' }}>Keep your profile active and updated — clients browsing Tendr will find and book you here.</div>
+                      <div style={{ fontSize:13, color:'#9B7450', maxWidth:280, margin:'0 auto 14px' }}>Keep your profile active and updated — clients browsing Tendr will find and book you here.</div>
+                      <button onClick={() => setWorkSubTab('outside')} style={{ padding:'8px 18px', borderRadius:9, border:'1.5px solid rgba(37,211,102,0.4)', background:'rgba(37,211,102,0.07)', color:'#15803D', fontFamily:font, fontSize:12.5, fontWeight:700, cursor:'pointer' }}>📲 Log a WhatsApp booking instead →</button>
                     </div>
                   ) : (
                     <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
@@ -3292,10 +3293,18 @@ const [tab, setTab] = useState('home');
               {/* ── OUTSIDE BOOKINGS ── */}
               {workSubTab === 'outside' && (
                 <div>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
                     <div style={{ fontSize:12, color:'#9B7450' }}>Direct bookings — WhatsApp, referrals, walk-ins, Tendr profile</div>
                     {outsideOrders.length>0 && <button onClick={exportCSV} style={{ padding:'5px 12px', borderRadius:8, border:'1.5px solid rgba(196,122,46,0.2)', background:'#fff', color:'#9B7450', fontFamily:font, fontSize:12, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', gap:5 }}>{dsic(<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></>)} CSV</button>}
                   </div>
+                  <button onClick={() => setModal('add')} style={{ display:'flex', alignItems:'center', gap:10, width:'100%', padding:'12px 16px', borderRadius:12, border:'1.5px dashed rgba(37,211,102,0.45)', background:'rgba(37,211,102,0.06)', cursor:'pointer', fontFamily:font, marginBottom:12, textAlign:'left' }}>
+                    <span style={{ fontSize:20 }}>📲</span>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:13, fontWeight:700, color:'#15803D' }}>Log a WhatsApp / Direct Booking</div>
+                      <div style={{ fontSize:11.5, color:'#9B7450', marginTop:1 }}>Record bookings from WhatsApp, Instagram, referrals or walk-ins</div>
+                    </div>
+                    <span style={{ fontSize:14, color:'#15803D', fontWeight:700 }}>+</span>
+                  </button>
                   {/* Status pills */}
                   {outsideOrders.length>0 && (
                     <div style={{ display:'flex', gap:8, marginBottom:12, flexWrap:'wrap' }}>

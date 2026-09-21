@@ -468,7 +468,7 @@ export default function UnifiedVendorDashboard() {
     const h = aH(token);
 
     Promise.all([
-      fetch(`${BASE}/vendor/bookings`, { headers: h }).then(r => r.json()),
+      fetch(`${BASE}/vendors/bookings`, { headers: h }).then(r => r.json()),
       fetch(`${BASE}/vendors/outside-orders`, { headers: h }).then(r => r.json()),
       fetch(`${BASE}/vendors/me/blocked-dates`, { headers: h }).then(r => r.json()),
       fetch(`${BASE}/vendors/me/crm-clients`, { headers: h }).then(r => r.json()),
