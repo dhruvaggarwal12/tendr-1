@@ -308,6 +308,7 @@ const sidebar_arr = [
   { label: "Coordinators",         icon: <span style={{ fontSize: 16 }}>🎯</span>,  key: "Coordinators" },
   { label: "People Hub",           icon: <span style={{ fontSize: 16 }}>👥</span>,  key: "PeopleHub" },
   { label: "Cart Orders",          icon: <span style={{ fontSize: 16 }}>🛒</span>,  key: "CartOrders" },
+  { label: "Quotation Builder",    icon: <span style={{ fontSize: 16 }}>📋</span>,  key: "QuotationBuilder" },
 ];
 
 // Simple inline markdown renderer — handles *bold*, _italic_, line breaks, [img:...] images
@@ -1083,6 +1084,115 @@ function EbooksAdminTab() {
           </table>
         </div>
       )}
+    </div>
+  );
+}
+
+function QuotationBuilderTab() {
+  const font = "'Outfit', sans-serif";
+  const SERVICE_OPTS = ["DJ", "Decorator", "Photographer", "Caterer", "Anchor", "Band", "Choreographer", "Cake", "Gift Hampers", "Venue", "Make-up", "Mehendi", "Other"];
+  const [qLines, setQLines] = React.useState([{ service: "DJ", vendor: "", amount: "" }]);
+  const [qCustomer, setQCustomer] = React.useState("");
+  const [qPhone, setQPhone] = React.useState("");
+  const [qEvent, setQEvent] = React.useState("");
+  const [qDate, setQDate] = React.useState("");
+  const [qLocation, setQLocation] = React.useState("");
+  const [qNotes, setQNotes] = React.useState("");
+  const total = qLines.reduce((s, l) => s + (Number(l.amount) || 0), 0);
+  const addLine = () => setQLines(prev => [...prev, { service: "Decorator", vendor: "", amount: "" }]);
+  const removeLine = (i) => setQLines(prev => prev.filter((_, idx) => idx !== i));
+  const updateLine = (i, field, val) => setQLines(prev => prev.map((l, idx) => idx === i ? { ...l, [field]: val } : l));
+
+  const buildMsg = () => {
+    const lines = [
+      `📋 *Quotation — ${qEvent || 'Your Event'}*`,
+      qCustomer ? `👤 ${qCustomer}` : '',
+      qDate ? `📅 Date: ${qDate}` : '',
+      qLocation ? `📍 Location: ${qLocation}` : '',
+      '',
+      '*Services Included:*',
+      ...qLines.filter(l => l.service || l.vendor || l.amount).map(l => `• ${l.service}${l.vendor ? ` (${l.vendor})` : ''}: ₹${Number(l.amount || 0).toLocaleString('en-IN')}`),
+      '',
+      `*Total: ₹${total.toLocaleString('en-IN')}*`,
+      qNotes ? `\n📝 ${qNotes}` : '',
+      '\n— Team Tendr',
+    ].filter(Boolean);
+    return lines.join('\n');
+  };
+
+  return (
+    <div style={{ padding: "28px 32px", maxWidth: 760, margin: "0 auto", fontFamily: font }}>
+      <h2 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px" }}>📋 Quotation Builder</h2>
+      <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 24px" }}>Build a quote and share on WhatsApp</p>
+
+      <div style={{ background: "#FFFCF5", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.18)", padding: "18px 20px", marginBottom: 16 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Customer & Event</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          {[
+            { label: "Customer Name", val: qCustomer, set: setQCustomer, ph: "e.g. Priya Sharma" },
+            { label: "Phone", val: qPhone, set: setQPhone, ph: "10-digit number" },
+            { label: "Event Type", val: qEvent, set: setQEvent, ph: "e.g. Birthday Party" },
+            { label: "Date", val: qDate, set: setQDate, ph: "e.g. 15 Dec 2025" },
+            { label: "Location", val: qLocation, set: setQLocation, ph: "e.g. Noida" },
+            { label: "Notes", val: qNotes, set: setQNotes, ph: "Any extra info…" },
+          ].map(({ label, val, set, ph }) => (
+            <div key={label}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "#7A5535", marginBottom: 4 }}>{label}</div>
+              <input value={val} onChange={e => set(e.target.value)} placeholder={ph}
+                style={{ width: "100%", padding: "7px 10px", borderRadius: 7, border: "1.5px solid #E5D5C0", fontSize: 12, fontFamily: font, outline: "none", boxSizing: "border-box" }} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ background: "#FFFCF5", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.18)", padding: "18px 20px", marginBottom: 16 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Services</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {qLines.map((line, i) => (
+            <div key={i} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <select value={line.service} onChange={e => updateLine(i, 'service', e.target.value)}
+                style={{ padding: "7px 8px", borderRadius: 7, border: "1.5px solid #E5D5C0", fontSize: 12, fontFamily: font, minWidth: 130, cursor: "pointer" }}>
+                {SERVICE_OPTS.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+              <input value={line.vendor} onChange={e => updateLine(i, 'vendor', e.target.value)} placeholder="Vendor name (optional)"
+                style={{ flex: 1, padding: "7px 10px", borderRadius: 7, border: "1.5px solid #E5D5C0", fontSize: 12, fontFamily: font, outline: "none" }} />
+              <div style={{ position: "relative" }}>
+                <span style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: "#9B7450", fontWeight: 700 }}>₹</span>
+                <input type="number" value={line.amount} onChange={e => updateLine(i, 'amount', e.target.value)} placeholder="0"
+                  style={{ width: 110, padding: "7px 10px 7px 22px", borderRadius: 7, border: "1.5px solid #E5D5C0", fontSize: 12, fontFamily: font, outline: "none" }} />
+              </div>
+              {qLines.length > 1 && (
+                <button onClick={() => removeLine(i)} style={{ padding: "6px 10px", borderRadius: 6, border: "1.5px solid rgba(220,38,38,0.25)", background: "#fff", color: "#dc2626", fontSize: 12, cursor: "pointer", fontFamily: font }}>✕</button>
+              )}
+            </div>
+          ))}
+        </div>
+        <button onClick={addLine} style={{ marginTop: 10, padding: "6px 14px", borderRadius: 7, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>+ Add Service</button>
+      </div>
+
+      <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 14, padding: "16px 20px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div>
+          <div style={{ fontSize: 11, color: "rgba(204,171,74,0.7)", fontWeight: 600, marginBottom: 2 }}>TOTAL</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#CCAB4A" }}>₹{total.toLocaleString('en-IN')}</div>
+        </div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button onClick={() => { navigator.clipboard.writeText(buildMsg()); alert('Copied!'); }}
+            style={{ padding: "8px 16px", borderRadius: 9, border: "1.5px solid rgba(204,171,74,0.4)", background: "rgba(204,171,74,0.1)", color: "#CCAB4A", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+            📋 Copy Quote
+          </button>
+          {qPhone && (
+            <a href={`https://wa.me/91${qPhone.replace(/\D/g,'')}?text=${encodeURIComponent(buildMsg())}`} target="_blank" rel="noopener noreferrer"
+              style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "8px 16px", borderRadius: 9, background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, textDecoration: "none" }}>
+              📲 Send on WhatsApp
+            </a>
+          )}
+        </div>
+      </div>
+
+      <div style={{ background: "#F8F4EF", borderRadius: 14, border: "1px solid rgba(196,122,46,0.15)", padding: "16px 20px" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Preview</div>
+        <pre style={{ margin: 0, fontSize: 12, color: "#2C1A0E", fontFamily: font, whiteSpace: "pre-wrap", lineHeight: 1.7 }}>{buildMsg()}</pre>
+      </div>
     </div>
   );
 }
@@ -2692,6 +2802,37 @@ const AdminDashboard = () => {
                                             </div>
                                           );
                                         })()}
+                                        {coordAssign.coordinatorId && (
+                                          <button
+                                            onClick={async () => {
+                                              try {
+                                                const r = await fetch(`${BASE_URL}/admin/coordinators/assign-lead`, {
+                                                  method: 'POST',
+                                                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                                  credentials: 'include',
+                                                  body: JSON.stringify({
+                                                    eventPlanId: plan._id,
+                                                    customerName: plan.customerId?.name,
+                                                    eventType: plan.eventType,
+                                                    eventDate: plan.date,
+                                                    location: plan.location,
+                                                    guests: plan.guests,
+                                                    budget: plan.totalAmount || plan.amount,
+                                                    phone: plan.customerId?.phoneNumber,
+                                                    coordinatorId: coordAssign.coordinatorId,
+                                                    referredByCoordinator: !!coordAssign.referredByCoordinator,
+                                                    services: coordAssign.services || [],
+                                                    notes: `Booking from ${plan.customerId?.name} — ${plan.eventType}`,
+                                                  }),
+                                                });
+                                                const d = await r.json();
+                                                alert(d.message || 'Lead sent to coordinator');
+                                              } catch { alert('Failed to send lead'); }
+                                            }}
+                                            style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "1.5px solid rgba(99,102,241,0.4)", background: "rgba(99,102,241,0.08)", color: "#4F46E5", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                            🎯 Send to Coordinator
+                                          </button>
+                                        )}
                                       </div>
                                       <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                                         {phone && (
@@ -2727,11 +2868,6 @@ const AdminDashboard = () => {
                                           }}
                                           style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: `1.5px solid ${plan.isBaatKaro ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: plan.isBaatKaro ? "rgba(196,122,46,0.12)" : "transparent", color: plan.isBaatKaro ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
                                           💬 {plan.isBaatKaro ? "Baat Karo ✓" : "Baat Karo"}
-                                        </button>
-                                        <button
-                                          onClick={() => openCoordPicker('booking', { eventPlanId: plan._id, customerName: plan.customerId?.name, eventType: plan.eventType, eventDate: plan.date, location: plan.location, guests: plan.guests, budget: plan.totalAmount || plan.amount, phone: plan.customerId?.phoneNumber, notes: `Booking from ${plan.customerId?.name} — ${plan.eventType}` })}
-                                          style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "1.5px solid rgba(99,102,241,0.4)", background: "rgba(99,102,241,0.08)", color: "#4F46E5", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
-                                          🎯 Send to Coordinator
                                         </button>
                                       </div>
                                     </>
@@ -2790,11 +2926,6 @@ const AdminDashboard = () => {
                                         }}
                                         style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: `1.5px solid ${plan.isBaatKaro ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: plan.isBaatKaro ? "rgba(196,122,46,0.12)" : "transparent", color: plan.isBaatKaro ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
                                         💬 {plan.isBaatKaro ? "Baat Karo ✓" : "Baat Karo"}
-                                      </button>
-                                      <button
-                                        onClick={() => openCoordPicker('booking', { eventPlanId: plan._id, customerName: plan.customerId?.name, eventType: plan.eventType, eventDate: plan.date, location: plan.location, guests: plan.guests, budget: plan.totalAmount || plan.amount, phone: plan.customerId?.phoneNumber, notes: `Confirmed booking — ${plan.customerId?.name} · ${plan.eventType}` })}
-                                        style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "1.5px solid rgba(99,102,241,0.4)", background: "rgba(99,102,241,0.08)", color: "#4F46E5", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
-                                        🎯 Send to Coordinator
                                       </button>
                                     </div>
                                   );
@@ -6501,6 +6632,29 @@ const AdminDashboard = () => {
                           );
                         })()}
 
+                        {/* Vendor Approval — shown in expanded view for active plans */}
+                        {isExp && plan.status === 'active' && (plan.vendorSlots || []).length > 0 && (
+                          <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "14px 22px", background: "rgba(196,122,46,0.02)", fontFamily: "'Outfit', sans-serif" }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>🏷️ Get Vendor Approval</div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                              {(plan.vendorSlots || []).map((slot, si) => (
+                                <div key={si} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                  <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E", minWidth: 90 }}>{slot.category}</span>
+                                  <span style={{ fontSize: 12, color: "#5A3A1A", flex: 1 }}>{slot.vendorName || '—'}</span>
+                                  <select
+                                    value={slot.status || 'pending'}
+                                    onChange={e => handleStatusChange(plan._id, slot.category, e.target.value)}
+                                    style={{ padding: "4px 8px", borderRadius: 6, border: "1.5px solid #E5D5C0", fontSize: 11, fontFamily: "'Outfit', sans-serif", cursor: "pointer", background: slot.status === 'confirmed' ? "rgba(22,163,74,0.08)" : slot.status === 'rejected' ? "rgba(220,38,38,0.07)" : "#fff", color: slot.status === 'confirmed' ? "#15803d" : slot.status === 'rejected' ? "#dc2626" : "#9B7450" }}>
+                                    <option value="pending">Pending</option>
+                                    <option value="confirmed">✓ Confirmed</option>
+                                    <option value="rejected">✕ Rejected</option>
+                                  </select>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
                         {/* Actions row */}
                         <div style={{ padding: "10px 22px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -6508,7 +6662,7 @@ const AdminDashboard = () => {
                               Submitted {new Date(plan.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                             </span>
                             {plan.status === 'pending' && <span style={{ fontSize: 11, fontWeight: 700, color: "#b45309", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 100, padding: "2px 10px" }}>Pending</span>}
-                            {plan.status === 'active' && <span style={{ fontSize: 11, fontWeight: 700, color: "#15803d", background: "rgba(22,163,74,0.1)", border: "1px solid rgba(22,163,74,0.25)", borderRadius: 100, padding: "2px 10px" }}>✓ Accepted</span>}
+                            {plan.status === 'active' && <span style={{ fontSize: 11, fontWeight: 700, color: "#15803d", background: "rgba(22,163,74,0.1)", border: "1px solid rgba(22,163,74,0.25)", borderRadius: 100, padding: "2px 10px" }}>✓ Accepted — see Bookings tab</span>}
                             {plan.status === 'cancelled' && <span style={{ fontSize: 11, fontWeight: 700, color: "#dc2626", background: "rgba(220,38,38,0.07)", border: "1px solid rgba(220,38,38,0.2)", borderRadius: 100, padding: "2px 10px" }}>Rejected</span>}
                             {plan.status === 'completed' && <span style={{ fontSize: 11, fontWeight: 700, color: "#15803d", background: "rgba(22,163,74,0.1)", border: "1px solid rgba(22,163,74,0.25)", borderRadius: 8, padding: "7px 12px" }}>✓ Paid</span>}
                           </div>
@@ -6538,38 +6692,12 @@ const AdminDashboard = () => {
                                 ✕ Reject
                               </button>
                             </>)}
-                            {/* Send on WhatsApp — after accepting */}
-                            {plan.status === 'active' && plan.customerPhone && (() => {
-                              const ed = plan.eventDetails || {};
-                              const slots = (plan.vendorSlots || []).map(s => `• ${s.category}: ${s.vendorName || 'TBD'} (₹${(s.estimatedCost || 0).toLocaleString('en-IN')})`).join('\n');
-                              const msg = `Hi ${plan.customerName || 'there'}! 🎉 Your Smart Plan has been accepted!\n\nEvent: ${ed.eventType || ''} on ${ed.date || 'TBD'} at ${ed.location || 'TBD'} for ${ed.guests || ''} guests\n\nVendors:\n${slots}\n\nOur team will coordinate everything. You can chat with us anytime. — Team Tendr`;
-                              return (
-                                <a href={`https://wa.me/91${plan.customerPhone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`} target="_blank" rel="noopener noreferrer"
-                                  style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 14px", borderRadius: 9, background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", textDecoration: "none" }}>
-                                  📲 Send on WhatsApp
-                                </a>
-                              );
-                            })()}
-                            {/* Open Chat */}
-                            {plan.conversationId && (
+                            {/* Open Chat — always useful for viewing the concierge conversation */}
+                            {plan.conversationId && plan.status !== 'pending' && (
                               <button
                                 onClick={() => { setPendingConciergeId(plan.conversationId.toString()); reloadConversations(); setactiveDropdown('chat'); }}
                                 style={{ padding: "7px 16px", borderRadius: 9, border: "none", background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
                                 💬 Open Chat
-                              </button>
-                            )}
-                            {/* Mark Payment Done */}
-                            {plan.status === 'active' && (
-                              <button
-                                onClick={async () => {
-                                  if (!window.confirm(`Mark payment done for ${plan.customerName || 'this customer'}?`)) return;
-                                  try {
-                                    await fetch(`${BASE_URL}/admin/smart-plans/${plan._id}/mark-payment`, { method: 'PATCH', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
-                                    setSmartPlans(prev => prev.map(p => p._id === plan._id ? { ...p, status: 'completed' } : p));
-                                  } catch (e) { console.error(e); }
-                                }}
-                                style={{ padding: "7px 16px", borderRadius: 9, border: "none", background: "#0369a1", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                                💳 Mark Payment Done
                               </button>
                             )}
                           </div>
@@ -6596,6 +6724,9 @@ const AdminDashboard = () => {
             <CartOrdersTab token={token} BASE_URL={BASE_URL} />
           </div>
         )}
+
+        {/* ── Quotation Builder ── */}
+        {activeDropdown === "quotationbuilder" && <QuotationBuilderTab />}
 
         {/* ── Recommendation Intelligence ── */}
         {activeDropdown === "recommendations" && <RecommendationIntelligenceTab />}
