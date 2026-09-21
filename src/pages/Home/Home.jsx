@@ -843,7 +843,7 @@ const Home = () => {
     } catch {}
     const results = await Promise.all(
       PERFORMER_TYPES.map(p =>
-        getVendors({ serviceTypes: [p.type], limit: 1 })
+        getVendors({ serviceTypes: [p.type], limit: 1, includeDemo: true })
           .then(r => ({ type: p.type, has: (r?.vendors || []).length > 0 }))
           .catch(() => ({ type: p.type, has: false }))
       )
