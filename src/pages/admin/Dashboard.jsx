@@ -1270,6 +1270,7 @@ const AdminDashboard = () => {
   const [smartPlanExpanded, setSmartPlanExpanded] = useState(null);
   const [smartPlanBudgets, setSmartPlanBudgets] = useState({}); // { [planId]: { [category]: amount } }
   const [budgetPinning, setBudgetPinning] = useState({}); // { [planId]: bool }
+  const [smartPlanCoordMap, setSmartPlanCoordMap] = useState({}); // { [planId]: { coordinatorId, coordinatorName, services, referredByCoordinator } }
   // PDF + pinned messages in bookings
   const [pdfGenerating, setPdfGenerating] = useState(false);
 
@@ -6452,6 +6453,54 @@ const AdminDashboard = () => {
                           );
                         })()}
 
+                        {/* Coordinator assignment — shown in expanded view for active plans */}
+                        {isExp && plan.status === 'active' && (() => {
+                          const coordAssign = smartPlanCoordMap[plan._id] || {};
+                          const COORD_SERVICES = ['Chat Support', 'Home Visit', 'Venue Visit', 'Event Day'];
+                          const toggleSvc = (svc) => {
+                            const cur = coordAssign.services || [];
+                            setSmartPlanCoordMap(prev => ({ ...prev, [plan._id]: { ...prev[plan._id], services: cur.includes(svc) ? cur.filter(s => s !== svc) : [...cur, svc] } }));
+                          };
+                          return (
+                            <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "14px 22px", background: "rgba(196,122,46,0.02)", fontFamily: "'Outfit', sans-serif" }}>
+                              <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>🎯 Coordinator Assignment</div>
+                              <select
+                                value={coordAssign.coordinatorId || ""}
+                                onChange={e => { const sel = approvedCoords.find(c => c._id === e.target.value); setSmartPlanCoordMap(prev => ({ ...prev, [plan._id]: { ...prev[plan._id], coordinatorId: e.target.value, coordinatorName: sel?.name || "" } })); }}
+                                onFocus={async () => { if (!approvedCoords.length) { try { const r = await fetch(`${BASE_URL}/admin/coordinators/approved`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" }); if (r.ok) setApprovedCoords(await r.json()); } catch {} } }}
+                                style={{ width: "100%", padding: "6px 8px", borderRadius: 7, border: "1.5px solid #E5D5C0", fontSize: 12, fontFamily: "'Outfit', sans-serif", background: "#fff", color: "#2C1A0E", marginBottom: 8 }}
+                              >
+                                <option value="">— No coordinator —</option>
+                                {approvedCoords.map(c => <option key={c._id} value={c._id}>{c.name} ({c.city})</option>)}
+                              </select>
+                              <label style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, cursor: "pointer", fontSize: 11 }}>
+                                <input type="checkbox" checked={!!coordAssign.referredByCoordinator} onChange={e => setSmartPlanCoordMap(prev => ({ ...prev, [plan._id]: { ...prev[plan._id], referredByCoordinator: e.target.checked } }))} style={{ accentColor: "#C47A2E" }} />
+                                <span style={{ color: "#5A3A1A", fontWeight: 600 }}>Coordinator referred this customer</span>
+                              </label>
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+                                {COORD_SERVICES.map(svc => { const on = (coordAssign.services || []).includes(svc); return <button key={svc} onClick={() => toggleSvc(svc)} style={{ padding: "3px 9px", borderRadius: 100, fontSize: 10, fontWeight: 700, cursor: "pointer", background: on ? "#C47A2E" : "#fff", color: on ? "#fff" : "#9B7450", border: on ? "none" : "1.5px solid #E5D5C0", fontFamily: "'Outfit', sans-serif" }}>{svc}</button>; })}
+                              </div>
+                              {coordAssign.coordinatorId && (
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      await fetch(`${BASE_URL}/admin/coordinators/assign-lead`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                        credentials: 'include',
+                                        body: JSON.stringify({ conversationId: plan.conversationId, coordinatorId: coordAssign.coordinatorId, coordinatorName: coordAssign.coordinatorName, referredByCoordinator: !!coordAssign.referredByCoordinator, services: coordAssign.services || [], planId: plan._id }),
+                                      });
+                                    } catch (e) { console.error(e); }
+                                  }}
+                                  style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                                >
+                                  Assign Coordinator
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })()}
+
                         {/* Actions row */}
                         <div style={{ padding: "10px 22px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -6489,6 +6538,18 @@ const AdminDashboard = () => {
                                 ✕ Reject
                               </button>
                             </>)}
+                            {/* Send on WhatsApp — after accepting */}
+                            {plan.status === 'active' && plan.customerPhone && (() => {
+                              const ed = plan.eventDetails || {};
+                              const slots = (plan.vendorSlots || []).map(s => `• ${s.category}: ${s.vendorName || 'TBD'} (₹${(s.estimatedCost || 0).toLocaleString('en-IN')})`).join('\n');
+                              const msg = `Hi ${plan.customerName || 'there'}! 🎉 Your Smart Plan has been accepted!\n\nEvent: ${ed.eventType || ''} on ${ed.date || 'TBD'} at ${ed.location || 'TBD'} for ${ed.guests || ''} guests\n\nVendors:\n${slots}\n\nOur team will coordinate everything. You can chat with us anytime. — Team Tendr`;
+                              return (
+                                <a href={`https://wa.me/91${plan.customerPhone.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`} target="_blank" rel="noopener noreferrer"
+                                  style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 14px", borderRadius: 9, background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", textDecoration: "none" }}>
+                                  📲 Send on WhatsApp
+                                </a>
+                              );
+                            })()}
                             {/* Open Chat */}
                             {plan.conversationId && (
                               <button
