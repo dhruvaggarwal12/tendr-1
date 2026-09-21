@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { getResumeUrl } from '../utils/planningResume';
 
 const F = "'Outfit', sans-serif";
 const GOLD = '#C47A2E';
@@ -831,6 +832,10 @@ export function MyEventFloatDesktop() {
             <button
               onClick={() => {
                 setModal(false);
+                // 1. Use the saved resume URL from the last visited flow page
+                const resumeUrl = getResumeUrl();
+                if (resumeUrl) { navigate(resumeUrl); return; }
+                // 2. Fall back to OccasionDetail slug if found in localStorage
                 let slug = null;
                 try {
                   for (let i = 0; i < localStorage.length; i++) {

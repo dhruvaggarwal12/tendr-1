@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import usePlanningResume from "../../hooks/usePlanningResume";
 import { getStationeryProducts, STATIONERY_CATEGORIES, DEFAULT_STATIONERY } from "./stationeryProducts";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
@@ -29,6 +30,7 @@ function getPriceDisplay(item) {
 }
 
 export default function WeddingStationery() {
+  usePlanningResume();
   const navigate = useNavigate();
   // Pre-fill with defaults so mobile always sees content immediately while API loads
   const [items, setItems]               = useState(DEFAULT_STATIONERY.filter(p => p.available));

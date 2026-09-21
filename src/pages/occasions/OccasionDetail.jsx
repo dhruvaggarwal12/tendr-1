@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 import { setMultipleFormData, setBookingType, setSelectedPerformer } from "../../redux/eventPlanningSlice";
 import { PERFORMER_TYPES } from "../../components/PerformerSuggestions";
 import { getVendors } from "../../apis/vendorApi";
@@ -1273,6 +1275,7 @@ export default function OccasionDetail(){
   const {slug}=useParams();
   const navigate=useNavigate();
   const dispatch=useDispatch();
+  const token=useSelector(s=>s.auth?.token);
   const [searchParams]=useSearchParams();
   const cardRef=useRef(null);
   const planRef=useRef(null);
@@ -1487,6 +1490,28 @@ export default function OccasionDetail(){
     }
     if(step===2){setStep(3);return;}
     if(step===3){setStep(4);return;}
+    if(step===5 && token && occasion && date && guests && city){
+      try{ if(!sessionStorage.getItem('tendr_early_plan_created')){
+        sessionStorage.setItem('tendr_early_plan_created','1');
+        fetch(`${BASE_URL}/event-plans`,{
+          method:'POST',
+          headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+          credentials:'include',
+          body:JSON.stringify({
+            bookingType:'you-do-it',
+            eventName: occasion.name,
+            eventType: occasion.name,
+            guests: String(guests),
+            location: city,
+            date,
+            budget: budget ? String(budget) : '',
+            additionalInfo: '',
+            selectedServices: vendors,
+            finalisedVendors: {},
+          }),
+        }).catch(()=>{ try{sessionStorage.removeItem('tendr_early_plan_created');}catch{} });
+      }}catch{}
+    }
     setStep(s=>Math.min(s+1,6));
   };
   const back=()=>{

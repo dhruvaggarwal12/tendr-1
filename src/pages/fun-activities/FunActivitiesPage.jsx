@@ -2,6 +2,7 @@ import React from "react";
 import HamburgerNav from "../../components/HamburgerNav";
 import FunActivitiesSection from "../../components/FunActivitiesSection";
 import SEO from "../../components/SEO";
+import usePlanningResume from "../../hooks/usePlanningResume";
 
 const F  = "'Outfit', sans-serif";
 const FD = "'Cormorant Garamond', Georgia, serif";
@@ -14,6 +15,7 @@ const TRUST = [
 ];
 
 export default function FunActivitiesPage() {
+  usePlanningResume();
   return (
     <div style={{ minHeight: "100vh", background: "#FAF7F2", fontFamily: F }}>
       <SEO

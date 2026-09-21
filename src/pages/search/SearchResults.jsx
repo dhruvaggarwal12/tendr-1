@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import usePlanningResume from "../../hooks/usePlanningResume";
 import { setFilters, addVendorToCompare, removeVendorFromCompare } from "../../redux/listingFiltersSlice";
 import HamburgerNav from "../../components/HamburgerNav";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
@@ -18,6 +19,7 @@ const PLATFORM_LOCATIONS  = ["Delhi", "Noida", "Gurgaon", "Ghaziabad", "Greater 
 const CAT_EMOJI = { Caterer: "🍽️", Decorator: "🎨", Photographer: "📸", DJ: "🎵", "Fun Activities": "🎭" };
 
 export default function SearchResults() {
+  usePlanningResume();
   const [searchParams] = useSearchParams();
   const navigate       = useNavigate();
   const dispatch       = useDispatch();

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
+import usePlanningResume from "../../hooks/usePlanningResume";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 import Footer from "../../components/Footer";
@@ -19,6 +20,7 @@ const GH_HERO_FALLBACK = [
 ];
 
 const GiftHampersCakes = () => {
+  usePlanningResume();
   const navigate = useNavigate();
   const location = useLocation();
   const { token } = useSelector(s => s.auth);

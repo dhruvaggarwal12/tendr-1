@@ -249,6 +249,32 @@ const EventPlanning = () => {
   const giftHamperItems    = useSelector(selectGhCartItems);
   const { startSession, trackClick, trackSelect, trackDeselect, trackIgnored } = useRecommendationTracking();
 
+  // Fire-and-forget: create an EventPlan in admin Bookings the moment the customer submits a plan
+  const createEarlyEventPlan = (bType, services = []) => {
+    if (!token) return;
+    const fd = formData || {};
+    if (!fd.eventType || !fd.date || !fd.location || !fd.guests) return;
+    try { sessionStorage.setItem('tendr_early_plan_created', '1'); } catch {}
+    fetch(`${BASE_URL}/event-plans`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      credentials: 'include',
+      body: JSON.stringify({
+        bookingType: bType,
+        eventName: fd.eventType,
+        eventType: fd.eventType,
+        guests: String(fd.guests),
+        location: fd.location,
+        date: fd.date,
+        budget: fd.budget || '',
+        additionalInfo: (fd.extraRequirements || []).join(', '),
+        selectedServices: services,
+        finalisedVendors: {},
+        ...(selectedPerformer ? { selectedPerformer } : {}),
+      }),
+    }).catch(() => { try { sessionStorage.removeItem('tendr_early_plan_created'); } catch {} });
+  };
+
   // Scroll to top whenever the smart plan screen opens (must be after showVendorScreen is declared)
   useEffect(() => {
     if (showVendorScreen && smartPlan) window.scrollTo({ top: 0, behavior: "instant" });
@@ -614,6 +640,7 @@ const EventPlanning = () => {
     } catch (e) {
       console.error("Package request failed:", e);
     }
+    createEarlyEventPlan('you-do-it', Object.keys(pickedVendors));
     setPlanSubmitted(true);
     setYdiSubmitLoading(false);
   };
@@ -683,6 +710,7 @@ const EventPlanning = () => {
       } catch (e) {
         console.error('Plan submit failed:', e);
       }
+      createEarlyEventPlan('let-us-do-it', selectedVendors || []);
       setPlanSubmitted(true);
       setShowWizard(false);
       setSubmitLoading(false);

@@ -1,4 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
+import usePlanningResume from "../../hooks/usePlanningResume";
 import SEO, { vendorListTitle, vendorListDescription } from "../../components/SEO";
 import { setFilters, addVendorToCompare, removeVendorFromCompare, clearVendorCompare } from "../../redux/listingFiltersSlice.js";
 import { setCategoryBudgets } from "../../redux/eventPlanningSlice.js";
@@ -28,6 +29,7 @@ const font = "'Outfit', sans-serif";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const VendorList = () => {
+  usePlanningResume();
   const navigate = useNavigate();
   const location = useLocation();
 
