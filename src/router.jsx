@@ -155,8 +155,9 @@ const PaymentProcessing   = lazy(() => import('./pages/booking/PaymentProcessing
 const PaymentSuccessPage  = lazy(() => import('./pages/booking/PaymentSuccessPage'));
 const PaymentFailedPage   = lazy(() => import('./pages/booking/PaymentFailedPage'));
 const BookingConfirmation = lazy(() => import('./pages/booking/BookingConfirmation'));
-const ArtistsPage         = lazy(() => import('./pages/artists/ArtistsPage'));
-const ArtistListingsPage  = lazy(() => import('./pages/artists/ArtistListingsPage'));
+const ArtistsPage           = lazy(() => import('./pages/artists/ArtistsPage'));
+const ArtistListingsPage    = lazy(() => import('./pages/artists/ArtistListingsPage'));
+const CoordinatorRegister   = lazy(() => import('./pages/coordinator/CoordinatorRegister'));
 const ReviewForm          = lazy(() => import('./pages/review/ReviewForm'));
 const FeedbackForm        = lazy(() => import('./pages/review/FeedbackForm'));
 const ContractPage        = lazy(() => import('./pages/vendor/ContractPage'));
@@ -357,6 +358,12 @@ const router = createBrowserRouter([
   {
     path: "/artists/:serviceType",
     element: <ArtistListingsPage />,
+    errorElement: <ErrorPage />
+  },
+
+  {
+    path: "/coordinator/register",
+    element: <CoordinatorRegister />,
     errorElement: <ErrorPage />
   },
 

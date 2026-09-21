@@ -751,9 +751,21 @@ function CoordinatorsTab({ token, BASE_URL }) {
       .then(r => r.json()).then(d => { setAllEarnings(Array.isArray(d) ? d : []); setEarningsLoaded(true); }).catch(() => setEarningsLoaded(true));
   }, [coordSubTab]);
 
-  const updateStatus = (id, status) => {
+  const updateStatus = (id, status, coord) => {
     fetch(`${BASE_URL}/admin/coordinators/${id}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, credentials: 'include', body: JSON.stringify({ status }) })
-      .then(r => r.json()).then(d => { if (d.coordinator) setCoords(prev => prev.map(c => c._id === id ? d.coordinator : c)); else alert(d.error || 'Failed'); }).catch(() => alert('Network error'));
+      .then(r => r.json()).then(d => {
+        if (d.coordinator) {
+          setCoords(prev => prev.map(c => c._id === id ? d.coordinator : c));
+          // Open WhatsApp with pre-filled message
+          const frontendUrl = 'https://tendr.live';
+          const name = coord?.name || d.coordinator.name;
+          const phone = coord?.phoneNumber || d.coordinator.phoneNumber;
+          const msg = status === 'approved'
+            ? `Hi ${name}, your coordinator application on Tendr has been approved. You can sign in with your phone number and the password you used during signup at ${frontendUrl}/coordinator/login. Welcome to the team. - Team Tendr`
+            : `Hi ${name}, your coordinator application on Tendr has not been accepted at this time. Thank you for your interest. - Team Tendr`;
+          window.open(`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+        } else alert(d.error || 'Failed');
+      }).catch(() => alert('Network error'));
   };
 
   const saveTags = (id) => {
@@ -927,17 +939,17 @@ function CoordinatorsTab({ token, BASE_URL }) {
                   )}
                   {c.status === "pending" && (
                     <div style={{ display: "flex", gap: 8 }}>
-                      <button onClick={() => updateStatus(c._id, "approved")} style={{ padding: "8px 20px", borderRadius: 8, border: "none", background: "#15803D", color: "#fff", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>✅ Approve</button>
-                      <button onClick={() => updateStatus(c._id, "rejected")} style={{ padding: "8px 20px", borderRadius: 8, border: "1.5px solid #FCA5A5", background: "#FFF1F2", color: "#BE123C", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>❌ Reject</button>
+                      <button onClick={() => updateStatus(c._id, "approved", c)} style={{ padding: "8px 20px", borderRadius: 8, border: "none", background: "#15803D", color: "#fff", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Approve</button>
+                      <button onClick={() => updateStatus(c._id, "rejected", c)} style={{ padding: "8px 20px", borderRadius: 8, border: "1.5px solid #FCA5A5", background: "#FFF1F2", color: "#BE123C", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Reject</button>
                     </div>
                   )}
                   {c.status === "approved" && (
                     <div style={{ display: "flex", gap: 8 }}>
-                      <button onClick={() => updateStatus(c._id, "rejected")} style={{ padding: "7px 16px", borderRadius: 8, border: "1.5px solid #FCA5A5", background: "#FFF1F2", color: "#BE123C", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Revoke Access</button>
+                      <button onClick={() => updateStatus(c._id, "rejected", c)} style={{ padding: "7px 16px", borderRadius: 8, border: "1.5px solid #FCA5A5", background: "#FFF1F2", color: "#BE123C", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Revoke Access</button>
                     </div>
                   )}
                   {c.status === "rejected" && (
-                    <button onClick={() => updateStatus(c._id, "approved")} style={{ padding: "7px 16px", borderRadius: 8, border: "none", background: "#15803D", color: "#fff", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Re-Approve</button>
+                    <button onClick={() => updateStatus(c._id, "approved", c)} style={{ padding: "7px 16px", borderRadius: 8, border: "none", background: "#15803D", color: "#fff", fontFamily: F, fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Re-Approve</button>
                   )}
                 </div>
               );
@@ -1330,6 +1342,7 @@ const AdminDashboard = () => {
   const [userList, setUserList] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [bookingTab, setBookingTab] = useState("All");
+  const [highlightPlanId, setHighlightPlanId] = useState(null);
   // Payments tab
   const [paymentsList, setPaymentsList] = useState([]);
   const [paymentStats, setPaymentStats] = useState(null);
