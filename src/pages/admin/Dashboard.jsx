@@ -2508,6 +2508,7 @@ const AdminDashboard = () => {
             const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
             if (!phone) return null;
             const services = (plan.selectedServices || []).map(s => `  • ${s}`).join("\n") || "  • Not specified";
+            const perfLine = plan.selectedPerformer ? `  • ${plan.selectedPerformer.emoji} ${plan.selectedPerformer.label} (live performance)` : null;
             const typeLabel = plan.bookingType === "you-do-it" ? "You Do It" : "Let Us Do It";
             const msg = [
               `Hi ${name}! 👋`,
@@ -2523,6 +2524,7 @@ const AdminDashboard = () => {
               ``,
               `*✅ Services Selected*`,
               services,
+              perfLine,
               ``,
               `*🎯 Booking Type:* ${typeLabel}`,
               ``,
@@ -2687,7 +2689,12 @@ const AdminDashboard = () => {
                                 {(plan.selectedServices || []).map((s) => (
                                   <span key={s} style={{ fontSize: 10, padding: "1px 6px", borderRadius: 100, background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontWeight: 600 }}>{s}</span>
                                 ))}
-                                {!plan.selectedServices?.length && "—"}
+                                {plan.selectedPerformer && (
+                                  <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 100, background: "rgba(130,80,180,0.12)", color: "#7C3AED", fontWeight: 700, border: "1px solid rgba(124,58,237,0.2)" }}>
+                                    {plan.selectedPerformer.emoji} {plan.selectedPerformer.label}
+                                  </span>
+                                )}
+                                {!plan.selectedServices?.length && !plan.selectedPerformer && "—"}
                               </div>
                             </td>
                             <td style={{ padding: "10px 14px" }}>

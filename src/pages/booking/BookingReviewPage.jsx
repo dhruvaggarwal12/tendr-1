@@ -693,7 +693,8 @@ const BookingReviewPage = () => {
   useEffect(() => { sessionStorage.setItem("wr_referralInput", referralInput); }, [referralInput]);
   useEffect(() => { sessionStorage.setItem("wr_notes", JSON.stringify(notes)); }, [notes]);
   const [saving, setSaving] = useState(false);
-  const selectedVendors = useSelector((s) => s.eventPlanning.selectedVendors || []);
+  const selectedVendors   = useSelector((s) => s.eventPlanning.selectedVendors || []);
+  const selectedPerformer = useSelector((s) => s.eventPlanning.selectedPerformer || null);
   const handleRemove = (serviceType) => dispatch(clearFinalisedVendor(serviceType));
 
   const saveEventPlan = async () => {
@@ -723,6 +724,7 @@ const BookingReviewPage = () => {
           additionalInfo: formData.additionalInfo || "",
           selectedServices: selectedVendors,
           finalisedVendors: finalisedVendorIds,
+          selectedPerformer: selectedPerformer || undefined,
           platformFee,
           eventTime: formData.eventTime || (() => { try { return localStorage.getItem('tendr_event_time') || ''; } catch { return ''; } })(),
           personName: (() => { try { return localStorage.getItem('tendr_person_name') || ''; } catch { return ''; } })(),
@@ -1528,6 +1530,7 @@ const BookingReviewPage = () => {
                                 `• ${cat}: ${v?.name || "Tendr"} — ${prices[cat] !== null ? "Rs." + Number(prices[cat]).toLocaleString("en-IN") : "TBC"}`
                               ),
                             ] : []),
+                            ...(selectedPerformer ? ["", `*Live Performance:* ${selectedPerformer.emoji} ${selectedPerformer.label} (Tendr will recommend the best option)`] : []),
                             ...pinnedLines,
                             ...(faItems.length > 0 ? [
                               "",
@@ -1605,10 +1608,31 @@ const BookingReviewPage = () => {
         </div>
       </div>
 
+      {/* Selected performer banner */}
+      {selectedPerformer && (
+        <div style={{ padding: "0 24px 16px", maxWidth: 860, margin: "0 auto" }}>
+          <div style={{ borderRadius: 14, border: "1.5px solid #C47A2E", background: "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.05))", padding: "16px 20px", fontFamily: "'Outfit', sans-serif", display: "flex", alignItems: "center", gap: 14 }}>
+            <span style={{ fontSize: 30, flexShrink: 0 }}>{selectedPerformer.emoji}</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>
+                {selectedPerformer.label} requested
+              </div>
+              <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.4 }}>
+                We'll recommend the best {selectedPerformer.label.toLowerCase()} for your event and include it in your booking request.
+              </div>
+            </div>
+            <a href={`/listings?serviceType=${encodeURIComponent(selectedPerformer.type)}`} style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 10, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
+              Browse →
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* Performer suggestions — persistent section at bottom of page */}
       <div style={{ padding: "20px 24px 24px", maxWidth: 860, margin: "0 auto" }}>
         <PerformerSuggestions
           title="People also book for their events"
+          excludeType={selectedPerformer?.type}
           wrapStyle={{ background: "#FFFCF5", borderRadius: 14, padding: "16px 18px", border: "1.5px solid rgba(196,122,46,0.15)" }}
         />
       </div>
@@ -1717,6 +1741,7 @@ const BookingReviewPage = () => {
                       `• ${cat}: ${v?.name || "Tendr"} — ${prices[cat] !== null ? "Rs." + Number(prices[cat]).toLocaleString("en-IN") : "TBC"}`
                     ),
                   ] : []),
+                  ...(selectedPerformer ? ["", `*Live Performance:* ${selectedPerformer.emoji} ${selectedPerformer.label} (Tendr will recommend the best option)`] : []),
                   ...pinnedLines,
                   ...(faItems.length > 0 ? [
                     "",

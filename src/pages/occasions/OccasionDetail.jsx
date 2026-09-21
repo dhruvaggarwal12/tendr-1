@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { setMultipleFormData, setBookingType } from "../../redux/eventPlanningSlice";
+import { setMultipleFormData, setBookingType, setSelectedPerformer } from "../../redux/eventPlanningSlice";
+import { PERFORMER_TYPES } from "../../components/PerformerSuggestions";
+import { getVendors } from "../../apis/vendorApi";
 import { getOccasionById } from "../../data/occasions";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
@@ -1334,6 +1336,13 @@ export default function OccasionDetail(){
   /* custom vendor input visibility */
   const [showCustomVendorInput,setShowCustomVendorInput]=useState(false);
 
+  /* live performance prompt state */
+  const [showOccPerfModal,setShowOccPerfModal]=useState(false);
+  const [occPerfLoading,setOccPerfLoading]=useState(false);
+  const [occAvailPerfs,setOccAvailPerfs]=useState(null);
+  const [occPerfSkipped,setOccPerfSkipped]=useState(false);
+  const [occSelectedPerf,setOccSelectedPerf]=useState(null);
+
   /* which vendor's package panel is open */
   const [expandedVendor,setExpandedVendor]=useState(null);
 
@@ -1948,6 +1957,99 @@ export default function OccasionDetail(){
                     <button onClick={()=>toggleVendor(v)} style={{background:"none",border:"none",cursor:"pointer",color:"rgba(196,122,46,0.6)",fontSize:13,padding:0,lineHeight:1,display:"flex",alignItems:"center"}}>✕</button>
                   </span>
                 ))}
+              </div>
+            )}
+
+            {/* ── Live performance prompt ── */}
+            {vendors.length > 0 && !occPerfSkipped && (() => {
+              const openOccPerfModal = async () => {
+                setShowOccPerfModal(true);
+                if (occAvailPerfs !== null) return;
+                setOccPerfLoading(true);
+                try {
+                  const cached = (() => { try { const r = sessionStorage.getItem('tendr_perf_avail_v1'); return r ? JSON.parse(r) : null; } catch { return null; } })();
+                  if (cached) {
+                    setOccAvailPerfs(PERFORMER_TYPES.filter(p => cached.includes(p.type)));
+                  } else {
+                    const results = await Promise.all(
+                      PERFORMER_TYPES.map(p =>
+                        getVendors({ serviceTypes: [p.type], limit: 1 })
+                          .then(r => ({ type: p.type, has: (r?.vendors || []).length > 0 }))
+                          .catch(() => ({ type: p.type, has: false }))
+                      )
+                    );
+                    const avail = results.filter(r => r.has).map(r => r.type);
+                    try { sessionStorage.setItem('tendr_perf_avail_v1', JSON.stringify(avail)); } catch {}
+                    setOccAvailPerfs(PERFORMER_TYPES.filter(p => avail.includes(p.type)));
+                  }
+                } finally {
+                  setOccPerfLoading(false);
+                }
+              };
+              if (occSelectedPerf) {
+                return (
+                  <div style={{ borderRadius: 14, border: `1.5px solid ${gold}`, background: "linear-gradient(135deg,rgba(196,122,46,0.07),rgba(204,171,74,0.05))", padding: "14px 16px", fontFamily: font, display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+                    <span style={{ fontSize: 24, flexShrink: 0 }}>{occSelectedPerf.emoji}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: ink, marginBottom: 2 }}>{occSelectedPerf.label} added</div>
+                      <div style={{ fontSize: 11.5, color: muted, lineHeight: 1.4 }}>
+                        We'll recommend the best {occSelectedPerf.label.toLowerCase()} for your event.
+                        <button onClick={() => { setOccSelectedPerf(null); dispatch(setSelectedPerformer(null)); }} style={{ marginLeft: 8, background: "none", border: "none", cursor: "pointer", color: gold, fontSize: 11.5, fontWeight: 700, padding: 0, fontFamily: font }}>Change →</button>
+                      </div>
+                    </div>
+                    <button onClick={() => { setOccSelectedPerf(null); dispatch(setSelectedPerformer(null)); setOccPerfSkipped(true); }} style={{ background: "none", border: "none", cursor: "pointer", color: muted, fontSize: 16, padding: 4, lineHeight: 1 }}>✕</button>
+                  </div>
+                );
+              }
+              return (
+                <div style={{ borderRadius: 14, border: `1.5px solid ${border}`, background: "#fff", padding: "14px 16px", fontFamily: font, display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+                  <span style={{ fontSize: 24, flexShrink: 0 }}>🎤</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: ink, marginBottom: 3 }}>Want live performance?</div>
+                    <div style={{ fontSize: 11.5, color: muted, marginBottom: 10, lineHeight: 1.4 }}>Add a singer, live band, anchor, choreographer and more.</div>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <button onClick={openOccPerfModal} style={{ padding: "7px 14px", borderRadius: 10, background: `linear-gradient(135deg,${gold},#CCAB4A)`, color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Yes, show options</button>
+                      <button onClick={() => setOccPerfSkipped(true)} style={{ padding: "7px 12px", borderRadius: 10, border: `1.5px solid ${border}`, background: "#fff", color: muted, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Not now</button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Performer picker modal for OccasionDetail */}
+            {showOccPerfModal && (
+              <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.52)", backdropFilter: "blur(6px)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+                onClick={() => setShowOccPerfModal(false)}>
+                <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 24, padding: "28px 24px", maxWidth: 460, width: "100%", boxShadow: "0 24px 80px rgba(0,0,0,0.22)", fontFamily: font }}>
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+                    <div>
+                      <div style={{ fontSize: 17, fontWeight: 800, color: ink }}>Live Performance</div>
+                      <div style={{ fontSize: 12.5, color: muted, marginTop: 3 }}>Select what kind you'd like for your event</div>
+                    </div>
+                    <button onClick={() => setShowOccPerfModal(false)} style={{ background: "rgba(196,122,46,0.08)", border: "none", cursor: "pointer", borderRadius: "50%", width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: muted, flexShrink: 0 }}>✕</button>
+                  </div>
+                  {occPerfLoading ? (
+                    <div style={{ textAlign: "center", padding: "32px 0", color: muted }}>Checking availability…</div>
+                  ) : !occAvailPerfs || occAvailPerfs.length === 0 ? (
+                    <div style={{ textAlign: "center", padding: "32px 0", color: muted }}>No performers available right now.</div>
+                  ) : (
+                    <>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 16 }}>
+                        {occAvailPerfs.map(p => (
+                          <button key={p.type}
+                            onClick={() => { setOccSelectedPerf(p); dispatch(setSelectedPerformer(p)); setShowOccPerfModal(false); }}
+                            style={{ padding: "15px 6px", borderRadius: 14, border: `1.5px solid ${border}`, background: "#FDFAF5", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 7, transition: "all 0.15s" }}
+                            onMouseEnter={e => { e.currentTarget.style.border = `1.5px solid ${gold}`; e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                            onMouseLeave={e => { e.currentTarget.style.border = `1.5px solid ${border}`; e.currentTarget.style.background = "#FDFAF5"; e.currentTarget.style.transform = ""; }}>
+                            <span style={{ fontSize: 26 }}>{p.emoji}</span>
+                            <span style={{ fontSize: 11.5, fontWeight: 700, color: ink, textAlign: "center", lineHeight: 1.3 }}>{p.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                      <p style={{ fontSize: 11.5, color: "#B8956A", textAlign: "center", margin: 0, lineHeight: 1.4 }}>We'll share the best options for your event.</p>
+                    </>
+                  )}
+                </div>
               </div>
             )}
 

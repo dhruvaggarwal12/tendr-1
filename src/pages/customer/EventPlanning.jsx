@@ -40,7 +40,9 @@ import {
   setCategoryBudgets,
   toggleExtraRequirement,
   setCurrentStep,
+  setSelectedPerformer,
 } from "../../redux/eventPlanningSlice.js";
+import { PERFORMER_TYPES } from "../../components/PerformerSuggestions";
 
 import { setFilters } from "../../redux/listingFiltersSlice";
 import { selectFunCartItems } from "../../redux/funActivitiesCartSlice.js";
@@ -239,6 +241,7 @@ const EventPlanning = () => {
     bookingType,
     selectedVendors,
     categoryBudgets: savedCategoryBudgets,
+    selectedPerformer,
   } = useSelector((state) => state.eventPlanning);
   const extraRequirements = formData?.extraRequirements || [];
   const { token, user: authUser } = useSelector((state) => state.auth);
@@ -250,6 +253,12 @@ const EventPlanning = () => {
   useEffect(() => {
     if (showVendorScreen && smartPlan) window.scrollTo({ top: 0, behavior: "instant" });
   }, [showVendorScreen, smartPlan]);
+
+  // Live performance prompt state
+  const [showPerfModal, setShowPerfModal] = useState(false);
+  const [perfLoading, setPerfLoading] = useState(false);
+  const [availablePerfs, setAvailablePerfs] = useState(null);
+  const [perfPromptSkipped, setPerfPromptSkipped] = useState(false);
 
   // Per-category budget modal state
   const [showBudgetModal, setShowBudgetModal] = useState(false);
@@ -1919,6 +1928,109 @@ const EventPlanning = () => {
               </div>
             );
           })()}
+
+          {/* Live performance prompt */}
+          {selectedVendors.length > 0 && !perfPromptSkipped && (() => {
+            const openPerfModal = async () => {
+              setShowPerfModal(true);
+              if (availablePerfs !== null) return;
+              setPerfLoading(true);
+              try {
+                const cached = (() => { try { const r = sessionStorage.getItem('tendr_perf_avail_v1'); return r ? JSON.parse(r) : null; } catch { return null; } })();
+                if (cached) {
+                  setAvailablePerfs(PERFORMER_TYPES.filter(p => cached.includes(p.type)));
+                } else {
+                  const results = await Promise.all(
+                    PERFORMER_TYPES.map(p =>
+                      getVendors({ serviceTypes: [p.type], limit: 1 })
+                        .then(r => ({ type: p.type, has: (r?.vendors || []).length > 0 }))
+                        .catch(() => ({ type: p.type, has: false }))
+                    )
+                  );
+                  const avail = results.filter(r => r.has).map(r => r.type);
+                  try { sessionStorage.setItem('tendr_perf_avail_v1', JSON.stringify(avail)); } catch {}
+                  setAvailablePerfs(PERFORMER_TYPES.filter(p => avail.includes(p.type)));
+                }
+              } finally {
+                setPerfLoading(false);
+              }
+            };
+            if (selectedPerformer) {
+              return (
+                <div className="w-full" style={{ maxWidth: 1100, marginBottom: 24 }}>
+                  <div style={{ borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.22)", background: "linear-gradient(135deg,rgba(196,122,46,0.07),rgba(204,171,74,0.05))", padding: "16px 20px", fontFamily: "'Outfit', sans-serif", display: "flex", alignItems: "center", gap: 14 }}>
+                    <span style={{ fontSize: 28, flexShrink: 0 }}>{selectedPerformer.emoji}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 800, color: "#2C1A0E", marginBottom: 2 }}>
+                        {selectedPerformer.label} added to your event
+                      </div>
+                      <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.4 }}>
+                        We'll recommend you the best {selectedPerformer.label.toLowerCase()} for your event.
+                        <button onClick={() => dispatch(setSelectedPerformer(null))} style={{ marginLeft: 8, background: "none", border: "none", cursor: "pointer", color: "#C47A2E", fontSize: 12, fontWeight: 700, padding: 0, fontFamily: "'Outfit', sans-serif" }}>Change →</button>
+                      </div>
+                    </div>
+                    <button onClick={() => dispatch(setSelectedPerformer(null))} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(28,9,0,0.35)", fontSize: 18, padding: 4, lineHeight: 1, flexShrink: 0 }}>✕</button>
+                  </div>
+                </div>
+              );
+            }
+            return (
+              <div className="w-full" style={{ maxWidth: 1100, marginBottom: 24 }}>
+                <div style={{ borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.16)", background: "#fff", padding: "16px 20px", fontFamily: "'Outfit', sans-serif", display: "flex", alignItems: "center", gap: 14 }}>
+                  <span style={{ fontSize: 28, flexShrink: 0 }}>🎤</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>Want live performance at your event?</div>
+                    <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 12, lineHeight: 1.4 }}>Add a singer, live band, anchor, choreographer and more.</div>
+                    <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
+                      <button onClick={openPerfModal} style={{ padding: "7px 16px", borderRadius: 10, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", border: "none", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                        Yes, show options
+                      </button>
+                      <button onClick={() => setPerfPromptSkipped(true)} style={{ padding: "7px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", color: "#9B7450", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                        Not now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Performer picker modal */}
+          {showPerfModal && (
+            <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.52)", backdropFilter: "blur(6px)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+              onClick={() => setShowPerfModal(false)}>
+              <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 24, padding: "28px 24px", maxWidth: 460, width: "100%", boxShadow: "0 24px 80px rgba(0,0,0,0.22)", fontFamily: "'Outfit', sans-serif" }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+                  <div>
+                    <div style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E" }}>Live Performance</div>
+                    <div style={{ fontSize: 12.5, color: "#9B7450", marginTop: 3 }}>Select what kind you'd like for your event</div>
+                  </div>
+                  <button onClick={() => setShowPerfModal(false)} style={{ background: "rgba(196,122,46,0.08)", border: "none", cursor: "pointer", borderRadius: "50%", width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: "#9B7450", flexShrink: 0 }}>✕</button>
+                </div>
+                {perfLoading ? (
+                  <div style={{ textAlign: "center", padding: "32px 0", color: "#9B7450" }}>Checking availability…</div>
+                ) : !availablePerfs || availablePerfs.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "32px 0", color: "#9B7450" }}>No performers available right now.</div>
+                ) : (
+                  <>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 16 }}>
+                      {availablePerfs.map(p => (
+                        <button key={p.type}
+                          onClick={() => { dispatch(setSelectedPerformer(p)); setShowPerfModal(false); }}
+                          style={{ padding: "15px 6px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.2)", background: "#FDFAF5", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 7, transition: "all 0.15s" }}
+                          onMouseEnter={e => { e.currentTarget.style.border = "1.5px solid #C47A2E"; e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                          onMouseLeave={e => { e.currentTarget.style.border = "1.5px solid rgba(196,122,46,0.2)"; e.currentTarget.style.background = "#FDFAF5"; e.currentTarget.style.transform = ""; }}>
+                          <span style={{ fontSize: 26 }}>{p.emoji}</span>
+                          <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{p.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <p style={{ fontSize: 11.5, color: "#B8956A", textAlign: "center", margin: 0, lineHeight: 1.4 }}>We'll share the best options for your event.</p>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* DIY flow: prompt users to browse and shortlist vendors */}
           {isYouDoIt && selectedVendors.length > 0 && (

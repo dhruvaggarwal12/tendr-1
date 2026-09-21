@@ -179,6 +179,7 @@ const saveSession = (state) => {
       currentStep: state.currentStep,
       showVendorScreen: state.showVendorScreen,
       selectedVendors: state.selectedVendors,
+      selectedPerformer: state.selectedPerformer || null,
       __savedAt: Date.now(),
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(data));
@@ -203,6 +204,7 @@ const initialState = {
   selectedVendors: savedSession?.selectedVendors || [],
   bookingType: savedSession?.bookingType || "",
   vendorTimings: savedSession?.vendorTimings || {}, // { [serviceType]: { eventTiming, djHours, coverage } }
+  selectedPerformer: savedSession?.selectedPerformer || null, // { type, label, emoji } or null
   submitting: false,
   submitError: null,
   lastSubmission: null, // { bookingId, bookingType }
@@ -283,6 +285,10 @@ const eventPlanningSlice = createSlice({
       };
       saveSession(state);
     },
+    setSelectedPerformer: (state, action) => {
+      state.selectedPerformer = action.payload || null;
+      saveSession(state);
+    },
     toggleExtraRequirement: (state, action) => {
       const item = action.payload;
       const extras = state.formData.extraRequirements || [];
@@ -306,6 +312,7 @@ const eventPlanningSlice = createSlice({
         selectedVendors: [],
         bookingType: "",
         vendorTimings: {},
+        selectedPerformer: null,
         submitting: false,
         submitError: null,
         lastSubmission: null,
@@ -360,6 +367,7 @@ export const {
   resetEventPlanning,
   toggleExtraRequirement,
   saveVendorTiming,
+  setSelectedPerformer,
 } = eventPlanningSlice.actions;
 
 const eventPlanningReducer = eventPlanningSlice.reducer;
@@ -378,6 +386,7 @@ const eventPlanningWithLogout = (state, action) => {
       showVendorScreen: false,
       selectedVendors: [],
       bookingType: "",
+      selectedPerformer: null,
       submitting: false,
       submitError: null,
       lastSubmission: null,
