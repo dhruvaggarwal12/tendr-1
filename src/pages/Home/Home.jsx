@@ -1,6 +1,7 @@
 ﻿// src/pages/Home/Home.jsx
 import React, { useEffect, useState, useRef } from "react";
-import PerformerSuggestions from "../../components/PerformerSuggestions";
+import { PERFORMER_TYPES } from "../../components/PerformerSuggestions";
+import { getVendors } from "../../apis/vendorApi";
 import { useNavigate as useNav, useSearchParams } from "react-router-dom";
 import PageTour from "../../components/PageTour";
 import { GUIDES } from "../guides/guideData";
@@ -830,6 +831,27 @@ const Home = () => {
   const [faCarouselActive, setFaCarouselActive] = useState(0);
   const faTouchStartX = useRef(null);
   const [vendorStripOpen, setVendorStripOpen] = useState(false);
+  const [showPerformerModal, setShowPerformerModal] = useState(false);
+  const [availablePerformers, setAvailablePerformers] = useState(null);
+
+  const openPerformerModal = async () => {
+    setShowPerformerModal(true);
+    if (availablePerformers !== null) return;
+    try {
+      const cached = JSON.parse(sessionStorage.getItem('tendr_perf_avail_v1'));
+      if (cached) { setAvailablePerformers(cached); return; }
+    } catch {}
+    const results = await Promise.all(
+      PERFORMER_TYPES.map(p =>
+        getVendors({ serviceTypes: [p.type], limit: 1 })
+          .then(r => ({ type: p.type, has: (r?.vendors || []).length > 0 }))
+          .catch(() => ({ type: p.type, has: false }))
+      )
+    );
+    const avail = results.filter(r => r.has).map(r => r.type);
+    setAvailablePerformers(avail);
+    try { sessionStorage.setItem('tendr_perf_avail_v1', JSON.stringify(avail)); } catch {}
+  };
   const [ghProducts, setGhProducts] = useState([]);
   const ghCarouselRef = useRef(null);
   const [plannerOccasion, setPlannerOccasion] = useState(null);
@@ -1595,42 +1617,53 @@ const Home = () => {
         <div style={{ maxWidth: 1120, margin: "0 auto" }}>
           <div className="cat-strip" style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none" }}>
             {[
-              { label: "Caterer",        type: "Caterer",      href: null,                  photoMob: "/occasions/mobile/Caterer.png",                  photoDesk: "/occasions/desktop/Caterer.png" },
-              { label: "Decorator",      type: "Decorator",    href: null,                  photoMob: "/occasions/mobile/Decorator.png",                photoDesk: "/occasions/desktop/Decorator.png" },
-              { label: "Photographer",   type: "Photographer", href: null,                  photoMob: "/occasions/mobile/Photographer.png",             photoDesk: "/occasions/desktop/Photographer.png" },
-              { label: "DJ",             type: "DJ",           href: null,                  photoMob: "/occasions/mobile/DJ.png",                       photoDesk: "/occasions/desktop/DJ.png" },
-              { label: "Gift Hampers",   type: null,           href: "/gift-hampers-cakes", photoMob: "/occasions/mobile/Gift%20hampers.png",           photoDesk: "/occasions/desktop/Gift_hampers.png" },
-              { label: "Stationery",     type: null,           href: "/stationery",         photoMob: "/occasions/mobile/Event_stationaries.png",       photoDesk: "/occasions/desktop/Event_stationaries.png" },
-              { label: "Fun Activities", type: null,           href: "/fun-activities",     photoMob: "/occasions/mobile/Fun_activities.png",           photoDesk: "/occasions/desktop/Fun_activities.png" },
+              { label: "Caterer",        type: "Caterer",      href: null,          photoMob: "/occasions/mobile/Caterer.png",              photoDesk: "/occasions/desktop/Caterer.png" },
+              { label: "Decorator",      type: "Decorator",    href: null,          photoMob: "/occasions/mobile/Decorator.png",            photoDesk: "/occasions/desktop/Decorator.png" },
+              { label: "Photographer",   type: "Photographer", href: null,          photoMob: "/occasions/mobile/Photographer.png",         photoDesk: "/occasions/desktop/Photographer.png" },
+              { label: "DJ",             type: "DJ",           href: null,          photoMob: "/occasions/mobile/DJ.png",                   photoDesk: "/occasions/desktop/DJ.png" },
+              { label: "Gift Hampers",   type: null,           href: "/gift-hampers-cakes", photoMob: "/occasions/mobile/Gift%20hampers.png", photoDesk: "/occasions/desktop/Gift_hampers.png" },
+              { label: "Stationery",     type: null,           href: "/stationery", photoMob: "/occasions/mobile/Event_stationaries.png",   photoDesk: "/occasions/desktop/Event_stationaries.png" },
+              { label: "Fun Activities", type: null,           href: "/fun-activities", photoMob: "/occasions/mobile/Fun_activities.png",   photoDesk: "/occasions/desktop/Fun_activities.png" },
             ].map(({ label, type, href, photoMob, photoDesk }) => (
               <button
                 key={label}
                 className="cat-tile"
                 onClick={() => href ? navigate(href) : navigate(`/listings?serviceType=${encodeURIComponent(type)}`)}
                 style={{
-                  flexShrink: 0,
-                  position: "relative",
-                  overflow: "hidden",
-                  borderRadius: 12,
-                  border: "none",
-                  cursor: "pointer",
-                  minWidth: 80,
-                  flex: "1 1 0",
-                  padding: 0,
-                  fontFamily: "'Outfit', sans-serif",
-                  transition: "transform 0.18s, box-shadow 0.18s",
+                  flexShrink: 0, position: "relative", overflow: "hidden", borderRadius: 12,
+                  border: "none", cursor: "pointer", minWidth: 80, flex: "1 1 0", padding: 0,
+                  fontFamily: "'Outfit', sans-serif", transition: "transform 0.18s, box-shadow 0.18s",
                   boxShadow: "0 2px 8px rgba(28,14,4,0.1)",
                 }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.04)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(28,14,4,0.18)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 2px 8px rgba(28,14,4,0.1)"; }}
               >
-                {/* Separate image source for mobile (200px) and desktop (400px) */}
                 <picture style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
                   <source media="(min-width: 900px)" srcSet={photoDesk} />
                   <img src={photoMob} alt={label} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                 </picture>
               </button>
             ))}
+            {/* Performers tile — opens category modal */}
+            <button
+              className="cat-tile"
+              onClick={openPerformerModal}
+              style={{
+                flexShrink: 0, position: "relative", overflow: "hidden", borderRadius: 12,
+                border: "none", cursor: "pointer", minWidth: 80, flex: "1 1 0", padding: 0,
+                fontFamily: "'Outfit', sans-serif", transition: "transform 0.18s, box-shadow 0.18s",
+                boxShadow: "0 2px 8px rgba(28,14,4,0.1)",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.04)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(28,14,4,0.18)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 2px 8px rgba(28,14,4,0.1)"; }}
+            >
+              <img src="/anchor-portrait.png" alt="Artists & Performers" loading="lazy"
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              {/* Label overlay — since photo has no baked-in text */}
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent, rgba(28,14,4,0.72))", padding: "18px 6px 7px", display: "flex", justifyContent: "center" }}>
+                <span style={{ fontSize: 10, fontWeight: 800, color: "#fff", letterSpacing: "0.02em", textAlign: "center", lineHeight: 1.2 }}>Artists</span>
+              </div>
+            </button>
           </div>
           <style>{`
             .cat-strip::-webkit-scrollbar{display:none}
@@ -1639,11 +1672,48 @@ const Home = () => {
               .cat-tile { height: 108px; min-width: 112px !important; border-radius: 14px !important; }
             }
           `}</style>
-          {/* Performer chips — supply-gated, shown when ≥1 vendor exists per type */}
-          <PerformerSuggestions
-            title="Also book artists for your event"
-            wrapStyle={{ marginTop: 12 }}
-          />
+
+          {/* Performers modal */}
+          {showPerformerModal && (
+            <>
+              <div onClick={() => setShowPerformerModal(false)}
+                style={{ position: "fixed", inset: 0, background: "rgba(10,4,0,0.62)", zIndex: 9000, backdropFilter: "blur(4px)" }} />
+              <div style={{
+                position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+                zIndex: 9001, background: "#FFFCF5", borderRadius: 20, padding: "24px 20px",
+                width: "90%", maxWidth: 360, boxShadow: "0 24px 64px rgba(28,10,4,0.3)",
+                fontFamily: "'Outfit', sans-serif",
+              }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 18 }}>
+                  <div>
+                    <div style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E" }}>Artists & Performers</div>
+                    <div style={{ fontSize: 12, color: "#9B7450", marginTop: 3 }}>Book a live artist for your event</div>
+                  </div>
+                  <button onClick={() => setShowPerformerModal(false)}
+                    style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 22, lineHeight: 1, padding: "2px 6px", marginTop: -2 }}>×</button>
+                </div>
+                {availablePerformers === null ? (
+                  <div style={{ textAlign: "center", padding: "28px 0", color: "#C47A2E", fontSize: 13 }}>Loading…</div>
+                ) : availablePerformers.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "28px 0", color: "#9B7450", fontSize: 13 }}>No artists available yet — check back soon.</div>
+                ) : (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+                    {PERFORMER_TYPES.filter(p => availablePerformers.includes(p.type)).map(p => (
+                      <a key={p.type} href={`/listings?serviceType=${encodeURIComponent(p.type)}`}
+                        onClick={() => setShowPerformerModal(false)}
+                        style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "14px 6px", borderRadius: 12, background: "#fff", border: "1.5px solid rgba(196,122,46,0.18)", textDecoration: "none", transition: "all 0.15s", boxShadow: "0 2px 8px rgba(28,14,4,0.04)" }}
+                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.4)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.18)"; }}
+                      >
+                        <span style={{ fontSize: 26 }}>{p.emoji}</span>
+                        <span style={{ fontSize: 10.5, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{p.label}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </section>
 
