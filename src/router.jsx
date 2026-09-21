@@ -155,6 +155,7 @@ const PaymentProcessing   = lazy(() => import('./pages/booking/PaymentProcessing
 const PaymentSuccessPage  = lazy(() => import('./pages/booking/PaymentSuccessPage'));
 const PaymentFailedPage   = lazy(() => import('./pages/booking/PaymentFailedPage'));
 const BookingConfirmation = lazy(() => import('./pages/booking/BookingConfirmation'));
+const ArtistsPage         = lazy(() => import('./pages/artists/ArtistsPage'));
 const ReviewForm          = lazy(() => import('./pages/review/ReviewForm'));
 const FeedbackForm        = lazy(() => import('./pages/review/FeedbackForm'));
 const ContractPage        = lazy(() => import('./pages/vendor/ContractPage'));
@@ -343,6 +344,12 @@ const router = createBrowserRouter([
   {
     path: "/listings/:vendorType",
     element: <VendorList />,
+    errorElement: <ErrorPage />
+  },
+
+  {
+    path: "/artists",
+    element: <ArtistsPage />,
     errorElement: <ErrorPage />
   },
 

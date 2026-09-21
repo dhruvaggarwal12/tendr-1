@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getVendors } from '../apis/vendorApi';
 
 export const PERFORMER_TYPES = [
@@ -19,18 +20,15 @@ function writeCache(val) {
   try { sessionStorage.setItem(CACHE_KEY, JSON.stringify(val)); } catch {}
 }
 
-// Supply-gated performer suggestions strip.
-// Shows only types with ≥1 approved vendor in the marketplace.
-// Results are cached in sessionStorage for the browser session.
-export default function PerformerSuggestions({
-  title = 'People also book for their events',
-  excludeType,
-  wrapStyle = {},
-}) {
-  const [available, setAvailable] = useState(readCache);
+// Simplified performer CTA — shows a single "Want live performance?" card
+// that navigates to /artists. Still supply-gated (only renders if ≥1 type available).
+export default function PerformerSuggestions({ wrapStyle = {} }) {
+  const navigate = useNavigate();
+  const [hasAny, setHasAny] = useState(null); // null=loading, false=none, true=some
 
   useEffect(() => {
-    if (available !== null) return;
+    const cached = readCache();
+    if (cached !== null) { setHasAny(cached.length > 0); return; }
     Promise.all(
       PERFORMER_TYPES.map(p =>
         getVendors({ serviceTypes: [p.type], limit: 1 })
@@ -39,44 +37,40 @@ export default function PerformerSuggestions({
       )
     ).then(results => {
       const avail = results.filter(r => r.has).map(r => r.type);
-      setAvailable(avail);
       writeCache(avail);
+      setHasAny(avail.length > 0);
     });
   }, []);
 
-  if (!available) return null;
-
-  const filtered = PERFORMER_TYPES.filter(p => available.includes(p.type) && p.type !== excludeType);
-  if (filtered.length === 0) return null;
+  if (!hasAny) return null;
 
   return (
     <div style={{ fontFamily: "'Outfit', sans-serif", ...wrapStyle }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 10 }}>
-        {title}
-      </div>
-      <div className="_pf-strip" style={{ display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', paddingBottom: 4 }}>
-        {filtered.map(p => (
-          <a
-            key={p.type}
-            href={`/listings?serviceType=${encodeURIComponent(p.type)}`}
-            style={{
-              flex: '0 0 auto',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 5,
-              width: 82, padding: '11px 6px',
-              borderRadius: 12,
-              background: '#FFFCF5', border: '1.5px solid rgba(196,122,46,0.2)',
-              textDecoration: 'none', boxShadow: '0 2px 8px rgba(28,14,4,0.05)',
-              transition: 'transform 0.16s, box-shadow 0.16s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(196,122,46,0.18)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 2px 8px rgba(28,14,4,0.05)'; }}
-          >
-            <span style={{ fontSize: 20 }}>{p.emoji}</span>
-            <span style={{ fontSize: 10, fontWeight: 700, color: '#2C1A0E', textAlign: 'center', lineHeight: 1.3 }}>{p.label}</span>
-          </a>
-        ))}
-      </div>
-      <style>{`._pf-strip::-webkit-scrollbar{display:none}`}</style>
+      <button
+        onClick={() => navigate('/artists')}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', gap: 14,
+          padding: '14px 18px', borderRadius: 14,
+          background: 'linear-gradient(135deg, rgba(196,122,46,0.07), rgba(204,171,74,0.04))',
+          border: '1.5px solid rgba(196,122,46,0.22)',
+          cursor: 'pointer', textAlign: 'left', transition: 'all 0.18s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(196,122,46,0.13), rgba(204,171,74,0.08))'; e.currentTarget.style.borderColor = 'rgba(196,122,46,0.4)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(196,122,46,0.07), rgba(204,171,74,0.04))'; e.currentTarget.style.borderColor = 'rgba(196,122,46,0.22)'; }}
+      >
+        <span style={{ fontSize: 28, flexShrink: 0 }}>🎤</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13.5, fontWeight: 800, color: '#2C1A0E', marginBottom: 2 }}>
+            Want live performance at your event?
+          </div>
+          <div style={{ fontSize: 12, color: '#9B7450' }}>
+            Singers, bands, anchors, choreographers &amp; more
+          </div>
+        </div>
+        <span style={{ fontSize: 12, fontWeight: 700, color: '#C47A2E', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          Browse Artists →
+        </span>
+      </button>
     </div>
   );
 }
