@@ -112,6 +112,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
     return unsub;
   }, []);
 
+
   // Refresh saved vendors when listing page saves/unsaves
   useEffect(() => {
     const refresh = () => setSavedVendors(getSavedVendors());

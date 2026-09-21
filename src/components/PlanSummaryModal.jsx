@@ -728,6 +728,11 @@ export function MyEventFloatDesktop() {
     return () => { window.removeEventListener('storage', refresh); window.removeEventListener('tendr:plan-confirmed', refresh); };
   }, [refresh]);
 
+  // Signal visibility to FloatingChatButton so it can adjust its slot position
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('tendr:fab-in-planning', { detail: { visible: !!(plan && !hidden && !minimized) } }));
+  }, [plan, hidden, minimized]);
+
   if (!plan || hidden || minimized) return null;
 
   const isDraft = plan._draft === true;
@@ -800,11 +805,14 @@ export function MyEventFloatDesktop() {
       {modal === 'mini' && (
         <div
           onClick={() => setModal(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', padding: '0 24px 140px' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 9998 }}
         >
           <div
             onClick={e => e.stopPropagation()}
             style={{
+              position: 'fixed',
+              bottom: 'calc(22px + env(safe-area-inset-bottom, 0px))',
+              right: 430,
               background: CREAM, borderRadius: 18, padding: '20px 22px',
               boxShadow: '0 16px 48px rgba(44,26,14,0.22)',
               fontFamily: F, width: 260,
