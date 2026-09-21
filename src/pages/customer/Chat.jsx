@@ -18,6 +18,7 @@ import JourneyProgress from "../../components/JourneyProgress";
 import HamburgerNav from "../../components/HamburgerNav";
 import CompareModal from "../../components/CompareModal";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
+import PerformerSuggestions from "../../components/PerformerSuggestions";
 
 const compileFiltersMessage = (filters = {}) =>
   [
@@ -881,6 +882,16 @@ const Chat = () => {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Performer suggestions — shown on waiting screen so customer can browse while Tendr confirms */}
+          {isExistingChat && !vendorApproved && (
+            <div style={{ padding: "8px 16px 16px" }}>
+              <PerformerSuggestions
+                title="Also consider for your event"
+                wrapStyle={{ background: "#FFFCF5", borderRadius: 14, padding: "14px", border: "1px solid rgba(196,122,46,0.12)" }}
+              />
             </div>
           )}
 

@@ -49,6 +49,7 @@ const openExistingChatForVendor = async (vendorId, vendorData, token, openExisti
 import ServiceAreaMap from "../../components/ServiceAreaMap";
 import Footer from "../../components/Footer";
 import AuthModal from "../../components/AuthModal";
+import PerformerSuggestions from "../../components/PerformerSuggestions";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const chatSaveKey = (id) => `tendr:chat_req:${id}`;
@@ -1696,6 +1697,15 @@ const VendorDetailsPage = () => {
           </div>
         </div>
       )}
+
+      {/* People also book performers for their events */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 40px", fontFamily: font }}>
+        <PerformerSuggestions
+          title="People also book for their events"
+          excludeType={serviceType}
+          wrapStyle={{ borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 24 }}
+        />
+      </div>
 
       <Footer />
 

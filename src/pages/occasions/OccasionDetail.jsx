@@ -5,6 +5,7 @@ import { setMultipleFormData, setBookingType } from "../../redux/eventPlanningSl
 import { getOccasionById } from "../../data/occasions";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
+import PerformerSuggestions from "../../components/PerformerSuggestions";
 
 /* ── tokens ── */
 const font  = "'Outfit', sans-serif";
@@ -2466,6 +2467,12 @@ export default function OccasionDetail(){
                       </div>
                     );
                   })()}
+
+                  {/* Live artist marketplace — shown when vendor-side performers are available */}
+                  <PerformerSuggestions
+                    title="Also hire a live artist from Tendr"
+                    wrapStyle={{ marginBottom: 16, padding: "14px", background: "rgba(196,122,46,0.03)", borderRadius: 14, border: "1px solid rgba(196,122,46,0.12)" }}
+                  />
 
                   {/* Custom activity */}
                   <div style={{paddingTop:16,borderTop:"1px solid rgba(196,122,46,0.08)"}}>

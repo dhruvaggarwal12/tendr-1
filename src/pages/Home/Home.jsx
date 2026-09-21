@@ -1,5 +1,6 @@
 ﻿// src/pages/Home/Home.jsx
 import React, { useEffect, useState, useRef } from "react";
+import PerformerSuggestions from "../../components/PerformerSuggestions";
 import { useNavigate as useNav, useSearchParams } from "react-router-dom";
 import PageTour from "../../components/PageTour";
 import { GUIDES } from "../guides/guideData";
@@ -1638,6 +1639,11 @@ const Home = () => {
               .cat-tile { height: 108px; min-width: 112px !important; border-radius: 14px !important; }
             }
           `}</style>
+          {/* Performer chips — supply-gated, shown when ≥1 vendor exists per type */}
+          <PerformerSuggestions
+            title="Also book artists for your event"
+            wrapStyle={{ marginTop: 12 }}
+          />
         </div>
       </section>
 

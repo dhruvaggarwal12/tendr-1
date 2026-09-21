@@ -15,6 +15,7 @@ import ListingsNav from "../../components/ListingsNav";
 import HamburgerNav from "../../components/HamburgerNav";
 import JourneyProgress from "../../components/JourneyProgress";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
+import PerformerSuggestions from "../../components/PerformerSuggestions";
 
 const PRICE_RANGES = {
   Caterer:      [50000,  300000],
@@ -1602,6 +1603,14 @@ const BookingReviewPage = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Performer suggestions — persistent section at bottom of page */}
+      <div style={{ padding: "20px 24px 24px", maxWidth: 860, margin: "0 auto" }}>
+        <PerformerSuggestions
+          title="People also book for their events"
+          wrapStyle={{ background: "#FFFCF5", borderRadius: 14, padding: "16px 18px", border: "1.5px solid rgba(196,122,46,0.15)" }}
+        />
       </div>
 
       {/* Mobile-only fixed checkout bar */}
