@@ -1616,6 +1616,25 @@ const Home = () => {
       <section style={{ background: "#FFFCF5", padding: "20px 24px", fontFamily: "'Outfit', sans-serif", borderBottom: "1px solid rgba(28,14,4,0.07)" }}>
         <div style={{ maxWidth: 1120, margin: "0 auto" }}>
           <div className="cat-strip" style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none" }}>
+            {/* Artists tile — first in strip */}
+            <button
+              className="cat-tile"
+              onClick={openPerformerModal}
+              style={{
+                flexShrink: 0, position: "relative", overflow: "hidden", borderRadius: 12,
+                border: "none", cursor: "pointer", minWidth: 80, flex: "1 1 0", padding: 0,
+                fontFamily: "'Outfit', sans-serif", transition: "transform 0.18s, box-shadow 0.18s",
+                boxShadow: "0 2px 8px rgba(28,14,4,0.1)",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.04)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(28,14,4,0.18)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 2px 8px rgba(28,14,4,0.1)"; }}
+            >
+              <img src="/anchor-portrait.png" alt="Artists & Performers" loading="lazy"
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent, rgba(28,14,4,0.72))", padding: "18px 6px 7px", display: "flex", justifyContent: "center" }}>
+                <span style={{ fontSize: 10, fontWeight: 800, color: "#fff", letterSpacing: "0.02em", textAlign: "center", lineHeight: 1.2 }}>Artists</span>
+              </div>
+            </button>
             {[
               { label: "Caterer",        type: "Caterer",      href: null,          photoMob: "/occasions/mobile/Caterer.png",              photoDesk: "/occasions/desktop/Caterer.png" },
               { label: "Decorator",      type: "Decorator",    href: null,          photoMob: "/occasions/mobile/Decorator.png",            photoDesk: "/occasions/desktop/Decorator.png" },
@@ -1644,26 +1663,6 @@ const Home = () => {
                 </picture>
               </button>
             ))}
-            {/* Performers tile — opens category modal */}
-            <button
-              className="cat-tile"
-              onClick={openPerformerModal}
-              style={{
-                flexShrink: 0, position: "relative", overflow: "hidden", borderRadius: 12,
-                border: "none", cursor: "pointer", minWidth: 80, flex: "1 1 0", padding: 0,
-                fontFamily: "'Outfit', sans-serif", transition: "transform 0.18s, box-shadow 0.18s",
-                boxShadow: "0 2px 8px rgba(28,14,4,0.1)",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.04)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(28,14,4,0.18)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 2px 8px rgba(28,14,4,0.1)"; }}
-            >
-              <img src="/anchor-portrait.png" alt="Artists & Performers" loading="lazy"
-                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-              {/* Label overlay — since photo has no baked-in text */}
-              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent, rgba(28,14,4,0.72))", padding: "18px 6px 7px", display: "flex", justifyContent: "center" }}>
-                <span style={{ fontSize: 10, fontWeight: 800, color: "#fff", letterSpacing: "0.02em", textAlign: "center", lineHeight: 1.2 }}>Artists</span>
-              </div>
-            </button>
           </div>
           <style>{`
             .cat-strip::-webkit-scrollbar{display:none}
