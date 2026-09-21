@@ -154,221 +154,110 @@ function TipsByTendrSection() {
   const navigate = useNav();
   const serif = "'Cormorant Garamond', Georgia, serif";
   const sans  = "'Outfit', sans-serif";
-  const [featured, ...rest] = GUIDES.slice(0, 3);
-  const secondary = rest[0];
-  const tertiary  = rest[1];
+  const guides = GUIDES.slice(0, 3);
 
   return (
     <section style={{ background: "#FFFCF5", fontFamily: sans }}>
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "72px 24px 80px" }}>
 
         {/* ── Header ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.48, ease: [0.25, 0.46, 0.45, 0.94] }}
-          style={{ marginBottom: 40 }}
-        >
-          <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(180,83,9,0.55)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 18, fontFamily: sans }}>
-            Tendr Journal
-          </div>
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 24, flexWrap: "wrap", marginBottom: 12 }}>
-            <h2 style={{ fontFamily: serif, fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", letterSpacing: "-0.01em", lineHeight: 1.08, margin: 0 }}>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 24, flexWrap: "wrap", marginBottom: 40 }}>
+          <div>
+            <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(180,83,9,0.5)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 10, fontFamily: sans }}>
+              Tendr Journal
+            </div>
+            <h2 style={{ fontFamily: serif, fontSize: "clamp(1.8rem,3.5vw,2.5rem)", fontWeight: 400, color: "#2C1A0E", letterSpacing: "-0.01em", lineHeight: 1.1, margin: "0 0 8px" }}>
               Read before you plan.
             </h2>
-            <button
-              onClick={() => navigate("/guides")}
-              style={{ background: "none", border: "none", color: "#C47A2E", fontSize: 13, cursor: "pointer", fontFamily: sans, padding: 0, whiteSpace: "nowrap", flexShrink: 0, transition: "color 0.15s" }}
-              onMouseEnter={e => e.currentTarget.style.color = "#9A5E1E"}
-              onMouseLeave={e => e.currentTarget.style.color = "#C47A2E"}
-            >
-              All guides →
-            </button>
+            <p style={{ fontSize: 13.5, color: "rgba(44,26,14,0.48)", margin: 0, lineHeight: 1.6 }}>
+              The stuff that saves you money before you've spent it.
+            </p>
           </div>
-          <p style={{ fontSize: 14, color: "rgba(44,26,14,0.55)", margin: 0, lineHeight: 1.7, maxWidth: 400 }}>
-            The stuff that saves you money before you've spent it.
-          </p>
-        </motion.div>
+          <button
+            onClick={() => navigate("/guides")}
+            style={{ background: "none", border: "1px solid rgba(196,122,46,0.3)", color: "#C47A2E", fontSize: 12.5, cursor: "pointer", fontFamily: sans, padding: "7px 16px", borderRadius: 100, whiteSpace: "nowrap", flexShrink: 0, transition: "all 0.15s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.6)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
+          >
+            All guides →
+          </button>
+        </div>
 
-        {/* ── Hairline ── */}
-        <div style={{ height: 1, background: "rgba(44,26,14,0.10)", marginBottom: 2 }} />
-
-        {/* ── Photo grid — featured + secondary ── */}
+        {/* ── Guide cards — 3 columns ── */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.15 }}
-          transition={{ duration: 0.52, ease: [0.25, 0.46, 0.45, 0.94] }}
-          style={{ display: "flex", flexWrap: "wrap", gap: 2, marginBottom: 2 }}
+          viewport={{ once: true, amount: 0.1 }}
+          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 28, marginBottom: 52 }}
         >
-          {/* Featured guide */}
-          {featured && (
+          {guides.map((guide, i) => (
             <div
-              onClick={() => navigate(`/guides/${featured.slug}`)}
-              style={{ flex: "3 1 320px", minHeight: 340, position: "relative", overflow: "hidden", cursor: "pointer" }}
+              key={guide.slug}
+              onClick={() => navigate(`/guides/${guide.slug}`)}
+              style={{ cursor: "pointer" }}
+              onMouseEnter={e => { e.currentTarget.querySelector("img").style.transform = "scale(1.04)"; e.currentTarget.querySelector(".guide-title").style.color = "#C47A2E"; }}
+              onMouseLeave={e => { e.currentTarget.querySelector("img").style.transform = "scale(1)"; e.currentTarget.querySelector(".guide-title").style.color = "#2C1A0E"; }}
             >
-              <img
-                src={GUIDE_PHOTOS[featured.slug] || heroFestive}
-                alt={featured.title}
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.5s ease" }}
-                onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"}
-                onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
-              />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.30) 55%, transparent 100%)" }} />
-              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "32px 30px" }}>
-                <div style={{ fontSize: 8.5, color: "rgba(196,151,58,0.72)", textTransform: "uppercase", letterSpacing: "0.26em", marginBottom: 12, fontFamily: sans }}>Featured</div>
-                <h3 style={{ fontFamily: serif, fontSize: "clamp(1.55rem,2.4vw,2.1rem)", fontWeight: 400, color: "#FFF8EC", margin: "0 0 10px", lineHeight: 1.12, letterSpacing: "0.01em" }}>
-                  {featured.title}
-                </h3>
-                {featured.subtitle && (
-                  <p style={{ fontSize: 13, color: "rgba(255,248,236,0.58)", margin: "0 0 16px", lineHeight: 1.55, fontFamily: sans }}>
-                    {featured.subtitle}
-                  </p>
-                )}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 11, color: "rgba(255,248,236,0.40)", fontFamily: sans }}>{featured.readTime}</span>
-                    {featured.pages && <>
-                      <span style={{ color: "rgba(255,255,255,0.18)", fontSize: 11 }}>|</span>
-                      <span style={{ fontSize: 11, color: "rgba(255,248,236,0.40)", fontFamily: sans }}>{featured.pages} pages</span>
-                    </>}
-                  </div>
-                  <span style={{ fontSize: 12.5, color: "rgba(196,151,58,0.85)", fontFamily: sans }}>Read guide →</span>
-                </div>
+              {/* Image */}
+              <div style={{ overflow: "hidden", borderRadius: 4, aspectRatio: "3/2", marginBottom: 16 }}>
+                <img
+                  src={GUIDE_PHOTOS[guide.slug] || heroFestive}
+                  alt={guide.title}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.5s ease" }}
+                />
               </div>
-            </div>
-          )}
-
-          {/* Secondary guide */}
-          {secondary && (
-            <div
-              onClick={() => navigate(`/guides/${secondary.slug}`)}
-              style={{ flex: "2 1 200px", minHeight: 340, position: "relative", overflow: "hidden", cursor: "pointer" }}
-            >
-              <img
-                src={GUIDE_PHOTOS[secondary.slug] || heroCorporate}
-                alt={secondary.title}
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.5s ease" }}
-                onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"}
-                onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
-              />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.32) 52%, transparent 100%)" }} />
-              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "28px 24px" }}>
-                <div style={{ fontSize: 8.5, color: "rgba(196,151,58,0.65)", textTransform: "uppercase", letterSpacing: "0.22em", marginBottom: 10, fontFamily: sans }}>{secondary.tags[0]}</div>
-                <h3 style={{ fontFamily: serif, fontSize: "clamp(1.2rem,1.8vw,1.55rem)", fontWeight: 400, color: "#FFF8EC", margin: "0 0 8px", lineHeight: 1.15, letterSpacing: "0.01em" }}>
-                  {secondary.title}
-                </h3>
-                {secondary.subtitle && (
-                  <p style={{ fontSize: 12.5, color: "rgba(255,248,236,0.50)", margin: "0 0 14px", lineHeight: 1.55, fontFamily: sans }}>
-                    {secondary.subtitle}
-                  </p>
+              {/* Meta */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <span style={{ fontSize: 9.5, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.18em", fontFamily: sans }}>
+                  {i === 0 ? "Featured" : guide.tags?.[0] || "Guide"}
+                </span>
+                {guide.readTime && (
+                  <>
+                    <span style={{ color: "rgba(44,26,14,0.2)", fontSize: 10 }}>·</span>
+                    <span style={{ fontSize: 11, color: "rgba(44,26,14,0.4)", fontFamily: sans }}>{guide.readTime}</span>
+                  </>
                 )}
-                <span style={{ fontSize: 12, color: "rgba(196,151,58,0.82)", fontFamily: sans }}>Read guide →</span>
               </div>
+              <h3 className="guide-title" style={{ fontFamily: serif, fontSize: "clamp(1.25rem,1.8vw,1.5rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 7px", lineHeight: 1.2, transition: "color 0.18s" }}>
+                {guide.title}
+              </h3>
+              {guide.subtitle && (
+                <p style={{ fontSize: 13, color: "rgba(44,26,14,0.5)", margin: "0 0 12px", lineHeight: 1.55, fontFamily: sans }}>
+                  {guide.subtitle}
+                </p>
+              )}
+              <span style={{ fontSize: 12.5, color: "#C47A2E", fontFamily: sans, fontWeight: 600 }}>Read →</span>
             </div>
-          )}
+          ))}
         </motion.div>
 
-        {/* ── Tertiary guide + Community — shared dark textured block ── */}
-        <div style={{ position: "relative", marginTop: 2, overflow: "hidden", borderRadius: 0 }}>
-          {/* Dark warm base */}
-          <div style={{
-            position: "absolute", inset: 0,
-            background: "linear-gradient(160deg, #1C0E05 0%, #150A02 55%, #1A0D04 100%)",
-          }} />
-          {/* Grain texture overlay */}
-          <div style={{
-            position: "absolute", inset: 0, opacity: 0.045,
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
-            backgroundSize: "200px 200px",
-          }} />
-          {/* Warm amber glow top-left */}
-          <div style={{
-            position: "absolute", top: 0, left: 0, width: "55%", height: "60%",
-            background: "radial-gradient(ellipse at 20% 20%, rgba(196,122,46,0.09) 0%, transparent 65%)",
-            pointerEvents: "none",
-          }} />
-          {/* Subtle warm glow bottom-right */}
-          <div style={{
-            position: "absolute", bottom: 0, right: 0, width: "45%", height: "50%",
-            background: "radial-gradient(ellipse at 80% 80%, rgba(120,55,12,0.12) 0%, transparent 65%)",
-            pointerEvents: "none",
-          }} />
-
-          <div style={{ position: "relative", zIndex: 1, padding: "0 0 0" }}>
-            {/* Tertiary guide row */}
-            {tertiary && (
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
-                onClick={() => navigate(`/guides/${tertiary.slug}`)}
-                style={{
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  padding: "36px 40px", borderBottom: "1px solid rgba(196,122,46,0.10)",
-                  cursor: "pointer", transition: "background 0.18s", gap: 32,
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.04)"}
-                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-              >
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(196,151,74,0.60)", letterSpacing: "0.26em", textTransform: "uppercase", marginBottom: 10, fontFamily: sans }}>{tertiary.tags[0]}</div>
-                  <h3 style={{ fontFamily: serif, fontSize: "clamp(1.5rem,2.6vw,2.1rem)", fontWeight: 400, color: "rgba(255,248,236,0.92)", margin: "0 0 10px", lineHeight: 1.15 }}>{tertiary.title}</h3>
-                  {tertiary.subtitle && (
-                    <p style={{ fontSize: 13.5, color: "rgba(255,248,236,0.42)", margin: 0, lineHeight: 1.65, fontFamily: sans, maxWidth: 500 }}>{tertiary.subtitle}</p>
-                  )}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
-                  <span style={{ fontSize: 13, color: "rgba(196,151,58,0.75)", fontFamily: sans, whiteSpace: "nowrap" }}>Read guide →</span>
-                  <div style={{ width: 38, height: 38, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.45)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(196,151,58,0.80)", fontSize: 16, flexShrink: 0, transition: "all 0.18s" }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.15)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.7)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.45)"; }}
-                  >→</div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Community block */}
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.45, delay: 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
-              style={{ padding: "36px 40px 44px" }}
-            >
-              <div style={{ height: 1, background: "rgba(204,171,74,0.08)", marginBottom: 32 }} />
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(204,171,74,0.55)", textTransform: "uppercase", letterSpacing: "0.26em", marginBottom: 12, fontFamily: sans }}>Community</div>
-                  <h3 style={{ fontFamily: serif, fontSize: "clamp(1.5rem,2.8vw,2.2rem)", fontWeight: 400, color: "rgba(255,248,236,0.90)", margin: "0 0 10px", lineHeight: 1.15 }}>
-                    Steal their setup.
-                  </h3>
-                  <p style={{ fontSize: 13.5, color: "rgba(255,248,236,0.40)", margin: 0, lineHeight: 1.65, fontFamily: sans }}>
-                    Photos and ideas from people who just pulled one off.
-                  </p>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
-                  <button
-                    onClick={() => navigate("/community")}
-                    style={{ background: "none", border: "none", color: "rgba(204,171,74,0.65)", fontSize: 13, cursor: "pointer", fontFamily: sans, padding: 0, whiteSpace: "nowrap", transition: "color 0.15s" }}
-                    onMouseEnter={e => e.currentTarget.style.color = "#CCAB4A"}
-                    onMouseLeave={e => e.currentTarget.style.color = "rgba(204,171,74,0.65)"}
-                  >
-                    Explore community →
-                  </button>
-                  <div
-                    onClick={() => navigate("/community")}
-                    style={{ width: 38, height: 38, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.45)", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(196,151,58,0.80)", fontSize: 16, flexShrink: 0, cursor: "pointer", transition: "all 0.18s" }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.15)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.7)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.45)"; }}
-                  >→</div>
-                </div>
-              </div>
-            </motion.div>
+        {/* ── Community strip ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ borderTop: "1px solid rgba(44,26,14,0.1)", paddingTop: 36, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}
+        >
+          <div>
+            <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(180,83,9,0.5)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 8, fontFamily: sans }}>Community</div>
+            <h3 style={{ fontFamily: serif, fontSize: "clamp(1.4rem,2.4vw,1.9rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 6px", lineHeight: 1.15 }}>
+              Steal their setup.
+            </h3>
+            <p style={{ fontSize: 13.5, color: "rgba(44,26,14,0.48)", margin: 0, lineHeight: 1.6, fontFamily: sans }}>
+              Photos and ideas from people who just pulled one off.
+            </p>
           </div>
-        </div>
+          <button
+            onClick={() => navigate("/community")}
+            style={{ background: "none", border: "1px solid rgba(196,122,46,0.3)", color: "#C47A2E", fontSize: 12.5, cursor: "pointer", fontFamily: sans, padding: "9px 20px", borderRadius: 100, whiteSpace: "nowrap", flexShrink: 0, transition: "all 0.15s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.6)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
+          >
+            Explore community →
+          </button>
+        </motion.div>
 
       </div>
     </section>
