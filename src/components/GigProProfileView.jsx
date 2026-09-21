@@ -113,7 +113,7 @@ function BgDecor({ serviceType = "" }) {
 }
 
 // ── Main ───────────────────────────────────────────────────────────────────────
-export default function GigProProfileView({ vendor, reviews = [], onBook, onChat }) {
+export default function GigProProfileView({ vendor, reviews = [], onBook, onChat, isDirectLink = false }) {
   const [tab, setTab] = useState("Portfolio");
   const [catFilter, setCatFilter] = useState("All");
   const [reviewIdx, setReviewIdx] = useState(0);
@@ -557,7 +557,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               );
             })()}
 
-            {(social.showreel || social.instagram || social.youtube) && (
+            {isDirectLink && (social.showreel || social.instagram || social.youtube) && (
               <div style={{ marginTop:44, display:"flex", gap:28, flexWrap:"wrap" }}>
                 {social.showreel && (
                   <a href={social.showreel} target="_blank" rel="noopener noreferrer"
@@ -606,7 +606,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               </div>
             )}
 
-            {(social.showreel || vendor.showreel) && (
+            {isDirectLink && (social.showreel || vendor.showreel) && (
               <div style={{ marginTop:52 }}>
                 <a href={social.showreel || vendor.showreel} target="_blank" rel="noopener noreferrer"
                   style={{ display:"inline-flex", alignItems:"center", gap:12, padding:"14px 32px", borderRadius:100, background:`linear-gradient(135deg,${GOLD},#9A7010)`, color:"#1A1000", textDecoration:"none", fontSize:14.5, fontWeight:700 }}>

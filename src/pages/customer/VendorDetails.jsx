@@ -173,6 +173,8 @@ const VendorDetailsPage = () => {
   const isFromListingFlow = location.state?.from === "listing";
   // DIY shortlist mode — URL param fromPlan=1 set by HamburgerNav Browse→ links
   const isFromPlanFlow = new URLSearchParams(location.search).get("fromPlan") === "1";
+  // Visitor arrived via vendor's own shared direct link → show socials, bypass Tendr chat
+  const isDirectLink = new URLSearchParams(location.search).get("src") === "direct";
   const [shortlistTick, setShortlistTick] = useState(0);
   const [enquiryOpen, setEnquiryOpen] = useState(false);
   const [enquiryForm, setEnquiryForm] = useState({ name: '', phone: '', eventType: '', eventDate: '', message: '' });
@@ -414,9 +416,14 @@ const VendorDetailsPage = () => {
   const isGigPro = GIG_PRO_TYPES.some(t => serviceType?.toLowerCase() === t.toLowerCase() || serviceType?.toLowerCase().includes(t.toLowerCase()));
 
   const openGigHeroChat = () => {
+    // Direct link visitor → go straight to WhatsApp/call, not Tendr platform chat
+    if (isDirectLink) {
+      if (vendor?.phoneNumber) {
+        window.open(`https://wa.me/91${vendor.phoneNumber.replace(/\D/g, "")}?text=${encodeURIComponent(`Hi ${vendor.name}, I came across your profile and wanted to enquire about booking your services.`)}`, '_blank');
+      }
+      return;
+    }
     if (!token && isGigPro) {
-      // Guest visitor on a GigPro profile — offer a direct (vendor-direct) chat
-      // without requiring a Tendr account
       setDirectChatName('');
       setDirectChatPrompt(true);
       return;
@@ -471,7 +478,14 @@ const VendorDetailsPage = () => {
         <GigProProfileView
           vendor={vendor}
           reviews={gigProReviews}
+          isDirectLink={isDirectLink}
           onBook={() => {
+            if (isDirectLink) {
+              if (vendor?.phoneNumber) {
+                window.open(`https://wa.me/91${vendor.phoneNumber.replace(/\D/g, "")}?text=${encodeURIComponent(`Hi ${vendor.name}, I'd like to book your services. Can we discuss the details?`)}`, '_blank');
+              }
+              return;
+            }
             if (!token) { setAuthModalOpen(true); return; }
             openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
           }}
@@ -1087,9 +1101,9 @@ const VendorDetailsPage = () => {
                   Book Now
                 </button>
               )}
-              <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "0 0 10px", lineHeight: 1.5 }}>Our team reviews and connects you within a few hours</p>
-              {/* Contact directly (mobile) */}
-              {vendor?.phoneNumber && (
+              {!isDirectLink && <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "0 0 10px", lineHeight: 1.5 }}>Our team reviews and connects you within a few hours</p>}
+              {/* Contact directly — only on direct link visits */}
+              {isDirectLink && vendor?.phoneNumber && (
                 <div style={{ marginBottom: 10 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                     <div style={{ flex: 1, height: 1, background: "rgba(196,122,46,0.12)" }} />
@@ -1219,8 +1233,8 @@ const VendorDetailsPage = () => {
               );
             })()}
 
-            {/* ── Gig Pro: Showreel + Social ── */}
-            {isGigPro && (vendor?.showreel || vendor?.socialLink) && (
+            {/* ── Gig Pro: Showreel + Social — only shown on direct link visits ── */}
+            {isGigPro && isDirectLink && (vendor?.showreel || vendor?.socialLink) && (
               <>
                 <div style={{ height: 1, background: "rgba(196,122,46,0.1)", marginBottom: 24 }} />
                 <div style={{ marginBottom: 28 }}>
@@ -1406,12 +1420,10 @@ const VendorDetailsPage = () => {
                     Book Now
                   </button>
                 )}
-                <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "0 0 10px", lineHeight: 1.5 }}>
-                  Our team reviews and connects you within a few hours
-                </p>
+                {!isDirectLink && <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "0 0 10px", lineHeight: 1.5 }}>Our team reviews and connects you within a few hours</p>}
 
-                {/* Contact directly */}
-                {vendor?.phoneNumber && (
+                {/* Contact directly — only on direct link visits */}
+                {isDirectLink && vendor?.phoneNumber && (
                   <div style={{ marginBottom: 6 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                       <div style={{ flex: 1, height: 1, background: "rgba(196,122,46,0.12)" }} />
