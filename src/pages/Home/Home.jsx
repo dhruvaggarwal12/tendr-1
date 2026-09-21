@@ -175,7 +175,7 @@ function TipsByTendrSection() {
           </div>
           <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 24, flexWrap: "wrap", marginBottom: 12 }}>
             <h2 style={{ fontFamily: serif, fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", letterSpacing: "-0.01em", lineHeight: 1.08, margin: 0 }}>
-              Free Event Planning Guides
+              Read before you plan.
             </h2>
             <button
               onClick={() => navigate("/guides")}
@@ -183,11 +183,11 @@ function TipsByTendrSection() {
               onMouseEnter={e => e.currentTarget.style.color = "#9A5E1E"}
               onMouseLeave={e => e.currentTarget.style.color = "#C47A2E"}
             >
-              View all guides →
+              All guides →
             </button>
           </div>
           <p style={{ fontSize: 14, color: "rgba(44,26,14,0.55)", margin: 0, lineHeight: 1.7, maxWidth: 400 }}>
-            Practical guides for budgeting, decorating, and planning better events.
+            The stuff that saves you money before you've spent it.
           </p>
         </motion.div>
 
@@ -341,12 +341,12 @@ function TipsByTendrSection() {
               <div style={{ height: 1, background: "rgba(204,171,74,0.08)", marginBottom: 32 }} />
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 24 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(204,171,74,0.55)", textTransform: "uppercase", letterSpacing: "0.26em", marginBottom: 12, fontFamily: sans }}>From the Tendr Community</div>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(204,171,74,0.55)", textTransform: "uppercase", letterSpacing: "0.26em", marginBottom: 12, fontFamily: sans }}>Community</div>
                   <h3 style={{ fontFamily: serif, fontSize: "clamp(1.5rem,2.8vw,2.2rem)", fontWeight: 400, color: "rgba(255,248,236,0.90)", margin: "0 0 10px", lineHeight: 1.15 }}>
-                    Real events. Real setups.
+                    Steal their setup.
                   </h3>
                   <p style={{ fontSize: 13.5, color: "rgba(255,248,236,0.40)", margin: 0, lineHeight: 1.65, fontFamily: sans }}>
-                    Real ideas from people planning them.
+                    Photos and ideas from people who just pulled one off.
                   </p>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
