@@ -812,8 +812,8 @@ export function MyEventFloatDesktop() {
             onClick={e => e.stopPropagation()}
             style={{
               position: 'fixed',
-              bottom: 'calc(22px + env(safe-area-inset-bottom, 0px))',
-              right: 430,
+              bottom: 'calc(88px + 48px + 8px)',
+              right: 24,
               background: CREAM, borderRadius: 18, padding: '20px 22px',
               boxShadow: '0 16px 48px rgba(44,26,14,0.22)',
               fontFamily: F, width: 260,
@@ -821,7 +821,7 @@ export function MyEventFloatDesktop() {
               animation: 'myevent-pop 0.22s cubic-bezier(0.34,1.56,0.64,1)',
             }}
           >
-            <style>{`@keyframes myevent-pop { from{opacity:0;transform:scale(0.9) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }`}</style>
+            <style>{`@keyframes myevent-pop { from{opacity:0;transform:scale(0.9) translateY(12px)} to{opacity:1;transform:scale(1) translateY(0)} }`}</style>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
               <span style={{ fontSize: 18 }}>📋</span>
               <div>
