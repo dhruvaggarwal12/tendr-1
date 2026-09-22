@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font  = "'Outfit', sans-serif";
@@ -60,6 +60,99 @@ const COORDINATOR_SPECIALIZATIONS = [
   "Social Events (Baby Shower, Anniversary)", "Award Nights & Galas",
   "Musical Nights / Concerts", "Exhibitions & Product Launches", "Sports Events",
 ];
+
+const CITY_OPTIONS = [
+  "Delhi", "Noida", "Gurugram", "Ghaziabad", "Faridabad",
+  "Mumbai", "Pune", "Bengaluru", "Hyderabad", "Chennai", "Kolkata", "Jaipur", "Chandigarh",
+];
+
+const ARTIST_PERFORMER_TYPES = [
+  { value: "Singer",        label: "Singer",        emoji: "🎤", sub: "Solo vocalist — Bollywood, classical, western & more" },
+  { value: "Band",          label: "Live Band",      emoji: "🎸", sub: "Bollywood, jazz, rock or fusion band" },
+  { value: "Anchor",        label: "Anchor",         emoji: "🎙️", sub: "Professional host for weddings & events" },
+  { value: "Choreographer", label: "Choreographer",  emoji: "💃", sub: "Dance performances & group choreography" },
+  { value: "Musician",      label: "Musician",       emoji: "🎹", sub: "Instrumentalist — piano, guitar, tabla & more" },
+  { value: "Emcee",         label: "Emcee",          emoji: "🎭", sub: "Master of ceremonies for any occasion" },
+];
+
+const ARTIST_GENRES = {
+  Singer:        ["Bollywood", "Classical", "Western/Pop", "Ghazal/Sufi", "Folk", "Jazz", "Devotional"],
+  Band:          ["Bollywood", "Rock/Jazz", "Fusion", "Devotional", "Retro", "EDM"],
+  Anchor:        ["Hindi", "English", "Bilingual", "Corporate", "Wedding", "Comedy"],
+  Choreographer: ["Bollywood", "Classical", "Contemporary", "Hip-Hop", "Sangeet/Wedding", "Folk"],
+  Musician:      ["Piano", "Guitar", "Tabla", "Violin", "Flute", "Saxophone", "Sitar", "Multiple"],
+  Emcee:         ["Hindi", "English", "Bilingual", "Corporate", "Wedding", "Stand-up/Comedy"],
+};
+
+const DURATION_OPTIONS = ["30–45 min", "1 hour", "2 hours", "3 hours", "Full event (4+ hrs)", "Flexible"];
+const PRICE_RANGE_OPTIONS = ["Under ₹5,000", "₹5,000–10,000", "₹10,000–25,000", "₹25,000–50,000", "₹50,000+", "Negotiable"];
+
+const VENDOR_SERVICE_TYPES = [
+  { value: "Decorator",      label: "Decorator / Event Stylist",   sub: "Floral, balloon, LED, draping" },
+  { value: "Caterer",        label: "Caterer / Food Service",      sub: "Buffet, live counters, delivery" },
+  { value: "Photographer",   label: "Photographer / Videographer", sub: "Candid, cinematic, drone" },
+  { value: "DJ",             label: "DJ",                          sub: "Open format, Bollywood, EDM" },
+  { value: "Florist",        label: "Florist",                     sub: "Wedding & event florals" },
+  { value: "AV Setup",       label: "AV / Tech Setup",             sub: "Projector, LED wall, sound" },
+  { value: "Venue",          label: "Venue / Banquet Hall",        sub: "Indoor, outdoor, rooftop" },
+  { value: "Baker",          label: "Baker / Cake Studio",         sub: "Wedding, birthday, custom cakes" },
+  { value: "Transportation", label: "Transportation",              sub: "Cars, buses, vintage vehicles" },
+  { value: "Makeup Artist",  label: "Makeup Artist / Hair Stylist",sub: "Bridal, party, editorial" },
+  { value: "Other",          label: "Other",                       sub: "Something not listed above" },
+];
+
+const CATEGORY_QUESTIONS = {
+  Decorator: [
+    { id: "specializations", label: "Specializations", type: "chips", options: ["Floral", "Balloon", "LED/Lighting", "Draping", "Minimal", "Grand/Royal", "Mehendi"] },
+    { id: "inventory",       label: "Own inventory?",  type: "radio", options: ["Own", "Rented", "Mix of both"] },
+    { id: "teamSize",        label: "Team size",        type: "radio", options: ["Solo", "2–5", "5–10", "10+"] },
+    { id: "minBooking",      label: "Min booking value",type: "radio", options: ["< ₹10K", "₹10–25K", "₹25–50K", "₹50K+"] },
+  ],
+  Caterer: [
+    { id: "cuisines",     label: "Cuisines served",    type: "chips", options: ["North Indian", "South Indian", "Continental", "Chinese", "Mughlai", "Multi-cuisine"] },
+    { id: "serviceStyle", label: "Service style",      type: "chips", options: ["Buffet", "Live Counters", "Plated Service", "Home Delivery"] },
+    { id: "capacity",     label: "Max guest capacity", type: "radio", options: ["Up to 50", "50–200", "200–500", "500–1000", "1000+"] },
+    { id: "foodType",     label: "Food type",          type: "radio", options: ["Pure Veg", "Non-Veg", "Both"] },
+  ],
+  Photographer: [
+    { id: "style",        label: "Photography style",  type: "chips", options: ["Candid", "Traditional", "Cinematic", "Documentary", "Drone/Aerial"] },
+    { id: "teamSize",     label: "Team",                type: "radio", options: ["Solo", "Duo", "Full team (3+)"] },
+    { id: "portfolioLink",label: "Portfolio link",      type: "text",  placeholder: "https://your-portfolio.com" },
+    { id: "delivery",     label: "Delivery timeline",  type: "radio", options: ["Within 1 week", "2–4 weeks", "1–2 months"] },
+  ],
+  DJ: [
+    { id: "genres",      label: "Music genres",  type: "chips", options: ["Bollywood", "EDM", "Hip-Hop", "Commercial", "Retro", "All genres"] },
+    { id: "equipment",   label: "Equipment",     type: "radio", options: ["Own setup", "Venue provides", "Both"] },
+    { id: "setDuration", label: "Set duration",  type: "radio", options: ["2–4 hrs", "4–6 hrs", "6–8 hrs", "Full day"] },
+  ],
+  Florist: [
+    { id: "specialization", label: "Specialization", type: "chips", options: ["Wedding", "Birthday/Events", "Corporate", "Gifting"] },
+    { id: "delivery",       label: "Services",       type: "radio", options: ["Delivery + Setup", "Venue setup only", "Pickup only"] },
+  ],
+  "AV Setup": [
+    { id: "equipment", label: "Equipment offered", type: "chips", options: ["Projector/Screen", "LED Wall", "Sound System", "Stage Lighting", "Complete AV"] },
+    { id: "techTeam",  label: "Tech team",         type: "radio", options: ["Own team", "Freelance", "Both"] },
+  ],
+  Venue: [
+    { id: "capacity",  label: "Guest capacity", type: "radio", options: ["Up to 50", "50–200", "200–500", "500–1000", "1000+"] },
+    { id: "type",      label: "Venue type",     type: "radio", options: ["Indoor", "Outdoor", "Both"] },
+    { id: "ac",        label: "Air conditioned",type: "radio", options: ["Yes", "No", "Partly"] },
+    { id: "catering",  label: "Catering policy",type: "radio", options: ["In-house only", "External allowed", "Both"] },
+  ],
+  Baker: [
+    { id: "specialization", label: "Specialization",   type: "chips", options: ["Wedding Cakes", "Birthday Cakes", "Cupcakes", "Custom/Fondant", "Dessert Tables"] },
+    { id: "leadTime",       label: "Lead time needed", type: "radio", options: ["Same day", "2–3 days", "1 week", "2+ weeks"] },
+    { id: "delivery",       label: "Delivery",         type: "radio", options: ["Delivery available", "Pickup only"] },
+  ],
+  Transportation: [
+    { id: "vehicles", label: "Vehicle types", type: "chips", options: ["Car/SUV", "Bus/Mini-bus", "Vintage Car", "Tempo Traveller", "Luxury Coach"] },
+    { id: "fleet",    label: "Fleet",         type: "radio", options: ["Own fleet", "Third-party tie-up", "Both"] },
+  ],
+  "Makeup Artist": [
+    { id: "specialization", label: "Specialization", type: "chips", options: ["Bridal Makeup", "Party Makeup", "Hair Styling", "Mehendi", "Editorial"] },
+    { id: "travel",         label: "Travel to client?",type: "radio", options: ["Yes", "Studio only", "Both"] },
+  ],
+};
 
 const TRUST = [
   { n: "15%", label: "Commission",  sub: "15% platform fee on confirmed bookings only" },
@@ -488,65 +581,105 @@ function CoordinatorForm({ onBack, onSuccess }) {
   );
 }
 
+// ─── Category-question renderer ───────────────────────────────────────────────
+
+function CategoryQuestions({ serviceType, answers, onChange }) {
+  const questions = CATEGORY_QUESTIONS[serviceType] || [];
+  if (!questions.length) return null;
+  const toggleChip = (id, val) => {
+    const cur = answers[id] || [];
+    onChange(id, cur.includes(val) ? cur.filter(x => x !== val) : [...cur, val]);
+  };
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20, marginTop: 4 }}>
+      {questions.map(q => (
+        <div key={q.id}>
+          <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: muted, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em" }}>{q.label}</label>
+          {q.type === "chips" && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {q.options.map(opt => {
+                const on = (answers[q.id] || []).includes(opt);
+                return (
+                  <button key={opt} type="button" onClick={() => toggleChip(q.id, opt)}
+                    style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
+                    {opt}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {q.type === "radio" && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {q.options.map(opt => {
+                const on = answers[q.id] === opt;
+                return (
+                  <button key={opt} type="button" onClick={() => onChange(q.id, opt)}
+                    style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
+                    {opt}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {q.type === "text" && (
+            <input placeholder={q.placeholder || ""} value={answers[q.id] || ""} onChange={e => onChange(q.id, e.target.value)}
+              style={{ width: "100%", padding: "11px 14px", borderRadius: 10, border: "1.5px solid rgba(28,14,4,0.14)", background: "#fff", fontFamily: font, fontSize: 13.5, color: ink, outline: "none", boxSizing: "border-box" }} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── Main Registration component ──────────────────────────────────────────────
 
 export default function VendorRegistration() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const flow = searchParams.get("flow"); // "artist" | "vendor" | null
 
-  // Navigation state
-  const [step, setStep]         = useState(1);       // 1 | "plan" | 2 | 3 | "artform"
-  const [category, setCategory] = useState("");      // "artist" | "vendor" | "coordinator"
-  const [artForm, setArtForm]   = useState("");      // for Performer sub-step
-  const [plan, setPlan]         = useState("free");  // "free" | "paid"
+  // ── Shared state ──────────────────────────────────────────────────────────
 
-  // Contact form (steps 2→3 for artist/vendor)
-  const [form, setForm]   = useState({ name: "", phoneNumber: "", whatsappNumber: "", email: "", address: "", serviceType: "" });
-  const [errors, setErrors]     = useState({});
-  const [focused, setFocused]   = useState("");
-  const [loading, setLoading]   = useState(false);
-  const [apiError, setApiError] = useState("");
+  // Artist flow
+  const [performerType, setPerformerType] = useState("");
+  const [genres, setGenres] = useState([]);
+  const [artistForm, setArtistForm] = useState({
+    name: "", phoneNumber: "", whatsappNumber: "", email: "", city: "",
+    bio: "", priceRange: "", duration: "", sampleLink: "", instagram: "",
+  });
 
-  // Success
+  // Vendor flow
+  const [plan, setPlan]               = useState("free");
+  const [serviceType, setServiceType] = useState("");
+  const [vendorForm, setVendorForm]   = useState({
+    businessName: "", name: "", phoneNumber: "", whatsappNumber: "", email: "", address: "",
+  });
+  const [categoryAnswers, setCatAns]  = useState({});
+
+  // Legacy (keeps old coordinator + artist-via-step-1 paths working)
+  const [step, setStep]         = useState(flow === "artist" ? "a_type" : flow === "vendor" ? "plan" : 1);
+  const [category, setCategory] = useState(flow === "artist" ? "artist" : flow === "vendor" ? "vendor" : "");
+  const [artForm, setArtForm]   = useState("");
+  const [form, setForm]         = useState({ name: "", phoneNumber: "", whatsappNumber: "", email: "", address: "", serviceType: "" });
+
+  // Shared
+  const [loading, setLoading]       = useState(false);
+  const [apiError, setApiError]     = useState("");
+  const [errors, setErrors]         = useState({});
   const [submitted, setSubmitted]   = useState(false);
   const [successName, setSuccessName] = useState("");
   const [isCoordinator, setIsCoordinator] = useState(false);
+  const [focused, setFocused]       = useState("");
 
   const iStyle = (f) => inputStyle(focused, errors, f, gold, ink);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm(p => ({ ...p, [name]: value }));
-    if (errors[name]) setErrors(p => ({ ...p, [name]: "" }));
-    if (apiError) setApiError("");
-  };
-
-  const validate = () => {
-    const e = {};
-    if (!form.name.trim())            e.name = "Name is required";
-    if (!form.phoneNumber.trim())     e.phoneNumber = "Phone number is required";
-    else if (!/^[6-9]\d{9}$/.test(form.phoneNumber)) e.phoneNumber = "Enter a valid 10-digit number";
-    if (!form.whatsappNumber.trim())  e.whatsappNumber = "WhatsApp number is required";
-    else if (!/^[6-9]\d{9}$/.test(form.whatsappNumber)) e.whatsappNumber = "Enter a valid 10-digit number";
-    if (!form.address.trim())         e.address = "Area / city is required";
-    if (!form.serviceType)            e.serviceType = "Please select your service type";
-    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Enter a valid email";
-    return e;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const v = validate();
-    if (Object.keys(v).length) { setErrors(v); return; }
-    setLoading(true);
-    setApiError("");
+  // ── Generic submit helper ──────────────────────────────────────────────────
+  const submitApplication = async (payload) => {
+    setLoading(true); setApiError("");
     try {
-      const payload = { ...form, plan };
-      if (artForm) payload.performerArtForm = artForm;
       const res = await fetch(`${BASE_URL}/vendor-applications`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        credentials: "include",
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload), credentials: "include",
       });
       const data = await res.json();
       if (!res.ok) {
@@ -556,24 +689,21 @@ export default function VendorRegistration() {
           data.errors.forEach(er => { mapped[er.param || er.path] = er.msg; });
           setErrors(mapped);
         } else setApiError(data.message || "Submission failed. Please try again.");
-        return;
+        return false;
       }
-      setSuccessName(form.name);
-      setIsCoordinator(false);
-      setSubmitted(true);
+      return true;
     } catch {
       setApiError("Network error. Please check your connection and try again.");
+      return false;
     } finally {
       setLoading(false);
     }
   };
 
-  // ── Success ────────────────────────────────────────────────────────────────
-  if (submitted) {
-    return <SuccessScreen name={successName} isCoordinator={isCoordinator} navigate={navigate} />;
-  }
+  // ── SUCCESS ────────────────────────────────────────────────────────────────
+  if (submitted) return <SuccessScreen name={successName} isCoordinator={isCoordinator} navigate={navigate} />;
 
-  // ── Coordinator flow ───────────────────────────────────────────────────────
+  // ── COORDINATOR FLOW (legacy) ──────────────────────────────────────────────
   if (category === "coordinator") {
     return (
       <CoordinatorForm
@@ -583,49 +713,226 @@ export default function VendorRegistration() {
     );
   }
 
-  // ── Step 1: Pick category ──────────────────────────────────────────────────
-  if (step === 1) {
-    const OPTIONS = [
-      {
-        key: "artist",
-        title: "Individual Artist",
-        sub: "DJ · Singer · Choreographer · Makeup Artist · Mehendi · Cake Artist · Bartender · and more",
-        icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
-      },
-      {
-        key: "vendor",
-        title: "Business / Vendor",
-        sub: "Decorator · Caterer · Photographer · Videographer · Wedding Planner · Photo Booth · Transport · and more",
-        icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
-      },
-      {
-        key: "coordinator",
-        title: "Event Coordinator",
-        sub: "Manage client chats & leads · Plan weddings, corporate & private events",
-        icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>,
-      },
-    ];
+  // ══════════════════════════════════════════════════════════════════
+  //  ARTIST / PERFORMER FLOW
+  // ══════════════════════════════════════════════════════════════════
+
+  // Step a_type — Pick performer type
+  if (step === "a_type") {
+    return (
+      <Shell step={1} steps={["Type", "Profile", "Submit"]}>
+        <div style={{ marginBottom: 28 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 8 }}>Artist / Performer</p>
+          <h1 style={{ fontSize: "clamp(1.5rem,3.5vw,2rem)", fontWeight: 800, color: ink, margin: "0 0 8px", lineHeight: 1.2 }}>What type of performer are you?</h1>
+          <p style={{ fontSize: 14, color: muted, margin: 0 }}>Your profile will be tailored to match your style.</p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
+          {ARTIST_PERFORMER_TYPES.map(t => (
+            <button key={t.value} type="button"
+              onClick={() => { setPerformerType(t.value); setGenres([]); setStep("a_profile"); }}
+              style={{ padding: "20px 16px", borderRadius: 14, border: "1.5px solid rgba(28,14,4,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)", display: "flex", flexDirection: "column", gap: 8 }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(196,122,46,0.14)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.1)"; e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; }}
+            >
+              <span style={{ fontSize: 28 }}>{t.emoji}</span>
+              <div style={{ fontSize: 14, fontWeight: 700, color: ink }}>{t.label}</div>
+              <div style={{ fontSize: 11, color: muted, lineHeight: 1.5 }}>{t.sub}</div>
+            </button>
+          ))}
+        </div>
+        <p style={{ textAlign: "center", fontSize: 13, color: muted, marginTop: 24 }}>
+          Already listed? <span onClick={() => navigate("/vendor/login")} style={{ color: gold, fontWeight: 600, cursor: "pointer" }}>Sign in</span>
+        </p>
+      </Shell>
+    );
+  }
+
+  // Step a_profile — Artist profile form
+  if (step === "a_profile") {
+    const typeInfo = ARTIST_PERFORMER_TYPES.find(t => t.value === performerType) || {};
+    const genreOptions = ARTIST_GENRES[performerType] || [];
+    const toggleGenre = (g) => setGenres(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g]);
+
+    const handleArtistSubmit = async (e) => {
+      e.preventDefault();
+      const er = {};
+      if (!artistForm.name.trim())         er.name = "Name is required";
+      if (!/^[6-9]\d{9}$/.test(artistForm.phoneNumber))   er.phoneNumber = "Enter a valid 10-digit number";
+      if (!/^[6-9]\d{9}$/.test(artistForm.whatsappNumber)) er.whatsappNumber = "Enter a valid 10-digit number";
+      if (!artistForm.city)                er.city = "City is required";
+      if (artistForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(artistForm.email)) er.email = "Enter a valid email";
+      if (Object.keys(er).length) { setErrors(er); return; }
+
+      const ok = await submitApplication({
+        name: artistForm.name.trim(),
+        phoneNumber: artistForm.phoneNumber,
+        whatsappNumber: artistForm.whatsappNumber,
+        email: artistForm.email || "",
+        address: artistForm.city,
+        serviceType: performerType,
+        isArtist: true,
+        genres,
+        bio: artistForm.bio,
+        priceRange: artistForm.priceRange,
+        duration: artistForm.duration,
+        sampleLink: artistForm.sampleLink,
+        instagram: artistForm.instagram,
+      });
+      if (ok) { setSuccessName(artistForm.name); setSubmitted(true); }
+    };
+
+    const aInput = (f, label, req, opts = {}) => (
+      <div>
+        <Label required={req} optional={!req}>{label}</Label>
+        <input
+          value={artistForm[f]} onChange={e => { setArtistForm(p => ({...p, [f]: e.target.value})); if (errors[f]) setErrors(p => ({...p, [f]: ""})); }}
+          onFocus={() => setFocused(f)} onBlur={() => setFocused("")}
+          style={inputStyle(focused, errors, f, gold, ink)} {...opts}
+        />
+        <FieldError msg={errors[f]} />
+      </div>
+    );
 
     return (
-      <Shell step={1} steps={["Category", "Specialty", "Plan", "Details"]}>
-        <div style={{ marginBottom: 28 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 8 }}>Partner with Tendr</p>
-          <h1 style={{ fontSize: "clamp(1.6rem,3.5vw,2.2rem)", fontWeight: 800, color: ink, letterSpacing: "-0.02em", margin: "0 0 8px", lineHeight: 1.2 }}>How do you earn?</h1>
-          <p style={{ fontSize: 14, color: muted, margin: 0 }}>Pick the type that best describes what you do.</p>
+      <Shell step={2} steps={["Type", "Profile", "Submit"]}>
+        <button type="button" onClick={() => setStep("a_type")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 20, padding: 0 }}>
+          ← Back
+        </button>
+
+        <div style={{ marginBottom: 24 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 6 }}>{typeInfo.emoji} {typeInfo.label}</p>
+          <h1 style={{ fontSize: "clamp(1.4rem,3vw,1.8rem)", fontWeight: 800, color: ink, margin: "0 0 6px" }}>Build your artist profile</h1>
+          <p style={{ fontSize: 13.5, color: muted, margin: 0 }}>This is what customers see when they browse performers. Be specific — it helps you get booked.</p>
         </div>
 
+        <div style={{ background: "#fff", borderRadius: 16, padding: "24px 22px", border: "1px solid rgba(28,14,4,0.07)", boxShadow: "0 2px 12px rgba(28,14,4,0.05)" }}>
+          {apiError && <div style={{ background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 10, padding: "11px 16px", fontSize: 13, color: "#c0392b", marginBottom: 20 }}>{apiError}</div>}
+
+          <form onSubmit={handleArtistSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            {/* Contact */}
+            <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>Contact Details</p>
+
+            {aInput("name", "Artist / Band Name", true, { placeholder: "e.g. Aarav Vocals or The Harmony Band" })}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div>
+                <Label required>Phone</Label>
+                <input value={artistForm.phoneNumber} onChange={e => setArtistForm(p => ({...p, phoneNumber: e.target.value.replace(/\D/,"").slice(0,10)}))}
+                  onFocus={() => setFocused("phoneNumber")} onBlur={() => setFocused("")} inputMode="numeric" placeholder="10-digit number"
+                  style={inputStyle(focused, errors, "phoneNumber", gold, ink)} />
+                <FieldError msg={errors.phoneNumber} />
+              </div>
+              <div>
+                <Label required>WhatsApp</Label>
+                <input value={artistForm.whatsappNumber} onChange={e => setArtistForm(p => ({...p, whatsappNumber: e.target.value.replace(/\D/,"").slice(0,10)}))}
+                  onFocus={() => setFocused("whatsappNumber")} onBlur={() => setFocused("")} inputMode="numeric" placeholder="10-digit number"
+                  style={inputStyle(focused, errors, "whatsappNumber", gold, ink)} />
+                <FieldError msg={errors.whatsappNumber} />
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              {aInput("email", "Email", false, { type: "email", placeholder: "you@email.com" })}
+              <div>
+                <Label required>City</Label>
+                <select value={artistForm.city} onChange={e => { setArtistForm(p => ({...p, city: e.target.value})); if (errors.city) setErrors(p => ({...p, city: ""})); }}
+                  onFocus={() => setFocused("city")} onBlur={() => setFocused("")}
+                  style={{ ...inputStyle(focused, errors, "city", gold, ink), cursor: "pointer" }}>
+                  <option value="">Select city</option>
+                  {CITY_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <FieldError msg={errors.city} />
+              </div>
+            </div>
+
+            {/* Profile */}
+            <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "4px 0 0" }}>Your Profile (Shown to customers)</p>
+
+            {genreOptions.length > 0 && (
+              <div>
+                <Label optional>Genres / Specializations</Label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
+                  {genreOptions.map(g => {
+                    const on = genres.includes(g);
+                    return (
+                      <button key={g} type="button" onClick={() => toggleGenre(g)}
+                        style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
+                        {g}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div>
+                <Label optional>Performance Duration</Label>
+                <select value={artistForm.duration} onChange={e => setArtistForm(p => ({...p, duration: e.target.value}))}
+                  style={{ ...inputStyle(focused, errors, "duration", gold, ink), cursor: "pointer" }}>
+                  <option value="">Select</option>
+                  {DURATION_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+              <div>
+                <Label optional>Price Per Event</Label>
+                <select value={artistForm.priceRange} onChange={e => setArtistForm(p => ({...p, priceRange: e.target.value}))}
+                  style={{ ...inputStyle(focused, errors, "priceRange", gold, ink), cursor: "pointer" }}>
+                  <option value="">Select range</option>
+                  {PRICE_RANGE_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <Label optional>About You <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(shown on your profile)</span></Label>
+              <textarea value={artistForm.bio} onChange={e => setArtistForm(p => ({...p, bio: e.target.value}))} rows={3} maxLength={300}
+                placeholder={`Tell clients about your ${typeInfo.label?.toLowerCase()} style, experience, and what makes your performances special...`}
+                style={{ ...inputStyle(focused, errors, "bio", gold, ink), resize: "vertical" }} />
+              <p style={{ fontSize: 11, color: muted, marginTop: 4, textAlign: "right" }}>{artistForm.bio.length}/300</p>
+            </div>
+
+            {aInput("sampleLink", "Sample Video / YouTube Link", false, { placeholder: "https://youtube.com/..." })}
+            {aInput("instagram", "Instagram Handle", false, { placeholder: "@yourhandle" })}
+
+            <button type="submit" disabled={loading}
+              style={{ marginTop: 8, padding: "14px", borderRadius: 12, background: loading ? "#D4A060" : `linear-gradient(135deg,${gold},#CCAB4A)`, color: "#fff", border: "none", fontSize: 15, fontWeight: 800, cursor: loading ? "default" : "pointer", fontFamily: font }}>
+              {loading ? "Submitting…" : "Submit Application"}
+            </button>
+          </form>
+        </div>
+        <p style={{ textAlign: "center", fontSize: 12, color: muted, marginTop: 16 }}>
+          You'll get an SMS confirmation on your phone number. Our team will review and contact you within 24 hours.
+        </p>
+      </Shell>
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  //  VENDOR FLOW
+  // ══════════════════════════════════════════════════════════════════
+
+  // Step 1 (legacy / direct access) — Pick category
+  if (step === 1) {
+    const OPTIONS = [
+      { key: "artist",  title: "Individual Artist / Performer", sub: "Singer · Band · Anchor · Choreographer · Musician · Emcee", icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> },
+      { key: "vendor",  title: "Business / Vendor", sub: "Decorator · Caterer · Photographer · DJ · Venue · and more", icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
+      { key: "coordinator", title: "Event Coordinator", sub: "Manage client chats, leads & events", icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg> },
+    ];
+    return (
+      <Shell step={1} steps={["Category", "Plan", "Details"]}>
+        <div style={{ marginBottom: 28 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 8 }}>Partner with Tendr</p>
+          <h1 style={{ fontSize: "clamp(1.6rem,3.5vw,2.2rem)", fontWeight: 800, color: ink, margin: "0 0 8px", lineHeight: 1.2 }}>How do you earn?</h1>
+          <p style={{ fontSize: 14, color: muted, margin: 0 }}>Pick the type that best describes what you do.</p>
+        </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {OPTIONS.map(c => (
-            <button
-              key={c.key}
-              onClick={() => { setCategory(c.key); if (c.key !== "coordinator") setStep(2); }}
-              style={{ padding: "18px 18px", borderRadius: 14, border: "1.5px solid rgba(28,14,4,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)", display: "flex", alignItems: "center", gap: 16 }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = `0 6px 24px rgba(196,122,46,0.14)`; e.currentTarget.style.transform = "translateY(-2px)"; }}
+            <button key={c.key} type="button"
+              onClick={() => { setCategory(c.key); if (c.key === "artist") setStep("a_type"); else if (c.key === "coordinator") {} else setStep("plan"); }}
+              style={{ padding: "18px", borderRadius: 14, border: "1.5px solid rgba(28,14,4,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)", display: "flex", alignItems: "center", gap: 16 }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = "0 6px 24px rgba(196,122,46,0.14)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.1)"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; e.currentTarget.style.transform = ""; }}
             >
-              <div style={{ flexShrink: 0, width: 48, height: 48, borderRadius: "50%", background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.16)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                {c.icon}
-              </div>
+              <div style={{ flexShrink: 0, width: 48, height: 48, borderRadius: "50%", background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.16)", display: "flex", alignItems: "center", justifyContent: "center" }}>{c.icon}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: ink, marginBottom: 4 }}>{c.title}</div>
                 <div style={{ fontSize: 12, color: muted, lineHeight: 1.55 }}>{c.sub}</div>
@@ -634,290 +941,239 @@ export default function VendorRegistration() {
             </button>
           ))}
         </div>
-
         <p style={{ textAlign: "center", fontSize: 13, color: muted, marginTop: 24 }}>
-          Already listed?{" "}
-          <span onClick={() => navigate("/login")} style={{ color: gold, fontWeight: 600, cursor: "pointer" }}>Sign in</span>
+          Already listed? <span onClick={() => navigate("/vendor/login")} style={{ color: gold, fontWeight: 600, cursor: "pointer" }}>Sign in</span>
         </p>
       </Shell>
     );
   }
 
-  // ── Step "plan": Choose Free or Paid tier ──────────────────────────────────
+  // Step plan — Choose Free or Paid
   if (step === "plan") {
     return (
-      <Shell step={3} steps={["Category", "Specialty", "Plan", "Details"]} sideTiers>
-        <button onClick={() => setStep(2)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
-          ← Back
-        </button>
-
+      <Shell step={flow === "vendor" ? 1 : 2} steps={["Plan", "Details", "Submit"]} sideTiers>
+        {flow !== "vendor" && (
+          <button type="button" onClick={() => setStep(1)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
+            ← Back
+          </button>
+        )}
         <div style={{ marginBottom: 28 }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 8 }}>Choose your plan</p>
-          <h1 style={{ fontSize: "clamp(1.5rem,3.5vw,2rem)", fontWeight: 800, color: ink, letterSpacing: "-0.02em", margin: "0 0 8px", lineHeight: 1.2 }}>Start free, upgrade anytime</h1>
-          <p style={{ fontSize: 14, color: muted, margin: 0 }}>No card needed to start. Switch plans whenever you're ready.</p>
+          <h1 style={{ fontSize: "clamp(1.5rem,3.5vw,2rem)", fontWeight: 800, color: ink, margin: "0 0 8px", lineHeight: 1.2 }}>Start free, upgrade anytime</h1>
+          <p style={{ fontSize: 14, color: muted, margin: 0 }}>No card needed. Switch plans whenever you are ready.</p>
         </div>
-
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {/* Free tier card */}
-          <button
-            onClick={() => { setPlan("free"); setStep(3); }}
-            style={{ padding: "22px 20px", borderRadius: 16, border: plan === "free" ? `2px solid ${gold}` : "1.5px solid rgba(28,14,4,0.1)", background: plan === "free" ? "rgba(196,122,46,0.04)" : "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)" }}
+          <button type="button" onClick={() => { setPlan("free"); setStep("v_form"); }}
+            style={{ padding: "22px 20px", borderRadius: 16, border: "1.5px solid rgba(28,14,4,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)" }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.12)"; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = plan === "free" ? gold : "rgba(28,14,4,0.1)"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; }}
-          >
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.1)"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
               <div>
                 <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(196,122,46,0.65)", marginBottom: 4 }}>Free listing</div>
                 <div style={{ fontSize: 22, fontWeight: 800, color: ink }}>₹0 <span style={{ fontSize: 13, fontWeight: 500, color: muted }}>forever</span></div>
               </div>
-              <div style={{ width: 22, height: 22, borderRadius: "50%", border: `2px solid ${plan === "free" ? gold : "rgba(28,14,4,0.2)"}`, background: plan === "free" ? gold : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-                {plan === "free" && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-              </div>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-              {FREE_FEATS.map(f => (
-                <div key={f} style={{ fontSize: 12.5, color: muted, display: "flex", gap: 8, alignItems: "flex-start" }}>
-                  <span style={{ color: gold, flexShrink: 0, lineHeight: 1.6 }}>✓</span>{f}
-                </div>
-              ))}
-            </div>
-            <div style={{ marginTop: 14, padding: "8px 14px", borderRadius: 8, background: "rgba(196,122,46,0.07)", fontSize: 12, color: "#7a4d1b", fontWeight: 600 }}>
-              15% commission only on bookings made through Tendr
-            </div>
+            {FREE_FEATS.map(f => <div key={f} style={{ fontSize: 12.5, color: muted, display: "flex", gap: 8, marginBottom: 4 }}><span style={{ color: gold, flexShrink: 0 }}>✓</span>{f}</div>)}
+            <div style={{ marginTop: 12, padding: "8px 14px", borderRadius: 8, background: "rgba(196,122,46,0.07)", fontSize: 12, color: "#7a4d1b", fontWeight: 600 }}>15% commission only on Tendr bookings</div>
           </button>
 
-          {/* Paid Dashboard card */}
-          <button
-            onClick={() => { setPlan("paid"); setStep(3); }}
-            style={{ padding: "22px 20px", borderRadius: 16, border: plan === "paid" ? `2px solid ${gold}` : "1.5px solid rgba(28,14,4,0.1)", background: plan === "paid" ? "rgba(196,122,46,0.04)" : "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)", position: "relative" }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.12)"; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = plan === "paid" ? gold : "rgba(28,14,4,0.1)"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; }}
-          >
-            <div style={{ position: "absolute", top: -1, right: 16, background: gold, color: "#fff", fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: "0 0 8px 8px", letterSpacing: "0.06em", textTransform: "uppercase" }}>7-day free trial</div>
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
+          <button type="button" onClick={() => { setPlan("paid"); setStep("v_features"); }}
+            style={{ padding: "22px 20px", borderRadius: 16, border: `1.5px solid ${gold}`, background: "rgba(196,122,46,0.03)", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)", position: "relative" }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(196,122,46,0.18)"; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; }}>
+            <div style={{ position: "absolute", top: -1, right: 16, background: gold, color: "#fff", fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: "0 0 8px 8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>7-day free trial</div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
               <div>
                 <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 4 }}>Listing + Dashboard</div>
                 <div style={{ fontSize: 22, fontWeight: 800, color: ink }}>₹399 <span style={{ fontSize: 13, fontWeight: 500, color: muted }}>+ GST / month</span></div>
-                <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>after 7-day trial · no card needed to start</div>
-              </div>
-              <div style={{ width: 22, height: 22, borderRadius: "50%", border: `2px solid ${plan === "paid" ? gold : "rgba(28,14,4,0.2)"}`, background: plan === "paid" ? gold : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-                {plan === "paid" && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>after trial · no card needed to start</div>
               </div>
             </div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: muted, marginBottom: 6, letterSpacing: "0.08em", textTransform: "uppercase" }}>Everything in Free, plus:</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: muted, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>Everything in Free, plus:</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 12px" }}>
-              {PAID_FEATS.map(f => (
-                <div key={f} style={{ fontSize: 12, color: muted, display: "flex", gap: 6, alignItems: "flex-start" }}>
-                  <span style={{ color: gold, flexShrink: 0, lineHeight: 1.65 }}>✓</span>{f}
-                </div>
-              ))}
+              {PAID_FEATS.map(f => <div key={f} style={{ fontSize: 12, color: muted, display: "flex", gap: 6, marginBottom: 2 }}><span style={{ color: gold, flexShrink: 0 }}>✓</span>{f}</div>)}
             </div>
-            <div style={{ marginTop: 14, padding: "8px 14px", borderRadius: 8, background: "rgba(196,122,46,0.07)", fontSize: 12, color: "#7a4d1b", fontWeight: 600 }}>
-              0% commission on bookings made outside Tendr
-            </div>
+            <div style={{ marginTop: 12, padding: "8px 14px", borderRadius: 8, background: "rgba(196,122,46,0.07)", fontSize: 12, color: "#7a4d1b", fontWeight: 600 }}>0% commission on bookings made outside Tendr</div>
+            <div style={{ marginTop: 10, color: gold, fontSize: 12, fontWeight: 700 }}>See everything you get →</div>
           </button>
         </div>
       </Shell>
     );
   }
 
-  // ── Step 2: Pick specific type ─────────────────────────────────────────────
-  if (step === 2) {
-    const types = category === "artist" ? ARTIST_TYPES : VENDOR_TYPES;
+  // Step v_features — Paid plan full feature breakdown
+  if (step === "v_features") {
+    const featureSections = [
+      { title: "Profile & Discovery", items: ["Full vendor profile with photos & videos", "Appear in Tendr search & category pages", "SEO-optimised public listing page", "Verified badge after approval"] },
+      { title: "Business Tools", items: ["Bookings & availability calendar", "Client enquiries & lead management", "Custom quotes & invoicing", "Contract templates", "Payment tracking (Tendr + outside)"] },
+      { title: "Growth", items: ["Analytics: views, clicks, enquiries", "Review & rating collection", "Flyer builder & shareable link", "Smart reminders for follow-ups", "Referral program access"] },
+      { title: "Support", items: ["Priority WhatsApp support", "Onboarding call with Tendr team", "Hindi & English support", "Business insights & monthly report"] },
+    ];
     return (
-      <Shell step={2} steps={["Category", "Specialty", "Plan", "Details"]} narrow={false}>
-        <button onClick={() => { setStep(1); setCategory(""); }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
+      <Shell step={2} steps={["Plan", "Details", "Submit"]} sideTiers>
+        <button type="button" onClick={() => setStep("plan")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 20, padding: 0 }}>
           ← Back
         </button>
-
-        <div style={{ marginBottom: 28 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 8 }}>
-            {category === "artist" ? "Individual Artist" : "Business / Vendor"}
-          </p>
-          <h1 style={{ fontSize: "clamp(1.5rem,3vw,2rem)", fontWeight: 800, color: ink, margin: "0 0 6px" }}>What's your specialty?</h1>
-          <p style={{ fontSize: 14, color: muted, margin: 0 }}>Choose your service type — your profile will be tailored for you.</p>
+        <div style={{ marginBottom: 24 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 6 }}>Dashboard Plan — ₹399/month</p>
+          <h1 style={{ fontSize: "clamp(1.4rem,3vw,1.8rem)", fontWeight: 800, color: ink, margin: "0 0 6px" }}>Everything you need to grow</h1>
+          <p style={{ fontSize: 13.5, color: muted, margin: 0 }}>7 days free. No card needed. Cancel anytime.</p>
         </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 12 }}>
-          {types.map(t => (
-            <button
-              key={t.value}
-              onClick={() => {
-                setForm(f => ({ ...f, serviceType: t.value }));
-                if (t.hasArtForm) {
-                  setStep("artform");
-                } else {
-                  setArtForm("");
-                  setStep("plan");
-                }
-              }}
-              style={{ padding: "18px 16px", borderRadius: 14, border: "1.5px solid rgba(28,14,4,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 3px rgba(28,14,4,0.04)", position: "relative", display: "flex", flexDirection: "column", alignItems: "flex-start" }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.background = "rgba(196,122,46,0.03)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.12)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.1)"; e.currentTarget.style.background = "#fff"; e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 1px 3px rgba(28,14,4,0.04)"; }}
-            >
-              <div style={{ width: 44, height: 44, borderRadius: "50%", background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.16)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12, flexShrink: 0 }}>
-                {t.icon}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 28 }}>
+          {featureSections.map(s => (
+            <div key={s.title} style={{ background: "#fff", borderRadius: 14, padding: "18px 20px", border: "1.5px solid rgba(196,122,46,0.14)" }}>
+              <p style={{ fontSize: 11, fontWeight: 800, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>{s.title}</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 14px" }}>
+                {s.items.map(i => <div key={i} style={{ fontSize: 12.5, color: muted, display: "flex", gap: 7 }}><span style={{ color: gold, flexShrink: 0 }}>✓</span>{i}</div>)}
               </div>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: ink, marginBottom: 4 }}>{t.label}</div>
-              <div style={{ fontSize: 11, color: muted, lineHeight: 1.5 }}>{t.sub}</div>
-              {t.hasArtForm && (
-                <div style={{ fontSize: 10.5, color: gold, fontWeight: 600, marginTop: 8, letterSpacing: "0.04em" }}>Choose art form →</div>
-              )}
-            </button>
+            </div>
           ))}
         </div>
-      </Shell>
-    );
-  }
-
-  // ── Step "artform": Performer art form picker ──────────────────────────────
-  if (step === "artform") {
-    return (
-      <Shell step={2} steps={["Category", "Specialty", "Plan", "Details"]} narrow={false}>
-        <button onClick={() => { setStep(2); setArtForm(""); }} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
-          ← Back
+        <button type="button" onClick={() => setStep("v_form")}
+          style={{ width: "100%", padding: "14px", borderRadius: 12, background: `linear-gradient(135deg,${gold},#CCAB4A)`, color: "#fff", border: "none", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font }}>
+          Continue with Dashboard Plan →
         </button>
-
-        <div style={{ marginBottom: 28 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 8 }}>Solo Performer</p>
-          <h1 style={{ fontSize: "clamp(1.5rem,3vw,2rem)", fontWeight: 800, color: ink, margin: "0 0 6px" }}>What's your art form?</h1>
-          <p style={{ fontSize: 14, color: muted, margin: 0 }}>We'll match you with the right events for your style.</p>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
-          {PERFORMER_ART_FORMS.map(af => (
-            <button
-              key={af.value}
-              onClick={() => { setArtForm(af.value); setStep("plan"); }}
-              style={{ padding: "18px 16px", borderRadius: 14, border: "1.5px solid rgba(28,14,4,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 3px rgba(28,14,4,0.04)" }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.background = "rgba(196,122,46,0.04)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(196,122,46,0.12)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.1)"; e.currentTarget.style.background = "#fff"; e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 1px 3px rgba(28,14,4,0.04)"; }}
-            >
-              <div style={{ fontSize: 24, marginBottom: 10 }}>{af.emoji}</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: ink, marginBottom: 4 }}>{af.label}</div>
-              <div style={{ fontSize: 11, color: muted, lineHeight: 1.5 }}>{af.sub}</div>
-            </button>
-          ))}
-        </div>
+        <button type="button" onClick={() => { setPlan("free"); setStep("v_form"); }}
+          style={{ width: "100%", marginTop: 10, padding: "12px", borderRadius: 12, background: "none", color: muted, border: "1.5px solid rgba(28,14,4,0.14)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+          No thanks, continue with Free listing
+        </button>
       </Shell>
     );
   }
 
-  // ── Step 3: Contact details form ───────────────────────────────────────────
-  const typeLabel = [...ARTIST_TYPES, ...VENDOR_TYPES].find(t => t.value === form.serviceType);
-  const artFormLabel = PERFORMER_ART_FORMS.find(a => a.value === artForm);
+  // Step v_form — Vendor details + category-specific questions
+  if (step === "v_form") {
+    const handleVendorChange = (e) => {
+      const { name, value } = e.target;
+      setVendorForm(p => ({ ...p, [name]: value }));
+      if (errors[name]) setErrors(p => ({ ...p, [name]: "" }));
+      if (apiError) setApiError("");
+    };
 
-  return (
-    <Shell step={4} steps={["Category", "Specialty", "Plan", "Details"]}>
-      <button onClick={() => setStep("plan")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 20, padding: 0 }}>
-        ← Back
-      </button>
+    const handleVendorSubmit = async (e) => {
+      e.preventDefault();
+      const er = {};
+      if (!vendorForm.name.trim())          er.name = "Name is required";
+      if (!vendorForm.businessName.trim())  er.businessName = "Business name is required";
+      if (!/^[6-9]\d{9}$/.test(vendorForm.phoneNumber))   er.phoneNumber = "Enter a valid 10-digit number";
+      if (!/^[6-9]\d{9}$/.test(vendorForm.whatsappNumber)) er.whatsappNumber = "Enter a valid 10-digit number";
+      if (!vendorForm.address.trim())       er.address = "City / area is required";
+      if (!serviceType)                     er.serviceType = "Please select your service category";
+      if (vendorForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(vendorForm.email)) er.email = "Enter a valid email";
+      if (Object.keys(er).length) { setErrors(er); return; }
 
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: "clamp(1.4rem,3vw,1.8rem)", fontWeight: 800, color: ink, margin: "0 0 4px" }}>
-          {typeLabel?.label || form.serviceType}
-          {artFormLabel ? ` — ${artFormLabel.label}` : ""}
-        </h1>
-        <p style={{ fontSize: 14, color: muted, margin: 0 }}>Fill in your contact details — we'll reach you on WhatsApp.</p>
+      const ok = await submitApplication({
+        name: vendorForm.name.trim(),
+        businessName: vendorForm.businessName.trim(),
+        phoneNumber: vendorForm.phoneNumber,
+        whatsappNumber: vendorForm.whatsappNumber,
+        email: vendorForm.email || "",
+        address: vendorForm.address,
+        serviceType,
+        isArtist: false,
+        plan,
+        categoryAnswers,
+      });
+      if (ok) { setSuccessName(vendorForm.name); setSubmitted(true); }
+    };
+
+    const vInput = (f, label, req, opts = {}) => (
+      <div>
+        <Label required={req} optional={!req}>{label}</Label>
+        <input name={f} value={vendorForm[f]} onChange={handleVendorChange}
+          onFocus={() => setFocused(f)} onBlur={() => setFocused("")}
+          style={inputStyle(focused, errors, f, gold, ink)} {...opts} />
+        <FieldError msg={errors[f]} />
       </div>
+    );
 
-      <div style={{ background: "#fff", borderRadius: 16, padding: "24px 22px", border: "1px solid rgba(28,14,4,0.07)", boxShadow: "0 2px 12px rgba(28,14,4,0.05)" }}>
-        {apiError && (
-          <div style={{ background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 10, padding: "11px 16px", fontSize: 13, color: "#c0392b", marginBottom: 20 }}>{apiError}</div>
-        )}
+    return (
+      <Shell step={3} steps={["Plan", "Details", "Submit"]}>
+        <button type="button" onClick={() => setStep(plan === "paid" ? "v_features" : "plan")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 20, padding: 0 }}>
+          ← Back
+        </button>
 
-        <form onSubmit={handleSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-          <div>
-            <Label required>Full Name</Label>
-            <input name="name" type="text" placeholder="e.g. Rahul Sharma" value={form.name} onChange={handleChange}
-              onFocus={() => setFocused("name")} onBlur={() => setFocused("")}
-              style={iStyle("name")} />
-            <FieldError msg={errors.name} />
-          </div>
+        <div style={{ marginBottom: 24 }}>
+          <h1 style={{ fontSize: "clamp(1.4rem,3vw,1.8rem)", fontWeight: 800, color: ink, margin: "0 0 4px" }}>Tell us about your business</h1>
+          <p style={{ fontSize: 13.5, color: muted, margin: 0 }}>We'll reach you on WhatsApp to complete your onboarding.</p>
+        </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div style={{ background: "#fff", borderRadius: 16, padding: "24px 22px", border: "1px solid rgba(28,14,4,0.07)", boxShadow: "0 2px 12px rgba(28,14,4,0.05)" }}>
+          {apiError && <div style={{ background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 10, padding: "11px 16px", fontSize: 13, color: "#c0392b", marginBottom: 20 }}>{apiError}</div>}
+
+          <form onSubmit={handleVendorSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>Business Info</p>
+
+            {vInput("businessName", "Business / Brand Name", true, { placeholder: "e.g. Royal Decorators or Rahul Photography" })}
+
             <div>
-              <Label required>Phone</Label>
-              <input name="phoneNumber" type="tel" placeholder="10-digit number" value={form.phoneNumber} onChange={handleChange}
-                onFocus={() => setFocused("phoneNumber")} onBlur={() => setFocused("")} maxLength={10}
-                style={iStyle("phoneNumber")} />
-              <FieldError msg={errors.phoneNumber} />
-            </div>
-            <div>
-              <Label required>WhatsApp</Label>
-              <input name="whatsappNumber" type="tel" placeholder="10-digit number" value={form.whatsappNumber} onChange={handleChange}
-                onFocus={() => setFocused("whatsappNumber")} onBlur={() => setFocused("")} maxLength={10}
-                style={iStyle("whatsappNumber")} />
-              <FieldError msg={errors.whatsappNumber} />
-            </div>
-          </div>
-
-          <div>
-            <Label optional>Email</Label>
-            <input name="email" type="email" placeholder="e.g. rahul@example.com" value={form.email} onChange={handleChange}
-              onFocus={() => setFocused("email")} onBlur={() => setFocused("")}
-              style={iStyle("email")} />
-            <FieldError msg={errors.email} />
-          </div>
-
-          <div>
-            <Label required>City / Area you serve</Label>
-            <textarea name="address" placeholder="e.g. South Delhi, Noida, Gurgaon" value={form.address} onChange={handleChange}
-              onFocus={() => setFocused("address")} onBlur={() => setFocused("")} rows={2}
-              style={{ ...iStyle("address"), resize: "vertical" }} />
-            <FieldError msg={errors.address} />
-          </div>
-
-          {/* Summary chips */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 10, background: "#F9F6F1", border: "1px solid rgba(28,14,4,0.09)" }}>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>
-                  {typeLabel?.label || form.serviceType}
-                  {artFormLabel ? ` · ${artFormLabel.label}` : ""}
-                </div>
-                <div style={{ fontSize: 11, color: muted }}>Your service type</div>
+              <Label required>Service Category</Label>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 8, marginTop: 4 }}>
+                {VENDOR_SERVICE_TYPES.map(t => {
+                  const on = serviceType === t.value;
+                  return (
+                    <button key={t.value} type="button" onClick={() => { setServiceType(t.value); setCatAns({}); if (errors.serviceType) setErrors(p => ({...p, serviceType: ""})); }}
+                      style={{ padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${on ? gold : "rgba(28,14,4,0.12)"}`, background: on ? "rgba(196,122,46,0.07)" : "#F9F6F1", color: on ? ink : muted, fontSize: 12, fontWeight: on ? 700 : 600, cursor: "pointer", fontFamily: font, textAlign: "left", transition: "all 0.15s" }}>
+                      <div style={{ fontWeight: 700, marginBottom: 2 }}>{t.label}</div>
+                      <div style={{ fontSize: 10.5, color: muted, lineHeight: 1.4 }}>{t.sub}</div>
+                    </button>
+                  );
+                })}
               </div>
-              <button type="button" onClick={() => { setStep(artForm ? "artform" : 2); }} style={{ fontSize: 12, fontWeight: 600, color: gold, background: "none", border: "none", cursor: "pointer", fontFamily: font }}>
-                Change
-              </button>
+              <FieldError msg={errors.serviceType} />
             </div>
+
+            {serviceType && (
+              <>
+                <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "4px 0 0" }}>Service Details</p>
+                <CategoryQuestions serviceType={serviceType} answers={categoryAnswers} onChange={(id, val) => setCatAns(p => ({...p, [id]: val}))} />
+              </>
+            )}
+
+            <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "4px 0 0" }}>Contact Details</p>
+
+            {vInput("name", "Your Full Name", true, { placeholder: "Contact person name" })}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div>
+                <Label required>Phone</Label>
+                <input name="phoneNumber" value={vendorForm.phoneNumber} onChange={e => { setVendorForm(p => ({...p, phoneNumber: e.target.value.replace(/\D/,"").slice(0,10)})); if (errors.phoneNumber) setErrors(p => ({...p, phoneNumber: ""})); }}
+                  onFocus={() => setFocused("phoneNumber")} onBlur={() => setFocused("")} inputMode="numeric" placeholder="10-digit number"
+                  style={inputStyle(focused, errors, "phoneNumber", gold, ink)} />
+                <FieldError msg={errors.phoneNumber} />
+              </div>
+              <div>
+                <Label required>WhatsApp</Label>
+                <input name="whatsappNumber" value={vendorForm.whatsappNumber} onChange={e => { setVendorForm(p => ({...p, whatsappNumber: e.target.value.replace(/\D/,"").slice(0,10)})); if (errors.whatsappNumber) setErrors(p => ({...p, whatsappNumber: ""})); }}
+                  onFocus={() => setFocused("whatsappNumber")} onBlur={() => setFocused("")} inputMode="numeric" placeholder="10-digit number"
+                  style={inputStyle(focused, errors, "whatsappNumber", gold, ink)} />
+                <FieldError msg={errors.whatsappNumber} />
+              </div>
+            </div>
+            {vInput("email", "Email Address", false, { type: "email", placeholder: "business@email.com" })}
+            {vInput("address", "City / Area you serve", true, { placeholder: "e.g. South Delhi, Noida, Gurgaon" })}
+
+            {/* Plan summary */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 10, background: plan === "paid" ? "rgba(196,122,46,0.06)" : "#F9F6F1", border: plan === "paid" ? `1px solid rgba(196,122,46,0.28)` : "1px solid rgba(28,14,4,0.09)" }}>
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>
-                    {plan === "paid" ? "Listing + Dashboard" : "Free Listing"}
-                  </div>
-                  {plan === "paid" && (
-                    <div style={{ fontSize: 10, fontWeight: 800, background: gold, color: "#fff", padding: "2px 7px", borderRadius: 100, letterSpacing: "0.05em" }}>7-day trial</div>
-                  )}
-                </div>
-                <div style={{ fontSize: 11, color: muted, marginTop: 1 }}>
-                  {plan === "paid" ? "₹399 + GST/month after trial · 0% outside commission" : "₹0 forever · 15% on Tendr bookings"}
-                </div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>{plan === "paid" ? "Dashboard Plan — ₹399/month" : "Free listing"}</div>
+                <div style={{ fontSize: 11, color: muted }}>{plan === "paid" ? "7-day free trial · upgrade after" : "₹0 forever · 15% on Tendr bookings only"}</div>
               </div>
-              <button type="button" onClick={() => setStep("plan")} style={{ fontSize: 12, fontWeight: 600, color: gold, background: "none", border: "none", cursor: "pointer", fontFamily: font }}>
-                Change
-              </button>
+              <button type="button" onClick={() => setStep("plan")} style={{ fontSize: 12, fontWeight: 600, color: gold, background: "none", border: "none", cursor: "pointer", fontFamily: font }}>Change</button>
             </div>
-          </div>
 
-          <FieldError msg={errors.serviceType} />
+            <button type="submit" disabled={loading}
+              style={{ marginTop: 4, padding: "14px", borderRadius: 12, background: loading ? "#D4A060" : `linear-gradient(135deg,${gold},#CCAB4A)`, color: "#fff", border: "none", fontSize: 15, fontWeight: 800, cursor: loading ? "default" : "pointer", fontFamily: font }}>
+              {loading ? "Submitting…" : "Submit Application"}
+            </button>
+          </form>
+        </div>
+        <p style={{ textAlign: "center", fontSize: 12, color: muted, marginTop: 16 }}>
+          You'll get an SMS confirmation. Our team will review and reach you on WhatsApp within 24–48 hours.
+        </p>
+      </Shell>
+    );
+  }
 
-          <button type="submit" disabled={loading}
-            style={{ width: "100%", padding: "14px", borderRadius: 10, border: "none", background: loading ? "#e5e7eb" : gold, color: loading ? "#9ca3af" : "#fff", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: loading ? "not-allowed" : "pointer", boxShadow: loading ? "none" : "0 4px 14px rgba(196,122,46,0.3)", transition: "all 0.2s" }}>
-            {loading ? "Submitting…" : "Submit Application →"}
-          </button>
-        </form>
-      </div>
-
-      <p style={{ textAlign: "center", fontSize: 12, color: muted, marginTop: 16 }}>
-        {plan === "paid" ? "7-day free trial · No card needed · Cancel anytime" : "Free to list · 15% only on Tendr bookings · Upgrade anytime"}
-      </p>
-      <p style={{ textAlign: "center", fontSize: 13, color: muted, marginTop: 6 }}>
-        Already a partner?{" "}
-        <span onClick={() => navigate("/login")} style={{ color: gold, fontWeight: 600, cursor: "pointer" }}>Sign in</span>
-      </p>
-    </Shell>
-  );
+  // Fallback
+  return null;
 }

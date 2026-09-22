@@ -1362,6 +1362,7 @@ const AdminDashboard = () => {
   const [editingVendor, setEditingVendor] = useState(null);
   const [menuVendor, setMenuVendor] = useState(null);
   const [registeringAppId, setRegisteringAppId] = useState(null);
+  const [vendorWaPopup, setVendorWaPopup] = useState(null); // { msg, phone }
   // Vendor search + filters
   const [vendorSearch, setVendorSearch] = useState("");
   const [vendorFilterType, setVendorFilterType] = useState("all");
@@ -3753,16 +3754,41 @@ const AdminDashboard = () => {
               );
             })()}
 
+            {/* WhatsApp popup for vendor approve/reject */}
+            {vendorWaPopup && (
+              <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+                onClick={() => setVendorWaPopup(null)}>
+                <div style={{ background: "#fff", borderRadius: 18, padding: "28px 26px", maxWidth: 440, width: "100%", boxShadow: "0 20px 60px rgba(0,0,0,0.2)", fontFamily: "'Outfit',sans-serif" }}
+                  onClick={e => e.stopPropagation()}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>SMS sent ✓</p>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", marginBottom: 12 }}>Also send on WhatsApp?</p>
+                  <div style={{ background: "#F9F6F1", borderRadius: 10, padding: "12px 14px", fontSize: 13, color: "#5a3a1a", lineHeight: 1.6, marginBottom: 18, whiteSpace: "pre-wrap" }}>{vendorWaPopup.msg}</div>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <a href={`https://wa.me/91${vendorWaPopup.phone}?text=${encodeURIComponent(vendorWaPopup.msg)}`}
+                      target="_blank" rel="noopener noreferrer"
+                      onClick={() => setVendorWaPopup(null)}
+                      style={{ flex: 1, padding: "11px", borderRadius: 10, background: "#25D366", color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none", textAlign: "center" }}>
+                      Send on WhatsApp
+                    </a>
+                    <button type="button" onClick={() => setVendorWaPopup(null)}
+                      style={{ padding: "11px 18px", borderRadius: 10, border: "1.5px solid #E5D5C0", background: "#F9F6F1", color: "#9B7450", fontWeight: 600, fontSize: 13, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
+                      Skip
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Vendor Applications Table */}
             <div className="mb-8">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <div className="text-xl font-semibold text-black">Vendor Applications ({vendorApplications.length})</div>
+                <div className="text-xl font-semibold text-black">Vendor Applications ({vendorApplications.filter(a => !a.isArtist).length})</div>
               </div>
-              {vendorApplications.length === 0 ? (
+              {vendorApplications.filter(a => !a.isArtist).length === 0 ? (
                 <div style={{ textAlign: "center", padding: "32px", color: "#9B7450", background: "#fff", borderRadius: 16, border: "2px solid #CCAB4A" }}>No applications yet.</div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {vendorApplications.map((app) => {
+                  {vendorApplications.filter(a => !a.isArtist).map((app) => {
                     // ── Replace this URL when you have the Google Form link ──
                     const GOOGLE_FORM_URL = "https://forms.gle/9DLeMdJiMdLNsTmbA";
 
@@ -3784,9 +3810,14 @@ const AdminDashboard = () => {
                         body: JSON.stringify({ status: newStatus }),
                       })
                         .then((r) => r.json())
-                        .then(() => setVendorApplications((prev) =>
-                          prev.map((a) => a._id === app._id ? { ...a, status: newStatus } : a)
-                        ))
+                        .then((d) => {
+                          setVendorApplications((prev) =>
+                            prev.map((a) => a._id === app._id ? { ...a, status: newStatus } : a)
+                          );
+                          if (d.whatsappMsg && d.whatsappPhone) {
+                            setVendorWaPopup({ msg: d.whatsappMsg, phone: d.whatsappPhone });
+                          }
+                        })
                         .catch(() => {});
                     };
 

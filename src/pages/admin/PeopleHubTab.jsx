@@ -43,6 +43,7 @@ export default function PeopleHubTab({
   const [appSearch, setAppSearch]     = useState("");
   const [appFilter, setAppFilter]     = useState("all"); // all | pending | form_sent | approved | rejected
   const [appStatusOverrides, setAppStatusOverrides] = useState({}); // { [id]: status }
+  const [waPopup, setWaPopup]         = useState(null); // { msg, phone } after approve
 
   useEffect(() => {
     if (coordsLoaded) return;
@@ -74,9 +75,9 @@ export default function PeopleHubTab({
   const performers         = vendorStats.filter(v => PERFORMER_TYPES.includes(v.serviceType));
   const coordAssignedChats = chatRequests.filter(c => c.coordinatorId);
 
-  // Artist applications: VendorApplication entries with an artist serviceType (or untyped)
+  // Artist applications: VendorApplication entries flagged as isArtist
   const artistApplications = vendorApplications.filter(a =>
-    ARTIST_SERVICE_TYPES.includes(a.serviceType) || !a.serviceType
+    a.isArtist === true || ARTIST_SERVICE_TYPES.includes(a.serviceType)
   );
 
   // Unified applications list: coordinator pending registrations + artist applications
@@ -156,6 +157,31 @@ export default function PeopleHubTab({
 
   return (
     <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-6 overflow-y-auto">
+
+      {/* WhatsApp popup after approve/reject */}
+      {waPopup && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+          onClick={() => setWaPopup(null)}>
+          <div style={{ background: "#fff", borderRadius: 18, padding: "28px 26px", maxWidth: 440, width: "100%", boxShadow: "0 20px 60px rgba(0,0,0,0.2)", fontFamily: F }}
+            onClick={e => e.stopPropagation()}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: GOLD, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>SMS sent ✓</p>
+            <p style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", marginBottom: 12 }}>Also send on WhatsApp?</p>
+            <div style={{ background: "#F9F6F1", borderRadius: 10, padding: "12px 14px", fontSize: 13, color: "#5a3a1a", lineHeight: 1.6, marginBottom: 18, whiteSpace: "pre-wrap" }}>{waPopup.msg}</div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <a href={`https://wa.me/91${waPopup.phone}?text=${encodeURIComponent(waPopup.msg)}`}
+                target="_blank" rel="noopener noreferrer"
+                onClick={() => setWaPopup(null)}
+                style={{ flex: 1, padding: "11px", borderRadius: 10, background: "#25D366", color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none", textAlign: "center" }}>
+                Send on WhatsApp
+              </a>
+              <button type="button" onClick={() => setWaPopup(null)}
+                style={{ padding: "11px 18px", borderRadius: 10, border: "1.5px solid #E5D5C0", background: "#F9F6F1", color: "#9B7450", fontWeight: 600, fontSize: 13, cursor: "pointer", fontFamily: F }}>
+                Skip
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
@@ -271,9 +297,12 @@ export default function PeopleHubTab({
                     .then(r => r.json())
                     .then(d => {
                       setAppStatusOverrides(prev => ({ ...prev, [app._id]: newStatus }));
-                      // Also keep the coords list in sync for the Coordinators tab
                       if (isCoord && d.coordinator) {
                         setCoords(prev => prev.map(c => c._id === app._id ? d.coordinator : c));
+                      }
+                      // Show WhatsApp popup when backend returns a message
+                      if (!isCoord && d.whatsappMsg && d.whatsappPhone) {
+                        setWaPopup({ msg: d.whatsappMsg, phone: d.whatsappPhone });
                       }
                     })
                     .catch(() => {});
@@ -360,8 +389,15 @@ export default function PeopleHubTab({
                         <Btn onClick={() => updateAppStatus("pending")} bg="#FEF3C7" color="#D97706" border="#FDE68A">↩ Move to Pending</Btn>
                       )}
 
-                      {/* Artist flow: pending → invite to register on platform → registered */}
-                      {!isCoord && curStatus === "pending" && (
+                      {/* Artist flow */}
+                      {!isCoord && curStatus === "pending" && app.isArtist && (
+                        <>
+                          <Btn onClick={() => updateAppStatus("approved")} bg="#15803D" color="#fff">✅ Approve & List</Btn>
+                          <Btn onClick={() => updateAppStatus("rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">❌ Reject</Btn>
+                        </>
+                      )}
+                      {/* Legacy non-isArtist pending (old flow) */}
+                      {!isCoord && curStatus === "pending" && !app.isArtist && (
                         <>
                           <a
                             href={`https://wa.me/91${waNum}?text=${encodeURIComponent(`Hi ${app.name}! 🎉 Your interest in joining Tendr as a ${app.serviceType || "performer"} has been reviewed.\n\nPlease complete your profile registration here:\n${window.location.origin}/vendor/register\n\nOnce you register, you'll be live on the platform. Welcome to Tendr! 🙌`)}`}

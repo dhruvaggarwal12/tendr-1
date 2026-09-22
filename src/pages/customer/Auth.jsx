@@ -227,7 +227,7 @@ const Auth = () => {
       // Store token + user in Redux (same as login)
       dispatch({ type: "auth/login/fulfilled", payload: data });
       if (data.consumer?.isAdmin) { navigate("/AdminDashboard"); return; }
-      if (accountType === "vendor") { navigate("/vendor/register"); return; }
+      if (accountType === "vendor") { navigate("/vendor/registration?flow=vendor"); return; }
       if (accountType === "company") { navigate("/dashboard"); return; }
       // Extend discovery session TTL to event date on signup
       try {
