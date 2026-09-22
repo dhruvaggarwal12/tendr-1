@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import router from "../router";
 import { FUN_ACTIVITIES } from "../data/funActivitiesData";
 import { addActivity, removeActivity, saveActivityForm, clearFunCart, setFunConfirmed, selectFunCartItems } from "../redux/funActivitiesCartSlice";
+import { useChatOverlay } from "../context/ChatContext";
 
 const F     = "'Outfit', sans-serif";
 const GOLD  = "#C47A2E";
@@ -308,6 +309,7 @@ export function FunActivityCard({ activity, onQuickView, onBook, onAddToCart, is
 export function FunCartDrawer({ onClose }) {
   const dispatch = useDispatch();
   const cartItems = useSelector(selectFunCartItems);
+  const { openFunActivitiesChat } = useChatOverlay();
   const today = new Date().toISOString().split("T")[0];
 
   const [step, setStep] = useState(0); // 0=cart 1=form 2=done
@@ -327,7 +329,7 @@ export function FunCartDrawer({ onClose }) {
     return sum + item.price * qty;
   }, 0);
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!valid) return;
     cartItems.forEach(item => {
       const qty = item.perUnit ? (qtyMap[item.id] || 1) : 1;
@@ -335,29 +337,23 @@ export function FunCartDrawer({ onClose }) {
       dispatch(saveActivityForm({ id: item.id, form: { ...form, qty }, totalPrice }));
     });
     dispatch(setFunConfirmed(true));
-    try {
-      const BASE_URL = import.meta.env.VITE_BASE_URL;
-      await fetch(`${BASE_URL}/stationery/cart-orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'fun-activity',
-          customerName: form.name,
-          customerPhone: form.phone,
-          address: form.address,
-          eventDate: form.date,
-          items: cartItems.map(item => ({
-            name: item.name,
-            quantity: item.perUnit ? (qtyMap[item.id] || 1) : 1,
-            price: item.price,
-            unit: item.unitLabel || 'unit',
-            category: 'Fun Activity',
-          })),
-          details: { eventType: form.eventType, guests: form.guests, time: form.time, notes: form.notes },
-          totalEstimate: cartTotal,
-        }),
-      });
-    } catch { /* non-blocking */ }
+
+    const itemLines = cartItems.map(item => {
+      const qty = item.perUnit ? (qtyMap[item.id] || 1) : 1;
+      return `• ${item.name}${item.perUnit ? ` × ${qty}` : ""} — ₹${(item.price * qty).toLocaleString("en-IN")}`;
+    }).join("\n");
+    const msg = `🎭 Fun Activities Booking\n\nActivities:\n${itemLines}\n\nTotal: ₹${cartTotal.toLocaleString("en-IN")}\n\nEvent: ${form.eventType}\nDate: ${form.date} at ${form.time}\nGuests: ${form.guests}\nVenue: ${form.address}${form.notes ? `\nNotes: ${form.notes}` : ""}`;
+
+    const eventDetails = {
+      eventType: form.eventType,
+      guests: form.guests,
+      date: form.date,
+      time: form.time,
+      venueAddress: form.address,
+      ...(form.notes ? { message: form.notes } : {}),
+    };
+
+    openFunActivitiesChat(msg, eventDetails);
     setStep(2);
   };
 
@@ -374,18 +370,18 @@ export function FunCartDrawer({ onClose }) {
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
         <div>
-          <h3 data-ui-heading style={{ fontSize: 20, fontWeight: 900, color: BROWN, margin: "0 0 8px", fontFamily: F }}>Booking Details Saved!</h3>
-          <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 4px", lineHeight: 1.6 }}>Your activities are ready.</p>
-          <p style={{ fontSize: 13, color: BROWN, fontWeight: 700, margin: 0, lineHeight: 1.6 }}>Tap the 🎁 gift icon to the left of the chat button to send your booking.</p>
+          <h3 data-ui-heading style={{ fontSize: 20, fontWeight: 900, color: BROWN, margin: "0 0 8px", fontFamily: F }}>Booking Request Sent!</h3>
+          <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 4px", lineHeight: 1.6 }}>Your fun activities booking has been received.</p>
+          <p style={{ fontSize: 13, color: BROWN, fontWeight: 700, margin: 0, lineHeight: 1.6 }}>Continue the conversation in Active Chats.</p>
         </div>
         <div style={{ width: "100%", background: "rgba(196,122,46,0.08)", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 20 }}>
-            🎁
+            💬
           </div>
-          <p style={{ fontSize: 12, color: "#7A5535", margin: 0, lineHeight: 1.5, textAlign: "left" }}>Close this window and tap the <strong>🎁 gift icon</strong> to the left of the chat button at the bottom of the screen.</p>
+          <p style={{ fontSize: 12, color: "#7A5535", margin: 0, lineHeight: 1.5, textAlign: "left" }}>Your booking details have been sent to the Tendr team. Check <strong>Active Chats</strong> to track and continue the conversation.</p>
         </div>
-        <button onClick={onClose} style={{ width: "100%", padding: "13px", borderRadius: 12, border: "1.5px solid rgba(44,26,14,0.15)", background: "#fff", color: BROWN, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
-          Close
+        <button onClick={onClose} style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
+          Continue in Active Chats
         </button>
       </div>
     </>

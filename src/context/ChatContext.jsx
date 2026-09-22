@@ -55,6 +55,20 @@ export function ChatProvider({ children }) {
       initialMessage,
     });
 
+  // Open "Fun Activities" chat — initiated after fun activities booking form
+  const openFunActivitiesChat = (initialMessage = "", eventDetails = {}) =>
+    setChatState({
+      vendor: { _id: "fun-activities", name: "Tendr Team", serviceType: "Fun Activity", approved: true },
+      conversationId: null,
+      minimized: false,
+      isExisting: false,
+      isConcierge: true,
+      skipBotFlow: true,
+      isFunActivities: true,
+      initialMessage,
+      funEventDetails: eventDetails,
+    });
+
   const setConversationId = (id) =>
     setChatState(prev => prev ? { ...prev, conversationId: id } : null);
 
@@ -67,7 +81,7 @@ export function ChatProvider({ children }) {
   const closeChat = () => setChatState(null);
 
   return (
-    <ChatContext.Provider value={{ chatState, openVendorChat, openExistingChat, openConciergeChat, openTendrTeamChat, openOccasionsChat, setConversationId, minimizeChat, expandChat, closeChat }}>
+    <ChatContext.Provider value={{ chatState, openVendorChat, openExistingChat, openConciergeChat, openTendrTeamChat, openOccasionsChat, openFunActivitiesChat, setConversationId, minimizeChat, expandChat, closeChat }}>
       {children}
     </ChatContext.Provider>
   );
@@ -80,6 +94,7 @@ export const useChatOverlay = () => useContext(ChatContext) || {
   openConciergeChat: () => {},
   openTendrTeamChat: () => {},
   openOccasionsChat: () => {},
+  openFunActivitiesChat: () => {},
   setConversationId: () => {},
   minimizeChat: () => {},
   expandChat: () => {},

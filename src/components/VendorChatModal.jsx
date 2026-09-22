@@ -471,6 +471,7 @@ export default function VendorChatModal() {
   const isSkipBot = !!chatState?.skipBotFlow;
   const isSmartPlan = !!chatState?.isSmartPlan;
   const isOccasions = !!chatState?.isOccasions;
+  const isFunActivities = !!chatState?.isFunActivities;
 
   // ── Bot state ────────────────────────────────────────────────────────────────
   const selectedVendorTypes = useSelector(s => s.eventPlanning.selectedVendors || []);
@@ -688,19 +689,21 @@ export default function VendorChatModal() {
     // New concierge chat: open immediately on connect (no bot)
     if (isConcierge && !chatState.conversationId) {
       if (isSkipBot) {
-        // Queue the occasions plan text as first message before conversation opens
-        if (isOccasions && chatState.initialMessage) {
+        // Queue the initial message as first message before conversation opens
+        if ((isOccasions || isFunActivities) && chatState.initialMessage) {
           pendingMsgsRef.current = [chatState.initialMessage];
         }
-        // Occasions / Talk to Tendr Team — find-or-create the conversation
+        // Occasions / Fun Activities / Talk to Tendr Team — find-or-create the conversation
         (async () => {
           try {
-            const serviceType = isOccasions ? "Occasions" : "Talk to Tendr Team";
+            const serviceType = isOccasions ? "Occasions" : isFunActivities ? "Fun Activity" : "Talk to Tendr Team";
+            const body = { serviceType };
+            if (isFunActivities && chatState.funEventDetails) body.eventDetails = chatState.funEventDetails;
             const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
               method: "POST",
               headers: { "Content-Type": "application/json", ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
               credentials: "include",
-              body: JSON.stringify({ serviceType }),
+              body: JSON.stringify(body),
             });
             if (res.ok) {
               const data = await res.json();
