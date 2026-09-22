@@ -180,7 +180,7 @@ const GiftHampersCakes = () => {
     try {
       const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
         method: "POST", headers: hdrs, credentials: "include",
-        body: JSON.stringify({ message: msg, serviceType: "Baat Karo" }),
+        body: JSON.stringify({ message: msg, serviceType: "Baat Karo", bookingCategory: "gift-hampers" }),
       });
       const data = await res.json();
       if (res.ok && data.conversationId) {

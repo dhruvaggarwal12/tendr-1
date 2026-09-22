@@ -576,7 +576,7 @@ export default function FunActivitiesSection({ heading, subheading, activities =
 
   const handleAddToCart = (activity) => {
     dispatch(addActivity({ id: activity.id, name: activity.name, emoji: activity.emoji, price: activity.price, perUnit: activity.perUnit, unitLabel: activity.unitLabel }));
-    syncCartToBackend(localStorage.getItem('tendr_token'));
+    syncCartToBackend(localStorage.getItem('tendr_token'), 'fun-activities');
   };
 
   const scroll = (dir) => {

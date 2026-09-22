@@ -2455,8 +2455,11 @@ const AdminDashboard = () => {
                               </div>
                             </td>
                             <td style={{ padding: "10px 14px" }}>
-                              <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, background: plan.bookingType === "you-do-it" ? "#eff6ff" : "#f5f3ff", color: plan.bookingType === "you-do-it" ? "#0369a1" : "#7c3aed", border: "1px solid currentColor", whiteSpace: "nowrap" }}>
-                                {plan.bookingType === "you-do-it" ? "You Do It" : "Let Us Do It"}
+                              <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, whiteSpace: "nowrap", border: "1px solid currentColor",
+                                background: plan.bookingType === "you-do-it" ? "#eff6ff" : plan.bookingType === "let-us-do-it" ? "#f5f3ff" : plan.bookingType === "fun-activities" ? "#f0fdf4" : plan.bookingType === "stationery" ? "#fff7ed" : plan.bookingType === "gift-hampers" ? "#fdf4ff" : "#fefce8",
+                                color: plan.bookingType === "you-do-it" ? "#0369a1" : plan.bookingType === "let-us-do-it" ? "#7c3aed" : plan.bookingType === "fun-activities" ? "#15803d" : plan.bookingType === "stationery" ? "#c2410c" : plan.bookingType === "gift-hampers" ? "#a21caf" : "#a16207",
+                              }}>
+                                {plan.bookingType === "you-do-it" ? "You Do It" : plan.bookingType === "let-us-do-it" ? "Let Us Do It" : plan.bookingType === "fun-activities" ? "Fun Activities" : plan.bookingType === "stationery" ? "Stationery" : plan.bookingType === "gift-hampers" ? "Gift Hampers" : plan.bookingType === "occasions" ? "Occasions" : plan.bookingType}
                               </span>
                             </td>
                             {bookingTab === "Cancelled" ? (

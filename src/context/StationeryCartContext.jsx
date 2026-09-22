@@ -37,7 +37,7 @@ export function StationeryCartProvider({ children }) {
       if (exists) return prev.map(c => (c.item._id || c.item.id) === id ? { ...c, quantity: Number(quantity) } : c);
       return [...prev, { item, quantity: Number(quantity) }];
     });
-    syncCartToBackend(localStorage.getItem('tendr_token'));
+    syncCartToBackend(localStorage.getItem('tendr_token'), 'stationery');
   }, []);
 
   const removeFromCart = useCallback((item) => {

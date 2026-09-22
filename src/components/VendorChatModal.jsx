@@ -698,6 +698,8 @@ export default function VendorChatModal() {
           try {
             const serviceType = isOccasions ? "Baat Karo" : isFunActivities ? "Stationery & Activities" : "Tendr Team";
             const body = { serviceType };
+            if (isOccasions) body.bookingCategory = 'occasions';
+            if (isFunActivities) body.bookingCategory = 'fun-activities';
             if (isFunActivities && chatState.funEventDetails) body.eventDetails = chatState.funEventDetails;
             const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
               method: "POST",
