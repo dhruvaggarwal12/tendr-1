@@ -96,7 +96,7 @@ import OtpVerification  from "./pages/customer/OtpVerification";
 import CustomerChatList from "./pages/customer/Chats";
 
 // ── Lazy loaded (not on critical path — split into separate chunks) ─────────
-const CoordinatorRegister = lazy(() => import("./pages/coordinator/Register"));
+const CoordinatorRegister = lazy(() => import("./pages/coordinator/CoordinatorRegister"));
 const CoordinatorLogin    = lazy(() => import("./pages/coordinator/Login"));
 const CoordinatorDashboard= lazy(() => import("./pages/coordinator/Dashboard"));
 const CoordinatorLanding  = lazy(() => import("./pages/coordinator/CoordinatorLanding"));
@@ -157,7 +157,6 @@ const PaymentFailedPage   = lazy(() => import('./pages/booking/PaymentFailedPage
 const BookingConfirmation = lazy(() => import('./pages/booking/BookingConfirmation'));
 const ArtistsPage           = lazy(() => import('./pages/artists/ArtistsPage'));
 const ArtistListingsPage    = lazy(() => import('./pages/artists/ArtistListingsPage'));
-const CoordinatorRegister   = lazy(() => import('./pages/coordinator/CoordinatorRegister'));
 const ReviewForm          = lazy(() => import('./pages/review/ReviewForm'));
 const FeedbackForm        = lazy(() => import('./pages/review/FeedbackForm'));
 const ContractPage        = lazy(() => import('./pages/vendor/ContractPage'));
@@ -358,12 +357,6 @@ const router = createBrowserRouter([
   {
     path: "/artists/:serviceType",
     element: <ArtistListingsPage />,
-    errorElement: <ErrorPage />
-  },
-
-  {
-    path: "/coordinator/register",
-    element: <CoordinatorRegister />,
     errorElement: <ErrorPage />
   },
 
