@@ -720,7 +720,7 @@ export default function VendorRegistration() {
   // Step a_type — Pick performer type
   if (step === "a_type") {
     return (
-      <Shell step={1} steps={["Type", "Profile", "Submit"]}>
+      <Shell step={1} steps={["Type", "Plan", "Profile"]}>
         <div style={{ marginBottom: 28 }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 8 }}>Artist / Performer</p>
           <h1 style={{ fontSize: "clamp(1.5rem,3.5vw,2rem)", fontWeight: 800, color: ink, margin: "0 0 8px", lineHeight: 1.2 }}>What type of performer are you?</h1>
@@ -729,7 +729,7 @@ export default function VendorRegistration() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
           {ARTIST_PERFORMER_TYPES.map(t => (
             <button key={t.value} type="button"
-              onClick={() => { setPerformerType(t.value); setGenres([]); setStep("a_profile"); }}
+              onClick={() => { setPerformerType(t.value); setGenres([]); setStep("a_plan"); }}
               style={{ padding: "20px 16px", borderRadius: 14, border: "1.5px solid rgba(28,14,4,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)", display: "flex", flexDirection: "column", gap: 8 }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(196,122,46,0.14)"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.1)"; e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; }}
@@ -743,6 +743,97 @@ export default function VendorRegistration() {
         <p style={{ textAlign: "center", fontSize: 13, color: muted, marginTop: 24 }}>
           Already listed? <span onClick={() => navigate("/vendor/login")} style={{ color: gold, fontWeight: 600, cursor: "pointer" }}>Sign in</span>
         </p>
+      </Shell>
+    );
+  }
+
+  // Step a_plan — Artist free / paid choice
+  if (step === "a_plan") {
+    return (
+      <Shell step={2} steps={["Type", "Plan", "Profile"]} sideTiers>
+        <button type="button" onClick={() => setStep("a_type")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
+          ← Back
+        </button>
+        <div style={{ marginBottom: 28 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 8 }}>Choose your plan</p>
+          <h1 style={{ fontSize: "clamp(1.5rem,3.5vw,2rem)", fontWeight: 800, color: ink, margin: "0 0 8px", lineHeight: 1.2 }}>Start free, upgrade anytime</h1>
+          <p style={{ fontSize: 14, color: muted, margin: 0 }}>No card needed. Switch plans whenever you are ready.</p>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <button type="button" onClick={() => { setPlan("free"); setStep("a_profile"); }}
+            style={{ padding: "22px 20px", borderRadius: 16, border: "1.5px solid rgba(28,14,4,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.12)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.1)"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(196,122,46,0.65)", marginBottom: 4 }}>Free listing</div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: ink }}>₹0 <span style={{ fontSize: 13, fontWeight: 500, color: muted }}>forever</span></div>
+              </div>
+            </div>
+            {FREE_FEATS.map(f => <div key={f} style={{ fontSize: 12.5, color: muted, display: "flex", gap: 8, marginBottom: 4 }}><span style={{ color: gold, flexShrink: 0 }}>✓</span>{f}</div>)}
+            <div style={{ marginTop: 12, padding: "8px 14px", borderRadius: 8, background: "rgba(196,122,46,0.07)", fontSize: 12, color: "#7a4d1b", fontWeight: 600 }}>15% commission only on Tendr bookings</div>
+          </button>
+
+          <button type="button" onClick={() => { setPlan("paid"); setStep("a_features"); }}
+            style={{ padding: "22px 20px", borderRadius: 16, border: `1.5px solid ${gold}`, background: "rgba(196,122,46,0.03)", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)", position: "relative" }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(196,122,46,0.18)"; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; }}>
+            <div style={{ position: "absolute", top: -1, right: 16, background: gold, color: "#fff", fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: "0 0 8px 8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>7-day free trial</div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 4 }}>Listing + Dashboard</div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: ink }}>₹399 <span style={{ fontSize: 13, fontWeight: 500, color: muted }}>+ GST / month</span></div>
+                <div style={{ fontSize: 11, color: muted, marginTop: 2 }}>after trial · no card needed to start</div>
+              </div>
+            </div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: muted, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>Everything in Free, plus:</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 12px" }}>
+              {PAID_FEATS.map(f => <div key={f} style={{ fontSize: 12, color: muted, display: "flex", gap: 6, marginBottom: 2 }}><span style={{ color: gold, flexShrink: 0 }}>✓</span>{f}</div>)}
+            </div>
+            <div style={{ marginTop: 12, padding: "8px 14px", borderRadius: 8, background: "rgba(196,122,46,0.07)", fontSize: 12, color: "#7a4d1b", fontWeight: 600 }}>0% commission on bookings made outside Tendr</div>
+            <div style={{ marginTop: 10, color: gold, fontSize: 12, fontWeight: 700 }}>See everything you get →</div>
+          </button>
+        </div>
+      </Shell>
+    );
+  }
+
+  // Step a_features — Paid plan full feature breakdown (artist)
+  if (step === "a_features") {
+    const featureSections = [
+      { title: "Profile & Discovery", items: ["Full artist profile with photos & videos", "Appear in Tendr search & category pages", "SEO-optimised public listing page", "Verified badge after approval"] },
+      { title: "Business Tools", items: ["Bookings & availability calendar", "Client enquiries & lead management", "Custom quotes & invoicing", "Contract templates", "Payment tracking (Tendr + outside)"] },
+      { title: "Growth", items: ["Analytics: views, clicks, enquiries", "Review & rating collection", "Flyer builder & shareable link", "Smart reminders for follow-ups", "Referral program access"] },
+      { title: "Support", items: ["Priority WhatsApp support", "Onboarding call with Tendr team", "Hindi & English support", "Business insights & monthly report"] },
+    ];
+    return (
+      <Shell step={2} steps={["Type", "Plan", "Profile"]} sideTiers>
+        <button type="button" onClick={() => setStep("a_plan")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 20, padding: 0 }}>
+          ← Back
+        </button>
+        <div style={{ marginBottom: 24 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 6 }}>Dashboard Plan — ₹399/month</p>
+          <h1 style={{ fontSize: "clamp(1.4rem,3vw,1.8rem)", fontWeight: 800, color: ink, margin: "0 0 6px" }}>Everything you need to grow</h1>
+          <p style={{ fontSize: 13.5, color: muted, margin: 0 }}>7 days free. No card needed. Cancel anytime.</p>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 28 }}>
+          {featureSections.map(s => (
+            <div key={s.title} style={{ background: "#fff", borderRadius: 14, padding: "18px 20px", border: "1.5px solid rgba(196,122,46,0.14)" }}>
+              <p style={{ fontSize: 11, fontWeight: 800, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>{s.title}</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 14px" }}>
+                {s.items.map(i => <div key={i} style={{ fontSize: 12.5, color: muted, display: "flex", gap: 7 }}><span style={{ color: gold, flexShrink: 0 }}>✓</span>{i}</div>)}
+              </div>
+            </div>
+          ))}
+        </div>
+        <button type="button" onClick={() => setStep("a_profile")}
+          style={{ width: "100%", padding: "14px", borderRadius: 12, background: `linear-gradient(135deg,${gold},#CCAB4A)`, color: "#fff", border: "none", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font }}>
+          Continue with Dashboard Plan →
+        </button>
+        <button type="button" onClick={() => { setPlan("free"); setStep("a_profile"); }}
+          style={{ width: "100%", marginTop: 10, padding: "12px", borderRadius: 12, background: "none", color: muted, border: "1.5px solid rgba(28,14,4,0.14)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+          No thanks, continue with Free listing
+        </button>
       </Shell>
     );
   }
@@ -794,8 +885,8 @@ export default function VendorRegistration() {
     );
 
     return (
-      <Shell step={2} steps={["Type", "Profile", "Submit"]}>
-        <button type="button" onClick={() => setStep("a_type")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 20, padding: 0 }}>
+      <Shell step={3} steps={["Type", "Plan", "Profile"]}>
+        <button type="button" onClick={() => setStep("a_plan")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 20, padding: 0 }}>
           ← Back
         </button>
 
