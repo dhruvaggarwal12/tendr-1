@@ -42,6 +42,19 @@ export function ChatProvider({ children }) {
       skipBotFlow: true,
     });
 
+  // Open "Occasions" chat — for plan sharing from OccasionDetail
+  const openOccasionsChat = (initialMessage = "") =>
+    setChatState({
+      vendor: { _id: "occasions", name: "Occasions", serviceType: "Occasions", approved: true },
+      conversationId: null,
+      minimized: false,
+      isExisting: false,
+      isConcierge: true,
+      skipBotFlow: true,
+      isOccasions: true,
+      initialMessage,
+    });
+
   const setConversationId = (id) =>
     setChatState(prev => prev ? { ...prev, conversationId: id } : null);
 
@@ -54,7 +67,7 @@ export function ChatProvider({ children }) {
   const closeChat = () => setChatState(null);
 
   return (
-    <ChatContext.Provider value={{ chatState, openVendorChat, openExistingChat, openConciergeChat, openTendrTeamChat, setConversationId, minimizeChat, expandChat, closeChat }}>
+    <ChatContext.Provider value={{ chatState, openVendorChat, openExistingChat, openConciergeChat, openTendrTeamChat, openOccasionsChat, setConversationId, minimizeChat, expandChat, closeChat }}>
       {children}
     </ChatContext.Provider>
   );
@@ -66,6 +79,7 @@ export const useChatOverlay = () => useContext(ChatContext) || {
   openExistingChat: () => {},
   openConciergeChat: () => {},
   openTendrTeamChat: () => {},
+  openOccasionsChat: () => {},
   setConversationId: () => {},
   minimizeChat: () => {},
   expandChat: () => {},

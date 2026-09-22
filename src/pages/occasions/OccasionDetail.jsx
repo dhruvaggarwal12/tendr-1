@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { useChatOverlay } from "../../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 import { setMultipleFormData, setBookingType, setSelectedPerformer } from "../../redux/eventPlanningSlice";
@@ -172,13 +173,20 @@ const ALL_ACTIVITIES = {
 };
 
 const ACTIVITY_TYPES = [
-  { key:"anchors",    label:"Anchor / Emcee", icon:"🎙️", singular:"Anchor" },
-  { key:"bands",      label:"Live Bands",     icon:"🎺",  singular:"Band" },
   { key:"stalls",     label:"Stalls",         icon:"🛒",  singular:"Stall" },
-  { key:"performers", label:"Performers",     icon:"🎪",  singular:"Performer" },
   { key:"shows",      label:"Special Shows",  icon:"✨",  singular:"Show" },
-  { key:"games",      label:"Activities & Games", icon:"🎲", singular:"Activity" },
+  { key:"games",      label:"Fun Activities", icon:"🎉",  singular:"Activity" },
 ];
+
+// Merge anchors, bands, performers into games so they show under Fun Activities
+(function mergeIntoGames() {
+  const extra = [
+    ...ALL_ACTIVITIES.anchors,
+    ...ALL_ACTIVITIES.bands,
+    ...ALL_ACTIVITIES.performers,
+  ];
+  ALL_ACTIVITIES.games = [...extra, ...ALL_ACTIVITIES.games];
+})();
 
 const ALL_ACTIVITY_ITEMS = Object.values(ALL_ACTIVITIES).flat();
 
@@ -1276,6 +1284,7 @@ export default function OccasionDetail(){
   const navigate=useNavigate();
   const dispatch=useDispatch();
   const token=useSelector(s=>s.auth?.token);
+  const { openOccasionsChat } = useChatOverlay();
   const [searchParams]=useSearchParams();
   const cardRef=useRef(null);
   const planRef=useRef(null);
@@ -2674,8 +2683,7 @@ export default function OccasionDetail(){
                         {sel&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
                       </div>
                     </div>
-                    <div style={{fontSize:11.5,color:muted,lineHeight:1.5,marginBottom:6}}>{(g.desc||"").slice(0,70)}{(g.desc||"").length>70?"…":""}</div>
-                    <div style={{display:"inline-block",fontSize:11.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.08)",borderRadius:100,padding:"3px 10px"}}>{g.price}</div>
+                    <div style={{fontSize:11.5,color:muted,lineHeight:1.5}}>{(g.desc||"").slice(0,70)}{(g.desc||"").length>70?"…":""}</div>
                   </button>
                 );
               })}
@@ -2969,8 +2977,15 @@ export default function OccasionDetail(){
               </button>
             )}
             {step===6&&(
-              <button onClick={()=>window.open(buildBaatKaroMsg(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,selectedActivities,customActivities}),"_blank","noopener")} style={btnPrimary}>
-                Send to Baat Karo ↗
+              <button onClick={()=>{
+                if(token){
+                  const planText = buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities});
+                  openOccasionsChat(planText);
+                } else {
+                  navigate("/signup");
+                }
+              }} style={btnPrimary}>
+                Share with Tendr Team →
               </button>
             )}
           </div>

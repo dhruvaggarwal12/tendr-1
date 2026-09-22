@@ -812,8 +812,8 @@ export function MyEventFloatDesktop() {
             onClick={e => e.stopPropagation()}
             style={{
               position: 'fixed',
-              bottom: 'calc(88px + 48px + 8px)',
-              right: 24,
+              bottom: 88,
+              right: 'calc(24px + 200px + 12px)',
               background: CREAM, borderRadius: 18, padding: '20px 22px',
               boxShadow: '0 16px 48px rgba(44,26,14,0.22)',
               fontFamily: F, width: 260,

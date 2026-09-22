@@ -470,6 +470,7 @@ export default function VendorChatModal() {
   const isConcierge = !!chatState?.isConcierge;
   const isSkipBot = !!chatState?.skipBotFlow;
   const isSmartPlan = !!chatState?.isSmartPlan;
+  const isOccasions = !!chatState?.isOccasions;
 
   // ── Bot state ────────────────────────────────────────────────────────────────
   const selectedVendorTypes = useSelector(s => s.eventPlanning.selectedVendors || []);
@@ -687,15 +688,19 @@ export default function VendorChatModal() {
     // New concierge chat: open immediately on connect (no bot)
     if (isConcierge && !chatState.conversationId) {
       if (isSkipBot) {
-        // Talk to Tendr Team — find-or-create the single unified Baat Karo conversation
-        // so every entry point (Baat Karo page, Talk to Tendr Team) shares one chat
+        // Queue the occasions plan text as first message before conversation opens
+        if (isOccasions && chatState.initialMessage) {
+          pendingMsgsRef.current = [chatState.initialMessage];
+        }
+        // Occasions / Talk to Tendr Team — find-or-create the conversation
         (async () => {
           try {
+            const serviceType = isOccasions ? "Occasions" : "Talk to Tendr Team";
             const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
               method: "POST",
               headers: { "Content-Type": "application/json", ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
               credentials: "include",
-              body: JSON.stringify({ serviceType: "Talk to Tendr Team" }),
+              body: JSON.stringify({ serviceType }),
             });
             if (res.ok) {
               const data = await res.json();
