@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { syncCartToBackend } from "../utils/cartBookingSync";
 
 const CART_KEY = "tendr_stationery_cart";
 
@@ -36,6 +37,7 @@ export function StationeryCartProvider({ children }) {
       if (exists) return prev.map(c => (c.item._id || c.item.id) === id ? { ...c, quantity: Number(quantity) } : c);
       return [...prev, { item, quantity: Number(quantity) }];
     });
+    syncCartToBackend(localStorage.getItem('tendr_token'));
   }, []);
 
   const removeFromCart = useCallback((item) => {

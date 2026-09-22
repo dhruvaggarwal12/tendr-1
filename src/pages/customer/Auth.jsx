@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { clearError, signup, login } from "../../redux/authSlice";
 import { fetchEventData } from "../../redux/eventPlanningSlice";
 import { syncProgressOnLogin } from "../../utils/progressSync";
+import { syncCartToBackend } from "../../utils/cartBookingSync";
 import { useGoogleLogin } from "@react-oauth/google";
 
 const font = "'Outfit', sans-serif";
@@ -54,6 +55,7 @@ function GoogleAuthBtn({ accountType, isBusy }) {
         if (loggedUser?.isAdmin) { navigate("/AdminDashboard"); return; }
         if (loggedUser?.accountType === "vendor") { navigate("/vendor/register"); return; }
         if (loggedUser?.accountType === "company") { navigate("/dashboard"); return; }
+        syncCartToBackend(data.token);
         window.dispatchEvent(new CustomEvent("tendr:show-pwa-prompt", { detail: { source: "signup" } }));
         navigate(location.state?.returnTo || "/");
         setTimeout(() => window.scrollTo({ top: 0, behavior: "instant" }), 0);
@@ -229,6 +231,7 @@ const Auth = () => {
       if (data.consumer?.isAdmin) { navigate("/AdminDashboard"); return; }
       if (accountType === "vendor") { navigate("/vendor/registration?flow=vendor"); return; }
       if (accountType === "company") { navigate("/dashboard"); return; }
+      syncCartToBackend(data.token);
       // Extend discovery session TTL to event date on signup
       try {
         const raw = JSON.parse(localStorage.getItem("tendr:session:discovery") || "null");
@@ -305,7 +308,7 @@ const Auth = () => {
       if (login.fulfilled.match(result)) {
         const loggedUser = result.payload?.consumer;
         const token = result.payload?.token;
-        if (token) { dispatch(fetchEventData(token)); syncProgressOnLogin(token); }
+        if (token) { dispatch(fetchEventData(token)); syncProgressOnLogin(token); syncCartToBackend(token); }
         try {
           const raw = JSON.parse(localStorage.getItem("tendr:session:discovery") || "null");
           if (raw?.date) {

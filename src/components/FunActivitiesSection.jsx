@@ -5,6 +5,7 @@ import router from "../router";
 import { FUN_ACTIVITIES } from "../data/funActivitiesData";
 import { addActivity, removeActivity, saveActivityForm, clearFunCart, setFunConfirmed, selectFunCartItems } from "../redux/funActivitiesCartSlice";
 import { useChatOverlay } from "../context/ChatContext";
+import { syncCartToBackend } from "../utils/cartBookingSync";
 
 const F     = "'Outfit', sans-serif";
 const GOLD  = "#C47A2E";
@@ -575,6 +576,7 @@ export default function FunActivitiesSection({ heading, subheading, activities =
 
   const handleAddToCart = (activity) => {
     dispatch(addActivity({ id: activity.id, name: activity.name, emoji: activity.emoji, price: activity.price, perUnit: activity.perUnit, unitLabel: activity.unitLabel }));
+    syncCartToBackend(localStorage.getItem('tendr_token'));
   };
 
   const scroll = (dir) => {
