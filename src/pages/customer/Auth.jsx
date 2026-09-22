@@ -540,6 +540,16 @@ const Auth = () => {
                   sub: "DJ, photographer, caterer, decorator, or other event professional",
                 },
                 {
+                  value: "artist",
+                  icon: (
+                    <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+                    </svg>
+                  ),
+                  label: "Artist / Performer",
+                  sub: "Singer, band, anchor, choreographer, musician, or other live performer",
+                },
+                {
                   value: "coordinator",
                   icon: (
                     <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
@@ -592,6 +602,7 @@ const Auth = () => {
                 type="button"
                 onClick={() => {
                   if (accountType === "coordinator") { navigate("/coordinator/register"); return; }
+                  if (accountType === "artist") { navigate("/vendor/registration"); return; }
                   if (accountType === "company") { navigate("/corporate-signup"); return; }
                   setSignupStep("form");
                 }}
@@ -603,7 +614,7 @@ const Auth = () => {
                   boxShadow: "0 4px 14px rgba(196,122,46,0.35)", transition: "all 0.2s",
                 }}
               >
-                Continue as {accountType === "coordinator" ? "Coordinator" : accountType === "vendor" ? "Vendor" : accountType === "company" ? "Corporate" : "Personal"} →
+                Continue as {accountType === "coordinator" ? "Coordinator" : accountType === "artist" ? "Artist / Performer" : accountType === "vendor" ? "Vendor" : accountType === "company" ? "Corporate" : "Personal"} →
               </button>
             </div>
           ) : isSignup ? (
