@@ -380,7 +380,8 @@ const router = createBrowserRouter([
     path: '/vendor',
     errorElement: <ErrorPage />,
     children: [
-      { path: "register",  element: <VendorOnboarding /> },
+      { path: "register",      element: <VendorOnboarding /> },
+      { path: "registration",  element: <VendorRegistration /> },
       { path: "status",    element: <ApplicationStatus /> },
       { path: "dashboard", element: <VendorDashboard /> },
       { path: "profile",   element: <VendorProfile /> },
