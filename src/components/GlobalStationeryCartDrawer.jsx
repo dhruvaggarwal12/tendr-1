@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useStationeryCart } from "../context/StationeryCartContext";
 import { setStBooking } from "../redux/stationeryBookingSlice";
+import { useChatOverlay } from "../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -60,6 +61,7 @@ function buildWhatsAppMessage(cart, form) {
 export default function GlobalStationeryCartDrawer() {
   const dispatch = useDispatch();
   const { cart, cartCount, isCartOpen, closeCart, removeFromCart, updateQty, clearCart } = useStationeryCart();
+  const { openFunActivitiesChat } = useChatOverlay();
   const [step, setStep] = useState(0); // 0=cart 1=form 2=done
   const [form, setForm] = useState({ name: "", phone: "", address: "", date: "" });
   const [err, setErr] = useState("");
@@ -88,7 +90,7 @@ export default function GlobalStationeryCartDrawer() {
   }, 0);
   const hasUnpriced = cart.some((c) => c.item.priceOnRequest);
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     setErr("");
     if (!form.name.trim())    { setErr("Name is required"); return; }
     if (!form.phone.trim())   { setErr("Phone number is required"); return; }
@@ -98,29 +100,22 @@ export default function GlobalStationeryCartDrawer() {
     const cartSnapshot = cart.map(({ item, quantity }) => ({ item, quantity }));
     dispatch(setStBooking({ form: { ...form }, cartSnapshot }));
 
-    // Save to backend so admin can see the order
-    try {
-      await fetch(`${BASE_URL}/stationery/cart-orders`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "stationery",
-          customerName:  form.name,
-          customerPhone: form.phone,
-          address:       form.address,
-          eventDate:     form.date,
-          items: cart.map(({ item, quantity }) => ({
-            name:     item.name,
-            quantity,
-            price:    item.startingPrice || 0,
-            unit:     item.unit || "pcs",
-            category: item.category || "",
-          })),
-          totalEstimate: pricedTotal,
-        }),
-      });
-    } catch { /* non-blocking — order still saved locally */ }
+    // Build chat message with full order details
+    const itemLines = cart.map(({ item, quantity }) => {
+      const price = item.priceOnRequest ? "Price on request"
+        : item.priceRange ? item.priceRange
+        : item.startingPrice ? `₹${Number(item.startingPrice).toLocaleString("en-IN")} per ${item.unit || "pcs"}`
+        : "—";
+      return `• ${item.name} × ${quantity} ${item.unit || "pcs"} — ${price}`;
+    }).join("\n");
+    const msg = `💌 Wedding Stationery Booking\n\nItems:\n${itemLines}${pricedTotal > 0 ? `\n\nDesign Total: ₹${pricedTotal.toLocaleString("en-IN")} (+ printing & delivery)` : ""}\n\nName: ${form.name}\nPhone: ${form.phone}\nAddress: ${form.address}\nEvent Date: ${form.date}`;
 
+    const eventDetails = {
+      date: form.date,
+      venueAddress: form.address,
+    };
+
+    openFunActivitiesChat(msg, eventDetails);
     clearCart();
     closeCart();
     setStep(2);
@@ -142,18 +137,18 @@ export default function GlobalStationeryCartDrawer() {
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
         <div>
-          <h3 style={{ fontSize: 20, fontWeight: 900, color: BROWN, margin: "0 0 8px" }}>Order Saved!</h3>
-          <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 4px", lineHeight: 1.6 }}>Your stationery selection has been saved.</p>
-          <p style={{ fontSize: 13, color: BROWN, fontWeight: 700, margin: 0, lineHeight: 1.6 }}>Tap the <strong>🎁 gift icon</strong> to the left of the chat button to review and send your order on WhatsApp.</p>
+          <h3 style={{ fontSize: 20, fontWeight: 900, color: BROWN, margin: "0 0 8px" }}>Booking Request Sent!</h3>
+          <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 4px", lineHeight: 1.6 }}>Your stationery order has been received.</p>
+          <p style={{ fontSize: 13, color: BROWN, fontWeight: 700, margin: 0, lineHeight: 1.6 }}>Continue the conversation in Active Chats.</p>
         </div>
         <div style={{ width: "100%", background: "rgba(196,122,46,0.08)", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 20 }}>
-            🎁
+            💬
           </div>
-          <p style={{ fontSize: 12, color: "#7A5535", margin: 0, lineHeight: 1.5, textAlign: "left" }}>Close this window and tap the <strong>gift icon</strong> to the left of the chat button at the bottom of the screen.</p>
+          <p style={{ fontSize: 12, color: "#7A5535", margin: 0, lineHeight: 1.5, textAlign: "left" }}>Your order details have been sent to the Tendr team. Check <strong>Active Chats</strong> to track and continue the conversation.</p>
         </div>
-        <button onClick={handleClose} style={{ width: "100%", padding: "13px", borderRadius: 12, border: "1.5px solid rgba(44,26,14,0.15)", background: "#fff", color: BROWN, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-          Close
+        <button onClick={handleClose} style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+          Continue in Active Chats
         </button>
       </div>
     </>

@@ -39,6 +39,8 @@ const CONFIG = {
 
 export default function ServiceChat({ serviceType }) {
   const cfg = CONFIG[serviceType] || CONFIG["Occasions"];
+  // All Gift Hampers + Occasions chats merge into the same "Baat Karo" conversation
+  const storedServiceType = (serviceType === "Gift Hampers" || serviceType === "Occasions") ? "Baat Karo" : serviceType;
   const { token } = useSelector((s) => s.auth);
   const { openExistingChat } = useChatOverlay();
 
@@ -76,7 +78,7 @@ export default function ServiceChat({ serviceType }) {
       try {
         const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
           method: "POST", headers: hdrs, credentials: "include",
-          body: JSON.stringify({ message: draft.trim(), serviceType }),
+          body: JSON.stringify({ message: draft.trim(), serviceType: storedServiceType }),
         });
         const data = await res.json();
         if (!res.ok || !data.conversationId) return;
@@ -95,7 +97,7 @@ export default function ServiceChat({ serviceType }) {
         }
         if (photos.length > 0) { try { sessionStorage.removeItem("gh_chat_photos"); } catch {} setRefPhotos([]); }
         setText("");
-        openExistingChat(cid, { _id: null, name: "Tendr Team", serviceType, approved: false });
+        openExistingChat(cid, { _id: null, name: "Tendr Team", serviceType: storedServiceType, approved: false });
       } catch (e) { console.error("ServiceChat auto-submit failed:", e); }
       finally { setSending(false); }
     })();
@@ -110,7 +112,7 @@ export default function ServiceChat({ serviceType }) {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         credentials: "include",
-        body: JSON.stringify({ message: text.trim(), serviceType }),
+        body: JSON.stringify({ message: text.trim(), serviceType: storedServiceType }),
       });
       const data = await res.json();
       if (res.ok && data.conversationId) {
@@ -159,7 +161,7 @@ export default function ServiceChat({ serviceType }) {
         openExistingChat(data.conversationId, {
           _id: null,
           name: "Tendr Team",
-          serviceType,
+          serviceType: storedServiceType,
           approved: false,
         });
       }

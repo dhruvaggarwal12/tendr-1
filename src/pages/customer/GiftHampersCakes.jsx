@@ -34,7 +34,7 @@ const GiftHampersCakes = () => {
     fetch(`${BASE_URL}/conversations`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" })
       .then(r => r.ok ? r.json() : { conversations: [] })
       .then(data => {
-        const found = (data.conversations || []).find(c => c.serviceType === "Gift Hampers" && !c.vendorId);
+        const found = (data.conversations || []).find(c => (c.serviceType === "Baat Karo" || c.serviceType === "Gift Hampers") && !c.vendorId);
         if (found) setExistingChat(found);
       }).catch(() => {});
   }, [token]);
@@ -180,7 +180,7 @@ const GiftHampersCakes = () => {
     try {
       const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
         method: "POST", headers: hdrs, credentials: "include",
-        body: JSON.stringify({ message: msg, serviceType: "Gift Hampers" }),
+        body: JSON.stringify({ message: msg, serviceType: "Baat Karo" }),
       });
       const data = await res.json();
       if (res.ok && data.conversationId) {
@@ -190,7 +190,7 @@ const GiftHampersCakes = () => {
           if (photo.name) try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: "POST", headers: hdrs, body: JSON.stringify({ sender: "user", content: `📎 ${photo.name}${photo.priceRange ? ` — ${photo.priceRange}` : ""}` }) }); } catch {}
           try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: "POST", headers: hdrs, body: JSON.stringify({ sender: "user", content: `[img:${photo.url}]` }) }); } catch {}
         }
-        openExistingChat(cid, { _id: null, name: "Tendr Team", serviceType: "Gift Hampers", approved: false });
+        openExistingChat(cid, { _id: null, name: "Tendr Team", serviceType: "Baat Karo", approved: false });
       }
     } catch (e) { console.error("GiftHampersCakes chat failed:", e); }
   };
@@ -244,7 +244,7 @@ const GiftHampersCakes = () => {
             <span style={{ color: "#FFF8EC", fontSize: 13, fontWeight: 600, fontFamily: font }}>Active Gift Hampers chat</span>
           </div>
           <button
-            onClick={() => openExistingChat(existingChat._id, { _id: null, name: "Tendr Team", serviceType: "Gift Hampers", approved: true })}
+            onClick={() => openExistingChat(existingChat._id, { _id: null, name: "Tendr Team", serviceType: "Baat Karo", approved: true })}
             style={{ background: "none", color: "#CCAB4A", border: "1px solid rgba(204,171,74,0.35)", borderRadius: 100, padding: "7px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", letterSpacing: "0.03em" }}
           >
             Resume →

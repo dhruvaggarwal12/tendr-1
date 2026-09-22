@@ -34,7 +34,7 @@ export function ChatProvider({ children }) {
   // Open "Talk to Tendr Team" chat — no wizard, no approval wait, suggested Q&A
   const openTendrTeamChat = () =>
     setChatState({
-      vendor: { _id: "tendr-team", name: "Tendr Team", serviceType: "Concierge", approved: true },
+      vendor: { _id: "tendr-team", name: "Tendr Team", serviceType: "Tendr Team", approved: true },
       conversationId: null,
       minimized: false,
       isExisting: false,
@@ -42,10 +42,10 @@ export function ChatProvider({ children }) {
       skipBotFlow: true,
     });
 
-  // Open "Occasions" chat — for plan sharing from OccasionDetail
+  // Open "Occasions" chat — merges with Baat Karo + Gift Hampers into one conversation
   const openOccasionsChat = (initialMessage = "") =>
     setChatState({
-      vendor: { _id: "occasions", name: "Occasions", serviceType: "Occasions", approved: true },
+      vendor: { _id: "occasions", name: "Tendr Team", serviceType: "Baat Karo", approved: true },
       conversationId: null,
       minimized: false,
       isExisting: false,
@@ -55,10 +55,10 @@ export function ChatProvider({ children }) {
       initialMessage,
     });
 
-  // Open "Fun Activities" chat — initiated after fun activities booking form
+  // Open "Stationery & Activities" chat — merges Fun Activity + Wedding Stationery
   const openFunActivitiesChat = (initialMessage = "", eventDetails = {}) =>
     setChatState({
-      vendor: { _id: "fun-activities", name: "Tendr Team", serviceType: "Fun Activity", approved: true },
+      vendor: { _id: "stationery-activities", name: "Tendr Team", serviceType: "Stationery & Activities", approved: true },
       conversationId: null,
       minimized: false,
       isExisting: false,

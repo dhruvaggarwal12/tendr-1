@@ -696,7 +696,7 @@ export default function VendorChatModal() {
         // Occasions / Fun Activities / Talk to Tendr Team — find-or-create the conversation
         (async () => {
           try {
-            const serviceType = isOccasions ? "Occasions" : isFunActivities ? "Fun Activity" : "Talk to Tendr Team";
+            const serviceType = isOccasions ? "Baat Karo" : isFunActivities ? "Stationery & Activities" : "Tendr Team";
             const body = { serviceType };
             if (isFunActivities && chatState.funEventDetails) body.eventDetails = chatState.funEventDetails;
             const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {

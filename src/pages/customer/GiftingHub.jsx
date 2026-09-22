@@ -790,12 +790,12 @@ export default function GiftingHub() {
     try {
       const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
         method: "POST", headers: hdrs, credentials: "include",
-        body: JSON.stringify({ message, serviceType: "Gift Hampers" }),
+        body: JSON.stringify({ message, serviceType: "Baat Karo" }),
       });
       const data = await res.json();
       if (res.ok && data.conversationId) {
         window.dispatchEvent(new CustomEvent("tendr:chat-started"));
-        openExistingChat(data.conversationId, { _id: null, name: "Tendr Team", serviceType: "Gift Hampers", approved: false });
+        openExistingChat(data.conversationId, { _id: null, name: "Tendr Team", serviceType: "Baat Karo", approved: false });
       }
     } catch (e) { console.error("GiftingHub chat failed:", e); }
   }, [token, navigate, openExistingChat]);
