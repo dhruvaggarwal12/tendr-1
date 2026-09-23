@@ -937,7 +937,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
       {(() => {
         const hasLocalPay = path !== "/booking/review" && Object.keys(finalisedVendors).length > 0;
         const hasBackendPrice = vendorChats.some(c => (c.vendorPrice?.amount > 0) && c.chatApproved);
-        const showPay = hasLocalPay || (path !== "/booking/review" && hasBackendPrice);
+        const myOrderFinalised = path !== "/booking/review" && !!localStorage.getItem('tendr:my-order-finalised');
+        const showPay = hasLocalPay || (path !== "/booking/review" && hasBackendPrice) || myOrderFinalised;
         return ((showPay || ghConfirmed || stConfirmed || funConfirmed) && (
           <div className="chat-row-left">
             {showPay && (

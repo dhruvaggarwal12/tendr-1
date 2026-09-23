@@ -546,8 +546,8 @@ export default function VendorChatModal() {
   const [showFinalisePopup, setShowFinalisePopup] = useState(false);
   const [finalising, setFinalising] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  // All null-vendorId non-SmartPlan chats are Baat Karo flows (Baat Karo, Gift Hampers, Occasions, etc.)
-  const isBaatKaro = !vendor?._id && !isSmartPlan;
+  // All null-vendorId non-SmartPlan chats are Baat Karo flows; My Order also treated as Baat Karo for UI
+  const isBaatKaro = (!vendor?._id && !isSmartPlan) || isAllBookings;
   // Direct chats (no approval) — Mark Done + Finalise locked until admin replies once
   const isDirectChat = isBaatKaro || (isConcierge && !isSmartPlan);
   const finalisedVendors = useSelector(s => s.listingFilters.finalisedVendors || {});
@@ -563,7 +563,9 @@ export default function VendorChatModal() {
     const arr = Array.isArray(entry) ? entry : [entry];
     return arr.some(v => v._id === vendor._id);
   })();
-  const bookingSubmitted = isBaatKaro
+  const bookingSubmitted = isAllBookings
+    ? false  // My Order chat stays active until admin marks payment done
+    : isBaatKaro
     ? !!localStorage.getItem(`tendr:baat-karo-finalised:${conversationId}`)
     : !!localStorage.getItem(`tendr:booking-submitted:${vendor?._id}`);
 
@@ -1097,13 +1099,18 @@ export default function VendorChatModal() {
     }
 
     dispatch(setFinalisedVendor(vendor));
-    if (isBaatKaro && conversationId) localStorage.setItem(`tendr:baat-karo-finalised:${conversationId}`, "1");
+    if (isBaatKaro && conversationId) {
+      localStorage.setItem(`tendr:baat-karo-finalised:${conversationId}`, "1");
+      if (isAllBookings) localStorage.setItem('tendr:my-order-finalised', conversationId);
+    }
     try { const t = localStorage.getItem("tendr_token") || localStorage.getItem("jwt"); if (t) import("../utils/progressSync").then(m => m.scheduleSyncToServer(t)); } catch {}
     if (socketRef.current && conversationId) {
       socketRef.current.emit("send_message", {
         conversationId,
         sender: "customer-care",
-        content: isBaatKaro
+        content: isAllBookings
+          ? `[FINALISED] ✅ Customer has confirmed their My Order. Ready for payment.`
+          : isBaatKaro
           ? `[FINALISED] ✅ Customer has confirmed the plan with Tendr Team. Ready for payment.`
           : isConcierge
           ? `[FINALISED] ✅ Customer has finalised the Smart Plan. Ready for payment.`
@@ -1111,7 +1118,9 @@ export default function VendorChatModal() {
       });
     }
     setMessages(prev => [...prev, {
-      text: isBaatKaro
+      text: isAllBookings
+        ? `✅ Order confirmed! Continue browsing to add more services, or tap Pay when ready.`
+        : isBaatKaro
         ? `✅ Confirmed with Tendr Team! Tap the gold Pay button at the bottom right to proceed.`
         : isConcierge
         ? `✅ Smart Plan finalised! Tap the pay button at the bottom right to proceed.`
@@ -2009,10 +2018,12 @@ export default function VendorChatModal() {
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
               <h3 style={{ fontSize: 17, fontWeight: 900, color: "#2C1A0E", margin: "0 0 6px" }}>
-                {isBaatKaro ? "Plan Confirmed!" : isConcierge ? "Smart Plan Finalised!" : "Vendor Finalised!"}
+                {isAllBookings ? "My Order Confirmed!" : isBaatKaro ? "Plan Confirmed!" : isConcierge ? "Smart Plan Finalised!" : "Vendor Finalised!"}
               </h3>
               <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 16px", lineHeight: 1.6 }}>
-                {isBaatKaro
+                {isAllBookings
+                  ? "Continue browsing to add more services, or tap Pay to proceed."
+                  : isBaatKaro
                   ? "Your plan with Tendr Team is locked in. Tap Pay to proceed."
                   : isConcierge
                   ? "You can pay through the pay button at the bottom right. Please close this window."
@@ -2027,12 +2038,29 @@ export default function VendorChatModal() {
                   Tap the <strong>Pay button</strong> to the left of the chat button to go to Review & Pay.
                 </p>
               </div>
-              <button
-                onClick={() => setShowFinalisePopup(false)}
-                style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}
-              >
-                Got it ✓
-              </button>
+              {isAllBookings ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <button
+                    onClick={() => { setShowFinalisePopup(false); closeChat(); router.navigate("/booking/review"); }}
+                    style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}
+                  >
+                    Review & Pay →
+                  </button>
+                  <button
+                    onClick={() => setShowFinalisePopup(false)}
+                    style={{ width: "100%", padding: "11px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}
+                  >
+                    Continue Browsing
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowFinalisePopup(false)}
+                  style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}
+                >
+                  Got it ✓
+                </button>
+              )}
             </div>
           </div>
         )}

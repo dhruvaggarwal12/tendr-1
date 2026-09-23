@@ -1087,12 +1087,13 @@ const VendorDetailsPage = () => {
                 {isFromPlanFlow ? (() => {
                   void shortlistTick;
                   const slActive = vendor && isInShortlist(vendor.serviceType, vendor._id);
+                  const myOrderActive = !!chatState?.isAllBookings;
                   return (
                     <button
-                      onClick={() => { if (!slActive && vendor) addToShortlist(vendor.serviceType, vendor); }}
-                      style={{ flex: 1, padding: "12px", borderRadius: 10, border: "none", background: slActive ? "rgba(34,197,94,0.08)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: slActive ? "#16a34a" : "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: slActive ? "default" : "pointer", boxShadow: slActive ? "none" : "0 3px 12px rgba(196,122,46,0.4)", border: slActive ? "1.5px solid rgba(34,197,94,0.3)" : "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}
+                      onClick={() => { if (!slActive && !myOrderActive && vendor) addToShortlist(vendor.serviceType, vendor); }}
+                      style={{ flex: 1, padding: "12px", borderRadius: 10, border: "none", background: myOrderActive ? "rgba(196,122,46,0.08)" : slActive ? "rgba(34,197,94,0.08)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: myOrderActive ? "#C47A2E" : slActive ? "#16a34a" : "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: (slActive || myOrderActive) ? "default" : "pointer", boxShadow: (slActive || myOrderActive) ? "none" : "0 3px 12px rgba(196,122,46,0.4)", border: myOrderActive ? "1.5px solid rgba(196,122,46,0.3)" : slActive ? "1.5px solid rgba(34,197,94,0.3)" : "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}
                     >
-                      {slActive ? "✓ Shortlisted" : "Shortlist Vendor"}
+                      {myOrderActive ? "💬 Already in Chat" : slActive ? "✓ Shortlisted" : "Shortlist Vendor"}
                     </button>
                   );
                 })() : isPerformer ? (
@@ -1413,12 +1414,13 @@ const VendorDetailsPage = () => {
                   {isFromPlanFlow ? (() => {
                     void shortlistTick;
                     const slActive = vendor && isInShortlist(vendor.serviceType, vendor._id);
+                    const myOrderActive = !!chatState?.isAllBookings;
                     return (
                       <button
-                        onClick={() => { if (!slActive && vendor) addToShortlist(vendor.serviceType, vendor); }}
-                        style={{ flex: 1, padding: "14px", borderRadius: 12, border: slActive ? "1.5px solid rgba(34,197,94,0.3)" : "none", background: slActive ? "rgba(34,197,94,0.08)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: slActive ? "#16a34a" : "#fff", fontSize: 15, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: slActive ? "default" : "pointer", boxShadow: slActive ? "none" : "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+                        onClick={() => { if (!slActive && !myOrderActive && vendor) addToShortlist(vendor.serviceType, vendor); }}
+                        style={{ flex: 1, padding: "14px", borderRadius: 12, border: myOrderActive ? "1.5px solid rgba(196,122,46,0.3)" : slActive ? "1.5px solid rgba(34,197,94,0.3)" : "none", background: myOrderActive ? "rgba(196,122,46,0.08)" : slActive ? "rgba(34,197,94,0.08)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: myOrderActive ? "#C47A2E" : slActive ? "#16a34a" : "#fff", fontSize: 15, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: (slActive || myOrderActive) ? "default" : "pointer", boxShadow: (slActive || myOrderActive) ? "none" : "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
                       >
-                        {slActive ? "✓ Shortlisted" : "Shortlist Vendor"}
+                        {myOrderActive ? "💬 Already in Chat" : slActive ? "✓ Shortlisted" : "Shortlist Vendor"}
                       </button>
                     );
                   })() : (

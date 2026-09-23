@@ -391,6 +391,8 @@ const BookingReviewPage = () => {
   const faTotal    = useSelector(selectFunCartTotal);
   const faBooking  = (() => { try { return JSON.parse(sessionStorage.getItem("fa_booking")  || "null"); } catch { return null; } })();
   const currentUser = useSelector((s) => s.auth.user);
+  const myOrderConversationId = (() => { try { return localStorage.getItem('tendr:my-order-finalised') || null; } catch { return null; } })();
+  const [myOrderPlans, setMyOrderPlans] = useState([]);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
   const [tcAgreed, setTcAgreed]     = useState(false);
   const [showTcModal, setShowTcModal] = useState(false);
@@ -449,7 +451,7 @@ const BookingReviewPage = () => {
   useEffect(() => {
     if (!token) return;
     const hasActiveVendors = Object.keys(finalisedVendors).length > 0;
-    if (hasActiveVendors || faItems.length > 0) return;
+    if (hasActiveVendors || faItems.length > 0 || myOrderConversationId) return;
     fetch(`${BASE_URL}/event-plans`, {
       headers: { Authorization: `Bearer ${token}` },
       credentials: "include",
@@ -590,6 +592,18 @@ const BookingReviewPage = () => {
       })
       .catch(() => {});
   }, [token]);
+
+  // Fetch My Order event plans (for per-category prices on Review & Pay)
+  useEffect(() => {
+    if (!token || !myOrderConversationId) return;
+    fetch(`${BASE_URL}/event-plans`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.plans) setMyOrderPlans(data.plans); })
+      .catch(() => {});
+  }, [token, myOrderConversationId]); // eslint-disable-line
 
   // Auto-refresh every 20s so admin price/pinned updates appear without reload
   useEffect(() => {
@@ -1257,6 +1271,48 @@ const BookingReviewPage = () => {
               </div>
             )}
 
+            {/* ── My Order section — per-category prices + pinned messages ── */}
+            {myOrderConversationId && myOrderPlans.length > 0 && (
+              <div style={{ marginBottom: 20, background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.12)", boxShadow: "0 3px 14px rgba(139,69,19,0.06)", padding: "18px 20px" }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", borderRadius: 8, width: 26, height: 26, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>📦</span>
+                  My Order
+                </div>
+                {(() => {
+                  const BOOKING_LABELS = { 'occasions': 'Occasions', 'fun-activities': 'Fun Activities', 'stationery': 'Wedding Stationery', 'gift-hampers': 'Gift Hampers', 'you-do-it': 'You Do It', 'let-us-do-it': 'Let Us Do It' };
+                  return myOrderPlans.map((plan, idx) => (
+                    <div key={plan._id} style={{ marginBottom: idx < myOrderPlans.length - 1 ? 14 : 0, paddingBottom: idx < myOrderPlans.length - 1 ? 14 : 0, borderBottom: idx < myOrderPlans.length - 1 ? "1px solid rgba(196,122,46,0.1)" : "none" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{BOOKING_LABELS[plan.bookingType] || plan.bookingType}</span>
+                        <span style={{ fontSize: 14, fontWeight: 800, color: plan.quotedPrice > 0 ? "#15803d" : "#9B7450", fontStyle: plan.quotedPrice > 0 ? "normal" : "italic" }}>
+                          {plan.quotedPrice > 0 ? `₹${plan.quotedPrice.toLocaleString("en-IN")}` : "Price pending"}
+                        </span>
+                      </div>
+                    </div>
+                  ));
+                })()}
+                {(pinnedMap["__svc__My Order"] || []).length > 0 && (
+                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(196,122,46,0.1)" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Pinned Messages</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {(pinnedMap["__svc__My Order"] || []).map((msg, mi) => (
+                        <div key={mi} style={{ display: "flex", gap: 6, alignItems: "flex-start", fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.5 }}>
+                          <span style={{ flexShrink: 0 }}>📌</span>
+                          <span>{msg}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {myOrderPlans.filter(p => p.quotedPrice > 0).length > 1 && (
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 800, color: "#C47A2E", borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 10, marginTop: 10 }}>
+                    <span>My Order Total</span>
+                    <span>₹{myOrderPlans.reduce((s, p) => s + (p.quotedPrice || 0), 0).toLocaleString("en-IN")}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* ── People Also Get — horizontal scroll with product cards ── */}
             <PeopleAlsoGet faItems={faItems} dispatch={dispatch} navigate={navigate} addActivity={addActivity} />
 
@@ -1279,6 +1335,17 @@ const BookingReviewPage = () => {
                     </span>
                   </div>
                 ))}
+                {myOrderConversationId && myOrderPlans.map(plan => {
+                  const BOOKING_LABELS = { 'occasions': 'Occasions', 'fun-activities': 'Fun Activities', 'stationery': 'Stationery', 'gift-hampers': 'Gift Hampers', 'you-do-it': 'You Do It', 'let-us-do-it': 'Let Us Do It' };
+                  return (
+                    <div key={plan._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14, color: "#5a3a1a" }}>
+                      <span style={{ fontWeight: 500 }}>{BOOKING_LABELS[plan.bookingType] || plan.bookingType}</span>
+                      <span style={{ fontWeight: 600, color: plan.quotedPrice > 0 ? "#2C1A0E" : "#bbb", fontStyle: plan.quotedPrice > 0 ? "normal" : "italic" }}>
+                        {plan.quotedPrice > 0 ? formatINR(plan.quotedPrice) : "Yet to be updated"}
+                      </span>
+                    </div>
+                  );
+                })}
 
                 {/* Referral discount line */}
                 {appliedCode && (confirmedTotal + faTotal) > 0 && (() => {
