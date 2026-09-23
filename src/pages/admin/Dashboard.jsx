@@ -1630,6 +1630,8 @@ const AdminDashboard = () => {
 
   const [pricingAmount, setPricingAmount] = useState("");
   const [pricingVendorName, setPricingVendorName] = useState("");
+  const [myBookingPrices, setMyBookingPrices] = useState({}); // { [planId]: string } for My Bookings chat
+  const [savingBkPrice, setSavingBkPrice] = useState({});     // { [planId]: bool }
   // Send Menu cuisine picker state
   const [menuPickerOpen, setMenuPickerOpen] = useState(false);
   const [menuPickerCuisine, setMenuPickerCuisine] = useState("North Indian");
@@ -2467,54 +2469,9 @@ const AdminDashboard = () => {
                                 {plan.bookingType === "you-do-it" ? "You Do It" : plan.bookingType === "let-us-do-it" ? "Let Us Do It" : plan.bookingType === "fun-activities" ? "Fun Activities" : plan.bookingType === "stationery" ? "Stationery" : plan.bookingType === "gift-hampers" ? "Gift Hampers" : plan.bookingType === "occasions" ? "Occasions" : plan.bookingType}
                               </span>
                             </td>
-                            {/* ── Quoted Price cell ── */}
-                            <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
-                              {(() => {
-                                const pid = plan._id;
-                                const editing = priceEdits[pid] !== undefined;
-                                const current = plan.quotedPrice > 0 ? `₹${plan.quotedPrice.toLocaleString('en-IN')}` : "—";
-                                const savePrice = async () => {
-                                  const val = Number(String(priceEdits[pid]).replace(/[^0-9.]/g, ''));
-                                  if (!val) { setPriceEdits(p => { const n = {...p}; delete n[pid]; return n; }); return; }
-                                  setPriceSaving(p => ({...p, [pid]: true}));
-                                  try {
-                                    const r = await fetch(`${BASE_URL}/admin/event-plans/${pid}/set-price`, {
-                                      method: 'PATCH',
-                                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                                      credentials: 'include',
-                                      body: JSON.stringify({ quotedPrice: val }),
-                                    });
-                                    if (r.ok) {
-                                      setEventPlans(prev => prev.map(p => p._id === pid ? {...p, quotedPrice: val} : p));
-                                    }
-                                  } catch {} finally {
-                                    setPriceSaving(p => ({...p, [pid]: false}));
-                                    setPriceEdits(p => { const n = {...p}; delete n[pid]; return n; });
-                                  }
-                                };
-                                return editing ? (
-                                  <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                                    <input
-                                      autoFocus
-                                      type="number"
-                                      value={priceEdits[pid]}
-                                      onChange={e => setPriceEdits(p => ({...p, [pid]: e.target.value}))}
-                                      onKeyDown={e => { if (e.key === 'Enter') savePrice(); if (e.key === 'Escape') setPriceEdits(p => { const n = {...p}; delete n[pid]; return n; }); }}
-                                      placeholder="0"
-                                      style={{ width: 80, padding: '3px 7px', borderRadius: 6, border: '1.5px solid #C47A2E', fontSize: 12, fontFamily: "'Outfit', sans-serif", outline: 'none' }}
-                                    />
-                                    <button onClick={savePrice} disabled={priceSaving[pid]}
-                                      style={{ padding: '3px 8px', borderRadius: 6, border: 'none', background: '#C47A2E', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
-                                      {priceSaving[pid] ? '…' : '✓'}
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <button onClick={() => setPriceEdits(p => ({...p, [pid]: plan.quotedPrice || ''}))}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: plan.quotedPrice > 0 ? 700 : 400, color: plan.quotedPrice > 0 ? '#C47A2E' : '#9B7450', fontFamily: "'Outfit', sans-serif", padding: 0 }}>
-                                    {current} ✏
-                                  </button>
-                                );
-                              })()}
+                            {/* ── Quoted Price cell (read-only — set via chat panel) ── */}
+                            <td style={{ padding: "10px 14px", whiteSpace: "nowrap", fontSize: 13, fontWeight: plan.quotedPrice > 0 ? 700 : 400, color: plan.quotedPrice > 0 ? "#C47A2E" : "#9B7450" }}>
+                              {plan.quotedPrice > 0 ? `₹${plan.quotedPrice.toLocaleString('en-IN')}` : "—"}
                             </td>
 
                             {bookingTab === "Cancelled" ? (
@@ -4800,8 +4757,60 @@ const AdminDashboard = () => {
                           </div>
                         ))}
                       </div>
-                      {/* Pricing input — single vendor chats only */}
-                      {selectedChat.serviceType !== "SmartPlan" && (
+                      {/* Pricing — My Bookings: one price input per booking type */}
+                      {selectedChat.serviceType === "My Bookings" && (() => {
+                        const custId = selectedChat.customerId?._id || selectedChat.customerId;
+                        const custPlans = eventPlans.filter(p => {
+                          const pid = p.customerId?._id || p.customerId;
+                          return String(pid) === String(custId);
+                        });
+                        if (!custPlans.length) return null;
+                        const BK_LABELS = { 'you-do-it': 'You Do It', 'let-us-do-it': 'Let Us Do It', 'fun-activities': 'Fun Activities', stationery: 'Stationery', 'gift-hampers': 'Gift Hampers', occasions: 'Occasions' };
+                        return (
+                          <div style={{ padding: "10px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>💰 Set Price Per Booking</div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                              {custPlans.map(plan => {
+                                const pid = plan._id;
+                                const label = BK_LABELS[plan.bookingType] || plan.bookingType;
+                                const current = myBookingPrices[pid] !== undefined ? myBookingPrices[pid] : (plan.quotedPrice || "");
+                                const savePrice = async () => {
+                                  const val = Number(String(current).replace(/[^0-9.]/g, ''));
+                                  setSavingBkPrice(p => ({...p, [pid]: true}));
+                                  try {
+                                    const r = await fetch(`${BASE_URL}/admin/event-plans/${pid}/set-price`, {
+                                      method: 'PATCH',
+                                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                      credentials: 'include',
+                                      body: JSON.stringify({ quotedPrice: val }),
+                                    });
+                                    if (r.ok) setEventPlans(prev => prev.map(p => p._id === pid ? {...p, quotedPrice: val} : p));
+                                  } catch {} finally { setSavingBkPrice(p => ({...p, [pid]: false})); }
+                                };
+                                return (
+                                  <div key={pid} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                    <span style={{ fontSize: 11, fontWeight: 600, color: "#2C1A0E", minWidth: 90 }}>{label}</span>
+                                    <span style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", flexShrink: 0 }}>₹</span>
+                                    <input
+                                      type="number"
+                                      placeholder="0"
+                                      value={current}
+                                      onChange={e => setMyBookingPrices(p => ({...p, [pid]: e.target.value}))}
+                                      onBlur={savePrice}
+                                      onKeyDown={e => e.key === 'Enter' && savePrice()}
+                                      style={{ flex: 1, padding: "5px 8px", borderRadius: 7, border: "1.5px solid rgba(196,122,46,0.2)", fontSize: 12, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color: "#2C1A0E", outline: "none" }}
+                                    />
+                                    {savingBkPrice[pid] && <span style={{ fontSize: 10, color: "#9B7450" }}>…</span>}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Pricing input — single vendor chats only (not SmartPlan, not My Bookings) */}
+                      {selectedChat.serviceType !== "SmartPlan" && selectedChat.serviceType !== "My Bookings" && (
                       <div style={{ padding: "10px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 7 }}>💰 Agreed Price</div>
                         <input
