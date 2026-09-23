@@ -728,6 +728,11 @@ export default function VendorChatModal() {
               setApproved(true);
               window.dispatchEvent(new CustomEvent("tendr:chat-started"));
 
+              // Persist My Order conversation ID so vendor chats can forward their summaries to it
+              if (isAllBookings) {
+                try { localStorage.setItem('tendr:my-order-conversation', cid); } catch {}
+              }
+
               // Fetch all customer bookings for the summary panel
               if (isAllBookings && authToken) {
                 fetch(`${BASE_URL}/event-plans`, {
@@ -884,6 +889,22 @@ export default function VendorChatModal() {
         setTimeout(() => {
           socket.emit("send_message", { conversationId: _id, sender: "user", content: fullMsg });
         }, 400);
+
+        // Forward wizard summary to My Order chat if one is active
+        const myOrderCid = (() => { try { return localStorage.getItem('tendr:my-order-conversation'); } catch { return null; } })();
+        if (myOrderCid && myOrderCid !== _id && authToken) {
+          const forwardMsg = `📋 Vendor details added — ${vendor?.name || vendor?.serviceType}\n\n${fullMsg}`;
+          setTimeout(async () => {
+            try {
+              await fetch(`${BASE_URL}/messages/${myOrderCid}/message`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+                credentials: "include",
+                body: JSON.stringify({ sender: "user", content: forwardMsg }),
+              });
+            } catch {}
+          }, 800);
+        }
 
         if (refPhotosRef.current.length > 0) {
           refPhotosRef.current.forEach((photo, idx) => {
