@@ -180,7 +180,7 @@ const GiftHampersCakes = () => {
     try {
       const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
         method: "POST", headers: hdrs, credentials: "include",
-        body: JSON.stringify({ message: msg, serviceType: "Baat Karo", bookingCategory: "gift-hampers" }),
+        body: JSON.stringify({ message: msg, serviceType: "My Bookings", bookingCategory: "gift-hampers" }),
       });
       const data = await res.json();
       if (res.ok && data.conversationId) {
@@ -190,7 +190,7 @@ const GiftHampersCakes = () => {
           if (photo.name) try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: "POST", headers: hdrs, body: JSON.stringify({ sender: "user", content: `📎 ${photo.name}${photo.priceRange ? ` — ${photo.priceRange}` : ""}` }) }); } catch {}
           try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: "POST", headers: hdrs, body: JSON.stringify({ sender: "user", content: `[img:${photo.url}]` }) }); } catch {}
         }
-        openExistingChat(cid, { _id: null, name: "Tendr Team", serviceType: "Baat Karo", approved: false });
+        openExistingChat(cid, { _id: null, name: "Tendr Team", serviceType: "My Bookings", approved: true });
       }
     } catch (e) { console.error("GiftHampersCakes chat failed:", e); }
   };

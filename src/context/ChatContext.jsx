@@ -42,33 +42,26 @@ export function ChatProvider({ children }) {
       skipBotFlow: true,
     });
 
-  // Open "Occasions" chat — merges with Baat Karo + Gift Hampers into one conversation
-  const openOccasionsChat = (initialMessage = "") =>
+  // Open unified "My Bookings" chat — single bucket for all service booking types
+  // (occasions, gift-hampers, stationery, fun-activities, you-do-it, let-us-do-it)
+  const openAllBookingsChat = (initialMessage = "", bookingCategory = null, eventDetails = {}) =>
     setChatState({
-      vendor: { _id: "occasions", name: "Tendr Team", serviceType: "Baat Karo", approved: true },
+      vendor: { _id: "all-bookings", name: "Tendr Team", serviceType: "My Bookings", approved: true },
       conversationId: null,
       minimized: false,
       isExisting: false,
       isConcierge: true,
       skipBotFlow: true,
-      isOccasions: true,
+      isAllBookings: true,
       initialMessage,
+      bookingCategory,
+      funEventDetails: eventDetails,
     });
 
-  // Open "Stationery & Activities" chat — merges Fun Activity + Wedding Stationery
+  // Wrappers kept for backward compatibility — both funnel into the single bucket
+  const openOccasionsChat = (initialMessage = "") => openAllBookingsChat(initialMessage, 'occasions');
   const openFunActivitiesChat = (initialMessage = "", eventDetails = {}, bookingCategory = 'fun-activities') =>
-    setChatState({
-      vendor: { _id: "stationery-activities", name: "Tendr Team", serviceType: "Stationery & Activities", approved: true },
-      conversationId: null,
-      minimized: false,
-      isExisting: false,
-      isConcierge: true,
-      skipBotFlow: true,
-      isFunActivities: true,
-      initialMessage,
-      funEventDetails: eventDetails,
-      bookingCategory,
-    });
+    openAllBookingsChat(initialMessage, bookingCategory, eventDetails);
 
   const setConversationId = (id) =>
     setChatState(prev => prev ? { ...prev, conversationId: id } : null);
@@ -82,7 +75,7 @@ export function ChatProvider({ children }) {
   const closeChat = () => setChatState(null);
 
   return (
-    <ChatContext.Provider value={{ chatState, openVendorChat, openExistingChat, openConciergeChat, openTendrTeamChat, openOccasionsChat, openFunActivitiesChat, setConversationId, minimizeChat, expandChat, closeChat }}>
+    <ChatContext.Provider value={{ chatState, openVendorChat, openExistingChat, openConciergeChat, openTendrTeamChat, openOccasionsChat, openFunActivitiesChat, openAllBookingsChat, setConversationId, minimizeChat, expandChat, closeChat }}>
       {children}
     </ChatContext.Provider>
   );
@@ -96,6 +89,7 @@ export const useChatOverlay = () => useContext(ChatContext) || {
   openTendrTeamChat: () => {},
   openOccasionsChat: () => {},
   openFunActivitiesChat: () => {},
+  openAllBookingsChat: () => {},
   setConversationId: () => {},
   minimizeChat: () => {},
   expandChat: () => {},

@@ -1023,6 +1023,8 @@ const AdminDashboard = () => {
   // ── Per-booking coordinator assignment state ─────────────────────────────
   // { [planId]: { coordinatorId, coordinatorName, referredByCoordinator, services: [] } }
   const [bookingCoordMap, setBookingCoordMap] = useState({});
+  const [priceEdits, setPriceEdits] = useState({});   // { [planId]: string }
+  const [priceSaving, setPriceSaving] = useState({}); // { [planId]: bool }
 
   const openCoordPicker = async (mode, payload) => {
     setCoordModal({ mode, payload });
@@ -2424,7 +2426,7 @@ const AdminDashboard = () => {
                     <thead>
                       <tr style={{ background: "#fffaf0", borderBottom: "1.5px solid #CCAB4A" }}>
                         {[
-                          "Customer", "Event", "Type", "Date", "Guests", "Budget", "Services", "Booking Type",
+                          "Customer", "Event", "Type", "Date", "Guests", "Budget", "Services", "Booking Type", "Quoted Price",
                           ...(bookingTab === "Cancelled" ? ["Reason", "Actions"] : ["Actions"]),
                         ].map((h) => (
                           <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "#7A5535", whiteSpace: "nowrap" }}>{h}</th>
@@ -2465,6 +2467,56 @@ const AdminDashboard = () => {
                                 {plan.bookingType === "you-do-it" ? "You Do It" : plan.bookingType === "let-us-do-it" ? "Let Us Do It" : plan.bookingType === "fun-activities" ? "Fun Activities" : plan.bookingType === "stationery" ? "Stationery" : plan.bookingType === "gift-hampers" ? "Gift Hampers" : plan.bookingType === "occasions" ? "Occasions" : plan.bookingType}
                               </span>
                             </td>
+                            {/* ── Quoted Price cell ── */}
+                            <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                              {(() => {
+                                const pid = plan._id;
+                                const editing = priceEdits[pid] !== undefined;
+                                const current = plan.quotedPrice > 0 ? `₹${plan.quotedPrice.toLocaleString('en-IN')}` : "—";
+                                const savePrice = async () => {
+                                  const val = Number(String(priceEdits[pid]).replace(/[^0-9.]/g, ''));
+                                  if (!val) { setPriceEdits(p => { const n = {...p}; delete n[pid]; return n; }); return; }
+                                  setPriceSaving(p => ({...p, [pid]: true}));
+                                  try {
+                                    const r = await fetch(`${BASE_URL}/admin/event-plans/${pid}/set-price`, {
+                                      method: 'PATCH',
+                                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                      credentials: 'include',
+                                      body: JSON.stringify({ quotedPrice: val }),
+                                    });
+                                    if (r.ok) {
+                                      setEventPlans(prev => prev.map(p => p._id === pid ? {...p, quotedPrice: val} : p));
+                                    }
+                                  } catch {} finally {
+                                    setPriceSaving(p => ({...p, [pid]: false}));
+                                    setPriceEdits(p => { const n = {...p}; delete n[pid]; return n; });
+                                  }
+                                };
+                                return editing ? (
+                                  <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                                    <input
+                                      autoFocus
+                                      type="number"
+                                      value={priceEdits[pid]}
+                                      onChange={e => setPriceEdits(p => ({...p, [pid]: e.target.value}))}
+                                      onKeyDown={e => { if (e.key === 'Enter') savePrice(); if (e.key === 'Escape') setPriceEdits(p => { const n = {...p}; delete n[pid]; return n; }); }}
+                                      placeholder="0"
+                                      style={{ width: 80, padding: '3px 7px', borderRadius: 6, border: '1.5px solid #C47A2E', fontSize: 12, fontFamily: "'Outfit', sans-serif", outline: 'none' }}
+                                    />
+                                    <button onClick={savePrice} disabled={priceSaving[pid]}
+                                      style={{ padding: '3px 8px', borderRadius: 6, border: 'none', background: '#C47A2E', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+                                      {priceSaving[pid] ? '…' : '✓'}
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button onClick={() => setPriceEdits(p => ({...p, [pid]: plan.quotedPrice || ''}))}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: plan.quotedPrice > 0 ? 700 : 400, color: plan.quotedPrice > 0 ? '#C47A2E' : '#9B7450', fontFamily: "'Outfit', sans-serif", padding: 0 }}>
+                                    {current} ✏
+                                  </button>
+                                );
+                              })()}
+                            </td>
+
                             {bookingTab === "Cancelled" ? (
                               <>
                                 <td style={{ padding: "10px 14px", fontSize: 12, color: "#c0392b", fontStyle: "italic", maxWidth: 200 }}>

@@ -472,6 +472,7 @@ export default function VendorChatModal() {
   const isSmartPlan = !!chatState?.isSmartPlan;
   const isOccasions = !!chatState?.isOccasions;
   const isFunActivities = !!chatState?.isFunActivities;
+  const isAllBookings = !!chatState?.isAllBookings;
 
   // ── Bot state ────────────────────────────────────────────────────────────────
   const selectedVendorTypes = useSelector(s => s.eventPlanning.selectedVendors || []);
@@ -527,6 +528,7 @@ export default function VendorChatModal() {
   // ── Chat state ───────────────────────────────────────────────────────────────
   const [messages, setMessages] = useState([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
+  const [customerPlans, setCustomerPlans] = useState([]);
   const [text, setText] = useState("");
   const [botOtherMode, setBotOtherMode] = useState(false); // "Other..." selected — show text input
   const [conversationId, setConversationId] = useState(null);
@@ -613,6 +615,7 @@ export default function VendorChatModal() {
     botDoneRef.current = done;
     summarySentRef.current = false;
     setMessages([]);
+    setCustomerPlans([]);
     setText("");
     setConversationId(chatState.conversationId || null);
     setApproved(existing ? (!chatState.vendor?._id || !!chatState.vendor?.approved) : (chatState?.skipBotFlow ? true : false));
@@ -693,11 +696,11 @@ export default function VendorChatModal() {
         // Occasions / Fun Activities / Talk to Tendr Team — find-or-create the conversation
         (async () => {
           try {
-            const serviceType = isOccasions ? "Baat Karo" : isFunActivities ? "Stationery & Activities" : "Tendr Team";
+            const serviceType = isAllBookings ? "My Bookings" : isOccasions ? "Baat Karo" : isFunActivities ? "Stationery & Activities" : "Tendr Team";
             const body = { serviceType };
-            if (isOccasions) body.bookingCategory = 'occasions';
-            else if (isFunActivities) body.bookingCategory = chatState.bookingCategory || 'fun-activities';
-            if (isFunActivities && chatState.funEventDetails) body.eventDetails = chatState.funEventDetails;
+            const bc = chatState.bookingCategory;
+            if (bc) body.bookingCategory = bc;
+            if (chatState.funEventDetails && Object.keys(chatState.funEventDetails).length) body.eventDetails = chatState.funEventDetails;
             const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
               method: "POST",
               headers: { "Content-Type": "application/json", ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
@@ -711,6 +714,16 @@ export default function VendorChatModal() {
               setCtxConvoId(cid);
               setApproved(true);
               window.dispatchEvent(new CustomEvent("tendr:chat-started"));
+
+              // Fetch all customer bookings for the summary panel
+              if (isAllBookings && authToken) {
+                fetch(`${BASE_URL}/event-plans`, {
+                  headers: { Authorization: `Bearer ${authToken}` },
+                  credentials: "include",
+                }).then(r => r.ok ? r.json() : null).then(d => {
+                  if (d?.plans) setCustomerPlans(d.plans);
+                }).catch(() => {});
+              }
 
               // Load existing message history
               setMessagesLoading(true);
@@ -739,7 +752,7 @@ export default function VendorChatModal() {
 
               // Send initial summary message via REST so it persists and renders immediately
               const initialMsg = chatState.initialMessage;
-              if ((isOccasions || isFunActivities) && initialMsg && authToken) {
+              if ((isAllBookings || isOccasions || isFunActivities) && initialMsg && authToken) {
                 try {
                   const msgRes = await fetch(`${BASE_URL}/messages/${cid}/message`, {
                     method: "POST",
@@ -1415,6 +1428,30 @@ export default function VendorChatModal() {
                   <b style={{ color: "#C47A2E" }}>{label}:</b> {value}
                 </span>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── All-Bookings Summary Panel ── */}
+        {isAllBookings && customerPlans.length > 0 && (
+          <div style={{ flexShrink: 0, borderBottom: "1px solid rgba(196,122,46,0.15)", background: "#FFFCF5", padding: "10px 16px" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Your Bookings</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              {customerPlans.map(p => {
+                const labels = { 'you-do-it': 'You Do It', 'let-us-do-it': 'Let Us Do It', 'fun-activities': 'Fun Activities', stationery: 'Stationery', 'gift-hampers': 'Gift Hampers', occasions: 'Occasions' };
+                const colors = { 'you-do-it': '#0369a1', 'let-us-do-it': '#7c3aed', 'fun-activities': '#15803d', stationery: '#c2410c', 'gift-hampers': '#a21caf', occasions: '#a16207' };
+                const bgColors = { 'you-do-it': '#eff6ff', 'let-us-do-it': '#f5f3ff', 'fun-activities': '#f0fdf4', stationery: '#fff7ed', 'gift-hampers': '#fdf4ff', occasions: '#fefce8' };
+                const statusColors = { submitted: '#15803d', in_progress: '#0369a1', completed: '#6b7280', draft: '#9B7450', cancelled: '#dc2626' };
+                return (
+                  <div key={p._id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 8, background: bgColors[p.bookingType] || "#f9f9f9" }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: colors[p.bookingType] || "#444", minWidth: 110 }}>{labels[p.bookingType] || p.bookingType}</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: statusColors[p.status] || "#444", background: "rgba(255,255,255,0.7)", borderRadius: 100, padding: "1px 7px", textTransform: "capitalize" }}>{p.status?.replace('_', ' ')}</span>
+                    {p.quotedPrice > 0 && (
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", marginLeft: "auto" }}>₹{p.quotedPrice.toLocaleString('en-IN')}</span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
