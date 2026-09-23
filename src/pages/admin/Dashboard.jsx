@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { generateEventDetailsPDF, generateInvoicePDF, generateInvitationPDF, generateTimelinePDF } from "../../utils/pdfGenerator";
@@ -285,7 +285,6 @@ async function extractPdfPages(file) {
 
 const sidebar_arr = [
   { label: "Dashboard",        icon: <LayoutDashboard size={22} />,   key: "Dashboard" },
-  { label: "Chat Requests",    icon: <MessageCircle size={22} />,     key: "ChatRequests" },
   { label: "Bookings",         icon: <CalendarFold size={22} />,      key: "Bookings" },
   { label: "Change Requests",  icon: <CalendarClock size={22} />,     key: "ChangeRequests" },
   { label: "Vendors",          icon: <BriefcaseBusiness size={22} />, key: "Vendors" },
@@ -297,7 +296,6 @@ const sidebar_arr = [
   { label: "Invoices",         icon: <FileText size={22} />,                   key: "Invoices" },
   { label: "Reviews",          icon: <Star size={22} />,                       key: "Reviews" },
   { label: "Photos",           icon: <Camera size={22} />,                     key: "Photos" },
-  { label: "Smart Plans",     icon: <span style={{ fontSize: 16 }}>🗂</span>,  key: "SmartPlans" },
   { label: "Stationery by Tendr",   icon: <span style={{ fontSize: 16 }}>✦</span>,   key: "Stationery" },
   { label: "Rec. Intelligence",     icon: <span style={{ fontSize: 16 }}>📊</span>,  key: "Recommendations" },
   { label: "Community",             icon: <span style={{ fontSize: 16 }}>🌟</span>,  key: "Community" },
@@ -1011,8 +1009,6 @@ const AdminDashboard = () => {
   const [vendorApplications, setVendorApplications] = useState([]);
   const [eventPlans, setEventPlans] = useState([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
-  const [chatRequests, setChatRequests] = useState([]);
-
   // ── Coordinator picker modal ────────────────────────────────────────────────
   const [coordModal, setCoordModal] = useState(null); // null | { mode: 'booking'|'chat', payload: any }
   const [approvedCoords, setApprovedCoords] = useState([]);
@@ -1051,7 +1047,6 @@ const AdminDashboard = () => {
         const r = await fetch(`${BASE_URL}/admin/transfer/chat/${payload.chatId}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, credentials: 'include', body: JSON.stringify({ coordinatorId: coord._id }) });
         const d = await r.json();
         if (r.ok) {
-          setChatRequests(prev => prev.map(c => c._id === payload.chatId ? { ...c, coordinatorId: coord._id, coordinatorName: coord.name } : c));
           alert(`Chat transferred to ${coord.name}`);
         } else { alert(d.error || 'Transfer failed'); }
       }
@@ -1133,13 +1128,6 @@ const AdminDashboard = () => {
   // per-category upload meta: { [category]: { theme, caption } }
   const [galleryUploadMeta, setGalleryUploadMeta] = useState({});
   const [viewingPhoto, setViewingPhoto] = useState(null); // full-screen photo URL
-  // Smart Plans
-  const [smartPlans, setSmartPlans] = useState([]);
-  const [smartPlansLoaded, setSmartPlansLoaded] = useState(false);
-  const [smartPlanExpanded, setSmartPlanExpanded] = useState(null);
-  const [smartPlanBudgets, setSmartPlanBudgets] = useState({}); // { [planId]: { [category]: amount } }
-  const [budgetPinning, setBudgetPinning] = useState({}); // { [planId]: bool }
-  const [smartPlanCoordMap, setSmartPlanCoordMap] = useState({}); // { [planId]: { coordinatorId, coordinatorName, services, referredByCoordinator } }
   // PDF + pinned messages in bookings
   const [pdfGenerating, setPdfGenerating] = useState(false);
 
@@ -1332,15 +1320,6 @@ const AdminDashboard = () => {
       .then((data) => { setEventPlans(data.plans || []); setLoadingPlans(false); })
       .catch((e) => { setLoadingPlans(false); if (e?.message !== '401') console.error('event-plans fetch:', e); });
 
-    adminFetch(`${BASE_URL}/admin/chat-requests`)
-      .then((r) => r.json())
-      .then((data) => {
-        const all = data.conversations || [];
-        // Show ALL vendor chat requests — admin must see every request regardless of event date
-        setChatRequests(all);
-      })
-      .catch((e) => { if (e?.message !== '401') console.error('chat-requests fetch:', e); });
-
     adminFetch(`${BASE_URL}/admin/vendor-stats`)
       .then((r) => r.json())
       .then((data) => setVendorStats(data.vendors || []))
@@ -1485,30 +1464,6 @@ const AdminDashboard = () => {
   useEffect(() => { selectedChatRef.current = selectedChat; }, [selectedChat]);
 
   // Poll chat requests every 30s — catches new requests that arrive while socket is
-  // already connected (socket events can be missed; poll is the reliable fallback)
-  useEffect(() => {
-    if (!token || !isAdminToken) return;
-    const poll = () => {
-      fetch(`${BASE_URL}/admin/chat-requests`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' })
-        .then(r => r.ok ? r.json() : null)
-        .then(data => { if (!data) return; const all = data.conversations || []; setChatRequests(all); })
-        .catch(() => {});
-    };
-    poll(); // fire immediately on mount — don't wait 30s for first data
-    const id = setInterval(poll, 30000);
-    return () => clearInterval(id);
-  }, [token, isAdminToken]);
-
-  // Re-fetch chat requests whenever the Chat Requests tab is clicked
-  useEffect(() => {
-    if (activeDropdown !== 'chatrequests' || !token || !isAdminToken) return;
-    adminFetch(`${BASE_URL}/admin/chat-requests`)
-      .then(r => r.json())
-      .then(data => { const all = data.conversations || []; setChatRequests(all); })
-      .catch(e => { if (e?.message !== '401') console.error('chat-requests tab fetch:', e); });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeDropdown, token]);
-
   // Re-fetch conversations whenever the Chat tab is opened (ensures stale-free list)
   useEffect(() => {
     if (activeDropdown !== 'chat' || !token || !isAdminToken) return;
@@ -1586,29 +1541,8 @@ const AdminDashboard = () => {
 
     socket.on('connect', () => {
       console.log('Admin socket connected:', socket.id);
-      // Re-fetch chat requests on reconnect so backend restarts don't cause missed requests
-      fetch(`${BASE_URL}/admin/chat-requests`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' })
-        .then(r => r.ok ? r.json() : null)
-        .then(data => {
-          if (!data) return; // don't wipe list on auth/server error
-          const all = data.conversations || [];
-          setChatRequests(all);
-        })
-        .catch(() => {});
     });
     socket.on('connect_error', (e) => console.error('Admin socket error:', e.message));
-
-    socket.on('new_chat_request', (req) => {
-      // Join the new conversation room so subsequent messages arrive in real-time
-      socket.join(req._id?.toString());
-      // Refresh the Chat tab conversation list (picks up new Baat Karo chats)
-      reloadConversationsRef.current();
-      setChatRequests((prev) => {
-        const exists = prev.find((r) => r._id === req._id);
-        if (exists) return prev;
-        return [req, ...prev];
-      });
-    });
 
     // Receive new messages in real-time
     // If the message is for the currently open chat → append it
@@ -1949,175 +1883,12 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* ── CHAT REQUESTS TAB ── */}
         {activeDropdown === "chatrequests" && (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-              <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl lg:text-5xl my-4 text-[#d08f4e]">
-                Chat Requests
-              </div>
-              <button
-                onClick={() => adminFetch(`${BASE_URL}/admin/chat-requests`).then(r => r.json()).then(data => { const all = data.conversations || []; setChatRequests(all); }).catch(() => {})}
-                style={{ background: '#CCAB4A', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}
-              >
-                Refresh
-              </button>
-            </div>
-
-            {chatRequests.length === 0 ? (
-              <div className="text-center py-16 text-gray-400 text-lg">No chat requests yet.</div>
-            ) : (
-              <div className="adm-section">
-                <div className="adm-section-header">
-                  <span className="adm-section-title">Chat Requests</span>
-                  <span className="adm-section-count">{chatRequests.length}</span>
-                </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                {chatRequests.map((req) => (
-                  <div key={req._id} style={{ background: "#fff", borderRadius: 16, border: "2px solid #CCAB4A", padding: "20px 24px", boxShadow: "0 2px 12px rgba(139,69,19,0.07)" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
-                          <span style={{ fontWeight: 800, fontSize: 16, color: "#2C1A0E" }}>{req.customerName || req.customerId?.name || "Customer"}</span>
-                          <span style={{ fontSize: 12, color: "#9B7450" }}>wants to chat with</span>
-                          <span style={{ fontWeight: 800, fontSize: 16, color: "#C47A2E" }}>{req.vendorName || req.vendorId?.name || "Vendor"}</span>
-                          <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, background: "#eff6ff", color: "#0369a1", border: "1px solid #bfdbfe", fontWeight: 600 }}>{req.serviceType}</span>
-                          <Badge status={req.chatApproved ? "approved" : req.chatRejected ? "rejected" : "pending"} />
-                          {isClosed(req) && <Badge status="closed">🔒 Auto-closed</Badge>}
-                          {/* Expiry countdown */}
-                          {(() => { const h = hoursLeft(req); return h !== null && h <= 6 ? (
-                            <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, background: h <= 2 ? "#fff5f5" : "#fffbeb", color: h <= 2 ? "#c0392b" : "#b45309", border: `1px solid ${h <= 2 ? "#fca5a5" : "#fde68a"}`, fontWeight: 600 }}>
-                              ⏳ {h === 0 ? "Expiring now" : `Expires in ${h}h`}
-                            </span>
-                          ) : null; })()}
-                        </div>
-
-                        {req.eventDetails && Object.values(req.eventDetails).some(Boolean) && (() => {
-                          // Friendly labels for all possible eventDetails keys (form + bot answers)
-                          const labels = {
-                            eventName:"Event", eventType:"Type", date:"Date", time:"Time",
-                            location:"City", guests:"Guests", budget:"Budget",
-                            decorationType:"Decoration", venueType:"Venue Type",
-                            cateringType:"Catering", foodPreference:"Food",
-                            photographyType:"Coverage", albumRequired:"Album",
-                            coverage:"Hours", musicVibe:"Music", djHours:"DJ Hours",
-                            soundSetup:"Sound", servicesNeeded:"Services",
-                            timeline:"Timeline", venueAddress:"Address", queryType:"Query",
-                            message:"Message",
-                          };
-                          const entries = Object.entries(req.eventDetails).filter(([,v]) => v);
-                          return (
-                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
-                              {entries.map(([key, val]) => (
-                                <span key={key} style={{ fontSize: 12, background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "2px 10px", color: "#5a3a1a" }}>
-                                  <b style={{ color: "#C47A2E" }}>{labels[key] || key}:</b> {val}
-                                </span>
-                              ))}
-                            </div>
-                          );
-                        })()}
-                        <div style={{ fontSize: 12, color: "#9B7450", marginTop: 8 }}>
-                          Requested: {new Date(req.createdAt).toLocaleString("en-IN")}
-                        </div>
-                      </div>
-
-                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-                        {!req.chatApproved && !req.chatRejected && (
-                          <>
-                            <button
-                              onClick={() => {
-                                fetch(`${BASE_URL}/admin/chat-requests/${req._id}/approve`, {
-                                  method: "POST", headers: { Authorization: `Bearer ${token}` }, credentials: "include",
-                                })
-                                  .then((r) => { if (r.ok) setChatRequests((prev) => prev.map((r2) => r2._id === req._id ? { ...r2, chatApproved: true, chatRejected: false } : r2)); })
-                                  .catch(() => {});
-                              }}
-                              style={{ padding: "7px 18px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
-                            >
-                              ✓ Accept
-                            </button>
-                            <button
-                              onClick={() => {
-                                fetch(`${BASE_URL}/admin/chat-requests/${req._id}/reject`, {
-                                  method: "POST", headers: { Authorization: `Bearer ${token}` }, credentials: "include",
-                                })
-                                  .then((r) => { if (r.ok) setChatRequests((prev) => prev.map((r2) => r2._id === req._id ? { ...r2, chatRejected: true, chatApproved: false } : r2)); })
-                                  .catch(() => {});
-                              }}
-                              style={{ padding: "7px 18px", borderRadius: 8, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
-                            >
-                              ✗ Reject
-                            </button>
-                          </>
-                        )}
-                        {req.chatApproved && req.customerId?.phoneNumber && (
-                          <a
-                            href={`https://wa.me/91${req.customerId.phoneNumber}?text=${encodeURIComponent(`Hi ${req.customerName || "there"}! Your chat request with ${req.vendorName || "the vendor"} on Tendr has been accepted. You can now start chatting. — Team Tendr`)}`}
-                            target="_blank" rel="noopener noreferrer"
-                            style={{ padding: "7px 16px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5 }}
-                          >
-                            📱 Notify on WhatsApp
-                          </a>
-                        )}
-                        {req.chatRejected && (
-                          <button
-                            onClick={() => {
-                              fetch(`${BASE_URL}/admin/chat-requests/${req._id}/notify-rejected`, {
-                                method: "POST",
-                                headers: { Authorization: `Bearer ${token}` },
-                                credentials: "include",
-                              })
-                                .then(r => r.json())
-                                .then(d => alert(d.error ? `Error: ${d.error}` : "✅ Re-notification sent"))
-                                .catch(() => alert("Failed to send notification"));
-                            }}
-                            style={{ padding: "7px 16px", borderRadius: 8, border: "1.5px solid #CCAB4A", background: "#fffbeb", color: "#b45309", fontWeight: 600, fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif", display: "inline-flex", alignItems: "center", gap: 5 }}
-                          >
-                            📲 Re-send Notification
-                          </button>
-                        )}
-                        {/* Transfer to Coordinator */}
-                        {req.coordinatorId ? (
-                          <span style={{ padding: "7px 12px", borderRadius: 8, background: "rgba(99,102,241,0.08)", color: "#4F46E5", fontWeight: 600, fontSize: 11, border: "1.5px solid rgba(99,102,241,0.3)", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                            🎯 {req.coordinatorName || 'Coordinator assigned'}
-                          </span>
-                        ) : (
-                          <button
-                            onClick={() => openCoordPicker('chat', { chatId: req._id, customerName: req.customerName })}
-                            style={{ padding: "7px 12px", borderRadius: 8, border: "1.5px solid rgba(99,102,241,0.4)", background: "rgba(99,102,241,0.08)", color: "#4F46E5", fontWeight: 600, fontSize: 11, cursor: "pointer", fontFamily: "'Outfit', sans-serif", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                            🎯 Assign Coordinator
-                          </button>
-                        )}
-                        {/* Delete — available for all request states */}
-                        <button
-                          onClick={() => {
-                            if (!window.confirm("Permanently delete this chat request and all its messages from the database?")) return;
-                            fetch(`${BASE_URL}/admin/conversations/${req._id}`, {
-                              method: "DELETE", headers: { Authorization: `Bearer ${token}` }, credentials: "include",
-                            })
-                              .then(async r => {
-                                if (r.ok) {
-                                  setChatRequests(prev => prev.filter(r2 => r2._id !== req._id));
-                                } else {
-                                  const data = await r.json().catch(() => ({}));
-                                  window.alert(`Delete failed: ${data.error || r.statusText}`);
-                                }
-                              })
-                              .catch(() => window.alert("Network error — request not deleted."));
-                          }}
-                          style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
-                        >
-                          🗑 Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              </div>
-            )}
+            <div className="text-center py-16 text-gray-400 text-lg">Chat Requests have been removed. All chats start directly.</div>
           </div>
         )}
+
 
         {activeDropdown === "dashboard" && (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
@@ -6286,292 +6057,6 @@ const AdminDashboard = () => {
           );
         })()}
 
-        {/* ── Smart Plans ── */}
-        {activeDropdown === "smartplans" && (() => {
-          if (!smartPlansLoaded) {
-            fetch(`${BASE_URL}/admin/smart-plans`, {
-              headers: { Authorization: `Bearer ${token}` },
-              credentials: 'include',
-            })
-              .then(r => r.ok ? r.json() : { plans: [] })
-              .then(d => { setSmartPlans(d.plans || []); setSmartPlansLoaded(true); })
-              .catch(() => setSmartPlansLoaded(true));
-          }
-
-          const CAT_EMOJI = { Caterer: '🍽️', Decorator: '🎨', Photographer: '📸', DJ: '🎵' };
-
-          const handleStatusChange = async (planId, category, status) => {
-            try {
-              const res = await fetch(`${BASE_URL}/admin/smart-plans/${planId}/vendor-status`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                credentials: 'include',
-                body: JSON.stringify({ category, status }),
-              });
-              const data = await res.json();
-              if (data.plan) {
-                setSmartPlans(prev => prev.map(p => p._id === planId ? data.plan : p));
-              }
-            } catch (e) { console.error(e); }
-          };
-
-          return (
-            <div style={{ padding: "28px 32px", maxWidth: 860, margin: "0 auto" }}>
-              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px", fontFamily: "'Outfit', sans-serif" }}>🗂 Smart Plans</h2>
-              <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 24px", fontFamily: "'Outfit', sans-serif" }}>Customers who submitted a curated vendor package via Smart Planner</p>
-
-              {!smartPlansLoaded ? (
-                <div style={{ padding: 48, textAlign: "center", color: "#C47A2E", fontFamily: "'Outfit', sans-serif" }}>Loading…</div>
-              ) : smartPlans.length === 0 ? (
-                <div style={{ padding: 48, textAlign: "center", color: "#bbb", fontFamily: "'Outfit', sans-serif" }}>No smart plans submitted yet.</div>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  {smartPlans.map(plan => {
-                    const ed = plan.eventDetails || {};
-                    const isExp = smartPlanExpanded === plan._id;
-                    return (
-                      <div key={plan._id} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.18)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)", overflow: "hidden", fontFamily: "'Outfit', sans-serif" }}>
-
-                        {/* Header row */}
-                        <div style={{ padding: "18px 22px 14px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-                          <div>
-                            <div style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>
-                              {plan.customerName || "Guest"}
-                              {plan.customerPhone && <span style={{ fontSize: 12, fontWeight: 500, color: "#9B7450", marginLeft: 10 }}>📞 {plan.customerPhone}</span>}
-                            </div>
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
-                              {ed.eventType && <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, background: "rgba(196,122,46,0.1)", color: "#7A5535", fontWeight: 600 }}>{ed.eventType}</span>}
-                              {ed.date && <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, background: "rgba(196,122,46,0.07)", color: "#7A5535" }}>📅 {ed.date}</span>}
-                              {ed.location && <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, background: "rgba(196,122,46,0.07)", color: "#7A5535" }}>📍 {ed.location}</span>}
-                              {ed.guests && <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, background: "rgba(196,122,46,0.07)", color: "#7A5535" }}>👥 {ed.guests} guests</span>}
-                              {(ed.budget || ed.totalBudget) && <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, background: "rgba(196,122,46,0.07)", color: "#7A5535" }}>💰 ₹{(ed.totalBudget || ed.budget || '').toLocaleString()}</span>}
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => setSmartPlanExpanded(isExp ? null : plan._id)}
-                            style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
-                          >
-                            {isExp ? "▲ Collapse" : "▼ Details"}
-                          </button>
-                        </div>
-
-                        {/* Vendor slots — names and budgets only, no status */}
-                        <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "10px 22px", display: "flex", flexWrap: "wrap", gap: 8 }}>
-                          {(plan.vendorSlots || []).map((slot, si) => (
-                            <div key={si} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 8, background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.15)" }}>
-                              <span style={{ fontSize: 15 }}>{CAT_EMOJI[slot.category] || '🏷️'}</span>
-                              <div>
-                                <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{slot.vendorName || "—"}</div>
-                                <div style={{ fontSize: 10, color: "#9B7450" }}>{slot.category} · ₹{(slot.estimatedCost || 0).toLocaleString()}</div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Expanded wizard answers */}
-                        {isExp && plan.wizardAnswers && Object.keys(plan.wizardAnswers).length > 0 && (
-                          <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "14px 22px", background: "rgba(196,122,46,0.03)" }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Event Brief</div>
-                            {Object.entries(plan.wizardAnswers).map(([cat, val]) => (
-                              <div key={cat} style={{ marginBottom: 10 }}>
-                                <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "capitalize", marginBottom: 4 }}>{cat.replace(/_/g, ' ')}</div>
-                                {val && typeof val === 'object' && !Array.isArray(val)
-                                  ? Object.entries(val).map(([subKey, subVal]) => (
-                                    <div key={subKey} style={{ display: "flex", gap: 8, marginBottom: 4, fontSize: 12, paddingLeft: 8 }}>
-                                      <span style={{ color: "#9B7450", minWidth: 130, textTransform: "capitalize" }}>{subKey.replace(/_/g, ' ')}:</span>
-                                      <span style={{ color: "#2C1A0E", fontWeight: 500 }}>{Array.isArray(subVal) ? subVal.join(', ') : String(subVal)}</span>
-                                    </div>
-                                  ))
-                                  : (
-                                    <div style={{ fontSize: 12, color: "#2C1A0E", fontWeight: 500, paddingLeft: 8 }}>{Array.isArray(val) ? val.join(', ') : String(val)}</div>
-                                  )
-                                }
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Budget per category — only for accepted plans with vendor slots */}
-                        {isExp && plan.status === 'active' && (plan.vendorSlots || []).length > 0 && (() => {
-                          const planBudgets = smartPlanBudgets[plan._id] || {};
-                          // Init defaults from estimatedCost if not set
-                          const slots = plan.vendorSlots || [];
-                          const isPinning = !!budgetPinning[plan._id];
-                          return (
-                            <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "14px 22px", background: "rgba(196,122,46,0.02)" }}>
-                              <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>📌 Set Budget per Category</div>
-                              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 14 }}>
-                                {slots.map((slot, si) => {
-                                  const cat = slot.category;
-                                  const val = planBudgets[cat] !== undefined ? planBudgets[cat] : (slot.estimatedCost || '');
-                                  return (
-                                    <div key={si} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                      <span style={{ fontSize: 13, color: "#2C1A0E", fontWeight: 600, minWidth: 110 }}>{cat}</span>
-                                      <input
-                                        type="number"
-                                        placeholder={`₹${(slot.estimatedCost || 0).toLocaleString('en-IN')}`}
-                                        value={val}
-                                        onChange={e => setSmartPlanBudgets(prev => ({ ...prev, [plan._id]: { ...(prev[plan._id] || {}), [cat]: Number(e.target.value) || '' } }))}
-                                        style={{ flex: 1, padding: "7px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit', sans-serif", outline: "none" }}
-                                      />
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                              <button
-                                disabled={isPinning}
-                                onClick={async () => {
-                                  setBudgetPinning(prev => ({ ...prev, [plan._id]: true }));
-                                  const budgets = planBudgets;
-                                  const categoryBudgets = slots.map(s => ({
-                                    category: s.category,
-                                    amount: budgets[s.category] !== undefined ? Number(budgets[s.category]) : (s.estimatedCost || 0),
-                                  }));
-                                  try {
-                                    await fetch(`${BASE_URL}/smart-plans/${plan._id}/pin-budget`, {
-                                      method: 'POST',
-                                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                                      credentials: 'include',
-                                      body: JSON.stringify({ categoryBudgets }),
-                                    });
-                                  } catch (e) { console.error(e); }
-                                  setBudgetPinning(prev => ({ ...prev, [plan._id]: false }));
-                                }}
-                                style={{ padding: "8px 18px", borderRadius: 9, border: "none", background: isPinning ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: isPinning ? "#9ca3af" : "#fff", fontSize: 12, fontWeight: 700, cursor: isPinning ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}
-                              >
-                                {isPinning ? "Pinning…" : "📌 Pin Budget to Chat"}
-                              </button>
-                            </div>
-                          );
-                        })()}
-
-                        {/* Coordinator assignment — shown in expanded view for active plans */}
-                        {isExp && plan.status === 'active' && (() => {
-                          const coordAssign = smartPlanCoordMap[plan._id] || {};
-                          const COORD_SERVICES = ['Chat Support', 'Home Visit', 'Venue Visit', 'Event Day'];
-                          const toggleSvc = (svc) => {
-                            const cur = coordAssign.services || [];
-                            setSmartPlanCoordMap(prev => ({ ...prev, [plan._id]: { ...prev[plan._id], services: cur.includes(svc) ? cur.filter(s => s !== svc) : [...cur, svc] } }));
-                          };
-                          return (
-                            <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "14px 22px", background: "rgba(196,122,46,0.02)", fontFamily: "'Outfit', sans-serif" }}>
-                              <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>🎯 Coordinator Assignment</div>
-                              <select
-                                value={coordAssign.coordinatorId || ""}
-                                onChange={e => { const sel = approvedCoords.find(c => c._id === e.target.value); setSmartPlanCoordMap(prev => ({ ...prev, [plan._id]: { ...prev[plan._id], coordinatorId: e.target.value, coordinatorName: sel?.name || "" } })); }}
-                                onFocus={async () => { if (!approvedCoords.length) { try { const r = await fetch(`${BASE_URL}/admin/coordinators/approved`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" }); if (r.ok) setApprovedCoords(await r.json()); } catch {} } }}
-                                style={{ width: "100%", padding: "6px 8px", borderRadius: 7, border: "1.5px solid #E5D5C0", fontSize: 12, fontFamily: "'Outfit', sans-serif", background: "#fff", color: "#2C1A0E", marginBottom: 8 }}
-                              >
-                                <option value="">— No coordinator —</option>
-                                {approvedCoords.map(c => <option key={c._id} value={c._id}>{c.name} ({c.city})</option>)}
-                              </select>
-                              <label style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, cursor: "pointer", fontSize: 11 }}>
-                                <input type="checkbox" checked={!!coordAssign.referredByCoordinator} onChange={e => setSmartPlanCoordMap(prev => ({ ...prev, [plan._id]: { ...prev[plan._id], referredByCoordinator: e.target.checked } }))} style={{ accentColor: "#C47A2E" }} />
-                                <span style={{ color: "#5A3A1A", fontWeight: 600 }}>Coordinator referred this customer</span>
-                              </label>
-                              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
-                                {COORD_SERVICES.map(svc => { const on = (coordAssign.services || []).includes(svc); return <button key={svc} onClick={() => toggleSvc(svc)} style={{ padding: "3px 9px", borderRadius: 100, fontSize: 10, fontWeight: 700, cursor: "pointer", background: on ? "#C47A2E" : "#fff", color: on ? "#fff" : "#9B7450", border: on ? "none" : "1.5px solid #E5D5C0", fontFamily: "'Outfit', sans-serif" }}>{svc}</button>; })}
-                              </div>
-                              {coordAssign.coordinatorId && (
-                                <button
-                                  onClick={async () => {
-                                    try {
-                                      await fetch(`${BASE_URL}/admin/coordinators/assign-lead`, {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                                        credentials: 'include',
-                                        body: JSON.stringify({ conversationId: plan.conversationId, coordinatorId: coordAssign.coordinatorId, coordinatorName: coordAssign.coordinatorName, referredByCoordinator: !!coordAssign.referredByCoordinator, services: coordAssign.services || [], planId: plan._id }),
-                                      });
-                                    } catch (e) { console.error(e); }
-                                  }}
-                                  style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
-                                >
-                                  Assign Coordinator
-                                </button>
-                              )}
-                            </div>
-                          );
-                        })()}
-
-                        {/* Vendor Approval — shown in expanded view for active plans */}
-                        {isExp && plan.status === 'active' && (plan.vendorSlots || []).length > 0 && (
-                          <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "14px 22px", background: "rgba(196,122,46,0.02)", fontFamily: "'Outfit', sans-serif" }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>🏷️ Get Vendor Approval</div>
-                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                              {(plan.vendorSlots || []).map((slot, si) => (
-                                <div key={si} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                  <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E", minWidth: 90 }}>{slot.category}</span>
-                                  <span style={{ fontSize: 12, color: "#5A3A1A", flex: 1 }}>{slot.vendorName || '—'}</span>
-                                  <select
-                                    value={slot.status || 'pending'}
-                                    onChange={e => handleStatusChange(plan._id, slot.category, e.target.value)}
-                                    style={{ padding: "4px 8px", borderRadius: 6, border: "1.5px solid #E5D5C0", fontSize: 11, fontFamily: "'Outfit', sans-serif", cursor: "pointer", background: slot.status === 'confirmed' ? "rgba(22,163,74,0.08)" : slot.status === 'rejected' ? "rgba(220,38,38,0.07)" : "#fff", color: slot.status === 'confirmed' ? "#15803d" : slot.status === 'rejected' ? "#dc2626" : "#9B7450" }}>
-                                    <option value="pending">Pending</option>
-                                    <option value="confirmed">✓ Confirmed</option>
-                                    <option value="rejected">✕ Rejected</option>
-                                  </select>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Actions row */}
-                        <div style={{ padding: "10px 22px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                            <span style={{ fontSize: 11, color: "#bbb" }}>
-                              Submitted {new Date(plan.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                            {plan.status === 'pending' && <span style={{ fontSize: 11, fontWeight: 700, color: "#b45309", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 100, padding: "2px 10px" }}>Pending</span>}
-                            {plan.status === 'active' && <span style={{ fontSize: 11, fontWeight: 700, color: "#15803d", background: "rgba(22,163,74,0.1)", border: "1px solid rgba(22,163,74,0.25)", borderRadius: 100, padding: "2px 10px" }}>✓ Accepted — see Bookings tab</span>}
-                            {plan.status === 'cancelled' && <span style={{ fontSize: 11, fontWeight: 700, color: "#dc2626", background: "rgba(220,38,38,0.07)", border: "1px solid rgba(220,38,38,0.2)", borderRadius: 100, padding: "2px 10px" }}>Rejected</span>}
-                            {plan.status === 'completed' && <span style={{ fontSize: 11, fontWeight: 700, color: "#15803d", background: "rgba(22,163,74,0.1)", border: "1px solid rgba(22,163,74,0.25)", borderRadius: 8, padding: "7px 12px" }}>✓ Paid</span>}
-                          </div>
-                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                            {/* Accept / Reject — only show when pending */}
-                            {plan.status === 'pending' && (<>
-                              <button
-                                onClick={async () => {
-                                  try {
-                                    await fetch(`${BASE_URL}/smart-plans/${plan._id}/accept`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
-                                    setSmartPlans(prev => prev.map(p => p._id === plan._id ? { ...p, status: 'active' } : p));
-                                    if (plan.conversationId) { setPendingConciergeId(plan.conversationId.toString()); reloadConversations(); setactiveDropdown('chat'); }
-                                  } catch (e) { console.error(e); }
-                                }}
-                                style={{ padding: "7px 16px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                                ✓ Accept
-                              </button>
-                              <button
-                                onClick={async () => {
-                                  if (!window.confirm(`Reject this plan? The customer will be notified in chat.`)) return;
-                                  try {
-                                    await fetch(`${BASE_URL}/smart-plans/${plan._id}/reject`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
-                                    setSmartPlans(prev => prev.map(p => p._id === plan._id ? { ...p, status: 'cancelled' } : p));
-                                  } catch (e) { console.error(e); }
-                                }}
-                                style={{ padding: "7px 16px", borderRadius: 9, border: "1.5px solid rgba(220,38,38,0.3)", background: "#fff", color: "#dc2626", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                                ✕ Reject
-                              </button>
-                            </>)}
-                            {/* Open Chat — always useful for viewing the concierge conversation */}
-                            {plan.conversationId && plan.status !== 'pending' && (
-                              <button
-                                onClick={() => { setPendingConciergeId(plan.conversationId.toString()); reloadConversations(); setactiveDropdown('chat'); }}
-                                style={{ padding: "7px 16px", borderRadius: 9, border: "none", background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                                💬 Open Chat
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        })()}
-
         {/* ── Stationery ── */}
         {activeDropdown === "stationery" && (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] overflow-y-auto">
@@ -6863,7 +6348,6 @@ const AdminDashboard = () => {
             token={token}
             BASE_URL={BASE_URL}
             vendorStats={vendorStats}
-            chatRequests={chatRequests}
             vendorApplications={vendorApplications}
           />
         )}
