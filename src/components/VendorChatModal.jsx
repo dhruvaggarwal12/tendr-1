@@ -689,17 +689,14 @@ export default function VendorChatModal() {
     // New concierge chat: open immediately on connect (no bot)
     if (isConcierge && !chatState.conversationId) {
       if (isSkipBot) {
-        // Queue the initial message as first message before conversation opens
-        if ((isOccasions || isFunActivities) && chatState.initialMessage) {
-          pendingMsgsRef.current = [chatState.initialMessage];
-        }
+        // Initial message sent via REST after conversation is ready (not socket) to ensure persistence
         // Occasions / Fun Activities / Talk to Tendr Team — find-or-create the conversation
         (async () => {
           try {
             const serviceType = isOccasions ? "Baat Karo" : isFunActivities ? "Stationery & Activities" : "Tendr Team";
             const body = { serviceType };
             if (isOccasions) body.bookingCategory = 'occasions';
-            if (isFunActivities) body.bookingCategory = 'fun-activities';
+            else if (isFunActivities) body.bookingCategory = chatState.bookingCategory || 'fun-activities';
             if (isFunActivities && chatState.funEventDetails) body.eventDetails = chatState.funEventDetails;
             const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
               method: "POST",
@@ -740,7 +737,23 @@ export default function VendorChatModal() {
               if (socket.connected) joinRoom();
               else socket.on("connect", joinRoom);
 
-              // Flush any messages the user typed before conversation was ready
+              // Send initial summary message via REST so it persists and renders immediately
+              const initialMsg = chatState.initialMessage;
+              if ((isOccasions || isFunActivities) && initialMsg && authToken) {
+                try {
+                  const msgRes = await fetch(`${BASE_URL}/messages/${cid}/message`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+                    credentials: "include",
+                    body: JSON.stringify({ sender: "user", content: initialMsg }),
+                  });
+                  if (msgRes.ok) {
+                    setMessages(prev => [...prev, { text: initialMsg, sender: "user", ts: Date.now() }]);
+                  }
+                } catch {}
+              }
+
+              // Flush any user-typed messages queued before conversation was ready
               if (pendingMsgsRef.current.length > 0) {
                 const toFlush = [...pendingMsgsRef.current];
                 pendingMsgsRef.current = [];

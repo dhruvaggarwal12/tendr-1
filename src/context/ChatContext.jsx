@@ -56,7 +56,7 @@ export function ChatProvider({ children }) {
     });
 
   // Open "Stationery & Activities" chat — merges Fun Activity + Wedding Stationery
-  const openFunActivitiesChat = (initialMessage = "", eventDetails = {}) =>
+  const openFunActivitiesChat = (initialMessage = "", eventDetails = {}, bookingCategory = 'fun-activities') =>
     setChatState({
       vendor: { _id: "stationery-activities", name: "Tendr Team", serviceType: "Stationery & Activities", approved: true },
       conversationId: null,
@@ -67,6 +67,7 @@ export function ChatProvider({ children }) {
       isFunActivities: true,
       initialMessage,
       funEventDetails: eventDetails,
+      bookingCategory,
     });
 
   const setConversationId = (id) =>

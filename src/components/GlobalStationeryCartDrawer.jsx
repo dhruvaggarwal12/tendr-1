@@ -115,7 +115,7 @@ export default function GlobalStationeryCartDrawer() {
       venueAddress: form.address,
     };
 
-    openFunActivitiesChat(msg, eventDetails);
+    openFunActivitiesChat(msg, eventDetails, 'stationery');
     clearCart();
     closeCart();
     setStep(2);

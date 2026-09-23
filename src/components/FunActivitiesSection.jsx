@@ -337,8 +337,6 @@ export function FunCartDrawer({ onClose }) {
       const totalPrice = item.price * qty;
       dispatch(saveActivityForm({ id: item.id, form: { ...form, qty }, totalPrice }));
     });
-    dispatch(setFunConfirmed(true));
-
     const itemLines = cartItems.map(item => {
       const qty = item.perUnit ? (qtyMap[item.id] || 1) : 1;
       return `• ${item.name}${item.perUnit ? ` × ${qty}` : ""} — ₹${(item.price * qty).toLocaleString("en-IN")}`;
@@ -355,6 +353,7 @@ export function FunCartDrawer({ onClose }) {
     };
 
     openFunActivitiesChat(msg, eventDetails);
+    dispatch(clearFunCart());
     setStep(2);
   };
 

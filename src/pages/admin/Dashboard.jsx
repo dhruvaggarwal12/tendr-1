@@ -2435,7 +2435,10 @@ const AdminDashboard = () => {
                       {filteredPlans.map((plan, i) => {
                         return (
                           <tr key={plan._id} style={{ borderBottom: i < filteredPlans.length - 1 ? "1px solid rgba(204,171,74,0.15)" : "none", background: i % 2 === 0 ? "#fffcf5" : "#fff" }}>
-                            <td style={{ padding: "10px 14px", fontSize: 13, fontWeight: 600, color: "#2C1A0E", whiteSpace: "nowrap" }}>{plan.customerId?.name || "—"}</td>
+                            <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{plan.customerId?.name || "—"}</div>
+                              {plan.customerId?.phoneNumber && <div style={{ fontSize: 11, color: "#9B7450", marginTop: 2 }}>📞 {plan.customerId.phoneNumber}</div>}
+                            </td>
                             <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a", fontWeight: 600 }}>{plan.eventName}</td>
                             <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a" }}>{plan.eventType}</td>
                             <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a", whiteSpace: "nowrap" }}>{plan.date}</td>
