@@ -525,6 +525,17 @@ export default function VendorChatModal() {
   const refPhotosRef = useRef([]);
   const pendingMsgsRef = useRef([]); // messages queued before conversationId is ready (Tendr Team chat)
 
+  // ── My Order intake bot — fires when chat has no pre-built initialMessage ────
+  const MY_ORDER_BOT_QS = [
+    { key: "date",   q: "What's your event date? 📅",                       hint: "e.g. 15 December 2025" },
+    { key: "guests", q: "How many guests? 👥",                               hint: "e.g. 50" },
+    { key: "notes",  q: "Any special requirements or notes? (or type 'skip') 📝", hint: "e.g. outdoor, vegetarian only…" },
+  ];
+  const shouldRunMyOrderBot = isAllBookings && !chatState?.initialMessage;
+  const [myOrderBotStep, setMyOrderBotStep] = useState(0);
+  const [myOrderBotAnswers, setMyOrderBotAnswers] = useState({});
+  const myOrderBotActive = shouldRunMyOrderBot && myOrderBotStep < MY_ORDER_BOT_QS.length;
+
   // ── Chat state ───────────────────────────────────────────────────────────────
   const [messages, setMessages] = useState([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
@@ -766,6 +777,13 @@ export default function VendorChatModal() {
                     setMessages(prev => [...prev, { text: initialMsg, sender: "user", ts: Date.now() }]);
                   }
                 } catch {}
+              }
+
+              // My Order intake bot — inject first question if no initialMessage was provided
+              if (shouldRunMyOrderBot) {
+                setTimeout(() => {
+                  setMessages(prev => [...prev, { text: MY_ORDER_BOT_QS[0].q, sender: "vendor", ts: Date.now() }]);
+                }, 600);
               }
 
               // Flush any user-typed messages queued before conversation was ready
@@ -1136,6 +1154,48 @@ export default function VendorChatModal() {
   const sendText = (override) => {
     const content = typeof override === "string" ? override : text.trim();
     if (!content) return;
+
+    // My Order intake bot — intercept typed answers before sending to server
+    if (myOrderBotActive && conversationId) {
+      const q = MY_ORDER_BOT_QS[myOrderBotStep];
+      const answer = content.toLowerCase() === 'skip' ? '' : content;
+      const newAnswers = { ...myOrderBotAnswers, [q.key]: answer };
+      setMyOrderBotAnswers(newAnswers);
+      setMessages(prev => [...prev, { text: content, sender: "user", ts: Date.now() }]);
+      if (!override) setText("");
+      const nextStep = myOrderBotStep + 1;
+      setMyOrderBotStep(nextStep);
+      if (nextStep < MY_ORDER_BOT_QS.length) {
+        setTimeout(() => {
+          setMessages(prev => [...prev, { text: MY_ORDER_BOT_QS[nextStep].q, sender: "vendor", ts: Date.now() }]);
+        }, 400);
+      } else {
+        // All answers collected — build and send summary
+        const BOOKING_LABELS = { 'occasions': 'Occasions', 'fun-activities': 'Fun Activities', 'stationery': 'Wedding Stationery', 'gift-hampers': 'Gift Hampers', 'you-do-it': 'You Do It', 'let-us-do-it': 'Let Us Do It' };
+        const cat = BOOKING_LABELS[chatState?.bookingCategory] || 'My Order';
+        const summaryLines = [`📋 My Order — ${cat} Details`];
+        if (newAnswers.date) summaryLines.push(`📅 Date: ${newAnswers.date}`);
+        if (newAnswers.guests) summaryLines.push(`👥 Guests: ${newAnswers.guests}`);
+        if (newAnswers.notes) summaryLines.push(`📝 Notes: ${newAnswers.notes}`);
+        const summary = summaryLines.join('\n');
+        setTimeout(async () => {
+          try {
+            const cid = conversationIdRef.current;
+            if (!cid || !authToken) return;
+            await fetch(`${BASE_URL}/messages/${cid}/message`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+              credentials: "include",
+              body: JSON.stringify({ sender: "user", content: summary }),
+            });
+            setMessages(prev => [...prev, { text: summary, sender: "user", ts: Date.now() }]);
+            setMessages(prev => [...prev, { text: "Thanks! Our team will review your order and get back to you shortly. 🙌", sender: "vendor", ts: Date.now() + 1 }]);
+          } catch {}
+        }, 400);
+      }
+      return;
+    }
+
     if (!isSkipBot && (!approved || !conversationId)) return;
     setMessages(prev => [...prev, { text: content, sender: "user", ts: Date.now() }]);
     localStorage.setItem("tendr:lastMsgAt", Date.now().toString());
@@ -1942,7 +2002,7 @@ export default function VendorChatModal() {
                   value={text}
                   onChange={e => (approved && !bookingSubmitted) && setText(e.target.value)}
                   onKeyDown={e => (approved && !bookingSubmitted) && e.key === "Enter" && !e.shiftKey && sendText()}
-                  placeholder={bookingSubmitted ? "Awaiting payment confirmation…" : approved ? "Write your message…" : "Waiting for approval…"}
+                  placeholder={bookingSubmitted ? "Awaiting payment confirmation…" : myOrderBotActive ? (MY_ORDER_BOT_QS[myOrderBotStep]?.hint || "Type your answer…") : approved ? "Write your message…" : "Waiting for approval…"}
                   disabled={!approved || bookingSubmitted}
                   style={{ flex: 1, padding: "9px 14px", borderRadius: 100, border: `1.5px solid ${(approved && !bookingSubmitted) ? "rgba(196,122,46,0.22)" : "rgba(0,0,0,0.08)"}`, fontSize: 13, fontFamily: font, outline: "none", background: (approved && !bookingSubmitted) ? "#fff" : "#f5f5f5", color: (approved && !bookingSubmitted) ? "inherit" : "#bbb", cursor: (approved && !bookingSubmitted) ? "text" : "not-allowed" }}
                 />
