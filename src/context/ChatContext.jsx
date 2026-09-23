@@ -42,11 +42,11 @@ export function ChatProvider({ children }) {
       skipBotFlow: true,
     });
 
-  // Open unified "My Bookings" chat — single bucket for all service booking types
+  // Open unified "My Order" chat — single bucket for all service booking types
   // (occasions, gift-hampers, stationery, fun-activities, you-do-it, let-us-do-it)
   const openAllBookingsChat = (initialMessage = "", bookingCategory = null, eventDetails = {}) =>
     setChatState({
-      vendor: { _id: "all-bookings", name: "Tendr Team", serviceType: "My Bookings", approved: true },
+      vendor: { _id: "all-bookings", name: "Tendr Team", serviceType: "My Order", approved: true },
       conversationId: null,
       minimized: false,
       isExisting: false,

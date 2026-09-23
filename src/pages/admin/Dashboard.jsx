@@ -1630,7 +1630,7 @@ const AdminDashboard = () => {
 
   const [pricingAmount, setPricingAmount] = useState("");
   const [pricingVendorName, setPricingVendorName] = useState("");
-  const [myBookingPrices, setMyBookingPrices] = useState({}); // { [planId]: string } for My Bookings chat
+  const [myBookingPrices, setMyBookingPrices] = useState({}); // { [planId]: string } for My Order chat
   const [savingBkPrice, setSavingBkPrice] = useState({});     // { [planId]: bool }
   // Send Menu cuisine picker state
   const [menuPickerOpen, setMenuPickerOpen] = useState(false);
@@ -4757,8 +4757,8 @@ const AdminDashboard = () => {
                           </div>
                         ))}
                       </div>
-                      {/* Pricing — My Bookings: one price input per booking type */}
-                      {selectedChat.serviceType === "My Bookings" && (() => {
+                      {/* Pricing — My Order: one price input per booking type */}
+                      {selectedChat.serviceType === "My Order" && (() => {
                         const custId = selectedChat.customerId?._id || selectedChat.customerId;
                         const custPlans = eventPlans.filter(p => {
                           const pid = p.customerId?._id || p.customerId;
@@ -4809,8 +4809,8 @@ const AdminDashboard = () => {
                         );
                       })()}
 
-                      {/* Pricing input — single vendor chats only (not SmartPlan, not My Bookings) */}
-                      {selectedChat.serviceType !== "SmartPlan" && selectedChat.serviceType !== "My Bookings" && (
+                      {/* Pricing input — single vendor chats only (not SmartPlan, not My Order) */}
+                      {selectedChat.serviceType !== "SmartPlan" && selectedChat.serviceType !== "My Order" && (
                       <div style={{ padding: "10px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 7 }}>💰 Agreed Price</div>
                         <input

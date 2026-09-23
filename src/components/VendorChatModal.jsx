@@ -696,7 +696,7 @@ export default function VendorChatModal() {
         // Occasions / Fun Activities / Talk to Tendr Team — find-or-create the conversation
         (async () => {
           try {
-            const serviceType = isAllBookings ? "My Bookings" : isOccasions ? "Baat Karo" : isFunActivities ? "Stationery & Activities" : "Tendr Team";
+            const serviceType = isAllBookings ? "My Order" : isOccasions ? "Baat Karo" : isFunActivities ? "Stationery & Activities" : "Tendr Team";
             const body = { serviceType };
             const bc = chatState.bookingCategory;
             if (bc) body.bookingCategory = bc;
