@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { getVendors } from '../apis/vendorApi';
 
 export const PERFORMER_TYPES = [
@@ -23,7 +22,6 @@ function writeCache(val) {
 // Simplified performer CTA — shows a single "Want live performance?" card
 // that navigates to /artists. Still supply-gated (only renders if ≥1 type available).
 export default function PerformerSuggestions({ wrapStyle = {} }) {
-  const navigate = useNavigate();
   const [hasAny, setHasAny] = useState(null); // null=loading, false=none, true=some
 
   useEffect(() => {
@@ -47,7 +45,7 @@ export default function PerformerSuggestions({ wrapStyle = {} }) {
   return (
     <div style={{ fontFamily: "'Outfit', sans-serif", ...wrapStyle }}>
       <button
-        onClick={() => navigate('/artists')}
+        onClick={() => window.open('/artists', '_blank', 'noopener,noreferrer')}
         style={{
           width: '100%', display: 'flex', alignItems: 'center', gap: 14,
           padding: '14px 18px', borderRadius: 14,
