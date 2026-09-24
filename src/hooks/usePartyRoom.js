@@ -16,6 +16,7 @@ export function usePartyRoom() {
   const [effect, setEffect]         = useState(null);   // { type, by, payload } or null
   const [error, setError]           = useState(null);
   const [activityLog, setActivityLog] = useState([]);  // [{ type:'joined'|'left', name, time }]
+  const [playerActivities, setPlayerActivities] = useState({}); // { [name]: activityString | null }
 
   // Lazy-connect: only create socket on first use
   const getSocket = useCallback(() => {
@@ -36,7 +37,17 @@ export function usePartyRoom() {
       });
       s.on('party:player-left', ({ name, players: pl }) => {
         setPlayers(pl);
-        if (name) setActivityLog(prev => [...prev.slice(-19), { type: 'left', name, time: Date.now() }]);
+        if (name) {
+          setActivityLog(prev => [...prev.slice(-19), { type: 'left', name, time: Date.now() }]);
+          setPlayerActivities(prev => { const next = { ...prev }; delete next[name]; return next; });
+        }
+      });
+
+      s.on('party:player-activity', ({ name, activity }) => {
+        setPlayerActivities(prev => {
+          if (!activity) { const next = { ...prev }; delete next[name]; return next; }
+          return { ...prev, [name]: activity };
+        });
       });
 
       s.on('party:game-changed', ({ game, gameState: gs }) => {
@@ -135,6 +146,11 @@ export function usePartyRoom() {
     getSocket().emit('party:effect', { type, payload });
   }, [getSocket]);
 
+  const setActivity = useCallback((activity) => {
+    if (!socketRef.current) return;
+    socketRef.current.emit('party:set-activity', { activity: activity || null });
+  }, []);
+
   const setGame = useCallback((game, initialState) => {
     return new Promise((resolve) => {
       getSocket().emit('party:set-game', { game, initialState }, resolve);
@@ -143,9 +159,9 @@ export function usePartyRoom() {
 
   return {
     connected, room, players, gameState, currentGame,
-    myName, isHost, effect, error, activityLog,
+    myName, isHost, effect, error, activityLog, playerActivities,
     createRoom, joinRoom, closeRoom, leaveRoom,
-    sendAction, sendEffect, setGame,
+    sendAction, sendEffect, setGame, setActivity,
     clearError: () => setError(null),
   };
 }

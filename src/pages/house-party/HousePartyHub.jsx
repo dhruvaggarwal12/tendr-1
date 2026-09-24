@@ -4547,7 +4547,7 @@ function RoomLobbyModal({ onClose, onCreate, onJoin, error }) {
 }
 
 // ── Room banner ───────────────────────────────────────────────────────────────
-function RoomBanner({ room, players, isHost, myName, activityLog = [], onClose, onLeave }) {
+function RoomBanner({ room, players, isHost, myName, activityLog = [], playerActivities = {}, onClose, onLeave }) {
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
@@ -4601,14 +4601,18 @@ function RoomBanner({ room, players, isHost, myName, activityLog = [], onClose, 
 
       {/* Compact player chips */}
       <div style={{ padding: "10px 16px", display: "flex", gap: 6, flexWrap: "wrap" }}>
-        {players.map(p => (
-          <div key={p} style={{ display: "flex", alignItems: "center", gap: 5, background: p === myName ? "rgba(196,122,46,0.35)" : "rgba(255,255,255,0.08)", borderRadius: 100, padding: "3px 10px 3px 7px", border: p === myName ? "1px solid rgba(196,122,46,0.5)" : "1px solid transparent" }}>
-            <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: "#34D399", flexShrink: 0 }} />
-            <span style={{ fontSize: 12, color: "#fff", fontWeight: p === myName ? 700 : 400 }}>
-              {p === myName ? "You" : p}{p === room.hostName ? " 👑" : ""}
-            </span>
-          </div>
-        ))}
+        {players.map(p => {
+          const activity = playerActivities[p];
+          return (
+            <div key={p} title={activity || undefined} style={{ display: "flex", alignItems: "center", gap: 5, background: p === myName ? "rgba(196,122,46,0.35)" : activity ? "rgba(52,211,153,0.1)" : "rgba(255,255,255,0.08)", borderRadius: 100, padding: "3px 10px 3px 7px", border: p === myName ? "1px solid rgba(196,122,46,0.5)" : activity ? "1px solid rgba(52,211,153,0.25)" : "1px solid transparent" }}>
+              <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: "#34D399", flexShrink: 0 }} />
+              <span style={{ fontSize: 12, color: "#fff", fontWeight: p === myName ? 700 : 400 }}>
+                {p === myName ? "You" : p}{p === room.hostName ? " 👑" : ""}
+              </span>
+              {activity && <span style={{ fontSize: 9, marginLeft: 1 }}>●</span>}
+            </div>
+          );
+        })}
       </div>
 
       {/* Expanded panel */}
@@ -4627,7 +4631,8 @@ function RoomBanner({ room, players, isHost, myName, activityLog = [], onClose, 
                   <div style={{ fontSize: 13, fontWeight: p === myName ? 700 : 500, color: p === myName ? "#CCAB4A" : "#fff", display: "flex", alignItems: "center", gap: 6 }}>
                     {p}{p === myName && <span style={{ fontSize: 10, color: "#CCAB4A", background: "rgba(196,122,46,0.25)", borderRadius: 4, padding: "1px 5px", fontWeight: 600 }}>you</span>}
                   </div>
-                  {p === room.hostName && <div style={{ fontSize: 10, color: "#FBBF24", fontWeight: 600, marginTop: 1 }}>👑 Host</div>}
+                  {p === room.hostName && !playerActivities[p] && <div style={{ fontSize: 10, color: "#FBBF24", fontWeight: 600, marginTop: 1 }}>👑 Host</div>}
+                  {playerActivities[p] && <div style={{ fontSize: 10.5, color: "rgba(52,211,153,0.85)", fontWeight: 500, marginTop: 1 }}>{playerActivities[p]}</div>}
                 </div>
                 <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#34D399", boxShadow: "0 0 6px #34D399", flexShrink: 0 }} />
               </div>
@@ -4689,9 +4694,32 @@ export default function HousePartyHub() {
   const navigate = useNavigate();
 
   const {
-    room, players, gameState, currentGame, myName, isHost, effect, error, activityLog,
-    createRoom, joinRoom, closeRoom, leaveRoom, sendAction, sendEffect, clearError,
+    room, players, gameState, currentGame, myName, isHost, effect, error, activityLog, playerActivities,
+    createRoom, joinRoom, closeRoom, leaveRoom, sendAction, sendEffect, setActivity, clearError,
   } = usePartyRoom();
+
+  const ACTIVITY_LABELS = {
+    bills: '💸 splitting bills', playlist: '🎵 adding songs', budget: '💰 planning budget',
+    checklist: '📋 checking items', guestlist: '👥 on guest list', theme: '🎨 voting theme',
+    countdown: '⏱️ watching countdown', reportcard: '🏆 filling report card',
+    wishwall: '⭐ adding wishes', moodmeter: '🌡️ setting vibe', secretmsg: '💌 secret messages',
+    lovenotes: '💌 writing love notes', venuevote: '🗳️ voting on venues',
+    groupcheck: '📋 group checklist', kittyfund: '💰 kitty fund',
+    menu: '🍽️ on menu planner', seating: '🪑 seating chart', daytimeline: '🗓️ day timeline',
+    venue: '📍 venue notes', vendors: '🗂️ vendor tracker', wabroadcast: '📣 broadcasts',
+    truthordare: '🎯 playing Truth or Dare', neverhavei: '🙋 playing Never Have I',
+    wouldyou: '🤔 playing Would You Rather', hottakes: '🔥 reacting Hot Takes',
+    spin: '🍾 spinning bottle', charades: '🎭 playing Charades', bingo: '🎱 playing Bingo',
+    mostlikelyto: '🏆 voting Most Likely To', twotruthslie: '🤥 playing Two Truths',
+    hotseat: '🪑 on Hot Seat', darewheel: '🎡 spinning Dare Wheel',
+    wordwolf: '🐺 playing Word Wolf', categoryblitz: '⚡ Category Blitz',
+    roastbattle: '🔥 in Roast Battle',
+  };
+
+  useEffect(() => {
+    if (!room) return;
+    setActivity(open ? (ACTIVITY_LABELS[open] || '🎮 using a tool') : null);
+  }, [open, room]);
 
   // When room disappears (host closed it for guests, or we closed it), fall back to explore
   useEffect(() => {
@@ -4850,7 +4878,7 @@ export default function HousePartyHub() {
       {room && (
         <RoomBanner
           room={room} players={players} isHost={isHost} myName={myName}
-          activityLog={activityLog}
+          activityLog={activityLog} playerActivities={playerActivities}
           onClose={async () => { await closeRoom(); }}
           onLeave={async () => { await leaveRoom(); }}
         />
