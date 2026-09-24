@@ -770,7 +770,7 @@ function Checklist({ onClose }) {
           <span style={{ fontSize:12, fontWeight:700, color:'rgba(255,255,255,0.45)' }}>Progress</span>
           <span style={{ fontSize:12, fontWeight:700, color: done===total&&total>0?'#22c55e':'rgba(255,255,255,0.6)' }}>{done} / {total} done</span>
         </div>
-        <div style={{ height:6, borderRadius:3, background: "transparent", overflow:'hidden' }}>
+        <div style={{ height:6, borderRadius:3, background: "rgba(255,255,255,0.1)", overflow:'hidden' }}>
           <div style={{ height:'100%', width:`${total?done/total*100:0}%`, background: done===total&&total>0?'linear-gradient(90deg,#22c55e,#16a34a)':'linear-gradient(90deg,#C47A2E,#E5A84A)', borderRadius:3, transition:'width 0.3s' }} />
         </div>
       </div>
@@ -822,7 +822,10 @@ function Checklist({ onClose }) {
           <button onClick={addItem} style={{ background:'#C47A2E', border:'none', borderRadius:9, padding:'9px 14px', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:font }}>+</button>
         </div>
       </div>
-      <button onClick={() => { setSavedItems(null); try { localStorage.removeItem(SK); } catch {} }} style={{ marginTop:12, width:'100%', background:'transparent', border:'1px solid rgba(255,255,255,0.08)', borderRadius:9, padding:'9px', color:'rgba(255,255,255,0.25)', fontSize:12, cursor:'pointer', fontFamily:font }}>Change template</button>
+      <div style={{ display:'flex', gap:8, marginTop:12 }}>
+        {done > 0 && <button onClick={() => persist(savedItems.filter(it => !it.done))} style={{ flex:1, background:'rgba(34,197,94,0.08)', border:'1px solid rgba(34,197,94,0.25)', borderRadius:9, padding:'9px', color:'#86efac', fontSize:12, cursor:'pointer', fontFamily:font, fontWeight:700 }}>✓ Clear Done ({done})</button>}
+        <button onClick={() => { setSavedItems(null); try { localStorage.removeItem(SK); } catch {} }} style={{ flex:1, background:'transparent', border:'1px solid rgba(255,255,255,0.08)', borderRadius:9, padding:'9px', color:'rgba(255,255,255,0.25)', fontSize:12, cursor:'pointer', fontFamily:font }}>Change template</button>
+      </div>
     </Modal>
   );
 }
@@ -1508,14 +1511,23 @@ function BillSplitter({ onClose }) {
 }
 
 function ThemePicker({ onClose }) {
-  const [votes, setVotes] = useState({});
-  const [myVote, setMyVote] = useState(null);
+  const SK = 'tendr-hp-theme-votes';
+  const [votes, setVotes] = useState(() => { try { return JSON.parse(localStorage.getItem(SK)||'{}'); } catch { return {}; } });
+  const [myVote, setMyVote] = useState(() => { try { return localStorage.getItem('tendr-hp-theme-myvote')||null; } catch { return null; } });
   const [winner, setWinner] = useState(null);
 
   const castVote = (name) => {
-    if (myVote) setVotes(v => ({ ...v, [myVote]: Math.max(0, (v[myVote] || 0) - 1) }));
+    const newVotes = { ...votes };
+    if (myVote) newVotes[myVote] = Math.max(0, (newVotes[myVote] || 0) - 1);
+    newVotes[name] = (newVotes[name] || 0) + 1;
     setMyVote(name);
-    setVotes(v => ({ ...v, [name]: (v[name] || 0) + 1 }));
+    setVotes(newVotes);
+    try { localStorage.setItem(SK, JSON.stringify(newVotes)); localStorage.setItem('tendr-hp-theme-myvote', name); } catch {}
+  };
+
+  const resetVotes = () => {
+    setVotes({}); setMyVote(null); setWinner(null);
+    try { localStorage.removeItem(SK); localStorage.removeItem('tendr-hp-theme-myvote'); } catch {}
   };
   const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0);
   const maxVotes = Math.max(...Object.values(votes), 1);
@@ -1575,23 +1587,34 @@ function ThemePicker({ onClose }) {
           );
         })}
       </div>
-      {leadTheme && totalVotes > 0 && (
-        <button onClick={() => setWinner(leadTheme)} style={btn("#C47A2E")}>
-          🏆 Reveal Winner: {leadTheme}
-        </button>
-      )}
+      <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+        {leadTheme && totalVotes > 0 && (
+          <button onClick={() => setWinner(leadTheme)} style={{ ...btn("#C47A2E"), flex: 1 }}>
+            🏆 Reveal Winner: {leadTheme}
+          </button>
+        )}
+        {totalVotes > 0 && (
+          <button onClick={resetVotes} style={{ padding: "11px 14px", borderRadius: 10, border: "1px solid rgba(239,68,68,0.25)", background: "rgba(239,68,68,0.06)", color: "#FCA5A5", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>↺ Reset</button>
+        )}
+      </div>
     </Modal>
   );
 }
 
 function Countdown({ onClose }) {
-  const [target, setTarget] = useState("");
+  const SK = 'tendr-hp-countdown';
+  const saved = (() => { try { return JSON.parse(localStorage.getItem(SK)||'null'); } catch { return null; } })();
+  const [target, setTarget] = useState(saved?.target || '');
+  const [eventLabel, setEventLabel] = useState(saved?.label || '');
   const [timeLeft, setTimeLeft] = useState(null);
   const [celebrating, setCelebrating] = useState(false);
   const intervalRef = useRef(null);
 
+  const persist = (t, l) => { try { localStorage.setItem(SK, JSON.stringify({ target: t, label: l })); } catch {} };
+
   const start = () => {
     if (!target) return;
+    persist(target, eventLabel);
     clearInterval(intervalRef.current);
     const tick = () => {
       const diff = new Date(target) - Date.now();
@@ -1608,6 +1631,12 @@ function Countdown({ onClose }) {
   };
   useEffect(() => () => clearInterval(intervalRef.current), []);
 
+  const reset = () => {
+    clearInterval(intervalRef.current);
+    setTimeLeft(null); setCelebrating(false); setTarget(''); setEventLabel('');
+    try { localStorage.removeItem(SK); } catch {}
+  };
+
   const FlipCard = ({ value, lbl }) => (
     <div style={{ textAlign: "center" }}>
       <div style={{ background: "linear-gradient(180deg,#1a1208 50%,#0f0a05 50%)", borderRadius: 10, width: 64, height: 76, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 38, fontWeight: 900, color: "#FBBF24", border: "2px solid rgba(196,122,46,0.4)", boxShadow: "0 8px 24px rgba(0,0,0,0.5)", position: "relative", overflow: "hidden", fontFamily: font, letterSpacing: "-0.03em" }}>
@@ -1622,9 +1651,9 @@ function Countdown({ onClose }) {
     <Modal onClose={onClose} emoji="⏱️" title="Countdown Timer">
       <div style={{ textAlign: "center", padding: "28px 0" }}>
         <div style={{ fontSize: 72, marginBottom: 12 }}>🎉</div>
-        <div style={{ fontSize: 28, fontWeight: 900, color: "#FBBF24" }}>Party Time!</div>
-        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 8 }}>The moment is here!</div>
-        <button onClick={() => { setCelebrating(false); setTimeLeft(null); setTarget(""); }} style={{ ...btn("rgba(255,255,255,0.1)"), marginTop: 20 }}>Reset</button>
+        <div style={{ fontSize: 28, fontWeight: 900, color: "#FBBF24" }}>{eventLabel || "Party Time!"}</div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 8 }}>The moment is here! 🎊</div>
+        <button onClick={reset} style={{ ...btn("rgba(255,255,255,0.1)"), marginTop: 20 }}>Set New Countdown</button>
       </div>
     </Modal>
   );
@@ -1633,20 +1662,23 @@ function Countdown({ onClose }) {
     <Modal onClose={onClose} emoji="⏱️" title="Countdown Timer">
       {!timeLeft ? (
         <>
+          <label style={label}>Event Name</label>
+          <input value={eventLabel} onChange={e => setEventLabel(e.target.value)} placeholder="e.g. Rahul's Birthday 🎂" style={{ ...inp, marginBottom: 12 }} />
           <label style={label}>Party Start Date & Time</label>
           <input type="datetime-local" value={target} onChange={e => setTarget(e.target.value)} style={{ ...inp, marginBottom: 12 }} />
-          <button onClick={start} style={btn("#C47A2E")}>Start Countdown</button>
+          <button onClick={start} disabled={!target} style={{ ...btn("#C47A2E"), opacity: target ? 1 : 0.5 }}>▶ Start Countdown</button>
         </>
       ) : (
         <>
-          <div style={{ display: "flex", justifyContent: "center", gap: 10, padding: "28px 0 16px" }}>
+          {eventLabel && <div style={{ textAlign: "center", fontSize: 13, fontWeight: 700, color: "#CCAB4A", marginBottom: 4, letterSpacing: "0.05em" }}>{eventLabel}</div>}
+          <div style={{ display: "flex", justifyContent: "center", gap: 10, padding: "20px 0 14px" }}>
             {timeLeft.d > 0 && <FlipCard value={timeLeft.d} lbl="Days" />}
             <FlipCard value={timeLeft.h} lbl="Hours" />
             <FlipCard value={timeLeft.m} lbl="Min" />
             <FlipCard value={timeLeft.s} lbl="Sec" />
           </div>
           <div style={{ textAlign: "center", fontSize: 12, color: "rgba(255,255,255,0.35)", marginBottom: 18 }}>Party is coming… 🎊</div>
-          <button onClick={() => { clearInterval(intervalRef.current); setTimeLeft(null); setTarget(""); }} style={btn("rgba(255,255,255,0.1)")}>Reset</button>
+          <button onClick={reset} style={btn("rgba(255,255,255,0.1)")}>Reset</button>
         </>
       )}
     </Modal>
@@ -1654,9 +1686,11 @@ function Countdown({ onClose }) {
 }
 
 function PlaylistBuilder({ onClose }) {
-  const [songs, setSongs] = useState([]);
-  const [newSong, setNewSong] = useState("");
-  const [newArtist, setNewArtist] = useState("");
+  const SK = 'tendr-hp-playlist';
+  const [songs, setSongs] = useState(() => { try { return JSON.parse(localStorage.getItem(SK)||'[]'); } catch { return []; } });
+  const [newSong, setNewSong] = useState('');
+  const [newArtist, setNewArtist] = useState('');
+  const [addedBy, setAddedBy] = useState(() => { try { return localStorage.getItem('tendr-hp-playlist-name')||''; } catch { return ''; } });
   const [nowPlaying, setNowPlaying] = useState(null);
   const [reelAngle, setReelAngle] = useState(0);
 
@@ -1666,14 +1700,22 @@ function PlaylistBuilder({ onClose }) {
     return () => clearInterval(id);
   }, [nowPlaying]);
 
+  const persist = (list) => { setSongs(list); try { localStorage.setItem(SK, JSON.stringify(list)); } catch {} };
+  const saveName = (n) => { setAddedBy(n); try { localStorage.setItem('tendr-hp-playlist-name', n); } catch {} };
+
   const add = () => {
     if (!newSong.trim()) return;
-    setSongs(s => [...s, { id: Date.now(), song: newSong.trim(), artist: newArtist.trim(), votes: 0 }].sort((a, b) => b.votes - a.votes));
-    setNewSong(""); setNewArtist("");
+    persist([...songs, { id: Date.now(), song: newSong.trim(), artist: newArtist.trim(), addedBy: addedBy.trim(), votes: 0 }].sort((a, b) => b.votes - a.votes));
+    setNewSong(''); setNewArtist('');
   };
-  const upvote = (id) => setSongs(s => s.map(x => x.id === id ? { ...x, votes: x.votes + 1 } : x).sort((a, b) => b.votes - a.votes));
-  const remove = (id) => { setSongs(s => s.filter(x => x.id !== id)); if (nowPlaying === id) setNowPlaying(null); };
+  const upvote = (id) => persist(songs.map(x => x.id === id ? { ...x, votes: x.votes + 1 } : x).sort((a, b) => b.votes - a.votes));
+  const remove = (id) => { persist(songs.filter(x => x.id !== id)); if (nowPlaying === id) setNowPlaying(null); };
   const displaySong = songs.find(s => s.id === nowPlaying) || songs[0];
+
+  const shareWA = () => {
+    const text = `🎵 Party Playlist\n\n${songs.map((s, i) => `${i+1}. ${s.song}${s.artist?` — ${s.artist}`:''}${s.votes>0?` (${s.votes} ↑)`:''}`).join('\n')}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
 
   return (
     <Modal onClose={onClose} emoji="🎵" title="Playlist Builder" wide>
@@ -1683,6 +1725,7 @@ function PlaylistBuilder({ onClose }) {
           <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.15em", marginBottom: 2 }}>NOW PLAYING</div>
           <div style={{ fontSize: 15, fontWeight: 900, color: "#fff", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displaySong?.song || "Add your first song!"}</div>
           {displaySong?.artist && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>{displaySong.artist}</div>}
+          {displaySong?.addedBy && <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", marginTop: 1 }}>Added by {displaySong.addedBy}</div>}
         </div>
         <div style={{ display: "flex", justifyContent: "space-around" }}>
           {[0, 1].map(i => (
@@ -1697,25 +1740,37 @@ function PlaylistBuilder({ onClose }) {
           ))}
         </div>
       </div>
-      <input value={newSong} onChange={e => setNewSong(e.target.value)} placeholder="Song name" style={{ ...inp, marginBottom: 8 }} />
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+
+      {/* Add form */}
+      <input value={addedBy} onChange={e => saveName(e.target.value)} placeholder="Your name (remembered next time)" style={{ ...inp, marginBottom: 8 }} />
+      <input value={newSong} onChange={e => setNewSong(e.target.value)} placeholder="Song name *" style={{ ...inp, marginBottom: 8 }} />
+      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
         <input value={newArtist} onChange={e => setNewArtist(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Artist (optional)" style={{ ...inp, flex: 1 }} />
         <button onClick={add} style={{ ...btn("#C47A2E"), width: "auto", padding: "10px 16px" }}>+ Add</button>
       </div>
+
+      {/* Queue */}
       {songs.length === 0 && <div style={{ textAlign: "center", color: "rgba(255,255,255,0.25)", fontSize: 13, padding: "20px 0" }}>No songs yet — start the queue!</div>}
       {songs.map((s, i) => (
         <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: nowPlaying === s.id ? "rgba(196,122,46,0.15)" : "transparent", borderRadius: 12, marginBottom: 7, border: `1.5px solid ${nowPlaying === s.id ? "rgba(196,122,46,0.4)" : "rgba(255,255,255,0.07)"}` }}>
           <div style={{ width: 22, textAlign: "center", fontSize: 11, color: i === 0 ? "#FBBF24" : "rgba(255,255,255,0.3)", fontWeight: 800 }}>{i === 0 ? "🔊" : `${i + 1}`}</div>
           <div onClick={() => setNowPlaying(np => np === s.id ? null : s.id)} style={{ flex: 1, minWidth: 0, cursor: "pointer" }}>
             <div style={{ fontSize: 13, color: "#fff", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.song}</div>
-            {s.artist && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>{s.artist}</div>}
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {s.artist && <span>{s.artist}</span>}
+              {s.addedBy && <span style={{ color: "rgba(196,122,46,0.6)" }}>by {s.addedBy}</span>}
+            </div>
           </div>
           <button onClick={() => upvote(s.id)} style={{ background: "rgba(196,122,46,0.15)", border: "none", borderRadius: 8, padding: "4px 9px", color: "#FBBF24", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>↑ {s.votes}</button>
           <button onClick={() => remove(s.id)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.25)", cursor: "pointer", fontSize: 15, padding: "0 2px" }}>✕</button>
         </div>
       ))}
       {songs.length > 0 && (
-        <button onClick={() => copyLink(songs.map((s, i) => `${i + 1}. ${s.song}${s.artist ? ` — ${s.artist}` : ""}`).join("\n"))} style={{ ...btn("rgba(255,255,255,0.07)"), marginTop: 10 }}>📋 Copy Playlist</button>
+        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+          <button onClick={() => copyLink(songs.map((s, i) => `${i+1}. ${s.song}${s.artist?` — ${s.artist}`:''}`).join('\n'))} style={{ ...btn("rgba(255,255,255,0.07)"), flex: 1 }}>📋 Copy</button>
+          <button onClick={shareWA} style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1px solid rgba(37,211,102,0.35)", background: "rgba(37,211,102,0.1)", color: "#25D366", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>📲 WhatsApp</button>
+          <button onClick={() => persist([])} style={{ padding: "11px 14px", borderRadius: 10, border: "1px solid rgba(239,68,68,0.25)", background: "rgba(239,68,68,0.06)", color: "#FCA5A5", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>🗑️</button>
+        </div>
       )}
     </Modal>
   );
@@ -1735,9 +1790,10 @@ function PartyReportCard({ onClose }) {
   const gradeColor = { "A+": "#22C55E", A: "#34D399", B: "#FBBF24", C: "#F97316", D: "#EF4444", "—": "#6B7280" };
   const teacherLines = { "A+": "Outstanding! Exceeds all expectations.", A: "Excellent performance. Well done.", B: "Satisfactory. Room for improvement.", C: "Below average. Must try harder.", D: "Disappointing. See me after class.", "—": "Not yet assessed." };
 
-  const [ratings, setRatings] = useState({});
+  const SK = 'tendr-hp-reportcard';
+  const [ratings, setRatings] = useState(() => { try { return JSON.parse(localStorage.getItem(SK)||'{}'); } catch { return {}; } });
   const [submitted, setSubmitted] = useState(false);
-  const [comment, setComment] = useState("");
+  const [comment, setComment] = useState('');
 
   const allRated = subjects.every(s => ratings[s.key]);
   const overallGrade = allRated ? (() => {
@@ -1784,7 +1840,13 @@ function PartyReportCard({ onClose }) {
           </div>
         </div>
       </div>
-      <button onClick={() => { setSubmitted(false); setRatings({}); setComment(""); }} style={{ ...btn("rgba(255,255,255,0.08)"), marginTop: 16 }}>Fill Again</button>
+      <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+        <button onClick={() => {
+          const text = `🎓 Party Report Card\n\n${subjects.map(s => `${s.emoji} ${s.label}: ${gradeMap[ratings[s.key]||0]}`).join('\n')}\n\nOverall Grade: ${overallGrade}\n\n${comment||teacherLines[overallGrade]}`;
+          window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }} style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1px solid rgba(37,211,102,0.3)", background: "rgba(37,211,102,0.08)", color: "#25D366", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>📲 Share</button>
+        <button onClick={() => { setSubmitted(false); setRatings({}); setComment(''); try { localStorage.removeItem(SK); } catch {} }} style={{ ...btn("rgba(255,255,255,0.08)"), flex: 1 }}>Fill Again</button>
+      </div>
     </Modal>
   );
 
@@ -1808,7 +1870,7 @@ function PartyReportCard({ onClose }) {
         <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Teacher's Special Comment (optional)</div>
         <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="What would Mrs Sharma say about this night..." style={{ ...inp, minHeight: 56, resize: "vertical" }} />
       </div>
-      <button onClick={() => setSubmitted(true)} disabled={!allRated} style={{ ...btn("#C47A2E"), opacity: allRated ? 1 : 0.45 }}>Generate Report Card 📝</button>
+      <button onClick={() => { setSubmitted(true); try { localStorage.setItem(SK, JSON.stringify(ratings)); } catch {} }} disabled={!allRated} style={{ ...btn("#C47A2E"), opacity: allRated ? 1 : 0.45 }}>Generate Report Card 📝</button>
     </Modal>
   );
 }
@@ -2954,10 +3016,10 @@ function GuestListModal({ onClose }) {
   const plusOneCount = guests.filter(g=>g.rsvp==='yes'&&g.plusOne).length;
   const pendingWithPhone = guests.filter(g=>g.rsvp==='pending'&&g.phone);
 
-  const sendReminder = () => {
-    if (!pendingWithPhone.length) return;
-    const msg = encodeURIComponent("Hey! Just checking — are you coming to the party? Let us know! 🎉");
-    const ph = pendingWithPhone[0].phone.replace(/\D/g,'');
+  const [showReminders, setShowReminders] = useState(false);
+  const sendReminder = (guest) => {
+    const msg = encodeURIComponent(`Hey ${guest.name}! Just checking — are you coming to the party? Let us know! 🎉`);
+    const ph = guest.phone.replace(/\D/g,'');
     window.open(`https://wa.me/${ph.startsWith('91')&&ph.length===12?ph:'91'+ph}?text=${msg}`, '_blank');
   };
 
@@ -3040,9 +3102,23 @@ function GuestListModal({ onClose }) {
       )}
 
       {pendingWithPhone.length > 0 && (
-        <button onClick={sendReminder} style={{ marginTop:14, width:'100%', padding:'11px', borderRadius:10, border:'none', background:'linear-gradient(135deg,#25D366,#128C7E)', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>
-          📩 Send Reminder to {pendingWithPhone.length} Pending Guest{pendingWithPhone.length!==1?'s':''}
-        </button>
+        <>
+          <button onClick={() => setShowReminders(r => !r)} style={{ marginTop:14, width:'100%', padding:'11px', borderRadius:10, border:'none', background:'linear-gradient(135deg,#25D366,#128C7E)', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', fontFamily:font }}>
+            📩 Remind {pendingWithPhone.length} Pending Guest{pendingWithPhone.length!==1?'s':''} on WhatsApp {showReminders?'▲':'▼'}
+          </button>
+          {showReminders && (
+            <div style={{ marginTop:8, background:"rgba(37,211,102,0.05)", border:"1px solid rgba(37,211,102,0.2)", borderRadius:12, padding:"10px 12px", display:"flex", flexDirection:"column", gap:6 }}>
+              {pendingWithPhone.map(g => (
+                <div key={g.id} style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  <div style={{ width:28, height:28, borderRadius:"50%", background:"rgba(37,211,102,0.15)", border:"1px solid rgba(37,211,102,0.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:800, color:"#25D366", flexShrink:0 }}>{g.name[0]?.toUpperCase()}</div>
+                  <span style={{ flex:1, fontSize:13, color:"#fff", fontWeight:600 }}>{g.name}</span>
+                  <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>{g.phone}</span>
+                  <button onClick={() => sendReminder(g)} style={{ padding:"5px 12px", borderRadius:8, border:"none", background:"#25D366", color:"#fff", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:font, flexShrink:0 }}>📲 Remind</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </Modal>
   );
@@ -3485,7 +3561,7 @@ function BudgetPlannerModal({ onClose }) {
             <input type="number" value={data.total||''} onChange={e=>upd('total',e.target.value)} placeholder="0" style={{ flex:1, background:'transparent', border:'none', outline:'none', fontSize:30, fontWeight:900, color:goldLt, fontFamily:font }} />
           </div>
           {total>0&&<>
-            <div style={{ height:5, borderRadius:3, background: "transparent", overflow:'hidden', marginBottom:8 }}>
+            <div style={{ height:5, borderRadius:3, background: "rgba(255,255,255,0.1)", overflow:'hidden', marginBottom:8 }}>
               <div style={{ height:'100%', width:`${Math.min(spent/total*100,100)}%`, background:overBudget?'#ef4444':gold, borderRadius:3, transition:'width 0.3s' }} />
             </div>
             <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, fontWeight:700 }}>
@@ -3520,7 +3596,7 @@ function BudgetPlannerModal({ onClose }) {
                   ))}
                 </div>
                 {alloc>0&&<>
-                  <div style={{ height:3, borderRadius:2, background: "transparent", overflow:'hidden', marginTop:8 }}>
+                  <div style={{ height:3, borderRadius:2, background: "rgba(255,255,255,0.1)", overflow:'hidden', marginTop:8 }}>
                     <div style={{ height:'100%', width:`${pct}%`, background:over?'#ef4444':c.color, borderRadius:2 }} />
                   </div>
                   <div style={{ fontSize:10, color:over?'#ef4444':'rgba(255,255,255,0.3)', marginTop:3, textAlign:'right', fontWeight:700 }}>{over?`Over ₹${(act-alloc).toLocaleString('en-IN')}`:`₹${(alloc-act).toLocaleString('en-IN')} free`}</div>
@@ -3978,14 +4054,17 @@ function KittyFund({ onClose, room, myName, isHost, gameState, sendAction }) {
 const STICKY_COLORS = ["#FEF08A","#86EFAC","#FDA4AF","#93C5FD","#FCA5A5","#C4B5FD","#FCD34D","#6EE7B7"];
 const STICKY_ROTATES = ["-2deg","1.5deg","-1deg","2.5deg","-3deg","1deg","-1.8deg","2deg"];
 
+const WISH_EMOJIS = ['⭐','🌟','💖','🎉','🌈','✨','💌','🎊','🔥','🌸','🥂','🎂'];
+
 function WishWall({ onClose, room, myName, gameState, sendAction, sendEffect }) {
   const [text, setText] = useState('');
+  const [selectedEmoji, setSelectedEmoji] = useState('⭐');
   const [showWall, setShowWall] = useState(false);
   const items = gameState?.items || [];
 
   const add = () => {
     if (!text.trim()) return;
-    sendAction?.('add', { text: text.trim(), emoji: '⭐' });
+    sendAction?.('add', { text: text.trim(), emoji: selectedEmoji });
     sendEffect?.('wish', { text: text.trim() });
     setText('');
   };
@@ -4034,10 +4113,16 @@ function WishWall({ onClose, room, myName, gameState, sendAction, sendEffect }) 
         </button>
       )}
 
+      {/* Emoji picker */}
+      <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 8 }}>
+        {WISH_EMOJIS.map(e => (
+          <button key={e} onClick={() => setSelectedEmoji(e)} style={{ fontSize: 18, padding: "4px 6px", borderRadius: 8, border: `1.5px solid ${selectedEmoji === e ? "rgba(245,158,11,0.7)" : "rgba(255,255,255,0.1)"}`, background: selectedEmoji === e ? "rgba(245,158,11,0.2)" : "transparent", cursor: "pointer", lineHeight: 1 }}>{e}</button>
+        ))}
+      </div>
       {/* Add input */}
       <div style={{ display: "flex", gap: 8 }}>
         <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Make a wish…" style={{ ...inp, flex: 1 }} />
-        <button onClick={add} style={{ ...btn("#F59E0B"), width: "auto", padding: "10px 16px" }}>⭐ Pin</button>
+        <button onClick={add} style={{ ...btn("#F59E0B"), width: "auto", padding: "10px 16px" }}>{selectedEmoji} Pin</button>
       </div>
     </Modal>
   );
