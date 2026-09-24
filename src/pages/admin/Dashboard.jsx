@@ -4197,6 +4197,69 @@ const AdminDashboard = () => {
                       </div>
                     )}
 
+                    {/* Services & Prices header — My Order chats */}
+                    {selectedChat.serviceType === "My Order" && (() => {
+                      const custId = selectedChat.customerId?._id || selectedChat.customerId;
+                      const custPlans = eventPlans.filter(p => String(p.customerId?._id || p.customerId) === String(custId));
+                      if (!custPlans.length) return null;
+                      const BK_LABELS = { 'you-do-it': 'You Do It', 'let-us-do-it': 'Let Us Do It', 'fun-activities': 'Fun Activities', stationery: 'Stationery', 'gift-hampers': 'Gift Hampers', occasions: 'Occasions', 'vendor-enquiry': 'Vendor' };
+                      const total = custPlans.reduce((s, p) => s + (p.quotedPrice || 0), 0);
+                      const confirmed = custPlans.filter(p => p.quotedPrice > 0).length;
+                      return (
+                        <div style={{ background: "#FFF9EE", borderBottom: "1px solid rgba(196,122,46,0.15)", flexShrink: 0 }}>
+                          <div style={{ padding: "9px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                              <span style={{ fontSize: 11.5, fontWeight: 800, color: "#C47A2E" }}>📦 Services</span>
+                              <span style={{ fontSize: 11, color: "#9B7450" }}>{confirmed}/{custPlans.length} priced</span>
+                              {custPlans.map(p => {
+                                const name = p.bookingType === 'vendor-enquiry' ? (p.vendorName || 'Vendor') : (BK_LABELS[p.bookingType] || p.bookingType);
+                                return (
+                                  <span key={p._id} style={{ fontSize: 10.5, fontWeight: 600, padding: "2px 9px", borderRadius: 100, background: p.quotedPrice > 0 ? "rgba(21,128,61,0.1)" : "rgba(196,122,46,0.08)", color: p.quotedPrice > 0 ? "#15803d" : "#9B7450", border: `1px solid ${p.quotedPrice > 0 ? "rgba(21,128,61,0.2)" : "rgba(196,122,46,0.15)"}` }}>
+                                    {name}{p.quotedPrice > 0 ? ` — ₹${p.quotedPrice.toLocaleString("en-IN")}` : ""}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                            {total > 0 && <span style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E" }}>Total: ₹{total.toLocaleString("en-IN")}</span>}
+                          </div>
+                          {/* Inline price inputs */}
+                          <div style={{ padding: "0 16px 10px", display: "flex", gap: 8, flexWrap: "wrap" }}>
+                            {custPlans.map(plan => {
+                              const pid = plan._id;
+                              const name = plan.bookingType === 'vendor-enquiry' ? (plan.vendorName || 'Vendor') : (BK_LABELS[plan.bookingType] || plan.bookingType);
+                              const current = myBookingPrices[pid] !== undefined ? myBookingPrices[pid] : (plan.quotedPrice || "");
+                              const savePrice = async () => {
+                                const val = Number(String(current).replace(/[^0-9.]/g, ''));
+                                setSavingBkPrice(p => ({ ...p, [pid]: true }));
+                                try {
+                                  const r = await fetch(`${BASE_URL}/admin/event-plans/${pid}/set-price`, {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                    credentials: 'include',
+                                    body: JSON.stringify({ quotedPrice: val }),
+                                  });
+                                  if (r.ok) setEventPlans(prev => prev.map(p => p._id === pid ? { ...p, quotedPrice: val } : p));
+                                } catch {} finally { setSavingBkPrice(p => ({ ...p, [pid]: false })); }
+                              };
+                              return (
+                                <div key={pid} style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.18)", padding: "4px 10px" }}>
+                                  <span style={{ fontSize: 11, fontWeight: 600, color: "#7a5c1e", whiteSpace: "nowrap" }}>{name}</span>
+                                  <span style={{ fontSize: 12, fontWeight: 700, color: "#9B7450" }}>₹</span>
+                                  <input type="number" placeholder="0" value={current}
+                                    onChange={e => setMyBookingPrices(p => ({ ...p, [pid]: e.target.value }))}
+                                    onBlur={savePrice} onKeyDown={e => e.key === 'Enter' && savePrice()}
+                                    style={{ width: 70, padding: "3px 5px", border: "none", outline: "none", fontSize: 12, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color: "#2C1A0E", background: "transparent" }}
+                                  />
+                                  {savingBkPrice[pid] && <span style={{ fontSize: 10, color: "#9B7450" }}>…</span>}
+                                  {!savingBkPrice[pid] && current > 0 && <span style={{ fontSize: 10, color: "#15803d" }}>✓</span>}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     {/* Messages */}
                     {currentConversation && currentConversation.length > 0 && (
                       <div className="flex-1 p-3 sm:p-4 overflow-y-auto flex flex-col space-y-2 sm:space-y-3">

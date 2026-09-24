@@ -536,6 +536,30 @@ export default function VendorChatModal() {
   const [myOrderBotAnswers, setMyOrderBotAnswers] = useState({});
   const myOrderBotActive = shouldRunMyOrderBot && myOrderBotStep < MY_ORDER_BOT_QS.length;
 
+  // ── Vendor enquiry wizard — runs after My Order conversation is created ────
+  const isVendorEnquiry = isAllBookings && chatState?.bookingCategory === 'vendor-enquiry';
+  const veServiceType = chatState?.funEventDetails?.serviceType;
+  const veFlow = React.useMemo(
+    () => (isVendorEnquiry && veServiceType) ? getBotFlow(veServiceType, undefined, reduxFormData) : [],
+    [isVendorEnquiry, veServiceType, reduxFormData.date, reduxFormData.budget] // eslint-disable-line
+  );
+  const [veStep, setVeStep] = useState(-1); // -1 = not started yet
+  const [veAnswers, setVeAnswers] = useState({});
+  const veAnswersRef = useRef({});
+  const veSummarySentRef = useRef(false);
+  const vendorEnquiryBotActive = isVendorEnquiry && veStep >= 0 && veStep < veFlow.length;
+
+  // ── Services & Prices header — loads EventPlans for My Order ────────────────
+  const [orderPlans, setOrderPlans] = useState([]);
+  const [plansHeaderOpen, setPlansHeaderOpen] = useState(false);
+  useEffect(() => {
+    if (!isAllBookings || !authToken) return;
+    fetch(`${BASE_URL}/event-plans`, { headers: { Authorization: `Bearer ${authToken}` }, credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.plans) setOrderPlans(d.plans); })
+      .catch(() => {});
+  }, [isAllBookings, authToken, conversationId]); // eslint-disable-line
+
   // ── Chat state ───────────────────────────────────────────────────────────────
   const [messages, setMessages] = useState([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
@@ -787,6 +811,14 @@ export default function VendorChatModal() {
                     setMessages(prev => [...prev, { text: initialMsg, sender: "user", ts: Date.now() }]);
                   }
                 } catch {}
+              }
+
+              // Vendor enquiry wizard — start after initial summary is shown
+              if (isVendorEnquiry && veFlow.length > 0) {
+                setTimeout(() => {
+                  setMessages(prev => [...prev, { text: veFlow[0].question, sender: "vendor", ts: Date.now() }]);
+                  setVeStep(0);
+                }, 900);
               }
 
               // My Order intake bot — inject first question if no initialMessage was provided
@@ -1154,6 +1186,48 @@ export default function VendorChatModal() {
     const content = typeof override === "string" ? override : text.trim();
     if (!content) return;
 
+    // Vendor enquiry wizard — intercept answers while wizard is active
+    if (vendorEnquiryBotActive && conversationId) {
+      const step = veFlow[veStep];
+      const newAnswers = { ...veAnswersRef.current, [step.key]: content };
+      veAnswersRef.current = newAnswers;
+      setVeAnswers(newAnswers);
+      setMessages(prev => [...prev, { text: content, sender: "user", ts: Date.now() }]);
+      if (!override) setText("");
+      const nextStep = veStep + 1;
+      setVeStep(nextStep);
+      if (nextStep < veFlow.length) {
+        setTimeout(() => {
+          setMessages(prev => [...prev, { text: veFlow[nextStep].question, sender: "vendor", ts: Date.now() }]);
+        }, 400);
+      } else {
+        // All wizard answers collected — send full summary to the My Order conversation
+        if (!veSummarySentRef.current) {
+          veSummarySentRef.current = true;
+          const summary = buildSummaryMessage(
+            reduxFormData, newAnswers,
+            chatState?.funEventDetails?.vendorName,
+            chatState?.funEventDetails?.serviceType
+          );
+          setTimeout(async () => {
+            try {
+              const cid = conversationIdRef.current;
+              if (!cid || !authToken) return;
+              await fetch(`${BASE_URL}/messages/${cid}/message`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+                credentials: "include",
+                body: JSON.stringify({ sender: "user", content: summary }),
+              });
+              setMessages(prev => [...prev, { text: summary, sender: "user", ts: Date.now() }]);
+              setMessages(prev => [...prev, { text: "Got it! Our team will get back to you with a quote shortly. 🙌", sender: "vendor", ts: Date.now() + 1 }]);
+            } catch {}
+          }, 400);
+        }
+      }
+      return;
+    }
+
     // My Order intake bot — intercept typed answers before sending to server
     if (myOrderBotActive && conversationId) {
       const q = MY_ORDER_BOT_QS[myOrderBotStep];
@@ -1508,29 +1582,68 @@ export default function VendorChatModal() {
           </div>
         )}
 
-        {/* ── All-Bookings Summary Panel ── */}
-        {isAllBookings && customerPlans.length > 0 && (
-          <div style={{ flexShrink: 0, borderBottom: "1px solid rgba(196,122,46,0.15)", background: "#FFFCF5", padding: "10px 16px" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Your Bookings</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-              {customerPlans.map(p => {
-                const labels = { 'you-do-it': 'You Do It', 'let-us-do-it': 'Let Us Do It', 'fun-activities': 'Fun Activities', stationery: 'Stationery', 'gift-hampers': 'Gift Hampers', occasions: 'Occasions' };
-                const colors = { 'you-do-it': '#0369a1', 'let-us-do-it': '#7c3aed', 'fun-activities': '#15803d', stationery: '#c2410c', 'gift-hampers': '#a21caf', occasions: '#a16207' };
-                const bgColors = { 'you-do-it': '#eff6ff', 'let-us-do-it': '#f5f3ff', 'fun-activities': '#f0fdf4', stationery: '#fff7ed', 'gift-hampers': '#fdf4ff', occasions: '#fefce8' };
-                const statusColors = { submitted: '#15803d', in_progress: '#0369a1', completed: '#6b7280', draft: '#9B7450', cancelled: '#dc2626' };
-                return (
-                  <div key={p._id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 8, background: bgColors[p.bookingType] || "#f9f9f9" }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: colors[p.bookingType] || "#444", minWidth: 110 }}>{labels[p.bookingType] || p.bookingType}</span>
-                    <span style={{ fontSize: 10, fontWeight: 600, color: statusColors[p.status] || "#444", background: "rgba(255,255,255,0.7)", borderRadius: 100, padding: "1px 7px", textTransform: "capitalize" }}>{p.status?.replace('_', ' ')}</span>
-                    {p.quotedPrice > 0 && (
-                      <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", marginLeft: "auto" }}>₹{p.quotedPrice.toLocaleString('en-IN')}</span>
-                    )}
+        {/* ── Services & Prices header — collapsible strip ── */}
+        {isAllBookings && orderPlans.length > 0 && (() => {
+          const BK = { occasions: 'Occasions', 'fun-activities': 'Fun Activities', stationery: 'Stationery', 'gift-hampers': 'Gift Hampers', 'you-do-it': 'You Do It', 'let-us-do-it': 'Let Us Do It', 'vendor-enquiry': 'Vendor' };
+          const confirmed = orderPlans.filter(p => p.quotedPrice > 0);
+          const total = confirmed.reduce((s, p) => s + p.quotedPrice, 0);
+          return (
+            <div style={{ flexShrink: 0, borderBottom: "1px solid rgba(196,122,46,0.15)", background: "#FDF9F2" }}>
+              {/* Collapsed row — always visible */}
+              <button
+                onClick={() => setPlansHeaderOpen(v => !v)}
+                style={{ width: "100%", padding: "9px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "transparent", border: "none", cursor: "pointer", fontFamily: font, gap: 8 }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                  <span style={{ fontSize: 13 }}>📦</span>
+                  <span style={{ fontSize: 11.5, fontWeight: 700, color: "#C47A2E", whiteSpace: "nowrap" }}>Services</span>
+                  <span style={{ fontSize: 11, color: "#9B7450", whiteSpace: "nowrap" }}>{confirmed.length}/{orderPlans.length} priced</span>
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap", overflow: "hidden", maxHeight: 20 }}>
+                    {orderPlans.map(p => {
+                      const name = p.bookingType === 'vendor-enquiry' ? (p.vendorName || 'Vendor') : (BK[p.bookingType] || p.bookingType);
+                      return (
+                        <span key={p._id} style={{ fontSize: 10, fontWeight: 600, color: p.quotedPrice > 0 ? "#15803d" : "#9B7450", background: p.quotedPrice > 0 ? "rgba(21,128,61,0.1)" : "rgba(155,116,80,0.08)", borderRadius: 100, padding: "2px 7px", whiteSpace: "nowrap" }}>
+                          {name}{p.quotedPrice > 0 ? ` ✓` : ""}
+                        </span>
+                      );
+                    })}
                   </div>
-                );
-              })}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                  {total > 0 && <span style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E" }}>₹{total.toLocaleString('en-IN')}</span>}
+                  <span style={{ fontSize: 10, color: "#9B7450" }}>{plansHeaderOpen ? "▲" : "▼"}</span>
+                </div>
+              </button>
+              {/* Expanded dropdown */}
+              {plansHeaderOpen && (
+                <div style={{ padding: "0 16px 12px", display: "flex", flexDirection: "column", gap: 7 }}>
+                  {orderPlans.map(p => {
+                    const name = p.bookingType === 'vendor-enquiry' ? (p.vendorName || 'Vendor') : (BK[p.bookingType] || p.bookingType);
+                    return (
+                      <div key={p._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 10px", borderRadius: 9, background: "#fff", border: "1px solid rgba(196,122,46,0.12)" }}>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{name}</div>
+                          {p.bookingType === 'vendor-enquiry' && p.bookingType !== name && (
+                            <div style={{ fontSize: 10, color: "#9B7450" }}>{p.eventType || 'Vendor Enquiry'}</div>
+                          )}
+                        </div>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: p.quotedPrice > 0 ? "#15803d" : "#9B7450", fontStyle: p.quotedPrice > 0 ? "normal" : "italic" }}>
+                          {p.quotedPrice > 0 ? `₹${p.quotedPrice.toLocaleString('en-IN')}` : "Pending"}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  {total > 0 && (
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 800, color: "#C47A2E", paddingTop: 4, borderTop: "1px solid rgba(196,122,46,0.12)", marginTop: 2 }}>
+                      <span>Total confirmed</span>
+                      <span>₹{total.toLocaleString('en-IN')}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* ── Messages / Bot area ── */}
         <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -1992,6 +2105,18 @@ export default function VendorChatModal() {
 
           {(approved || isExistingChat) ? (
             <>
+              {/* Vendor enquiry wizard MCQ chips */}
+              {vendorEnquiryBotActive && veFlow[veStep]?.options && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 10 }}>
+                  {veFlow[veStep].options.map(opt => (
+                    <button key={opt} onClick={() => sendText(opt)}
+                      style={{ fontSize: 12, fontWeight: 600, padding: "6px 13px", borderRadius: 100, background: "#fff", border: "1.5px solid rgba(196,122,46,0.28)", color: "#2C1A0E", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.5)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.28)"; }}
+                    >{opt}</button>
+                  ))}
+                </div>
+              )}
               {/* Booking submitted — chat locked until admin marks payment done */}
               {bookingSubmitted && (
                 <div style={{ background: "linear-gradient(135deg,#eff6ff,#dbeafe)", border: "1.5px solid #93c5fd", borderRadius: 10, padding: "10px 14px", marginBottom: 8, textAlign: "center" }}>
@@ -2009,7 +2134,7 @@ export default function VendorChatModal() {
                   value={text}
                   onChange={e => (approved && !bookingSubmitted) && setText(e.target.value)}
                   onKeyDown={e => (approved && !bookingSubmitted) && e.key === "Enter" && !e.shiftKey && sendText()}
-                  placeholder={bookingSubmitted ? "Awaiting payment confirmation…" : myOrderBotActive ? (MY_ORDER_BOT_QS[myOrderBotStep]?.hint || "Type your answer…") : approved ? "Write your message…" : "Waiting for approval…"}
+                  placeholder={bookingSubmitted ? "Awaiting payment confirmation…" : vendorEnquiryBotActive ? (veFlow[veStep]?.hint || "Type your answer…") : myOrderBotActive ? (MY_ORDER_BOT_QS[myOrderBotStep]?.hint || "Type your answer…") : approved ? "Write your message…" : "Waiting for approval…"}
                   disabled={!approved || bookingSubmitted}
                   style={{ flex: 1, padding: "9px 14px", borderRadius: 100, border: `1.5px solid ${(approved && !bookingSubmitted) ? "rgba(196,122,46,0.22)" : "rgba(0,0,0,0.08)"}`, fontSize: 13, fontFamily: font, outline: "none", background: (approved && !bookingSubmitted) ? "#fff" : "#f5f5f5", color: (approved && !bookingSubmitted) ? "inherit" : "#bbb", cursor: (approved && !bookingSubmitted) ? "text" : "not-allowed" }}
                 />
