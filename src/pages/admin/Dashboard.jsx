@@ -4536,14 +4536,16 @@ const AdminDashboard = () => {
                           return String(pid) === String(custId);
                         });
                         if (!custPlans.length) return null;
-                        const BK_LABELS = { 'you-do-it': 'You Do It', 'let-us-do-it': 'Let Us Do It', 'fun-activities': 'Fun Activities', stationery: 'Stationery', 'gift-hampers': 'Gift Hampers', occasions: 'Occasions' };
+                        const BK_LABELS = { 'you-do-it': 'You Do It', 'let-us-do-it': 'Let Us Do It', 'fun-activities': 'Fun Activities', stationery: 'Stationery', 'gift-hampers': 'Gift Hampers', occasions: 'Occasions', 'vendor-enquiry': 'Vendor' };
                         return (
                           <div style={{ padding: "10px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
                             <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>💰 Set Price Per Booking</div>
                             <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                               {custPlans.map(plan => {
                                 const pid = plan._id;
-                                const label = BK_LABELS[plan.bookingType] || plan.bookingType;
+                                const label = plan.bookingType === 'vendor-enquiry'
+                                  ? (plan.vendorName || BK_LABELS['vendor-enquiry'])
+                                  : (BK_LABELS[plan.bookingType] || plan.bookingType);
                                 const current = myBookingPrices[pid] !== undefined ? myBookingPrices[pid] : (plan.quotedPrice || "");
                                 const savePrice = async () => {
                                   const val = Number(String(current).replace(/[^0-9.]/g, ''));

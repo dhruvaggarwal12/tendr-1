@@ -1279,11 +1279,15 @@ const BookingReviewPage = () => {
                   My Order
                 </div>
                 {(() => {
-                  const BOOKING_LABELS = { 'occasions': 'Occasions', 'fun-activities': 'Fun Activities', 'stationery': 'Wedding Stationery', 'gift-hampers': 'Gift Hampers', 'you-do-it': 'You Do It', 'let-us-do-it': 'Let Us Do It' };
+                  const BOOKING_LABELS = { 'occasions': 'Occasions', 'fun-activities': 'Fun Activities', 'stationery': 'Wedding Stationery', 'gift-hampers': 'Gift Hampers', 'you-do-it': 'You Do It', 'let-us-do-it': 'Let Us Do It', 'vendor-enquiry': 'Vendor' };
                   return myOrderPlans.map((plan, idx) => (
                     <div key={plan._id} style={{ marginBottom: idx < myOrderPlans.length - 1 ? 14 : 0, paddingBottom: idx < myOrderPlans.length - 1 ? 14 : 0, borderBottom: idx < myOrderPlans.length - 1 ? "1px solid rgba(196,122,46,0.1)" : "none" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{BOOKING_LABELS[plan.bookingType] || plan.bookingType}</span>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>
+                          {plan.bookingType === 'vendor-enquiry' && plan.vendorName
+                            ? plan.vendorName
+                            : (BOOKING_LABELS[plan.bookingType] || plan.bookingType)}
+                        </span>
                         <span style={{ fontSize: 14, fontWeight: 800, color: plan.quotedPrice > 0 ? "#15803d" : "#9B7450", fontStyle: plan.quotedPrice > 0 ? "normal" : "italic" }}>
                           {plan.quotedPrice > 0 ? `₹${plan.quotedPrice.toLocaleString("en-IN")}` : "Price pending"}
                         </span>
@@ -1336,10 +1340,13 @@ const BookingReviewPage = () => {
                   </div>
                 ))}
                 {myOrderConversationId && myOrderPlans.map(plan => {
-                  const BOOKING_LABELS = { 'occasions': 'Occasions', 'fun-activities': 'Fun Activities', 'stationery': 'Stationery', 'gift-hampers': 'Gift Hampers', 'you-do-it': 'You Do It', 'let-us-do-it': 'Let Us Do It' };
+                  const BOOKING_LABELS = { 'occasions': 'Occasions', 'fun-activities': 'Fun Activities', 'stationery': 'Stationery', 'gift-hampers': 'Gift Hampers', 'you-do-it': 'You Do It', 'let-us-do-it': 'Let Us Do It', 'vendor-enquiry': 'Vendor' };
+                  const planLabel = plan.bookingType === 'vendor-enquiry' && plan.vendorName
+                    ? plan.vendorName
+                    : (BOOKING_LABELS[plan.bookingType] || plan.bookingType);
                   return (
                     <div key={plan._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14, color: "#5a3a1a" }}>
-                      <span style={{ fontWeight: 500 }}>{BOOKING_LABELS[plan.bookingType] || plan.bookingType}</span>
+                      <span style={{ fontWeight: 500 }}>{planLabel}</span>
                       <span style={{ fontWeight: 600, color: plan.quotedPrice > 0 ? "#2C1A0E" : "#bbb", fontStyle: plan.quotedPrice > 0 ? "normal" : "italic" }}>
                         {plan.quotedPrice > 0 ? formatINR(plan.quotedPrice) : "Yet to be updated"}
                       </span>

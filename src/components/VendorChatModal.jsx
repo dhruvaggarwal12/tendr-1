@@ -769,7 +769,12 @@ export default function VendorChatModal() {
               else socket.on("connect", joinRoom);
 
               // Send initial summary message via REST so it persists and renders immediately
-              const initialMsg = chatState.initialMessage;
+              const rawInitialMsg = chatState.initialMessage;
+              const vendorCtx = chatState.funEventDetails;
+              // For vendor enquiries, build a richer structured summary
+              const initialMsg = (isAllBookings && chatState.bookingCategory === 'vendor-enquiry' && vendorCtx?.vendorName)
+                ? `📋 New Vendor Enquiry\n👤 Vendor: ${vendorCtx.vendorName}\n🎯 Service: ${vendorCtx.serviceType || ''}\n\nI'd like to get a quote for my event.`
+                : rawInitialMsg;
               if ((isAllBookings || isOccasions || isFunActivities) && initialMsg && authToken) {
                 try {
                   const msgRes = await fetch(`${BASE_URL}/messages/${cid}/message`, {
@@ -1459,12 +1464,20 @@ export default function VendorChatModal() {
             >‹</button>
           )}
           <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 900, fontSize: 17, flexShrink: 0 }}>
-            {(vendor?.name || "V")[0].toUpperCase()}
+            {isAllBookings ? "📦" : (vendor?.name || "V")[0].toUpperCase()}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vendor?.name || "Vendor"}</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {isAllBookings
+                ? (chatState?.funEventDetails?.vendorName
+                    ? `Enquiry — ${chatState.funEventDetails.vendorName}`
+                    : "My Order")
+                : (vendor?.name || "Vendor")}
+            </div>
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)" }}>
-              {vendor?.serviceType || "Service"} · {approved ? "Chat active" : "Awaiting approval"}
+              {isAllBookings
+                ? (chatState?.funEventDetails?.serviceType || "Tendr Team") + " · My Order"
+                : (vendor?.serviceType || "Service") + " · " + (approved ? "Chat active" : "Awaiting approval")}
             </div>
           </div>
           <div style={{ display: "flex", gap: 6 }}>
