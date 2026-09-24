@@ -15,6 +15,7 @@ export function usePartyRoom() {
   const [isHost, setIsHost]         = useState(false);
   const [effect, setEffect]         = useState(null);   // { type, by, payload } or null
   const [error, setError]           = useState(null);
+  const [activityLog, setActivityLog] = useState([]);  // [{ type:'joined'|'left', name, time }]
 
   // Lazy-connect: only create socket on first use
   const getSocket = useCallback(() => {
@@ -29,8 +30,14 @@ export function usePartyRoom() {
       s.on('connect',    () => setConnected(true));
       s.on('disconnect', () => setConnected(false));
 
-      s.on('party:player-joined', ({ players: pl }) => setPlayers(pl));
-      s.on('party:player-left',   ({ players: pl }) => setPlayers(pl));
+      s.on('party:player-joined', ({ name, players: pl }) => {
+        setPlayers(pl);
+        if (name) setActivityLog(prev => [...prev.slice(-19), { type: 'joined', name, time: Date.now() }]);
+      });
+      s.on('party:player-left', ({ name, players: pl }) => {
+        setPlayers(pl);
+        if (name) setActivityLog(prev => [...prev.slice(-19), { type: 'left', name, time: Date.now() }]);
+      });
 
       s.on('party:game-changed', ({ game, gameState: gs }) => {
         setCurrentGame(game);
@@ -136,7 +143,7 @@ export function usePartyRoom() {
 
   return {
     connected, room, players, gameState, currentGame,
-    myName, isHost, effect, error,
+    myName, isHost, effect, error, activityLog,
     createRoom, joinRoom, closeRoom, leaveRoom,
     sendAction, sendEffect, setGame,
     clearError: () => setError(null),

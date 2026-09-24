@@ -4462,39 +4462,111 @@ function RoomLobbyModal({ onClose, onCreate, onJoin, error }) {
 }
 
 // ── Room banner ───────────────────────────────────────────────────────────────
-function RoomBanner({ room, players, isHost, myName, onClose, onLeave }) {
+function RoomBanner({ room, players, isHost, myName, activityLog = [], onClose, onLeave }) {
   const [copied, setCopied] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
   const copyCode = () => {
     navigator.clipboard?.writeText(room.code).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const timeAgo = (ts) => {
+    const s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 60) return 'just now';
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m}m ago`;
+    return `${Math.floor(m / 60)}h ago`;
+  };
+
+  const recentLog = [...activityLog].reverse().slice(0, 5);
+
   return (
-    <div style={{ margin: "0 16px 16px", background: "rgba(196,122,46,0.12)", border: "1.5px solid rgba(196,122,46,0.35)", borderRadius: 16, padding: "14px 16px", fontFamily: font }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 2 }}>Live Room · {room.partyName}</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 20, fontWeight: 900, color: "#fff", letterSpacing: "0.12em" }}>{room.code}</span>
+    <div style={{ margin: "0 16px 16px", background: "rgba(196,122,46,0.10)", border: "1.5px solid rgba(196,122,46,0.35)", borderRadius: 16, fontFamily: font, overflow: "hidden" }}>
+
+      {/* Header */}
+      <div style={{ padding: "14px 16px 0", display: "flex", alignItems: "flex-start", gap: 10 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: "#34D399", boxShadow: "0 0 6px #34D399", flexShrink: 0 }} />
+            Live Room · {room.partyName}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: "0.14em" }}>{room.code}</span>
             <button onClick={copyCode} style={{ background: "rgba(255,255,255,0.1)", border: "none", borderRadius: 6, padding: "4px 10px", color: copied ? "#34D399" : "#CCAB4A", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
               {copied ? "✓ Copied" : "Copy"}
             </button>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#fff", background: "rgba(196,122,46,0.4)", borderRadius: 100, padding: "2px 8px" }}>
+              {players.length} {players.length === 1 ? "person" : "people"}
+            </span>
           </div>
         </div>
-        {isHost ? (
-          <button onClick={onClose} style={{ padding: "6px 14px", borderRadius: 100, border: "1.5px solid rgba(239,68,68,0.4)", background: "rgba(239,68,68,0.1)", color: "#FCA5A5", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>Close Room</button>
-        ) : (
-          <button onClick={onLeave} style={{ padding: "6px 14px", borderRadius: 100, border: "1.5px solid rgba(255,255,255,0.2)", background: "transparent", color: "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>Leave</button>
-        )}
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end", flexShrink: 0 }}>
+          {isHost ? (
+            <button onClick={onClose} style={{ padding: "6px 14px", borderRadius: 100, border: "1.5px solid rgba(239,68,68,0.4)", background: "rgba(239,68,68,0.1)", color: "#FCA5A5", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Close Room</button>
+          ) : (
+            <button onClick={onLeave} style={{ padding: "6px 14px", borderRadius: 100, border: "1.5px solid rgba(255,255,255,0.2)", background: "transparent", color: "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Leave</button>
+          )}
+          <button onClick={() => setExpanded(e => !e)} style={{ padding: "3px 10px", borderRadius: 100, border: "1px solid rgba(196,122,46,0.35)", background: "transparent", color: "#CCAB4A", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+            {expanded ? "▲ Less" : "▼ More"}
+          </button>
+        </div>
       </div>
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+
+      {/* Compact player chips */}
+      <div style={{ padding: "10px 16px", display: "flex", gap: 6, flexWrap: "wrap" }}>
         {players.map(p => (
-          <div key={p} style={{ display: "flex", alignItems: "center", gap: 5, background: p === myName ? "rgba(196,122,46,0.35)" : "rgba(255,255,255,0.08)", borderRadius: 100, padding: "3px 10px 3px 4px" }}>
-            <div style={{ width: 20, height: 20, borderRadius: "50%", background: p === room.hostName ? "#FBBF24" : "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "#fff" }}>{p[0]?.toUpperCase()}</div>
-            <span style={{ fontSize: 12, color: "#fff", fontWeight: p === myName ? 700 : 400 }}>{p}{p === room.hostName ? " 👑" : ""}</span>
+          <div key={p} style={{ display: "flex", alignItems: "center", gap: 5, background: p === myName ? "rgba(196,122,46,0.35)" : "rgba(255,255,255,0.08)", borderRadius: 100, padding: "3px 10px 3px 7px", border: p === myName ? "1px solid rgba(196,122,46,0.5)" : "1px solid transparent" }}>
+            <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: "#34D399", flexShrink: 0 }} />
+            <span style={{ fontSize: 12, color: "#fff", fontWeight: p === myName ? 700 : 400 }}>
+              {p === myName ? "You" : p}{p === room.hostName ? " 👑" : ""}
+            </span>
           </div>
         ))}
       </div>
+
+      {/* Expanded panel */}
+      {expanded && (
+        <div style={{ borderTop: "1px solid rgba(196,122,46,0.2)", padding: "12px 16px 14px" }}>
+
+          {/* Full participant list */}
+          <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>In this room</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 200, overflowY: "auto" }}>
+            {players.map(p => (
+              <div key={p} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 34, height: 34, borderRadius: "50%", background: p === room.hostName ? "rgba(251,191,36,0.18)" : "rgba(196,122,46,0.15)", border: `1.5px solid ${p === room.hostName ? "rgba(251,191,36,0.5)" : "rgba(196,122,46,0.3)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: p === room.hostName ? "#FBBF24" : "#C47A2E", flexShrink: 0 }}>
+                  {p[0]?.toUpperCase()}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: p === myName ? 700 : 500, color: p === myName ? "#CCAB4A" : "#fff", display: "flex", alignItems: "center", gap: 6 }}>
+                    {p}{p === myName && <span style={{ fontSize: 10, color: "#CCAB4A", background: "rgba(196,122,46,0.25)", borderRadius: 4, padding: "1px 5px", fontWeight: 600 }}>you</span>}
+                  </div>
+                  {p === room.hostName && <div style={{ fontSize: 10, color: "#FBBF24", fontWeight: 600, marginTop: 1 }}>👑 Host</div>}
+                </div>
+                <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#34D399", boxShadow: "0 0 6px #34D399", flexShrink: 0 }} />
+              </div>
+            ))}
+          </div>
+
+          {/* Activity feed */}
+          {recentLog.length > 0 && (
+            <>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.1em", marginTop: 16, marginBottom: 8 }}>Recent activity</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                {recentLog.map((entry, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 14, flexShrink: 0 }}>{entry.type === 'joined' ? '👋' : '🚪'}</span>
+                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.85)", fontWeight: 500 }}>{entry.name}</span>
+                    <span style={{ fontSize: 12, color: entry.type === 'joined' ? "#34D399" : "rgba(255,255,255,0.4)", fontWeight: 400 }}>{entry.type === 'joined' ? 'joined' : 'left'}</span>
+                    <span style={{ marginLeft: "auto", fontSize: 10, color: "rgba(255,255,255,0.3)", flexShrink: 0 }}>{timeAgo(entry.time)}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -4532,7 +4604,7 @@ export default function HousePartyHub() {
   const navigate = useNavigate();
 
   const {
-    room, players, gameState, currentGame, myName, isHost, effect, error,
+    room, players, gameState, currentGame, myName, isHost, effect, error, activityLog,
     createRoom, joinRoom, closeRoom, leaveRoom, sendAction, sendEffect, clearError,
   } = usePartyRoom();
 
@@ -4693,6 +4765,7 @@ export default function HousePartyHub() {
       {room && (
         <RoomBanner
           room={room} players={players} isHost={isHost} myName={myName}
+          activityLog={activityLog}
           onClose={async () => { await closeRoom(); }}
           onLeave={async () => { await leaveRoom(); }}
         />
