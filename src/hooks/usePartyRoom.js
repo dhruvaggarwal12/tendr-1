@@ -17,6 +17,7 @@ export function usePartyRoom() {
   const [error, setError]           = useState(null);
   const [activityLog, setActivityLog] = useState([]);  // [{ type:'joined'|'left', name, time }]
   const [playerActivities, setPlayerActivities] = useState({}); // { [name]: activityString | null }
+  const [playerRoles, setPlayerRoles]           = useState({}); // { [name]: 'cohost'|'gamehost'|'treasurer' }
 
   // Lazy-connect: only create socket on first use
   const getSocket = useCallback(() => {
@@ -48,6 +49,10 @@ export function usePartyRoom() {
           if (!activity) { const next = { ...prev }; delete next[name]; return next; }
           return { ...prev, [name]: activity };
         });
+      });
+
+      s.on('party:roles-updated', ({ roles }) => {
+        setPlayerRoles(roles || {});
       });
 
       s.on('party:game-changed', ({ game, gameState: gs }) => {
@@ -90,6 +95,7 @@ export function usePartyRoom() {
           setPlayers(res.room.players);
           setGameState(res.room.gameState || {});
           setCurrentGame(res.room.currentGame);
+          setPlayerRoles(res.room.roles || {});
           setMyName(hostName);
           setIsHost(true);
         } else {
@@ -110,6 +116,7 @@ export function usePartyRoom() {
           setPlayers(res.room.players);
           setGameState(res.room.gameState || {});
           setCurrentGame(res.room.currentGame);
+          setPlayerRoles(res.room.roles || {});
           setMyName(name);
           setIsHost(name === res.room.hostName);
         } else {
@@ -151,6 +158,12 @@ export function usePartyRoom() {
     socketRef.current.emit('party:set-activity', { activity: activity || null });
   }, []);
 
+  const assignRole = useCallback((player, role) => {
+    return new Promise((resolve) => {
+      getSocket().emit('party:set-role', { player, role: role || null }, resolve);
+    });
+  }, [getSocket]);
+
   const setGame = useCallback((game, initialState) => {
     return new Promise((resolve) => {
       getSocket().emit('party:set-game', { game, initialState }, resolve);
@@ -159,9 +172,9 @@ export function usePartyRoom() {
 
   return {
     connected, room, players, gameState, currentGame,
-    myName, isHost, effect, error, activityLog, playerActivities,
+    myName, isHost, effect, error, activityLog, playerActivities, playerRoles,
     createRoom, joinRoom, closeRoom, leaveRoom,
-    sendAction, sendEffect, setGame, setActivity,
+    sendAction, sendEffect, setGame, setActivity, assignRole,
     clearError: () => setError(null),
   };
 }
