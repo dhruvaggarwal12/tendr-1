@@ -11,8 +11,13 @@ export function ChatProvider({ children }) {
   // chatState: { vendor, conversationId?, minimized }
 
   // Open a NEW chat (with bot flow)
+  // All vendor enquiries route into the unified My Order chat
   const openVendorChat = (vendor) =>
-    setChatState({ vendor, conversationId: null, minimized: false, isExisting: false });
+    openAllBookingsChat(
+      `I'd like to enquire about ${vendor.name} (${vendor.serviceType}) for my event.`,
+      'vendor-enquiry',
+      { vendorId: vendor._id, vendorName: vendor.name, serviceType: vendor.serviceType }
+    );
 
   // Open an EXISTING approved chat (skip bot, load history)
   const openExistingChat = (conversationId, vendor) =>

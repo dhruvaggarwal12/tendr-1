@@ -866,17 +866,6 @@ export default function VendorChatModal() {
         });
       }
 
-      // Persist chat request to localStorage so "View Active Chat" can open it directly
-      if (vendor?._id && vendor._id !== "concierge" && vendor._id !== "tendr-team") {
-        try {
-          localStorage.setItem(`tendr:chat_req:${vendor._id}`, JSON.stringify({
-            conversationId: _id,
-            date: reduxFormData?.date || "",
-            submittedAt: Date.now(),
-          }));
-        } catch {}
-      }
-
       if (botDoneRef.current && Object.keys(botAnswersRef.current).length > 0 && !summarySentRef.current) {
         summarySentRef.current = true;
         const fullMsg = buildSummaryMessage(reduxFormData, botAnswersRef.current, vendor?.name, vendor?.serviceType);
@@ -889,22 +878,6 @@ export default function VendorChatModal() {
         setTimeout(() => {
           socket.emit("send_message", { conversationId: _id, sender: "user", content: fullMsg });
         }, 400);
-
-        // Forward wizard summary to My Order chat if one is active
-        const myOrderCid = (() => { try { return localStorage.getItem('tendr:my-order-conversation'); } catch { return null; } })();
-        if (myOrderCid && myOrderCid !== _id && authToken) {
-          const forwardMsg = `📋 Vendor details added — ${vendor?.name || vendor?.serviceType}\n\n${fullMsg}`;
-          setTimeout(async () => {
-            try {
-              await fetch(`${BASE_URL}/messages/${myOrderCid}/message`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-                credentials: "include",
-                body: JSON.stringify({ sender: "user", content: forwardMsg }),
-              });
-            } catch {}
-          }, 800);
-        }
 
         if (refPhotosRef.current.length > 0) {
           refPhotosRef.current.forEach((photo, idx) => {
