@@ -837,6 +837,14 @@ const BS_CATS = [
   { id:"stay",     emoji:"🏠", label:"Stay"      },
   { id:"other",    emoji:"📦", label:"Other"     },
 ];
+const BS_TEMPLATES = [
+  { id:"birthday",   emoji:"🎂", label:"Birthday",    name:"Birthday Party"  },
+  { id:"trip",       emoji:"✈️", label:"Trip",        name:"Trip Fund"       },
+  { id:"wedding",    emoji:"💍", label:"Wedding",     name:"Wedding Split"   },
+  { id:"houseparty", emoji:"🏠", label:"House Party", name:"House Party"     },
+  { id:"kitty",      emoji:"💰", label:"Kitty",       name:"Kitty Party"     },
+  { id:"custom",     emoji:"✏️", label:"Custom",      name:""                },
+];
 
 function BillSplitter({ onClose }) {
   const STORE_KEY = "tendr:bill-splitter-v2";
@@ -844,28 +852,33 @@ function BillSplitter({ onClose }) {
   const saveStore = (d) => { try { localStorage.setItem(STORE_KEY, JSON.stringify(d)); } catch {} };
 
   const stored = loadStore();
-  const [partyName, setPartyName] = useState(stored.partyName || "");
-  const [people, setPeople]       = useState(stored.people || []);
-  const [expenses, setExpenses]   = useState(stored.expenses || []);
-  const [settled, setSettled]     = useState(new Set(stored.settled || []));
-  const [tab, setTab]             = useState("expenses");
+  const [screen, setScreen]               = useState(stored.people?.length ? "main" : "start");
+  const [partyName, setPartyName]         = useState(stored.partyName || "");
+  const [budget, setBudget]               = useState(stored.budget || "");
+  const [people, setPeople]               = useState(stored.people || []);
+  const [expenses, setExpenses]           = useState(stored.expenses || []);
+  const [contributions, setContributions] = useState(stored.contributions || {});
+  const [settled, setSettled]             = useState(new Set(stored.settled || []));
+  const [settleDates, setSettleDates]     = useState(stored.settleDates || {});
+  const [tab, setTab]                     = useState("expenses");
 
-  const [newName, setNewName]         = useState("");
-  const [newUpi, setNewUpi]           = useState("");
+  const [newName, setNewName]           = useState("");
+  const [newUpi, setNewUpi]             = useState("");
   const [showAddPerson, setShowAddPerson] = useState(false);
-  const [showForm, setShowForm]       = useState(false);
-  const [editId, setEditId]           = useState(null);
-  const [quickMode, setQuickMode]     = useState(false);
-  const [fDesc, setFDesc]             = useState("");
-  const [fAmount, setFAmount]         = useState("");
-  const [fCat, setFCat]               = useState("food");
-  const [fPaidBy, setFPaidBy]         = useState("");
-  const [fSplitAmong, setFSplitAmong] = useState([]);
-  const [fSplitType, setFSplitType]   = useState("equal");
-  const [fCustom, setFCustom]         = useState({});
-  const [fNote, setFNote]             = useState("");
+  const [showForm, setShowForm]         = useState(false);
+  const [editId, setEditId]             = useState(null);
+  const [quickMode, setQuickMode]       = useState(false);
+  const [fDesc, setFDesc]               = useState("");
+  const [fAmount, setFAmount]           = useState("");
+  const [fCat, setFCat]                 = useState("food");
+  const [fPaidBy, setFPaidBy]           = useState("");
+  const [fSplitAmong, setFSplitAmong]   = useState([]);
+  const [fSplitType, setFSplitType]     = useState("equal");
+  const [fCustom, setFCustom]           = useState({});
+  const [fNote, setFNote]               = useState("");
+  const [receiptImg, setReceiptImg]     = useState(null);
 
-  useEffect(() => { saveStore({ partyName, people, expenses, settled: [...settled] }); }, [partyName, people, expenses, settled]);
+  useEffect(() => { saveStore({ partyName, budget, people, expenses, contributions, settled: [...settled], settleDates }); }, [partyName, budget, people, expenses, contributions, settled, settleDates]);
 
   const addPerson = () => {
     const name = newName.trim();
@@ -879,11 +892,32 @@ function BillSplitter({ onClose }) {
       alert("Remove expenses involving " + name + " first."); return;
     }
     setPeople(prev => prev.filter(x => x.name !== name));
+    setContributions(prev => { const c = { ...prev }; delete c[name]; return c; });
+  };
+
+  const importGuests = () => {
+    try {
+      const guests = JSON.parse(localStorage.getItem("tendr-hp-guestlist") || "[]");
+      const attending = guests.filter(g => g.rsvp === "yes");
+      if (!attending.length) { alert("No confirmed guests in your Guest List yet."); return; }
+      let added = 0;
+      setPeople(prev => {
+        const next = [...prev];
+        attending.forEach(g => {
+          if (!next.find(p => p.name === g.name)) {
+            next.push({ name: g.name, color: BS_COLORS[next.length % BS_COLORS.length], upiId: "" });
+            added++;
+          }
+        });
+        if (!added) alert("All confirmed guests are already added.");
+        return next;
+      });
+    } catch {}
   };
 
   const openAdd = (quick = false) => {
     setEditId(null); setQuickMode(quick);
-    setFDesc(""); setFAmount(""); setFCat("food"); setFNote("");
+    setFDesc(""); setFAmount(""); setFCat("food"); setFNote(""); setReceiptImg(null);
     setFPaidBy(people[0]?.name || "");
     setFSplitAmong(people.map(p => p.name));
     setFSplitType("equal"); setFCustom({});
@@ -895,6 +929,7 @@ function BillSplitter({ onClose }) {
     setFDesc(exp.desc); setFAmount(String(exp.amount)); setFCat(exp.cat);
     setFPaidBy(exp.paidBy); setFSplitAmong(Object.keys(exp.splits));
     setFSplitType(exp.splitType || "equal"); setFCustom(exp.custom || {}); setFNote(exp.note || "");
+    setReceiptImg(exp.receiptImg || null);
     setShowForm(true);
   };
 
@@ -905,9 +940,14 @@ function BillSplitter({ onClose }) {
     if (fSplitType === "equal") fSplitAmong.forEach(n => { splits[n] = total / fSplitAmong.length; });
     else if (fSplitType === "amount") fSplitAmong.forEach(n => { splits[n] = Number(fCustom[n] || 0); });
     else fSplitAmong.forEach(n => { splits[n] = total * Number(fCustom[n] || 0) / 100; });
-    const exp = { id: editId || Date.now(), desc: fDesc || "Expense", cat: fCat, paidBy: fPaidBy, amount: total, splits, splitType: fSplitType, custom: fCustom, note: fNote, createdAt: editId ? (expenses.find(e => e.id === editId)?.createdAt || Date.now()) : Date.now() };
+    const exp = {
+      id: editId || Date.now(), desc: fDesc || "Expense", cat: fCat, paidBy: fPaidBy,
+      amount: total, splits, splitType: fSplitType, custom: fCustom, note: fNote,
+      receiptImg: receiptImg || null,
+      createdAt: editId ? (expenses.find(e => e.id === editId)?.createdAt || Date.now()) : Date.now(),
+    };
     setExpenses(prev => editId ? prev.map(e => e.id === editId ? exp : e) : [...prev, exp]);
-    setShowForm(false); setEditId(null);
+    setShowForm(false); setEditId(null); setReceiptImg(null);
   };
 
   const colorOf = (name) => people.find(p => p.name === name)?.color || "#C47A2E";
@@ -915,7 +955,8 @@ function BillSplitter({ onClose }) {
   const catOf   = (id)   => BS_CATS.find(c => c.id === id) || BS_CATS[BS_CATS.length - 1];
 
   const calcBalances = () => {
-    const bal = {}; people.forEach(p => { bal[p.name] = 0; });
+    const bal = {};
+    people.forEach(p => { bal[p.name] = contributions[p.name] || 0; });
     expenses.forEach(exp => {
       bal[exp.paidBy] = (bal[exp.paidBy] || 0) + exp.amount;
       Object.entries(exp.splits).forEach(([n, amt]) => { bal[n] = (bal[n] || 0) - amt; });
@@ -947,10 +988,22 @@ function BillSplitter({ onClose }) {
   const settlements = calcSettlements();
   const grandTotal  = expenses.reduce((s, e) => s + e.amount, 0);
   const pendingCount = settlements.filter(t => !settled.has(t.key)).length;
+  const budgetNum   = Number(budget) || 0;
+  const budgetPct   = budgetNum > 0 ? Math.min(100, Math.round((grandTotal / budgetNum) * 100)) : 0;
 
   const shareWhatsApp = (txn) => {
-    const msg = `Hi ${txn.from}! 👋\n\nYou owe *₹${txn.amount.toLocaleString()}* to *${txn.to}*${partyName ? ` from *${partyName}*` : ""}.\n\n${upiOf(txn.to) ? `UPI ID: ${upiOf(txn.to)}\n\n` : ""}_Via Tendr Party Hub_ 🎉`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+    const dueDate = settleDates[txn.key];
+    const upi = upiOf(txn.to);
+    const lines = [
+      `Hi ${txn.from}! 👋`,
+      ``,
+      `You owe *₹${txn.amount.toLocaleString()}* to *${txn.to}*${partyName ? ` — *${partyName}*` : ""}.`,
+      dueDate ? `⏰ Pay by: *${new Date(dueDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}*` : "",
+      upi ? `\nUPI ID: \`${upi}\`` : "",
+      ``,
+      `_Sent via Tendr Party Hub_ 🎉`,
+    ].filter(Boolean);
+    window.open(`https://wa.me/?text=${encodeURIComponent(lines.join("\n"))}`, "_blank");
   };
 
   const openUPI = (txn) => {
@@ -960,30 +1013,38 @@ function BillSplitter({ onClose }) {
   };
 
   const shareFullSummary = () => {
+    const pending = settlements.filter(t => !settled.has(t.key));
     const lines = [
       `💸 *${partyName || "Party"} — Bill Summary*`,
-      `Total: ₹${grandTotal.toLocaleString()} · ${people.length} people\n`,
+      `Total: ₹${grandTotal.toLocaleString()} across ${expenses.length} expenses\n`,
       `*Settle up:*`,
-      ...settlements.map(t => `• ${t.from} → ${t.to}: ₹${t.amount.toLocaleString()}${upiOf(t.to) ? ` (${upiOf(t.to)})` : ""}`),
+      ...pending.map(t => {
+        const dueDate = settleDates[t.key];
+        const upi = upiOf(t.to);
+        return `• ${t.from} → ${t.to}: ₹${t.amount.toLocaleString()}${upi ? ` (${upi})` : ""}${dueDate ? ` by ${new Date(dueDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}` : ""}`;
+      }),
       `\n_Sent via Tendr Party Hub_ 🎉`,
     ];
     window.open(`https://wa.me/?text=${encodeURIComponent(lines.join("\n"))}`, "_blank");
   };
 
   const resetAll = () => {
-    if (!window.confirm("Reset everything? This clears all people and expenses.")) return;
-    setPeople([]); setExpenses([]); setSettled(new Set()); setPartyName(""); setShowForm(false);
+    if (!window.confirm("Reset everything? This clears all people, expenses, and settings.")) return;
+    setPeople([]); setExpenses([]); setSettled(new Set()); setPartyName(""); setBudget("");
+    setContributions({}); setSettleDates({}); setShowForm(false); setScreen("start");
   };
 
   const toggleSplit = (name) =>
     setFSplitAmong(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]);
 
   const tabBtn = (id, lbl, badge) => (
-    <button onClick={() => setTab(id)} style={{ flex: 1, padding: "9px 4px", borderRadius: 10, border: "none", position: "relative", background: tab === id ? "#C47A2E" : "rgba(255,255,255,0.07)", color: tab === id ? "#fff" : "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+    <button onClick={() => { setTab(id); setShowForm(false); }} style={{ flex: 1, padding: "8px 4px", borderRadius: 10, border: "none", position: "relative", background: tab === id ? "#C47A2E" : "rgba(255,255,255,0.06)", color: tab === id ? "#fff" : "rgba(255,255,255,0.45)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, transition: "background 0.15s" }}>
       {lbl}
-      {badge > 0 && <span style={{ position: "absolute", top: 4, right: 4, width: 14, height: 14, borderRadius: "50%", background: "#DC2626", color: "#fff", fontSize: 9, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>{badge}</span>}
+      {badge > 0 && <span style={{ position: "absolute", top: 3, right: 3, minWidth: 14, height: 14, borderRadius: 7, background: "#EF4444", color: "#fff", fontSize: 9, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, padding: "0 3px" }}>{badge}</span>}
     </button>
   );
+
+  const hasGuestList = (() => { try { return JSON.parse(localStorage.getItem("tendr-hp-guestlist") || "[]").some(g => g.rsvp === "yes"); } catch { return false; } })();
 
   const Avatar = ({ name, size = 30 }) => (
     <div style={{ width: size, height: size, borderRadius: "50%", background: colorOf(name), display: "flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.4, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
@@ -991,45 +1052,108 @@ function BillSplitter({ onClose }) {
     </div>
   );
 
+  // ── START SCREEN ─────────────────────────────────────────────
+  if (screen === "start") return (
+    <Modal onClose={onClose} emoji="💸" title="Bill Splitter" wide>
+      <div style={{ textAlign: "center", marginBottom: 8 }}>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.38)", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.1em" }}>Pick a template</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 7, marginBottom: 16 }}>
+          {BS_TEMPLATES.map(t => {
+            const isSelected = t.name ? partyName === t.name : !BS_TEMPLATES.slice(0,-1).find(x => x.name === partyName);
+            return (
+              <button key={t.id} onClick={() => { if (t.name) setPartyName(t.name); }} style={{ padding: "12px 6px", borderRadius: 12, border: `2px solid ${isSelected ? "#C47A2E" : "rgba(255,255,255,0.09)"}`, background: isSelected ? "rgba(196,122,46,0.16)" : "rgba(255,255,255,0.03)", cursor: "pointer", fontFamily: font, textAlign: "center", transition: "border 0.15s,background 0.15s" }}>
+                <div style={{ fontSize: 22, marginBottom: 4 }}>{t.emoji}</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: isSelected ? "#fff" : "rgba(255,255,255,0.55)" }}>{t.label}</div>
+              </button>
+            );
+          })}
+        </div>
+        <input value={partyName} onChange={e => setPartyName(e.target.value)} placeholder="Or type your party name..." style={{ ...inp, marginBottom: 10, textAlign: "center", fontSize: 15, fontWeight: 600 }} />
+        <input value={budget} onChange={e => setBudget(e.target.value)} placeholder="Set a budget (₹) — optional" type="number" style={{ ...inp, marginBottom: 18, textAlign: "center", fontSize: 14 }} />
+        <button onClick={() => setScreen("main")} style={{ ...btn("#C47A2E"), fontSize: 15, padding: "13px 20px" }}>
+          Let's Split →
+        </button>
+        {stored.people?.length > 0 && (
+          <button onClick={() => setScreen("main")} style={{ ...btn("rgba(255,255,255,0.05)"), marginTop: 8, fontSize: 12 }}>
+            ↩ Resume previous session
+          </button>
+        )}
+      </div>
+    </Modal>
+  );
+
+  // ── MAIN SCREEN ───────────────────────────────────────────────
   return (
     <Modal onClose={onClose} emoji="💸" title="Bill Splitter" wide>
 
-      {/* ── Party name ── */}
-      <input value={partyName} onChange={e => setPartyName(e.target.value)} placeholder="Party name (e.g. Goa Trip 2025)" style={{ ...inp, marginBottom: 14, fontSize: 15, fontWeight: 700, textAlign: "center" }} />
+      {/* ── Header ── */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <div>
+          {partyName
+            ? <div style={{ fontSize: 17, fontWeight: 800, color: "#fff", letterSpacing: "-0.01em" }}>{partyName}</div>
+            : <input value={partyName} onChange={e => setPartyName(e.target.value)} placeholder="Party name..." style={{ ...inp, padding: "4px 0", fontSize: 16, fontWeight: 700, border: "none", background: "transparent", width: 170 }} />
+          }
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.32)", marginTop: 2 }}>
+            {people.length} {people.length === 1 ? "person" : "people"} · ₹{grandTotal.toLocaleString()} spent
+          </div>
+        </div>
+        <button onClick={resetAll} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 8, padding: "5px 10px", color: "rgba(255,255,255,0.3)", fontSize: 11, cursor: "pointer", fontFamily: font }}>Reset</button>
+      </div>
+
+      {/* ── Budget bar ── */}
+      {budgetNum > 0 && (
+        <div style={{ marginBottom: 12, background: "rgba(255,255,255,0.04)", borderRadius: 11, padding: "10px 13px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5, alignItems: "center" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.07em" }}>Budget</span>
+            <span style={{ fontSize: 12, fontWeight: 800, color: budgetPct >= 100 ? "#EF4444" : budgetPct >= 80 ? "#F59E0B" : "#34D399" }}>
+              ₹{grandTotal.toLocaleString()} / ₹{budgetNum.toLocaleString()} · {budgetPct}%
+            </span>
+          </div>
+          <div style={{ height: 7, borderRadius: 4, background: "rgba(255,255,255,0.07)" }}>
+            <div style={{ height: "100%", width: `${budgetPct}%`, maxWidth: "100%", borderRadius: 4, background: budgetPct >= 100 ? "#EF4444" : budgetPct >= 80 ? "linear-gradient(90deg,#F59E0B,#EF4444)" : "linear-gradient(90deg,#059669,#34D399)", transition: "width 0.4s ease" }} />
+          </div>
+          <div style={{ fontSize: 10, marginTop: 4, color: budgetPct >= 100 ? "#EF4444" : "rgba(255,255,255,0.28)", fontWeight: budgetPct >= 100 ? 700 : 400 }}>
+            {budgetPct >= 100 ? `⚠️ Over by ₹${(grandTotal - budgetNum).toLocaleString()}` : `₹${(budgetNum - grandTotal).toLocaleString()} remaining`}
+          </div>
+        </div>
+      )}
 
       {/* ── People ── */}
-      <div style={{ marginBottom: 14 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: showAddPerson ? 8 : 0 }}>
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           {people.map(p => (
-            <div key={p.name} style={{ display: "flex", alignItems: "center", gap: 5, background: `${p.color}18`, border: `1.5px solid ${p.color}44`, borderRadius: 100, padding: "3px 9px 3px 3px" }}>
-              <Avatar name={p.name} size={22} />
+            <div key={p.name} style={{ display: "flex", alignItems: "center", gap: 4, background: `${p.color}14`, border: `1.5px solid ${p.color}35`, borderRadius: 100, padding: "3px 8px 3px 3px" }}>
+              <Avatar name={p.name} size={20} />
               <span style={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>{p.name}</span>
-              {p.upiId && <span style={{ fontSize: 9, color: "rgba(255,255,255,0.35)" }}>· {p.upiId}</span>}
-              <button onClick={() => removePerson(p.name)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", cursor: "pointer", fontSize: 13, lineHeight: 1, padding: 0, marginLeft: 2 }}>×</button>
+              {contributions[p.name] > 0 && <span style={{ fontSize: 9, color: "#34D399", fontWeight: 700 }}>+₹{contributions[p.name].toLocaleString()}</span>}
+              <button onClick={() => removePerson(p.name)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.2)", cursor: "pointer", fontSize: 12, padding: 0, marginLeft: 1, lineHeight: 1 }}>×</button>
             </div>
           ))}
-          <button onClick={() => setShowAddPerson(v => !v)} style={{ padding: "4px 11px", borderRadius: 100, border: "1.5px dashed rgba(255,255,255,0.18)", background: "transparent", color: "rgba(255,255,255,0.45)", fontSize: 12, cursor: "pointer", fontFamily: font }}>+ person</button>
+          <button onClick={() => setShowAddPerson(v => !v)} style={{ padding: "4px 10px", borderRadius: 100, border: "1.5px dashed rgba(255,255,255,0.14)", background: "transparent", color: "rgba(255,255,255,0.38)", fontSize: 11, cursor: "pointer", fontFamily: font }}>+ add</button>
+          {hasGuestList && (
+            <button onClick={importGuests} style={{ padding: "4px 10px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.08)", color: "#C47A2E", fontSize: 11, cursor: "pointer", fontFamily: font, fontWeight: 700 }}>👥 From guest list</button>
+          )}
         </div>
         {showAddPerson && (
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: 10, marginTop: 6 }}>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: 10, marginTop: 8 }}>
             <input value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === "Enter" && addPerson()} placeholder="Name *" style={{ ...inp, flex: 1, minWidth: 80, padding: "7px 10px", fontSize: 13 }} />
-            <input value={newUpi} onChange={e => setNewUpi(e.target.value)} placeholder="UPI ID (optional)" style={{ ...inp, flex: 2, minWidth: 120, padding: "7px 10px", fontSize: 13 }} />
-            <button onClick={addPerson} style={{ ...btn("#059669"), width: "auto", padding: "7px 16px", fontSize: 13, flexShrink: 0 }}>Add</button>
+            <input value={newUpi} onChange={e => setNewUpi(e.target.value)} placeholder="UPI ID (optional)" style={{ ...inp, flex: 2, minWidth: 100, padding: "7px 10px", fontSize: 13 }} />
+            <button onClick={addPerson} style={{ ...btn("#059669"), width: "auto", padding: "7px 14px", fontSize: 13, flexShrink: 0 }}>Add</button>
           </div>
         )}
       </div>
 
       {/* ── Stats bar ── */}
       {expenses.length > 0 && (
-        <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+        <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
           {[
-            { label: "Total",      value: `₹${grandTotal.toLocaleString()}`, red: false },
-            { label: "Expenses",   value: expenses.length,                   red: false },
-            { label: "To settle",  value: pendingCount,                      red: pendingCount > 0 },
+            { label: "Total",     value: `₹${grandTotal.toLocaleString()}`, color: "#CCAB4A" },
+            { label: "Expenses",  value: expenses.length,                   color: "#fff" },
+            { label: "Pending",   value: pendingCount,                      color: pendingCount > 0 ? "#F87171" : "#34D399" },
           ].map(s => (
-            <div key={s.label} style={{ flex: 1, background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: "9px 4px", textAlign: "center" }}>
-              <div style={{ fontSize: 15, fontWeight: 800, color: s.red ? "#F87171" : "#CCAB4A" }}>{s.value}</div>
-              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.38)", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 2 }}>{s.label}</div>
+            <div key={s.label} style={{ flex: 1, background: "rgba(255,255,255,0.045)", borderRadius: 10, padding: "9px 4px", textAlign: "center" }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: s.color }}>{s.value}</div>
+              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.09em", marginTop: 2 }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -1037,34 +1161,41 @@ function BillSplitter({ onClose }) {
 
       {/* ── Tabs ── */}
       <div style={{ display: "flex", gap: 5, marginBottom: 14 }}>
-        {tabBtn("expenses", "Expenses")}
-        {tabBtn("balances", "Balances")}
-        {tabBtn("settle",   "Settle Up", pendingCount)}
-        {tabBtn("summary",  "Summary")}
+        {tabBtn("expenses", "💸 Expenses")}
+        {tabBtn("balances", "⚖️ Balances")}
+        {tabBtn("settle",   "✓ Settle Up", pendingCount)}
+        {tabBtn("summary",  "📊 Summary")}
       </div>
 
       {/* ── EXPENSES TAB ── */}
       {tab === "expenses" && (
         <>
           {expenses.length === 0
-            ? <div style={{ textAlign: "center", padding: "28px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>No expenses yet</div>
+            ? <div style={{ textAlign: "center", padding: "30px 0", color: "rgba(255,255,255,0.25)", fontSize: 13 }}>
+                <div style={{ fontSize: 30, marginBottom: 8 }}>💸</div>
+                No expenses yet — add one below
+              </div>
             : expenses.map(exp => (
-              <div key={exp.id} style={{ ...card, display: "flex", alignItems: "center", gap: 10, padding: "11px 13px", marginBottom: 8, background: "rgba(255,255,255,0.04)", borderRadius: 12 }}>
-                <span style={{ fontSize: 20, flexShrink: 0 }}>{catOf(exp.cat).emoji}</span>
+              <div key={exp.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 13px", marginBottom: 7, background: "rgba(255,255,255,0.04)", borderRadius: 13, border: "1px solid rgba(255,255,255,0.065)" }}>
+                {exp.receiptImg
+                  ? <img src={exp.receiptImg} alt="" style={{ width: 34, height: 34, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
+                  : <span style={{ fontSize: 20, flexShrink: 0, width: 34, textAlign: "center" }}>{catOf(exp.cat).emoji}</span>
+                }
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 700, color: "#fff", fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{exp.desc}</div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", marginTop: 2, display: "flex", gap: 5, flexWrap: "wrap" }}>
-                    <span style={{ width: 9, height: 9, borderRadius: "50%", background: colorOf(exp.paidBy), display: "inline-block", flexShrink: 0, alignSelf: "center" }} />
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 2, display: "flex", gap: 5, alignItems: "center", flexWrap: "wrap" }}>
+                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: colorOf(exp.paidBy), display: "inline-block", flexShrink: 0 }} />
                     <span>{exp.paidBy}</span>
-                    <span>· {Object.keys(exp.splits).length} way{Object.keys(exp.splits).length !== 1 ? "s" : ""}</span>
-                    {exp.note && <span style={{ opacity: 0.7 }}>· {exp.note}</span>}
+                    <span style={{ color: "rgba(255,255,255,0.18)" }}>·</span>
+                    <span>{Object.keys(exp.splits).length}-way</span>
+                    {exp.note && <><span style={{ color: "rgba(255,255,255,0.18)" }}>·</span><span>{exp.note}</span></>}
                   </div>
                 </div>
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
                   <div style={{ fontWeight: 800, color: "#CCAB4A", fontSize: 15 }}>₹{exp.amount.toLocaleString()}</div>
                   <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 3 }}>
-                    <button onClick={() => openEdit(exp)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", fontSize: 11, padding: 0 }}>Edit</button>
-                    <button onClick={() => setExpenses(prev => prev.filter(e => e.id !== exp.id))} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.22)", cursor: "pointer", fontSize: 11, padding: 0 }}>Del</button>
+                    <button onClick={() => openEdit(exp)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.35)", cursor: "pointer", fontSize: 11, padding: 0 }}>Edit</button>
+                    <button onClick={() => setExpenses(prev => prev.filter(e => e.id !== exp.id))} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.18)", cursor: "pointer", fontSize: 11, padding: 0 }}>Del</button>
                   </div>
                 </div>
               </div>
@@ -1073,38 +1204,62 @@ function BillSplitter({ onClose }) {
 
           {!showForm && people.length >= 2 && (
             <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-              <button onClick={() => openAdd(true)} style={{ ...btn("rgba(255,255,255,0.08)"), flex: 0.6, fontSize: 13, padding: "11px 8px" }}>⚡ Quick</button>
+              <button onClick={() => openAdd(true)} style={{ ...btn("rgba(255,255,255,0.06)"), flex: 0.55, fontSize: 12, padding: "11px 4px" }}>⚡ Quick</button>
               <button onClick={() => openAdd(false)} style={{ ...btn("#C47A2E"), flex: 1, fontSize: 13, padding: "11px 8px" }}>+ Add Expense</button>
             </div>
           )}
           {!showForm && people.length < 2 && (
-            <div style={{ textAlign: "center", color: "rgba(255,255,255,0.28)", fontSize: 13, marginTop: 14 }}>Add at least 2 people to start</div>
+            <div style={{ textAlign: "center", color: "rgba(255,255,255,0.22)", fontSize: 13, marginTop: 12, padding: "12px", background: "rgba(255,255,255,0.025)", borderRadius: 12 }}>
+              Add at least 2 people to start tracking
+            </div>
           )}
 
           {showForm && (
-            <div style={{ background: "rgba(196,122,46,0.08)", border: "1.5px solid rgba(196,122,46,0.22)", borderRadius: 16, padding: 14, marginTop: 10 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#E5C97A", marginBottom: 10 }}>{editId ? "Edit Expense" : quickMode ? "⚡ Quick Add" : "New Expense"}</div>
+            <div style={{ background: "rgba(196,122,46,0.07)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 16, padding: 14, marginTop: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#E5C97A" }}>{editId ? "Edit Expense" : quickMode ? "⚡ Quick Add" : "New Expense"}</span>
+                {!quickMode && (
+                  <label style={{ display: "flex", alignItems: "center", gap: 5, cursor: "pointer", color: "rgba(255,255,255,0.4)", fontSize: 12, userSelect: "none" }}>
+                    📷 Scan receipt
+                    <input type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = ev => setReceiptImg(ev.target.result);
+                      reader.readAsDataURL(file);
+                    }} />
+                  </label>
+                )}
+              </div>
+
+              {receiptImg && (
+                <div style={{ position: "relative", marginBottom: 10 }}>
+                  <img src={receiptImg} alt="receipt" style={{ width: "100%", maxHeight: 130, objectFit: "cover", borderRadius: 10 }} />
+                  <button onClick={() => setReceiptImg(null)} style={{ position: "absolute", top: 5, right: 5, background: "rgba(0,0,0,0.55)", border: "none", borderRadius: "50%", width: 22, height: 22, color: "#fff", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+                </div>
+              )}
 
               {!quickMode && (
                 <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 10 }}>
                   {BS_CATS.map(c => (
-                    <button key={c.id} onClick={() => setFCat(c.id)} style={{ padding: "4px 9px", borderRadius: 20, border: `1.5px solid ${fCat === c.id ? "#C47A2E" : "rgba(255,255,255,0.1)"}`, background: fCat === c.id ? "rgba(196,122,46,0.25)" : "transparent", color: fCat === c.id ? "#fff" : "rgba(255,255,255,0.4)", fontSize: 11, cursor: "pointer", fontFamily: font }}>
+                    <button key={c.id} onClick={() => setFCat(c.id)} style={{ padding: "4px 9px", borderRadius: 20, border: `1.5px solid ${fCat === c.id ? "#C47A2E" : "rgba(255,255,255,0.09)"}`, background: fCat === c.id ? "rgba(196,122,46,0.2)" : "transparent", color: fCat === c.id ? "#fff" : "rgba(255,255,255,0.37)", fontSize: 11, cursor: "pointer", fontFamily: font }}>
                       {c.emoji} {c.label}
                     </button>
                   ))}
                 </div>
               )}
 
-              {!quickMode && <input value={fDesc} onChange={e => setFDesc(e.target.value)} placeholder="Description" style={{ ...inp, marginBottom: 8 }} />}
-              <input value={fAmount} onChange={e => setFAmount(e.target.value)} placeholder="Amount (₹)" type="number" style={{ ...inp, marginBottom: 8, fontSize: 20, fontWeight: 700 }} autoFocus />
+              {!quickMode && <input value={fDesc} onChange={e => setFDesc(e.target.value)} placeholder="Description (e.g. Dinner at Barbeque Nation)" style={{ ...inp, marginBottom: 8, fontSize: 13 }} />}
 
-              <div style={{ marginBottom: 8 }}>
+              <input value={fAmount} onChange={e => setFAmount(e.target.value)} placeholder="₹ Amount" type="number" style={{ ...inp, marginBottom: 10, fontSize: 24, fontWeight: 800, textAlign: "center" }} autoFocus />
+
+              <div style={{ marginBottom: 10 }}>
                 <label style={label}>Paid by</label>
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                   {people.map(p => (
-                    <button key={p.name} onClick={() => setFPaidBy(p.name)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px 5px 4px", borderRadius: 100, border: `1.5px solid ${fPaidBy === p.name ? p.color : "rgba(255,255,255,0.1)"}`, background: fPaidBy === p.name ? `${p.color}2a` : "transparent", cursor: "pointer", fontFamily: font }}>
+                    <button key={p.name} onClick={() => setFPaidBy(p.name)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px 5px 4px", borderRadius: 100, border: `2px solid ${fPaidBy === p.name ? p.color : "rgba(255,255,255,0.09)"}`, background: fPaidBy === p.name ? `${p.color}22` : "transparent", cursor: "pointer", fontFamily: font }}>
                       <div style={{ width: 18, height: 18, borderRadius: "50%", background: p.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#fff" }}>{p.name[0].toUpperCase()}</div>
-                      <span style={{ fontSize: 12, color: "#fff", fontWeight: 600 }}>{p.name}</span>
+                      <span style={{ fontSize: 12, color: "#fff", fontWeight: fPaidBy === p.name ? 700 : 400 }}>{p.name}</span>
                     </button>
                   ))}
                 </div>
@@ -1112,45 +1267,50 @@ function BillSplitter({ onClose }) {
 
               {!quickMode && (
                 <>
-                  <div style={{ marginBottom: 8 }}>
+                  <div style={{ marginBottom: 10 }}>
                     <label style={label}>Split among</label>
                     <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                       {people.map(p => (
-                        <button key={p.name} onClick={() => toggleSplit(p.name)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 10px 4px 4px", borderRadius: 100, border: `1.5px solid ${fSplitAmong.includes(p.name) ? p.color : "rgba(255,255,255,0.1)"}`, background: fSplitAmong.includes(p.name) ? `${p.color}20` : "transparent", cursor: "pointer", fontFamily: font }}>
-                          <div style={{ width: 16, height: 16, borderRadius: "50%", background: fSplitAmong.includes(p.name) ? p.color : "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, color: "#fff", fontWeight: 800 }}>{fSplitAmong.includes(p.name) ? "✓" : p.name[0].toUpperCase()}</div>
-                          <span style={{ fontSize: 12, color: "#fff" }}>{p.name}</span>
+                        <button key={p.name} onClick={() => toggleSplit(p.name)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 10px 4px 4px", borderRadius: 100, border: `2px solid ${fSplitAmong.includes(p.name) ? p.color : "rgba(255,255,255,0.09)"}`, background: fSplitAmong.includes(p.name) ? `${p.color}1c` : "transparent", cursor: "pointer", fontFamily: font }}>
+                          <div style={{ width: 16, height: 16, borderRadius: "50%", background: fSplitAmong.includes(p.name) ? p.color : "rgba(255,255,255,0.13)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, color: "#fff", fontWeight: 800 }}>{fSplitAmong.includes(p.name) ? "✓" : p.name[0].toUpperCase()}</div>
+                          <span style={{ fontSize: 12, color: fSplitAmong.includes(p.name) ? "#fff" : "rgba(255,255,255,0.45)" }}>{p.name}</span>
                         </button>
                       ))}
                     </div>
                   </div>
 
                   <div style={{ marginBottom: 10 }}>
-                    <label style={label}>Split type</label>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      {[["equal","Equally"],["amount","By ₹"],["percent","By %"]].map(([id, lbl]) => (
-                        <button key={id} onClick={() => setFSplitType(id)} style={{ flex: 1, padding: "7px 4px", borderRadius: 9, border: "none", background: fSplitType === id ? "#C47A2E" : "rgba(255,255,255,0.07)", color: fSplitType === id ? "#fff" : "rgba(255,255,255,0.45)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>{lbl}</button>
+                    <label style={label}>How to split</label>
+                    <div style={{ display: "flex", gap: 5 }}>
+                      {[["equal","Equally"],["amount","By ₹ amount"],["percent","By %"]].map(([id, lbl]) => (
+                        <button key={id} onClick={() => setFSplitType(id)} style={{ flex: 1, padding: "7px 4px", borderRadius: 9, border: "none", background: fSplitType === id ? "#C47A2E" : "rgba(255,255,255,0.05)", color: fSplitType === id ? "#fff" : "rgba(255,255,255,0.38)", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>{lbl}</button>
                       ))}
                     </div>
+                    {fSplitType === "equal" && fAmount && fSplitAmong.length > 0 && (
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 6, textAlign: "right" }}>
+                        ₹{(Number(fAmount) / fSplitAmong.length).toFixed(0)} each × {fSplitAmong.length}
+                      </div>
+                    )}
                     {fSplitType !== "equal" && fSplitAmong.length > 0 && (
                       <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
                         {fSplitAmong.map(n => (
                           <div key={n} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             <div style={{ width: 18, height: 18, borderRadius: "50%", background: colorOf(n), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{n[0].toUpperCase()}</div>
-                            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", flex: 1 }}>{n}</span>
-                            <input value={fCustom[n] || ""} onChange={e => setFCustom(prev => ({ ...prev, [n]: e.target.value }))} placeholder={fSplitType === "percent" ? "%" : "₹"} type="number" style={{ ...inp, width: 72, padding: "5px 8px", fontSize: 13 }} />
+                            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", flex: 1 }}>{n}</span>
+                            <input value={fCustom[n] || ""} onChange={e => setFCustom(prev => ({ ...prev, [n]: e.target.value }))} placeholder={fSplitType === "percent" ? "%" : "₹"} type="number" style={{ ...inp, width: 72, padding: "5px 8px", fontSize: 13, textAlign: "right" }} />
                           </div>
                         ))}
                       </div>
                     )}
                   </div>
 
-                  <input value={fNote} onChange={e => setFNote(e.target.value)} placeholder="Note (optional)" style={{ ...inp, marginBottom: 10, fontSize: 12 }} />
+                  <input value={fNote} onChange={e => setFNote(e.target.value)} placeholder="Add a note..." style={{ ...inp, marginBottom: 10, fontSize: 12 }} />
                 </>
               )}
 
               <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => { setShowForm(false); setEditId(null); }} style={{ ...btn("rgba(255,255,255,0.07)"), flex: 0.5, padding: "11px 8px" }}>Cancel</button>
-                <button onClick={saveExpense} style={{ ...btn("#C47A2E"), flex: 1, padding: "11px 8px" }}>{editId ? "Save" : "Add Expense"}</button>
+                <button onClick={() => { setShowForm(false); setEditId(null); setReceiptImg(null); }} style={{ ...btn("rgba(255,255,255,0.06)"), flex: 0.5, padding: "11px 4px", fontSize: 13 }}>Cancel</button>
+                <button onClick={saveExpense} style={{ ...btn("#C47A2E"), flex: 1, padding: "11px 8px", fontSize: 13 }}>{editId ? "Save Changes" : "Add Expense"}</button>
               </div>
             </div>
           )}
@@ -1160,28 +1320,51 @@ function BillSplitter({ onClose }) {
       {/* ── BALANCES TAB ── */}
       {tab === "balances" && (
         <>
+          {people.length > 0 && (
+            <div style={{ marginBottom: 14, background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: "12px 13px", border: "1px solid rgba(255,255,255,0.07)" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 4 }}>💰 Flat Contributions</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.27)", marginBottom: 10 }}>If someone is paying a fixed amount upfront, enter it here — it reduces what they owe.</div>
+              {people.map(p => (
+                <div key={p.name} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <Avatar name={p.name} size={24} />
+                  <span style={{ fontSize: 12, color: "#fff", fontWeight: 600, flex: 1 }}>{p.name}</span>
+                  <input
+                    value={contributions[p.name] || ""}
+                    onChange={e => setContributions(prev => ({ ...prev, [p.name]: Number(e.target.value) || 0 }))}
+                    placeholder="₹0"
+                    type="number"
+                    style={{ ...inp, width: 80, padding: "5px 8px", fontSize: 13, textAlign: "right" }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
           {people.length === 0
-            ? <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>Add people to see balances</div>
+            ? <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,0.25)", fontSize: 13 }}>Add people to see balances</div>
             : people.map(p => {
               const bal = balances[p.name] || 0;
               const isPos = bal > 0.01, isNeg = bal < -0.01;
               const paid  = expenses.filter(e => e.paidBy === p.name).reduce((s, e) => s + e.amount, 0);
               const share = expenses.reduce((s, e) => s + (e.splits[p.name] || 0), 0);
+              const contrib = contributions[p.name] || 0;
               return (
-                <div key={p.name} style={{ ...card, display: "flex", alignItems: "center", gap: 12, background: "rgba(255,255,255,0.04)", borderRadius: 12, marginBottom: 8 }}>
-                  <Avatar name={p.name} size={38} />
+                <div key={p.name} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 13px", marginBottom: 8, background: "rgba(255,255,255,0.04)", borderRadius: 13, border: `1.5px solid ${isPos ? "rgba(52,211,153,0.18)" : isNeg ? "rgba(248,113,113,0.18)" : "rgba(255,255,255,0.065)"}` }}>
+                  <Avatar name={p.name} size={40} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 700, color: "#fff", fontSize: 14 }}>{p.name}</div>
-                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", marginTop: 2 }}>
-                      paid ₹{paid.toLocaleString()} · share ₹{Math.round(share).toLocaleString()}
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>
+                      paid ₹{paid.toLocaleString()}
+                      {contrib > 0 && ` + ₹${contrib.toLocaleString()} flat`}
+                      {" · "}share ₹{Math.round(share).toLocaleString()}
                     </div>
                   </div>
                   <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: 18, fontWeight: 800, color: isPos ? "#34D399" : isNeg ? "#F87171" : "rgba(255,255,255,0.3)" }}>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: isPos ? "#34D399" : isNeg ? "#F87171" : "rgba(255,255,255,0.25)" }}>
                       {isPos ? "+" : ""}₹{Math.round(Math.abs(bal)).toLocaleString()}
                     </div>
-                    <div style={{ fontSize: 10, fontWeight: 600, color: isPos ? "#34D399" : isNeg ? "#F87171" : "rgba(255,255,255,0.25)", marginTop: 2 }}>
-                      {isPos ? "gets back" : isNeg ? "owes" : "settled ✓"}
+                    <div style={{ fontSize: 10, fontWeight: 700, color: isPos ? "#34D399" : isNeg ? "#F87171" : "rgba(255,255,255,0.2)", marginTop: 2 }}>
+                      {isPos ? "gets back" : isNeg ? "owes" : "all good ✓"}
                     </div>
                   </div>
                 </div>
@@ -1196,45 +1379,57 @@ function BillSplitter({ onClose }) {
         <>
           {settlements.length === 0 ? (
             <div style={{ textAlign: "center", padding: "36px 0" }}>
-              <div style={{ fontSize: 36, marginBottom: 8 }}>🎉</div>
-              <div style={{ color: "#34D399", fontWeight: 700, fontSize: 15 }}>All settled up!</div>
-              <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, marginTop: 4 }}>No payments needed</div>
+              <div style={{ fontSize: 40, marginBottom: 8 }}>🎉</div>
+              <div style={{ color: "#34D399", fontWeight: 800, fontSize: 16 }}>All settled up!</div>
+              <div style={{ color: "rgba(255,255,255,0.28)", fontSize: 13, marginTop: 4 }}>No payments needed</div>
             </div>
           ) : (
             <>
               {settlements.map(t => {
                 const done = settled.has(t.key);
                 const upi  = upiOf(t.to);
+                const dueDate = settleDates[t.key];
+                const isOverdue = dueDate && new Date(dueDate) < new Date() && !done;
                 return (
-                  <div key={t.key} style={{ ...card, background: "rgba(255,255,255,0.04)", borderRadius: 14, marginBottom: 10, opacity: done ? 0.5 : 1 }}>
+                  <div key={t.key} style={{ padding: "14px", marginBottom: 10, background: done ? "rgba(255,255,255,0.025)" : "rgba(255,255,255,0.05)", borderRadius: 14, border: `1.5px solid ${done ? "rgba(52,211,153,0.18)" : isOverdue ? "rgba(239,68,68,0.28)" : "rgba(255,255,255,0.08)"}`, opacity: done ? 0.55 : 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: done ? 0 : 10 }}>
-                      <Avatar name={t.from} size={32} />
+                      <Avatar name={t.from} size={34} />
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
+                        <div style={{ fontSize: 14, fontWeight: 700 }}>
                           <span style={{ color: "#F87171" }}>{t.from}</span>
-                          <span style={{ color: "rgba(255,255,255,0.35)", margin: "0 6px", fontSize: 11 }}>pays</span>
+                          <span style={{ color: "rgba(255,255,255,0.28)", margin: "0 8px", fontSize: 12 }}>→</span>
                           <span style={{ color: "#34D399" }}>{t.to}</span>
                         </div>
-                        {upi && !done && <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginTop: 2 }}>UPI: {upi}</div>}
+                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", marginTop: 2, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          {upi && <span>UPI: {upi}</span>}
+                          {dueDate && !done && <span style={{ color: isOverdue ? "#EF4444" : "rgba(255,255,255,0.32)" }}>{isOverdue ? "⚠️ Overdue" : `Due ${new Date(dueDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`}</span>}
+                          {done && <span style={{ color: "#34D399" }}>✓ Paid</span>}
+                        </div>
                       </div>
-                      <div style={{ fontWeight: 800, color: "#CCAB4A", fontSize: 18 }}>₹{t.amount.toLocaleString()}</div>
+                      <div style={{ fontWeight: 900, color: "#CCAB4A", fontSize: 20 }}>₹{t.amount.toLocaleString()}</div>
                     </div>
                     {!done && (
-                      <div style={{ display: "flex", gap: 7 }}>
-                        {upi && <button onClick={() => openUPI(t)} style={{ ...btn("#2563EB"), flex: 1, fontSize: 12, padding: "9px 6px" }}>💳 Pay UPI</button>}
-                        <button onClick={() => shareWhatsApp(t)} style={{ ...btn("#25D366"), flex: 1, fontSize: 12, padding: "9px 6px" }}>📱 Remind</button>
-                        <button onClick={() => setSettled(prev => { const s = new Set(prev); s.add(t.key); return s; })} style={{ ...btn("rgba(255,255,255,0.08)"), flex: 0.7, fontSize: 12, padding: "9px 4px" }}>✓ Done</button>
-                      </div>
+                      <>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.32)", whiteSpace: "nowrap" }}>Pay by:</span>
+                          <input type="date" value={settleDates[t.key] || ""} onChange={e => setSettleDates(prev => ({ ...prev, [t.key]: e.target.value }))} style={{ ...inp, flex: 1, padding: "4px 8px", fontSize: 12 }} />
+                        </div>
+                        <div style={{ display: "flex", gap: 7 }}>
+                          {upi && <button onClick={() => openUPI(t)} style={{ ...btn("#2563EB"), flex: 1, fontSize: 12, padding: "9px 4px" }}>💳 Pay UPI</button>}
+                          <button onClick={() => shareWhatsApp(t)} style={{ ...btn("#25D366"), flex: 1, fontSize: 12, padding: "9px 4px" }}>📱 Remind</button>
+                          <button onClick={() => setSettled(prev => { const s = new Set(prev); s.add(t.key); return s; })} style={{ ...btn("rgba(52,211,153,0.15)"), flex: 0.7, fontSize: 12, padding: "9px 2px", border: "1.5px solid rgba(52,211,153,0.28)", color: "#34D399" }}>✓ Done</button>
+                        </div>
+                      </>
                     )}
                     {done && (
                       <div style={{ textAlign: "right" }}>
-                        <button onClick={() => setSettled(prev => { const s = new Set(prev); s.delete(t.key); return s; })} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.28)", cursor: "pointer", fontSize: 11, fontFamily: font }}>✓ Paid — undo?</button>
+                        <button onClick={() => setSettled(prev => { const s = new Set(prev); s.delete(t.key); return s; })} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.22)", cursor: "pointer", fontSize: 11, fontFamily: font }}>↩ Undo</button>
                       </div>
                     )}
                   </div>
                 );
               })}
-              <button onClick={shareFullSummary} style={{ ...btn("rgba(37,211,102,0.12)"), border: "1.5px solid rgba(37,211,102,0.3)", color: "#25D366", marginTop: 4 }}>
+              <button onClick={shareFullSummary} style={{ ...btn("rgba(37,211,102,0.08)"), border: "1.5px solid rgba(37,211,102,0.22)", color: "#25D366", marginTop: 4, fontSize: 13 }}>
                 📲 Share full summary on WhatsApp
               </button>
             </>
@@ -1246,17 +1441,25 @@ function BillSplitter({ onClose }) {
       {tab === "summary" && (
         <>
           {expenses.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>No expenses to summarise</div>
+            <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,0.25)", fontSize: 13 }}>No expenses to summarise yet</div>
           ) : (
             <>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.38)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>By category</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, background: "rgba(255,255,255,0.04)", borderRadius: 11, padding: "9px 13px" }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.45)", flex: 1 }}>🎯 Budget</span>
+                <input value={budget} onChange={e => setBudget(e.target.value)} placeholder="Set budget (₹)" type="number" style={{ ...inp, width: 130, padding: "5px 8px", fontSize: 13, textAlign: "right" }} />
+              </div>
+
+              <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.32)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>By Category</div>
               {catTotals().map(([catId, total]) => {
                 const cat = catOf(catId), pct = Math.round((total / grandTotal) * 100);
                 return (
                   <div key={catId} style={{ marginBottom: 10 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                       <span style={{ fontSize: 13, color: "#fff" }}>{cat.emoji} {cat.label}</span>
-                      <span style={{ fontSize: 13, color: "#CCAB4A", fontWeight: 700 }}>₹{total.toLocaleString()} <span style={{ color: "rgba(255,255,255,0.3)", fontWeight: 400 }}>({pct}%)</span></span>
+                      <span style={{ fontSize: 13, fontWeight: 700 }}>
+                        <span style={{ color: "#CCAB4A" }}>₹{total.toLocaleString()}</span>
+                        <span style={{ color: "rgba(255,255,255,0.28)", fontWeight: 400 }}> · {pct}%</span>
+                      </span>
                     </div>
                     <div style={{ height: 6, borderRadius: 3, background: "rgba(255,255,255,0.07)" }}>
                       <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 3 }} />
@@ -1265,25 +1468,37 @@ function BillSplitter({ onClose }) {
                 );
               })}
 
-              <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.38)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "16px 0 10px" }}>Per person</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.32)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "18px 0 10px" }}>Per Person</div>
               {people.map(p => {
                 const paid  = expenses.filter(e => e.paidBy === p.name).reduce((s, e) => s + e.amount, 0);
                 const share = expenses.reduce((s, e) => s + (e.splits[p.name] || 0), 0);
+                const contrib = contributions[p.name] || 0;
                 return (
-                  <div key={p.name} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, padding: "8px 10px", background: "rgba(255,255,255,0.04)", borderRadius: 10 }}>
+                  <div key={p.name} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, padding: "9px 12px", background: "rgba(255,255,255,0.04)", borderRadius: 11 }}>
                     <Avatar name={p.name} size={28} />
-                    <span style={{ fontSize: 13, color: "#fff", fontWeight: 600, flex: 1 }}>{p.name}</span>
+                    <span style={{ fontSize: 13, color: "#fff", fontWeight: 700, flex: 1 }}>{p.name}</span>
                     <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>Paid <span style={{ color: "#CCAB4A", fontWeight: 700 }}>₹{paid.toLocaleString()}</span></div>
-                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>Share ₹{Math.round(share).toLocaleString()}</div>
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>Paid <span style={{ color: "#CCAB4A", fontWeight: 700 }}>₹{(paid + contrib).toLocaleString()}</span></div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.25)" }}>Share ₹{Math.round(share).toLocaleString()}</div>
                     </div>
                   </div>
                 );
               })}
 
-              <button onClick={resetAll} style={{ ...btn("rgba(220,38,38,0.12)"), border: "1.5px solid rgba(220,38,38,0.28)", color: "#F87171", marginTop: 8, fontSize: 13 }}>
-                🗑 Reset everything
-              </button>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.32)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "18px 0 10px" }}>Full Log</div>
+              {expenses.map(exp => (
+                <div key={exp.id} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: "1px solid rgba(255,255,255,0.05)", fontSize: 12 }}>
+                  <span style={{ color: "rgba(255,255,255,0.45)" }}>{catOf(exp.cat).emoji} {exp.desc}</span>
+                  <div style={{ textAlign: "right" }}>
+                    <span style={{ color: "#CCAB4A", fontWeight: 700 }}>₹{exp.amount.toLocaleString()}</span>
+                    <span style={{ color: "rgba(255,255,255,0.25)", marginLeft: 5 }}>by {exp.paidBy}</span>
+                  </div>
+                </div>
+              ))}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderTop: "1.5px solid rgba(196,122,46,0.22)", marginTop: 2 }}>
+                <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 12 }}>{expenses.length} expenses</span>
+                <span style={{ color: "#CCAB4A", fontWeight: 800, fontSize: 15 }}>Total ₹{grandTotal.toLocaleString()}</span>
+              </div>
             </>
           )}
         </>
