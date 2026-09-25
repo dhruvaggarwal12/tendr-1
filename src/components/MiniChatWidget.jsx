@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
-import router from "../router";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -99,6 +99,7 @@ function getFAQAnswer(text) {
 export default function MiniChatWidget({ onClose, conversationId: existingConvoId, vendorName, prefillMessage, prefillPhoto }) {
   const isVendorChat = !!existingConvoId;
   const { user, token: authToken } = useSelector((s) => s.auth);
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState(prefillMessage || "");
   const [conversationId, setConversationId] = useState(existingConvoId || null);
@@ -342,7 +343,7 @@ export default function MiniChatWidget({ onClose, conversationId: existingConvoI
       <div style={{ padding: "10px 12px", borderTop: "1px solid rgba(196,122,46,0.1)", display: "flex", flexDirection: "column", gap: 8 }}>
         {!user?._id && (
           <button
-            onClick={() => router.navigate("/login")}
+            onClick={() => navigate("/login")}
             style={{ width: "100%", padding: "10px 0", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.3)" }}
           >
             Sign In to Chat

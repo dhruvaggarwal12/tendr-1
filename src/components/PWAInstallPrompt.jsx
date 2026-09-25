@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import router from "../router";
+import { useNavigate } from "react-router-dom";
 
 const font = "'Outfit', sans-serif";
 const KEY_DISMISSED = "tendr_pwa_dismissed_at";
@@ -28,6 +28,7 @@ function dismissedRecently() {
 }
 
 export default function PWAInstallPrompt() {
+  const navigate = useNavigate();
   const [visible,         setVisible]         = useState(false);
   const [showIOSSteps,    setShowIOSSteps]     = useState(false);
   const [showAndroidSteps, setShowAndroidSteps] = useState(false);
@@ -103,7 +104,7 @@ export default function PWAInstallPrompt() {
       setShowIOSSteps(true);
     } else {
       dismiss();
-      router.navigate("/install");
+      navigate("/install");
     }
   };
 
