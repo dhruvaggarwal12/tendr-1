@@ -37,6 +37,27 @@ Disallow: /vendor/status
 Disallow: /vendor/dashboard
 Disallow: /plan-event/form
 
+# Block static standalone pages (not SPA routes)
+Disallow: /qr.html
+Disallow: /social.html
+Disallow: /links
+
+# Block internal tools with noindex tags
+Disallow: /find-by-style
+Disallow: /design-your-event
+Disallow: /guest-list
+Disallow: /payment-tracker
+Disallow: /equipment-generator
+Disallow: /memories
+Disallow: /memories/
+
+# Block search results (parameterised, no unique value)
+Disallow: /search
+
+# Block coordinator-only routes
+Disallow: /coordinator/
+Disallow: /corporate-signup
+
 # Block duplicate/parameterised states that add no SEO value
 Disallow: /*?*sort=
 Disallow: /*?*page=
