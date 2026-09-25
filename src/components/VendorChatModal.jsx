@@ -768,6 +768,7 @@ export default function VendorChatModal() {
 
               // Load existing message history
               setMessagesLoading(true);
+              let historyHasMessages = false;
               try {
                 const histRes = await fetch(`${BASE_URL}/messages/${cid}/messages`, {
                   headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
@@ -781,6 +782,7 @@ export default function VendorChatModal() {
                       ts: new Date(m.createdAt).getTime(),
                     }));
                     setMessages(mapped);
+                    historyHasMessages = true;
                     if (mapped.some(m => m.sender === "vendor")) setAdminReplied(true);
                   }
                 }
@@ -791,14 +793,15 @@ export default function VendorChatModal() {
               if (socket.connected) joinRoom();
               else socket.on("connect", joinRoom);
 
-              // Send initial summary message via REST so it persists and renders immediately
+              // Send initial summary message via REST — skip if history already has messages
+              // (re-opening an existing conversation would duplicate the initial plan message)
               const rawInitialMsg = chatState.initialMessage;
               const vendorCtx = chatState.funEventDetails;
               // For vendor enquiries, build a richer structured summary
               const initialMsg = (isAllBookings && chatState.bookingCategory === 'vendor-enquiry' && vendorCtx?.vendorName)
                 ? `📋 New Vendor Enquiry\n👤 Vendor: ${vendorCtx.vendorName}\n🎯 Service: ${vendorCtx.serviceType || ''}\n\nI'd like to get a quote for my event.`
                 : rawInitialMsg;
-              if ((isAllBookings || isOccasions || isFunActivities) && initialMsg && authToken) {
+              if (!historyHasMessages && (isAllBookings || isOccasions || isFunActivities) && initialMsg && authToken) {
                 try {
                   const msgRes = await fetch(`${BASE_URL}/messages/${cid}/message`, {
                     method: "POST",
@@ -1869,23 +1872,21 @@ export default function VendorChatModal() {
             </div>
           )}
 
-          {/* Tendr Team welcome + Q&A chips (no-wizard mode) */}
+          {/* Tendr Team smart Q&A suggestions (no-wizard mode) */}
           {isSkipBot && isConcierge && messages.length === 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <div style={{ alignSelf: "flex-start", maxWidth: "88%", background: "#fff", borderRadius: "16px 16px 16px 4px", padding: "12px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", fontSize: 13, color: "#1a1a1a", lineHeight: 1.6 }}>
-                👋 Hi! I'm from the Tendr team. Tell us what you're looking for and we'll personally help you find the right vendor for your event.
-              </div>
-              <div style={{ alignSelf: "stretch" }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Quick questions</div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {TENDR_TEAM_QA.map(({ q }) => (
-                    <button key={q} onClick={() => handleTendrQ(q)}
-                      style={{ padding: "6px 13px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.28)", background: "#fff", color: "#6B3A1F", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: font, transition: "all 0.12s", lineHeight: 1.3, textAlign: "left" }}
-                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.08)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.5)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.28)"; }}
-                    >{q}</button>
-                  ))}
-                </div>
+            <div style={{ alignSelf: "stretch" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Things you can ask us</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                {TENDR_TEAM_QA.map(({ q }) => (
+                  <button key={q} onClick={() => handleTendrQ(q)}
+                    style={{ padding: "10px 14px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.22)", background: "#fff", color: "#3D1F0A", fontSize: 12.5, fontWeight: 500, cursor: "pointer", fontFamily: font, transition: "all 0.12s", lineHeight: 1.4, textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.45)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.22)"; }}
+                  >
+                    <span>{q}</span>
+                    <span style={{ color: "#C47A2E", fontSize: 14, flexShrink: 0 }}>→</span>
+                  </button>
+                ))}
               </div>
             </div>
           )}

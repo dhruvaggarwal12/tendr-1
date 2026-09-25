@@ -482,12 +482,12 @@ export function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, 
           )}
 
           {/* Chat note */}
-          {hasChat && (
+          {(hasChat || plan.chatSent) && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'rgba(37,211,102,0.06)', border: '1.5px solid rgba(37,211,102,0.2)', borderRadius: 12, marginBottom: 18 }}>
               <span style={{ fontSize: 18 }}>💬</span>
               <div>
-                <div style={{ fontSize: 12.5, fontWeight: 700, color: '#166534' }}>Chat is active</div>
-                <div style={{ fontSize: 11, color: '#4ade80' }}>Find it in Active Chats on your dashboard</div>
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: '#166534' }}>Plan sent to chat</div>
+                <div style={{ fontSize: 11, color: '#15803d' }}>Find it in Active Chats on your dashboard</div>
               </div>
             </div>
           )}
@@ -569,15 +569,15 @@ export function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, 
             >
               ✏️ Edit Everything
             </button>
-            {hasChat && (
+            {(hasChat || plan.chatSent) && (
               <button
                 onClick={() => { onClose(); navigate('/chats'); }}
                 style={{ flex: 1, minWidth: 120, padding: '11px 0', borderRadius: 12, background: GOLD, color: '#fff', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 4px 14px rgba(196,122,46,0.3)' }}
               >
-                💬 Continue Chat
+                💬 Go to Chat
               </button>
             )}
-            {!hasChat && (
+            {!hasChat && !plan.chatSent && (
               <button
                 onClick={() => { onClose(); navigate('/my-event'); }}
                 style={{ flex: 1, minWidth: 120, padding: '11px 0', borderRadius: 12, background: GOLD, color: '#fff', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 4px 14px rgba(196,122,46,0.3)' }}

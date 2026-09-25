@@ -8,6 +8,7 @@ import { setMultipleFormData, setBookingType, setSelectedPerformer } from "../..
 import { PERFORMER_TYPES } from "../../components/PerformerSuggestions";
 import { getVendors } from "../../apis/vendorApi";
 import { getOccasionById } from "../../data/occasions";
+import { saveResumeUrl } from "../../utils/planningResume";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 import PerformerSuggestions from "../../components/PerformerSuggestions";
@@ -1475,11 +1476,14 @@ export default function OccasionDetail(){
     budgetMin:5000,budgetMax:500000,typicalGuests:"10–500",
   } : rawOccasion;
 
-  /* load saved plan on mount */
+  /* load saved plan on mount — restores all form state including step */
   useEffect(()=>{
     try{
       const saved=JSON.parse(localStorage.getItem(PLAN_KEY)||"null");
-      if(saved&&saved.step>0) setSavedPlan(saved);
+      if(saved&&saved.step>0){
+        setSavedPlan(saved);
+        restorePlan(saved);
+      }
     }catch{}
   },[slug]);
 
@@ -1492,6 +1496,7 @@ export default function OccasionDetail(){
         selectedActivities,customCatering,customDecor,customActivities,customEventName,customEventDesc,
         savedAt:new Date().toISOString(),
       }));
+      saveResumeUrl(`/occasions/${slug}`);
     }
   },[planMode,step,guests,date,budget,city,venueType,venueProvides,ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,checked]);
 
@@ -3327,6 +3332,11 @@ export default function OccasionDetail(){
                 onClick={()=>{
                   const msg=buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,customCatering,customDecor,celebrantName});
                   openOccasionsChat(msg);
+                  try{
+                    const sp={eventDetails:{eventType:occasion.name,date,location:city,guests,budget},vendorSlots:vendors.map(cat=>({category:cat,vendorName:"",estimatedCost:0,status:"Pending"})),selectedPackages:vendorPackages,chatSent:true,slug};
+                    localStorage.setItem("tendr_smart_plan",JSON.stringify(sp));
+                    window.dispatchEvent(new CustomEvent("tendr:plan-confirmed"));
+                  }catch{}
                 }}
                 style={{flex:1,minWidth:120,padding:"12px 14px",borderRadius:12,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:12.5,fontWeight:700,cursor:"pointer",fontFamily:font,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -3648,6 +3658,11 @@ export default function OccasionDetail(){
                 if(token){
                   const planText = buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,celebrantName});
                   openOccasionsChat(planText);
+                  try{
+                    const sp={eventDetails:{eventType:occasion.name,date,location:city,guests,budget},vendorSlots:vendors.map(cat=>({category:cat,vendorName:"",estimatedCost:0,status:"Pending"})),selectedPackages:vendorPackages,chatSent:true,slug};
+                    localStorage.setItem("tendr_smart_plan",JSON.stringify(sp));
+                    window.dispatchEvent(new CustomEvent("tendr:plan-confirmed"));
+                  }catch{}
                 } else {
                   navigate("/signup");
                 }
