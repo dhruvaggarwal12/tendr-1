@@ -193,7 +193,9 @@ const ALL_ACTIVITY_ITEMS = Object.values(ALL_ACTIVITIES).flat();
 /* ── score + filter activities for this occasion ── */
 function getActivitySuggestions(occasion, {ageGroups=[], theme=null}) {
   const id  = occasion?.id||"";
-  const hasKids = (ageGroups||[]).includes("Kids")||(ageGroups||[]).includes("Toddlers");
+  const hasKids   = (ageGroups||[]).includes("Kids")||(ageGroups||[]).includes("Toddlers");
+  const hasSeniors= (ageGroups||[]).includes("Seniors");
+  const mixedAge  = hasKids && hasSeniors;
   const tags = (theme?.tags||[]).join(" ").toLowerCase();
   const result = {};
   for(const {key} of ACTIVITY_TYPES) {
@@ -202,7 +204,10 @@ function getActivitySuggestions(occasion, {ageGroups=[], theme=null}) {
       if(a.occasions.includes(id)) score += 4;
       if(hasKids && a.tags.includes("kids")) score += 2;
       if(!hasKids && a.tags.includes("kids") && !a.tags.some(t=>["all","food","adult","craft"].includes(t))) score -= 2;
-      if((ageGroups||[]).includes("Seniors") && a.tags.includes("adult")) score += 1;
+      if(hasSeniors && a.tags.includes("adult")) score += 1;
+      // Mixed age conflict: penalise loud acts, boost quiet/visual ones
+      if(mixedAge && (a.id==="DJ"||a.id.startsWith("band-")||a.id==="laser-show"||a.id==="fire-led")) score -= 3;
+      if(mixedAge && (a.id==="diy-photo-booth"||a.id==="craft-station"||a.id==="balloon-artist"||a.id==="face-painting"||a.id==="tambola")) score += 2;
       if(tags.includes("bollywood") && (a.id==="bollywood-dancer"||a.id==="antakshari"||a.id==="band-bollywood")) score += 2;
       if(tags.includes("neon") && (a.id==="laser-show"||a.id==="fire-led"||a.id==="projection-mapping")) score += 2;
       if(tags.includes("sufi")||tags.includes("ghazal")) { if(a.id==="band-sufi") score += 3; }
@@ -551,10 +556,26 @@ function getRecommended(occasion, theme, ageGroups, venueType) {
     if(t.includes("floral")||t.includes("garden")||t.includes("nature")) recs.add("Florist");
     if(t.includes("neon")||t.includes("glow")||t.includes("teen")||t.includes("dance")||t.includes("fun")) recs.add("DJ");
     if(t.includes("bollywood")||t.includes("indian")||t.includes("colourful")) recs.add("Emcee / Host");
-    if(t.includes("gold")||t.includes("elegant")||t.includes("glam")) recs.add("Lighting Setup");
+    if(t.includes("gold")||t.includes("elegant")||t.includes("glam")) { recs.add("Lighting Setup"); recs.add("Makeup Artist"); }
     if(t.includes("photo")||t.includes("memories")||t.includes("red-carpet")) recs.add("Photo Booth");
     if(t.includes("corporate")||t.includes("professional")||t.includes("modern")||t.includes("minimal")) {
       recs.add("AV Setup"); recs.add("Photo Booth");
+    }
+    // Baby-shower-specific theme tags
+    if(t.includes("pastel")||t.includes("nursery")||t.includes("baby")||t.includes("pink")) {
+      recs.add("Florist"); recs.add("Cake Artist");
+    }
+    if(t.includes("jungle")||t.includes("safari")||t.includes("animal")) {
+      recs.add("Florist"); recs.add("Entertainer");
+    }
+    if(t.includes("teddy")||t.includes("bear")||t.includes("plush")||t.includes("cute")) {
+      recs.add("Balloon Artist"); recs.add("Cake Artist");
+    }
+    if(t.includes("stars")||t.includes("twinkle")||t.includes("sky")||t.includes("dreamy")) {
+      recs.add("Lighting Setup");
+    }
+    if(t.includes("royal")) {
+      recs.add("Makeup Artist"); recs.add("Lighting Setup");
     }
   }
   if(occasion.id==="office-party") { recs.add("AV Setup"); recs.add("Emcee / Host"); }
@@ -564,11 +585,18 @@ function getRecommended(occasion, theme, ageGroups, venueType) {
   if(venue.includes("banquet")||venue.includes("hall")) {
     recs.add("Sound System");
   }
-  if(ageGroups.includes("Kids")||ageGroups.includes("Toddlers")) {
+  // Age group conflict: Kids + Seniors together → quiet activities, no DJ
+  const hasKids  = ageGroups.includes("Kids")||ageGroups.includes("Toddlers");
+  const hasTeen  = ageGroups.includes("Teens");
+  const hasSenior= ageGroups.includes("Seniors");
+  if(hasKids && hasSenior) {
+    // Mixed age: boost visual/craft activities, skip loud entertainment
+    recs.add("Photo Booth"); recs.add("Balloon Artist");
+  } else if(hasKids) {
     recs.add("Entertainer"); recs.add("Balloon Artist");
   }
-  if(ageGroups.includes("Teens")) { recs.add("DJ"); recs.add("Photo Booth"); }
-  if(ageGroups.includes("Seniors")) { recs.add("Live Band"); }
+  if(hasTeen && !hasSenior) { recs.add("DJ"); recs.add("Photo Booth"); }
+  if(hasSenior && !hasKids) { recs.add("Live Band"); }
   return recs;
 }
 
@@ -1142,18 +1170,26 @@ function buildTimeline(dateStr, vendors) {
   return {days,phases};
 }
 
-/* ── budget split ── */
-function buildBudgetSplit(total) {
+/* ── budget split — recalculates based on selected vendors ── */
+function buildBudgetSplit(total, vendors=[]) {
   const n=Number(total);
   if(!n||n<=0) return null;
-  return [
-    {label:"Décor & Setup",   pct:28,color:"#C47A2E"},
-    {label:"Catering",        pct:32,color:"#D4A848"},
-    {label:"Photography",     pct:14,color:"#B8956A"},
-    {label:"Entertainment",   pct:12,color:"#9B7450"},
-    {label:"Cake & Sweets",   pct:8, color:"#8B6545"},
-    {label:"Miscellaneous",   pct:6, color:"#7A5535"},
-  ].map(c=>({...c,amt:Math.round(n*c.pct/100)}));
+  const anySelected = vendors.length > 0;
+  const hasDecor    = !anySelected || vendors.some(v=>["Decorator","Florist","Lighting Setup","Balloon Artist"].includes(v));
+  const hasCatering = !anySelected || vendors.includes("Caterer");
+  const hasPhoto    = !anySelected || vendors.some(v=>["Photographer","Videographer"].includes(v));
+  const hasEntertain= !anySelected || vendors.some(v=>["DJ","Live Band","Entertainer","Photo Booth","Emcee / Host","AV Setup"].includes(v));
+  const hasCake     = !anySelected || vendors.includes("Cake Artist");
+  const cats=[
+    {label:"Décor & Setup",  w:hasDecor?28:0,    color:"#C47A2E"},
+    {label:"Catering",       w:hasCatering?32:0,  color:"#D4A848"},
+    {label:"Photography",    w:hasPhoto?14:0,     color:"#B8956A"},
+    {label:"Entertainment",  w:hasEntertain?12:0, color:"#9B7450"},
+    {label:"Cake & Sweets",  w:hasCake?8:0,       color:"#8B6545"},
+    {label:"Miscellaneous",  w:6,                 color:"#7A5535"},
+  ].filter(c=>c.w>0);
+  const sum=cats.reduce((s,c)=>s+c.w,0);
+  return cats.map(c=>({...c,pct:Math.round(c.w*100/sum),amt:Math.round(n*c.w/sum)}));
 }
 
 /* ── gift personalization score ── */
@@ -1296,10 +1332,29 @@ export default function OccasionDetail(){
   const [budget,setBudget]=useState("");
   const [celebrantName,setCelebrantName]=useState("");
   const [notes,setNotes]=useState("");
+  const notesKeywords=React.useMemo(()=>{
+    if(!notes.trim()) return [];
+    const n=notes.toLowerCase();
+    const hits=[];
+    if(n.includes("dj")||n.includes(" music")||n.includes("dance")) hits.push("DJ");
+    if(n.includes("makeup")||n.includes("make up")) hits.push("Makeup Artist");
+    if(n.includes("cake")) hits.push("Cake Artist");
+    if(n.includes("photo")||n.includes("camera")||n.includes("photograph")) hits.push("Photographer");
+    if(n.includes("video")) hits.push("Videographer");
+    if(n.includes("balloon")) hits.push("Balloon Artist");
+    if(n.includes("band")||n.includes("live music")) hits.push("Live Band");
+    if(n.includes("catering")||n.includes("food")||n.includes("caterer")) hits.push("Caterer");
+    if(n.includes("decor")||n.includes("decoration")||n.includes("balloon")) hits.push("Decorator");
+    if(n.includes("flower")||n.includes("floral")||n.includes("bouquet")) hits.push("Florist");
+    if(n.includes("lighting")||n.includes("lights")) hits.push("Lighting Setup");
+    if(n.includes("anchor")||n.includes("emcee")||n.includes("host")) hits.push("Emcee / Host");
+    return [...new Set(hits)].filter(v=>ALL_VENDORS.includes(v));
+  },[notes]);
   const [city,setCity]=useState("");
   const [venueType,setVenueType]=useState("");
   const [ageGroups,setAgeGroups]=useState([]);
   const [theme,setTheme]=useState(null);
+  const [vibeFilter,setVibeFilter]=useState(null);
   const [vendors,setVendors]=useState([]);
   const [cateringType,setCateringType]=useState("");
   const [cakeType,setCakeType]=useState("");
@@ -1348,6 +1403,10 @@ export default function OccasionDetail(){
 
   /* custom vendor input visibility */
   const [showCustomVendorInput,setShowCustomVendorInput]=useState(false);
+
+  /* progressive form: lower fields revealed once date + guests are both set */
+  const [advancedUnlocked,setAdvancedUnlocked]=useState(false);
+  useEffect(()=>{ if(date&&guests>0) setAdvancedUnlocked(true); },[date,guests]);
 
   /* live performance prompt state */
   const [showOccPerfModal,setShowOccPerfModal]=useState(false);
@@ -1446,6 +1505,28 @@ export default function OccasionDetail(){
     if(contentRef.current) contentRef.current.scrollTop=0;
   },[step]);
 
+  /* Pre-fill from OccasionPlanner modal if a fresh draft was written */
+  useEffect(()=>{
+    try{
+      const raw=sessionStorage.getItem(`tendr-planner-prefill-${slug}`);
+      if(!raw) return;
+      sessionStorage.removeItem(`tendr-planner-prefill-${slug}`);
+      const d=JSON.parse(raw);
+      // Only prefill if there's no existing in-progress plan
+      const existingRaw=localStorage.getItem(PLAN_KEY);
+      if(existingRaw){const ex=JSON.parse(existingRaw); if(ex.step>1) return;}
+      // Match theme by name in occasion.decorThemes
+      if(d.themeName && occasion?.decorThemes){
+        const match=occasion.decorThemes.find(t=>t.name.toLowerCase()===d.themeName.toLowerCase());
+        if(match) setTheme(match);
+      }
+      if(d.guests) setGuests(d.guests);
+      if(d.date) setDate(d.date);
+      if(d.city) setCity(d.city);
+      if(d.planMode) setPlanMode(d.planMode);
+    }catch{}
+  },[slug]);
+
   function restorePlan(s){
     setPlanMode(s.planMode);setStep(s.step);setGuests(s.guests||20);
     setDate(s.date||"");setBudget(s.budget||"");setCity(s.city||"");
@@ -1476,7 +1557,7 @@ export default function OccasionDetail(){
   const tasksTotal=(occasion.checklist||[]).length;
   const catVendors=vendors.filter(v=>(occasion.vendorCategories||[]).includes(v)||ALL_VENDORS.includes(v));
   const timeline=buildTimeline(date,vendors);
-  const budgetSplit=buildBudgetSplit(budget);
+  const budgetSplit=buildBudgetSplit(budget, vendors);
 
   /* vendor link URL */
   const vendorUrl=(cat)=>{
@@ -1582,7 +1663,6 @@ export default function OccasionDetail(){
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontSize:15,fontWeight:700,color:ink,letterSpacing:"-0.01em"}}>{occasion.name}{occasion.localName&&<span style={{fontSize:12,color:occAccent,fontWeight:600,marginLeft:6}}>/ {occasion.localName}</span>}</div>
           </div>
-          {hub&&<button onClick={()=>navigate(hub)} style={{fontSize:11,fontWeight:700,color:occAccent,background:`${occAccent}0E`,border:`1px solid ${occAccent}30`,borderRadius:8,padding:"6px 11px",cursor:"pointer",fontFamily:font,flexShrink:0}}>🛠️ Tools ▼</button>}
         </div>
         {step>0&&<TabBar step={step} withTheme={withTheme} occAccent={occAccent} onTab={setStep}/>}
       </div>
@@ -1710,12 +1790,12 @@ export default function OccasionDetail(){
                   <div style={{fontSize:11.5,color:muted,lineHeight:1.4}}>This helps us suggest the best options for you.</div>
                 </div>
                 <div style={{flexShrink:0,display:"flex",alignItems:"center",gap:0}}>
-                  <button onClick={()=>setGuests(g=>Math.max(5,g-5))}
+                  <button onClick={()=>setGuests(g=>Math.max(1,g-(g<=20?1:5)))}
                     style={{width:36,height:36,borderRadius:"8px 0 0 8px",border:`1px solid rgba(28,9,0,0.12)`,borderRight:"none",background:"rgba(28,9,0,0.03)",color:ink,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>−</button>
                   <div style={{height:36,minWidth:52,display:"flex",alignItems:"center",justifyContent:"center",border:`1px solid rgba(28,9,0,0.12)`,background:"#fff",flexDirection:"column",gap:0}}>
                     <span style={{fontFamily:serif,fontSize:16,fontWeight:700,color:ink,lineHeight:1}}>{guests}</span>
                   </div>
-                  <button onClick={()=>setGuests(g=>g+5)}
+                  <button onClick={()=>setGuests(g=>g+(g<20?1:5))}
                     style={{width:36,height:36,borderRadius:"0 8px 8px 0",border:`1px solid ${occAccent}`,background:occAccent,color:"#fff",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>+</button>
                 </div>
               </div>
@@ -1757,7 +1837,16 @@ export default function OccasionDetail(){
               </div>
             </div>
 
+            {/* Progressive reveal nudge — visible only until date+guests are set */}
+            {!advancedUnlocked&&(
+              <div style={{display:"flex",alignItems:"center",gap:9,padding:"9px 13px",borderRadius:10,background:"rgba(196,122,46,0.05)",border:"1px dashed rgba(196,122,46,0.2)",marginBottom:10}}>
+                <span style={{fontSize:14,lineHeight:1}}>💡</span>
+                <span style={{fontSize:11.5,color:muted,lineHeight:1.4}}>Set a date and guest count above to unlock venue, budget & recommendation options.</span>
+              </div>
+            )}
+
             {/* Venue card */}
+            <div style={{opacity:advancedUnlocked?1:0.55,transition:"opacity 0.3s",pointerEvents:advancedUnlocked?"auto":"none"}}>
             <div style={{borderRadius:12,background:"#fff",border:`1px solid rgba(28,9,0,0.08)`,marginBottom:8,boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
               <div style={{display:"flex",alignItems:"flex-start",gap:14,padding:"16px 18px 12px"}}>
                 <div style={{width:44,height:44,borderRadius:"50%",background:`${occAccent}15`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1,fontSize:20}}>📍</div>
@@ -1893,6 +1982,7 @@ export default function OccasionDetail(){
                 </div>
               </div>
             </div>
+            </div>{/* end progressive wrapper */}
 
           </div>
         )}
@@ -1913,9 +2003,41 @@ export default function OccasionDetail(){
               </div>
             </div>
 
+            {/* Vibe filter pills */}
+            {(()=>{
+              const VIBES=[
+                {label:"Soft & Intimate",  tags:["pastel","floral","soft","pink","dreamy","nursery","gentle","light","baby","minimal","white"]},
+                {label:"Grand & Celebratory",tags:["gold","royal","elegant","glam","red-carpet","luxe","premium","formal","opulent"]},
+                {label:"Playful & Fun",    tags:["fun","neon","glow","dance","teen","colourful","bold","jungle","safari","teddy","bear","cute","cartoon","vibrant"]},
+                {label:"Warm & Traditional",tags:["bollywood","indian","marigold","ghazal","sufi","classic","heritage","traditional","stars","twinkle"]},
+              ];
+              const filteredThemes=(occasion.decorThemes||[]).filter(t=>{
+                if(!vibeFilter) return true;
+                const vibe=VIBES.find(v=>v.label===vibeFilter);
+                if(!vibe) return true;
+                return (t.tags||[]).some(tag=>vibe.tags.some(vt=>tag.toLowerCase().includes(vt)||vt.includes(tag.toLowerCase())));
+              });
+              const displayThemes=filteredThemes.length>0?filteredThemes:(occasion.decorThemes||[]);
+              return(
+                <>
+                  <div style={{marginBottom:14}}>
+                    <div style={{fontSize:10,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:7}}>Filter by vibe</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                      {VIBES.map(v=>{
+                        const sel=vibeFilter===v.label;
+                        return(
+                          <button key={v.label} onClick={()=>setVibeFilter(sel?null:v.label)}
+                            style={{fontSize:11.5,fontWeight:sel?700:500,color:sel?gold:muted,background:sel?"rgba(196,122,46,0.1)":"rgba(28,9,0,0.04)",border:`1px solid ${sel?"rgba(196,122,46,0.3)":"rgba(28,9,0,0.1)"}`,borderRadius:100,padding:"5px 12px",cursor:"pointer",fontFamily:font,transition:"all 0.15s"}}>
+                            {v.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
             {/* theme cards — 2-col image grid */}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-              {(occasion.decorThemes||[]).map((t,i)=>{
+              {displayThemes.map((t,i)=>{
                 const sel=theme?.name===t.name;
                 const tc=themeColor(t.tags);
                 const te=themeEmoji(t.tags);
@@ -1975,6 +2097,9 @@ export default function OccasionDetail(){
                 <button onClick={()=>setTheme(null)} style={{fontSize:11,color:muted,background:"none",border:"none",cursor:"pointer",padding:"4px 8px",fontFamily:font}}>Clear</button>
               </div>
             )}
+                </>
+              );
+            })()}
           </div>
         )}
 
@@ -2046,13 +2171,36 @@ export default function OccasionDetail(){
               );
             })()}
 
+            {/* ── From your notes: detected vendor suggestions ── */}
+            {notesKeywords.length>0&&(
+              <div style={{marginBottom:16,padding:"10px 13px",borderRadius:10,background:"rgba(196,122,46,0.05)",border:"1px solid rgba(196,122,46,0.15)"}}>
+                <div style={{fontSize:9.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:8}}>From your notes</div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                  {notesKeywords.map(v=>{
+                    const sel=vendors.includes(v);
+                    return(
+                      <button key={v} onClick={()=>!sel&&toggleVendor(v)}
+                        style={{fontSize:12,fontWeight:700,color:sel?gold:ink,background:sel?"rgba(196,122,46,0.12)":"rgba(28,9,0,0.04)",border:`1px solid ${sel?"rgba(196,122,46,0.35)":"rgba(28,9,0,0.1)"}`,borderRadius:100,padding:"4px 11px",cursor:sel?"default":"pointer",fontFamily:font,display:"inline-flex",alignItems:"center",gap:5}}>
+                        {sel?<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>:<span>+</span>}
+                        {v}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div style={{fontSize:10.5,color:muted,marginTop:7}}>Tap any to add it to your plan.</div>
+              </div>
+            )}
+
             {/* ── Service picker — 3 tiers ── */}
             {(()=>{
               const essential=occasion.vendorCategories||[];
               const recOnly=[...recommended].filter(v=>!essential.includes(v));
               const addOns=ALL_VENDORS.filter(v=>!essential.includes(v)&&!recOnly.includes(v));
-              const tierLabel=(label,color)=>(
-                <div style={{fontSize:10,fontWeight:800,color,textTransform:"uppercase",letterSpacing:"0.13em",marginBottom:8,marginTop:4}}>{label}</div>
+              const tierLabel=(label,color,sub)=>(
+                <div style={{marginBottom:8,marginTop:4}}>
+                  <span style={{fontSize:10,fontWeight:800,color,textTransform:"uppercase",letterSpacing:"0.13em"}}>{label}</span>
+                  {sub&&<span style={{fontSize:10,fontWeight:500,color:"rgba(28,9,0,0.35)",marginLeft:7}}>{sub}</span>}
+                </div>
               );
               const chip=(v)=>{
                 const sel=vendors.includes(v);
@@ -2082,9 +2230,9 @@ export default function OccasionDetail(){
               };
               return(
                 <div style={{marginBottom:16}}>
-                  {essential.length>0&&<>{tierLabel("Essential","#92400E")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{essential.filter(v=>ALL_VENDORS.includes(v)).map(chip)}</div></>}
-                  {recOnly.length>0&&<>{tierLabel("Recommended for your event",gold)}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{recOnly.filter(v=>ALL_VENDORS.includes(v)).map(chip)}</div></>}
-                  {addOns.length>0&&<>{tierLabel("Add-ons","rgba(28,9,0,0.4)")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{addOns.map(chip)}
+                  {essential.length>0&&<>{tierLabel(city.trim()?`Essential in ${city}`:"Essential","#92400E","Everyone books these")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{essential.filter(v=>ALL_VENDORS.includes(v)).map(chip)}</div></>}
+                  {recOnly.length>0&&<>{tierLabel(`Recommended${city.trim()?` · ${city}`:""}`,gold,"Matched to your event details")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{recOnly.filter(v=>ALL_VENDORS.includes(v)).map(chip)}</div></>}
+                  {addOns.length>0&&<>{tierLabel("Add-ons","rgba(28,9,0,0.4)","Extras worth considering")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{addOns.map(chip)}
                     <button onClick={()=>setShowCustomVendorInput(v=>!v)}
                       style={{display:"inline-flex",alignItems:"center",gap:6,padding:"9px 15px",borderRadius:100,border:`1.5px dashed ${showCustomVendorInput?"rgba(196,122,46,0.5)":"rgba(196,122,46,0.28)"}`,background:showCustomVendorInput?"rgba(196,122,46,0.06)":"#fff",color:"rgba(196,122,46,0.7)",fontSize:13.5,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s",letterSpacing:"-0.01em"}}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -2608,7 +2756,7 @@ export default function OccasionDetail(){
                                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:4,flexWrap:"wrap"}}>
                                     <span style={{fontSize:12,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{pkg.label}</span>
                                     {budgetFit==="fits"&&!sel&&<span style={{fontSize:7.5,fontWeight:800,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"1px 5px",flexShrink:0}}>✓ Budget</span>}
-                                    {pkg.popular&&budgetFit!=="fits"&&<span style={{fontSize:8,fontWeight:800,color:gold,background:"rgba(196,122,46,0.1)",borderRadius:100,padding:"1px 5px",flexShrink:0}}>Best</span>}
+                                    {pkg.popular&&!sel&&<span style={{fontSize:7.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.1)",borderRadius:100,padding:"1px 5px",flexShrink:0}}>Recommended</span>}
                                   </div>
                                   <div style={{display:"flex",flexDirection:"column",gap:1.5}}>
                                     {pkg.items.map((it,ii)=><div key={ii} style={{fontSize:10,color:muted,lineHeight:1.4}}>· {it}</div>)}
@@ -2725,10 +2873,13 @@ export default function OccasionDetail(){
                           <button onClick={()=>setExpandedActivityType(null)} style={{background:"none",border:"none",cursor:"pointer",color:muted,fontSize:18,lineHeight:1,padding:"0 0 0 8px"}}>×</button>
                         </div>
                         <div style={{padding:"12px 14px",display:"flex",flexDirection:"column",gap:8}}>
-                          {items.map(a=>{
+                          {items.map((a,ai)=>{
                             const sel=selectedActivities.includes(a.id);
+                            const tierBreak=ai===0?<div style={{marginBottom:4}}><span style={{fontSize:10,fontWeight:800,color:"#92400E",textTransform:"uppercase",letterSpacing:"0.13em"}}>Top picks</span><span style={{fontSize:10,fontWeight:500,color:"rgba(28,9,0,0.35)",marginLeft:7}}>Crowd favourites for this event</span></div>:ai===2?<div style={{margin:"4px 0"}}><span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.13em"}}>Also great</span><span style={{fontSize:10,fontWeight:500,color:"rgba(28,9,0,0.35)",marginLeft:7}}>More options to explore</span></div>:null;
                             return(
-                              <button key={a.id} onClick={()=>toggleActivity(a.id)}
+                              <React.Fragment key={a.id}>
+                              {tierBreak}
+                              <button onClick={()=>toggleActivity(a.id)}
                                 style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.06)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.16s",textAlign:"left"}}>
                                 <div style={{width:38,height:38,borderRadius:10,background:sel?"rgba(196,122,46,0.12)":"rgba(196,122,46,0.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,flexShrink:0}}>
                                   {a.icon}
@@ -2741,6 +2892,7 @@ export default function OccasionDetail(){
                                   {sel&&<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
                                 </div>
                               </button>
+                              </React.Fragment>
                             );
                           })}
                         </div>
@@ -2792,6 +2944,18 @@ export default function OccasionDetail(){
                 </div>
               );
             })()}
+
+            {/* Tools CTA — visible at bottom of FUN tab */}
+            {hub&&(
+              <div onClick={()=>navigate(hub)} style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",borderRadius:14,background:"linear-gradient(135deg,rgba(26,10,46,0.96),rgba(45,16,96,0.92))",cursor:"pointer",marginTop:22,border:"1px solid rgba(124,58,237,0.25)"}}>
+                <div style={{width:36,height:36,borderRadius:10,background:"rgba(124,58,237,0.25)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:18}}>🛠️</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:13,fontWeight:800,color:"#fff",lineHeight:1.2}}>Party-day tools</div>
+                  <div style={{fontSize:11,color:"rgba(167,139,250,0.75)",marginTop:2}}>Games, playlists, bill split & more — all in one hub</div>
+                </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(167,139,250,0.7)" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            )}
           </div>
         )}
 
@@ -2840,7 +3004,7 @@ export default function OccasionDetail(){
               const curated=sortedGifts.filter(g=>g.score>=4);
               const good=sortedGifts.filter(g=>g.score>0&&g.score<4);
               const more=sortedGifts.filter(g=>g.score<=0);
-              const tierLabel=(label,color)=><div style={{fontSize:10,fontWeight:800,color,textTransform:"uppercase",letterSpacing:"0.13em",marginBottom:8,marginTop:4}}>{label}</div>;
+              const tierLabel=(label,color,sub)=><div style={{marginBottom:8,marginTop:4}}><span style={{fontSize:10,fontWeight:800,color,textTransform:"uppercase",letterSpacing:"0.13em"}}>{label}</span>{sub&&<span style={{fontSize:10,fontWeight:500,color:"rgba(28,9,0,0.35)",marginLeft:7}}>{sub}</span>}</div>;
               const giftCard=(g,i)=>{
                 const sel=gifts.includes(g.name);
                 return(
@@ -2867,9 +3031,9 @@ export default function OccasionDetail(){
               }
               return(
                 <div>
-                  {curated.length>0&&<>{tierLabel("Perfect picks","#92400E")}<div className="g2" style={{display:"grid",gridTemplateColumns:"1fr",gap:10,marginBottom:14}}>{curated.map(giftCard)}</div></>}
-                  {good.length>0&&<>{tierLabel("Also great",gold)}<div className="g2" style={{display:"grid",gridTemplateColumns:"1fr",gap:10,marginBottom:14}}>{good.map(giftCard)}</div></>}
-                  {more.length>0&&<>{tierLabel("More options","rgba(28,9,0,0.4)")}<div className="g2" style={{display:"grid",gridTemplateColumns:"1fr",gap:10,marginBottom:14}}>{more.map(giftCard)}</div></>}
+                  {curated.length>0&&<>{tierLabel("Perfect picks","#92400E","Matched to your event & theme")}<div className="g2" style={{display:"grid",gridTemplateColumns:"1fr",gap:10,marginBottom:14}}>{curated.map(giftCard)}</div></>}
+                  {good.length>0&&<>{tierLabel("Also great",gold,"Good choices for most guests")}<div className="g2" style={{display:"grid",gridTemplateColumns:"1fr",gap:10,marginBottom:14}}>{good.map(giftCard)}</div></>}
+                  {more.length>0&&<>{tierLabel("More options","rgba(28,9,0,0.4)","Browse everything else")}<div className="g2" style={{display:"grid",gridTemplateColumns:"1fr",gap:10,marginBottom:14}}>{more.map(giftCard)}</div></>}
                 </div>
               );
             })()}
@@ -3024,7 +3188,7 @@ export default function OccasionDetail(){
             {/* budget split */}
             {budgetSplit&&(
               <div style={{marginBottom:24}}>
-                <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:14,fontFamily:font}}>How budgets are typically split</div>
+                <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:14,fontFamily:font}}>{vendors.length>0?"How your budget is split":"How budgets are typically split"}</div>
                 {budgetSplit.map(c=>(
                   <div key={c.label} style={{marginBottom:10}}>
                     <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>

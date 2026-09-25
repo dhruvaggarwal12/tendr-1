@@ -818,6 +818,23 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
       'Can you help with planning, vendor booking, and coordination?',
     ].filter(l => l !== null).join('\n');
 
+    // Write prefill data so OccasionDetail can pre-load theme/guests/date/city
+    const OCC_SLUG_MAP = {
+      'Baby Shower':'baby-shower','Birthday':'birthday-party','Anniversary':'anniversary',
+      'House Party':'house-party','Housewarming':'housewarming','Get Together':'get-together',
+      'Kitty Party':'kitty-party','Naming Ceremony':'naming-ceremony',
+    };
+    const occSlug = OCC_SLUG_MAP[occasion] || occasion.toLowerCase().replace(/\s+/g,'-');
+    try {
+      sessionStorage.setItem(`tendr-planner-prefill-${occSlug}`, JSON.stringify({
+        themeName: theme.theme,
+        guests: pForm.guests ? Number(pForm.guests) : null,
+        date: pForm.date || '',
+        city: pForm.city || '',
+        planMode: 'with',
+      }));
+    } catch {}
+
     if (!token) {
       try { sessionStorage.setItem('baat_karo_draft', parts); } catch {}
       if (venuePhoto) try { sessionStorage.setItem('baat_karo_venue_photo', venuePhoto); } catch {}
