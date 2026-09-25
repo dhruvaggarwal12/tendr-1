@@ -1,7 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import router from "../router";
 import { FUN_ACTIVITIES } from "../data/funActivitiesData";
 import { addActivity, removeActivity, saveActivityForm, clearFunCart, setFunConfirmed, selectFunCartItems } from "../redux/funActivitiesCartSlice";
 import { useChatOverlay } from "../context/ChatContext";

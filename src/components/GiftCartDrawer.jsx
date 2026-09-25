@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import router from "../router";
 import { selectCartItems, selectCartTotal, removeFromCart, updateQuantity, setGhConfirmed } from "../redux/giftHamperCartSlice";
 
 const F = "'Outfit', sans-serif";

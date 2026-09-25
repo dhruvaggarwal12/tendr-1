@@ -1,5 +1,5 @@
 ﻿import React, { useState, useEffect } from "react";
-import router from "../router";
+import { useNavigate } from "react-router-dom";
 import { useChatOverlay } from "../context/ChatContext";
 
 const font    = "'Outfit', sans-serif";
@@ -164,7 +164,7 @@ function MobileCard({ v, isTendrsPick, isBestPrice, isBestRating, openVendorChat
           Chat Now →
         </button>
         <button
-          onClick={() => router.navigate(`/vendor/${v._id}`)}
+          onClick={() => navigate(`/vendor/${v._id}`)}
           style={{ width: "100%", padding: "10px 6px", borderRadius: 10, border: "1.5px solid rgba(201,168,76,0.35)", background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer" }}>
           View Profile
         </button>
@@ -214,6 +214,7 @@ function StatRow({ values, winIdx, icon, label, tendersPickIdx }) {
 // ── Main ─────────────────────────────────────────────────────────────────────
 const ComparisonMatrix = ({ vendors = [] }) => {
   const { openVendorChat } = useChatOverlay();
+  const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" ? window.innerWidth < 640 : false);
 
   useEffect(() => {
@@ -406,7 +407,7 @@ const ComparisonMatrix = ({ vendors = [] }) => {
                       Chat Now →
                     </button>
                     <button
-                      onClick={() => router.navigate(`/vendor/${v._id}`)}
+                      onClick={() => navigate(`/vendor/${v._id}`)}
                       style={{ width: "100%", padding: "10px 6px", borderRadius: 10, border: "1.5px solid rgba(201,168,76,0.35)", background: "transparent", color: "#9B7450", fontSize: 12, fontWeight: 600, fontFamily: font, cursor: "pointer" }}>
                       View Profile
                     </button>
