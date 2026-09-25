@@ -1276,10 +1276,12 @@ function timeAgo(iso) {
 /* ── inline CSS ── */
 const css=`
   @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes chipPop{0%{transform:scale(1)}40%{transform:scale(1.12)}70%{transform:scale(0.96)}100%{transform:scale(1)}}
   .os{animation:fadeUp 0.24s cubic-bezier(0.22,1,0.36,1);}
   .chip{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:10px;border:1.5px solid rgba(196,122,46,0.22);background:rgba(196,122,46,0.03);color:${ink};font-size:14px;font-weight:500;cursor:pointer;transition:all 0.14s;font-family:${font};white-space:nowrap;position:relative;}
   .chip:hover{border-color:rgba(196,122,46,0.45);background:rgba(196,122,46,0.06);}
   .chip.sel{border-color:${gold};background:rgba(196,122,46,0.10);color:${gold};font-weight:600;}
+  .chip-pop{animation:chipPop 0.25s cubic-bezier(0.34,1.56,0.64,1);}
   input[type="date"]::-webkit-calendar-picker-indicator{opacity:0.45;cursor:pointer;filter:invert(60%) sepia(60%) saturate(400%) hue-rotate(5deg);}
   ::-webkit-scrollbar{display:none;}
   @media(min-width:600px){.g2{grid-template-columns:repeat(2,1fr)!important;}}
@@ -1747,6 +1749,30 @@ export default function OccasionDetail(){
                 {occasion.icon||"🎉"}
               </div>
             </div>
+
+            {/* Progress bar — counts required fields filled */}
+            {(()=>{
+              const fields=[!!date,guests>0,!!venueType,city.trim().length>0];
+              const filled=fields.filter(Boolean).length;
+              const total=fields.length;
+              const pct=Math.round(filled*100/total);
+              return(
+                <div style={{marginBottom:10,padding:"10px 16px",borderRadius:10,background:"#fff",border:"1px solid rgba(28,9,0,0.07)"}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+                    <span style={{fontSize:10.5,fontWeight:600,color:pct===100?occAccent:muted}}>{pct===100?"Ready to go! →":`${filled} of ${total} basics filled`}</span>
+                    <span style={{fontSize:10,fontWeight:700,color:pct===100?occAccent:"rgba(28,9,0,0.25)"}}>{pct}%</span>
+                  </div>
+                  <div style={{height:4,borderRadius:2,background:"rgba(28,9,0,0.06)",overflow:"hidden"}}>
+                    <div style={{height:"100%",width:`${pct}%`,background:pct===100?occAccent:gold,borderRadius:2,transition:"width 0.4s cubic-bezier(0.34,1.56,0.64,1)"}}/>
+                  </div>
+                  {pct<100&&<div style={{fontSize:10,color:muted,marginTop:5}}>
+                    {!date?"Set your event date":""}
+                    {date&&!venueType?" · Pick a venue type":""}
+                    {date&&venueType&&!city.trim()?" · Add your city":""}
+                  </div>}
+                </div>
+              );
+            })()}
 
             {/* Who is this for card */}
             {!isCustomOccasion&&(()=>{
@@ -2268,24 +2294,27 @@ export default function OccasionDetail(){
               // e.g. "DJ / Sound" → "DJ", "Decoration" → "Decorator"
               const VP_MAP={"DJ / Sound":"DJ","Decoration":"Decorator","Lighting":"Lighting Setup"};
               const venueCovers=venueProvides.map(p=>VP_MAP[p]||p);
-              const chip=(v,forceGreyed=false)=>{
+              const chip=(v,forceGreyed=false,sizeHint="normal")=>{
                 const sel=vendors.includes(v);
                 const byVenue=venueCovers.includes(v);
                 const isRec=recommended.has(v);
-                if(byVenue&&!forceGreyed) return null; // hidden from regular tiers
+                if(byVenue&&!forceGreyed) return null;
                 const grey=byVenue||forceGreyed;
+                const sz=sizeHint==="large"?"10px 17px":sizeHint==="small"?"7px 12px":"9px 15px";
+                const fsz=sizeHint==="large"?14:sizeHint==="small"?12:13.5;
                 return(
-                  <button key={v} onClick={()=>!grey&&toggleVendor(v)}
+                  <button key={v} id={`chip-${v}`}
+                    onClick={()=>{if(!grey){toggleVendor(v);const el=document.getElementById(`chip-${v}`);if(el){el.classList.remove("chip-pop");void el.offsetWidth;el.classList.add("chip-pop");}}}}
                     style={{
                       display:"inline-flex",alignItems:"center",gap:6,
-                      padding:"9px 15px",borderRadius:100,
+                      padding:sz,borderRadius:100,
                       border:`1.5px solid ${grey?"rgba(28,9,0,0.08)":sel?gold:"rgba(196,122,46,0.22)"}`,
                       background:grey?"rgba(28,9,0,0.03)":sel?`rgba(196,122,46,0.1)`:"#fff",
                       color:grey?"rgba(28,9,0,0.3)":sel?gold:ink,
-                      fontSize:13.5,fontWeight:sel?700:600,
+                      fontSize:fsz,fontWeight:sel?700:600,
                       letterSpacing:"-0.01em",
                       cursor:grey?"default":"pointer",fontFamily:font,
-                      transition:"all 0.18s",
+                      transition:"border-color 0.18s,background 0.18s,color 0.18s,box-shadow 0.18s",
                       boxShadow:grey?"none":sel?`0 0 0 3px rgba(196,122,46,0.08)`:"0 1px 3px rgba(0,0,0,0.06)",
                     }}>
                     {grey
@@ -2302,9 +2331,14 @@ export default function OccasionDetail(){
               const byVenueTier=ALL_VENDORS.filter(v=>venueCovers.includes(v));
               return(
                 <div style={{marginBottom:16}}>
-                  {essential.length>0&&<>{tierLabel(city.trim()?`Essential in ${city}`:"Essential","#92400E","Everyone books these")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{essential.filter(v=>ALL_VENDORS.includes(v)).map(v=>chip(v))}</div></>}
-                  {recOnly.length>0&&<>{tierLabel(`Recommended${city.trim()?` · ${city}`:""}`,gold,"Matched to your event details")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{recOnly.filter(v=>ALL_VENDORS.includes(v)).map(v=>chip(v))}</div></>}
-                  {addOns.length>0&&<>{tierLabel("Add-ons","rgba(28,9,0,0.4)","Extras worth considering")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{addOns.filter(v=>!venueCovers.includes(v)).map(v=>chip(v))}
+                  {essential.length>0&&(
+                    <div style={{background:"rgba(146,64,14,0.04)",border:"1px solid rgba(146,64,14,0.1)",borderRadius:12,padding:"12px 14px",marginBottom:14}}>
+                      {tierLabel(city.trim()?`Every ${occasion.name} in ${city} books these`:"Every event books these","#92400E")}
+                      <div style={{display:"flex",flexWrap:"wrap",gap:7}}>{essential.filter(v=>ALL_VENDORS.includes(v)).map(v=>chip(v,false,"large"))}</div>
+                    </div>
+                  )}
+                  {recOnly.length>0&&<>{tierLabel(`Most people add these${city.trim()?` · ${city}`:""}`,gold,"Based on your venue, guests & theme")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{recOnly.filter(v=>ALL_VENDORS.includes(v)).map(v=>chip(v,false,"normal"))}</div></>}
+                  {addOns.length>0&&<>{tierLabel("Nice to have","rgba(28,9,0,0.4)","Browse extras — add anything that fits")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{addOns.filter(v=>!venueCovers.includes(v)).map(v=>chip(v,false,"small"))}
                     <button onClick={()=>setShowCustomVendorInput(v=>!v)}
                       style={{display:"inline-flex",alignItems:"center",gap:6,padding:"9px 15px",borderRadius:100,border:`1.5px dashed ${showCustomVendorInput?"rgba(196,122,46,0.5)":"rgba(196,122,46,0.28)"}`,background:showCustomVendorInput?"rgba(196,122,46,0.06)":"#fff",color:"rgba(196,122,46,0.7)",fontSize:13.5,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s",letterSpacing:"-0.01em"}}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -3124,21 +3158,52 @@ export default function OccasionDetail(){
         {step===6&&(
           <div className="os">
             <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.3,marginBottom:4}}>Your plan is ready ✦</p>
-            <p style={{fontSize:13,color:muted,marginBottom:16,lineHeight:1.6}}>Full plan below — download as a PDF to save or share.</p>
 
-            {/* download + send buttons */}
-            <div style={{display:"flex",gap:10,marginBottom:20}}>
+            {/* paragraph summary */}
+            {(()=>{
+              const parts=[];
+              const who=celebrantName?`${celebrantName}'s ${occasion.name}`:`a ${occasion.name}`;
+              const guestStr=guests===1?"1 guest":`${guests} guests`;
+              const dateStr=date?new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"long"}):null;
+              const locationStr=[city,venueType].filter(Boolean).join(", ");
+              parts.push(`You're planning ${who} for ${guestStr}${dateStr?` on ${dateStr}`:""}${locationStr?` at ${locationStr}`:""}.`);
+              if(theme) parts.push(`The ${theme.name} theme runs through the décor and gift suggestions.`);
+              if(vendors.length>0){
+                const vList=vendors.slice(0,3).join(", ")+(vendors.length>3?` and ${vendors.length-3} more`:"");
+                parts.push(`Your plan covers ${vList}.`);
+              }
+              if(budget&&Number(budget)>0) parts.push(`Total budget: ₹${Number(budget).toLocaleString("en-IN")}.`);
+              return(
+                <p style={{fontSize:13,color:muted,lineHeight:1.7,marginBottom:16,padding:"12px 16px",borderRadius:12,background:"rgba(196,122,46,0.04)",border:"1px solid rgba(196,122,46,0.12)"}}>
+                  {parts.join(" ")}
+                </p>
+              );
+            })()}
+
+            {/* action buttons */}
+            <div style={{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap"}}>
               <button onClick={async()=>{setDownloading(true);await downloadPlanCard(planRef.current,occasion.name);setDownloading(false);}} disabled={downloading}
-                style={{flex:1,padding:"13px 16px",borderRadius:12,border:`1px solid rgba(196,122,46,0.25)`,background:"#fff",color:gold,fontSize:13,fontWeight:700,cursor:downloading?"wait":"pointer",fontFamily:font,transition:"all 0.2s",display:"flex",alignItems:"center",justifyContent:"center",gap:7}}>
-                {downloading?<><div style={{width:14,height:14,borderRadius:"50%",border:`2px solid rgba(196,122,46,0.2)`,borderTopColor:gold,animation:"spin 0.7s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>Generating…</>:<><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download PDF</>}
+                style={{flex:1,minWidth:120,padding:"12px 14px",borderRadius:12,border:`1px solid rgba(196,122,46,0.25)`,background:"#fff",color:gold,fontSize:12.5,fontWeight:700,cursor:downloading?"wait":"pointer",fontFamily:font,transition:"all 0.2s",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                {downloading?<><div style={{width:13,height:13,borderRadius:"50%",border:`2px solid rgba(196,122,46,0.2)`,borderTopColor:gold,animation:"spin 0.7s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>Generating…</>:<><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download PDF</>}
+              </button>
+              <button
+                onClick={()=>{
+                  const msg=buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,customCatering,customDecor,celebrantName});
+                  const who=celebrantName?`${celebrantName}'s `:"";
+                  const shareText=`🎉 ${who}${occasion.name} Plan\n\n${msg}\n\n— Made with Tendr`;
+                  window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`,"_blank","noopener");
+                }}
+                style={{padding:"12px 14px",borderRadius:12,border:"none",background:"#25D366",color:"#fff",fontSize:12.5,fontWeight:700,cursor:"pointer",fontFamily:font,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.553 4.115 1.522 5.845L.057 23.704a.5.5 0 0 0 .614.639l5.975-1.565A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.886 0-3.645-.518-5.148-1.418l-.37-.221-3.814.999.998-3.74-.241-.381A9.956 9.956 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+                WhatsApp
               </button>
               <button
                 onClick={()=>{
                   const msg=buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,customCatering,customDecor,celebrantName});
                   openOccasionsChat(msg);
                 }}
-                style={{flex:1,padding:"13px 16px",borderRadius:12,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font,display:"flex",alignItems:"center",justifyContent:"center",gap:7}}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                style={{flex:1,minWidth:120,padding:"12px 14px",borderRadius:12,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:12.5,fontWeight:700,cursor:"pointer",fontFamily:font,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 Send to Chat
               </button>
             </div>
@@ -3214,13 +3279,55 @@ export default function OccasionDetail(){
               </div>
             </div>
 
+            {/* budget split — centrepiece */}
+            {budgetSplit&&(
+              <div style={{marginBottom:20,padding:"18px 18px 16px",borderRadius:16,background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",border:`1.5px solid rgba(196,122,46,0.18)`}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
+                  <div style={{width:26,height:26,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  </div>
+                  <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>{vendors.length>0?"How your budget is split":"How budgets are typically split"}</span>
+                  <div style={{flex:1,height:1,background:`rgba(196,122,46,0.12)`}}/>
+                </div>
+                {budget&&Number(budget)>0&&(
+                  <div style={{textAlign:"center",marginBottom:16,padding:"10px 0 4px"}}>
+                    <div style={{fontSize:10,fontWeight:700,color:"rgba(196,122,46,0.5)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:2}}>Total budget</div>
+                    <div style={{fontFamily:serif,fontSize:28,fontWeight:400,color:gold,lineHeight:1}}>₹{Number(budget).toLocaleString("en-IN")}</div>
+                  </div>
+                )}
+                {budgetSplit.map(c=>(
+                  <div key={c.label} style={{marginBottom:10}}>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                      <span style={{fontSize:12,fontWeight:600,color:ink}}>{c.label}</span>
+                      <div style={{display:"flex",alignItems:"center",gap:6}}>
+                        {budget&&Number(budget)>0&&<span style={{fontSize:11,color:muted}}>~₹{Math.round(Number(budget)*c.pct/100).toLocaleString("en-IN")}</span>}
+                        <span style={{fontSize:12,fontWeight:700,color:gold}}>{c.pct}%</span>
+                      </div>
+                    </div>
+                    <div style={{height:7,borderRadius:3.5,background:"rgba(196,122,46,0.1)",overflow:"hidden"}}>
+                      <div style={{height:"100%",width:`${c.pct}%`,background:c.color,borderRadius:3.5,transition:"width 0.8s ease"}}/>
+                    </div>
+                  </div>
+                ))}
+                <div style={{fontSize:11,color:muted,marginTop:12,lineHeight:1.6,padding:"10px 12px",background:"rgba(196,122,46,0.04)",borderRadius:8,border:`1px solid rgba(196,122,46,0.12)`}}>
+                  Exact pricing will be shared by your Tendr coordinator once you connect.
+                </div>
+              </div>
+            )}
+
             {/* event itinerary — hero of the plan */}
             {(()=>{
               const itinerary=buildItinerary(occasion,{guests,vendors,selectedActivities,venueType,ageGroups});
               if(!itinerary.length) return null;
               return(
                 <div style={{marginBottom:20}}>
-                  <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:12,fontFamily:font}}>Your event itinerary</div>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                    <div style={{width:26,height:26,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </div>
+                    <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>Your event itinerary</span>
+                    <div style={{flex:1,height:1,background:`rgba(196,122,46,0.12)`}}/>
+                  </div>
                   <div style={{background:"#fff",borderRadius:14,border:`1px solid ${border}`,overflow:"hidden"}}>
                     {itinerary.map((slot,i)=>{
                       const isHighlight=slot.type==="highlight";
@@ -3251,7 +3358,13 @@ export default function OccasionDetail(){
             {/* timeline — booking countdown */}
             {timeline&&(
               <div style={{marginBottom:24}}>
-                <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:16,fontFamily:font}}>Your timeline · {timeline.days} days to go</div>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
+                  <div style={{width:26,height:26,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  </div>
+                  <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>Your timeline · {timeline.days} days to go</span>
+                  <div style={{flex:1,height:1,background:`rgba(196,122,46,0.12)`}}/>
+                </div>
                 <div style={{position:"relative",paddingLeft:24}}>
                   <div style={{position:"absolute",left:7,top:8,bottom:8,width:1.5,background:`linear-gradient(180deg,${gold},rgba(196,122,46,0.1))`}}/>
                   {timeline.phases.map((p,i)=>(
@@ -3265,31 +3378,16 @@ export default function OccasionDetail(){
               </div>
             )}
 
-            {/* budget split */}
-            {budgetSplit&&(
-              <div style={{marginBottom:24}}>
-                <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:14,fontFamily:font}}>{vendors.length>0?"How your budget is split":"How budgets are typically split"}</div>
-                {budgetSplit.map(c=>(
-                  <div key={c.label} style={{marginBottom:10}}>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                      <span style={{fontSize:12,fontWeight:600,color:ink}}>{c.label}</span>
-                      <span style={{fontSize:12,fontWeight:700,color:gold}}>{c.pct}%</span>
-                    </div>
-                    <div style={{height:6,borderRadius:3,background:"rgba(196,122,46,0.1)",overflow:"hidden"}}>
-                      <div style={{height:"100%",width:`${c.pct}%`,background:c.color,borderRadius:3,transition:"width 0.8s ease"}}/>
-                    </div>
-                  </div>
-                ))}
-                <div style={{fontSize:11,color:muted,marginTop:12,lineHeight:1.6,padding:"10px 12px",background:"rgba(196,122,46,0.04)",borderRadius:8,border:`1px solid rgba(196,122,46,0.12)`}}>
-                  Exact pricing will be shared by your Tendr coordinator once you connect.
-                </div>
-              </div>
-            )}
-
             {/* fun activities in plan */}
             {(selectedActivities.length>0||customActivities.length>0)&&(
               <div style={{marginBottom:20}}>
-                <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:12,fontFamily:font}}>Entertainment & Activities</div>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                  <div style={{width:26,height:26,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  </div>
+                  <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>Entertainment & Activities</span>
+                  <div style={{flex:1,height:1,background:`rgba(196,122,46,0.12)`}}/>
+                </div>
                 {selectedActivities.map(id=>{
                   const a=ALL_ACTIVITY_ITEMS.find(x=>x.id===id);
                   if(!a) return null;
@@ -3320,7 +3418,13 @@ export default function OccasionDetail(){
             {/* gifts */}
             {gifts.length>0&&(
               <div style={{marginBottom:20}}>
-                <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:12,fontFamily:font}}>Gift ideas</div>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                  <div style={{width:26,height:26,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+                  </div>
+                  <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>Gift ideas</span>
+                  <div style={{flex:1,height:1,background:`rgba(196,122,46,0.12)`}}/>
+                </div>
                 {gifts.map(name=>{
                   const g=(occasion.giftIdeas||[]).find(g=>g.name===name);
                   return g?(
@@ -3338,9 +3442,13 @@ export default function OccasionDetail(){
 
             {/* checklist */}
             <div style={{marginBottom:20}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-                <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>Checklist</div>
-                {tasksDone>0&&<span style={{fontSize:11,fontWeight:700,color:gold}}>{tasksDone}/{tasksTotal}</span>}
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+                <div style={{width:26,height:26,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                </div>
+                <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>Checklist</span>
+                <div style={{flex:1,height:1,background:`rgba(196,122,46,0.12)`}}/>
+                {tasksDone>0&&<span style={{fontSize:11,fontWeight:700,color:gold,flexShrink:0}}>{tasksDone}/{tasksTotal}</span>}
               </div>
               {tasksDone>0&&(
                 <div style={{height:4,background:"rgba(196,122,46,0.1)",borderRadius:2,overflow:"hidden",marginBottom:10}}>
