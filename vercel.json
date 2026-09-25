@@ -10,10 +10,26 @@
       ]
     }
   ],
+  "redirects": [
+    {
+      "source": "/VendorDetails",
+      "destination": "/listings",
+      "permanent": true
+    },
+    {
+      "source": "/social.html",
+      "destination": "/links",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/sitemap.xml",
       "destination": "https://tendr-backend-75ag.onrender.com/sitemap.xml"
+    },
+    {
+      "source": "/qr.html",
+      "destination": "/qr.html"
     },
     {
       "source": "/links",
