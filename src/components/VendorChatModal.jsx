@@ -552,14 +552,6 @@ export default function VendorChatModal() {
   // ── Services & Prices header — loads EventPlans for My Order ────────────────
   const [orderPlans, setOrderPlans] = useState([]);
   const [plansHeaderOpen, setPlansHeaderOpen] = useState(false);
-  useEffect(() => {
-    if (!isAllBookings || !authToken) return;
-    fetch(`${BASE_URL}/event-plans`, { headers: { Authorization: `Bearer ${authToken}` }, credentials: 'include' })
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.plans) setOrderPlans(d.plans); })
-      .catch(() => {});
-  }, [isAllBookings, authToken, conversationId]); // eslint-disable-line
-
   // ── Chat state ───────────────────────────────────────────────────────────────
   const [messages, setMessages] = useState([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
@@ -567,6 +559,13 @@ export default function VendorChatModal() {
   const [text, setText] = useState("");
   const [botOtherMode, setBotOtherMode] = useState(false); // "Other..." selected — show text input
   const [conversationId, setConversationId] = useState(null);
+  useEffect(() => {
+    if (!isAllBookings || !authToken) return;
+    fetch(`${BASE_URL}/event-plans`, { headers: { Authorization: `Bearer ${authToken}` }, credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.plans) setOrderPlans(d.plans); })
+      .catch(() => {});
+  }, [isAllBookings, authToken, conversationId]); // eslint-disable-line
   const [approved, setApproved] = useState(false);
   const [justApproved, setJustApproved] = useState(false); // shows install banner on first approval
   const socketRef = useRef(null);
