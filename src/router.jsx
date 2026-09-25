@@ -137,6 +137,7 @@ const CheckboxPicker         = lazy(() => import('./pages/checkbox/CheckboxPicke
 const EquipmentGenerator     = lazy(() => import('./pages/tools/EquipmentGenerator'));
 const PrebuiltCheckbox       = lazy(() => import('./pages/checkbox/PrebuiltCheckbox'));
 // const DecorFinder      = lazy(() => import('./pages/tools/DecorFinder.jsx')); // disabled
+const DecorAnalyzerPage  = lazy(() => import('./pages/tools/DecorAnalyzerPage.jsx'));
 const FindByStyle         = lazy(() => import('./pages/customer/FindByStyle.jsx'));
 const DesignYourEvent     = lazy(() => import('./pages/design/DesignYourEvent.jsx'));
 const GuestList           = lazy(() => import('./pages/tools/GuestList.jsx'));
@@ -592,6 +593,7 @@ const router = createBrowserRouter([
   { path: '/payment-tracker', element: <PaymentTracker />, errorElement: <ErrorPage /> },
   { path: '/guest-list', element: <GuestList />, errorElement: <ErrorPage /> },
   // { path: '/decor-finder', element: <DecorFinder />, errorElement: <ErrorPage /> }, // disabled
+  { path: '/decor-analyser', element: <DecorAnalyzerPage />, errorElement: <ErrorPage /> },
   { path: '/find-by-style', element: <FindByStyle />, errorElement: <ErrorPage /> },
   { path: '/design-your-event', element: <DesignYourEvent />, errorElement: <ErrorPage /> },
   { path: '/search', element: <SearchResults />, errorElement: <ErrorPage /> },

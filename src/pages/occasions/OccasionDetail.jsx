@@ -12,6 +12,7 @@ import { saveResumeUrl } from "../../utils/planningResume";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 import PerformerSuggestions from "../../components/PerformerSuggestions";
+import DecorAnalyzer from "../../components/DecorAnalyzer";
 
 /* ── tokens ── */
 const font  = "'Outfit', sans-serif";
@@ -1365,6 +1366,7 @@ export default function OccasionDetail(){
   const [ageGroups,setAgeGroups]=useState([]);
   const [theme,setTheme]=useState(null);
   const [vibeFilter,setVibeFilter]=useState(null);
+  const [decorAnalyserOpen,setDecorAnalyserOpen]=useState(false);
   const [vendors,setVendors]=useState([]);
   const [cateringType,setCateringType]=useState("");
   const [cakeType,setCakeType]=useState("");
@@ -2150,6 +2152,35 @@ export default function OccasionDetail(){
                 <div style={{fontSize:11.5,color:muted,lineHeight:1.55}}>Think of it as the overall look of your decorations — the colours, style and feel. Once you pick one, everything we suggest (décor, gifts, vendor tips) will match that look.</div>
               </div>
             </div>
+
+            {/* Venue photo analyser CTA */}
+            <button onClick={()=>setDecorAnalyserOpen(true)}
+              style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",borderRadius:12,border:"1.5px solid rgba(196,122,46,0.25)",background:"rgba(196,122,46,0.04)",cursor:"pointer",width:"100%",marginBottom:20,fontFamily:font,textAlign:"left"}}>
+              <span style={{fontSize:20,flexShrink:0}}>📷</span>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:700,color:ink}}>Analyse your venue</div>
+                <div style={{fontSize:11.5,color:muted,marginTop:1}}>Upload a photo — AI will suggest decoration zones, colours & ideas</div>
+              </div>
+              <span style={{color:gold,fontSize:14,flexShrink:0}}>→</span>
+            </button>
+
+            {/* Decor analyser modal */}
+            {decorAnalyserOpen&&(
+              <div style={{position:"fixed",inset:0,zIndex:10000,background:"rgba(28,9,0,0.65)",display:"flex",alignItems:"flex-end",justifyContent:"center"}}
+                onClick={e=>{if(e.target===e.currentTarget)setDecorAnalyserOpen(false);}}>
+                <div style={{width:"100%",maxWidth:640,background:"#FFFCF5",borderRadius:"20px 20px 0 0",padding:"20px 18px 32px",maxHeight:"93dvh",overflowY:"auto",fontFamily:font}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+                    <div>
+                      <div style={{fontSize:10.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.12em"}}>AI Tool</div>
+                      <div style={{fontSize:18,fontWeight:800,color:ink,marginTop:2}}>Venue Decor Analyser</div>
+                    </div>
+                    <button onClick={()=>setDecorAnalyserOpen(false)}
+                      style={{width:32,height:32,borderRadius:"50%",border:"1.5px solid rgba(196,122,46,0.25)",background:"#fff",cursor:"pointer",fontSize:16,color:"#9B7450",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:font}}>×</button>
+                  </div>
+                  <DecorAnalyzer onClose={()=>setDecorAnalyserOpen(false)} initialEventType={occasion?.name||""} compact />
+                </div>
+              </div>
+            )}
 
             {/* Vibe filter pills */}
             {(()=>{
