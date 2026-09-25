@@ -1504,9 +1504,9 @@ export default function OccasionDetail(){
     }));
   },[occasion?.name, date, guests, city, budget, step]);
 
-  /* scroll content to top whenever step changes */
+  /* scroll content to top whenever step changes — smooth */
   useEffect(()=>{
-    if(contentRef.current) contentRef.current.scrollTop=0;
+    if(contentRef.current) contentRef.current.scrollTo({top:0,behavior:"smooth"});
   },[step]);
 
   /* Pre-fill from OccasionPlanner modal if a fresh draft was written */
@@ -1672,7 +1672,7 @@ export default function OccasionDetail(){
       </div>
 
       {/* content */}
-      <div ref={contentRef} style={{flex:1,overflowY:"auto",padding:"28px 20px 32px",maxWidth:680,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
+      <div ref={contentRef} style={{flex:1,overflowY:"auto",padding:"28px 20px 32px",maxWidth:680,margin:"0 auto",width:"100%",boxSizing:"border-box",scrollBehavior:"smooth"}}>
 
         {/* ══ STEP 0: CUSTOM OCCASION — name & describe ══ */}
         {step===0&&isCustomOccasion&&(
@@ -1770,6 +1770,27 @@ export default function OccasionDetail(){
                     {date&&!venueType?" · Pick a venue type":""}
                     {date&&venueType&&!city.trim()?" · Add your city":""}
                   </div>}
+                </div>
+              );
+            })()}
+
+            {/* Conversational summary sentence */}
+            {(()=>{
+              const occName=isCustomOccasion?(customEventName||"your event"):occasion.name;
+              const guestStr=guests>0?<span style={{fontWeight:700,color:ink}}>{guests} guests</span>:<span style={{color:"rgba(28,9,0,0.22)"}}>__ guests</span>;
+              const dateStr=date?<span style={{fontWeight:700,color:ink}}>{new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short"})}</span>:<span style={{color:"rgba(28,9,0,0.22)"}}>a date</span>;
+              const cityStr=city.trim()?<span style={{fontWeight:700,color:ink}}>{city}</span>:<span style={{color:"rgba(28,9,0,0.22)"}}>your city</span>;
+              const venueStr=venueType?<span style={{fontWeight:700,color:ink}}>{venueType}</span>:null;
+              return(
+                <div style={{marginBottom:10,padding:"12px 16px",borderRadius:12,background:"rgba(196,122,46,0.03)",border:"1px solid rgba(196,122,46,0.1)",lineHeight:1.7,fontSize:14,color:muted}}>
+                  <span>I'm planning a </span>
+                  <span style={{fontWeight:700,color:occAccent}}>{occName}</span>
+                  <span> for </span>{guestStr}
+                  <span> on </span>{dateStr}
+                  {venueStr&&<><span> at a </span>{venueStr}</>}
+                  <span> in </span>{cityStr}
+                  <span>.</span>
+                  {celebrantName&&<span style={{display:"block",fontSize:12,marginTop:3,color:"rgba(28,9,0,0.35)"}}>For {celebrantName} ✦</span>}
                 </div>
               );
             })()}
@@ -2067,6 +2088,17 @@ export default function OccasionDetail(){
                     placeholder="e.g. it's a surprise party, guests are mostly family, prefer vegetarian food…"
                     rows={3}
                     style={{width:"100%",padding:"9px 12px",borderRadius:8,border:`1px solid ${notes?occAccent:`rgba(28,9,0,0.12)`}`,background:notes?`${occAccent}05`:"rgba(28,9,0,0.02)",fontSize:13,fontFamily:font,color:ink,outline:"none",resize:"none",lineHeight:1.55,boxSizing:"border-box"}}/>
+                  {notesKeywords.length>0&&(
+                    <div style={{display:"flex",alignItems:"flex-start",gap:7,marginTop:8,padding:"8px 10px",borderRadius:8,background:"rgba(196,122,46,0.05)",border:"1px solid rgba(196,122,46,0.15)"}}>
+                      <svg style={{flexShrink:0,marginTop:1}} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                      <div style={{flex:1,minWidth:0}}>
+                        <span style={{fontSize:10.5,color:muted}}>We noticed </span>
+                        {notesKeywords.map((v,i)=><span key={v} style={{fontSize:10.5,fontWeight:700,color:gold}}>{i>0?", ":""}{v}</span>)}
+                        <span style={{fontSize:10.5,color:muted}}> — we'll suggest {notesKeywords.length===1?"this":"these"} in the </span>
+                        <span style={{fontSize:10.5,fontWeight:700,color:gold}}>Services tab →</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -2262,7 +2294,11 @@ export default function OccasionDetail(){
             {/* ── From your notes: detected vendor suggestions ── */}
             {notesKeywords.length>0&&(
               <div style={{marginBottom:16,padding:"10px 13px",borderRadius:10,background:"rgba(196,122,46,0.05)",border:"1px solid rgba(196,122,46,0.15)"}}>
-                <div style={{fontSize:9.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:8}}>From your notes</div>
+                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                  <span style={{fontSize:9.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.12em"}}>From your notes</span>
+                  <span style={{fontSize:9,color:muted,fontWeight:500}}>· Step 1</span>
+                </div>
                 <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
                   {notesKeywords.map(v=>{
                     const sel=vendors.includes(v);
