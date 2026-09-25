@@ -1352,6 +1352,8 @@ export default function OccasionDetail(){
   },[notes]);
   const [city,setCity]=useState("");
   const [venueType,setVenueType]=useState("");
+  const [venueProvides,setVenueProvides]=useState([]);
+  const [showVenueOthersModal,setShowVenueOthersModal]=useState(false);
   const [ageGroups,setAgeGroups]=useState([]);
   const [theme,setTheme]=useState(null);
   const [vibeFilter,setVibeFilter]=useState(null);
@@ -1478,13 +1480,13 @@ export default function OccasionDetail(){
   useEffect(()=>{
     if(step>0){
       localStorage.setItem(PLAN_KEY,JSON.stringify({
-        planMode,step,guests,date,budget,city,venueType,celebrantName,
+        planMode,step,guests,date,budget,city,venueType,venueProvides,celebrantName,
         ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,checked,
         selectedActivities,customCatering,customDecor,customActivities,customEventName,customEventDesc,
         savedAt:new Date().toISOString(),
       }));
     }
-  },[planMode,step,guests,date,budget,city,venueType,ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,checked]);
+  },[planMode,step,guests,date,budget,city,venueType,venueProvides,ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,checked]);
 
   /* Sync to main eventPlanning session so the Navbar plan icon activates.
      Placed after `occasion` is declared to avoid TDZ in the production bundle. */
@@ -1531,7 +1533,7 @@ export default function OccasionDetail(){
     setPlanMode(s.planMode);setStep(s.step);setGuests(s.guests||20);
     setDate(s.date||"");setBudget(s.budget||"");setCity(s.city||"");
     setCelebrantName(s.celebrantName||"");
-    setVenueType(s.venueType||"");setAgeGroups(s.ageGroups||[]);
+    setVenueType(s.venueType||"");setVenueProvides(s.venueProvides||[]);setAgeGroups(s.ageGroups||[]);
     setTheme(s.theme||null);setVendors(s.vendors||[]);
     setVendorPackages(s.vendorPackages||{});
     setCateringType(s.cateringType||"");setCakeType(s.cakeType||"");
@@ -1864,7 +1866,7 @@ export default function OccasionDetail(){
                   {VENUE_TYPES.map(v=>{
                     const sel=venueType===v.id;
                     return(
-                      <button key={v.id} onClick={()=>setVenueType(t=>t===v.id?"":v.id)}
+                      <button key={v.id} onClick={()=>{setVenueType(t=>t===v.id?"":v.id);if(venueType===v.id)setVenueProvides([]);}}
                         style={{display:"flex",alignItems:"center",gap:8,padding:"9px 12px",borderRadius:8,border:`1px solid ${sel?occAccent:`rgba(28,9,0,0.09)`}`,background:sel?`${occAccent}10`:"transparent",cursor:"pointer",fontFamily:font,transition:"all 0.12s",textAlign:"left",minHeight:40}}>
                         <span style={{fontSize:16,flexShrink:0,lineHeight:1}}>{v.icon}</span>
                         <span style={{fontSize:12,fontWeight:sel?600:400,color:sel?occAccent:ink,lineHeight:1.3,flex:1}}>{v.id}</span>
@@ -1874,7 +1876,67 @@ export default function OccasionDetail(){
                   })}
                 </div>
               </div>
+
+              {/* What does your venue provide — shown only when a venue is selected */}
+              {venueType&&(
+                <div style={{padding:"12px 18px 16px",borderTop:"1px solid rgba(28,9,0,0.06)"}}>
+                  <div style={{fontSize:11.5,fontWeight:600,color:muted,marginBottom:9}}>What does your venue already provide?</div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                    {["Catering","Decoration","DJ / Sound","Lighting"].map(item=>{
+                      const sel=venueProvides.includes(item);
+                      return(
+                        <button key={item} onClick={()=>setVenueProvides(p=>sel?p.filter(x=>x!==item):[...p,item])}
+                          style={{fontSize:12,fontWeight:sel?700:500,color:sel?"#fff":muted,background:sel?occAccent:"rgba(28,9,0,0.04)",border:`1px solid ${sel?occAccent:"rgba(28,9,0,0.1)"}`,borderRadius:100,padding:"5px 13px",cursor:"pointer",fontFamily:font,transition:"all 0.15s",display:"inline-flex",alignItems:"center",gap:5}}>
+                          {sel&&<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                          {item}
+                        </button>
+                      );
+                    })}
+                    <button onClick={()=>setShowVenueOthersModal(true)}
+                      style={{fontSize:12,fontWeight:500,color:occAccent,background:"transparent",border:`1px dashed ${occAccent}60`,borderRadius:100,padding:"5px 13px",cursor:"pointer",fontFamily:font,transition:"all 0.15s",display:"inline-flex",alignItems:"center",gap:5}}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      Others
+                      {venueProvides.filter(p=>!["Catering","Decoration","DJ / Sound","Lighting"].includes(p)).length>0&&
+                        <span style={{fontSize:10,fontWeight:800,color:"#fff",background:occAccent,borderRadius:100,padding:"0px 5px",minWidth:14,textAlign:"center"}}>
+                          {venueProvides.filter(p=>!["Catering","Decoration","DJ / Sound","Lighting"].includes(p)).length}
+                        </span>
+                      }
+                    </button>
+                  </div>
+                  {venueProvides.length>0&&<div style={{fontSize:10.5,color:muted,marginTop:8}}>These will be marked as covered in Services — you can still add them back if upgrading.</div>}
+                </div>
+              )}
             </div>
+
+            {/* Others modal — full service list */}
+            {showVenueOthersModal&&(
+              <div onClick={()=>setShowVenueOthersModal(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:200,display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+                <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:"20px 20px 0 0",padding:"20px 20px 32px",width:"100%",maxWidth:520,maxHeight:"70vh",overflowY:"auto",boxSizing:"border-box"}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+                    <div>
+                      <div style={{fontSize:14,fontWeight:800,color:ink}}>What else does your venue provide?</div>
+                      <div style={{fontSize:11,color:muted,marginTop:2}}>Select anything already included in your booking.</div>
+                    </div>
+                    <button onClick={()=>setShowVenueOthersModal(false)} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:muted,padding:"0 0 0 12px",lineHeight:1}}>×</button>
+                  </div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
+                    {ALL_VENDORS.filter(v=>!["Catering","Decoration","DJ / Sound","Lighting"].includes(v)).map(v=>{
+                      const sel=venueProvides.includes(v);
+                      return(
+                        <button key={v} onClick={()=>setVenueProvides(p=>sel?p.filter(x=>x!==v):[...p,v])}
+                          style={{fontSize:13,fontWeight:sel?700:500,color:sel?"#fff":ink,background:sel?occAccent:"rgba(28,9,0,0.04)",border:`1.5px solid ${sel?occAccent:"rgba(28,9,0,0.1)"}`,borderRadius:100,padding:"7px 15px",cursor:"pointer",fontFamily:font,transition:"all 0.15s",display:"inline-flex",alignItems:"center",gap:6}}>
+                          {sel&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                          {v}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button onClick={()=>setShowVenueOthersModal(false)} style={{marginTop:20,width:"100%",padding:"13px",borderRadius:12,background:occAccent,color:"#fff",fontSize:14,fontWeight:700,border:"none",cursor:"pointer",fontFamily:font}}>
+                    Done{venueProvides.length>0?` · ${venueProvides.length} selected`:""}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* City card */}
             <div style={{borderRadius:12,background:"#fff",border:`1px solid rgba(28,9,0,0.08)`,marginBottom:8,boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
@@ -2202,43 +2264,61 @@ export default function OccasionDetail(){
                   {sub&&<span style={{fontSize:10,fontWeight:500,color:"rgba(28,9,0,0.35)",marginLeft:7}}>{sub}</span>}
                 </div>
               );
-              const chip=(v)=>{
+              // Normalise venueProvides vendor names to match ALL_VENDORS keys
+              // e.g. "DJ / Sound" → "DJ", "Decoration" → "Decorator"
+              const VP_MAP={"DJ / Sound":"DJ","Decoration":"Decorator","Lighting":"Lighting Setup"};
+              const venueCovers=venueProvides.map(p=>VP_MAP[p]||p);
+              const chip=(v,forceGreyed=false)=>{
                 const sel=vendors.includes(v);
+                const byVenue=venueCovers.includes(v);
                 const isRec=recommended.has(v);
+                if(byVenue&&!forceGreyed) return null; // hidden from regular tiers
+                const grey=byVenue||forceGreyed;
                 return(
-                  <button key={v} onClick={()=>toggleVendor(v)}
+                  <button key={v} onClick={()=>!grey&&toggleVendor(v)}
                     style={{
                       display:"inline-flex",alignItems:"center",gap:6,
                       padding:"9px 15px",borderRadius:100,
-                      border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.22)"}`,
-                      background:sel?`rgba(196,122,46,0.1)`:"#fff",
-                      color:sel?gold:ink,
+                      border:`1.5px solid ${grey?"rgba(28,9,0,0.08)":sel?gold:"rgba(196,122,46,0.22)"}`,
+                      background:grey?"rgba(28,9,0,0.03)":sel?`rgba(196,122,46,0.1)`:"#fff",
+                      color:grey?"rgba(28,9,0,0.3)":sel?gold:ink,
                       fontSize:13.5,fontWeight:sel?700:600,
                       letterSpacing:"-0.01em",
-                      cursor:"pointer",fontFamily:font,
+                      cursor:grey?"default":"pointer",fontFamily:font,
                       transition:"all 0.18s",
-                      boxShadow:sel?`0 0 0 3px rgba(196,122,46,0.08)`:"0 1px 3px rgba(0,0,0,0.06)",
+                      boxShadow:grey?"none":sel?`0 0 0 3px rgba(196,122,46,0.08)`:"0 1px 3px rgba(0,0,0,0.06)",
                     }}>
-                    {sel
-                      ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(196,122,46,0.4)" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    {grey
+                      ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(28,9,0,0.2)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      : sel
+                        ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(196,122,46,0.4)" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     }
                     {v}
-                    {isRec&&!sel&&<span style={{fontSize:9,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"1px 5px",marginLeft:1}}>✦</span>}
+                    {isRec&&!sel&&!grey&&<span style={{fontSize:9,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"1px 5px",marginLeft:1}}>✦</span>}
                   </button>
                 );
               };
+              const byVenueTier=ALL_VENDORS.filter(v=>venueCovers.includes(v));
               return(
                 <div style={{marginBottom:16}}>
-                  {essential.length>0&&<>{tierLabel(city.trim()?`Essential in ${city}`:"Essential","#92400E","Everyone books these")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{essential.filter(v=>ALL_VENDORS.includes(v)).map(chip)}</div></>}
-                  {recOnly.length>0&&<>{tierLabel(`Recommended${city.trim()?` · ${city}`:""}`,gold,"Matched to your event details")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{recOnly.filter(v=>ALL_VENDORS.includes(v)).map(chip)}</div></>}
-                  {addOns.length>0&&<>{tierLabel("Add-ons","rgba(28,9,0,0.4)","Extras worth considering")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{addOns.map(chip)}
+                  {essential.length>0&&<>{tierLabel(city.trim()?`Essential in ${city}`:"Essential","#92400E","Everyone books these")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{essential.filter(v=>ALL_VENDORS.includes(v)).map(v=>chip(v))}</div></>}
+                  {recOnly.length>0&&<>{tierLabel(`Recommended${city.trim()?` · ${city}`:""}`,gold,"Matched to your event details")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{recOnly.filter(v=>ALL_VENDORS.includes(v)).map(v=>chip(v))}</div></>}
+                  {addOns.length>0&&<>{tierLabel("Add-ons","rgba(28,9,0,0.4)","Extras worth considering")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{addOns.filter(v=>!venueCovers.includes(v)).map(v=>chip(v))}
                     <button onClick={()=>setShowCustomVendorInput(v=>!v)}
                       style={{display:"inline-flex",alignItems:"center",gap:6,padding:"9px 15px",borderRadius:100,border:`1.5px dashed ${showCustomVendorInput?"rgba(196,122,46,0.5)":"rgba(196,122,46,0.28)"}`,background:showCustomVendorInput?"rgba(196,122,46,0.06)":"#fff",color:"rgba(196,122,46,0.7)",fontSize:13.5,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s",letterSpacing:"-0.01em"}}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                       Other
                     </button>
                   </div></>}
+                  {byVenueTier.length>0&&(
+                    <>
+                      {tierLabel("By your venue","rgba(28,9,0,0.28)","Already included — tap to add back if upgrading")}
+                      <div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>
+                        {byVenueTier.map(v=>chip(v,true))}
+                      </div>
+                    </>
+                  )}
                 </div>
               );
             })()}
