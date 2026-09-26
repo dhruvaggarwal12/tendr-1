@@ -64,6 +64,11 @@ function ZoneCard({ zone, index }) {
       {open && (
         <div style={{ padding: "0 14px 14px" }}>
           <div style={{ fontSize: 12.5, color: "#4A2810", lineHeight: 1.6, marginBottom: 10 }}>{zone.details}</div>
+          {zone.betterThan && (
+            <div style={{ fontSize: 11.5, color: MUTED, lineHeight: 1.5, padding: "8px 10px", borderRadius: 8, background: "rgba(28,9,0,0.03)", borderLeft: "2px solid rgba(196,122,46,0.25)", marginBottom: 10 }}>
+              <span style={{ fontWeight: 700, color: "#9B7450" }}>vs. alternatives: </span>{zone.betterThan}
+            </div>
+          )}
           <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
             {zone.effort && <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20, background: eff.bg, color: eff.color }}>{zone.effort}</span>}
             {zone.cost && <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, background: "rgba(28,9,0,0.05)", color: MUTED }}>{zone.cost}</span>}
@@ -277,8 +282,22 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
 
       {/* Summary */}
       {a.spaceSummary && (
-        <div style={{ padding: "12px 14px", borderRadius: 12, background: "rgba(196,122,46,0.05)", border: "1px solid rgba(196,122,46,0.12)", fontSize: 13, color: "#4A2810", lineHeight: 1.6, marginBottom: 16 }}>
+        <div style={{ padding: "12px 14px", borderRadius: 12, background: "rgba(196,122,46,0.05)", border: "1px solid rgba(196,122,46,0.12)", fontSize: 13, color: "#4A2810", lineHeight: 1.6, marginBottom: 12 }}>
           {a.spaceSummary}
+        </div>
+      )}
+
+      {/* What AI sees in your space */}
+      {a.existingElements?.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 10.5, fontWeight: 800, color: MUTED, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>What we see in your space</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {a.existingElements.map((el, i) => (
+              <span key={i} style={{ fontSize: 11.5, padding: "4px 10px", borderRadius: 20, background: "rgba(28,9,0,0.05)", color: "#4A2810", border: "1px solid rgba(28,9,0,0.08)" }}>
+                {el}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 
