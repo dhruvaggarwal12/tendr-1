@@ -1367,6 +1367,55 @@ export default function OccasionDetail(){
   const [theme,setTheme]=useState(null);
   const [vibeFilter,setVibeFilter]=useState(null);
   const [decorAnalyserOpen,setDecorAnalyserOpen]=useState(false);
+  const [venueAnalysis,setVenueAnalysis]=useState(null); // result from DecorAnalyzer
+
+  /* Map analysis → DECOR_ITEMS suggestions */
+  const matchDecorFromAnalysis = useCallback((analysis)=>{
+    if(!analysis) return {};
+    const KEYWORD_MAP = {
+      "Backdrop & Wall":  ["backdrop","wall","banner","neon","sequin","tulle","photo frame","fairy light curtain","flower wall","balloon wall"],
+      "Balloons":         ["balloon","chrome","metallic","foil","organic"],
+      "Flowers":          ["flower","floral","marigold","petal","roses","garland"],
+      "Lighting":         ["light","lamp","lantern","candle","glow","edison","string light","uplighting","spotlight","led","warm","fairy"],
+      "Table & Seating":  ["table","chair","centrepiece","runner","charger","napkin","menu card"],
+      "Entry & Walkway":  ["entry","entrance","walkway","gate","pathway","arch","ribbon","welcome","signboard"],
+      "Photo Corner":     ["photo","booth","selfie","polaroid","props","memory"],
+      "Theme Items":      ["character","standee","cutout","bunting","banner","themed","custom","personalized"],
+    };
+    const allText = [
+      ...(analysis.topPicks||[]).map(p=>`${p.title} ${p.description}`),
+      ...(analysis.decorZones||[]).map(z=>`${z.zone} ${z.suggestion} ${z.details}`),
+      ...(analysis.tips||[]),
+      analysis.style||"",
+      analysis.styleNote||"",
+    ].join(" ").toLowerCase();
+
+    const result = {};
+    Object.entries(KEYWORD_MAP).forEach(([cat, keywords])=>{
+      const matched = (DECOR_ITEMS[cat]||[]).filter(item=>
+        keywords.some(kw=>allText.includes(kw)) &&
+        keywords.some(kw=>item.toLowerCase().includes(kw.split(" ")[0]))
+      );
+      if(matched.length) result[cat] = matched.slice(0,3);
+    });
+    return result;
+  },[]);
+
+  const handleVenueAnalysisDone = useCallback((analysis)=>{
+    setVenueAnalysis(analysis);
+    setDecorAnalyserOpen(false);
+    // Auto-populate decor items from analysis
+    const suggested = matchDecorFromAnalysis(analysis);
+    if(Object.keys(suggested).length>0){
+      setCustomDecor(prev=>{
+        const merged={...prev};
+        Object.entries(suggested).forEach(([cat,items])=>{
+          merged[cat]=[...new Set([...(merged[cat]||[]),...items])];
+        });
+        return merged;
+      });
+    }
+  },[matchDecorFromAnalysis]);
   const [vendors,setVendors]=useState([]);
   const [cateringType,setCateringType]=useState("");
   const [cakeType,setCakeType]=useState("");
@@ -2177,7 +2226,46 @@ export default function OccasionDetail(){
                     <button onClick={()=>setDecorAnalyserOpen(false)}
                       style={{width:32,height:32,borderRadius:"50%",border:"1.5px solid rgba(196,122,46,0.25)",background:"#fff",cursor:"pointer",fontSize:16,color:"#9B7450",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:font}}>×</button>
                   </div>
-                  <DecorAnalyzer onClose={()=>setDecorAnalyserOpen(false)} initialEventType={occasion?.name||""} compact />
+                  <DecorAnalyzer onClose={()=>setDecorAnalyserOpen(false)} initialEventType={occasion?.name||""} compact onAnalysisComplete={handleVenueAnalysisDone} />
+                </div>
+              </div>
+            )}
+
+            {/* ── Venue analysis result banner ── */}
+            {venueAnalysis&&(
+              <div style={{borderRadius:14,border:"1.5px solid rgba(196,122,46,0.25)",background:"linear-gradient(135deg,rgba(196,122,46,0.06),rgba(196,122,46,0.02))",padding:"14px",marginBottom:20}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                  <div>
+                    <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em"}}>Your venue · AI analysis</div>
+                    <div style={{fontSize:14,fontWeight:800,color:ink,marginTop:2}}>{venueAnalysis.spaceType} — {venueAnalysis.style}</div>
+                  </div>
+                  <button onClick={()=>setVenueAnalysis(null)} style={{background:"none",border:"none",fontSize:16,color:muted,cursor:"pointer",padding:4}}>×</button>
+                </div>
+                {/* Colour palette */}
+                {venueAnalysis.colorPalette?.length>0&&(
+                  <div style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:10}}>
+                    {venueAnalysis.colorPalette.map((c,i)=>(
+                      <div key={i} style={{display:"flex",alignItems:"center",gap:5,background:"#fff",borderRadius:8,padding:"4px 9px",border:"1px solid rgba(196,122,46,0.12)"}}>
+                        <div style={{width:14,height:14,borderRadius:3,background:c.hex,border:"1.5px solid rgba(0,0,0,0.1)",flexShrink:0}}/>
+                        <span style={{fontSize:11,fontWeight:600,color:ink}}>{c.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {/* Top picks from analysis */}
+                {venueAnalysis.topPicks?.length>0&&(
+                  <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:10}}>
+                    {venueAnalysis.topPicks.slice(0,3).map((p,i)=>(
+                      <div key={i} style={{display:"flex",gap:8,alignItems:"flex-start",fontSize:12}}>
+                        <span style={{color:gold,fontSize:10,marginTop:1,flexShrink:0}}>★</span>
+                        <div><span style={{fontWeight:700,color:ink}}>{p.title}</span>{p.cost&&<span style={{color:muted,marginLeft:6}}>· {p.cost}</span>}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                  <div style={{fontSize:11,color:gold,fontWeight:700}}>✓ Decor items auto-suggested in step 5</div>
+                  <button onClick={()=>setDecorAnalyserOpen(true)} style={{fontSize:11,fontWeight:600,color:muted,background:"none",border:"none",cursor:"pointer",fontFamily:font,textDecoration:"underline",padding:0}}>Re-analyse</button>
                 </div>
               </div>
             )}
@@ -2848,6 +2936,31 @@ export default function OccasionDetail(){
                         {/* Decor Builder panel */}
                         {showDecorBuilder&&(chosen==="custom"||typeof chosen==="number")&&(
                           <div style={{borderTop:`1px solid rgba(196,122,46,0.1)`,background:"#FFFDF8",padding:"14px 14px 16px"}}>
+
+                            {/* AI venue suggestions strip */}
+                            {venueAnalysis&&Object.keys(matchDecorFromAnalysis(venueAnalysis)).length>0&&(
+                              <div style={{marginBottom:16,padding:"12px 12px 10px",borderRadius:12,background:"rgba(196,122,46,0.06)",border:"1.5px solid rgba(196,122,46,0.2)"}}>
+                                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+                                  <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em"}}>📷 From your venue analysis</div>
+                                  <span style={{fontSize:10.5,fontWeight:600,color:muted}}>{venueAnalysis.spaceType}</span>
+                                </div>
+                                <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                                  {Object.entries(matchDecorFromAnalysis(venueAnalysis)).flatMap(([cat,items])=>
+                                    items.map(item=>{
+                                      const already=(customDecor[cat]||[]).includes(item);
+                                      return(
+                                        <button key={`${cat}:${item}`}
+                                          onClick={()=>!already&&setCustomDecor(prev=>({...prev,[cat]:[...(prev[cat]||[]),item]}))}
+                                          style={{fontSize:11.5,fontWeight:600,padding:"5px 11px",borderRadius:100,border:`1.5px solid ${already?gold:"rgba(196,122,46,0.3)"}`,background:already?"rgba(196,122,46,0.12)":"#fff",color:already?gold:ink,cursor:already?"default":"pointer",fontFamily:font,display:"flex",alignItems:"center",gap:4}}>
+                                          {already&&<span style={{fontSize:9}}>✓</span>}
+                                          {item}
+                                        </button>
+                                      );
+                                    })
+                                  )}
+                                </div>
+                              </div>
+                            )}
 
                             {/* Package edit mode — remove existing + add from categories */}
                             {editedPackageItems!==null&&typeof chosen==="number"&&(

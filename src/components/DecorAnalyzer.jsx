@@ -79,7 +79,7 @@ function ZoneCard({ zone, index }) {
   );
 }
 
-export default function DecorAnalyzer({ onClose, initialEventType = "", compact = false }) {
+export default function DecorAnalyzer({ onClose, initialEventType = "", compact = false, onAnalysisComplete = null }) {
   const { openOccasionsChat } = useChatOverlay();
   const fileRef = useRef(null);
 
@@ -128,6 +128,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
       if (!res.ok || !data.analysis) throw new Error(data.error || "Analysis failed");
       setAnalysis(data.analysis);
       setPhase("done");
+      if (onAnalysisComplete) onAnalysisComplete(data.analysis);
     } catch (e) {
       setErrMsg(e.message || "Something went wrong. Please try again.");
       setPhase("error");

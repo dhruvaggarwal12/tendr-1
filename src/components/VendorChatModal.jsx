@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useInstallPrompt } from "../hooks/useInstallPrompt";
 import { useSelector, useDispatch } from "react-redux";
+import DecorAnalyzer from "./DecorAnalyzer";
 import router from "../router";
 import { io } from "socket.io-client";
 import { getBotFlow, BOT_FLOWS, ADDRESS_STEP, OTHER_OPTION, CHAT_PACKAGES, buildSummaryMessage } from "../utils/chatbot";
@@ -557,6 +558,7 @@ export default function VendorChatModal() {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [customerPlans, setCustomerPlans] = useState([]);
   const [text, setText] = useState("");
+  const [decorCamOpen, setDecorCamOpen] = useState(false);
   const [botOtherMode, setBotOtherMode] = useState(false); // "Other..." selected — show text input
   const [conversationId, setConversationId] = useState(null);
   useEffect(() => {
@@ -2124,8 +2126,59 @@ export default function VendorChatModal() {
                   <div style={{ fontSize: 11, color: "#1e40af" }}>Chat is locked — awaiting payment confirmation from Tendr</div>
                 </div>
               )}
+              {/* Decor camera modal — occasions/concierge chat only */}
+              {decorCamOpen && (
+                <div style={{ position: "fixed", inset: 0, zIndex: 10010, background: "rgba(28,9,0,0.65)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+                  onClick={e => { if (e.target === e.currentTarget) setDecorCamOpen(false); }}>
+                  <div style={{ width: "100%", maxWidth: 640, background: "#FFFCF5", borderRadius: "20px 20px 0 0", padding: "20px 18px 32px", maxHeight: "93dvh", overflowY: "auto", fontFamily: font }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                      <div>
+                        <div style={{ fontSize: 10.5, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em" }}>AI Tool</div>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: "#1C0900", marginTop: 2 }}>Analyse your venue</div>
+                        <div style={{ fontSize: 12, color: "rgba(28,9,0,0.5)", marginTop: 2 }}>Results will be sent to chat for decor package suggestions</div>
+                      </div>
+                      <button onClick={() => setDecorCamOpen(false)}
+                        style={{ width: 32, height: 32, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", cursor: "pointer", fontSize: 16, color: "#9B7450", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
+                    </div>
+                    <DecorAnalyzer
+                      compact
+                      onClose={() => setDecorCamOpen(false)}
+                      onAnalysisComplete={(a) => {
+                        setDecorCamOpen(false);
+                        const lines = [
+                          `📷 *Venue Analysis for Decor Planning*`,
+                          ``,
+                          `Space: ${a.spaceType}${a.style ? ` · ${a.style}` : ""}`,
+                          a.spaceSummary ? a.spaceSummary : "",
+                          ``,
+                          `*What I see in my space:*`,
+                          ...(a.existingElements||[]).map(e => `• ${e}`),
+                          ``,
+                          `*Top decoration ideas for this space:*`,
+                          ...(a.topPicks||[]).map(p => `• ${p.title}${p.cost ? ` (${p.cost})` : ""}`),
+                          ``,
+                          `*Zones to focus on:*`,
+                          ...(a.decorZones||[]).slice(0,4).map(z => `• ${z.zone}: ${z.suggestion}`),
+                          ``,
+                          `Based on this, can you suggest specific decor packages that would work well for this space?`,
+                        ].filter(l => l !== undefined).join("\n");
+                        sendText(lines);
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Message row */}
               <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
+                {/* Venue photo analyser button */}
+                <button
+                  onClick={() => setDecorCamOpen(true)}
+                  title="Analyse your venue for decor suggestions"
+                  style={{ width: 34, height: 34, borderRadius: "50%", background: "#f5f0ea", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, cursor: "pointer", flexShrink: 0, border: "none" }}
+                >
+                  📷
+                </button>
                 <label title="Attach image" style={{ width: 34, height: 34, borderRadius: "50%", background: "#f5f0ea", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, cursor: (approved && !bookingSubmitted) ? "pointer" : "not-allowed", flexShrink: 0, opacity: (approved && !bookingSubmitted) ? 1 : 0.4 }}>
                   📌
                   <input type="file" accept="image/*" style={{ display: "none" }} onChange={(approved && !bookingSubmitted) ? sendImage : undefined} disabled={!approved || bookingSubmitted} />
