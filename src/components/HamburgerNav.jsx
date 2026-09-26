@@ -671,8 +671,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   { emoji: "🍽️", label: "Caterer",            href: "/search?categories=Caterer" },
                   { emoji: "📸", label: "Photographer",       href: "/search?categories=Photographer" },
                   { emoji: "🎵", label: "DJ",                 href: "/search?categories=DJ" },
-                  { emoji: "🎤", label: "Live Performances",  href: "/search?categories=Singer,Band,Musician,Anchor,Choreographer" },
-                  { emoji: "💄", label: "Makeup",             href: "/search?categories=Makeup" },
+                  { emoji: "🎤", label: "Live Performances",  href: "/artists" },
                   { emoji: "🎁", label: "Gift Hampers",       href: "/gifting" },
                   { emoji: "🎭", label: "Fun Activities",     href: "/fun-activities" },
                 ].map(cat => (
@@ -967,8 +966,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 { emoji: "🍽️", label: "Caterer",            href: "/search?categories=Caterer" },
                 { emoji: "📸", label: "Photographer",       href: "/search?categories=Photographer" },
                 { emoji: "🎵", label: "DJ",                 href: "/search?categories=DJ" },
-                { emoji: "🎤", label: "Live Performances",  href: "/search?categories=Singer,Band,Musician,Anchor,Choreographer" },
-                { emoji: "💄", label: "Makeup",             href: "/search?categories=Makeup" },
+                { emoji: "🎤", label: "Live Performances",  href: "/artists" },
                 { emoji: "🎁", label: "Gift Hampers",       href: "/gifting" },
                 { emoji: "🎭", label: "Fun Activities",     href: "/fun-activities" },
               ].map(cat => (
