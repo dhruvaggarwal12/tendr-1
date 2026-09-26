@@ -317,6 +317,7 @@ function BottomNavInner() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10, marginBottom: 10 }}>
               {[
                 ...CATEGORIES,
+                { icon: ic(<><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></>), label: "Live Performances", path: "/search?categories=Singer,Band,Musician,Anchor,Choreographer" },
                 { icon: ic(<><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></>), label: "Fun Activities", path: "/fun-activities" },
               ].map(({ icon, label, path, soon }) => (
                 <button key={label}

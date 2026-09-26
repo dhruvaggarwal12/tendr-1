@@ -99,7 +99,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   ];
   const SVC_KW2 = { caterer: "Caterer", catering: "Caterer", food: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", dj: "DJ", music: "DJ" };
   const LOC_KW2 = { delhi: "Delhi", noida: "Noida", gurgaon: "Gurgaon", gurugram: "Gurgaon", ghaziabad: "Ghaziabad", "greater noida": "Greater Noida" };
-  const PAGE_KW2 = { budget: "/budget-picker", "gift hamper": "/gifting", "gift hampers": "/gifting", hampers: "/gifting", cakes: "/gift-hampers-cakes", gifting: "/gifting", /* "decor finder": "/decor-finder", */timeline: "/timeline-picker", invitation: "/stationery", flyer: "/stationery", stationery: "/stationery", aftermovie: "/stationery" };
+  const PAGE_KW2 = { budget: "/budget-picker", "gift hamper": "/gifting", "gift hampers": "/gifting", hampers: "/gifting", cakes: "/gift-hampers-cakes", gifting: "/gifting", timeline: "/timeline-picker", invitation: "/stationery", flyer: "/stationery", stationery: "/stationery", aftermovie: "/stationery", "decor analyser": "/decor-analyser", "decor analyzer": "/decor-analyser", "venue photo": "/decor-analyser", guides: "/guides", community: "/community" };
 
   const handleNavSearch = (q) => {
     const query = q || searchQuery;
@@ -258,13 +258,17 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
     ]},
     { label: "Tools", items: [
       { label: "✦ Plan My Event",  href: "/plan", activePaths: ["/plan","/checklist-picker","/prebuilt-checklist"], tag: "hub", onClickOverride: () => { close(); navigate("/plan"); } },
+      { label: "📷 Decor Analyser", href: "/decor-analyser", activePaths: ["/decor-analyser"], tag: "ai" },
       { label: "Timeline",         href: "/timeline-picker", activePaths: ["/timeline-picker","/timeline","/prebuilt-timeline"],
         onClickOverride: () => { try { const d = localStorage.getItem("tendr_timeline_v2"); const s = d ? JSON.parse(d) : null; if (s?.phases?.length > 0) { setTimelinePopupOpen(true); } else { window.open("/timeline-picker", "_blank"); } } catch { window.open("/timeline-picker", "_blank"); } } },
       { label: "Budget Allocator", href: "/budget-picker", activePaths: ["/budget-picker","/budget-allocator"],
         onClickOverride: () => { try { const d = localStorage.getItem("tendr_budget_v2"); const s = d ? JSON.parse(d) : null; if (s?.totalBudget) { setBudgetPopupOpen(true); } else { window.open("/budget-picker", "_blank"); } } catch { window.open("/budget-picker", "_blank"); } } },
       { label: "Equipment Planner", href: "/equipment-list", activePaths: ["/equipment-list"], onClickOverride: () => { close(); window.open("/equipment-list", "_blank"); } },
       { label: "Invitation Builder", href: "/invitation-builder", activePaths: ["/invitation-builder"], onClickOverride: () => { close(); window.open("/invitation-builder", "_blank"); } },
-      // { label: "Decor Finder", href: "/decor-finder" }, // disabled
+    ]},
+    { label: "Community", items: [
+      { label: "Guide Store",     href: "/guides",     activePaths: ["/guides"] },
+      { label: "Community Wall",  href: "/community",  activePaths: ["/community"] },
     ]},
     ...(user?.isAdmin ? [{ label: "Memories", hideOnMobile: true, items: [
       { label: "Memories (Preview)", href: "/memories" },
@@ -656,28 +660,29 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         {vendorPickerOpen && (
           <>
             <div onClick={() => setVendorPickerOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 500, backdropFilter: "blur(4px)" }} />
-            <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 501, background: "#FFFCF5", borderRadius: 20, padding: "24px", width: "min(90vw,480px)", boxShadow: "0 20px 60px rgba(139,69,19,0.22)", fontFamily: font }}>
+            <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 501, background: "#FFFCF5", borderRadius: 20, padding: "24px", width: "min(90vw,520px)", boxShadow: "0 20px 60px rgba(139,69,19,0.22)", fontFamily: font }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
                 <h3 style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>Find a Vendor</h3>
                 <button onClick={() => setVendorPickerOpen(false)} style={{ width: 30, height: 30, borderRadius: "50%", background: "#f3f4f6", border: "none", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10 }}>
                 {[
-                  { emoji: "🎨", label: "Decorator",      href: "/search?categories=Decorator" },
-                  { emoji: "🍽️", label: "Caterer",        href: "/search?categories=Caterer" },
-                  { emoji: "📸", label: "Photographer",   href: "/search?categories=Photographer" },
-                  { emoji: "🎵", label: "DJ",             href: "/search?categories=DJ" },
-                  { emoji: "🎁", label: "Gift Hampers",   href: "/gifting" },
-                  { emoji: "🎭", label: "Fun Activities", href: "/fun-activities" },
+                  { emoji: "🎨", label: "Decorator",          href: "/search?categories=Decorator" },
+                  { emoji: "🍽️", label: "Caterer",            href: "/search?categories=Caterer" },
+                  { emoji: "📸", label: "Photographer",       href: "/search?categories=Photographer" },
+                  { emoji: "🎵", label: "DJ",                 href: "/search?categories=DJ" },
+                  { emoji: "🎤", label: "Live Performances",  href: "/search?categories=Singer,Band,Musician,Anchor,Choreographer" },
+                  { emoji: "💄", label: "Makeup",             href: "/search?categories=Makeup" },
+                  { emoji: "🎁", label: "Gift Hampers",       href: "/gifting" },
+                  { emoji: "🎭", label: "Fun Activities",     href: "/fun-activities" },
                 ].map(cat => (
                   <button key={cat.label} onClick={() => { navigate(cat.href); setVendorPickerOpen(false); }}
-                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "16px 8px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff", cursor: "pointer", fontFamily: font, transition: "all 0.15s", position: "relative" }}
+                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "14px 6px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff", cursor: "pointer", fontFamily: font, transition: "all 0.15s", position: "relative" }}
                     onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
                     onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.18)"; }}
                   >
-                    {cat.soon && <span style={{ position: "absolute", top: 6, right: 6, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", borderRadius: 6, padding: "1px 5px", fontSize: 9, fontWeight: 800, letterSpacing: "0.05em" }}>SOON</span>}
-                    <span style={{ fontSize: 28 }}>{cat.emoji}</span>
-                    <span style={{ fontSize: 12.5, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{cat.label}</span>
+                    <span style={{ fontSize: 26 }}>{cat.emoji}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{cat.label}</span>
                   </button>
                 ))}
               </div>
@@ -951,28 +956,29 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       {vendorPickerOpen && (
         <>
           <div onClick={() => setVendorPickerOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 500, backdropFilter: "blur(4px)" }} />
-          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 501, background: "#FFFCF5", borderRadius: 20, padding: "24px", width: "min(92vw,400px)", boxShadow: "0 20px 60px rgba(139,69,19,0.22)", fontFamily: font }}>
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 501, background: "#FFFCF5", borderRadius: 20, padding: "24px", width: "min(92vw,420px)", boxShadow: "0 20px 60px rgba(139,69,19,0.22)", fontFamily: font }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
               <h3 style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>Find a Vendor</h3>
               <button onClick={() => setVendorPickerOpen(false)} style={{ width: 30, height: 30, borderRadius: "50%", background: "#f3f4f6", border: "none", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10 }}>
               {[
-                { emoji: "🎨", label: "Decorator",      href: "/search?categories=Decorator" },
-                { emoji: "🍽️", label: "Caterer",        href: "/search?categories=Caterer" },
-                { emoji: "📸", label: "Photographer",   href: "/search?categories=Photographer" },
-                { emoji: "🎵", label: "DJ",             href: "/search?categories=DJ" },
-                { emoji: "🎁", label: "Gift Hampers",   href: "/gifting" },
-                { emoji: "🎭", label: "Fun Activities", href: "/fun-activities" },
+                { emoji: "🎨", label: "Decorator",          href: "/search?categories=Decorator" },
+                { emoji: "🍽️", label: "Caterer",            href: "/search?categories=Caterer" },
+                { emoji: "📸", label: "Photographer",       href: "/search?categories=Photographer" },
+                { emoji: "🎵", label: "DJ",                 href: "/search?categories=DJ" },
+                { emoji: "🎤", label: "Live Performances",  href: "/search?categories=Singer,Band,Musician,Anchor,Choreographer" },
+                { emoji: "💄", label: "Makeup",             href: "/search?categories=Makeup" },
+                { emoji: "🎁", label: "Gift Hampers",       href: "/gifting" },
+                { emoji: "🎭", label: "Fun Activities",     href: "/fun-activities" },
               ].map(cat => (
                 <button key={cat.label} onClick={() => { navigate(cat.href); setVendorPickerOpen(false); }}
-                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "14px 6px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff", cursor: "pointer", fontFamily: font, transition: "all 0.15s", position: "relative" }}
+                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "12px 4px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
                   onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.18)"; }}
                 >
-                  {cat.soon && <span style={{ position: "absolute", top: 5, right: 5, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", borderRadius: 5, padding: "1px 5px", fontSize: 8, fontWeight: 800, letterSpacing: "0.05em" }}>SOON</span>}
-                  <span style={{ fontSize: 26 }}>{cat.emoji}</span>
-                  <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{cat.label}</span>
+                  <span style={{ fontSize: 24 }}>{cat.emoji}</span>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{cat.label}</span>
                 </button>
               ))}
             </div>
