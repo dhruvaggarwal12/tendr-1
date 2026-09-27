@@ -170,7 +170,7 @@ const CREW_ROLES = ["Assistant","Co-anchor","Technician","Makeup","Photographer"
 
 function OutsideOrderModal({ order, onClose, onSave, token }) {
   const isEdit = !!order?._id;
-  const [tab, setTab] = useState("details");
+  const [tab, setTab] = useState(order?._openTab || "details");
   const [form, setForm] = useState({
     clientName: "", clientPhone: "", eventType: "", eventDate: "", venue: "", city: "",
     amount: "", paymentStatus: "Pending", status: "Pending", source: "WhatsApp",
@@ -181,11 +181,12 @@ function OutsideOrderModal({ order, onClose, onSave, token }) {
   const [saving, setSaving] = useState(false);
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
-  const addPayment = () => set("payments", [...(form.payments || []), { id: uid(), date: todayStr(), amount: "", method: "Cash", note: "" }]);
+  const addPayment = () => set("payments", [...(form.payments || []), { id: uid(), dueDate: "", amount: "", method: "Cash", note: "", paid: false }]);
   const addExpense = () => set("expenses", [...(form.expenses || []), { id: uid(), date: todayStr(), description: "", amount: "", category: "Misc" }]);
   const addCrew    = () => set("crew", [...(form.crew || []), { id: uid(), name: "", role: "Assistant", fee: "" }]);
 
-  const paid = (form.payments || []).reduce((s, p) => s + Number(p.amount || 0), 0);
+  const paid = (form.payments || []).filter(p => p.paid !== false).reduce((s, p) => s + Number(p.amount || 0), 0);
+  const scheduledDue = (form.payments || []).filter(p => p.paid === false).reduce((s, p) => s + Number(p.amount || 0), 0);
   const totalExp = (form.expenses || []).reduce((s, e) => s + Number(e.amount || 0), 0);
   const profit = Number(form.amount || 0) - totalExp;
 
@@ -244,20 +245,35 @@ function OutsideOrderModal({ order, onClose, onSave, token }) {
       {tab === "payments" && (
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-            <div style={{ fontSize: 13, color: muted }}>Total: {fmt(form.amount)} · Paid: {fmt(paid)} · Due: {fmt(Math.max(0, Number(form.amount || 0) - paid))}</div>
+            <div style={{ fontSize: 13, color: muted }}>Total: {fmt(form.amount)} · Collected: {fmt(paid)} · Scheduled: {fmt(scheduledDue)} · Remaining: {fmt(Math.max(0, Number(form.amount || 0) - paid - scheduledDue))}</div>
             <Btn onClick={addPayment} variant="secondary" style={{ padding: "6px 14px", fontSize: 12 }}>+ Add</Btn>
           </div>
           {(form.payments || []).map((p, i) => (
-            <div key={p.id} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 8, marginBottom: 8, alignItems: "center" }}>
-              <input type="date" value={p.date} onChange={e => set("payments", form.payments.map((x, j) => j === i ? { ...x, date: e.target.value } : x))} style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13, fontFamily: font }} />
-              <input type="number" placeholder="₹ Amount" value={p.amount} onChange={e => set("payments", form.payments.map((x, j) => j === i ? { ...x, amount: e.target.value } : x))} style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13, fontFamily: font }} />
-              <select value={p.method} onChange={e => set("payments", form.payments.map((x, j) => j === i ? { ...x, method: e.target.value } : x))} style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13, fontFamily: font }}>
-                {PAY_METHODS.map(m => <option key={m}>{m}</option>)}
-              </select>
-              <button onClick={() => set("payments", form.payments.filter((_, j) => j !== i))} style={{ width: 28, height: 28, borderRadius: 8, border: "1px solid #FCA5A5", background: "#FEE2E2", color: "#DC2626", cursor: "pointer", fontSize: 14 }}>×</button>
+            <div key={p.id} style={{ background: p.paid !== false ? "#F0FDF4" : "#FFFBEB", borderRadius: 10, padding: "10px 12px", marginBottom: 8, border: `1px solid ${p.paid !== false ? "#86EFAC" : "#FCD34D"}` }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 8, marginBottom: 8, alignItems: "flex-end" }}>
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: muted, marginBottom: 3 }}>DUE DATE</div>
+                  <input type="date" value={p.dueDate || p.date || ""} onChange={e => set("payments", form.payments.map((x, j) => j === i ? { ...x, dueDate: e.target.value } : x))} style={{ width: "100%", padding: "7px 8px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13, fontFamily: font, boxSizing: "border-box" }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: muted, marginBottom: 3 }}>AMOUNT</div>
+                  <input type="number" placeholder="₹" value={p.amount} onChange={e => set("payments", form.payments.map((x, j) => j === i ? { ...x, amount: e.target.value } : x))} style={{ width: "100%", padding: "7px 8px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13, fontFamily: font, boxSizing: "border-box" }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: muted, marginBottom: 3 }}>METHOD</div>
+                  <select value={p.method} onChange={e => set("payments", form.payments.map((x, j) => j === i ? { ...x, method: e.target.value } : x))} style={{ width: "100%", padding: "7px 8px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13, fontFamily: font, boxSizing: "border-box" }}>
+                    {PAY_METHODS.map(m => <option key={m}>{m}</option>)}
+                  </select>
+                </div>
+                <button onClick={() => set("payments", form.payments.filter((_, j) => j !== i))} style={{ width: 28, height: 28, borderRadius: 8, border: "1px solid #FCA5A5", background: "#FEE2E2", color: "#DC2626", cursor: "pointer", fontSize: 14 }}>×</button>
+              </div>
+              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: p.paid !== false ? "#16A34A" : "#D97706", cursor: "pointer" }}>
+                <input type="checkbox" checked={p.paid !== false} onChange={e => set("payments", form.payments.map((x, j) => j === i ? { ...x, paid: e.target.checked, date: e.target.checked ? todayStr() : "" } : x))} style={{ accentColor: "#16A34A", width: 14, height: 14 }} />
+                {p.paid !== false ? "✓ Received" : "Not received yet — tick when paid"}
+              </label>
             </div>
           ))}
-          {!(form.payments || []).length && <div style={{ color: muted, fontSize: 13, textAlign: "center", padding: 20 }}>No payments logged yet</div>}
+          {!(form.payments || []).length && <div style={{ color: muted, fontSize: 13, textAlign: "center", padding: 20 }}>No payment instalments yet. Add one!</div>}
         </div>
       )}
 
@@ -513,7 +529,7 @@ export default function UnifiedVendorDashboard() {
   // ── Computed stats ───────────────────────────────────────────────────────────
   const confirmed  = tendrBookings.filter(b => b.status === "CONFIRMED" || b.status === "Confirmed");
   const pending    = tendrBookings.filter(b => b.status === "PENDING"   || b.status === "Pending");
-  const totalEarned = outside.filter(o => o.paymentStatus === "Paid").reduce((s, o) => s + Number(o.amount || 0), 0);
+  const totalEarned = outside.flatMap(o => o.payments || []).filter(p => p.paid !== false).reduce((s, p) => s + Number(p.amount || 0), 0);
   const avgRating  = reviews.length ? (reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length).toFixed(1) : "—";
 
   // ── Calendar helpers ─────────────────────────────────────────────────────────
@@ -624,6 +640,16 @@ export default function UnifiedVendorDashboard() {
     await fetch(`${BASE}/vendors/me/expenses/${id}`, { method: "DELETE", headers: aH(token) });
     setExpenses(es => es.filter(e => e.id !== id));
     toast("Expense deleted");
+  };
+
+  const markPaymentPaid = async (orderId, paymentId) => {
+    const order = outside.find(o => o._id === orderId);
+    if (!order) return;
+    const updatedPayments = (order.payments || []).map(p => p.id === paymentId ? { ...p, paid: true, date: todayStr() } : p);
+    const res = await fetch(`${BASE}/vendors/outside-orders/${orderId}`, { method: "PATCH", headers: aH(token), body: JSON.stringify({ payments: updatedPayments }) });
+    const d = await res.json();
+    setOutside(os => os.map(o => o._id === orderId ? (d.order || { ...o, payments: updatedPayments }) : o));
+    toast("Payment marked as received!");
   };
 
   // ── Reminders ────────────────────────────────────────────────────────────────
@@ -774,11 +800,11 @@ export default function UnifiedVendorDashboard() {
         {/* ── WORK ── */}
         {tab === "work" && (
           <div>
-            <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+            <div style={{ display: "flex", gap: 8, marginBottom: 20, alignItems: "center" }}>
               {["tendr","outside"].map(v => (
                 <button key={v} onClick={() => setWorkView(v)}
                   style={{ padding: "8px 20px", borderRadius: 10, fontFamily: font, fontSize: 13, fontWeight: 700, cursor: "pointer", border: "none", background: workView === v ? `linear-gradient(135deg,${gold},${goldLt})` : "rgba(196,122,46,0.08)", color: workView === v ? "#fff" : gold }}>
-                  {v === "tendr" ? "Tendr Bookings" : "Outside Orders"}
+                  {v === "tendr" ? `Tendr (${tendrBookings.length})` : `Outside Orders (${outside.length})`}
                 </button>
               ))}
               {workView === "outside" && <Btn onClick={() => setOrderModal("add")} style={{ marginLeft: "auto" }}>+ Add Order</Btn>}
@@ -792,7 +818,7 @@ export default function UnifiedVendorDashboard() {
                   if (!bks.length) return null;
                   return (
                     <div key={status} style={{ marginBottom: 20 }}>
-                      <SL>{status}</SL>
+                      <SL>{status} ({bks.length})</SL>
                       {bks.map(b => (
                         <Card key={b._id} style={{ marginBottom: 10 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -813,27 +839,104 @@ export default function UnifiedVendorDashboard() {
 
             {workView === "outside" && (
               <div>
-                {outside.length === 0 && <div style={{ color: muted, fontSize: 14, textAlign: "center", padding: 40 }}>No outside orders yet. Add your first one!</div>}
-                {outside.map(o => (
-                  <Card key={o._id} style={{ marginBottom: 12 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <div style={{ fontSize: 15, fontWeight: 700, color: ink }}>{o.clientName}</div>
-                          <Pill s={o.status} />
-                          <span style={{ fontSize: 11, background: o.paymentStatus === "Paid" ? "#D1FAE5" : "#FEF9C3", color: o.paymentStatus === "Paid" ? "#059669" : "#CA8A04", borderRadius: 100, padding: "2px 8px", fontWeight: 700 }}>{o.paymentStatus}</span>
+                {outside.length === 0 && (
+                  <div style={{ color: muted, fontSize: 14, textAlign: "center", padding: 60 }}>
+                    <div style={{ fontSize: 36, marginBottom: 12 }}>📋</div>
+                    No outside orders yet. Add your first one!
+                  </div>
+                )}
+                {outside.map(o => {
+                  const oCollected = (o.payments||[]).filter(p=>p.paid!==false).reduce((s,p)=>s+Number(p.amount||0),0);
+                  const oDue       = (o.payments||[]).filter(p=>p.paid===false).reduce((s,p)=>s+Number(p.amount||0),0);
+                  const oExp       = (o.expenses||[]).reduce((s,e)=>s+Number(e.amount||0),0);
+                  const oCrew      = (o.crew||[]).reduce((s,c)=>s+Number(c.fee||0),0);
+                  const oProfit    = oCollected - oExp - oCrew;
+                  const nextUnpaid = (o.payments||[]).find(p => p.paid === false && p.amount);
+
+                  const STEPS = [
+                    { label: "Details",   done: !!(o.clientName && o.amount) },
+                    { label: "Confirmed", done: o.status === "Confirmed" || o.status === "Completed" },
+                    { label: `Payments\n(${(o.payments||[]).length})`,  done: (o.payments||[]).length > 0 },
+                    { label: `Expenses\n(${(o.expenses||[]).length})`,  done: (o.expenses||[]).length > 0 },
+                    { label: `Crew\n(${(o.crew||[]).length})`,          done: (o.crew||[]).length > 0 },
+                    { label: "Done",      done: o.status === "Completed" },
+                  ];
+
+                  return (
+                    <Card key={o._id} style={{ marginBottom: 16 }}>
+                      {/* Header */}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+                        <div>
+                          <div style={{ fontSize: 16, fontWeight: 800, color: ink }}>{o.clientName}</div>
+                          <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>{[o.eventType, o.eventDate, o.city].filter(Boolean).join(" · ")}</div>
                         </div>
-                        <div style={{ fontSize: 12, color: muted, marginTop: 4 }}>{o.eventType} · {o.eventDate} · {o.city || ""}</div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: gold, marginTop: 4 }}>{fmt(o.amount)}</div>
-                        {o.contractTerms && <div style={{ fontSize: 11, color: muted, marginTop: 4 }}>📋 Contract on file</div>}
+                        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                          <Pill s={o.status} />
+                          <button onClick={() => setOrderModal(o)} style={{ width: 28, height: 28, borderRadius: 8, border: "1px solid rgba(196,122,46,0.2)", background: "#fff", color: muted, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✎</button>
+                        </div>
                       </div>
-                      <div style={{ display: "flex", gap: 6 }}>
-                        <button onClick={() => setOrderModal(o)} style={{ padding: "5px 12px", borderRadius: 8, border: `1px solid ${gold}`, background: "#fff", color: gold, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Edit</button>
-                        <button onClick={() => { if (confirm("Delete this order?")) deleteOrder(o._id); }} style={{ padding: "5px 12px", borderRadius: 8, border: "1px solid #FCA5A5", background: "#FEE2E2", color: "#DC2626", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Delete</button>
+
+                      {/* Pipeline steps */}
+                      <div style={{ display: "flex", alignItems: "flex-start", marginBottom: 16, overflowX: "auto", paddingBottom: 4 }}>
+                        {STEPS.map((s, i) => (
+                          <div key={i} style={{ display: "flex", alignItems: "flex-start", flexShrink: 0 }}>
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                              <div style={{ width: 28, height: 28, borderRadius: "50%", background: s.done ? "#16A34A" : "rgba(196,122,46,0.1)", border: s.done ? "none" : "1.5px solid rgba(196,122,46,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: s.done ? "#fff" : muted, fontWeight: 800, flexShrink: 0 }}>
+                                {s.done ? "✓" : i + 1}
+                              </div>
+                              <div style={{ fontSize: 9.5, color: s.done ? "#16A34A" : muted, fontWeight: s.done ? 700 : 500, textAlign: "center", whiteSpace: "pre", lineHeight: 1.3 }}>{s.label}</div>
+                            </div>
+                            {i < STEPS.length - 1 && (
+                              <div style={{ width: 22, height: 2, background: STEPS[i+1].done ? "#16A34A" : "rgba(196,122,46,0.15)", marginTop: 13, flexShrink: 0 }} />
+                            )}
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                  </Card>
-                ))}
+
+                      {/* Financial snapshot */}
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 6, marginBottom: 14 }}>
+                        {[
+                          ["Total",     fmt(o.amount||0),  ink],
+                          ["Collected", fmt(oCollected),   "#16A34A"],
+                          oDue > 0 ? ["Due", fmt(oDue), "#D97706"] : ["Expenses", fmt(oExp + oCrew), "#DC2626"],
+                          ["Profit",    fmt(oProfit),      oProfit >= 0 ? "#16A34A" : "#DC2626"],
+                        ].map(([label, val, color]) => (
+                          <div key={label} style={{ textAlign: "center", padding: "7px 4px", background: "rgba(196,122,46,0.04)", borderRadius: 8 }}>
+                            <div style={{ fontSize: 9, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</div>
+                            <div style={{ fontSize: 13, fontWeight: 800, color, marginTop: 2 }}>{val}</div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Quick actions */}
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        <button onClick={() => setOrderModal({ ...o, _openTab: "payments" })} style={{ padding: "5px 12px", borderRadius: 8, border: `1.5px solid ${gold}`, background: "#fff", color: gold, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>+ Payment</button>
+                        <button onClick={() => setOrderModal({ ...o, _openTab: "expenses" })} style={{ padding: "5px 12px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.25)", background: "#fff", color: muted, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>+ Expense</button>
+                        <button onClick={() => setOrderModal({ ...o, _openTab: "crew" })} style={{ padding: "5px 12px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.25)", background: "#fff", color: muted, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>+ Crew</button>
+                        {o.status !== "Completed" && (
+                          <button onClick={async () => {
+                            const res = await fetch(`${BASE}/vendors/outside-orders/${o._id}`, { method: "PATCH", headers: aH(token), body: JSON.stringify({ status: "Completed" }) });
+                            const d = await res.json();
+                            setOutside(os => os.map(x => x._id === o._id ? (d.order || { ...x, status: "Completed" }) : x));
+                            toast("Marked as completed!");
+                          }} style={{ padding: "5px 12px", borderRadius: 8, border: "1px solid #86EFAC", background: "#F0FDF4", color: "#16A34A", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                            ✓ Mark Complete
+                          </button>
+                        )}
+                        {nextUnpaid && (
+                          <button onClick={() => {
+                            const msg = `Hi ${o.clientName}, just a reminder that ₹${nextUnpaid.amount} is due${nextUnpaid.dueDate ? ` on ${nextUnpaid.dueDate}` : ""}. Please let me know once sent. Thank you!`;
+                            if (o.clientPhone) window.open(`https://wa.me/91${o.clientPhone.replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`);
+                            else { navigator.clipboard.writeText(msg); toast("Message copied!"); }
+                          }} style={{ padding: "5px 12px", borderRadius: 8, border: "1px solid #FCD34D", background: "#FFFBEB", color: "#D97706", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                            💬 Remind Client
+                          </button>
+                        )}
+                        <button onClick={() => { if (confirm("Delete this order?")) deleteOrder(o._id); }} style={{ padding: "5px 12px", borderRadius: 8, border: "1px solid #FCA5A5", background: "#FEE2E2", color: "#DC2626", fontSize: 12, fontWeight: 600, cursor: "pointer", marginLeft: "auto", fontFamily: font }}>Delete</button>
+                      </div>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -965,29 +1068,111 @@ export default function UnifiedVendorDashboard() {
         {/* ── MONEY ── */}
         {tab === "money" && (
           <div>
+            {/* 5 summary tiles */}
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 24 }}>
-              <StatTile label="Total Income" value={fmt(outside.reduce((s,o) => s + Number(o.amount||0), 0))} sub="All outside orders" />
-              <StatTile label="Collected" value={fmt(outside.filter(o=>o.paymentStatus==="Paid").reduce((s,o) => s + Number(o.amount||0), 0))} sub="Paid orders" />
+              <StatTile label="Total Billed" value={fmt(outside.reduce((s,o) => s + Number(o.amount||0), 0))} sub="All outside orders" />
+              <StatTile label="Collected" value={fmt(outside.flatMap(o=>o.payments||[]).filter(p=>p.paid!==false).reduce((s,p)=>s+Number(p.amount||0),0))} sub="Payments received" />
+              <StatTile label="Pending" value={fmt(outside.flatMap(o=>o.payments||[]).filter(p=>p.paid===false).reduce((s,p)=>s+Number(p.amount||0),0))} sub="Scheduled, not received" />
               <StatTile label="Expenses" value={fmt(expenses.reduce((s,e) => s + Number(e.amount||0), 0))} sub="All logged expenses" />
-              <StatTile label="Net Profit" value={fmt(outside.filter(o=>o.paymentStatus==="Paid").reduce((s,o)=>s+Number(o.amount||0),0) - expenses.reduce((s,e)=>s+Number(e.amount||0),0))} sub="Collected − expenses" />
+              <StatTile label="Net Profit" value={fmt(outside.flatMap(o=>o.payments||[]).filter(p=>p.paid!==false).reduce((s,p)=>s+Number(p.amount||0),0) - expenses.reduce((s,e)=>s+Number(e.amount||0),0))} sub="Collected − expenses" />
             </div>
+
+            {/* Payments due section */}
+            {(() => {
+              const due = outside.flatMap(o =>
+                (o.payments||[]).filter(p => p.paid === false && p.amount).map(p => ({
+                  ...p, orderId: o._id, clientName: o.clientName, clientPhone: o.clientPhone,
+                }))
+              ).sort((a,b) => (a.dueDate||"9999") < (b.dueDate||"9999") ? -1 : 1);
+              if (!due.length) return null;
+              return (
+                <Card style={{ marginBottom: 24, borderColor: "#FCD34D", borderWidth: 1.5 }}>
+                  <SL>Payments Due ({due.length})</SL>
+                  {due.map(p => {
+                    const isOverdue = p.dueDate && p.dueDate < todayStr();
+                    return (
+                      <div key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid rgba(196,122,46,0.07)", flexWrap: "wrap", gap: 8 }}>
+                        <div>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: ink }}>{p.clientName}</div>
+                          <div style={{ fontSize: 12, color: isOverdue ? "#DC2626" : muted, fontWeight: isOverdue ? 700 : 400 }}>
+                            {fmt(p.amount)} due {p.dueDate ? `on ${p.dueDate}` : "soon"}{isOverdue ? " · OVERDUE" : ""}
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button onClick={() => {
+                            const msg = `Hi ${p.clientName}, just a reminder that ₹${p.amount} is due${p.dueDate ? ` on ${p.dueDate}` : ""}. Please let me know once sent. Thank you!`;
+                            if (p.clientPhone) window.open(`https://wa.me/91${p.clientPhone.replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`);
+                            else { navigator.clipboard.writeText(msg); toast("Message copied!"); }
+                          }} style={{ padding: "5px 12px", borderRadius: 8, border: "1px solid #22C55E", background: "#F0FDF4", color: "#16A34A", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                            Remind Client
+                          </button>
+                          <button onClick={() => markPaymentPaid(p.orderId, p.id)} style={{ padding: "5px 12px", borderRadius: 8, border: `1px solid ${gold}`, background: "#fff", color: gold, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                            Mark Paid
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </Card>
+              );
+            })()}
+
+            {/* Per-order P&L breakdown */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: ink }}>Expenses</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: ink }}>Order Breakdown</div>
               <Btn onClick={() => setExpModal({})}>+ Log Expense</Btn>
             </div>
-            {expenses.length === 0 && <div style={{ color: muted, fontSize: 14, textAlign: "center", padding: 30 }}>No expenses logged yet</div>}
-            {expenses.map(e => (
-              <div key={e.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid rgba(196,122,46,0.07)" }}>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: ink }}>{e.description}</div>
-                  <div style={{ fontSize: 12, color: muted }}>{e.category}{e.date ? ` · ${e.date}` : ""}</div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: "#DC2626" }}>−{fmt(e.amount)}</div>
-                  <button onClick={() => deleteExpense(e.id)} style={{ width: 26, height: 26, borderRadius: 6, border: "1px solid #FCA5A5", background: "#FEE2E2", color: "#DC2626", cursor: "pointer", fontSize: 14 }}>×</button>
-                </div>
+            {outside.length === 0 && <div style={{ color: muted, fontSize: 14, textAlign: "center", padding: 30 }}>No outside orders yet</div>}
+            {outside.map(o => {
+              const oCollected = (o.payments||[]).filter(p=>p.paid!==false).reduce((s,p)=>s+Number(p.amount||0),0);
+              const oPending   = (o.payments||[]).filter(p=>p.paid===false).reduce((s,p)=>s+Number(p.amount||0),0);
+              const oExp       = (o.expenses||[]).reduce((s,e)=>s+Number(e.amount||0),0);
+              const oCrew      = (o.crew||[]).reduce((s,c)=>s+Number(c.fee||0),0);
+              const oProfit    = oCollected - oExp - oCrew;
+              return (
+                <Card key={o._id} style={{ marginBottom: 10 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: ink }}>{o.clientName}</div>
+                      <div style={{ fontSize: 12, color: muted }}>{[o.eventType, o.eventDate, o.city].filter(Boolean).join(" · ")}</div>
+                    </div>
+                    <Pill s={o.paymentStatus || "Pending"} />
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
+                    {[
+                      ["Billed",    fmt(o.amount||0),  ink],
+                      ["Collected", fmt(oCollected),   "#16A34A"],
+                      oPending > 0 ? ["Due",    fmt(oPending), "#D97706"] : ["Expenses", fmt(oExp), "#DC2626"],
+                      ["Profit",    fmt(oProfit),      oProfit >= 0 ? "#16A34A" : "#DC2626"],
+                    ].map(([label, val, color]) => (
+                      <div key={label} style={{ textAlign: "center", padding: "8px 4px", background: "rgba(196,122,46,0.04)", borderRadius: 8 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</div>
+                        <div style={{ fontSize: 14, fontWeight: 800, color, marginTop: 2 }}>{val}</div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              );
+            })}
+
+            {/* General expenses */}
+            {expenses.length > 0 && (
+              <div style={{ marginTop: 20 }}>
+                <SL>General Expenses</SL>
+                {expenses.map(e => (
+                  <div key={e.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid rgba(196,122,46,0.07)" }}>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: ink }}>{e.description}</div>
+                      <div style={{ fontSize: 12, color: muted }}>{e.category}{e.date ? ` · ${e.date}` : ""}</div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: "#DC2626" }}>−{fmt(e.amount)}</div>
+                      <button onClick={() => deleteExpense(e.id)} style={{ width: 26, height: 26, borderRadius: 6, border: "1px solid #FCA5A5", background: "#FEE2E2", color: "#DC2626", cursor: "pointer", fontSize: 14 }}>×</button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
         )}
 
