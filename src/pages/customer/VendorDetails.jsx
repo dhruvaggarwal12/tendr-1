@@ -1264,8 +1264,8 @@ const VendorDetailsPage = () => {
               );
             })()}
 
-            {/* ── Gig Pro: Showreel + Social — only shown on direct link visits ── */}
-            {isGigPro && isDirectLink && (vendor?.showreel || vendor?.socialLink) && (
+            {/* ── Watch & Follow + Link Hub — only shown on direct link visits ── */}
+            {isDirectLink && (vendor?.showreel || vendor?.socialLink || (vendor?.linktree?.links || []).length > 0) && (
               <>
                 <div style={{ height: 1, background: "rgba(196,122,46,0.1)", marginBottom: 24 }} />
                 <div style={{ marginBottom: 28 }}>
@@ -1285,6 +1285,13 @@ const VendorDetailsPage = () => {
                         Instagram
                       </a>
                     )}
+                    {(vendor?.linktree?.links || []).map(lk => lk.url && (
+                      <a key={lk.id} href={lk.url} target="_blank" rel="noopener noreferrer"
+                        style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 12, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.2)", color: "#2C1A0E", fontSize: 13, fontWeight: 700, textDecoration: "none", fontFamily: font }}>
+                        <span style={{ fontSize: 15 }}>{lk.emoji || "🔗"}</span>
+                        {lk.label || lk.url}
+                      </a>
+                    ))}
                   </div>
                 </div>
               </>

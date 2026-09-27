@@ -1306,8 +1306,9 @@ export default function UnifiedVendorDashboard() {
               {/* Tendr profile link */}
               <Card style={{ marginBottom: 12 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: ink, marginBottom: 4 }}>🔗 Your Tendr Profile</div>
-                <div style={{ fontSize: 12, color: gold, wordBreak: "break-all" }}>{window.location.origin}/vendor/{vendorId}</div>
-                <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/vendor/${vendorId}`); toast("Link copied!"); }}
+                <div style={{ fontSize: 12, color: gold, wordBreak: "break-all" }}>{window.location.origin}/vendor/{vendorId}?src=direct</div>
+                <div style={{ fontSize: 11, color: muted, marginTop: 4 }}>Shared via this link → your social links are visible. Found via browse → hidden.</div>
+                <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/vendor/${vendorId}?src=direct`); toast("Link copied!"); }}
                   style={{ marginTop: 8, padding: "5px 12px", borderRadius: 8, border: `1px solid ${gold}`, background: "#fff", color: gold, fontSize: 12, cursor: "pointer", fontFamily: font, fontWeight: 600 }}>Copy Link</button>
               </Card>
               {/* Custom links */}
