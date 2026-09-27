@@ -6912,9 +6912,10 @@ export default function OccasionHub({ occasion }) {
   };
   const occTheme = OCC_THEME[occasion] || OCC_THEME["birthday-party"];
   const isDark = true; // always dark gradient for all occasions
-  const pageBg = "#09060F"; // solid fallback (used in splash compat)
+  const pageBg = "#050208"; // solid fallback (used in splash compat)
   const occAccent = occTheme.accent;
-  const darkGrad = `linear-gradient(160deg, #09060F 0%, ${occTheme.accent}22 50%, #07040C 100%)`;
+  // Per-occasion unique dark gradient: accent drives ALL colour so each one looks distinct
+  const darkGrad = `linear-gradient(160deg, ${occTheme.accent}12 0%, ${occTheme.accent}40 45%, ${occTheme.accent}0A 100%)`;
   const occIconBg = occTheme.iconBg;
   const occHostGrad = occTheme.hostGrad;
   const occConfetti = occTheme.confetti;
@@ -7713,14 +7714,14 @@ export default function OccasionHub({ occasion }) {
                   const cc = CARD_PALETTE[(i + 2) % CARD_PALETTE.length];
                   const em = TOOL_EMOJI[t.id] || "🎮";
                   return (
-                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:`${cc}1A`, border:`1.5px solid ${LIVE_GAME_IDS.has(t.id) && room ? "#22c55e50" : cc+"40"}`, borderRadius:16, padding:"16px 8px 14px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:6, textAlign:"center", position:"relative" }}>
+                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:`${cc}38`, border:`2px solid ${LIVE_GAME_IDS.has(t.id) && room ? "#22c55eAA" : cc+"88"}`, borderRadius:16, padding:"18px 8px 14px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:6, textAlign:"center", position:"relative", boxShadow:`0 4px 16px ${cc}22` }}>
                     {LIVE_GAME_IDS.has(t.id) && (
-                      <div style={{ position:"absolute", top:5, right:5, fontSize:7.5, fontWeight:800, color: room ? "#22c55e" : "rgba(255,255,255,0.35)", letterSpacing:"0.05em", textTransform:"uppercase", background: room ? "rgba(34,197,94,0.14)" : "rgba(255,255,255,0.08)", borderRadius:100, padding:"2px 5px" }}>
+                      <div style={{ position:"absolute", top:5, right:5, fontSize:7.5, fontWeight:800, color: room ? "#22c55e" : "rgba(255,255,255,0.6)", letterSpacing:"0.05em", textTransform:"uppercase", background: room ? "rgba(34,197,94,0.18)" : "rgba(255,255,255,0.12)", borderRadius:100, padding:"2px 5px" }}>
                         {room ? "● Live" : "👥"}
                       </div>
                     )}
-                    <div style={{ fontSize:28, lineHeight:1, filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.4))" }}>{em}</div>
-                    <div style={{ fontSize:11, fontWeight:700, color:"#fff", lineHeight:1.35 }}>{t.title}</div>
+                    <div style={{ fontSize:32, lineHeight:1, textShadow:`0 0 16px ${cc}CC` }}>{em}</div>
+                    <div style={{ fontSize:11, fontWeight:800, color:"#FFFFFF", lineHeight:1.35, textShadow:"0 1px 4px rgba(0,0,0,0.5)" }}>{t.title}</div>
                   </div>
                   );
                 })}
@@ -7786,14 +7787,15 @@ export default function OccasionHub({ occasion }) {
                     const em = TOOL_EMOJI[t.id] || "🎯";
                     return (
                       <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{
-                        background:`${cc}1A`, border:`1.5px solid ${cc}40`,
-                        borderRadius:18, padding:"20px 12px 16px", cursor:"pointer",
+                        background:`${cc}38`, border:`2px solid ${cc}88`,
+                        borderRadius:18, padding:"22px 12px 16px", cursor:"pointer",
                         display:"flex", flexDirection:"column", alignItems:"center", gap:8, textAlign:"center",
                         position:"relative", overflow:"hidden",
+                        boxShadow:`0 4px 20px ${cc}25`,
                       }}>
-                        <div style={{ fontSize:34, lineHeight:1, filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.4))" }}>{em}</div>
-                        <div style={{ fontSize:12, fontWeight:700, color:"#fff", lineHeight:1.3, letterSpacing:"-0.01em" }}>{t.title}</div>
-                        <div style={{ position:"absolute", top:-18, right:-18, width:60, height:60, borderRadius:"50%", background:`${cc}18`, pointerEvents:"none" }} />
+                        <div style={{ fontSize:40, lineHeight:1, textShadow:`0 0 18px ${cc}CC, 0 0 6px ${cc}88` }}>{em}</div>
+                        <div style={{ fontSize:12.5, fontWeight:800, color:"#FFFFFF", lineHeight:1.3, letterSpacing:"0em", textShadow:"0 1px 4px rgba(0,0,0,0.5)" }}>{t.title}</div>
+                        <div style={{ position:"absolute", top:-20, right:-20, width:64, height:64, borderRadius:"50%", background:`${cc}22`, pointerEvents:"none" }} />
                       </div>
                     );
                   })}
@@ -7819,14 +7821,15 @@ export default function OccasionHub({ occasion }) {
                     const em = TOOL_EMOJI[t.id] || "✨";
                     return (
                       <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{
-                        background:`${cc}1A`, border:`1.5px solid ${cc}40`,
-                        borderRadius:18, padding:"20px 12px 16px", cursor:"pointer",
+                        background:`${cc}38`, border:`2px solid ${cc}88`,
+                        borderRadius:18, padding:"22px 12px 16px", cursor:"pointer",
                         display:"flex", flexDirection:"column", alignItems:"center", gap:8, textAlign:"center",
                         position:"relative", overflow:"hidden",
+                        boxShadow:`0 4px 20px ${cc}25`,
                       }}>
-                        <div style={{ fontSize:34, lineHeight:1, filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.4))" }}>{em}</div>
-                        <div style={{ fontSize:12, fontWeight:700, color:"#fff", lineHeight:1.3, letterSpacing:"-0.01em" }}>{t.title}</div>
-                        <div style={{ position:"absolute", top:-18, right:-18, width:60, height:60, borderRadius:"50%", background:`${cc}18`, pointerEvents:"none" }} />
+                        <div style={{ fontSize:40, lineHeight:1, textShadow:`0 0 18px ${cc}CC, 0 0 6px ${cc}88` }}>{em}</div>
+                        <div style={{ fontSize:12.5, fontWeight:800, color:"#FFFFFF", lineHeight:1.3, textShadow:"0 1px 4px rgba(0,0,0,0.5)" }}>{t.title}</div>
+                        <div style={{ position:"absolute", top:-20, right:-20, width:64, height:64, borderRadius:"50%", background:`${cc}22`, pointerEvents:"none" }} />
                       </div>
                     );
                   })}
@@ -7844,16 +7847,24 @@ export default function OccasionHub({ occasion }) {
       </div>
 
       {/* ── Bottom Navigation ── */}
-      <div style={{ flexShrink:0, background:T.navBg, borderTop:`1px solid ${T.sectionLn}`, padding:"10px 0", paddingBottom:"calc(10px + env(safe-area-inset-bottom,0px))", position:"relative", zIndex:2, boxShadow:"0 -1px 0 rgba(0,0,0,0.05)", backdropFilter:"blur(20px)" }}>
-        <div style={{ display:"flex", maxWidth:800, margin:"0 auto" }}>
+      <div style={{ flexShrink:0, background:"rgba(6,3,10,0.97)", borderTop:`1px solid ${occAccent}25`, padding:"10px 12px", paddingBottom:"calc(10px + env(safe-area-inset-bottom,0px))", position:"relative", zIndex:2, backdropFilter:"blur(24px)" }}>
+        <div style={{ display:"flex", maxWidth:800, margin:"0 auto", gap:8 }}>
           {TAB_CFG.map(t => {
             const isActive = activeTab === t.id;
-            const tColor = tabAccentMap[t.id] || occAccent;
+            const tColor = occAccent;
             return (
-              <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:3, padding:"4px 0 2px", border:"none", background:"transparent", cursor:"pointer" }}>
-                <div style={{ color:isActive?tColor:T.navInact, transition:"color 0.18s" }}>{t.icon}</div>
-                <div style={{ fontSize:10.5, fontWeight:isActive?700:600, color:isActive?tColor:T.navInact, letterSpacing:"0.06em", textTransform:"uppercase", transition:"color 0.18s" }}>{t.label}</div>
-                <div style={{ width:isActive?16:0, height:2, borderRadius:1, background:tColor, transition:"width 0.22s cubic-bezier(0.22,1,0.36,1)" }} />
+              <button key={t.id} onClick={()=>setActiveTab(t.id)} style={{
+                flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:3,
+                padding:"8px 4px 6px",
+                border: isActive ? `1.5px solid ${tColor}80` : `1.5px solid rgba(255,255,255,0.10)`,
+                borderRadius:14,
+                background: isActive ? `${tColor}28` : "rgba(255,255,255,0.04)",
+                cursor:"pointer",
+                transition:"background 0.18s, border-color 0.18s",
+                boxShadow: isActive ? `0 0 14px ${tColor}30` : "none",
+              }}>
+                <div style={{ color:isActive ? tColor : "rgba(255,255,255,0.45)", transition:"color 0.18s" }}>{t.icon}</div>
+                <div style={{ fontSize:9.5, fontWeight:isActive?800:600, color:isActive ? tColor : "rgba(255,255,255,0.45)", letterSpacing:"0.07em", textTransform:"uppercase", transition:"color 0.18s", marginTop:1 }}>{t.label}</div>
               </button>
             );
           })}
