@@ -6635,6 +6635,55 @@ const CARD_PALETTE = [
   "#C77DFF","#FF5FA0","#00C9A7","#FF6F00","#5E60CE",
 ];
 
+// ── first-time intro content per tool ────────────────────────────────────
+const TOOL_INTRO_DATA = {
+  invite:          { emoji:"📨", headline:"No more screenshot invites", body:"One link — guests click, RSVP instantly. No more midnight \"are you coming?\" follow-ups.", scene:["You share one link 🔗","They click & RSVP ✅","You see who's in 📊"] },
+  checklist:       { emoji:"✅", headline:"Forget nothing this time", body:"Tell it your guest count — it builds the complete buy list automatically. Just tick off as you go.", scene:["Enter guest count →","Get auto buy-list 📋","Tick off as done ✔"] },
+  bills:           { emoji:"💸", headline:"No more awkward money math", body:"Add who paid what. It splits fairly and tells everyone exactly what they owe. No arguments.", scene:["Add expenses →","Auto-splits fairly ⚖️","Who owes what 💰"] },
+  guestlist:       { emoji:"👥", headline:"Know exactly who's coming", body:"Track RSVPs, phone numbers, plus-ones. No more counting replies in a 50-person group.", scene:["✅ Confirmed 12","⏳ Awaiting 5","❌ Can't make it 3"] },
+  menu:            { emoji:"🍽️", headline:"Plan the food without the chaos", body:"Add dishes, assign who brings what, track what's confirmed. Zero last-minute panic.", scene:["Plan dishes →","Assign people →","Track status 🟢"] },
+  daytimeline:     { emoji:"⏰", headline:"Run the day like a director", body:"Schedule every moment. Share with helpers. A live NOW tracker shows what's happening right now.", scene:["5PM: Decor setup 🎨","7PM: Guests arrive 👋","8PM: Cake time 🎂"] },
+  venue:           { emoji:"📍", headline:"Stop sending the same address 10 times", body:"One note with address, parking details, and maps link. Share once. Everyone's sorted.", scene:["Address + maps 🗺️","Parking tips 🚗","Share once 🔗"] },
+  seating:         { emoji:"🪑", headline:"End the table drama before it starts", body:"Drag names to tables visually. Everyone knows where to sit before they even arrive.", scene:["Visual tables 🪑","Tap to assign →","Share seating 📋"] },
+  budget:          { emoji:"💰", headline:"Know where the money went", body:"Set a total, track by category. See what's left before you accidentally overspend on the cake.", scene:["Budget ₹20,000 set","Spent ₹14,500 →","₹5,500 left ✅"] },
+  vendors:         { emoji:"🛍️", headline:"Your vendor chaos, sorted", body:"Caterer, decorator, DJ — contacts, deposits, balances, all in one place. No more lost WhatsApps.", scene:["Caterer ✅ paid","DJ 🟡 deposit due","Decor ⏳ pending"] },
+  wabroadcast:     { emoji:"📢", headline:"The right message, timed perfectly", body:"Ready-made save the dates, reminders, and thank-yous. Copy, personalise, send.", scene:["Save the date 📅","Day reminder ⏰","Thank-you note 💌"] },
+  potluck:         { emoji:"🍲", headline:"Everyone brings something different", body:"Share a link — friends claim their dish. No more 4 people showing up with biryani.", scene:["Ravi → Biryani 🍛","Priya → Cake 🎂","Amit → Coke 🥤"] },
+  giftregistry:    { emoji:"📦", headline:"Tell people what you actually need", body:"Add gifts you want, share the link. They pick something useful. Everyone wins.", scene:["Add wishlist 📝","Share link 🔗","They gift what fits 🎁"] },
+  gifttracker:     { emoji:"🎁", headline:"Remember who gave what", body:"Log every gift with the giver's name. Track thank-yous so nobody feels forgotten.", scene:["Anjali → Flowers 💐","Rahul → Cash 💵","Thank-you sent ✅"] },
+  advicecards:     { emoji:"💡", headline:"Wisdom they'll actually keep", body:"Guests share advice anonymously. Print them out. Read them when things get hard.", scene:["💌 Anonymous tip","🌟 Printed card","📖 Kept forever"] },
+  namesuggestions: { emoji:"📝", headline:"Let the family vote on the name", body:"Everyone suggests a name with meaning. The most loved one floats to the top.", scene:["Suggest names →","Upvote favourites ❤️","See what wins 🏆"] },
+  kittyfund:       { emoji:"🐱", headline:"Kitty money, tracked for everyone", body:"Set the contribution, mark who's paid, track the fund. Transparent for the whole group.", scene:["₹500 per member","12 of 15 paid ✅","Fund: ₹6,000 💰"] },
+  countdown:       { emoji:"⏳", headline:"Build the excitement together", body:"A live countdown to the big day. Share it, put it on the group. Let the hype grow.", scene:["🎂 3 days to go","🎉 12 hours left","🎊 It's happening!"] },
+  runofshow:       { emoji:"🎬", headline:"No event ever ran on time by accident", body:"Script the entire event minute by minute. Share with helpers. Nobody asks \"what's next?\"", scene:["6PM: Doors open","7PM: Welcome speech","8PM: Surprise reveal 🎉"] },
+  theme:           { emoji:"🎨", headline:"Let everyone vote on the vibe", body:"Show theme options, run a quick vote. Guests feel involved, decision gets made fast.", scene:["🌸 Pastel Bloom","🖤 Dark Glam → 14 votes","Clear winner revealed 🎯"] },
+  photowall:       { emoji:"📸", headline:"One shared album that actually gets used", body:"Share a link — everyone uploads as the night happens. No chasing photos a week later.", scene:["Link goes in group →","Everyone uploads 📸","Album auto-builds 🖼️"] },
+  wishwall:        { emoji:"⭐", headline:"More than just a birthday card", body:"Everyone writes their message live. The person reads them all at once. That's the real moment.", scene:["Guests write wishes →","Wall fills up live ✨","Read together 🥹"] },
+  lovenotes:       { emoji:"💌", headline:"Notes they'll come back to", body:"Everyone leaves a love note. Collected, printed, or read live — your call.", scene:["Anonymous notes 💌","Collected & saved →","A gift they keep 📖"] },
+  blessingswall:   { emoji:"🙏", headline:"Blessings from everyone who matters", body:"Guests leave blessings in real time. Watch the wall fill up together.", scene:["Guests bless →","Wall glows up ✨","Screenshot & treasure"] },
+  appreciationwall:{ emoji:"💝", headline:"Shoutouts they'll never forget", body:"Team members leave appreciation messages. Play it at the party. Tears guaranteed.", scene:["\"Best manager ever\"","\"You changed our team\"","Read live 😭"] },
+  secretmessage:   { emoji:"🔐", headline:"The things people mean but don't say", body:"Anonymous messages, only the host sees. Honest, heartfelt, sometimes hilarious.", scene:["Anonymous input →","Only host sees it 👀","Read at right moment 🎤"] },
+  moodmeter:       { emoji:"😊", headline:"Read the room without asking", body:"Guests tap their vibe. You see the live pulse of the party. Adjust accordingly.", scene:["🔥 Lit — 18 people","😊 Chilling — 7","😴 Tired — 2"] },
+  playlist:        { emoji:"🎵", headline:"The playlist everyone wanted", body:"Each guest adds a song. No DJ monopoly. The party plays the crowd's actual taste.", scene:["Ravi adds Blinding Lights","Priya adds Kesariya","Auto-queued 🎶"] },
+  awardsceremony:  { emoji:"🏆", headline:"Crown the legends of the night", body:"Everyone nominates, everyone votes. Reveal awards live. Pure crowd energy.", scene:["Nominate →","Secret vote →","🏆 Live reveal 🎉"] },
+  truthordare:     { emoji:"🎯", headline:"The real conversations start here", body:"Not the boring version. Prompts built for this specific occasion. Things get interesting.", scene:["Draw a card 🃏","Truth or Dare?","No skipping 😈"] },
+  neverhavei:      { emoji:"🍺", headline:"Find out who's been living their best life", body:"30 rounds with occasion-specific prompts. You'll learn something new about everyone tonight.", scene:["\"Never have I ever...\"","Sip if you have 😏","Score tracker built in"] },
+  wouldyou:        { emoji:"❓", headline:"The game that reveals everything", body:"Impossible choices, heated debates. Someone always says something surprising.", scene:["\"Would you rather...\"","Group votes →","Defend your answer 🔥"] },
+  hottakes:        { emoji:"🔥", headline:"Agree or fight about it", body:"Bold opinions on screen. You tap agree or disagree. Watch the room split in real time.", scene:["Bold opinion drops →","Live vote bar 📊","Cue the debate 🗣️"] },
+  spin:            { emoji:"🌀", headline:"Leave it to fate", body:"Add names, spin, let chaos decide. For dares, prizes, or who gives the next speech.", scene:["Add names →","Spin the wheel 🌀","\"Rahul, you're up!\" 😂"] },
+  charades:        { emoji:"🎭", headline:"No words. Just vibes.", body:"Act it out, team guesses. Built-in timer, categories, score tracker. Classic chaos.", scene:["Draw a card →","60 sec timer ⏱️","Team screams guesses 😂"] },
+  bingo:           { emoji:"🎲", headline:"Play as the party unfolds", body:"Your card has real party scenarios. Tick them off as they happen. First to 5 wins.", scene:["\"Cake drama\" ✅","\"Late guest\" ✅","BINGO! 🎉"] },
+  mostlikelyto:    { emoji:"👆", headline:"Call your people out — lovingly", body:"Everyone votes anonymously on who's most likely to do what. Results reveal live.", scene:["\"Most likely to...\"","Secret vote →","Live reveal 😂"] },
+  t2l:             { emoji:"👀", headline:"Who's hiding something?", body:"Two truths, one lie. Figure out which is which. Every round, someone's exposed.", scene:["Share 3 statements →","Group guesses →","\"OMG you actually did?!\""] },
+  rapidfire:       { emoji:"⚡", headline:"30 seconds. No thinking. Pure honesty.", body:"Questions fire fast. Yes or No. Your gut tells the truth even when your brain tries to hide.", scene:["Question fires →","30 sec timer ⏱️","No skipping allowed 🚫"] },
+  couplequiz:      { emoji:"💑", headline:"How well does anyone actually know them?", body:"Questions about their story. Guests answer live. The couple reveals what's actually true.", scene:["Guest guesses →","Couple reveals →","\"Wrong! It's pizza 🍕\""] },
+  birthdayquiz:    { emoji:"🎂", headline:"Only real fans get this right", body:"Questions about the birthday person. Prove you actually know them.", scene:["\"Favourite food?\"","Guests guess →","\"Wrong! It's pizza 🍕\""] },
+  luckydraw:       { emoji:"🎰", headline:"Fair and square, every time", body:"Add names, spin, reveal a winner. Instant, visual, no arguments about who chose.", scene:["All names in →","Spin the draw 🌀","🎉 Winner revealed!"] },
+  genderpoll:      { emoji:"🍭", headline:"Before the big reveal", body:"Guests vote Team Blue or Team Pink? Build the suspense. Then reveal.", scene:["Team 💙 vs Team 🩷","Live votes fill →","REVEAL 🎊"] },
+  babynamevote:    { emoji:"👶", headline:"Let the family weigh in — anonymously", body:"Put name options up for a vote. Anonymous, live, no family politics.", scene:["Options on screen →","Guests vote →","Clear winner emerges 🏆"] },
+  reportcard:      { emoji:"📊", headline:"How did the party actually go?", body:"Quick rating from guests. Venue, food, vibe, overall. Real feedback, collected live.", scene:["Guests rate →","Results compile →","Host sees full report 📋"] },
+};
+
 // ── occasion → plan slug ──────────────────────────────────────────────────
 const SLUG_FOR_OCC = {
   birthday:"birthday-party", "first-birthday":"first-birthday", anniversary:"anniversary",
@@ -6656,6 +6705,17 @@ export default function OccasionHub({ occasion }) {
     try { return !localStorage.getItem("tendr-occ-tour-v1"); } catch { return false; }
   });
   const [tourStep, setTourStep] = useState(0);
+
+  // ── First-time intro state ───────────────────────────────────────────────
+  const [hubIntroStep, setHubIntroStep] = useState(0);
+  const [hubIntroDone, setHubIntroDone] = useState(() => {
+    try { return !!localStorage.getItem("occ_hub_intro_v1"); } catch { return false; }
+  });
+  const [toolIntroId, setToolIntroId] = useState(null);
+  const [seenToolsSession, setSeenToolsSession] = useState(new Set());
+  const [neverShowTools, setNeverShowTools] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem("occ_tool_intros_v1") || "[]")); } catch { return new Set(); }
+  });
   const [splashOut, setSplashOut]   = useState(false);
   const [planData, setPlanData]     = useState(null);
 
@@ -6701,6 +6761,25 @@ export default function OccasionHub({ occasion }) {
   const { room, connected, error: roomError, myName, players: roomPlayers, gameState, currentGame, isHost, effect, createRoom, joinRoom, leaveRoom, closeRoom, sendAction, sendEffect, setGame, clearError } = usePartyRoom();
   const liveProps = room ? { room, myName, players: roomPlayers, gameState, currentGame, sendAction, sendEffect, isHost, setGame } : {};
   const navigate = useNavigate();
+
+  // ── Tool intro helpers ────────────────────────────────────────────────────
+  const openTool = (id) => {
+    const hasIntro = !!TOOL_INTRO_DATA[id];
+    const alreadySeen = neverShowTools.has(id) || seenToolsSession.has(id);
+    if (hasIntro && !alreadySeen) {
+      setSeenToolsSession(prev => new Set([...prev, id]));
+      setToolIntroId(id);
+    } else {
+      setOpen(id);
+    }
+  };
+  const permanentlyDismissToolIntro = (id) => {
+    setNeverShowTools(prev => {
+      const next = new Set([...prev, id]);
+      try { localStorage.setItem("occ_tool_intros_v1", JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  };
 
   // ── Back navigation: push history entries at each depth level ──────────────
   const stateRef = useRef({ open: null, entryMode: null });
@@ -6807,6 +6886,122 @@ export default function OccasionHub({ occasion }) {
   const copyRoomLink = async (code) => {
     const url = `${window.location.origin}${window.location.pathname}?room=${code}`;
     try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2200); } catch {}
+  };
+
+  // ── Hub intro (2-slide first-time onboarding) ────────────────────────────
+  const renderHubIntro = () => {
+    if (!entryMode || hubIntroDone) return null;
+    const slides = [
+      {
+        visual: occ.emoji,
+        headline: `Your ${occ.name} Command Centre`,
+        body: "Everything your party needs — plan it, play it, capture it. All in one place, all in real time.",
+        tags: ["📋 MANAGE", "🎮 PLAY", "👥 PEOPLE", "✨ MOMENTS"],
+      },
+      {
+        visual: "🎪",
+        headline: "Host a room. Your crew plays live.",
+        body: "Create a live party room, share the code. Games, polls, votes — everyone's in sync on their own phone. No app download needed.",
+        steps: ["Host creates room 🏠", "Share the code 🔗", "Crew joins & plays 🎉"],
+      },
+    ];
+    const slide = slides[hubIntroStep];
+    const isLast = hubIntroStep === slides.length - 1;
+    const dismiss = (save) => {
+      if (save) try { localStorage.setItem("occ_hub_intro_v1", "1"); } catch {}
+      setHubIntroDone(true);
+    };
+    return (
+      <div style={{ position:"fixed", inset:0, zIndex:9991, background:"rgba(2,1,6,0.90)", backdropFilter:"blur(20px)", display:"flex", alignItems:"center", justifyContent:"center", padding:"0 20px" }}>
+        <div key={hubIntroStep} style={{ width:"100%", maxWidth:380, background:"linear-gradient(145deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02))", border:`1.5px solid ${accent}45`, borderRadius:28, padding:"40px 28px 28px", boxShadow:`0 24px 64px rgba(0,0,0,0.7),0 0 50px ${accent}20`, animation:"rm-in 0.32s cubic-bezier(0.22,1,0.36,1)", textAlign:"center", position:"relative" }}>
+          {/* Step counter */}
+          <div style={{ position:"absolute", top:18, right:22, fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.30)", letterSpacing:"0.1em" }}>{hubIntroStep+1} / {slides.length}</div>
+          {/* Visual */}
+          <div style={{ fontSize:72, lineHeight:1, marginBottom:22, display:"inline-block", animation:"splash-pulse 2.4s ease-in-out infinite" }}>{slide.visual}</div>
+          {/* Headline */}
+          <div style={{ fontSize:22, fontWeight:800, color:"#FFFFFF", marginBottom:12, lineHeight:1.25 }}>{slide.headline}</div>
+          {/* Body */}
+          <div style={{ fontSize:14, color:"rgba(255,255,255,0.62)", lineHeight:1.65, marginBottom:24 }}>{slide.body}</div>
+          {/* Slide-specific visual elements */}
+          {slide.tags && (
+            <div style={{ display:"flex", gap:6, flexWrap:"wrap", justifyContent:"center", marginBottom:28 }}>
+              {slide.tags.map((p,i) => (
+                <div key={i} style={{ padding:"7px 14px", borderRadius:100, background:`${accent}22`, border:`1.5px solid ${accent}55`, fontSize:12, fontWeight:700, color:accent, animation:`rm-in 0.3s ${i*0.07}s both` }}>{p}</div>
+              ))}
+            </div>
+          )}
+          {slide.steps && (
+            <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:18, padding:"18px 20px", marginBottom:24, display:"flex", flexDirection:"column", gap:10 }}>
+              {slide.steps.map((s,i) => (
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:10, animation:`rm-in 0.3s ${i*0.1}s both` }}>
+                  <div style={{ width:24, height:24, borderRadius:"50%", background:`${accent}30`, border:`1.5px solid ${accent}70`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:800, color:accent, flexShrink:0 }}>{i+1}</div>
+                  <div style={{ fontSize:13, color:"rgba(255,255,255,0.78)", fontWeight:600, textAlign:"left" }}>{s}</div>
+                </div>
+              ))}
+            </div>
+          )}
+          {/* Progress dots */}
+          <div style={{ display:"flex", justifyContent:"center", gap:6, marginBottom:24 }}>
+            {slides.map((_,i) => (
+              <div key={i} onClick={() => setHubIntroStep(i)} style={{ width:i===hubIntroStep?22:6, height:6, borderRadius:3, background:i===hubIntroStep?accent:"rgba(255,255,255,0.20)", transition:"all 0.25s", cursor:"pointer" }} />
+            ))}
+          </div>
+          {/* Primary button */}
+          <button onClick={() => isLast ? dismiss(true) : setHubIntroStep(s=>s+1)} style={{ width:"100%", padding:"14px 0", borderRadius:14, border:"none", background:accent, color:"#fff", fontSize:15, fontWeight:700, cursor:"pointer", marginBottom:12, boxShadow:`0 4px 20px ${accent}50` }}>
+            {isLast ? "Let's go →" : "Next →"}
+          </button>
+          {/* Skip / Don't show again */}
+          <button onClick={() => dismiss(isLast)} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.35)", fontSize:12, cursor:"pointer", padding:"4px 8px", lineHeight:1.4 }}>
+            {isLast ? "Don't show again" : "Skip intro"}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // ── Tool intro (first-time overlay per tool) ──────────────────────────────
+  const renderToolIntro = () => {
+    if (!toolIntroId) return null;
+    const data = TOOL_INTRO_DATA[toolIntroId];
+    if (!data) { setOpen(toolIntroId); setToolIntroId(null); return null; }
+    const proceed = (dontShow) => {
+      if (dontShow) permanentlyDismissToolIntro(toolIntroId);
+      const id = toolIntroId;
+      setToolIntroId(null);
+      setOpen(id);
+    };
+    return (
+      <div style={{ position:"fixed", inset:0, zIndex:9991, background:"rgba(2,1,6,0.92)", backdropFilter:"blur(22px)", display:"flex", alignItems:"center", justifyContent:"center", padding:"0 20px" }}>
+        <div style={{ width:"100%", maxWidth:360, background:"linear-gradient(145deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02))", border:`1.5px solid ${accent}45`, borderRadius:28, padding:"40px 24px 28px", boxShadow:`0 24px 64px rgba(0,0,0,0.75),0 0 50px ${accent}18`, animation:"rm-in 0.32s cubic-bezier(0.22,1,0.36,1)", textAlign:"center" }}>
+          {/* Big emoji */}
+          <div style={{ fontSize:72, lineHeight:1, marginBottom:18, animation:"splash-pulse 2s ease-in-out infinite" }}>{data.emoji}</div>
+          {/* Headline */}
+          <div style={{ fontSize:21, fontWeight:800, color:"#FFFFFF", marginBottom:10, lineHeight:1.25 }}>{data.headline}</div>
+          {/* Body */}
+          <div style={{ fontSize:14, color:"rgba(255,255,255,0.60)", lineHeight:1.65, marginBottom:20 }}>{data.body}</div>
+          {/* Scene steps */}
+          {data.scene && (
+            <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:16, padding:"16px 18px", marginBottom:24, display:"flex", flexDirection:"column", gap:10 }}>
+              {data.scene.map((step,i) => (
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:10, animation:`rm-in 0.28s ${i*0.09}s both` }}>
+                  {i>0 && <div style={{ width:24, textAlign:"center", fontSize:12, color:accent }}>↓</div>}
+                  {i===0 && <div style={{ width:24, textAlign:"center", fontSize:14 }}>▶</div>}
+                  <div style={{ fontSize:13, color:"rgba(255,255,255,0.75)", fontWeight:500 }}>{step}</div>
+                </div>
+              ))}
+            </div>
+          )}
+          {/* Primary: open tool */}
+          <button onClick={() => proceed(false)} style={{ width:"100%", padding:"13px 0", borderRadius:14, border:"none", background:accent, color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", marginBottom:10, boxShadow:`0 4px 18px ${accent}45` }}>
+            Let's try it →
+          </button>
+          {/* Secondary: don't show again */}
+          <button onClick={() => proceed(true)} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.35)", fontSize:12, cursor:"pointer", padding:"4px 8px" }}>
+            Don't show again
+          </button>
+        </div>
+      </div>
+    );
   };
 
   const renderModal = () => {
@@ -7659,7 +7854,7 @@ export default function OccasionHub({ occasion }) {
                   {isGameSection ? (
                     <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }}>
                       {sectionTools.map(t => (
-                        <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:T.cardBg, border:`1.5px solid ${T.cardBd}`, borderRadius:14, padding:"16px 8px 14px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:10, textAlign:"center" }}>
+                        <div key={t.id} onClick={()=>openTool(t.id)} className="occ-tool-card" style={{ background:T.cardBg, border:`1.5px solid ${T.cardBd}`, borderRadius:14, padding:"16px 8px 14px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:10, textAlign:"center" }}>
                           <div style={{ color:PH.violet }}>{TOOL_ICONS[t.id]||occic(<polygon points="5 3 19 12 5 21 5 3"/>)}</div>
                           <div style={{ fontSize:11.5, fontWeight:600, color:T.main, lineHeight:1.35 }}>{t.title}</div>
                         </div>
@@ -7672,7 +7867,7 @@ export default function OccasionHub({ occasion }) {
                           const desc = t.desc && !t.desc.startsWith('#') ? t.desc : null;
                           const isRight = i % 2 === 1;
                           return (
-                            <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{
+                            <div key={t.id} onClick={()=>openTool(t.id)} className="occ-tool-card" style={{
                               background:"transparent", border:"none",
                               borderBottom: i < sectionTools.length - (sectionTools.length%2===0?2:1) ? `1px solid ${T.rowBd}` : "none",
                               borderRight: !isRight && i < sectionTools.length-1 ? `1px solid ${T.rowBd}` : "none",
@@ -7714,7 +7909,7 @@ export default function OccasionHub({ occasion }) {
                   const cc = CARD_PALETTE[(i + 2) % CARD_PALETTE.length];
                   const em = TOOL_EMOJI[t.id] || "🎮";
                   return (
-                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:`${cc}38`, border:`2px solid ${LIVE_GAME_IDS.has(t.id) && room ? "#22c55eAA" : cc+"88"}`, borderRadius:16, padding:"18px 8px 14px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:6, textAlign:"center", position:"relative", boxShadow:`0 4px 16px ${cc}22` }}>
+                  <div key={t.id} onClick={()=>openTool(t.id)} className="occ-tool-card" style={{ background:`${cc}38`, border:`2px solid ${LIVE_GAME_IDS.has(t.id) && room ? "#22c55eAA" : cc+"88"}`, borderRadius:16, padding:"18px 8px 14px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:6, textAlign:"center", position:"relative", boxShadow:`0 4px 16px ${cc}22` }}>
                     {LIVE_GAME_IDS.has(t.id) && (
                       <div style={{ position:"absolute", top:5, right:5, fontSize:7.5, fontWeight:800, color: room ? "#22c55e" : "rgba(255,255,255,0.6)", letterSpacing:"0.05em", textTransform:"uppercase", background: room ? "rgba(34,197,94,0.18)" : "rgba(255,255,255,0.12)", borderRadius:100, padding:"2px 5px" }}>
                         {room ? "● Live" : "👥"}
@@ -7786,7 +7981,7 @@ export default function OccasionHub({ occasion }) {
                     const cc = CARD_PALETTE[i % CARD_PALETTE.length];
                     const em = TOOL_EMOJI[t.id] || "🎯";
                     return (
-                      <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{
+                      <div key={t.id} onClick={()=>openTool(t.id)} className="occ-tool-card" style={{
                         background:`${cc}38`, border:`2px solid ${cc}88`,
                         borderRadius:18, padding:"22px 12px 16px", cursor:"pointer",
                         display:"flex", flexDirection:"column", alignItems:"center", gap:8, textAlign:"center",
@@ -7820,7 +8015,7 @@ export default function OccasionHub({ occasion }) {
                     const cc = CARD_PALETTE[(i + 4) % CARD_PALETTE.length];
                     const em = TOOL_EMOJI[t.id] || "✨";
                     return (
-                      <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{
+                      <div key={t.id} onClick={()=>openTool(t.id)} className="occ-tool-card" style={{
                         background:`${cc}38`, border:`2px solid ${cc}88`,
                         borderRadius:18, padding:"22px 12px 16px", cursor:"pointer",
                         display:"flex", flexDirection:"column", alignItems:"center", gap:8, textAlign:"center",
@@ -7840,7 +8035,7 @@ export default function OccasionHub({ occasion }) {
                 <div style={{ fontSize:14, fontWeight:600, color:T.main, marginBottom:3 }}>Party Recap</div>
                 <div style={{ fontSize:12, color:T.sub, lineHeight:1.5 }}>Create a shareable summary of your event.</div>
               </div>
-              <button onClick={()=>setOpen("reportcard")} style={{ padding:"9px 18px", borderRadius:10, border:`1.5px solid ${PH.violet}50`, background:`${PH.violet}14`, color:PH.violet, fontSize:12, fontWeight:600, cursor:"pointer", flexShrink:0 }}>Create →</button>
+              <button onClick={()=>openTool("reportcard")} style={{ padding:"9px 18px", borderRadius:10, border:`1.5px solid ${PH.violet}50`, background:`${PH.violet}14`, color:PH.violet, fontSize:12, fontWeight:600, cursor:"pointer", flexShrink:0 }}>Create →</button>
             </div>
           </div>
         )}
@@ -7878,6 +8073,8 @@ export default function OccasionHub({ occasion }) {
       </button>
 
       {renderModal()}
+      {renderHubIntro()}
+      {renderToolIntro()}
     </div>
   );
 }
