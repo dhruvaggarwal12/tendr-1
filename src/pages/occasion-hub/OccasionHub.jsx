@@ -6393,6 +6393,73 @@ const GAME_IDS = new Set([
   "birthdayquiz","couplequiz","t2l","rapidfire","mostlikelyto","luckydraw","genderpoll","babynamevote","moodmeter",
 ]);
 
+// ── Game release waves ───────────────────────────────────────────────────
+// To ship a wave: uncomment its IDs below.
+// Games not listed here are invisible in the PLAY tab.
+const ENABLED_GAME_IDS = new Set([
+
+  // ── Wave 1 — LIVE NOW (core set, all built) ───────────────────────────
+  "truthordare",
+  "neverhavei",
+  "wouldyou",
+  "hottakes",
+  "spin",
+  "charades",
+  "bingo",
+  "mostlikelyto",
+  "t2l",
+  "rapidfire",
+  "birthdayquiz",
+  "couplequiz",
+  "luckydraw",
+  "genderpoll",
+  "babynamevote",
+  "moodmeter",
+  "awardsceremony",
+
+  // ── Wave 2 — uncomment when built ─────────────────────────────────────
+  // "pictionary",          // all occasions
+  // "telephonedrawing",    // birthday, get-together, house-party
+  // "guesssong3sec",       // birthday, get-together, office
+  // "finishlyrics",        // birthday, anniversary
+  // "wronganswers",        // get-together, house-party, office, holi
+  // "dontsayyesno",        // get-together, house-party, bachelorette
+  // "whoknowsbirthdayperson", // birthday
+  // "guessthecouplesanswer",  // anniversary
+
+  // ── Wave 3 ────────────────────────────────────────────────────────────
+  // "mafia",               // get-together, house-party
+  // "spyfall",             // get-together, house-party
+  // "emojiDecoder",        // get-together, kitty, office, diwali, holi
+  // "dontlaugh",           // get-together, house-party, holi
+  // "wordchain",           // get-together, office
+  // "nameplaceanimal",     // get-together
+  // "fastestfinger",       // get-together, house-party
+
+  // ── Wave 4 ────────────────────────────────────────────────────────────
+  // "guesschildhoodphoto", // birthday, graduation, farewell, retirement
+  // "guessvoice",          // get-together, office, farewell, kitty
+  // "scavengerhunt",       // birthday, housewarming, get-together, graduation
+  // "birthdaymemory",      // birthday
+  // "couplePictionary",    // anniversary, wedding
+  // "babyfoodguess",       // baby shower
+  // "dontsaybaby",         // baby shower
+
+  // ── Wave 5 (occasion-specific) ───────────────────────────────────────
+  // "bollywoodeemoji",     // kitty, diwali, holi
+  // "bollywooddialogueGuess", // kitty, diwali, holi
+  // "guessprice",          // housewarming, kitty
+  // "kittyauction2",       // kitty (remix)
+  // "officescavengerhunt", // office, farewell
+  // "whosentthismessage",  // office
+  // "garbasongguess",      // navratri
+  // "dancefreeze",         // navratri
+  // "colourwars2",         // holi (expanded)
+  // "diwalisound",         // diwali
+  // "diwalisearch",        // diwali
+
+]);
+
 const TOOL_STATUS_MAP = {
   invite:["INVITE","READY"], checklist:["PLAN","READY"], giftregistry:["REGISTRY","OPEN"],
   potluck:["LIST","OPEN"], guestlist:["GUESTS","OPEN"], budget:["BUDGET","READY"],
@@ -7334,7 +7401,7 @@ export default function OccasionHub({ occasion }) {
 
   // Party Hub section classification
   const allTools   = (occ.sections || []).flatMap(s => s.tools || []);
-  const playTools  = allTools.filter(t => PLAY_IDS.has(t.id));
+  const playTools  = allTools.filter(t => PLAY_IDS.has(t.id) && ENABLED_GAME_IDS.has(t.id));
   const momentTools = allTools.filter(t => MOMENTS_IDS.has(t.id));
   const planTools  = allTools.filter(t => PLAN_IDS.has(t.id));
   const lobbyQuick = [...planTools.slice(0, 2), ...playTools.slice(0, 2)].slice(0, 4);
