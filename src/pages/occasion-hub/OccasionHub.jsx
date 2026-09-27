@@ -6635,6 +6635,42 @@ const CARD_PALETTE = [
   "#C77DFF","#FF5FA0","#00C9A7","#FF6F00","#5E60CE",
 ];
 
+// ── Game metadata: mood tags, player count, time, preview ────────────────
+const MOOD_TAGS = [
+  { id:"quick",       label:"⚡ Quick",        color:"#FFD700" },
+  { id:"funny",       label:"😂 Funny",        color:"#FF6B6B" },
+  { id:"quiz",        label:"🧠 Quiz",         color:"#4D96FF" },
+  { id:"music",       label:"🎵 Music",        color:"#6BCB77" },
+  { id:"acting",      label:"🎭 Acting",       color:"#C77DFF" },
+  { id:"competitive", label:"🔥 Competitive",  color:"#FF8E53" },
+  { id:"mystery",     label:"🕵️ Mystery",      color:"#5E60CE" },
+];
+const GAME_META = {
+  truthordare:    { emoji:"🎯", tagline:"Real conversations begin here", desc:"Occasion-specific prompts — things get interesting fast.", time:"10–20 min", players:"4–20", min:4, tags:["funny","competitive"], popular:true,  howItWorks:["Draw a card","Pick Truth or Dare","Answer honestly or take the dare","No skipping!"] },
+  neverhavei:     { emoji:"🙅", tagline:"Find out who's been living their best life", desc:"30 rounds, occasion-specific. You'll learn something new about everyone.", time:"10–15 min", players:"4–15", min:4, tags:["funny","quick"],       popular:true,  howItWorks:["Host reads a statement","Raise hand if you've done it","Score is tracked","Most points wins 🏆"] },
+  wouldyou:       { emoji:"❓", tagline:"Impossible choices, heated debates", desc:"Someone always says something surprising. Defend your answer.", time:"10–15 min", players:"4–20", min:4, tags:["funny","competitive"],   popular:true,  howItWorks:["A dilemma appears","Everyone votes","See how the group split","Defend your pick 🔥"] },
+  hottakes:       { emoji:"🔥", tagline:"Agree or fight about it", desc:"Bold opinions on screen. Tap agree or disagree. Watch the room split.", time:"5–10 min",  players:"3–20", min:3, tags:["quick","funny","competitive"], popular:true,  howItWorks:["A bold opinion drops","Everyone taps Agree or Disagree","See the live vote bar","Cue the debate 🗣️"] },
+  spin:           { emoji:"🌀", tagline:"Leave it to fate", desc:"Add names, spin, let chaos decide. For dares, prizes, speeches.", time:"2–5 min",   players:"2–30", min:2, tags:["quick","funny"],             popular:false, howItWorks:["Add all the names","Give the wheel a spin","Watch it land","\"Rahul, you're up!\" 😂"] },
+  charades:       { emoji:"🎭", tagline:"No words. Just vibes.", desc:"Act it out, team guesses. Timer, categories, score tracker built in.", time:"15–25 min", players:"4–20", min:4, tags:["acting","funny","competitive"], popular:true,  howItWorks:["Draw a card with a prompt","Act it out — no words","Your team guesses","Beat the 60-second timer ⏱️"] },
+  bingo:          { emoji:"🎲", tagline:"Play as the party unfolds", desc:"Real party scenarios on your card. Tick them off as they happen.", time:"30–60 min", players:"4–30", min:4, tags:["funny","competitive"],   popular:false, howItWorks:["Everyone gets a bingo card","Tick off what actually happens","First to 5 in a row","BINGO! 🎉"] },
+  birthdayquiz:   { emoji:"🎂", tagline:"Only real fans get this right", desc:"Questions about the birthday person. Prove you actually know them.", time:"10–15 min", players:"4–20", min:4, tags:["quiz","funny"],          popular:false, howItWorks:["Questions about the birthday person","Everyone guesses","Person reveals the truth","Most right answers wins"] },
+  couplequiz:     { emoji:"💑", tagline:"How well does anyone actually know them?", desc:"Questions about the couple. Guests answer live. Couple reveals truth.", time:"10–15 min", players:"4–20", min:4, tags:["quiz","funny"],      popular:false, howItWorks:["Question about the couple","Everyone submits their answer","Couple reveals the truth","Score tallied live"] },
+  t2l:            { emoji:"👀", tagline:"Who's hiding something?", desc:"Two truths, one lie. Figure out which is which.", time:"10–20 min", players:"4–15", min:4, tags:["mystery","funny"],        popular:true,  howItWorks:["Share 3 statements about yourself","Group votes on which is the lie","Reveal the truth","Collect points for fooling people"] },
+  rapidfire:      { emoji:"⚡", tagline:"30 seconds. No thinking. Pure honesty.", desc:"Questions fire fast. Yes or No. Your gut always tells the truth.", time:"5–10 min",  players:"3–20", min:3, tags:["quick","funny","competitive"], popular:false, howItWorks:["Questions appear fast","Answer Yes or No","No time to overthink","Results revealed at end"] },
+  mostlikelyto:   { emoji:"👆", tagline:"Call your people out — lovingly", desc:"Everyone votes anonymously. Results reveal live.", time:"10–15 min", players:"4–20", min:4, tags:["funny","competitive"],   popular:true,  howItWorks:["A \"Most likely to...\" question drops","Everyone votes secretly","Live reveal of results","And the winner is... 😂"] },
+  luckydraw:      { emoji:"🎰", tagline:"Fair and square, every time", desc:"Add names, reveal a random winner. No arguments.", time:"2–5 min",   players:"2–50", min:2, tags:["quick"],                    popular:false, howItWorks:["Add everyone's name","Hit Draw","Watch the animation","Winner is revealed 🎉"] },
+  genderpoll:     { emoji:"🍭", tagline:"Before the big reveal", desc:"Team Blue vs Team Pink. Build suspense, then reveal.", time:"5–10 min",  players:"4–30", min:4, tags:["quick","competitive"],      popular:false, howItWorks:["Team Blue or Team Pink?","Guests vote live","Watch the bar fill","REVEAL TIME 🎊"] },
+  babynamevote:   { emoji:"👶", tagline:"Let the family weigh in — anonymously", desc:"Name options up for a vote. Live, no politics.", time:"5–10 min",  players:"4–20", min:4, tags:["quick"],                    popular:false, howItWorks:["Host adds name options","Everyone votes secretly","Live results appear","Clear winner emerges 🏆"] },
+  moodmeter:      { emoji:"😊", tagline:"Read the room without asking", desc:"Guests tap their vibe. You see the live pulse of the party.", time:"ongoing",  players:"2–50", min:2, tags:["quick"],                    popular:false, howItWorks:["Guests tap their current mood","Host sees live breakdown","Adjust the party accordingly","Keep checking in all night"] },
+  awardsceremony: { emoji:"🏆", tagline:"Crown the legends of the night", desc:"Everyone nominates, everyone votes. Reveal awards live.", time:"15–25 min", players:"4–30", min:4, tags:["competitive","funny"],  popular:false, howItWorks:["Host creates award categories","Everyone nominates","Secret voting round","Live awards reveal 🏆"] },
+  theme:          { emoji:"🎨", tagline:"Let everyone vote on the vibe", desc:"Show theme options, quick vote. Everyone feels involved.", time:"3–5 min",   players:"2–30", min:2, tags:["quick"],                    popular:false, howItWorks:["Host shows theme options","Everyone votes","Winning theme revealed","Party vibe decided 🎨"] },
+  wishwall:       { emoji:"⭐", tagline:"More than just a card", desc:"Everyone writes their message live. Read them all together.", time:"10–15 min", players:"2–30", min:2, tags:["quick"],                    popular:false, howItWorks:["Share the wall link","Guests write wishes","Wall fills up live","Read together — that's the moment 🥹"] },
+  secretmessage:  { emoji:"🔐", tagline:"The things people mean but don't say", desc:"Anonymous messages only the host sees. Honest, heartfelt, sometimes hilarious.", time:"5–10 min",  players:"2–30", min:2, tags:["mystery","funny"],        popular:false, howItWorks:["Guests type anonymous messages","Only host sees them","Host reads aloud","Reaction is priceless 😂"] },
+  lovenotes:      { emoji:"💌", tagline:"Notes they'll come back to", desc:"Everyone leaves a love note. Collected, read live — your call.", time:"5–10 min",  players:"2–30", min:2, tags:["quick"],                    popular:false, howItWorks:["Guests leave love notes","All anonymous","Host collects them","Read live or save for later 💌"] },
+  blessingswall:  { emoji:"🙏", tagline:"Blessings from everyone who matters", desc:"Guests leave blessings in real time. Watch the wall fill.", time:"5–10 min",  players:"2–30", min:2, tags:["quick"],                    popular:false, howItWorks:["Share the blessings link","Guests write blessings","Wall glows up live","Screenshot and treasure it"] },
+};
+const POPULAR_GAME_IDS = Object.entries(GAME_META).filter(([,v])=>v.popular).map(([k])=>k);
+
 // ── first-time intro content per tool ────────────────────────────────────
 const TOOL_INTRO_DATA = {
   invite:          { emoji:"📨", headline:"No more screenshot invites", body:"One link — guests click, RSVP instantly. No more midnight \"are you coming?\" follow-ups.", scene:["You share one link 🔗","They click & RSVP ✅","You see who's in 📊"] },
@@ -6712,6 +6748,9 @@ export default function OccasionHub({ occasion }) {
     try { return !!localStorage.getItem("occ_hub_intro_v1"); } catch { return false; }
   });
   const [toolIntroId, setToolIntroId] = useState(null);
+  const [gamePreviewId, setGamePreviewId] = useState(null);
+  const [playMood, setPlayMood] = useState(null);
+  const [playCount, setPlayCount] = useState(null);
   const [seenToolsSession, setSeenToolsSession] = useState(new Set());
   const [neverShowTools, setNeverShowTools] = useState(() => {
     try { return new Set(JSON.parse(localStorage.getItem("occ_tool_intros_v1") || "[]")); } catch { return new Set(); }
@@ -6764,6 +6803,12 @@ export default function OccasionHub({ occasion }) {
 
   // ── Tool intro helpers ────────────────────────────────────────────────────
   const openTool = (id) => {
+    // Games in the PLAY tab go through the Game Preview screen first
+    if (GAME_IDS.has(id) && !room) {
+      setGamePreviewId(id);
+      return;
+    }
+    // Tool intros for non-game tools
     const hasIntro = !!TOOL_INTRO_DATA[id];
     const alreadySeen = neverShowTools.has(id) || seenToolsSession.has(id);
     if (hasIntro && !alreadySeen) {
@@ -6886,6 +6931,216 @@ export default function OccasionHub({ occasion }) {
   const copyRoomLink = async (code) => {
     const url = `${window.location.origin}${window.location.pathname}?room=${code}`;
     try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2200); } catch {}
+  };
+
+  // ── Game Preview overlay (tapped from PLAY tab, no room) ─────────────────
+  const renderGamePreview = () => {
+    if (!gamePreviewId) return null;
+    const meta = GAME_META[gamePreviewId];
+    const tool = allTools.find(t => t.id === gamePreviewId);
+    if (!meta || !tool) { setOpen(gamePreviewId); setGamePreviewId(null); return null; }
+    const close = () => setGamePreviewId(null);
+    const isLive = LIVE_GAME_IDS.has(gamePreviewId);
+    return (
+      <div style={{ position:"fixed", inset:0, zIndex:9990, background:"rgba(2,1,6,0.94)", backdropFilter:"blur(24px)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"0 20px" }}
+        onClick={e => e.target===e.currentTarget && close()}>
+        <div style={{ width:"100%", maxWidth:400, background:"linear-gradient(145deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02))", border:`1.5px solid ${accent}50`, borderRadius:28, overflow:"hidden", boxShadow:`0 28px 70px rgba(0,0,0,0.8),0 0 60px ${accent}18`, animation:"rm-in 0.32s cubic-bezier(0.22,1,0.36,1)", maxHeight:"90vh", overflowY:"auto" }}>
+          {/* Header band */}
+          <div style={{ background:`${accent}22`, borderBottom:`1px solid ${accent}30`, padding:"28px 24px 22px", textAlign:"center", position:"relative" }}>
+            <button onClick={close} style={{ position:"absolute", top:14, right:16, background:"rgba(255,255,255,0.1)", border:"none", borderRadius:"50%", width:30, height:30, color:"rgba(255,255,255,0.7)", fontSize:16, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>×</button>
+            <div style={{ fontSize:56, lineHeight:1, marginBottom:14, animation:"splash-pulse 2s ease-in-out infinite" }}>{meta.emoji}</div>
+            <div style={{ fontSize:21, fontWeight:800, color:"#FFFFFF", marginBottom:6, lineHeight:1.2 }}>{tool.title}</div>
+            <div style={{ fontSize:13, color:"rgba(255,255,255,0.62)", lineHeight:1.5, marginBottom:14 }}>{meta.tagline}</div>
+            <div style={{ display:"flex", gap:8, justifyContent:"center", flexWrap:"wrap" }}>
+              <div style={{ padding:"4px 12px", borderRadius:100, background:"rgba(255,255,255,0.10)", fontSize:12, color:"rgba(255,255,255,0.75)", fontWeight:600 }}>👥 {meta.players} players</div>
+              <div style={{ padding:"4px 12px", borderRadius:100, background:"rgba(255,255,255,0.10)", fontSize:12, color:"rgba(255,255,255,0.75)", fontWeight:600 }}>⏱️ {meta.time}</div>
+              {isLive && <div style={{ padding:"4px 12px", borderRadius:100, background:"rgba(34,197,94,0.15)", border:"1px solid rgba(34,197,94,0.4)", fontSize:12, color:"#4ade80", fontWeight:700 }}>● Live game</div>}
+            </div>
+          </div>
+          {/* How it works */}
+          <div style={{ padding:"22px 24px" }}>
+            <div style={{ fontSize:11, fontWeight:800, color:"rgba(255,255,255,0.40)", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:14 }}>How it works</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:24 }}>
+              {meta.howItWorks.map((step,i) => (
+                <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:12, animation:`rm-in 0.28s ${i*0.07}s both` }}>
+                  <div style={{ width:26, height:26, borderRadius:"50%", background:`${accent}28`, border:`1.5px solid ${accent}60`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:800, color:accent, flexShrink:0, marginTop:1 }}>{i+1}</div>
+                  <div style={{ fontSize:14, color:"rgba(255,255,255,0.75)", lineHeight:1.45, fontWeight:500 }}>{step}</div>
+                </div>
+              ))}
+            </div>
+            {/* CTA Buttons */}
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              <button onClick={() => { setGamePreviewId(null); setRoomModal("host-setup"); }} style={{ width:"100%", padding:"14px 0", borderRadius:14, border:"none", background:accent, color:"#fff", fontSize:15, fontWeight:700, cursor:"pointer", boxShadow:`0 4px 20px ${accent}50` }}>
+                🏠 Host a Game
+              </button>
+              <button onClick={() => { setGamePreviewId(null); setRoomModal("join"); }} style={{ width:"100%", padding:"14px 0", borderRadius:14, border:`1.5px solid rgba(255,255,255,0.18)`, background:"rgba(255,255,255,0.06)", color:"rgba(255,255,255,0.85)", fontSize:15, fontWeight:700, cursor:"pointer" }}>
+                🔗 Join a Game
+              </button>
+              <button onClick={() => { setGamePreviewId(null); setForceSoloOpen(true); setOpen(gamePreviewId); }} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.40)", fontSize:13, cursor:"pointer", padding:"6px 0", fontWeight:500 }}>
+                Preview solo →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ── PLAY tab: mood discovery + player count filter ────────────────────────
+  const renderPlayTab = () => {
+    if (!playTools.length) return <div style={{ textAlign:"center", padding:"48px 20px", color:T.sub, fontSize:14 }}>No games for this occasion.</div>;
+
+    // Apply filters
+    const playerRange = { "4-6":[4,6], "7-10":[7,10], "10+":[10,99] };
+    const filtered = playTools.filter(t => {
+      const meta = GAME_META[t.id];
+      if (!meta) return !playMood && !playCount;
+      if (playMood && !meta.tags.includes(playMood)) return false;
+      if (playCount) {
+        const [lo,hi] = playerRange[playCount];
+        if (meta.min > hi) return false;
+      }
+      return true;
+    });
+
+    const popularInTab = playTools.filter(t => POPULAR_GAME_IDS.includes(t.id));
+    const showPopular = !playMood && !playCount && popularInTab.length > 0;
+
+    const randomPick = () => {
+      const choices = filtered.length ? filtered : playTools;
+      const pick = choices[Math.floor(Math.random() * choices.length)];
+      if (pick) { room ? setOpen(pick.id) : setGamePreviewId(pick.id); }
+    };
+
+    const GameCard = ({ t, large }) => {
+      const meta = GAME_META[t.id];
+      const cc = CARD_PALETTE[playTools.indexOf(t) % CARD_PALETTE.length] || accent;
+      const isLive = LIVE_GAME_IDS.has(t.id);
+      return (
+        <div onClick={() => room ? setOpen(t.id) : (GAME_IDS.has(t.id) ? setGamePreviewId(t.id) : openTool(t.id))}
+          className="occ-tool-card"
+          style={{ background:`${cc}22`, border:`2px solid ${cc}60`, borderRadius:20, padding:large?"20px 18px 18px":"16px 14px 14px", cursor:"pointer", position:"relative", overflow:"hidden", boxShadow:`0 4px 18px ${cc}18`, transition:"transform 0.12s,box-shadow 0.12s" }}>
+          {isLive && room && <div style={{ position:"absolute", top:10, right:10, fontSize:8, fontWeight:800, color:"#4ade80", background:"rgba(34,197,94,0.15)", border:"1px solid rgba(34,197,94,0.4)", borderRadius:100, padding:"2px 6px" }}>● LIVE</div>}
+          <div style={{ fontSize:large?44:32, lineHeight:1, marginBottom:large?12:8, textShadow:`0 0 18px ${cc}CC` }}>{meta?.emoji||TOOL_EMOJI[t.id]||"🎮"}</div>
+          <div style={{ fontSize:large?15:12.5, fontWeight:800, color:"#FFFFFF", lineHeight:1.25, marginBottom:large?6:4 }}>{t.title}</div>
+          {large && meta && (
+            <>
+              <div style={{ fontSize:12, color:"rgba(255,255,255,0.58)", lineHeight:1.45, marginBottom:10 }}>{meta.desc}</div>
+              <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                <span style={{ fontSize:11, color:cc, fontWeight:600 }}>👥 {meta.players}</span>
+                <span style={{ fontSize:11, color:"rgba(255,255,255,0.45)" }}>·</span>
+                <span style={{ fontSize:11, color:"rgba(255,255,255,0.55)", fontWeight:500 }}>⏱️ {meta.time}</span>
+              </div>
+            </>
+          )}
+          {!large && meta && <div style={{ fontSize:10, color:"rgba(255,255,255,0.45)", fontWeight:500 }}>{meta.time}</div>}
+          <div style={{ position:"absolute", top:-22, right:-22, width:70, height:70, borderRadius:"50%", background:`${cc}18`, pointerEvents:"none" }} />
+        </div>
+      );
+    };
+
+    return (
+      <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+        {/* Header row */}
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+          <div>
+            <div style={{ fontSize:14, fontWeight:800, color:"#FFFFFF" }}>🎮 PLAY</div>
+            <div style={{ fontSize:12, color:"rgba(255,255,255,0.50)", marginTop:2 }}>What are you in the mood for?</div>
+          </div>
+          <button onClick={randomPick} style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 14px", borderRadius:100, border:`1.5px solid ${accent}55`, background:`${accent}18`, color:accent, fontSize:12, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap" }}>
+            🎲 I'm Bored
+          </button>
+        </div>
+
+        {/* Mood filter chips */}
+        <div style={{ display:"flex", gap:8, overflowX:"auto", paddingBottom:4, marginBottom:14, scrollbarWidth:"none" }}>
+          {MOOD_TAGS.map(m => {
+            const active = playMood === m.id;
+            return (
+              <button key={m.id} onClick={() => setPlayMood(active ? null : m.id)} style={{ flexShrink:0, padding:"7px 14px", borderRadius:100, border:`1.5px solid ${active ? m.color : "rgba(255,255,255,0.15)"}`, background:active ? `${m.color}28` : "rgba(255,255,255,0.05)", color:active ? m.color : "rgba(255,255,255,0.55)", fontSize:12.5, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap", transition:"all 0.15s" }}>
+                {m.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Player count filter */}
+        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20 }}>
+          <div style={{ fontSize:11, color:"rgba(255,255,255,0.40)", fontWeight:600, whiteSpace:"nowrap" }}>How many?</div>
+          {[["4-6","👤 4–6"],["7-10","👥 7–10"],["10+","🧑‍🤝‍🧑 10+"]].map(([key,label]) => {
+            const active = playCount === key;
+            return (
+              <button key={key} onClick={() => setPlayCount(active ? null : key)} style={{ padding:"6px 12px", borderRadius:100, border:`1.5px solid ${active ? accent : "rgba(255,255,255,0.12)"}`, background:active ? `${accent}22` : "rgba(255,255,255,0.04)", color:active ? accent : "rgba(255,255,255,0.50)", fontSize:11.5, fontWeight:700, cursor:"pointer", transition:"all 0.15s", whiteSpace:"nowrap" }}>
+                {label}
+              </button>
+            );
+          })}
+          {(playMood||playCount) && <button onClick={()=>{setPlayMood(null);setPlayCount(null);}} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.35)", fontSize:11, cursor:"pointer", padding:"0 4px" }}>✕ Clear</button>}
+        </div>
+
+        {/* Popular Right Now — only when no filter active */}
+        {showPopular && (
+          <>
+            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
+              <div style={{ fontSize:11, fontWeight:800, color:"rgba(255,255,255,0.45)", textTransform:"uppercase", letterSpacing:"0.12em" }}>🔥 Popular Right Now</div>
+              <div style={{ flex:1, height:1, background:"rgba(255,255,255,0.08)" }} />
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:24 }}>
+              {popularInTab.map(t => <GameCard key={t.id} t={t} large />)}
+            </div>
+            <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
+              <div style={{ fontSize:11, fontWeight:800, color:"rgba(255,255,255,0.45)", textTransform:"uppercase", letterSpacing:"0.12em" }}>All Games</div>
+              <div style={{ flex:1, height:1, background:"rgba(255,255,255,0.08)" }} />
+              <div style={{ fontSize:10, color:accent, fontWeight:600 }}>{playTools.length}</div>
+            </div>
+          </>
+        )}
+
+        {/* Filtered / All grid */}
+        {filtered.length === 0 ? (
+          <div style={{ textAlign:"center", padding:"40px 20px" }}>
+            <div style={{ fontSize:36, marginBottom:12 }}>🤷</div>
+            <div style={{ fontSize:15, fontWeight:700, color:"#FFFFFF", marginBottom:8 }}>No games match that filter</div>
+            <button onClick={()=>{setPlayMood(null);setPlayCount(null);}} style={{ padding:"10px 20px", borderRadius:100, border:`1.5px solid ${accent}50`, background:`${accent}18`, color:accent, fontSize:13, fontWeight:700, cursor:"pointer" }}>Clear Filters</button>
+          </div>
+        ) : (
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:12 }}>
+            {(showPopular ? filtered.filter(t => !POPULAR_GAME_IDS.includes(t.id)) : filtered).map(t => (
+              <GameCard key={t.id} t={t} large={false} />
+            ))}
+          </div>
+        )}
+
+        {/* In-room: suggested for group size */}
+        {room && (
+          <div style={{ marginTop:20, background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.25)", borderRadius:16, padding:"16px" }}>
+            <div style={{ fontSize:12, fontWeight:700, color:"#4ade80", marginBottom:12 }}>🎯 Suggested for your {room.players?.length||1}-person group</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {playTools.filter(t=>{const m=GAME_META[t.id];return m&&(room.players?.length||4)>=m.min;}).slice(0,4).map(t=>{
+                const meta=GAME_META[t.id]; const cc=CARD_PALETTE[playTools.indexOf(t)%CARD_PALETTE.length]||accent;
+                return (
+                  <div key={t.id} onClick={()=>setOpen(t.id)} style={{ display:"flex", alignItems:"center", gap:12, background:`${cc}15`, border:`1px solid ${cc}35`, borderRadius:12, padding:"12px 14px", cursor:"pointer" }}>
+                    <div style={{ fontSize:26 }}>{meta?.emoji||TOOL_EMOJI[t.id]||"🎮"}</div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:13, fontWeight:700, color:"#FFFFFF" }}>{t.title}</div>
+                      <div style={{ fontSize:11, color:"rgba(255,255,255,0.50)" }}>👥 {meta?.players} · ⏱️ {meta?.time}</div>
+                    </div>
+                    <div style={{ fontSize:18, color:cc }}>→</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* I'm bored CTA at bottom */}
+        <div style={{ marginTop:22, textAlign:"center" }}>
+          <button onClick={randomPick} style={{ padding:"13px 32px", borderRadius:100, border:"none", background:accent, color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", boxShadow:`0 4px 20px ${accent}45` }}>
+            🎲 Pick a game for us
+          </button>
+        </div>
+      </div>
+    );
   };
 
   // ── Hub intro (2-slide first-time onboarding) ────────────────────────────
@@ -7894,36 +8149,7 @@ export default function OccasionHub({ occasion }) {
         )}
 
         {/* PLAY */}
-        {activeTab === "play" && (
-          <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
-              <div style={{ fontSize:10, fontWeight:800, color:T.sectionLbl, textTransform:"uppercase", letterSpacing:"0.16em" }}>Games &amp; Activities</div>
-              <div style={{ flex:1, height:1, background:T.sectionLn }} />
-              <div style={{ fontSize:10, color:PH.violet, fontWeight:600 }}>{playTools.length}</div>
-            </div>
-            {playTools.length === 0 ? (
-              <div style={{ textAlign:"center", padding:"48px 20px", color:T.sub, fontSize:14 }}>No games available for this occasion.</div>
-            ) : (
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10 }}>
-                {playTools.map((t,i) => {
-                  const cc = CARD_PALETTE[(i + 2) % CARD_PALETTE.length];
-                  const em = TOOL_EMOJI[t.id] || "🎮";
-                  return (
-                  <div key={t.id} onClick={()=>openTool(t.id)} className="occ-tool-card" style={{ background:`${cc}38`, border:`2px solid ${LIVE_GAME_IDS.has(t.id) && room ? "#22c55eAA" : cc+"88"}`, borderRadius:16, padding:"18px 8px 14px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:6, textAlign:"center", position:"relative", boxShadow:`0 4px 16px ${cc}22` }}>
-                    {LIVE_GAME_IDS.has(t.id) && (
-                      <div style={{ position:"absolute", top:5, right:5, fontSize:7.5, fontWeight:800, color: room ? "#22c55e" : "rgba(255,255,255,0.6)", letterSpacing:"0.05em", textTransform:"uppercase", background: room ? "rgba(34,197,94,0.18)" : "rgba(255,255,255,0.12)", borderRadius:100, padding:"2px 5px" }}>
-                        {room ? "● Live" : "👥"}
-                      </div>
-                    )}
-                    <div style={{ fontSize:32, lineHeight:1, textShadow:`0 0 16px ${cc}CC` }}>{em}</div>
-                    <div style={{ fontSize:11, fontWeight:800, color:"#FFFFFF", lineHeight:1.35, textShadow:"0 1px 4px rgba(0,0,0,0.5)" }}>{t.title}</div>
-                  </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
+        {activeTab === "play" && renderPlayTab()}
 
         {/* PEOPLE */}
         {activeTab === "people" && (
@@ -8073,6 +8299,7 @@ export default function OccasionHub({ occasion }) {
       </button>
 
       {renderModal()}
+      {renderGamePreview()}
       {renderHubIntro()}
       {renderToolIntro()}
     </div>
