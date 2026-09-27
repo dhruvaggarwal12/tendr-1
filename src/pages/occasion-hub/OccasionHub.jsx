@@ -6914,8 +6914,8 @@ export default function OccasionHub({ occasion }) {
   const isDark = true; // always dark gradient for all occasions
   const pageBg = "#050208"; // solid fallback (used in splash compat)
   const occAccent = occTheme.accent;
-  // Per-occasion unique dark gradient: accent drives ALL colour so each one looks distinct
-  const darkGrad = `linear-gradient(160deg, ${occTheme.accent}12 0%, ${occTheme.accent}40 45%, ${occTheme.accent}0A 100%)`;
+  // Per-occasion unique dark gradient: solid near-black base + accent tint so it's always DARK
+  const darkGrad = `#050208 linear-gradient(145deg, ${occTheme.accent}22 0%, ${occTheme.accent}58 38%, ${occTheme.accent}18 72%, ${occTheme.accent}08 100%)`;
   const occIconBg = occTheme.iconBg;
   const occHostGrad = occTheme.hostGrad;
   const occConfetti = occTheme.confetti;
@@ -7054,7 +7054,7 @@ export default function OccasionHub({ occasion }) {
 
       {/* ── Splash ── */}
       {showSplash && (
-        <div style={{ position:"fixed", inset:0, zIndex:9999, background:`radial-gradient(ellipse at 30% 40%, ${accent}28 0%, ${PH.bg} 60%)`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", opacity:splashOut?0:1, transition:"opacity 0.55s cubic-bezier(0.4,0,0.2,1)", pointerEvents:splashOut?"none":"all" }}>
+        <div style={{ position:"fixed", inset:0, zIndex:9999, background:`#050208 radial-gradient(ellipse at 30% 40%, ${accent}45 0%, transparent 65%)`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", opacity:splashOut?0:1, transition:"opacity 0.55s cubic-bezier(0.4,0,0.2,1)", pointerEvents:splashOut?"none":"all" }}>
           <div style={{ textAlign:"center", padding:"0 32px" }}>
             <div style={{ fontSize:72, marginBottom:18, animation:"splash-pulse 1.8s ease-in-out infinite", filter:`drop-shadow(0 0 28px ${accent}90)` }}>{occ.emoji}</div>
             <div style={{ fontSize:"clamp(1.7rem,5vw,2.5rem)", fontWeight:700, color:"#fff", letterSpacing:"-0.02em", lineHeight:1.15, marginBottom:10 }}>
