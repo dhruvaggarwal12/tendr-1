@@ -9305,71 +9305,86 @@ const GAME_IDS = new Set([
 ]);
 
 // ── Game release waves ───────────────────────────────────────────────────
-// To ship a wave: uncomment its IDs below.
-// Games not listed here are invisible in the PLAY tab.
-const ENABLED_GAME_IDS = new Set([
+// ── Game Release Schedule ────────────────────────────────────────────────────
+// null  = live immediately on deploy
+// Date  = locked until that date, then auto-unlocks for everyone
+// absent = game component not built yet (stub card only, always locked)
+//
+// To schedule a wave: set the Date here, build the components, push to main.
+// On the scheduled date the game auto-activates — no deploy needed.
+const GAME_RELEASE_SCHEDULE = {
+  // ── Wave 1 — live now ────────────────────────────────────────────────
+  truthordare:      null,
+  neverhavei:       null,
+  wouldyou:         null,
+  hottakes:         null,
+  spin:             null,
+  charades:         null,
+  bingo:            null,
+  mostlikelyto:     null,
+  t2l:              null,
+  rapidfire:        null,
+  birthdayquiz:     null,
+  couplequiz:       null,
+  luckydraw:        null,
+  genderpoll:       null,
+  babynamevote:     null,
+  moodmeter:        null,
+  awardsceremony:   null,
+  emojiDecoder:     null,
+  pictionary:       null,
+  wordchain:        null,
+  dontsayyesno:     null,
+  wronganswers:     null,
+  mafia:            null,
+  spyfall:          null,
+  // ── Wave 2 — live now ────────────────────────────────────────────────
+  telephonedrawing: null,
+  guesssong3sec:    null,
+  finishlyrics:     null,
+  // ── Wave 3 — live now ────────────────────────────────────────────────
+  dontlaugh:        null,
+  nameplaceanimal:  null,
+  fastestfinger:    null,
+  // ── Wave 4 — set dates before pushing to main ────────────────────────
+  // guesschildhoodphoto: new Date("2026-10-12"),
+  // guessvoice:          new Date("2026-10-12"),
+  // scavengerhunt:       new Date("2026-10-19"),
+  // couplePictionary:    new Date("2026-10-19"),
+  // babyfoodguess:       new Date("2026-10-19"),
+  // dontsaybaby:         new Date("2026-10-19"),
+  // ── Wave 5 — set dates before pushing to main ────────────────────────
+  // bollysound:          new Date("2026-10-26"),
+  // garbaquiz:           new Date("2026-10-26"),
+  // brandlogoquiz:       new Date("2026-11-02"),
+  // partychampionship:   new Date("2026-11-02"),
+};
 
-  // ── Wave 1 — LIVE NOW (core set, all built) ───────────────────────────
-  "truthordare",
-  "neverhavei",
-  "wouldyou",
-  "hottakes",
-  "spin",
-  "charades",
-  "bingo",
-  "mostlikelyto",
-  "t2l",
-  "rapidfire",
-  "birthdayquiz",
-  "couplequiz",
-  "luckydraw",
-  "genderpoll",
-  "babynamevote",
-  "moodmeter",
-  "awardsceremony",
-  "emojiDecoder",
-  "pictionary",
-  "wordchain",
-  "dontsayyesno",
-  "wronganswers",
-  "mafia",
-  "spyfall",
+// Derived at runtime — games unlock automatically when their date passes
+const ENABLED_GAME_IDS = new Set(
+  Object.entries(GAME_RELEASE_SCHEDULE)
+    .filter(([, date]) => !date || Date.now() >= date.getTime())
+    .map(([id]) => id)
+);
 
-  // ── Wave 2 — LIVE NOW ──────────────────────────────────────────────────
-  "telephonedrawing",
-  "guesssong3sec",
-  "finishlyrics",
-  // "whoknowsbirthdayperson", // birthday — not yet built
-  // "guessthecouplesanswer",  // anniversary — not yet built
+// Returns the future unlock date for a scheduled-but-locked game, or null
+function gameUnlockDate(id) {
+  const date = GAME_RELEASE_SCHEDULE[id];
+  if (!date || Date.now() >= date.getTime()) return null;
+  return date;
+}
 
-  // ── Wave 3 — LIVE NOW ──────────────────────────────────────────────────
-  "dontlaugh",
-  "nameplaceanimal",
-  "fastestfinger",
+// True if the game was added to the schedule within the last 7 days
+function isNewRelease(id) {
+  const date = GAME_RELEASE_SCHEDULE[id];
+  if (!date) return false;
+  const age = Date.now() - date.getTime();
+  return age >= 0 && age < 7 * 24 * 60 * 60 * 1000;
+}
 
-  // ── Wave 4 ────────────────────────────────────────────────────────────
-  // "guesschildhoodphoto", // birthday, graduation, farewell, retirement
-  // "guessvoice",          // get-together, office, farewell, kitty
-  // "scavengerhunt",       // birthday, housewarming, get-together, graduation
-  // "birthdaymemory",      // birthday
-  // "couplePictionary",    // anniversary, wedding
-  // "babyfoodguess",       // baby shower
-  // "dontsaybaby",         // baby shower
-
-  // ── Wave 5 (occasion-specific) ───────────────────────────────────────
-  // "bollywoodeemoji",     // kitty, diwali, holi
-  // "bollywooddialogueGuess", // kitty, diwali, holi
-  // "guessprice",          // housewarming, kitty
-  // "kittyauction2",       // kitty (remix)
-  // "officescavengerhunt", // office, farewell
-  // "whosentthismessage",  // office
-  // "garbasongguess",      // navratri
-  // "dancefreeze",         // navratri
-  // "colourwars2",         // holi (expanded)
-  // "diwalisound",         // diwali
-  // "diwalisearch",        // diwali
-
-]);
+function fmtUnlockDate(date) {
+  return date.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
+}
 
 const TOOL_STATUS_MAP = {
   invite:["INVITE","READY"], checklist:["PLAN","READY"], giftregistry:["REGISTRY","OPEN"],
@@ -10011,11 +10026,13 @@ export default function OccasionHub({ occasion }) {
       const meta = GAME_META[t.id];
       const cc = CARD_PALETTE[playTools.indexOf(t) % CARD_PALETTE.length] || accent;
       const isLive = LIVE_GAME_IDS.has(t.id);
+      const newGame = isNewRelease(t.id);
       return (
         <div onClick={() => room ? setOpen(t.id) : (GAME_IDS.has(t.id) ? setGamePreviewId(t.id) : openTool(t.id))}
           className="occ-tool-card"
           style={{ background:`${cc}22`, border:`2px solid ${cc}60`, borderRadius:20, padding:large?"20px 18px 18px":"16px 14px 14px", cursor:"pointer", position:"relative", overflow:"hidden", boxShadow:`0 4px 18px ${cc}18`, transition:"transform 0.12s,box-shadow 0.12s" }}>
           {isLive && room && <div style={{ position:"absolute", top:10, right:10, fontSize:8, fontWeight:800, color:"#4ade80", background:"rgba(34,197,94,0.15)", border:"1px solid rgba(34,197,94,0.4)", borderRadius:100, padding:"2px 6px" }}>● LIVE</div>}
+          {newGame && !room && <div style={{ position:"absolute", top:8, right:8, fontSize:8, fontWeight:800, color:"#fff", background:"#F59E0B", borderRadius:20, padding:"2px 7px", letterSpacing:0.5 }}>🆕 NEW</div>}
           <div style={{ fontSize:large?44:32, lineHeight:1, marginBottom:large?12:8, textShadow:`0 0 18px ${cc}CC` }}>{meta?.emoji||TOOL_EMOJI[t.id]||"🎮"}</div>
           <div style={{ fontSize:large?15:12.5, fontWeight:800, color:"#FFFFFF", lineHeight:1.25, marginBottom:large?6:4 }}>{t.title}</div>
           {large && meta && (
@@ -11116,12 +11133,27 @@ export default function OccasionHub({ occasion }) {
                   </div>
                   {isGameSection ? (
                     <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }}>
-                      {sectionTools.map(t => (
-                        <div key={t.id} onClick={()=>openTool(t.id)} className="occ-tool-card" style={{ background:T.cardBg, border:`1.5px solid ${T.cardBd}`, borderRadius:14, padding:"16px 8px 14px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:10, textAlign:"center" }}>
-                          <div style={{ color:PH.violet }}>{TOOL_ICONS[t.id]||occic(<polygon points="5 3 19 12 5 21 5 3"/>)}</div>
-                          <div style={{ fontSize:11.5, fontWeight:600, color:T.main, lineHeight:1.35 }}>{t.title}</div>
-                        </div>
-                      ))}
+                      {sectionTools.map(t => {
+                        const isEnabled  = ENABLED_GAME_IDS.has(t.id);
+                        const unlockDate = gameUnlockDate(t.id);
+                        const isNew      = isNewRelease(t.id);
+                        const isBuilt    = t.id in GAME_RELEASE_SCHEDULE;
+                        const isLocked   = !isEnabled;
+                        return (
+                          <div key={t.id}
+                            onClick={() => isEnabled ? openTool(t.id) : undefined}
+                            className={isEnabled ? "occ-tool-card" : undefined}
+                            style={{ background: isLocked ? 'rgba(0,0,0,0.06)' : T.cardBg, border:`1.5px solid ${isLocked ? 'rgba(0,0,0,0.08)' : T.cardBd}`, borderRadius:14, padding:"14px 6px 12px", cursor: isEnabled ? "pointer" : "default", display:"flex", flexDirection:"column", alignItems:"center", gap:8, textAlign:"center", position:"relative", overflow:"hidden", opacity: isLocked ? 0.7 : 1 }}>
+                            {isNew && <div style={{ position:"absolute", top:5, right:5, fontSize:7, fontWeight:800, color:"#fff", background:"#F59E0B", borderRadius:20, padding:"2px 5px", letterSpacing:0.5 }}>NEW</div>}
+                            {isLocked && isBuilt && unlockDate && <div style={{ position:"absolute", top:5, left:5, fontSize:7, fontWeight:800, color:"#6B7280", background:"rgba(0,0,0,0.08)", borderRadius:20, padding:"2px 5px" }}>{fmtUnlockDate(unlockDate)}</div>}
+                            <div style={{ fontSize:isLocked?20:22, filter: isLocked ? 'grayscale(0.6)' : 'none' }}>{isLocked ? (isBuilt && unlockDate ? '🔒' : '🔒') : (TOOL_ICONS[t.id] ? <span style={{ color:PH.violet }}>{TOOL_ICONS[t.id]}</span> : null)}</div>
+                            {(!isLocked && !TOOL_ICONS[t.id]) && <div style={{ color:PH.violet }}>{occic(<polygon points="5 3 19 12 5 21 5 3"/>)}</div>}
+                            <div style={{ fontSize:10.5, fontWeight: isLocked ? 500 : 600, color: isLocked ? T.sub : T.main, lineHeight:1.3 }}>{t.title}</div>
+                            {isLocked && unlockDate && <div style={{ fontSize:9, color:'#9CA3AF', fontWeight:600 }}>Unlocks {fmtUnlockDate(unlockDate)}</div>}
+                            {isLocked && !isBuilt && <div style={{ fontSize:9, color:'#9CA3AF', fontWeight:500 }}>Coming soon</div>}
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <div style={{ background:T.cardBg, borderRadius:16, border:`1px solid ${T.cardBd}`, overflow:"hidden", boxShadow:"0 2px 12px rgba(0,0,0,0.05)" }}>
