@@ -6614,6 +6614,27 @@ function OccPolygonGrid({ tools, onOpen, accent }) {
   );
 }
 
+// ── per-tool emoji icons for card grid ────────────────────────────────────
+const TOOL_EMOJI = {
+  invite:"📧", checklist:"✅", bills:"💸", gifttracker:"🎁", guestlist:"👥",
+  menu:"🍽️", daytimeline:"⏰", venue:"📍", seating:"🪑", budget:"💰",
+  vendors:"🛍️", wabroadcast:"📢", potluck:"🍲", giftregistry:"📦",
+  advicecards:"💡", namesuggestions:"📝", kittyfund:"🐱", countdown:"⏳",
+  runofshow:"🎬", theme:"🎨", photowall:"📸", wishwall:"⭐",
+  lovenotes:"💌", blessingswall:"🙏", appreciationwall:"💝",
+  secretmessage:"🔐", reportcard:"📊", playlist:"🎵", moodmeter:"😊",
+  awardsceremony:"🏆", truthordare:"🎯", neverhavei:"🍺", wouldyou:"❓",
+  hottakes:"🔥", spin:"🌀", charades:"🎭", bingo:"🎲", birthdayquiz:"🎂",
+  couplequiz:"💑", t2l:"👀", rapidfire:"⚡", mostlikelyto:"👆",
+  luckydraw:"🎰", genderpoll:"🍭", babynamevote:"👶", blessings:"✨",
+  wishwall2:"🌠", secretmsg:"🔏",
+};
+// Vibrant per-card accent colours cycling through the grid
+const CARD_PALETTE = [
+  "#FF6B6B","#FF8E53","#FFCA3A","#6BCB77","#4D96FF",
+  "#C77DFF","#FF5FA0","#00C9A7","#FF6F00","#5E60CE",
+];
+
 // ── occasion → plan slug ──────────────────────────────────────────────────
 const SLUG_FOR_OCC = {
   birthday:"birthday-party", "first-birthday":"first-birthday", anniversary:"anniversary",
@@ -6890,9 +6911,10 @@ export default function OccasionHub({ occasion }) {
     "house-party":     { bg:"#1A1218", dark:true,  accent:"#F0A050", iconBg:"#3A2828", hostGrad:"linear-gradient(135deg,#F0A050,#C07030)", confetti:["#F8B848","#F87858","#F8D058","#C878E8","#78B8F8"] },
   };
   const occTheme = OCC_THEME[occasion] || OCC_THEME["birthday-party"];
-  const isDark = occTheme.dark === true;
-  const pageBg = occTheme.bg;
+  const isDark = true; // always dark gradient for all occasions
+  const pageBg = "#09060F"; // solid fallback (used in splash compat)
   const occAccent = occTheme.accent;
+  const darkGrad = `linear-gradient(160deg, #09060F 0%, ${occTheme.accent}22 50%, #07040C 100%)`;
   const occIconBg = occTheme.iconBg;
   const occHostGrad = occTheme.hostGrad;
   const occConfetti = occTheme.confetti;
@@ -6934,7 +6956,7 @@ export default function OccasionHub({ occasion }) {
   if (!entryMode) {
     const inpStyle = { width:"100%", padding:"12px 14px", borderRadius:12, border:isDark?"1.5px solid rgba(255,255,255,0.15)":"1.5px solid rgba(44,26,14,0.15)", background:isDark?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.8)", color:T.main, fontSize:15, outline:"none", boxSizing:"border-box" };
     return (
-      <div style={{ height:"100dvh", display:"flex", flexDirection:"column", fontFamily:font, background:pageBg, position:"relative", overflow:"hidden", alignItems:"center", justifyContent:"center" }}>
+      <div style={{ height:"100dvh", display:"flex", flexDirection:"column", fontFamily:font, background:darkGrad, position:"relative", overflow:"hidden", alignItems:"center", justifyContent:"center" }}>
         <style>{`@keyframes eg-in{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}} @keyframes eg-glow{0%,100%{opacity:0.08}50%{opacity:0.14}}`}</style>
         {/* Subtle botanical tint */}
         <div style={{ position:"fixed", top:-80, right:-80, width:360, height:360, borderRadius:"50%", background:`radial-gradient(ellipse, ${accent}14 0%, transparent 70%)`, pointerEvents:"none", zIndex:0 }} />
@@ -7005,7 +7027,7 @@ export default function OccasionHub({ occasion }) {
 
   // ── RENDER ────────────────────────────────────────────────────────────────
   return (
-    <div style={{ height: "100dvh", display: "flex", flexDirection: "column", fontFamily: font, background: PH.bg, position: "relative", overflow: "hidden" }}>
+    <div style={{ height: "100dvh", display: "flex", flexDirection: "column", fontFamily: font, background: darkGrad, position: "relative", overflow: "hidden" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Dancing+Script:wght@700&display=swap');
         @keyframes splash-pulse { 0%,100%{opacity:0.8;transform:scale(1)} 50%{opacity:1;transform:scale(1.04)} }
@@ -7253,7 +7275,7 @@ export default function OccasionHub({ occasion }) {
         return (
           <div style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, overflow:"hidden" }}>
             {emojis.map((d,i)=>(
-              <div key={i} style={{ position:"absolute", left:`${d.x}%`, top:`${d.y}%`, fontSize:d.s, opacity:isDark?0.07:0.09, lineHeight:1, userSelect:"none", transform:`rotate(${(i%2===0?1:-1)*12}deg)` }}>
+              <div key={i} style={{ position:"absolute", left:`${d.x}%`, top:`${d.y}%`, fontSize:d.s, opacity:0.30, lineHeight:1, userSelect:"none", transform:`rotate(${(i%2===0?1:-1)*12}deg)`, filter:"saturate(1.4) brightness(1.2)" }}>
                 {d.e}
               </div>
             ))}
@@ -7270,7 +7292,7 @@ export default function OccasionHub({ occasion }) {
           {x:20,y:70,s:5,c:0},{x:75,y:62,s:7,c:1},{x:88,y:72,s:4,c:2},{x:3,y:80,s:5,c:3},{x:92,y:85,s:6,c:4},
           {x:40,y:90,s:4,c:0},{x:55,y:88,s:5,c:1},{x:65,y:92,s:7,c:2},{x:35,y:55,s:4,c:3},{x:60,y:50,s:5,c:4},
         ].map((d,i) => (
-          <div key={i} style={{ position:"absolute", left:`${d.x}%`, top:`${d.y}%`, width:d.s, height:d.s, borderRadius: i%3===0 ? 1 : "50%", background: occConfetti[d.c % occConfetti.length], opacity:0.55, transform:`rotate(${i*17}deg)` }} />
+          <div key={i} style={{ position:"absolute", left:`${d.x}%`, top:`${d.y}%`, width:d.s, height:d.s, borderRadius: i%3===0 ? 1 : "50%", background: occConfetti[d.c % occConfetti.length], opacity:0.75, transform:`rotate(${i*17}deg)`, filter:"brightness(1.3)" }} />
         ))}
       </div>
 
@@ -7570,7 +7592,7 @@ export default function OccasionHub({ occasion }) {
       })()}
 
       {/* ── Section content ── */}
-      <div className="occ-scroll-area" style={{ flex:1, overflowY:"auto", padding:"14px 16px 110px", maxWidth:800, margin:"0 auto", width:"100%", boxSizing:"border-box", position:"relative", zIndex:1, background: pageBg }}>
+      <div className="occ-scroll-area" style={{ flex:1, overflowY:"auto", padding:"14px 16px 110px", maxWidth:800, margin:"0 auto", width:"100%", boxSizing:"border-box", position:"relative", zIndex:1, background: "transparent" }}>
 
 
         {/* LOBBY — removed */}
@@ -7686,18 +7708,22 @@ export default function OccasionHub({ occasion }) {
             {playTools.length === 0 ? (
               <div style={{ textAlign:"center", padding:"48px 20px", color:T.sub, fontSize:14 }}>No games available for this occasion.</div>
             ) : (
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }}>
-                {playTools.map(t => (
-                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:T.cardBg, border:`1.5px solid ${LIVE_GAME_IDS.has(t.id) && room ? occAccent+"50" : T.cardBd}`, borderRadius:14, padding:"16px 8px 14px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:6, textAlign:"center", position:"relative" }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10 }}>
+                {playTools.map((t,i) => {
+                  const cc = CARD_PALETTE[(i + 2) % CARD_PALETTE.length];
+                  const em = TOOL_EMOJI[t.id] || "🎮";
+                  return (
+                  <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{ background:`${cc}1A`, border:`1.5px solid ${LIVE_GAME_IDS.has(t.id) && room ? "#22c55e50" : cc+"40"}`, borderRadius:16, padding:"16px 8px 14px", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:6, textAlign:"center", position:"relative" }}>
                     {LIVE_GAME_IDS.has(t.id) && (
-                      <div style={{ position:"absolute", top:5, right:5, fontSize:7.5, fontWeight:800, color: room ? "#22c55e" : "rgba(28,9,0,0.28)", letterSpacing:"0.05em", textTransform:"uppercase", background: room ? "rgba(34,197,94,0.12)" : "rgba(0,0,0,0.05)", borderRadius:100, padding:"2px 5px" }}>
+                      <div style={{ position:"absolute", top:5, right:5, fontSize:7.5, fontWeight:800, color: room ? "#22c55e" : "rgba(255,255,255,0.35)", letterSpacing:"0.05em", textTransform:"uppercase", background: room ? "rgba(34,197,94,0.14)" : "rgba(255,255,255,0.08)", borderRadius:100, padding:"2px 5px" }}>
                         {room ? "● Live" : "👥"}
                       </div>
                     )}
-                    <div style={{ color:PH.violet }}>{TOOL_ICONS[t.id]||occic(<polygon points="5 3 19 12 5 21 5 3"/>)}</div>
-                    <div style={{ fontSize:11.5, fontWeight:600, color:T.main, lineHeight:1.35 }}>{t.title}</div>
+                    <div style={{ fontSize:28, lineHeight:1, filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.4))" }}>{em}</div>
+                    <div style={{ fontSize:11, fontWeight:700, color:"#fff", lineHeight:1.35 }}>{t.title}</div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -7754,31 +7780,24 @@ export default function OccasionHub({ occasion }) {
             {planTools.length === 0 ? (
               <div style={{ textAlign:"center", padding:"48px 20px", color:T.sub, fontSize:14 }}>No planning tools for this occasion.</div>
             ) : (
-              <div style={{ background:T.cardBg, borderRadius:16, border:`1px solid ${T.cardBd}`, overflow:"hidden", boxShadow:"0 2px 12px rgba(0,0,0,0.05)" }}>
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:0 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:10 }}>
                   {planTools.map((t,i) => {
-                    const desc = t.desc && !t.desc.startsWith('#') ? t.desc : null;
-                    const isRight = i % 2 === 1;
+                    const cc = CARD_PALETTE[i % CARD_PALETTE.length];
+                    const em = TOOL_EMOJI[t.id] || "🎯";
                     return (
                       <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{
-                        background:"transparent", border:"none",
-                        borderBottom: i < planTools.length - (planTools.length%2===0?2:1) ? `1px solid ${T.rowBd}` : "none",
-                        borderRight: !isRight && i < planTools.length-1 ? `1px solid ${T.rowBd}` : "none",
-                        padding:"14px 14px", cursor:"pointer", display:"flex", alignItems:"center", gap:12
+                        background:`${cc}1A`, border:`1.5px solid ${cc}40`,
+                        borderRadius:18, padding:"20px 12px 16px", cursor:"pointer",
+                        display:"flex", flexDirection:"column", alignItems:"center", gap:8, textAlign:"center",
+                        position:"relative", overflow:"hidden",
                       }}>
-                        <div style={{ width:44, height:44, borderRadius:12, background:occIconBg, border:`1.5px solid ${occAccent}20`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:occAccent }}>
-                          {TOOL_ICONS[t.id]||occic(<rect x="3" y="3" width="18" height="18" rx="2"/>)}
-                        </div>
-                        <div style={{ flex:1, minWidth:0 }}>
-                          <div style={{ fontSize:13.5, fontWeight:700, color:T.main, lineHeight:1.3 }}>{t.title}</div>
-                          {desc && <div style={{ fontSize:11.5, color:T.sub, marginTop:2, lineHeight:1.4 }}>{desc}</div>}
-                        </div>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        <div style={{ fontSize:34, lineHeight:1, filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.4))" }}>{em}</div>
+                        <div style={{ fontSize:12, fontWeight:700, color:"#fff", lineHeight:1.3, letterSpacing:"-0.01em" }}>{t.title}</div>
+                        <div style={{ position:"absolute", top:-18, right:-18, width:60, height:60, borderRadius:"50%", background:`${cc}18`, pointerEvents:"none" }} />
                       </div>
                     );
                   })}
                 </div>
-              </div>
             )}
           </div>
         )}
@@ -7794,31 +7813,24 @@ export default function OccasionHub({ occasion }) {
             {momentTools.length === 0 ? (
               <div style={{ textAlign:"center", padding:"40px 20px", color:T.sub, fontSize:14 }}>No moments tools for this occasion.</div>
             ) : (
-              <div style={{ background:T.cardBg, borderRadius:16, border:`1px solid ${T.cardBd}`, overflow:"hidden", boxShadow:"0 2px 12px rgba(0,0,0,0.05)" }}>
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:0 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:10 }}>
                   {momentTools.map((t,i) => {
-                    const desc = t.desc && !t.desc.startsWith('#') ? t.desc : null;
-                    const isRight = i % 2 === 1;
+                    const cc = CARD_PALETTE[(i + 4) % CARD_PALETTE.length];
+                    const em = TOOL_EMOJI[t.id] || "✨";
                     return (
                       <div key={t.id} onClick={()=>setOpen(t.id)} className="occ-tool-card" style={{
-                        background:"transparent", border:"none",
-                        borderBottom: i < momentTools.length - (momentTools.length%2===0?2:1) ? `1px solid ${T.rowBd}` : "none",
-                        borderRight: !isRight && i < momentTools.length-1 ? `1px solid ${T.rowBd}` : "none",
-                        padding:"14px 14px", cursor:"pointer", display:"flex", alignItems:"center", gap:12
+                        background:`${cc}1A`, border:`1.5px solid ${cc}40`,
+                        borderRadius:18, padding:"20px 12px 16px", cursor:"pointer",
+                        display:"flex", flexDirection:"column", alignItems:"center", gap:8, textAlign:"center",
+                        position:"relative", overflow:"hidden",
                       }}>
-                        <div style={{ width:44, height:44, borderRadius:12, background:occIconBg, border:`1.5px solid ${occAccent}20`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:occAccent }}>
-                          {TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}
-                        </div>
-                        <div style={{ flex:1, minWidth:0 }}>
-                          <div style={{ fontSize:13.5, fontWeight:700, color:T.main, lineHeight:1.3 }}>{t.title}</div>
-                          {desc && <div style={{ fontSize:11.5, color:T.sub, marginTop:2, lineHeight:1.4 }}>{desc}</div>}
-                        </div>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        <div style={{ fontSize:34, lineHeight:1, filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.4))" }}>{em}</div>
+                        <div style={{ fontSize:12, fontWeight:700, color:"#fff", lineHeight:1.3, letterSpacing:"-0.01em" }}>{t.title}</div>
+                        <div style={{ position:"absolute", top:-18, right:-18, width:60, height:60, borderRadius:"50%", background:`${cc}18`, pointerEvents:"none" }} />
                       </div>
                     );
                   })}
                 </div>
-              </div>
             )}
             <div style={{ marginTop:20, background:`${occAccent}0a`, border:`1px solid ${occAccent}25`, borderRadius:14, padding:"18px 20px", display:"flex", alignItems:"center", gap:14 }}>
               <div style={{ flex:1 }}>
