@@ -141,24 +141,29 @@ function LightFormModal({ onClose, emoji, title, subtitle, accent, children }) {
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
   }, [onClose]);
-  const accentRgb = accent || "#C4973A";
+  const ac = accent || "#C4973A";
   return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.52)", backdropFilter:"blur(12px)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:"16px" }}>
-      <div onClick={e=>e.stopPropagation()} style={{ background:"#FFFAF7", borderRadius:28, width:"100%", maxWidth:480, maxHeight:"92dvh", overflowY:"auto", padding:"26px 22px 30px", fontFamily:font, boxShadow:"0 32px 80px rgba(0,0,0,0.20), 0 2px 8px rgba(0,0,0,0.06)", animation:"modal-in 0.24s cubic-bezier(0.22,1,0.36,1)" }}>
-        {/* Header row */}
-        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:20 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:14 }}>
-            <div style={{ width:54, height:54, borderRadius:16, background:`${accentRgb}18`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-              <span style={{ fontSize:27 }}>{emoji}</span>
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,1,8,0.82)", backdropFilter:"blur(20px)", zIndex:1000, display:"flex", alignItems:"flex-end", justifyContent:"center" }}>
+      <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, maxHeight:"93dvh", borderRadius:"24px 24px 0 0", overflow:"hidden", display:"flex", flexDirection:"column", fontFamily:font, boxShadow:`0 -28px 80px rgba(0,0,0,0.65), 0 0 0 1px ${ac}18`, animation:"modal-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+        {/* Dark immersive header — like the party hub bg */}
+        <div style={{ background:"linear-gradient(155deg,#0D0820 0%,rgba(18,8,40,0.99) 100%)", padding:"24px 20px 20px", position:"relative", overflow:"hidden", flexShrink:0 }}>
+          <div style={{ position:"absolute", top:-60, right:-60, width:220, height:220, borderRadius:"50%", background:`radial-gradient(ellipse,${ac}30 0%,transparent 70%)`, pointerEvents:"none" }} />
+          <div style={{ position:"absolute", bottom:-50, left:-30, width:160, height:160, borderRadius:"50%", background:`radial-gradient(ellipse,${ac}12 0%,transparent 70%)`, pointerEvents:"none" }} />
+          <button onClick={onClose} style={{ position:"absolute", top:14, right:14, background:"rgba(255,255,255,0.10)", border:"1px solid rgba(255,255,255,0.14)", color:"rgba(255,255,255,0.65)", width:32, height:32, borderRadius:"50%", cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", justifyContent:"center", zIndex:2 }}>✕</button>
+          <div style={{ display:"flex", alignItems:"center", gap:14, position:"relative", zIndex:1 }}>
+            <div style={{ width:52, height:52, borderRadius:15, background:`${ac}22`, border:`1.5px solid ${ac}50`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:`0 0 22px ${ac}35` }}>
+              <span style={{ fontSize:26 }}>{emoji}</span>
             </div>
             <div>
-              <div style={{ fontSize:21, fontWeight:800, color:"#1C1410", fontFamily:"'Cormorant Garamond',Georgia,serif", letterSpacing:"-0.01em", lineHeight:1.15 }}>{title}</div>
-              {subtitle && <div style={{ fontSize:13, color:"rgba(28,20,16,0.45)", marginTop:3, lineHeight:1.4 }}>{subtitle}</div>}
+              <div style={{ fontSize:20, fontWeight:800, color:"#FFFFFF", letterSpacing:"-0.01em", lineHeight:1.2 }}>{title}</div>
+              {subtitle && <div style={{ fontSize:13, color:"rgba(255,255,255,0.50)", marginTop:3, lineHeight:1.4 }}>{subtitle}</div>}
             </div>
           </div>
-          <button onClick={onClose} style={{ background:"rgba(0,0,0,0.07)", border:"none", color:"#555", width:34, height:34, borderRadius:"50%", cursor:"pointer", fontSize:14, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginLeft:8 }}>✕</button>
         </div>
-        {children}
+        {/* Light content area */}
+        <div style={{ background:"#FFFAF7", padding:"20px 20px 36px", overflowY:"auto", flex:1 }}>
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -1167,42 +1172,50 @@ function WouldYouRather({ onClose, accent, room, myName: liveName, players: live
     setRound(r => r + 1);
   };
   const debatePrompts = ["Defend your choice!", "Convince the other side!", "Why would anyone pick the other?!", "No backtracking now!", "Explain yourself!"];
+  const SIDE_GRADS = ["linear-gradient(145deg,#1E3A8A,#2563EB)","linear-gradient(145deg,#5B21B6,#9333EA)"];
+  const SIDE_GLOWS = ["rgba(37,99,235,0.55)","rgba(147,51,234,0.55)"];
+  const SIDE_PCTS  = ["#93C5FD","#D8B4FE"];
+  const SIDE_LABELS = ["OPTION A","OPTION B"];
   return (
     <LightFormModal onClose={onClose} emoji="🤷" title="Would You Rather" accent={accent}>
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={Object.fromEntries(Object.keys(liveVotesMap || {}).map(n => [n, true]))} />
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-        <div style={{fontSize:12,fontWeight:700,color:"rgba(28,9,0,0.40)"}}>Round {round}</div>
-        {totalVotes>0&&<div style={{fontSize:12,color:accent}}>{totalVotes} vote{totalVotes!==1?"s":""}</div>}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <div style={{fontSize:10,fontWeight:800,color:"rgba(28,9,0,0.35)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Round {round}</div>
+          {!myPick && <div style={{fontSize:10,color:accent,fontWeight:600,background:`${accent}15`,borderRadius:8,padding:"2px 8px"}}>Pick a side to reveal votes</div>}
+        </div>
+        {totalVotes>0&&<div style={{fontSize:12,color:accent,fontWeight:700}}>👥 {totalVotes} voted</div>}
       </div>
-      {/* VS Battle layout */}
-      <div style={{display:"flex",gap:0,marginBottom:myPick?12:16,alignItems:"stretch"}}>
+      {/* VS Battle layout — always dramatic dark cards */}
+      <div style={{display:"flex",gap:8,marginBottom:myPick?12:16,alignItems:"stretch"}}>
         {["a","b"].map((side,si)=>{
           const pct=side==="a"?pctA:pctB;
           const isChosen=myPick===side,isOther=myPick&&myPick!==side;
-          const GRADS=["linear-gradient(145deg,#1E40AF,#3B82F6)","linear-gradient(145deg,#6D28D9,#A855F7)"];
-          const GLOWS=["rgba(59,130,246,0.4)","rgba(168,85,247,0.4)"];
-          const PCTS=["#60A5FA","#C084FC"];
           const sideVoters = side === 'a' ? aVoters : bVoters;
           return (
             <div key={side} onClick={()=>pick(side)} style={{
-              flex:1,padding:"22px 14px 18px",
-              borderRadius:si===0?"16px 0 0 16px":"0 16px 16px 0",
-              background:isChosen?GRADS[si]:isOther?"rgba(0,0,0,0.02)":"rgba(0,0,0,0.04)",
-              border:`2px solid ${isChosen?PCTS[si]+"66":isOther?"rgba(0,0,0,0.04)":"rgba(0,0,0,0.08)"}`,
-              borderRight:si===0?"none":undefined,
-              borderLeft:si===1?"none":undefined,
-              cursor:myPick?"default":"pointer",textAlign:"center",
-              opacity:isOther?0.42:1,transition:"all 0.3s",
-              position:"relative",overflow:"hidden",
-              boxShadow:isChosen?`0 8px 32px ${GLOWS[si]}`:undefined,
+              flex:1, padding:"20px 14px 18px",
+              borderRadius:16,
+              background: isOther ? "rgba(0,0,0,0.10)" : SIDE_GRADS[si],
+              border:`2px solid ${isChosen ? SIDE_PCTS[si]+"88" : isOther ? "rgba(0,0,0,0.06)" : SIDE_PCTS[si]+"44"}`,
+              cursor:myPick?"default":"pointer", textAlign:"center",
+              opacity:isOther?0.38:1, transition:"all 0.3s",
+              position:"relative", overflow:"hidden",
+              boxShadow: isOther ? "none" : isChosen
+                ? `0 12px 40px ${SIDE_GLOWS[si]}, inset 0 1px 0 rgba(255,255,255,0.15)`
+                : `0 6px 24px ${SIDE_GLOWS[si]}, inset 0 1px 0 rgba(255,255,255,0.08)`,
+              transform: isChosen ? "scale(1.03)" : "scale(1)",
             }}>
-              {myPick&&<div style={{position:"absolute",bottom:0,left:0,right:0,height:`${pct}%`,background:isChosen?PCTS[si]+"18":"rgba(0,0,0,0.04)",transition:"height 0.6s cubic-bezier(0.22,1,0.36,1)"}}/>}
+              {/* Vote fill bar */}
+              {myPick && <div style={{position:"absolute",bottom:0,left:0,right:0,height:`${pct}%`,background:"rgba(255,255,255,0.10)",transition:"height 0.7s cubic-bezier(0.22,1,0.36,1)"}}/>}
+              {/* Corner accent */}
+              <div style={{position:"absolute",top:-20,right:-20,width:80,height:80,borderRadius:"50%",background:"rgba(255,255,255,0.06)",pointerEvents:"none"}}/>
               <div style={{position:"relative",zIndex:1}}>
-                <div style={{fontSize:9,fontWeight:800,color:isChosen?PCTS[si]:"rgba(28,9,0,0.30)",marginBottom:8,letterSpacing:"0.1em",textTransform:"uppercase"}}>
-                  {si===0?"OPTION A":"OPTION B"}
+                <div style={{fontSize:9,fontWeight:800,color:"rgba(255,255,255,0.50)",marginBottom:10,letterSpacing:"0.12em",textTransform:"uppercase"}}>
+                  {SIDE_LABELS[si]}
                 </div>
-                <div style={{fontSize:13.5,color:isChosen?"#fff":"#1C1410",lineHeight:1.6,fontWeight:isChosen?700:400}}>{pair[side]}</div>
-                {myPick&&<div style={{fontSize:20,fontWeight:900,color:isChosen?PCTS[si]:"rgba(28,9,0,0.25)",marginTop:10}}>{pct}%</div>}
+                <div style={{fontSize:14,color:"#FFFFFF",lineHeight:1.65,fontWeight:isChosen?700:500}}>{pair[side]}</div>
+                {myPick&&<div style={{fontSize:22,fontWeight:900,color:SIDE_PCTS[si],marginTop:12}}>{pct}%</div>}
                 {/* Voter chips in live mode */}
                 {live && sideVoters.length > 0 && (
                   <div style={{display:"flex",flexWrap:"wrap",gap:3,marginTop:8,justifyContent:"center"}}>
@@ -1215,26 +1228,22 @@ function WouldYouRather({ onClose, accent, room, myName: liveName, players: live
             </div>
           );
         })}
-        {/* VS badge */}
-        <div style={{width:40,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.04)",borderTop:"2px solid rgba(0,0,0,0.07)",borderBottom:"2px solid rgba(0,0,0,0.07)"}}>
-          <div style={{width:32,height:32,borderRadius:"50%",background:"rgba(0,0,0,0.06)",border:"1.5px solid rgba(0,0,0,0.12)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:900,color:"rgba(28,9,0,0.50)",letterSpacing:"0.01em"}}>VS</div>
-        </div>
       </div>
-      {myPick&&(
-        <>
-          {/* 90-second debate timer */}
-          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-            <div style={{flex:1,height:5,background:"rgba(0,0,0,0.07)",borderRadius:3,overflow:"hidden"}}>
-              <div style={{height:"100%",width:`${(debateTimer/90)*100}%`,background:debateTimer>30?"#22c55e":debateTimer>10?"#f59e0b":"#ef4444",transition:"width 1s linear",borderRadius:3}}/>
+      {/* 90-second debate timer — always shown once voted */}
+      {myPick && (
+        <div style={{marginBottom:12}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+            <div style={{flex:1,height:6,background:"rgba(0,0,0,0.08)",borderRadius:4,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${(debateTimer/90)*100}%`,background:debateTimer>30?"#22c55e":debateTimer>10?"#f59e0b":"#ef4444",transition:"width 1s linear",borderRadius:4}}/>
             </div>
-            <div style={{fontSize:13,fontWeight:900,color:debateTimer>30?"#22c55e":debateTimer>10?"#f59e0b":"#ef4444",minWidth:36,textAlign:"right",fontVariantNumeric:"tabular-nums"}}>{debateTimer}s</div>
+            <div style={{fontSize:14,fontWeight:900,color:debateTimer>30?"#22c55e":debateTimer>10?"#f59e0b":"#ef4444",minWidth:38,textAlign:"right",fontVariantNumeric:"tabular-nums"}}>{debateTimer}s</div>
           </div>
-          <div style={{textAlign:"center",background:accent+"15",borderRadius:12,padding:"10px 14px",marginBottom:14,fontSize:14,color:accent,fontWeight:700}}>
-            {debateTimer>0?rand(debatePrompts):"⏰ Time's up — vote on the winner!"}
+          <div style={{textAlign:"center",background:`${accent}18`,borderRadius:12,padding:"11px 14px",fontSize:14,color:accent,fontWeight:700,border:`1px solid ${accent}30`}}>
+            {debateTimer>0 ? rand(debatePrompts) : "⏰ Time's up — vote on the winner!"}
           </div>
-        </>
+        </div>
       )}
-      <button onClick={next} style={lBtn(myPick?accent:"rgba(0,0,0,0.07)")}>{myPick?"Next Question →":<span style={{color:"#1C1410"}}>Skip</span>}</button>
+      <button onClick={next} style={{...lBtn(myPick?accent:"rgba(0,0,0,0.08)"),color:myPick?"#fff":"#1C1410",marginTop:4}}>{myPick?"Next Question →":"Skip"}</button>
     </LightFormModal>
   );
 }
@@ -9634,6 +9643,7 @@ const CARD_PALETTE = [
 
 // ── Game metadata: mood tags, player count, time, preview ────────────────
 const MOOD_TAGS = [
+  { id:"all",         label:"✨ All",           color:"#FFFFFF" },
   { id:"quick",       label:"⚡ Quick",        color:"#FFD700" },
   { id:"funny",       label:"😂 Funny",        color:"#FF6B6B" },
   { id:"quiz",        label:"🧠 Quiz",         color:"#4D96FF" },
@@ -9755,7 +9765,7 @@ export default function OccasionHub({ occasion }) {
   // ── First-time intro state ───────────────────────────────────────────────
   const [hubIntroStep, setHubIntroStep] = useState(0);
   const [hubIntroDone, setHubIntroDone] = useState(() => {
-    try { return !!localStorage.getItem("occ_hub_intro_v1"); } catch { return false; }
+    try { return !!localStorage.getItem(`occ_hub_intro_${occasion}_v1`); } catch { return false; }
   });
   const [toolIntroId, setToolIntroId] = useState(null);
   const [gamePreviewId, setGamePreviewId] = useState(null);
@@ -10064,30 +10074,27 @@ export default function OccasionHub({ occasion }) {
           </button>
         </div>
 
-        {/* Mood filter chips */}
-        <div style={{ display:"flex", gap:8, overflowX:"auto", paddingBottom:4, marginBottom:14, scrollbarWidth:"none" }}>
+        {/* Mood + count filter chips — single row */}
+        <div style={{ display:"flex", gap:7, overflowX:"auto", paddingBottom:6, marginBottom:12, scrollbarWidth:"none", WebkitOverflowScrolling:"touch" }}>
           {MOOD_TAGS.map(m => {
-            const active = playMood === m.id;
+            const isAll = m.id === "all";
+            const active = isAll ? !playMood : playMood === m.id;
             return (
-              <button key={m.id} onClick={() => setPlayMood(active ? null : m.id)} style={{ flexShrink:0, padding:"7px 14px", borderRadius:100, border:`1.5px solid ${active ? m.color : "rgba(255,255,255,0.15)"}`, background:active ? `${m.color}28` : "rgba(255,255,255,0.05)", color:active ? m.color : "rgba(255,255,255,0.55)", fontSize:12.5, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap", transition:"all 0.15s" }}>
+              <button key={m.id} onClick={() => { if (isAll) { setPlayMood(null); } else { setPlayMood(active ? null : m.id); } }} style={{ flexShrink:0, padding:"8px 15px", borderRadius:100, border:`1.5px solid ${active ? m.color : "rgba(255,255,255,0.28)"}`, background:active ? `${m.color}30` : "rgba(255,255,255,0.07)", color:active ? m.color : "rgba(255,255,255,0.82)", fontSize:12.5, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap", transition:"all 0.15s", boxShadow:active?`0 0 14px ${m.color}35`:undefined }}>
                 {m.label}
               </button>
             );
           })}
-        </div>
-
-        {/* Player count filter */}
-        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:20 }}>
-          <div style={{ fontSize:11, color:"rgba(255,255,255,0.40)", fontWeight:600, whiteSpace:"nowrap" }}>How many?</div>
-          {[["4-6","👤 4–6"],["7-10","👥 7–10"],["10+","🧑‍🤝‍🧑 10+"]].map(([key,label]) => {
+          <div style={{ width:1, flexShrink:0, background:"rgba(255,255,255,0.12)", margin:"4px 2px" }} />
+          {[["4-6","4–6"],["7-10","7–10"],["10+","10+"]].map(([key,label]) => {
             const active = playCount === key;
             return (
-              <button key={key} onClick={() => setPlayCount(active ? null : key)} style={{ padding:"6px 12px", borderRadius:100, border:`1.5px solid ${active ? accent : "rgba(255,255,255,0.12)"}`, background:active ? `${accent}22` : "rgba(255,255,255,0.04)", color:active ? accent : "rgba(255,255,255,0.50)", fontSize:11.5, fontWeight:700, cursor:"pointer", transition:"all 0.15s", whiteSpace:"nowrap" }}>
-                {label}
+              <button key={key} onClick={() => setPlayCount(active ? null : key)} style={{ flexShrink:0, padding:"8px 13px", borderRadius:100, border:`1.5px solid ${active ? accent : "rgba(255,255,255,0.22)"}`, background:active ? `${accent}28` : "rgba(255,255,255,0.06)", color:active ? accent : "rgba(255,255,255,0.72)", fontSize:12, fontWeight:700, cursor:"pointer", transition:"all 0.15s", whiteSpace:"nowrap", boxShadow:active?`0 0 12px ${accent}35`:undefined }}>
+                👥 {label}
               </button>
             );
           })}
-          {(playMood||playCount) && <button onClick={()=>{setPlayMood(null);setPlayCount(null);}} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.35)", fontSize:11, cursor:"pointer", padding:"0 4px" }}>✕ Clear</button>}
+          {(playMood||playCount) && <button onClick={()=>{setPlayMood(null);setPlayCount(null);}} style={{ flexShrink:0, padding:"8px 12px", background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.18)", color:"rgba(255,255,255,0.60)", fontSize:12, cursor:"pointer", borderRadius:100, fontWeight:600 }}>✕ Clear</button>}
         </div>
 
         {/* Popular Right Now — only when no filter active */}
@@ -10175,7 +10182,7 @@ export default function OccasionHub({ occasion }) {
     const slide = slides[hubIntroStep];
     const isLast = hubIntroStep === slides.length - 1;
     const dismiss = (save) => {
-      if (save) try { localStorage.setItem("occ_hub_intro_v1", "1"); } catch {}
+      if (save) try { localStorage.setItem(`occ_hub_intro_${occasion}_v1`, "1"); } catch {}
       setHubIntroDone(true);
     };
     return (
@@ -10437,6 +10444,9 @@ export default function OccasionHub({ occasion }) {
         {/* Subtle botanical tint */}
         <div style={{ position:"fixed", top:-80, right:-80, width:360, height:360, borderRadius:"50%", background:`radial-gradient(ellipse, ${accent}14 0%, transparent 70%)`, pointerEvents:"none", zIndex:0 }} />
 
+        {/* Back navigation */}
+        <button onClick={() => navigate(-1)} style={{ position:"absolute", top:20, left:20, zIndex:3, background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.14)", color:"rgba(255,255,255,0.70)", borderRadius:12, padding:"8px 14px", fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:6 }}>← Back</button>
+
         {/* Header */}
         <div style={{ position:"relative", zIndex:2, textAlign:"center", padding:"0 24px 32px" }}>
           <div style={{ fontSize:56, marginBottom:12, lineHeight:1 }}>{occ.emoji}</div>
@@ -10546,31 +10556,104 @@ export default function OccasionHub({ occasion }) {
       {/* ── First-time tour ── */}
       {showTour && !showSplash && (() => {
         const steps = [
-          { icon:"👆", title:"Tap any tool",    body:"Each card opens a party tool — planner, game, or memory maker." },
-          { icon:"◈",  title:"Browse by tab",   body:"MANAGE for logistics, PLAY for games, MOMENTS to capture memories." },
-          { icon:"🎮", title:"Play together",   body:"Hit HOST to start a live room and play with your whole group." },
+          {
+            gradient:"linear-gradient(145deg,#0D1B2A,#1A3A2A)",
+            glow:accent,
+            visual: (
+              <div style={{ position:"relative", width:200, height:120, margin:"0 auto" }}>
+                {/* Mini card grid mockup */}
+                {[0,1,2,3].map(i=>(
+                  <div key={i} style={{ position:"absolute", width:82, height:52, borderRadius:10, background:`${accent}${i%2===0?"22":"15"}`, border:`1px solid ${accent}44`, left:i%2===0?4:108, top:i<2?4:70, display:"flex",alignItems:"center",justifyContent:"center",gap:6 }}>
+                    <span style={{fontSize:18}}>{ ["📋","🎮","👥","✨"][i] }</span>
+                    <span style={{fontSize:9,color:"rgba(255,255,255,0.6)",fontWeight:600}}>{ ["MANAGE","PLAY","PEOPLE","MOMENTS"][i] }</span>
+                  </div>
+                ))}
+                {/* Tap finger */}
+                <div style={{ position:"absolute", right:20, top:30, fontSize:28, filter:"drop-shadow(0 4px 12px rgba(0,0,0,0.4))", animation:"splash-pulse 1.5s ease-in-out infinite" }}>👆</div>
+              </div>
+            ),
+            title:"Tap any card to open it",
+            body:"Every card is a party tool — planner, game, poll, or memory maker. Tap to explore.",
+          },
+          {
+            gradient:"linear-gradient(145deg,#1A0A2E,#0D1A2E)",
+            glow:"#7C3AED",
+            visual: (
+              <div style={{ position:"relative", width:220, height:110, margin:"0 auto" }}>
+                {/* Tab bar mockup */}
+                <div style={{ position:"absolute", bottom:0, left:0, right:0, height:44, borderRadius:12, background:"rgba(255,255,255,0.07)", border:"1px solid rgba(255,255,255,0.10)", display:"flex", alignItems:"center" }}>
+                  {["📋 MANAGE","🎮 PLAY","👥 PEOPLE","✨ MOMENTS"].map((t,i)=>(
+                    <div key={i} style={{ flex:1, textAlign:"center", fontSize:8, fontWeight:i===1?800:500, color:i===1?"#A78BFA":"rgba(255,255,255,0.35)" }}>{t}</div>
+                  ))}
+                </div>
+                {/* Active tab highlight */}
+                <div style={{ position:"absolute", bottom:0, left:"25%", width:"25%", height:44, borderRadius:12, background:"rgba(167,139,250,0.15)", border:"1px solid rgba(167,139,250,0.35)" }} />
+                {/* Content preview */}
+                <div style={{ position:"absolute", top:0, left:0, right:0, height:60, display:"flex",gap:6 }}>
+                  {[0,1].map(i=>(
+                    <div key={i} style={{ flex:1, borderRadius:10, background:"rgba(167,139,250,0.15)", border:"1px solid rgba(167,139,250,0.25)", display:"flex",alignItems:"center",justifyContent:"center",fontSize:20 }}>
+                      {i===0?"🎲":"🎯"}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ),
+            title:"Browse by tab",
+            body:"MANAGE for logistics, PLAY for games, PEOPLE for guests, MOMENTS for memories.",
+          },
+          {
+            gradient:"linear-gradient(145deg,#0A1F0A,#1A0A2E)",
+            glow:"#22c55e",
+            visual: (
+              <div style={{ position:"relative", width:220, height:110, margin:"0 auto" }}>
+                {/* Room code display */}
+                <div style={{ position:"absolute", top:0, left:"50%", transform:"translateX(-50%)", background:"rgba(34,197,94,0.15)", border:"1px solid rgba(34,197,94,0.40)", borderRadius:12, padding:"10px 24px", textAlign:"center" }}>
+                  <div style={{ fontSize:9,color:"rgba(255,255,255,0.50)",marginBottom:4,letterSpacing:"0.1em" }}>ROOM CODE</div>
+                  <div style={{ fontSize:22,fontWeight:800,color:"#4ade80",letterSpacing:"0.18em" }}>ABC123</div>
+                </div>
+                {/* Player dots */}
+                <div style={{ position:"absolute", bottom:0, left:0, right:0, display:"flex",gap:8,justifyContent:"center" }}>
+                  {["🟢","🟢","🟢","🟡"].map((d,i)=>(
+                    <div key={i} style={{ width:36,height:36,borderRadius:10,background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,animation:`dot-pulse 2s ease-in-out infinite`,animationDelay:`${i*0.25}s` }}>{d}</div>
+                  ))}
+                </div>
+              </div>
+            ),
+            title:"Play live with your crew",
+            body:"Hit HOST to create a live room. Share the code — everyone joins on their own phone. No app needed.",
+          },
         ];
         const step = steps[tourStep];
         const dismissTour = () => { setShowTour(false); try { localStorage.setItem("tendr-occ-tour-v1","1"); } catch {} };
         return (
-          <div style={{ position:"fixed", inset:0, zIndex:4000, background:"rgba(0,0,0,0.72)", display:"flex", alignItems:"flex-end", justifyContent:"center", padding:"0 0 40px" }}>
-            <div style={{ background:PH.surface, border:`1px solid ${isDark?"rgba(255,255,255,0.10)":"rgba(0,0,0,0.08)"}`, borderRadius:24, padding:"28px 24px 24px", maxWidth:360, width:"calc(100% - 32px)", animation:"rm-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-              <div style={{ textAlign:"center", marginBottom:20 }}>
-                <div style={{ fontSize:42, marginBottom:12 }}>{step.icon}</div>
-                <div style={{ fontSize:18, fontWeight:700, color:isDark?"#fff":"#1C1410", marginBottom:8 }}>{step.title}</div>
-                <div style={{ fontSize:13.5, color:isDark?"rgba(255,255,255,0.62)":"rgba(28,9,0,0.60)", lineHeight:1.6 }}>{step.body}</div>
+          <div style={{ position:"fixed", inset:0, zIndex:4000, background:"rgba(0,0,0,0.82)", backdropFilter:"blur(14px)", display:"flex", alignItems:"flex-end", justifyContent:"center", padding:0 }}>
+            <div key={tourStep} style={{ background:step.gradient, border:`1px solid ${step.glow}30`, borderRadius:"24px 24px 0 0", padding:"28px 22px 24px", maxWidth:420, width:"100%", animation:"rm-in 0.28s cubic-bezier(0.22,1,0.36,1)", position:"relative", overflow:"hidden" }}>
+              {/* Glow blob */}
+              <div style={{ position:"absolute", top:-60, right:-60, width:200, height:200, borderRadius:"50%", background:`radial-gradient(ellipse,${step.glow}25 0%,transparent 70%)`, pointerEvents:"none" }} />
+              {/* Step counter */}
+              <div style={{ position:"absolute", top:20, right:20, fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.30)", letterSpacing:"0.1em" }}>{tourStep+1}/{steps.length}</div>
+              {/* Visual illustration */}
+              <div style={{ marginBottom:20, position:"relative", zIndex:1 }}>
+                {step.visual}
               </div>
-              <div style={{ display:"flex", justifyContent:"center", gap:6, marginBottom:20 }}>
-                {steps.map((_,i) => <div key={i} style={{ width:i===tourStep?18:6, height:6, borderRadius:3, background:i===tourStep?PH.violet:isDark?"rgba(255,255,255,0.18)":"rgba(0,0,0,0.15)", transition:"width 0.2s,background 0.2s" }} />)}
+              {/* Text */}
+              <div style={{ textAlign:"center", marginBottom:20, position:"relative", zIndex:1 }}>
+                <div style={{ fontSize:18, fontWeight:800, color:"#FFFFFF", marginBottom:8 }}>{step.title}</div>
+                <div style={{ fontSize:13.5, color:"rgba(255,255,255,0.62)", lineHeight:1.65 }}>{step.body}</div>
               </div>
-              <div style={{ display:"flex", gap:10 }}>
+              {/* Progress dots */}
+              <div style={{ display:"flex", justifyContent:"center", gap:6, marginBottom:20, position:"relative", zIndex:1 }}>
+                {steps.map((_,i) => <div key={i} onClick={()=>setTourStep(i)} style={{ width:i===tourStep?22:6, height:6, borderRadius:3, background:i===tourStep?step.glow:"rgba(255,255,255,0.18)", transition:"all 0.25s", cursor:"pointer" }} />)}
+              </div>
+              {/* Buttons */}
+              <div style={{ display:"flex", gap:10, position:"relative", zIndex:1 }}>
                 {tourStep < steps.length - 1 ? (
                   <>
-                    <button onClick={dismissTour} style={{ flex:1, padding:"11px 0", borderRadius:12, border:`1px solid ${isDark?"rgba(255,255,255,0.10)":"rgba(0,0,0,0.12)"}`, background:"transparent", color:isDark?"rgba(255,255,255,0.72)":"rgba(28,9,0,0.55)", fontSize:13, fontWeight:500, cursor:"pointer" }}>Skip</button>
-                    <button onClick={() => setTourStep(s=>s+1)} style={{ flex:2, padding:"11px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:14, fontWeight:600, cursor:"pointer" }}>Next →</button>
+                    <button onClick={dismissTour} style={{ flex:1, padding:"11px 0", borderRadius:12, border:"1px solid rgba(255,255,255,0.14)", background:"transparent", color:"rgba(255,255,255,0.55)", fontSize:13, fontWeight:500, cursor:"pointer" }}>Skip</button>
+                    <button onClick={() => setTourStep(s=>s+1)} style={{ flex:2, padding:"13px 0", borderRadius:12, border:"none", background:step.glow, color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", boxShadow:`0 4px 20px ${step.glow}50` }}>Next →</button>
                   </>
                 ) : (
-                  <button onClick={dismissTour} style={{ flex:1, padding:"13px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:14, fontWeight:600, cursor:"pointer" }}>Got it</button>
+                  <button onClick={dismissTour} style={{ flex:1, padding:"14px 0", borderRadius:12, border:"none", background:step.glow, color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", boxShadow:`0 4px 20px ${step.glow}50` }}>Let's Party! 🎉</button>
                 )}
               </div>
             </div>
