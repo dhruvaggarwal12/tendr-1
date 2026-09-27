@@ -196,6 +196,10 @@ function PlayerRail({ room, players = [], myName, accent, checked = {} }) {
 const LIVE_GAME_IDS = new Set([
   "truthordare","neverhavei","wouldyou","hottakes","mostlikelyto",
   "moodmeter","wishwall","lovenotes","blessingswall","blessings","secretmessage",
+  "emojiDecoder","pictionary","wordchain","dontsayyesno","wronganswers",
+  "mafia","spyfall",
+  "finishlyrics","guesssong3sec","telephonedrawing",
+  "dontlaugh","nameplaceanimal","fastestfinger",
 ]);
 
 const GAME_DESCRIPTIONS = {
@@ -5156,12 +5160,25 @@ const OCCASIONS = {
         { id: "wouldyou",      emoji: "🤷", title: "Would You Rather",    desc: "Spicy choices · defend your answer",        color: "#7C3AED" },
         { id: "spin",          emoji: "🍾", title: "Spin the Bottle",     desc: "Random picker with spinner",                color: "#2563EB" },
         { id: "charades",      emoji: "🎭", title: "Dumb Charades",       desc: "Bollywood · Celebs · Memes",               color: "#D97706" },
+        { id: "pictionary",    emoji: "🎨", title: "Pictionary",          desc: "Draw it, guess it — no talking!",           color: "#EC4899" },
         { id: "bingo",            emoji: "🎱", title: "Party Bingo",            desc: "5×5 birthday scenario bingo",                    color: "#0891B2" },
         { id: "memorymatch",      emoji: "🖼️", title: "Memory Match",           desc: "Old photos · guess when · where · who",          color: "#8B5CF6" },
         { id: "roastbattle",      emoji: "🎤", title: "Birthday Roast Battle",  desc: "Submit roasts · Mild / Spicy / Nuclear · vote",  color: "#EF4444" },
         { id: "futureme",         emoji: "🔮", title: "Future Me",              desc: "Predict where they'll be in 5 years",            color: "#0891B2" },
         { id: "birthdaystockmarket", emoji: "📈", title: "Birthday Stock Market", desc: "Bet imaginary points on funny predictions",    color: "#10B981" },
-        { id: "birthdaytimeline", emoji: "⏳", title: "Birthday Timeline",      desc: "Race to arrange life moments chronologically",   color: "#F59E0B" },
+        { id: "birthdaytimeline",   emoji: "⏳", title: "Birthday Timeline",       desc: "Race to arrange life moments chronologically",   color: "#F59E0B" },
+        { id: "dontsayyesno",       emoji: "🚫", title: "Don't Say Yes/No",       desc: "Answer without saying yes or no — 60 secs",      color: "#EF4444" },
+        { id: "wronganswers",       emoji: "🤪", title: "Wrong Answers Only",      desc: "Worst answer wins — vote for the funniest",      color: "#F59E0B" },
+        { id: "emojiDecoder",       emoji: "🧩", title: "Emoji Decoder",           desc: "Decode birthday emoji clues · race the clock",   color: "#10B981" },
+        { id: "wordchain",          emoji: "🔤", title: "Word Chain",              desc: "Each word starts where the last one ended",      color: "#059669" },
+        { id: "guesschildhoodphoto",emoji: "📸", title: "Childhood Photo Guess",   desc: "Whose baby photo is this?",                      color: "#8B5CF6" },
+        { id: "guesssong3sec",      emoji: "🎵", title: "Guess the Song",          desc: "3-second intro · name the track!",               color: "#EC4899" },
+        { id: "finishlyrics",       emoji: "🎤", title: "Finish the Lyrics",       desc: "Complete the birthday classics together",        color: "#3B82F6" },
+        { id: "telephonedrawing",   emoji: "📞", title: "Telephone Drawing",       desc: "Draw · pass · hilarious results",                color: "#10B981" },
+        { id: "guessvoice",         emoji: "🎙️", title: "Guess the Voice",         desc: "Disguised voices · who is it?",                  color: "#F59E0B" },
+        { id: "whoknowsbirthday",   emoji: "🎂", title: "Who Knows the Birthday Person?", desc: "Questions only the real fans can answer", color: "#EC4899" },
+        { id: "scavengerhunt",      emoji: "🗺️", title: "Scavenger Hunt",          desc: "Clues around the venue · race to finish",        color: "#059669" },
+        { id: "partychampionship",  emoji: "🏆", title: "Party Championship",      desc: "Multi-game tournament · one champion wins",      color: "#F59E0B" },
       ]},
       { id: "other", label: "🏆 Other", subtitle: "After the party", tools: [
         { id: "reportcard", emoji: "🏆", title: "Party Report Card", desc: "Rate the night · get a grade", color: "#FBBF24" },
@@ -5211,7 +5228,17 @@ const OCCASIONS = {
         { id: "storyguessyear",  emoji: "📅", title: "Their Story — Guess the Year", desc: "Photos appear · guests guess the year",  color: "#FBBF24" },
         { id: "lovestockmarket", emoji: "📈", title: "Love Stock Market",      desc: "Predict the couple's next big move",            color: "#10B981" },
         { id: "finishsentence",  emoji: "💬", title: "Finish Their Sentence",  desc: "Complete it · couple picks their favourites",   color: "#8B5CF6" },
-        { id: "relshipmuseum",   emoji: "🏛️", title: "Relationship Museum",   desc: "Memories → photos → interactive timeline",      color: "#EC4899" },
+        { id: "relshipmuseum",      emoji: "🏛️", title: "Relationship Museum",    desc: "Memories → photos → interactive timeline",       color: "#EC4899" },
+        { id: "dontsayyesno",       emoji: "🚫", title: "Don't Say Yes/No",       desc: "Answer couple questions without yes or no",      color: "#EF4444" },
+        { id: "wronganswers",       emoji: "🤪", title: "Wrong Answers Only",      desc: "Worst couple answer wins — vote for funniest",   color: "#F59E0B" },
+        { id: "couplepictionary",   emoji: "🎨", title: "Couple Pictionary",       desc: "Draw love moments together · no talking!",       color: "#F472B6" },
+        { id: "whoremembersbetter", emoji: "🧠", title: "Who Remembers Better?",   desc: "Memory quiz · which partner recalls more?",      color: "#8B5CF6" },
+        { id: "guesscouplesphoto",  emoji: "📸", title: "Guess the Couple's Photo",desc: "When was this taken? Where were they?",          color: "#FBBF24" },
+        { id: "couplesongsong",     emoji: "🎵", title: "Couple Song Challenge",   desc: "Their song vs your guess · race the timer",      color: "#EC4899" },
+        { id: "whosaidit",          emoji: "💬", title: "Who Said It?",            desc: "Guess which partner said this classic line",     color: "#10B981" },
+        { id: "loveletterdecoder",  emoji: "💌", title: "Love Letter Decoder",     desc: "Emoji-encoded love notes to decode together",    color: "#F9A8D4" },
+        { id: "scavengerhunt",      emoji: "🗺️", title: "Relationship Scavenger Hunt", desc: "Clue trail through the couple's story",      color: "#059669" },
+        { id: "partychampionship",  emoji: "🏆", title: "Couple Championship",     desc: "Multi-game tournament · one pair wins",          color: "#F59E0B" },
       ]},
       { id: "other", label: "🏆 Other", subtitle: "After the celebration", tools: [
         { id: "reportcard", emoji: "🏆", title: "Evening Report Card", desc: "Rate the celebration · get a grade", color: "#FBBF24" },
@@ -5258,7 +5285,18 @@ const OCCASIONS = {
         { id: "nameauction",     emoji: "🏷️", title: "Name Auction",          desc: "Bid virtual coins on baby names",                color: "#F472B6" },
         { id: "parentmatch",     emoji: "👫", title: "Parent Match",           desc: "Guests predict if mom & dad answers match",      color: "#A78BFA" },
         { id: "babyemoji",       emoji: "🧩", title: "Baby Emoji Decoder",    desc: "Decode emoji combos into baby phrases",          color: "#F59E0B" },
-        { id: "adviceroulette",  emoji: "🎡", title: "Advice Roulette",       desc: "Spin · advice / story / blessing / prediction",  color: "#10B981" },
+        { id: "adviceroulette",    emoji: "🎡", title: "Advice Roulette",        desc: "Spin · advice / story / blessing / prediction",  color: "#10B981" },
+        { id: "guessbabyfood",     emoji: "🍼", title: "Guess the Baby Food",    desc: "Taste test · identify mystery baby foods",        color: "#38BDF8" },
+        { id: "babypictionary",    emoji: "🎨", title: "Baby Pictionary",        desc: "Draw baby things · guess before time runs out",   color: "#F472B6" },
+        { id: "guessbabyph",       emoji: "📸", title: "Guess the Baby Photo",   desc: "Whose baby photo is this?",                       color: "#8B5CF6" },
+        { id: "babysongsong",      emoji: "🎵", title: "Baby Song Challenge",    desc: "Guess the lullaby from 3 notes",                  color: "#EC4899" },
+        { id: "babywordscramble",  emoji: "🔤", title: "Baby Word Scramble",     desc: "Unscramble baby-related words in 30 secs",        color: "#10B981" },
+        { id: "babyobjectmemory",  emoji: "🧸", title: "Baby Object Memory",     desc: "Memorise baby items · test your recall",           color: "#A78BFA" },
+        { id: "babycharades",      emoji: "🎭", title: "Baby Charades",          desc: "Act out baby items · no words allowed",           color: "#D97706" },
+        { id: "dontsaybaby",       emoji: "🚫", title: "Don't Say Baby",         desc: "Play without saying the word 'baby'",              color: "#EF4444" },
+        { id: "babysoundguess",    emoji: "👂", title: "Baby Sound Guess",       desc: "Identify baby sounds · crying · giggling",        color: "#38BDF8" },
+        { id: "scavengerhunt",     emoji: "🗺️", title: "Nursery Scavenger Hunt", desc: "Find hidden baby items around the venue",         color: "#059669" },
+        { id: "partychampionship", emoji: "🏆", title: "Shower Championship",    desc: "Multi-game tournament · one champion wins",       color: "#F59E0B" },
       ]},
       { id: "other", label: "🏆 Other", subtitle: "After the shower", tools: [
         { id: "reportcard", emoji: "🏆", title: "Shower Report Card", desc: "Rate the celebration", color: "#FBBF24" },
@@ -5303,7 +5341,16 @@ const OCCASIONS = {
         { id: "guessprice",   emoji: "💰", title: "Guess the Price",  desc: "Guests guess what each room item cost",         color: "#F59E0B" },
         { id: "mostlikelyhome",emoji: "🏡", title: "Most Likely To",  desc: "Who'll redecorate first · leave dishes · more", color: "#10B981" },
         { id: "designmyroom", emoji: "🎨", title: "Design My Room",   desc: "Guests vote on which aesthetic fits best",      color: "#38BDF8" },
-        { id: "housecapsule", emoji: "📦", title: "Home Time Capsule",desc: "Messages to open in 5 years in this home",     color: "#EC4899" },
+        { id: "housecapsule",      emoji: "📦", title: "Home Time Capsule",      desc: "Messages to open in 5 years in this home",      color: "#EC4899" },
+        { id: "finditfirst",       emoji: "🔍", title: "Find It First",          desc: "Race to spot hidden items around the home",      color: "#10B981" },
+        { id: "pictionary",        emoji: "🎨", title: "Pictionary",             desc: "Draw it, guess it — no talking!",                color: "#C77DFF" },
+        { id: "emojiDecoder",      emoji: "🧩", title: "Emoji Decoder",          desc: "Decode home emoji clues · race the clock",       color: "#38BDF8" },
+        { id: "dontsayyesno",      emoji: "🚫", title: "Don't Say Yes/No",       desc: "Answer without saying yes or no — 60 secs",      color: "#EF4444" },
+        { id: "wronganswers",      emoji: "🤪", title: "Wrong Answers Only",     desc: "Worst answer wins — vote for the funniest",      color: "#F59E0B" },
+        { id: "furniturememory",   emoji: "🛋️", title: "Furniture Memory",       desc: "Memorise the room · recall what's where",        color: "#8B5CF6" },
+        { id: "mysteryobject",     emoji: "🔮", title: "Mystery Object",         desc: "Feel it · guess it · the funniest wins",          color: "#7C3AED" },
+        { id: "whatsmissing",      emoji: "🤔", title: "What's Missing?",        desc: "Spot the item removed from the room",             color: "#F97316" },
+        { id: "partychampionship", emoji: "🏆", title: "New Home Championship",  desc: "Multi-game tournament · one champion wins",      color: "#F97316" },
       ]},
       { id: "other", label: "🏆 Other", subtitle: "After the celebration", tools: [
         { id: "reportcard", emoji: "🏆", title: "Housewarming Report Card", desc: "Rate the celebration", color: "#FBBF24" },
@@ -5347,11 +5394,29 @@ const OCCASIONS = {
         { id: "spin", emoji: "🍾", title: "Spin the Bottle", desc: "Random picker with spinner", color: "#2563EB" },
         { id: "charades", emoji: "🎭", title: "Dumb Charades", desc: "Bollywood · Web Shows · Memes", color: "#D97706" },
         { id: "bingo",            emoji: "🎱", title: "Party Bingo",       desc: "5×5 scenario bingo cards",                   color: "#0891B2" },
+        { id: "emojiDecoder",     emoji: "🧩", title: "Emoji Decoder",     desc: "Decode emoji clues · race the timer",         color: "#10B981" },
+        { id: "pictionary",       emoji: "🎨", title: "Pictionary",         desc: "Draw it, guess it — no talking!",              color: "#C77DFF" },
+        { id: "wordchain",        emoji: "🔤", title: "Word Chain",          desc: "Each word starts where the last one ended",    color: "#10B981" },
+        { id: "dontsayyesno",     emoji: "🚫", title: "Don't Say Yes/No",    desc: "Answer questions without saying yes or no!",   color: "#EF4444" },
+        { id: "wronganswers",     emoji: "🤪", title: "Wrong Answers Only",  desc: "Worst answer wins — vote for the funniest",   color: "#F59E0B" },
+        { id: "mafia",            emoji: "🔴", title: "Mafia",             desc: "Find the Mafia before they eliminate everyone", color: "#DC2626" },
+        { id: "spyfall",          emoji: "🕵️", title: "Spyfall",           desc: "Everyone knows the location — except the spy",  color: "#8B5CF6" },
         { id: "partymissions",    emoji: "🎯", title: "Party Missions",    desc: "Complete dares · earn points · leaderboard",  color: "#EF4444" },
         { id: "secretidentity",   emoji: "🕵️", title: "Secret Identity",   desc: "Everyone has a hidden role · guess who",      color: "#8B5CF6" },
         { id: "partyroulette",    emoji: "🎡", title: "Party Roulette",    desc: "Spin · truth / dare / drink / skip",          color: "#F59E0B" },
         { id: "anonconfessions",  emoji: "🤫", title: "Anon Confessions",  desc: "Submit anonymous · host reads aloud",         color: "#EC4899" },
-        { id: "chaosmode",        emoji: "🌪️", title: "Chaos Mode",        desc: "Random combo challenges · every 5 minutes",   color: "#F97316" },
+        { id: "chaosmode",          emoji: "🌪️", title: "Chaos Mode",         desc: "Random combo challenges · every 5 minutes",     color: "#F97316" },
+        { id: "telephonedrawing",   emoji: "📞", title: "Telephone Drawing",   desc: "Draw · pass · results are hilarious",            color: "#10B981" },
+        { id: "guesssong3sec",      emoji: "🎵", title: "Guess the Song",      desc: "3-second intro · name the track fast!",          color: "#EC4899" },
+        { id: "guesssound",         emoji: "👂", title: "Guess the Sound",     desc: "Identify mystery sounds · race to answer",       color: "#F59E0B" },
+        { id: "guessvoice",         emoji: "🎙️", title: "Guess the Voice",     desc: "Disguised voices · who is it?",                  color: "#8B5CF6" },
+        { id: "dontlaugh",          emoji: "😶", title: "Don't Laugh Challenge",desc: "Keep a straight face as long as you can",       color: "#F472B6" },
+        { id: "fastestfinger",      emoji: "⚡", title: "Fastest Finger",      desc: "Tap first · score first · leaderboard",          color: "#3B82F6" },
+        { id: "wordassociation",    emoji: "💬", title: "Word Association",    desc: "Say the first word that comes to mind",          color: "#10B981" },
+        { id: "nameplaceanimal",    emoji: "🌍", title: "Name Place Animal",   desc: "Classic NPTA · race to fill the grid",           color: "#059669" },
+        { id: "categories",         emoji: "📋", title: "Categories",          desc: "Name 5 things in the category in 10 secs",       color: "#7C3AED" },
+        { id: "scavengerhunt",      emoji: "🗺️", title: "Scavenger Hunt",      desc: "Clues around the venue · race to finish",        color: "#059669" },
+        { id: "partychampionship",  emoji: "🏆", title: "Party Championship",  desc: "Multi-game tournament · one champion wins",      color: "#10B981" },
       ]},
       { id: "other", label: "🏆 Other", subtitle: "End of the night", tools: [
         { id: "reportcard", emoji: "🏆", title: "Evening Report Card", desc: "Rate the night · get a grade", color: "#FBBF24" },
@@ -5397,7 +5462,18 @@ const OCCASIONS = {
         { id: "guesspr",        emoji: "💅", title: "Guess the Price",    desc: "Jewellery · bags · shoes · who paid what",      color: "#F59E0B" },
         { id: "fashiondetect",  emoji: "👗", title: "Fashion Detective",  desc: "Spot who's wearing what brand · guess the cost", color: "#EC4899" },
         { id: "bollyworddecode",emoji: "🎬", title: "Bollywood Decode",   desc: "Emoji combos → Bollywood songs & movies",       color: "#8B5CF6" },
-        { id: "kittyauction",   emoji: "🏷️", title: "Kitty Auction",     desc: "Bid virtual coins on funny items & dares",      color: "#38BDF8" },
+        { id: "emojiDecoder",   emoji: "🧩", title: "Emoji Decoder",      desc: "Decode emoji clues · race the timer",           color: "#E879F9" },
+        { id: "kittyauction",      emoji: "🏷️", title: "Kitty Auction",      desc: "Bid virtual coins on funny items & dares",       color: "#38BDF8" },
+        { id: "pictionary",        emoji: "🎨", title: "Kitty Pictionary",   desc: "Draw Bollywood stars · no talking!",              color: "#E879F9" },
+        { id: "dontsayyesno",      emoji: "🚫", title: "Don't Say Yes/No",   desc: "Answer without saying yes or no — 60 secs",      color: "#EF4444" },
+        { id: "wronganswers",      emoji: "🤪", title: "Wrong Answers Only", desc: "Worst answer wins — vote for the funniest",      color: "#F59E0B" },
+        { id: "guessactress",      emoji: "🎬", title: "Guess the Actress",  desc: "Costume & clues · who is she?",                  color: "#F472B6" },
+        { id: "guesssong3sec",     emoji: "🎵", title: "Guess the Song",     desc: "3-second Bollywood intro · name it!",            color: "#EC4899" },
+        { id: "brandlogoquiz",     emoji: "🏷️", title: "Brand Logo Quiz",    desc: "Spot the brand from the partial logo",           color: "#38BDF8" },
+        { id: "moviedialogue",     emoji: "🎭", title: "Movie Dialogue Guess",desc: "Complete the iconic Bollywood line",             color: "#8B5CF6" },
+        { id: "bollysound",        emoji: "🎵", title: "Bollywood Sound Guess",desc: "Identify the song from 3 audio notes",         color: "#A78BFA" },
+        { id: "passthephone",      emoji: "📱", title: "Pass the Phone",     desc: "Complete the challenge before passing it on",    color: "#F59E0B" },
+        { id: "partychampionship", emoji: "🏆", title: "Kitty Championship", desc: "Multi-game tournament · one kitty queen wins",   color: "#E879F9" },
       ]},
       { id: "other", label: "🏆 Other", subtitle: "After the kitty", tools: [
         { id: "reportcard", emoji: "🏆", title: "Kitty Report Card", desc: "Rate this month's kitty", color: "#FBBF24" },
@@ -5447,13 +5523,27 @@ const OCCASIONS = {
         { id: "hottakes",      emoji: "🌶️", title: "Hot Takes",          desc: "Office opinions — agree or disagree",    color: "#DC2626" },
         { id: "bingo",         emoji: "🎱", title: "Office Party Bingo",  desc: "5×5 corporate party scenario bingo",     color: "#0891B2" },
         { id: "charades",         emoji: "🎭", title: "Dumb Charades",         desc: "Bollywood · Web Shows · Office Memes",          color: "#D97706" },
+        { id: "pictionary",       emoji: "🎨", title: "Pictionary",             desc: "Draw it, guess it — no talking!",               color: "#3B82F6" },
+        { id: "wordchain",        emoji: "🔤", title: "Word Chain",             desc: "Each word starts where the last one ended",     color: "#10B981" },
+        { id: "dontsayyesno",     emoji: "🚫", title: "Don't Say Yes/No",      desc: "Answer questions without saying yes or no!",    color: "#EF4444" },
+        { id: "wronganswers",     emoji: "🤪", title: "Wrong Answers Only",     desc: "Worst answer wins — vote for the funniest",    color: "#F59E0B" },
+        { id: "spyfall",          emoji: "🕵️", title: "Spyfall",               desc: "One secret spy — can the team expose them?",    color: "#7C3AED" },
+        { id: "emojiDecoder",     emoji: "🧩", title: "Emoji Decoder",         desc: "Decode emoji clues before the timer runs out",  color: "#3B82F6" },
         { id: "officewrapped",    emoji: "🎁", title: "Office Wrapped",         desc: "Spotify-style year in review for the team",     color: "#1DB954" },
         { id: "secretcolleague",  emoji: "🕵️", title: "Secret Colleague",       desc: "Guess who sent each anonymous compliment",      color: "#38BDF8" },
         { id: "officestockmarket",emoji: "📈", title: "Office Stock Market",    desc: "Bet on colleagues' next big life moves",        color: "#10B981" },
         { id: "companytimeline",  emoji: "⏳", title: "Company Timeline",       desc: "Race to arrange company milestones in order",   color: "#F59E0B" },
         { id: "deptwars",         emoji: "⚔️", title: "Department Wars",        desc: "Dept vs dept · trivia · challenges · trophy",   color: "#EF4444" },
         { id: "anonofficeawards", emoji: "🏅", title: "Anon Office Awards",     desc: "Anonymous votes · funniest · most likely to",   color: "#8B5CF6" },
-        { id: "guessdesk",        emoji: "🖥️", title: "Guess Whose Desk",       desc: "Photo of a desk · guess the colleague",         color: "#EC4899" },
+        { id: "guessdesk",          emoji: "🖥️", title: "Guess Whose Desk",       desc: "Photo of a desk · guess the colleague",         color: "#EC4899" },
+        { id: "guesscolleaguephoto",emoji: "📸", title: "Colleague Childhood Photo",desc: "Whose archive photo is this in the office?",    color: "#38BDF8" },
+        { id: "guessvoice",         emoji: "🎙️", title: "Guess the Voice",         desc: "Disguised colleague voices · who is it?",       color: "#F59E0B" },
+        { id: "whosentmessage",     emoji: "💬", title: "Who Sent This Message?",   desc: "Guess the anonymous office WhatsApp sender",    color: "#10B981" },
+        { id: "brandlogoquiz",      emoji: "🏷️", title: "Company Logo Quiz",       desc: "Identify logos · brands · partners",            color: "#8B5CF6" },
+        { id: "officescavengerhunt",emoji: "🗺️", title: "Office Scavenger Hunt",   desc: "Clues around the office · race to finish",      color: "#059689" },
+        { id: "officemystery",      emoji: "🔍", title: "Office Mystery",          desc: "Who did it? Deduce from the clues",              color: "#7C3AED" },
+        { id: "mafia",              emoji: "🔴", title: "Mafia",                   desc: "Find the Mafia before they eliminate everyone",  color: "#DC2626" },
+        { id: "partychampionship",  emoji: "🏆", title: "Office Championship",     desc: "Multi-game tournament · one department wins",    color: "#3B82F6" },
       ]},
       { id: "other", label: "🏆 After", subtitle: "Wrap up the night", tools: [
         { id: "reportcard", emoji: "🏆", title: "Party Report Card", desc: "Rate the night · get a grade", color: "#FBBF24" },
@@ -5500,7 +5590,15 @@ const OCCASIONS = {
         { id: "babyfacetl",    emoji: "👣", title: "Baby Face Timeline",      desc: "Guess the month — day 1 to today",             color: "#38BDF8" },
         { id: "whosaiditbaby", emoji: "💬", title: "Who Said It?",            desc: "Guess which family member said it",            color: "#A78BFA" },
         { id: "firstyearbingo",emoji: "🎱", title: "First Year Bingo",        desc: "First word · step · tooth · trip · mischief",  color: "#0891B2" },
-        { id: "lettersfuture", emoji: "💌", title: "Letters to Future Baby",  desc: "Write messages · open when you turn 18",       color: "#EC4899" },
+        { id: "lettersfuture",     emoji: "💌", title: "Letters to Future Baby",  desc: "Write messages · open when you turn 18",        color: "#EC4899" },
+        { id: "guessbabyph",       emoji: "📸", title: "Guess the Baby Photo",    desc: "Family baby photos · who is who?",               color: "#F472B6" },
+        { id: "babysoundguess",    emoji: "👂", title: "Baby Sound Guess",        desc: "Identify baby sounds — crying, giggling",        color: "#38BDF8" },
+        { id: "whoknowsbaby",      emoji: "🎂", title: "Who Knows Baby Best?",    desc: "Questions only true fans can answer",             color: "#EC4899" },
+        { id: "babypictionary",    emoji: "🎨", title: "Baby Pictionary",         desc: "Draw baby items · no words allowed",             color: "#A78BFA" },
+        { id: "guessbabyitem",     emoji: "🧸", title: "Guess the Baby Item",     desc: "Feel or describe the mystery baby object",       color: "#F59E0B" },
+        { id: "emojiDecoder",      emoji: "🧩", title: "Baby Emoji Decoder",      desc: "Decode emoji combos into baby phrases",          color: "#F472B6" },
+        { id: "familyphotoguess",  emoji: "👨‍👩‍👧", title: "Family Photo Guess",   desc: "Guess whose family snap · classic chaos",         color: "#8B5CF6" },
+        { id: "partychampionship", emoji: "🏆", title: "1st Birthday Championship",desc: "Multi-game tournament · one champion wins",     color: "#F472B6" },
       ]},
       { id: "other", label: "🏆 After", subtitle: "End of the celebration", tools: [
         { id: "reportcard", emoji: "🏆", title: "Party Report Card", desc: "Rate the 1st birthday celebration", color: "#FBBF24" },
@@ -5550,7 +5648,17 @@ const OCCASIONS = {
         { id: "babyfanclub",     emoji: "⭐", title: "Baby's First Fan Club",  desc: "Team Mom · Team Dad · Team Baby · predictions", color: "#38BDF8" },
         { id: "babylooklike",    emoji: "👀", title: "Who Does Baby Look Like?", desc: "Vote Mom / Dad / Grandpa / Grandma / Mix",   color: "#F472B6" },
         { id: "welcomeworld",    emoji: "🌍", title: "Welcome Around the World", desc: "Blessings in different languages & cultures", color: "#A78BFA" },
-        { id: "openwhen",        emoji: "📬", title: "Open When...",           desc: "Messages for age 5 · 10 · 18 · college",       color: "#F59E0B" },
+        { id: "openwhen",          emoji: "📬", title: "Open When...",           desc: "Messages for age 5 · 10 · 18 · college",       color: "#F59E0B" },
+        { id: "guessbabyph",       emoji: "📸", title: "Guess the Baby Photo",   desc: "Whose newborn photo is this?",                   color: "#34D399" },
+        { id: "babysoundguess",    emoji: "👂", title: "Baby Sound Guess",       desc: "Identify baby sounds — sleeping, crying",        color: "#38BDF8" },
+        { id: "babyobjectmemory",  emoji: "🧸", title: "Baby Item Memory",       desc: "Memorise baby gifts · recall what's there",      color: "#A78BFA" },
+        { id: "babywordscramble",  emoji: "🔤", title: "Baby Name Word Game",    desc: "Unscramble letters to find baby names",          color: "#F59E0B" },
+        { id: "parentmatch",       emoji: "👫", title: "Parent Trivia",          desc: "How well do guests know the new parents?",       color: "#F472B6" },
+        { id: "familyphotoguess",  emoji: "👨‍👩‍👧", title: "Family Photo Guess",  desc: "Which side of the family does baby look like?",  color: "#8B5CF6" },
+        { id: "babypictionary",    emoji: "🎨", title: "Baby Pictionary",        desc: "Draw baby things · no words allowed",            color: "#34D399" },
+        { id: "emojiDecoder",      emoji: "🧩", title: "Baby Emoji Decoder",     desc: "Decode emoji combos into baby phrases",          color: "#38BDF8" },
+        { id: "guessbabyitem",     emoji: "🧸", title: "Guess the Baby Item",    desc: "Feel the mystery baby object · name it",         color: "#F472B6" },
+        { id: "partychampionship", emoji: "🏆", title: "Welcome Championship",   desc: "Multi-game tournament · one champion wins",      color: "#34D399" },
       ]},
       { id: "other", label: "🏆 After", subtitle: "Wrap up the welcome", tools: [
         { id: "reportcard", emoji: "🏆", title: "Welcome Report Card", desc: "Rate the homecoming celebration", color: "#FBBF24" },
@@ -5594,7 +5702,15 @@ const OCCASIONS = {
         { id: "predmeter",       emoji: "📊", title: "Prediction Meter",      desc: "Live room shows real-time prediction %",        color: "#38BDF8" },
         { id: "predstreak",      emoji: "🔥", title: "Prediction Streak",     desc: "Correct guesses build a streak",                color: "#EF4444" },
         { id: "teamchallenge",   emoji: "⚔️", title: "Team Challenge",        desc: "Team A vs Team B · games build the final score", color: "#8B5CF6" },
-        { id: "revealvault",     emoji: "🗝️", title: "The Reveal Vault",      desc: "Complete 3 challenges to unlock the reveal",    color: "#FBBF24" },
+        { id: "revealvault",      emoji: "🗝️", title: "The Reveal Vault",      desc: "Complete 3 challenges to unlock the reveal",      color: "#FBBF24" },
+        { id: "guessbabyph",      emoji: "📸", title: "Guess the Baby Photo",   desc: "Whose baby photo matches the bump? You decide",   color: "#34D399" },
+        { id: "babysongsong",     emoji: "🎵", title: "Baby Song Battle",       desc: "Guess songs with 'baby' in the title · fastest wins", color: "#F59E0B" },
+        { id: "babypictionary",   emoji: "🎨", title: "Baby Pictionary",        desc: "Draw baby-related words · no letters allowed",    color: "#A78BFA" },
+        { id: "dontsayyesno",     emoji: "🚫", title: "Don't Say Yes/No",       desc: "Answer baby questions without saying yes or no",  color: "#F472B6" },
+        { id: "wronganswers",     emoji: "🤪", title: "Wrong Answers Only",     desc: "Give the worst baby-related answer · crowd votes", color: "#10B981" },
+        { id: "emojiDecoder",     emoji: "🧩", title: "Baby Emoji Decoder",     desc: "Decode emoji combos — baby items, nursery rhymes", color: "#38BDF8" },
+        { id: "wordchain",        emoji: "🔗", title: "Baby Word Chain",        desc: "Chain words — each starts with the last letter",  color: "#8B5CF6" },
+        { id: "partychampionship",emoji: "🏆", title: "Reveal Championship",    desc: "Multi-game tournament · the big winner crowned",  color: "#FBBF24" },
       ]},
       { id: "other", label: "🏆 After", subtitle: "After the big moment", tools: [
         { id: "reportcard", emoji: "🏆", title: "Reveal Report Card", desc: "Rate the gender reveal party", color: "#FBBF24" },
@@ -5645,7 +5761,15 @@ const OCCASIONS = {
         { id: "collegememory",  emoji: "🎓", title: "College Memory Map",   desc: "Place your favourite memory on a campus map",  color: "#38BDF8" },
         { id: "classmateawards",emoji: "🏆", title: "Classmate Awards",     desc: "Most likely to · best glow-up · voted results", color: "#F59E0B" },
         { id: "futurelinkedin", emoji: "💼", title: "Future LinkedIn",       desc: "Write your classmate's 2030 LinkedIn headline", color: "#0A66C2" },
-        { id: "gradcapsule",    emoji: "📬", title: "Grad Time Capsule",    desc: "Letters to open at your 5-year reunion",       color: "#EC4899" },
+        { id: "gradcapsule",      emoji: "📬", title: "Grad Time Capsule",    desc: "Letters to open at your 5-year reunion",         color: "#EC4899" },
+        { id: "mafia",            emoji: "🔴", title: "Mafia",                  desc: "Social deduction classic · who is the Mafia?",    color: "#EF4444" },
+        { id: "spyfall",          emoji: "🕵️", title: "Spyfall",               desc: "Find the Spy before they guess the location",     color: "#8B5CF6" },
+        { id: "wordchain",        emoji: "🔗", title: "Word Chain",             desc: "Chain words · each starts with the last letter",  color: "#38BDF8" },
+        { id: "pictionary",       emoji: "🎨", title: "Grad Pictionary",        desc: "Draw college memories · no words allowed",        color: "#F59E0B" },
+        { id: "emojiDecoder",     emoji: "🧩", title: "Emoji Decoder",          desc: "Decode emoji combos into movies, shows, phrases", color: "#A78BFA" },
+        { id: "guessyearphoto",   emoji: "📅", title: "Guess the Year",         desc: "Old class photos — guess the year they were taken", color: "#EC4899" },
+        { id: "scavengerhunt",    emoji: "🗺️", title: "Campus Scavenger Hunt", desc: "Find clues around the venue · team challenge",    color: "#10B981" },
+        { id: "partychampionship",emoji: "🏆", title: "Grad Championship",      desc: "Multi-game tournament · one champion earns the crown", color: "#FBBF24" },
       ]},
       { id: "other", label: "🏆 After", subtitle: "End of the celebration", tools: [
         { id: "reportcard", emoji: "🏆", title: "Grad Party Report Card", desc: "Rate the graduation celebration", color: "#FBBF24" },
@@ -5696,7 +5820,15 @@ const OCCASIONS = {
         { id: "weddingpredmkt",   emoji: "📊", title: "Wedding Prediction Market",desc: "Bet on first dance · speech · garter toss",   color: "#38BDF8" },
         { id: "digitalguestbook", emoji: "📓", title: "Digital Guest Book",     desc: "Video · voice · text messages for the couple",  color: "#A78BFA" },
         { id: "coupletimeline",   emoji: "⏳", title: "Couple Timeline",        desc: "Race to arrange their relationship milestones",  color: "#F59E0B" },
-        { id: "whoknowscouple",   emoji: "💑", title: "Who Knows the Couple?",  desc: "Questions about both · tiebreaker round",       color: "#EC4899" },
+        { id: "whoknowscouple",   emoji: "💑", title: "Who Knows the Couple?",  desc: "Questions about both · tiebreaker round",         color: "#EC4899" },
+        { id: "dontsayyesno",     emoji: "🚫", title: "Don't Say Yes/No",       desc: "Wedding questions · no yes or no allowed",        color: "#F9A8D4" },
+        { id: "wronganswers",     emoji: "🤪", title: "Wrong Answers Only",     desc: "Hilariously wrong wedding answers · crowd votes",  color: "#10B981" },
+        { id: "mafia",            emoji: "🔴", title: "Wedding Mafia",          desc: "Social deduction · who's the secret troublemaker?", color: "#EF4444" },
+        { id: "spyfall",          emoji: "🕵️", title: "Spyfall",               desc: "Find the Spy before they guess the location",     color: "#8B5CF6" },
+        { id: "pictionary",       emoji: "🎨", title: "Wedding Pictionary",     desc: "Draw wedding scenes · no words allowed",          color: "#A78BFA" },
+        { id: "couplesongsong",   emoji: "🎵", title: "Couple Song Battle",     desc: "Guess their favourite songs · fastest hand wins",  color: "#F59E0B" },
+        { id: "scavengerhunt",    emoji: "🗺️", title: "Venue Scavenger Hunt",  desc: "Find clues around the wedding venue",             color: "#34D399" },
+        { id: "partychampionship",emoji: "🏆", title: "Wedding Championship",   desc: "Multi-game tournament · champion crowned at dinner", color: "#FBBF24" },
       ]},
       { id: "other", label: "🏆 After", subtitle: "Wrap up the celebration", tools: [
         { id: "reportcard", emoji: "🏆", title: "Wedding Report Card", desc: "Rate the magical day", color: "#FBBF24" },
@@ -5742,11 +5874,23 @@ const OCCASIONS = {
         { id: "rapidfire",    emoji: "⚡", title: "Rapid Fire",          desc: "Would you? 30 seconds · no thinking",     color: "#EF4444" },
         { id: "spin",         emoji: "🍾", title: "Random Picker",       desc: "Spin to pick tonight's dare",             color: "#2563EB" },
         { id: "mostlikelyto",  emoji: "🏆", title: "Most Likely To",       desc: "Who's most likely to embarrass the bride?", color: "#F59E0B" },
+        { id: "dontsayyesno",  emoji: "🚫", title: "Don't Say Yes/No",      desc: "Answer without saying yes or no — 60 secs", color: "#F472B6" },
+        { id: "wronganswers",  emoji: "🤪", title: "Wrong Answers Only",    desc: "Worst answer wins — vote for the funniest",  color: "#E879F9" },
+        { id: "mafia",         emoji: "🔴", title: "Mafia",                 desc: "Trust no one — find the secret Mafia",       color: "#DC2626" },
         { id: "roastcourt",    emoji: "⚖️", title: "Roast Court",           desc: "Bride on trial · squad submits evidence",   color: "#EF4444" },
         { id: "secmissions",   emoji: "🎯", title: "Secret Missions",       desc: "Hidden tasks · complete before midnight",   color: "#8B5CF6" },
         { id: "howwellknow",   emoji: "💬", title: "How Well Do You Know?", desc: "Bride vs squad answers · who matches most", color: "#F472B6" },
         { id: "friendshiprank",emoji: "📊", title: "Friendship Rank",       desc: "Guests rank their friendship closeness",    color: "#38BDF8" },
-        { id: "finalboss",     emoji: "👑", title: "Final Boss Round",      desc: "Last person standing wins the crown",       color: "#FBBF24" },
+        { id: "finalboss",        emoji: "👑", title: "Final Boss Round",      desc: "Last person standing wins the crown",           color: "#FBBF24" },
+        { id: "mafia",            emoji: "🔴", title: "Squad Mafia",            desc: "Social deduction · who is the secret villain?",   color: "#EF4444" },
+        { id: "spyfall",          emoji: "🕵️", title: "Spyfall",               desc: "Find the Spy before they guess the location",     color: "#8B5CF6" },
+        { id: "dontsayyesno",     emoji: "🚫", title: "Don't Say Yes/No",       desc: "Squad questions · no yes or no allowed",          color: "#F472B6" },
+        { id: "wronganswers",     emoji: "🤪", title: "Wrong Answers Only",     desc: "Worst answer wins — vote for the most iconic",    color: "#10B981" },
+        { id: "wordchain",        emoji: "🔗", title: "Word Chain",             desc: "Chain words · each starts with the last letter",  color: "#38BDF8" },
+        { id: "guessvoice",       emoji: "🎤", title: "Guess the Voice",        desc: "Hear a disguised voice · name your squad member", color: "#A78BFA" },
+        { id: "telephonedrawing", emoji: "📞", title: "Telephone Drawing",      desc: "Draw it · fold it · pass it — see the chaos",    color: "#F59E0B" },
+        { id: "scavengerhunt",    emoji: "🗺️", title: "Venue Scavenger Hunt",  desc: "Find bachelorette clues around the venue",        color: "#34D399" },
+        { id: "partychampionship",emoji: "🏆", title: "Bachelorette Championship", desc: "Multi-game tournament · ultimate champion wins", color: "#FBBF24" },
       ]},
       { id: "other", label: "🏆 After", subtitle: "End of the legendary night", tools: [
         { id: "reportcard", emoji: "🏆", title: "Night Report Card", desc: "Rate the bachelorette party", color: "#FBBF24" },
@@ -5795,7 +5939,17 @@ const OCCASIONS = {
         { id: "whosaidwork",   emoji: "💬", title: "Who Said It at Work?", desc: "Guess who said the famous office quote",    color: "#38BDF8" },
         { id: "faretimemachine",emoji: "⏳", title: "Time Machine",        desc: "What would you tell your past self here?",  color: "#F472B6" },
         { id: "msgfromevery",  emoji: "📬", title: "Message From Everyone",desc: "Every person records a 30-sec goodbye",     color: "#A78BFA" },
-        { id: "bestmoments",   emoji: "🎬", title: "Best Moments Replay",  desc: "Vote on the top 5 memories together",       color: "#FBBF24" },
+        { id: "bestmoments",      emoji: "🎬", title: "Best Moments Replay",  desc: "Vote on the top 5 memories together",           color: "#FBBF24" },
+        { id: "mafia",            emoji: "🔴", title: "Farewell Mafia",         desc: "Social deduction classic · find the Mafia",       color: "#EF4444" },
+        { id: "spyfall",          emoji: "🕵️", title: "Spyfall",               desc: "Find the Spy before they guess the location",     color: "#8B5CF6" },
+        { id: "telephonedrawing", emoji: "📞", title: "Telephone Drawing",      desc: "Draw it · fold it · pass it — chaos guaranteed",  color: "#F59E0B" },
+        { id: "guessvoice",       emoji: "🎤", title: "Guess the Voice",        desc: "Disguised voice · name the colleague",            color: "#A78BFA" },
+        { id: "dontsayyesno",     emoji: "🚫", title: "Don't Say Yes/No",       desc: "Work questions · no yes or no allowed",           color: "#60A5FA" },
+        { id: "wronganswers",     emoji: "🤪", title: "Wrong Answers Only",     desc: "Worst answer wins — vote for the funniest",       color: "#10B981" },
+        { id: "wordchain",        emoji: "🔗", title: "Word Chain",             desc: "Chain words · each starts with the last letter",  color: "#38BDF8" },
+        { id: "emojiDecoder",     emoji: "🧩", title: "Emoji Decoder",          desc: "Decode emoji combos into memories and moments",   color: "#8B5CF6" },
+        { id: "scavengerhunt",    emoji: "🗺️", title: "Farewell Scavenger Hunt", desc: "Find clues around the office · final mission",  color: "#34D399" },
+        { id: "partychampionship",emoji: "🏆", title: "Farewell Championship",  desc: "Multi-game tournament · send-off champion crowned", color: "#FBBF24" },
       ]},
       { id: "other", label: "🏆 After", subtitle: "End of the send-off", tools: [
         { id: "reportcard", emoji: "🏆", title: "Farewell Report Card", desc: "Rate the send-off party", color: "#FBBF24" },
@@ -5841,7 +5995,16 @@ const OCCASIONS = {
         { id: "retyearguess",   emoji: "📅", title: "Guess the Year",        desc: "Work photos · guess the year it was taken",   color: "#38BDF8" },
         { id: "retbingo",       emoji: "🎱", title: "Retirement Bingo",      desc: "Retirement clichés · beach · golf · travel",  color: "#0891B2" },
         { id: "legacyawards",   emoji: "🏅", title: "Legacy Awards",         desc: "Most memorable moment · best mentor · voted", color: "#FBBF24" },
-        { id: "lifeafterwork",  emoji: "🌅", title: "Life After Work",       desc: "Guests predict their dream retirement",        color: "#10B981" },
+        { id: "lifeafterwork",    emoji: "🌅", title: "Life After Work",       desc: "Guests predict their dream retirement",          color: "#10B981" },
+        { id: "mafia",            emoji: "🔴", title: "Office Mafia",           desc: "Social deduction · who's the secret retiree rebel?", color: "#EF4444" },
+        { id: "spyfall",          emoji: "🕵️", title: "Spyfall",               desc: "Find the Spy before they guess the location",     color: "#8B5CF6" },
+        { id: "dontsayyesno",     emoji: "🚫", title: "Don't Say Yes/No",       desc: "Career questions · no yes or no allowed",         color: "#FCD34D" },
+        { id: "wronganswers",     emoji: "🤪", title: "Wrong Answers Only",     desc: "Worst retirement advice wins · crowd votes",      color: "#10B981" },
+        { id: "wordchain",        emoji: "🔗", title: "Word Chain",             desc: "Chain words · each starts with the last letter",  color: "#38BDF8" },
+        { id: "emojiDecoder",     emoji: "🧩", title: "Emoji Decoder",          desc: "Decode emoji combos into career milestones",      color: "#A78BFA" },
+        { id: "careerphotoquiz",  emoji: "📸", title: "Career Photo Quiz",      desc: "Guess which year this workplace photo was taken", color: "#F59E0B" },
+        { id: "scavengerhunt",    emoji: "🗺️", title: "Retirement Scavenger Hunt", desc: "Find clues around the office · final mission", color: "#34D399" },
+        { id: "partychampionship",emoji: "🏆", title: "Retirement Championship",desc: "Multi-game tournament · the last champion crowned", color: "#FBBF24" },
       ]},
       { id: "other", label: "🏆 After", subtitle: "End of a legendary career", tools: [
         { id: "reportcard", emoji: "🏆", title: "Party Report Card", desc: "Rate the retirement celebration", color: "#FBBF24" },
@@ -5889,6 +6052,16 @@ const OCCASIONS = {
         { id: "lakshmiquiz",  emoji: "🪔", title: "Lakshmi Quiz",          desc: "Diwali traditions · mythology · stories", color: "#A78BFA" },
         { id: "diwalipredict",emoji: "🔮", title: "Diwali Predictions",    desc: "What will this year bring? Vote together", color: "#38BDF8" },
         { id: "diwalifamcup", emoji: "🏆", title: "Diwali Family Cup",     desc: "Family vs family · games · grand trophy",  color: "#10B981" },
+        { id: "emojiDecoder",     emoji: "🧩", title: "Emoji Decoder",          desc: "Decode festive emoji clues · race the clock",     color: "#F59E0B" },
+        { id: "guesssong3sec",    emoji: "🎵", title: "Guess the Song (3 sec)",  desc: "Bollywood & Diwali classics · fastest hand wins",  color: "#EC4899" },
+        { id: "finishlyrics",     emoji: "🎤", title: "Finish the Lyrics",       desc: "Fill in the missing lyric from festive favourites", color: "#F472B6" },
+        { id: "bollysound",       emoji: "🎶", title: "Bolly Sound Guess",       desc: "Identify famous Bollywood sound bites",           color: "#A78BFA" },
+        { id: "pictionary",       emoji: "🎨", title: "Diwali Pictionary",       desc: "Draw festive items · no words allowed",            color: "#38BDF8" },
+        { id: "wordchain",        emoji: "🔗", title: "Word Chain",              desc: "Chain words · each starts with the last letter",  color: "#8B5CF6" },
+        { id: "dontsayyesno",     emoji: "🚫", title: "Don't Say Yes/No",        desc: "Festive questions · no yes or no allowed",         color: "#F472B6" },
+        { id: "wronganswers",     emoji: "🤪", title: "Wrong Answers Only",      desc: "Worst Diwali answer wins · crowd votes",           color: "#10B981" },
+        { id: "scavengerhunt",    emoji: "🗺️", title: "Diwali Scavenger Hunt",  desc: "Find festive clues around the venue",             color: "#34D399" },
+        { id: "partychampionship",emoji: "🏆", title: "Diwali Championship",     desc: "Multi-game tournament · the grand Diwali winner", color: "#FBBF24" },
       ]},
       { id: "other", label: "🏆 After", subtitle: "End of the celebration", tools: [
         { id: "reportcard", emoji: "🏆", title: "Diwali Report Card", desc: "Rate the Diwali celebration", color: "#FBBF24" },
@@ -5936,6 +6109,18 @@ const OCCASIONS = {
         { id: "songsplash",   emoji: "🎵", title: "Song Splash",        desc: "Guess Holi song from 5-note audio clip",      color: "#38BDF8" },
         { id: "holiphotoch",  emoji: "📸", title: "Holi Photo Challenge",desc: "Most colourful · best pose · most drenched",  color: "#F472B6" },
         { id: "colourconfess",emoji: "🤫", title: "Colour Confessions", desc: "Anonymous Holi confessions · host reads live", color: "#A78BFA" },
+        { id: "emojiDecoder", emoji: "🧩", title: "Emoji Decoder",       desc: "Decode Holi emoji clues · race the clock",     color: "#E879F9" },
+        { id: "wronganswers", emoji: "🤪", title: "Wrong Answers Only",  desc: "Worst answer wins — vote for the funniest",     color: "#10B981" },
+        { id: "dontsayyesno",     emoji: "🚫", title: "Don't Say Yes/No",      desc: "Answer questions without saying yes or no!",     color: "#F472B6" },
+        { id: "mafia",            emoji: "🔴", title: "Holi Mafia",             desc: "Find the colour thief · social deduction fun",    color: "#EF4444" },
+        { id: "spyfall",          emoji: "🕵️", title: "Spyfall",               desc: "Find the Spy before they guess the location",     color: "#8B5CF6" },
+        { id: "telephonedrawing", emoji: "📞", title: "Telephone Drawing",      desc: "Draw Holi scenes · fold · pass — pure chaos",     color: "#F59E0B" },
+        { id: "guesssong3sec",    emoji: "🎵", title: "Guess the Song (3 sec)", desc: "Holi & Bollywood classics · fastest hand wins",   color: "#EC4899" },
+        { id: "bollysound",       emoji: "🎶", title: "Bolly Sound Guess",      desc: "Identify famous Bollywood sound bites",           color: "#A78BFA" },
+        { id: "wordchain",        emoji: "🔗", title: "Word Chain",             desc: "Chain words · each starts with the last letter",  color: "#38BDF8" },
+        { id: "pictionary",       emoji: "🎨", title: "Holi Pictionary",        desc: "Draw colour-themed items · no words allowed",     color: "#E879F9" },
+        { id: "scavengerhunt",    emoji: "🗺️", title: "Holi Scavenger Hunt",   desc: "Find colour clues around the venue",              color: "#34D399" },
+        { id: "partychampionship",emoji: "🏆", title: "Holi Championship",      desc: "Multi-game tournament · the Holi champion wins",  color: "#FBBF24" },
       ]},
       { id: "other", label: "🏆 After", subtitle: "End of the colour party", tools: [
         { id: "reportcard", emoji: "🏆", title: "Holi Report Card", desc: "Rate the colour celebration", color: "#FBBF24" },
@@ -5983,7 +6168,15 @@ const OCCASIONS = {
         { id: "songdrop",    emoji: "🎵", title: "Song Drop",           desc: "Guess the garba song from 3-second intro",      color: "#F59E0B" },
         { id: "garbabingo",  emoji: "🎱", title: "Garba Bingo",         desc: "Garba moves on your card · shout BINGO",        color: "#0891B2" },
         { id: "bestdressedvote",emoji: "👗", title: "Best Dressed Vote", desc: "Chaniya choli · lehenga · live vote results",  color: "#EC4899" },
-        { id: "garbachain",  emoji: "🔗", title: "Garba Chain",         desc: "Everyone adds a step · longest chain wins",     color: "#A78BFA" },
+        { id: "garbachain",       emoji: "🔗", title: "Garba Chain",           desc: "Everyone adds a step · longest chain wins",       color: "#A78BFA" },
+        { id: "garbaquiz",        emoji: "🪷", title: "Garba Quiz",             desc: "Navratri trivia · mythology · traditions",         color: "#EC4899" },
+        { id: "emojiDecoder",     emoji: "🧩", title: "Emoji Decoder",          desc: "Decode festive Navratri emoji combos",             color: "#F59E0B" },
+        { id: "dontsayyesno",     emoji: "🚫", title: "Don't Say Yes/No",       desc: "Festive questions · no yes or no allowed",         color: "#F472B6" },
+        { id: "wronganswers",     emoji: "🤪", title: "Wrong Answers Only",     desc: "Worst garba answer wins · crowd votes",            color: "#10B981" },
+        { id: "wordchain",        emoji: "🔗", title: "Word Chain",             desc: "Chain words · each starts with the last letter",  color: "#38BDF8" },
+        { id: "guesssong3sec",    emoji: "🎵", title: "Guess the Garba Song",   desc: "Navratri & garba classics · fastest hand wins",    color: "#C084FC" },
+        { id: "scavengerhunt",    emoji: "🗺️", title: "Navratri Scavenger Hunt", desc: "Find festive clues around the pandal",          color: "#34D399" },
+        { id: "partychampionship",emoji: "🏆", title: "Navratri Championship",  desc: "Multi-game tournament · the garba champion wins",  color: "#FBBF24" },
       ]},
       { id: "other", label: "🏆 After", subtitle: "End of the garba night", tools: [
         { id: "reportcard", emoji: "🏆", title: "Garba Night Report Card", desc: "Rate the Navratri celebration", color: "#FBBF24" },
@@ -6039,7 +6232,15 @@ const OCCASIONS = {
         { id: "wouldyou",    emoji: "🤷", title: "Would You Rather",   desc: "Family-friendly dilemmas · group fun",        color: "#7C3AED" },
         { id: "rapidfire",   emoji: "⚡", title: "Rapid Fire",          desc: "Baby predictions · 30 seconds",               color: "#EF4444" },
         { id: "mostlikelyto",emoji: "🏆", title: "Most Likely To",     desc: "What will this child grow up to be?",         color: "#F59E0B" },
-        { id: "t2l",         emoji: "🤥", title: "Two Truths One Lie", desc: "Family memories edition",                     color: "#8B5CF6" },
+        { id: "t2l",              emoji: "🤥", title: "Two Truths One Lie",   desc: "Family memories edition",                         color: "#8B5CF6" },
+        { id: "guessbabyph",      emoji: "📸", title: "Guess the Baby Photo",   desc: "Whose baby photo is this? Family guessing game",  color: "#34D399" },
+        { id: "babysongsong",     emoji: "🎵", title: "Baby Song Battle",       desc: "Guess songs with 'baby' in the title · fastest wins", color: "#F59E0B" },
+        { id: "babypictionary",   emoji: "🎨", title: "Baby Pictionary",        desc: "Draw baby-related words · no letters allowed",    color: "#EC4899" },
+        { id: "babyobjectmemory", emoji: "🧸", title: "Baby Item Memory",       desc: "Memorise baby gifts · recall what's missing",     color: "#A78BFA" },
+        { id: "emojiDecoder",     emoji: "🧩", title: "Baby Emoji Decoder",     desc: "Decode emoji combos into baby phrases",           color: "#38BDF8" },
+        { id: "guessbabyitem",    emoji: "🧸", title: "Guess the Baby Item",    desc: "Feel the mystery baby object · name it blind",    color: "#F472B6" },
+        { id: "scavengerhunt",    emoji: "🗺️", title: "Ceremony Scavenger Hunt", desc: "Find blessing clues around the ceremony",      color: "#34D399" },
+        { id: "partychampionship",emoji: "🏆", title: "Naming Championship",    desc: "Multi-game tournament · champion blessed by all", color: "#A78BFA" },
       ]},
       { id: "other", label: "🏆 Other", subtitle: "Remember this day", tools: [
         { id: "reportcard", emoji: "🏆", title: "Ceremony Report Card", desc: "Rate the beautiful day", color: "#FBBF24" },
@@ -6368,7 +6569,2711 @@ function PartyHubBackground() {
   );
 }
 
+// ── Emoji Decoder ─────────────────────────────────────────────────────────
+const EMOJI_ROUNDS = [
+  { emojis:"🦁👑",        answer:"The Lion King",        category:"Movie" },
+  { emojis:"🕷️🕸️👨",     answer:"Spider-Man",           category:"Movie" },
+  { emojis:"🧊👸❄️",      answer:"Frozen",               category:"Movie" },
+  { emojis:"🐟🔵🔵",      answer:"Finding Nemo",         category:"Movie" },
+  { emojis:"🦖🌿🏝️",     answer:"Jurassic Park",        category:"Movie" },
+  { emojis:"🚀🌌⭐",      answer:"Star Wars",            category:"Movie" },
+  { emojis:"👻🔫🎶",      answer:"Ghostbusters",         category:"Movie" },
+  { emojis:"👸🍎💀🪞",    answer:"Snow White",           category:"Fairy Tale" },
+  { emojis:"🌹🕐💰",      answer:"Beauty and the Beast", category:"Fairy Tale" },
+  { emojis:"🔮👠🎃",      answer:"Cinderella",           category:"Fairy Tale" },
+  { emojis:"3️⃣🤡🎓",     answer:"3 Idiots",             category:"Bollywood" },
+  { emojis:"💍🌸🎶🚂",    answer:"DDLJ",                 category:"Bollywood" },
+  { emojis:"👊💥🌾🔫",    answer:"Sholay",               category:"Bollywood" },
+  { emojis:"🦁🌟👑⚔️",    answer:"Bahubali",             category:"Bollywood" },
+  { emojis:"💃🌹🇪🇸🎶",   answer:"Despacito",            category:"Song" },
+  { emojis:"🔔🛷🎅❄️",    answer:"Jingle Bells",         category:"Song" },
+  { emojis:"🍰🎂🎉",      answer:"Happy Birthday",       category:"Song" },
+  { emojis:"🦋🦋🦋🌈",    answer:"Butterfly",            category:"Song" },
+  { emojis:"🌊🏄‍♂️🦈",   answer:"Jaws",                 category:"Movie" },
+  { emojis:"🐼🍜🥋",      answer:"Kung Fu Panda",        category:"Movie" },
+];
+
+function EmojiDecoder({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'emoji-decoder') setGame?.('emoji-decoder', {}); }, [live, isHost]); // eslint-disable-line
+
+  const [localPhase, setLocalPhase] = useState("lobby");
+  const [localRoundIdx, setLocalRoundIdx] = useState(0);
+  const [localAnswers, setLocalAnswers] = useState({});
+  const [localScores, setLocalScores] = useState({});
+  const [localPlayers, setLocalPlayers] = useState([]);
+  const [playerInput, setPlayerInput] = useState("");
+  const [myAnswer, setMyAnswer] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [numRounds, setNumRounds] = useState(5);
+  const timerRef = useRef(null);
+
+  const phase      = live ? (gameState?.phase || "lobby") : localPhase;
+  const roundIdx   = live ? (gameState?.roundIdx || 0) : localRoundIdx;
+  const answers    = live ? (gameState?.answers || {}) : localAnswers;
+  const scores     = live ? (gameState?.scores || {}) : localScores;
+  const timerEnd   = live ? gameState?.timerEnd : null;
+  const rounds     = live ? (gameState?.rounds || EMOJI_ROUNDS.slice(0, numRounds)) : EMOJI_ROUNDS.slice(0, numRounds);
+  const activePlayers = live ? livePlayers : localPlayers;
+
+  const currentRound    = rounds[roundIdx] || rounds[0] || EMOJI_ROUNDS[0];
+  const submittedCount  = Object.keys(answers).length;
+  const allSubmitted    = activePlayers.length > 0 && submittedCount >= activePlayers.length;
+  const totalRounds     = live ? rounds.length : numRounds;
+
+  // Countdown timer
+  useEffect(() => {
+    clearInterval(timerRef.current);
+    if (phase !== "answering") return;
+    if (live && timerEnd) {
+      const tick = () => setTimeLeft(Math.max(0, Math.ceil((timerEnd - Date.now()) / 1000)));
+      tick();
+      timerRef.current = setInterval(tick, 250);
+      return () => clearInterval(timerRef.current);
+    }
+    if (!live) {
+      setTimeLeft(30);
+      timerRef.current = setInterval(() => {
+        setTimeLeft(t => {
+          if (t <= 1) { clearInterval(timerRef.current); setLocalPhase("revealing"); return 0; }
+          return t - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timerRef.current);
+    }
+  }, [phase, timerEnd, live]); // eslint-disable-line
+
+  // Host auto-reveal when all submitted
+  useEffect(() => {
+    if (phase === "answering" && allSubmitted) {
+      if (live && isHost) sendAction('reveal', {});
+      else if (!live) { clearInterval(timerRef.current); setLocalPhase("revealing"); }
+    }
+  }, [allSubmitted]); // eslint-disable-line
+
+  const checkCorrect = (input, correct) => {
+    const norm = s => s.toLowerCase().replace(/[^a-z0-9\s]/g, "").trim().replace(/\s+/g," ");
+    const a = norm(input), b = norm(correct);
+    return a === b || (a.length >= 3 && b.includes(a));
+  };
+
+  const submitAnswer = () => {
+    if (!myAnswer.trim() || submitted) return;
+    setSubmitted(true);
+    const isCorrect = checkCorrect(myAnswer, currentRound.answer);
+    if (live) {
+      sendAction('submit_answer', { answer: myAnswer, correct: isCorrect });
+    } else {
+      const name = liveName || "You";
+      const pts = isCorrect ? 10 : 0;
+      setLocalAnswers(a => ({ ...a, [name]: { text: myAnswer, correct: isCorrect, points: pts } }));
+      if (isCorrect) setLocalScores(s => ({ ...s, [name]: (s[name] || 0) + pts }));
+    }
+  };
+
+  const startGame = () => {
+    const selectedRounds = EMOJI_ROUNDS.slice(0, numRounds);
+    if (live) {
+      sendAction('start_game', { rounds: selectedRounds, numRounds, timerEnd: Date.now() + 30000 });
+    } else {
+      setLocalRoundIdx(0); setLocalAnswers({}); setMyAnswer(""); setSubmitted(false); setLocalPhase("answering");
+    }
+  };
+  const hostReveal = () => {
+    if (live) sendAction('reveal', {});
+    else { clearInterval(timerRef.current); setLocalPhase("revealing"); }
+  };
+  const showLeaderboard = () => {
+    if (live) sendAction('leaderboard', {});
+    else setLocalPhase("leaderboard");
+  };
+  const nextRound = () => {
+    const next = roundIdx + 1;
+    if (next >= totalRounds) {
+      if (live) sendAction('end_game', {});
+      else setLocalPhase("gameover");
+    } else {
+      if (live) sendAction('next_round', { roundIdx: next, timerEnd: Date.now() + 30000 });
+      else { setLocalRoundIdx(next); setLocalAnswers({}); setMyAnswer(""); setSubmitted(false); setLocalPhase("answering"); }
+    }
+  };
+  const playAgain = () => {
+    if (live) sendAction('restart', {});
+    else { setLocalRoundIdx(0); setLocalAnswers({}); setLocalScores({}); setMyAnswer(""); setSubmitted(false); setLocalPhase("lobby"); }
+  };
+
+  const addPlayer = () => { const n = playerInput.trim(); if (n && !localPlayers.includes(n)) { setLocalPlayers(p => [...p, n]); setPlayerInput(""); } };
+  const sortedScores = [...activePlayers].sort((a, b) => (scores[b] || 0) - (scores[a] || 0));
+  const medals = ["🥇", "🥈", "🥉"];
+
+  const darkStage = { background:"linear-gradient(145deg,#08000F,#130020)", borderRadius:20, padding:"24px 18px", marginBottom:16, border:`1.5px solid ${accent}35`, boxShadow:`0 0 50px ${accent}10`, position:"relative", overflow:"hidden" };
+  const answerRow = { display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 14px", borderRadius:12, marginBottom:6 };
+
+  return (
+    <LightFormModal onClose={onClose} accent={accent} emoji="🧩" title="Emoji Decoder" wide>
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent}
+        checked={phase === "answering" ? Object.fromEntries(Object.keys(answers).map(n => [n, true])) : {}} />
+
+      {/* ── LOBBY ── */}
+      {phase === "lobby" && (<>
+        <div style={{ textAlign:"center", padding:"8px 0 18px" }}>
+          <div style={{ fontSize:52, marginBottom:10, lineHeight:1 }}>🧩</div>
+          <div style={{ fontSize:16, fontWeight:900, color:"#1C1410", marginBottom:5 }}>Emoji Decoder</div>
+          <div style={{ fontSize:13, color:"rgba(28,9,0,0.50)", lineHeight:1.4 }}>Emoji clues → guess the movie, song or phrase. Answer before the clock hits zero.</div>
+        </div>
+
+        {!live && (<>
+          <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+            <input value={playerInput} onChange={e => setPlayerInput(e.target.value)} onKeyDown={e => e.key === "Enter" && addPlayer()} placeholder="Add player name…" style={{ ...linp, flex:1 }} />
+            <button onClick={addPlayer} style={{ ...lBtn(accent), width:"auto", padding:"10px 18px" }}>+</button>
+          </div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:14 }}>
+            {localPlayers.map(p => (
+              <span key={p} style={{ background:`${accent}18`, border:`1px solid ${accent}35`, color:accent, padding:"4px 12px", borderRadius:100, fontSize:12, display:"flex", alignItems:"center", gap:6 }}>
+                {p}
+                <button onClick={() => setLocalPlayers(pl => pl.filter(x => x !== p))} style={{ background:"none", border:"none", color:"rgba(28,9,0,0.4)", cursor:"pointer", padding:0, fontSize:14, lineHeight:1 }}>×</button>
+              </span>
+            ))}
+          </div>
+        </>)}
+
+        {(live ? isHost : true) && (<>
+          <div style={{ marginBottom:14 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:"rgba(28,9,0,0.45)", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:8 }}>Rounds</div>
+            <div style={{ display:"flex", gap:8 }}>
+              {[3, 5, 8, 10].map(n => (
+                <button key={n} onClick={() => setNumRounds(n)} style={{ flex:1, padding:"9px 0", borderRadius:10, border:`1.5px solid ${n === numRounds ? accent : "rgba(28,9,0,0.12)"}`, background:n === numRounds ? `${accent}12` : "transparent", color:n === numRounds ? accent : "rgba(28,9,0,0.55)", fontWeight:700, fontSize:13, cursor:"pointer" }}>{n}</button>
+              ))}
+            </div>
+          </div>
+          <button onClick={startGame} disabled={!live && localPlayers.length < 1} style={{ ...lBtn(accent), opacity:!live && localPlayers.length < 1 ? 0.45 : 1 }}>🚀 Start Game</button>
+          {!live && localPlayers.length < 1 && <div style={{ fontSize:11, color:"rgba(28,9,0,0.4)", textAlign:"center", marginTop:6 }}>Add at least 1 player to begin</div>}
+        </>)}
+        {live && !isHost && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.45)", fontSize:13, paddingTop:8 }}>Waiting for host to start…</div>}
+      </>)}
+
+      {/* ── ANSWERING ── */}
+      {phase === "answering" && currentRound && (<>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+          <span style={{ fontSize:11, fontWeight:800, color:accent, textTransform:"uppercase", letterSpacing:"0.12em" }}>Round {roundIdx + 1} / {totalRounds}</span>
+          <span style={{ fontSize:11, color:"rgba(255,255,255,0.4)", background:"rgba(255,255,255,0.08)", padding:"3px 10px", borderRadius:100 }}>{currentRound.category}</span>
+        </div>
+
+        <div style={darkStage}>
+          <div aria-hidden style={{ position:"absolute", top:-40, left:"50%", transform:"translateX(-50%)", width:200, height:120, background:`radial-gradient(ellipse,${accent}20 0%,transparent 70%)`, pointerEvents:"none" }} />
+          <div style={{ fontSize:11, fontWeight:700, color:accent, textTransform:"uppercase", letterSpacing:"0.18em", marginBottom:14, position:"relative" }}>What does this mean?</div>
+          <div style={{ fontSize:54, letterSpacing:6, lineHeight:1.3, marginBottom:8, position:"relative" }}>{currentRound.emojis}</div>
+          <div style={{ fontSize:10, color:"rgba(255,255,255,0.28)", position:"relative" }}>A {currentRound.category}</div>
+        </div>
+
+        <div style={{ display:"flex", justifyContent:"center", marginBottom:14 }}>
+          <div style={{ width:58, height:58, borderRadius:"50%", border:`3px solid ${timeLeft > 10 ? accent : "#FF4444"}`, display:"flex", alignItems:"center", justifyContent:"center", background:`${timeLeft > 10 ? accent : "#FF4444"}12`, transition:"border-color 0.4s, background 0.4s" }}>
+            <span style={{ fontSize:22, fontWeight:900, color:timeLeft > 10 ? accent : "#FF4444", fontVariantNumeric:"tabular-nums", transition:"color 0.4s" }}>{timeLeft}</span>
+          </div>
+        </div>
+
+        {!submitted ? (
+          <div style={{ display:"flex", gap:8 }}>
+            <input value={myAnswer} onChange={e => setMyAnswer(e.target.value)} onKeyDown={e => e.key === "Enter" && submitAnswer()}
+              placeholder="Your answer…"
+              style={{ ...linp, flex:1, fontSize:15 }} autoFocus />
+            <button onClick={submitAnswer} style={{ ...lBtn(accent), width:"auto", padding:"10px 22px", fontSize:18 }}>✓</button>
+          </div>
+        ) : (
+          <div style={{ textAlign:"center", padding:"14px 0 4px", color:"rgba(28,9,0,0.50)", fontSize:13 }}>
+            ✅ Answer locked in · {submittedCount}/{activePlayers.length} answered
+          </div>
+        )}
+
+        {live && isHost && submittedCount > 0 && !allSubmitted && (
+          <button onClick={hostReveal} style={{ ...lBtn("rgba(0,0,0,0.07)"), color:"#1C1410", marginTop:10 }}>
+            Reveal now ({submittedCount}/{activePlayers.length}) →
+          </button>
+        )}
+      </>)}
+
+      {/* ── REVEALING ── */}
+      {phase === "revealing" && currentRound && (<>
+        <div style={{ textAlign:"center", marginBottom:18 }}>
+          <div style={{ fontSize:46, letterSpacing:4, marginBottom:14, lineHeight:1.2 }}>{currentRound.emojis}</div>
+          <div style={{ fontSize:11, fontWeight:700, color:accent, textTransform:"uppercase", letterSpacing:"0.18em", marginBottom:6 }}>The answer was</div>
+          <div style={{ fontSize:26, fontWeight:900, color:"#1C1410", letterSpacing:"-0.02em", marginBottom:4 }}>{currentRound.answer}</div>
+          <div style={{ display:"inline-block", background:`${accent}15`, border:`1px solid ${accent}30`, color:accent, fontSize:11, fontWeight:700, padding:"3px 12px", borderRadius:100 }}>{currentRound.category}</div>
+        </div>
+
+        <div style={{ marginBottom:16 }}>
+          <div style={{ fontSize:10, fontWeight:700, color:"rgba(28,9,0,0.40)", textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:8 }}>Results</div>
+          {activePlayers.map(p => {
+            const a = answers[p];
+            return (
+              <div key={p} style={{ ...answerRow, background:a?.correct ? `${accent}10` : "rgba(0,0,0,0.03)", border:`1px solid ${a?.correct ? accent+"30" : "rgba(0,0,0,0.08)"}` }}>
+                <div>
+                  <span style={{ fontWeight:700, color:"#1C1410", fontSize:14 }}>{p}</span>
+                  {a ? <span style={{ fontSize:12, color:"rgba(28,9,0,0.45)", marginLeft:8 }}>"{a.text}"</span>
+                     : <span style={{ fontSize:12, color:"rgba(28,9,0,0.30)", marginLeft:8 }}>—</span>}
+                </div>
+                <span style={{ fontWeight:900, fontSize:15, color:a?.correct ? "#2E7D32" : "rgba(28,9,0,0.25)" }}>{a?.correct ? "+10" : "—"}</span>
+              </div>
+            );
+          })}
+          {activePlayers.length === 0 && <div style={{ fontSize:12, color:"rgba(28,9,0,0.35)", textAlign:"center" }}>No players yet</div>}
+        </div>
+
+        {(live ? isHost : true) && <button onClick={showLeaderboard} style={lBtn(accent)}>Scores →</button>}
+        {live && !isHost && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.4)", fontSize:13 }}>Waiting for host…</div>}
+      </>)}
+
+      {/* ── LEADERBOARD ── */}
+      {phase === "leaderboard" && (<>
+        <div style={{ textAlign:"center", marginBottom:14 }}>
+          <div style={{ fontSize:11, fontWeight:800, color:accent, textTransform:"uppercase", letterSpacing:"0.15em", marginBottom:3 }}>Leaderboard</div>
+          <div style={{ fontSize:12, color:"rgba(28,9,0,0.40)" }}>After round {roundIdx + 1} of {totalRounds}</div>
+        </div>
+        {sortedScores.map((p, i) => (
+          <div key={p} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 16px", marginBottom:6, borderRadius:14, background:i === 0 ? `${accent}14` : "rgba(0,0,0,0.04)", border:`1px solid ${i === 0 ? accent+"35" : "rgba(0,0,0,0.07)"}`, transform:i === 0 ? "scale(1.02)" : "scale(1)" }}>
+            <span style={{ fontSize:22 }}>{medals[i] || `${i + 1}.`}</span>
+            <span style={{ flex:1, fontWeight:700, color:"#1C1410", fontSize:14 }}>{p}</span>
+            <span style={{ fontWeight:900, color:i === 0 ? accent : "rgba(28,9,0,0.60)", fontSize:17, fontVariantNumeric:"tabular-nums" }}>{scores[p] || 0} pts</span>
+          </div>
+        ))}
+        {activePlayers.length === 0 && <div style={{ fontSize:12, color:"rgba(28,9,0,0.35)", textAlign:"center" }}>No players</div>}
+
+        {(live ? isHost : true) && (
+          <button onClick={nextRound} style={{ ...lBtn(accent), marginTop:12 }}>
+            {roundIdx + 1 >= totalRounds ? "Final Results →" : `Round ${roundIdx + 2} →`}
+          </button>
+        )}
+        {live && !isHost && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.4)", fontSize:13, marginTop:8 }}>Waiting for host…</div>}
+      </>)}
+
+      {/* ── GAME OVER ── */}
+      {phase === "gameover" && (<>
+        <div style={{ textAlign:"center", marginBottom:20 }}>
+          <div style={{ fontSize:48, marginBottom:10 }}>🏆</div>
+          <div style={{ fontSize:20, fontWeight:900, color:"#1C1410", letterSpacing:"-0.02em", marginBottom:4 }}>Game Over!</div>
+          <div style={{ fontSize:13, color:"rgba(28,9,0,0.45)" }}>Final standings</div>
+        </div>
+        {sortedScores.map((p, i) => (
+          <div key={p} style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 16px", marginBottom:8, borderRadius:16, background:i === 0 ? `${accent}18` : "rgba(0,0,0,0.04)", border:`1.5px solid ${i === 0 ? accent+"45" : "rgba(0,0,0,0.07)"}`, transform:i === 0 ? "scale(1.03)" : "scale(1)", transition:"all 0.3s" }}>
+            <span style={{ fontSize:28 }}>{medals[i] || `${i + 1}.`}</span>
+            <span style={{ flex:1, fontWeight:800, color:"#1C1410", fontSize:15 }}>{p}</span>
+            <div style={{ textAlign:"right" }}>
+              <div style={{ fontWeight:900, color:i === 0 ? accent : "rgba(28,9,0,0.70)", fontSize:20, fontVariantNumeric:"tabular-nums" }}>{scores[p] || 0}</div>
+              <div style={{ fontSize:10, color:"rgba(28,9,0,0.35)" }}>pts</div>
+            </div>
+          </div>
+        ))}
+        {activePlayers.length === 0 && <div style={{ fontSize:12, color:"rgba(28,9,0,0.35)", textAlign:"center" }}>No players</div>}
+        <div style={{ display:"flex", gap:10, marginTop:18 }}>
+          <button onClick={playAgain} style={{ ...lBtn(accent), flex:1 }}>🔄 Play Again</button>
+          <button onClick={onClose} style={{ ...lBtn("rgba(0,0,0,0.07)"), color:"#1C1410", flex:1 }}>Exit</button>
+        </div>
+      </>)}
+    </LightFormModal>
+  );
+}
+
+// ── Draw & Guess (Pictionary template) ────────────────────────────────────
+const DRAW_WORDS = {
+  easy:      ["Cat","Dog","House","Sun","Tree","Car","Fish","Bird","Hat","Book","Moon","Star","Key","Ball","Clock","Chair","Table","Phone","Cup","Boat"],
+  medium:    ["Pizza","Guitar","Rainbow","Mountain","Swimming","Dancing","Castle","Rocket","Elephant","Butterfly","Umbrella","Volcano","Tornado","Skateboard","Sunglasses","Headphones"],
+  bollywood: ["Sholay","DDLJ","Bahubali","3 Idiots","Lagaan","Dil Chahta Hai","PK","Gully Boy","Padmaavat","Mughal-E-Azam"],
+  party:     ["Birthday Cake","DJ","Confetti","Balloon","Champagne","Dance Floor","Karaoke","Photo Booth","Ice Cream","Firecracker"],
+  animals:   ["Penguin","Giraffe","Flamingo","Octopus","Kangaroo","Porcupine","Chameleon","Peacock","Sloth","Platypus"],
+};
+const DRAW_CATEGORIES = [
+  { id:"easy", label:"Easy", emoji:"🟢" },
+  { id:"medium", label:"Medium", emoji:"🟡" },
+  { id:"bollywood", label:"Bollywood", emoji:"🎬" },
+  { id:"party", label:"Party", emoji:"🎉" },
+  { id:"animals", label:"Animals", emoji:"🐾" },
+];
+const PEN_COLORS = ["#111111","#EF4444","#3B82F6","#10B981","#F59E0B","#8B5CF6","#EC4899","#FFFFFF"];
+const rand_draw = arr => arr[Math.floor(Math.random() * arr.length)];
+
+function DrawGuessGame({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'pictionary') setGame?.('pictionary', {}); }, [live, isHost]); // eslint-disable-line
+
+  const canvasRef    = useRef(null);
+  const drawingRef   = useRef(false);
+  const strokePtsRef = useRef([]);
+  const lastPtRef    = useRef(null);
+
+  const [localPhase,   setLocalPhase]   = useState("lobby");
+  const [localPlayers, setLocalPlayers] = useState([]);
+  const [playerInput,  setPlayerInput]  = useState("");
+  const [localWord,    setLocalWord]    = useState("");        // only on drawer's device
+  const [myGuess,      setMyGuess]      = useState("");
+  const [gotItList,    setGotItList]    = useState([]);        // self-reported correct guessers
+  const [localScores,  setLocalScores]  = useState({});
+  const [localRound,   setLocalRound]   = useState(0);
+  const [timeLeft,     setTimeLeft]     = useState(60);
+  const [penColor,     setPenColor]     = useState("#111111");
+  const [penWidth,     setPenWidth]     = useState(4);
+  const [numRounds,    setNumRounds]    = useState(3);
+  const [category,     setCategory]     = useState("easy");
+  const [localStrokes, setLocalStrokes] = useState([]);
+  const timerRef = useRef(null);
+
+  const phase      = live ? (gameState?.phase || "lobby") : localPhase;
+  const roundIdx   = live ? (gameState?.roundIdx || 0) : localRound;
+  const drawerName = live ? (gameState?.drawerName || "") : (liveName || "You");
+  const scores     = live ? (gameState?.scores || {}) : localScores;
+  const revealWord = live ? (gameState?.revealWord || "") : localWord;
+  const strokes    = live ? (gameState?.strokes || []) : localStrokes;
+  const activePlayers = live ? livePlayers : localPlayers;
+  const totalRounds   = live ? (gameState?.numRounds || numRounds) : numRounds;
+  const timerEnd      = live ? gameState?.timerEnd : null;
+
+  const isDrawer = live ? (drawerName === liveName) : true;
+  const isMyTurn = isDrawer;
+
+  // Countdown
+  useEffect(() => {
+    clearInterval(timerRef.current);
+    if (phase !== "drawing") return;
+    if (live && timerEnd) {
+      const tick = () => setTimeLeft(Math.max(0, Math.ceil((timerEnd - Date.now()) / 1000)));
+      tick();
+      timerRef.current = setInterval(tick, 300);
+      return () => clearInterval(timerRef.current);
+    }
+    if (!live) {
+      setTimeLeft(60);
+      timerRef.current = setInterval(() => setTimeLeft(t => {
+        if (t <= 1) { clearInterval(timerRef.current); setLocalPhase("reveal"); return 0; }
+        return t - 1;
+      }), 1000);
+      return () => clearInterval(timerRef.current);
+    }
+  }, [phase, timerEnd, live]); // eslint-disable-line
+
+  // Redraw canvas for viewers
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, W, H);
+    const src = live && !isDrawer ? strokes : localStrokes;
+    src.forEach(stroke => {
+      if (!stroke.points?.length) return;
+      ctx.beginPath();
+      ctx.strokeStyle = stroke.color || '#111';
+      ctx.lineWidth = (stroke.width || 4) * (W / 300);
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      stroke.points.forEach((pt, i) => {
+        const x = pt.x * W, y = pt.y * H;
+        if (i === 0) ctx.moveTo(x, y); else { ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y); }
+      });
+    });
+  }, [strokes, localStrokes, phase, live, isDrawer]);
+
+  // Canvas pointer handlers (drawer only)
+  const getPos = e => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const src = e.touches?.[0] || e;
+    return { x: (src.clientX - rect.left) / rect.width, y: (src.clientY - rect.top) / rect.height };
+  };
+  const onPtrDown = e => {
+    if (!isMyTurn || phase !== "drawing") return;
+    e.preventDefault(); drawingRef.current = true;
+    const pt = getPos(e); strokePtsRef.current = [pt]; lastPtRef.current = pt;
+    const canvas = canvasRef.current; const ctx = canvas.getContext('2d');
+    ctx.beginPath(); ctx.moveTo(pt.x * canvas.width, pt.y * canvas.height);
+  };
+  const onPtrMove = e => {
+    if (!drawingRef.current) return; e.preventDefault();
+    const canvas = canvasRef.current; const ctx = canvas.getContext('2d');
+    const pt = getPos(e);
+    strokePtsRef.current.push(pt);
+    const prev = lastPtRef.current; lastPtRef.current = pt;
+    ctx.strokeStyle = penColor; ctx.lineWidth = penWidth * (canvas.width / 300);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(prev.x * canvas.width, prev.y * canvas.height);
+    ctx.lineTo(pt.x * canvas.width, pt.y * canvas.height); ctx.stroke();
+  };
+  const onPtrUp = e => {
+    if (!drawingRef.current) return; drawingRef.current = false;
+    const pts = strokePtsRef.current;
+    if (!pts.length) return;
+    const sampled = pts.length > 60 ? pts.filter((_, i) => i % Math.ceil(pts.length / 60) === 0) : pts;
+    const stroke = { points: sampled, color: penColor, width: penWidth };
+    if (live) sendAction('stroke', stroke);
+    else setLocalStrokes(s => [...s, stroke]);
+    strokePtsRef.current = [];
+  };
+
+  const clearCanvas = () => {
+    if (live) sendAction('clear_canvas', {});
+    else {
+      setLocalStrokes([]);
+      const canvas = canvasRef.current; if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+  };
+
+  // Host actions
+  const pickWordAndStart = () => {
+    const words = DRAW_WORDS[category] || DRAW_WORDS.easy;
+    const word = rand_draw(words);
+    setLocalWord(word);
+    const now = Date.now();
+    if (live) {
+      sendAction('start_round', { roundIdx: 0, drawerName: liveName, numRounds, category, timerEnd: now + 60000 });
+    } else {
+      setLocalRound(0); setLocalStrokes([]); setGotItList([]); setMyGuess(""); setLocalPhase("drawing");
+    }
+  };
+  const endDrawing = () => {
+    clearInterval(timerRef.current);
+    if (live) sendAction('end_drawing', { revealWord: localWord });
+    else setLocalPhase("reveal");
+  };
+  const awardPoints = () => {
+    if (!live) {
+      const pts = {};
+      gotItList.forEach(n => { pts[n] = (localScores[n] || 0) + 10; });
+      setLocalScores(s => ({ ...s, ...pts }));
+      setLocalPhase("leaderboard");
+    } else {
+      sendAction('award_points', { gotIt: gotItList });
+    }
+  };
+  const nextDrawer = () => {
+    const nextIdx = roundIdx + 1;
+    if (nextIdx >= (live ? activePlayers.length * totalRounds : totalRounds)) {
+      if (live) sendAction('end_game', {});
+      else setLocalPhase("gameover");
+    } else {
+      const nextDrawer = activePlayers[nextIdx % activePlayers.length]?.name || activePlayers[nextIdx % activePlayers.length] || "You";
+      const words = DRAW_WORDS[live ? (gameState?.category || "easy") : category];
+      const word = rand_draw(words);
+      if (!live) setLocalWord(word);
+      if (live) sendAction('next_round', { roundIdx: nextIdx, drawerName: nextDrawer, timerEnd: Date.now() + 60000 });
+      else { setLocalRound(nextIdx); setLocalStrokes([]); setGotItList([]); setMyGuess(""); setLocalPhase("drawing"); }
+    }
+  };
+  const playAgain = () => {
+    if (live) sendAction('restart', {});
+    else { setLocalRound(0); setLocalStrokes([]); setLocalScores({}); setGotItList([]); setMyGuess(""); setLocalPhase("lobby"); }
+  };
+
+  const toggleGotIt = () => {
+    const name = liveName || "You";
+    if (gotItList.includes(name)) setGotItList(l => l.filter(x => x !== name));
+    else setGotItList(l => [...l, name]);
+    if (live) sendAction('got_it', {});
+  };
+
+  const addPlayer = () => { const n = playerInput.trim(); if (n && !localPlayers.includes(n)) { setLocalPlayers(p => [...p, n]); setPlayerInput(""); } };
+  const sortedScores = [...activePlayers].sort((a, b) => (scores[b] || 0) - (scores[a] || 0));
+  const medals = ["🥇","🥈","🥉"];
+
+  return (
+    <LightFormModal onClose={onClose} accent={accent} emoji="🎨" title="Draw & Guess" wide>
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
+
+      {/* ── LOBBY ── */}
+      {phase === "lobby" && (<>
+        <div style={{ textAlign:"center", padding:"8px 0 16px" }}>
+          <div style={{ fontSize:52, marginBottom:10 }}>🎨</div>
+          <div style={{ fontSize:16, fontWeight:900, color:"#1C1410", marginBottom:5 }}>Draw & Guess</div>
+          <div style={{ fontSize:13, color:"rgba(28,9,0,0.50)", lineHeight:1.4 }}>One person draws, everyone guesses. Rotate each round — no speaking allowed!</div>
+        </div>
+
+        {!live && (<>
+          <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+            <input value={playerInput} onChange={e => setPlayerInput(e.target.value)} onKeyDown={e => e.key === "Enter" && addPlayer()} placeholder="Add player name…" style={{ ...linp, flex:1 }} />
+            <button onClick={addPlayer} style={{ ...lBtn(accent), width:"auto", padding:"10px 18px" }}>+</button>
+          </div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:14 }}>
+            {localPlayers.map(p => (
+              <span key={p} style={{ background:`${accent}18`, border:`1px solid ${accent}35`, color:accent, padding:"4px 12px", borderRadius:100, fontSize:12, display:"flex", alignItems:"center", gap:6 }}>
+                {p}<button onClick={() => setLocalPlayers(pl => pl.filter(x => x !== p))} style={{ background:"none", border:"none", color:"rgba(28,9,0,0.4)", cursor:"pointer", padding:0, fontSize:14 }}>×</button>
+              </span>
+            ))}
+          </div>
+        </>)}
+
+        {(live ? isHost : true) && (<>
+          <div style={{ marginBottom:12 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:"rgba(28,9,0,0.45)", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:8 }}>Word Category</div>
+            <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+              {DRAW_CATEGORIES.map(c => (
+                <button key={c.id} onClick={() => setCategory(c.id)} style={{ padding:"7px 14px", borderRadius:100, border:`1.5px solid ${c.id === category ? accent : "rgba(28,9,0,0.12)"}`, background:c.id === category ? `${accent}12` : "transparent", color:c.id === category ? accent : "rgba(28,9,0,0.55)", fontWeight:700, fontSize:12, cursor:"pointer" }}>{c.emoji} {c.label}</button>
+              ))}
+            </div>
+          </div>
+          <div style={{ marginBottom:14 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:"rgba(28,9,0,0.45)", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:8 }}>Rounds</div>
+            <div style={{ display:"flex", gap:8 }}>
+              {[2,3,5,7].map(n => (
+                <button key={n} onClick={() => setNumRounds(n)} style={{ flex:1, padding:"9px 0", borderRadius:10, border:`1.5px solid ${n === numRounds ? accent : "rgba(28,9,0,0.12)"}`, background:n === numRounds ? `${accent}12` : "transparent", color:n === numRounds ? accent : "rgba(28,9,0,0.55)", fontWeight:700, fontSize:13, cursor:"pointer" }}>{n}</button>
+              ))}
+            </div>
+          </div>
+          <button onClick={pickWordAndStart} style={lBtn(accent)}>🖊️ Start Drawing</button>
+        </>)}
+        {live && !isHost && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.45)", fontSize:13, paddingTop:8 }}>Waiting for host…</div>}
+      </>)}
+
+      {/* ── DRAWING ── */}
+      {phase === "drawing" && (<>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+          <span style={{ fontSize:12, fontWeight:800, color:accent, textTransform:"uppercase", letterSpacing:"0.1em" }}>
+            {isDrawer ? "🖊️ Your turn to draw!" : `${drawerName} is drawing…`}
+          </span>
+          <div style={{ width:44, height:44, borderRadius:"50%", border:`2.5px solid ${timeLeft > 15 ? accent : "#EF4444"}`, display:"flex", alignItems:"center", justifyContent:"center", background:`${timeLeft > 15 ? accent : "#EF4444"}10`, transition:"border-color 0.4s" }}>
+            <span style={{ fontSize:16, fontWeight:900, color:timeLeft > 15 ? accent : "#EF4444", fontVariantNumeric:"tabular-nums" }}>{timeLeft}</span>
+          </div>
+        </div>
+
+        {/* Secret word for drawer */}
+        {isDrawer && localWord && (
+          <div style={{ textAlign:"center", marginBottom:10, padding:"10px 16px", borderRadius:12, background:`${accent}12`, border:`1.5px solid ${accent}30` }}>
+            <div style={{ fontSize:10, fontWeight:700, color:accent, textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:3 }}>Draw this</div>
+            <div style={{ fontSize:22, fontWeight:900, color:"#1C1410" }}>{localWord}</div>
+          </div>
+        )}
+        {live && !isDrawer && (
+          <div style={{ textAlign:"center", marginBottom:10, padding:"10px 16px", borderRadius:12, background:"rgba(0,0,0,0.04)", border:"1.5px solid rgba(0,0,0,0.08)" }}>
+            <div style={{ fontSize:10, fontWeight:700, color:"rgba(28,9,0,0.45)", textTransform:"uppercase", letterSpacing:"0.12em" }}>Guess the drawing!</div>
+          </div>
+        )}
+
+        {/* Canvas */}
+        <div style={{ borderRadius:16, overflow:"hidden", border:`1.5px solid rgba(0,0,0,0.10)`, marginBottom:10, touchAction:"none", userSelect:"none" }}>
+          <canvas
+            ref={canvasRef}
+            width={300} height={300}
+            style={{ display:"block", width:"100%", height:"auto", background:"#fff", cursor:isDrawer && phase==="drawing" ? "crosshair" : "default" }}
+            onPointerDown={isDrawer ? onPtrDown : undefined}
+            onPointerMove={isDrawer ? onPtrMove : undefined}
+            onPointerUp={isDrawer ? onPtrUp : undefined}
+            onPointerLeave={isDrawer ? onPtrUp : undefined}
+          />
+        </div>
+
+        {/* Drawer tools */}
+        {isDrawer && (<>
+          <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:10 }}>
+            <div style={{ display:"flex", gap:5, flex:1, flexWrap:"wrap" }}>
+              {PEN_COLORS.map(c => (
+                <button key={c} onClick={() => setPenColor(c)} style={{ width:26, height:26, borderRadius:"50%", background:c, border:penColor === c ? `3px solid ${accent}` : "2px solid rgba(0,0,0,0.12)", cursor:"pointer", flexShrink:0 }} />
+              ))}
+            </div>
+            <button onClick={clearCanvas} style={{ ...lBtn("rgba(0,0,0,0.07)"), color:"#1C1410", width:"auto", padding:"8px 14px", fontSize:12 }}>🗑 Clear</button>
+          </div>
+          <div style={{ display:"flex", gap:6, marginBottom:10 }}>
+            {[2,4,7,12].map(w => (
+              <button key={w} onClick={() => setPenWidth(w)} style={{ flex:1, padding:"8px 0", borderRadius:10, border:`1.5px solid ${w === penWidth ? accent : "rgba(0,0,0,0.12)"}`, background:w === penWidth ? `${accent}12` : "transparent", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <div style={{ width:w*1.5, height:w*1.5, borderRadius:"50%", background:"#111", maxWidth:16, maxHeight:16 }} />
+              </button>
+            ))}
+          </div>
+          <button onClick={endDrawing} style={{ ...lBtn(accent) }}>✅ Reveal Word</button>
+        </>)}
+
+        {/* Guesser input */}
+        {!isDrawer && (
+          <div style={{ display:"flex", gap:8 }}>
+            <input value={myGuess} onChange={e => setMyGuess(e.target.value)} placeholder="Type your guess…" style={{ ...linp, flex:1 }} />
+            <button onClick={() => {}} style={{ ...lBtn(accent), width:"auto", padding:"10px 16px", fontSize:13 }}>💬</button>
+          </div>
+        )}
+      </>)}
+
+      {/* ── REVEAL ── */}
+      {phase === "reveal" && (<>
+        <div style={{ textAlign:"center", marginBottom:16 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:accent, textTransform:"uppercase", letterSpacing:"0.15em", marginBottom:6 }}>The word was</div>
+          <div style={{ fontSize:30, fontWeight:900, color:"#1C1410", letterSpacing:"-0.02em", marginBottom:4 }}>{revealWord}</div>
+          <div style={{ fontSize:12, color:"rgba(28,9,0,0.40)" }}>Drawn by {drawerName}</div>
+        </div>
+
+        {/* Frozen canvas */}
+        <div style={{ borderRadius:16, overflow:"hidden", border:`1.5px solid rgba(0,0,0,0.10)`, marginBottom:14 }}>
+          <canvas ref={canvasRef} width={300} height={300} style={{ display:"block", width:"100%", height:"auto" }} />
+        </div>
+
+        <div style={{ marginBottom:14 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:"rgba(28,9,0,0.45)", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:8 }}>Who got it right?</div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
+            {activePlayers.filter(p => (live ? p : p) !== drawerName).map(p => {
+              const name = typeof p === 'string' ? p : p;
+              const got  = gotItList.includes(name);
+              return (
+                <button key={name} onClick={() => {
+                  if (gotItList.includes(name)) setGotItList(l => l.filter(x => x !== name));
+                  else setGotItList(l => [...l, name]);
+                }} style={{ padding:"9px 16px", borderRadius:100, border:`1.5px solid ${got ? accent : "rgba(0,0,0,0.12)"}`, background:got ? `${accent}15` : "transparent", color:got ? accent : "rgba(28,9,0,0.55)", fontWeight:700, fontSize:13, cursor:"pointer" }}>
+                  {got ? "✅ " : ""}{name}
+                </button>
+              );
+            })}
+          </div>
+          {activePlayers.length === 0 && <div style={{ fontSize:12, color:"rgba(28,9,0,0.35)", textAlign:"center" }}>No players</div>}
+        </div>
+
+        {(live ? isHost : true) && <button onClick={awardPoints} style={lBtn(accent)}>Award Points →</button>}
+        {live && !isHost && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.4)", fontSize:13 }}>Waiting for host…</div>}
+      </>)}
+
+      {/* ── LEADERBOARD ── */}
+      {phase === "leaderboard" && (<>
+        <div style={{ textAlign:"center", marginBottom:14 }}>
+          <div style={{ fontSize:11, fontWeight:800, color:accent, textTransform:"uppercase", letterSpacing:"0.15em", marginBottom:3 }}>Scores</div>
+          <div style={{ fontSize:12, color:"rgba(28,9,0,0.40)" }}>Round {roundIdx + 1} of {totalRounds}</div>
+        </div>
+        {sortedScores.map((p, i) => (
+          <div key={p} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 16px", marginBottom:6, borderRadius:14, background:i === 0 ? `${accent}14` : "rgba(0,0,0,0.04)", border:`1px solid ${i === 0 ? accent+"35" : "rgba(0,0,0,0.07)"}`, transform:i === 0 ? "scale(1.02)" : "scale(1)" }}>
+            <span style={{ fontSize:22 }}>{medals[i] || `${i+1}.`}</span>
+            <span style={{ flex:1, fontWeight:700, color:"#1C1410", fontSize:14 }}>{p}</span>
+            <span style={{ fontWeight:900, color:i === 0 ? accent : "rgba(28,9,0,0.60)", fontSize:17, fontVariantNumeric:"tabular-nums" }}>{scores[p] || 0} pts</span>
+          </div>
+        ))}
+        {activePlayers.length === 0 && <div style={{ fontSize:12, color:"rgba(28,9,0,0.35)", textAlign:"center" }}>No players</div>}
+        {(live ? isHost : true) && (
+          <button onClick={nextDrawer} style={{ ...lBtn(accent), marginTop:12 }}>
+            {roundIdx + 1 >= totalRounds ? "Final Results →" : `Next Drawer →`}
+          </button>
+        )}
+        {live && !isHost && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.4)", fontSize:13, marginTop:8 }}>Waiting for host…</div>}
+      </>)}
+
+      {/* ── GAME OVER ── */}
+      {phase === "gameover" && (<>
+        <div style={{ textAlign:"center", marginBottom:20 }}>
+          <div style={{ fontSize:48, marginBottom:10 }}>🏆</div>
+          <div style={{ fontSize:20, fontWeight:900, color:"#1C1410", letterSpacing:"-0.02em", marginBottom:4 }}>Game Over!</div>
+          <div style={{ fontSize:13, color:"rgba(28,9,0,0.45)" }}>Final standings</div>
+        </div>
+        {sortedScores.map((p, i) => (
+          <div key={p} style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 16px", marginBottom:8, borderRadius:16, background:i === 0 ? `${accent}18` : "rgba(0,0,0,0.04)", border:`1.5px solid ${i === 0 ? accent+"45" : "rgba(0,0,0,0.07)"}`, transform:i === 0 ? "scale(1.03)" : "scale(1)", transition:"all 0.3s" }}>
+            <span style={{ fontSize:28 }}>{medals[i] || `${i+1}.`}</span>
+            <span style={{ flex:1, fontWeight:800, color:"#1C1410", fontSize:15 }}>{p}</span>
+            <div style={{ textAlign:"right" }}>
+              <div style={{ fontWeight:900, color:i === 0 ? accent : "rgba(28,9,0,0.70)", fontSize:20, fontVariantNumeric:"tabular-nums" }}>{scores[p] || 0}</div>
+              <div style={{ fontSize:10, color:"rgba(28,9,0,0.35)" }}>pts</div>
+            </div>
+          </div>
+        ))}
+        <div style={{ display:"flex", gap:10, marginTop:18 }}>
+          <button onClick={playAgain} style={{ ...lBtn(accent), flex:1 }}>🔄 Play Again</button>
+          <button onClick={onClose} style={{ ...lBtn("rgba(0,0,0,0.07)"), color:"#1C1410", flex:1 }}>Exit</button>
+        </div>
+      </>)}
+    </LightFormModal>
+  );
+}
+
+// ── Word Chain ────────────────────────────────────────────────────────────
+const WC_STARTERS = ["Apple","Bear","Cat","Dog","Elephant","Frog","Guitar","Horse","Igloo","Jungle","Kite","Lion","Mango","Nest","Orange","Parrot","Queen","Rose","Sun","Tiger","Umbrella","Violet","Water","Xray","Yak","Zebra"];
+const WC_LIVES = 3;
+
+function WordChainGame({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'word-chain') setGame?.('word-chain', {}); }, [live, isHost]); // eslint-disable-line
+
+  const [localPlayers,    setLocalPlayers]    = useState([]);
+  const [playerInput,     setPlayerInput]     = useState("");
+  const [myWord,          setMyWord]          = useState("");
+  const [localChain,      setLocalChain]      = useState([]);
+  const [localLives,      setLocalLives]      = useState({});
+  const [localIdx,        setLocalIdx]        = useState(0);
+  const [localWord,       setLocalWord]       = useState("");
+  const [localPhase,      setLocalPhase]      = useState("lobby");
+  const [localUsed,       setLocalUsed]       = useState(new Set());
+  const [timeLeft,        setTimeLeft]        = useState(15);
+  const [feedback,        setFeedback]        = useState(null);
+  const timerRef = useRef(null); const feedRef = useRef(null);
+
+  const phase         = live ? (gameState?.phase || "lobby") : localPhase;
+  const chain         = live ? (gameState?.chain || []) : localChain;
+  const currentWord   = live ? (gameState?.currentWord || "") : localWord;
+  const currentLetter = currentWord ? currentWord[currentWord.length - 1].toUpperCase() : "";
+  const activePlayers = live ? livePlayers : localPlayers;
+  const lives         = live ? (gameState?.lives || {}) : localLives;
+  const curIdx        = live ? (gameState?.currentPlayerIdx || 0) : localIdx;
+  const timerEnd      = live ? gameState?.timerEnd : null;
+  const curPlayer     = activePlayers[curIdx % Math.max(activePlayers.length, 1)] || liveName || "You";
+  const isMyTurn      = live ? curPlayer === liveName : true;
+  const usedWords     = live ? new Set(gameState?.usedWords || []) : localUsed;
+
+  const startTimer = (dur = 15) => {
+    clearInterval(timerRef.current); setTimeLeft(dur);
+    timerRef.current = setInterval(() => setTimeLeft(t => {
+      if (t <= 1) {
+        clearInterval(timerRef.current);
+        const name = activePlayers[localIdx % Math.max(activePlayers.length, 1)] || liveName || "You";
+        setLocalLives(l => { const next = { ...l, [name]: Math.max(0, (l[name] ?? WC_LIVES) - 1) }; return next; });
+        showFeedback(false, "⏰ Time's up! -1 life");
+        setLocalIdx(i => i + 1);
+        return 0;
+      }
+      return t - 1;
+    }), 1000);
+  };
+  const showFeedback = (ok, msg) => {
+    clearTimeout(feedRef.current); setFeedback({ ok, msg });
+    feedRef.current = setTimeout(() => setFeedback(null), 1500);
+  };
+
+  useEffect(() => {
+    if (phase !== "playing") { clearInterval(timerRef.current); return; }
+    if (live && timerEnd) {
+      const tick = () => setTimeLeft(Math.max(0, Math.ceil((timerEnd - Date.now()) / 1000)));
+      tick(); timerRef.current = setInterval(tick, 300);
+      return () => clearInterval(timerRef.current);
+    }
+    if (!live) startTimer(15);
+    return () => clearInterval(timerRef.current);
+  }, [phase, timerEnd, live, curIdx]); // eslint-disable-line
+
+  const submitWord = () => {
+    const word = myWord.trim(); if (!word) return;
+    const norm = word.toLowerCase();
+    if (currentLetter && norm[0] !== currentLetter.toLowerCase()) { showFeedback(false, `Must start with "${currentLetter}"!`); return; }
+    if (usedWords.has(norm)) { showFeedback(false, "Already used!"); return; }
+    showFeedback(true, "✅ Nice!");
+    if (live) { sendAction('submit_word', { word }); }
+    else {
+      const name = activePlayers[localIdx % Math.max(activePlayers.length, 1)] || liveName || "You";
+      setLocalChain(c => [...c, { player: name, word }]);
+      setLocalUsed(s => new Set([...s, norm]));
+      setLocalWord(word); setLocalIdx(i => i + 1);
+      clearInterval(timerRef.current);
+    }
+    setMyWord("");
+  };
+
+  const startGame = () => {
+    const starter = WC_STARTERS[Math.floor(Math.random() * WC_STARTERS.length)];
+    if (live) { sendAction('start_word_chain', { startWord: starter, timerEnd: Date.now() + 15000 }); return; }
+    const initLives = {}; [...localPlayers, liveName || "You"].forEach(p => { initLives[p] = WC_LIVES; });
+    setLocalLives(initLives); setLocalWord(starter);
+    setLocalChain([{ player: "—", word: starter, start: true }]);
+    setLocalUsed(new Set([starter.toLowerCase()])); setLocalIdx(0); setLocalPhase("playing");
+  };
+
+  const addPlayer = () => { const n = playerInput.trim(); if (n && !localPlayers.includes(n)) { setLocalPlayers(p => [...p, n]); setPlayerInput(""); } };
+  const alivePl = activePlayers.filter(p => (lives[p] ?? WC_LIVES) > 0);
+  const chainTail = chain.slice(-10);
+  const medals = ["🥇","🥈","🥉"];
+
+  return (
+    <LightFormModal onClose={onClose} accent={accent} emoji="🔤" title="Word Chain" wide>
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
+
+      {phase === "lobby" && (<>
+        <div style={{ textAlign:"center", padding:"8px 0 14px" }}>
+          <div style={{ fontSize:48, marginBottom:8 }}>🔤</div>
+          <div style={{ fontSize:16, fontWeight:900, color:"#1C1410", marginBottom:5 }}>Word Chain</div>
+          <div style={{ fontSize:13, color:"rgba(28,9,0,0.50)", lineHeight:1.45 }}>Each word must start with the last letter of the previous one. Run out of time or repeat a word → lose a life. 3 lives each.</div>
+        </div>
+        {!live && (<>
+          <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+            <input value={playerInput} onChange={e=>setPlayerInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addPlayer()} placeholder="Add player name…" style={{ ...linp, flex:1 }} />
+            <button onClick={addPlayer} style={{ ...lBtn(accent), width:"auto", padding:"10px 18px" }}>+</button>
+          </div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:14 }}>
+            {localPlayers.map(p=><span key={p} style={{ background:`${accent}18`, border:`1px solid ${accent}35`, color:accent, padding:"4px 12px", borderRadius:100, fontSize:12, display:"flex", alignItems:"center", gap:6 }}>{p}<button onClick={()=>setLocalPlayers(pl=>pl.filter(x=>x!==p))} style={{ background:"none",border:"none",color:"rgba(28,9,0,0.4)",cursor:"pointer",padding:0,fontSize:14 }}>×</button></span>)}
+          </div>
+        </>)}
+        {(live ? isHost : true) && <button onClick={startGame} style={lBtn(accent)}>🔤 Start Chain</button>}
+        {live && !isHost && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.45)", fontSize:13, paddingTop:8 }}>Waiting for host…</div>}
+      </>)}
+
+      {phase === "playing" && (<>
+        <div style={{ display:"flex", gap:6, marginBottom:10, flexWrap:"wrap" }}>
+          {activePlayers.map(p => {
+            const l = lives[p] ?? WC_LIVES;
+            return <div key={p} style={{ display:"flex", alignItems:"center", gap:5, padding:"4px 10px", borderRadius:100, background:p===curPlayer?`${accent}18`:"rgba(0,0,0,0.04)", border:`1px solid ${p===curPlayer?accent+"35":"rgba(0,0,0,0.07)"}` }}>
+              <span style={{ fontSize:12, fontWeight:700, color:p===curPlayer?accent:"rgba(28,9,0,0.55)" }}>{p}</span>
+              <span style={{ fontSize:10 }}>{Array.from({length:WC_LIVES}).map((_,i)=>i<l?"❤️":"🖤").join("")}</span>
+            </div>;
+          })}
+        </div>
+        <div style={{ background:"linear-gradient(145deg,#08000F,#130020)", borderRadius:18, padding:"18px 16px", textAlign:"center", marginBottom:12, border:`1.5px solid ${accent}35` }}>
+          <div style={{ fontSize:11, fontWeight:700, color:accent, textTransform:"uppercase", letterSpacing:"0.15em", marginBottom:8 }}>Current word</div>
+          <div style={{ fontSize:34, fontWeight:900, color:"#fff", letterSpacing:2 }}>
+            {currentWord.slice(0,-1)}<span style={{ color:accent }}>{currentWord.slice(-1).toUpperCase()}</span>
+          </div>
+          <div style={{ fontSize:12, color:"rgba(255,255,255,0.45)", marginTop:6 }}>Next word starts with <span style={{ color:accent, fontWeight:800 }}>{currentLetter}</span></div>
+        </div>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+          <span style={{ fontSize:13, fontWeight:700, color:isMyTurn?"#1C1410":"rgba(28,9,0,0.45)" }}>{isMyTurn?"🎯 Your turn!": `${curPlayer}'s turn…`}</span>
+          <div style={{ width:40, height:40, borderRadius:"50%", border:`2.5px solid ${timeLeft>5?accent:"#EF4444"}`, display:"flex", alignItems:"center", justifyContent:"center", background:`${timeLeft>5?accent:"#EF4444"}10`, transition:"border-color 0.4s" }}>
+            <span style={{ fontSize:15, fontWeight:900, color:timeLeft>5?accent:"#EF4444", fontVariantNumeric:"tabular-nums" }}>{timeLeft}</span>
+          </div>
+        </div>
+        {feedback && <div style={{ textAlign:"center", padding:"8px", borderRadius:10, marginBottom:8, background:feedback.ok?`${accent}12`:"#EF444412", color:feedback.ok?accent:"#EF4444", fontWeight:700, fontSize:13 }}>{feedback.msg}</div>}
+        {isMyTurn && <div style={{ display:"flex", gap:8, marginBottom:10 }}>
+          <input value={myWord} onChange={e=>setMyWord(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submitWord()} placeholder={`Word starting with ${currentLetter}…`} style={{ ...linp, flex:1 }} autoFocus />
+          <button onClick={submitWord} style={{ ...lBtn(accent), width:"auto", padding:"10px 20px" }}>→</button>
+        </div>}
+        <div style={{ display:"flex", flexWrap:"wrap", gap:5 }}>
+          {chainTail.map((c,i)=><span key={i} style={{ background:c.start?"rgba(0,0,0,0.05)":`${accent}10`, border:`1px solid ${c.start?"rgba(0,0,0,0.08)":accent+"28"}`, color:c.start?"rgba(28,9,0,0.35)":accent, padding:"3px 10px", borderRadius:100, fontSize:12, fontWeight:600 }}>{c.word}</span>)}
+        </div>
+      </>)}
+
+      {phase === "gameover" && (<>
+        <div style={{ textAlign:"center", marginBottom:18 }}>
+          <div style={{ fontSize:44, marginBottom:8 }}>🏆</div>
+          <div style={{ fontSize:18, fontWeight:900, color:"#1C1410", marginBottom:4 }}>Game Over!</div>
+          <div style={{ fontSize:13, color:"rgba(28,9,0,0.45)" }}>Chain: {chain.length} words</div>
+        </div>
+        {[...activePlayers].sort((a,b)=>(lives[b]??0)-(lives[a]??0)).map((p,i)=>(
+          <div key={p} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 16px", marginBottom:6, borderRadius:14, background:i===0?`${accent}18`:"rgba(0,0,0,0.04)", border:`1.5px solid ${i===0?accent+"45":"rgba(0,0,0,0.07)"}` }}>
+            <span style={{ fontSize:24 }}>{medals[i]||`${i+1}.`}</span>
+            <span style={{ flex:1, fontWeight:800, color:"#1C1410", fontSize:14 }}>{p}</span>
+            <span style={{ fontSize:12 }}>{Array.from({length:WC_LIVES}).map((_,j)=>j<(lives[p]??WC_LIVES)?"❤️":"🖤").join("")}</span>
+          </div>
+        ))}
+        <div style={{ display:"flex", gap:10, marginTop:16 }}>
+          <button onClick={()=>{setLocalPhase("lobby");setLocalChain([]);setLocalLives({});setLocalWord("");setLocalUsed(new Set());}} style={{ ...lBtn(accent), flex:1 }}>🔄 Again</button>
+          <button onClick={onClose} style={{ ...lBtn("rgba(0,0,0,0.07)"), color:"#1C1410", flex:1 }}>Exit</button>
+        </div>
+      </>)}
+    </LightFormModal>
+  );
+}
+
+// ── Don't Say Yes/No ──────────────────────────────────────────────────────
+const DSYN_QUESTIONS = [
+  "Do you like pizza?","Are you taller than your best friend?","Did you eat breakfast today?",
+  "Have you ever lied to your parents?","Is your phone battery below 50% right now?",
+  "Would you go on a date with a stranger?","Are you scared of the dark?",
+  "Do you think you're a good dancer?","Have you ever broken something and blamed someone else?",
+  "Is your current crush in this room?","Are you the funniest person you know?",
+  "Do you snore when you sleep?","Have you ever eaten food off the floor?",
+  "Are you always on time?","Do you still have your ex's number?",
+  "Can you keep a secret?","Do you ever talk to yourself?","Are you a morning person?",
+  "Have you ever pretended not to see someone to avoid talking to them?",
+  "Is there anything you regret saying today?","Would you swap your life with anyone here?",
+];
+const DSYN_BANNED = ["yes","no","haan","nahi","ha","naa","yeah","nope","yep","yup","nah","sure","absolutely"];
+
+function DontSayYesNo({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'dont-say-yes-no') setGame?.('dont-say-yes-no', {}); }, [live, isHost]); // eslint-disable-line
+
+  const [localPlayers,  setLocalPlayers]  = useState([]);
+  const [playerInput,   setPlayerInput]   = useState("");
+  const [localPhase,    setLocalPhase]    = useState("lobby");
+  const [localHotIdx,   setLocalHotIdx]   = useState(0);
+  const [localScore,    setLocalScore]    = useState({});
+  const [localQIdx,     setLocalQIdx]     = useState(0);
+  const [timeLeft,      setTimeLeft]      = useState(60);
+  const [caught,        setCaught]        = useState(false);
+  const timerRef = useRef(null);
+
+  const phase       = live ? (gameState?.phase || "lobby") : localPhase;
+  const hotIdx      = live ? (gameState?.hotIdx || 0) : localHotIdx;
+  const qIdx        = live ? (gameState?.qIdx || 0) : localQIdx;
+  const scores      = live ? (gameState?.scores || {}) : localScore;
+  const timerEnd    = live ? gameState?.timerEnd : null;
+  const activePlayers = live ? livePlayers : localPlayers;
+  const hotPlayer   = activePlayers[hotIdx % Math.max(activePlayers.length, 1)] || liveName || "You";
+  const isHotSeat   = live ? hotPlayer === liveName : true;
+  const question    = DSYN_QUESTIONS[qIdx % DSYN_QUESTIONS.length];
+
+  useEffect(() => {
+    clearInterval(timerRef.current);
+    if (phase !== "hotSeat") return;
+    if (live && timerEnd) {
+      const tick = () => setTimeLeft(Math.max(0, Math.ceil((timerEnd - Date.now()) / 1000)));
+      tick(); timerRef.current = setInterval(tick, 300);
+      return () => clearInterval(timerRef.current);
+    }
+    setTimeLeft(60);
+    timerRef.current = setInterval(() => setTimeLeft(t => {
+      if (t <= 1) { clearInterval(timerRef.current); nextPlayer(true); return 0; }
+      return t - 1;
+    }), 1000);
+    return () => clearInterval(timerRef.current);
+  }, [phase, timerEnd, live, hotIdx]); // eslint-disable-line
+
+  const nextPlayer = (survived = false) => {
+    const name = hotPlayer;
+    if (survived && !live) setLocalScore(s => ({ ...s, [name]: (s[name] || 0) + 10 }));
+    else if (!survived && !live) {} // no penalty
+    const nextHot = hotIdx + 1;
+    if (!live) {
+      if (nextHot >= activePlayers.length) { setLocalPhase("gameover"); return; }
+      setLocalHotIdx(nextHot); setLocalQIdx(q => q + 1); setCaught(false);
+    } else { sendAction('next_hot_seat', { survived, nextHotIdx: nextHot }); }
+  };
+  const catchThem = () => {
+    clearInterval(timerRef.current); setCaught(true);
+    const name = hotPlayer;
+    if (!live) {} // just mark caught, no score change
+    setTimeout(() => { setCaught(false); nextPlayer(false); }, 2000);
+    if (live) sendAction('caught', { name });
+  };
+
+  const startGame = () => {
+    const shuffled = DSYN_QUESTIONS.sort(() => Math.random() - 0.5);
+    if (live) { sendAction('start_dsyn', { timerEnd: Date.now() + 60000 }); return; }
+    const s = {}; activePlayers.forEach(p => { s[p] = 0; });
+    setLocalScore(s); setLocalHotIdx(0); setLocalQIdx(0); setCaught(false); setLocalPhase("hotSeat");
+  };
+  const addPlayer = () => { const n = playerInput.trim(); if (n && !localPlayers.includes(n)) { setLocalPlayers(p => [...p, n]); setPlayerInput(""); } };
+  const medals = ["🥇","🥈","🥉"];
+  const banned = DSYN_BANNED.join(" / ");
+
+  return (
+    <LightFormModal onClose={onClose} accent={accent} emoji="🚫" title="Don't Say Yes/No" wide>
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
+
+      {phase === "lobby" && (<>
+        <div style={{ textAlign:"center", padding:"8px 0 14px" }}>
+          <div style={{ fontSize:48, marginBottom:8 }}>🚫</div>
+          <div style={{ fontSize:16, fontWeight:900, color:"#1C1410", marginBottom:5 }}>Don't Say Yes/No</div>
+          <div style={{ fontSize:13, color:"rgba(28,9,0,0.50)", lineHeight:1.45 }}>You're on the hot seat. Answer questions without saying <b>yes, no, haan or nahi</b>. 60 seconds. Others try to catch you!</div>
+        </div>
+        {!live && (<>
+          <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+            <input value={playerInput} onChange={e=>setPlayerInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addPlayer()} placeholder="Add player name…" style={{ ...linp, flex:1 }} />
+            <button onClick={addPlayer} style={{ ...lBtn(accent), width:"auto", padding:"10px 18px" }}>+</button>
+          </div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:14 }}>
+            {localPlayers.map(p=><span key={p} style={{ background:`${accent}18`, border:`1px solid ${accent}35`, color:accent, padding:"4px 12px", borderRadius:100, fontSize:12, display:"flex", alignItems:"center", gap:6 }}>{p}<button onClick={()=>setLocalPlayers(pl=>pl.filter(x=>x!==p))} style={{ background:"none",border:"none",color:"rgba(28,9,0,0.4)",cursor:"pointer",padding:0,fontSize:14 }}>×</button></span>)}
+          </div>
+        </>)}
+        {(live ? isHost : true) && <button onClick={startGame} disabled={!live && activePlayers.length < 1} style={{ ...lBtn(accent), opacity:!live && activePlayers.length<1?0.45:1 }}>🎯 Start Game</button>}
+        {live && !isHost && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.45)", fontSize:13, paddingTop:8 }}>Waiting for host…</div>}
+      </>)}
+
+      {phase === "hotSeat" && (<>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+          <div>
+            <div style={{ fontSize:10, fontWeight:700, color:accent, textTransform:"uppercase", letterSpacing:"0.12em" }}>Hot Seat</div>
+            <div style={{ fontSize:18, fontWeight:900, color:"#1C1410" }}>{hotPlayer} {isHotSeat ? "🔥 (you!)" : ""}</div>
+          </div>
+          <div style={{ width:48, height:48, borderRadius:"50%", border:`2.5px solid ${timeLeft>15?accent:"#EF4444"}`, display:"flex", alignItems:"center", justifyContent:"center", background:`${timeLeft>15?accent:"#EF4444"}10`, transition:"border-color 0.4s" }}>
+            <span style={{ fontSize:18, fontWeight:900, color:timeLeft>15?accent:"#EF4444", fontVariantNumeric:"tabular-nums" }}>{timeLeft}</span>
+          </div>
+        </div>
+
+        <div style={{ background:"linear-gradient(145deg,#08000F,#130020)", borderRadius:20, padding:"22px 18px", textAlign:"center", marginBottom:14, border:`1.5px solid ${accent}35`, position:"relative", overflow:"hidden" }}>
+          <div aria-hidden style={{ position:"absolute", top:-30, left:"50%", transform:"translateX(-50%)", width:160, height:100, background:`radial-gradient(ellipse,${accent}20 0%,transparent 70%)`, pointerEvents:"none" }} />
+          <div style={{ fontSize:11, fontWeight:700, color:accent, textTransform:"uppercase", letterSpacing:"0.15em", marginBottom:12, position:"relative" }}>Question</div>
+          <div style={{ fontSize:19, fontWeight:800, color:"#fff", lineHeight:1.4, position:"relative" }}>{question}</div>
+        </div>
+
+        {caught ? (
+          <div style={{ textAlign:"center", padding:"16px", background:"#EF444412", borderRadius:14, border:"1.5px solid #EF444430", fontSize:16, fontWeight:800, color:"#EF4444" }}>Caught! 😱 They said it!</div>
+        ) : (<>
+          {isHotSeat && <div style={{ textAlign:"center", marginBottom:10, padding:"8px 14px", background:`${accent}10`, borderRadius:10, fontSize:12, color:"rgba(28,9,0,0.55)" }}>❌ Don't say: <b>{banned}</b></div>}
+          {!isHotSeat && (
+            <button onClick={catchThem} style={{ ...lBtn("#EF4444"), fontSize:16, padding:"16px" }}>🚨 CAUGHT THEM!</button>
+          )}
+          {isHotSeat && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.45)", fontSize:12, padding:"8px 0" }}>Answer without saying yes or no — others are watching!</div>}
+          {(live ? isHost : true) && (
+            <button onClick={()=>nextPlayer(true)} style={{ ...lBtn("rgba(0,0,0,0.07)"), color:"#1C1410", marginTop:8 }}>Survived → Next</button>
+          )}
+        </>)}
+      </>)}
+
+      {phase === "gameover" && (<>
+        <div style={{ textAlign:"center", marginBottom:18 }}>
+          <div style={{ fontSize:44, marginBottom:8 }}>🏆</div>
+          <div style={{ fontSize:18, fontWeight:900, color:"#1C1410", marginBottom:4 }}>Final Scores</div>
+        </div>
+        {[...activePlayers].sort((a,b)=>(scores[b]||0)-(scores[a]||0)).map((p,i)=>(
+          <div key={p} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 16px", marginBottom:6, borderRadius:14, background:i===0?`${accent}18`:"rgba(0,0,0,0.04)", border:`1.5px solid ${i===0?accent+"45":"rgba(0,0,0,0.07)"}` }}>
+            <span style={{ fontSize:24 }}>{medals[i]||`${i+1}.`}</span>
+            <span style={{ flex:1, fontWeight:800, color:"#1C1410", fontSize:14 }}>{p}</span>
+            <span style={{ fontWeight:900, color:i===0?accent:"rgba(28,9,0,0.6)", fontSize:16, fontVariantNumeric:"tabular-nums" }}>{scores[p]||0} pts</span>
+          </div>
+        ))}
+        <div style={{ display:"flex", gap:10, marginTop:16 }}>
+          <button onClick={()=>{setLocalPhase("lobby");setLocalScore({});setLocalHotIdx(0);setLocalQIdx(0);}} style={{ ...lBtn(accent), flex:1 }}>🔄 Again</button>
+          <button onClick={onClose} style={{ ...lBtn("rgba(0,0,0,0.07)"), color:"#1C1410", flex:1 }}>Exit</button>
+        </div>
+      </>)}
+    </LightFormModal>
+  );
+}
+
+// ── Wrong Answers Only ────────────────────────────────────────────────────
+const WAO_QUESTIONS = [
+  { q:"What color is the sky?",       hint:"Not blue…" },
+  { q:"What do cows eat?",            hint:"Not grass…" },
+  { q:"What is 2 + 2?",               hint:"Not 4…" },
+  { q:"Why do birds fly south?",      hint:"Not for warmth…" },
+  { q:"What does the heart do?",      hint:"Not pump blood…" },
+  { q:"Why do we blink?",             hint:"Not to keep eyes moist…" },
+  { q:"What is the sun?",             hint:"Not a star…" },
+  { q:"Why do we yawn?",              hint:"Not tiredness…" },
+  { q:"What is water made of?",       hint:"Not H₂O…" },
+  { q:"Why do cats purr?",            hint:"Not contentment…" },
+  { q:"Where does rain come from?",   hint:"Not clouds…" },
+  { q:"Why do we eat?",               hint:"Not for hunger…" },
+  { q:"What happens when you sleep?", hint:"Not resting…" },
+  { q:"Why do we laugh?",             hint:"Not because it's funny…" },
+  { q:"What is money for?",           hint:"Not for buying things…" },
+];
+
+function WrongAnswersOnly({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'wrong-answers') setGame?.('wrong-answers', {}); }, [live, isHost]); // eslint-disable-line
+
+  const [localPlayers,  setLocalPlayers]  = useState([]);
+  const [playerInput,   setPlayerInput]   = useState("");
+  const [localPhase,    setLocalPhase]    = useState("lobby");
+  const [localQIdx,     setLocalQIdx]     = useState(0);
+  const [myAnswer,      setMyAnswer]      = useState("");
+  const [submitted,     setSubmitted]     = useState(false);
+  const [localAnswers,  setLocalAnswers]  = useState({});
+  const [localVotes,    setLocalVotes]    = useState({});
+  const [localScores,   setLocalScores]   = useState({});
+  const [timeLeft,      setTimeLeft]      = useState(30);
+  const [numRounds,     setNumRounds]     = useState(5);
+  const timerRef = useRef(null);
+
+  const phase      = live ? (gameState?.phase || "lobby") : localPhase;
+  const qIdx       = live ? (gameState?.qIdx || 0) : localQIdx;
+  const answers    = live ? (gameState?.answers || {}) : localAnswers;
+  const votes      = live ? (gameState?.votes || {}) : localVotes;
+  const scores     = live ? (gameState?.scores || {}) : localScores;
+  const timerEnd   = live ? gameState?.timerEnd : null;
+  const activePlayers = live ? livePlayers : localPlayers;
+  const totalRounds   = live ? (gameState?.numRounds || numRounds) : numRounds;
+  const question = (WAO_QUESTIONS[qIdx % WAO_QUESTIONS.length] || WAO_QUESTIONS[0]);
+  const myName = liveName || "You";
+  const myVote = votes[myName];
+
+  useEffect(() => {
+    clearInterval(timerRef.current);
+    if (phase !== "answering") return;
+    if (live && timerEnd) {
+      const tick = () => setTimeLeft(Math.max(0, Math.ceil((timerEnd - Date.now()) / 1000)));
+      tick(); timerRef.current = setInterval(tick, 300);
+      return () => clearInterval(timerRef.current);
+    }
+    setTimeLeft(30);
+    timerRef.current = setInterval(() => setTimeLeft(t => {
+      if (t <= 1) { clearInterval(timerRef.current); if (!live) setLocalPhase("voting"); return 0; }
+      return t - 1;
+    }), 1000);
+    return () => clearInterval(timerRef.current);
+  }, [phase, timerEnd, live, qIdx]); // eslint-disable-line
+
+  const submitAnswer = () => {
+    if (!myAnswer.trim() || submitted) return;
+    setSubmitted(true);
+    if (live) sendAction('wao_answer', { answer: myAnswer });
+    else setLocalAnswers(a => ({ ...a, [myName]: myAnswer }));
+  };
+  const castVote = (name) => {
+    if (name === myName || myVote) return;
+    if (live) sendAction('wao_vote', { for: name });
+    else setLocalVotes(v => ({ ...v, [myName]: name }));
+  };
+  const revealScores = () => {
+    if (live) { sendAction('wao_reveal', {}); return; }
+    const newScores = { ...localScores };
+    Object.values(localVotes).forEach(name => { newScores[name] = (newScores[name] || 0) + 5; });
+    setLocalScores(newScores); setLocalPhase("roundScore");
+  };
+  const nextQ = () => {
+    const next = qIdx + 1;
+    if (!live) {
+      if (next >= numRounds) { setLocalPhase("gameover"); return; }
+      setLocalQIdx(next); setLocalAnswers({}); setLocalVotes({}); setMyAnswer(""); setSubmitted(false); setLocalPhase("answering");
+    } else sendAction('wao_next', { qIdx: next });
+  };
+  const startGame = () => {
+    const shuffled = [...WAO_QUESTIONS].sort(() => Math.random() - 0.5);
+    if (live) { sendAction('start_wao', { questions: shuffled.slice(0, numRounds), numRounds, timerEnd: Date.now() + 30000 }); return; }
+    setLocalQIdx(0); setLocalAnswers({}); setLocalVotes({}); setLocalScores({}); setMyAnswer(""); setSubmitted(false); setLocalPhase("answering");
+  };
+  const addPlayer = () => { const n = playerInput.trim(); if (n && !localPlayers.includes(n)) { setLocalPlayers(p => [...p, n]); setPlayerInput(""); } };
+  const submittedCount = Object.keys(answers).length;
+  const allAnswered = activePlayers.length > 0 && submittedCount >= activePlayers.length;
+  const sortedScores = [...activePlayers].sort((a,b) => (scores[b]||0)-(scores[a]||0));
+  const medals = ["🥇","🥈","🥉"];
+
+  return (
+    <LightFormModal onClose={onClose} accent={accent} emoji="🤪" title="Wrong Answers Only" wide>
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent}
+        checked={phase==="answering" ? Object.fromEntries(Object.keys(answers).map(n=>[n,true])) : {}} />
+
+      {phase === "lobby" && (<>
+        <div style={{ textAlign:"center", padding:"8px 0 14px" }}>
+          <div style={{ fontSize:48, marginBottom:8 }}>🤪</div>
+          <div style={{ fontSize:16, fontWeight:900, color:"#1C1410", marginBottom:5 }}>Wrong Answers Only</div>
+          <div style={{ fontSize:13, color:"rgba(28,9,0,0.50)", lineHeight:1.45 }}>A question pops up. Everyone answers — but the WRONG answers only! Vote for the funniest. Points for making people laugh.</div>
+        </div>
+        {!live && (<>
+          <div style={{ display:"flex", gap:8, marginBottom:8 }}>
+            <input value={playerInput} onChange={e=>setPlayerInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addPlayer()} placeholder="Add player name…" style={{ ...linp, flex:1 }} />
+            <button onClick={addPlayer} style={{ ...lBtn(accent), width:"auto", padding:"10px 18px" }}>+</button>
+          </div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:14 }}>
+            {localPlayers.map(p=><span key={p} style={{ background:`${accent}18`, border:`1px solid ${accent}35`, color:accent, padding:"4px 12px", borderRadius:100, fontSize:12, display:"flex", alignItems:"center", gap:6 }}>{p}<button onClick={()=>setLocalPlayers(pl=>pl.filter(x=>x!==p))} style={{ background:"none",border:"none",color:"rgba(28,9,0,0.4)",cursor:"pointer",padding:0,fontSize:14 }}>×</button></span>)}
+          </div>
+        </>)}
+        {(live ? isHost : true) && (<>
+          <div style={{ display:"flex", gap:8, marginBottom:14 }}>
+            {[3,5,8,10].map(n=><button key={n} onClick={()=>setNumRounds(n)} style={{ flex:1, padding:"9px 0", borderRadius:10, border:`1.5px solid ${n===numRounds?accent:"rgba(28,9,0,0.12)"}`, background:n===numRounds?`${accent}12`:"transparent", color:n===numRounds?accent:"rgba(28,9,0,0.55)", fontWeight:700, fontSize:13, cursor:"pointer" }}>{n} rounds</button>)}
+          </div>
+          <button onClick={startGame} style={lBtn(accent)}>🤪 Start Game</button>
+        </>)}
+        {live && !isHost && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.45)", fontSize:13, paddingTop:8 }}>Waiting for host…</div>}
+      </>)}
+
+      {phase === "answering" && (<>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+          <span style={{ fontSize:11, fontWeight:800, color:accent, textTransform:"uppercase", letterSpacing:"0.1em" }}>Round {qIdx+1} / {totalRounds}</span>
+          <div style={{ width:40, height:40, borderRadius:"50%", border:`2.5px solid ${timeLeft>10?accent:"#EF4444"}`, display:"flex", alignItems:"center", justifyContent:"center", background:`${timeLeft>10?accent:"#EF4444"}10`, transition:"border-color 0.4s" }}>
+            <span style={{ fontSize:15, fontWeight:900, color:timeLeft>10?accent:"#EF4444", fontVariantNumeric:"tabular-nums" }}>{timeLeft}</span>
+          </div>
+        </div>
+        <div style={{ background:"linear-gradient(145deg,#08000F,#130020)", borderRadius:20, padding:"22px 18px", textAlign:"center", marginBottom:12, border:`1.5px solid ${accent}35` }}>
+          <div style={{ fontSize:11, fontWeight:700, color:accent, textTransform:"uppercase", letterSpacing:"0.15em", marginBottom:10 }}>Give the WRONG answer</div>
+          <div style={{ fontSize:20, fontWeight:800, color:"#fff", lineHeight:1.4, marginBottom:8 }}>{question.q}</div>
+          <div style={{ fontSize:11, color:"rgba(255,255,255,0.30)" }}>{question.hint}</div>
+        </div>
+        {!submitted ? (
+          <div style={{ display:"flex", gap:8 }}>
+            <input value={myAnswer} onChange={e=>setMyAnswer(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submitAnswer()} placeholder="Your WRONG answer…" style={{ ...linp, flex:1 }} autoFocus />
+            <button onClick={submitAnswer} style={{ ...lBtn(accent), width:"auto", padding:"10px 20px", fontSize:16 }}>✓</button>
+          </div>
+        ) : (
+          <div style={{ textAlign:"center", padding:"12px", color:"rgba(28,9,0,0.50)", fontSize:13 }}>✅ Submitted · {submittedCount}/{activePlayers.length} answered</div>
+        )}
+        {live && isHost && submittedCount > 0 && (
+          <button onClick={()=>sendAction('wao_stop_answers',{})} style={{ ...lBtn("rgba(0,0,0,0.07)"), color:"#1C1410", marginTop:8 }}>Reveal all →</button>
+        )}
+        {!live && allAnswered && <button onClick={()=>setLocalPhase("voting")} style={{ ...lBtn(accent), marginTop:8 }}>Vote now →</button>}
+      </>)}
+
+      {phase === "voting" && (<>
+        <div style={{ textAlign:"center", marginBottom:14 }}>
+          <div style={{ fontSize:15, fontWeight:900, color:"#1C1410", marginBottom:2 }}>{question.q}</div>
+          <div style={{ fontSize:11, color:accent, fontWeight:700 }}>Tap the funniest wrong answer</div>
+        </div>
+        {Object.entries(answers).map(([name, ans]) => {
+          const votedFor = votes[name] !== undefined ? Object.values(votes).filter(v=>v===name).length : 0;
+          const iMine = name === myName;
+          const voted = !!myVote;
+          return (
+            <div key={name} onClick={()=>castVote(name)} style={{ padding:"12px 16px", borderRadius:14, marginBottom:8, border:`1.5px solid ${myVote===name?accent+"50":"rgba(0,0,0,0.09)"}`, background:myVote===name?`${accent}12`:"rgba(0,0,0,0.03)", cursor:iMine||voted?"default":"pointer", opacity:l=>1 }}>
+              <div style={{ fontSize:15, fontWeight:700, color:"#1C1410", marginBottom:4 }}>"{ans}"</div>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <span style={{ fontSize:11, color:"rgba(28,9,0,0.40)" }}>{iMine ? "(yours)" : name}</span>
+                {votedFor > 0 && <span style={{ fontSize:12, fontWeight:700, color:accent }}>👍 {votedFor}</span>}
+              </div>
+            </div>
+          );
+        })}
+        {Object.keys(answers).length === 0 && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.35)", fontSize:13 }}>No answers yet</div>}
+        {(live ? isHost : true) && <button onClick={revealScores} style={{ ...lBtn(accent), marginTop:8 }}>Scores →</button>}
+      </>)}
+
+      {phase === "roundScore" && (<>
+        <div style={{ textAlign:"center", marginBottom:14 }}>
+          <div style={{ fontSize:11, fontWeight:800, color:accent, textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:3 }}>Round {qIdx+1} Scores</div>
+        </div>
+        {sortedScores.map((p,i)=>(
+          <div key={p} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 16px", marginBottom:6, borderRadius:12, background:i===0?`${accent}14`:"rgba(0,0,0,0.04)", border:`1px solid ${i===0?accent+"35":"rgba(0,0,0,0.07)"}` }}>
+            <span style={{ fontSize:20 }}>{medals[i]||`${i+1}.`}</span>
+            <span style={{ flex:1, fontWeight:700, color:"#1C1410", fontSize:14 }}>{p}</span>
+            <span style={{ fontWeight:900, color:i===0?accent:"rgba(28,9,0,0.6)", fontSize:16, fontVariantNumeric:"tabular-nums" }}>{scores[p]||0} pts</span>
+          </div>
+        ))}
+        {(live ? isHost : true) && (
+          <button onClick={nextQ} style={{ ...lBtn(accent), marginTop:12 }}>
+            {qIdx+1 >= totalRounds ? "Final Results →" : `Round ${qIdx+2} →`}
+          </button>
+        )}
+        {live && !isHost && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.4)", fontSize:13, marginTop:8 }}>Waiting for host…</div>}
+      </>)}
+
+      {phase === "gameover" && (<>
+        <div style={{ textAlign:"center", marginBottom:18 }}>
+          <div style={{ fontSize:44, marginBottom:8 }}>🏆</div>
+          <div style={{ fontSize:18, fontWeight:900, color:"#1C1410", marginBottom:4 }}>Final Standings</div>
+        </div>
+        {sortedScores.map((p,i)=>(
+          <div key={p} style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 16px", marginBottom:8, borderRadius:16, background:i===0?`${accent}18`:"rgba(0,0,0,0.04)", border:`1.5px solid ${i===0?accent+"45":"rgba(0,0,0,0.07)"}`, transform:i===0?"scale(1.02)":"scale(1)" }}>
+            <span style={{ fontSize:26 }}>{medals[i]||`${i+1}.`}</span>
+            <span style={{ flex:1, fontWeight:800, color:"#1C1410", fontSize:15 }}>{p}</span>
+            <div style={{ textAlign:"right" }}>
+              <div style={{ fontWeight:900, color:i===0?accent:"rgba(28,9,0,0.70)", fontSize:18, fontVariantNumeric:"tabular-nums" }}>{scores[p]||0}</div>
+              <div style={{ fontSize:10, color:"rgba(28,9,0,0.35)" }}>pts</div>
+            </div>
+          </div>
+        ))}
+        <div style={{ display:"flex", gap:10, marginTop:18 }}>
+          <button onClick={()=>{setLocalPhase("lobby");setLocalScores({});setLocalQIdx(0);setLocalAnswers({});setLocalVotes({});setMyAnswer("");setSubmitted(false);}} style={{ ...lBtn(accent), flex:1 }}>🔄 Play Again</button>
+          <button onClick={onClose} style={{ ...lBtn("rgba(0,0,0,0.07)"), color:"#1C1410", flex:1 }}>Exit</button>
+        </div>
+      </>)}
+    </LightFormModal>
+  );
+}
+
+// ── Mafia ─────────────────────────────────────────────────────────────────
+const MAFIA_ROLE_LABELS = { mafia:"🔴 Mafia", town:"🟢 Town", doctor:"💊 Doctor" };
+function MafiaGame({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'mafia') setGame?.('mafia', {}); }, [live, isHost]);
+  const [withDoctor, setWithDoctor] = useState(true);
+  const [lPhase, setLPhase] = useState("lobby");
+  const [lRoles, setLRoles] = useState({});
+  const [lAlive, setLAlive] = useState([]);
+  const [lNK, setLNK] = useState(null); // night kill target
+  const [lNS, setLNS] = useState(null); // night save target
+  const [lVotes, setLVotes] = useState({});
+  const [lRound, setLRound] = useState(1);
+  const [roleRevealed, setRoleRevealed] = useState(false);
+  const revTimerRef = useRef(null);
+
+  const phase   = live ? (gameState?.phase || "lobby")  : lPhase;
+  const roles   = live ? (gameState?.roles || {})       : lRoles;
+  const alive   = live ? (gameState?.alive || [])       : lAlive;
+  const nKill   = live ? (gameState?.nightKill || null) : lNK;
+  const nSave   = live ? (gameState?.nightSave || null) : lNS;
+  const votes   = live ? (gameState?.votes || {})       : lVotes;
+  const round   = live ? (gameState?.round || 1)        : lRound;
+  const lastKilled = live ? (gameState?.lastKilled || null) : null;
+  const winner  = live ? (gameState?.winner || null)    : null;
+  const myRole  = roles[liveName || "You"];
+  const isMafia = myRole === 'mafia';
+  const isDoctor = myRole === 'doctor';
+  const mafiaTeam = Object.entries(roles).filter(([,r]) => r === 'mafia').map(([n]) => n);
+  const hasDoc  = Object.values(roles).includes('doctor');
+  const aliveMafia = alive.filter(p => roles[p] === 'mafia');
+
+  const assignRoles = (players) => {
+    const sh = [...players].sort(() => Math.random() - 0.5);
+    const nm = players.length <= 5 ? 1 : players.length <= 9 ? 2 : 3;
+    const r = {};
+    sh.forEach((p, i) => { r[p] = i < nm ? 'mafia' : (withDoctor && i === nm ? 'doctor' : 'town'); });
+    return r;
+  };
+  const startGame = () => {
+    const pls = live ? livePlayers : [];
+    if (pls.length < 4) return;
+    const r = assignRoles(pls);
+    if (live) sendAction('start_mafia', { roles: r, alive: pls, round: 1, phase: 'roleReveal' });
+    else { setLRoles(r); setLAlive([...pls]); setLRound(1); setLPhase("roleReveal"); }
+  };
+  const revealRole = () => {
+    setRoleRevealed(true);
+    clearTimeout(revTimerRef.current);
+    revTimerRef.current = setTimeout(() => setRoleRevealed(false), 3000);
+  };
+  const beginNight = () => {
+    if (live) sendAction('begin_night', { phase: 'night' });
+    else setLPhase("night");
+  };
+  const nightKill = (name) => {
+    if (live) sendAction('night_kill', { target: name });
+    else setLNK(name);
+  };
+  const nightSave = (name) => {
+    if (live) sendAction('night_save', { target: name });
+    else setLNS(name);
+  };
+  const wakeUp = () => {
+    const killed = (nKill && nSave !== nKill) ? nKill : null;
+    const newAlive = killed ? alive.filter(p => p !== killed) : [...alive];
+    if (live) sendAction('wake_up', { killed, newAlive, phase: 'day', round });
+    else { setLAlive(newAlive); setLNK(null); setLNS(null); setLPhase("day"); }
+  };
+  const castVote = (name) => {
+    if (live) sendAction('day_vote', { for: name });
+    else setLVotes(v => ({ ...v, [liveName || "You"]: name }));
+  };
+  const confirmElim = () => {
+    const vc = {};
+    Object.values(votes).forEach(n => { vc[n] = (vc[n] || 0) + 1; });
+    const elim = Object.entries(vc).sort((a, b) => b[1] - a[1])[0]?.[0];
+    const na = alive.filter(p => p !== elim);
+    const mLeft = na.filter(p => roles[p] === 'mafia').length;
+    const tLeft = na.filter(p => roles[p] !== 'mafia').length;
+    const w = mLeft === 0 ? 'town' : mLeft >= tLeft ? 'mafia' : null;
+    if (live) sendAction('eliminate', { eliminated: elim, newAlive: na, winner: w, phase: w ? 'gameover' : 'roleReveal', round: round + 1 });
+    else { setLAlive(na); setLVotes({}); setLRound(r => r + 1); if (w) setLPhase("gameover"); else setLPhase("roleReveal"); }
+  };
+  const voteCounts = Object.values(votes).reduce((acc, n) => { acc[n] = (acc[n] || 0) + 1; return acc; }, {});
+  const pls = live ? livePlayers : alive;
+
+  return (
+    <LightFormModal onClose={onClose} accent={accent} emoji="🔴" title="Mafia" wide>
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
+
+      {phase === "lobby" && (<>
+        <div style={{ textAlign:"center", padding:"8px 0 12px" }}>
+          <div style={{ fontSize:44, marginBottom:6 }}>🔴</div>
+          <div style={{ fontSize:15, fontWeight:900, color:"#1C1410", marginBottom:5 }}>Mafia</div>
+          <div style={{ fontSize:13, color:"rgba(28,9,0,0.50)", lineHeight:1.5 }}>Mafia secretly eliminate town at night. Town discusses and votes by day. Can you figure out who's who?</div>
+        </div>
+        {(live ? isHost : true) && (<>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 14px", borderRadius:12, background:`${accent}08`, border:`1px solid ${accent}20`, marginBottom:12 }}>
+            <div>
+              <div style={{ fontSize:13, fontWeight:700, color:"#1C1410" }}>Include Doctor role</div>
+              <div style={{ fontSize:11, color:"rgba(28,9,0,0.45)" }}>Doctor saves one player per night</div>
+            </div>
+            <div onClick={() => setWithDoctor(d => !d)} style={{ width:44, height:24, borderRadius:100, background:withDoctor?accent:"rgba(0,0,0,0.12)", border:"none", cursor:"pointer", transition:"background 0.2s", position:"relative" }}>
+              <div style={{ width:20, height:20, borderRadius:"50%", background:"#fff", position:"absolute", top:2, transition:"left 0.2s", left:withDoctor?22:2, boxShadow:"0 1px 3px rgba(0,0,0,0.25)" }} />
+            </div>
+          </div>
+          <div style={{ fontSize:12, color:"rgba(28,9,0,0.45)", marginBottom:10 }}>
+            {live ? `${livePlayers.length} players joined` : "Add players via a live room"} · need 4+
+          </div>
+          <button onClick={startGame} disabled={(live ? livePlayers.length : 0) < 4} style={{ ...lBtn(accent), opacity:(live?livePlayers.length:0)<4?0.45:1 }}>🔴 Assign Roles</button>
+        </>)}
+        {live && !isHost && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.45)", fontSize:13, paddingTop:8 }}>Waiting for host…</div>}
+        {!live && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.45)", fontSize:12, paddingTop:8 }}>Mafia works best with 4+ players on separate phones. Start a live room!</div>}
+      </>)}
+
+      {phase === "roleReveal" && (<>
+        <div style={{ textAlign:"center", marginBottom:14 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:accent, textTransform:"uppercase", letterSpacing:"0.15em", marginBottom:4 }}>Night {round} — Check Your Role</div>
+          <div style={{ fontSize:12, color:"rgba(28,9,0,0.50)" }}>Tap privately. Don't let anyone see your screen.</div>
+        </div>
+        <div onClick={revealRole} style={{ textAlign:"center", padding:"26px 16px", borderRadius:20, border:`2px solid ${accent}35`, background:roleRevealed?`${accent}10`:"rgba(0,0,0,0.04)", cursor:"pointer", marginBottom:14, transition:"all 0.2s" }}>
+          {roleRevealed ? (<>
+            <div style={{ fontSize:38, marginBottom:6 }}>{myRole==='mafia'?"🔴":myRole==='doctor'?"💊":"🟢"}</div>
+            <div style={{ fontSize:18, fontWeight:900, color:myRole==='mafia'?"#DC2626":myRole==='doctor'?"#059669":"#1C1410" }}>{MAFIA_ROLE_LABELS[myRole] || "🟢 Town"}</div>
+            {isMafia && mafiaTeam.length > 1 && <div style={{ fontSize:12, color:"#DC2626", marginTop:8 }}>Your team: {mafiaTeam.filter(n=>n!==liveName).join(", ")}</div>}
+            {isDoctor && <div style={{ fontSize:12, color:"#059669", marginTop:8 }}>You can save one person each night</div>}
+          </>) : (
+            <div style={{ fontSize:14, fontWeight:700, color:"rgba(28,9,0,0.40)" }}>🃏 Tap to reveal your role</div>
+          )}
+        </div>
+        {(live ? isHost : true) && <button onClick={beginNight} style={lBtn(accent)}>🌙 Begin Night Phase →</button>}
+        {live && !isHost && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.45)", fontSize:13, marginTop:8 }}>Waiting for host…</div>}
+      </>)}
+
+      {phase === "night" && (<>
+        <div style={{ background:"linear-gradient(145deg,#02000A,#060018)", borderRadius:20, padding:"18px 14px", marginBottom:12, border:`1.5px solid ${accent}30` }}>
+          <div style={{ textAlign:"center", fontSize:11, fontWeight:700, color:accent, textTransform:"uppercase", letterSpacing:"0.15em", marginBottom:12 }}>🌙 Night — Everyone eyes closed</div>
+          {isMafia && !nKill && (<>
+            <div style={{ fontSize:13, fontWeight:700, color:"#fff", marginBottom:10 }}>🔴 Mafia: tap your target</div>
+            {alive.filter(p => !mafiaTeam.includes(p)).map(p => (
+              <button key={p} onClick={() => nightKill(p)} style={{ display:"block", width:"100%", padding:"10px 14px", borderRadius:10, marginBottom:6, background:"rgba(220,38,38,0.15)", border:"1px solid rgba(220,38,38,0.35)", color:"#fff", cursor:"pointer", fontSize:14, fontWeight:600, textAlign:"left", fontFamily:font }}>{p}</button>
+            ))}
+          </>)}
+          {isMafia && nKill && <div style={{ textAlign:"center", color:"rgba(255,255,255,0.55)", fontSize:14, padding:"10px 0" }}>✅ Target chosen. Wait for host.</div>}
+          {isDoctor && nKill && !nSave && (<>
+            <div style={{ fontSize:13, fontWeight:700, color:"#fff", marginBottom:10 }}>💊 Doctor: tap someone to save</div>
+            {alive.map(p => (
+              <button key={p} onClick={() => nightSave(p)} style={{ display:"block", width:"100%", padding:"10px 14px", borderRadius:10, marginBottom:6, background:"rgba(5,150,105,0.15)", border:"1px solid rgba(5,150,105,0.35)", color:"#fff", cursor:"pointer", fontSize:14, fontWeight:600, textAlign:"left", fontFamily:font }}>{p}</button>
+            ))}
+          </>)}
+          {isDoctor && nSave && <div style={{ textAlign:"center", color:"rgba(255,255,255,0.55)", fontSize:14, padding:"10px 0" }}>✅ Save chosen. Wait for host.</div>}
+          {!isMafia && !isDoctor && <div style={{ textAlign:"center", padding:"24px 0", color:"rgba(255,255,255,0.30)", fontSize:28 }}>🙈</div>}
+        </div>
+        {(live ? isHost : true) && nKill && (!hasDoc || nSave || !live) && (
+          <button onClick={wakeUp} style={lBtn(accent)}>☀️ Wake Everyone Up →</button>
+        )}
+        {live && isHost && nKill && hasDoc && !nSave && <div style={{ fontSize:12, color:"rgba(28,9,0,0.45)", textAlign:"center", marginTop:4 }}>Waiting for Doctor to save…</div>}
+      </>)}
+
+      {phase === "day" && (<>
+        <div style={{ textAlign:"center", marginBottom:14 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:accent, textTransform:"uppercase", letterSpacing:"0.15em", marginBottom:6 }}>Day Phase — Round {round}</div>
+          {lastKilled
+            ? <div style={{ fontSize:15, fontWeight:800, color:"#DC2626" }}>😵 {lastKilled} was killed last night</div>
+            : <div style={{ fontSize:15, fontWeight:800, color:"#059669" }}>✅ No one was killed last night!</div>}
+        </div>
+        <div style={{ marginBottom:14 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:"rgba(28,9,0,0.45)", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:8 }}>Alive ({alive.length})</div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+            {alive.map(p => <span key={p} style={{ background:`${accent}12`, border:`1px solid ${accent}30`, color:accent, padding:"5px 12px", borderRadius:100, fontSize:13, fontWeight:600 }}>{p}</span>)}
+          </div>
+        </div>
+        <div style={{ fontSize:13, color:"rgba(28,9,0,0.50)", marginBottom:14, lineHeight:1.5 }}>Discuss who you think is Mafia. Look for inconsistencies, nerves, or evasiveness.</div>
+        {(live ? isHost : true) && <button onClick={() => { if (live) sendAction('start_vote', { phase:'vote' }); else setLPhase("vote"); }} style={lBtn(accent)}>Vote to Eliminate →</button>}
+        {live && !isHost && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.45)", fontSize:13, marginTop:8 }}>Waiting for host…</div>}
+      </>)}
+
+      {phase === "vote" && (<>
+        <div style={{ textAlign:"center", marginBottom:14 }}>
+          <div style={{ fontSize:15, fontWeight:900, color:"#1C1410" }}>Who is Mafia?</div>
+          <div style={{ fontSize:12, color:"rgba(28,9,0,0.45)" }}>Tap to vote — majority is eliminated</div>
+        </div>
+        {pls.map(p => (
+          <div key={p} onClick={() => castVote(p)} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 16px", marginBottom:6, borderRadius:12, background:votes[liveName||"You"]===p?`${accent}15`:"rgba(0,0,0,0.04)", border:`1.5px solid ${votes[liveName||"You"]===p?accent+"40":"rgba(0,0,0,0.08)"}`, cursor:"pointer" }}>
+            <span style={{ fontWeight:700, color:"#1C1410", fontSize:14 }}>{p}</span>
+            {voteCounts[p] > 0 && <span style={{ background:`${accent}15`, color:accent, fontWeight:800, fontSize:13, padding:"3px 10px", borderRadius:100 }}>{voteCounts[p]}v</span>}
+          </div>
+        ))}
+        {(live ? isHost : true) && Object.keys(votes).length > 0 && (
+          <button onClick={confirmElim} style={{ ...lBtn(accent), marginTop:10 }}>Eliminate →</button>
+        )}
+      </>)}
+
+      {(phase === "gameover" || !!winner) && (<>
+        <div style={{ textAlign:"center", marginBottom:16 }}>
+          <div style={{ fontSize:44, marginBottom:8 }}>{aliveMafia.length===0?"🎉":"💀"}</div>
+          <div style={{ fontSize:20, fontWeight:900, color:aliveMafia.length===0?"#059669":"#DC2626", marginBottom:4 }}>
+            {aliveMafia.length===0 ? "Town Wins!" : "Mafia Wins!"}
+          </div>
+        </div>
+        <div style={{ marginBottom:14 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:"rgba(28,9,0,0.45)", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:8 }}>The Mafia was:</div>
+          {Object.entries(roles).filter(([,r]) => r==='mafia').map(([n]) => (
+            <div key={n} style={{ padding:"10px 16px", borderRadius:12, marginBottom:6, background:"rgba(220,38,38,0.07)", border:"1px solid rgba(220,38,38,0.25)", display:"flex", alignItems:"center", gap:10 }}>
+              <span style={{ fontSize:18 }}>🔴</span><span style={{ fontWeight:700, color:"#DC2626", fontSize:14 }}>{n}</span>
+            </div>
+          ))}
+        </div>
+        <button onClick={() => { setLPhase("lobby"); setLRoles({}); setLAlive([]); setLNK(null); setLNS(null); setLVotes({}); setLRound(1); }} style={lBtn(accent)}>🔄 Play Again</button>
+      </>)}
+    </LightFormModal>
+  );
+}
+
+// ── Spyfall ────────────────────────────────────────────────────────────────
+const SPYFALL_LOCS = [
+  "🏖️ Beach","🏫 School","🏥 Hospital","🚀 Space Station","🏦 Bank","🍽️ Restaurant",
+  "📚 Library","✈️ Airport","🚔 Police Station","🏨 Hotel","🎬 Movie Set",
+  "🎪 Circus","🎰 Casino","⚓ Pirate Ship","💒 Wedding","🎡 Amusement Park",
+  "🏋️ Gym","🎭 Theatre","🛒 Supermarket","🏰 Medieval Castle",
+];
+function SpyfallGame({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'spyfall') setGame?.('spyfall', {}); }, [live, isHost]);
+  const [lPhase, setLPhase] = useState("lobby");
+  const [lLoc, setLLoc] = useState("");
+  const [lSpy, setLSpy] = useState("");
+  const [lAcc, setLAcc] = useState({});
+  const [cardRevealed, setCardRevealed] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(480);
+  const [mySpyGuess, setMySpyGuess] = useState("");
+  const [showLocList, setShowLocList] = useState(false);
+  const revTimerRef = useRef(null);
+  const timerRef   = useRef(null);
+
+  const phase    = live ? (gameState?.phase || "lobby")    : lPhase;
+  const location = live ? (gameState?.location || "")     : lLoc;
+  const spyName  = live ? (gameState?.spyName || "")      : lSpy;
+  const accVotes = live ? (gameState?.accVotes || {})     : lAcc;
+  const timerEnd = live ? gameState?.timerEnd             : null;
+  const iAmSpy   = liveName === spyName;
+
+  useEffect(() => {
+    clearInterval(timerRef.current);
+    if (phase !== "questioning") return;
+    if (live && timerEnd) {
+      const tick = () => setTimeLeft(Math.max(0, Math.ceil((timerEnd - Date.now()) / 1000)));
+      tick(); timerRef.current = setInterval(tick, 300);
+    } else {
+      setTimeLeft(480);
+      timerRef.current = setInterval(() => setTimeLeft(t => { if (t <= 1) { clearInterval(timerRef.current); if (!live) setLPhase("accuse"); return 0; } return t - 1; }), 1000);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [phase, timerEnd, live]); // eslint-disable-line
+
+  const startGame = () => {
+    const pls = live ? livePlayers : [];
+    if (live && pls.length < 3) return;
+    const spy = pls[Math.floor(Math.random() * pls.length)] || liveName || "You";
+    const loc  = SPYFALL_LOCS[Math.floor(Math.random() * SPYFALL_LOCS.length)];
+    if (live) sendAction('start_spyfall', { spyName: spy, location: loc, timerEnd: Date.now() + 480000, phase: 'reveal' });
+    else { setLSpy(spy); setLLoc(loc); setLPhase("reveal"); }
+  };
+  const revealCard = () => {
+    setCardRevealed(true);
+    clearTimeout(revTimerRef.current);
+    revTimerRef.current = setTimeout(() => setCardRevealed(false), 4000);
+  };
+  const accusePlayer = (name) => {
+    if (live) sendAction('accuse', { suspected: name });
+    else setLAcc(a => ({ ...a, [liveName||"You"]: name }));
+  };
+  const spyGuess = () => {
+    if (!mySpyGuess.trim()) return;
+    const locName = location.split(' ').slice(1).join(' ').toLowerCase();
+    const correct = mySpyGuess.trim().toLowerCase() === locName;
+    if (live) sendAction('spy_guess', { guess: mySpyGuess, correct, phase: 'gameover' });
+    else setLPhase("gameover");
+  };
+  const confirmAccuse = () => {
+    const counts = {};
+    Object.values(accVotes).forEach(n => { counts[n] = (counts[n]||0)+1; });
+    const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+    if (live) sendAction('confirm_accuse', { eliminated: top?.[0], townWins: top?.[0]===spyName, phase: 'gameover' });
+    else setLPhase("gameover");
+  };
+  const fmt = s => `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
+  const accCounts = Object.values(accVotes).reduce((a,n)=>{a[n]=(a[n]||0)+1;return a;},{});
+
+  return (
+    <LightFormModal onClose={onClose} accent={accent} emoji="🕵️" title="Spyfall" wide>
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
+
+      {phase === "lobby" && (<>
+        <div style={{ textAlign:"center", padding:"8px 0 12px" }}>
+          <div style={{ fontSize:44, marginBottom:6 }}>🕵️</div>
+          <div style={{ fontSize:15, fontWeight:900, color:"#1C1410", marginBottom:5 }}>Spyfall</div>
+          <div style={{ fontSize:13, color:"rgba(28,9,0,0.50)", lineHeight:1.5 }}>Everyone knows the secret location — except the Spy. Ask questions, spot the odd one out. Spy: figure out where you are before you're caught!</div>
+        </div>
+        {(live ? isHost : true) && (
+          <button onClick={startGame} disabled={live && livePlayers.length < 3} style={{ ...lBtn(accent), opacity:live&&livePlayers.length<3?0.45:1 }}>🕵️ Start Spyfall</button>
+        )}
+        {live && !isHost && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.45)", fontSize:13, paddingTop:8 }}>Waiting for host…</div>}
+        {!live && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.45)", fontSize:12, paddingTop:8 }}>Best with 3+ players on separate phones. Start a live room!</div>}
+      </>)}
+
+      {phase === "reveal" && (<>
+        <div style={{ textAlign:"center", marginBottom:14 }}>
+          <div style={{ fontSize:11, fontWeight:700, color:accent, textTransform:"uppercase", letterSpacing:"0.15em", marginBottom:4 }}>Check Your Card</div>
+          <div style={{ fontSize:12, color:"rgba(28,9,0,0.50)" }}>Tap privately — don't let others see!</div>
+        </div>
+        <div onClick={revealCard} style={{ textAlign:"center", padding:"26px 16px", borderRadius:20, border:`2px solid ${accent}35`, background:cardRevealed?`${accent}10`:"rgba(0,0,0,0.04)", cursor:"pointer", marginBottom:14, transition:"all 0.2s" }}>
+          {cardRevealed ? (iAmSpy ? (<>
+            <div style={{ fontSize:36, marginBottom:6 }}>🕵️</div>
+            <div style={{ fontSize:18, fontWeight:900, color:"#DC2626" }}>You are the SPY!</div>
+            <div style={{ fontSize:12, color:"rgba(28,9,0,0.50)", marginTop:6 }}>Listen carefully. Figure out the location. Stay hidden.</div>
+          </>) : (<>
+            <div style={{ fontSize:34, marginBottom:4 }}>{location.split(' ')[0]}</div>
+            <div style={{ fontSize:18, fontWeight:900, color:accent }}>{location.split(' ').slice(1).join(' ')}</div>
+          </>)) : (
+            <div style={{ fontSize:14, fontWeight:700, color:"rgba(28,9,0,0.40)" }}>🃏 Tap to reveal your card</div>
+          )}
+        </div>
+        {(live ? isHost : true) && (
+          <button onClick={() => { const te = Date.now()+480000; if (live) sendAction('start_questioning',{timerEnd:te,phase:'questioning'}); else setLPhase("questioning"); }} style={lBtn(accent)}>Start Questioning →</button>
+        )}
+        {live && !isHost && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.45)", fontSize:13, marginTop:8 }}>Waiting for host…</div>}
+      </>)}
+
+      {phase === "questioning" && (<>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+          <div>
+            <div style={{ fontSize:11, fontWeight:700, color:accent, textTransform:"uppercase", letterSpacing:"0.12em" }}>Questioning</div>
+            <div style={{ fontSize:12, color:"rgba(28,9,0,0.50)" }}>Ask each other questions</div>
+          </div>
+          <div style={{ textAlign:"right" }}>
+            <div style={{ fontSize:24, fontWeight:900, color:timeLeft<60?"#EF4444":accent, fontVariantNumeric:"tabular-nums" }}>{fmt(timeLeft)}</div>
+            <div style={{ fontSize:10, color:"rgba(28,9,0,0.35)" }}>remaining</div>
+          </div>
+        </div>
+        {iAmSpy ? (
+          <div style={{ padding:"14px", borderRadius:14, background:"rgba(220,38,38,0.06)", border:"1px solid rgba(220,38,38,0.18)", marginBottom:12 }}>
+            <div style={{ fontSize:13, fontWeight:700, color:"#DC2626", marginBottom:6 }}>🕵️ You're the spy! Locations:</div>
+            <div style={{ display:"flex", flexWrap:"wrap", gap:5, marginBottom:10 }}>
+              {SPYFALL_LOCS.map(l => (
+                <span key={l} onClick={() => setMySpyGuess(l.split(' ').slice(1).join(' '))} style={{ fontSize:11, padding:"3px 8px", borderRadius:100, background:mySpyGuess===l.split(' ').slice(1).join(' ')?`${accent}20`:"rgba(0,0,0,0.06)", border:`1px solid ${mySpyGuess===l.split(' ').slice(1).join(' ')?accent+"40":"rgba(0,0,0,0.10)"}`, cursor:"pointer", color:"#1C1410" }}>{l}</span>
+              ))}
+            </div>
+            <div style={{ display:"flex", gap:8 }}>
+              <input value={mySpyGuess} onChange={e=>setMySpyGuess(e.target.value)} placeholder="Guess the location…" style={{ ...linp, flex:1, fontSize:13 }} />
+              <button onClick={spyGuess} disabled={!mySpyGuess.trim()} style={{ ...lBtn(accent), width:"auto", padding:"9px 14px" }}>Guess</button>
+            </div>
+          </div>
+        ) : (
+          <div style={{ padding:"12px 16px", borderRadius:14, background:`${accent}08`, border:`1px solid ${accent}20`, marginBottom:12 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:accent, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:3 }}>Secret Location</div>
+            <div style={{ fontSize:18, fontWeight:900, color:"#1C1410" }}>{location}</div>
+          </div>
+        )}
+        <div style={{ display:"flex", gap:8 }}>
+          {(live ? isHost : true) && <button onClick={() => { clearInterval(timerRef.current); if (live) sendAction('force_accuse',{phase:'accuse'}); else setLPhase("accuse"); }} style={{ ...lBtn("rgba(0,0,0,0.07)"), color:"#1C1410", flex:1, fontSize:13 }}>Accuse Now →</button>}
+        </div>
+      </>)}
+
+      {phase === "accuse" && (<>
+        <div style={{ textAlign:"center", marginBottom:14 }}>
+          <div style={{ fontSize:15, fontWeight:900, color:"#1C1410" }}>Who is the Spy?</div>
+          <div style={{ fontSize:12, color:"rgba(28,9,0,0.45)" }}>Vote — majority decides</div>
+        </div>
+        {livePlayers.map(p => (
+          <div key={p} onClick={() => accusePlayer(p)} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 16px", marginBottom:6, borderRadius:12, background:accVotes[liveName||"You"]===p?`${accent}15`:"rgba(0,0,0,0.04)", border:`1.5px solid ${accVotes[liveName||"You"]===p?accent+"40":"rgba(0,0,0,0.08)"}`, cursor:"pointer" }}>
+            <span style={{ fontWeight:700, color:"#1C1410", fontSize:14 }}>{p}</span>
+            {accCounts[p] > 0 && <span style={{ background:`${accent}15`, color:accent, fontWeight:800, fontSize:13, padding:"3px 10px", borderRadius:100 }}>{accCounts[p]}v</span>}
+          </div>
+        ))}
+        {livePlayers.length === 0 && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.35)", fontSize:12 }}>No players — use a live room</div>}
+        {(live ? isHost : true) && Object.keys(accVotes).length > 0 && (
+          <button onClick={confirmAccuse} style={{ ...lBtn(accent), marginTop:10 }}>Reveal Spy →</button>
+        )}
+        <button onClick={() => { if (live) sendAction('skip_vote',{phase:'gameover'}); else setLPhase("gameover"); }} style={{ ...lBtn("rgba(0,0,0,0.06)"), color:"#1C1410", marginTop:8 }}>Skip — just reveal</button>
+      </>)}
+
+      {phase === "gameover" && (<>
+        <div style={{ textAlign:"center", marginBottom:16 }}>
+          <div style={{ fontSize:44, marginBottom:8 }}>🕵️</div>
+          <div style={{ fontSize:18, fontWeight:900, color:"#1C1410", marginBottom:8 }}>The Spy was…</div>
+          <div style={{ fontSize:24, fontWeight:900, color:"#DC2626", marginBottom:6 }}>{spyName}</div>
+          <div style={{ fontSize:15, color:accent, fontWeight:700 }}>{location}</div>
+        </div>
+        <button onClick={() => { if (live) sendAction('restart',{phase:'lobby'}); else { setLPhase("lobby"); setLLoc(""); setLSpy(""); setLAcc({}); }}} style={lBtn(accent)}>🔄 Play Again</button>
+      </>)}
+    </LightFormModal>
+  );
+}
+
 // ════════════════════════════════════════════════════════════════════════════
+// TEMPLATE #6 — MUSIC GAMES
+// ════════════════════════════════════════════════════════════════════════════
+
+const LYRICS_DECK = [
+  { song:"Bohemian Rhapsody",    artist:"Queen",             shown:"Is this the real life? Is this just fantasy?",          answer:"Caught in a landslide, no escape from reality" },
+  { song:"Don't Stop Believin'", artist:"Journey",           shown:"Just a small town girl",                                answer:"Living in a lonely world" },
+  { song:"Shape of You",         artist:"Ed Sheeran",        shown:"I'm in love with the shape of you",                    answer:"We push and pull like a magnet do" },
+  { song:"Blinding Lights",      artist:"The Weeknd",        shown:"I said ooh, I'm blinded by the lights",                answer:"No, I can't sleep until I feel your touch" },
+  { song:"Rolling in the Deep",  artist:"Adele",             shown:"We could have had it all",                             answer:"Rolling in the deep" },
+  { song:"Hotel California",     artist:"Eagles",            shown:"On a dark desert highway",                             answer:"Cool wind in my hair" },
+  { song:"Sweet Child O' Mine",  artist:"Guns N' Roses",     shown:"She's got a smile it seems to me",                    answer:"Reminds me of childhood memories" },
+  { song:"Someone Like You",     artist:"Adele",             shown:"I hate to turn up out of the blue uninvited",          answer:"But I couldn't stay away, I couldn't fight it" },
+  { song:"Counting Stars",       artist:"OneRepublic",       shown:"Lately I been, I been losing sleep",                  answer:"Dreaming about the things that we could be" },
+  { song:"Happy",                artist:"Pharrell Williams", shown:"Because I'm happy",                                   answer:"Clap along if you feel like a room without a roof" },
+  { song:"Perfect",              artist:"Ed Sheeran",        shown:"I found a love for me",                               answer:"Darling, just dive right in and follow my lead" },
+  { song:"Uptown Funk",          artist:"Mark Ronson",       shown:"Don't believe me just watch",                         answer:"Uh, come on" },
+  { song:"Senorita",             artist:"Shawn Mendes",      shown:"I love it when you call me señorita",                 answer:"I wish I could pretend I didn't need ya" },
+  { song:"Tum Hi Ho",            artist:"Arijit Singh",      shown:"Hum tere bin ab reh nahi sakte",                      answer:"Tere bina kya wajood mera" },
+  { song:"Kal Ho Na Ho",         artist:"Sonu Nigam",        shown:"Har ghadi badal rahi hai roop zindagi",               answer:"Chaav hai kabhi kabhi hai dhoop zindagi" },
+  { song:"Tujhe Dekha Toh",      artist:"Lata Mangeshkar",   shown:"Tujhe dekha toh yeh jaana sanam",                     answer:"Pyaar hota hai deewana sanam" },
+  { song:"Kesariya",             artist:"Arijit Singh",      shown:"Kesariya tera ishq hai piya",                         answer:"Kesariya" },
+  { song:"Raataan Lambiyan",     artist:"Jubin Nautiyal",    shown:"Raataan lambiyan teri kattiyaan na kareen",            answer:"Main taare gin loon teri yaad mein" },
+  { song:"Galliyan",             artist:"Ankit Tiwari",      shown:"Teri galliyon mein na rakhenge kadam",                answer:"Aaj ke baad hum" },
+  { song:"Ae Dil Hai Mushkil",   artist:"Arijit Singh",      shown:"Ae dil hai mushkil",                                  answer:"Jeena yahan" },
+  { song:"Chaiyya Chaiyya",      artist:"Sukhwinder Singh",  shown:"Chal chaiyya chaiyya chaiyya chaiyya",                answer:"Chal chaiyya chaiyya chaiyya chaiyya" },
+  { song:"Believer",             artist:"Imagine Dragons",   shown:"First things first, I'ma say all the words inside my head", answer:"I'm fired up and tired of the way that things have been" },
+  { song:"Stay With Me",         artist:"Sam Smith",         shown:"Oh won't you stay with me",                           answer:"'Cause you're all I need" },
+  { song:"Watermelon Sugar",     artist:"Harry Styles",      shown:"Tastes like strawberries",                            answer:"On a summer evening" },
+  { song:"Mere Naam Tu",         artist:"Armaan Malik",      shown:"Mere naam tu, aankhon mein tu",                       answer:"Har dum mein tu, raahon mein tu" },
+];
+
+function FinishLyricsGame({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'finishlyrics') setGame?.('finishlyrics', {}); }, [live, isHost]);
+  const players = live ? livePlayers : [liveName || "You"];
+
+  const [lPhase,    setLPhase]    = useState('lobby');
+  const [lIdx,      setLIdx]      = useState(0);
+  const [lScores,   setLScores]   = useState({});
+  const [lDeck,     setLDeck]     = useState([]);
+  const [lBuzzed,   setLBuzzed]   = useState(null);
+  const [lGuess,    setLGuess]    = useState('');
+
+  const phase   = live ? (gameState?.phase   || 'lobby') : lPhase;
+  const idx     = live ? (gameState?.idx     || 0)       : lIdx;
+  const scores  = live ? (gameState?.scores  || {})      : lScores;
+  const deck    = live ? (gameState?.deck    || [])      : lDeck;
+  const buzzed  = live ? (gameState?.buzzed  || null)    : lBuzzed;
+  const ROUNDS  = 10;
+  const current = deck[idx] || LYRICS_DECK[0];
+
+  function shuffle(arr) { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+  function startGame() {
+    const d = shuffle(LYRICS_DECK).slice(0, ROUNDS);
+    const s = Object.fromEntries(players.map(p => [p, 0]));
+    if (live) sendAction('fl_start', { deck: d, scores: s, phase: 'question', idx: 0, buzzed: null });
+    else { setLDeck(d); setLScores(s); setLPhase('question'); setLIdx(0); setLBuzzed(null); setLGuess(''); }
+  }
+
+  function buzz() {
+    if (buzzed) return;
+    if (live) sendAction('fl_buzz', { who: liveName });
+    else setLBuzzed(liveName || 'You');
+  }
+
+  function award(player) {
+    const ns = { ...scores, [player]: (scores[player] || 0) + 1 };
+    const next = idx + 1 >= ROUNDS ? 'gameover' : 'reveal';
+    if (live) sendAction('fl_award', { scores: ns, phase: next, answered: true });
+    else { setLScores(ns); setLPhase(next); }
+  }
+
+  function skip() {
+    const next = idx + 1 >= ROUNDS ? 'gameover' : 'reveal';
+    if (live) sendAction('fl_skip', { phase: next });
+    else setLPhase(next);
+  }
+
+  function nextQ() {
+    const ni = idx + 1;
+    if (live) sendAction('fl_next', { idx: ni, phase: 'question', buzzed: null });
+    else { setLIdx(ni); setLPhase('question'); setLBuzzed(null); setLGuess(''); }
+  }
+
+  useEffect(() => {
+    if (!live || !gameState?.lastAction) return;
+    const { type: t, payload: p } = gameState.lastAction;
+    if (t === 'fl_start') { setLDeck(p.deck); setLScores(p.scores); setLPhase('question'); setLIdx(0); setLBuzzed(null); setLGuess(''); }
+    if (t === 'fl_buzz'  && !lBuzzed) setLBuzzed(p.who);
+    if (t === 'fl_award') { setLScores(p.scores); setLPhase(p.phase); }
+    if (t === 'fl_skip')  setLPhase(p.phase);
+    if (t === 'fl_next')  { setLIdx(p.idx); setLPhase('question'); setLBuzzed(null); setLGuess(''); }
+    if (t === 'fl_restart') { setLPhase('lobby'); setLDeck([]); setLScores({}); setLIdx(0); }
+  }, [gameState?.lastAction]);
+
+  const sorted = [...players].sort((a,b) => (scores[b]||0) - (scores[a]||0));
+
+  return (
+    <LightFormModal onClose={onClose} accent={accent} title="🎤 Finish the Lyrics">
+      {phase === 'lobby' && (<>
+        <div style={{ textAlign:'center', padding:'12px 0 16px' }}>
+          <div style={{ fontSize:44, marginBottom:8 }}>🎤</div>
+          <div style={{ fontSize:19, fontWeight:800, color:'#1C1410' }}>Finish the Lyrics</div>
+          <div style={{ fontSize:13, color:'#6B7280', marginTop:6 }}>Complete the next line from famous songs · {ROUNDS} rounds</div>
+        </div>
+        {live && !isHost ? <div style={{ textAlign:'center', color:'#6B7280', fontSize:14 }}>Waiting for host to start…</div> : <button onClick={startGame} style={lBtn(accent)}>🎵 Start Game</button>}
+      </>)}
+
+      {phase === 'question' && (<>
+        <div style={{ background:`${accent}12`, border:`1.5px solid ${accent}35`, borderRadius:16, padding:'16px', marginBottom:12, textAlign:'center' }}>
+          <div style={{ fontSize:10, fontWeight:800, color:accent, letterSpacing:1.5, marginBottom:10 }}>ROUND {idx+1} / {ROUNDS}</div>
+          <div style={{ fontSize:15, fontWeight:700, color:'#1C1410', lineHeight:1.6, marginBottom:8 }}>"{current.shown}…"</div>
+          <div style={{ fontSize:12, color:'#9CA3AF' }}>What comes next?</div>
+        </div>
+        {live ? (<>
+          {!buzzed
+            ? <button onClick={buzz} style={lBtn(accent)}>🔔 Buzz In!</button>
+            : <div style={{ textAlign:'center' }}>
+                <div style={{ fontSize:15, fontWeight:700, color:accent, marginBottom:12 }}>🎤 {buzzed} buzzed in!</div>
+                {isHost && <div style={{ display:'flex', gap:8 }}>
+                  <button onClick={() => award(buzzed)}  style={{ ...lBtn('#10B981'), flex:1 }}>✅ Correct</button>
+                  <button onClick={skip}                  style={{ ...lBtn('#EF4444'), flex:1 }}>❌ Wrong</button>
+                </div>}
+                {!isHost && <div style={{ color:'#6B7280', fontSize:13 }}>Host is judging…</div>}
+              </div>}
+          {isHost && !buzzed && <button onClick={skip} style={{ ...lBtn('#9CA3AF'), marginTop:8, fontSize:13, padding:'9px' }}>⏭ Skip</button>}
+        </>) : (<>
+          <input value={lGuess} onChange={e=>setLGuess(e.target.value)} onKeyDown={e=>e.key==='Enter'&&lGuess.trim()&&award(liveName||'You')} placeholder="Type the next line…" style={{ ...linp, marginBottom:10 }} />
+          <div style={{ display:'flex', gap:8 }}>
+            <button onClick={() => award(liveName||'You')} disabled={!lGuess.trim()} style={{ ...lBtn(accent), flex:1, opacity:lGuess.trim()?1:0.5 }}>✅ Submit</button>
+            <button onClick={skip} style={{ ...lBtn('#9CA3AF'), flex:1 }}>⏭ Skip</button>
+          </div>
+        </>)}
+        <div style={{ display:'flex', gap:6, marginTop:12, flexWrap:'wrap' }}>
+          {sorted.map(p => <div key={p} style={{ background:`${accent}18`, borderRadius:20, padding:'4px 10px', fontSize:12, fontWeight:700, color:accent }}>{p} {scores[p]||0}</div>)}
+        </div>
+      </>)}
+
+      {phase === 'reveal' && (<>
+        <div style={{ textAlign:'center', padding:'8px 0 16px' }}>
+          <div style={{ fontSize:12, color:'#9CA3AF', marginBottom:6 }}>The answer was…</div>
+          <div style={{ fontSize:17, fontWeight:800, color:accent, marginBottom:4 }}>"{current.answer}"</div>
+          <div style={{ fontSize:12, color:'#6B7280' }}>— {current.song} · {current.artist}</div>
+        </div>
+        {sorted.map((p,i) => <div key={p} style={{ ...lcrd, display:'flex', alignItems:'center', gap:10 }}><span>{i===0?'🥇':i===1?'🥈':'🥉'}</span><span style={{ flex:1, fontWeight:700 }}>{p}</span><span style={{ fontWeight:800, color:accent }}>{scores[p]||0}</span></div>)}
+        {(!live || isHost) ? <button onClick={nextQ} style={{ ...lBtn(accent), marginTop:8 }}>➡️ Next Lyric</button>
+          : <div style={{ textAlign:'center', color:'#9CA3AF', fontSize:13, marginTop:8 }}>Waiting for host…</div>}
+      </>)}
+
+      {phase === 'gameover' && (<>
+        <div style={{ textAlign:'center', padding:'8px 0 16px' }}>
+          <div style={{ fontSize:40, marginBottom:6 }}>🏆</div>
+          <div style={{ fontSize:18, fontWeight:800, color:'#1C1410', marginBottom:4 }}>Game Over!</div>
+          <div style={{ fontSize:14, color:accent, fontWeight:700 }}>{sorted[0]} wins with {scores[sorted[0]]||0} pts!</div>
+        </div>
+        {sorted.map((p,i) => <div key={p} style={{ ...lcrd, display:'flex', alignItems:'center', gap:10, background:i===0?`${accent}20`:'rgba(0,0,0,0.04)' }}><span>{i===0?'🥇':i===1?'🥈':'🥉'}</span><span style={{ flex:1, fontWeight:700 }}>{p}</span><span style={{ fontWeight:800, color:accent }}>{scores[p]||0} pts</span></div>)}
+        {(!live || isHost) && <button onClick={() => { if(live) sendAction('fl_restart',{}); else { setLPhase('lobby'); setLDeck([]); setLScores({}); setLIdx(0); }}} style={{ ...lBtn(accent), marginTop:8 }}>🔄 Play Again</button>}
+      </>)}
+    </LightFormModal>
+  );
+}
+
+// ── Song Intro Deck ───────────────────────────────────────────────────────────
+const SONG_INTRO_DECK = [
+  { song:"Blinding Lights",      artist:"The Weeknd",        hint:"I said, ooh, I'm blinded by…" },
+  { song:"Shape of You",         artist:"Ed Sheeran",        hint:"The club isn't the best place to find a love…" },
+  { song:"Uptown Funk",          artist:"Mark Ronson",       hint:"This hit, that ice cold…" },
+  { song:"Rolling in the Deep",  artist:"Adele",             hint:"There's a fire starting in my heart…" },
+  { song:"Bohemian Rhapsody",    artist:"Queen",             hint:"Is this the real life?…" },
+  { song:"Don't Stop Believin'", artist:"Journey",           hint:"Just a small town girl…" },
+  { song:"Hotel California",     artist:"Eagles",            hint:"On a dark desert highway…" },
+  { song:"Happy",                artist:"Pharrell Williams", hint:"It might seem crazy what I'm 'bout to say…" },
+  { song:"Someone Like You",     artist:"Adele",             hint:"I heard that you're settled down…" },
+  { song:"Counting Stars",       artist:"OneRepublic",       hint:"Lately I been, I been losing sleep…" },
+  { song:"Perfect",              artist:"Ed Sheeran",        hint:"I found a love for me…" },
+  { song:"Watermelon Sugar",     artist:"Harry Styles",      hint:"Tastes like strawberries on a summer evening…" },
+  { song:"Tum Hi Ho",            artist:"Arijit Singh",      hint:"Hum tere bin ab reh nahi sakte…" },
+  { song:"Kesariya",             artist:"Arijit Singh",      hint:"Kesariya tera ishq hai piya…" },
+  { song:"Raataan Lambiyan",     artist:"Jubin Nautiyal",    hint:"Raataan lambiyan teri…" },
+  { song:"Kal Ho Na Ho",         artist:"Sonu Nigam",        hint:"Har ghadi badal rahi hai roop…" },
+  { song:"Ae Dil Hai Mushkil",   artist:"Arijit Singh",      hint:"Ae dil hai mushkil…" },
+  { song:"Chaiyya Chaiyya",      artist:"Sukhwinder Singh",  hint:"Chal chaiyya chaiyya…" },
+  { song:"Galliyan",             artist:"Ankit Tiwari",      hint:"Teri galliyon mein…" },
+  { song:"Believer",             artist:"Imagine Dragons",   hint:"First things first, I'ma say all the words…" },
+  { song:"Stay With Me",         artist:"Sam Smith",         hint:"Guess it's true, I'm not good at a one-night stand…" },
+  { song:"Senorita",             artist:"Shawn Mendes",      hint:"I love it when you call me señorita…" },
+  { song:"Sweet Child O' Mine",  artist:"Guns N' Roses",     hint:"She's got a smile it seems to me…" },
+  { song:"Tujhe Dekha Toh",      artist:"Lata Mangeshkar",   hint:"Tujhe dekha toh yeh jaana sanam…" },
+  { song:"Mere Naam Tu",         artist:"Armaan Malik",      hint:"Mere naam tu, aankhon mein tu…" },
+];
+
+function GuessSong3SecGame({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'guesssong3sec') setGame?.('guesssong3sec', {}); }, [live, isHost]);
+  const players = live ? livePlayers : [liveName || "You"];
+
+  const [lPhase,   setLPhase]   = useState('lobby');
+  const [lIdx,     setLIdx]     = useState(0);
+  const [lScores,  setLScores]  = useState({});
+  const [lDeck,    setLDeck]    = useState([]);
+  const [lBuzzed,  setLBuzzed]  = useState(null);
+  const [lRevealed,setLRevealed]= useState(false);
+  const [lGuess,   setLGuess]   = useState('');
+  const [timer,    setTimer]    = useState(3);
+  const timerRef = useRef(null);
+
+  const phase    = live ? (gameState?.phase    || 'lobby') : lPhase;
+  const idx      = live ? (gameState?.idx      || 0)       : lIdx;
+  const scores   = live ? (gameState?.scores   || {})      : lScores;
+  const deck     = live ? (gameState?.deck     || [])      : lDeck;
+  const buzzed   = live ? (gameState?.buzzed   || null)    : lBuzzed;
+  const revealed = live ? (gameState?.revealed || false)   : lRevealed;
+  const ROUNDS   = 10;
+  const current  = deck[idx] || SONG_INTRO_DECK[0];
+
+  function shuffle(arr) { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+  function startGame() {
+    const d = shuffle(SONG_INTRO_DECK).slice(0, ROUNDS);
+    const s = Object.fromEntries(players.map(p => [p, 0]));
+    if (live) sendAction('gs_start', { deck: d, scores: s, phase: 'question', idx: 0, buzzed: null, revealed: false });
+    else { setLDeck(d); setLScores(s); setLPhase('question'); setLIdx(0); setLBuzzed(null); setLRevealed(false); setLGuess(''); startTimer(); }
+  }
+
+  function startTimer() {
+    setTimer(3);
+    clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => setTimer(t => { if (t <= 1) { clearInterval(timerRef.current); return 0; } return t - 1; }), 1000);
+  }
+
+  useEffect(() => { if (!live && phase === 'question') startTimer(); return () => clearInterval(timerRef.current); }, [lIdx, lPhase]);
+
+  function buzz() {
+    if (buzzed) return;
+    if (live) sendAction('gs_buzz', { who: liveName });
+    else setLBuzzed(liveName || 'You');
+  }
+
+  function award(player) {
+    const ns = { ...scores, [player]: (scores[player] || 0) + 1 };
+    const next = idx + 1 >= ROUNDS ? 'gameover' : 'reveal';
+    if (live) sendAction('gs_award', { scores: ns, phase: next, revealed: true });
+    else { setLScores(ns); setLPhase(next); setLRevealed(true); }
+  }
+
+  function skip() {
+    const next = idx + 1 >= ROUNDS ? 'gameover' : 'reveal';
+    if (live) sendAction('gs_skip', { phase: next, revealed: true });
+    else { setLPhase(next); setLRevealed(true); }
+  }
+
+  function nextQ() {
+    const ni = idx + 1;
+    if (live) sendAction('gs_next', { idx: ni, phase: 'question', buzzed: null, revealed: false });
+    else { setLIdx(ni); setLPhase('question'); setLBuzzed(null); setLRevealed(false); setLGuess(''); }
+  }
+
+  useEffect(() => {
+    if (!live || !gameState?.lastAction) return;
+    const { type: t, payload: p } = gameState.lastAction;
+    if (t === 'gs_start')  { setLDeck(p.deck); setLScores(p.scores); setLPhase('question'); setLIdx(0); setLBuzzed(null); setLRevealed(false); setLGuess(''); }
+    if (t === 'gs_buzz'  && !lBuzzed) setLBuzzed(p.who);
+    if (t === 'gs_award') { setLScores(p.scores); setLPhase(p.phase); setLRevealed(true); }
+    if (t === 'gs_skip')  { setLPhase(p.phase); setLRevealed(true); }
+    if (t === 'gs_next')  { setLIdx(p.idx); setLPhase('question'); setLBuzzed(null); setLRevealed(false); setLGuess(''); }
+    if (t === 'gs_restart') { setLPhase('lobby'); setLDeck([]); setLScores({}); setLIdx(0); }
+  }, [gameState?.lastAction]);
+
+  const sorted = [...players].sort((a,b) => (scores[b]||0) - (scores[a]||0));
+
+  return (
+    <LightFormModal onClose={onClose} accent={accent} title="🎵 Guess the Song">
+      {phase === 'lobby' && (<>
+        <div style={{ textAlign:'center', padding:'12px 0 16px' }}>
+          <div style={{ fontSize:44, marginBottom:8 }}>🎵</div>
+          <div style={{ fontSize:19, fontWeight:800, color:'#1C1410' }}>Guess the Song</div>
+          <div style={{ fontSize:13, color:'#6B7280', marginTop:6 }}>Hear the hint · buzz first · name that song! · {ROUNDS} rounds</div>
+        </div>
+        {live && !isHost ? <div style={{ textAlign:'center', color:'#6B7280', fontSize:14 }}>Waiting for host…</div> : <button onClick={startGame} style={lBtn(accent)}>🎶 Start Game</button>}
+      </>)}
+
+      {phase === 'question' && (<>
+        <div style={{ background:`${accent}12`, border:`1.5px solid ${accent}35`, borderRadius:16, padding:'16px', marginBottom:12, textAlign:'center' }}>
+          <div style={{ fontSize:10, fontWeight:800, color:accent, letterSpacing:1.5, marginBottom:10 }}>ROUND {idx+1} / {ROUNDS}</div>
+          <div style={{ fontSize:15, fontWeight:700, color:'#1C1410', lineHeight:1.6, marginBottom:10 }}>🎧 "{current.hint}"</div>
+          {!live && <div style={{ fontSize:32, fontWeight:900, color:timer>0?accent:'#10B981' }}>{timer > 0 ? timer : '🔔 Buzz!'}</div>}
+        </div>
+        {live ? (<>
+          {!buzzed
+            ? <button onClick={buzz} style={lBtn(accent)}>🔔 Buzz In!</button>
+            : <div style={{ textAlign:'center' }}>
+                <div style={{ fontSize:15, fontWeight:700, color:accent, marginBottom:12 }}>🎤 {buzzed} buzzed in!</div>
+                {isHost && <div style={{ display:'flex', gap:8 }}>
+                  <button onClick={() => award(buzzed)} style={{ ...lBtn('#10B981'), flex:1 }}>✅ Correct</button>
+                  <button onClick={skip}                 style={{ ...lBtn('#EF4444'), flex:1 }}>❌ Wrong</button>
+                </div>}
+              </div>}
+          {isHost && !buzzed && <button onClick={skip} style={{ ...lBtn('#9CA3AF'), marginTop:8, fontSize:13, padding:'9px' }}>⏭ Skip</button>}
+        </>) : (<>
+          <input value={lGuess} onChange={e=>setLGuess(e.target.value)} onKeyDown={e=>e.key==='Enter'&&lGuess.trim()&&award(liveName||'You')} placeholder="Song name + artist…" style={{ ...linp, marginBottom:10 }} />
+          <div style={{ display:'flex', gap:8 }}>
+            <button onClick={() => award(liveName||'You')} disabled={!lGuess.trim()} style={{ ...lBtn(accent), flex:1, opacity:lGuess.trim()?1:0.5 }}>✅ Submit</button>
+            <button onClick={skip} style={{ ...lBtn('#9CA3AF'), flex:1 }}>⏭ Skip</button>
+          </div>
+        </>)}
+        <div style={{ display:'flex', gap:6, marginTop:12, flexWrap:'wrap' }}>
+          {sorted.map(p => <div key={p} style={{ background:`${accent}18`, borderRadius:20, padding:'4px 10px', fontSize:12, fontWeight:700, color:accent }}>{p} {scores[p]||0}</div>)}
+        </div>
+      </>)}
+
+      {phase === 'reveal' && (<>
+        <div style={{ textAlign:'center', padding:'8px 0 16px' }}>
+          <div style={{ fontSize:12, color:'#9CA3AF', marginBottom:6 }}>The song was…</div>
+          <div style={{ fontSize:20, fontWeight:800, color:accent, marginBottom:4 }}>{current.song}</div>
+          <div style={{ fontSize:13, color:'#6B7280' }}>by {current.artist}</div>
+        </div>
+        {sorted.map((p,i) => <div key={p} style={{ ...lcrd, display:'flex', alignItems:'center', gap:10 }}><span>{i===0?'🥇':i===1?'🥈':'🥉'}</span><span style={{ flex:1, fontWeight:700 }}>{p}</span><span style={{ fontWeight:800, color:accent }}>{scores[p]||0}</span></div>)}
+        {(!live || isHost) ? <button onClick={nextQ} style={{ ...lBtn(accent), marginTop:8 }}>➡️ Next Song</button>
+          : <div style={{ textAlign:'center', color:'#9CA3AF', fontSize:13, marginTop:8 }}>Waiting for host…</div>}
+      </>)}
+
+      {phase === 'gameover' && (<>
+        <div style={{ textAlign:'center', padding:'8px 0 16px' }}>
+          <div style={{ fontSize:40, marginBottom:6 }}>🏆</div>
+          <div style={{ fontSize:18, fontWeight:800, color:'#1C1410', marginBottom:4 }}>Game Over!</div>
+          <div style={{ fontSize:14, color:accent, fontWeight:700 }}>{sorted[0]} wins with {scores[sorted[0]]||0} pts!</div>
+        </div>
+        {sorted.map((p,i) => <div key={p} style={{ ...lcrd, display:'flex', alignItems:'center', gap:10, background:i===0?`${accent}20`:'rgba(0,0,0,0.04)' }}><span>{i===0?'🥇':i===1?'🥈':'🥉'}</span><span style={{ flex:1, fontWeight:700 }}>{p}</span><span style={{ fontWeight:800, color:accent }}>{scores[p]||0} pts</span></div>)}
+        {(!live || isHost) && <button onClick={() => { if(live) sendAction('gs_restart',{}); else { setLPhase('lobby'); setLDeck([]); setLScores({}); setLIdx(0); }}} style={{ ...lBtn(accent), marginTop:8 }}>🔄 Play Again</button>}
+      </>)}
+    </LightFormModal>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TEMPLATE #7 — TELEPHONE DRAWING
+// ════════════════════════════════════════════════════════════════════════════
+
+const TELE_WORDS = [
+  "Pizza","Elephant","Birthday cake","Roller coaster","Guitar","Submarine","Lighthouse",
+  "Astronaut","Wedding ring","Hot air balloon","Kangaroo","Spaghetti","Snowman","Cactus",
+  "Pirate ship","Spider web","Volcano","Hamburger","Penguin","Treasure chest","Rainbow",
+  "Bicycle","Waterfall","Boxing gloves","Camera","Tornado","Igloo","Mermaid","Fireworks",
+  "Sunflower","Dinosaur","Magic wand","Sandcastle","Rocket","Jellyfish","Chess board",
+];
+
+function DrawingCanvas({ onSubmit, accent, word }) {
+  const canvasRef = useRef(null);
+  const drawing   = useRef(false);
+
+  function getPos(e) {
+    const canvas = canvasRef.current;
+    const rect   = canvas.getBoundingClientRect();
+    const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
+    const src = e.touches ? e.touches[0] : e;
+    return { x: (src.clientX - rect.left) * sx, y: (src.clientY - rect.top) * sy };
+  }
+
+  function startDraw(e) {
+    e.preventDefault();
+    drawing.current = true;
+    const ctx = canvasRef.current.getContext('2d');
+    const p = getPos(e);
+    ctx.beginPath(); ctx.moveTo(p.x, p.y);
+  }
+
+  function draw(e) {
+    e.preventDefault();
+    if (!drawing.current) return;
+    const ctx = canvasRef.current.getContext('2d');
+    const p = getPos(e);
+    ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#1C1410';
+    ctx.lineTo(p.x, p.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p.x, p.y);
+  }
+
+  function stopDraw() { drawing.current = false; }
+
+  function clearCanvas() {
+    const canvas = canvasRef.current;
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  function submit() { onSubmit(canvasRef.current.toDataURL('image/jpeg', 0.4)); }
+
+  return (
+    <div>
+      {word && <div style={{ textAlign:'center', background:`${accent}12`, border:`1.5px solid ${accent}35`, borderRadius:12, padding:'10px', marginBottom:12, fontSize:18, fontWeight:900, color:accent }}>✏️ Draw: {word}</div>}
+      <canvas ref={canvasRef} width={280} height={180}
+        style={{ width:'100%', height:'auto', border:'2px solid #E5E7EB', borderRadius:12, background:'#fff', touchAction:'none', cursor:'crosshair', display:'block' }}
+        onMouseDown={startDraw} onMouseMove={draw} onMouseUp={stopDraw} onMouseLeave={stopDraw}
+        onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={stopDraw}
+      />
+      <div style={{ display:'flex', gap:8, marginTop:10 }}>
+        <button onClick={clearCanvas} style={{ ...lBtn('#9CA3AF'), flex:1 }}>🗑 Clear</button>
+        <button onClick={submit}      style={{ ...lBtn(accent), flex:1 }}>✅ Done</button>
+      </div>
+    </div>
+  );
+}
+
+function TelephoneDrawingGame({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'telephonedrawing') setGame?.('telephonedrawing', {}); }, [live, isHost]);
+  const players = live ? livePlayers : [liveName || "You", "Player 2", "Player 3"];
+
+  const [lPhase,  setLPhase]  = useState('lobby');
+  const [lChain,  setLChain]  = useState([]);
+  const [lTurnIdx,setLTurnIdx]= useState(0);
+  const [lType,   setLType]   = useState('draw'); // 'draw' | 'guess'
+  const [lGuess,  setLGuess]  = useState('');
+
+  const phase    = live ? (gameState?.phase    || 'lobby')  : lPhase;
+  const chain    = live ? (gameState?.chain    || [])       : lChain;
+  const turnIdx  = live ? (gameState?.turnIdx  || 0)        : lTurnIdx;
+  const turnType = live ? (gameState?.turnType || 'draw')   : lType;
+
+  const currentTurnPlayer = players[turnIdx % players.length];
+  const isMyTurn = !live ? true : (liveName === currentTurnPlayer);
+
+  function shuffle(arr) { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+  function startGame() {
+    const word = shuffle([...TELE_WORDS])[0];
+    const initChain = [{ type:'word', value:word, player: players[0] }];
+    if (live) sendAction('td_start', { chain: initChain, phase:'playing', turnIdx: 0, turnType:'draw' });
+    else { setLChain(initChain); setLPhase('playing'); setLTurnIdx(0); setLType('draw'); setLGuess(''); }
+  }
+
+  function submitDrawing(dataUrl) {
+    const newEntry = { type:'drawing', value:dataUrl, player:currentTurnPlayer };
+    const nc = [...chain, newEntry];
+    const ni = turnIdx + 1;
+    const done = ni >= players.length;
+    if (live) sendAction('td_submit', { chain: nc, turnIdx: ni, turnType:'guess', phase: done?'reveal':'playing' });
+    else { setLChain(nc); setLTurnIdx(ni); setLType('guess'); if (done) setLPhase('reveal'); setLGuess(''); }
+  }
+
+  function submitGuess() {
+    if (!lGuess.trim()) return;
+    const newEntry = { type:'guess', value:lGuess.trim(), player:currentTurnPlayer };
+    const nc = [...chain, newEntry];
+    const ni = turnIdx + 1;
+    const done = ni >= players.length;
+    if (live) sendAction('td_submit', { chain: nc, turnIdx: ni, turnType:'draw', phase: done?'reveal':'playing' });
+    else { setLChain(nc); setLTurnIdx(ni); setLType('draw'); if (done) setLPhase('reveal'); setLGuess(''); }
+  }
+
+  useEffect(() => {
+    if (!live || !gameState?.lastAction) return;
+    const { type: t, payload: p } = gameState.lastAction;
+    if (t === 'td_start')   { setLChain(p.chain); setLPhase('playing'); setLTurnIdx(0); setLType('draw'); setLGuess(''); }
+    if (t === 'td_submit')  { setLChain(p.chain); setLTurnIdx(p.turnIdx); setLType(p.turnType); setLPhase(p.phase); setLGuess(''); }
+    if (t === 'td_restart') { setLPhase('lobby'); setLChain([]); setLTurnIdx(0); }
+  }, [gameState?.lastAction]);
+
+  const startWord = chain[0]?.value;
+  const finalEntry = chain[chain.length - 1];
+
+  return (
+    <LightFormModal onClose={onClose} accent={accent} title="📞 Telephone Drawing">
+      {phase === 'lobby' && (<>
+        <div style={{ textAlign:'center', padding:'12px 0 16px' }}>
+          <div style={{ fontSize:44, marginBottom:8 }}>📞</div>
+          <div style={{ fontSize:19, fontWeight:800, color:'#1C1410' }}>Telephone Drawing</div>
+          <div style={{ fontSize:13, color:'#6B7280', marginTop:6, lineHeight:1.6 }}>Draw a secret word · pass the phone · see how it transforms!</div>
+          <div style={{ fontSize:11, color:'#9CA3AF', marginTop:8 }}>{players.length} player{players.length!==1?'s':''} · {players.length} rounds</div>
+        </div>
+        {live && !isHost ? <div style={{ textAlign:'center', color:'#6B7280', fontSize:14 }}>Waiting for host…</div> : <button onClick={startGame} style={lBtn(accent)}>✏️ Start Drawing</button>}
+      </>)}
+
+      {phase === 'playing' && (<>
+        {isMyTurn ? (<>
+          <div style={{ fontSize:11, fontWeight:800, color:accent, letterSpacing:1.5, marginBottom:10, textAlign:'center' }}>
+            YOUR TURN — {turnType === 'draw' ? 'DRAW IT' : 'GUESS WHAT THIS IS'}
+          </div>
+          {turnType === 'draw' ? (
+            <DrawingCanvas
+              accent={accent}
+              word={chain[chain.length-1]?.type==='word' ? chain[chain.length-1].value : chain[chain.length-1]?.value}
+              onSubmit={submitDrawing}
+            />
+          ) : (<>
+            {chain[chain.length-1]?.type === 'drawing' && (
+              <img src={chain[chain.length-1].value} alt="drawing" style={{ width:'100%', borderRadius:12, border:'2px solid #E5E7EB', marginBottom:12, background:'#fff' }} />
+            )}
+            <input value={lGuess} onChange={e=>setLGuess(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submitGuess()} placeholder="What is this drawing?" style={{ ...linp, marginBottom:10 }} />
+            <button onClick={submitGuess} disabled={!lGuess.trim()} style={{ ...lBtn(accent), opacity:lGuess.trim()?1:0.5 }}>✅ Submit Guess</button>
+          </>)}
+        </>) : (
+          <div style={{ textAlign:'center', padding:'32px 0' }}>
+            <div style={{ fontSize:32, marginBottom:12 }}>⏳</div>
+            <div style={{ fontSize:15, fontWeight:700, color:'#1C1410' }}>Waiting for {currentTurnPlayer}…</div>
+            <div style={{ fontSize:13, color:'#6B7280', marginTop:6 }}>They are {turnType === 'draw' ? 'drawing' : 'guessing'}</div>
+          </div>
+        )}
+        <div style={{ display:'flex', gap:4, marginTop:14, flexWrap:'wrap' }}>
+          {players.map((p,i) => (
+            <div key={p} style={{ background:i<turnIdx?`${accent}20`:i===turnIdx?accent:'rgba(0,0,0,0.06)', color:i===turnIdx?'#fff':i<turnIdx?accent:'#9CA3AF', borderRadius:20, padding:'4px 10px', fontSize:12, fontWeight:700 }}>
+              {i<turnIdx?'✓':i===turnIdx?'→':''} {p}
+            </div>
+          ))}
+        </div>
+      </>)}
+
+      {phase === 'reveal' && (<>
+        <div style={{ textAlign:'center', marginBottom:14 }}>
+          <div style={{ fontSize:13, color:'#9CA3AF', marginBottom:4 }}>Started as…</div>
+          <div style={{ fontSize:20, fontWeight:900, color:accent }}>"{startWord}"</div>
+          <div style={{ fontSize:13, color:'#9CA3AF', marginTop:4 }}>Ended as…</div>
+          <div style={{ fontSize:18, fontWeight:800, color:'#1C1410' }}>"{finalEntry?.type==='guess'?finalEntry.value:'(drawing)'}"</div>
+        </div>
+        <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:14 }}>
+          {chain.map((item,i) => (
+            <div key={i} style={{ ...lcrd, padding:'10px 12px' }}>
+              <div style={{ fontSize:11, fontWeight:700, color:accent, marginBottom:6 }}>{item.player} — {item.type==='word'?'🔤 Word':item.type==='drawing'?'🎨 Drawing':'💬 Guess'}</div>
+              {item.type === 'drawing'
+                ? <img src={item.value} alt="chain drawing" style={{ width:'100%', borderRadius:8, background:'#fff' }} />
+                : <div style={{ fontSize:15, fontWeight:700, color:'#1C1410' }}>"{item.value}"</div>
+              }
+            </div>
+          ))}
+        </div>
+        {(!live || isHost) && <button onClick={() => { if(live) sendAction('td_restart',{}); else { setLPhase('lobby'); setLChain([]); setLTurnIdx(0); }}} style={lBtn(accent)}>🔄 Play Again</button>}
+      </>)}
+    </LightFormModal>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
+// TEMPLATE #8 — DON'T LAUGH
+// ════════════════════════════════════════════════════════════════════════════
+
+const DONT_LAUGH_PROMPTS = [
+  "Do your best celebrity impression for 20 seconds",
+  "Describe your day as if it's a Bollywood movie plot",
+  "Perform a dramatic reading of a food delivery app review",
+  "Say 'I like turtles' in 5 completely different accents",
+  "Tell a terrible dad joke with a completely straight face",
+  "Do your best impression of the birthday person",
+  "Mime getting ready in the morning — in slow-motion",
+  "Narrate what you're doing right now in a live sports commentary style",
+  "Do a dramatic farewell scene as if you're leaving forever — just to get a glass of water",
+  "Describe WiFi to someone from the 1800s",
+  "Perform your best villain origin story using a spilled cup of tea",
+  "Act out 'a Monday morning' without using any words",
+  "Give a 30-second TEDx talk on why you prefer one food over another",
+  "Do your best impression of a robot ordering from Zomato",
+  "Re-enact the last time you stubbed your toe — as dramatically as possible",
+  "Be a wildlife documentary narrator describing someone in this room",
+  "Be a news anchor reporting on someone sneezing",
+  "Freestyle rap for 15 seconds about the snacks on the table",
+  "Do an infomercial for an item currently in your pocket",
+  "Explain what a birthday party is to an alien who has never seen one",
+];
+
+function DontLaughGame({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'dontlaugh') setGame?.('dontlaugh', {}); }, [live, isHost]);
+  const players = live ? livePlayers : [liveName || "You"];
+
+  const [lPhase,        setLPhase]        = useState('lobby');
+  const [lPerformerIdx, setLPerformerIdx] = useState(0);
+  const [lPrompt,       setLPrompt]       = useState('');
+  const [lVotes,        setLVotes]        = useState({});
+  const [lScores,       setLScores]       = useState({});
+  const [lRound,        setLRound]        = useState(0);
+  const [timer,         setTimer]         = useState(20);
+  const timerRef = useRef(null);
+
+  const phase        = live ? (gameState?.phase        || 'lobby') : lPhase;
+  const performerIdx = live ? (gameState?.performerIdx || 0)       : lPerformerIdx;
+  const prompt       = live ? (gameState?.prompt       || '')      : lPrompt;
+  const votes        = live ? (gameState?.votes        || {})      : lVotes;
+  const scores       = live ? (gameState?.scores       || {})      : lScores;
+  const round        = live ? (gameState?.round        || 0)       : lRound;
+  const ROUNDS       = Math.min(players.length, 8);
+  const performer    = players[performerIdx % players.length];
+  const isPerformer  = !live || liveName === performer;
+  const alreadyVoted = live ? votes[liveName] !== undefined : lVotes[liveName || 'You'] !== undefined;
+  const audience     = players.filter(p => p !== performer);
+
+  function shuffle(arr) { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+  function startGame() {
+    const s = Object.fromEntries(players.map(p => [p, 0]));
+    const p = shuffle([...DONT_LAUGH_PROMPTS])[0];
+    if (live) sendAction('dl_start', { scores: s, prompt: p, phase: 'performing', performerIdx: 0, votes: {}, round: 0 });
+    else { setLScores(s); setLPrompt(p); setLPhase('performing'); setLPerformerIdx(0); setLVotes({}); setLRound(0); }
+  }
+
+  useEffect(() => {
+    if (!live && phase === 'performing') {
+      setTimer(20);
+      clearInterval(timerRef.current);
+      timerRef.current = setInterval(() => setTimer(t => {
+        if (t <= 1) { clearInterval(timerRef.current); setLPhase('voting'); return 0; }
+        return t - 1;
+      }), 1000);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [lPerformerIdx, lPhase, live]);
+
+  function endPerformance() {
+    if (live) sendAction('dl_vote_open', { phase: 'voting', votes: {} });
+    else setLPhase('voting');
+  }
+
+  function vote(v) {
+    if (alreadyVoted) return;
+    const nv = { ...votes, [liveName || 'You']: v };
+    if (live) sendAction('dl_vote', { votes: nv });
+    else {
+      setLVotes(nv);
+      const allIn = audience.every(p => nv[p] !== undefined);
+      if (allIn || players.length === 1) tally(nv);
+    }
+  }
+
+  function tally(v) {
+    const v2 = v || votes;
+    const laughed = Object.values(v2).filter(x => x === 'laughed').length;
+    const ns = { ...scores, [performer]: (scores[performer] || 0) + laughed };
+    const nr = round + 1;
+    const done = nr >= ROUNDS;
+    if (live) sendAction('dl_tally', { scores: ns, phase: done ? 'gameover' : 'result', round: nr });
+    else { setLScores(ns); setLPhase(done ? 'gameover' : 'result'); setLRound(nr); }
+  }
+
+  function nextTurn() {
+    const ni = performerIdx + 1;
+    const p = shuffle([...DONT_LAUGH_PROMPTS])[0];
+    if (live) sendAction('dl_next', { performerIdx: ni, prompt: p, phase: 'performing', votes: {} });
+    else { setLPerformerIdx(ni); setLPrompt(p); setLPhase('performing'); setLVotes({}); }
+  }
+
+  useEffect(() => {
+    if (!live || !gameState?.lastAction) return;
+    const { type: t, payload: p } = gameState.lastAction;
+    if (t === 'dl_start')     { setLScores(p.scores); setLPrompt(p.prompt); setLPhase('performing'); setLPerformerIdx(0); setLVotes({}); setLRound(0); }
+    if (t === 'dl_vote_open') { setLPhase('voting'); setLVotes({}); }
+    if (t === 'dl_vote')      setLVotes(p.votes);
+    if (t === 'dl_tally')     { setLScores(p.scores); setLPhase(p.phase); setLRound(p.round); }
+    if (t === 'dl_next')      { setLPerformerIdx(p.performerIdx); setLPrompt(p.prompt); setLPhase('performing'); setLVotes({}); }
+    if (t === 'dl_restart')   { setLPhase('lobby'); setLScores({}); setLRound(0); }
+  }, [gameState?.lastAction]);
+
+  const sorted = [...players].sort((a,b) => (scores[b]||0) - (scores[a]||0));
+  const laughCount = Object.values(votes).filter(v => v === 'laughed').length;
+
+  return (
+    <LightFormModal onClose={onClose} accent={accent} title="😂 Don't Laugh">
+      {phase === 'lobby' && (<>
+        <div style={{ textAlign:'center', padding:'12px 0 16px' }}>
+          <div style={{ fontSize:44, marginBottom:8 }}>😂</div>
+          <div style={{ fontSize:19, fontWeight:800, color:'#1C1410' }}>Don't Laugh</div>
+          <div style={{ fontSize:13, color:'#6B7280', marginTop:6, lineHeight:1.6 }}>Performer acts out a prompt · everyone tries NOT to laugh · points for cracking people up</div>
+        </div>
+        {live && !isHost ? <div style={{ textAlign:'center', color:'#6B7280', fontSize:14 }}>Waiting for host…</div> : <button onClick={startGame} style={lBtn(accent)}>😂 Start Game</button>}
+      </>)}
+
+      {phase === 'performing' && (<>
+        <div style={{ fontSize:10, fontWeight:800, color:accent, letterSpacing:1.5, marginBottom:10, textAlign:'center' }}>ROUND {round+1} / {ROUNDS} · {performer} PERFORMING</div>
+        {isPerformer
+          ? <div style={{ background:`${accent}12`, border:`1.5px solid ${accent}35`, borderRadius:16, padding:'16px', marginBottom:12 }}>
+              <div style={{ fontSize:11, fontWeight:700, color:'#9CA3AF', marginBottom:8 }}>YOUR PROMPT:</div>
+              <div style={{ fontSize:15, fontWeight:700, color:'#1C1410', lineHeight:1.65 }}>{prompt}</div>
+            </div>
+          : <div style={{ background:'rgba(0,0,0,0.06)', borderRadius:16, padding:'28px 16px', textAlign:'center', marginBottom:12 }}>
+              <div style={{ fontSize:32, marginBottom:8 }}>🎭</div>
+              <div style={{ fontSize:14, fontWeight:700, color:'#1C1410' }}>{performer} is performing…</div>
+              <div style={{ fontSize:13, color:'#6B7280', marginTop:4 }}>Keep a straight face! 😐</div>
+            </div>
+        }
+        {!live && <div style={{ fontSize:40, fontWeight:900, textAlign:'center', color:timer>5?accent:'#EF4444', marginBottom:12 }}>{timer}s</div>}
+        {live && isHost && <button onClick={endPerformance} style={lBtn(accent)}>⏱ End Performance → Vote</button>}
+        {live && !isHost && <div style={{ textAlign:'center', color:'#6B7280', fontSize:13 }}>Watch {performer} perform…</div>}
+      </>)}
+
+      {phase === 'voting' && (<>
+        <div style={{ textAlign:'center', marginBottom:14 }}>
+          <div style={{ fontSize:15, fontWeight:800, color:'#1C1410', marginBottom:12 }}>Did {performer} make you laugh?</div>
+          {performer !== (liveName || 'You') ? (!alreadyVoted
+            ? <div style={{ display:'flex', gap:10 }}>
+                <button onClick={() => vote('laughed')}  style={{ ...lBtn('#F59E0B'), flex:1, fontSize:22 }}>😂</button>
+                <button onClick={() => vote('straight')} style={{ ...lBtn('#10B981'), flex:1, fontSize:22 }}>😐</button>
+              </div>
+            : <div style={{ textAlign:'center', color:'#10B981', fontWeight:700, fontSize:14 }}>✅ Vote recorded!</div>)
+          : <div style={{ textAlign:'center', color:'#9CA3AF', fontSize:13 }}>You're the performer — wait for others to vote</div>}
+        </div>
+        <div style={{ fontSize:13, color:'#9CA3AF', textAlign:'center', marginBottom:8 }}>{Object.keys(votes).length} / {audience.length} voted</div>
+        {(!live || isHost) && Object.keys(votes).length >= audience.length && (
+          <button onClick={() => tally(votes)} style={lBtn(accent)}>✅ Tally Results</button>
+        )}
+      </>)}
+
+      {phase === 'result' && (<>
+        <div style={{ textAlign:'center', padding:'8px 0 12px' }}>
+          <div style={{ fontSize:36, marginBottom:6 }}>{laughCount > 0 ? '😂' : '😐'}</div>
+          <div style={{ fontSize:16, fontWeight:800, color:'#1C1410' }}>{laughCount === 0 ? 'Not a single laugh!' : `${laughCount} person${laughCount !== 1 ? 's' : ''} cracked up!`}</div>
+          <div style={{ fontSize:13, color:accent, fontWeight:700, marginTop:4 }}>{performer} earns {laughCount} pt{laughCount !== 1 ? 's' : ''}</div>
+        </div>
+        {sorted.map((p,i) => <div key={p} style={{ ...lcrd, display:'flex', alignItems:'center', gap:10 }}><span>{i===0?'🥇':i===1?'🥈':'🥉'}</span><span style={{ flex:1, fontWeight:700 }}>{p}</span><span style={{ fontWeight:800, color:accent }}>{scores[p]||0} laughs</span></div>)}
+        {(!live || isHost) ? <button onClick={nextTurn} style={{ ...lBtn(accent), marginTop:8 }}>➡️ Next Performer</button>
+          : <div style={{ textAlign:'center', color:'#9CA3AF', fontSize:13, marginTop:8 }}>Waiting for host…</div>}
+      </>)}
+
+      {phase === 'gameover' && (<>
+        <div style={{ textAlign:'center', padding:'8px 0 16px' }}>
+          <div style={{ fontSize:40, marginBottom:6 }}>🏆</div>
+          <div style={{ fontSize:18, fontWeight:800, color:'#1C1410', marginBottom:4 }}>Funniest Person!</div>
+          <div style={{ fontSize:14, color:accent, fontWeight:700 }}>{sorted[0]} made {scores[sorted[0]]||0} people laugh!</div>
+        </div>
+        {sorted.map((p,i) => <div key={p} style={{ ...lcrd, display:'flex', alignItems:'center', gap:10, background:i===0?`${accent}20`:'rgba(0,0,0,0.04)' }}><span>{i===0?'🥇':i===1?'🥈':'🥉'}</span><span style={{ flex:1, fontWeight:700 }}>{p}</span><span style={{ fontWeight:800, color:accent }}>{scores[p]||0} laughs</span></div>)}
+        {(!live || isHost) && <button onClick={() => { if(live) sendAction('dl_restart',{}); else { setLPhase('lobby'); setLScores({}); setLRound(0); }}} style={{ ...lBtn(accent), marginTop:8 }}>🔄 Play Again</button>}
+      </>)}
+    </LightFormModal>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TEMPLATE #9 — NAME PLACE ANIMAL THING
+// ════════════════════════════════════════════════════════════════════════════
+
+const NPA_LETTERS = 'ABCDEFGHIJKLMNPRSTW'.split('');
+const NPA_CATEGORIES = ['Name 👤', 'Place 🌍', 'Animal 🐾', 'Thing 📦'];
+
+function NamePlaceAnimalGame({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'nameplaceanimal') setGame?.('nameplaceanimal', {}); }, [live, isHost]);
+  const players = live ? livePlayers : [liveName || "You"];
+
+  const [lPhase,   setLPhase]   = useState('lobby');
+  const [lLetter,  setLLetter]  = useState('');
+  const [lAnswers, setLAnswers] = useState({ 0:'', 1:'', 2:'', 3:'' });
+  const [lAll,     setLAll]     = useState({});
+  const [lScores,  setLScores]  = useState({});
+  const [lRound,   setLRound]   = useState(0);
+  const [timer,    setTimer]    = useState(30);
+  const [submitted,setSubmitted]= useState(false);
+  const timerRef = useRef(null);
+
+  const phase   = live ? (gameState?.phase   || 'lobby') : lPhase;
+  const letter  = live ? (gameState?.letter  || '')      : lLetter;
+  const all     = live ? (gameState?.all     || {})      : lAll;
+  const scores  = live ? (gameState?.scores  || {})      : lScores;
+  const round   = live ? (gameState?.round   || 0)       : lRound;
+  const ROUNDS  = 5;
+
+  function pickLetter() { return NPA_LETTERS[Math.floor(Math.random() * NPA_LETTERS.length)]; }
+
+  function startGame() {
+    const l = pickLetter();
+    const s = Object.fromEntries(players.map(p => [p, 0]));
+    if (live) sendAction('npa_start', { letter: l, scores: s, phase: 'filling', all: {}, round: 0 });
+    else { setLLetter(l); setLScores(s); setLPhase('filling'); setLAll({}); setLRound(0); setLAnswers({ 0:'',1:'',2:'',3:'' }); setSubmitted(false); startTimer(); }
+  }
+
+  function startTimer() {
+    setTimer(30);
+    clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => setTimer(t => {
+      if (t <= 1) { clearInterval(timerRef.current); doSubmit(); return 0; }
+      return t - 1;
+    }), 1000);
+  }
+
+  useEffect(() => { if (!live && phase === 'filling') { setSubmitted(false); startTimer(); } return () => clearInterval(timerRef.current); }, [lRound, lPhase, live]);
+
+  function doSubmit() {
+    if (submitted) return;
+    setSubmitted(true);
+    clearInterval(timerRef.current);
+    const myName = liveName || 'You';
+    const na = { ...all, [myName]: lAnswers };
+    if (live) sendAction('npa_submit', { all: na, player: myName });
+    else { setLAll(na); setLPhase('reveal'); }
+  }
+
+  function awardPoints(player, pts) {
+    const ns = { ...scores, [player]: (scores[player] || 0) + pts };
+    if (live) sendAction('npa_award', { scores: ns });
+    else setLScores(ns);
+  }
+
+  function nextRound() {
+    const l = pickLetter();
+    const nr = round + 1;
+    if (nr >= ROUNDS) {
+      if (live) sendAction('npa_gameover', { phase: 'gameover' });
+      else setLPhase('gameover');
+      return;
+    }
+    if (live) sendAction('npa_next', { letter: l, phase: 'filling', all: {}, round: nr });
+    else { setLLetter(l); setLPhase('filling'); setLAll({}); setLRound(nr); setLAnswers({ 0:'',1:'',2:'',3:'' }); setSubmitted(false); }
+  }
+
+  useEffect(() => {
+    if (!live || !gameState?.lastAction) return;
+    const { type: t, payload: p } = gameState.lastAction;
+    if (t === 'npa_start')    { setLLetter(p.letter); setLScores(p.scores); setLPhase('filling'); setLAll({}); setLRound(0); setLAnswers({ 0:'',1:'',2:'',3:'' }); setSubmitted(false); }
+    if (t === 'npa_submit')   setLAll(p.all);
+    if (t === 'npa_award')    setLScores(p.scores);
+    if (t === 'npa_gameover') setLPhase('gameover');
+    if (t === 'npa_next')     { setLLetter(p.letter); setLPhase('filling'); setLAll({}); setLRound(p.round); setLAnswers({ 0:'',1:'',2:'',3:'' }); setSubmitted(false); }
+    if (t === 'npa_reveal')   setLPhase('reveal');
+    if (t === 'npa_restart')  { setLPhase('lobby'); setLScores({}); setLRound(0); }
+  }, [gameState?.lastAction]);
+
+  const sorted = [...players].sort((a,b) => (scores[b]||0) - (scores[a]||0));
+
+  return (
+    <LightFormModal onClose={onClose} accent={accent} title="🌍 Name Place Animal">
+      {phase === 'lobby' && (<>
+        <div style={{ textAlign:'center', padding:'12px 0 16px' }}>
+          <div style={{ fontSize:44, marginBottom:8 }}>🌍</div>
+          <div style={{ fontSize:19, fontWeight:800, color:'#1C1410' }}>Name · Place · Animal · Thing</div>
+          <div style={{ fontSize:13, color:'#6B7280', marginTop:6, lineHeight:1.6 }}>A random letter drops · 30 seconds · fill all 4 categories starting with that letter</div>
+          <div style={{ fontSize:11, color:'#9CA3AF', marginTop:6 }}>{ROUNDS} rounds · unique answers score 10 pts · shared answers 5 pts</div>
+        </div>
+        {live && !isHost ? <div style={{ textAlign:'center', color:'#6B7280', fontSize:14 }}>Waiting for host…</div> : <button onClick={startGame} style={lBtn(accent)}>🎯 Start Game</button>}
+      </>)}
+
+      {phase === 'filling' && (<>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
+          <div>
+            <div style={{ fontSize:10, fontWeight:800, color:accent, letterSpacing:1.5 }}>ROUND {round+1} / {ROUNDS}</div>
+            <div style={{ fontSize:36, fontWeight:900, color:'#1C1410', lineHeight:1 }}>"{letter}"</div>
+          </div>
+          <div style={{ fontSize:32, fontWeight:900, color:timer>10?accent:'#EF4444', textAlign:'right' }}>{timer}s</div>
+        </div>
+        {NPA_CATEGORIES.map((cat, i) => (
+          <div key={i} style={{ marginBottom:8 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:'#6B7280', marginBottom:4 }}>{cat}</div>
+            <input
+              value={lAnswers[i]}
+              onChange={e => setLAnswers(prev => ({ ...prev, [i]: e.target.value }))}
+              placeholder={`${cat.split(' ')[0]} starting with ${letter}…`}
+              style={{ ...linp }}
+              disabled={submitted}
+            />
+          </div>
+        ))}
+        <button onClick={doSubmit} disabled={submitted} style={{ ...lBtn(submitted ? '#9CA3AF' : accent), marginTop:8, opacity:submitted?0.6:1 }}>
+          {submitted ? '✅ Submitted!' : '⚡ Submit Early'}
+        </button>
+        {live && isHost && <button onClick={() => { sendAction('npa_reveal', { phase:'reveal' }); setLPhase('reveal'); }} style={{ ...lBtn('#9CA3AF'), marginTop:8, fontSize:13, padding:'9px' }}>⏱ Reveal All</button>}
+      </>)}
+
+      {phase === 'reveal' && (<>
+        <div style={{ fontSize:10, fontWeight:800, color:accent, letterSpacing:1.5, marginBottom:10, textAlign:'center' }}>ROUND {round+1} — LETTER "{letter}" — ANSWERS</div>
+        {Object.entries(all).map(([player, ans]) => (
+          <div key={player} style={{ ...lcrd, marginBottom:8 }}>
+            <div style={{ fontSize:12, fontWeight:800, color:accent, marginBottom:6 }}>{player}</div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'4px 12px' }}>
+              {NPA_CATEGORIES.map((cat, i) => (
+                <div key={i} style={{ fontSize:13 }}>
+                  <span style={{ color:'#9CA3AF', fontSize:11 }}>{cat.split(' ')[0]}: </span>
+                  <span style={{ fontWeight:700, color:'#1C1410' }}>{ans[i] || '—'}</span>
+                </div>
+              ))}
+            </div>
+            {(!live || isHost) && (
+              <div style={{ display:'flex', gap:6, marginTop:8 }}>
+                <button onClick={() => awardPoints(player, 10)} style={{ ...lBtn('#10B981'), flex:1, fontSize:12, padding:'6px' }}>+10 Unique</button>
+                <button onClick={() => awardPoints(player, 5)}  style={{ ...lBtn('#F59E0B'), flex:1, fontSize:12, padding:'6px' }}>+5 Shared</button>
+              </div>
+            )}
+          </div>
+        ))}
+        {(!live || isHost) && <button onClick={nextRound} style={{ ...lBtn(accent), marginTop:4 }}>{round + 1 >= ROUNDS ? '🏆 Final Scores' : '➡️ Next Round'}</button>}
+        {live && !isHost && <div style={{ textAlign:'center', color:'#9CA3AF', fontSize:13, marginTop:8 }}>Waiting for host to score…</div>}
+      </>)}
+
+      {phase === 'gameover' && (<>
+        <div style={{ textAlign:'center', padding:'8px 0 16px' }}>
+          <div style={{ fontSize:40, marginBottom:6 }}>🏆</div>
+          <div style={{ fontSize:18, fontWeight:800, color:'#1C1410', marginBottom:4 }}>Game Over!</div>
+          <div style={{ fontSize:14, color:accent, fontWeight:700 }}>{sorted[0]} wins with {scores[sorted[0]]||0} pts!</div>
+        </div>
+        {sorted.map((p,i) => <div key={p} style={{ ...lcrd, display:'flex', alignItems:'center', gap:10, background:i===0?`${accent}20`:'rgba(0,0,0,0.04)' }}><span>{i===0?'🥇':i===1?'🥈':'🥉'}</span><span style={{ flex:1, fontWeight:700 }}>{p}</span><span style={{ fontWeight:800, color:accent }}>{scores[p]||0} pts</span></div>)}
+        {(!live || isHost) && <button onClick={() => { if(live) sendAction('npa_restart',{}); else { setLPhase('lobby'); setLScores({}); setLRound(0); }}} style={{ ...lBtn(accent), marginTop:8 }}>🔄 Play Again</button>}
+      </>)}
+    </LightFormModal>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TEMPLATE #10 — FASTEST FINGER
+// ════════════════════════════════════════════════════════════════════════════
+
+const FASTEST_DECK = [
+  { q:"How many sides does a hexagon have?",               a:"6",          cat:"Math"    },
+  { q:"What is the capital of Japan?",                     a:"Tokyo",      cat:"World"   },
+  { q:"How many days in a leap year?",                     a:"366",        cat:"General" },
+  { q:"Which planet is closest to the Sun?",               a:"Mercury",    cat:"Science" },
+  { q:"What year did India gain independence?",            a:"1947",       cat:"History" },
+  { q:"How many bones are in the adult human body?",       a:"206",        cat:"Science" },
+  { q:"What is 17 × 6?",                                   a:"102",        cat:"Math"    },
+  { q:"Which ocean is the largest?",                       a:"Pacific",    cat:"World"   },
+  { q:"How many players in a cricket team?",               a:"11",         cat:"Sports"  },
+  { q:"What currency does Japan use?",                     a:"Yen",        cat:"World"   },
+  { q:"Which element has the symbol 'O'?",                 a:"Oxygen",     cat:"Science" },
+  { q:"What is the square root of 144?",                   a:"12",         cat:"Math"    },
+  { q:"Who directed the movie 3 Idiots?",                  a:"Rajkumar Hirani", cat:"Bollywood" },
+  { q:"How many overs in a T20 cricket match?",            a:"20",         cat:"Sports"  },
+  { q:"What is the largest country by area?",              a:"Russia",     cat:"World"   },
+  { q:"What is 8 × 9?",                                    a:"72",         cat:"Math"    },
+  { q:"Which city is known as the Pink City of India?",    a:"Jaipur",     cat:"India"   },
+  { q:"How many strings does a standard guitar have?",     a:"6",          cat:"Music"   },
+  { q:"Which river is the longest in the world?",          a:"Nile",       cat:"World"   },
+  { q:"In which year was WhatsApp founded?",               a:"2009",       cat:"Tech"    },
+  { q:"What is the national sport of India?",              a:"Hockey",     cat:"Sports"  },
+  { q:"How many continents are there on Earth?",           a:"7",          cat:"World"   },
+  { q:"What is 25% of 200?",                               a:"50",         cat:"Math"    },
+  { q:"Which actor plays Iron Man in the MCU?",            a:"Robert Downey Jr.", cat:"Hollywood" },
+  { q:"What is the capital of Australia?",                 a:"Canberra",   cat:"World"   },
+];
+
+function FastestFingerGame({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'fastestfinger') setGame?.('fastestfinger', {}); }, [live, isHost]);
+  const players = live ? livePlayers : [liveName || "You"];
+
+  const [lPhase,   setLPhase]   = useState('lobby');
+  const [lIdx,     setLIdx]     = useState(0);
+  const [lScores,  setLScores]  = useState({});
+  const [lDeck,    setLDeck]    = useState([]);
+  const [lBuzzed,  setLBuzzed]  = useState(null);
+  const [lAnswer,  setLAnswer]  = useState('');
+
+  const phase   = live ? (gameState?.phase   || 'lobby') : lPhase;
+  const idx     = live ? (gameState?.idx     || 0)       : lIdx;
+  const scores  = live ? (gameState?.scores  || {})      : lScores;
+  const deck    = live ? (gameState?.deck    || [])      : lDeck;
+  const buzzed  = live ? (gameState?.buzzed  || null)    : lBuzzed;
+  const ROUNDS  = 10;
+  const current = deck[idx] || FASTEST_DECK[0];
+
+  function shuffle(arr) { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+  function startGame() {
+    const d = shuffle(FASTEST_DECK).slice(0, ROUNDS);
+    const s = Object.fromEntries(players.map(p => [p, 0]));
+    if (live) sendAction('ff_start', { deck: d, scores: s, phase: 'question', idx: 0, buzzed: null });
+    else { setLDeck(d); setLScores(s); setLPhase('question'); setLIdx(0); setLBuzzed(null); setLAnswer(''); }
+  }
+
+  function buzz() {
+    if (buzzed) return;
+    if (live) sendAction('ff_buzz', { who: liveName });
+    else setLBuzzed(liveName || 'You');
+  }
+
+  function award(player) {
+    const ns = { ...scores, [player]: (scores[player] || 0) + 1 };
+    const next = idx + 1 >= ROUNDS ? 'gameover' : 'reveal';
+    if (live) sendAction('ff_award', { scores: ns, phase: next });
+    else { setLScores(ns); setLPhase(next); }
+  }
+
+  function skip() {
+    const next = idx + 1 >= ROUNDS ? 'gameover' : 'reveal';
+    if (live) sendAction('ff_skip', { phase: next });
+    else setLPhase(next);
+  }
+
+  function nextQ() {
+    const ni = idx + 1;
+    if (live) sendAction('ff_next', { idx: ni, phase: 'question', buzzed: null });
+    else { setLIdx(ni); setLPhase('question'); setLBuzzed(null); setLAnswer(''); }
+  }
+
+  useEffect(() => {
+    if (!live || !gameState?.lastAction) return;
+    const { type: t, payload: p } = gameState.lastAction;
+    if (t === 'ff_start')  { setLDeck(p.deck); setLScores(p.scores); setLPhase('question'); setLIdx(0); setLBuzzed(null); setLAnswer(''); }
+    if (t === 'ff_buzz'  && !lBuzzed) setLBuzzed(p.who);
+    if (t === 'ff_award') { setLScores(p.scores); setLPhase(p.phase); }
+    if (t === 'ff_skip')  setLPhase(p.phase);
+    if (t === 'ff_next')  { setLIdx(p.idx); setLPhase('question'); setLBuzzed(null); setLAnswer(''); }
+    if (t === 'ff_restart') { setLPhase('lobby'); setLDeck([]); setLScores({}); setLIdx(0); }
+  }, [gameState?.lastAction]);
+
+  const sorted = [...players].sort((a,b) => (scores[b]||0) - (scores[a]||0));
+
+  return (
+    <LightFormModal onClose={onClose} accent={accent} title="⚡ Fastest Finger">
+      {phase === 'lobby' && (<>
+        <div style={{ textAlign:'center', padding:'12px 0 16px' }}>
+          <div style={{ fontSize:44, marginBottom:8 }}>⚡</div>
+          <div style={{ fontSize:19, fontWeight:800, color:'#1C1410' }}>Fastest Finger</div>
+          <div style={{ fontSize:13, color:'#6B7280', marginTop:6, lineHeight:1.6 }}>Question appears · buzz first · answer correctly · most points wins!</div>
+        </div>
+        {live && !isHost ? <div style={{ textAlign:'center', color:'#6B7280', fontSize:14 }}>Waiting for host…</div> : <button onClick={startGame} style={lBtn(accent)}>⚡ Start Game ({ROUNDS} rounds)</button>}
+      </>)}
+
+      {phase === 'question' && (<>
+        <div style={{ background:`${accent}12`, border:`1.5px solid ${accent}35`, borderRadius:16, padding:'16px', marginBottom:12 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+            <div style={{ fontSize:10, fontWeight:800, color:accent, letterSpacing:1.5 }}>Q {idx+1} / {ROUNDS}</div>
+            <div style={{ fontSize:10, fontWeight:700, color:'#9CA3AF', background:'rgba(0,0,0,0.06)', borderRadius:8, padding:'3px 8px' }}>{current.cat}</div>
+          </div>
+          <div style={{ fontSize:16, fontWeight:700, color:'#1C1410', lineHeight:1.55 }}>{current.q}</div>
+        </div>
+        {live ? (<>
+          {!buzzed
+            ? <button onClick={buzz} style={lBtn(accent)}>⚡ Buzz In!</button>
+            : <div style={{ textAlign:'center' }}>
+                <div style={{ fontSize:15, fontWeight:700, color:accent, marginBottom:12 }}>⚡ {buzzed} buzzed!</div>
+                {isHost && <div style={{ display:'flex', gap:8 }}>
+                  <button onClick={() => award(buzzed)} style={{ ...lBtn('#10B981'), flex:1 }}>✅ Correct</button>
+                  <button onClick={skip}                 style={{ ...lBtn('#EF4444'), flex:1 }}>❌ Wrong → Skip</button>
+                </div>}
+              </div>}
+          {isHost && !buzzed && <button onClick={skip} style={{ ...lBtn('#9CA3AF'), marginTop:8, fontSize:13, padding:'9px' }}>⏭ Skip</button>}
+        </>) : (<>
+          <input value={lAnswer} onChange={e=>setLAnswer(e.target.value)} onKeyDown={e=>e.key==='Enter'&&lAnswer.trim()&&award(liveName||'You')} placeholder="Your answer…" style={{ ...linp, marginBottom:10 }} />
+          <div style={{ display:'flex', gap:8 }}>
+            <button onClick={() => award(liveName||'You')} disabled={!lAnswer.trim()} style={{ ...lBtn(accent), flex:1, opacity:lAnswer.trim()?1:0.5 }}>✅ Submit</button>
+            <button onClick={skip} style={{ ...lBtn('#9CA3AF'), flex:1 }}>⏭ Skip</button>
+          </div>
+        </>)}
+        <div style={{ display:'flex', gap:6, marginTop:12, flexWrap:'wrap' }}>
+          {sorted.map(p => <div key={p} style={{ background:`${accent}18`, borderRadius:20, padding:'4px 10px', fontSize:12, fontWeight:700, color:accent }}>{p} {scores[p]||0}</div>)}
+        </div>
+      </>)}
+
+      {phase === 'reveal' && (<>
+        <div style={{ textAlign:'center', padding:'8px 0 14px' }}>
+          <div style={{ fontSize:12, color:'#9CA3AF', marginBottom:6 }}>The answer was…</div>
+          <div style={{ fontSize:22, fontWeight:900, color:accent, marginBottom:4 }}>{current.a}</div>
+          <div style={{ fontSize:12, color:'#9CA3AF' }}>{current.q}</div>
+        </div>
+        {sorted.map((p,i) => <div key={p} style={{ ...lcrd, display:'flex', alignItems:'center', gap:10 }}><span>{i===0?'🥇':i===1?'🥈':'🥉'}</span><span style={{ flex:1, fontWeight:700 }}>{p}</span><span style={{ fontWeight:800, color:accent }}>{scores[p]||0}</span></div>)}
+        {(!live || isHost) ? <button onClick={nextQ} style={{ ...lBtn(accent), marginTop:8 }}>➡️ Next Question</button>
+          : <div style={{ textAlign:'center', color:'#9CA3AF', fontSize:13, marginTop:8 }}>Waiting for host…</div>}
+      </>)}
+
+      {phase === 'gameover' && (<>
+        <div style={{ textAlign:'center', padding:'8px 0 16px' }}>
+          <div style={{ fontSize:40, marginBottom:6 }}>🏆</div>
+          <div style={{ fontSize:18, fontWeight:800, color:'#1C1410', marginBottom:4 }}>Game Over!</div>
+          <div style={{ fontSize:14, color:accent, fontWeight:700 }}>{sorted[0]} wins with {scores[sorted[0]]||0} pts!</div>
+        </div>
+        {sorted.map((p,i) => <div key={p} style={{ ...lcrd, display:'flex', alignItems:'center', gap:10, background:i===0?`${accent}20`:'rgba(0,0,0,0.04)' }}><span>{i===0?'🥇':i===1?'🥈':'🥉'}</span><span style={{ flex:1, fontWeight:700 }}>{p}</span><span style={{ fontWeight:800, color:accent }}>{scores[p]||0} pts</span></div>)}
+        {(!live || isHost) && <button onClick={() => { if(live) sendAction('ff_restart',{}); else { setLPhase('lobby'); setLDeck([]); setLScores({}); setLIdx(0); }}} style={{ ...lBtn(accent), marginTop:8 }}>🔄 Play Again</button>}
+      </>)}
+    </LightFormModal>
+  );
+}
+
 // PARTY HUB — Tool category sets for the 5-section layout
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -6376,7 +9281,10 @@ const PLAY_IDS = new Set([
   "truthordare","neverhavei","wouldyou","hottakes","spin","charades","bingo",
   "birthdayquiz","couplequiz","t2l","rapidfire","mostlikelyto","luckydraw",
   "moodmeter","genderpoll","babynamevote","theme","blessings","blessingswall",
-  "lovenotes","wishwall","secretmessage","moodmeter","awardsceremony",
+  "lovenotes","wishwall","secretmessage","awardsceremony","emojiDecoder","pictionary",
+  "wordchain","dontsayyesno","wronganswers","mafia","spyfall",
+  "finishlyrics","guesssong3sec","telephonedrawing",
+  "dontlaugh","nameplaceanimal","fastestfinger",
 ]);
 const MOMENTS_IDS = new Set([
   "photowall","wishwall","lovenotes","blessingswall","blessings","appreciationwall",
@@ -6391,6 +9299,9 @@ const PLAN_IDS = new Set([
 const GAME_IDS = new Set([
   "truthordare","neverhavei","wouldyou","hottakes","spin","charades","bingo",
   "birthdayquiz","couplequiz","t2l","rapidfire","mostlikelyto","luckydraw","genderpoll","babynamevote","moodmeter",
+  "emojiDecoder","pictionary","wordchain","dontsayyesno","wronganswers","mafia","spyfall",
+  "finishlyrics","guesssong3sec","telephonedrawing",
+  "dontlaugh","nameplaceanimal","fastestfinger",
 ]);
 
 // ── Game release waves ───────────────────────────────────────────────────
@@ -6416,25 +9327,25 @@ const ENABLED_GAME_IDS = new Set([
   "babynamevote",
   "moodmeter",
   "awardsceremony",
+  "emojiDecoder",
+  "pictionary",
+  "wordchain",
+  "dontsayyesno",
+  "wronganswers",
+  "mafia",
+  "spyfall",
 
-  // ── Wave 2 — uncomment when built ─────────────────────────────────────
-  // "pictionary",          // all occasions
-  // "telephonedrawing",    // birthday, get-together, house-party
-  // "guesssong3sec",       // birthday, get-together, office
-  // "finishlyrics",        // birthday, anniversary
-  // "wronganswers",        // get-together, house-party, office, holi
-  // "dontsayyesno",        // get-together, house-party, bachelorette
-  // "whoknowsbirthdayperson", // birthday
-  // "guessthecouplesanswer",  // anniversary
+  // ── Wave 2 — LIVE NOW ──────────────────────────────────────────────────
+  "telephonedrawing",
+  "guesssong3sec",
+  "finishlyrics",
+  // "whoknowsbirthdayperson", // birthday — not yet built
+  // "guessthecouplesanswer",  // anniversary — not yet built
 
-  // ── Wave 3 ────────────────────────────────────────────────────────────
-  // "mafia",               // get-together, house-party
-  // "spyfall",             // get-together, house-party
-  // "emojiDecoder",        // get-together, kitty, office, diwali, holi
-  // "dontlaugh",           // get-together, house-party, holi
-  // "wordchain",           // get-together, office
-  // "nameplaceanimal",     // get-together
-  // "fastestfinger",       // get-together, house-party
+  // ── Wave 3 — LIVE NOW ──────────────────────────────────────────────────
+  "dontlaugh",
+  "nameplaceanimal",
+  "fastestfinger",
 
   // ── Wave 4 ────────────────────────────────────────────────────────────
   // "guesschildhoodphoto", // birthday, graduation, farewell, retirement
@@ -6694,7 +9605,11 @@ const TOOL_EMOJI = {
   hottakes:"🔥", spin:"🌀", charades:"🎭", bingo:"🎲", birthdayquiz:"🎂",
   couplequiz:"💑", t2l:"👀", rapidfire:"⚡", mostlikelyto:"👆",
   luckydraw:"🎰", genderpoll:"🍭", babynamevote:"👶", blessings:"✨",
-  wishwall2:"🌠", secretmsg:"🔏",
+  wishwall2:"🌠", secretmsg:"🔏", emojiDecoder:"🧩", pictionary:"🎨",
+  wordchain:"🔤", dontsayyesno:"🚫", wronganswers:"🤪",
+  mafia:"🔴", spyfall:"🕵️",
+  finishlyrics:"🎤", guesssong3sec:"🎵", telephonedrawing:"📞",
+  dontlaugh:"😂", nameplaceanimal:"🌍", fastestfinger:"⚡",
 };
 // Vibrant per-card accent colours cycling through the grid
 const CARD_PALETTE = [
@@ -6735,6 +9650,19 @@ const GAME_META = {
   secretmessage:  { emoji:"🔐", tagline:"The things people mean but don't say", desc:"Anonymous messages only the host sees. Honest, heartfelt, sometimes hilarious.", time:"5–10 min",  players:"2–30", min:2, tags:["mystery","funny"],        popular:false, howItWorks:["Guests type anonymous messages","Only host sees them","Host reads aloud","Reaction is priceless 😂"] },
   lovenotes:      { emoji:"💌", tagline:"Notes they'll come back to", desc:"Everyone leaves a love note. Collected, read live — your call.", time:"5–10 min",  players:"2–30", min:2, tags:["quick"],                    popular:false, howItWorks:["Guests leave love notes","All anonymous","Host collects them","Read live or save for later 💌"] },
   blessingswall:  { emoji:"🙏", tagline:"Blessings from everyone who matters", desc:"Guests leave blessings in real time. Watch the wall fill.", time:"5–10 min",  players:"2–30", min:2, tags:["quick"],                    popular:false, howItWorks:["Share the blessings link","Guests write blessings","Wall glows up live","Screenshot and treasure it"] },
+  emojiDecoder:   { emoji:"🧩", tagline:"Decode the emojis before time runs out", desc:"Emoji clues → movie, song or phrase. Type fast, score big.", time:"10–20 min", players:"2–20", min:2, tags:["quiz","competitive","quick"], popular:true,  howItWorks:["Emoji clue appears on screen","Type what you think it means","30 seconds on the clock","Most correct guesses wins 🏆"] },
+  pictionary:     { emoji:"🎨", tagline:"Draw it. Guess it. Chaos guaranteed.", desc:"One person draws, everyone guesses. No talking, no clues — just vibes.", time:"15–30 min", players:"3–20", min:3, tags:["acting","funny","competitive"], popular:true, howItWorks:["Drawer gets a secret word","60 seconds on the canvas","Everyone guesses","Most correct guesses wins 🏆"] },
+  wordchain:      { emoji:"🔤", tagline:"Every word leads to the next", desc:"Start with the last letter. Repeat or freeze — lose a life. Last player standing wins.", time:"10–20 min", players:"2–15", min:2, tags:["quick","competitive"], popular:false, howItWorks:["A word appears on screen","Your word must start with its last letter","15 seconds per turn","Repeat or time out = life lost ❤️"] },
+  dontsayyesno:   { emoji:"🚫", tagline:"Two words you cannot say", desc:"Answer rapid questions without saying yes or no. Sounds easy. It isn't.", time:"5–10 min", players:"3–15", min:3, tags:["funny","quick"], popular:true, howItWorks:["You're on the hot seat","Questions fire fast","Don't say yes or no!","Others watch to catch you 👀"] },
+  wronganswers:   { emoji:"🤪", tagline:"The worse your answer, the better", desc:"Give the most absurd wrong answer to normal questions. Vote for the funniest.", time:"10–20 min", players:"3–20", min:3, tags:["funny","competitive"], popular:true, howItWorks:["A question appears","Type the WORST wrong answer","Everyone votes for funniest","Points for making people laugh 😂"] },
+  mafia:          { emoji:"🔴", tagline:"Trust no one. The Mafia strikes at night.", desc:"Social deduction classic. Mafia eliminate town at night; town votes to expose them by day.", time:"20–40 min", players:"4–20", min:4, tags:["deduction","social","competitive"], popular:true, howItWorks:["Roles are secretly assigned","Mafia kills someone each night","Town discusses and votes by day","Eliminate all Mafia to win 🏆"] },
+  spyfall:        { emoji:"🕵️",  tagline:"Everyone knows the location — except the Spy.",   desc:"Ask clever questions, find the Spy before they figure out where they are.",        time:"10–20 min", players:"3–12",  min:3, tags:["deduction","social","quick"],            popular:true,  howItWorks:["A secret location is revealed to all except the Spy","Ask each other questions to find the odd one out","Spy tries to figure out the location","Accuse or guess — whoever is right wins 🕵️"] },
+  finishlyrics:   { emoji:"🎤",  tagline:"Know the song? Prove it — complete the next line.", desc:"A classic from famous songs, one line at a time. Buzz in and finish the lyric first.", time:"10–20 min", players:"2–20",  min:2, tags:["music","quick","team"],               popular:true,  howItWorks:["A partial lyric appears on screen","Buzz in when you know the next line","Host confirms — or auto-check in solo mode","Most correct answers wins 🎤"] },
+  guesssong3sec:  { emoji:"🎵",  tagline:"Three words. One chance. Name that tune.",           desc:"A short lyric snippet is your only clue. Buzz first and guess the song before anyone else.", time:"10–20 min", players:"2–20", min:2, tags:["music","quick","competitive"],     popular:true,  howItWorks:["A short hint from a famous song appears","Race to buzz in first","Name the song and artist","Most correct guesses wins the round 🎵"] },
+  telephonedrawing:{ emoji:"📞", tagline:"Draw it. Pass it. Watch it fall apart.",             desc:"Telephone but with drawings. Each player draws or guesses, one step at a time.",         time:"10–20 min", players:"3–10",  min:3, tags:["drawing","creative","chaotic"],       popular:true,  howItWorks:["A secret word is drawn by the first player","The next player guesses what the drawing is","Then draws THAT guess","Final reveal shows how far it drifted 😂"] },
+  dontlaugh:      { emoji:"😂",  tagline:"The harder you try not to laugh, the worse it gets.", desc:"Performers get wild prompts and try to crack everyone up. Audience tries to stay straight-faced.", time:"15–25 min", players:"3–15", min:3, tags:["fun","creative","social"],           popular:true,  howItWorks:["Each player takes a turn as the performer","They get a random prompt to act out","Audience votes if they laughed","Most laughs wins 😂"] },
+  nameplaceanimal:{ emoji:"🌍",  tagline:"A letter drops. 30 seconds. Fill all four.",          desc:"Classic Name Place Animal Thing — with a countdown, live scoring, and 5 rounds.",      time:"15–25 min", players:"2–15",  min:2, tags:["word","classic","india"],              popular:true,  howItWorks:["A random letter is revealed","Fill in Name, Place, Animal & Thing starting with it","30 seconds on the clock","Unique answers score 10, shared answers score 5 🌍"] },
+  fastestfinger:  { emoji:"⚡",  tagline:"First to buzz. First to answer. First to win.",       desc:"Trivia questions across categories — buzz faster than everyone else to earn points.",  time:"10–20 min", players:"2–20",  min:2, tags:["trivia","competitive","quick"],        popular:true,  howItWorks:["A trivia question appears on screen","Race to buzz in first","Answer correctly for a point","10 rounds — fastest fingers wins ⚡"] },
 };
 const POPULAR_GAME_IDS = Object.entries(GAME_META).filter(([,v])=>v.popular).map(([k])=>k);
 
@@ -7386,6 +10314,19 @@ export default function OccasionHub({ occasion }) {
       case "rapidfire":      return <RapidFire onClose={close} accent={accent} />;
       case "moodmeter":      return <MoodMeter onClose={close} accent={accent} {...liveProps} />;
       case "secretmessage":  return <SecretMessage onClose={close} accent={accent} {...liveProps} />;
+      case "emojiDecoder":   return <EmojiDecoder onClose={close} accent={accent} {...liveProps} />;
+      case "pictionary":     return <DrawGuessGame onClose={close} accent={accent} {...liveProps} />;
+      case "wordchain":      return <WordChainGame onClose={close} accent={accent} {...liveProps} />;
+      case "dontsayyesno":   return <DontSayYesNo onClose={close} accent={accent} {...liveProps} />;
+      case "wronganswers":   return <WrongAnswersOnly onClose={close} accent={accent} {...liveProps} />;
+      case "mafia":          return <MafiaGame onClose={close} accent={accent} {...liveProps} />;
+      case "spyfall":         return <SpyfallGame        onClose={close} accent={accent} {...liveProps} />;
+      case "finishlyrics":    return <FinishLyricsGame    onClose={close} accent={accent} {...liveProps} />;
+      case "guesssong3sec":   return <GuessSong3SecGame   onClose={close} accent={accent} {...liveProps} />;
+      case "telephonedrawing": return <TelephoneDrawingGame onClose={close} accent={accent} {...liveProps} />;
+      case "dontlaugh":        return <DontLaughGame        onClose={close} accent={accent} {...liveProps} />;
+      case "nameplaceanimal":  return <NamePlaceAnimalGame  onClose={close} accent={accent} {...liveProps} />;
+      case "fastestfinger":    return <FastestFingerGame    onClose={close} accent={accent} {...liveProps} />;
       case "gifttracker":    return <GiftTracker onClose={close} accent={accent} />;
       case "guestlist":      return <OccGuestListModal onClose={close} occasion={occasion} accent={accent} />;
       case "menu":           return <OccMenuPlannerModal onClose={close} occasion={occasion} accent={accent} />;
