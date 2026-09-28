@@ -102,9 +102,12 @@ export default function VendorProfile() {
   };
 
   useEffect(() => {
-    if (!vendorId) return;
-    fetch(`${BASE_URL}/vendors/${vendorId}`, { credentials: "include" })
-      .then(r => r.json())
+    if (!vendorId) { setLoading(false); return; }
+    fetch(`${BASE_URL}/vendors/${vendorId}`, {
+      credentials: "include",
+      headers: { "Authorization": `Bearer ${token}` },
+    })
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(v => {
         setProfile(v);
         setForm({
@@ -880,20 +883,24 @@ export default function VendorProfile() {
 }
 
 function BankDetailsForm({ vendorId, showToast }) {
+  const { token } = useSelector((s) => s.auth);
   const [bank, setBank]     = useState({ accountHolder: "", accountNumber: "", ifsc: "", bankName: "" });
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     if (!vendorId) return;
-    fetch(`${BASE_URL}/vendors/${vendorId}/bank-details`, { credentials: "include" })
+    fetch(`${BASE_URL}/vendors/${vendorId}/bank-details`, {
+      credentials: "include",
+      headers: { "Authorization": `Bearer ${token}` },
+    })
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (d) setBank({ accountHolder: d.accountHolder || "", accountNumber: d.accountNumber || "", ifsc: d.ifsc || "", bankName: d.bankName || "" });
         setLoaded(true);
       })
       .catch(() => setLoaded(true));
-  }, [vendorId]);
+  }, [vendorId, token]);
 
   const setF = (k, v) => setBank(b => ({ ...b, [k]: v }));
 
@@ -902,7 +909,7 @@ function BankDetailsForm({ vendorId, showToast }) {
     try {
       const r = await fetch(`${BASE_URL}/vendors/${vendorId}/bank-details`, {
         method: "POST", credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify(bank),
       });
       if (!r.ok) throw new Error();
