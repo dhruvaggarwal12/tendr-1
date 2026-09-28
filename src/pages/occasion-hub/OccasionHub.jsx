@@ -10037,6 +10037,8 @@ export default function OccasionHub({ occasion }) {
   const [showLeaderboard, setShowLeaderboard]   = useState(false);
   const [gameQueue, setGameQueue]               = useState([]); // [{id,title,emoji}]
   const [showGameQueue, setShowGameQueue]       = useState(false);
+  const [gameSetupId, setGameSetupId]           = useState(null); // game being configured by host
+  const [showInGameControls, setShowInGameControls] = useState(false); // host ⋮ overlay
 
   // Entry gate: null = gate showing; 'exploring' | 'hosting' | 'joined' = hub visible
   const [entryMode, setEntryMode]   = useState(null);
@@ -10149,6 +10151,14 @@ export default function OccasionHub({ occasion }) {
       setEntryMode("exploring");
     }
   }, [room]);
+
+  // Auto-open game for everyone when host starts/switches/ends it
+  useEffect(() => {
+    if (!room) return;
+    if (currentGame && open !== currentGame) setOpen(currentGame);
+    if (!currentGame && open && LIVE_GAME_IDS.has(open)) setOpen(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentGame, room]);
 
   const occ = OCCASIONS[occasion];
   if (!occ) return <div style={{ color: "#fff", padding: 40, textAlign: "center", fontFamily: font }}>Unknown occasion: {occasion}</div>;
@@ -10269,16 +10279,24 @@ export default function OccasionHub({ occasion }) {
       const cc = CARD_PALETTE[playTools.indexOf(t) % CARD_PALETTE.length] || accent;
       const isLive = LIVE_GAME_IDS.has(t.id);
       const newGame = isNewRelease(t.id);
-      const lockedByHost = room && !isHost && isLive;
+      // In a room: host can select game (→ setup sheet for live, direct open for non-live)
+      // In a room: player can browse but NOT tap to launch — host controls what plays
+      const clickable = room ? (isHost) : true;
+      const handleClick = () => {
+        if (room) {
+          if (!isHost) return; // players browse only
+          if (isLive) { setGameSetupId(t.id); }
+          else { setOpen(t.id); }
+        } else {
+          GAME_IDS.has(t.id) ? setGamePreviewId(t.id) : openTool(t.id);
+        }
+      };
       return (
-        <div onClick={() => {
-          if (room) { if (!isLive || isHost) setOpen(t.id); }
-          else { GAME_IDS.has(t.id) ? setGamePreviewId(t.id) : openTool(t.id); }
-        }}
+        <div onClick={handleClick}
           className="occ-tool-card"
-          style={{ background:`${cc}22`, border:`2px solid ${cc}60`, borderRadius:20, padding:large?"20px 18px 18px":"16px 14px 14px", cursor:lockedByHost?"default":"pointer", position:"relative", overflow:"hidden", boxShadow:`0 4px 18px ${cc}18`, transition:"transform 0.12s,box-shadow 0.12s", opacity:lockedByHost?0.55:1 }}>
-          {isLive && room && isHost && <div style={{ position:"absolute", top:10, right:10, fontSize:8, fontWeight:800, color:"#4ade80", background:"rgba(34,197,94,0.15)", border:"1px solid rgba(34,197,94,0.4)", borderRadius:100, padding:"2px 6px" }}>● LIVE</div>}
-          {isLive && room && !isHost && <div style={{ position:"absolute", top:8, right:8, fontSize:8, fontWeight:800, color:"rgba(255,255,255,0.50)", background:"rgba(0,0,0,0.40)", borderRadius:100, padding:"2px 7px" }}>🔒 HOST</div>}
+          style={{ background:`${cc}22`, border:`2px solid ${cc}60`, borderRadius:20, padding:large?"20px 18px 18px":"16px 14px 14px", cursor:clickable?"pointer":"default", position:"relative", overflow:"hidden", boxShadow:`0 4px 18px ${cc}18`, transition:"transform 0.12s,box-shadow 0.12s", opacity:(!clickable&&!isHost)?0.6:1 }}>
+          {isLive && room && isHost && <div style={{ position:"absolute", top:8, right:8, fontSize:8, fontWeight:800, color:"#4ade80", background:"rgba(34,197,94,0.15)", border:"1px solid rgba(34,197,94,0.4)", borderRadius:100, padding:"2px 6px" }}>● LIVE</div>}
+          {isLive && room && !isHost && <div style={{ position:"absolute", top:8, right:8, fontSize:8, fontWeight:800, color:"rgba(255,255,255,0.45)", background:"rgba(255,255,255,0.08)", borderRadius:100, padding:"2px 7px" }}>👥 {meta?.players||"2+"}</div>}
           {newGame && !room && <div style={{ position:"absolute", top:8, right:8, fontSize:8, fontWeight:800, color:"#fff", background:"#F59E0B", borderRadius:20, padding:"2px 7px", letterSpacing:0.5 }}>🆕 NEW</div>}
           <div style={{ fontSize:large?44:32, lineHeight:1, marginBottom:large?12:8, textShadow:`0 0 18px ${cc}CC` }}>{meta?.emoji||TOOL_EMOJI[t.id]||"🎮"}</div>
           <div style={{ fontSize:large?15:12.5, fontWeight:800, color:"#FFFFFF", lineHeight:1.25, marginBottom:large?6:4 }}>{t.title}</div>
@@ -10300,23 +10318,36 @@ export default function OccasionHub({ occasion }) {
 
     return (
       <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-        {/* Host manage strip — only visible when host is in a room */}
+        {/* Host strip — choose a game to launch for the room */}
         {room && isHost && (
-          <div style={{ background:`${accent}12`, border:`1.5px solid ${accent}35`, borderRadius:14, padding:"11px 14px", marginBottom:14, display:"flex", alignItems:"center", gap:10 }}>
-            <span style={{ width:8, height:8, borderRadius:"50%", background:"#4ade80", animation:"dot-pulse 2s ease infinite", flexShrink:0 }} />
-            <div style={{ flex:1, minWidth:0 }}>
-              <div style={{ fontSize:11, fontWeight:800, color:accent, textTransform:"uppercase", letterSpacing:"0.12em" }}>🎙️ Host · Tap any game to launch it</div>
-              {currentGame && <div style={{ fontSize:11, color:"rgba(255,255,255,0.50)", marginTop:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Now playing: {currentGame}</div>}
+          <div style={{ background:`${accent}10`, border:`1.5px solid ${accent}30`, borderRadius:14, padding:"12px 14px", marginBottom:16 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom: currentGame ? 8 : 0 }}>
+              <span style={{ width:7, height:7, borderRadius:"50%", background:"#4ade80", animation:"dot-pulse 2s ease infinite", flexShrink:0 }} />
+              <div style={{ fontSize:12, fontWeight:700, color:accent }}>👑 Host · {roomPlayers?.length||1} players online</div>
+              <button onClick={()=>setShowLeaderboard(true)} style={{ marginLeft:"auto", padding:"4px 10px", borderRadius:8, border:`1px solid ${accent}40`, background:`${accent}15`, color:accent, fontSize:11, fontWeight:700, cursor:"pointer", flexShrink:0 }}>🏆</button>
             </div>
-            <button onClick={()=>setShowLeaderboard(true)} style={{ padding:"5px 10px", borderRadius:8, border:`1px solid ${accent}40`, background:`${accent}15`, color:accent, fontSize:11, fontWeight:700, cursor:"pointer", flexShrink:0 }}>🏆</button>
+            {currentGame ? (
+              <div style={{ display:"flex", alignItems:"center", gap:10, background:"rgba(255,255,255,0.06)", borderRadius:10, padding:"9px 12px" }}>
+                <span style={{ fontSize:13, color:"rgba(255,255,255,0.85)", fontWeight:700, flex:1 }}>▶ Now playing: {currentGame}</span>
+                <button onClick={()=>setShowInGameControls(true)} style={{ padding:"4px 10px", borderRadius:8, border:"1px solid rgba(255,255,255,0.18)", background:"rgba(255,255,255,0.08)", color:"rgba(255,255,255,0.70)", fontSize:11, fontWeight:700, cursor:"pointer" }}>⋮ Controls</button>
+              </div>
+            ) : (
+              <div style={{ fontSize:12, color:"rgba(255,255,255,0.45)", marginTop:4 }}>Tap any game below to start it for everyone</div>
+            )}
           </div>
         )}
-        {/* Non-host room status strip */}
+        {/* Player strip — waiting for host */}
         {room && !isHost && (
-          <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.10)", borderRadius:12, padding:"10px 14px", marginBottom:14, display:"flex", alignItems:"center", gap:10 }}>
-            <span style={{ width:7, height:7, borderRadius:"50%", background:"#4ade80", animation:"dot-pulse 2s ease infinite", flexShrink:0 }} />
-            <div style={{ flex:1, fontSize:12, color:"rgba(255,255,255,0.50)", fontWeight:600 }}>Live room · {roomPlayers?.length||1} players · Host picks the game</div>
-            {currentGame && <div style={{ fontSize:11, color:"rgba(255,255,255,0.65)", background:"rgba(255,255,255,0.08)", padding:"3px 8px", borderRadius:20, flexShrink:0, fontWeight:600 }}>{currentGame}</div>}
+          <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.10)", borderRadius:12, padding:"12px 14px", marginBottom:16 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <span style={{ width:7, height:7, borderRadius:"50%", background:currentGame?"#4ade80":"#facc15", animation:"dot-pulse 2s ease infinite", flexShrink:0 }} />
+              {currentGame ? (
+                <div style={{ fontSize:12, color:"rgba(255,255,255,0.75)", fontWeight:600 }}>▶ {currentGame} is running…</div>
+              ) : (
+                <div style={{ fontSize:12, color:"rgba(255,255,255,0.50)", fontWeight:600 }}>Waiting for host to start a game…</div>
+              )}
+              <div style={{ marginLeft:"auto", fontSize:11, color:"rgba(255,255,255,0.35)" }}>{roomPlayers?.length||1} players</div>
+            </div>
           </div>
         )}
         {/* Header row */}
@@ -10386,34 +10417,14 @@ export default function OccasionHub({ occasion }) {
           </div>
         )}
 
-        {/* In-room: suggested for group size */}
-        {room && (
-          <div style={{ marginTop:20, background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.25)", borderRadius:16, padding:"16px" }}>
-            <div style={{ fontSize:12, fontWeight:700, color:"#4ade80", marginBottom:12 }}>🎯 Suggested for your {room.players?.length||1}-person group</div>
-            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-              {playTools.filter(t=>{const m=GAME_META[t.id];return m&&(room.players?.length||4)>=m.min;}).slice(0,4).map(t=>{
-                const meta=GAME_META[t.id]; const cc=CARD_PALETTE[playTools.indexOf(t)%CARD_PALETTE.length]||accent;
-                return (
-                  <div key={t.id} onClick={()=>setOpen(t.id)} style={{ display:"flex", alignItems:"center", gap:12, background:`${cc}15`, border:`1px solid ${cc}35`, borderRadius:12, padding:"12px 14px", cursor:"pointer" }}>
-                    <div style={{ fontSize:26 }}>{meta?.emoji||TOOL_EMOJI[t.id]||"🎮"}</div>
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontSize:13, fontWeight:700, color:"#FFFFFF" }}>{t.title}</div>
-                      <div style={{ fontSize:11, color:"rgba(255,255,255,0.50)" }}>👥 {meta?.players} · ⏱️ {meta?.time}</div>
-                    </div>
-                    <div style={{ fontSize:18, color:cc }}>→</div>
-                  </div>
-                );
-              })}
-            </div>
+        {/* No room: Random pick CTA */}
+        {!room && (
+          <div style={{ marginTop:22, textAlign:"center" }}>
+            <button onClick={randomPick} style={{ padding:"13px 32px", borderRadius:100, border:"none", background:accent, color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", boxShadow:`0 4px 20px ${accent}45` }}>
+              🎲 Pick a game for us
+            </button>
           </div>
         )}
-
-        {/* I'm bored CTA at bottom */}
-        <div style={{ marginTop:22, textAlign:"center" }}>
-          <button onClick={randomPick} style={{ padding:"13px 32px", borderRadius:100, border:"none", background:accent, color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", boxShadow:`0 4px 20px ${accent}45` }}>
-            🎲 Pick a game for us
-          </button>
-        </div>
       </div>
     );
   };
@@ -11011,6 +11022,73 @@ export default function OccasionHub({ occasion }) {
           playTools={allTools.filter(t => PLAY_IDS.has(t.id) && ENABLED_GAME_IDS.has(t.id))}
           onLaunchGame={(id)=>{setOpen(id);setShowGameQueue(false);}}
         />
+      )}
+
+      {/* ── Game Setup Sheet (host selects a live game → configure → start) ── */}
+      {gameSetupId && isHost && room && (() => {
+        const meta = GAME_META[gameSetupId];
+        const tool = allTools.find(t => t.id === gameSetupId);
+        const cc = CARD_PALETTE[playTools.indexOf(tool) % CARD_PALETTE.length] || occAccent;
+        return (
+          <div style={{ position:"fixed", inset:0, zIndex:5500, background:"rgba(2,1,8,0.88)", backdropFilter:"blur(24px)", display:"flex", alignItems:"flex-end" }} onClick={()=>setGameSetupId(null)}>
+            <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, margin:"0 auto", background:"#0D0820", borderRadius:"24px 24px 0 0", border:`1px solid ${cc}30`, borderBottom:"none", animation:"modal-in 0.24s cubic-bezier(0.22,1,0.36,1)", padding:"20px 20px 32px" }}>
+              <div style={{ width:36, height:4, background:"rgba(255,255,255,0.18)", borderRadius:2, margin:"0 auto 20px" }} />
+              <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:20 }}>
+                <div style={{ width:52, height:52, borderRadius:16, background:`${cc}22`, border:`1.5px solid ${cc}50`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, flexShrink:0 }}>{meta?.emoji||"🎮"}</div>
+                <div>
+                  <div style={{ fontSize:10, fontWeight:800, color:cc, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:3 }}>Start Game</div>
+                  <div style={{ fontSize:18, fontWeight:800, color:"#FFFFFF" }}>{tool?.title || gameSetupId}</div>
+                  {meta && <div style={{ fontSize:12, color:"rgba(255,255,255,0.45)", marginTop:2 }}>👥 {meta.players} · ⏱️ {meta.time}</div>}
+                </div>
+              </div>
+              <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:14, padding:"14px 16px", marginBottom:18 }}>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,0.45)", marginBottom:12 }}>
+                  {roomPlayers?.length||1} player{(roomPlayers?.length||1)!==1?"s":""} will be pulled into this game automatically.
+                </div>
+                {meta?.howItWorks && (
+                  <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                    {meta.howItWorks.map((step, i) => (
+                      <div key={i} style={{ display:"flex", gap:8, alignItems:"flex-start" }}>
+                        <span style={{ fontSize:10, fontWeight:800, color:cc, background:`${cc}18`, borderRadius:"50%", width:18, height:18, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>{i+1}</span>
+                        <span style={{ fontSize:12, color:"rgba(255,255,255,0.60)", lineHeight:1.4 }}>{step}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button onClick={() => { setGameSetupId(null); setOpen(gameSetupId); }} style={{ width:"100%", padding:"15px", borderRadius:14, border:"none", background:`linear-gradient(135deg,${cc},${cc}bb)`, color:"#fff", fontSize:15, fontWeight:800, cursor:"pointer", boxShadow:`0 4px 20px ${cc}45` }}>
+                ▶ Start for Everyone
+              </button>
+              <button onClick={()=>setGameSetupId(null)} style={{ width:"100%", marginTop:10, padding:"12px", borderRadius:14, border:"1px solid rgba(255,255,255,0.12)", background:"transparent", color:"rgba(255,255,255,0.45)", fontSize:13, fontWeight:600, cursor:"pointer" }}>Cancel</button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── In-game Host Controls overlay (⋮) ── */}
+      {showInGameControls && isHost && room && (
+        <div style={{ position:"fixed", inset:0, zIndex:5500, background:"rgba(2,1,8,0.82)", backdropFilter:"blur(20px)", display:"flex", alignItems:"flex-end" }} onClick={()=>setShowInGameControls(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, margin:"0 auto", background:"#0D0820", borderRadius:"24px 24px 0 0", border:`1px solid ${occAccent}25`, borderBottom:"none", animation:"modal-in 0.24s cubic-bezier(0.22,1,0.36,1)", padding:"20px 20px 32px" }}>
+            <div style={{ width:36, height:4, background:"rgba(255,255,255,0.18)", borderRadius:2, margin:"0 auto 20px" }} />
+            <div style={{ fontSize:16, fontWeight:800, color:"#FFFFFF", marginBottom:4 }}>Game Controls</div>
+            {currentGame && <div style={{ fontSize:12, color:"rgba(255,255,255,0.40)", marginBottom:20 }}>▶ {currentGame}</div>}
+            {!currentGame && <div style={{ fontSize:12, color:"rgba(255,255,255,0.40)", marginBottom:20 }}>No game running</div>}
+            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {currentGame && <>
+                <button onClick={()=>{sendAction("pause",{});setShowInGameControls(false);}} style={{ width:"100%", padding:"13px 16px", borderRadius:12, border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.06)", color:"rgba(255,255,255,0.80)", fontSize:14, fontWeight:600, cursor:"pointer", textAlign:"left" }}>⏸ Pause Game</button>
+                <button onClick={()=>{sendAction("skip_round",{});setShowInGameControls(false);}} style={{ width:"100%", padding:"13px 16px", borderRadius:12, border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.06)", color:"rgba(255,255,255,0.80)", fontSize:14, fontWeight:600, cursor:"pointer", textAlign:"left" }}>⏭ Skip Round</button>
+                <button onClick={()=>{sendAction("restart_round",{});setShowInGameControls(false);}} style={{ width:"100%", padding:"13px 16px", borderRadius:12, border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.06)", color:"rgba(255,255,255,0.80)", fontSize:14, fontWeight:600, cursor:"pointer", textAlign:"left" }}>🔄 Restart Round</button>
+                <button onClick={()=>{setGameWithScores(null,{});setShowInGameControls(false);}} style={{ width:"100%", padding:"13px 16px", borderRadius:12, border:"1px solid rgba(239,68,68,0.25)", background:"rgba(239,68,68,0.08)", color:"#ef4444", fontSize:14, fontWeight:700, cursor:"pointer", textAlign:"left" }}>🛑 End Game</button>
+              </>}
+              <button onClick={()=>{closeRoom();setShowInGameControls(false);}} style={{ width:"100%", padding:"13px 16px", borderRadius:12, border:"1px solid rgba(239,68,68,0.35)", background:"rgba(239,68,68,0.12)", color:"#f87171", fontSize:14, fontWeight:700, cursor:"pointer", textAlign:"left", marginTop:4 }}>✕ End Party</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── In-game ⋮ button (host-only floating button when a live game is open) ── */}
+      {open && LIVE_GAME_IDS.has(open) && isHost && room && !showInGameControls && (
+        <button onClick={()=>setShowInGameControls(true)} style={{ position:"fixed", top:16, right:16, zIndex:10200, width:36, height:36, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.20)", background:"rgba(13,8,32,0.85)", backdropFilter:"blur(12px)", color:"rgba(255,255,255,0.80)", fontSize:18, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", lineHeight:1, fontWeight:700 }}>⋮</button>
       )}
 
       {/* ── Host Controls Panel ── */}
