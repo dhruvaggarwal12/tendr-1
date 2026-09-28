@@ -1397,8 +1397,27 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
 }
 
 // ── Quote Modal ───────────────────────────────────────────────────────────────
-function QuoteModal({ initial, onSave, onClose }) {
-  const BLANK = { clientName:'', clientPhone:'', eventType:'', eventDate:'', items:[{ desc:'', qty:1, rate:'' }], discount:'', notes:'', status:'Draft' };
+function QuoteModal({ initial, onSave, onClose, serviceType = '' }) {
+  const defaultItems = (() => {
+    if (initial) return initial.items || [{ desc:'', qty:1, rate:'' }];
+    const map = {
+      'DJ':                  [{ desc:'DJ Service Fee', qty:1, rate:'' }, { desc:'Sound System Setup', qty:1, rate:'' }, { desc:'Lighting Equipment', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
+      'Band':                [{ desc:'Band Performance Fee', qty:1, rate:'' }, { desc:'Sound System / PA', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
+      'Singer':              [{ desc:'Vocalist Fee', qty:1, rate:'' }, { desc:'Accompaniment / Backing Track', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
+      'Anchor':              [{ desc:'Anchoring Fee', qty:1, rate:'' }, { desc:'Script Preparation', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
+      'Emcee/Host':          [{ desc:'Hosting Fee', qty:1, rate:'' }, { desc:'Script Preparation', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
+      'Photographer':        [{ desc:'Photography Service', qty:1, rate:'' }, { desc:'Photo Editing', qty:1, rate:'' }, { desc:'Prints / Album', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
+      'Videographer':        [{ desc:'Videography Service', qty:1, rate:'' }, { desc:'Video Editing', qty:1, rate:'' }, { desc:'Drone Shots', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
+      'Decorator':           [{ desc:'Decoration Service', qty:1, rate:'' }, { desc:'Materials & Flowers', qty:1, rate:'' }, { desc:'Setup & Dismantling', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
+      'Caterer':             [{ desc:'Catering Service', qty:1, rate:'' }, { desc:'Food & Ingredients', qty:1, rate:'' }, { desc:'Staff', qty:1, rate:'' }, { desc:'Equipment Rental', qty:1, rate:'' }],
+      'Choreographer':       [{ desc:'Choreography Fee', qty:1, rate:'' }, { desc:'Rehearsal Sessions', qty:1, rate:'' }, { desc:'Costume / Props', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
+      'Musician':            [{ desc:'Performance Fee', qty:1, rate:'' }, { desc:'Equipment Setup', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
+      'Magician':            [{ desc:'Magic Show Fee', qty:1, rate:'' }, { desc:'Props & Materials', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
+      'Makeup Artist':       [{ desc:'Makeup Service', qty:1, rate:'' }, { desc:'Products Used', qty:1, rate:'' }, { desc:'Trial Session', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
+    };
+    return map[serviceType] || [{ desc:'Service Fee', qty:1, rate:'' }, { desc:'Setup Charge', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }];
+  })();
+  const BLANK = { clientName:'', clientPhone:'', eventType:'', eventDate:'', items: defaultItems, discount:'', notes:'', status:'Draft' };
   const [form, setForm] = useState(() => ({ ...BLANK, ...(initial||{}) }));
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const setItem = (i, k, v) => setForm(f => ({ ...f, items: f.items.map((it, idx) => idx === i ? { ...it, [k]: v } : it) }));
@@ -2290,7 +2309,7 @@ const [tab, setTab] = useState('home');
 
   // Load portfolio photos when gig-profile tab opened
   useEffect(() => {
-    if (tab !== 'gig-profile' || photosLoaded || !vendorId) return;
+    if (tab !== 'gig-profile' && tab !== 'portfolio' || photosLoaded || !vendorId) return;
     fetch(`${BASE}/vendors/${vendorId}/portfolio-photos`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d) setPortfolioPhotos(d.portfolioPhotos || []); })
@@ -2636,11 +2655,13 @@ const [tab, setTab] = useState('home');
   const NAV_ITEMS = [
     { key: 'home',        group: 'EVENTS',   label: t('navHome'),                                                         icon: dsic(<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>) },
     { key: 'work',        group: 'EVENTS',   label: isArtist ? t(terms==='Shows'?'navShows':'navGigs') : t('navWork'), icon: dsic(<><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>) },
+    { key: 'orders',      group: 'EVENTS',   label: isArtist ? (terms==='Shows'?'My Shows':'My Gigs') : 'My Orders',     icon: dsic(<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8"/></>) },
     { key: 'money',       group: 'MONEY',    label: 'Money',                                                              icon: dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>) },
     { key: 'packages',    group: 'MANAGE',   label: 'Packages',                                                           icon: dsic(<><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></>) },
     { key: 'reviews',     group: 'MANAGE',   label: 'Reviews',                                                            icon: dsic(<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>) },
     { key: 'tools',       group: 'MANAGE',   label: 'Tools',                                                              icon: dsic(<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>) },
     { key: 'clients',     group: 'MANAGE',   label: 'Clients',                                                            icon: dsic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></>) },
+    { key: 'portfolio',   group: 'MANAGE',   label: 'Portfolio',                                                          icon: dsic(<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></>) },
     ...(modules.includes('equipment') ? [{ key: 'inventory', group: 'MANAGE', label: typeConfig.invLabel, icon: dsic(<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>) }] : []),
     { key: 'profile',     group: 'MANAGE',   label: t('navPage'),                                                         icon: dsic(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>) },
     ...(modules.includes('performance') ? [{ key: 'gig-profile', group: 'ARTIST', label: 'Performance', icon: dsic(<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>) }] : []),
@@ -4044,94 +4065,17 @@ const [tab, setTab] = useState('home');
                   </div>
                 </div>
 
-                {/* ── Photos & Videos ── */}
+                {/* Portfolio link */}
                 <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.12)', marginBottom:20 }}>
-                  <div style={{ fontSize:14, fontWeight:800, color:ink, marginBottom:14 }}>Photos & Videos</div>
-
-                  {/* Photos row */}
-                  <input ref={photoFileRef} type="file" accept="image/*" multiple style={{ display:'none' }} onChange={e => { uploadPortfolioPhotos(e.target.files); e.target.value = ''; }} />
-                  <div style={{ padding:'12px 14px', borderRadius:12, border:'1.5px solid rgba(196,122,46,0.13)', background:'#FFFCF5', marginBottom:10 }}>
-                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
-                      <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-                        <div style={{ width:38, height:38, borderRadius:10, background:`linear-gradient(135deg,${gold},${goldLt})`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                        </div>
-                        <div>
-                          <div style={{ fontSize:13, fontWeight:700, color:ink }}>Portfolio Photos</div>
-                          <div style={{ fontSize:11.5, color:'#9B7450', marginTop:1 }}>
-                            {photoCount === null ? 'Loading…' : photoCount === 0 ? 'No photos yet — add some to impress customers' : `${photoCount}/10 photo${photoCount!==1?'s':''} uploaded`}
-                          </div>
-                        </div>
-                      </div>
-                      <div style={{ display:'flex', gap:7, flexShrink:0 }}>
-                        <button
-                          onClick={() => photoFileRef.current?.click()}
-                          disabled={photoUploading || photoCount >= 10}
-                          style={{ padding:'7px 14px', borderRadius:9, border:'none', background:photoCount >= 10 ? '#e5e7eb' : `linear-gradient(135deg,${gold},${goldLt})`, color:photoCount >= 10 ? '#9B7450' : '#fff', fontSize:12, fontWeight:700, cursor:photoCount >= 10 ? 'not-allowed' : 'pointer', fontFamily:font, whiteSpace:'nowrap' }}>
-                          {photoUploading ? 'Uploading…' : photoCount >= 10 ? 'Max' : '+ Upload'}
-                        </button>
-                        <button onClick={() => navigate('/vendor/profile?tab=portfolio')}
-                          style={{ padding:'7px 12px', borderRadius:9, border:`1.5px solid ${gold}`, background:'transparent', color:gold, fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:font, whiteSpace:'nowrap' }}>
-                          Manage
-                        </button>
-                      </div>
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                    <div>
+                      <div style={{ fontSize:14, fontWeight:800, color:ink, marginBottom:2 }}>Portfolio</div>
+                      <div style={{ fontSize:12, color:'#9B7450' }}>{photoCount === null ? 'Loading…' : photoCount === 0 ? 'No photos yet — add some to impress customers' : `${photoCount} photo${photoCount!==1?'s':''} uploaded`}</div>
                     </div>
-                  </div>
-
-                  {/* Video/demo links */}
-                  <div>
-                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
-                      <div style={{ fontSize:12.5, fontWeight:700, color:'#6B3A1F' }}>
-                        {isArtist ? 'Demo Reels & Mixes' : 'Videos & Showcases'}
-                      </div>
-                      {mediaLinks.length < 6 && (
-                        <button onClick={() => setMediaModal(true)}
-                          style={{ padding:'5px 12px', borderRadius:8, border:`1.5px solid ${gold}`, background:'transparent', color:gold, fontSize:11.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>
-                          + Add Link
-                        </button>
-                      )}
-                    </div>
-
-                    {mediaLinks.length === 0 ? (
-                      <button onClick={() => setMediaModal(true)}
-                        style={{ width:'100%', padding:'14px', borderRadius:12, border:'2px dashed rgba(196,122,46,0.25)', background:'transparent', cursor:'pointer', fontFamily:font, textAlign:'center' }}>
-                        <div style={{ fontSize:12.5, color:'#9B7450', fontWeight:600 }}>
-                          {isArtist ? '+ Add a YouTube, Instagram, or SoundCloud link' : '+ Add a YouTube or Instagram link'}
-                        </div>
-                        <div style={{ fontSize:11, color:'#BDA282', marginTop:4 }}>Customers see these on your profile page</div>
-                      </button>
-                    ) : (
-                      <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                        {mediaLinks.map(m => {
-                          const isYT = /youtu/.test(m.url);
-                          const isIG = /instagram/.test(m.url);
-                          const isSC = /soundcloud/.test(m.url);
-                          const isSpotify = /spotify/.test(m.url);
-                          const icon = isYT ? '▶' : isIG ? '📸' : isSC ? '🎵' : isSpotify ? '🎶' : '🔗';
-                          const platform = isYT ? 'YouTube' : isIG ? 'Instagram' : isSC ? 'SoundCloud' : isSpotify ? 'Spotify' : 'Link';
-                          return (
-                            <div key={m.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 12px', borderRadius:11, border:'1.5px solid rgba(196,122,46,0.13)', background:'#FFFCF5' }}>
-                              <span style={{ fontSize:18, flexShrink:0 }}>{icon}</span>
-                              <div style={{ flex:1, minWidth:0 }}>
-                                <div style={{ fontSize:12.5, fontWeight:700, color:ink, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.title || platform}</div>
-                                <a href={m.url} target="_blank" rel="noopener noreferrer"
-                                  style={{ fontSize:11, color:gold, textDecoration:'none', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', display:'block' }}>
-                                  {m.url.length > 40 ? m.url.slice(0,40)+'…' : m.url}
-                                </a>
-                              </div>
-                              <button onClick={() => removeMediaLink(m.id)}
-                                style={{ width:26, height:26, borderRadius:'50%', border:'none', background:'rgba(220,38,38,0.08)', color:'#dc2626', cursor:'pointer', fontSize:14, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>×</button>
-                            </div>
-                          );
-                        })}
-                        {mediaLinks.length < 6 && (
-                          <button onClick={() => setMediaModal(true)}
-                            style={{ padding:'9px', borderRadius:11, border:'2px dashed rgba(196,122,46,0.2)', background:'transparent', cursor:'pointer', fontFamily:font, fontSize:12, color:'#9B7450', fontWeight:600 }}>
-                            + Add another link
-                          </button>
-                        )}
-                      </div>
-                    )}
+                    <button onClick={() => setTab('portfolio')}
+                      style={{ padding:'8px 18px', borderRadius:10, border:`1.5px solid ${gold}`, background:'transparent', color:gold, fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font, whiteSpace:'nowrap' }}>
+                      Manage →
+                    </button>
                   </div>
                 </div>
 
@@ -4286,6 +4230,167 @@ const [tab, setTab] = useState('home');
                     {gstSaving ? 'Saving…' : 'Save'}
                   </button>
                 </div>
+              </div>
+            );
+          })()}
+
+          {/* ── PORTFOLIO TAB ── */}
+          {tab === 'portfolio' && (() => {
+            return (
+              <div>
+                {/* Photos section */}
+                <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.12)', marginBottom:20 }}>
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
+                    <div style={{ fontSize:14, fontWeight:800, color:ink }}>Portfolio Photos</div>
+                    <div style={{ display:'flex', gap:8 }}>
+                      <input ref={photoFileRef} type="file" accept="image/*" multiple style={{ display:'none' }} onChange={e => { uploadPortfolioPhotos(e.target.files); e.target.value=''; }} />
+                      <button onClick={() => photoFileRef.current?.click()} disabled={photoUploading || (portfolioPhotos||[]).length >= 10}
+                        style={{ padding:'7px 16px', borderRadius:9, border:'none', background:(portfolioPhotos||[]).length >= 10?'#e5e7eb':`linear-gradient(135deg,${gold},${goldLt})`, color:(portfolioPhotos||[]).length >= 10?'#9B7450':'#fff', fontSize:12.5, fontWeight:700, cursor:(portfolioPhotos||[]).length >= 10?'not-allowed':'pointer', fontFamily:font }}>
+                        {photoUploading ? 'Uploading…' : (portfolioPhotos||[]).length >= 10 ? 'Max 10' : '+ Upload Photos'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {(portfolioPhotos||[]).length === 0 ? (
+                    <div style={{ textAlign:'center', padding:'32px 0', color:'#9B7450' }}>
+                      <div style={{ fontSize:40, marginBottom:10 }}>📸</div>
+                      <div style={{ fontSize:13, fontWeight:600, marginBottom:4 }}>No photos yet</div>
+                      <div style={{ fontSize:12 }}>Upload up to 10 photos — customers see these on your public profile</div>
+                      <button onClick={() => photoFileRef.current?.click()} disabled={photoUploading}
+                        style={{ marginTop:14, padding:'9px 22px', borderRadius:10, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:13, fontWeight:700, cursor:'pointer' }}>
+                        + Upload First Photo
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(120px,1fr))', gap:10 }}>
+                      {(portfolioPhotos||[]).map((p, i) => (
+                        <div key={p.public_id||p.url||i} style={{ position:'relative', aspectRatio:'1', borderRadius:12, overflow:'hidden', border:'1.5px solid rgba(196,122,46,0.13)' }}>
+                          {i === 0 && <span style={{ position:'absolute', top:6, left:6, fontSize:10, fontWeight:700, background:gold, color:'#fff', padding:'2px 7px', borderRadius:6, zIndex:1 }}>Cover</span>}
+                          <img src={p.url||p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                          <button onClick={async () => {
+                            try {
+                              const pubId = p.public_id || p;
+                              await fetch(`${BASE}/vendors/${vendorId}/portfolio-photos/${encodeURIComponent(pubId)}`, { method:'DELETE', headers:authHeaders(token) });
+                              setPortfolioPhotos(ps => ps.filter((_,idx) => idx !== i));
+                              setPhotoCount(c => Math.max(0,(c||1)-1));
+                              showToast('Photo removed');
+                            } catch { showToast('Failed to remove', false); }
+                          }} style={{ position:'absolute', top:4, right:4, width:24, height:24, borderRadius:'50%', border:'none', background:'rgba(0,0,0,0.55)', color:'#fff', cursor:'pointer', fontSize:14, display:'flex', alignItems:'center', justifyContent:'center', zIndex:2 }}>×</button>
+                        </div>
+                      ))}
+                      {(portfolioPhotos||[]).length < 10 && (
+                        <button onClick={() => photoFileRef.current?.click()} disabled={photoUploading}
+                          style={{ aspectRatio:'1', borderRadius:12, border:'2px dashed rgba(196,122,46,0.25)', background:'transparent', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:6, color:'#9B7450' }}>
+                          <span style={{ fontSize:24 }}>+</span>
+                          <span style={{ fontSize:11, fontWeight:600 }}>Add Photo</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  <div style={{ marginTop:12, fontSize:11.5, color:'#9B7450' }}>{(portfolioPhotos||[]).length}/10 photos uploaded. First photo is your cover image.</div>
+                </div>
+
+                {/* Video/Demo Links */}
+                <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.12)' }}>
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
+                    <div style={{ fontSize:14, fontWeight:800, color:ink }}>{isArtist ? 'Demo Reels & Mixes' : 'Videos & Showcases'}</div>
+                    {mediaLinks.length < 6 && (
+                      <button onClick={() => setMediaModal(true)}
+                        style={{ padding:'7px 14px', borderRadius:9, border:`1.5px solid ${gold}`, background:'transparent', color:gold, fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:font }}>
+                        + Add Link
+                      </button>
+                    )}
+                  </div>
+                  {mediaLinks.length === 0 ? (
+                    <button onClick={() => setMediaModal(true)}
+                      style={{ width:'100%', padding:'14px', borderRadius:12, border:'2px dashed rgba(196,122,46,0.25)', background:'transparent', cursor:'pointer', fontFamily:font, textAlign:'center' }}>
+                      <div style={{ fontSize:12.5, color:'#9B7450', fontWeight:600 }}>+ Add a YouTube, Instagram, or SoundCloud link</div>
+                      <div style={{ fontSize:11, color:'#BDA282', marginTop:4 }}>Customers see these on your profile page</div>
+                    </button>
+                  ) : (
+                    <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                      {mediaLinks.map(m => {
+                        const isYT = m.url.includes('youtu');
+                        const isIG = m.url.includes('instagram');
+                        const isSC = m.url.includes('soundcloud');
+                        const isSP = m.url.includes('spotify');
+                        const icon = isYT ? '▶' : isIG ? '📸' : isSC ? '🎵' : isSP ? '🎶' : '🔗';
+                        const platform = isYT ? 'YouTube' : isIG ? 'Instagram' : isSC ? 'SoundCloud' : isSP ? 'Spotify' : 'Link';
+                        return (
+                          <div key={m.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 12px', borderRadius:11, border:'1.5px solid rgba(196,122,46,0.13)', background:'#FFFCF5' }}>
+                            <span style={{ fontSize:18, flexShrink:0 }}>{icon}</span>
+                            <div style={{ flex:1, minWidth:0 }}>
+                              <div style={{ fontSize:12.5, fontWeight:700, color:ink, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.title || platform}</div>
+                              <a href={m.url} target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:gold, textDecoration:'none', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', display:'block' }}>{m.url.length > 40 ? m.url.slice(0,40)+'…' : m.url}</a>
+                            </div>
+                            <button onClick={() => removeMediaLink(m.id)} style={{ width:26, height:26, borderRadius:'50%', border:'none', background:'rgba(220,38,38,0.08)', color:'#dc2626', cursor:'pointer', fontSize:14, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>×</button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ── OUTSIDE ORDERS TAB ── */}
+          {tab === 'orders' && (() => {
+            const visibleOrders = outsideOrders.filter(o => {
+              const q = oSearch.toLowerCase();
+              return !q || (o.clientName||'').toLowerCase().includes(q) || (o.eventType||'').toLowerCase().includes(q);
+            }).filter(o => oFilter === 'all' || o.status === oFilter);
+            return (
+              <div>
+                {/* Stats */}
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10, marginBottom:20 }}>
+                  <div style={{ background:'#fff', borderRadius:14, padding:'14px 16px', border:'1px solid rgba(196,122,46,0.12)', textAlign:'center' }}>
+                    <div style={{ fontSize:20, fontWeight:800, color:ink }}>{outsideOrders.length}</div>
+                    <div style={{ fontSize:11, color:'#9B7450', marginTop:2 }}>Total {terms}</div>
+                  </div>
+                  <div style={{ background:'#fff', borderRadius:14, padding:'14px 16px', border:'1px solid rgba(196,122,46,0.12)', textAlign:'center' }}>
+                    <div style={{ fontSize:20, fontWeight:800, color:ink }}>₹{outsideRevenue.toLocaleString('en-IN')}</div>
+                    <div style={{ fontSize:11, color:'#9B7450', marginTop:2 }}>Total Value</div>
+                  </div>
+                  <div style={{ background:'#fff', borderRadius:14, padding:'14px 16px', border:'1px solid rgba(196,122,46,0.12)', textAlign:'center' }}>
+                    <div style={{ fontSize:20, fontWeight:800, color:'#DC2626' }}>₹{Math.max(0,outsideRevenue-outsideCollected).toLocaleString('en-IN')}</div>
+                    <div style={{ fontSize:11, color:'#9B7450', marginTop:2 }}>Pending</div>
+                  </div>
+                </div>
+
+                {/* Search + filter + add */}
+                <div style={{ display:'flex', gap:8, marginBottom:16, flexWrap:'wrap' }}>
+                  <input value={oSearch} onChange={e => setOSearch(e.target.value)} placeholder={`Search ${terms.toLowerCase()}…`}
+                    style={{ flex:1, minWidth:160, padding:'9px 12px', borderRadius:10, border:'1.5px solid rgba(196,122,46,0.2)', fontFamily:font, fontSize:13, color:ink, outline:'none', background:'#fff' }} />
+                  <select value={oFilter} onChange={e => setOFilter(e.target.value)}
+                    style={{ padding:'9px 12px', borderRadius:10, border:'1.5px solid rgba(196,122,46,0.2)', fontFamily:font, fontSize:13, color:ink, background:'#fff', outline:'none' }}>
+                    <option value="all">All</option>
+                    {['Pending','Confirmed','Completed','Cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                  <button onClick={() => setModal('add')} style={{ padding:'9px 18px', borderRadius:10, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:13, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap' }}>
+                    + Add {term}
+                  </button>
+                </div>
+
+                {/* Orders list */}
+                {visibleOrders.length === 0 ? (
+                  <div style={{ textAlign:'center', padding:'40px 24px', background:'#fff', borderRadius:18, border:'1.5px dashed rgba(196,122,46,0.18)' }}>
+                    <div style={{ fontSize:36, marginBottom:10 }}>📋</div>
+                    <div style={{ fontSize:14, fontWeight:700, color:ink, marginBottom:4 }}>No {terms.toLowerCase()} yet</div>
+                    <div style={{ fontSize:13, color:'#9B7450', marginBottom:16 }}>Log bookings from WhatsApp, referrals, direct calls — track everything in one place.</div>
+                    <button onClick={() => setModal('add')} style={{ padding:'11px 24px', borderRadius:10, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:13.5, fontWeight:700, cursor:'pointer' }}>
+                      + Log first {term.toLowerCase()}
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                    {visibleOrders.map(o => (
+                      <div key={o._id} style={{ outline:gigConflicts.has(o._id)?'2px solid #DC2626':'none', borderRadius:14 }}>
+                        <OutsideOrderCard order={o} onEdit={setModal} onDelete={deleteOrder} onStatus={setOrderStatus} onRequestPayment={setPayReqModal} vendorName={vendorName} profileUrl={`${window.location.origin}/vendor/${vendorId}`} token={token} />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })()}
@@ -5387,6 +5492,7 @@ const [tab, setTab] = useState('home');
           initial={editQuote}
           onSave={addOrUpdateQuote}
           onClose={() => { setQuoteModal(false); setEditQuote(null); }}
+          serviceType={serviceType}
         />
       )}
 

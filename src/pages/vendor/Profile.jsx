@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import logo from "../../assets/logos/tendr-logo-secondary.png";
@@ -40,12 +40,9 @@ export default function VendorProfile() {
   const [searchParams] = useSearchParams();
   const { user, token } = useSelector((s) => s.auth);
   const vendorId   = user?._id || user?.id;
-  const fileRef    = useRef();
-
-  const [tab, setTab]       = useState(() => searchParams.get('tab') || "info");
+  const [tab, setTab]       = useState(() => { const t = searchParams.get('tab'); return (!t || t === 'portfolio') ? 'info' : t; });
   const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [toast, setToast]       = useState(null);
   const [profile, setProfile]   = useState(null);
 
@@ -276,42 +273,61 @@ export default function VendorProfile() {
   };
   const removeLocation = (loc) => setLocations(l => l.filter(x => x !== loc));
 
-  const uploadPhotos = async (files) => {
-    if (!files.length) return;
-    setUploading(true);
-    const fd = new FormData();
-    Array.from(files).forEach(f => fd.append("photos", f));
-    try {
-      const r = await fetch(`${BASE_URL}/vendors/${vendorId}/portfolio-photos`, {
-        method: "POST", credentials: "include", headers: { "Authorization": `Bearer ${token}` }, body: fd,
-      });
-      const json = await r.json();
-      if (!r.ok) throw new Error(json.error || "Upload failed");
-      setProfile(p => ({ ...p, portfolioPhotos: json.portfolioPhotos }));
-      showToast(`${files.length} photo${files.length > 1 ? "s" : ""} uploaded!`);
-    } catch (e) {
-      showToast(e.message || "Upload failed", false);
-    } finally {
-      setUploading(false);
-      if (fileRef.current) fileRef.current.value = "";
-    }
-  };
+  const setGig = (k, v) => setGigForm(f => ({ ...f, [k]: v }));
+  const toggleGig = (k, val) => setGigForm(f => ({ ...f, [k]: f[k].includes(val) ? f[k].filter(x => x !== val) : [...f[k], val] }));
+  const setSvc = (k, v) => setSvcForm(f => ({ ...f, [k]: v }));
+  const toggleSvc = (k, val) => setSvcForm(f => ({ ...f, [k]: f[k].includes(val) ? f[k].filter(x => x !== val) : [...f[k], val] }));
 
-  const deletePhoto = async (url) => {
-    const publicId = url.split("/").pop().split(".")[0];
-    try {
-      const r = await fetch(`${BASE_URL}/vendors/${vendorId}/portfolio-photos/${publicId}`, {
-        method: "DELETE", credentials: "include", headers: { "Authorization": `Bearer ${token}` },
-      });
-      if (!r.ok) throw new Error();
-      setProfile(p => ({ ...p, portfolioPhotos: p.portfolioPhotos.filter(u => u !== url) }));
-      showToast("Photo removed");
-    } catch {
-      showToast("Failed to remove photo", false);
-    }
-  };
+  const ChipPicker = ({ label, field, options }) => (
+    <div className="mb-5">
+      <label className="block text-sm font-semibold text-gray-600 mb-2">{label}</label>
+      <div className="flex flex-wrap gap-2">
+        {options.map(opt => {
+          const active = gigForm[field]?.includes(opt);
+          return (
+            <button key={opt} type="button" onClick={() => toggleGig(field, opt)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${active ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 
-  const photos = profile?.portfolioPhotos || [];
+  const ChipSingle = ({ label, field, options }) => (
+    <div className="mb-5">
+      <label className="block text-sm font-semibold text-gray-600 mb-2">{label}</label>
+      <div className="flex flex-wrap gap-2">
+        {options.map(opt => {
+          const active = svcForm[field] === opt;
+          return (
+            <button key={opt} type="button" onClick={() => setSvc(field, active ? "" : opt)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${active ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const ChipMulti = ({ label, field, options }) => (
+    <div className="mb-5">
+      <label className="block text-sm font-semibold text-gray-600 mb-2">{label}</label>
+      <div className="flex flex-wrap gap-2">
+        {options.map(opt => {
+          const active = svcForm[field]?.includes(opt);
+          return (
+            <button key={opt} type="button" onClick={() => toggleSvc(field, opt)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${active ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 
   if (loading) {
     return (
@@ -350,10 +366,7 @@ export default function VendorProfile() {
         {/* Tabs */}
         <div className="flex gap-2 mb-8 border-b border-gray-200 overflow-x-auto">
           {[
-            ["info", "Business Info"],
-            ...(GIG_PRO_TYPES.includes(profile?.serviceType) ? [["gig", "Performance Details"]] : []),
-            ...(['Photographer','Caterer','Decorator','Makeup Artist','Mehendi Artist','Hair Stylist','Cake Artist','Bartender','Videographer','Food Truck','Wedding Planner','Live Streaming','Photo Booth','Gift & Favours','Transportation','Security'].includes(profile?.serviceType) ? [["service", "Service Details"]] : []),
-            ["portfolio", "Portfolio Photos"],
+            ["info", "About Me"],
             ...(GIG_PRO_TYPES.includes(profile?.serviceType) ? [["setlist", "Setlist"]] : []),
             ["bank", "Bank & Payments"],
           ].map(([id, label]) => (
@@ -363,7 +376,7 @@ export default function VendorProfile() {
           ))}
         </div>
 
-        {/* ── Business Info Tab ── */}
+        {/* ── About Me Tab ── */}
         {tab === "info" && (
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <h2 className="text-xl font-bold text-gray-800 mb-6">Business Details</h2>
@@ -419,353 +432,216 @@ export default function VendorProfile() {
               </div>
             </div>
 
+            {/* ── Performance Details (gig pros only) ── */}
+            {GIG_PRO_TYPES.includes(profile?.serviceType) && (() => {
+              const svc = profile.serviceType;
+              const styleOpts = GIG_STYLE_OPTIONS[svc] || [];
+              return (
+                <>
+                  <hr className="my-8 border-gray-100" />
+                  <h3 className="text-lg font-bold text-gray-800 mb-1">Performance Details</h3>
+                  <p className="text-sm text-gray-500 mb-6">Help customers understand exactly what you offer — this info shows on your public profile.</p>
+
+                  <div className="mb-5">
+                    <label className="block text-sm font-semibold text-gray-600 mb-1.5">About You <span className="text-gray-400 font-normal">(shown on your profile)</span></label>
+                    <textarea value={gigForm.bio} onChange={e => setGig("bio", e.target.value)} rows={3}
+                      placeholder={`Tell customers about your ${svc?.toLowerCase()} journey, style, and what makes you special...`}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm resize-none" />
+                  </div>
+
+                  {styleOpts.length > 0 && <ChipPicker label="Performing Style" field="performingStyle" options={styleOpts} />}
+                  {['DJ', 'Band', 'Musician', 'Singer'].includes(svc) && <ChipPicker label="Music Genres" field="genres" options={GIG_GENRE_OPTIONS} />}
+
+                  {['Band', 'Musician'].includes(svc) && (
+                    <div className="mb-5">
+                      <label className="block text-sm font-semibold text-gray-600 mb-1.5">Instruments <span className="text-gray-400 font-normal">(comma-separated)</span></label>
+                      <input value={gigForm.instruments?.join(', ')} onChange={e => setGig("instruments", e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
+                        placeholder="e.g. Guitar, Tabla, Keyboard, Violin" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                    </div>
+                  )}
+
+                  {svc === 'Band' && (
+                    <div className="mb-5">
+                      <label className="block text-sm font-semibold text-gray-600 mb-1.5">Number of Members</label>
+                      <input type="number" min="1" value={gigForm.bandSize} onChange={e => setGig("bandSize", e.target.value)}
+                        placeholder="e.g. 5" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                    </div>
+                  )}
+
+                  {svc === 'Choreographer' && (
+                    <ChipPicker label="Dance Styles" field="danceStyles" options={['Bollywood', 'Classical', 'Contemporary', 'Hip-Hop', 'Salsa', 'Couple Dance', 'Group']} />
+                  )}
+
+                  {['Emcee/Host', 'Anchor', 'Singer', 'Stand-up Comedian'].includes(svc) && <ChipPicker label="Languages" field="languages" options={GIG_LANG_OPTIONS} />}
+
+                  <ChipPicker label="Suitable For" field="eventTypes"
+                    options={['Wedding', 'Birthday', 'Corporate', 'Festival', 'College Event', 'Private Party', 'Sangeet', 'Anniversary', 'Award Night']} />
+
+                  {svc === 'DJ' && (<>
+                    <div className="mb-5">
+                      <label className="block text-sm font-semibold text-gray-600 mb-2">Setup Type</label>
+                      <div className="flex gap-2 flex-wrap">
+                        {['Basic Setup','Full Production'].map(opt => (
+                          <button key={opt} type="button" onClick={() => setGig("setupType", gigForm.setupType === opt ? "" : opt)}
+                            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${gigForm.setupType === opt ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mb-5">
+                      <label className="block text-sm font-semibold text-gray-600 mb-2">Lights Included?</label>
+                      <div className="flex gap-2">
+                        {['Yes','No'].map(opt => (
+                          <button key={opt} type="button" onClick={() => setGig("lightsIncluded", gigForm.lightsIncluded === opt ? "" : opt)}
+                            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${gigForm.lightsIncluded === opt ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>)}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-600 mb-1.5">Instagram / Social Link</label>
+                      <input value={gigForm.socialLink} onChange={e => setGig("socialLink", e.target.value)}
+                        placeholder="https://instagram.com/yourprofile" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-600 mb-1.5">Showreel / YouTube Link</label>
+                      <input value={gigForm.showreel} onChange={e => setGig("showreel", e.target.value)}
+                        placeholder="https://youtube.com/watch?v=..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
+
+            {/* ── Service Details (service vendors only) ── */}
+            {['Photographer','Caterer','Decorator','Makeup Artist','Mehendi Artist','Hair Stylist','Cake Artist','Bartender','Videographer','Food Truck','Wedding Planner','Live Streaming','Photo Booth','Gift & Favours','Transportation','Security'].includes(profile?.serviceType) && (() => {
+              const svc = profile.serviceType;
+              return (
+                <>
+                  <hr className="my-8 border-gray-100" />
+                  <h3 className="text-lg font-bold text-gray-800 mb-1">Service Details</h3>
+                  <p className="text-sm text-gray-500 mb-6">These details appear on your public profile and help customers choose you.</p>
+
+                  {svc === 'Photographer' && (<>
+                    <ChipSingle label="Services Offered" field="photoServices" options={['Photographer','Videographer','Both']} />
+                    <ChipMulti label="Photography Style" field="photographyType" options={['Candid','Drone','Traditional','Cinematic']} />
+                    <ChipSingle label="Hours Included" field="hoursIncluded" options={['2 hrs','4 hrs','8 hrs','Full day']} />
+                    <ChipSingle label="Editing Time (days)" field="editingTime" options={['2','5','7','10+']} />
+                  </>)}
+
+                  {svc === 'Caterer' && (<>
+                    <ChipMulti label="Cuisine Types" field="cuisineTypes" options={['North Indian','South Indian','Snacks','Chinese Starters','Punjabi','Sweets','Italian','Continental','Other']} />
+                    <ChipMulti label="Service Style" field="cateringServiceType" options={['Buffet','Food Stations','Live Counter','Family Style']} />
+                    <ChipMulti label="Menu Type" field="menuType" options={['Veg','Non Veg','Jain']} />
+                    <ChipSingle label="Beverages Included?" field="beverage" options={['Yes','No']} />
+                  </>)}
+
+                  {svc === 'Decorator' && (<>
+                    <ChipMulti label="Decoration Types" field="decorTypes" options={['Themed','Floral','Lighting','Balloon Art','Traditional','Modern','Rustic','Minimalist','Other']} />
+                    <ChipMulti label="Venue Coverage" field="venueCoverage" options={['Interior','Exterior','Full Venue','Stage Setup','Entrance Focus','Backdrop']} />
+                  </>)}
+
+                  {svc === 'Makeup Artist' && (<>
+                    <ChipMulti label="Specialisations" field="makeupSpecialisations" options={['Bridal','HD Airbrush','Party Makeup','Editorial','Stage / Theatre','Grooming']} />
+                    <ChipMulti label="Brands Used" field="makeupBrands" options={['MAC','Huda Beauty','Kryolan','Armani','L\'Oréal','Charlotte Tilbury','NARS','Other']} />
+                    <ChipMulti label="Who Do You Serve" field="makeupAudience" options={['Bride','Bridesmaids','Groom Grooming','Group Bookings']} />
+                    <ChipSingle label="Trial Booking Available?" field="makeupTrialAvailable" options={['Yes','No']} />
+                  </>)}
+
+                  {svc === 'Mehendi Artist' && (<>
+                    <ChipMulti label="Design Styles" field="mehendiStyles" options={['Arabic','Indian Traditional','Fusion','Moroccan','Pakistani','Minimalist']} />
+                    <ChipMulti label="Coverage Offered" field="mehendiCoverage" options={['Full Hands','Half Hands','Feet','Back of Hand','Arms']} />
+                    <ChipSingle label="Cone Type" field="mehendiConeType" options={['Natural Only','Chemical','Both']} />
+                    <ChipSingle label="Group Bookings?" field="mehendiGroupBooking" options={['Yes','No']} />
+                  </>)}
+
+                  {svc === 'Hair Stylist' && (<>
+                    <ChipMulti label="Services Offered" field="hairServices" options={['Bridal Updo','Extensions','Highlights / Colour','Blowout','Party Style','Braids & Accessories']} />
+                    <ChipMulti label="Hair Types Handled" field="hairTypes" options={['Straight','Wavy','Curly','Thick','Fine','Coloured / Treated']} />
+                    <ChipSingle label="Travel to Venue?" field="hairTravelAvailable" options={['Yes','No']} />
+                  </>)}
+
+                  {svc === 'Cake Artist' && (<>
+                    <ChipMulti label="Cake Styles" field="cakeStyles" options={['Fondant','Fresh Cream','Drip Cake','Naked Cake','Floral','Sculpted / 3D']} />
+                    <ChipMulti label="Flavours" field="cakeFlavours" options={['Vanilla','Chocolate','Butterscotch','Red Velvet','Fruit','Blueberry','Custom']} />
+                    <ChipSingle label="Minimum Order" field="cakeMinOrder" options={['500g','1 kg','2 kg','3 kg+']} />
+                    <ChipSingle label="Lead Time Needed" field="cakeLeadTime" options={['1 day','2 days','3–5 days','7+ days']} />
+                  </>)}
+
+                  {svc === 'Bartender' && (<>
+                    <ChipMulti label="Drink Services" field="bartenderServices" options={['Cocktails','Mocktails','Wine Service','Beer Service','Shots & LIIT','BYOB Setup']} />
+                    <ChipMulti label="Event Types" field="bartenderEventTypes" options={['Wedding','House Party','Corporate','Pool Party','Club Night']} />
+                    <ChipSingle label="Bring Own Bar Counter?" field="bartenderBarEquipment" options={['Yes','No']} />
+                    <ChipSingle label="Certified Mixologist?" field="bartenderCertified" options={['Yes','No']} />
+                  </>)}
+
+                  {svc === 'Videographer' && (<>
+                    <ChipMulti label="Filming Style" field="videoStyle" options={['Cinematic','Documentary','Highlight Reel','Short Reels','Live Event']} />
+                    <ChipMulti label="Packages" field="videoPackages" options={['2 hrs','4 hrs','Full Day','Multi-Day','Pre-Wedding']} />
+                    <ChipSingle label="Drone Available?" field="videoDroneAvailable" options={['Yes','No']} />
+                    <ChipSingle label="Delivery Timeline" field="videoDeliveryDays" options={['3 days','7 days','14 days','30 days']} />
+                  </>)}
+
+                  {svc === 'Food Truck' && (<>
+                    <ChipMulti label="Counter Types" field="foodCounterTypes" options={['Chaat','Dosa / South Indian','Pizza','Biryani','Chinese','Desserts','Beverages','BBQ','Other']} />
+                    <ChipSingle label="Minimum Pax" field="foodMinPax" options={['25','50','100','200+']} />
+                    <ChipSingle label="Space Needed" field="foodSpaceNeeded" options={['10×10 ft','15×15 ft','20×20 ft','Flexible']} />
+                    <ChipSingle label="Power Requirement" field="foodPowerNeeded" options={['Self-sufficient','5 kW','10 kW','15 kW+']} />
+                  </>)}
+
+                  {svc === 'Wedding Planner' && (<>
+                    <ChipMulti label="Services Offered" field="plannerServices" options={['Full Planning','Partial Planning','Day-of Coordination','Destination Weddings','Pre-Wedding Events']} />
+                    <ChipMulti label="Budget Range Handled" field="plannerBudgetRange" options={['Under ₹5L','₹5–15L','₹15–50L','₹50L+']} />
+                    <ChipMulti label="Event Types" field="plannerEventTypes" options={['Hindu','Muslim','Christian','Sikh','Destination','Corporate','Private Party']} />
+                  </>)}
+
+                  {svc === 'Live Streaming' && (<>
+                    <ChipMulti label="Platforms Supported" field="streamPlatforms" options={['YouTube','Zoom','Facebook','Instagram Live','Custom RTMP']} />
+                    <ChipSingle label="Camera Count" field="streamCameraCount" options={['1','2','3','4+']} />
+                    <ChipSingle label="Max Resolution" field="streamResolution" options={['720p','1080p','4K']} />
+                    <ChipSingle label="Backup Internet?" field="streamBackupInternet" options={['Yes','No']} />
+                  </>)}
+
+                  {svc === 'Photo Booth' && (<>
+                    <ChipMulti label="Booth Types" field="boothTypes" options={['Open Booth','360 Booth','Mirror Booth','Enclosed','GIF Booth','Selfie Pod']} />
+                    <ChipSingle label="On-site Prints?" field="boothPrints" options={['Yes','No']} />
+                    <ChipSingle label="Branded Overlay?" field="boothBrandedOverlay" options={['Yes','No']} />
+                    <ChipSingle label="Prop Box Included?" field="boothPropBox" options={['Yes','No']} />
+                  </>)}
+
+                  {svc === 'Gift & Favours' && (<>
+                    <ChipMulti label="Occasion Specialities" field="giftOccasions" options={['Wedding','Corporate','Diwali','Birthday','Baby Shower','Anniversary','Farewell']} />
+                    <ChipMulti label="Customisation Options" field="giftCustomisation" options={['Branding / Logo','Personalised Message','Custom Packaging','Monogramming','Edible Items']} />
+                    <ChipSingle label="Minimum Order Qty" field="giftMinOrder" options={['1','10','25','50','100+']} />
+                    <ChipSingle label="Delivery" field="giftDelivery" options={['Pickup Only','Local Delivery','Pan India']} />
+                  </>)}
+
+                  {svc === 'Transportation' && (<>
+                    <ChipMulti label="Vehicle Types" field="transportVehicles" options={['Sedan','SUV / Luxury','Vintage / Classic','Mini Bus (18-seater)','Bus / Coach','Tempo Traveller','Decorated Bridal Car']} />
+                    <ChipMulti label="Service Areas" field="transportServiceArea" options={['Local City','Outstation','Airport Transfers','Pan India']} />
+                    <ChipSingle label="Decoration Available?" field="transportDecoration" options={['Yes','No']} />
+                  </>)}
+
+                  {svc === 'Security' && (<>
+                    <ChipMulti label="Services Offered" field="securityServices" options={['Crowd Management','VIP Escort','Door Supervision','Patrol','Metal Detection','Parking Management']} />
+                    <ChipSingle label="Team Size" field="securityTeamSize" options={['1–5','5–10','10–20','20+']} />
+                    <ChipSingle label="PSARA Certified?" field="securityCertified" options={['Yes','No']} />
+                    <ChipSingle label="Armed Guards?" field="securityArmed" options={['Available','Not Available']} />
+                  </>)}
+                </>
+              );
+            })()}
+
             <div className="mt-8 flex justify-end">
               <button onClick={saveInfo} disabled={saving} className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-bold text-sm transition-colors disabled:opacity-60">
                 {saving ? "Saving…" : "Save Changes"}
               </button>
             </div>
-          </div>
-        )}
-
-        {/* ── Performance Details Tab (gig pros only) ── */}
-        {tab === "gig" && GIG_PRO_TYPES.includes(profile?.serviceType) && (() => {
-          const svc = profile.serviceType;
-          const styleOpts = GIG_STYLE_OPTIONS[svc] || [];
-          const setGig = (k, v) => setGigForm(f => ({ ...f, [k]: v }));
-          const toggleArr = (k, val) => setGigForm(f => ({ ...f, [k]: f[k].includes(val) ? f[k].filter(x => x !== val) : [...f[k], val] }));
-
-          const ChipPicker = ({ label, field, options }) => (
-            <div className="mb-5">
-              <label className="block text-sm font-semibold text-gray-600 mb-2">{label}</label>
-              <div className="flex flex-wrap gap-2">
-                {options.map(opt => {
-                  const active = gigForm[field]?.includes(opt);
-                  return (
-                    <button key={opt} type="button" onClick={() => toggleArr(field, opt)}
-                      className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${active ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
-                      {opt}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-
-          return (
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800">Performance Details</h2>
-                  <p className="text-sm text-gray-500 mt-0.5">Help customers understand exactly what you offer — this info shows on your public profile.</p>
-                </div>
-              </div>
-
-              {/* Bio / About */}
-              <div className="mb-5">
-                <label className="block text-sm font-semibold text-gray-600 mb-1.5">About You <span className="text-gray-400 font-normal">(shown on your profile)</span></label>
-                <textarea value={gigForm.bio} onChange={e => setGig("bio", e.target.value)} rows={3}
-                  placeholder={`Tell customers about your ${svc?.toLowerCase()} journey, style, and what makes you special...`}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm resize-none" />
-              </div>
-
-              {/* Style options */}
-              {styleOpts.length > 0 && <ChipPicker label="Performing Style" field="performingStyle" options={styleOpts} />}
-
-              {/* Genres — for music-based gig types */}
-              {['DJ', 'Band', 'Musician', 'Singer'].includes(svc) && <ChipPicker label="Music Genres" field="genres" options={GIG_GENRE_OPTIONS} />}
-
-              {/* Instruments — Band & Musician */}
-              {['Band', 'Musician'].includes(svc) && (
-                <div className="mb-5">
-                  <label className="block text-sm font-semibold text-gray-600 mb-1.5">Instruments <span className="text-gray-400 font-normal">(comma-separated)</span></label>
-                  <input value={gigForm.instruments?.join(', ')} onChange={e => setGig("instruments", e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
-                    placeholder="e.g. Guitar, Tabla, Keyboard, Violin" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
-                </div>
-              )}
-
-              {/* Band size */}
-              {svc === 'Band' && (
-                <div className="mb-5">
-                  <label className="block text-sm font-semibold text-gray-600 mb-1.5">Number of Members</label>
-                  <input type="number" min="1" value={gigForm.bandSize} onChange={e => setGig("bandSize", e.target.value)}
-                    placeholder="e.g. 5" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
-                </div>
-              )}
-
-              {/* Dance styles — Choreographer */}
-              {svc === 'Choreographer' && (
-                <ChipPicker label="Dance Styles" field="danceStyles" options={['Bollywood', 'Classical', 'Contemporary', 'Hip-Hop', 'Salsa', 'Couple Dance', 'Group']} />
-              )}
-
-              {/* Languages — Emcee/Host, Anchor, Singer, Stand-up Comedian */}
-              {['Emcee/Host', 'Anchor', 'Singer', 'Stand-up Comedian'].includes(svc) && <ChipPicker label="Languages" field="languages" options={GIG_LANG_OPTIONS} />}
-
-              {/* Suitable event types */}
-              <ChipPicker label="Suitable For" field="eventTypes"
-                options={['Wedding', 'Birthday', 'Corporate', 'Festival', 'College Event', 'Private Party', 'Sangeet', 'Anniversary', 'Award Night']} />
-
-              {/* DJ-specific setup questions */}
-              {svc === 'DJ' && (<>
-                <div className="mb-5">
-                  <label className="block text-sm font-semibold text-gray-600 mb-2">Setup Type</label>
-                  <div className="flex gap-2 flex-wrap">
-                    {['Basic Setup','Full Production'].map(opt => (
-                      <button key={opt} type="button" onClick={() => setGig("setupType", gigForm.setupType === opt ? "" : opt)}
-                        className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${gigForm.setupType === opt ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="mb-5">
-                  <label className="block text-sm font-semibold text-gray-600 mb-2">Lights Included?</label>
-                  <div className="flex gap-2">
-                    {['Yes','No'].map(opt => (
-                      <button key={opt} type="button" onClick={() => setGig("lightsIncluded", gigForm.lightsIncluded === opt ? "" : opt)}
-                        className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${gigForm.lightsIncluded === opt ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </>)}
-
-              {/* Social / showreel */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-600 mb-1.5">Instagram / Social Link</label>
-                  <input value={gigForm.socialLink} onChange={e => setGig("socialLink", e.target.value)}
-                    placeholder="https://instagram.com/yourprofile" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-600 mb-1.5">Showreel / YouTube Link</label>
-                  <input value={gigForm.showreel} onChange={e => setGig("showreel", e.target.value)}
-                    placeholder="https://youtube.com/watch?v=..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
-                </div>
-              </div>
-
-              <div className="mt-8 flex justify-end">
-                <button onClick={saveInfo} disabled={saving}
-                  className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-bold text-sm transition-colors disabled:opacity-60">
-                  {saving ? "Saving…" : "Save Performance Details"}
-                </button>
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* ── Service Details Tab ── */}
-        {tab === "service" && ['Photographer','Caterer','Decorator','Makeup Artist','Mehendi Artist','Hair Stylist','Cake Artist','Bartender','Videographer','Food Truck','Wedding Planner','Live Streaming','Photo Booth','Gift & Favours','Transportation','Security'].includes(profile?.serviceType) && (() => {
-          const svc = profile.serviceType;
-          const setSvc = (k, v) => setSvcForm(f => ({ ...f, [k]: v }));
-          const toggleSvc = (k, val) => setSvcForm(f => ({ ...f, [k]: f[k].includes(val) ? f[k].filter(x => x !== val) : [...f[k], val] }));
-
-          const ChipSingle = ({ label, field, options }) => (
-            <div className="mb-5">
-              <label className="block text-sm font-semibold text-gray-600 mb-2">{label}</label>
-              <div className="flex flex-wrap gap-2">
-                {options.map(opt => {
-                  const active = svcForm[field] === opt;
-                  return (
-                    <button key={opt} type="button" onClick={() => setSvc(field, active ? "" : opt)}
-                      className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${active ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
-                      {opt}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-
-          const ChipMulti = ({ label, field, options }) => (
-            <div className="mb-5">
-              <label className="block text-sm font-semibold text-gray-600 mb-2">{label}</label>
-              <div className="flex flex-wrap gap-2">
-                {options.map(opt => {
-                  const active = svcForm[field]?.includes(opt);
-                  return (
-                    <button key={opt} type="button" onClick={() => toggleSvc(field, opt)}
-                      className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${active ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
-                      {opt}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-
-          return (
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h2 className="text-xl font-bold text-gray-800 mb-1">Service Details</h2>
-              <p className="text-sm text-gray-500 mb-6">These details appear on your public profile and help customers choose you.</p>
-
-              {svc === 'Photographer' && (<>
-                <ChipSingle label="Services Offered" field="photoServices" options={['Photographer','Videographer','Both']} />
-                <ChipMulti label="Photography Style" field="photographyType" options={['Candid','Drone','Traditional','Cinematic']} />
-                <ChipSingle label="Hours Included" field="hoursIncluded" options={['2 hrs','4 hrs','8 hrs','Full day']} />
-                <ChipSingle label="Editing Time (days)" field="editingTime" options={['2','5','7','10+']} />
-              </>)}
-
-              {svc === 'Caterer' && (<>
-                <ChipMulti label="Cuisine Types" field="cuisineTypes" options={['North Indian','South Indian','Snacks','Chinese Starters','Punjabi','Sweets','Italian','Continental','Other']} />
-                <ChipMulti label="Service Style" field="cateringServiceType" options={['Buffet','Food Stations','Live Counter','Family Style']} />
-                <ChipMulti label="Menu Type" field="menuType" options={['Veg','Non Veg','Jain']} />
-                <ChipSingle label="Beverages Included?" field="beverage" options={['Yes','No']} />
-              </>)}
-
-              {svc === 'Decorator' && (<>
-                <ChipMulti label="Decoration Types" field="decorTypes" options={['Themed','Floral','Lighting','Balloon Art','Traditional','Modern','Rustic','Minimalist','Other']} />
-                <ChipMulti label="Venue Coverage" field="venueCoverage" options={['Interior','Exterior','Full Venue','Stage Setup','Entrance Focus','Backdrop']} />
-              </>)}
-
-              {svc === 'Makeup Artist' && (<>
-                <ChipMulti label="Specialisations" field="makeupSpecialisations" options={['Bridal','HD Airbrush','Party Makeup','Editorial','Stage / Theatre','Grooming']} />
-                <ChipMulti label="Brands Used" field="makeupBrands" options={['MAC','Huda Beauty','Kryolan','Armani','L\'Oréal','Charlotte Tilbury','NARS','Other']} />
-                <ChipMulti label="Who Do You Serve" field="makeupAudience" options={['Bride','Bridesmaids','Groom Grooming','Group Bookings']} />
-                <ChipSingle label="Trial Booking Available?" field="makeupTrialAvailable" options={['Yes','No']} />
-              </>)}
-
-              {svc === 'Mehendi Artist' && (<>
-                <ChipMulti label="Design Styles" field="mehendiStyles" options={['Arabic','Indian Traditional','Fusion','Moroccan','Pakistani','Minimalist']} />
-                <ChipMulti label="Coverage Offered" field="mehendiCoverage" options={['Full Hands','Half Hands','Feet','Back of Hand','Arms']} />
-                <ChipSingle label="Cone Type" field="mehendiConeType" options={['Natural Only','Chemical','Both']} />
-                <ChipSingle label="Group Bookings?" field="mehendiGroupBooking" options={['Yes','No']} />
-              </>)}
-
-              {svc === 'Hair Stylist' && (<>
-                <ChipMulti label="Services Offered" field="hairServices" options={['Bridal Updo','Extensions','Highlights / Colour','Blowout','Party Style','Braids & Accessories']} />
-                <ChipMulti label="Hair Types Handled" field="hairTypes" options={['Straight','Wavy','Curly','Thick','Fine','Coloured / Treated']} />
-                <ChipSingle label="Travel to Venue?" field="hairTravelAvailable" options={['Yes','No']} />
-              </>)}
-
-              {svc === 'Cake Artist' && (<>
-                <ChipMulti label="Cake Styles" field="cakeStyles" options={['Fondant','Fresh Cream','Drip Cake','Naked Cake','Floral','Sculpted / 3D']} />
-                <ChipMulti label="Flavours" field="cakeFlavours" options={['Vanilla','Chocolate','Butterscotch','Red Velvet','Fruit','Blueberry','Custom']} />
-                <ChipSingle label="Minimum Order" field="cakeMinOrder" options={['500g','1 kg','2 kg','3 kg+']} />
-                <ChipSingle label="Lead Time Needed" field="cakeLeadTime" options={['1 day','2 days','3–5 days','7+ days']} />
-              </>)}
-
-              {svc === 'Bartender' && (<>
-                <ChipMulti label="Drink Services" field="bartenderServices" options={['Cocktails','Mocktails','Wine Service','Beer Service','Shots & LIIT','BYOB Setup']} />
-                <ChipMulti label="Event Types" field="bartenderEventTypes" options={['Wedding','House Party','Corporate','Pool Party','Club Night']} />
-                <ChipSingle label="Bring Own Bar Counter?" field="bartenderBarEquipment" options={['Yes','No']} />
-                <ChipSingle label="Certified Mixologist?" field="bartenderCertified" options={['Yes','No']} />
-              </>)}
-
-              {svc === 'Videographer' && (<>
-                <ChipMulti label="Filming Style" field="videoStyle" options={['Cinematic','Documentary','Highlight Reel','Short Reels','Live Event']} />
-                <ChipMulti label="Packages" field="videoPackages" options={['2 hrs','4 hrs','Full Day','Multi-Day','Pre-Wedding']} />
-                <ChipSingle label="Drone Available?" field="videoDroneAvailable" options={['Yes','No']} />
-                <ChipSingle label="Delivery Timeline" field="videoDeliveryDays" options={['3 days','7 days','14 days','30 days']} />
-              </>)}
-
-              {svc === 'Food Truck' && (<>
-                <ChipMulti label="Counter Types" field="foodCounterTypes" options={['Chaat','Dosa / South Indian','Pizza','Biryani','Chinese','Desserts','Beverages','BBQ','Other']} />
-                <ChipSingle label="Minimum Pax" field="foodMinPax" options={['25','50','100','200+']} />
-                <ChipSingle label="Space Needed" field="foodSpaceNeeded" options={['10×10 ft','15×15 ft','20×20 ft','Flexible']} />
-                <ChipSingle label="Power Requirement" field="foodPowerNeeded" options={['Self-sufficient','5 kW','10 kW','15 kW+']} />
-              </>)}
-
-              {svc === 'Wedding Planner' && (<>
-                <ChipMulti label="Services Offered" field="plannerServices" options={['Full Planning','Partial Planning','Day-of Coordination','Destination Weddings','Pre-Wedding Events']} />
-                <ChipMulti label="Budget Range Handled" field="plannerBudgetRange" options={['Under ₹5L','₹5–15L','₹15–50L','₹50L+']} />
-                <ChipMulti label="Event Types" field="plannerEventTypes" options={['Hindu','Muslim','Christian','Sikh','Destination','Corporate','Private Party']} />
-              </>)}
-
-              {svc === 'Live Streaming' && (<>
-                <ChipMulti label="Platforms Supported" field="streamPlatforms" options={['YouTube','Zoom','Facebook','Instagram Live','Custom RTMP']} />
-                <ChipSingle label="Camera Count" field="streamCameraCount" options={['1','2','3','4+']} />
-                <ChipSingle label="Max Resolution" field="streamResolution" options={['720p','1080p','4K']} />
-                <ChipSingle label="Backup Internet?" field="streamBackupInternet" options={['Yes','No']} />
-              </>)}
-
-              {svc === 'Photo Booth' && (<>
-                <ChipMulti label="Booth Types" field="boothTypes" options={['Open Booth','360 Booth','Mirror Booth','Enclosed','GIF Booth','Selfie Pod']} />
-                <ChipSingle label="On-site Prints?" field="boothPrints" options={['Yes','No']} />
-                <ChipSingle label="Branded Overlay?" field="boothBrandedOverlay" options={['Yes','No']} />
-                <ChipSingle label="Prop Box Included?" field="boothPropBox" options={['Yes','No']} />
-              </>)}
-
-              {svc === 'Gift & Favours' && (<>
-                <ChipMulti label="Occasion Specialities" field="giftOccasions" options={['Wedding','Corporate','Diwali','Birthday','Baby Shower','Anniversary','Farewell']} />
-                <ChipMulti label="Customisation Options" field="giftCustomisation" options={['Branding / Logo','Personalised Message','Custom Packaging','Monogramming','Edible Items']} />
-                <ChipSingle label="Minimum Order Qty" field="giftMinOrder" options={['1','10','25','50','100+']} />
-                <ChipSingle label="Delivery" field="giftDelivery" options={['Pickup Only','Local Delivery','Pan India']} />
-              </>)}
-
-              {svc === 'Transportation' && (<>
-                <ChipMulti label="Vehicle Types" field="transportVehicles" options={['Sedan','SUV / Luxury','Vintage / Classic','Mini Bus (18-seater)','Bus / Coach','Tempo Traveller','Decorated Bridal Car']} />
-                <ChipMulti label="Service Areas" field="transportServiceArea" options={['Local City','Outstation','Airport Transfers','Pan India']} />
-                <ChipSingle label="Decoration Available?" field="transportDecoration" options={['Yes','No']} />
-              </>)}
-
-              {svc === 'Security' && (<>
-                <ChipMulti label="Services Offered" field="securityServices" options={['Crowd Management','VIP Escort','Door Supervision','Patrol','Metal Detection','Parking Management']} />
-                <ChipSingle label="Team Size" field="securityTeamSize" options={['1–5','5–10','10–20','20+']} />
-                <ChipSingle label="PSARA Certified?" field="securityCertified" options={['Yes','No']} />
-                <ChipSingle label="Armed Guards?" field="securityArmed" options={['Available','Not Available']} />
-              </>)}
-
-              <div className="mt-6 flex justify-end">
-                <button onClick={saveInfo} disabled={saving}
-                  className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-bold text-sm transition-colors disabled:opacity-60">
-                  {saving ? "Saving…" : "Save Service Details"}
-                </button>
-              </div>
-            </div>
-          );
-        })()}
-
-        {/* ── Portfolio Tab ── */}
-        {tab === "portfolio" && (
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl font-bold text-gray-800">Portfolio Photos</h2>
-                <p className="text-sm text-gray-500 mt-1">{photos.length}/10 photos · Customers see these on your profile</p>
-              </div>
-              <div>
-                <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={e => uploadPhotos(e.target.files)} />
-                <button onClick={() => fileRef.current?.click()} disabled={uploading || photos.length >= 10} className="px-5 py-2.5 bg-yellow-500 text-white rounded-xl font-semibold text-sm hover:bg-yellow-600 transition-colors disabled:opacity-50">
-                  {uploading ? "Uploading…" : photos.length >= 10 ? "Max reached" : "+ Upload Photos"}
-                </button>
-              </div>
-            </div>
-
-            {photos.length === 0 ? (
-              <div className="text-center py-16 border-2 border-dashed border-gray-200 rounded-xl">
-                <div className="text-4xl mb-3">📷</div>
-                <div className="text-gray-500 font-medium">No portfolio photos yet</div>
-                <div className="text-gray-400 text-sm mt-1">Upload photos to showcase your work to customers</div>
-                <button onClick={() => fileRef.current?.click()} className="mt-4 px-6 py-2.5 bg-yellow-500 text-white rounded-xl font-semibold text-sm hover:bg-yellow-600 transition-colors">
-                  Upload First Photo
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {photos.map((url, i) => (
-                  <div key={url} className="relative group rounded-xl overflow-hidden aspect-square bg-gray-100">
-                    <img src={url} alt={`Portfolio ${i + 1}`} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <button onClick={() => deletePhoto(url)} className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-semibold hover:bg-red-600 transition-colors">
-                        Remove
-                      </button>
-                    </div>
-                    {i === 0 && (
-                      <div className="absolute top-2 left-2 bg-yellow-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
-                        Cover
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {photos.length < 10 && (
-                  <button onClick={() => fileRef.current?.click()} className="aspect-square border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:border-yellow-400 hover:text-yellow-500 transition-colors">
-                    <span className="text-3xl mb-1">+</span>
-                    <span className="text-sm font-medium">Add Photo</span>
-                  </button>
-                )}
-              </div>
-            )}
           </div>
         )}
 
