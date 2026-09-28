@@ -135,29 +135,37 @@ function Modal({ onClose, title, emoji, children, wide }) {
 }
 
 // ── Light Form Modal (white card, occasion-tinted) ──────────────────────────
-function LightFormModal({ onClose, emoji, title, subtitle, accent, children, onLeaderboard }) {
+function LightFormModal({ onClose, emoji, title, subtitle, accent, children, onLeaderboard, system, wide }) {
   useEffect(() => {
     const h = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
   }, [onClose]);
-  const ac = accent || "#C4973A";
+  const sys = system ? GAME_SYSTEMS[system] : null;
+  const ac = sys?.accent || accent || "#C4973A";
+  const glow = sys?.glow || ac;
+  const headerGrad = sys?.grad || "linear-gradient(155deg,#0D0820 0%,rgba(18,8,40,0.99) 100%)";
+  const contentBg = sys?.contentBg || "#FFFAF7";
   return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,1,8,0.82)", backdropFilter:"blur(20px)", zIndex:1000, display:"flex", alignItems:"flex-end", justifyContent:"center" }}>
-      <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, maxHeight:"93dvh", borderRadius:"24px 24px 0 0", overflow:"hidden", display:"flex", flexDirection:"column", fontFamily:font, boxShadow:`0 -28px 80px rgba(0,0,0,0.65), 0 0 0 1px ${ac}18`, animation:"modal-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-        {/* Dark immersive header */}
-        <div style={{ background:"linear-gradient(155deg,#0D0820 0%,rgba(18,8,40,0.99) 100%)", padding:"24px 20px 20px", position:"relative", overflow:"hidden", flexShrink:0 }}>
-          <div style={{ position:"absolute", top:-60, right:-60, width:220, height:220, borderRadius:"50%", background:`radial-gradient(ellipse,${ac}30 0%,transparent 70%)`, pointerEvents:"none" }} />
-          <div style={{ position:"absolute", bottom:-50, left:-30, width:160, height:160, borderRadius:"50%", background:`radial-gradient(ellipse,${ac}12 0%,transparent 70%)`, pointerEvents:"none" }} />
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,1,8,0.85)", backdropFilter:"blur(20px)", zIndex:1000, display:"flex", alignItems:"flex-end", justifyContent:"center" }}>
+      <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, maxHeight:"93dvh", borderRadius:"24px 24px 0 0", overflow:"hidden", display:"flex", flexDirection:"column", fontFamily:font, boxShadow:`0 -28px 80px rgba(0,0,0,0.65), 0 0 0 1px ${glow}22`, animation:"modal-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+        {/* System-themed header */}
+        <div style={{ background:headerGrad, padding:"24px 20px 20px", position:"relative", overflow:"hidden", flexShrink:0 }}>
+          {/* Top accent line */}
+          <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:`linear-gradient(90deg,transparent,${glow}90,transparent)`, pointerEvents:"none" }} />
+          <div style={{ position:"absolute", top:-60, right:-60, width:220, height:220, borderRadius:"50%", background:`radial-gradient(ellipse,${glow}35 0%,transparent 70%)`, pointerEvents:"none" }} />
+          <div style={{ position:"absolute", bottom:-50, left:-30, width:160, height:160, borderRadius:"50%", background:`radial-gradient(ellipse,${glow}15 0%,transparent 70%)`, pointerEvents:"none" }} />
           {/* Close + optional leaderboard button */}
           <div style={{ position:"absolute", top:14, right:14, display:"flex", gap:6, zIndex:2 }}>
             {onLeaderboard && (
-              <button onClick={e=>{e.stopPropagation();onLeaderboard();}} style={{ background:"rgba(255,255,255,0.10)", border:"1px solid rgba(255,255,255,0.18)", color:"rgba(255,255,255,0.80)", height:32, borderRadius:20, cursor:"pointer", fontSize:12, fontWeight:700, padding:"0 10px", display:"flex", alignItems:"center", gap:4 }}>🏆 Board</button>
+              <button onClick={e=>{e.stopPropagation();onLeaderboard();}} style={{ background:"rgba(255,255,255,0.10)", border:`1px solid ${glow}40`, color:"rgba(255,255,255,0.80)", height:32, borderRadius:20, cursor:"pointer", fontSize:12, fontWeight:700, padding:"0 10px", display:"flex", alignItems:"center", gap:4 }}>🏆 Board</button>
             )}
             <button onClick={onClose} style={{ background:"rgba(255,255,255,0.10)", border:"1px solid rgba(255,255,255,0.14)", color:"rgba(255,255,255,0.65)", width:32, height:32, borderRadius:"50%", cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
           </div>
+          {/* System tag + title row */}
+          {sys && <div style={{ fontSize:9, fontWeight:900, color:`${glow}90`, textTransform:"uppercase", letterSpacing:"0.22em", marginBottom:10, position:"relative", zIndex:1 }}>{sys.tag}</div>}
           <div style={{ display:"flex", alignItems:"center", gap:14, position:"relative", zIndex:1 }}>
-            <div style={{ width:52, height:52, borderRadius:15, background:`${ac}22`, border:`1.5px solid ${ac}50`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:`0 0 22px ${ac}35` }}>
+            <div style={{ width:52, height:52, borderRadius:15, background:`${glow}22`, border:`1.5px solid ${glow}50`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:`0 0 22px ${glow}35` }}>
               <span style={{ fontSize:26 }}>{emoji}</span>
             </div>
             <div>
@@ -166,8 +174,8 @@ function LightFormModal({ onClose, emoji, title, subtitle, accent, children, onL
             </div>
           </div>
         </div>
-        {/* Light content area */}
-        <div style={{ background:"#FFFAF7", padding:"20px 20px 36px", overflowY:"auto", flex:1 }}>
+        {/* Content area — system-tinted background */}
+        <div style={{ background:contentBg, padding:"20px 20px 36px", overflowY:"auto", flex:1 }}>
           {children}
         </div>
       </div>
@@ -202,6 +210,20 @@ function PlayerRail({ room, players = [], myName, accent, checked = {} }) {
     </div>
   );
 }
+
+// ── 10 Game Visual Systems ──────────────────────────────────────────────────
+const GAME_SYSTEMS = {
+  choice:      { grad:"linear-gradient(155deg,#040B2B 0%,#0D1052 100%)",      glow:"#4169E1", accent:"#6C63FF", tag:"VOTE",       contentBg:"#F0F2FF" },
+  truth:       { grad:"linear-gradient(155deg,#1C0808 0%,#2D1208 100%)",      glow:"#FF5C5C", accent:"#FF8A65", tag:"SOCIAL",     contentBg:"#FFF5F0" },
+  mystery:     { grad:"linear-gradient(155deg,#0D0618 0%,#1A0A30 100%)",      glow:"#9B6DFF", accent:"#9B6DFF", tag:"MYSTERY",    contentBg:"#F5F0FF" },
+  quiz:        { grad:"linear-gradient(155deg,#140C00 0%,#2D1C00 100%)",      glow:"#F2A900", accent:"#FFD166", tag:"QUIZ",       contentBg:"#FFFBF0" },
+  music:       { grad:"linear-gradient(155deg,#1A0018 0%,#280A28 100%)",      glow:"#D946A8", accent:"#FF73C6", tag:"MUSIC",      contentBg:"#FFF0FA" },
+  creative:    { grad:"linear-gradient(155deg,#001818 0%,#002820 100%)",      glow:"#16A6A0", accent:"#63D8C8", tag:"CREATIVE",   contentBg:"#F0FFFE" },
+  word:        { grad:"linear-gradient(155deg,#001828 0%,#002038 100%)",      glow:"#14B8C4", accent:"#38BDF8", tag:"WORD BATTLE",contentBg:"#F0F8FF" },
+  performance: { grad:"linear-gradient(155deg,#1C0008 0%,#280010 100%)",      glow:"#EF4444", accent:"#F43F5E", tag:"STAGE",      contentBg:"#FFF0F0" },
+  speed:       { grad:"linear-gradient(155deg,#081400 0%,#101C00 100%)",      glow:"#84CC16", accent:"#A3E635", tag:"REACTION",   contentBg:"#F5FFF0" },
+  celebration: { grad:"linear-gradient(155deg,#1A1000 0%,#1E0A28 100%)",      glow:"#D4AF37", accent:"#FFE29A", tag:"PARTY",      contentBg:"#FFFDF0" },
+};
 
 // ── IDs of tools that are live-wired (need a room to play together) ──────────
 const LIVE_GAME_IDS = new Set([
@@ -905,7 +927,7 @@ function TruthOrDare({ onClose, accent, room, myName: liveName, players: livePla
   const totalDone = Object.values(completedBy).reduce((a, b) => a + b, 0);
 
   if (phase === "setup" && !live) return (
-    <LightFormModal onClose={onClose} emoji="🎯" title="Truth or Dare" accent={accent}>
+    <LightFormModal onClose={onClose} emoji="🎯" title="Truth or Dare" accent={accent} system="truth">
       <p style={{ fontSize: 13, color: "rgba(28,9,0,0.50)", marginBottom: 14 }}>Add players for turn-based, or skip straight to cards.</p>
       <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
         <input value={newP} onChange={e => setNewP(e.target.value)} onKeyDown={e => e.key === "Enter" && addP()} placeholder="Player name" style={{ ...linp, flex: 1 }} />
@@ -921,7 +943,7 @@ function TruthOrDare({ onClose, accent, room, myName: liveName, players: livePla
     </LightFormModal>
   );
   if (phase === "spinning") return (
-    <LightFormModal onClose={onClose} emoji="🎯" title="Truth or Dare" accent={accent}>
+    <LightFormModal onClose={onClose} emoji="🎯" title="Truth or Dare" accent={accent} system="truth">
       <div style={{ textAlign: "center", padding: "12px 0" }}>
         <div style={{ fontSize: 13, color: "rgba(28,9,0,0.40)", marginBottom: 20 }}>Picking who goes next…</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
@@ -934,17 +956,38 @@ function TruthOrDare({ onClose, accent, room, myName: liveName, players: livePla
   );
   const displayPlayer = live ? liveCurrent : current;
   if (phase === "mode") return (
-    <LightFormModal onClose={onClose} emoji="🎯" title="Truth or Dare" accent={accent}>
+    <LightFormModal onClose={onClose} emoji="🎯" title="Truth or Dare" accent={accent} system="truth">
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
-      <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <div style={{ fontSize: 32, fontWeight: 900, color: "#1C1410", letterSpacing: "-0.02em" }}>{displayPlayer}</div>
-        <div style={{ fontSize: 13, color: "rgba(28,9,0,0.40)", marginTop: 4 }}>
-          {live && liveName === displayPlayer ? "it's your turn!" : live ? `waiting for ${displayPlayer}…` : `it's your turn · round ${totalDone + 1}`}
+      <div style={{ textAlign:"center", marginBottom:20, marginTop:4 }}>
+        <div style={{ fontSize:11, fontWeight:800, color:"rgba(255,92,92,0.65)", textTransform:"uppercase", letterSpacing:"0.18em", marginBottom:8 }}>It's their turn</div>
+        <div style={{ fontSize:34, fontWeight:900, color:"#1C0808", letterSpacing:"-0.02em" }}>{displayPlayer}</div>
+        <div style={{ fontSize:13, color:"rgba(28,9,0,0.42)", marginTop:4 }}>
+          {live && liveName === displayPlayer ? "Choose your challenge!" : live ? `Waiting for ${displayPlayer}…` : `Round ${totalDone + 1}`}
         </div>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <button onClick={() => pickMode("truth")} disabled={live && liveName !== displayPlayer} style={{ ...lBtn("#1D4ED8"), padding: "22px 20px", fontSize: 20, borderRadius: 16, letterSpacing: "0.01em", opacity: live && liveName !== displayPlayer ? 0.45 : 1 }}>🤔 Truth</button>
-        <button onClick={() => pickMode("dare")} disabled={live && liveName !== displayPlayer} style={{ ...lBtn("#DC2626"), padding: "22px 20px", fontSize: 20, borderRadius: 16, letterSpacing: "0.01em", opacity: live && liveName !== displayPlayer ? 0.45 : 1 }}>🔥 Dare</button>
+      <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+        <button onClick={() => pickMode("truth")} disabled={live && liveName !== displayPlayer}
+          style={{ padding:0, borderRadius:20, border:"none", cursor: live && liveName !== displayPlayer ? "default" : "pointer", opacity: live && liveName !== displayPlayer ? 0.45 : 1, overflow:"hidden", textAlign:"left", background:"linear-gradient(145deg,#FFF5F0,#FFE8E0)", boxShadow:"0 6px 24px rgba(255,92,92,0.15)" }}>
+          <div style={{ padding:"22px 20px", display:"flex", alignItems:"center", gap:16 }}>
+            <div style={{ width:52, height:52, borderRadius:16, background:"rgba(255,92,92,0.12)", border:"1.5px solid rgba(255,92,92,0.25)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, flexShrink:0 }}>🤔</div>
+            <div>
+              <div style={{ fontSize:22, fontWeight:900, color:"#7F1D1D", letterSpacing:"0.04em" }}>TRUTH</div>
+              <div style={{ fontSize:12, color:"rgba(127,29,29,0.55)", marginTop:2 }}>Answer honestly — no hiding</div>
+            </div>
+            <div style={{ marginLeft:"auto", fontSize:20, color:"rgba(255,92,92,0.35)" }}>→</div>
+          </div>
+        </button>
+        <button onClick={() => pickMode("dare")} disabled={live && liveName !== displayPlayer}
+          style={{ padding:0, borderRadius:20, border:"none", cursor: live && liveName !== displayPlayer ? "default" : "pointer", opacity: live && liveName !== displayPlayer ? 0.45 : 1, overflow:"hidden", textAlign:"left", background:"linear-gradient(145deg,#1A0505,#3D0A0A)", boxShadow:"0 8px 32px rgba(220,38,38,0.35)" }}>
+          <div style={{ padding:"22px 20px", display:"flex", alignItems:"center", gap:16 }}>
+            <div style={{ width:52, height:52, borderRadius:16, background:"rgba(220,38,38,0.18)", border:"1.5px solid rgba(220,38,38,0.40)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, flexShrink:0 }}>🔥</div>
+            <div>
+              <div style={{ fontSize:22, fontWeight:900, color:"#FFFFFF", letterSpacing:"0.04em" }}>DARE</div>
+              <div style={{ fontSize:12, color:"rgba(255,255,255,0.50)", marginTop:2 }}>Do it or face the consequences</div>
+            </div>
+            <div style={{ marginLeft:"auto", fontSize:20, color:"rgba(255,92,92,0.50)" }}>→</div>
+          </div>
+        </button>
       </div>
     </LightFormModal>
   );
@@ -952,7 +995,7 @@ function TruthOrDare({ onClose, accent, room, myName: liveName, players: livePla
   const activeCard = live ? liveCard : card;
   const isMyTurn = !live || liveName === displayPlayer;
   return (
-    <LightFormModal onClose={onClose} emoji="🎯" title="Truth or Dare" accent={accent} onLeaderboard={onLeaderboard}>
+    <LightFormModal onClose={onClose} emoji="🎯" title="Truth or Dare" accent={accent} onLeaderboard={onLeaderboard} system="truth">
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
       {displayPlayer && <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div style={{fontSize:13,fontWeight:700,color:accent}}>{live && liveName === displayPlayer ? "Your turn!" : `${displayPlayer}'s turn`}</div>
@@ -1050,7 +1093,7 @@ function NeverHaveI({ onClose, accent, room, myName: liveName, players: livePlay
   };
 
   if (!live && players.length < 2) return (
-    <LightFormModal onClose={onClose} emoji="🙅" title="Never Have I Ever" accent={accent}>
+    <LightFormModal onClose={onClose} emoji="🙅" title="Never Have I Ever" accent={accent} system="truth">
       <p style={{ color: "rgba(28,9,0,0.50)", marginBottom: 14, fontSize: 13, textAlign: "center" }}>Sit in a circle — add everyone playing</p>
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
         <input value={newP} onChange={e => setNewP(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Player name" style={{ ...linp, flex: 1 }} />
@@ -1067,7 +1110,7 @@ function NeverHaveI({ onClose, accent, room, myName: liveName, players: livePlay
   const haveCount = Object.values(roundHave).filter(Boolean).length;
 
   return (
-    <LightFormModal onClose={onClose} emoji="🙅" title="Never Have I Ever" accent={accent} onLeaderboard={onLeaderboard}>
+    <LightFormModal onClose={onClose} emoji="🙅" title="Never Have I Ever" accent={accent} onLeaderboard={onLeaderboard} system="truth">
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={revealed ? Object.fromEntries(Object.entries(roundHave).filter(([,v])=>v).map(([n])=>[n,true])) : {}} />
       {/* Statement card */}
       <div style={{ background: "#fff", border: `1.5px solid ${accent}30`, borderRadius: 18, padding: "20px 18px", textAlign: "center", marginBottom: 6, boxShadow: `0 4px 20px ${accent}10` }}>
@@ -1186,7 +1229,7 @@ function WouldYouRather({ onClose, accent, room, myName: liveName, players: live
   const SIDE_PCTS  = ["#93C5FD","#D8B4FE"];
   const SIDE_LABELS = ["OPTION A","OPTION B"];
   return (
-    <LightFormModal onClose={onClose} emoji="🤷" title="Would You Rather" accent={accent} onLeaderboard={onLeaderboard}>
+    <LightFormModal onClose={onClose} emoji="🤷" title="Would You Rather" accent={accent} onLeaderboard={onLeaderboard} system="choice">
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={Object.fromEntries(Object.keys(liveVotesMap || {}).map(n => [n, true]))} />
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
@@ -1304,7 +1347,7 @@ function HotTakes({ onClose, accent, room, myName: liveName, players: livePlayer
   const currentTake = live ? { id: liveIdx, text: liveTakeText, reactions: liveReactions || {} } : takes[0];
 
   return (
-    <LightFormModal onClose={onClose} emoji="🌶️" title="Hot Takes" accent={accent} wide onLeaderboard={onLeaderboard}>
+    <LightFormModal onClose={onClose} emoji="🌶️" title="Hot Takes" accent={accent} wide onLeaderboard={onLeaderboard} system="choice">
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={Object.fromEntries(Object.keys(liveVotesMap||{}).map(n=>[n,true]))} />
       {/* Room temperature meter */}
       <div style={{ background: "rgba(0,0,0,0.03)", borderRadius: 14, padding: "12px 16px", marginBottom: 14, display: "flex", alignItems: "center", gap: 12 }}>
@@ -1375,7 +1418,7 @@ function SpinBottle({ onClose, accent }) {
     setTimeout(()=>{ setSpinning(false); setRevealing(true); setTimeout(()=>{ setResult(rand(players)); setRevealing(false); },600); },3200);
   };
   return (
-    <LightFormModal onClose={onClose} emoji="🍾" title="Spin & Pick" accent={accent}>
+    <LightFormModal onClose={onClose} emoji="🍾" title="Spin & Pick" accent={accent} system="celebration">
       <div style={{display:"flex",gap:8,marginBottom:10}}>
         <input value={newP} onChange={e=>setNewP(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addP()} placeholder="Add a name" style={{...linp,flex:1}}/>
         <button onClick={addP} style={{...lBtn(accent),width:"auto",padding:"10px 16px"}}>+</button>
@@ -1462,7 +1505,7 @@ function Charades({ onClose, accent }) {
     return () => clearInterval(ref.current);
   }, [timerKey]);
   if (!cat) return (
-    <LightFormModal onClose={onClose} emoji="🎭" title="Dumb Charades" accent={accent}>
+    <LightFormModal onClose={onClose} emoji="🎭" title="Dumb Charades" accent={accent} system="performance">
       {/* Theater marquee header */}
       <div style={{ position:"relative", borderRadius:14, overflow:"hidden", marginBottom:16, background:"linear-gradient(180deg,#1A0808,#0F0505)", border:"1px solid rgba(220,38,38,0.2)", padding:"18px 20px 14px" }}>
         {/* Marquee light bulbs */}
@@ -1491,7 +1534,7 @@ function Charades({ onClose, accent }) {
   );
   const timerColor = timer > 15 ? "#34D399" : timer > 5 ? "#FBBF24" : "#F87171";
   return (
-    <LightFormModal onClose={onClose} emoji="🎭" title="Dumb Charades" accent={accent}>
+    <LightFormModal onClose={onClose} emoji="🎭" title="Dumb Charades" accent={accent} system="performance">
       {/* Scoreboard */}
       <div style={{ display:"flex", gap:8, marginBottom:12 }}>
         {["A","B"].map(t => (
@@ -1560,7 +1603,7 @@ function Bingo({ onClose, accent, squares }) {
   const inWinLine = (i) => winLines.some(line => line.includes(i));
   const markedCount = Object.values(marked).filter(Boolean).length;
   return (
-    <LightFormModal onClose={onClose} emoji="🎱" title="Bingo" accent={accent} wide>
+    <LightFormModal onClose={onClose} emoji="🎱" title="Bingo" accent={accent} wide system="celebration">
       {bingo&&(
         <div style={{textAlign:"center",marginBottom:16,background:"linear-gradient(135deg,rgba(251,191,36,0.12),rgba(251,191,36,0.06))",borderRadius:16,padding:"16px",border:"2px solid rgba(251,191,36,0.4)",animation:"splash-pulse 0.6s ease-out"}}>
           <div style={{fontSize:30,fontWeight:900,color:"#D97706",letterSpacing:"0.06em"}}>🎉 B I N G O !</div>
@@ -1747,7 +1790,7 @@ function BirthdayQuiz({ onClose, accent, celebrant }) {
   const revealDone = Object.keys(correctAnswers).length === questions.length;
 
   if (phase === "setup") return (
-    <LightFormModal onClose={onClose} emoji="🎯" title={`How well do you know ${celebrant || "them"}?`} accent={accent} wide>
+    <LightFormModal onClose={onClose} emoji="🎯" title={`How well do you know ${celebrant || "them"}?`} accent={accent} wide system="quiz">
       <style>{`
         @keyframes bq-glow{0%,100%{box-shadow:0 0 20px ${accent}44,0 0 0 2px ${accent}22}50%{box-shadow:0 0 40px ${accent}66,0 0 0 2px ${accent}44}}
         @keyframes bq-slide{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
@@ -1832,7 +1875,7 @@ function BirthdayQuiz({ onClose, accent, celebrant }) {
 
   const q = questions[currentQ];
   return (
-    <LightFormModal onClose={onClose} emoji="🎯" title={playerName ? `${playerName}'s turn` : "Your turn"} accent={accent} wide>
+    <LightFormModal onClose={onClose} emoji="🎯" title={playerName ? `${playerName}'s turn` : "Your turn"} accent={accent} wide system="quiz">
       <style>{`
         @keyframes bq-qin{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
         @keyframes bq-optin{from{opacity:0;transform:scale(0.92)}to{opacity:1;transform:scale(1)}}
@@ -2006,7 +2049,7 @@ function CoupleQuiz({ onClose, accent }) {
   const revealDone = Object.keys(correctAnswers).length === questions.length;
 
   if (phase === "setup") return (
-    <LightFormModal onClose={onClose} emoji="💑" title="Couple Quiz" accent={accent} wide>
+    <LightFormModal onClose={onClose} emoji="💑" title="Couple Quiz" accent={accent} wide system="quiz">
       <style>{`
         @keyframes cq-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
         @keyframes cq-slide{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -2098,7 +2141,7 @@ function CoupleQuiz({ onClose, accent }) {
 
   const q = questions[currentQ];
   return (
-    <LightFormModal onClose={onClose} emoji="💑" title={playerName ? `${playerName}'s turn` : "Your turn"} accent={accent} wide>
+    <LightFormModal onClose={onClose} emoji="💑" title={playerName ? `${playerName}'s turn` : "Your turn"} accent={accent} wide system="quiz">
       <style>{`@keyframes cq-qin{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}`}</style>
 
       {/* Progress */}
@@ -2206,7 +2249,7 @@ function BabyNameVote({ onClose, accent }) {
 
   if (phase === "name") {
     return (
-      <LightFormModal onClose={onClose} accent={accent} emoji="👶" title="Baby Name Vote">
+      <LightFormModal onClose={onClose} accent={accent} emoji="👶" title="Baby Name Vote" system="choice">
         <p style={{ textAlign: "center", color: "rgba(28,9,0,0.50)", fontSize: 13, marginBottom: 20 }}>What's your name? You'll vote with this identity.</p>
         <input
           value={voterName}
@@ -2229,7 +2272,7 @@ function BabyNameVote({ onClose, accent }) {
   }
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="👶" title="Baby Name Vote">
+    <LightFormModal onClose={onClose} accent={accent} emoji="👶" title="Baby Name Vote" system="choice">
       <style>{`
         @keyframes bnv-pulse { 0%{transform:scale(1)} 30%{transform:scale(1.08)} 100%{transform:scale(1)} }
         .bnv-pulse { animation: bnv-pulse 0.45s cubic-bezier(0.34,1.56,0.64,1); }
@@ -2356,7 +2399,7 @@ function GenderPoll({ onClose, accent }) {
   };
 
   if (phase === "name") return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="🍼" title="Gender Prediction">
+    <LightFormModal onClose={onClose} accent={accent} emoji="🍼" title="Gender Prediction" system="choice">
       <p style={{ fontSize: 13, color: "rgba(28,9,0,0.50)", marginBottom: 14, textAlign: "center" }}>Pass the phone — each person enters their name and votes</p>
       <input value={voterName} onChange={e => setVoterName(e.target.value)} onKeyDown={e => e.key === "Enter" && voterName.trim() && setPhase("vote")} placeholder="Your name" style={{ ...linp, marginBottom: 12 }} />
       <button onClick={() => voterName.trim() && setPhase("vote")} style={lBtn(accent)} disabled={!voterName.trim()}>Enter Voting Booth →</button>
@@ -2365,7 +2408,7 @@ function GenderPoll({ onClose, accent }) {
   );
 
   if (phase === "reveal") return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="🎉" title="Gender Prediction — Results">
+    <LightFormModal onClose={onClose} accent={accent} emoji="🎉" title="Gender Prediction — Results" system="choice">
       <div style={{ textAlign: "center", padding: "10px 0" }}>
         <div style={{ fontSize: 64, marginBottom: 12 }}>{winner === "boy" ? "👦" : winner === "girl" ? "👧" : "🤝"}</div>
         <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(28,9,0,0.45)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>The crowd says…</div>
@@ -2383,7 +2426,7 @@ function GenderPoll({ onClose, accent }) {
 
   // Voting phase — two massive zones
   return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="🍼" title={`${voterName}'s Prediction`}>
+    <LightFormModal onClose={onClose} accent={accent} emoji="🍼" title={`${voterName}'s Prediction`} system="choice">
       <div style={{ fontSize: 13, color: "rgba(28,9,0,0.45)", textAlign: "center", marginBottom: 12 }}>Place yourself in your team!</div>
 
       {/* Two giant team zones */}
@@ -2681,7 +2724,7 @@ function LuckyDraw({ onClose, accent }) {
   };
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="🎰" title="Lucky Draw">
+    <LightFormModal onClose={onClose} accent={accent} emoji="🎰" title="Lucky Draw" system="celebration">
       {/* Add members */}
       <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
         <input value={newM} onChange={e => setNewM(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Add participant name…" style={{ ...linp, flex: 1 }} />
@@ -3211,7 +3254,7 @@ function MostLikelyTo({ onClose, accent, room, myName: liveName, players: livePl
   const effectivePhase = live ? "voting" : phase;
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="🏆" title="Most Likely To" wide onLeaderboard={onLeaderboard}>
+    <LightFormModal onClose={onClose} accent={accent} emoji="🏆" title="Most Likely To" wide onLeaderboard={onLeaderboard} system="choice">
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={liveVotesMap ? Object.fromEntries(Object.keys(liveVotesMap).map(n=>[n,true])) : {}} />
       {effectivePhase === "setup" && (<>
         <div style={{ ...lcrd, textAlign: "center", marginBottom: 16 }}>
@@ -3335,7 +3378,7 @@ function TwoTruthsOneLie({ onClose, accent }) {
   const CARD_COLORS = ["#3B82F6", "#10B981", "#F59E0B"];
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="🤥" title="Two Truths One Lie" wide>
+    <LightFormModal onClose={onClose} accent={accent} emoji="🤥" title="Two Truths One Lie" wide system="mystery">
       <style>{`@keyframes ttl-flip{0%{transform:rotateY(90deg);opacity:0}100%{transform:rotateY(0deg);opacity:1}} @keyframes ttl-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}`}</style>
 
       {phase === "setup" && (<>
@@ -3555,7 +3598,7 @@ function RapidFire({ onClose, accent }) {
   const timerColor = timeLeft > 15 ? "#4ADE80" : timeLeft > 7 ? "#FBBF24" : "#F87171";
 
   if (!deck) return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="⚡" title="Rapid Fire" wide>
+    <LightFormModal onClose={onClose} accent={accent} emoji="⚡" title="Rapid Fire" wide system="truth">
       <style>{`
         @keyframes rf-flicker{0%,100%{opacity:1}45%{opacity:0.85}50%{opacity:1}}
         @keyframes rf-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
@@ -3588,7 +3631,7 @@ function RapidFire({ onClose, accent }) {
     const pct = Math.round((correct/answers.length)*100);
     const speed = pct >= 80 ? "🏆 Outstanding!" : pct >= 60 ? "⚡ Pretty good!" : pct >= 40 ? "📈 Keep at it!" : "😅 Needs practice!";
     return (
-      <LightFormModal onClose={onClose} accent={accent} emoji="⚡" title="Rapid Fire">
+      <LightFormModal onClose={onClose} accent={accent} emoji="⚡" title="Rapid Fire" system="truth">
         <div style={{ marginBottom:16, borderRadius:16, background:"linear-gradient(180deg,#1A0A00,#2D1000)", border:"2px solid rgba(251,146,60,0.35)", padding:"22px 16px", textAlign:"center" }}>
           <div style={{ fontSize:11, fontWeight:900, letterSpacing:"0.2em", color:"rgba(251,146,60,0.8)", textTransform:"uppercase", marginBottom:10 }}>ROUND COMPLETE</div>
           <div style={{ fontSize:52, fontWeight:900, color:"#FB923C", fontVariantNumeric:"tabular-nums", lineHeight:1 }}>{correct}/{answers.length}</div>
@@ -3619,7 +3662,7 @@ function RapidFire({ onClose, accent }) {
   const OPT_COLORS = ["#2563EB","#7C3AED","#EA580C","#059669"];
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="⚡" title="Rapid Fire">
+    <LightFormModal onClose={onClose} accent={accent} emoji="⚡" title="Rapid Fire" system="truth">
       <style>{`
         @keyframes rf-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
         @keyframes rf-urgent{0%,100%{background:rgba(239,68,68,0.07)}50%{background:rgba(239,68,68,0.18)}}
@@ -3740,7 +3783,7 @@ function MoodMeter({ onClose, accent, room, myName: liveName, players: livePlaye
   const vibeLabel = avgTemp > 70 ? "🔥 CHAOS MODE" : avgTemp > 40 ? "😄 Party Vibes" : avgTemp > 20 ? "😎 Chill Zone" : "😴 Need Energy";
 
   return (
-    <LightFormModal onClose={onClose} emoji="🌡️" title="Mood Meter" accent={accent} wide>
+    <LightFormModal onClose={onClose} emoji="🌡️" title="Mood Meter" accent={accent} wide system="choice">
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={Object.fromEntries(Object.keys(liveMoodsMap||{}).map(n=>[n,true]))} />
       {/* Giant Mood Orb */}
       {total > 0 && (
@@ -4934,7 +4977,7 @@ function AwardsCeremony({ onClose, accent }) {
   const TROPHY_COLORS = ["#FBBF24","#C0C0C0","#CD7F32","#A78BFA","#F87171","#34D399","#60A5FA","#F472B6"];
 
   if (phase === "setup") return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="🏆" title="Awards Ceremony" wide>
+    <LightFormModal onClose={onClose} accent={accent} emoji="🏆" title="Awards Ceremony" wide system="celebration">
       <div style={{ background:"linear-gradient(135deg,#1A1207,#0F0A04)", borderRadius:14, padding:"14px 16px", marginBottom:14, border:"1px solid rgba(251,191,36,0.2)" }}>
         <div style={{ fontSize:9, fontWeight:800, color:"rgba(251,191,36,0.5)", textTransform:"uppercase", letterSpacing:"0.18em", marginBottom:10 }}>🏆 TROPHY SHELF</div>
         {awards.length === 0 ? (
@@ -4980,7 +5023,7 @@ function AwardsCeremony({ onClose, accent }) {
   );
 
   if (done) return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="🎉" title="All Awards Presented!">
+    <LightFormModal onClose={onClose} accent={accent} emoji="🎉" title="All Awards Presented!" system="celebration">
       <div style={{ textAlign: "center", padding: "20px 0" }}>
         <div style={{ fontSize: 60, marginBottom: 12 }}>🎉</div>
         <div style={{ fontSize: 20, fontWeight: 900, color: "#1C1410", marginBottom: 6 }}>Congratulations to all winners!</div>
@@ -4997,7 +5040,7 @@ function AwardsCeremony({ onClose, accent }) {
 
   const award = awards[current];
   return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="🏆" title={`Award ${current+1} of ${awards.length}`}>
+    <LightFormModal onClose={onClose} accent={accent} emoji="🏆" title={`Award ${current+1} of ${awards.length}`} system="celebration">
       <style>{`
         @keyframes award-fall{0%{transform:translateY(-8px) rotate(0deg);opacity:1}100%{transform:translateY(190px) rotate(540deg);opacity:0}}
         @keyframes award-glow{0%,100%{text-shadow:0 0 20px rgba(251,191,36,0.5)}50%{text-shadow:0 0 48px rgba(251,191,36,0.9),0 0 96px rgba(251,191,36,0.4)}}
@@ -6768,7 +6811,7 @@ function EmojiDecoder({ onClose, accent, room, myName: liveName, players: livePl
   const answerRow = { display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 14px", borderRadius:12, marginBottom:6 };
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="🧩" title="Emoji Decoder" wide>
+    <LightFormModal onClose={onClose} accent={accent} emoji="🧩" title="Emoji Decoder" wide system="quiz">
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent}
         checked={phase === "answering" ? Object.fromEntries(Object.keys(answers).map(n => [n, true])) : {}} />
 
@@ -7133,7 +7176,7 @@ function DrawGuessGame({ onClose, accent, room, myName: liveName, players: liveP
   const medals = ["🥇","🥈","🥉"];
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="🎨" title="Draw & Guess" wide>
+    <LightFormModal onClose={onClose} accent={accent} emoji="🎨" title="Draw & Guess" wide system="creative">
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
 
       {/* ── LOBBY ── */}
@@ -7425,7 +7468,7 @@ function WordChainGame({ onClose, accent, room, myName: liveName, players: liveP
   const medals = ["🥇","🥈","🥉"];
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="🔤" title="Word Chain" wide>
+    <LightFormModal onClose={onClose} accent={accent} emoji="🔤" title="Word Chain" wide system="word">
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
 
       {phase === "lobby" && (<>
@@ -7586,7 +7629,7 @@ function DontSayYesNo({ onClose, accent, room, myName: liveName, players: livePl
   const banned = DSYN_BANNED.join(" / ");
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="🚫" title="Don't Say Yes/No" wide>
+    <LightFormModal onClose={onClose} accent={accent} emoji="🚫" title="Don't Say Yes/No" wide system="truth">
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
 
       {phase === "lobby" && (<>
@@ -7760,7 +7803,7 @@ function WrongAnswersOnly({ onClose, accent, room, myName: liveName, players: li
   const medals = ["🥇","🥈","🥉"];
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="🤪" title="Wrong Answers Only" wide>
+    <LightFormModal onClose={onClose} accent={accent} emoji="🤪" title="Wrong Answers Only" wide system="truth">
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent}
         checked={phase==="answering" ? Object.fromEntries(Object.keys(answers).map(n=>[n,true])) : {}} />
 
@@ -7968,7 +8011,7 @@ function MafiaGame({ onClose, accent, room, myName: liveName, players: livePlaye
   const pls = live ? livePlayers : alive;
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="🔴" title="Mafia" wide>
+    <LightFormModal onClose={onClose} accent={accent} emoji="🔴" title="Mafia" wide system="mystery">
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
 
       {phase === "lobby" && (<>
@@ -8171,7 +8214,7 @@ function SpyfallGame({ onClose, accent, room, myName: liveName, players: livePla
   const accCounts = Object.values(accVotes).reduce((a,n)=>{a[n]=(a[n]||0)+1;return a;},{});
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="🕵️" title="Spyfall" wide>
+    <LightFormModal onClose={onClose} accent={accent} emoji="🕵️" title="Spyfall" wide system="mystery">
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
 
       {phase === "lobby" && (<>
@@ -8376,7 +8419,7 @@ function FinishLyricsGame({ onClose, accent, room, myName: liveName, players: li
   const sorted = [...players].sort((a,b) => (scores[b]||0) - (scores[a]||0));
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} title="🎤 Finish the Lyrics">
+    <LightFormModal onClose={onClose} accent={accent} title="🎤 Finish the Lyrics" system="music">
       {phase === 'lobby' && (<>
         <div style={{ textAlign:'center', padding:'12px 0 16px' }}>
           <div style={{ fontSize:44, marginBottom:8 }}>🎤</div>
@@ -8549,7 +8592,7 @@ function GuessSong3SecGame({ onClose, accent, room, myName: liveName, players: l
   const sorted = [...players].sort((a,b) => (scores[b]||0) - (scores[a]||0));
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} title="🎵 Guess the Song">
+    <LightFormModal onClose={onClose} accent={accent} title="🎵 Guess the Song" system="music">
       {phase === 'lobby' && (<>
         <div style={{ textAlign:'center', padding:'12px 0 16px' }}>
           <div style={{ fontSize:44, marginBottom:8 }}>🎵</div>
@@ -8738,7 +8781,7 @@ function TelephoneDrawingGame({ onClose, accent, room, myName: liveName, players
   const finalEntry = chain[chain.length - 1];
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} title="📞 Telephone Drawing">
+    <LightFormModal onClose={onClose} accent={accent} title="📞 Telephone Drawing" system="creative">
       {phase === 'lobby' && (<>
         <div style={{ textAlign:'center', padding:'12px 0 16px' }}>
           <div style={{ fontSize:44, marginBottom:8 }}>📞</div>
@@ -8930,7 +8973,7 @@ function DontLaughGame({ onClose, accent, room, myName: liveName, players: liveP
   const laughCount = Object.values(votes).filter(v => v === 'laughed').length;
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} title="😂 Don't Laugh">
+    <LightFormModal onClose={onClose} accent={accent} title="😂 Don't Laugh" system="performance">
       {phase === 'lobby' && (<>
         <div style={{ textAlign:'center', padding:'12px 0 16px' }}>
           <div style={{ fontSize:44, marginBottom:8 }}>😂</div>
@@ -9091,7 +9134,7 @@ function NamePlaceAnimalGame({ onClose, accent, room, myName: liveName, players:
   const sorted = [...players].sort((a,b) => (scores[b]||0) - (scores[a]||0));
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} title="🌍 Name Place Animal">
+    <LightFormModal onClose={onClose} accent={accent} title="🌍 Name Place Animal" system="word">
       {phase === 'lobby' && (<>
         <div style={{ textAlign:'center', padding:'12px 0 16px' }}>
           <div style={{ fontSize:44, marginBottom:8 }}>🌍</div>
@@ -9266,7 +9309,7 @@ function FastestFingerGame({ onClose, accent, room, myName: liveName, players: l
   const sorted = [...players].sort((a,b) => (scores[b]||0) - (scores[a]||0));
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} title="⚡ Fastest Finger">
+    <LightFormModal onClose={onClose} accent={accent} title="⚡ Fastest Finger" system="speed">
       {phase === 'lobby' && (<>
         <div style={{ textAlign:'center', padding:'12px 0 16px' }}>
           <div style={{ fontSize:44, marginBottom:8 }}>⚡</div>
@@ -9277,33 +9320,42 @@ function FastestFingerGame({ onClose, accent, room, myName: liveName, players: l
       </>)}
 
       {phase === 'question' && (<>
-        <div style={{ background:`${accent}12`, border:`1.5px solid ${accent}35`, borderRadius:16, padding:'16px', marginBottom:12 }}>
+        <style>{`@keyframes ff-pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(132,204,22,0.7)}50%{transform:scale(1.04);box-shadow:0 0 0 18px rgba(132,204,22,0)}}`}</style>
+        <div style={{ background:"rgba(132,204,22,0.08)", border:"1.5px solid rgba(132,204,22,0.25)", borderRadius:16, padding:"18px 16px", marginBottom:14 }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-            <div style={{ fontSize:10, fontWeight:800, color:accent, letterSpacing:1.5 }}>Q {idx+1} / {ROUNDS}</div>
-            <div style={{ fontSize:10, fontWeight:700, color:'#9CA3AF', background:'rgba(0,0,0,0.06)', borderRadius:8, padding:'3px 8px' }}>{current.cat}</div>
+            <div style={{ fontSize:10, fontWeight:800, color:"#84CC16", letterSpacing:1.5 }}>Q {idx+1} / {ROUNDS}</div>
+            <div style={{ fontSize:10, fontWeight:700, color:'#6B7280', background:'rgba(0,0,0,0.06)', borderRadius:8, padding:'3px 8px' }}>{current.cat}</div>
           </div>
-          <div style={{ fontSize:16, fontWeight:700, color:'#1C1410', lineHeight:1.55 }}>{current.q}</div>
+          <div style={{ fontSize:17, fontWeight:700, color:'#1C1410', lineHeight:1.55 }}>{current.q}</div>
         </div>
         {live ? (<>
-          {!buzzed
-            ? <button onClick={buzz} style={lBtn(accent)}>⚡ Buzz In!</button>
-            : <div style={{ textAlign:'center' }}>
-                <div style={{ fontSize:15, fontWeight:700, color:accent, marginBottom:12 }}>⚡ {buzzed} buzzed!</div>
-                {isHost && <div style={{ display:'flex', gap:8 }}>
-                  <button onClick={() => award(buzzed)} style={{ ...lBtn('#10B981'), flex:1 }}>✅ Correct</button>
-                  <button onClick={skip}                 style={{ ...lBtn('#EF4444'), flex:1 }}>❌ Wrong → Skip</button>
-                </div>}
-              </div>}
-          {isHost && !buzzed && <button onClick={skip} style={{ ...lBtn('#9CA3AF'), marginTop:8, fontSize:13, padding:'9px' }}>⏭ Skip</button>}
+          {!buzzed ? (
+            <button onClick={buzz} style={{ width:"100%", padding:"28px 20px", borderRadius:20, border:"none", background:"linear-gradient(135deg,#65A30D,#84CC16)", color:"#fff", fontSize:22, fontWeight:900, cursor:"pointer", fontFamily:font, letterSpacing:"0.04em", animation:"ff-pulse 1.2s ease-in-out infinite", boxShadow:"0 8px 32px rgba(132,204,22,0.40)" }}>
+              ⚡ BUZZ IN!
+            </button>
+          ) : (
+            <div style={{ textAlign:'center', padding:"12px 0" }}>
+              <div style={{ fontSize:32, marginBottom:8 }}>⚡</div>
+              <div style={{ fontSize:20, fontWeight:900, color:"#65A30D" }}>{buzzed}</div>
+              <div style={{ fontSize:13, color:"rgba(28,9,0,0.45)", marginTop:4 }}>buzzed first!</div>
+              {isHost && (
+                <div style={{ display:'flex', gap:8, marginTop:16 }}>
+                  <button onClick={() => award(buzzed)} style={{ ...lBtn('#65A30D'), flex:2 }}>✓ Correct +1</button>
+                  <button onClick={skip} style={{ ...lBtn("rgba(0,0,0,0.08)"), flex:1, color:"#1C1410" }}>Skip</button>
+                </div>
+              )}
+            </div>
+          )}
+          {isHost && !buzzed && <button onClick={skip} style={{ ...lBtn('rgba(0,0,0,0.08)'), marginTop:10, fontSize:13, padding:'9px', color:'#1C1410' }}>⏭ Skip Question</button>}
         </>) : (<>
           <input value={lAnswer} onChange={e=>setLAnswer(e.target.value)} onKeyDown={e=>e.key==='Enter'&&lAnswer.trim()&&award(liveName||'You')} placeholder="Your answer…" style={{ ...linp, marginBottom:10 }} />
           <div style={{ display:'flex', gap:8 }}>
-            <button onClick={() => award(liveName||'You')} disabled={!lAnswer.trim()} style={{ ...lBtn(accent), flex:1, opacity:lAnswer.trim()?1:0.5 }}>✅ Submit</button>
-            <button onClick={skip} style={{ ...lBtn('#9CA3AF'), flex:1 }}>⏭ Skip</button>
+            <button onClick={() => award(liveName||'You')} disabled={!lAnswer.trim()} style={{ ...lBtn('#84CC16'), flex:1, opacity:lAnswer.trim()?1:0.5 }}>✅ Submit</button>
+            <button onClick={skip} style={{ ...lBtn('rgba(0,0,0,0.08)'), flex:1, color:'#1C1410' }}>⏭ Skip</button>
           </div>
         </>)}
-        <div style={{ display:'flex', gap:6, marginTop:12, flexWrap:'wrap' }}>
-          {sorted.map(p => <div key={p} style={{ background:`${accent}18`, borderRadius:20, padding:'4px 10px', fontSize:12, fontWeight:700, color:accent }}>{p} {scores[p]||0}</div>)}
+        <div style={{ display:'flex', gap:6, marginTop:14, flexWrap:'wrap' }}>
+          {sorted.map(p => <div key={p} style={{ background:"rgba(132,204,22,0.15)", borderRadius:20, padding:'4px 10px', fontSize:12, fontWeight:700, color:"#65A30D" }}>{p} {scores[p]||0}</div>)}
         </div>
       </>)}
 
