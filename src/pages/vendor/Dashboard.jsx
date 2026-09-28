@@ -2239,6 +2239,18 @@ const [tab, setTab] = useState('home');
   const [perfSaving, setPerfSaving] = useState(false);
   const [perfLoaded, setPerfLoaded] = useState(false);
 
+  // Notification bell
+  const [notifOpen, setNotifOpen] = useState(false);
+  const notifRef = useRef(null);
+
+  // Insights tab
+  const [insightsLoaded, setInsightsLoaded] = useState(false);
+  const [profileViews, setProfileViews] = useState(null);
+
+  // Portfolio photos for gig-profile media gallery
+  const [portfolioPhotos, setPortfolioPhotos] = useState([]);
+  const [photosLoaded, setPhotosLoaded] = useState(false);
+
   // Milestone tracking (localStorage)
   const MILESTONE_KEY = `tendr_milestone_${vendorId||'v'}`;
   const [lastMilestone, setLastMilestone] = useState(() => { try { return Number(localStorage.getItem(MILESTONE_KEY)||0); } catch { return 0; } });
@@ -2266,12 +2278,35 @@ const [tab, setTab] = useState('home');
     setTimeout(() => setToast(null), 3500);
   };
 
-  // Click-outside for profile menu
+  // Click-outside for profile menu + notification bell
   useEffect(() => {
-    const h = (e) => { if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false); };
+    const h = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
+      if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
+    };
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, []);
+
+  // Load portfolio photos when gig-profile tab opened
+  useEffect(() => {
+    if (tab !== 'gig-profile' || photosLoaded || !vendorId) return;
+    fetch(`${BASE}/vendors/${vendorId}/portfolio-photos`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setPortfolioPhotos(d.portfolioPhotos || []); })
+      .catch(() => {})
+      .finally(() => setPhotosLoaded(true));
+  }, [tab, vendorId, photosLoaded]); // eslint-disable-line
+
+  // Load profile views when insights tab opened
+  useEffect(() => {
+    if (tab !== 'insights' || insightsLoaded || !vendorId) return;
+    setInsightsLoaded(true);
+    fetch(`${BASE}/vendors/${vendorId}/insights`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setProfileViews(d.views ?? d.profileViews ?? null); })
+      .catch(() => {});
+  }, [tab, vendorId, insightsLoaded]); // eslint-disable-line
 
   // Load Tendr bookings
   useEffect(() => {
@@ -2605,11 +2640,13 @@ const [tab, setTab] = useState('home');
     { key: 'packages',    group: 'MANAGE',   label: 'Packages',                                                           icon: dsic(<><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></>) },
     { key: 'reviews',     group: 'MANAGE',   label: 'Reviews',                                                            icon: dsic(<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>) },
     { key: 'tools',       group: 'MANAGE',   label: 'Tools',                                                              icon: dsic(<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>) },
+    { key: 'clients',     group: 'MANAGE',   label: 'Clients',                                                            icon: dsic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></>) },
     ...(modules.includes('equipment') ? [{ key: 'inventory', group: 'MANAGE', label: typeConfig.invLabel, icon: dsic(<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>) }] : []),
     { key: 'profile',     group: 'MANAGE',   label: t('navPage'),                                                         icon: dsic(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>) },
     ...(modules.includes('performance') ? [{ key: 'gig-profile', group: 'ARTIST', label: 'Performance', icon: dsic(<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>) }] : []),
     { key: 'calendar',    group: 'SCHEDULE', label: 'Availability',                                                       icon: dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>) },
     { key: 'market',      group: 'GROW',     label: 'Grow',                                                               icon: dsic(<><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></>) },
+    { key: 'insights',    group: 'GROW',     label: 'Insights',                                                           icon: dsic(<><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>) },
   ];
   const sideW = 220;
 
@@ -2698,6 +2735,7 @@ const [tab, setTab] = useState('home');
                   {item.key==='work' && (pendingCount>0||bookings.filter(b=>b.status==='Pending').length>0) && <span style={{ fontSize:10, fontWeight:700, background:'rgba(220,38,38,0.12)', color:'#DC2626', borderRadius:100, padding:'1px 6px' }}>{pendingCount+bookings.filter(b=>b.status==='Pending').length}</span>}
                   {item.key==='reviews' && vendorReviews.filter(r=>!r.vendorResponse).length>0 && <span style={{ fontSize:10, fontWeight:700, background:'rgba(196,122,46,0.15)', color:gold, borderRadius:100, padding:'1px 6px' }}>{vendorReviews.filter(r=>!r.vendorResponse).length}</span>}
                   {item.key==='inventory' && inventory.filter(i=>i.condition==='Needs Service'||i.condition==='Out of Order').length>0 && <span style={{ fontSize:10, fontWeight:700, background:'rgba(220,38,38,0.1)', color:'#DC2626', borderRadius:100, padding:'1px 6px' }}>!</span>}
+                  {item.key==='clients' && crmClients.filter(c=>(c.bookingCount||0)>1).length>0 && <span style={{ fontSize:10, fontWeight:700, background:'rgba(124,58,237,0.1)', color:'#7C3AED', borderRadius:100, padding:'1px 6px' }}>{crmClients.filter(c=>(c.bookingCount||0)>1).length} repeat</span>}
                 </button>
               );
               return acc;
@@ -2743,6 +2781,58 @@ const [tab, setTab] = useState('home');
               style={{ padding:'7px 14px', borderRadius:9, border:`1.5px solid ${gold}`, background:'transparent', color:gold, fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>{t('copyLink')}</button>}
             {tab==='profile'   && <button onClick={() => { navigator.clipboard?.writeText(`${window.location.origin}/vendor/${vendorId}?src=direct`).then(() => showToast(t('directLinkCopied'))); }}
               style={{ padding:'7px 14px', borderRadius:9, border:`1.5px solid ${gold}`, background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>{t('copyDirectLink')}</button>}
+            {/* ── Notification Bell ── */}
+            {(() => {
+              const pendingBookings = bookings.filter(b => b.status === 'Pending');
+              const unansweredReviews = vendorReviews.filter(r => !r.vendorResponse);
+              const unpaidOrders = outsideOrders.filter(o => (o.amount||0) - (o.paidAmount||0) > 0 && ['Confirmed','Completed'].includes(o.status));
+              const tomorrowStr = (() => { const d = new Date(); d.setDate(d.getDate()+1); return d.toISOString().slice(0,10); })();
+              const tomorrowGigs = outsideOrders.filter(o => (o.eventDate||'').slice(0,10) === tomorrowStr);
+              const notifs = [
+                ...pendingBookings.map(b => ({ type:'booking', icon:'🎯', title:`New booking — ${b.customerName||'Customer'}`, sub:`${b.eventType||''} · ${b.eventDate ? new Date(b.eventDate).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : ''}`, action:() => { setTab('work'); setNotifOpen(false); } })),
+                ...unansweredReviews.map(r => ({ type:'review', icon:'⭐', title:`Review from ${r.customerName||'Customer'}`, sub:r.rating ? `${r.rating}/5 — tap to respond` : 'Tap to respond', action:() => { setTab('reviews'); setNotifOpen(false); } })),
+                ...tomorrowGigs.map(g => ({ type:'tomorrow', icon:'📅', title:`Tomorrow: ${g.clientName||g.eventType||'Event'}`, sub:g.eventType||'', action:() => { setTab('work'); setNotifOpen(false); } })),
+                ...unpaidOrders.slice(0,3).map(o => ({ type:'payment', icon:'💸', title:`Payment pending — ${o.clientName||'Client'}`, sub:`₹${((o.amount||0)-(o.paidAmount||0)).toLocaleString('en-IN')} outstanding`, action:() => { setTab('money'); setNotifOpen(false); } })),
+              ];
+              const count = notifs.length;
+              return (
+                <div ref={notifRef} style={{ position:'relative' }}>
+                  <button onClick={() => setNotifOpen(p => !p)} style={{ width:34, height:34, borderRadius:'50%', border:`1.5px solid rgba(196,122,46,${count>0?0.4:0.18})`, background:count>0?'rgba(196,122,46,0.08)':'transparent', color:count>0?gold:'#9B7450', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', position:'relative', flexShrink:0 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    {count > 0 && <span style={{ position:'absolute', top:-3, right:-3, width:16, height:16, borderRadius:'50%', background:'#DC2626', color:'#fff', fontSize:9, fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', border:'2px solid #fff' }}>{count > 9 ? '9+' : count}</span>}
+                  </button>
+                  {notifOpen && (
+                    <div style={{ position:'absolute', top:42, right:0, background:'#fff', borderRadius:16, boxShadow:'0 8px 32px rgba(0,0,0,0.16)', border:'1px solid rgba(196,122,46,0.14)', zIndex:300, width:300, maxHeight:400, overflowY:'auto', fontFamily:font }}>
+                      <div style={{ padding:'12px 16px 8px', borderBottom:'1px solid rgba(196,122,46,0.1)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                        <div style={{ fontSize:13, fontWeight:800, color:ink }}>Notifications</div>
+                        {count > 0 && <span style={{ fontSize:10, fontWeight:700, color:'#DC2626', background:'rgba(220,38,38,0.08)', borderRadius:6, padding:'2px 7px' }}>{count} new</span>}
+                      </div>
+                      {notifs.length === 0 ? (
+                        <div style={{ padding:'24px 16px', textAlign:'center' }}>
+                          <div style={{ fontSize:24, marginBottom:8 }}>✅</div>
+                          <div style={{ fontSize:13, color:'#9B7450' }}>All caught up! Nothing needs attention.</div>
+                        </div>
+                      ) : (
+                        <div>
+                          {notifs.map((n, i) => (
+                            <button key={i} onClick={n.action} style={{ width:'100%', padding:'11px 16px', border:'none', background:'none', textAlign:'left', cursor:'pointer', display:'flex', gap:10, alignItems:'flex-start', borderBottom:i<notifs.length-1?'1px solid rgba(196,122,46,0.07)':'none', fontFamily:font, transition:'background 0.12s' }}
+                              onMouseEnter={e=>e.currentTarget.style.background='rgba(196,122,46,0.04)'}
+                              onMouseLeave={e=>e.currentTarget.style.background='none'}>
+                              <span style={{ fontSize:18, flexShrink:0, marginTop:1 }}>{n.icon}</span>
+                              <div style={{ flex:1, minWidth:0 }}>
+                                <div style={{ fontSize:12.5, fontWeight:700, color:ink, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{n.title}</div>
+                                <div style={{ fontSize:11, color:'#9B7450', marginTop:1 }}>{n.sub}</div>
+                              </div>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink:0, marginTop:3 }}><polyline points="9 18 15 12 9 6"/></svg>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
             <div ref={profileRef} style={{ position:'relative' }}>
               <button onClick={() => setProfileOpen(p => !p)} style={{ width:34, height:34, borderRadius:'50%', background:`linear-gradient(135deg,${gold},${goldLt})`, border:'none', color:'#fff', fontWeight:800, fontSize:14, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>{initial}</button>
               {profileOpen && (
@@ -4201,7 +4291,7 @@ const [tab, setTab] = useState('home');
           })()}
 
           {/* ── CLIENT CRM (now inside Work tab → clients sub-tab) ── */}
-          {tab === '_clients_removed' && (() => {
+          {tab === 'clients' && (() => {
             const fmtAmt = n => n > 0 ? `₹${n.toLocaleString('en-IN')}` : '₹0';
             const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '—';
             const pending = (c) => Math.max(0, (c.totalAmount||0) - (c.paidAmount||0));
@@ -4800,9 +4890,67 @@ const [tab, setTab] = useState('home');
             };
 
             return (
-              <div>
+              <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
                 <div style={{ fontSize:15, fontWeight:800, color:ink, marginBottom:4 }}>{cfg.label}</div>
-                <div style={{ fontSize:12, color:'#9B7450', marginBottom:18 }}>{cfg.sub}</div>
+                <div style={{ fontSize:12, color:'#9B7450', marginTop:-16 }}>{cfg.sub}</div>
+
+                {/* ── Media Gallery ── */}
+                <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.12)' }}>
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
+                    <div style={{ fontSize:14, fontWeight:800, color:ink }}>Media Gallery</div>
+                    <button onClick={() => photoFileRef.current?.click()} disabled={photoUploading}
+                      style={{ padding:'6px 14px', borderRadius:9, border:`1.5px solid ${gold}`, background:'transparent', color:gold, fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:font, opacity:photoUploading?0.6:1 }}>
+                      {photoUploading ? 'Uploading…' : '+ Add Photos'}
+                    </button>
+                    <input ref={photoFileRef} type="file" accept="image/*" multiple style={{ display:'none' }} onChange={e => uploadPortfolioPhotos(e.target.files)} />
+                  </div>
+                  {portfolioPhotos.length > 0 ? (
+                    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(90px,1fr))', gap:8 }}>
+                      {portfolioPhotos.map((p, i) => (
+                        <div key={i} style={{ aspectRatio:'1', borderRadius:10, overflow:'hidden', background:'rgba(196,122,46,0.06)', border:'1px solid rgba(196,122,46,0.12)' }}>
+                          <img src={p.url || p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ textAlign:'center', padding:'24px 0', color:'#9B7450', fontSize:12 }}>
+                      <div style={{ fontSize:28, marginBottom:6 }}>📸</div>
+                      No photos yet — upload your best work to attract more bookings
+                    </div>
+                  )}
+
+                  {/* Video / Reel links */}
+                  <div style={{ marginTop:16, borderTop:'1px solid rgba(196,122,46,0.08)', paddingTop:14 }}>
+                    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
+                      <div style={{ fontSize:13, fontWeight:700, color:ink }}>Video Reels & Demo Links</div>
+                      <button onClick={() => setMediaModal(true)} style={{ padding:'5px 12px', borderRadius:8, border:`1.5px solid rgba(196,122,46,0.25)`, background:'transparent', color:gold, fontSize:11.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>+ Add Link</button>
+                    </div>
+                    {mediaLinks.length > 0 ? (
+                      <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                        {mediaLinks.map((m, i) => {
+                          const url = m.url || '';
+                          const isYt = url.includes('youtu');
+                          const isIg = url.includes('instagram');
+                          const icon = isYt ? '▶️' : isIg ? '📸' : '🔗';
+                          return (
+                            <div key={i} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 12px', borderRadius:10, background:'rgba(196,122,46,0.04)', border:'1px solid rgba(196,122,46,0.1)' }}>
+                              <span style={{ fontSize:18 }}>{icon}</span>
+                              <div style={{ flex:1, minWidth:0 }}>
+                                <div style={{ fontSize:12.5, fontWeight:700, color:ink, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.title || m.url}</div>
+                                <div style={{ fontSize:11, color:'#9B7450', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.url}</div>
+                              </div>
+                              <a href={m.url} target="_blank" rel="noopener noreferrer" style={{ color:gold, fontSize:11.5, fontWeight:700, textDecoration:'none', flexShrink:0 }}>Open</a>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize:12, color:'#9B7450', textAlign:'center', padding:'10px 0' }}>Add a YouTube/Instagram reel or SoundCloud demo so planners can hear/see your work</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* ── Performance Details form ── */}
                 <div style={{ background:'#fff', borderRadius:18, padding:'20px', border:'1px solid rgba(196,122,46,0.12)', display:'flex', flexDirection:'column', gap:16 }}>
 
                   {/* Performing Style */}
@@ -4896,6 +5044,156 @@ const [tab, setTab] = useState('home');
               </div>
             </div>
           )}
+
+          {/* ── INSIGHTS ── */}
+          {tab === 'insights' && (() => {
+            const totalGigs = outsideOrders.length + bookings.length;
+            const confirmedGigs = outsideOrders.filter(o => ['Confirmed','Completed'].includes(o.status)).length + bookings.filter(b => ['Confirmed','Completed'].includes(b.status)).length;
+            const convRate = totalGigs > 0 ? Math.round((confirmedGigs / totalGigs) * 100) : 0;
+            const totalRevenue = outsideOrders.reduce((s,o) => s+(o.amount||0), 0) + bookings.reduce((s,b) => s+(b.amount||0), 0);
+            const totalCollected = outsideOrders.reduce((s,o) => s+(o.paidAmount||0), 0) + bookings.filter(b=>['Confirmed','Completed'].includes(b.status)).reduce((s,b)=>s+(b.amount||0),0);
+            const collectionRate = totalRevenue > 0 ? Math.round((totalCollected / totalRevenue) * 100) : 0;
+            const avgDeal = confirmedGigs > 0 ? Math.round(totalRevenue / confirmedGigs) : 0;
+            // Top event types
+            const typeCounts = {};
+            [...outsideOrders, ...bookings].forEach(o => {
+              const t = o.eventType || o.occasionType || 'Other';
+              typeCounts[t] = (typeCounts[t] || 0) + 1;
+            });
+            const topTypes = Object.entries(typeCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+            // Lead sources
+            const srcCounts = {};
+            outsideOrders.forEach(o => { const s = o.source||'Other'; srcCounts[s]=(srcCounts[s]||0)+1; });
+            const topSrcs = Object.entries(srcCounts).sort((a,b)=>b[1]-a[1]).slice(0,6);
+            // Monthly trend — last 6 months
+            const now6 = new Date();
+            const months6 = Array.from({length:6},(_,i) => {
+              const d = new Date(now6.getFullYear(), now6.getMonth()-(5-i), 1);
+              return { label:d.toLocaleDateString('en-IN',{month:'short'}), year:d.getFullYear(), month:d.getMonth(), rev:0, count:0 };
+            });
+            [...outsideOrders,...bookings].forEach(o => {
+              const d = new Date(o.createdAt||o.eventDate);
+              if (isNaN(d)) return;
+              const m = months6.find(m=>m.month===d.getMonth()&&m.year===d.getFullYear());
+              if (m) { m.rev += Number(o.amount)||0; m.count++; }
+            });
+            const maxRev = Math.max(...months6.map(m=>m.rev), 1);
+            const maxCnt = Math.max(...months6.map(m=>m.count), 1);
+
+            const statCard = (label, value, sub, color='#C47A2E') => (
+              <div style={{ background:'#fff', borderRadius:16, padding:'16px 18px', border:'1px solid rgba(196,122,46,0.12)', flex:1, minWidth:0 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:4 }}>{label}</div>
+                <div style={{ fontSize:24, fontWeight:800, color, fontVariantNumeric:'tabular-nums' }}>{value}</div>
+                {sub && <div style={{ fontSize:11, color:'#9B7450', marginTop:3 }}>{sub}</div>}
+              </div>
+            );
+
+            return (
+              <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+                <div style={{ fontSize:15, fontWeight:800, color:ink }}>Business Insights</div>
+
+                {/* KPI tiles */}
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+                  {statCard('Total Gigs', totalGigs, 'Tendr + outside')}
+                  {statCard('Conversion', `${convRate}%`, 'confirmed / total', convRate >= 60 ? '#16A34A' : convRate >= 30 ? gold : '#DC2626')}
+                  {statCard('Collection Rate', `${collectionRate}%`, 'collected / billed', collectionRate >= 80 ? '#16A34A' : collectionRate >= 50 ? gold : '#DC2626')}
+                  {statCard('Avg Deal Size', avgDeal > 0 ? `₹${avgDeal >= 1000 ? (avgDeal/1000).toFixed(1)+'k' : avgDeal}` : '—', 'per confirmed gig')}
+                </div>
+
+                {/* Profile views (from backend if available) */}
+                {profileViews !== null && (
+                  <div style={{ background:'#fff', borderRadius:16, padding:'16px 18px', border:'1px solid rgba(196,122,46,0.12)', display:'flex', alignItems:'center', gap:14 }}>
+                    <div style={{ width:44, height:44, borderRadius:13, background:'rgba(196,122,46,0.1)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </div>
+                    <div>
+                      <div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.1em' }}>Profile Views (30 days)</div>
+                      <div style={{ fontSize:24, fontWeight:800, color:ink, fontVariantNumeric:'tabular-nums' }}>{profileViews.toLocaleString('en-IN')}</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Revenue trend chart */}
+                <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.12)' }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+                    <div style={{ fontSize:14, fontWeight:800, color:ink }}>Revenue Trend <span style={{ fontSize:11, fontWeight:500, color:'#9B7450' }}>last 6 months</span></div>
+                    <div style={{ display:'flex', gap:10 }}>
+                      {[['#C47A2E','Revenue'],['#16A34A','Gigs']].map(([c,l])=>(
+                        <span key={l} style={{ display:'flex', alignItems:'center', gap:4, fontSize:10.5, color:'#9B7450' }}>
+                          <span style={{ width:8,height:8,borderRadius:2,background:c,display:'inline-block'}} />{l}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ display:'flex', gap:8, alignItems:'flex-end', height:120 }}>
+                    {months6.map((m,i) => {
+                      const rh = Math.max(Math.round((m.rev/maxRev)*90),0);
+                      const ch = Math.max(Math.round((m.count/maxCnt)*90),0);
+                      const isLast = i === months6.length-1;
+                      return (
+                        <div key={m.label} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center' }}>
+                          <div style={{ width:'100%', display:'flex', alignItems:'flex-end', gap:2, height:100 }}>
+                            <div style={{ flex:1, background:isLast?gold:'rgba(196,122,46,0.35)', borderRadius:'3px 3px 0 0', height:`${rh}%`, minHeight:m.rev>0?3:0, transition:'height 0.3s' }} />
+                            <div style={{ flex:1, background:isLast?'#16A34A':'rgba(22,163,74,0.4)', borderRadius:'3px 3px 0 0', height:`${ch}%`, minHeight:m.count>0?3:0, transition:'height 0.3s' }} />
+                          </div>
+                          <div style={{ fontSize:9.5, color:isLast?ink:'#9B7450', fontWeight:isLast?700:500, marginTop:4 }}>{m.label}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {months6.every(m=>m.rev===0) && <div style={{ textAlign:'center', fontSize:12, color:'#9B7450', marginTop:4 }}>Log gigs to see revenue trend</div>}
+                </div>
+
+                {/* Top event types */}
+                {topTypes.length > 0 && (
+                  <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.12)' }}>
+                    <div style={{ fontSize:14, fontWeight:800, color:ink, marginBottom:14 }}>Top Event Types</div>
+                    <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                      {topTypes.map(([type, count]) => {
+                        const pct = Math.round((count / totalGigs) * 100);
+                        return (
+                          <div key={type}>
+                            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }}>
+                              <span style={{ fontSize:12.5, fontWeight:600, color:ink }}>{type}</span>
+                              <span style={{ fontSize:12, color:'#9B7450', fontVariantNumeric:'tabular-nums' }}>{count} · {pct}%</span>
+                            </div>
+                            <div style={{ height:6, borderRadius:3, background:'rgba(196,122,46,0.1)', overflow:'hidden' }}>
+                              <div style={{ height:'100%', width:`${pct}%`, background:`linear-gradient(90deg,${gold},${goldLt})`, borderRadius:3 }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Lead sources */}
+                {topSrcs.length > 0 && (
+                  <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.12)' }}>
+                    <div style={{ fontSize:14, fontWeight:800, color:ink, marginBottom:14 }}>Lead Sources</div>
+                    <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
+                      {topSrcs.map(([src, count]) => (
+                        <div key={src} style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 14px', borderRadius:100, background:'rgba(196,122,46,0.06)', border:'1.5px solid rgba(196,122,46,0.14)' }}>
+                          <span style={{ fontSize:14 }}>{SOURCE_EMOJI[src] || '📋'}</span>
+                          <span style={{ fontSize:12, fontWeight:700, color:ink }}>{src}</span>
+                          <span style={{ fontSize:11, color:'#9B7450', fontVariantNumeric:'tabular-nums' }}>{count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {totalGigs === 0 && (
+                  <div style={{ textAlign:'center', padding:'48px 24px', background:'#fff', borderRadius:18, border:'1px solid rgba(196,122,46,0.1)' }}>
+                    <div style={{ fontSize:36, marginBottom:10 }}>📊</div>
+                    <div style={{ fontSize:15, fontWeight:700, color:ink, marginBottom:6 }}>No data yet</div>
+                    <div style={{ fontSize:13, color:'#9B7450' }}>Log your first gig in the Work tab to start seeing insights.</div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
         </div>
       </div>
 
