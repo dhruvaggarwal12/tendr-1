@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -164,31 +164,31 @@ const TRUST = [
 
 function StepBar({ step, steps = ["Category", "Specialty", "Details"] }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 0, marginBottom: 36 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 0, marginBottom: 20 }}>
       {steps.map((label, i) => {
         const s = i + 1;
         const done   = step > s;
         const active = step === s;
         return (
           <React.Fragment key={s}>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
               <div style={{
-                width: 32, height: 32, borderRadius: "50%",
+                width: 24, height: 24, borderRadius: "50%",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 13, fontWeight: 700, fontFamily: font,
+                fontSize: 11, fontWeight: 700, fontFamily: font,
                 background: done ? gold : active ? "#fff" : "#f3ede6",
                 color: done ? "#fff" : active ? gold : "#B8956A",
                 border: active ? `2px solid ${gold}` : done ? `2px solid ${gold}` : "2px solid #E5D5C0",
                 transition: "all 0.25s",
               }}>
                 {done
-                  ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                   : s}
               </div>
-              <span style={{ fontSize: 10.5, fontWeight: active ? 700 : 500, color: active ? gold : done ? gold : "#B8956A", fontFamily: font, letterSpacing: "0.02em" }}>{label}</span>
+              <span style={{ fontSize: 9.5, fontWeight: active ? 700 : 500, color: active ? gold : done ? gold : "#B8956A", fontFamily: font, letterSpacing: "0.02em" }}>{label}</span>
             </div>
             {i < steps.length - 1 && (
-              <div style={{ flex: 1, height: 2, background: step > s ? gold : "#E5D5C0", margin: "0 6px", marginBottom: 20, borderRadius: 2, transition: "background 0.3s" }} />
+              <div style={{ flex: 1, height: 1.5, background: step > s ? gold : "#E5D5C0", margin: "0 5px", marginBottom: 14, borderRadius: 2, transition: "background 0.3s" }} />
             )}
           </React.Fragment>
         );
@@ -662,6 +662,9 @@ export default function VendorRegistration() {
   const [artForm, setArtForm]   = useState("");
   const [form, setForm]         = useState({ name: "", phoneNumber: "", whatsappNumber: "", email: "", address: "", serviceType: "" });
 
+  // Scroll to top whenever step changes
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [step]);
+
   // Shared
   const [loading, setLoading]       = useState(false);
   const [apiError, setApiError]     = useState("");
@@ -816,15 +819,26 @@ export default function VendorRegistration() {
           <h1 style={{ fontSize: "clamp(1.4rem,3vw,1.8rem)", fontWeight: 800, color: ink, margin: "0 0 6px" }}>Everything you need to grow</h1>
           <p style={{ fontSize: 13.5, color: muted, margin: 0 }}>7 days free. No card needed. Cancel anytime.</p>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 28 }}>
-          {featureSections.map(s => (
-            <div key={s.title} style={{ background: "#fff", borderRadius: 14, padding: "18px 20px", border: "1.5px solid rgba(196,122,46,0.14)" }}>
-              <p style={{ fontSize: 11, fontWeight: 800, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>{s.title}</p>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 14px" }}>
-                {s.items.map(i => <div key={i} style={{ fontSize: 12.5, color: muted, display: "flex", gap: 7 }}><span style={{ color: gold, flexShrink: 0 }}>✓</span>{i}</div>)}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 22 }}>
+          {featureSections.map((s, idx) => {
+            const icons = ["🔍", "🛠", "📈", "💬"];
+            return (
+              <div key={s.title} style={{ background: "#fff", borderRadius: 13, padding: "14px 15px", border: "1.5px solid rgba(196,122,46,0.14)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 9 }}>
+                  <span style={{ fontSize: 14 }}>{icons[idx]}</span>
+                  <p style={{ fontSize: 10, fontWeight: 800, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>{s.title}</p>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {s.items.map(item => (
+                    <div key={item} style={{ fontSize: 11.5, color: muted, display: "flex", gap: 6, alignItems: "flex-start" }}>
+                      <span style={{ color: gold, flexShrink: 0, lineHeight: 1.6 }}>✓</span>
+                      <span style={{ lineHeight: 1.45 }}>{item}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         <button type="button" onClick={() => setStep("a_profile")}
           style={{ width: "100%", padding: "14px", borderRadius: 12, background: `linear-gradient(135deg,${gold},#CCAB4A)`, color: "#fff", border: "none", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font }}>
@@ -1053,7 +1067,7 @@ export default function VendorRegistration() {
       { key: "coordinator", title: "Event Coordinator", sub: "Manage client chats, leads & events", icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg> },
     ];
     return (
-      <Shell step={1} steps={["Category", "Plan", "Details"]}>
+      <Shell step={1} steps={["Category", "Plan", "Details"]} sideTiers>
         <div style={{ marginBottom: 28 }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 8 }}>Partner with Tendr</p>
           <h1 style={{ fontSize: "clamp(1.6rem,3.5vw,2.2rem)", fontWeight: 800, color: ink, margin: "0 0 8px", lineHeight: 1.2 }}>How do you earn?</h1>
@@ -1154,15 +1168,26 @@ export default function VendorRegistration() {
           <h1 style={{ fontSize: "clamp(1.4rem,3vw,1.8rem)", fontWeight: 800, color: ink, margin: "0 0 6px" }}>Everything you need to grow</h1>
           <p style={{ fontSize: 13.5, color: muted, margin: 0 }}>7 days free. No card needed. Cancel anytime.</p>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 28 }}>
-          {featureSections.map(s => (
-            <div key={s.title} style={{ background: "#fff", borderRadius: 14, padding: "18px 20px", border: "1.5px solid rgba(196,122,46,0.14)" }}>
-              <p style={{ fontSize: 11, fontWeight: 800, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>{s.title}</p>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 14px" }}>
-                {s.items.map(i => <div key={i} style={{ fontSize: 12.5, color: muted, display: "flex", gap: 7 }}><span style={{ color: gold, flexShrink: 0 }}>✓</span>{i}</div>)}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 22 }}>
+          {featureSections.map((s, idx) => {
+            const icons = ["🔍", "🛠", "📈", "💬"];
+            return (
+              <div key={s.title} style={{ background: "#fff", borderRadius: 13, padding: "14px 15px", border: "1.5px solid rgba(196,122,46,0.14)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 9 }}>
+                  <span style={{ fontSize: 14 }}>{icons[idx]}</span>
+                  <p style={{ fontSize: 10, fontWeight: 800, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>{s.title}</p>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {s.items.map(item => (
+                    <div key={item} style={{ fontSize: 11.5, color: muted, display: "flex", gap: 6, alignItems: "flex-start" }}>
+                      <span style={{ color: gold, flexShrink: 0, lineHeight: 1.6 }}>✓</span>
+                      <span style={{ lineHeight: 1.45 }}>{item}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         <button type="button" onClick={() => setStep("v_form")}
           style={{ width: "100%", padding: "14px", borderRadius: 12, background: `linear-gradient(135deg,${gold},#CCAB4A)`, color: "#fff", border: "none", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font }}>

@@ -533,24 +533,14 @@ const Auth = () => {
                   sub: "Booking events for your company or organisation",
                 },
                 {
-                  value: "vendor",
+                  value: "professional",
                   icon: (
                     <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                     </svg>
                   ),
-                  label: "Vendor / Service Provider",
-                  sub: "DJ, photographer, caterer, decorator, or other event professional",
-                },
-                {
-                  value: "artist",
-                  icon: (
-                    <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
-                    </svg>
-                  ),
-                  label: "Artist / Performer",
-                  sub: "Singer, band, anchor, choreographer, musician, or other live performer",
+                  label: "Event Professional",
+                  sub: "Artist, performer, caterer, decorator, photographer, DJ, or any event service",
                 },
                 {
                   value: "coordinator",
@@ -560,7 +550,7 @@ const Auth = () => {
                     </svg>
                   ),
                   label: "Event Coordinator",
-                  sub: "Manage bookings, leads, and events as a professional coordinator",
+                  sub: "Manage client bookings, leads, and events as a professional coordinator",
                 },
               ].map(({ value, icon, label, sub }) => {
                 const active = accountType === value;
@@ -605,7 +595,7 @@ const Auth = () => {
                 type="button"
                 onClick={() => {
                   if (accountType === "coordinator") { navigate("/coordinator/register"); return; }
-                  if (accountType === "artist") { navigate("/vendor/registration"); return; }
+                  if (accountType === "professional") { navigate("/vendor/registration"); return; }
                   if (accountType === "company") { navigate("/corporate-signup"); return; }
                   setSignupStep("form");
                 }}
@@ -617,7 +607,7 @@ const Auth = () => {
                   boxShadow: "0 4px 14px rgba(196,122,46,0.35)", transition: "all 0.2s",
                 }}
               >
-                Continue as {accountType === "coordinator" ? "Coordinator" : accountType === "artist" ? "Artist / Performer" : accountType === "vendor" ? "Vendor" : accountType === "company" ? "Corporate" : "Personal"} →
+                Continue as {accountType === "coordinator" ? "Coordinator" : accountType === "professional" ? "Event Professional" : accountType === "company" ? "Corporate" : "Personal"} →
               </button>
             </div>
           ) : isSignup ? (
@@ -626,7 +616,7 @@ const Auth = () => {
               {/* Role pill + back */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 12px", background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 10 }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E" }}>
-                  {accountType === "coordinator" ? "🗓 Event Coordinator" : accountType === "vendor" ? "🎤 Vendor account" : accountType === "company" ? "🏢 Professional / Corporate" : "👤 Personal account"}
+                  {accountType === "coordinator" ? "🗓 Event Coordinator" : accountType === "professional" ? "⭐ Event Professional" : accountType === "company" ? "🏢 Professional / Corporate" : "👤 Personal account"}
                 </span>
                 <button type="button" onClick={() => setSignupStep("role")} style={{ background: "none", border: "none", fontSize: 12, color: "#9B7450", cursor: "pointer", fontFamily: font, fontWeight: 600, padding: 0 }}>
                   Change
