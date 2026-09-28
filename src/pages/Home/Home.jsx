@@ -859,6 +859,7 @@ const Home = () => {
   const [pathsRevealed, setPathsRevealed] = useState(false);
   const [occasionFlow, setOccasionFlow] = useState(null); // null | "grid" | occasionObject
   const [occasionSearch, setOccasionSearch] = useState("");
+  const [roomCodeInput, setRoomCodeInput] = useState("");
   const [hoveredOcc, setHoveredOcc] = useState(null);
   const [occModal, setOccModal] = useState(null);
   const [showIntro, setShowIntro] = useState(() => {
@@ -3076,7 +3077,7 @@ const Home = () => {
               </div>
 
               {/* Body */}
-              <div className="occ-flow-body" style={{ overflowY: "auto", flex: 1, scrollbarWidth: "none" }}>
+              <div className="occ-flow-body" style={{ overflowY: "auto", flex: 1, scrollbarWidth: "none", paddingBottom: 80 }}>
                 {searchTrim ? (
                   /* Search results: flat numbered list */
                   <div style={{ padding: "0 26px 24px" }}>
@@ -3153,6 +3154,30 @@ const Home = () => {
                     </div>
                   </>
                 )}
+              </div>
+
+              {/* Sticky join-room footer */}
+              <div style={{ position:"sticky", bottom:0, background:"#FFFFFF", borderTop:"1px solid rgba(0,0,0,0.07)", padding:"14px 28px 18px", flexShrink:0 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:10, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:5 }}>🎉 Have a room code?</div>
+                    <div style={{ display:"flex", gap:8 }}>
+                      <input
+                        value={roomCodeInput}
+                        onChange={e => setRoomCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6))}
+                        onKeyDown={e => e.key === "Enter" && roomCodeInput.length === 6 && (navigate(`/join-room?code=${roomCodeInput}`), closeFlow())}
+                        placeholder="Enter code…"
+                        maxLength={6}
+                        style={{ flex:1, padding:"9px 14px", borderRadius:10, border:`1.5px solid ${roomCodeInput.length===6?"#C47A2E80":"rgba(0,0,0,0.12)"}`, background:"#F8F5F0", color:"#2C1A0E", fontSize:15, fontWeight:700, outline:"none", letterSpacing:"0.16em", fontFamily:"'Outfit',sans-serif", textTransform:"uppercase", transition:"border-color 0.18s" }}
+                      />
+                      <button
+                        onClick={() => { if (roomCodeInput.length === 6) { navigate(`/join-room?code=${roomCodeInput}`); closeFlow(); } }}
+                        disabled={roomCodeInput.length < 6}
+                        style={{ padding:"9px 18px", borderRadius:10, border:"none", background:roomCodeInput.length===6?"#C47A2E":"rgba(0,0,0,0.07)", color:roomCodeInput.length===6?"#fff":"rgba(44,26,14,0.35)", fontSize:13, fontWeight:700, cursor:roomCodeInput.length===6?"pointer":"default", transition:"all 0.18s", whiteSpace:"nowrap" }}
+                      >Join →</button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </>

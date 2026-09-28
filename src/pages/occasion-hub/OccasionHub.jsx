@@ -11093,12 +11093,12 @@ export default function OccasionHub({ occasion }) {
 
       {/* ── Host Controls Panel ── */}
       {showHostControls && (
-        <div style={{ position:"fixed", inset:0, zIndex:4500, background:"rgba(2,1,8,0.82)", backdropFilter:"blur(20px)", display:"flex", alignItems:"flex-end" }} onClick={()=>setShowHostControls(false)}>
-          <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, margin:"0 auto", background:"#0D0820", borderRadius:"24px 24px 0 0", border:`1px solid ${occAccent}25`, borderBottom:"none", animation:"modal-in 0.26s cubic-bezier(0.22,1,0.36,1)", display:"flex", flexDirection:"column", maxHeight:"90dvh" }}>
+        <div style={{ position:"fixed", inset:0, zIndex:4500, background:"rgba(2,1,8,0.82)", backdropFilter:"blur(20px)", display:"flex", alignItems:"center", justifyContent:"center", padding:"20px 16px" }} onClick={()=>setShowHostControls(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:480, background:"#0D0820", borderRadius:24, border:`1px solid ${occAccent}25`, animation:"modal-in 0.26s cubic-bezier(0.22,1,0.36,1)", display:"flex", flexDirection:"column", maxHeight:"90dvh" }}>
             {/* Dark header */}
             <div style={{ padding:"20px 20px 16px", borderBottom:`1px solid rgba(255,255,255,0.08)`, flexShrink:0, position:"relative", overflow:"hidden" }}>
               <div style={{ position:"absolute", top:-40, right:-40, width:160, height:160, borderRadius:"50%", background:`radial-gradient(ellipse,${occAccent}25 0%,transparent 70%)`, pointerEvents:"none" }} />
-              <div style={{ width:36, height:4, background:"rgba(255,255,255,0.18)", borderRadius:2, margin:"0 auto 16px" }} />
+              <div style={{ width:36, height:4, background:"rgba(255,255,255,0.14)", borderRadius:2, margin:"0 auto 12px" }} />
               <div style={{ display:"flex", alignItems:"center", gap:12, position:"relative", zIndex:1 }}>
                 <div style={{ width:42, height:42, borderRadius:12, background:`${occAccent}20`, border:`1px solid ${occAccent}40`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>{room ? "🎙️" : "⭐"}</div>
                 <div>
