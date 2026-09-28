@@ -645,7 +645,7 @@ export default function VendorRegistration() {
   const [genres, setGenres] = useState([]);
   const [artistForm, setArtistForm] = useState({
     name: "", phoneNumber: "", whatsappNumber: "", email: "", city: "",
-    bio: "", priceRange: "", duration: "", sampleLink: "", instagram: "",
+    bio: "", packages: [{ name: "", price: "" }], duration: "", sampleLink: "", instagram: "", setlist: "",
   });
 
   // Vendor flow
@@ -844,6 +844,18 @@ export default function VendorRegistration() {
     const genreOptions = ARTIST_GENRES[performerType] || [];
     const toggleGenre = (g) => setGenres(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g]);
 
+    const setlistLabel = ["Anchor","Emcee"].includes(performerType) ? "Typical Segments / Script Outline"
+      : performerType === "Choreographer" ? "Routines / Acts You Offer"
+      : performerType === "Musician" ? "Repertoire / Sets"
+      : "Setlist / Repertoire";
+    const setlistPlaceholder = ["Anchor","Emcee"].includes(performerType)
+      ? "e.g.\n• Welcome address & intro\n• Couple Q&A / fun games\n• Audience interaction rounds\n• Award or milestone moments\n• Closing & vote of thanks"
+      : performerType === "Singer"
+      ? "e.g.\n• Bollywood romantic set: Tum Hi Ho, Kesariya\n• Ghazal set: Jagjit Singh classics\n• Crowd requests — open to suggestions"
+      : performerType === "Choreographer"
+      ? "e.g.\n• Couple first dance — choreographed routine\n• Bride's sisters group performance\n• Flash mob coordination"
+      : "List your key sets, songs, acts or signature segments";
+
     const handleArtistSubmit = async (e) => {
       e.preventDefault();
       const er = {};
@@ -864,10 +876,11 @@ export default function VendorRegistration() {
         isArtist: true,
         genres,
         bio: artistForm.bio,
-        priceRange: artistForm.priceRange,
+        packages: artistForm.packages.filter(p => p.name.trim() || p.price.trim()),
         duration: artistForm.duration,
         sampleLink: artistForm.sampleLink,
         instagram: artistForm.instagram,
+        setlist: artistForm.setlist,
       });
       if (ok) { setSuccessName(artistForm.name); setSubmitted(true); }
     };
@@ -954,22 +967,45 @@ export default function VendorRegistration() {
               </div>
             )}
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-              <div>
-                <Label optional>Performance Duration</Label>
-                <select value={artistForm.duration} onChange={e => setArtistForm(p => ({...p, duration: e.target.value}))}
-                  style={{ ...inputStyle(focused, errors, "duration", gold, ink), cursor: "pointer" }}>
-                  <option value="">Select</option>
-                  {DURATION_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
-                </select>
-              </div>
-              <div>
-                <Label optional>Price Per Event</Label>
-                <select value={artistForm.priceRange} onChange={e => setArtistForm(p => ({...p, priceRange: e.target.value}))}
-                  style={{ ...inputStyle(focused, errors, "priceRange", gold, ink), cursor: "pointer" }}>
-                  <option value="">Select range</option>
-                  {PRICE_RANGE_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
-                </select>
+            <div>
+              <Label optional>Performance Duration</Label>
+              <select value={artistForm.duration} onChange={e => setArtistForm(p => ({...p, duration: e.target.value}))}
+                style={{ ...inputStyle(focused, errors, "duration", gold, ink), cursor: "pointer" }}>
+                <option value="">Select</option>
+                {DURATION_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </div>
+
+            {/* Packages */}
+            <div>
+              <Label optional>Packages <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(name + price — up to 3)</span></Label>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {artistForm.packages.map((pkg, i) => (
+                  <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8, alignItems: "center" }}>
+                    <input
+                      value={pkg.name}
+                      onChange={e => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, name: e.target.value } : x) }))}
+                      placeholder={["Basic", "Standard", "Premium"][i] || "Package name"}
+                      style={inputStyle(focused, {}, "", gold, ink)}
+                    />
+                    <input
+                      value={pkg.price}
+                      onChange={e => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, price: e.target.value } : x) }))}
+                      placeholder="e.g. ₹15,000"
+                      style={inputStyle(focused, {}, "", gold, ink)}
+                    />
+                    {i > 0 ? (
+                      <button type="button" onClick={() => setArtistForm(p => ({ ...p, packages: p.packages.filter((_, j) => j !== i) }))}
+                        style={{ height: 42, width: 36, background: "none", border: "1.5px solid #fca5a5", borderRadius: 8, color: "#dc2626", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
+                    ) : <div style={{ width: 36 }} />}
+                  </div>
+                ))}
+                {artistForm.packages.length < 3 && (
+                  <button type="button" onClick={() => setArtistForm(p => ({ ...p, packages: [...p.packages, { name: "", price: "" }] }))}
+                    style={{ padding: "9px", borderRadius: 8, border: `1.5px dashed rgba(196,122,46,0.45)`, background: "transparent", color: gold, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                    + Add Package
+                  </button>
+                )}
               </div>
             </div>
 
@@ -983,6 +1019,14 @@ export default function VendorRegistration() {
 
             {aInput("sampleLink", "Sample Video / YouTube Link", false, { placeholder: "https://youtube.com/..." })}
             {aInput("instagram", "Instagram Handle", false, { placeholder: "@yourhandle" })}
+
+            <div>
+              <Label optional>{setlistLabel} <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(shown on your profile)</span></Label>
+              <textarea value={artistForm.setlist} onChange={e => setArtistForm(p => ({...p, setlist: e.target.value}))} rows={4} maxLength={500}
+                placeholder={setlistPlaceholder}
+                style={{ ...inputStyle(focused, errors, "setlist", gold, ink), resize: "vertical" }} />
+              <p style={{ fontSize: 11, color: muted, marginTop: 4, textAlign: "right" }}>{artistForm.setlist.length}/500</p>
+            </div>
 
             <button type="submit" disabled={loading}
               style={{ marginTop: 8, padding: "14px", borderRadius: 12, background: loading ? "#D4A060" : `linear-gradient(135deg,${gold},#CCAB4A)`, color: "#fff", border: "none", fontSize: 15, fontWeight: 800, cursor: loading ? "default" : "pointer", fontFamily: font }}>

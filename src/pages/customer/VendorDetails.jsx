@@ -1209,18 +1209,50 @@ const VendorDetailsPage = () => {
                 <div style={{ marginBottom: 28 }}>
                   <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 12px" }}>About</h2>
                   <p style={{ fontSize: 14.5, color: "#5a3a1a", lineHeight: 1.75, margin: 0 }}>{vendor.bio}</p>
+                  {vendor?.duration && (
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 14, padding: "5px 14px", borderRadius: 100, background: "rgba(196,122,46,0.08)", border: "1.5px solid rgba(196,122,46,0.18)" }}>
+                      <span style={{ fontSize: 14 }}>⏱</span>
+                      <span style={{ fontSize: 12.5, fontWeight: 600, color: "#5a3a1a", fontFamily: font }}>Performance: {vendor.duration}</span>
+                    </div>
+                  )}
                 </div>
               </>
             ) : (
               <>
                 <div style={{ height: 1, background: "rgba(196,122,46,0.1)", marginBottom: 24 }} />
-                <div style={{ marginBottom: 28, background: "#FFFCF5", borderRadius: 14, padding: "18px 20px", border: "1.5px solid rgba(196,122,46,0.14)" }}>
+                <div style={{ marginBottom: vendor?.duration ? 14 : 28, background: "#FFFCF5", borderRadius: 14, padding: "18px 20px", border: "1.5px solid rgba(196,122,46,0.14)" }}>
                   <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 10px" }}>About {vendor.name}</h2>
                   <p style={{ fontSize: 14, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>
                     {vendor.name} is a {serviceType.toLowerCase()} service provider based in {primaryCity}{stateName ? ", " + stateName : ""}.
                     With {yearsOfExperience ?? "several"} years of experience and {totalEventsCompleted ?? "many"} events completed,
                     they bring expertise and professionalism to every event.
                   </p>
+                </div>
+                {vendor?.duration && (
+                  <div style={{ marginBottom: 28 }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 100, background: "rgba(196,122,46,0.08)", border: "1.5px solid rgba(196,122,46,0.18)" }}>
+                      <span style={{ fontSize: 14 }}>⏱</span>
+                      <span style={{ fontSize: 12.5, fontWeight: 600, color: "#5a3a1a", fontFamily: font }}>Performance: {vendor.duration}</span>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* ── Packages ── */}
+            {(vendor?.packages?.length > 0) && (
+              <>
+                <div style={{ height: 1, background: "rgba(196,122,46,0.1)", marginBottom: 24 }} />
+                <div style={{ marginBottom: 28 }}>
+                  <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 16px" }}>Packages</h2>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {vendor.packages.filter(p => p.name || p.price).map((pkg, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 18px", background: "#FFFCF5", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.18)" }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", fontFamily: font }}>{pkg.name || `Package ${i + 1}`}</div>
+                        {pkg.price && <div style={{ fontSize: 15, fontWeight: 800, color: "#C4973A", fontFamily: font }}>{pkg.price}</div>}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </>
             )}
