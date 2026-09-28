@@ -135,7 +135,7 @@ function Modal({ onClose, title, emoji, children, wide }) {
 }
 
 // ── Light Form Modal (white card, occasion-tinted) ──────────────────────────
-function LightFormModal({ onClose, emoji, title, subtitle, accent, children }) {
+function LightFormModal({ onClose, emoji, title, subtitle, accent, children, onLeaderboard }) {
   useEffect(() => {
     const h = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", h);
@@ -145,11 +145,17 @@ function LightFormModal({ onClose, emoji, title, subtitle, accent, children }) {
   return (
     <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,1,8,0.82)", backdropFilter:"blur(20px)", zIndex:1000, display:"flex", alignItems:"flex-end", justifyContent:"center" }}>
       <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, maxHeight:"93dvh", borderRadius:"24px 24px 0 0", overflow:"hidden", display:"flex", flexDirection:"column", fontFamily:font, boxShadow:`0 -28px 80px rgba(0,0,0,0.65), 0 0 0 1px ${ac}18`, animation:"modal-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-        {/* Dark immersive header — like the party hub bg */}
+        {/* Dark immersive header */}
         <div style={{ background:"linear-gradient(155deg,#0D0820 0%,rgba(18,8,40,0.99) 100%)", padding:"24px 20px 20px", position:"relative", overflow:"hidden", flexShrink:0 }}>
           <div style={{ position:"absolute", top:-60, right:-60, width:220, height:220, borderRadius:"50%", background:`radial-gradient(ellipse,${ac}30 0%,transparent 70%)`, pointerEvents:"none" }} />
           <div style={{ position:"absolute", bottom:-50, left:-30, width:160, height:160, borderRadius:"50%", background:`radial-gradient(ellipse,${ac}12 0%,transparent 70%)`, pointerEvents:"none" }} />
-          <button onClick={onClose} style={{ position:"absolute", top:14, right:14, background:"rgba(255,255,255,0.10)", border:"1px solid rgba(255,255,255,0.14)", color:"rgba(255,255,255,0.65)", width:32, height:32, borderRadius:"50%", cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", justifyContent:"center", zIndex:2 }}>✕</button>
+          {/* Close + optional leaderboard button */}
+          <div style={{ position:"absolute", top:14, right:14, display:"flex", gap:6, zIndex:2 }}>
+            {onLeaderboard && (
+              <button onClick={e=>{e.stopPropagation();onLeaderboard();}} style={{ background:"rgba(255,255,255,0.10)", border:"1px solid rgba(255,255,255,0.18)", color:"rgba(255,255,255,0.80)", height:32, borderRadius:20, cursor:"pointer", fontSize:12, fontWeight:700, padding:"0 10px", display:"flex", alignItems:"center", gap:4 }}>🏆 Board</button>
+            )}
+            <button onClick={onClose} style={{ background:"rgba(255,255,255,0.10)", border:"1px solid rgba(255,255,255,0.14)", color:"rgba(255,255,255,0.65)", width:32, height:32, borderRadius:"50%", cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
+          </div>
           <div style={{ display:"flex", alignItems:"center", gap:14, position:"relative", zIndex:1 }}>
             <div style={{ width:52, height:52, borderRadius:15, background:`${ac}22`, border:`1.5px solid ${ac}50`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:`0 0 22px ${ac}35` }}>
               <span style={{ fontSize:26 }}>{emoji}</span>
@@ -827,7 +833,7 @@ function ShareableTool({ onClose, emoji, title, description, path, fields, accen
 // GAMES
 // ════════════════════════════════════════════════════════════════════════════
 
-function TruthOrDare({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+function TruthOrDare({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame, onLeaderboard }) {
   const live = !!room;
   useEffect(() => { if (live && isHost && currentGame !== 'truth-dare') setGame?.('truth-dare', {}); }, [live, isHost]); // eslint-disable-line
   const [players, setPlayers] = useState([]);
@@ -946,7 +952,7 @@ function TruthOrDare({ onClose, accent, room, myName: liveName, players: livePla
   const activeCard = live ? liveCard : card;
   const isMyTurn = !live || liveName === displayPlayer;
   return (
-    <LightFormModal onClose={onClose} emoji="🎯" title="Truth or Dare" accent={accent}>
+    <LightFormModal onClose={onClose} emoji="🎯" title="Truth or Dare" accent={accent} onLeaderboard={onLeaderboard}>
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
       {displayPlayer && <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div style={{fontSize:13,fontWeight:700,color:accent}}>{live && liveName === displayPlayer ? "Your turn!" : `${displayPlayer}'s turn`}</div>
@@ -986,7 +992,7 @@ function TruthOrDare({ onClose, accent, room, myName: liveName, players: livePla
   );
 }
 
-function NeverHaveI({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+function NeverHaveI({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame, onLeaderboard }) {
   const live = !!room;
   useEffect(() => { if (live && isHost && currentGame !== 'never-have-i') setGame?.('never-have-i', {}); }, [live, isHost]); // eslint-disable-line
   const [idx, setIdx] = useState(() => Math.floor(Math.random() * NEVER_HAVE_I.length));
@@ -1021,7 +1027,10 @@ function NeverHaveI({ onClose, accent, room, myName: liveName, players: livePlay
   const reveal = () => {
     setRevealed(true);
     if (live) {
-      if (roundHave[liveName]) sendAction('mark', {});
+      if (roundHave[liveName]) {
+        sendAction('mark', {});
+        sendAction('score-add', { player: liveName, points: 1 });
+      }
     } else {
       Object.entries(roundHave).forEach(([name, has]) => { if (has) setScores(s => ({ ...s, [name]: (s[name] || 0) + 1 })); });
     }
@@ -1058,7 +1067,7 @@ function NeverHaveI({ onClose, accent, room, myName: liveName, players: livePlay
   const haveCount = Object.values(roundHave).filter(Boolean).length;
 
   return (
-    <LightFormModal onClose={onClose} emoji="🙅" title="Never Have I Ever" accent={accent}>
+    <LightFormModal onClose={onClose} emoji="🙅" title="Never Have I Ever" accent={accent} onLeaderboard={onLeaderboard}>
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={revealed ? Object.fromEntries(Object.entries(roundHave).filter(([,v])=>v).map(([n])=>[n,true])) : {}} />
       {/* Statement card */}
       <div style={{ background: "#fff", border: `1.5px solid ${accent}30`, borderRadius: 18, padding: "20px 18px", textAlign: "center", marginBottom: 6, boxShadow: `0 4px 20px ${accent}10` }}>
@@ -1111,7 +1120,7 @@ function NeverHaveI({ onClose, accent, room, myName: liveName, players: livePlay
   );
 }
 
-function WouldYouRather({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+function WouldYouRather({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame, onLeaderboard }) {
   const live = !!room;
   useEffect(() => { if (live && isHost && currentGame !== 'would-you') setGame?.('would-you', {}); }, [live, isHost]); // eslint-disable-line
   // Local state (solo mode)
@@ -1177,7 +1186,7 @@ function WouldYouRather({ onClose, accent, room, myName: liveName, players: live
   const SIDE_PCTS  = ["#93C5FD","#D8B4FE"];
   const SIDE_LABELS = ["OPTION A","OPTION B"];
   return (
-    <LightFormModal onClose={onClose} emoji="🤷" title="Would You Rather" accent={accent}>
+    <LightFormModal onClose={onClose} emoji="🤷" title="Would You Rather" accent={accent} onLeaderboard={onLeaderboard}>
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={Object.fromEntries(Object.keys(liveVotesMap || {}).map(n => [n, true]))} />
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
         <div style={{display:"flex",alignItems:"center",gap:6}}>
@@ -1248,7 +1257,7 @@ function WouldYouRather({ onClose, accent, room, myName: liveName, players: live
   );
 }
 
-function HotTakes({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+function HotTakes({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame, onLeaderboard }) {
   const live = !!room;
   useEffect(() => { if (live && isHost && currentGame !== 'hot-takes') setGame?.('hot-takes', {}); }, [live, isHost]); // eslint-disable-line
   const [takes, setTakes] = useState([{ id: Date.now(), text: rand(HOT_TAKES), reactions: {} }]);
@@ -1295,7 +1304,7 @@ function HotTakes({ onClose, accent, room, myName: liveName, players: livePlayer
   const currentTake = live ? { id: liveIdx, text: liveTakeText, reactions: liveReactions || {} } : takes[0];
 
   return (
-    <LightFormModal onClose={onClose} emoji="🌶️" title="Hot Takes" accent={accent} wide>
+    <LightFormModal onClose={onClose} emoji="🌶️" title="Hot Takes" accent={accent} wide onLeaderboard={onLeaderboard}>
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={Object.fromEntries(Object.keys(liveVotesMap||{}).map(n=>[n,true]))} />
       {/* Room temperature meter */}
       <div style={{ background: "rgba(0,0,0,0.03)", borderRadius: 14, padding: "12px 16px", marginBottom: 14, display: "flex", alignItems: "center", gap: 12 }}>
@@ -3150,7 +3159,7 @@ const MLT_PROMPTS = shuffle([
   "Most likely to become a chef 🍳","Most likely to move abroad 🌍","Most likely to still be using the same phone in 5 years 📱",
 ]);
 
-function MostLikelyTo({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+function MostLikelyTo({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame, onLeaderboard }) {
   const live = !!room;
   useEffect(() => { if (live && isHost && currentGame !== 'most-likely') setGame?.('most-likely', {}); }, [live, isHost]); // eslint-disable-line
   const [players, setPlayers] = useState([]);
@@ -3202,7 +3211,7 @@ function MostLikelyTo({ onClose, accent, room, myName: liveName, players: livePl
   const effectivePhase = live ? "voting" : phase;
 
   return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="🏆" title="Most Likely To" wide>
+    <LightFormModal onClose={onClose} accent={accent} emoji="🏆" title="Most Likely To" wide onLeaderboard={onLeaderboard}>
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={liveVotesMap ? Object.fromEntries(Object.keys(liveVotesMap).map(n=>[n,true])) : {}} />
       {effectivePhase === "setup" && (<>
         <div style={{ ...lcrd, textAlign: "center", marginBottom: 16 }}>
@@ -3445,67 +3454,80 @@ function TwoTruthsOneLie({ onClose, accent }) {
 }
 
 // ── Rapid Fire ────────────────────────────────────────────────────────────────
+// RF deck format: { q, a, opts:[4 choices, correct included] }
 const RF_DECKS = {
   "Food & Trivia": [
-    "Which city in India is famous for biryani the most?",
-    "What is the national fruit of India?",
-    "Name one ingredient always found in chai masala.",
-    "Which Indian state is paneer most associated with?",
-    "What is the English name for imli?",
-    "Which city is famous for vada pav?",
-    "Name a dish served at almost every Indian wedding.",
-    "What flour is used to make poori?",
-    "Name the world's hottest spice category.",
-    "What is rabri made from?",
+    { q:"Which city in India is most famous for biryani?",           a:"Hyderabad",    opts:["Lucknow","Hyderabad","Mumbai","Kolkata"] },
+    { q:"What is the national fruit of India?",                      a:"Mango",        opts:["Papaya","Guava","Mango","Banana"] },
+    { q:"Which ingredient is always found in chai masala?",          a:"Cardamom",     opts:["Cinnamon","Cardamom","Cloves","Pepper"] },
+    { q:"Which Indian state is paneer most associated with?",        a:"Punjab",       opts:["Gujarat","Punjab","Rajasthan","Bengal"] },
+    { q:"What is the English name for imli?",                        a:"Tamarind",     opts:["Lemon","Tamarind","Vinegar","Kokum"] },
+    { q:"Which city is famous for vada pav?",                        a:"Mumbai",       opts:["Delhi","Pune","Mumbai","Ahmedabad"] },
+    { q:"What flour is used to make poori?",                         a:"Wheat",        opts:["Rice","Corn","Wheat","Chickpea"] },
+    { q:"What is rabri made from?",                                  a:"Milk",         opts:["Rice","Milk","Coconut","Semolina"] },
+    { q:"Which Indian sweet is made by deep-frying in a spiral?",   a:"Jalebi",       opts:["Barfi","Gulab Jamun","Jalebi","Halwa"] },
+    { q:"What is the spice that makes turmeric yellow?",             a:"Curcumin",     opts:["Capsaicin","Curcumin","Limonene","Tannin"] },
   ],
   "Bollywood & Pop": [
-    "Name Shah Rukh Khan's debut Bollywood film.",
-    "Who sang Kesariya from Brahmastra?",
-    "Which actor played Bajrangi in Bajrangi Bhaijaan?",
-    "Who directed Dangal?",
-    "Name a 2023 Bollywood film starring Shah Rukh Khan.",
-    "Which city is Bollywood based in?",
-    "Who plays Tiger in the Tiger franchise?",
-    "Name the iconic song from DDLJ.",
-    "What year did Dil Chahta Hai release?",
-    "Who sang Jai Ho from Slumdog Millionaire?",
+    { q:"What was Shah Rukh Khan's debut Bollywood film?",           a:"Deewana",      opts:["Baazigar","Darr","Deewana","DDLJ"] },
+    { q:"Who sang Kesariya from Brahmastra?",                        a:"Arijit Singh", opts:["KK","Jubin Nautiyal","Arijit Singh","Shreya Ghoshal"] },
+    { q:"Which actor played Bajrangi in Bajrangi Bhaijaan?",         a:"Salman Khan",  opts:["Hrithik Roshan","Salman Khan","Aamir Khan","Akshay Kumar"] },
+    { q:"Who directed Dangal?",                                      a:"Nitesh Tiwari",opts:["Karan Johar","Rajkumar Hirani","Nitesh Tiwari","Zoya Akhtar"] },
+    { q:"Which city is Bollywood based in?",                         a:"Mumbai",       opts:["Delhi","Chennai","Hyderabad","Mumbai"] },
+    { q:"Who plays Tiger in the Tiger franchise?",                   a:"Salman Khan",  opts:["Shah Rukh Khan","Salman Khan","Hrithik Roshan","John Abraham"] },
+    { q:"Name the iconic song from DDLJ.",                           a:"Tujhe Dekha To",opts:["Dil Dhadakne Do","Tujhe Dekha To","Mere Sapno Ki Rani","Pehla Nasha"] },
+    { q:"Who sang Jai Ho from Slumdog Millionaire?",                 a:"A.R. Rahman",  opts:["Shankar-Ehsaan-Loy","Vishal-Shekhar","A.R. Rahman","Pritam"] },
+    { q:"Which film features the song Besharam Rang?",              a:"Pathaan",      opts:["Tiger 3","War 2","Pathaan","Jawan"] },
+    { q:"Who directed RRR (2022)?",                                  a:"S.S. Rajamouli",opts:["Shankar","Mani Ratnam","S.S. Rajamouli","Farah Khan"] },
   ],
   "Know Your Crew": [
-    "Who in this group has the most siblings?",
-    "Who in this room was born first?",
-    "Who here has travelled to the most countries?",
-    "Who in this group wakes up earliest every day?",
-    "Who here has the longest full name?",
-    "Who was the last to get a haircut in this room?",
-    "Who here uses their phone the most?",
-    "Who in this group is the best cook?",
-    "Who here has the loudest laugh?",
-    "Who in this group has the most saved photos on their phone?",
+    { q:"Who in this group has the most siblings?",                  a:"OPEN",         opts:["Ask everyone!","Vote now →","Discuss!","Reveal! 🔥"] },
+    { q:"Who in this room was born first?",                          a:"OPEN",         opts:["The oldest one!","Vote now →","Ask around!","Reveal! 🔥"] },
+    { q:"Who has travelled to the most countries?",                  a:"OPEN",         opts:["The traveller!","Vote now →","Find out!","Reveal! 🔥"] },
+    { q:"Who wakes up earliest every day?",                          a:"OPEN",         opts:["The early bird!","Vote now →","Who is it?","Reveal! 🔥"] },
+    { q:"Who here uses their phone the most?",                       a:"OPEN",         opts:["The addict!","Vote now →","Guilty who?","Reveal! 🔥"] },
+    { q:"Who in this group is the best cook?",                       a:"OPEN",         opts:["MasterChef!","Vote now →","Whose food?","Reveal! 🔥"] },
+    { q:"Who here has the loudest laugh?",                           a:"OPEN",         opts:["The laugher!","Vote now →","Listen up!","Reveal! 🔥"] },
+    { q:"Who in this group sings the best?",                         a:"OPEN",         opts:["The singer!","Vote now →","Who's got it?","Reveal! 🔥"] },
+    { q:"Who would survive a zombie apocalypse?",                    a:"OPEN",         opts:["The tough one!","Vote now →","Who's ready?","Reveal! 🔥"] },
+    { q:"Who here is the biggest foodie?",                           a:"OPEN",         opts:["The foodie!","Vote now →","Who eats most?","Reveal! 🔥"] },
   ],
   "Quick Facts": [
-    "How many players are in a cricket team?",
-    "What is the capital of Australia?",
-    "Name a planet closer to the sun than Earth.",
-    "What is the boiling point of water in Celsius?",
-    "What year did India become independent?",
-    "How many sides does a hexagon have?",
-    "What is the full form of ISRO?",
-    "Name the longest river in India.",
-    "What is the currency of Japan?",
-    "How many bones are in the adult human body?",
+    { q:"How many players are in a cricket team?",                   a:"11",           opts:["9","10","11","12"] },
+    { q:"What is the capital of Australia?",                         a:"Canberra",     opts:["Sydney","Melbourne","Brisbane","Canberra"] },
+    { q:"What is the boiling point of water in Celsius?",            a:"100°C",        opts:["90°C","95°C","100°C","105°C"] },
+    { q:"What year did India become independent?",                   a:"1947",         opts:["1942","1945","1947","1950"] },
+    { q:"How many sides does a hexagon have?",                       a:"6",            opts:["5","6","7","8"] },
+    { q:"What is the full form of ISRO?",                            a:"Indian Space Research Organisation", opts:["Indian Science Research Org","Indian Space Research Organisation","International Space Research Org","Indian Satellite Research Org"] },
+    { q:"What is the currency of Japan?",                            a:"Yen",          opts:["Won","Rupee","Yen","Yuan"] },
+    { q:"How many bones are in the adult human body?",               a:"206",          opts:["189","196","206","215"] },
+    { q:"What is the speed of light (approx)?",                      a:"3 lakh km/s",  opts:["1 lakh km/s","2 lakh km/s","3 lakh km/s","4 lakh km/s"] },
+    { q:"Who invented the telephone?",                               a:"Alexander Graham Bell", opts:["Thomas Edison","Nikola Tesla","Alexander Graham Bell","Guglielmo Marconi"] },
   ],
 };
 
+function shuffleArr(arr) { return [...arr].sort(()=>Math.random()-0.5); }
+
 function RapidFire({ onClose, accent }) {
-  const [deck, setDeck]       = useState(null);
-  const [idx, setIdx]         = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [active, setActive]   = useState(false);
-  const [answers, setAnswers] = useState([]);
-  const [done, setDone]       = useState(false);
-  const timerRef              = useRef(null);
+  const [deck, setDeck]           = useState(null);
+  const [idx, setIdx]             = useState(0);
+  const [timeLeft, setTimeLeft]   = useState(30);
+  const [active, setActive]       = useState(false);
+  const [answers, setAnswers]     = useState([]);
+  const [done, setDone]           = useState(false);
+  const [chosen, setChosen]       = useState(null);      // selected option
+  const [shuffledOpts, setShuffledOpts] = useState([]); // randomised 4 opts
+  const timerRef                  = useRef(null);
 
   const questions = deck ? RF_DECKS[deck] : [];
+  const qObj = questions[idx] || null;
+  const isOpen = qObj?.a === "OPEN"; // crew-opinion questions have no fixed answer
+
+  // Shuffle options whenever the question index changes
+  useEffect(() => {
+    if (qObj) setShuffledOpts(shuffleArr(qObj.opts));
+    setChosen(null);
+  }, [idx, deck]); // eslint-disable-line
 
   useEffect(() => {
     if (!active) return;
@@ -3515,13 +3537,19 @@ function RapidFire({ onClose, accent }) {
     return () => clearInterval(timerRef.current);
   }, [active]);
 
-  const start = (d) => { setDeck(d); setIdx(0); setTimeLeft(30); setAnswers([]); setDone(false); setActive(true); };
+  const start = (d) => { setDeck(d); setIdx(0); setTimeLeft(30); setAnswers([]); setDone(false); setActive(true); setChosen(null); };
+
   const answer = (opt) => {
+    if (chosen) return;
+    setChosen(opt);
     clearInterval(timerRef.current);
-    const updated = [...answers, { q: questions[idx], a: opt }];
-    setAnswers(updated);
-    if (idx + 1 >= questions.length) { setDone(true); setActive(false); }
-    else { setIdx(i => i + 1); setTimeLeft(30); setActive(true); }
+    const correct = isOpen ? true : opt === qObj.a;
+    const updated = [...answers, { q: qObj.q, chosen: opt, correct, correct_a: qObj.a }];
+    setTimeout(() => {
+      setAnswers(updated);
+      if (idx + 1 >= questions.length) { setDone(true); setActive(false); }
+      else { setIdx(i => i + 1); setTimeLeft(30); setActive(true); setChosen(null); }
+    }, isOpen ? 400 : 900);
   };
 
   const timerColor = timeLeft > 15 ? "#4ADE80" : timeLeft > 7 ? "#FBBF24" : "#F87171";
@@ -3556,24 +3584,28 @@ function RapidFire({ onClose, accent }) {
   );
 
   if (done) {
-    const gotIt = answers.filter(a => a.a === "Got It").length;
-    const speed = gotIt >= 8 ? "Lightning fast!" : gotIt >= 5 ? "Pretty good!" : "Keep practicing!";
+    const correct = answers.filter(a => a.correct).length;
+    const pct = Math.round((correct/answers.length)*100);
+    const speed = pct >= 80 ? "🏆 Outstanding!" : pct >= 60 ? "⚡ Pretty good!" : pct >= 40 ? "📈 Keep at it!" : "😅 Needs practice!";
     return (
-      <LightFormModal onClose={onClose} accent={accent} emoji="⚡" title="Rapid Fire" wide>
+      <LightFormModal onClose={onClose} accent={accent} emoji="⚡" title="Rapid Fire">
         <div style={{ marginBottom:16, borderRadius:16, background:"linear-gradient(180deg,#1A0A00,#2D1000)", border:"2px solid rgba(251,146,60,0.35)", padding:"22px 16px", textAlign:"center" }}>
           <div style={{ fontSize:11, fontWeight:900, letterSpacing:"0.2em", color:"rgba(251,146,60,0.8)", textTransform:"uppercase", marginBottom:10 }}>ROUND COMPLETE</div>
-          <div style={{ fontSize:56, fontWeight:900, color:"#FB923C", fontVariantNumeric:"tabular-nums", lineHeight:1 }}>{gotIt}</div>
-          <div style={{ fontSize:13, color:"rgba(255,255,255,0.5)", marginTop:4 }}>out of {answers.length} got right</div>
-          <div style={{ fontSize:14, marginTop:10, color:"rgba(255,255,255,0.8)", fontWeight:700 }}>{speed}</div>
+          <div style={{ fontSize:52, fontWeight:900, color:"#FB923C", fontVariantNumeric:"tabular-nums", lineHeight:1 }}>{correct}/{answers.length}</div>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,0.5)", marginTop:4 }}>correct answers · {pct}%</div>
+          <div style={{ fontSize:14, marginTop:10, color:"rgba(255,255,255,0.9)", fontWeight:700 }}>{speed}</div>
           <div style={{ height:6, background:"rgba(255,255,255,0.08)", borderRadius:3, overflow:"hidden", margin:"14px 0 0" }}>
-            <div style={{ height:"100%", width:`${(gotIt/answers.length)*100}%`, background:"linear-gradient(90deg,#EA580C,#FB923C)", borderRadius:3 }} />
+            <div style={{ height:"100%", width:`${pct}%`, background:"linear-gradient(90deg,#EA580C,#FB923C)", borderRadius:3 }} />
           </div>
         </div>
         <div style={{ maxHeight:220, overflowY:"auto", marginBottom:14 }}>
           {answers.map((a, i) => (
-            <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 12px", background:"rgba(0,0,0,0.04)", borderRadius:10, marginBottom:5 }}>
-              <span style={{ fontSize:12, color:"rgba(28,9,0,0.55)", flex:1, marginRight:8 }}>{a.q}</span>
-              <span style={{ fontSize:12, fontWeight:700, color:a.a==="Got It"?"#22c55e":a.a==="–"?"rgba(28,9,0,0.30)":"#FB923C", flexShrink:0 }}>{a.a==="Got It"?"Got It":a.a==="–"?"Skipped":a.a}</span>
+            <div key={i} style={{ padding:"8px 12px", background:a.correct?"rgba(34,197,94,0.05)":"rgba(239,68,68,0.05)", borderRadius:10, marginBottom:5, borderLeft:`3px solid ${a.correct?"#22c55e":"#ef4444"}` }}>
+              <div style={{ fontSize:12, color:"rgba(28,9,0,0.55)", marginBottom:3 }}>{a.q}</div>
+              <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+                <span style={{ fontSize:11, fontWeight:700, color:a.correct?"#22c55e":"#ef4444" }}>{a.correct?"✓":"✗"} You: {a.chosen}</span>
+                {!a.correct && a.correct_a !== "OPEN" && <span style={{ fontSize:11, color:"rgba(28,9,0,0.40)" }}>· Ans: {a.correct_a}</span>}
+              </div>
             </div>
           ))}
         </div>
@@ -3584,16 +3616,19 @@ function RapidFire({ onClose, accent }) {
 
   const isUrgent = timeLeft <= 7;
   const isCritical = timeLeft <= 3;
+  const OPT_COLORS = ["#2563EB","#7C3AED","#EA580C","#059669"];
+
   return (
-    <LightFormModal onClose={onClose} accent={accent} emoji="⚡" title="Rapid Fire" wide>
+    <LightFormModal onClose={onClose} accent={accent} emoji="⚡" title="Rapid Fire">
       <style>{`
         @keyframes rf-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
         @keyframes rf-urgent{0%,100%{background:rgba(239,68,68,0.07)}50%{background:rgba(239,68,68,0.18)}}
         @keyframes rf-pop{0%{transform:scale(0.95);opacity:0}100%{transform:scale(1);opacity:1}}
+        @keyframes rf-correct{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
       `}</style>
       {/* Timer row */}
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16, padding:"8px 12px", borderRadius:12, background:isUrgent?"rgba(239,68,68,0.08)":"rgba(0,0,0,0.04)", animation:isCritical?"rf-urgent 0.6s ease-in-out infinite":undefined, transition:"background 0.3s" }}>
-        <div style={{ fontSize:11, color:"rgba(28,9,0,0.45)", fontWeight:600 }}>{idx+1} / {questions.length}</div>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14, padding:"8px 12px", borderRadius:12, background:isUrgent?"rgba(239,68,68,0.08)":"rgba(0,0,0,0.04)", animation:isCritical?"rf-urgent 0.6s ease-in-out infinite":undefined, transition:"background 0.3s" }}>
+        <div style={{ fontSize:11, color:"rgba(28,9,0,0.45)", fontWeight:600 }}>{idx+1}/{questions.length}</div>
         <div style={{ position:"relative", width:52, height:52 }}>
           <svg width="52" height="52" style={{ transform:"rotate(-90deg)", display:"block" }}>
             <circle cx="26" cy="26" r="21" fill="none" stroke="rgba(0,0,0,0.10)" strokeWidth="4"/>
@@ -3606,22 +3641,35 @@ function RapidFire({ onClose, accent }) {
         <div style={{ fontSize:11, color:timerColor, fontWeight:700 }}>{deck}</div>
       </div>
       {/* Question card */}
-      <div key={idx} style={{ background:"linear-gradient(180deg,#1A0800,#2D1200)", borderRadius:16, padding:"24px 20px", marginBottom:16, border:`2px solid ${isUrgent?"rgba(239,68,68,0.4)":"rgba(251,146,60,0.25)"}`, textAlign:"center", transition:"border-color 0.3s", animation:"rf-pop 0.22s ease-out" }}>
-        <div style={{ fontSize:10, fontWeight:900, color:"rgba(251,146,60,0.55)", letterSpacing:"0.18em", textTransform:"uppercase", marginBottom:12 }}>QUESTION</div>
-        <div style={{ fontSize:18, fontWeight:700, color:"#FFF8EC", lineHeight:1.5 }}>{questions[idx]}</div>
+      <div key={idx} style={{ background:"linear-gradient(180deg,#1A0800,#2D1200)", borderRadius:16, padding:"22px 18px", marginBottom:14, border:`2px solid ${isUrgent?"rgba(239,68,68,0.4)":"rgba(251,146,60,0.25)"}`, textAlign:"center", transition:"border-color 0.3s", animation:"rf-pop 0.22s ease-out" }}>
+        <div style={{ fontSize:9, fontWeight:900, color:"rgba(251,146,60,0.55)", letterSpacing:"0.18em", textTransform:"uppercase", marginBottom:10 }}>
+          {isOpen ? "CREW QUESTION" : "QUESTION"}
+        </div>
+        <div style={{ fontSize:17, fontWeight:700, color:"#FFF8EC", lineHeight:1.55 }}>{qObj?.q}</div>
+        {isOpen && <div style={{ fontSize:11, color:"rgba(255,255,255,0.35)", marginTop:8 }}>Pick the best answer — group decides together!</div>}
       </div>
-      {/* Got It / Skip */}
-      <div style={{ display:"flex", gap:10, marginBottom:6 }}>
-        <button onClick={() => answer("Got It")} style={{ flex:1, padding:"16px 14px", borderRadius:14, background:`linear-gradient(135deg,#22c55e,#16a34a)`, border:"none", color:"#fff", fontSize:15, fontWeight:800, cursor:"pointer", fontFamily:font, transition:"all 0.15s", boxShadow:"0 4px 16px rgba(34,197,94,0.3)" }}
-          onMouseEnter={e=>e.currentTarget.style.filter="brightness(1.08)"}
-          onMouseLeave={e=>e.currentTarget.style.filter="brightness(1)"}>
-          Got It!
-        </button>
-        <button onClick={() => answer("–")} style={{ padding:"16px 20px", borderRadius:14, background:"rgba(0,0,0,0.06)", border:"1.5px solid rgba(0,0,0,0.10)", color:"rgba(28,9,0,0.45)", fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:font, transition:"all 0.15s" }}
-          onMouseEnter={e=>e.currentTarget.style.background="rgba(0,0,0,0.10)"}
-          onMouseLeave={e=>e.currentTarget.style.background="rgba(0,0,0,0.06)"}>
-          Skip
-        </button>
+      {/* 4 MCQ options — 2×2 grid */}
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:6 }}>
+        {shuffledOpts.map((opt, oi) => {
+          const isChosen = chosen === opt;
+          const isCorrect = !isOpen && opt === qObj?.a;
+          const showResult = !!chosen;
+          let bg = `${OPT_COLORS[oi]}18`;
+          let border = `${OPT_COLORS[oi]}44`;
+          let color = OPT_COLORS[oi];
+          if (showResult) {
+            if (isCorrect && !isOpen) { bg = "rgba(34,197,94,0.20)"; border = "#22c55e"; color = "#22c55e"; }
+            else if (isChosen && !isCorrect && !isOpen) { bg = "rgba(239,68,68,0.18)"; border = "#ef4444"; color = "#ef4444"; }
+            else if (!isChosen) { bg = "rgba(0,0,0,0.04)"; border = "rgba(0,0,0,0.06)"; color = "rgba(28,9,0,0.30)"; }
+          }
+          return (
+            <button key={opt} onClick={() => answer(opt)} disabled={!!chosen} style={{ padding:"14px 10px", borderRadius:13, background:bg, border:`2px solid ${border}`, color, fontSize:13, fontWeight:isChosen||isCorrect?800:600, cursor:chosen?"default":"pointer", fontFamily:font, textAlign:"center", lineHeight:1.4, transition:"all 0.2s", animation:isChosen&&!isOpen&&isCorrect?"rf-correct 0.4s ease-out":undefined }}>
+              {showResult && isCorrect && !isOpen && <span style={{ marginRight:4 }}>✓</span>}
+              {showResult && isChosen && !isCorrect && !isOpen && <span style={{ marginRight:4 }}>✗</span>}
+              {opt}
+            </button>
+          );
+        })}
       </div>
     </LightFormModal>
   );
@@ -9750,6 +9798,128 @@ const SLUG_FOR_OCC = {
   "diwali-party":"diwali-party", "holi-party":"holi-party", "navratri-garba":"navratri-garba",
 };
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   LeaderboardPanel — cross-game session leaderboard shown to all room players
+───────────────────────────────────────────────────────────────────────────── */
+function LeaderboardPanel({ onClose, scores = {}, players = [], accent = "#C4973A", myName = "" }) {
+  const MEDALS = ["🥇","🥈","🥉"];
+  const sorted = [...new Set([...Object.keys(scores), ...players])]
+    .map(p => ({ name: p, pts: scores[p] || 0 }))
+    .sort((a,b) => b.pts - a.pts);
+  const max = sorted[0]?.pts || 1;
+
+  return (
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,1,8,0.85)", backdropFilter:"blur(20px)", zIndex:5000, display:"flex", alignItems:"flex-end", justifyContent:"center" }}>
+      <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, maxHeight:"88dvh", borderRadius:"24px 24px 0 0", overflow:"hidden", display:"flex", flexDirection:"column", fontFamily:font, boxShadow:`0 -28px 80px rgba(0,0,0,0.7), 0 0 0 1px ${accent}20`, animation:"modal-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+        {/* Header */}
+        <div style={{ background:"linear-gradient(155deg,#0D0820 0%,#1A0830 100%)", padding:"24px 20px 20px", position:"relative", overflow:"hidden", flexShrink:0 }}>
+          <div style={{ position:"absolute", top:-60, right:-60, width:220, height:220, borderRadius:"50%", background:`radial-gradient(ellipse,${accent}30 0%,transparent 70%)`, pointerEvents:"none" }} />
+          <button onClick={onClose} style={{ position:"absolute", top:14, right:14, background:"rgba(255,255,255,0.10)", border:"1px solid rgba(255,255,255,0.14)", color:"rgba(255,255,255,0.65)", width:32, height:32, borderRadius:"50%", cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
+          <div style={{ display:"flex", alignItems:"center", gap:14, position:"relative", zIndex:1 }}>
+            <div style={{ width:52, height:52, borderRadius:15, background:`${accent}22`, border:`1.5px solid ${accent}50`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:`0 0 22px ${accent}35`, fontSize:26 }}>🏆</div>
+            <div>
+              <div style={{ fontSize:20, fontWeight:800, color:"#FFFFFF", letterSpacing:"-0.01em", lineHeight:1.2 }}>Leaderboard</div>
+              <div style={{ fontSize:13, color:"rgba(255,255,255,0.50)", marginTop:3 }}>Session standings · live scores</div>
+            </div>
+          </div>
+        </div>
+        {/* Scores */}
+        <div style={{ background:"#FFFAF7", padding:"16px 20px 32px", overflowY:"auto", flex:1 }}>
+          {sorted.length === 0 && (
+            <div style={{ textAlign:"center", padding:"32px 0", color:"rgba(28,9,0,0.35)", fontSize:13 }}>No scores yet — play a game!</div>
+          )}
+          {sorted.map((row, i) => {
+            const pct = max > 0 ? (row.pts / max) * 100 : 0;
+            const isMe = row.name === myName;
+            return (
+              <div key={row.name} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 0", borderBottom: i < sorted.length-1 ? "1px solid rgba(0,0,0,0.06)" : "none" }}>
+                <div style={{ width:32, textAlign:"center", fontSize: i < 3 ? 20 : 13, fontWeight:700, color:i < 3 ? undefined : "rgba(28,9,0,0.30)", flexShrink:0 }}>{i < 3 ? MEDALS[i] : `${i+1}.`}</div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:14, fontWeight:700, color:"rgba(28,9,0,0.85)", display:"flex", alignItems:"center", gap:6 }}>
+                    {row.name}
+                    {isMe && <span style={{ fontSize:10, background:`${accent}20`, color:accent, borderRadius:20, padding:"2px 6px", fontWeight:700 }}>you</span>}
+                  </div>
+                  <div style={{ height:5, background:"rgba(0,0,0,0.07)", borderRadius:3, marginTop:6, overflow:"hidden" }}>
+                    <div style={{ height:"100%", width:`${pct}%`, background:`linear-gradient(90deg,${accent},${accent}bb)`, borderRadius:3, transition:"width 0.5s ease" }} />
+                  </div>
+                </div>
+                <div style={{ fontSize:18, fontWeight:900, color:accent, fontVariantNumeric:"tabular-nums", flexShrink:0 }}>{row.pts}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   GameQueuePanel — host builds a playlist of games to run in order
+───────────────────────────────────────────────────────────────────────────── */
+function GameQueuePanel({ onClose, queue, setQueue, onLaunchGame, accent = "#C4973A", playTools = [] }) {
+  const [search, setSearch] = useState("");
+  const available = playTools.filter(t => !queue.find(q => q.id === t.id) && (!search || t.title.toLowerCase().includes(search.toLowerCase())));
+
+  const remove = (id) => setQueue(q => q.filter(x => x.id !== id));
+  const moveUp = (i) => setQueue(q => { const a = [...q]; [a[i-1],a[i]] = [a[i],a[i-1]]; return a; });
+  const moveDown = (i) => setQueue(q => { const a = [...q]; [a[i],a[i+1]] = [a[i+1],a[i]]; return a; });
+
+  return (
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,1,8,0.85)", backdropFilter:"blur(20px)", zIndex:5000, display:"flex", alignItems:"flex-end", justifyContent:"center" }}>
+      <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, maxHeight:"92dvh", borderRadius:"24px 24px 0 0", overflow:"hidden", display:"flex", flexDirection:"column", fontFamily:font, boxShadow:`0 -28px 80px rgba(0,0,0,0.7)`, animation:"modal-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+        {/* Header */}
+        <div style={{ background:"linear-gradient(155deg,#0D0820 0%,#1A0830 100%)", padding:"24px 20px 20px", flexShrink:0, position:"relative", overflow:"hidden" }}>
+          <div style={{ position:"absolute", top:-60, right:-60, width:220, height:220, borderRadius:"50%", background:`radial-gradient(ellipse,${accent}30 0%,transparent 70%)`, pointerEvents:"none" }} />
+          <button onClick={onClose} style={{ position:"absolute", top:14, right:14, background:"rgba(255,255,255,0.10)", border:"1px solid rgba(255,255,255,0.14)", color:"rgba(255,255,255,0.65)", width:32, height:32, borderRadius:"50%", cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
+          <div style={{ display:"flex", alignItems:"center", gap:14, position:"relative", zIndex:1 }}>
+            <div style={{ width:52, height:52, borderRadius:15, background:`${accent}22`, border:`1.5px solid ${accent}50`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:26 }}>🎮</div>
+            <div>
+              <div style={{ fontSize:20, fontWeight:800, color:"#FFFFFF" }}>Game Queue</div>
+              <div style={{ fontSize:13, color:"rgba(255,255,255,0.50)", marginTop:3 }}>{queue.length} game{queue.length!==1?"s":""} in playlist</div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ background:"#FFFAF7", padding:"16px 20px 32px", overflowY:"auto", flex:1 }}>
+          {/* Current queue */}
+          {queue.length > 0 && (
+            <>
+              <div style={{ fontSize:10, fontWeight:800, color:"rgba(28,9,0,0.35)", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:10 }}>Your Playlist</div>
+              {queue.map((item, i) => (
+                <div key={item.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", background:"rgba(0,0,0,0.04)", borderRadius:12, marginBottom:6, border:"1px solid rgba(0,0,0,0.06)" }}>
+                  <div style={{ fontSize:16, flexShrink:0 }}>{item.emoji}</div>
+                  <div style={{ flex:1, fontSize:13, fontWeight:600, color:"rgba(28,9,0,0.80)" }}>{item.title}</div>
+                  <div style={{ display:"flex", gap:4 }}>
+                    {i > 0 && <button onClick={()=>moveUp(i)} style={{ width:26, height:26, borderRadius:8, border:"1px solid rgba(0,0,0,0.10)", background:"none", cursor:"pointer", fontSize:12 }}>↑</button>}
+                    {i < queue.length-1 && <button onClick={()=>moveDown(i)} style={{ width:26, height:26, borderRadius:8, border:"1px solid rgba(0,0,0,0.10)", background:"none", cursor:"pointer", fontSize:12 }}>↓</button>}
+                    <button onClick={()=>onLaunchGame(item.id)} style={{ padding:"4px 10px", borderRadius:8, border:"none", background:accent, color:"#fff", fontSize:11, fontWeight:700, cursor:"pointer" }}>▶</button>
+                    <button onClick={()=>remove(item.id)} style={{ width:26, height:26, borderRadius:8, border:"1px solid rgba(239,68,68,0.25)", background:"rgba(239,68,68,0.06)", color:"#ef4444", cursor:"pointer", fontSize:12 }}>✕</button>
+                  </div>
+                </div>
+              ))}
+              <div style={{ height:1, background:"rgba(0,0,0,0.08)", margin:"14px 0" }} />
+            </>
+          )}
+
+          {/* Search + add games */}
+          <div style={{ fontSize:10, fontWeight:800, color:"rgba(28,9,0,0.35)", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:10 }}>Add Games</div>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search games..." style={{ width:"100%", padding:"10px 14px", borderRadius:10, border:"1.5px solid rgba(0,0,0,0.12)", background:"rgba(0,0,0,0.03)", fontSize:13, fontFamily:font, marginBottom:10, boxSizing:"border-box", outline:"none" }} />
+          <div style={{ maxHeight:200, overflowY:"auto" }}>
+            {available.map(t => (
+              <div key={t.id} onClick={()=>setQueue(q=>[...q,{id:t.id,title:t.title,emoji:t.emoji}])} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", background:"rgba(0,0,0,0.02)", borderRadius:10, marginBottom:5, cursor:"pointer", border:"1px solid rgba(0,0,0,0.05)" }}>
+                <div style={{ fontSize:18, flexShrink:0 }}>{t.emoji}</div>
+                <div style={{ flex:1, fontSize:13, fontWeight:600, color:"rgba(28,9,0,0.70)" }}>{t.title}</div>
+                <div style={{ width:22, height:22, borderRadius:"50%", background:`${accent}18`, border:`1px solid ${accent}40`, display:"flex", alignItems:"center", justifyContent:"center", color:accent, fontSize:13, flexShrink:0 }}>+</div>
+              </div>
+            ))}
+            {available.length === 0 && <div style={{ textAlign:"center", color:"rgba(28,9,0,0.30)", fontSize:13, padding:"16px 0" }}>{search ? "No matches" : "All games added!"}</div>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function OccasionHub({ occasion }) {
   const [open, setOpen]         = useState(null);
   const [forceSoloOpen, setForceSoloOpen] = useState(false);
@@ -9812,13 +9982,23 @@ export default function OccasionHub({ occasion }) {
   const [roomLoading, setRoomLoading] = useState(false);
   const [copied, setCopied]         = useState(false);
   const [showHostControls, setShowHostControls] = useState(false);
+  const [showLeaderboard, setShowLeaderboard]   = useState(false);
+  const [gameQueue, setGameQueue]               = useState([]); // [{id,title,emoji}]
+  const [showGameQueue, setShowGameQueue]       = useState(false);
 
   // Entry gate: null = gate showing; 'exploring' | 'hosting' | 'joined' = hub visible
   const [entryMode, setEntryMode]   = useState(null);
   const [entryView, setEntryView]   = useState("pick"); // "pick" | "host" | "join"
 
   const { room, connected, error: roomError, myName, players: roomPlayers, gameState, currentGame, isHost, effect, createRoom, joinRoom, leaveRoom, closeRoom, sendAction, sendEffect, setGame, clearError } = usePartyRoom();
-  const liveProps = room ? { room, myName, players: roomPlayers, gameState, currentGame, sendAction, sendEffect, isHost, setGame } : {};
+
+  // Wrap setGame to preserve cross-game session scores (_scores) across game switches
+  const setGameWithScores = useCallback((gameName, initState) => {
+    const savedScores = gameState?._scores;
+    return setGame(gameName, { ...(initState||{}), ...(savedScores && Object.keys(savedScores).length ? {_scores: savedScores} : {}) });
+  }, [setGame, gameState]);
+
+  const liveProps = room ? { room, myName, players: roomPlayers, gameState, currentGame, sendAction, sendEffect, isHost, setGame: setGameWithScores, onLeaderboard: () => setShowLeaderboard(true) } : {};
   const navigate = useNavigate();
 
   // ── Tool intro helpers ────────────────────────────────────────────────────
@@ -10734,36 +10914,110 @@ export default function OccasionHub({ occasion }) {
       )}
 
       {/* ── HOST controls bottom sheet ── */}
+      {/* ── Leaderboard overlay ── */}
+      {showLeaderboard && (
+        <LeaderboardPanel
+          onClose={()=>setShowLeaderboard(false)}
+          scores={gameState?._scores || {}}
+          players={roomPlayers || []}
+          accent={occAccent}
+          myName={myName}
+        />
+      )}
+
+      {/* ── Game Queue overlay ── */}
+      {showGameQueue && (
+        <GameQueuePanel
+          onClose={()=>setShowGameQueue(false)}
+          queue={gameQueue}
+          setQueue={setGameQueue}
+          accent={occAccent}
+          playTools={allTools.filter(t => PLAY_IDS.has(t.id) && ENABLED_GAME_IDS.has(t.id))}
+          onLaunchGame={(id)=>{setOpen(id);setShowGameQueue(false);}}
+        />
+      )}
+
+      {/* ── Host Controls Panel ── */}
       {showHostControls && (
-        <div style={{ position:"fixed", inset:0, zIndex:4500, background:"rgba(0,0,0,0.7)", display:"flex", alignItems:"flex-end" }} onClick={()=>setShowHostControls(false)}>
-          <div onClick={e=>e.stopPropagation()} style={{ width:"100%", background:PH.surface, borderRadius:"24px 24px 0 0", padding:"24px 20px calc(32px + env(safe-area-inset-bottom,0px))", border:`1px solid ${PH.bd}`, borderBottom:"none", animation:"tab-slide 0.25s cubic-bezier(0.22,1,0.36,1)" }}>
-            <div style={{ width:36, height:4, background:PH.dotLine, borderRadius:2, margin:"0 auto 20px" }} />
-            <div style={{ fontSize:12, fontWeight:600, color:"rgba(196,151,58,0.80)", textTransform:"uppercase", letterSpacing:"0.10em", marginBottom:16 }}>Host Controls</div>
-            {room ? (
-              <>
-                <div style={{ display:"flex", alignItems:"center", gap:10, background:PH.inputBg, border:`1px solid ${PH.bd}`, borderRadius:12, padding:"12px 16px", marginBottom:14 }}>
-                  <span style={{ width:7, height:7, borderRadius:"50%", background:"#4ade80", animation:"dot-pulse 2s ease infinite" }} />
-                  <span style={{ fontSize:22, fontWeight:700, color:PH.txt, letterSpacing:"0.18em", flex:1 }}>{room.code}</span>
-                  <span style={{ fontSize:12, color:PH.sub }}>{room.players?.length||1} online</span>
+        <div style={{ position:"fixed", inset:0, zIndex:4500, background:"rgba(2,1,8,0.82)", backdropFilter:"blur(20px)", display:"flex", alignItems:"flex-end" }} onClick={()=>setShowHostControls(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, margin:"0 auto", background:"#0D0820", borderRadius:"24px 24px 0 0", border:`1px solid ${occAccent}25`, borderBottom:"none", animation:"modal-in 0.26s cubic-bezier(0.22,1,0.36,1)", display:"flex", flexDirection:"column", maxHeight:"90dvh" }}>
+            {/* Dark header */}
+            <div style={{ padding:"20px 20px 16px", borderBottom:`1px solid rgba(255,255,255,0.08)`, flexShrink:0, position:"relative", overflow:"hidden" }}>
+              <div style={{ position:"absolute", top:-40, right:-40, width:160, height:160, borderRadius:"50%", background:`radial-gradient(ellipse,${occAccent}25 0%,transparent 70%)`, pointerEvents:"none" }} />
+              <div style={{ width:36, height:4, background:"rgba(255,255,255,0.18)", borderRadius:2, margin:"0 auto 16px" }} />
+              <div style={{ display:"flex", alignItems:"center", gap:12, position:"relative", zIndex:1 }}>
+                <div style={{ width:42, height:42, borderRadius:12, background:`${occAccent}20`, border:`1px solid ${occAccent}40`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>{room ? "🎙️" : "⭐"}</div>
+                <div>
+                  <div style={{ fontSize:17, fontWeight:800, color:"#FFFFFF" }}>{room ? (isHost ? "Host Dashboard" : "Room") : "Party Hub"}</div>
+                  <div style={{ fontSize:12, color:"rgba(255,255,255,0.45)" }}>{room ? `${roomPlayers?.length||1} player${(roomPlayers?.length||1)!==1?"s":""} online · ${room.code}` : "Set up your party room"}</div>
                 </div>
-                <button onClick={()=>copyRoomLink(room.code)} style={{ width:"100%", padding:"13px", borderRadius:12, border:`1px solid ${PH.violet}44`, background:`${PH.violet}12`, color:PH.violet, fontSize:14, fontWeight:600, cursor:"pointer", marginBottom:10 }}>
-                  {copied ? "✓ Copied!" : "Copy Room Link"}
-                </button>
-                <button onClick={()=>{setRoomModal("players");setShowHostControls(false);}} style={{ width:"100%", padding:"13px", borderRadius:12, border:`1px solid ${PH.bd}`, background:PH.inputBg, color:PH.sub, fontSize:14, fontWeight:600, cursor:"pointer", marginBottom:10 }}>
-                  View Players →
-                </button>
-                <button onClick={leaveRoom} style={{ width:"100%", padding:"12px", border:"none", background:"none", color:"rgba(255,82,82,0.7)", fontSize:13, fontWeight:600, cursor:"pointer" }}>Leave Room</button>
-              </>
-            ) : (
-              <>
-                <button onClick={()=>{setRoomModal("host-setup");setShowHostControls(false);}} style={{ width:"100%", padding:"14px", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:14, fontWeight:600, cursor:"pointer", marginBottom:10 }}>
-                  Host a Room
-                </button>
-                <button onClick={()=>{setRoomModal("join");setShowHostControls(false);}} style={{ width:"100%", padding:"13px", borderRadius:12, border:`1px solid ${PH.bd}`, background:PH.inputBg, color:PH.sub, fontSize:14, fontWeight:500, cursor:"pointer" }}>
-                  Join a Room
-                </button>
-              </>
-            )}
+                <button onClick={()=>setShowHostControls(false)} style={{ marginLeft:"auto", background:"rgba(255,255,255,0.10)", border:"1px solid rgba(255,255,255,0.14)", color:"rgba(255,255,255,0.65)", width:32, height:32, borderRadius:"50%", cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
+              </div>
+            </div>
+
+            <div style={{ overflowY:"auto", flex:1, padding:"16px 20px calc(28px + env(safe-area-inset-bottom,0px))" }}>
+              {room ? (
+                <>
+                  {/* Room code + share */}
+                  <div style={{ display:"flex", alignItems:"center", gap:10, background:"rgba(74,222,128,0.06)", border:"1px solid rgba(74,222,128,0.20)", borderRadius:12, padding:"12px 16px", marginBottom:12 }}>
+                    <span style={{ width:7, height:7, borderRadius:"50%", background:"#4ade80", animation:"dot-pulse 2s ease infinite", flexShrink:0 }} />
+                    <span style={{ fontSize:20, fontWeight:700, color:"#FFFFFF", letterSpacing:"0.18em", flex:1 }}>{room.code}</span>
+                    <button onClick={()=>copyRoomLink(room.code)} style={{ padding:"6px 14px", borderRadius:8, border:`1px solid ${occAccent}44`, background:`${occAccent}14`, color:occAccent, fontSize:12, fontWeight:600, cursor:"pointer" }}>{copied?"✓ Copied":"Share"}</button>
+                  </div>
+
+                  {/* Players with scores */}
+                  <div style={{ fontSize:10, fontWeight:800, color:"rgba(255,255,255,0.35)", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:8 }}>Players · Scores</div>
+                  <div style={{ marginBottom:14 }}>
+                    {(roomPlayers||[myName]).map((p,i) => {
+                      const pts = gameState?._scores?.[p] || 0;
+                      return (
+                        <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", background:"rgba(255,255,255,0.05)", borderRadius:10, marginBottom:5, border:"1px solid rgba(255,255,255,0.07)" }}>
+                          <div style={{ width:30, height:30, borderRadius:"50%", background:`${occAccent}18`, border:`1px solid ${occAccent}28`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:occAccent, flexShrink:0 }}>{p.charAt(0).toUpperCase()}</div>
+                          <div style={{ flex:1, fontSize:13, fontWeight:600, color:"rgba(255,255,255,0.80)" }}>{p}{p===myName&&<span style={{ fontSize:10, color:occAccent, marginLeft:5 }}>you</span>}{p===room.hostName&&<span style={{ fontSize:10, color:"#FBBF24", marginLeft:5 }}>host</span>}</div>
+                          <div style={{ fontSize:13, fontWeight:800, color:occAccent, minWidth:32, textAlign:"right" }}>{pts > 0 ? `${pts}` : "—"}</div>
+                          {isHost && <button onClick={()=>sendAction('score-add',{player:p,points:1})} style={{ width:24, height:24, borderRadius:"50%", border:`1px solid ${occAccent}50`, background:`${occAccent}18`, color:occAccent, fontSize:13, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>+</button>}
+                          <span style={{ width:6, height:6, borderRadius:"50%", background:"#4ade80", flexShrink:0 }} />
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Current game */}
+                  {currentGame && (
+                    <div style={{ display:"flex", alignItems:"center", gap:10, background:`${occAccent}10`, border:`1px solid ${occAccent}25`, borderRadius:12, padding:"12px 16px", marginBottom:12 }}>
+                      <span style={{ fontSize:18 }}>🎮</span>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:12, fontWeight:800, color:"rgba(255,255,255,0.40)", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:2 }}>Now Playing</div>
+                        <div style={{ fontSize:14, fontWeight:700, color:"rgba(255,255,255,0.85)" }}>{currentGame}</div>
+                      </div>
+                      {isHost && <button onClick={()=>{setGameWithScores(null,{});setShowHostControls(false);}} style={{ padding:"6px 12px", borderRadius:8, border:"1px solid rgba(239,68,68,0.30)", background:"rgba(239,68,68,0.10)", color:"#ef4444", fontSize:12, fontWeight:600, cursor:"pointer" }}>End Game</button>}
+                    </div>
+                  )}
+
+                  {/* Action buttons */}
+                  <button onClick={()=>{setShowLeaderboard(true);setShowHostControls(false);}} style={{ width:"100%", padding:"13px", borderRadius:12, border:`1px solid ${occAccent}40`, background:`${occAccent}12`, color:occAccent, fontSize:14, fontWeight:700, cursor:"pointer", marginBottom:8, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+                    🏆 View Leaderboard
+                  </button>
+                  <button onClick={()=>{setShowGameQueue(true);setShowHostControls(false);}} style={{ width:"100%", padding:"13px", borderRadius:12, border:"1px solid rgba(255,255,255,0.14)", background:"rgba(255,255,255,0.06)", color:"rgba(255,255,255,0.75)", fontSize:14, fontWeight:600, cursor:"pointer", marginBottom:8, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+                    🎮 Game Queue {gameQueue.length > 0 && <span style={{ fontSize:11, background:`${occAccent}30`, color:occAccent, borderRadius:20, padding:"2px 7px" }}>{gameQueue.length}</span>}
+                  </button>
+                  <button onClick={()=>copyRoomLink(room.code)} style={{ width:"100%", padding:"12px", borderRadius:12, border:"1px solid rgba(255,255,255,0.10)", background:"rgba(255,255,255,0.04)", color:"rgba(255,255,255,0.50)", fontSize:13, fontWeight:500, cursor:"pointer", marginBottom:8 }}>
+                    {copied?"✓ Link Copied":"📋 Copy Invite Link"}
+                  </button>
+                  {isHost && <button onClick={()=>{sendAction('score-reset',{});}} style={{ width:"100%", padding:"10px", borderRadius:10, border:"none", background:"none", color:"rgba(255,82,82,0.50)", fontSize:12, fontWeight:500, cursor:"pointer", marginBottom:4 }}>Reset All Scores</button>}
+                  <button onClick={leaveRoom} style={{ width:"100%", padding:"10px", border:"none", background:"none", color:"rgba(255,82,82,0.60)", fontSize:13, fontWeight:600, cursor:"pointer" }}>{isHost ? "Close Room" : "Leave Room"}</button>
+                </>
+              ) : (
+                <>
+                  <button onClick={()=>{setRoomModal("host-setup");setShowHostControls(false);}} style={{ width:"100%", padding:"15px", borderRadius:12, border:"none", background:`linear-gradient(135deg,${occAccent},${occAccent}bb)`, color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", marginBottom:10 }}>
+                    🎙️ Host a Room
+                  </button>
+                  <button onClick={()=>{setRoomModal("join");setShowHostControls(false);}} style={{ width:"100%", padding:"13px", borderRadius:12, border:"1px solid rgba(255,255,255,0.14)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.65)", fontSize:14, fontWeight:500, cursor:"pointer" }}>
+                    Join a Room
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -10797,6 +11051,10 @@ export default function OccasionHub({ occasion }) {
             </div>
           </div>
           <div style={{ flex:1 }} />
+          {/* Leaderboard button (only in a room) */}
+          {room && (
+            <button onClick={()=>setShowLeaderboard(true)} style={{ display:"flex", alignItems:"center", justifyContent:"center", width:36, height:36, borderRadius:"50%", border:`1.5px solid ${occAccent}50`, background:"rgba(255,255,255,0.80)", color:occAccent, fontSize:16, cursor:"pointer", flexShrink:0, zIndex:1, boxShadow:"0 1px 6px rgba(0,0,0,0.08)", marginRight:8 }}>🏆</button>
+          )}
           {/* Host button */}
           <button onClick={()=>setShowHostControls(true)} style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 16px", borderRadius:100, border:`1.5px solid ${occAccent}60`, background:"rgba(255,255,255,0.85)", color:occAccent, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, zIndex:1, boxShadow:"0 1px 6px rgba(0,0,0,0.08)" }}>
             {room ? <span style={{ width:6, height:6, borderRadius:"50%", background:"#4ade80" }} /> : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>}
