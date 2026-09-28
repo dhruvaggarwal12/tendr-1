@@ -394,7 +394,7 @@ const router = createBrowserRouter([
       { path: "pricing",   element: <VendorPricing /> },
       { path: "login",     element: <VendorLogin /> },
       { path: "demo",      element: <VendorDemo /> },
-      { path: "demo-dashboard",    element: <VendorDashboard /> },
+      { path: "demo-dashboard",    element: <DemoDashboardKeyed /> },
       { path: "service-demo",      element: <ServiceDemoKeyed /> },
       { path: "coordinator-dash",  element: <CoordinatorDemoDash /> },
     ],
