@@ -2083,6 +2083,20 @@ const [tab, setTab] = useState('home');
   // Outside orders tab filters
   const [oFilter, setOFilter]         = useState('all');
   const [oSearch, setOSearch]         = useState('');
+  // General reminders
+  const [genReminders, setGenReminders]     = useState([]);
+  const [remLoaded, setRemLoaded]           = useState(false);
+  const [remAdding, setRemAdding]           = useState(false);
+  const [newRemText, setNewRemText]         = useState('');
+  const [newRemDate, setNewRemDate]         = useState('');
+  // General expenses
+  const [genExpenses, setGenExpenses]       = useState([]);
+  const [expLoaded, setExpLoaded]           = useState(false);
+  const [expAdding, setExpAdding]           = useState(false);
+  const [newExpDesc, setNewExpDesc]         = useState('');
+  const [newExpAmt, setNewExpAmt]           = useState('');
+  const [newExpCat, setNewExpCat]           = useState('');
+  const [newExpDate, setNewExpDate]         = useState('');
 
   // Mobile detection
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
@@ -2304,6 +2318,26 @@ const [tab, setTab] = useState('home');
       .catch(() => {})
       .finally(() => setPhotosLoaded(true));
   }, [tab, vendorId, photosLoaded]); // eslint-disable-line
+
+  // Load general reminders
+  useEffect(() => {
+    if (tab !== 'reminders' || remLoaded || !token) return;
+    setRemLoaded(true);
+    fetch(`${BASE}/vendors/me/reminders`, { headers: authHeaders(token) })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setGenReminders(d.reminders || []); })
+      .catch(() => {});
+  }, [tab, remLoaded, token]); // eslint-disable-line
+
+  // Load general expenses
+  useEffect(() => {
+    if (tab !== 'expenses' || expLoaded || !token) return;
+    setExpLoaded(true);
+    fetch(`${BASE}/vendors/me/expenses`, { headers: authHeaders(token) })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setGenExpenses(d.expenses || []); })
+      .catch(() => {});
+  }, [tab, expLoaded, token]); // eslint-disable-line
 
   // Load profile views when insights tab opened
   useEffect(() => {
@@ -2650,6 +2684,8 @@ const [tab, setTab] = useState('home');
     { key: 'tools',       group: 'MANAGE',   label: 'Tools',                                                              icon: dsic(<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>) },
     { key: 'clients',     group: 'MANAGE',   label: 'Clients',                                                            icon: dsic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></>) },
     { key: 'portfolio',   group: 'MANAGE',   label: 'Portfolio',                                                          icon: dsic(<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></>) },
+    { key: 'reminders',   group: 'MANAGE',   label: 'Reminders',                                                          icon: dsic(<><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></>) },
+    { key: 'expenses',    group: 'MANAGE',   label: 'Expenses',                                                           icon: dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>) },
     ...(modules.includes('equipment') ? [{ key: 'inventory', group: 'MANAGE', label: typeConfig.invLabel, icon: dsic(<><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>) }] : []),
     { key: 'profile',     group: 'MANAGE',   label: t('navPage'),                                                         icon: dsic(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>) },
     ...(modules.includes('performance') ? [{ key: 'gig-profile', group: 'ARTIST', label: 'Performance', icon: dsic(<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>) }] : []),
@@ -4380,6 +4416,198 @@ const [tab, setTab] = useState('home');
                         <OutsideOrderCard order={o} onEdit={setModal} onDelete={deleteOrder} onStatus={setOrderStatus} onRequestPayment={setPayReqModal} vendorName={vendorName} profileUrl={`${window.location.origin}/vendor/${vendorId}`} token={token} />
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* ── REMINDERS TAB ── */}
+          {tab === 'reminders' && (() => {
+            const pending = genReminders.filter(r => !r.done);
+            const done    = genReminders.filter(r => r.done);
+            const addReminder = async () => {
+              if (!newRemText.trim()) return;
+              setRemAdding(true);
+              try {
+                const r = await fetch(`${BASE}/vendors/me/reminders`, { method:'POST', headers: authHeaders(token), body: JSON.stringify({ text: newRemText.trim(), date: newRemDate }) });
+                const d = await r.json();
+                if (r.ok) { setGenReminders(d.reminders || []); setNewRemText(''); setNewRemDate(''); }
+              } catch {} finally { setRemAdding(false); }
+            };
+            const toggleDone = async (rem) => {
+              try {
+                const r = await fetch(`${BASE}/vendors/me/reminders/${rem.id}`, { method:'PATCH', headers: authHeaders(token), body: JSON.stringify({ done: !rem.done }) });
+                const d = await r.json();
+                if (r.ok) setGenReminders(d.reminders || []);
+              } catch {}
+            };
+            const deleteRem = async (id) => {
+              try {
+                const r = await fetch(`${BASE}/vendors/me/reminders/${id}`, { method:'DELETE', headers: authHeaders(token) });
+                const d = await r.json();
+                if (r.ok) setGenReminders(d.reminders || []);
+              } catch {}
+            };
+            return (
+              <div>
+                {/* Add reminder */}
+                <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.12)', marginBottom:20 }}>
+                  <div style={{ fontSize:14, fontWeight:800, color:ink, marginBottom:14 }}>Add Reminder</div>
+                  <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+                    <input value={newRemText} onChange={e => setNewRemText(e.target.value)}
+                      placeholder="e.g. Call client before event, renew insurance…"
+                      onKeyDown={e => e.key === 'Enter' && addReminder()}
+                      style={{ flex:'2 1 200px', padding:'9px 13px', borderRadius:10, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13, color:ink, outline:'none', background:'#FFFCF5' }} />
+                    <input type="date" value={newRemDate} onChange={e => setNewRemDate(e.target.value)}
+                      style={{ flex:'1 1 140px', padding:'9px 13px', borderRadius:10, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13, color:ink, outline:'none', background:'#FFFCF5' }} />
+                    <button onClick={addReminder} disabled={remAdding || !newRemText.trim()}
+                      style={{ padding:'9px 20px', borderRadius:10, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:13, fontWeight:700, cursor:'pointer', opacity: (!newRemText.trim()||remAdding)?0.5:1, whiteSpace:'nowrap' }}>
+                      {remAdding ? 'Adding…' : '+ Add'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Pending */}
+                {pending.length > 0 && (
+                  <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.12)', marginBottom:16 }}>
+                    <div style={{ fontSize:12, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 }}>Pending ({pending.length})</div>
+                    <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                      {pending.sort((a,b) => (a.date||'9999') > (b.date||'9999') ? 1 : -1).map(rem => {
+                        const isOverdue = rem.date && new Date(rem.date) < new Date();
+                        return (
+                          <div key={rem.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 12px', borderRadius:11, border:`1.5px solid ${isOverdue?'rgba(220,38,38,0.2)':'rgba(196,122,46,0.13)'}`, background: isOverdue?'rgba(220,38,38,0.03)':'#FFFCF5' }}>
+                            <button onClick={() => toggleDone(rem)} style={{ width:20, height:20, borderRadius:'50%', border:`2px solid ${gold}`, background:'transparent', cursor:'pointer', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center' }} />
+                            <div style={{ flex:1, minWidth:0 }}>
+                              <div style={{ fontSize:13, fontWeight:600, color:ink }}>{rem.text}</div>
+                              {rem.date && <div style={{ fontSize:11, color: isOverdue?'#DC2626':'#9B7450', marginTop:1 }}>{isOverdue?'Overdue · ':''}{new Date(rem.date+'T00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>}
+                            </div>
+                            <button onClick={() => deleteRem(rem.id)} style={{ width:24, height:24, borderRadius:'50%', border:'none', background:'rgba(220,38,38,0.08)', color:'#DC2626', cursor:'pointer', fontSize:14, flexShrink:0 }}>×</button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Empty */}
+                {genReminders.length === 0 && (
+                  <div style={{ textAlign:'center', padding:'40px 24px', background:'#fff', borderRadius:18, border:'1.5px dashed rgba(196,122,46,0.18)' }}>
+                    <div style={{ fontSize:36, marginBottom:10 }}>🔔</div>
+                    <div style={{ fontSize:14, fontWeight:700, color:ink, marginBottom:4 }}>No reminders yet</div>
+                    <div style={{ fontSize:13, color:'#9B7450' }}>Set reminders for anything — follow-ups, renewals, rehearsals.</div>
+                  </div>
+                )}
+
+                {/* Done */}
+                {done.length > 0 && (
+                  <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.1)', opacity:0.7 }}>
+                    <div style={{ fontSize:12, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:12 }}>Completed ({done.length})</div>
+                    <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                      {done.map(rem => (
+                        <div key={rem.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 12px', borderRadius:10, border:'1px solid rgba(196,122,46,0.1)' }}>
+                          <button onClick={() => toggleDone(rem)} style={{ width:20, height:20, borderRadius:'50%', border:`2px solid #16A34A`, background:'rgba(22,163,74,0.1)', cursor:'pointer', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          </button>
+                          <div style={{ flex:1, fontSize:13, color:'#9B7450', textDecoration:'line-through' }}>{rem.text}</div>
+                          <button onClick={() => deleteRem(rem.id)} style={{ width:24, height:24, borderRadius:'50%', border:'none', background:'rgba(220,38,38,0.08)', color:'#DC2626', cursor:'pointer', fontSize:14 }}>×</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* ── EXPENSES TAB ── */}
+          {tab === 'expenses' && (() => {
+            const totalExp = genExpenses.reduce((s, e) => s + (Number(e.amount)||0), 0);
+            const byCategory = EXPENSE_CATS.map(cat => ({
+              cat, total: genExpenses.filter(e => e.category === cat).reduce((s,e) => s + (Number(e.amount)||0), 0)
+            })).filter(c => c.total > 0);
+            const addExpense = async () => {
+              if (!newExpDesc.trim() || !newExpAmt) return;
+              setExpAdding(true);
+              try {
+                const r = await fetch(`${BASE}/vendors/me/expenses`, { method:'POST', headers: authHeaders(token), body: JSON.stringify({ description: newExpDesc.trim(), amount: Number(newExpAmt), category: newExpCat, date: newExpDate }) });
+                const d = await r.json();
+                if (r.ok) { setGenExpenses(d.expenses || []); setNewExpDesc(''); setNewExpAmt(''); setNewExpCat(''); setNewExpDate(''); }
+              } catch {} finally { setExpAdding(false); }
+            };
+            const deleteExp = async (id) => {
+              try {
+                const r = await fetch(`${BASE}/vendors/me/expenses/${id}`, { method:'DELETE', headers: authHeaders(token) });
+                const d = await r.json();
+                if (r.ok) setGenExpenses(d.expenses || []);
+              } catch {}
+            };
+            return (
+              <div>
+                {/* Summary */}
+                {genExpenses.length > 0 && (
+                  <div style={{ display:'grid', gridTemplateColumns: byCategory.length ? `repeat(${Math.min(byCategory.length+1,4)},1fr)` : '1fr', gap:10, marginBottom:20 }}>
+                    <div style={{ background:'#fff', borderRadius:14, padding:'14px 16px', border:'1px solid rgba(196,122,46,0.15)', textAlign:'center' }}>
+                      <div style={{ fontSize:20, fontWeight:800, color:ink }}>₹{totalExp.toLocaleString('en-IN')}</div>
+                      <div style={{ fontSize:11, color:'#9B7450', marginTop:2 }}>Total Expenses</div>
+                    </div>
+                    {byCategory.map(c => (
+                      <div key={c.cat} style={{ background:'#fff', borderRadius:14, padding:'14px 16px', border:'1px solid rgba(196,122,46,0.12)', textAlign:'center' }}>
+                        <div style={{ fontSize:18, fontWeight:800, color:ink }}>₹{c.total.toLocaleString('en-IN')}</div>
+                        <div style={{ fontSize:11, color:'#9B7450', marginTop:2 }}>{c.cat}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add form */}
+                <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.12)', marginBottom:20 }}>
+                  <div style={{ fontSize:14, fontWeight:800, color:ink, marginBottom:14 }}>Log Expense</div>
+                  <div style={{ display:'flex', gap:10, flexWrap:'wrap', marginBottom:10 }}>
+                    <input value={newExpDesc} onChange={e => setNewExpDesc(e.target.value)}
+                      placeholder="Description e.g. Sound equipment rental"
+                      style={{ flex:'2 1 200px', padding:'9px 13px', borderRadius:10, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13, color:ink, outline:'none', background:'#FFFCF5' }} />
+                    <input type="number" value={newExpAmt} onChange={e => setNewExpAmt(e.target.value)} placeholder="Amount ₹"
+                      style={{ flex:'1 1 100px', padding:'9px 13px', borderRadius:10, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13, color:ink, outline:'none', background:'#FFFCF5' }} />
+                  </div>
+                  <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+                    <select value={newExpCat} onChange={e => setNewExpCat(e.target.value)}
+                      style={{ flex:'1 1 130px', padding:'9px 13px', borderRadius:10, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13, color:ink, background:'#FFFCF5', outline:'none' }}>
+                      <option value="">Category</option>
+                      {EXPENSE_CATS.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <input type="date" value={newExpDate} onChange={e => setNewExpDate(e.target.value)}
+                      style={{ flex:'1 1 140px', padding:'9px 13px', borderRadius:10, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13, color:ink, outline:'none', background:'#FFFCF5' }} />
+                    <button onClick={addExpense} disabled={expAdding || !newExpDesc.trim() || !newExpAmt}
+                      style={{ padding:'9px 20px', borderRadius:10, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:13, fontWeight:700, cursor:'pointer', opacity:(!newExpDesc.trim()||!newExpAmt||expAdding)?0.5:1, whiteSpace:'nowrap' }}>
+                      {expAdding ? 'Adding…' : '+ Log'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* List */}
+                {genExpenses.length === 0 ? (
+                  <div style={{ textAlign:'center', padding:'40px 24px', background:'#fff', borderRadius:18, border:'1.5px dashed rgba(196,122,46,0.18)' }}>
+                    <div style={{ fontSize:36, marginBottom:10 }}>💸</div>
+                    <div style={{ fontSize:14, fontWeight:700, color:ink, marginBottom:4 }}>No expenses logged</div>
+                    <div style={{ fontSize:13, color:'#9B7450' }}>Track general business expenses — equipment, travel, subscriptions, anything not tied to a specific booking.</div>
+                  </div>
+                ) : (
+                  <div style={{ background:'#fff', borderRadius:18, border:'1px solid rgba(196,122,46,0.12)', overflow:'hidden' }}>
+                    <div style={{ padding:'14px 18px', borderBottom:'1px solid rgba(196,122,46,0.1)', fontSize:12, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em' }}>All Expenses ({genExpenses.length})</div>
+                    <div style={{ display:'flex', flexDirection:'column' }}>
+                      {[...genExpenses].sort((a,b)=>(b.date||'0')>(a.date||'0')?1:-1).map((e,i) => (
+                        <div key={e.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 18px', borderBottom: i < genExpenses.length-1 ? '1px solid rgba(196,122,46,0.08)' : 'none' }}>
+                          {e.category && <span style={{ fontSize:11, fontWeight:700, padding:'2px 8px', borderRadius:20, background:'rgba(196,122,46,0.1)', color:'#6B3A1F', whiteSpace:'nowrap' }}>{e.category}</span>}
+                          <div style={{ flex:1, minWidth:0 }}>
+                            <div style={{ fontSize:13, fontWeight:600, color:ink }}>{e.description}</div>
+                            {e.date && <div style={{ fontSize:11, color:'#9B7450', marginTop:1 }}>{new Date(e.date+'T00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>}
+                          </div>
+                          <div style={{ fontSize:14, fontWeight:800, color:ink, whiteSpace:'nowrap' }}>₹{Number(e.amount||0).toLocaleString('en-IN')}</div>
+                          <button onClick={() => deleteExp(e.id)} style={{ width:26, height:26, borderRadius:'50%', border:'none', background:'rgba(220,38,38,0.08)', color:'#DC2626', cursor:'pointer', fontSize:14, flexShrink:0 }}>×</button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
