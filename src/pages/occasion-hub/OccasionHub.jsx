@@ -10704,7 +10704,7 @@ export default function OccasionHub({ occasion }) {
 
   // ── ENTRY GATE ────────────────────────────────────────────────────────────
   if (!entryMode) {
-    const inpStyle = { width:"100%", padding:"12px 14px", borderRadius:12, border:isDark?"1.5px solid rgba(255,255,255,0.15)":"1.5px solid rgba(44,26,14,0.15)", background:isDark?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.8)", color:T.main, fontSize:15, outline:"none", boxSizing:"border-box" };
+    const inpStyle = { width:"100%", padding:"13px 14px", borderRadius:12, border:isDark?"1.5px solid rgba(255,255,255,0.15)":"1.5px solid rgba(44,26,14,0.15)", background:isDark?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.8)", color:T.main, fontSize:16, outline:"none", boxSizing:"border-box", WebkitAppearance:"none", appearance:"none" };
     return (
       <div style={{ height:"100dvh", display:"flex", flexDirection:"column", fontFamily:font, background:darkGrad, position:"relative", overflow:"hidden", alignItems:"center", justifyContent:"center" }}>
         <style>{`@keyframes eg-in{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}} @keyframes eg-glow{0%,100%{opacity:0.08}50%{opacity:0.14}}`}</style>
@@ -10754,11 +10754,11 @@ export default function OccasionHub({ occasion }) {
             <button onClick={()=>setEntryView("pick")} style={{ background:"none", border:"none", color:T.sub, fontSize:13, cursor:"pointer", marginBottom:18, display:"flex", alignItems:"center", gap:4, padding:0 }}>← Back</button>
             <div style={{ fontSize:18, fontWeight:700, color:T.main, marginBottom:4 }}>Host a Room</div>
             <div style={{ fontSize:13, color:T.sub, marginBottom:22 }}>Start a live party room for your crew</div>
-            <input value={hostName} onChange={e=>setHostName(e.target.value)} placeholder="Your name" style={{ ...inpStyle, marginBottom:10 }} />
-            <input value={partyName} onChange={e=>setPartyName(e.target.value)} placeholder={`Party name (e.g. ${occ.name} Bash)`} style={{ ...inpStyle, marginBottom:10 }} />
+            <input value={hostName} onChange={e=>setHostName(e.target.value)} placeholder="Your name" type="text" inputMode="text" autoCorrect="off" autoComplete="given-name" spellCheck={false} style={{ ...inpStyle, marginBottom:10 }} />
+            <input value={partyName} onChange={e=>setPartyName(e.target.value)} placeholder={`Party name (e.g. ${occ.name} Bash)`} type="text" inputMode="text" autoCorrect="off" autoComplete="off" spellCheck={false} style={{ ...inpStyle, marginBottom:10 }} />
             <div style={{ fontSize:11, fontWeight:700, color:T.sub, letterSpacing:"0.06em", textTransform:"uppercase", marginBottom:6 }}>{celebrantMeta.label}</div>
-            <input value={celebrantName} onChange={e=>saveCelebrant(e.target.value)} placeholder={celebrantMeta.ph} style={{ ...inpStyle, marginBottom:14 }} />
-            <button onClick={handleHostCreate} disabled={!hostName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:hostName.trim()?PH.violet:"rgba(44,26,14,0.1)", color:hostName.trim()?"#fff":"rgba(44,26,14,0.35)", fontSize:14, fontWeight:700, cursor:hostName.trim()?"pointer":"not-allowed" }}>
+            <input value={celebrantName} onChange={e=>saveCelebrant(e.target.value)} placeholder={celebrantMeta.ph} type="text" inputMode="text" autoCorrect="off" autoComplete="name" spellCheck={false} style={{ ...inpStyle, marginBottom:14 }} />
+            <button onClick={handleHostCreate} disabled={!hostName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:hostName.trim()?PH.violet:"rgba(44,26,14,0.1)", color:hostName.trim()?"#fff":"rgba(44,26,14,0.35)", fontSize:14, fontWeight:700, cursor:hostName.trim()?"pointer":"not-allowed", minHeight:48, WebkitTapHighlightColor:"transparent", touchAction:"manipulation" }}>
               {roomLoading ? "Creating…" : "Create Room →"}
             </button>
           </div>
@@ -10767,9 +10767,9 @@ export default function OccasionHub({ occasion }) {
             <button onClick={()=>setEntryView("pick")} style={{ background:"none", border:"none", color:T.sub, fontSize:13, cursor:"pointer", marginBottom:18, display:"flex", alignItems:"center", gap:4, padding:0 }}>← Back</button>
             <div style={{ fontSize:18, fontWeight:700, color:T.main, marginBottom:4 }}>Join a Party</div>
             <div style={{ fontSize:13, color:T.sub, marginBottom:22 }}>{joinCode ? "You were invited — just enter your name!" : "Enter the code your host shared"}</div>
-            <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="ABC123" maxLength={6} style={{ ...inpStyle, fontSize:24, fontWeight:700, textAlign:"center", letterSpacing:"0.22em", marginBottom:10 }} />
-            <input value={joinName} onChange={e=>setJoinName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleJoin()} placeholder="Your name" style={{ ...inpStyle, marginBottom:14 }} autoFocus />
-            <button onClick={handleJoin} disabled={joinCode.length<6||!joinName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:(joinCode.length>=6&&joinName.trim())?PH.violet:"rgba(44,26,14,0.1)", color:(joinCode.length>=6&&joinName.trim())?"#fff":"rgba(44,26,14,0.35)", fontSize:14, fontWeight:700, cursor:(joinCode.length>=6&&joinName.trim())?"pointer":"not-allowed" }}>
+            <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="ABC123" maxLength={6} type="text" inputMode="text" autoCapitalize="characters" autoCorrect="off" autoComplete="off" spellCheck={false} style={{ ...inpStyle, fontSize:24, fontWeight:700, textAlign:"center", letterSpacing:"0.22em", marginBottom:10 }} />
+            <input value={joinName} onChange={e=>setJoinName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleJoin()} placeholder="Your name" type="text" inputMode="text" autoCorrect="off" autoComplete="given-name" style={{ ...inpStyle, marginBottom:14 }} autoFocus />
+            <button onClick={handleJoin} disabled={joinCode.length<6||!joinName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:(joinCode.length>=6&&joinName.trim())?PH.violet:"rgba(44,26,14,0.1)", color:(joinCode.length>=6&&joinName.trim())?"#fff":"rgba(44,26,14,0.35)", fontSize:14, fontWeight:700, cursor:(joinCode.length>=6&&joinName.trim())?"pointer":"not-allowed", minHeight:48, WebkitTapHighlightColor:"transparent", touchAction:"manipulation" }}>
               {roomLoading ? "Joining…" : "Join Room →"}
             </button>
           </div>

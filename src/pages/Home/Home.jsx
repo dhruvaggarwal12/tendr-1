@@ -3157,26 +3157,28 @@ const Home = () => {
               </div>
 
               {/* Sticky join-room footer */}
-              <div style={{ position:"sticky", bottom:0, background:"#FFFFFF", borderTop:"1px solid rgba(0,0,0,0.07)", padding:"14px 28px 18px", flexShrink:0 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontSize:10, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:5 }}>🎉 Have a room code?</div>
-                    <div style={{ display:"flex", gap:8 }}>
-                      <input
-                        value={roomCodeInput}
-                        onChange={e => setRoomCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6))}
-                        onKeyDown={e => e.key === "Enter" && roomCodeInput.length === 6 && (navigate(`/join-room?code=${roomCodeInput}`), closeFlow())}
-                        placeholder="Enter code…"
-                        maxLength={6}
-                        style={{ flex:1, padding:"9px 14px", borderRadius:10, border:`1.5px solid ${roomCodeInput.length===6?"#C47A2E80":"rgba(0,0,0,0.12)"}`, background:"#F8F5F0", color:"#2C1A0E", fontSize:15, fontWeight:700, outline:"none", letterSpacing:"0.16em", fontFamily:"'Outfit',sans-serif", textTransform:"uppercase", transition:"border-color 0.18s" }}
-                      />
-                      <button
-                        onClick={() => { if (roomCodeInput.length === 6) { navigate(`/join-room?code=${roomCodeInput}`); closeFlow(); } }}
-                        disabled={roomCodeInput.length < 6}
-                        style={{ padding:"9px 18px", borderRadius:10, border:"none", background:roomCodeInput.length===6?"#C47A2E":"rgba(0,0,0,0.07)", color:roomCodeInput.length===6?"#fff":"rgba(44,26,14,0.35)", fontSize:13, fontWeight:700, cursor:roomCodeInput.length===6?"pointer":"default", transition:"all 0.18s", whiteSpace:"nowrap" }}
-                      >Join →</button>
-                    </div>
-                  </div>
+              <div style={{ position:"sticky", bottom:0, background:"#FFFFFF", borderTop:"1px solid rgba(0,0,0,0.07)", padding:"12px 24px 14px", paddingBottom:"max(14px,env(safe-area-inset-bottom,14px))", flexShrink:0 }}>
+                <div style={{ fontSize:10, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:7 }}>🎉 Already have a room code?</div>
+                <div style={{ display:"flex", gap:8 }}>
+                  <input
+                    value={roomCodeInput}
+                    onChange={e => setRoomCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6))}
+                    onKeyDown={e => e.key === "Enter" && roomCodeInput.length === 6 && (navigate(`/join-room?code=${roomCodeInput}`), closeFlow())}
+                    placeholder="ABC123"
+                    maxLength={6}
+                    type="text"
+                    inputMode="text"
+                    autoCapitalize="characters"
+                    autoCorrect="off"
+                    autoComplete="off"
+                    spellCheck={false}
+                    style={{ flex:1, padding:"12px 14px", borderRadius:12, border:`1.5px solid ${roomCodeInput.length===6?"#C47A2E80":"rgba(0,0,0,0.12)"}`, background:"#F8F5F0", color:"#2C1A0E", fontSize:16, fontWeight:800, outline:"none", letterSpacing:"0.20em", fontFamily:"'Outfit',sans-serif", textTransform:"uppercase", transition:"border-color 0.18s, box-shadow 0.18s", WebkitAppearance:"none", appearance:"none", boxShadow:roomCodeInput.length===6?"0 0 0 3px rgba(196,122,46,0.15)":"none", minHeight:48, boxSizing:"border-box" }}
+                  />
+                  <button
+                    onClick={() => { if (roomCodeInput.length === 6) { navigate(`/join-room?code=${roomCodeInput}`); closeFlow(); } }}
+                    disabled={roomCodeInput.length < 6}
+                    style={{ padding:"12px 20px", borderRadius:12, border:"none", background:roomCodeInput.length===6?"#C47A2E":"rgba(0,0,0,0.07)", color:roomCodeInput.length===6?"#fff":"rgba(44,26,14,0.30)", fontSize:14, fontWeight:700, cursor:roomCodeInput.length===6?"pointer":"default", transition:"all 0.18s", whiteSpace:"nowrap", WebkitTapHighlightColor:"transparent", touchAction:"manipulation", minHeight:48, flexShrink:0 }}
+                  >Join →</button>
                 </div>
               </div>
             </div>
