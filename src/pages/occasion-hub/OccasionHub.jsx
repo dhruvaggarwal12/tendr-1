@@ -147,8 +147,8 @@ function LightFormModal({ onClose, emoji, title, subtitle, accent, children, onL
   const headerGrad = sys?.grad || "linear-gradient(155deg,#0D0820 0%,rgba(18,8,40,0.99) 100%)";
   const contentBg = sys?.contentBg || "#FFFAF7";
   return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,1,8,0.85)", backdropFilter:"blur(20px)", zIndex:1000, display:"flex", alignItems:"flex-end", justifyContent:"center" }}>
-      <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, maxHeight:"93dvh", borderRadius:"24px 24px 0 0", overflow:"hidden", display:"flex", flexDirection:"column", fontFamily:font, boxShadow:`0 -28px 80px rgba(0,0,0,0.65), 0 0 0 1px ${glow}22`, animation:"modal-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,1,8,0.85)", backdropFilter:"blur(20px)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px 16px" }}>
+      <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, maxHeight:"90dvh", borderRadius:24, overflow:"hidden", display:"flex", flexDirection:"column", fontFamily:font, boxShadow:`0 8px 80px rgba(0,0,0,0.65), 0 0 0 1px ${glow}22`, animation:"modal-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
         {/* System-themed header */}
         <div style={{ background:headerGrad, padding:"24px 20px 20px", position:"relative", overflow:"hidden", flexShrink:0 }}>
           {/* Top accent line */}
@@ -9861,8 +9861,8 @@ function LeaderboardPanel({ onClose, scores = {}, players = [], accent = "#C4973
   const max = sorted[0]?.pts || 1;
 
   return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,1,8,0.85)", backdropFilter:"blur(20px)", zIndex:5000, display:"flex", alignItems:"flex-end", justifyContent:"center" }}>
-      <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, maxHeight:"88dvh", borderRadius:"24px 24px 0 0", overflow:"hidden", display:"flex", flexDirection:"column", fontFamily:font, boxShadow:`0 -28px 80px rgba(0,0,0,0.7), 0 0 0 1px ${accent}20`, animation:"modal-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,1,8,0.85)", backdropFilter:"blur(20px)", zIndex:5000, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px 16px" }}>
+      <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, maxHeight:"85dvh", borderRadius:24, overflow:"hidden", display:"flex", flexDirection:"column", fontFamily:font, boxShadow:`0 8px 80px rgba(0,0,0,0.7), 0 0 0 1px ${accent}20`, animation:"modal-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
         {/* Header */}
         <div style={{ background:"linear-gradient(155deg,#0D0820 0%,#1A0830 100%)", padding:"24px 20px 20px", position:"relative", overflow:"hidden", flexShrink:0 }}>
           <div style={{ position:"absolute", top:-60, right:-60, width:220, height:220, borderRadius:"50%", background:`radial-gradient(ellipse,${accent}30 0%,transparent 70%)`, pointerEvents:"none" }} />
@@ -9917,8 +9917,8 @@ function GameQueuePanel({ onClose, queue, setQueue, onLaunchGame, accent = "#C49
   const moveDown = (i) => setQueue(q => { const a = [...q]; [a[i],a[i+1]] = [a[i+1],a[i]]; return a; });
 
   return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,1,8,0.85)", backdropFilter:"blur(20px)", zIndex:5000, display:"flex", alignItems:"flex-end", justifyContent:"center" }}>
-      <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, maxHeight:"92dvh", borderRadius:"24px 24px 0 0", overflow:"hidden", display:"flex", flexDirection:"column", fontFamily:font, boxShadow:`0 -28px 80px rgba(0,0,0,0.7)`, animation:"modal-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,1,8,0.85)", backdropFilter:"blur(20px)", zIndex:5000, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px 16px" }}>
+      <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, maxHeight:"88dvh", borderRadius:24, overflow:"hidden", display:"flex", flexDirection:"column", fontFamily:font, boxShadow:`0 8px 80px rgba(0,0,0,0.7)`, animation:"modal-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
         {/* Header */}
         <div style={{ background:"linear-gradient(155deg,#0D0820 0%,#1A0830 100%)", padding:"24px 20px 20px", flexShrink:0, position:"relative", overflow:"hidden" }}>
           <div style={{ position:"absolute", top:-60, right:-60, width:220, height:220, borderRadius:"50%", background:`radial-gradient(ellipse,${accent}30 0%,transparent 70%)`, pointerEvents:"none" }} />
@@ -10269,11 +10269,16 @@ export default function OccasionHub({ occasion }) {
       const cc = CARD_PALETTE[playTools.indexOf(t) % CARD_PALETTE.length] || accent;
       const isLive = LIVE_GAME_IDS.has(t.id);
       const newGame = isNewRelease(t.id);
+      const lockedByHost = room && !isHost && isLive;
       return (
-        <div onClick={() => room ? setOpen(t.id) : (GAME_IDS.has(t.id) ? setGamePreviewId(t.id) : openTool(t.id))}
+        <div onClick={() => {
+          if (room) { if (!isLive || isHost) setOpen(t.id); }
+          else { GAME_IDS.has(t.id) ? setGamePreviewId(t.id) : openTool(t.id); }
+        }}
           className="occ-tool-card"
-          style={{ background:`${cc}22`, border:`2px solid ${cc}60`, borderRadius:20, padding:large?"20px 18px 18px":"16px 14px 14px", cursor:"pointer", position:"relative", overflow:"hidden", boxShadow:`0 4px 18px ${cc}18`, transition:"transform 0.12s,box-shadow 0.12s" }}>
-          {isLive && room && <div style={{ position:"absolute", top:10, right:10, fontSize:8, fontWeight:800, color:"#4ade80", background:"rgba(34,197,94,0.15)", border:"1px solid rgba(34,197,94,0.4)", borderRadius:100, padding:"2px 6px" }}>● LIVE</div>}
+          style={{ background:`${cc}22`, border:`2px solid ${cc}60`, borderRadius:20, padding:large?"20px 18px 18px":"16px 14px 14px", cursor:lockedByHost?"default":"pointer", position:"relative", overflow:"hidden", boxShadow:`0 4px 18px ${cc}18`, transition:"transform 0.12s,box-shadow 0.12s", opacity:lockedByHost?0.55:1 }}>
+          {isLive && room && isHost && <div style={{ position:"absolute", top:10, right:10, fontSize:8, fontWeight:800, color:"#4ade80", background:"rgba(34,197,94,0.15)", border:"1px solid rgba(34,197,94,0.4)", borderRadius:100, padding:"2px 6px" }}>● LIVE</div>}
+          {isLive && room && !isHost && <div style={{ position:"absolute", top:8, right:8, fontSize:8, fontWeight:800, color:"rgba(255,255,255,0.50)", background:"rgba(0,0,0,0.40)", borderRadius:100, padding:"2px 7px" }}>🔒 HOST</div>}
           {newGame && !room && <div style={{ position:"absolute", top:8, right:8, fontSize:8, fontWeight:800, color:"#fff", background:"#F59E0B", borderRadius:20, padding:"2px 7px", letterSpacing:0.5 }}>🆕 NEW</div>}
           <div style={{ fontSize:large?44:32, lineHeight:1, marginBottom:large?12:8, textShadow:`0 0 18px ${cc}CC` }}>{meta?.emoji||TOOL_EMOJI[t.id]||"🎮"}</div>
           <div style={{ fontSize:large?15:12.5, fontWeight:800, color:"#FFFFFF", lineHeight:1.25, marginBottom:large?6:4 }}>{t.title}</div>
@@ -10295,6 +10300,25 @@ export default function OccasionHub({ occasion }) {
 
     return (
       <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+        {/* Host manage strip — only visible when host is in a room */}
+        {room && isHost && (
+          <div style={{ background:`${accent}12`, border:`1.5px solid ${accent}35`, borderRadius:14, padding:"11px 14px", marginBottom:14, display:"flex", alignItems:"center", gap:10 }}>
+            <span style={{ width:8, height:8, borderRadius:"50%", background:"#4ade80", animation:"dot-pulse 2s ease infinite", flexShrink:0 }} />
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:11, fontWeight:800, color:accent, textTransform:"uppercase", letterSpacing:"0.12em" }}>🎙️ Host · Tap any game to launch it</div>
+              {currentGame && <div style={{ fontSize:11, color:"rgba(255,255,255,0.50)", marginTop:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Now playing: {currentGame}</div>}
+            </div>
+            <button onClick={()=>setShowLeaderboard(true)} style={{ padding:"5px 10px", borderRadius:8, border:`1px solid ${accent}40`, background:`${accent}15`, color:accent, fontSize:11, fontWeight:700, cursor:"pointer", flexShrink:0 }}>🏆</button>
+          </div>
+        )}
+        {/* Non-host room status strip */}
+        {room && !isHost && (
+          <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.10)", borderRadius:12, padding:"10px 14px", marginBottom:14, display:"flex", alignItems:"center", gap:10 }}>
+            <span style={{ width:7, height:7, borderRadius:"50%", background:"#4ade80", animation:"dot-pulse 2s ease infinite", flexShrink:0 }} />
+            <div style={{ flex:1, fontSize:12, color:"rgba(255,255,255,0.50)", fontWeight:600 }}>Live room · {roomPlayers?.length||1} players · Host picks the game</div>
+            {currentGame && <div style={{ fontSize:11, color:"rgba(255,255,255,0.65)", background:"rgba(255,255,255,0.08)", padding:"3px 8px", borderRadius:20, flexShrink:0, fontWeight:600 }}>{currentGame}</div>}
+          </div>
+        )}
         {/* Header row */}
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
           <div>
@@ -10418,8 +10442,8 @@ export default function OccasionHub({ occasion }) {
       setHubIntroDone(true);
     };
     return (
-      <div style={{ position:"fixed", inset:0, zIndex:9991, background:"rgba(2,1,6,0.90)", backdropFilter:"blur(20px)", display:"flex", alignItems:"center", justifyContent:"center", padding:"0 20px" }}>
-        <div key={hubIntroStep} style={{ width:"100%", maxWidth:380, background:"linear-gradient(145deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02))", border:`1.5px solid ${accent}45`, borderRadius:28, padding:"40px 28px 28px", boxShadow:`0 24px 64px rgba(0,0,0,0.7),0 0 50px ${accent}20`, animation:"rm-in 0.32s cubic-bezier(0.22,1,0.36,1)", textAlign:"center", position:"relative" }}>
+      <div style={{ position:"fixed", inset:0, zIndex:9991, background:"rgba(2,1,6,0.90)", backdropFilter:"blur(20px)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"0 20px", gap:16 }}>
+        <div key={hubIntroStep} style={{ width:"100%", maxWidth:380, background:"linear-gradient(145deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02))", border:`1.5px solid ${accent}45`, borderRadius:28, padding:"40px 28px 24px", boxShadow:`0 24px 64px rgba(0,0,0,0.7),0 0 50px ${accent}20`, animation:"rm-in 0.32s cubic-bezier(0.22,1,0.36,1)", textAlign:"center", position:"relative" }}>
           {/* Step counter */}
           <div style={{ position:"absolute", top:18, right:22, fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.30)", letterSpacing:"0.1em" }}>{hubIntroStep+1} / {slides.length}</div>
           {/* Visual */}
@@ -10453,14 +10477,14 @@ export default function OccasionHub({ occasion }) {
             ))}
           </div>
           {/* Primary button */}
-          <button onClick={() => isLast ? dismiss(true) : setHubIntroStep(s=>s+1)} style={{ width:"100%", padding:"14px 0", borderRadius:14, border:"none", background:accent, color:"#fff", fontSize:15, fontWeight:700, cursor:"pointer", marginBottom:12, boxShadow:`0 4px 20px ${accent}50` }}>
+          <button onClick={() => isLast ? dismiss(true) : setHubIntroStep(s=>s+1)} style={{ width:"100%", padding:"14px 0", borderRadius:14, border:"none", background:accent, color:"#fff", fontSize:15, fontWeight:700, cursor:"pointer", boxShadow:`0 4px 20px ${accent}50` }}>
             {isLast ? "Let's go →" : "Next →"}
           </button>
-          {/* Skip / Don't show again */}
-          <button onClick={() => dismiss(isLast)} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.35)", fontSize:12, cursor:"pointer", padding:"4px 8px", lineHeight:1.4 }}>
-            {isLast ? "Don't show again" : "Skip intro"}
-          </button>
         </div>
+        {/* Skip / Don't show again — outside card, on dark backdrop */}
+        <button onClick={() => dismiss(isLast)} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.38)", fontSize:13, cursor:"pointer", padding:"4px 12px", lineHeight:1.4, letterSpacing:"0.01em" }}>
+          {isLast ? "Don't show again" : "Skip intro"}
+        </button>
       </div>
     );
   };
@@ -10858,8 +10882,8 @@ export default function OccasionHub({ occasion }) {
         const step = steps[tourStep];
         const dismissTour = () => { setShowTour(false); try { localStorage.setItem("tendr-occ-tour-v1","1"); } catch {} };
         return (
-          <div style={{ position:"fixed", inset:0, zIndex:4000, background:"rgba(0,0,0,0.82)", backdropFilter:"blur(14px)", display:"flex", alignItems:"flex-end", justifyContent:"center", padding:0 }}>
-            <div key={tourStep} style={{ background:step.gradient, border:`1px solid ${step.glow}30`, borderRadius:"24px 24px 0 0", padding:"28px 22px 24px", maxWidth:420, width:"100%", animation:"rm-in 0.28s cubic-bezier(0.22,1,0.36,1)", position:"relative", overflow:"hidden" }}>
+          <div style={{ position:"fixed", inset:0, zIndex:4000, background:"rgba(0,0,0,0.82)", backdropFilter:"blur(14px)", display:"flex", alignItems:"center", justifyContent:"center", padding:"20px 16px" }}>
+            <div key={tourStep} style={{ background:step.gradient, border:`1px solid ${step.glow}30`, borderRadius:24, padding:"28px 22px 24px", maxWidth:420, width:"100%", animation:"rm-in 0.28s cubic-bezier(0.22,1,0.36,1)", position:"relative", overflow:"hidden" }}>
               {/* Glow blob */}
               <div style={{ position:"absolute", top:-60, right:-60, width:200, height:200, borderRadius:"50%", background:`radial-gradient(ellipse,${step.glow}25 0%,transparent 70%)`, pointerEvents:"none" }} />
               {/* Step counter */}
