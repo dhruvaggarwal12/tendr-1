@@ -10757,7 +10757,7 @@ export default function OccasionHub({ occasion }) {
             <div style={{ fontSize:18, fontWeight:700, color:T.main, marginBottom:4 }}>Join a Party</div>
             <div style={{ fontSize:13, color:T.sub, marginBottom:22 }}>{joinCode ? "You were invited — just enter your name!" : "Enter the code your host shared"}</div>
             <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="ABC123" maxLength={6} style={{ ...inpStyle, fontSize:24, fontWeight:700, textAlign:"center", letterSpacing:"0.22em", marginBottom:10 }} />
-            <input value={joinName} onChange={e=>setJoinName(e.target.value)} placeholder="Your name" style={{ ...inpStyle, marginBottom:14 }} />
+            <input value={joinName} onChange={e=>setJoinName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleJoin()} placeholder="Your name" style={{ ...inpStyle, marginBottom:14 }} autoFocus />
             <button onClick={handleJoin} disabled={joinCode.length<6||!joinName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:(joinCode.length>=6&&joinName.trim())?PH.violet:"rgba(44,26,14,0.1)", color:(joinCode.length>=6&&joinName.trim())?"#fff":"rgba(44,26,14,0.35)", fontSize:14, fontWeight:700, cursor:(joinCode.length>=6&&joinName.trim())?"pointer":"not-allowed" }}>
               {roomLoading ? "Joining…" : "Join Room →"}
             </button>

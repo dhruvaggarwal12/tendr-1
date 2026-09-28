@@ -23,7 +23,7 @@ export function usePartyRoom() {
   const getSocket = useCallback(() => {
     if (!socketRef.current) {
       socketRef.current = io(`${BASE_URL}/party`, {
-        transports: ['websocket'],
+        transports: ['websocket', 'polling'],
         autoConnect: true,
       });
 
@@ -89,7 +89,11 @@ export function usePartyRoom() {
     setError(null);
     return new Promise((resolve) => {
       const s = getSocket();
+      const timer = setTimeout(() => {
+        resolve({ ok: false, error: 'Connection timed out. Check your internet and try again.' });
+      }, 15000);
       s.emit('party:create', { occasionType, partyName, hostName }, (res) => {
+        clearTimeout(timer);
         if (res.ok) {
           setRoom(res.room);
           setPlayers(res.room.players);
@@ -110,7 +114,11 @@ export function usePartyRoom() {
     setError(null);
     return new Promise((resolve) => {
       const s = getSocket();
+      const timer = setTimeout(() => {
+        resolve({ ok: false, error: 'Connection timed out. Check your internet and try again.' });
+      }, 15000);
       s.emit('party:join', { code, name }, (res) => {
+        clearTimeout(timer);
         if (res.ok) {
           setRoom(res.room);
           setPlayers(res.room.players);
