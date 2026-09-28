@@ -258,6 +258,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
     ]},
     { label: "Tools", items: [
       { label: "✦ Plan My Event",  href: "/plan", activePaths: ["/plan","/checklist-picker","/prebuilt-checklist"], tag: "hub", onClickOverride: () => { close(); navigate("/plan"); } },
+      { label: "🎮 Occasion Hub",   href: "/occasion-hub", activePaths: ["/occasion-hub"], tag: "new", onClickOverride: () => { close(); navigate("/occasion-hub"); } },
       { label: "📷 Decor Analyser", href: "/decor-analyser", activePaths: ["/decor-analyser"], tag: "ai" },
       { label: "Timeline",         href: "/timeline-picker", activePaths: ["/timeline-picker","/timeline","/prebuilt-timeline"],
         onClickOverride: () => { try { const d = localStorage.getItem("tendr_timeline_v2"); const s = d ? JSON.parse(d) : null; if (s?.phases?.length > 0) { setTimelinePopupOpen(true); } else { window.open("/timeline-picker", "_blank"); } } catch { window.open("/timeline-picker", "_blank"); } } },

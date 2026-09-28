@@ -34,30 +34,11 @@ function DecorAnalyzerFloat() {
   if (hidden) return null;
   return (
     <>
-      {/* Trigger button */}
-      <button
-        onClick={() => setOpen(true)}
-        title="Analyse your venue decor"
-        style={{
-          position: "fixed", bottom: 148, right: 18, zIndex: 4990,
-          width: 44, height: 44, borderRadius: "50%",
-          background: "linear-gradient(135deg,#2C1A0E,#4A2810)",
-          border: "none", cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 4px 16px rgba(44,26,14,0.3)",
-        }}
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-          <circle cx="12" cy="13" r="4"/>
-        </svg>
-      </button>
-
-      {/* Full-screen modal */}
+      {/* Full-screen modal — centred */}
       {open && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(28,9,0,0.65)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+        <div style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(28,9,0,0.65)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px 16px" }}
           onClick={e => { if (e.target === e.currentTarget) setOpen(false); }}>
-          <div style={{ width: "100%", maxWidth: 640, background: "#FFFCF5", borderRadius: "20px 20px 0 0", padding: "20px 18px 32px", maxHeight: "93dvh", overflowY: "auto", fontFamily: "'Outfit',sans-serif" }}>
+          <div style={{ width: "100%", maxWidth: 640, background: "#FFFCF5", borderRadius: 24, padding: "24px 20px 32px", maxHeight: "90dvh", overflowY: "auto", fontFamily: "'Outfit',sans-serif", boxShadow: "0 32px 80px rgba(28,9,0,0.40)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <div>
                 <div style={{ fontSize: 10.5, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em" }}>AI Tool</div>

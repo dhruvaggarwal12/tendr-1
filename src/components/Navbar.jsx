@@ -280,9 +280,11 @@ const Navbar = ({
     {
       label: "Tools",
       items: [
-        { label: "Planning Timeline",  href: "/timeline-picker" },
-        { label: "Budget Allocator",   href: "/budget-picker" },
-        { label: "Find by Style",      href: "/find-by-style" },
+        { label: "🎮 Occasion Hub",     href: "/occasion-hub" },
+        { label: "📷 Decor Analyser",   href: "/decor-analyser" },
+        { label: "Planning Timeline",   href: "/timeline-picker" },
+        { label: "Budget Allocator",    href: "/budget-picker" },
+        { label: "Find by Style",       href: "/find-by-style" },
       ],
     },
     {
