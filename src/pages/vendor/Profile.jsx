@@ -17,6 +17,15 @@ const SERVICE_TYPE_LABELS = {
   Performer: "Performer", Musician: "Musician", Singer: "Singer", Comedian: "Comedian",
 };
 
+const ALL_VENDOR_TYPES = [
+  'DJ', 'Anchor', 'Emcee/Host', 'Band', 'Singer', 'Musician', 'Performer', 'Choreographer',
+  'Stand-up Comedian', 'Magician', 'AV Setup',
+  'Photographer', 'Videographer', 'Decorator', 'Caterer', 'Makeup Artist',
+  'Mehendi Artist', 'Hair Stylist', 'Cake Artist', 'Bartender',
+  'Wedding Planner', 'Food Truck', 'Photo Booth', 'Live Streaming',
+  'Gift & Favours', 'Transportation', 'Security',
+];
+
 const GIG_PRO_TYPES = ['DJ', 'Emcee/Host', 'Anchor', 'Band', 'Choreographer', 'Performer', 'Musician', 'Singer', 'Stand-up Comedian', 'Magician', 'AV Setup'];
 
 const GIG_GENRE_OPTIONS = ['Bollywood', 'EDM', 'Classical', 'Hip-Hop', 'Sufi', 'Punjabi', 'Jazz', 'Rock', 'Pop', 'Folk', 'Ghazal', 'Devotional'];
@@ -48,7 +57,7 @@ export default function VendorProfile() {
 
   const [form, setForm] = useState({
     name: "", yearsOfExperience: "", teamSize: "",
-    upiId: "", city: "", state: "",
+    upiId: "", city: "", state: "", serviceType: "",
   });
   const [gigForm, setGigForm] = useState({
     performingStyle: [], genres: [], languages: [],
@@ -114,6 +123,7 @@ export default function VendorProfile() {
           upiId: v.upiId || "",
           city: v.address?.city || "",
           state: v.address?.state || "",
+          serviceType: v.serviceType || "",
         });
         setGigForm({
           performingStyle: v.performingStyle || [],
@@ -202,9 +212,10 @@ export default function VendorProfile() {
   const saveInfo = async () => {
     setSaving(true);
     try {
-      const isGig = GIG_PRO_TYPES.includes(profile?.serviceType);
+      const currentType = form.serviceType || profile?.serviceType;
+      const isGig = GIG_PRO_TYPES.includes(currentType);
       const SVC_TYPES = ['Photographer','Caterer','Decorator','Makeup Artist','Mehendi Artist','Hair Stylist','Cake Artist','Bartender','Videographer','Food Truck','Wedding Planner','Live Streaming','Photo Booth','Gift & Favours','Transportation','Security'];
-      const isSvc = SVC_TYPES.includes(profile?.serviceType);
+      const isSvc = SVC_TYPES.includes(currentType);
       const body = {
         name: form.name,
         yearsOfExperience: Number(form.yearsOfExperience) || 0,
@@ -212,6 +223,7 @@ export default function VendorProfile() {
         upiId: form.upiId,
         locations,
         address: { city: form.city, state: form.state },
+        serviceType: form.serviceType || undefined,
         ...(isGig ? {
           performingStyle: gigForm.performingStyle,
           genres:          gigForm.genres,
@@ -259,6 +271,7 @@ export default function VendorProfile() {
         if (!rGig.ok) throw new Error();
       }
 
+      setProfile(p => ({ ...p, serviceType: form.serviceType || p?.serviceType }));
       showToast("Profile saved!");
     } catch {
       showToast("Failed to save. Try again.", false);
@@ -387,7 +400,10 @@ export default function VendorProfile() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-600 mb-1.5">Service Type</label>
-                <input value={SERVICE_TYPE_LABELS[profile?.serviceType] || profile?.serviceType || "—"} disabled className="w-full px-4 py-3 border border-gray-100 rounded-xl bg-gray-50 text-sm text-gray-400 cursor-not-allowed" />
+                <select value={form.serviceType} onChange={e => set("serviceType", e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm bg-white">
+                  <option value="">— Select type —</option>
+                  {ALL_VENDOR_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-600 mb-1.5">Years of Experience</label>

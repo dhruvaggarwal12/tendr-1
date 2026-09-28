@@ -1397,27 +1397,15 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
 }
 
 // ── Quote Modal ───────────────────────────────────────────────────────────────
-function QuoteModal({ initial, onSave, onClose, serviceType = '' }) {
-  const defaultItems = (() => {
-    if (initial) return initial.items || [{ desc:'', qty:1, rate:'' }];
-    const map = {
-      'DJ':                  [{ desc:'DJ Service Fee', qty:1, rate:'' }, { desc:'Sound System Setup', qty:1, rate:'' }, { desc:'Lighting Equipment', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
-      'Band':                [{ desc:'Band Performance Fee', qty:1, rate:'' }, { desc:'Sound System / PA', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
-      'Singer':              [{ desc:'Vocalist Fee', qty:1, rate:'' }, { desc:'Accompaniment / Backing Track', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
-      'Anchor':              [{ desc:'Anchoring Fee', qty:1, rate:'' }, { desc:'Script Preparation', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
-      'Emcee/Host':          [{ desc:'Hosting Fee', qty:1, rate:'' }, { desc:'Script Preparation', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
-      'Photographer':        [{ desc:'Photography Service', qty:1, rate:'' }, { desc:'Photo Editing', qty:1, rate:'' }, { desc:'Prints / Album', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
-      'Videographer':        [{ desc:'Videography Service', qty:1, rate:'' }, { desc:'Video Editing', qty:1, rate:'' }, { desc:'Drone Shots', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
-      'Decorator':           [{ desc:'Decoration Service', qty:1, rate:'' }, { desc:'Materials & Flowers', qty:1, rate:'' }, { desc:'Setup & Dismantling', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
-      'Caterer':             [{ desc:'Catering Service', qty:1, rate:'' }, { desc:'Food & Ingredients', qty:1, rate:'' }, { desc:'Staff', qty:1, rate:'' }, { desc:'Equipment Rental', qty:1, rate:'' }],
-      'Choreographer':       [{ desc:'Choreography Fee', qty:1, rate:'' }, { desc:'Rehearsal Sessions', qty:1, rate:'' }, { desc:'Costume / Props', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
-      'Musician':            [{ desc:'Performance Fee', qty:1, rate:'' }, { desc:'Equipment Setup', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
-      'Magician':            [{ desc:'Magic Show Fee', qty:1, rate:'' }, { desc:'Props & Materials', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
-      'Makeup Artist':       [{ desc:'Makeup Service', qty:1, rate:'' }, { desc:'Products Used', qty:1, rate:'' }, { desc:'Trial Session', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }],
-    };
-    return map[serviceType] || [{ desc:'Service Fee', qty:1, rate:'' }, { desc:'Setup Charge', qty:1, rate:'' }, { desc:'Travel', qty:1, rate:'' }];
-  })();
-  const BLANK = { clientName:'', clientPhone:'', eventType:'', eventDate:'', items: defaultItems, discount:'', notes:'', status:'Draft' };
+function QuoteModal({ initial, onSave, onClose }) {
+  const DEFAULT_ITEMS = initial?.items || [
+    { desc:'Service Fee',      qty:1, rate:'' },
+    { desc:'Setup Charge',     qty:1, rate:'' },
+    { desc:'Materials Cost',   qty:1, rate:'' },
+    { desc:'Travel Allowance', qty:1, rate:'' },
+    { desc:'Miscellaneous',    qty:1, rate:'' },
+  ];
+  const BLANK = { clientName:'', clientPhone:'', eventType:'', eventDate:'', items: DEFAULT_ITEMS, discount:'', notes:'', status:'Draft' };
   const [form, setForm] = useState(() => ({ ...BLANK, ...(initial||{}) }));
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const setItem = (i, k, v) => setForm(f => ({ ...f, items: f.items.map((it, idx) => idx === i ? { ...it, [k]: v } : it) }));
@@ -4105,14 +4093,17 @@ const [tab, setTab] = useState('home');
                   <div style={{ borderTop:'1px solid rgba(196,122,46,0.1)', paddingTop:14 }}>
                     <div style={{ fontSize:12, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:10 }}>Profile Tools</div>
                     <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
-                      {typeConfig.profileTools.filter(a => a.label !== 'Social Links').map(a => (
-                        <button key={a.label} onClick={() => navigate('/vendor/profile')}
-                          style={{ padding:'12px', borderRadius:12, border:'1.5px solid rgba(196,122,46,0.15)', background:'#FFFCF5', color:ink, textAlign:'left', cursor:'pointer', fontFamily:font, transition:'all 0.15s' }}>
-                          <div style={{ color:gold, marginBottom:5 }}>{dsic(a.icon)}</div>
-                          <div style={{ fontSize:12.5, fontWeight:700 }}>{a.label}</div>
-                          <div style={{ fontSize:11, color:'#9B7450', marginTop:1 }}>{a.sub}</div>
-                        </button>
-                      ))}
+                      {typeConfig.profileTools.filter(a => a.label !== 'Social Links').map(a => {
+                        const isPortfolio = a.label.toLowerCase().includes('portfolio');
+                        return (
+                          <button key={a.label} onClick={() => isPortfolio ? setTab('portfolio') : navigate('/vendor/profile')}
+                            style={{ padding:'12px', borderRadius:12, border:'1.5px solid rgba(196,122,46,0.15)', background:'#FFFCF5', color:ink, textAlign:'left', cursor:'pointer', fontFamily:font, transition:'all 0.15s' }}>
+                            <div style={{ color:gold, marginBottom:5 }}>{dsic(a.icon)}</div>
+                            <div style={{ fontSize:12.5, fontWeight:700 }}>{a.label}</div>
+                            <div style={{ fontSize:11, color:'#9B7450', marginTop:1 }}>{a.sub}</div>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
