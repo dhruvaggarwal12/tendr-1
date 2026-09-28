@@ -98,7 +98,7 @@ const TYPE_CONFIG = {
     emptyGigMsg:'No gigs yet — start logging outside bookings to track your income.',
   },
   'Emcee/Host': {
-    isArtist:true, emoji:'🎙️', term:'Show', terms:'Shows', invLabel:'Kit', invEmoji:'🎤',
+    isArtist:true, modules:['performance','equipment'], emoji:'🎙️', term:'Show', terms:'Shows', invLabel:'Kit', invEmoji:'🎤',
     invCats:['Wireless Mic','Lavalier Mic','Earpiece / IEM','Portable Speaker','Prompter Script Stand','Formal Outfit','Blazer / Sherwani','Other'],
     invPlaceholder:'e.g. Sennheiser Wireless Mic',
     profileTools:[
@@ -111,7 +111,7 @@ const TYPE_CONFIG = {
     emptyGigMsg:'No shows yet — log your first hosting gig to start tracking income.',
   },
   'Anchor': {
-    isArtist:true, emoji:'🎙️', term:'Show', terms:'Shows', invLabel:'Kit', invEmoji:'🎤',
+    isArtist:true, modules:['performance','equipment'], emoji:'🎙️', term:'Show', terms:'Shows', invLabel:'Kit', invEmoji:'🎤',
     invCats:['Wireless Mic','Lavalier Mic','Earpiece / IEM','Portable Speaker','Prompter Script Stand','Formal Outfit','Blazer / Sherwani','Other'],
     invPlaceholder:'e.g. Sennheiser Wireless Mic',
     profileTools:[
@@ -163,7 +163,7 @@ const TYPE_CONFIG = {
     emptyGigMsg:'No performances logged yet — start tracking your gigs here.',
   },
   'Performer': {
-    isArtist:true, emoji:'🎭', term:'Show', terms:'Shows', invLabel:'Kit', invEmoji:'🎭',
+    isArtist:true, modules:['performance','equipment'], emoji:'🎭', term:'Show', terms:'Shows', invLabel:'Kit', invEmoji:'🎭',
     invCats:['Costume / Outfit','Props','Lighting','Sound System','Backdrop','Makeup Kit','Other'],
     invPlaceholder:'e.g. LED costume or prop',
     profileTools:[
@@ -176,7 +176,7 @@ const TYPE_CONFIG = {
     emptyGigMsg:'No shows logged yet — start tracking your performance bookings.',
   },
   'Stand-up Comedian': {
-    isArtist:true, emoji:'😄', term:'Show', terms:'Shows', invLabel:'Kit', invEmoji:'😄',
+    isArtist:true, modules:['performance','equipment'], emoji:'😄', term:'Show', terms:'Shows', invLabel:'Kit', invEmoji:'😄',
     invCats:['Wireless Mic','Lavalier Mic','Speaker','Backdrop / Banner','Outfit','Other'],
     invPlaceholder:'e.g. Shure handheld mic',
     profileTools:[
@@ -189,7 +189,7 @@ const TYPE_CONFIG = {
     emptyGigMsg:'No shows logged yet — start tracking your comedy bookings.',
   },
   'Magician': {
-    isArtist:true, emoji:'🪄', term:'Show', terms:'Shows', invLabel:'Kit', invEmoji:'🪄',
+    isArtist:true, modules:['performance','equipment'], emoji:'🪄', term:'Show', terms:'Shows', invLabel:'Kit', invEmoji:'🪄',
     invCats:['Close-up Props','Stage Props','Costume','Sound System','Backdrop','Other'],
     invPlaceholder:'e.g. levitation platform',
     profileTools:[
@@ -416,7 +416,7 @@ const TYPE_CONFIG = {
     emptyGigMsg:'No events yet — log your first wedding or event to start tracking.',
   },
   'Choreographer': {
-    isArtist:true, emoji:'💃', term:'Session', terms:'Sessions', invLabel:'Studio Gear', invEmoji:'🎵',
+    isArtist:true, modules:['performance','equipment'], emoji:'💃', term:'Session', terms:'Sessions', invLabel:'Studio Gear', invEmoji:'🎵',
     invCats:['Bluetooth Speaker','Extension Board','Dance Floor Mat','Portable Mirror','Demo Costume / Outfit','Props','Laptop / Phone Stand','Other'],
     invPlaceholder:'e.g. JBL Partybox Bluetooth Speaker',
     profileTools:[
