@@ -233,6 +233,8 @@ const LIVE_GAME_IDS = new Set([
   "mafia","spyfall",
   "finishlyrics","guesssong3sec","telephonedrawing",
   "dontlaugh","nameplaceanimal","fastestfinger",
+  // Voting / party interactive tools
+  "babynamevote","genderpoll","luckydraw","nameauction","parentmatch",
 ]);
 
 const GAME_DESCRIPTIONS = {
@@ -10435,7 +10437,12 @@ export default function OccasionHub({ occasion }) {
     if (effect?.type === 'tool-visibility' && effect.payload?.config) {
       setToolVisibility(effect.payload.config);
     }
-  }, [effect]);
+    // Participant: host started a non-live tool for everyone
+    if (effect?.type === 'host-opened-tool' && effect.payload?.toolId && !isHost && room) {
+      setOpen(effect.payload.toolId);
+      setActiveTab('play');
+    }
+  }, [effect]); // eslint-disable-line
 
   // Host: re-broadcast visibility when a new player joins so they get current state
   const prevPlayerCountRef = useRef(0);
@@ -10705,37 +10712,18 @@ export default function OccasionHub({ occasion }) {
           </div>
         )}
 
-        {/* ── PARTICIPANT status + coming-up queue ── */}
+        {/* ── PARTICIPANT status strip ── */}
         {room && !isHost && (
-          <div style={{ marginBottom:16 }}>
-            <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.10)", borderRadius:14, padding:"12px 14px", marginBottom: gameQueue.length ? 10 : 0 }}>
-              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                <span style={{ width:7, height:7, borderRadius:"50%", background:currentGame?"#4ade80":"#facc15", animation:"dot-pulse 2s ease infinite", flexShrink:0 }} />
-                {currentGame ? (
-                  <div style={{ fontSize:12, color:"rgba(255,255,255,0.75)", fontWeight:600 }}>▶ {LIVE_GAME_NAMES[currentGame] || currentGame} is running…</div>
-                ) : (
-                  <div style={{ fontSize:12, color:"rgba(255,255,255,0.50)", fontWeight:600 }}>Waiting for host to start a game…</div>
-                )}
-                <div style={{ marginLeft:"auto", fontSize:11, color:"rgba(255,255,255,0.35)" }}>{roomPlayers?.length||1} players</div>
-              </div>
+          <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.10)", borderRadius:14, padding:"12px 14px", marginBottom:16 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <span style={{ width:7, height:7, borderRadius:"50%", background:currentGame?"#4ade80":"#facc15", animation:"dot-pulse 2s ease infinite", flexShrink:0 }} />
+              {currentGame ? (
+                <div style={{ fontSize:12, color:"rgba(255,255,255,0.75)", fontWeight:600 }}>▶ {LIVE_GAME_NAMES[currentGame] || currentGame} is running…</div>
+              ) : (
+                <div style={{ fontSize:12, color:"rgba(255,255,255,0.50)", fontWeight:600 }}>Waiting for host to start a game…</div>
+              )}
+              <div style={{ marginLeft:"auto", fontSize:11, color:"rgba(255,255,255,0.35)" }}>{roomPlayers?.length||1} players</div>
             </div>
-            {gameQueue.length > 0 && (
-              <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:12, overflow:"hidden" }}>
-                <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 14px", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
-                  <span style={{ fontSize:12 }}>📋</span>
-                  <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.55)", textTransform:"uppercase", letterSpacing:"0.10em" }}>Coming Up</div>
-                </div>
-                <div style={{ padding:"8px 12px" }}>
-                  {gameQueue.map((item, i) => (
-                    <div key={item.id} style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 8px", borderRadius:8, marginBottom:3 }}>
-                      <span style={{ fontSize:9, fontWeight:800, color:"rgba(255,255,255,0.22)", minWidth:14 }}>{i+1}</span>
-                      <span style={{ fontSize:14 }}>{item.emoji}</span>
-                      <span style={{ fontSize:12, fontWeight:600, color:"rgba(255,255,255,0.55)" }}>{item.title}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         )}
         {/* Header row */}
@@ -11483,7 +11471,18 @@ export default function OccasionHub({ occasion }) {
                   </div>
                 )}
               </div>
-              <button onClick={() => { setGameSetupId(null); setOpen(gameSetupId); }} style={{ width:"100%", padding:"15px", borderRadius:14, border:"none", background:`linear-gradient(135deg,${cc},${cc}bb)`, color:"#fff", fontSize:15, fontWeight:800, cursor:"pointer", boxShadow:`0 4px 20px ${cc}45` }}>
+              <button onClick={() => {
+                const id = gameSetupId;
+                setGameSetupId(null);
+                if (LIVE_GAME_IDS.has(id)) {
+                  // Socket broadcast: sets currentGame on server → all participants auto-open
+                  setGameWithScores(id, {});
+                } else {
+                  // Non-live tool: use effect broadcast so participants open it too
+                  sendEffect({ type: 'host-opened-tool', payload: { toolId: id } });
+                }
+                setOpen(id);
+              }} style={{ width:"100%", padding:"15px", borderRadius:14, border:"none", background:`linear-gradient(135deg,${cc},${cc}bb)`, color:"#fff", fontSize:15, fontWeight:800, cursor:"pointer", boxShadow:`0 4px 20px ${cc}45` }}>
                 ▶ Start for Everyone
               </button>
               <button onClick={()=>setGameSetupId(null)} style={{ width:"100%", marginTop:10, padding:"12px", borderRadius:14, border:"1px solid rgba(255,255,255,0.12)", background:"transparent", color:"rgba(255,255,255,0.45)", fontSize:13, fontWeight:600, cursor:"pointer" }}>Cancel</button>
