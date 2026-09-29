@@ -10233,6 +10233,13 @@ export default function OccasionHub({ occasion }) {
   const [memSaved, setMemSaved]                     = useState(false);
   const [showEventMemory, setShowEventMemory]       = useState(false);
   const [eventMemoryData, setEventMemoryData]       = useState(null);
+  // Per-tool visibility config: { toolId: false } means hidden from participants (default = visible)
+  const [toolVisibility, setToolVisibility]         = useState(() => {
+    try {
+      const saved = localStorage.getItem(`tendr-occ-${occasion}-tool-visibility`);
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
 
   // Entry gate: null = gate showing; 'exploring' | 'hosting' | 'joined' = hub visible
   const [entryMode, setEntryMode]   = useState(null);
@@ -10422,6 +10429,34 @@ export default function OccasionHub({ occasion }) {
     prevCurrentGameRef.current = currentGame;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentGame]);
+
+  // Receive tool-visibility broadcast from host
+  useEffect(() => {
+    if (effect?.type === 'tool-visibility' && effect.payload?.config) {
+      setToolVisibility(effect.payload.config);
+    }
+  }, [effect]);
+
+  // Host: re-broadcast visibility when a new player joins so they get current state
+  const prevPlayerCountRef = useRef(0);
+  useEffect(() => {
+    const count = (roomPlayers || []).length;
+    if (isHost && room && count > prevPlayerCountRef.current && Object.keys(toolVisibility).length > 0) {
+      sendEffect({ type: 'tool-visibility', payload: { config: toolVisibility } });
+    }
+    prevPlayerCountRef.current = count;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomPlayers]);
+
+  // Host toggles whether a MANAGE tool is visible to joined participants
+  const toggleToolVisibility = useCallback((toolId) => {
+    setToolVisibility(prev => {
+      const next = { ...prev, [toolId]: prev[toolId] === false ? true : false };
+      try { localStorage.setItem(`tendr-occ-${occasion}-tool-visibility`, JSON.stringify(next)); } catch {}
+      if (room) sendEffect({ type: 'tool-visibility', payload: { config: next } });
+      return next;
+    });
+  }, [occasion, room, sendEffect]);
 
   const occ = OCCASIONS[occasion];
   if (!occ) return <div style={{ color: "#fff", padding: 40, textAlign: "center", fontFamily: font }}>Unknown occasion: {occasion}</div>;
@@ -12041,10 +12076,11 @@ export default function OccasionHub({ occasion }) {
 
         {/* PLAN */}
         {activeTab === "plan" && (() => {
-          // Joined participants only see tools relevant to them; host sees everything
           const isParticipant = room && !isHost;
+          // Participants see tools in PARTICIPANT_PLAN_IDS that host hasn't hidden
+          // Host sees all planning tools with a per-tool visibility toggle
           const visiblePlanTools = isParticipant
-            ? planTools.filter(t => PARTICIPANT_PLAN_IDS.has(t.id))
+            ? planTools.filter(t => PARTICIPANT_PLAN_IDS.has(t.id) && toolVisibility[t.id] !== false)
             : planTools;
           return (
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
@@ -12053,6 +12089,9 @@ export default function OccasionHub({ occasion }) {
                 {isParticipant ? "Guest Tools" : "Planning Tools"}
               </div>
               <div style={{ flex:1, height:1, background:T.sectionLn }} />
+              {isHost && room && (
+                <div style={{ fontSize:9, color:T.sub, fontWeight:500, letterSpacing:"0.06em" }}>TAP EYE TO SHOW/HIDE</div>
+              )}
               <div style={{ fontSize:10, color:PH.violet, fontWeight:600 }}>{visiblePlanTools.length}</div>
             </div>
             {visiblePlanTools.length === 0 ? (
@@ -12062,6 +12101,9 @@ export default function OccasionHub({ occasion }) {
                   {visiblePlanTools.map((t,i) => {
                     const cc = CARD_PALETTE[i % CARD_PALETTE.length];
                     const em = TOOL_EMOJI[t.id] || "🎯";
+                    // For host in a room: show whether this tool is shared with participants
+                    const isParticipantTool = PARTICIPANT_PLAN_IDS.has(t.id);
+                    const isHiddenFromPeers = toolVisibility[t.id] === false;
                     return (
                       <div key={t.id} onClick={()=>openTool(t.id)} className="occ-tool-card" style={{
                         background:`${cc}38`, border:`2px solid ${cc}88`,
@@ -12069,10 +12111,26 @@ export default function OccasionHub({ occasion }) {
                         display:"flex", flexDirection:"column", alignItems:"center", gap:8, textAlign:"center",
                         position:"relative", overflow:"hidden",
                         boxShadow:`0 4px 20px ${cc}25`,
+                        opacity: isHiddenFromPeers ? 0.55 : 1,
                       }}>
                         <div style={{ fontSize:40, lineHeight:1, textShadow:`0 0 18px ${cc}CC, 0 0 6px ${cc}88` }}>{em}</div>
                         <div style={{ fontSize:12.5, fontWeight:800, color:"#FFFFFF", lineHeight:1.3, letterSpacing:"0em", textShadow:"0 1px 4px rgba(0,0,0,0.5)" }}>{t.title}</div>
                         <div style={{ position:"absolute", top:-20, right:-20, width:64, height:64, borderRadius:"50%", background:`${cc}22`, pointerEvents:"none" }} />
+                        {/* Host visibility toggle — only on tools that could show to participants */}
+                        {isHost && room && isParticipantTool && (
+                          <button
+                            onClick={e => { e.stopPropagation(); toggleToolVisibility(t.id); }}
+                            title={isHiddenFromPeers ? "Hidden from guests — tap to show" : "Visible to guests — tap to hide"}
+                            style={{
+                              position:"absolute", top:6, right:6,
+                              width:28, height:28, borderRadius:8,
+                              border:`1px solid ${isHiddenFromPeers ? "rgba(255,80,80,0.5)" : "rgba(255,255,255,0.25)"}`,
+                              background: isHiddenFromPeers ? "rgba(255,60,60,0.25)" : "rgba(255,255,255,0.12)",
+                              color: isHiddenFromPeers ? "rgba(255,120,120,0.9)" : "rgba(255,255,255,0.7)",
+                              fontSize:13, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center",
+                            }}
+                          >{isHiddenFromPeers ? "🚫" : "👁"}</button>
+                        )}
                       </div>
                     );
                   })}
