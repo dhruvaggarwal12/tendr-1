@@ -6844,6 +6844,135 @@ function PartyHubBackground() {
 }
 
 // ── Emoji Decoder ─────────────────────────────────────────────────────────
+const EMOJI_ROUNDS_BY_OCCASION = {
+  birthday: [
+    { emojis:"🎂🕯️🎉", answer:"Happy Birthday",           category:"Song" },
+    { emojis:"🧁🎈🌈", answer:"Birthday Song",              category:"Song" },
+    { emojis:"🎁🎀🥳", answer:"Party Rock Anthem",         category:"Song" },
+    { emojis:"🎠🎡🎢", answer:"Charlie and the Chocolate Factory", category:"Movie" },
+    { emojis:"🍰🎂🏆", answer:"MasterChef",                category:"TV Show" },
+    { emojis:"👶🎉🎊", answer:"Jack",                       category:"Movie" },
+    { emojis:"🎤🌟💃", answer:"It's My Party",             category:"Song" },
+    { emojis:"🎂🤡🎈", answer:"IT",                        category:"Movie" },
+    { emojis:"🦄🎈🌟", answer:"My Little Pony",            category:"Movie" },
+    { emojis:"🎵🎶🎂", answer:"Best Day Ever",             category:"Song" },
+    { emojis:"🏰👸🐉", answer:"Tangled",                   category:"Movie" },
+    { emojis:"🎊🥂✨", answer:"Celebration",              category:"Song" },
+  ],
+  "baby-shower": [
+    { emojis:"👶🌛⭐", answer:"Twinkle Twinkle Little Star", category:"Nursery Rhyme" },
+    { emojis:"🐥🐣🌊", answer:"Baby Shark",                category:"Song" },
+    { emojis:"👶🏠🌈", answer:"Look Who's Talking",        category:"Movie" },
+    { emojis:"🐘👶🎪", answer:"Dumbo",                     category:"Movie" },
+    { emojis:"🌙⭐🐑", answer:"Hush Little Baby",          category:"Nursery Rhyme" },
+    { emojis:"🐰👶🥕", answer:"Peter Rabbit",              category:"Movie" },
+    { emojis:"🦁👑👶", answer:"The Lion King",             category:"Movie" },
+    { emojis:"🍼😴🎵", answer:"Rock a Bye Baby",           category:"Nursery Rhyme" },
+    { emojis:"🌺💐👶", answer:"Aa Ante Amalapuram",        category:"Bollywood" },
+    { emojis:"🤱💕🌸", answer:"Lullaby",                  category:"Song" },
+    { emojis:"🎠🧸🎀", answer:"Toy Story",                category:"Movie" },
+    { emojis:"🌈☁️✨", answer:"Dream Boat",               category:"Song" },
+  ],
+  anniversary: [
+    { emojis:"💍❤️✈️", answer:"DDLJ",                     category:"Bollywood" },
+    { emojis:"🌹🎵💃", answer:"Despacito",                 category:"Song" },
+    { emojis:"💑🌊🛳️", answer:"Titanic",                  category:"Movie" },
+    { emojis:"💑🌆🗼", answer:"An Affair to Remember",    category:"Movie" },
+    { emojis:"❤️🎹🎶", answer:"All of Me",               category:"Song" },
+    { emojis:"🌹🌹🎷", answer:"La Vie en Rose",           category:"Song" },
+    { emojis:"💃🕺✨", answer:"Perfect - Ed Sheeran",     category:"Song" },
+    { emojis:"🌙⭐💑", answer:"Señorita",                  category:"Song" },
+    { emojis:"💌📜❤️", answer:"P.S. I Love You",          category:"Movie" },
+    { emojis:"🏡🌻💑", answer:"The Notebook",             category:"Movie" },
+    { emojis:"💑🎭🌟", answer:"Kabhi Khushi Kabhie Gham", category:"Bollywood" },
+    { emojis:"🎊🥂💫", answer:"Cheers to a New Year",    category:"Song" },
+  ],
+  "kitty-party": [
+    { emojis:"🃏🎴♠️", answer:"Teen Patti",                category:"Card Game" },
+    { emojis:"💰💄👗", answer:"Dhan Te Nan",              category:"Bollywood" },
+    { emojis:"☕🍰💬", answer:"Gossip Girl",               category:"TV Show" },
+    { emojis:"👒🌸🎀", answer:"Desperate Housewives",     category:"TV Show" },
+    { emojis:"💅💋👠", answer:"Aaja Nachle",              category:"Bollywood" },
+    { emojis:"🎤🌟💃", answer:"Nagada Sang Dhol",         category:"Bollywood" },
+    { emojis:"🤑💰🎰", answer:"Dhan Dhan Dhan",          category:"Punjabi" },
+    { emojis:"🌹🌺💐", answer:"Genda Phool",             category:"Bollywood" },
+    { emojis:"👑💎💍", answer:"Bejeweled",               category:"Song" },
+    { emojis:"🪄🎩✨", answer:"Now You See Me",           category:"Movie" },
+    { emojis:"🎯🏆🥇", answer:"Balle Balle",             category:"Bhangra" },
+    { emojis:"🎊🥂💃", answer:"Sheila Ki Jawani",        category:"Bollywood" },
+  ],
+  "office-party": [
+    { emojis:"💼💻☕", answer:"The Office",               category:"TV Show" },
+    { emojis:"📊📈🏢", answer:"Silicon Valley",           category:"TV Show" },
+    { emojis:"👔💡💰", answer:"Suits",                    category:"TV Show" },
+    { emojis:"🏢🔥💻", answer:"Office Space",             category:"Movie" },
+    { emojis:"📱🌐🚀", answer:"The Social Network",       category:"Movie" },
+    { emojis:"🤵👩‍💼🏆", answer:"The Devil Wears Prada", category:"Movie" },
+    { emojis:"☕🖨️📎", answer:"Nine to Five",            category:"Song" },
+    { emojis:"🎯📋✅", answer:"Work Hard Play Hard",      category:"Song" },
+    { emojis:"👨‍💻🎧🚀", answer:"Startup",               category:"TV Show" },
+    { emojis:"🏦💵🤝", answer:"Wolf of Wall Street",     category:"Movie" },
+    { emojis:"📱📸💼", answer:"The Intern",              category:"Movie" },
+    { emojis:"🎤💼🎶", answer:"9 to 5",                 category:"Song" },
+  ],
+  housewarming: [
+    { emojis:"🏠🔑🌻", answer:"Welcome to My House",     category:"Song" },
+    { emojis:"🏡🌈☀️", answer:"Home - Michael Bublé",    category:"Song" },
+    { emojis:"🪟🛋️🌿", answer:"This Is Home",            category:"Song" },
+    { emojis:"🏗️💒🌸", answer:"Up",                     category:"Movie" },
+    { emojis:"🏚️👻🔦", answer:"Haunted Mansion",        category:"Movie" },
+    { emojis:"🌳🏡🐕", answer:"Lassie Come Home",        category:"Movie" },
+    { emojis:"🛠️🔧🏠", answer:"Home Alone",             category:"Movie" },
+    { emojis:"🎨🖌️🏠", answer:"Fixer Upper",            category:"TV Show" },
+    { emojis:"🍳🥘🏡", answer:"Julie & Julia",           category:"Movie" },
+    { emojis:"🌸🪴🏠", answer:"Ghar Aaja Pardesi",       category:"Bollywood" },
+    { emojis:"🏠💛🌻", answer:"My Home",                 category:"Song" },
+    { emojis:"🔑🏠✨", answer:"Griha Pravesh",           category:"Occasion" },
+  ],
+  "get-together": [
+    { emojis:"👫👬👭", answer:"Dil Chahta Hai",           category:"Bollywood" },
+    { emojis:"🎉🍻🕺", answer:"Party All Night",           category:"Song" },
+    { emojis:"🤝💕🌟", answer:"Friends",                  category:"TV Show" },
+    { emojis:"🍕🎮🎬", answer:"Game Night",               category:"Movie" },
+    { emojis:"🎸🎤🎵", answer:"We Are the Champions",     category:"Song" },
+    { emojis:"🚗🗺️🏕️", answer:"Zindagi Na Milegi Dobara",category:"Bollywood" },
+    { emojis:"🌊🏄🕶️", answer:"The Hangover",            category:"Movie" },
+    { emojis:"🎵🎉🤸", answer:"Happy - Pharrell Williams",category:"Song" },
+    { emojis:"🎊🎈🥂", answer:"Abhi To Party Shuru Hui Hai", category:"Bollywood" },
+    { emojis:"👯🕺💃", answer:"YMCA",                    category:"Song" },
+    { emojis:"🎭🎪🎠", answer:"The Grand Budapest Hotel", category:"Movie" },
+    { emojis:"🌴🎶🔥", answer:"Lean On",                 category:"Song" },
+  ],
+  "gender-reveal": [
+    { emojis:"💙🩷🎊", answer:"Kya Hua Tera Vaada",       category:"Bollywood" },
+    { emojis:"🎀🩷👸", answer:"Pretty in Pink",           category:"Movie" },
+    { emojis:"💙🌊🎵", answer:"Blue - Eiffel 65",         category:"Song" },
+    { emojis:"🌸🌺💕", answer:"Pink",                     category:"Song" },
+    { emojis:"🐣🌈💕", answer:"Baby - Justin Bieber",     category:"Song" },
+    { emojis:"🩺👶💉", answer:"Grey's Anatomy",          category:"TV Show" },
+    { emojis:"🍭🎀🏷️", answer:"Candy Shop",              category:"Song" },
+    { emojis:"💙🌊🔵", answer:"Boys Don't Cry",          category:"Song" },
+    { emojis:"👶🎉🎊", answer:"Beautiful Boy",            category:"Song" },
+    { emojis:"🌸💕🤰", answer:"You Are the Sunshine",    category:"Song" },
+    { emojis:"🦋🩷✨", answer:"Butterfly Kisses",         category:"Song" },
+    { emojis:"👑💙🩷", answer:"Royals - Lorde",           category:"Song" },
+  ],
+  bachelorette: [
+    { emojis:"👰💄💎", answer:"Bride Wars",               category:"Movie" },
+    { emojis:"🎰🍹💃", answer:"The Hangover",             category:"Movie" },
+    { emojis:"💍🌟👑", answer:"Pretty Woman",             category:"Movie" },
+    { emojis:"🎤💃🌙", answer:"Girls Just Want to Have Fun", category:"Song" },
+    { emojis:"🍾💫🎊", answer:"Last Friday Night",        category:"Song" },
+    { emojis:"👰🤷🎶", answer:"Runaway Bride",            category:"Movie" },
+    { emojis:"💋👄🌹", answer:"Pehla Nasha",             category:"Bollywood" },
+    { emojis:"🎀💅👠", answer:"Mean Girls",               category:"Movie" },
+    { emojis:"💃🕺🎵", answer:"Single Ladies",           category:"Song" },
+    { emojis:"🥂✨💃", answer:"Tequila",                  category:"Song" },
+    { emojis:"👑🌸💕", answer:"Shake It Off",            category:"Song" },
+    { emojis:"🎉🌃🎵", answer:"Party in the USA",        category:"Song" },
+  ],
+};
+
 const EMOJI_ROUNDS = [
   { emojis:"🦁👑",        answer:"The Lion King",        category:"Movie" },
   { emojis:"🕷️🕸️👨",     answer:"Spider-Man",           category:"Movie" },
@@ -6867,7 +6996,7 @@ const EMOJI_ROUNDS = [
   { emojis:"🐼🍜🥋",      answer:"Kung Fu Panda",        category:"Movie" },
 ];
 
-function EmojiDecoder({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+function EmojiDecoder({ onClose, accent, occasion, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
   const live = !!room;
   useEffect(() => { if (live && isHost && currentGame !== 'emoji-decoder') setGame?.('emoji-decoder', {}); }, [live, isHost]); // eslint-disable-line
 
@@ -6888,7 +7017,8 @@ function EmojiDecoder({ onClose, accent, room, myName: liveName, players: livePl
   const answers    = live ? (gameState?.answers || {}) : localAnswers;
   const scores     = live ? (gameState?.scores || {}) : localScores;
   const timerEnd   = live ? gameState?.timerEnd : null;
-  const rounds     = live ? (gameState?.rounds || EMOJI_ROUNDS.slice(0, numRounds)) : EMOJI_ROUNDS.slice(0, numRounds);
+  const baseRounds = EMOJI_ROUNDS_BY_OCCASION[occasion] || EMOJI_ROUNDS;
+  const rounds     = live ? (gameState?.rounds || baseRounds.slice(0, numRounds)) : baseRounds.slice(0, numRounds);
   const activePlayers = live ? livePlayers : localPlayers;
 
   const currentRound    = rounds[roundIdx] || rounds[0] || EMOJI_ROUNDS[0];
@@ -6950,7 +7080,7 @@ function EmojiDecoder({ onClose, accent, room, myName: liveName, players: livePl
   };
 
   const startGame = () => {
-    const selectedRounds = EMOJI_ROUNDS.slice(0, numRounds);
+    const selectedRounds = (EMOJI_ROUNDS_BY_OCCASION[occasion] || EMOJI_ROUNDS).slice(0, numRounds);
     if (live) {
       sendAction('start_game', { rounds: selectedRounds, numRounds, timerEnd: Date.now() + 30000 });
     } else {
@@ -10261,6 +10391,11 @@ export default function OccasionHub({ occasion }) {
       return saved ? JSON.parse(saved) : {};
     } catch { return {}; }
   });
+  // Per-tool activation: { toolId: true } = host has unlocked it for participant interaction
+  const [toolActivated, setToolActivated]           = useState({});
+  // Pre-game ready lobby state
+  const [pregameId, setPregameId]                   = useState(null);
+  const [readySet, setReadySet]                     = useState(new Set());
 
   // Entry gate: null = gate showing; 'exploring' | 'hosting' | 'joined' = hub visible
   const [entryMode, setEntryMode]   = useState(null);
@@ -10328,6 +10463,8 @@ export default function OccasionHub({ occasion }) {
       setGamePreviewId(id);
       return;
     }
+    // In a room: participants cannot open unactivated manage tools
+    if (room && !isHost && PARTICIPANT_PLAN_IDS.has(id) && !toolActivated[id]) return;
     // Tool intros for non-game tools
     const hasIntro = !!TOOL_INTRO_DATA[id];
     const alreadySeen = neverShowTools.has(id) || seenToolsSession.has(id);
@@ -10461,14 +10598,36 @@ export default function OccasionHub({ occasion }) {
       setOpen(effect.payload.toolId);
       setActiveTab('play');
     }
+    // Host activated a manage tool — unlock it for all participants
+    if (effect?.type === 'tool-activated' && effect.payload?.toolId) {
+      setToolActivated(prev => ({ ...prev, [effect.payload.toolId]: true }));
+    }
+    // Host opened ready lobby for a game
+    if (effect?.type === 'pregame-ready' && effect.payload?.gameId) {
+      setPregameId(effect.payload.gameId);
+      setReadySet(new Set());
+    }
+    // A participant readied up
+    if (effect?.type === 'player-ready' && effect.payload?.name) {
+      setReadySet(prev => new Set([...prev, effect.payload.name]));
+    }
+    // Ready lobby closed (game launched or cancelled)
+    if (effect?.type === 'pregame-cancel') {
+      setPregameId(null);
+      setReadySet(new Set());
+    }
   }, [effect]); // eslint-disable-line
 
-  // Host: re-broadcast visibility when a new player joins so they get current state
+  // Host: re-broadcast visibility + activation state when a new player joins
   const prevPlayerCountRef = useRef(0);
   useEffect(() => {
     const count = (roomPlayers || []).length;
-    if (isHost && room && count > prevPlayerCountRef.current && Object.keys(toolVisibility).length > 0) {
-      sendEffect({ type: 'tool-visibility', payload: { config: toolVisibility } });
+    if (isHost && room && count > prevPlayerCountRef.current) {
+      if (Object.keys(toolVisibility).length > 0)
+        sendEffect({ type: 'tool-visibility', payload: { config: toolVisibility } });
+      Object.entries(toolActivated).forEach(([toolId, active]) => {
+        if (active) sendEffect({ type: 'tool-activated', payload: { toolId } });
+      });
     }
     prevPlayerCountRef.current = count;
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -10483,6 +10642,12 @@ export default function OccasionHub({ occasion }) {
       return next;
     });
   }, [occasion, room, sendEffect]);
+
+  // Host activates a manage tool — unlocks it permanently for all participants this session
+  const activateTool = useCallback((toolId) => {
+    setToolActivated(prev => ({ ...prev, [toolId]: true }));
+    if (room) sendEffect({ type: 'tool-activated', payload: { toolId } });
+  }, [room, sendEffect]);
 
   // Auto-remove a game from queue when it becomes the current game
   useEffect(() => {
@@ -11005,7 +11170,7 @@ export default function OccasionHub({ occasion }) {
       case "rapidfire":      return <RapidFire onClose={close} accent={accent} />;
       case "moodmeter":      return <MoodMeter onClose={close} accent={accent} {...liveProps} />;
       case "secretmessage":  return <SecretMessage onClose={close} accent={accent} {...liveProps} />;
-      case "emojiDecoder":   return <EmojiDecoder onClose={close} accent={accent} {...liveProps} />;
+      case "emojiDecoder":   return <EmojiDecoder onClose={close} accent={accent} occasion={occasion} {...liveProps} />;
       case "pictionary":     return <DrawGuessGame onClose={close} accent={accent} {...liveProps} />;
       case "wordchain":      return <WordChainGame onClose={close} accent={accent} {...liveProps} />;
       case "dontsayyesno":   return <DontSayYesNo onClose={close} accent={accent} {...liveProps} />;
@@ -11191,10 +11356,13 @@ export default function OccasionHub({ occasion }) {
         @keyframes tab-slide    { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
         @keyframes modal-in     { from{opacity:0;transform:scale(0.94) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
         @keyframes spin         { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        .occ-tool-card          { transition:background 0.12s ease, border-color 0.12s ease, transform 0.08s ease; }
-        .occ-tool-card:hover    { background:rgba(196,151,58,0.06) !important; border-color:rgba(196,151,58,0.3) !important; }
+        @keyframes ready-pulse  { 0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(74,222,128,0.55)} 50%{transform:scale(1.025);box-shadow:0 0 0 14px rgba(74,222,128,0)} }
+        @keyframes lock-shimmer { 0%,100%{opacity:0.82} 50%{opacity:1} }
+        @keyframes slide-up     { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+        .occ-tool-card          { transition:background 0.15s ease, border-color 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease; }
+        .occ-tool-card:hover    { transform:translateY(-2px) !important; box-shadow:0 10px 30px rgba(0,0,0,0.35) !important; }
         .occ-tool-card:hover svg { opacity:0.85 !important; }
-        .occ-tool-card:active   { transform:scale(0.97) !important; transition:transform 0.06s !important; }
+        .occ-tool-card:active   { transform:scale(0.96) !important; transition:transform 0.06s !important; }
         ::-webkit-scrollbar     { display:none; }
         textarea, input         { font-family:${font}; }
         select option           { background:#F4EDE8; color:#2C1A0E; }
@@ -11459,52 +11627,101 @@ export default function OccasionHub({ occasion }) {
         />
       )}
 
-      {/* ── Game Setup Sheet (host selects a live game → configure → start) ── */}
+      {/* ── Game Setup Sheet (host selects a live game → ready lobby → start) ── */}
       {gameSetupId && isHost && room && (() => {
         const meta = GAME_META[gameSetupId];
         const tool = allTools.find(t => t.id === gameSetupId);
         const cc = CARD_PALETTE[playTools.indexOf(tool) % CARD_PALETTE.length] || occAccent;
+        const inReadyLobby = pregameId === gameSetupId;
+        const allPlayersReady = (roomPlayers||[]).length > 0 && readySet.size >= (roomPlayers||[]).length;
+
+        const doLaunch = () => {
+          const id = gameSetupId;
+          setPregameId(null); setReadySet(new Set());
+          sendEffect({ type: 'pregame-cancel' });
+          setGameSetupId(null);
+          if (LIVE_GAME_IDS.has(id)) { setGameWithScores(id, {}); }
+          else { sendEffect({ type: 'host-opened-tool', payload: { toolId: id } }); }
+          setOpen(id);
+        };
+        const openReadyLobby = () => {
+          setPregameId(gameSetupId); setReadySet(new Set());
+          sendEffect({ type: 'pregame-ready', payload: { gameId: gameSetupId } });
+        };
+        const cancelSetup = () => {
+          if (inReadyLobby) { setPregameId(null); setReadySet(new Set()); sendEffect({ type: 'pregame-cancel' }); }
+          setGameSetupId(null);
+        };
         return (
-          <div style={{ position:"fixed", inset:0, zIndex:5500, background:"rgba(2,1,8,0.88)", backdropFilter:"blur(24px)", display:"flex", alignItems:"center", justifyContent:"center", padding:"20px 16px" }} onClick={()=>setGameSetupId(null)}>
+          <div style={{ position:"fixed", inset:0, zIndex:5500, background:"rgba(2,1,8,0.88)", backdropFilter:"blur(24px)", display:"flex", alignItems:"center", justifyContent:"center", padding:"20px 16px" }} onClick={cancelSetup}>
             <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, background:"#0D0820", borderRadius:24, border:`1px solid ${cc}30`, animation:"modal-in 0.24s cubic-bezier(0.22,1,0.36,1)", padding:"28px 24px 28px" }}>
+              {/* Header */}
               <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:20 }}>
                 <div style={{ width:52, height:52, borderRadius:16, background:`${cc}22`, border:`1.5px solid ${cc}50`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, flexShrink:0 }}>{meta?.emoji||"🎮"}</div>
-                <div>
-                  <div style={{ fontSize:10, fontWeight:800, color:cc, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:3 }}>Start Game</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:10, fontWeight:800, color:cc, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:3 }}>
+                    {inReadyLobby ? "Ready Lobby" : "Start Game"}
+                  </div>
                   <div style={{ fontSize:18, fontWeight:800, color:"#FFFFFF" }}>{tool?.title || gameSetupId}</div>
                   {meta && <div style={{ fontSize:12, color:"rgba(255,255,255,0.45)", marginTop:2 }}>👥 {meta.players} · ⏱️ {meta.time}</div>}
                 </div>
-              </div>
-              <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:14, padding:"14px 16px", marginBottom:18 }}>
-                <div style={{ fontSize:11, color:"rgba(255,255,255,0.45)", marginBottom:12 }}>
-                  {roomPlayers?.length||1} player{(roomPlayers?.length||1)!==1?"s":""} will be pulled into this game automatically.
-                </div>
-                {meta?.howItWorks && (
-                  <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                    {meta.howItWorks.map((step, i) => (
-                      <div key={i} style={{ display:"flex", gap:8, alignItems:"flex-start" }}>
-                        <span style={{ fontSize:10, fontWeight:800, color:cc, background:`${cc}18`, borderRadius:"50%", width:18, height:18, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>{i+1}</span>
-                        <span style={{ fontSize:12, color:"rgba(255,255,255,0.60)", lineHeight:1.4 }}>{step}</span>
-                      </div>
-                    ))}
+                {inReadyLobby && (
+                  <div style={{ fontSize:14, fontWeight:800, color: allPlayersReady ? "#4ade80" : "#FBBF24", background: allPlayersReady ? "rgba(74,222,128,0.12)" : "rgba(251,191,36,0.12)", borderRadius:10, padding:"5px 11px", border:`1px solid ${allPlayersReady ? "rgba(74,222,128,0.30)" : "rgba(251,191,36,0.30)"}`, flexShrink:0 }}>
+                    {readySet.size}/{(roomPlayers||[]).length}
                   </div>
                 )}
               </div>
-              <button onClick={() => {
-                const id = gameSetupId;
-                setGameSetupId(null);
-                if (LIVE_GAME_IDS.has(id)) {
-                  // Socket broadcast: sets currentGame on server → all participants auto-open
-                  setGameWithScores(id, {});
-                } else {
-                  // Non-live tool: use effect broadcast so participants open it too
-                  sendEffect({ type: 'host-opened-tool', payload: { toolId: id } });
-                }
-                setOpen(id);
-              }} style={{ width:"100%", padding:"15px", borderRadius:14, border:"none", background:`linear-gradient(135deg,${cc},${cc}bb)`, color:"#fff", fontSize:15, fontWeight:800, cursor:"pointer", boxShadow:`0 4px 20px ${cc}45` }}>
-                ▶ Start for Everyone
-              </button>
-              <button onClick={()=>setGameSetupId(null)} style={{ width:"100%", marginTop:10, padding:"12px", borderRadius:14, border:"1px solid rgba(255,255,255,0.12)", background:"transparent", color:"rgba(255,255,255,0.45)", fontSize:13, fontWeight:600, cursor:"pointer" }}>Cancel</button>
+
+              {!inReadyLobby ? (
+                <>
+                  <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:14, padding:"14px 16px", marginBottom:18 }}>
+                    <div style={{ fontSize:11, color:"rgba(255,255,255,0.45)", marginBottom: meta?.howItWorks ? 12 : 0 }}>
+                      {roomPlayers?.length||1} player{(roomPlayers?.length||1)!==1?"s":""} will be pulled in. Open a ready lobby so everyone is prepared, or skip straight to the game.
+                    </div>
+                    {meta?.howItWorks && (
+                      <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                        {meta.howItWorks.map((step, i) => (
+                          <div key={i} style={{ display:"flex", gap:8, alignItems:"flex-start" }}>
+                            <span style={{ fontSize:10, fontWeight:800, color:cc, background:`${cc}18`, borderRadius:"50%", width:18, height:18, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>{i+1}</span>
+                            <span style={{ fontSize:12, color:"rgba(255,255,255,0.60)", lineHeight:1.4 }}>{step}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <button onClick={openReadyLobby} style={{ width:"100%", padding:"15px", borderRadius:14, border:"none", background:`linear-gradient(135deg,${cc},${cc}bb)`, color:"#fff", fontSize:15, fontWeight:800, cursor:"pointer", boxShadow:`0 4px 20px ${cc}45`, marginBottom:8 }}>
+                    ⏳ Open Ready Lobby
+                  </button>
+                  <button onClick={doLaunch} style={{ width:"100%", padding:"12px", borderRadius:14, border:`1px solid ${cc}35`, background:`${cc}15`, color:cc, fontSize:13, fontWeight:700, cursor:"pointer", marginBottom:8 }}>
+                    ▶ Skip Ready · Start Immediately
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:14, padding:"14px 16px", marginBottom:16 }}>
+                    <div style={{ fontSize:10, fontWeight:800, color:"rgba(255,255,255,0.35)", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:10 }}>Players Readying Up</div>
+                    <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                      {(roomPlayers||[]).map(p => {
+                        const pName = typeof p === 'string' ? p : p.name;
+                        const isReady = readySet.has(pName);
+                        return (
+                          <div key={pName} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 12px", background: isReady ? "rgba(74,222,128,0.07)" : "rgba(255,255,255,0.03)", borderRadius:10, border:`1px solid ${isReady ? "rgba(74,222,128,0.22)" : "rgba(255,255,255,0.06)"}`, transition:"all 0.3s ease" }}>
+                            <div style={{ width:28, height:28, borderRadius:"50%", background: isReady ? "rgba(74,222,128,0.20)" : "rgba(255,255,255,0.08)", border:`1.5px solid ${isReady ? "#4ade80" : "rgba(255,255,255,0.15)"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, color: isReady ? "#4ade80" : "rgba(255,255,255,0.45)", transition:"all 0.3s ease", flexShrink:0 }}>
+                              {isReady ? "✓" : pName.charAt(0).toUpperCase()}
+                            </div>
+                            <span style={{ flex:1, fontSize:13, fontWeight:600, color: isReady ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.50)" }}>{pName}</span>
+                            {isReady && <span style={{ fontSize:10, fontWeight:800, color:"#4ade80" }}>Ready!</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <button onClick={doLaunch} style={{ width:"100%", padding:"15px", borderRadius:14, border:"none", background: allPlayersReady ? "linear-gradient(135deg,#22c55e,#16a34a)" : `linear-gradient(135deg,${cc},${cc}bb)`, color:"#fff", fontSize:15, fontWeight:800, cursor:"pointer", boxShadow:`0 4px 20px ${allPlayersReady ? "#22c55e45" : cc+"45"}`, marginBottom:8, animation: allPlayersReady ? "ready-pulse 1.5s ease-in-out infinite" : "none" }}>
+                    {allPlayersReady ? "🚀 All Ready — Launch!" : `▶ Force Start (${readySet.size}/${(roomPlayers||[]).length} ready)`}
+                  </button>
+                </>
+              )}
+              <button onClick={cancelSetup} style={{ width:"100%", padding:"12px", borderRadius:14, border:"1px solid rgba(255,255,255,0.12)", background:"transparent", color:"rgba(255,255,255,0.45)", fontSize:13, fontWeight:600, cursor:"pointer" }}>Cancel</button>
             </div>
           </div>
         );
@@ -11535,6 +11752,64 @@ export default function OccasionHub({ occasion }) {
       {open && LIVE_GAME_IDS.has(open) && isHost && room && !showInGameControls && (
         <button onClick={()=>setShowInGameControls(true)} style={{ position:"fixed", top:16, right:16, zIndex:10200, width:36, height:36, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.20)", background:"rgba(13,8,32,0.85)", backdropFilter:"blur(12px)", color:"rgba(255,255,255,0.80)", fontSize:18, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", lineHeight:1, fontWeight:700 }}>⋮</button>
       )}
+
+      {/* ── Participant Pre-Game Ready Overlay ── */}
+      {pregameId && !isHost && room && !currentGame && (() => {
+        const meta = GAME_META[pregameId];
+        const tool = allTools.find(t => t.id === pregameId);
+        const cc = CARD_PALETTE[playTools.indexOf(tool) % CARD_PALETTE.length] || occAccent;
+        const iAmReady = readySet.has(myName);
+        const totalPlayers = (roomPlayers||[]).length;
+        return (
+          <div style={{ position:"fixed", inset:0, zIndex:5200, background:"rgba(2,1,8,0.93)", backdropFilter:"blur(28px)", display:"flex", alignItems:"center", justifyContent:"center", padding:"20px 16px" }}>
+            <div style={{ width:"100%", maxWidth:440, animation:"modal-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+              {/* Game emoji + name */}
+              <div style={{ textAlign:"center", marginBottom:24 }}>
+                <div style={{ fontSize:64, marginBottom:14, animation:"splash-pulse 2s ease-in-out infinite" }}>{meta?.emoji || "🎮"}</div>
+                <div style={{ fontSize:11, fontWeight:800, color:cc, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:6 }}>Get Ready!</div>
+                <div style={{ fontSize:24, fontWeight:800, color:"#FFFFFF" }}>{tool?.title || pregameId}</div>
+                <div style={{ fontSize:13, color:"rgba(255,255,255,0.40)", marginTop:6 }}>Host is setting up — tap Ready when you're in!</div>
+              </div>
+              {/* Players list */}
+              <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.10)", borderRadius:16, padding:"16px", marginBottom:20 }}>
+                <div style={{ fontSize:10, fontWeight:800, color:"rgba(255,255,255,0.35)", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:10 }}>
+                  Players · {readySet.size}/{totalPlayers} Ready
+                </div>
+                <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                  {(roomPlayers||[]).map(p => {
+                    const pName = typeof p === 'string' ? p : p.name;
+                    const isReady = readySet.has(pName);
+                    return (
+                      <div key={pName} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 12px", background: isReady ? "rgba(74,222,128,0.07)" : "rgba(255,255,255,0.03)", borderRadius:10, border:`1px solid ${isReady ? "rgba(74,222,128,0.22)" : "rgba(255,255,255,0.06)"}`, transition:"all 0.35s ease" }}>
+                        <div style={{ width:30, height:30, borderRadius:"50%", background: isReady ? "rgba(74,222,128,0.18)" : "rgba(255,255,255,0.07)", border:`2px solid ${isReady ? "#4ade80" : "rgba(255,255,255,0.15)"}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, color: isReady ? "#4ade80" : "rgba(255,255,255,0.45)", transition:"all 0.35s ease", flexShrink:0 }}>
+                          {isReady ? "✓" : pName.charAt(0).toUpperCase()}
+                        </div>
+                        <span style={{ flex:1, fontSize:13, fontWeight:600, color: isReady ? "rgba(255,255,255,0.88)" : "rgba(255,255,255,0.50)" }}>
+                          {pName}{pName === myName && <span style={{ fontSize:10, color:cc, marginLeft:5 }}>you</span>}
+                        </span>
+                        {isReady && <span style={{ fontSize:10, fontWeight:800, color:"#4ade80" }}>✓ Ready</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              {/* Ready / Waiting button */}
+              {!iAmReady ? (
+                <button onClick={() => {
+                  setReadySet(prev => new Set([...prev, myName]));
+                  sendEffect({ type: 'player-ready', payload: { name: myName } });
+                }} style={{ width:"100%", padding:"17px", borderRadius:16, border:"none", background:`linear-gradient(135deg,${cc},${cc}bb)`, color:"#fff", fontSize:17, fontWeight:800, cursor:"pointer", boxShadow:`0 6px 24px ${cc}55`, animation:"ready-pulse 2s ease-in-out infinite" }}>
+                  ✋ I'm Ready!
+                </button>
+              ) : (
+                <div style={{ width:"100%", padding:"17px", borderRadius:16, background:"rgba(74,222,128,0.10)", border:"2px solid rgba(74,222,128,0.32)", color:"#4ade80", fontSize:16, fontWeight:800, textAlign:"center" }}>
+                  ✅ You're Ready! Waiting for the game to start...
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Host Controls Panel ── */}
       {showHostControls && (
@@ -12196,19 +12471,22 @@ export default function OccasionHub({ occasion }) {
             : planTools;
           return (
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom: isHost && room ? 8 : 14 }}>
               <div style={{ fontSize:10, fontWeight:800, color:T.sectionLbl, textTransform:"uppercase", letterSpacing:"0.16em" }}>
                 {isParticipant ? "Guest Tools" : "Planning Tools"}
               </div>
               <div style={{ flex:1, height:1, background:T.sectionLn }} />
-              {isHost && room && (
-                <div style={{ display:"flex", alignItems:"center", gap:4, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.10)", borderRadius:8, padding:"3px 8px" }}>
-                  <span style={{ fontSize:11 }}>👁</span>
-                  <span style={{ fontSize:9, color:"rgba(255,255,255,0.55)", fontWeight:600, letterSpacing:"0.04em" }}>Toggle guest visibility</span>
-                </div>
-              )}
               <div style={{ fontSize:10, color:PH.violet, fontWeight:600 }}>{visiblePlanTools.length}</div>
             </div>
+            {/* Host: clear legend for the two control buttons */}
+            {isHost && room && (
+              <div style={{ display:"flex", gap:6, marginBottom:12, padding:"8px 12px", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.09)", borderRadius:10 }}>
+                <span style={{ fontSize:11 }}>🔓</span>
+                <span style={{ fontSize:10, color:"rgba(255,255,255,0.55)", fontWeight:600, flex:1 }}>Tap to <strong style={{color:"#FBBF24"}}>activate</strong> for guests · </span>
+                <span style={{ fontSize:11 }}>👁</span>
+                <span style={{ fontSize:10, color:"rgba(255,255,255,0.55)", fontWeight:600 }}>show/hide</span>
+              </div>
+            )}
             {visiblePlanTools.length === 0 ? (
               <div style={{ textAlign:"center", padding:"48px 20px", color:T.sub, fontSize:14 }}>No tools available.</div>
             ) : (
@@ -12216,35 +12494,51 @@ export default function OccasionHub({ occasion }) {
                   {visiblePlanTools.map((t,i) => {
                     const cc = CARD_PALETTE[i % CARD_PALETTE.length];
                     const em = TOOL_EMOJI[t.id] || "🎯";
-                    // For host in a room: show whether this tool is shared with participants
                     const isParticipantTool = PARTICIPANT_PLAN_IDS.has(t.id);
                     const isHiddenFromPeers = toolVisibility[t.id] === false;
+                    const isActivated = toolActivated[t.id] || false;
+                    const lockedForParticipant = room && !isHost && isParticipantTool && !isActivated;
                     return (
-                      <div key={t.id} onClick={()=>openTool(t.id)} className="occ-tool-card" style={{
-                        background:`${cc}38`, border:`2px solid ${cc}88`,
-                        borderRadius:18, padding:"22px 12px 16px", cursor:"pointer",
-                        display:"flex", flexDirection:"column", alignItems:"center", gap:8, textAlign:"center",
-                        position:"relative", overflow:"hidden",
-                        boxShadow:`0 4px 20px ${cc}25`,
-                        opacity: isHiddenFromPeers ? 0.55 : 1,
-                      }}>
-                        <div style={{ fontSize:40, lineHeight:1, textShadow:`0 0 18px ${cc}CC, 0 0 6px ${cc}88` }}>{em}</div>
-                        <div style={{ fontSize:12.5, fontWeight:800, color:"#FFFFFF", lineHeight:1.3, letterSpacing:"0em", textShadow:"0 1px 4px rgba(0,0,0,0.5)" }}>{t.title}</div>
+                      <div key={t.id}
+                        onClick={() => { if (!lockedForParticipant) openTool(t.id); }}
+                        className="occ-tool-card"
+                        style={{
+                          background:`${cc}38`, border:`2px solid ${lockedForParticipant ? cc+"44" : cc+"88"}`,
+                          borderRadius:18, padding:"22px 12px 16px",
+                          cursor: lockedForParticipant ? "default" : "pointer",
+                          display:"flex", flexDirection:"column", alignItems:"center", gap:8, textAlign:"center",
+                          position:"relative", overflow:"hidden",
+                          boxShadow:`0 4px 20px ${cc}25`,
+                          opacity: isHiddenFromPeers ? 0.55 : 1,
+                        }}>
+                        <div style={{ fontSize:40, lineHeight:1, textShadow:`0 0 18px ${cc}CC, 0 0 6px ${cc}88`, opacity: lockedForParticipant ? 0.45 : 1 }}>{em}</div>
+                        <div style={{ fontSize:12.5, fontWeight:800, color: lockedForParticipant ? "rgba(255,255,255,0.40)" : "#FFFFFF", lineHeight:1.3, textShadow:"0 1px 4px rgba(0,0,0,0.5)" }}>{t.title}</div>
                         <div style={{ position:"absolute", top:-20, right:-20, width:64, height:64, borderRadius:"50%", background:`${cc}22`, pointerEvents:"none" }} />
-                        {/* Host visibility toggle — only on tools that could show to participants */}
+                        {/* Participant lock overlay when tool not yet activated by host */}
+                        {lockedForParticipant && (
+                          <div style={{ position:"absolute", inset:0, borderRadius:16, background:"rgba(2,1,8,0.70)", backdropFilter:"blur(3px)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:5, animation:"lock-shimmer 2.8s ease-in-out infinite" }}>
+                            <span style={{ fontSize:22 }}>🔒</span>
+                            <span style={{ fontSize:9, fontWeight:800, color:"rgba(255,255,255,0.55)", textAlign:"center", letterSpacing:"0.08em", textTransform:"uppercase" }}>Host Activates</span>
+                          </div>
+                        )}
+                        {/* Host controls: 🔓 activate + 👁 visibility */}
                         {isHost && room && isParticipantTool && (
-                          <button
-                            onClick={e => { e.stopPropagation(); toggleToolVisibility(t.id); }}
-                            title={isHiddenFromPeers ? "Hidden from guests — tap to show" : "Visible to guests — tap to hide"}
-                            style={{
-                              position:"absolute", top:6, right:6,
-                              width:28, height:28, borderRadius:8,
-                              border:`1px solid ${isHiddenFromPeers ? "rgba(255,80,80,0.5)" : "rgba(255,255,255,0.25)"}`,
-                              background: isHiddenFromPeers ? "rgba(255,60,60,0.25)" : "rgba(255,255,255,0.12)",
-                              color: isHiddenFromPeers ? "rgba(255,120,120,0.9)" : "rgba(255,255,255,0.7)",
-                              fontSize:13, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center",
-                            }}
-                          >{isHiddenFromPeers ? "🚫" : "👁"}</button>
+                          <div style={{ position:"absolute", top:6, right:6, display:"flex", gap:3 }}>
+                            <button
+                              onClick={e => { e.stopPropagation(); if (!isActivated) activateTool(t.id); }}
+                              title={isActivated ? "Activated — guests can use this" : "Activate for guests"}
+                              style={{ width:26, height:26, borderRadius:7, border:`1px solid ${isActivated ? "rgba(74,222,128,0.55)" : "rgba(251,191,36,0.65)"}`, background: isActivated ? "rgba(74,222,128,0.18)" : "rgba(251,191,36,0.18)", color: isActivated ? "#4ade80" : "#FBBF24", fontSize:12, cursor: isActivated ? "default" : "pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}
+                            >{isActivated ? "✓" : "🔓"}</button>
+                            <button
+                              onClick={e => { e.stopPropagation(); toggleToolVisibility(t.id); }}
+                              title={isHiddenFromPeers ? "Hidden from guests — tap to show" : "Visible to guests — tap to hide"}
+                              style={{ width:26, height:26, borderRadius:7, border:`1px solid ${isHiddenFromPeers ? "rgba(255,80,80,0.50)" : "rgba(255,255,255,0.22)"}`, background: isHiddenFromPeers ? "rgba(255,60,60,0.22)" : "rgba(255,255,255,0.10)", color: isHiddenFromPeers ? "rgba(255,120,120,0.90)" : "rgba(255,255,255,0.65)", fontSize:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}
+                            >{isHiddenFromPeers ? "🚫" : "👁"}</button>
+                          </div>
+                        )}
+                        {/* Host nudge: show activate status */}
+                        {isHost && room && isParticipantTool && !isActivated && (
+                          <div style={{ fontSize:9, color:"rgba(251,191,36,0.7)", fontWeight:700, marginTop:-4, letterSpacing:"0.04em" }}>Tap 🔓 to activate</div>
                         )}
                       </div>
                     );
