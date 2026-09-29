@@ -253,7 +253,9 @@ const NAV = [
   { key: "packages",    group: "MANAGE",   label: "Packages",    icon: "M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" },
   { key: "reviews",     group: "MANAGE",   label: "Reviews",     icon: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" },
   { key: "inventory",   group: "MANAGE",   label: "Setlist",     icon: "M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
-  { key: "photos",      group: "MANAGE",   label: "Photos & Videos", icon: "M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14m-6-6h.01M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" },
+  { key: "portfolio",   group: "MANAGE",   label: "Portfolio",   icon: "M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14m-6-6h.01M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" },
+  { key: "reminders",   group: "MANAGE",   label: "Reminders",   icon: "M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" },
+  { key: "expenses",    group: "MANAGE",   label: "Expenses",    icon: "M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" },
   { key: "profile",     group: "MANAGE",   label: "Profile",     icon: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" },
   { key: "gig",         group: "ARTIST",   label: "Performance", icon: "M9 18V5l12-2v13M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" },
   { key: "calendar",    group: "SCHEDULE", label: "Availability",icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" },
@@ -371,6 +373,22 @@ export default function DemoDashboard() {
   const [contracts, setContracts] = usePersisted(`${sType}:contracts`, []);
   const [contractModal, setContractModal] = useState(false);
   const [contractDraft, setContractDraft] = useState({ client: "", event: "", date: "", amount: "", terms: "50% advance before event. Balance due on completion. Cancellation within 7 days: full advance forfeited." });
+  const [genReminders, setGenReminders] = usePersisted(`${sType}:gen_reminders`, [
+    { id: 1, text: "Follow up with pending client — request waiting for 3 days", date: new Date(Date.now()+2*86400000).toISOString().slice(0,10), done: false },
+    { id: 2, text: "Send invoice for upcoming confirmed event", date: new Date(Date.now()+1*86400000).toISOString().slice(0,10), done: false },
+    { id: 3, text: "Update availability calendar for next month", date: new Date(Date.now()+7*86400000).toISOString().slice(0,10), done: false },
+  ]);
+  const [newRemText, setNewRemText] = useState('');
+  const [newRemDate, setNewRemDate] = useState('');
+  const [genExpenses, setGenExpenses] = usePersisted(`${sType}:gen_expenses`, [
+    { id: 1, desc: "Microphone / equipment maintenance", category: "Equipment", amount: 3500, date: new Date(Date.now()-14*86400000).toISOString().slice(0,10) },
+    { id: 2, desc: "Travel to outstation event", category: "Transport", amount: 1800, date: new Date(Date.now()-10*86400000).toISOString().slice(0,10) },
+    { id: 3, desc: "Outfit / styling for corporate gala", category: "Other", amount: 5000, date: new Date(Date.now()-5*86400000).toISOString().slice(0,10) },
+  ]);
+  const [newExpDesc, setNewExpDesc] = useState('');
+  const [newExpAmt, setNewExpAmt] = useState('');
+  const [newExpCat, setNewExpCat] = useState('Equipment');
+  const [newExpDate, setNewExpDate] = useState('');
 
   // Keep gigDraft in sync when profile loads from localStorage
   useEffect(() => {
@@ -1070,7 +1088,7 @@ export default function DemoDashboard() {
     }
 
     // ── PHOTOS & VIDEOS ───────────────────────────────────────────────────────
-    if (tab === "photos") {
+    if (tab === "portfolio") {
       const CATS = ["Wedding","Corporate","Birthday","Sangeet","Concert","Other"];
       const normalizeP = arr => (arr || []).map(p => typeof p === "string" ? { url: p, category: "All" } : p);
       const normPhotos = normalizeP(portfolioPhotos);

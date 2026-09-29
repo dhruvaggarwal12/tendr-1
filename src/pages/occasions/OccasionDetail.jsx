@@ -2899,6 +2899,19 @@ export default function OccasionDetail(){
                           </div>
                         </div>
 
+                        {/* Decor Analyser CTA — inside services card */}
+                        <div style={{padding:"6px 14px 2px"}}>
+                          <button onClick={()=>setDecorAnalyserOpen(true)}
+                            style={{display:"flex",alignItems:"center",gap:9,padding:"10px 13px",borderRadius:11,border:`1.5px solid ${venueAnalysis?"rgba(34,197,94,0.35)":"rgba(196,122,46,0.25)"}`,background:venueAnalysis?"rgba(34,197,94,0.05)":"rgba(196,122,46,0.04)",cursor:"pointer",width:"100%",fontFamily:font,textAlign:"left"}}>
+                            <span style={{fontSize:18,flexShrink:0}}>{venueAnalysis?"✅":"📷"}</span>
+                            <div style={{flex:1,minWidth:0}}>
+                              <div style={{fontSize:12,fontWeight:700,color:ink}}>{venueAnalysis?"Venue analysed — tap to re-analyse":"Analyse your venue with AI"}</div>
+                              <div style={{fontSize:10.5,color:muted,marginTop:1}}>{venueAnalysis?`${venueAnalysis.spaceType} · ${venueAnalysis.style}`:"Upload a photo — get decor zones, colours & package recs"}</div>
+                            </div>
+                            <span style={{color:venueAnalysis?"#16a34a":gold,fontSize:12,flexShrink:0,fontWeight:700}}>{venueAnalysis?"✓":"→"}</span>
+                          </button>
+                        </div>
+
                         {/* Suggested decor items */}
                         {(()=>{
                           const suggestions=getSuggestedDecor(occasion.id);
