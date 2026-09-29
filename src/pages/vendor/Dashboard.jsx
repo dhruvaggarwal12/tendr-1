@@ -753,7 +753,6 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
   const [form, setForm] = useState(() => ({ ...BLANK_FORM, ...(initial || {}), milestones: initial?.milestones || [], expenses: initial?.expenses || [], equipment: initial?.equipment || [], reminders: initial?.reminders || [], crew: initial?.crew || [], menuItems: initial?.menuItems || [], travel: { ...BLANK_FORM.travel, ...(initial?.travel || {}) } }));
   const isEntertainment = ENTERTAINMENT_TYPES.includes(serviceType);
   const isCaterer = serviceType === 'Caterer';
-  const [modalTab, setModalTab] = useState('details');
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const phoneDigits = (form.clientPhone || '').replace(/\D/g, '');
   const matchedClient = !initial && phoneDigits.length >= 10
@@ -821,26 +820,13 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
             </div>
             <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(196,122,46,0.1)', border: 'none', cursor: 'pointer', fontSize: 17, color: '#9B7450', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
           </div>
-          {/* Modal tabs */}
-          <div style={{ display: 'flex', gap: 2, overflowX: 'auto' }}>
-            {[['details','Details'], ['payments','Payments'], ['expenses','Expenses'], ['crew','Crew'], ['travel','Travel'], ['reminders','Reminders']].map(([key, label]) => (
-              <button key={key} onClick={() => setModalTab(key)}
-                style={{ padding: '7px 12px', border: 'none', background: 'transparent', fontFamily: font, fontSize: 12, fontWeight: modalTab === key ? 700 : 500, color: modalTab === key ? gold : '#9B7450', cursor: 'pointer', borderBottom: modalTab === key ? `2.5px solid ${gold}` : '2.5px solid transparent', transition: 'all 0.15s', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                {label}
-                {key === 'payments' && form.milestones.length > 0 && <span style={{ marginLeft: 5, fontSize: 11, background: 'rgba(196,122,46,0.12)', color: gold, borderRadius: 10, padding: '1px 6px' }}>{form.milestones.length}</span>}
-                {key === 'expenses' && form.expenses.length > 0 && <span style={{ marginLeft: 5, fontSize: 11, background: 'rgba(220,38,38,0.1)', color: '#DC2626', borderRadius: 10, padding: '1px 6px' }}>{form.expenses.length}</span>}
-                {key === 'crew' && (form.crew||[]).length > 0 && <span style={{ marginLeft: 5, fontSize: 11, background: 'rgba(124,58,237,0.1)', color: '#7C3AED', borderRadius: 10, padding: '1px 6px' }}>{(form.crew||[]).length}</span>}
-                {key === 'reminders' && (form.reminders||[]).length > 0 && <span style={{ marginLeft: 5, fontSize: 11, background: 'rgba(59,130,246,0.12)', color: '#2563EB', borderRadius: 10, padding: '1px 6px' }}>{(form.reminders||[]).length}</span>}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Form body */}
         <div style={{ overflowY: 'auto', padding: '16px 22px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
 
-          {/* ── Details tab ── */}
-          {modalTab === 'details' && <>
+          {/* ── Details ── */}
+          <>
             <div>
               <label style={lbl}>Where did this booking come from?</label>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -1010,7 +996,7 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
             )}
             {useMilestones && (
               <div style={{ padding: '8px 12px', borderRadius: 9, background: 'rgba(196,122,46,0.06)', border: '1px solid rgba(196,122,46,0.15)', fontSize: 12.5, color: '#9B7450' }}>
-                Payment split across {form.milestones.length} milestone{form.milestones.length > 1 ? 's' : ''} · ₹{milestonePaid.toLocaleString('en-IN')} of ₹{milestoneTotal.toLocaleString('en-IN')} collected → <button onClick={() => setModalTab('payments')} style={{ background: 'none', border: 'none', color: gold, fontWeight: 700, cursor: 'pointer', fontFamily: font, padding: 0 }}>Edit →</button>
+                Payment split across {form.milestones.length} milestone{form.milestones.length > 1 ? 's' : ''} · ₹{milestonePaid.toLocaleString('en-IN')} of ₹{milestoneTotal.toLocaleString('en-IN')} collected
               </div>
             )}
 
@@ -1045,10 +1031,10 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
               <label style={lbl}>Notes (optional)</label>
               <textarea style={{ ...inp(), height: 72, resize: 'vertical' }} value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Theme preference, venue, special requests…" />
             </div>
-          </>}
+          </>
 
-          {/* ── Payments tab ── */}
-          {modalTab === 'payments' && <>
+          {/* ── Payments ── */}
+          <div style={{ borderTop: '1.5px solid rgba(196,122,46,0.12)', paddingTop: 16, marginTop: 4 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>Payment Milestones</div>
               <button onClick={addMilestone}
@@ -1119,10 +1105,10 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
                 </div>
               </div>
             )}
-          </>}
+          </div>
 
-          {/* ── Expenses tab ── */}
-          {modalTab === 'expenses' && <>
+          {/* ── Expenses ── */}
+          <div style={{ borderTop: '1.5px solid rgba(196,122,46,0.12)', paddingTop: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>Event Expenses</div>
               <button onClick={addExpense}
@@ -1175,10 +1161,10 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
                 </div>
               </div>
             )}
-          </>}
+          </div>
 
-          {/* ── Crew tab ── */}
-          {modalTab === 'crew' && <>
+          {/* ── Crew ── */}
+          <div style={{ borderTop: '1.5px solid rgba(196,122,46,0.12)', paddingTop: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>Crew for this Gig</div>
@@ -1221,14 +1207,14 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
                 </div>
               </div>
             )}
-          </>}
+          </div>
 
-          {/* ── Travel tab ── */}
-          {modalTab === 'travel' && (() => {
+          {/* ── Travel ── */}
+          {(() => {
             const tr = form.travel || {};
-            return <>
-              <div style={{ fontSize: 13, fontWeight: 700, color: ink, marginBottom: 2 }}>Travel for this Gig</div>
-              <div style={{ fontSize: 12, color: '#9B7450', marginBottom: 14 }}>Track how you're getting there, departure time and stay details</div>
+            return <div style={{ borderTop: '1.5px solid rgba(196,122,46,0.12)', paddingTop: 16 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: ink, marginBottom: 2 }}>Travel</div>
+              <div style={{ fontSize: 12, color: '#9B7450', marginBottom: 14 }}>Venue, how you're getting there, stay details</div>
 
               <div>
                 <label style={lbl}>Venue / Location</label>
@@ -1287,18 +1273,19 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
                 <textarea style={{ ...inp(), height: 66, resize: 'vertical' }} value={tr.notes || ''} onChange={e => setTravel('notes', e.target.value)}
                   placeholder="Parking instructions, who's driving, client to arrange pickup…" />
               </div>
-            </>;
+            </div>;
           })()}
 
-          {/* ── Reminders tab ── */}
-          {modalTab === 'reminders' && <>
-            <div style={{ fontSize: 13, color: '#9B7450', marginBottom: 6, lineHeight: 1.5 }}>
-              Choose when you want to be reminded about this {isEntertainment ? 'gig' : 'booking'}. Reminders appear on your dashboard home screen.
+          {/* ── Reminders ── */}
+          <div style={{ borderTop: '1.5px solid rgba(196,122,46,0.12)', paddingTop: 16 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: ink, marginBottom: 6 }}>Reminders</div>
+            <div style={{ fontSize: 12, color: '#9B7450', marginBottom: 10, lineHeight: 1.5 }}>
+              Get reminded before this {isEntertainment ? 'gig' : 'booking'}. Appears on your dashboard home.
             </div>
 
             {!form.eventDate && (
               <div style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(217,119,6,0.07)', border: '1.5px solid rgba(217,119,6,0.2)', fontSize: 12.5, color: '#92400E' }}>
-                Set an event date in the Details tab first — reminders are calculated from the event date.
+                Set an event date above first — reminders are calculated from it.
               </div>
             )}
 
@@ -1380,7 +1367,7 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
                 )}
               </>
             )}
-          </>}
+          </div>
         </div>
 
         {/* Footer */}
