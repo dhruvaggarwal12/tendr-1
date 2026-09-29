@@ -167,6 +167,33 @@ export default function VendorDashboardNew(){
   // ── Tab ───────────────────────────────────────────────────────────────────────
   const [tab,setTab]=useState("home");
 
+  // ── First-time tour ───────────────────────────────────────────────────────────
+  const TOUR=[
+    { tab:null,      icon:"🎉", title:"Welcome to your Dashboard",           body:"Your complete vendor command center. Let's walk through what you can do here — takes under 2 minutes." },
+    { tab:"home",    icon:"🏠", title:"Home – At a Glance",                  body:"Today's quick stats, pending actions, upcoming events, and reminders all in one place." },
+    { tab:"work",    icon:"📋", title:"Work – Your Bookings",                body:"View and respond to Tendr enquiries. You can also log bookings you received outside Tendr." },
+    { tab:"calendar",icon:"📅", title:"Calendar – Stay Conflict-Free",      body:"Block dates when you're unavailable. Clients only see open dates when they try to book you." },
+    { tab:"clients", icon:"👥", title:"Clients – Built-in CRM",              body:"Track every lead and client — event date, budget, follow-up status — all in one place." },
+    { tab:"quotes",  icon:"📄", title:"Quotes – Look Professional",          body:"Create itemised quotes, send them to clients, and track them from Draft → Sent → Paid." },
+    { tab:"money",   icon:"💰", title:"Money – Know Your Numbers",           body:"Log expenses and revenue, track net profit, and keep your finances clear month by month." },
+    { tab:"packages",icon:"🎁", title:"Packages – Show What You Offer",      body:"Set up priced packages so clients see exactly what they get — boosts enquiry quality." },
+    { tab:"flyer",   icon:"📣", title:"Flyer & Links – Promote Yourself",   body:"Generate a shareable flyer and manage your link hub to share on WhatsApp, Instagram, and more." },
+    { tab:"profile", icon:"✨", title:"Profile – Your Public Page",          body:"This is what clients see. Keep your photos, bio, and specialisations up to date." },
+  ];
+  const [tourStep,setTourStep]=useState(null); // null=off, 0=welcome, 1..N=steps
+  const tourDoneKey=`tendr:tour-done:${vId}`;
+  useEffect(()=>{
+    if(vId&&!ls(tourDoneKey,false)) setTimeout(()=>setTourStep(0),600);
+  },[vId]); // eslint-disable-line
+  const tourNext=()=>{
+    const next=tourStep+1;
+    if(next>=TOUR.length){ lsSet(tourDoneKey,true); setTourStep(null); return; }
+    setTourStep(next);
+    if(TOUR[next].tab) setTab(TOUR[next].tab);
+  };
+  const tourSkip=()=>{ lsSet(tourDoneKey,true); setTourStep(null); };
+  const isTour=tourStep!==null;
+
   // ── API data ──────────────────────────────────────────────────────────────────
   const [bookings,setBookings]=useState([]);
   const [outside,setOutside]=useState([]);
@@ -370,13 +397,15 @@ export default function VendorDashboardNew(){
       <div style={{flex:1,padding:"10px 0",overflowY:"auto"}}>
         {NAV.map(item=>{
           const showDiv=item.group!==prevGrp;prevGrp=item.group;
+          const isTourTarget=isTour&&tourStep>0&&TOUR[tourStep]?.tab===item.key;
           return(
             <React.Fragment key={item.key}>
               {showDiv&&<div style={{padding:"12px 20px 3px",fontSize:9.5,fontWeight:700,letterSpacing:"0.16em",color:"rgba(204,171,74,0.3)",textTransform:"uppercase"}}>{item.group}</div>}
-              <button onClick={()=>{setTab(item.key);window.scrollTo(0,0);}} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"9px 20px",background:tab===item.key?"rgba(204,171,74,0.12)":"none",border:"none",cursor:"pointer",color:tab===item.key?goldLt:"rgba(255,248,236,0.5)",fontSize:12.5,fontWeight:tab===item.key?700:500,fontFamily:font,textAlign:"left",borderLeft:tab===item.key?`3px solid ${goldLt}`:"3px solid transparent"}}>
+              <button onClick={()=>{setTab(item.key);window.scrollTo(0,0);}} style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"9px 20px",background:tab===item.key?"rgba(204,171,74,0.12)":"none",border:"none",cursor:"pointer",color:tab===item.key?goldLt:"rgba(255,248,236,0.5)",fontSize:12.5,fontWeight:tab===item.key?700:500,fontFamily:font,textAlign:"left",borderLeft:tab===item.key?`3px solid ${goldLt}`:"3px solid transparent",position:"relative",zIndex:isTourTarget?1310:undefined,borderRadius:isTourTarget?8:undefined,outline:isTourTarget?`2px solid ${goldLt}`:"none",outlineOffset:isTourTarget?-2:undefined}}>
                 <Ico d={item.icon} sz={15} c="currentColor"/>
                 {item.label}
                 {!!item.badge&&<span style={{background:item.badgeColor||"#CA8A04",color:"#fff",borderRadius:100,padding:"1px 6px",fontSize:10,fontWeight:800,marginLeft:"auto"}}>{item.badge}</span>}
+                {isTourTarget&&<span style={{marginLeft:"auto",fontSize:9,fontWeight:800,color:goldLt,letterSpacing:"0.08em",animation:"vd-tour-pulse 1.2s ease-in-out infinite"}}>◀ HERE</span>}
               </button>
             </React.Fragment>
           );
@@ -967,16 +996,81 @@ export default function VendorDashboardNew(){
     </div>
   );
 
+  // ── Tour overlay ──────────────────────────────────────────────────────────────
+  const tourUI = isTour && (() => {
+    const step = TOUR[tourStep];
+    const isWelcome = tourStep === 0;
+    const progress = tourStep / (TOUR.length - 1);
+    return (
+      <>
+        {/* Dim backdrop — click outside skips */}
+        <div onClick={tourSkip} style={{position:"fixed",inset:0,background:"rgba(28,10,4,0.55)",zIndex:1200,backdropFilter:"blur(2px)"}}/>
+        {/* Tour card */}
+        {isWelcome ? (
+          /* Centered welcome splash */
+          <div style={{position:"fixed",top:"50%",left:"50%",transform:"translate(-50%,-50%)",zIndex:1300,width:"min(440px,90vw)",background:"#fff",borderRadius:24,overflow:"hidden",boxShadow:"0 24px 80px rgba(0,0,0,0.35)",fontFamily:font}}>
+            <div style={{background:`linear-gradient(135deg,${ink} 0%,#3A1A08 100%)`,padding:"36px 32px 28px",textAlign:"center"}}>
+              <div style={{fontSize:52,marginBottom:12}}>{step.icon}</div>
+              <div style={{fontFamily:serif,fontSize:"1.8rem",color:goldLt,fontWeight:400,marginBottom:8}}>Welcome to Tendr</div>
+              <div style={{fontSize:13,color:"rgba(255,248,236,0.6)",lineHeight:1.6}}>Your vendor dashboard is ready. Let's take a quick tour.</div>
+            </div>
+            <div style={{padding:"24px 32px 28px"}}>
+              <p style={{fontSize:14.5,color:"#4A3020",lineHeight:1.65,marginBottom:24}}>{step.body}</p>
+              <div style={{display:"flex",gap:10}}>
+                <button onClick={tourNext} style={{flex:1,padding:"13px",borderRadius:12,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:font}}>Start Tour →</button>
+                <button onClick={tourSkip} style={{padding:"13px 18px",borderRadius:12,border:`1px solid rgba(196,122,46,0.25)`,background:"transparent",color:muted,fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:font}}>Skip</button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Bottom floating step card */
+          <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:1300,padding:"0 0 24px",display:"flex",justifyContent:"center",pointerEvents:"none"}}>
+            <div style={{pointerEvents:"all",width:"min(520px,92vw)",background:"#fff",borderRadius:20,boxShadow:"0 -4px 40px rgba(0,0,0,0.18)",overflow:"hidden",fontFamily:font}}>
+              {/* Progress bar */}
+              <div style={{height:3,background:"#F3EDE5"}}>
+                <div style={{height:"100%",width:`${progress*100}%`,background:`linear-gradient(90deg,${gold},${goldLt})`,transition:"width 0.35s ease"}}/>
+              </div>
+              <div style={{padding:"18px 22px 20px"}}>
+                <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:10}}>
+                  <span style={{fontSize:28}}>{step.icon}</span>
+                  <div>
+                    <div style={{fontSize:9,fontWeight:700,color:muted,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:2}}>Step {tourStep} of {TOUR.length-1}</div>
+                    <div style={{fontSize:15,fontWeight:700,color:ink,lineHeight:1.2}}>{step.title}</div>
+                  </div>
+                </div>
+                <p style={{fontSize:13.5,color:"#4A3020",lineHeight:1.6,margin:"0 0 16px"}}>{step.body}</p>
+                {/* Progress dots */}
+                <div style={{display:"flex",gap:5,marginBottom:16}}>
+                  {TOUR.slice(1).map((_,i)=>(
+                    <div key={i} style={{height:4,borderRadius:2,flex:1,background:i<tourStep?`linear-gradient(90deg,${gold},${goldLt})`:"#EDE8E1",transition:"background 0.3s"}}/>
+                  ))}
+                </div>
+                <div style={{display:"flex",gap:10}}>
+                  <button onClick={tourNext} style={{flex:1,padding:"11px",borderRadius:10,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:13.5,fontWeight:700,cursor:"pointer",fontFamily:font}}>
+                    {tourStep===TOUR.length-1?"Finish Tour ✓":"Next →"}
+                  </button>
+                  <button onClick={tourSkip} style={{padding:"11px 16px",borderRadius:10,border:`1px solid rgba(196,122,46,0.25)`,background:"transparent",color:muted,fontSize:12.5,fontWeight:500,cursor:"pointer",fontFamily:font}}>Skip tour</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  })();
+
   return(
     <div style={{display:"flex",minHeight:"100dvh",fontFamily:font,background:cream}}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@400;500&display=swap');*{box-sizing:border-box;}input,textarea,select{outline:none;}
-@media(max-width:768px){.vd-sidebar{display:none!important;}.vd-main{padding:20px 16px 90px!important;}.vd-mobile-nav{display:block!important;}.vd-stat-grid{grid-template-columns:repeat(2,1fr)!important;}}`}</style>
+@media(max-width:768px){.vd-sidebar{display:none!important;}.vd-main{padding:20px 16px 90px!important;}.vd-mobile-nav{display:block!important;}.vd-stat-grid{grid-template-columns:repeat(2,1fr)!important;}}
+@keyframes vd-tour-pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}`}</style>
       <div className="vd-sidebar">{sidebar}</div>
       <div className="vd-main" style={{flex:1,padding:"32px 36px",overflowY:"auto",maxWidth:920}}>
         {tab==="work"?<WorkTab bookings={bookings} outside={outside} loading={loading} lang={lang}/>:TABS[tab]||homeTab}
       </div>
       {mobileBottomNav}
       {toast&&<div style={{position:"fixed",bottom:28,right:28,background:toast.ok?ink:"#BE123C",color:"#fff",borderRadius:12,padding:"12px 20px",fontSize:13.5,fontWeight:600,fontFamily:font,boxShadow:"0 8px 30px rgba(0,0,0,0.2)",zIndex:999}}>{toast.msg}</div>}
+      {tourUI}
     </div>
   );
 }
