@@ -4121,6 +4121,178 @@ function GiftTracker({ onClose, accent }) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+// EVENT MEMORY MODAL — post-event summary accessible by all room participants
+// ════════════════════════════════════════════════════════════════════════════
+
+function EventMemoryModal({ onClose, data, accent }) {
+  if (!data) return null;
+  const { partyName, hostName, occasionType, players = [], hubData = {}, gameHistory = [] } = data;
+
+  const hub = hubData || {};
+  const guests = Array.isArray(hub.guestlist) ? hub.guestlist : [];
+  const menuItems = Array.isArray(hub.menu) ? hub.menu : [];
+  const timeline = Array.isArray(hub.timeline) ? hub.timeline : [];
+  const vendors = Array.isArray(hub.vendors) ? hub.vendors : [];
+  const budget = hub.budget && typeof hub.budget === 'object' ? hub.budget : null;
+  const venue = hub.venue && typeof hub.venue === 'object' ? hub.venue : null;
+  const seatingTables = Array.isArray(hub['seating-tables']) ? hub['seating-tables'] : [];
+
+  const ac = accent || '#F0A050';
+  const hasHubData = guests.length || menuItems.length || timeline.length || vendors.length || venue?.address || budget?.total;
+
+  const GAME_EMOJIS = {
+    'truth-dare':'🎯','never-have-i':'🍺','would-you':'🤷','hot-takes':'🌶️',
+    'most-likely':'👀','mood-meter':'😊','wish-wall':'💌','love-notes':'💝',
+    'secret-messages':'🔒','emoji-decoder':'🧩','pictionary':'🎨','word-chain':'🔗',
+    'dont-say-yes-no':'🤐','wrong-answers':'😂','mafia':'🕵️','spyfall':'👁️',
+    'finishlyrics':'🎵','guesssong3sec':'🎶','dontlaugh':'😐','nameplaceanimal':'🌍',
+    'fastestfinger':'⚡','telephonedrawing':'📞',
+  };
+
+  const getWinner = (result) => {
+    if (!result || !result._scores) return null;
+    const scores = result._scores;
+    const sorted = Object.entries(scores).sort(([,a],[,b]) => b - a);
+    if (!sorted.length) return null;
+    const [name, pts] = sorted[0];
+    return { name, pts };
+  };
+
+  return (
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.85)", backdropFilter:"blur(16px)", zIndex:2000, display:"flex", alignItems:"center", justifyContent:"center", padding:"16px", overflowY:"auto" }}>
+      <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, borderRadius:24, overflow:"hidden", fontFamily:font, boxShadow:"0 24px 80px rgba(0,0,0,0.8)" }}>
+        {/* Header */}
+        <div style={{ background:`linear-gradient(145deg,#0D0820,#1A0830)`, padding:"24px 20px 20px", position:"relative", overflow:"hidden" }}>
+          <div style={{ position:"absolute", top:-40, right:-40, width:180, height:180, borderRadius:"50%", background:`radial-gradient(ellipse,${ac}35 0%,transparent 70%)`, pointerEvents:"none" }} />
+          <button onClick={onClose} style={{ position:"absolute", top:14, right:14, background:"rgba(255,255,255,0.10)", border:"none", color:"rgba(255,255,255,0.65)", width:32, height:32, borderRadius:"50%", cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", justifyContent:"center", zIndex:2 }}>✕</button>
+          <div style={{ fontSize:9, fontWeight:900, color:`${ac}90`, textTransform:"uppercase", letterSpacing:"0.22em", marginBottom:8 }}>Event Memory</div>
+          <div style={{ fontSize:22, fontWeight:800, color:"#fff", marginBottom:4 }}>{partyName || "Party"}</div>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,0.50)" }}>hosted by {hostName} · {players.length} guests</div>
+        </div>
+
+        {/* Content */}
+        <div style={{ background:"#FFFAF7", padding:"20px 20px 28px", maxHeight:"65vh", overflowY:"auto" }}>
+
+          {/* Hub data summary */}
+          {hasHubData ? (
+            <div style={{ marginBottom:20 }}>
+              <div style={{ fontSize:11, fontWeight:800, color:"rgba(28,20,16,0.40)", textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:10 }}>Event Details</div>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+                {guests.length > 0 && (
+                  <div style={{ background:"rgba(0,0,0,0.04)", borderRadius:10, padding:"10px 12px" }}>
+                    <div style={{ fontSize:18 }}>👥</div>
+                    <div style={{ fontSize:16, fontWeight:800, color:"#1C1410" }}>{guests.length}</div>
+                    <div style={{ fontSize:11, color:"rgba(28,20,16,0.50)" }}>Guests invited</div>
+                    <div style={{ fontSize:10, color:"rgba(28,20,16,0.40)", marginTop:2 }}>
+                      {guests.filter(g=>g.rsvp==='yes').length} confirmed · {guests.filter(g=>g.rsvp==='no').length} declined
+                    </div>
+                  </div>
+                )}
+                {menuItems.length > 0 && (
+                  <div style={{ background:"rgba(0,0,0,0.04)", borderRadius:10, padding:"10px 12px" }}>
+                    <div style={{ fontSize:18 }}>🍽️</div>
+                    <div style={{ fontSize:16, fontWeight:800, color:"#1C1410" }}>{menuItems.length}</div>
+                    <div style={{ fontSize:11, color:"rgba(28,20,16,0.50)" }}>Menu items</div>
+                  </div>
+                )}
+                {timeline.length > 0 && (
+                  <div style={{ background:"rgba(0,0,0,0.04)", borderRadius:10, padding:"10px 12px" }}>
+                    <div style={{ fontSize:18 }}>📅</div>
+                    <div style={{ fontSize:16, fontWeight:800, color:"#1C1410" }}>{timeline.length}</div>
+                    <div style={{ fontSize:11, color:"rgba(28,20,16,0.50)" }}>Timeline events</div>
+                  </div>
+                )}
+                {vendors.length > 0 && (
+                  <div style={{ background:"rgba(0,0,0,0.04)", borderRadius:10, padding:"10px 12px" }}>
+                    <div style={{ fontSize:18 }}>🚗</div>
+                    <div style={{ fontSize:16, fontWeight:800, color:"#1C1410" }}>{vendors.length}</div>
+                    <div style={{ fontSize:11, color:"rgba(28,20,16,0.50)" }}>Vendors booked</div>
+                  </div>
+                )}
+                {seatingTables.length > 0 && (
+                  <div style={{ background:"rgba(0,0,0,0.04)", borderRadius:10, padding:"10px 12px" }}>
+                    <div style={{ fontSize:18 }}>💺</div>
+                    <div style={{ fontSize:16, fontWeight:800, color:"#1C1410" }}>{seatingTables.length}</div>
+                    <div style={{ fontSize:11, color:"rgba(28,20,16,0.50)" }}>Tables arranged</div>
+                  </div>
+                )}
+                {budget?.total && (
+                  <div style={{ background:"rgba(0,0,0,0.04)", borderRadius:10, padding:"10px 12px" }}>
+                    <div style={{ fontSize:18 }}>💰</div>
+                    <div style={{ fontSize:16, fontWeight:800, color:"#1C1410" }}>₹{budget.total}</div>
+                    <div style={{ fontSize:11, color:"rgba(28,20,16,0.50)" }}>Total budget</div>
+                  </div>
+                )}
+                {venue?.address && (
+                  <div style={{ background:"rgba(0,0,0,0.04)", borderRadius:10, padding:"10px 12px", gridColumn:"1/-1" }}>
+                    <div style={{ fontSize:18 }}>📍</div>
+                    <div style={{ fontSize:13, fontWeight:700, color:"#1C1410", marginTop:2 }}>{venue.address}</div>
+                    <div style={{ fontSize:11, color:"rgba(28,20,16,0.50)" }}>Venue</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Games played */}
+          {gameHistory.length > 0 ? (
+            <div>
+              <div style={{ fontSize:11, fontWeight:800, color:"rgba(28,20,16,0.40)", textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:10 }}>Games Played · {gameHistory.length}</div>
+              {gameHistory.map((g, i) => {
+                const winner = getWinner(g.result);
+                return (
+                  <div key={i} style={{ background:"rgba(0,0,0,0.04)", borderRadius:12, padding:"12px 14px", marginBottom:8, display:"flex", alignItems:"center", gap:10 }}>
+                    <div style={{ width:36, height:36, borderRadius:10, background:`${ac}18`, border:`1px solid ${ac}30`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>
+                      {GAME_EMOJIS[g.gameId] || '🎮'}
+                    </div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:14, fontWeight:700, color:"#1C1410" }}>{g.gameName}</div>
+                      <div style={{ fontSize:11, color:"rgba(28,20,16,0.45)", marginTop:1 }}>
+                        {g.players?.length ? `${g.players.length} players` : ''}
+                        {g.playedAt ? ` · ${new Date(g.playedAt).toLocaleDateString('en-IN', { day:'numeric', month:'short' })}` : ''}
+                      </div>
+                    </div>
+                    {winner && (
+                      <div style={{ textAlign:"right", flexShrink:0 }}>
+                        <div style={{ fontSize:10, color:ac, fontWeight:700 }}>🏆 Winner</div>
+                        <div style={{ fontSize:12, fontWeight:800, color:"#1C1410" }}>{winner.name}</div>
+                        <div style={{ fontSize:10, color:"rgba(28,20,16,0.45)" }}>{winner.pts} pts</div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            !hasHubData && (
+              <div style={{ textAlign:"center", padding:"32px 0", color:"rgba(28,20,16,0.40)" }}>
+                <div style={{ fontSize:36, marginBottom:8 }}>🎉</div>
+                <div style={{ fontSize:14, fontWeight:600 }}>No saved event memory yet</div>
+                <div style={{ fontSize:12, marginTop:4 }}>The host can save event details during the party</div>
+              </div>
+            )
+          )}
+
+          {/* Players */}
+          {players.length > 0 && (
+            <div style={{ marginTop:16, paddingTop:16, borderTop:"1px solid rgba(0,0,0,0.07)" }}>
+              <div style={{ fontSize:11, fontWeight:800, color:"rgba(28,20,16,0.40)", textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:8 }}>Who was there</div>
+              <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
+                {players.map((p,i) => (
+                  <div key={i} style={{ background:`${ac}15`, border:`1px solid ${ac}30`, borderRadius:20, padding:"4px 10px", fontSize:12, fontWeight:600, color:ac }}>
+                    {p}{p===hostName&&<span style={{ fontSize:9, marginLeft:4, opacity:0.7 }}>host</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // MANAGE TOOL MODALS (shared across all occasions)
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -9752,6 +9924,19 @@ const MOOD_TAGS = [
   { id:"competitive", label:"🔥 Competitive",  color:"#FF8E53" },
   { id:"mystery",     label:"🕵️ Mystery",      color:"#5E60CE" },
 ];
+// Maps currentGame (backend game id, dash format) → display name
+const LIVE_GAME_NAMES = {
+  'truth-dare':'Truth or Dare', 'never-have-i':'Never Have I Ever', 'would-you':'Would You Rather',
+  'hot-takes':'Hot Takes', 'most-likely':'Most Likely To', 'mood-meter':'Mood Meter',
+  'wish-wall':'Wish Wall', 'love-notes':'Love Notes', 'secret-messages':'Secret Messages',
+  'emoji-decoder':'Emoji Decoder', 'pictionary':'Draw & Guess', 'word-chain':'Word Chain',
+  'dont-say-yes-no':"Don't Say Yes/No", 'wrong-answers':'Wrong Answers Only',
+  'mafia':'Mafia', 'spyfall':'Spyfall', 'finishlyrics':'Finish the Lyrics',
+  'guesssong3sec':'Guess the Song', 'telephonedrawing':'Telephone Drawing',
+  'dontlaugh':"Don't Laugh", 'nameplaceanimal':'Name Place Animal Thing', 'fastestfinger':'Fastest Finger',
+  'blessings-wall':'Blessings Wall',
+};
+
 const GAME_META = {
   truthordare:    { emoji:"🎯", tagline:"Real conversations begin here", desc:"Occasion-specific prompts — things get interesting fast.", time:"10–20 min", players:"4–20", min:4, tags:["funny","competitive"], popular:true,  howItWorks:["Draw a card","Pick Truth or Dare","Answer honestly or take the dare","No skipping!"] },
   neverhavei:     { emoji:"🙅", tagline:"Find out who's been living their best life", desc:"30 rounds, occasion-specific. You'll learn something new about everyone.", time:"10–15 min", players:"4–15", min:4, tags:["funny","quick"],       popular:true,  howItWorks:["Host reads a statement","Raise hand if you've done it","Score is tracked","Most points wins 🏆"] },
@@ -10039,6 +10224,9 @@ export default function OccasionHub({ occasion }) {
   const [showGameQueue, setShowGameQueue]       = useState(false);
   const [gameSetupId, setGameSetupId]           = useState(null); // game being configured by host
   const [showInGameControls, setShowInGameControls] = useState(false); // host ⋮ overlay
+  const [memSaved, setMemSaved]                     = useState(false);
+  const [showEventMemory, setShowEventMemory]       = useState(false);
+  const [eventMemoryData, setEventMemoryData]       = useState(null);
 
   // Entry gate: null = gate showing; 'exploring' | 'hosting' | 'joined' = hub visible
   const [entryMode, setEntryMode]   = useState(null);
@@ -10054,6 +10242,50 @@ export default function OccasionHub({ occasion }) {
 
   const liveProps = room ? { room, myName, players: roomPlayers, gameState, currentGame, sendAction, sendEffect, isHost, setGame: setGameWithScores, onLeaderboard: () => setShowLeaderboard(true) } : {};
   const navigate = useNavigate();
+
+  // Save management tool snapshots to backend (host only)
+  const saveHubDataToRoom = useCallback(async (code) => {
+    const keys = ['guestlist','menu','timeline','venue','seating-tables','seating-guests','budget','vendors'];
+    const hubData = {};
+    keys.forEach(k => {
+      try { const v = localStorage.getItem(`tendr-occ-${occasion}-${k}`); if (v) hubData[k] = JSON.parse(v); } catch {}
+    });
+    try {
+      await fetch(`${BASE_URL}/party-rooms/${code}/hub-data`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hubData, hostName: myName }),
+      });
+    } catch {}
+  }, [occasion, myName]);
+
+  // Save completed game result to backend
+  const saveGameResultToRoom = useCallback(async (code, gameId, gameName, players, result) => {
+    try {
+      // Strip large binary fields (canvas data, etc.) from result before saving
+      const safeResult = result ? JSON.parse(JSON.stringify(result, (k, v) => {
+        if (typeof v === 'string' && v.length > 2000) return '[truncated]';
+        return v;
+      })) : {};
+      await fetch(`${BASE_URL}/party-rooms/${code}/game-result`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gameId, gameName, players, result: safeResult }),
+      });
+    } catch {}
+  }, []);
+
+  // Fetch event memory from backend and show modal
+  const openEventMemory = useCallback(async (code) => {
+    try {
+      const r = await fetch(`${BASE_URL}/party-rooms/${code}`);
+      if (r.ok) {
+        const data = await r.json();
+        setEventMemoryData(data);
+        setShowEventMemory(true);
+      }
+    } catch {}
+  }, []);
 
   // ── Tool intro helpers ────────────────────────────────────────────────────
   const openTool = (id) => {
@@ -10159,6 +10391,31 @@ export default function OccasionHub({ occasion }) {
     if (!currentGame && open && LIVE_GAME_IDS.has(open)) setOpen(null);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentGame, room]);
+
+  // Keep a snapshot of last meaningful gameState (before it gets reset to {} when a game ends)
+  const lastGameStateRef = useRef({});
+  useEffect(() => {
+    if (gameState && Object.keys(gameState).length > 0) {
+      lastGameStateRef.current = gameState;
+    }
+  }, [gameState]);
+
+  // Auto-save game result when host ends a game (currentGame goes from set → null)
+  const prevCurrentGameRef = useRef(null);
+  useEffect(() => {
+    const prev = prevCurrentGameRef.current;
+    if (prev && !currentGame && isHost && room) {
+      saveGameResultToRoom(
+        room.code,
+        prev,
+        LIVE_GAME_NAMES[prev] || prev,
+        (roomPlayers || []).map(p => (typeof p === 'string' ? p : p.name)),
+        lastGameStateRef.current,
+      );
+    }
+    prevCurrentGameRef.current = currentGame;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentGame]);
 
   const occ = OCCASIONS[occasion];
   if (!occ) return <div style={{ color: "#fff", padding: 40, textAlign: "center", fontFamily: font }}>Unknown occasion: {occasion}</div>;
@@ -10996,8 +11253,43 @@ export default function OccasionHub({ occasion }) {
               </button>
               <button onClick={()=>setRoomModal(null)} style={{ width:"100%", padding:"10px 0", border:"none", background:"none", color:PH.dim, fontSize:13, cursor:"pointer" }}>Cancel</button>
             </>)}
+
+            {roomModal === "view-memory" && (<>
+              <div style={{ textAlign:"center", marginBottom:20 }}>
+                <div style={{ fontSize:36, marginBottom:8 }}>📖</div>
+                <div style={{ fontSize:17, fontWeight:800, color:PH.txt, marginBottom:4 }}>View Event Memory</div>
+                <div style={{ fontSize:13, color:PH.dim }}>Enter the room code to see the event recap</div>
+              </div>
+              <div style={{ marginBottom:20 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:PH.violet, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Room Code</div>
+                <input
+                  value={joinCode}
+                  onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))}
+                  placeholder="ABC123"
+                  maxLength={6}
+                  style={{ width:"100%", padding:"14px 16px", borderRadius:12, border:`1.5px solid ${PH.violet}44`, background:PH.inputBg, color:PH.txt, fontSize:24, fontWeight:700, textAlign:"center", letterSpacing:"0.22em", outline:"none", boxSizing:"border-box" }}
+                />
+              </div>
+              <button
+                onClick={async () => { await openEventMemory(joinCode); setRoomModal(null); }}
+                disabled={joinCode.length < 4}
+                style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:joinCode.length>=4?PH.violet:PH.inputBg, color:"#fff", fontSize:14, fontWeight:700, cursor:joinCode.length>=4?"pointer":"not-allowed", opacity:joinCode.length>=4?1:0.5, marginBottom:10 }}
+              >
+                View Memory →
+              </button>
+              <button onClick={()=>setRoomModal(null)} style={{ width:"100%", padding:"10px 0", border:"none", background:"none", color:PH.dim, fontSize:13, cursor:"pointer" }}>Cancel</button>
+            </>)}
           </div>
         </div>
+      )}
+
+      {/* ── Event Memory Modal ── */}
+      {showEventMemory && (
+        <EventMemoryModal
+          onClose={()=>setShowEventMemory(false)}
+          data={eventMemoryData}
+          accent={occAccent}
+        />
       )}
 
       {/* ── HOST controls bottom sheet ── */}
@@ -11159,6 +11451,18 @@ export default function OccasionHub({ occasion }) {
                     {copied?"✓ Link Copied":"📋 Copy Invite Link"}
                   </button>
                   {isHost && <button onClick={()=>{sendAction('score-reset',{});}} style={{ width:"100%", padding:"10px", borderRadius:10, border:"none", background:"none", color:"rgba(255,82,82,0.50)", fontSize:12, fontWeight:500, cursor:"pointer", marginBottom:4 }}>Reset All Scores</button>}
+                  {isHost && (
+                    <button onClick={async () => {
+                      await saveHubDataToRoom(room.code);
+                      setMemSaved(true);
+                      setTimeout(() => setMemSaved(false), 2500);
+                    }} style={{ width:"100%", padding:"10px", borderRadius:10, border:`1px solid ${occAccent}35`, background:`${occAccent}12`, color:occAccent, fontSize:12, fontWeight:600, cursor:"pointer", marginBottom:4 }}>
+                      {memSaved ? "✓ Memory Saved!" : "💾 Save Event Memory"}
+                    </button>
+                  )}
+                  <button onClick={()=>{ openEventMemory(room.code); setShowHostControls(false); }} style={{ width:"100%", padding:"10px", borderRadius:10, border:"1px solid rgba(255,255,255,0.10)", background:"rgba(255,255,255,0.04)", color:"rgba(255,255,255,0.50)", fontSize:12, fontWeight:500, cursor:"pointer", marginBottom:4 }}>
+                    📖 View Event Memory
+                  </button>
                   <button onClick={leaveRoom} style={{ width:"100%", padding:"10px", border:"none", background:"none", color:"rgba(255,82,82,0.60)", fontSize:13, fontWeight:600, cursor:"pointer" }}>{isHost ? "Close Room" : "Leave Room"}</button>
                 </>
               ) : (
@@ -11166,8 +11470,11 @@ export default function OccasionHub({ occasion }) {
                   <button onClick={()=>{setRoomModal("host-setup");setShowHostControls(false);}} style={{ width:"100%", padding:"15px", borderRadius:12, border:"none", background:`linear-gradient(135deg,${occAccent},${occAccent}bb)`, color:"#fff", fontSize:14, fontWeight:700, cursor:"pointer", marginBottom:10 }}>
                     🎙️ Host a Room
                   </button>
-                  <button onClick={()=>{setRoomModal("join");setShowHostControls(false);}} style={{ width:"100%", padding:"13px", borderRadius:12, border:"1px solid rgba(255,255,255,0.14)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.65)", fontSize:14, fontWeight:500, cursor:"pointer" }}>
+                  <button onClick={()=>{setRoomModal("join");setShowHostControls(false);}} style={{ width:"100%", padding:"13px", borderRadius:12, border:"1px solid rgba(255,255,255,0.14)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.65)", fontSize:14, fontWeight:500, cursor:"pointer", marginBottom:10 }}>
                     Join a Room
+                  </button>
+                  <button onClick={()=>setRoomModal("view-memory")} style={{ width:"100%", padding:"10px", borderRadius:10, border:"1px solid rgba(255,255,255,0.08)", background:"none", color:"rgba(255,255,255,0.35)", fontSize:12, fontWeight:500, cursor:"pointer" }}>
+                    📖 View Past Event Memory
                   </button>
                 </>
               )}
