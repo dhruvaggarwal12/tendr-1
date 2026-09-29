@@ -6932,6 +6932,8 @@ function EmojiDecoder({ onClose, accent, room, myName: liveName, players: livePl
     return a === b || (a.length >= 3 && b.includes(a));
   };
 
+  const [lastResult, setLastResult] = useState(null); // { correct, answer, correctAnswer }
+
   const submitAnswer = () => {
     if (!myAnswer.trim() || submitted) return;
     setSubmitted(true);
@@ -6939,10 +6941,11 @@ function EmojiDecoder({ onClose, accent, room, myName: liveName, players: livePl
     if (live) {
       sendAction('submit_answer', { answer: myAnswer, correct: isCorrect });
     } else {
-      const name = liveName || "You";
+      const name = localPlayers[0] || liveName || "You";
       const pts = isCorrect ? 10 : 0;
       setLocalAnswers(a => ({ ...a, [name]: { text: myAnswer, correct: isCorrect, points: pts } }));
       if (isCorrect) setLocalScores(s => ({ ...s, [name]: (s[name] || 0) + pts }));
+      setLastResult({ correct: isCorrect, answer: myAnswer, correctAnswer: currentRound.answer });
     }
   };
 
@@ -6951,7 +6954,7 @@ function EmojiDecoder({ onClose, accent, room, myName: liveName, players: livePl
     if (live) {
       sendAction('start_game', { rounds: selectedRounds, numRounds, timerEnd: Date.now() + 30000 });
     } else {
-      setLocalRoundIdx(0); setLocalAnswers({}); setMyAnswer(""); setSubmitted(false); setLocalPhase("answering");
+      setLocalRoundIdx(0); setLocalAnswers({}); setMyAnswer(""); setSubmitted(false); setLastResult(null); setLocalPhase("answering");
     }
   };
   const hostReveal = () => {
@@ -6969,12 +6972,12 @@ function EmojiDecoder({ onClose, accent, room, myName: liveName, players: livePl
       else setLocalPhase("gameover");
     } else {
       if (live) sendAction('next_round', { roundIdx: next, timerEnd: Date.now() + 30000 });
-      else { setLocalRoundIdx(next); setLocalAnswers({}); setMyAnswer(""); setSubmitted(false); setLocalPhase("answering"); }
+      else { setLocalRoundIdx(next); setLocalAnswers({}); setMyAnswer(""); setSubmitted(false); setLastResult(null); setLocalPhase("answering"); }
     }
   };
   const playAgain = () => {
     if (live) sendAction('restart', {});
-    else { setLocalRoundIdx(0); setLocalAnswers({}); setLocalScores({}); setMyAnswer(""); setSubmitted(false); setLocalPhase("lobby"); }
+    else { setLocalRoundIdx(0); setLocalAnswers({}); setLocalScores({}); setMyAnswer(""); setSubmitted(false); setLastResult(null); setLocalPhase("lobby"); }
   };
 
   const addPlayer = () => { const n = playerInput.trim(); if (n && !localPlayers.includes(n)) { setLocalPlayers(p => [...p, n]); setPlayerInput(""); } };
@@ -7055,9 +7058,25 @@ function EmojiDecoder({ onClose, accent, room, myName: liveName, players: livePl
             <button onClick={submitAnswer} style={{ ...lBtn(accent), width:"auto", padding:"10px 22px", fontSize:18 }}>✓</button>
           </div>
         ) : (
-          <div style={{ textAlign:"center", padding:"14px 0 4px", color:"rgba(28,9,0,0.50)", fontSize:13 }}>
-            ✅ Answer locked in · {submittedCount}/{activePlayers.length} answered
-          </div>
+          <>
+            {!live && lastResult ? (
+              <div style={{ borderRadius:14, padding:"16px 18px", textAlign:"center", background: lastResult.correct ? "rgba(22,163,74,0.08)" : "rgba(239,68,68,0.08)", border:`1.5px solid ${lastResult.correct ? "#16A34A40" : "#EF444440"}` }}>
+                <div style={{ fontSize:28, marginBottom:6 }}>{lastResult.correct ? "✅" : "❌"}</div>
+                <div style={{ fontSize:16, fontWeight:900, color: lastResult.correct ? "#16A34A" : "#EF4444", marginBottom: lastResult.correct ? 0 : 8 }}>
+                  {lastResult.correct ? "Correct! +10 pts" : "Not quite!"}
+                </div>
+                {!lastResult.correct && (
+                  <div style={{ fontSize:13, color:"rgba(28,9,0,0.55)" }}>
+                    Answer: <span style={{ fontWeight:800, color:"#1C1410" }}>{lastResult.correctAnswer}</span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div style={{ textAlign:"center", padding:"14px 0 4px", color:"rgba(28,9,0,0.50)", fontSize:13 }}>
+                ✅ Answer locked in · {submittedCount}/{activePlayers.length} answered
+              </div>
+            )}
+          </>
         )}
 
         {live && isHost && submittedCount > 0 && !allSubmitted && (
