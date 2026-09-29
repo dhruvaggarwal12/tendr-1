@@ -2164,6 +2164,7 @@ export default function VendorDashboard() {
   const initial = vendorName.charAt(0).toUpperCase();
 
 const [tab, setTab] = useState('home');
+  const [openGroup, setOpenGroup] = useState('EVENTS');
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
 
@@ -2412,6 +2413,13 @@ const [tab, setTab] = useState('home');
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, []);
+
+  // Sync open sidebar group when tab changes (e.g. from tour or quick actions)
+  useEffect(() => {
+    const groupMap = { EVENTS:['home','work','orders','calendar'], MONEY:['money'], MANAGE:['packages','reviews','tools','clients','portfolio','reminders','expenses','inventory','profile','gig-profile'], GROW:['market','insights'] };
+    const found = Object.entries(groupMap).find(([,keys]) => keys.includes(tab));
+    if (found) setOpenGroup(found[0]);
+  }, [tab]); // eslint-disable-line
 
   // Load portfolio photos when gig-profile tab opened
   useEffect(() => {
@@ -2857,56 +2865,117 @@ const [tab, setTab] = useState('home');
     <div style={{ display:'flex', minHeight:'100vh', background:'#FAF7F2', fontFamily:font }}>
 
       {/* ── Sidebar (desktop) ── */}
-      {!isMobile && (
-        <div style={{ width:sideW, background:'#1C0A04', borderRight:'none', position:'fixed', top:0, left:0, bottom:0, display:'flex', flexDirection:'column', zIndex:100 }}>
-          <div style={{ padding:'18px 16px 14px', borderBottom:'1px solid rgba(204,171,74,0.15)', cursor:'pointer' }} onClick={() => navigate('/')}>
-            <img src={logo} alt="Tendr" style={{ height:28, display:'block', marginBottom:10, filter:'brightness(1.6)' }} />
-            <div style={{ fontSize:13.5, fontWeight:800, color:'rgba(255,248,236,0.92)', lineHeight:1.2 }}>{vendorName}</div>
-            {serviceType && <div style={{ fontSize:11, color:goldLt, fontWeight:600, marginTop:2 }}>{serviceType}</div>}
-          </div>
-          <nav style={{ padding:'10px 10px', flex:1, overflowY:'auto' }}>
-            {NAV_ITEMS.reduce((acc, item, idx) => {
-              const prevGroup = idx > 0 ? NAV_ITEMS[idx-1].group : null;
-              if (item.group !== prevGroup) {
-                acc.push(
-                  <div key={`grp-${item.group}`} style={{ fontSize:9.5, fontWeight:800, color:'rgba(204,171,74,0.6)', letterSpacing:'0.14em', textTransform:'uppercase', padding:'14px 12px 4px', marginTop: idx > 0 ? 6 : 0 }}>
-                    {item.group}
+      {!isMobile && (() => {
+        const SIDEBAR_GROUPS = [
+          {
+            key: 'EVENTS',
+            label: 'Events',
+            icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+            items: NAV_ITEMS.filter(n => ['EVENTS','SCHEDULE'].includes(n.group)),
+          },
+          {
+            key: 'MONEY',
+            label: 'Money',
+            icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
+            items: NAV_ITEMS.filter(n => n.group === 'MONEY'),
+          },
+          {
+            key: 'MANAGE',
+            label: 'Manage',
+            icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M16.24 7.76a6 6 0 0 1 0 8.49M4.93 4.93a10 10 0 0 0 0 14.14M7.76 7.76a6 6 0 0 0 0 8.49"/></svg>,
+            items: NAV_ITEMS.filter(n => ['MANAGE','ARTIST'].includes(n.group)),
+          },
+          {
+            key: 'GROW',
+            label: 'Grow',
+            icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
+            items: NAV_ITEMS.filter(n => n.group === 'GROW'),
+          },
+        ];
+
+        const activeBadge = (key) => {
+          if (key==='home' && todaysGigs.length>0) return <span style={{ fontSize:9, fontWeight:700, background:'rgba(22,163,74,0.15)', color:'#16A34A', borderRadius:100, padding:'1px 5px' }}>{todaysGigs.length}</span>;
+          if (key==='work' && (pendingCount+bookings.filter(b=>b.status==='Pending').length)>0) return <span style={{ fontSize:9, fontWeight:700, background:'rgba(220,38,38,0.12)', color:'#DC2626', borderRadius:100, padding:'1px 5px' }}>{pendingCount+bookings.filter(b=>b.status==='Pending').length}</span>;
+          if (key==='reviews' && vendorReviews.filter(r=>!r.vendorResponse).length>0) return <span style={{ fontSize:9, fontWeight:700, background:'rgba(196,122,46,0.15)', color:'#C47A2E', borderRadius:100, padding:'1px 5px' }}>{vendorReviews.filter(r=>!r.vendorResponse).length}</span>;
+          if (key==='inventory' && inventory.filter(i=>i.condition==='Needs Service'||i.condition==='Out of Order').length>0) return <span style={{ fontSize:9, fontWeight:700, background:'rgba(220,38,38,0.1)', color:'#DC2626', borderRadius:100, padding:'1px 5px' }}>!</span>;
+          if (key==='clients' && crmClients.filter(c=>(c.bookingCount||0)>1).length>0) return <span style={{ fontSize:9, fontWeight:700, background:'rgba(124,58,237,0.1)', color:'#7C3AED', borderRadius:100, padding:'1px 5px' }}>{crmClients.filter(c=>(c.bookingCount||0)>1).length}</span>;
+          return null;
+        };
+
+        return (
+          <div style={{ width:sideW, background:'linear-gradient(170deg, #FFF8EE 0%, #FDECD0 55%, #F9DDB0 100%)', borderRight:'1px solid rgba(196,122,46,0.14)', position:'fixed', top:0, left:0, bottom:0, display:'flex', flexDirection:'column', zIndex:100 }}>
+            <div style={{ padding:'18px 16px 14px', borderBottom:'1px solid rgba(196,122,46,0.13)', cursor:'pointer' }} onClick={() => navigate('/')}>
+              <img src={logo} alt="Tendr" style={{ height:28, display:'block', marginBottom:10 }} />
+              <div style={{ fontSize:13.5, fontWeight:800, color:'#3A1A06', lineHeight:1.2 }}>{vendorName}</div>
+              {serviceType && <div style={{ fontSize:11, color:'#C47A2E', fontWeight:600, marginTop:2 }}>{serviceType}</div>}
+            </div>
+
+            <nav style={{ padding:'12px 12px', flex:1, overflowY:'auto' }}>
+              {SIDEBAR_GROUPS.map(group => {
+                const isOpen = openGroup === group.key;
+                const hasActive = group.items.some(i => i.key === tab);
+                return (
+                  <div key={group.key} style={{ marginBottom:3 }}>
+                    <button
+                      onClick={() => setOpenGroup(isOpen ? null : group.key)}
+                      style={{ width:'100%', padding:'10px 12px', borderRadius:10, border:'none',
+                        background: hasActive ? 'rgba(196,122,46,0.13)' : isOpen ? 'rgba(196,122,46,0.06)' : 'transparent',
+                        color: hasActive ? '#6B3A1F' : '#8B5E3C',
+                        cursor:'pointer', fontFamily:font, fontSize:14, fontWeight: hasActive ? 700 : 600,
+                        display:'flex', alignItems:'center', gap:10, textAlign:'left', transition:'all 0.15s' }}>
+                      <span style={{ color: hasActive ? '#C47A2E' : '#BFA080', display:'flex', flexShrink:0 }}>{group.icon}</span>
+                      <span style={{ flex:1 }}>{group.label}</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={hasActive?'#C47A2E':'#BFA080'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                        style={{ transition:'transform 0.2s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', flexShrink:0 }}>
+                        <polyline points="6 9 12 15 18 9"/>
+                      </svg>
+                    </button>
+
+                    {isOpen && (
+                      <div style={{ paddingLeft:14, paddingTop:2, paddingBottom:6 }}>
+                        {group.items.map(item => {
+                          const active = tab === item.key;
+                          const badge = activeBadge(item.key);
+                          return (
+                            <button key={item.key} id={`tour-nav-${item.key}`}
+                              onClick={() => setTab(item.key)}
+                              style={{ width:'100%', padding:'6px 10px', border:'none', background:'none',
+                                color: active ? '#C47A2E' : '#7A4A28',
+                                cursor:'pointer', fontFamily:font, fontSize:13, fontWeight: active ? 700 : 400,
+                                textAlign:'left', display:'flex', alignItems:'center', gap:6,
+                                textDecoration: active ? 'none' : 'none', transition:'color 0.12s' }}>
+                              {active && <span style={{ width:3, height:3, borderRadius:'50%', background:'#C47A2E', flexShrink:0 }}/>}
+                              {!active && <span style={{ width:3, flexShrink:0 }}/>}
+                              {item.label}
+                              {badge}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 );
-              }
-              const active = tab === item.key;
-              acc.push(
-                <button key={item.key} id={`tour-nav-${item.key}`} onClick={() => setTab(item.key)}
-                  style={{ width:'100%', padding:'9px 12px', paddingLeft:active?'9px':'12px', borderRadius:10, border:'none', borderLeft:active?`3px solid ${goldLt}`:'3px solid transparent', background:active?'rgba(204,171,74,0.14)':'transparent', color:active?goldLt:'rgba(255,248,236,0.82)', cursor:'pointer', fontFamily:font, fontSize:13.5, fontWeight:active?700:500, display:'flex', alignItems:'center', gap:10, marginBottom:2, transition:'all 0.15s', textAlign:'left' }}>
-                  <span style={{ color:active?goldLt:'rgba(255,248,236,0.45)', display:'flex', flexShrink:0 }}>{item.icon}</span>
-                  <span style={{ flex:1 }}>{item.label}</span>
-                  {item.key==='home' && todaysGigs.length>0 && <span style={{ fontSize:10, fontWeight:700, background:'rgba(22,163,74,0.12)', color:'#16A34A', borderRadius:100, padding:'1px 6px' }}>{todaysGigs.length} today</span>}
-                  {item.key==='work' && (pendingCount>0||bookings.filter(b=>b.status==='Pending').length>0) && <span style={{ fontSize:10, fontWeight:700, background:'rgba(220,38,38,0.12)', color:'#DC2626', borderRadius:100, padding:'1px 6px' }}>{pendingCount+bookings.filter(b=>b.status==='Pending').length}</span>}
-                  {item.key==='reviews' && vendorReviews.filter(r=>!r.vendorResponse).length>0 && <span style={{ fontSize:10, fontWeight:700, background:'rgba(196,122,46,0.15)', color:gold, borderRadius:100, padding:'1px 6px' }}>{vendorReviews.filter(r=>!r.vendorResponse).length}</span>}
-                  {item.key==='inventory' && inventory.filter(i=>i.condition==='Needs Service'||i.condition==='Out of Order').length>0 && <span style={{ fontSize:10, fontWeight:700, background:'rgba(220,38,38,0.1)', color:'#DC2626', borderRadius:100, padding:'1px 6px' }}>!</span>}
-                  {item.key==='clients' && crmClients.filter(c=>(c.bookingCount||0)>1).length>0 && <span style={{ fontSize:10, fontWeight:700, background:'rgba(124,58,237,0.1)', color:'#7C3AED', borderRadius:100, padding:'1px 6px' }}>{crmClients.filter(c=>(c.bookingCount||0)>1).length} repeat</span>}
-                </button>
-              );
-              return acc;
-            }, [])}
-          </nav>
-          <div style={{ padding:'8px 10px 16px', borderTop:'1px solid rgba(204,171,74,0.12)' }}>
-            <button onClick={toggleLang} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'1px solid rgba(204,171,74,0.25)', background:'rgba(204,171,74,0.08)', color:goldLt, cursor:'pointer', fontFamily:font, fontSize:12.5, fontWeight:700, display:'flex', alignItems:'center', gap:10, marginBottom:6, letterSpacing:'0.01em' }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              {t('langToggle')}
-            </button>
-            <button onClick={() => navigate('/vendor/chats')} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'none', background:'transparent', color:'rgba(255,248,236,0.55)', cursor:'pointer', fontFamily:font, fontSize:13, display:'flex', alignItems:'center', gap:10, marginBottom:1 }}>
-              {dsic(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>)} {t('navChats')}
-            </button>
-            <button onClick={() => navigate('/vendor/profile')} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'none', background:'transparent', color:'rgba(255,248,236,0.55)', cursor:'pointer', fontFamily:font, fontSize:13, display:'flex', alignItems:'center', gap:10, marginBottom:1 }}>
-              {dsic(<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>)} {t('navEditProfile')}
-            </button>
-            <button onClick={() => dispatch(logout()).then(() => navigate('/'))} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'none', background:'transparent', color:'rgba(239,68,68,0.75)', cursor:'pointer', fontFamily:font, fontSize:13, display:'flex', alignItems:'center', gap:10 }}>
-              {dsic(<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>)} {t('navSignOut')}
-            </button>
+              })}
+            </nav>
+
+            <div style={{ padding:'8px 12px 16px', borderTop:'1px solid rgba(196,122,46,0.13)' }}>
+              <button onClick={toggleLang} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'1px solid rgba(196,122,46,0.22)', background:'rgba(196,122,46,0.07)', color:'#8B5E3C', cursor:'pointer', fontFamily:font, fontSize:12.5, fontWeight:700, display:'flex', alignItems:'center', gap:10, marginBottom:6 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                {t('langToggle')}
+              </button>
+              <button onClick={() => navigate('/vendor/chats')} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'none', background:'transparent', color:'#9B7450', cursor:'pointer', fontFamily:font, fontSize:13, display:'flex', alignItems:'center', gap:10, marginBottom:1 }}>
+                {dsic(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>)} {t('navChats')}
+              </button>
+              <button onClick={() => navigate('/vendor/profile')} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'none', background:'transparent', color:'#9B7450', cursor:'pointer', fontFamily:font, fontSize:13, display:'flex', alignItems:'center', gap:10, marginBottom:1 }}>
+                {dsic(<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>)} {t('navEditProfile')}
+              </button>
+              <button onClick={() => dispatch(logout()).then(() => navigate('/'))} style={{ width:'100%', padding:'8px 12px', borderRadius:10, border:'none', background:'transparent', color:'rgba(220,38,38,0.7)', cursor:'pointer', fontFamily:font, fontSize:13, display:'flex', alignItems:'center', gap:10 }}>
+                {dsic(<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>)} {t('navSignOut')}
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ── Main content ── */}
       <div style={{ flex:1, marginLeft:isMobile?0:sideW, display:'flex', flexDirection:'column', minHeight:'100vh' }}>
