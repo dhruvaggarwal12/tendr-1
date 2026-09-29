@@ -11363,9 +11363,8 @@ export default function OccasionHub({ occasion }) {
         const tool = allTools.find(t => t.id === gameSetupId);
         const cc = CARD_PALETTE[playTools.indexOf(tool) % CARD_PALETTE.length] || occAccent;
         return (
-          <div style={{ position:"fixed", inset:0, zIndex:5500, background:"rgba(2,1,8,0.88)", backdropFilter:"blur(24px)", display:"flex", alignItems:"flex-end" }} onClick={()=>setGameSetupId(null)}>
-            <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, margin:"0 auto", background:"#0D0820", borderRadius:"24px 24px 0 0", border:`1px solid ${cc}30`, borderBottom:"none", animation:"modal-in 0.24s cubic-bezier(0.22,1,0.36,1)", padding:"20px 20px 32px" }}>
-              <div style={{ width:36, height:4, background:"rgba(255,255,255,0.18)", borderRadius:2, margin:"0 auto 20px" }} />
+          <div style={{ position:"fixed", inset:0, zIndex:5500, background:"rgba(2,1,8,0.88)", backdropFilter:"blur(24px)", display:"flex", alignItems:"center", justifyContent:"center", padding:"20px 16px" }} onClick={()=>setGameSetupId(null)}>
+            <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, background:"#0D0820", borderRadius:24, border:`1px solid ${cc}30`, animation:"modal-in 0.24s cubic-bezier(0.22,1,0.36,1)", padding:"28px 24px 28px" }}>
               <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:20 }}>
                 <div style={{ width:52, height:52, borderRadius:16, background:`${cc}22`, border:`1.5px solid ${cc}50`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, flexShrink:0 }}>{meta?.emoji||"🎮"}</div>
                 <div>
@@ -12090,7 +12089,10 @@ export default function OccasionHub({ occasion }) {
               </div>
               <div style={{ flex:1, height:1, background:T.sectionLn }} />
               {isHost && room && (
-                <div style={{ fontSize:9, color:T.sub, fontWeight:500, letterSpacing:"0.06em" }}>TAP EYE TO SHOW/HIDE</div>
+                <div style={{ display:"flex", alignItems:"center", gap:4, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.10)", borderRadius:8, padding:"3px 8px" }}>
+                  <span style={{ fontSize:11 }}>👁</span>
+                  <span style={{ fontSize:9, color:"rgba(255,255,255,0.55)", fontWeight:600, letterSpacing:"0.04em" }}>Toggle guest visibility</span>
+                </div>
               )}
               <div style={{ fontSize:10, color:PH.violet, fontWeight:600 }}>{visiblePlanTools.length}</div>
             </div>
