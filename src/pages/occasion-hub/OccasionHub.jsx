@@ -10458,6 +10458,14 @@ export default function OccasionHub({ occasion }) {
     });
   }, [occasion, room, sendEffect]);
 
+  // Auto-remove a game from queue when it becomes the current game
+  useEffect(() => {
+    if (currentGame && gameQueue.length > 0 && gameQueue[0].id === currentGame) {
+      setGameQueue(q => q.slice(1));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentGame]);
+
   const occ = OCCASIONS[occasion];
   if (!occ) return <div style={{ color: "#fff", padding: 40, textAlign: "center", fontFamily: font }}>Unknown occasion: {occasion}</div>;
 
@@ -10567,9 +10575,16 @@ export default function OccasionHub({ occasion }) {
     const showPopular = !playMood && !playCount && popularInTab.length > 0;
 
     const randomPick = () => {
-      const choices = filtered.length ? filtered : playTools;
+      const choices = (filtered.length ? filtered : playTools).filter(t => !isQueued(t.id));
+      if (!choices.length) return;
       const pick = choices[Math.floor(Math.random() * choices.length)];
-      if (pick) { room ? setOpen(pick.id) : setGamePreviewId(pick.id); }
+      if (!pick) return;
+      if (room && isHost) {
+        const meta = GAME_META[pick.id];
+        setGameQueue(q => [...q, { id:pick.id, title:pick.title, emoji: meta?.emoji || TOOL_EMOJI[pick.id] || "🎮" }]);
+      } else if (!room) {
+        GAME_IDS.has(pick.id) ? setGamePreviewId(pick.id) : openTool(pick.id);
+      }
     };
 
     const GameCard = ({ t, large }) => {
@@ -10577,14 +10592,13 @@ export default function OccasionHub({ occasion }) {
       const cc = CARD_PALETTE[playTools.indexOf(t) % CARD_PALETTE.length] || accent;
       const isLive = LIVE_GAME_IDS.has(t.id);
       const newGame = isNewRelease(t.id);
-      // In a room: host can select game (→ setup sheet for live, direct open for non-live)
-      // In a room: player can browse but NOT tap to launch — host controls what plays
-      const clickable = room ? (isHost) : true;
+      // In a room: host adds/removes from queue; player can browse only
+      const queued = room && isHost && isQueued(t.id);
+      const clickable = room ? isHost : true;
       const handleClick = () => {
         if (room) {
-          if (!isHost) return; // players browse only
-          if (isLive) { setGameSetupId(t.id); }
-          else { setOpen(t.id); }
+          if (!isHost) return;
+          toggleQueue(t); // add/remove from queue
         } else {
           GAME_IDS.has(t.id) ? setGamePreviewId(t.id) : openTool(t.id);
         }
@@ -10592,9 +10606,11 @@ export default function OccasionHub({ occasion }) {
       return (
         <div onClick={handleClick}
           className="occ-tool-card"
-          style={{ background:`${cc}22`, border:`2px solid ${cc}60`, borderRadius:20, padding:large?"20px 18px 18px":"16px 14px 14px", cursor:clickable?"pointer":"default", position:"relative", overflow:"hidden", boxShadow:`0 4px 18px ${cc}18`, transition:"transform 0.12s,box-shadow 0.12s", opacity:(!clickable&&!isHost)?0.6:1 }}>
-          {isLive && room && isHost && <div style={{ position:"absolute", top:8, right:8, fontSize:8, fontWeight:800, color:"#4ade80", background:"rgba(34,197,94,0.15)", border:"1px solid rgba(34,197,94,0.4)", borderRadius:100, padding:"2px 6px" }}>● LIVE</div>}
-          {isLive && room && !isHost && <div style={{ position:"absolute", top:8, right:8, fontSize:8, fontWeight:800, color:"rgba(255,255,255,0.45)", background:"rgba(255,255,255,0.08)", borderRadius:100, padding:"2px 7px" }}>👥 {meta?.players||"2+"}</div>}
+          style={{ background: queued ? `${cc}35` : `${cc}22`, border:`2px solid ${queued ? cc : cc+"60"}`, borderRadius:20, padding:large?"20px 18px 18px":"16px 14px 14px", cursor:clickable?"pointer":"default", position:"relative", overflow:"hidden", boxShadow: queued ? `0 4px 22px ${cc}45` : `0 4px 18px ${cc}18`, transition:"transform 0.12s,box-shadow 0.12s", opacity:(!clickable&&!isHost)?0.55:1 }}>
+          {/* Host in room: show queue status badge */}
+          {isLive && room && isHost && !queued && <div style={{ position:"absolute", top:8, right:8, fontSize:8, fontWeight:800, color:"rgba(255,255,255,0.45)", background:"rgba(255,255,255,0.10)", border:"1px solid rgba(255,255,255,0.18)", borderRadius:100, padding:"2px 7px" }}>+ Queue</div>}
+          {room && isHost && queued && <div style={{ position:"absolute", top:8, right:8, fontSize:8, fontWeight:800, color:"#4ade80", background:"rgba(34,197,94,0.15)", border:"1px solid rgba(34,197,94,0.35)", borderRadius:100, padding:"2px 7px" }}>✓ Queued</div>}
+          {isLive && room && !isHost && <div style={{ position:"absolute", top:8, right:8, fontSize:8, fontWeight:800, color:"rgba(255,255,255,0.35)", background:"rgba(255,255,255,0.06)", borderRadius:100, padding:"2px 7px" }}>👥 {meta?.players||"2+"}</div>}
           {newGame && !room && <div style={{ position:"absolute", top:8, right:8, fontSize:8, fontWeight:800, color:"#fff", background:"#F59E0B", borderRadius:20, padding:"2px 7px", letterSpacing:0.5 }}>🆕 NEW</div>}
           <div style={{ fontSize:large?44:32, lineHeight:1, marginBottom:large?12:8, textShadow:`0 0 18px ${cc}CC` }}>{meta?.emoji||TOOL_EMOJI[t.id]||"🎮"}</div>
           <div style={{ fontSize:large?15:12.5, fontWeight:800, color:"#FFFFFF", lineHeight:1.25, marginBottom:large?6:4 }}>{t.title}</div>
@@ -10614,49 +10630,128 @@ export default function OccasionHub({ occasion }) {
       );
     };
 
+    // Queue helpers (host only)
+    const isQueued = (id) => gameQueue.some(q => q.id === id);
+    const toggleQueue = (t) => {
+      if (isQueued(t.id)) {
+        setGameQueue(q => q.filter(x => x.id !== t.id));
+      } else {
+        const meta = GAME_META[t.id];
+        setGameQueue(q => [...q, { id:t.id, title:t.title, emoji: meta?.emoji || TOOL_EMOJI[t.id] || "🎮" }]);
+      }
+    };
+    const qMoveUp   = (i) => setGameQueue(q => { const a=[...q]; [a[i-1],a[i]]=[a[i],a[i-1]]; return a; });
+    const qMoveDown = (i) => setGameQueue(q => { const a=[...q]; [a[i],a[i+1]]=[a[i+1],a[i]]; return a; });
+    const qRemove   = (id) => setGameQueue(q => q.filter(x => x.id !== id));
+    const qLaunch   = (id) => { setGameSetupId(id); };
+    const qPlayNext = () => { if (gameQueue.length) setGameSetupId(gameQueue[0].id); };
+
     return (
       <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-        {/* Host strip — choose a game to launch for the room */}
+
+        {/* ── HOST status + queue panel ── */}
         {room && isHost && (
-          <div style={{ background:`${accent}10`, border:`1.5px solid ${accent}30`, borderRadius:14, padding:"12px 14px", marginBottom:16 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom: currentGame ? 8 : 0 }}>
-              <span style={{ width:7, height:7, borderRadius:"50%", background:"#4ade80", animation:"dot-pulse 2s ease infinite", flexShrink:0 }} />
-              <div style={{ fontSize:12, fontWeight:700, color:accent }}>👑 Host · {roomPlayers?.length||1} players online</div>
-              <button onClick={()=>setShowLeaderboard(true)} style={{ marginLeft:"auto", padding:"4px 10px", borderRadius:8, border:`1px solid ${accent}40`, background:`${accent}15`, color:accent, fontSize:11, fontWeight:700, cursor:"pointer", flexShrink:0 }}>🏆</button>
-            </div>
-            {currentGame ? (
-              <div style={{ display:"flex", alignItems:"center", gap:10, background:"rgba(255,255,255,0.06)", borderRadius:10, padding:"9px 12px" }}>
-                <span style={{ fontSize:13, color:"rgba(255,255,255,0.85)", fontWeight:700, flex:1 }}>▶ Now playing: {currentGame}</span>
-                <button onClick={()=>setShowInGameControls(true)} style={{ padding:"4px 10px", borderRadius:8, border:"1px solid rgba(255,255,255,0.18)", background:"rgba(255,255,255,0.08)", color:"rgba(255,255,255,0.70)", fontSize:11, fontWeight:700, cursor:"pointer" }}>⋮ Controls</button>
+          <div style={{ marginBottom:16 }}>
+            {/* Host bar */}
+            <div style={{ background:`${accent}10`, border:`1.5px solid ${accent}30`, borderRadius:14, padding:"11px 14px", marginBottom:10 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                <span style={{ width:7, height:7, borderRadius:"50%", background:"#4ade80", animation:"dot-pulse 2s ease infinite", flexShrink:0 }} />
+                <div style={{ fontSize:12, fontWeight:700, color:accent }}>👑 Host · {roomPlayers?.length||1} players online</div>
+                <button onClick={()=>setShowLeaderboard(true)} style={{ marginLeft:"auto", padding:"4px 10px", borderRadius:8, border:`1px solid ${accent}40`, background:`${accent}15`, color:accent, fontSize:11, fontWeight:700, cursor:"pointer", flexShrink:0 }}>🏆</button>
+                {currentGame && <button onClick={()=>setShowInGameControls(true)} style={{ padding:"4px 10px", borderRadius:8, border:"1px solid rgba(255,255,255,0.18)", background:"rgba(255,255,255,0.08)", color:"rgba(255,255,255,0.70)", fontSize:11, fontWeight:700, cursor:"pointer" }}>⋮</button>}
               </div>
-            ) : (
-              <div style={{ fontSize:12, color:"rgba(255,255,255,0.45)", marginTop:4 }}>Tap any game below to start it for everyone</div>
-            )}
+              {currentGame && (
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginTop:8, background:"rgba(74,222,128,0.08)", borderRadius:10, padding:"8px 12px", border:"1px solid rgba(74,222,128,0.20)" }}>
+                  <span style={{ fontSize:11, color:"#4ade80", fontWeight:800, letterSpacing:"0.08em" }}>▶ NOW PLAYING</span>
+                  <span style={{ fontSize:13, color:"#FFFFFF", fontWeight:700, flex:1 }}>{LIVE_GAME_NAMES[currentGame] || currentGame}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Game Queue panel */}
+            <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.10)", borderRadius:14, overflow:"hidden" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 14px", borderBottom: gameQueue.length ? "1px solid rgba(255,255,255,0.07)" : "none" }}>
+                <span style={{ fontSize:14 }}>🎮</span>
+                <div style={{ fontSize:12, fontWeight:700, color:"rgba(255,255,255,0.80)" }}>Game Queue</div>
+                {gameQueue.length > 0 && <span style={{ fontSize:10, fontWeight:800, background:`${accent}28`, color:accent, borderRadius:20, padding:"2px 7px" }}>{gameQueue.length}</span>}
+                <div style={{ marginLeft:"auto", fontSize:11, color:"rgba(255,255,255,0.35)", fontWeight:500 }}>Tap a game below to add</div>
+              </div>
+
+              {gameQueue.length === 0 ? (
+                <div style={{ padding:"18px 14px", textAlign:"center" }}>
+                  <div style={{ fontSize:11, color:"rgba(255,255,255,0.28)", fontWeight:500 }}>No games queued yet — tap any game card to add it</div>
+                </div>
+              ) : (
+                <div style={{ padding:"10px 12px" }}>
+                  {gameQueue.map((item, i) => (
+                    <div key={item.id} style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 10px", background: i===0 ? `${accent}12` : "rgba(255,255,255,0.03)", borderRadius:10, marginBottom:5, border: i===0 ? `1px solid ${accent}30` : "1px solid rgba(255,255,255,0.06)" }}>
+                      <span style={{ fontSize:9, fontWeight:800, color: i===0 ? accent : "rgba(255,255,255,0.25)", minWidth:14, textAlign:"center" }}>{i===0?"▶":(i+1)}</span>
+                      <span style={{ fontSize:16, flexShrink:0 }}>{item.emoji}</span>
+                      <span style={{ fontSize:12.5, fontWeight:700, color: i===0 ? "#FFFFFF" : "rgba(255,255,255,0.65)", flex:1 }}>{item.title}</span>
+                      <div style={{ display:"flex", gap:4, flexShrink:0 }}>
+                        {i > 0 && <button onClick={()=>qMoveUp(i)} style={{ width:24, height:24, borderRadius:6, border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.50)", cursor:"pointer", fontSize:11, display:"flex", alignItems:"center", justifyContent:"center" }}>↑</button>}
+                        {i < gameQueue.length-1 && <button onClick={()=>qMoveDown(i)} style={{ width:24, height:24, borderRadius:6, border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.05)", color:"rgba(255,255,255,0.50)", cursor:"pointer", fontSize:11, display:"flex", alignItems:"center", justifyContent:"center" }}>↓</button>}
+                        <button onClick={()=>qLaunch(item.id)} style={{ padding:"3px 9px", borderRadius:7, border:"none", background:accent, color:"#fff", fontSize:11, fontWeight:700, cursor:"pointer" }}>▶</button>
+                        <button onClick={()=>qRemove(item.id)} style={{ width:24, height:24, borderRadius:6, border:"1px solid rgba(239,68,68,0.25)", background:"rgba(239,68,68,0.08)", color:"#ef4444", cursor:"pointer", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
+                      </div>
+                    </div>
+                  ))}
+                  <button onClick={qPlayNext} style={{ width:"100%", marginTop:6, padding:"11px", borderRadius:10, border:"none", background:`linear-gradient(135deg,${accent},${accent}bb)`, color:"#fff", fontSize:13, fontWeight:800, cursor:"pointer", boxShadow:`0 3px 14px ${accent}40` }}>
+                    ▶ Start Next Game
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
-        {/* Player strip — waiting for host */}
+
+        {/* ── PARTICIPANT status + coming-up queue ── */}
         {room && !isHost && (
-          <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.10)", borderRadius:12, padding:"12px 14px", marginBottom:16 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-              <span style={{ width:7, height:7, borderRadius:"50%", background:currentGame?"#4ade80":"#facc15", animation:"dot-pulse 2s ease infinite", flexShrink:0 }} />
-              {currentGame ? (
-                <div style={{ fontSize:12, color:"rgba(255,255,255,0.75)", fontWeight:600 }}>▶ {currentGame} is running…</div>
-              ) : (
-                <div style={{ fontSize:12, color:"rgba(255,255,255,0.50)", fontWeight:600 }}>Waiting for host to start a game…</div>
-              )}
-              <div style={{ marginLeft:"auto", fontSize:11, color:"rgba(255,255,255,0.35)" }}>{roomPlayers?.length||1} players</div>
+          <div style={{ marginBottom:16 }}>
+            <div style={{ background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.10)", borderRadius:14, padding:"12px 14px", marginBottom: gameQueue.length ? 10 : 0 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                <span style={{ width:7, height:7, borderRadius:"50%", background:currentGame?"#4ade80":"#facc15", animation:"dot-pulse 2s ease infinite", flexShrink:0 }} />
+                {currentGame ? (
+                  <div style={{ fontSize:12, color:"rgba(255,255,255,0.75)", fontWeight:600 }}>▶ {LIVE_GAME_NAMES[currentGame] || currentGame} is running…</div>
+                ) : (
+                  <div style={{ fontSize:12, color:"rgba(255,255,255,0.50)", fontWeight:600 }}>Waiting for host to start a game…</div>
+                )}
+                <div style={{ marginLeft:"auto", fontSize:11, color:"rgba(255,255,255,0.35)" }}>{roomPlayers?.length||1} players</div>
+              </div>
             </div>
+            {gameQueue.length > 0 && (
+              <div style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:12, overflow:"hidden" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 14px", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
+                  <span style={{ fontSize:12 }}>📋</span>
+                  <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.55)", textTransform:"uppercase", letterSpacing:"0.10em" }}>Coming Up</div>
+                </div>
+                <div style={{ padding:"8px 12px" }}>
+                  {gameQueue.map((item, i) => (
+                    <div key={item.id} style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 8px", borderRadius:8, marginBottom:3 }}>
+                      <span style={{ fontSize:9, fontWeight:800, color:"rgba(255,255,255,0.22)", minWidth:14 }}>{i+1}</span>
+                      <span style={{ fontSize:14 }}>{item.emoji}</span>
+                      <span style={{ fontSize:12, fontWeight:600, color:"rgba(255,255,255,0.55)" }}>{item.title}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
         {/* Header row */}
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
           <div>
             <div style={{ fontSize:14, fontWeight:800, color:"#FFFFFF" }}>🎮 PLAY</div>
-            <div style={{ fontSize:12, color:"rgba(255,255,255,0.50)", marginTop:2 }}>What are you in the mood for?</div>
+            <div style={{ fontSize:12, color:"rgba(255,255,255,0.50)", marginTop:2 }}>
+              {room && isHost ? "Tap to add games to the queue" : room ? "Browse games" : "What are you in the mood for?"}
+            </div>
           </div>
-          <button onClick={randomPick} style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 14px", borderRadius:100, border:`1.5px solid ${accent}55`, background:`${accent}18`, color:accent, fontSize:12, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap" }}>
-            🎲 I'm Bored
-          </button>
+          {/* "I'm Bored" only shown to host in room (adds random game to queue) or solo browsing */}
+          {(!room || isHost) && (
+            <button onClick={randomPick} style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 14px", borderRadius:100, border:`1.5px solid ${accent}55`, background:`${accent}18`, color:accent, fontSize:12, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap" }}>
+              🎲 I'm Bored
+            </button>
+          )}
         </div>
 
         {/* Mood + count filter chips — single row */}
