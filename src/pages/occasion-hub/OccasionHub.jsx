@@ -9577,6 +9577,12 @@ const PLAN_IDS = new Set([
   "advicecards","namesuggestions","kittyfund","countdown","runofshow",
 ]);
 
+// Tools in MANAGE tab that make sense for joined participants (not just the host)
+const PARTICIPANT_PLAN_IDS = new Set([
+  "bills","gifttracker","potluck","giftregistry","advicecards",
+  "namesuggestions","kittyfund","countdown","checklist",
+]);
+
 const GAME_IDS = new Set([
   "truthordare","neverhavei","wouldyou","hottakes","spin","charades","bingo",
   "birthdayquiz","couplequiz","t2l","rapidfire","mostlikelyto","luckydraw","genderpoll","babynamevote","moodmeter",
@@ -12034,18 +12040,26 @@ export default function OccasionHub({ occasion }) {
         )}
 
         {/* PLAN */}
-        {activeTab === "plan" && (
+        {activeTab === "plan" && (() => {
+          // Joined participants only see tools relevant to them; host sees everything
+          const isParticipant = room && !isHost;
+          const visiblePlanTools = isParticipant
+            ? planTools.filter(t => PARTICIPANT_PLAN_IDS.has(t.id))
+            : planTools;
+          return (
           <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
             <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
-              <div style={{ fontSize:10, fontWeight:800, color:T.sectionLbl, textTransform:"uppercase", letterSpacing:"0.16em" }}>Planning Tools</div>
+              <div style={{ fontSize:10, fontWeight:800, color:T.sectionLbl, textTransform:"uppercase", letterSpacing:"0.16em" }}>
+                {isParticipant ? "Guest Tools" : "Planning Tools"}
+              </div>
               <div style={{ flex:1, height:1, background:T.sectionLn }} />
-              <div style={{ fontSize:10, color:PH.violet, fontWeight:600 }}>{planTools.length}</div>
+              <div style={{ fontSize:10, color:PH.violet, fontWeight:600 }}>{visiblePlanTools.length}</div>
             </div>
-            {planTools.length === 0 ? (
-              <div style={{ textAlign:"center", padding:"48px 20px", color:T.sub, fontSize:14 }}>No planning tools for this occasion.</div>
+            {visiblePlanTools.length === 0 ? (
+              <div style={{ textAlign:"center", padding:"48px 20px", color:T.sub, fontSize:14 }}>No tools available.</div>
             ) : (
               <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:10 }}>
-                  {planTools.map((t,i) => {
+                  {visiblePlanTools.map((t,i) => {
                     const cc = CARD_PALETTE[i % CARD_PALETTE.length];
                     const em = TOOL_EMOJI[t.id] || "🎯";
                     return (
@@ -12065,7 +12079,8 @@ export default function OccasionHub({ occasion }) {
                 </div>
             )}
           </div>
-        )}
+          );
+        })()}
 
         {/* MOMENTS */}
         {activeTab === "moments" && (
