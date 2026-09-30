@@ -11518,9 +11518,13 @@ export default function OccasionHub({ occasion }) {
                 <div style={{ fontSize:11, fontWeight:700, color:PH.violet, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Your Name</div>
                 <input value={hostName} onChange={e=>setHostName(e.target.value)} placeholder="e.g. Priya" style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:PH.inputBg, color:PH.txt, fontSize:15, outline:"none", boxSizing:"border-box" }} />
               </div>
-              <div style={{ marginBottom:20 }}>
+              <div style={{ marginBottom:12 }}>
                 <div style={{ fontSize:11, fontWeight:700, color:PH.violet, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>Party Name <span style={{ color:PH.dim, fontWeight:400, textTransform:"none" }}>(optional)</span></div>
                 <input value={partyName} onChange={e=>setPartyName(e.target.value)} placeholder={`e.g. ${occ.name}`} style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:PH.inputBg, color:PH.txt, fontSize:15, outline:"none", boxSizing:"border-box" }} />
+              </div>
+              <div style={{ marginBottom:20 }}>
+                <div style={{ fontSize:11, fontWeight:700, color:PH.violet, letterSpacing:"0.08em", textTransform:"uppercase", marginBottom:6 }}>{celebrantMeta.label}</div>
+                <input value={celebrantName} onChange={e=>saveCelebrant(e.target.value)} placeholder={celebrantMeta.ph} style={{ width:"100%", padding:"12px 14px", borderRadius:12, border:`1.5px solid ${PH.violet}33`, background:PH.inputBg, color:PH.txt, fontSize:15, outline:"none", boxSizing:"border-box" }} />
               </div>
               <button onClick={handleHostCreate} disabled={!hostName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:hostName.trim()?PH.violet:PH.inputBg, color:"#fff", fontSize:14, fontWeight:700, cursor:hostName.trim()?"pointer":"not-allowed", opacity:hostName.trim()?1:0.5, marginBottom:10 }}>
                 {roomLoading ? "Creating…" : "Create Room →"}
