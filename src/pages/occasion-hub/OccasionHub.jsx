@@ -1202,6 +1202,19 @@ function WouldYouRather({ onClose, accent, room, myName: liveName, players: live
     }
   }, [pairIdx, live]);
 
+  // Auto-advance when all live players have voted
+  const autoAdvanceRef = useRef(null);
+  useEffect(() => {
+    if (!live || !livePlayers.length) return;
+    if (totalVotes >= livePlayers.length && totalVotes > 0) {
+      autoAdvanceRef.current = setTimeout(() => next(), 5000);
+    } else {
+      clearTimeout(autoAdvanceRef.current);
+    }
+    return () => clearTimeout(autoAdvanceRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalVotes, livePlayers.length, live]);
+
   useEffect(() => {
     if (!timerActive) return;
     wyrTimerRef.current = setInterval(() => {
@@ -10382,6 +10395,7 @@ export default function OccasionHub({ occasion }) {
   const [joinName,  setJoinName]    = useState("");
   const [roomLoading, setRoomLoading] = useState(false);
   const [copied, setCopied]         = useState(false);
+  const [roomQrUrl, setRoomQrUrl]   = useState("");
   const [showHostControls, setShowHostControls] = useState(false);
   const [showLeaderboard, setShowLeaderboard]   = useState(false);
   const [gameQueue, setGameQueue]               = useState([]); // [{id,title,emoji}]
@@ -10562,10 +10576,34 @@ export default function OccasionHub({ occasion }) {
     }
   }, [room]);
 
+  // Generate QR code when room is created
+  useEffect(() => {
+    if (!room?.code) { setRoomQrUrl(""); return; }
+    import("qrcode").then(mod => {
+      const QR = mod.default || mod;
+      QR.toDataURL(`${window.location.origin}/join-room?code=${room.code}`, { width: 160, margin: 1, color: { dark: "#3D1070", light: "#FFFFFF" } })
+        .then(url => setRoomQrUrl(url))
+        .catch(() => {});
+    });
+  }, [room?.code]);
+
   // Auto-open game for everyone when host starts/switches/ends it
   useEffect(() => {
     if (!room) return;
-    if (currentGame && open !== currentGame) setOpen(currentGame);
+    if (currentGame && open !== currentGame) {
+      setOpen(currentGame);
+      if (!isHost) {
+        navigator.vibrate?.([300, 100, 300]);
+        const gameName = LIVE_GAME_NAMES[currentGame] || "A game";
+        if ('Notification' in window && Notification.permission === 'granted') {
+          try { new Notification('🎮 Game Starting!', { body: `${gameName} is starting — open the app to play!`, silent: false }); } catch {}
+        }
+        const prev = document.title;
+        document.title = `🎮 ${gameName} Starting!`;
+        const t = setTimeout(() => { document.title = prev; }, 6000);
+        return () => clearTimeout(t);
+      }
+    }
     if (!currentGame && open && LIVE_GAME_IDS.has(open)) setOpen(null);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentGame, room]);
@@ -10613,6 +10651,7 @@ export default function OccasionHub({ occasion }) {
     if (effect?.type === 'pregame-ready' && effect.payload?.gameId) {
       setPregameId(effect.payload.gameId);
       setReadySet(new Set());
+      if (!isHost) navigator.vibrate?.([200, 80, 200, 80, 200]);
     }
     // A participant readied up
     if (effect?.type === 'player-ready' && effect.payload?.name) {
@@ -11537,9 +11576,15 @@ export default function OccasionHub({ occasion }) {
                 <div style={{ fontSize:30, marginBottom:6 }}>🎉</div>
                 <div style={{ fontSize:17, fontWeight:700, color:PH.txt, marginBottom:2 }}>Room Created!</div>
                 <div style={{ fontSize:13, color:PH.sub, marginBottom:16, lineHeight:1.5 }}>Share the code with your guests</div>
-                <div style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", background:`${PH.violet}1a`, border:`1px solid ${PH.violet}55`, borderRadius:14, padding:"12px 24px", marginBottom:14 }}>
+                <div style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", background:`${PH.violet}1a`, border:`1px solid ${PH.violet}55`, borderRadius:14, padding:"12px 24px", marginBottom:10 }}>
                   <span style={{ fontSize:32, fontWeight:700, color:PH.violet, letterSpacing:"0.18em" }}>{room.code}</span>
                 </div>
+                {roomQrUrl && (
+                  <div style={{ display:"flex", flexDirection:"column", alignItems:"center", marginBottom:14 }}>
+                    <img src={roomQrUrl} alt="Room QR code" style={{ width:140, height:140, borderRadius:12, border:`2px solid ${PH.violet}44` }} />
+                    <div style={{ fontSize:11, color:PH.dim, marginTop:6 }}>Scan to join instantly</div>
+                  </div>
+                )}
               </div>
               <button onClick={()=>copyRoomLink(room.code)} style={{ width:"100%", padding:"12px 0", borderRadius:12, border:`1.5px solid ${copied?PH.violet:PH.bd}`, background:copied?`${PH.violet}20`:PH.inputBg, color:copied?PH.violet:PH.sub, fontSize:14, fontWeight:700, cursor:"pointer", marginBottom:12, transition:"all 0.18s" }}>
                 {copied ? "✓ Link Copied!" : "📋 Copy Room Link"}
@@ -11554,6 +11599,11 @@ export default function OccasionHub({ occasion }) {
                 ))}
               </div>
               <button onClick={()=>setRoomModal(null)} style={{ width:"100%", padding:"11px 0", borderRadius:12, border:"none", background:PH.violet, color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer" }}>Let's Play →</button>
+              {'Notification' in window && Notification.permission === 'default' && (
+                <button onClick={()=>Notification.requestPermission()} style={{ width:"100%", marginTop:8, padding:"9px 0", borderRadius:10, border:`1px solid ${PH.violet}44`, background:"none", color:PH.violet, fontSize:12, fontWeight:600, cursor:"pointer" }}>
+                  🔔 Enable game notifications
+                </button>
+              )}
             </>)}
 
             {roomModal === "join" && (<>
