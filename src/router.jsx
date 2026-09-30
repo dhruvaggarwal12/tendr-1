@@ -1,5 +1,5 @@
-import { createBrowserRouter, Outlet, ScrollRestoration, Navigate, useLocation, useSearchParams } from "react-router-dom";
-import { lazy, useEffect } from "react";
+import { createBrowserRouter, Outlet, ScrollRestoration, Navigate, useLocation, useSearchParams, useNavigate } from "react-router-dom";
+import { lazy, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import MobileBottomNav from "./components/MobileBottomNav";
@@ -67,6 +67,61 @@ function PageTransition() {
   );
 }
 
+const HUB_MIN_KEY = 'tendr-hub-min';
+
+function FloatingHubBubble() {
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const [hubState, setHubState] = useState(null);
+
+  useEffect(() => {
+    const read = () => {
+      try {
+        const raw = sessionStorage.getItem(HUB_MIN_KEY);
+        setHubState(raw ? JSON.parse(raw) : null);
+      } catch { setHubState(null); }
+    };
+    read();
+    window.addEventListener('tendr:hub-minimized', read);
+    return () => window.removeEventListener('tendr:hub-minimized', read);
+  }, [pathname]);
+
+  if (!hubState) return null;
+  if (pathname === hubState.path || pathname.endsWith('-hub')) return null;
+
+  const restore = () => {
+    try { sessionStorage.removeItem(HUB_MIN_KEY); } catch {}
+    setHubState(null);
+    navigate(hubState.path);
+  };
+
+  return (
+    <button
+      onClick={restore}
+      title={`Return to ${hubState.name} Hub`}
+      style={{
+        position: 'fixed', bottom: 'calc(20px + env(safe-area-inset-bottom, 0px))', left: 16,
+        zIndex: 8000, width: 56, height: 56, borderRadius: '50%',
+        background: 'linear-gradient(135deg, #1a0d30 0%, #0d0520 100%)',
+        border: '2px solid rgba(196,151,58,0.7)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.5), 0 0 0 1px rgba(196,151,58,0.2)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer', gap: 1,
+        animation: 'hub-bubble-pop 0.32s cubic-bezier(0.22,1,0.36,1) both',
+      }}
+    >
+      <style>{`
+        @keyframes hub-bubble-pop {
+          from { opacity: 0; transform: scale(0.5); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
+      <span style={{ fontSize: 22, lineHeight: 1 }}>{hubState.emoji}</span>
+      <span style={{ fontSize: 7, fontWeight: 800, color: 'rgba(196,151,58,0.85)', letterSpacing: '0.04em', textTransform: 'uppercase', fontFamily: "'Outfit', sans-serif" }}>Hub</span>
+    </button>
+  );
+}
+
 // Root layout — FloatingChatButton + VendorChatModal remain in App.jsx
 // because they already use router.state + router.navigate() directly
 // (not useNavigate/useLocation hooks), so they don't need Router context.
@@ -79,6 +134,7 @@ function RootLayout() {
       <MobileBottomNav />
       <PageTransition />
       <UpcomingEventNudge />
+      <FloatingHubBubble />
     </>
   );
 }

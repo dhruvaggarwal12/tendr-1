@@ -11413,6 +11413,15 @@ export default function OccasionHub({ occasion }) {
         textarea, input         { font-family:${font}; }
         select option           { background:#F4EDE8; color:#2C1A0E; }
         @media (prefers-reduced-motion:reduce) { * { animation:none !important; transition:none !important; } }
+        @media (max-width:600px) {
+          .occ-tool-row-card { padding: 10px 10px !important; }
+          .occ-tool-row-icon { width: 36px !important; height: 36px !important; border-radius: 10px !important; }
+          .occ-tool-row-label { font-size: 12px !important; }
+          .occ-tool-row-desc  { font-size: 10px !important; }
+          .occ-colored-card   { padding: 16px 10px 12px !important; }
+          .occ-colored-card-emoji { font-size: 30px !important; }
+          .occ-colored-card-label { font-size: 11.5px !important; }
+        }
       `}</style>
 
       {/* Accent glow — occasion colour */}
@@ -12005,6 +12014,23 @@ export default function OccasionHub({ occasion }) {
           {room && (
             <button onClick={()=>setShowLeaderboard(true)} style={{ display:"flex", alignItems:"center", justifyContent:"center", width:36, height:36, borderRadius:"50%", border:`1.5px solid ${occAccent}50`, background:"rgba(255,255,255,0.80)", color:occAccent, fontSize:16, cursor:"pointer", flexShrink:0, zIndex:1, boxShadow:"0 1px 6px rgba(0,0,0,0.08)", marginRight:8 }}>🏆</button>
           )}
+          {/* Minimize button */}
+          <button
+            onClick={() => {
+              try {
+                sessionStorage.setItem('tendr-hub-min', JSON.stringify({
+                  path: window.location.pathname,
+                  emoji: occ.emoji,
+                  name: occ.name,
+                }));
+              } catch {}
+              window.dispatchEvent(new CustomEvent('tendr:hub-minimized'));
+              navigate('/');
+            }}
+            title="Minimize to bubble"
+            style={{ display:"flex", alignItems:"center", justifyContent:"center", width:34, height:34, borderRadius:"50%", border:`1.5px solid ${occAccent}40`, background:"rgba(255,255,255,0.80)", color:occAccent, fontSize:15, cursor:"pointer", flexShrink:0, zIndex:1, boxShadow:"0 1px 6px rgba(0,0,0,0.08)", marginRight:6 }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
           {/* Host button */}
           <button onClick={()=>setShowHostControls(true)} style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 16px", borderRadius:100, border:`1.5px solid ${occAccent}60`, background:"rgba(255,255,255,0.85)", color:occAccent, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, zIndex:1, boxShadow:"0 1px 6px rgba(0,0,0,0.08)" }}>
             {room ? <span style={{ width:6, height:6, borderRadius:"50%", background:"#4ade80" }} /> : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>}
@@ -12453,18 +12479,18 @@ export default function OccasionHub({ occasion }) {
                           const desc = t.desc && !t.desc.startsWith('#') ? t.desc : null;
                           const isRight = i % 2 === 1;
                           return (
-                            <div key={t.id} onClick={()=>openTool(t.id)} className="occ-tool-card" style={{
+                            <div key={t.id} onClick={()=>openTool(t.id)} className="occ-tool-card occ-tool-row-card" style={{
                               background:"transparent", border:"none",
                               borderBottom: i < sectionTools.length - (sectionTools.length%2===0?2:1) ? `1px solid ${T.rowBd}` : "none",
                               borderRight: !isRight && i < sectionTools.length-1 ? `1px solid ${T.rowBd}` : "none",
                               padding:"14px 14px", cursor:"pointer", display:"flex", alignItems:"center", gap:12
                             }}>
-                              <div style={{ width:44, height:44, borderRadius:12, background:occIconBg, border:`1.5px solid ${occAccent}20`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:occAccent }}>
+                              <div className="occ-tool-row-icon" style={{ width:44, height:44, borderRadius:12, background:occIconBg, border:`1.5px solid ${occAccent}20`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:occAccent }}>
                                 {TOOL_ICONS[t.id]||occic(<circle cx="12" cy="12" r="10"/>)}
                               </div>
                               <div style={{ flex:1, minWidth:0 }}>
-                                <div style={{ fontSize:13.5, fontWeight:700, color:T.main, lineHeight:1.3 }}>{t.title}</div>
-                                {desc && <div style={{ fontSize:11.5, color:T.sub, marginTop:2, lineHeight:1.4 }}>{desc}</div>}
+                                <div className="occ-tool-row-label" style={{ fontSize:13.5, fontWeight:700, color:T.main, lineHeight:1.3 }}>{t.title}</div>
+                                {desc && <div className="occ-tool-row-desc" style={{ fontSize:11.5, color:T.sub, marginTop:2, lineHeight:1.4 }}>{desc}</div>}
                               </div>
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                             </div>
@@ -12562,7 +12588,7 @@ export default function OccasionHub({ occasion }) {
                     return (
                       <div key={t.id}
                         onClick={() => { if (!lockedForParticipant) openTool(t.id); }}
-                        className="occ-tool-card"
+                        className="occ-tool-card occ-colored-card"
                         style={{
                           background:`${cc}38`, border:`2px solid ${lockedForParticipant ? cc+"44" : cc+"88"}`,
                           borderRadius:18, padding:"22px 12px 16px",
@@ -12572,8 +12598,8 @@ export default function OccasionHub({ occasion }) {
                           boxShadow:`0 4px 20px ${cc}25`,
                           opacity: isHiddenFromPeers ? 0.55 : 1,
                         }}>
-                        <div style={{ fontSize:40, lineHeight:1, textShadow:`0 0 18px ${cc}CC, 0 0 6px ${cc}88`, opacity: lockedForParticipant ? 0.45 : 1 }}>{em}</div>
-                        <div style={{ fontSize:12.5, fontWeight:800, color: lockedForParticipant ? "rgba(255,255,255,0.40)" : "#FFFFFF", lineHeight:1.3, textShadow:"0 1px 4px rgba(0,0,0,0.5)" }}>{t.title}</div>
+                        <div className="occ-colored-card-emoji" style={{ fontSize:40, lineHeight:1, textShadow:`0 0 18px ${cc}CC, 0 0 6px ${cc}88`, opacity: lockedForParticipant ? 0.45 : 1 }}>{em}</div>
+                        <div className="occ-colored-card-label" style={{ fontSize:12.5, fontWeight:800, color: lockedForParticipant ? "rgba(255,255,255,0.40)" : "#FFFFFF", lineHeight:1.3, textShadow:"0 1px 4px rgba(0,0,0,0.5)" }}>{t.title}</div>
                         <div style={{ position:"absolute", top:-20, right:-20, width:64, height:64, borderRadius:"50%", background:`${cc}22`, pointerEvents:"none" }} />
                         {/* Participant lock overlay when tool not yet activated by host */}
                         {lockedForParticipant && (
@@ -12626,15 +12652,15 @@ export default function OccasionHub({ occasion }) {
                     const cc = CARD_PALETTE[(i + 4) % CARD_PALETTE.length];
                     const em = TOOL_EMOJI[t.id] || "✨";
                     return (
-                      <div key={t.id} onClick={()=>openTool(t.id)} className="occ-tool-card" style={{
+                      <div key={t.id} onClick={()=>openTool(t.id)} className="occ-tool-card occ-colored-card" style={{
                         background:`${cc}38`, border:`2px solid ${cc}88`,
                         borderRadius:18, padding:"22px 12px 16px", cursor:"pointer",
                         display:"flex", flexDirection:"column", alignItems:"center", gap:8, textAlign:"center",
                         position:"relative", overflow:"hidden",
                         boxShadow:`0 4px 20px ${cc}25`,
                       }}>
-                        <div style={{ fontSize:40, lineHeight:1, textShadow:`0 0 18px ${cc}CC, 0 0 6px ${cc}88` }}>{em}</div>
-                        <div style={{ fontSize:12.5, fontWeight:800, color:"#FFFFFF", lineHeight:1.3, textShadow:"0 1px 4px rgba(0,0,0,0.5)" }}>{t.title}</div>
+                        <div className="occ-colored-card-emoji" style={{ fontSize:40, lineHeight:1, textShadow:`0 0 18px ${cc}CC, 0 0 6px ${cc}88` }}>{em}</div>
+                        <div className="occ-colored-card-label" style={{ fontSize:12.5, fontWeight:800, color:"#FFFFFF", lineHeight:1.3, textShadow:"0 1px 4px rgba(0,0,0,0.5)" }}>{t.title}</div>
                         <div style={{ position:"absolute", top:-20, right:-20, width:64, height:64, borderRadius:"50%", background:`${cc}22`, pointerEvents:"none" }} />
                       </div>
                     );

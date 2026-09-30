@@ -151,7 +151,8 @@ function BottomNavInner() {
 
   const shouldHide =
     HIDE_PATHS.some((p) => location.pathname.startsWith(p)) ||
-    HIDE_EXACT.includes(location.pathname);
+    HIDE_EXACT.includes(location.pathname) ||
+    location.pathname.endsWith('-hub');
   if (shouldHide) return null;
   if (drawerOpen) return null;
 

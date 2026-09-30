@@ -379,20 +379,27 @@ const CSS = `
   input[type=number] { -moz-appearance:textfield; }
 
   @media (max-width:600px) {
-    .op-panel        { border-radius:20px !important; max-height:82vh !important; margin:auto !important; }
-    .op-overlay-wrap { align-items:center !important; padding:16px !important; }
+    .op-panel        { border-radius:20px !important; max-height:88vh !important; margin:auto !important; }
+    .op-overlay-wrap { align-items:flex-end !important; padding:0 !important; }
     .op-picker-grid  { gap:7px !important; }
     .op-occ-chip     { font-size:12px !important; padding:8px 14px !important; }
     .op-2col-form    { grid-template-columns:1fr 1fr !important; }
-    .book-detail-panel{ border-radius:20px !important; max-height:80vh !important; margin:auto !important; }
-    .book-detail-wrap { align-items:center !important; padding:16px !important; }
+    .book-detail-panel{ border-radius:20px 20px 0 0 !important; max-height:88vh !important; margin:0 !important; }
+    .book-detail-wrap { align-items:flex-end !important; padding:0 !important; }
     .book-detail-col  { grid-template-columns:1fr !important; }
     .op-sel-chip      { font-size:10px !important; padding:5px 10px !important; }
     .book-photo-grid  { grid-template-columns:repeat(2,1fr) !important; }
-    .book-hero-img    { height:210px !important; }
-    .book-title       { font-size:1.7rem !important; }
+    .book-hero-img    { height:200px !important; }
+    .book-title       { font-size:1.55rem !important; }
     .op-theme-grid    { grid-template-columns:1fr !important; }
     .pf-datetime      { grid-template-columns:1fr !important; }
+    .op-step          { padding: 20px 16px 28px !important; }
+    .op-step h2       { font-size: clamp(1.5rem,4.5vw,2rem) !important; }
+    .op-step-opt, .op-opt { padding: 14px 14px !important; }
+    .op-occ-row       { padding: 11px 6px !important; }
+  }
+  @media (max-width:380px) {
+    .op-2col-form     { grid-template-columns:1fr !important; }
   }
 `;
 
@@ -1347,7 +1354,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
             )}
 
             {/* ─── Step content ─── */}
-            <div key={step} className="op-step" style={{ padding: '26px 24px 32px' }}>
+            <div key={step} className="op-step" style={{ padding: '26px 24px 32px', animation: 'op-step 0.22s cubic-bezier(0.3,0,0.2,1) forwards' }}>
 
               {/* Step 0 — Occasion directory */}
               {step === 0 && (
