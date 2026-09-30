@@ -574,6 +574,7 @@ export default function VendorChatModal() {
   const conversationIdRef = useRef(null); // tracks current convo ID for reconnect
   const messagesEndRef = useRef(null);
   const messagesTopRef = useRef(null);
+  const autoReplySentRef = useRef(false); // fires once per live-chat session
 
   // ── Chat action state ────────────────────────────────────────────────────────
   const [chatCompleted, setChatCompleted] = useState(false);
@@ -652,6 +653,7 @@ export default function VendorChatModal() {
     setBotDone(done);
     botDoneRef.current = done;
     summarySentRef.current = false;
+    autoReplySentRef.current = false;
     setMessages([]);
     setCustomerPlans([]);
     setText("");
@@ -1281,6 +1283,22 @@ export default function VendorChatModal() {
       socketRef.current?.emit("send_message", { conversationId, sender: "user", content });
     } else if (isSkipBot) {
       pendingMsgsRef.current.push(content);
+    }
+
+    // Auto-acknowledgment — fires once per live-chat session so the user knows
+    // their message was received even before a human replies
+    if (!autoReplySentRef.current) {
+      autoReplySentRef.current = true;
+      const autoMsg = isConcierge
+        ? "Got it! Your request is with our concierge team. We'll put together the best options and get back to you shortly. 🎉"
+        : isFunActivities
+        ? "Thanks! Our fun activities team has received your request. We'll be in touch with availability and pricing shortly. 🎪"
+        : vendor?._id
+        ? `Your message has been sent to ${vendor.name || "the vendor"}. You'll be notified as soon as they respond! ⚡`
+        : "Thanks for reaching out! 🙏 Our team has received your message and will get back to you within a few hours. In the meantime, feel free to browse vendors!";
+      setTimeout(() => {
+        setMessages(prev => [...prev, { text: autoMsg, sender: "vendor", ts: Date.now() }]);
+      }, 1200);
     }
   };
 
