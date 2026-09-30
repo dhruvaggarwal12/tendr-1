@@ -36,6 +36,17 @@ const OCCASIONS_LIST = [
   { label: 'Get Together',    photo: '/occasions/get-together-desktop.png' },
   { label: 'Kitty Party',     photo: '/occasions/kitty-party-desktop.png' },
   { label: 'Naming Ceremony', photo: '/occasions/naming-ceremony-desktop.png' },
+  { label: 'Graduation',      photo: '/occasions/house-party-desktop.png' },
+  { label: 'Bachelorette',    photo: '/occasions/house-party-desktop.png' },
+  { label: 'Farewell',        photo: '/occasions/get-together-desktop.png' },
+  { label: 'Retirement',      photo: '/occasions/housewarming-desktop.png' },
+  { label: 'First Birthday',  photo: '/occasions/baby-shower-desktop.png' },
+  { label: 'Gender Reveal',   photo: '/occasions/baby-shower-desktop.png' },
+  { label: 'Office Party',    photo: '/occasions/house-party-desktop.png' },
+  { label: 'Newborn Welcome', photo: '/occasions/baby-shower-desktop.png' },
+  { label: 'Diwali Party',    photo: '/occasions/anniversary-desktop.png' },
+  { label: 'Holi Party',      photo: '/occasions/birthday-desktop.png' },
+  { label: 'Navratri Garba',  photo: '/occasions/house-party-desktop.png' },
 ];
 
 const BUDGET_OPTIONS = [
@@ -65,14 +76,25 @@ const PAGE_NAMES = ['Overview', 'Customise', 'Plan & Decor'];
 
 // Per-occasion accent colours — all warm earth/gold tones matching the website
 const OCC_COLOR = {
-  'Birthday':        '#FF4B8B',  // vibrant pink — festive & fun
-  'Anniversary':     '#C4728A',  // dusty rose
-  'Baby Shower':     '#8AB4A0',  // sage mint
-  'House Party':     '#D4A53A',  // bright amber
-  'Housewarming':    '#C47A2E',  // exact Tendr gold
-  'Get Together':    '#7A9A5A',  // forest sage
-  'Kitty Party':     '#D4778A',  // warm pink
-  'Naming Ceremony': '#D4922E',  // saffron
+  'Birthday':        '#FF4B8B',
+  'Anniversary':     '#C4728A',
+  'Baby Shower':     '#8AB4A0',
+  'House Party':     '#D4A53A',
+  'Housewarming':    '#C47A2E',
+  'Get Together':    '#7A9A5A',
+  'Kitty Party':     '#D4778A',
+  'Naming Ceremony': '#D4922E',
+  'Graduation':      '#4A6EB8',
+  'Bachelorette':    '#E878B8',
+  'Farewell':        '#8080B8',
+  'Retirement':      '#9A7A30',
+  'First Birthday':  '#E87060',
+  'Gender Reveal':   '#B070B8',
+  'Office Party':    '#7098D8',
+  'Newborn Welcome': '#7890A8',
+  'Diwali Party':    '#D09030',
+  'Holi Party':      '#D04898',
+  'Navratri Garba':  '#F0A020',
 };
 const FALLBACK_COLOR = '#C47A2E';
 const CHAMP = '#C4973A'; // single champagne accent — used everywhere
@@ -86,16 +108,28 @@ const HINGLISH = {
   'Get Together':    'Milna Julna',
   'Kitty Party':     'Kitty Party',
   'Naming Ceremony': 'Naamkaran',
+  'Graduation':      'Convocation',
+  'Bachelorette':    'Bachelorette',
+  'Farewell':        'Alvida Party',
+  'Retirement':      'Sewa Mukti Party',
+  'First Birthday':  'Pehla Janamdin',
+  'Gender Reveal':   'Ladka ya Ladki',
+  'Office Party':    'Office Party',
+  'Newborn Welcome': 'Naye Mehman',
+  'Diwali Party':    'Diwali Mela',
+  'Holi Party':      'Rang Barse',
+  'Navratri Garba':  'Garba Night',
 };
 
 const OCC_GROUPS = [
-  { label: 'Personal',   items: ['Baby Shower', 'Naming Ceremony', 'Housewarming', 'Get Together'] },
-  { label: 'Milestones', items: ['Birthday', 'Anniversary'] },
-  { label: 'Social',     items: ['House Party', 'Kitty Party'] },
+  { label: 'Milestones', items: ['Birthday', 'Anniversary', 'Graduation', 'Retirement', 'Farewell', 'Bachelorette'] },
+  { label: 'Life Events', items: ['Baby Shower', 'Naming Ceremony', 'First Birthday', 'Newborn Welcome', 'Gender Reveal', 'Housewarming'] },
+  { label: 'Social',     items: ['House Party', 'Kitty Party', 'Office Party', 'Get Together'] },
+  { label: 'Festivals',  items: ['Diwali Party', 'Holi Party', 'Navratri Garba'] },
 ];
 
 const OCC_BG = {
-  'Birthday':        ['#220814', '#140408'],  // deep pink/berry
+  'Birthday':        ['#220814', '#140408'],
   'Anniversary':     ['#1E0A18', '#120412'],
   'Baby Shower':     ['#061A14', '#031008'],
   'House Party':     ['#1E1608', '#120E02'],
@@ -103,6 +137,17 @@ const OCC_BG = {
   'Get Together':    ['#081806', '#041002'],
   'Kitty Party':     ['#220A14', '#140408'],
   'Naming Ceremony': ['#201008', '#140802'],
+  'Graduation':      ['#040C24', '#020818'],
+  'Bachelorette':    ['#1A0818', '#120412'],
+  'Farewell':        ['#0C0C1C', '#060614'],
+  'Retirement':      ['#1A1000', '#100A00'],
+  'First Birthday':  ['#1C0808', '#120404'],
+  'Gender Reveal':   ['#160818', '#0E040E'],
+  'Office Party':    ['#080E18', '#040810'],
+  'Newborn Welcome': ['#0A1018', '#060C12'],
+  'Diwali Party':    ['#1A1000', '#100A00'],
+  'Holi Party':      ['#1C0818', '#120410'],
+  'Navratri Garba':  ['#0C0818', '#060410'],
 };
 
 // Warm palette for per-theme unique colours (hashed from theme id)

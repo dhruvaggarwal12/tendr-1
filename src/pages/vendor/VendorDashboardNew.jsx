@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+﻿import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 // ── Tokens ────────────────────────────────────────────────────────────────────
 const gold="#C47A2E",goldLt="#CCAB4A",ink="#1C0A04",cream="#FAF7F2",muted="#9B7450";
 const font="'Outfit',sans-serif",serif="'Cormorant Garamond',Georgia,serif";
+const docStyles=`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Outfit',sans-serif;background:#f5f5f5;padding:20px;}@media print{body{background:#fff;padding:0;}@page{margin:15mm;}}`;
+const docOpen=(html)=>{const w=window.open("","_blank","width=900,height=700");w.document.write(html);w.document.close();setTimeout(()=>w.print(),700);};
 const BASE=import.meta.env.VITE_BASE_URL;
 const aH=(t)=>({...(t?{Authorization:`Bearer ${t}`}:{}),"Content-Type":"application/json"});
 const fmt=(n)=>"₹"+Number(n||0).toLocaleString("en-IN");
@@ -256,6 +258,66 @@ export default function VendorDashboardNew(){
   const [rDraft,setRDraft]=useState({text:"",date:todayStr,done:false});
   const saveRem=(up)=>{setReminders(up);lsSet(REM_KEY,up);};
 
+  // ── Booking workspace ─────────────────────────────────────────────────────────
+  const [workBooking,setWorkBooking]=useState(null);
+  const BKG_PAY_KEY=`tendr:bkgpay:${vId}`;
+  const [bkgPayments,setBkgPayments]=useState(()=>ls(BKG_PAY_KEY,{}));
+  const saveBkgPayments=(up)=>{setBkgPayments(up);lsSet(BKG_PAY_KEY,up);};
+
+  // ── My Page internal section ──────────────────────────────────────────────────
+  const [myPageSection,setMyPageSection]=useState("overview");
+
+  // ── Document history ──────────────────────────────────────────────────────────
+  const DOC_HIST_KEY=`tendr:dochist:${vId}`;
+  const [docHistory,setDocHistory]=useState(()=>ls(DOC_HIST_KEY,[]));
+  const addDocHistory=(e)=>{const up=[{...e,at:Date.now()},...docHistory].slice(0,30);setDocHistory(up);lsSet(DOC_HIST_KEY,up);};
+
+  // ── Business Tools ────────────────────────────────────────────────────────────
+  const [toolSection,setToolSection]=useState("quote");
+  const [tqForm,setTqForm]=useState({clientName:"",clientPhone:"",eventType:"",eventDate:"",items:[{desc:"",qty:1,rate:""}],discount:"",notes:""});
+  const [tiForm,setTiForm]=useState({clientName:"",clientPhone:"",clientEmail:"",eventType:"",eventDate:"",items:[{desc:"",qty:1,rate:""}],discount:"",notes:"",status:"PENDING"});
+  const [tcForm,setTcForm]=useState({clientName:"",clientPhone:"",eventType:"",eventDate:"",location:"",totalAmount:"",advanceAmount:"",terms:""});
+
+  const generateQuote=()=>{
+    const items=tqForm.items.filter(it=>it.desc.trim());
+    const subtotal=items.reduce((s,it)=>s+Number(it.qty||1)*Number(it.rate||0),0);
+    const disc=Number(tqForm.discount||0);
+    const total=subtotal-disc;
+    const validTill=new Date(Date.now()+7*864e5).toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"});
+    const rows=items.map(it=>`<tr><td style="padding:8px 12px;border-bottom:1px solid #f0ece6;">${it.desc}</td><td style="padding:8px 12px;text-align:center;border-bottom:1px solid #f0ece6;">${it.qty}</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid #f0ece6;">₹${Number(it.rate||0).toLocaleString("en-IN")}</td><td style="padding:8px 12px;text-align:right;font-weight:700;border-bottom:1px solid #f0ece6;">₹${(Number(it.qty||1)*Number(it.rate||0)).toLocaleString("en-IN")}</td></tr>`).join("");
+    docOpen(`<!doctype html><html><head><style>${docStyles}.doc{background:#fff;max-width:800px;margin:auto;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1)}.header{background:linear-gradient(135deg,#1C0A04,#3A1A08);padding:32px 36px;display:flex;justify-content:space-between;align-items:flex-start}.logo{color:#CCAB4A;font-size:1.8rem;font-weight:400;letter-spacing:.04em}.badge{background:rgba(204,171,74,.15);border:1px solid rgba(204,171,74,.3);color:#CCAB4A;padding:6px 18px;border-radius:6px;font-size:.75rem;font-weight:700;letter-spacing:.12em}.body{padding:32px 36px}.meta{display:flex;justify-content:space-between;margin-bottom:28px}.info-block p{font-size:13px;color:#666;margin:2px 0}h3{font-size:.7rem;font-weight:700;color:#9B7450;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}table{width:100%;border-collapse:collapse;margin-bottom:20px}thead tr{background:#FAF7F2}th{padding:10px 12px;font-size:.65rem;font-weight:700;color:#9B7450;text-transform:uppercase;letter-spacing:.08em}.total-box{background:#FAF7F2;border-radius:10px;padding:16px 20px;text-align:right}.footer{background:#FAF7F2;padding:14px 36px;font-size:11px;color:#9B7450;text-align:center;border-top:1px solid #EDE8E1}</style></head><body><div class="doc"><div class="header"><div><div class="logo">tendr</div><div style="color:rgba(255,248,236,.5);font-size:12px;margin-top:4px">${vName} · ${sType||"Vendor"}</div></div><div style="text-align:right"><div class="badge">ESTIMATE</div><div style="color:rgba(255,248,236,.5);font-size:12px;margin-top:8px">${new Date().toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}</div></div></div><div class="body"><div class="meta"><div class="info-block"><h3>Bill To</h3><p style="font-size:15px;font-weight:700;color:#1C0A04">${tqForm.clientName||"—"}</p>${tqForm.clientPhone?`<p>${tqForm.clientPhone}</p>`:""}</div><div class="info-block" style="text-align:right"><h3>Event Details</h3><p style="font-size:15px;font-weight:700;color:#1C0A04">${tqForm.eventType||"—"}</p>${tqForm.eventDate?`<p>${new Date(tqForm.eventDate).toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"})}</p>`:""}</div></div><table><thead><tr><th style="text-align:left">Description</th><th style="text-align:center">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead><tbody>${rows}</tbody></table><div class="total-box">${disc>0?`<div style="font-size:13px;color:#666;margin-bottom:4px">Subtotal: ₹${subtotal.toLocaleString("en-IN")}</div><div style="font-size:13px;color:#DC2626;margin-bottom:8px">Discount: −₹${disc.toLocaleString("en-IN")}</div>`:""}<div style="font-size:.65rem;font-weight:700;color:#9B7450;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Total Estimate</div><div style="font-size:1.8rem;font-weight:800;color:#C47A2E">₹${total.toLocaleString("en-IN")}</div></div>${tqForm.notes?`<p style="font-size:13px;color:#666;margin-top:16px">${tqForm.notes}</p>`:""}</div><div class="footer">Valid until ${validTill} &nbsp;·&nbsp; This is an estimate only — final pricing may vary &nbsp;·&nbsp; Generated via Tendr</div></div></body></html>`);
+    addDocHistory({type:"Estimate",client:tqForm.clientName,event:tqForm.eventType,date:tqForm.eventDate,total});
+  };
+
+  const generateInvoice=()=>{
+    const items=tiForm.items.filter(it=>it.desc.trim());
+    const subtotal=items.reduce((s,it)=>s+Number(it.qty||1)*Number(it.rate||0),0);
+    const disc=Number(tiForm.discount||0);
+    const total=subtotal-disc;
+    const invNum="INV-"+Math.floor(100000+Math.random()*900000);
+    const statusColors={PAID:["#DCFCE7","#16A34A"],PARTIAL:["#FEF9C3","#CA8A04"],PENDING:["#FEE2E2","#DC2626"]};
+    const [sbg,stc]=statusColors[tiForm.status]||statusColors.PENDING;
+    const rows=items.map(it=>`<tr><td style="padding:8px 12px;border-bottom:1px solid #f0ece6;">${it.desc}</td><td style="padding:8px 12px;text-align:center;border-bottom:1px solid #f0ece6;">${it.qty}</td><td style="padding:8px 12px;text-align:right;border-bottom:1px solid #f0ece6;">₹${Number(it.rate||0).toLocaleString("en-IN")}</td><td style="padding:8px 12px;text-align:right;font-weight:700;border-bottom:1px solid #f0ece6;">₹${(Number(it.qty||1)*Number(it.rate||0)).toLocaleString("en-IN")}</td></tr>`).join("");
+    docOpen(`<!doctype html><html><head><style>${docStyles}.doc{background:#fff;max-width:800px;margin:auto;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1)}.header{background:linear-gradient(135deg,#1C0A04,#3A1A08);padding:32px 36px;display:flex;justify-content:space-between;align-items:flex-start}.logo{color:#CCAB4A;font-size:1.8rem;font-weight:400;letter-spacing:.04em}.badge{background:rgba(204,171,74,.15);border:1px solid rgba(204,171,74,.3);color:#CCAB4A;padding:6px 18px;border-radius:6px;font-size:.75rem;font-weight:700;letter-spacing:.12em}.body{padding:32px 36px}.meta{display:flex;justify-content:space-between;margin-bottom:28px}.info-block p{font-size:13px;color:#666;margin:2px 0}h3{font-size:.7rem;font-weight:700;color:#9B7450;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}table{width:100%;border-collapse:collapse;margin-bottom:20px}thead tr{background:#FAF7F2}th{padding:10px 12px;font-size:.65rem;font-weight:700;color:#9B7450;text-transform:uppercase;letter-spacing:.08em}.total-box{background:#FAF7F2;border-radius:10px;padding:16px 20px;text-align:right}.footer{background:#FAF7F2;padding:14px 36px;font-size:11px;color:#9B7450;text-align:center;border-top:1px solid #EDE8E1}</style></head><body><div class="doc"><div class="header"><div><div class="logo">tendr</div><div style="color:rgba(255,248,236,.5);font-size:12px;margin-top:4px">${vName} · ${sType||"Vendor"}</div></div><div style="text-align:right"><div class="badge">TAX INVOICE</div><div style="color:rgba(255,248,236,.5);font-size:12px;margin-top:6px">${invNum}</div><div style="color:rgba(255,248,236,.5);font-size:12px;margin-top:2px">${new Date().toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}</div></div></div><div class="body"><div class="meta"><div class="info-block"><h3>Bill To</h3><p style="font-size:15px;font-weight:700;color:#1C0A04">${tiForm.clientName||"—"}</p>${tiForm.clientPhone?`<p>${tiForm.clientPhone}</p>`:""} ${tiForm.clientEmail?`<p>${tiForm.clientEmail}</p>`:""}</div><div class="info-block" style="text-align:right"><h3>Event</h3><p style="font-size:15px;font-weight:700;color:#1C0A04">${tiForm.eventType||"—"}</p>${tiForm.eventDate?`<p>${new Date(tiForm.eventDate).toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"})}</p>`:""}<div style="margin-top:8px;background:${sbg};color:${stc};border-radius:100px;padding:3px 14px;font-size:11px;font-weight:700;display:inline-block">${tiForm.status}</div></div></div><table><thead><tr><th style="text-align:left">Description</th><th style="text-align:center">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead><tbody>${rows}</tbody></table><div class="total-box">${disc>0?`<div style="font-size:13px;color:#666;margin-bottom:4px">Subtotal: ₹${subtotal.toLocaleString("en-IN")}</div><div style="font-size:13px;color:#DC2626;margin-bottom:8px">Discount: −₹${disc.toLocaleString("en-IN")}</div>`:""}<div style="font-size:.65rem;font-weight:700;color:#9B7450;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Total Amount</div><div style="font-size:1.8rem;font-weight:800;color:#C47A2E">₹${total.toLocaleString("en-IN")}</div></div>${tiForm.notes?`<p style="font-size:13px;color:#666;margin-top:16px">${tiForm.notes}</p>`:""}</div><div class="footer">Thank you for your business · Generated via Tendr</div></div></body></html>`);
+    addDocHistory({type:"Invoice",client:tiForm.clientName,event:tiForm.eventType,date:tiForm.eventDate,total});
+  };
+
+  const generateContract=()=>{
+    const defaultTerms=[
+      "Payment: An advance of the agreed amount is due before the event date. Balance to be cleared on or before the event day.",
+      "Cancellation: Cancellations made more than 15 days before the event will receive a 50% refund of the advance. Cancellations within 15 days are non-refundable.",
+      "Rescheduling: One free reschedule is permitted with a minimum 10-day notice. Subsequent changes attract a rescheduling fee of ₹500.",
+      "Services: The vendor will provide services as agreed during booking. Any additions or changes on the day are subject to availability and additional charges.",
+      "Setup Access: The client must ensure that the venue is accessible at least 2 hours before the event start time for setup.",
+      "Liability: The vendor is not liable for any damage, loss, or injury arising from circumstances beyond their control, including venue issues or force majeure events.",
+      "Portfolio: The vendor reserves the right to use photos/videos from this event for promotional purposes unless the client explicitly opts out in writing.",
+      "Governing Law: This agreement is subject to the laws of Delhi, India. Any disputes shall be resolved through mutual discussion or, if required, in the courts of Delhi.",
+    ];
+    const terms=(tcForm.terms.trim()?tcForm.terms.split("\n").filter(Boolean):defaultTerms).map((t,i)=>`<li style="margin-bottom:10px;padding-left:8px;border-left:2px solid rgba(204,171,74,.3);color:#4A3020;font-size:13px;line-height:1.6"><strong>${i+1}.</strong> ${t}</li>`).join("");
+    docOpen(`<!doctype html><html><head><style>${docStyles}.doc{background:#fff;max-width:800px;margin:auto;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1)}.header{background:linear-gradient(135deg,#1C0A04,#3A1A08);padding:32px 36px}.logo{color:#CCAB4A;font-size:1.8rem;font-weight:400;letter-spacing:.04em}.body{padding:32px 36px}.parties{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}.party-box{background:#FAF7F2;border-radius:10px;padding:16px 18px}h3{font-size:.7rem;font-weight:700;color:#9B7450;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}.amount-bar{background:linear-gradient(135deg,#1C0A04,#3A1A08);border-radius:10px;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}.amount-item{text-align:center}.amount-label{font-size:.65rem;font-weight:700;color:rgba(255,248,236,.5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}.amount-value{font-size:1.5rem;font-weight:800;color:#CCAB4A}.sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:32px}.sig-line{border-top:2px solid #1C0A04;padding-top:8px;font-size:12px;color:#9B7450;font-weight:700;text-transform:uppercase;letter-spacing:.08em}.footer{background:#FAF7F2;padding:14px 36px;font-size:11px;color:#9B7450;text-align:center;border-top:1px solid #EDE8E1}</style></head><body><div class="doc"><div class="header"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="logo">tendr</div><div style="color:rgba(255,248,236,.5);font-size:.65rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;margin-top:4px">Service Agreement</div></div><div style="text-align:right;color:rgba(255,248,236,.5);font-size:12px">${new Date().toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"})}</div></div></div><div class="body"><div class="parties"><div class="party-box"><h3>Service Provider</h3><div style="font-size:15px;font-weight:700;color:#1C0A04">${vName}</div><div style="font-size:13px;color:#666;margin-top:4px">${sType||"Vendor"}</div></div><div class="party-box"><h3>Client</h3><div style="font-size:15px;font-weight:700;color:#1C0A04">${tcForm.clientName||"—"}</div>${tcForm.clientPhone?`<div style="font-size:13px;color:#666;margin-top:4px">${tcForm.clientPhone}</div>`:""}</div></div><div style="background:#FAF7F2;border-radius:10px;padding:16px 18px;margin-bottom:20px;display:flex;justify-content:space-between"><div><h3>Event</h3><div style="font-size:15px;font-weight:700;color:#1C0A04">${tcForm.eventType||"—"}</div></div><div><h3>Date</h3><div style="font-size:15px;font-weight:700;color:#1C0A04">${tcForm.eventDate?new Date(tcForm.eventDate).toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"}):"—"}</div></div><div><h3>Location</h3><div style="font-size:15px;font-weight:700;color:#1C0A04">${tcForm.location||"—"}</div></div></div>${(tcForm.totalAmount||tcForm.advanceAmount)?`<div class="amount-bar"><div class="amount-item"><div class="amount-label">Contract Value</div><div class="amount-value">₹${Number(tcForm.totalAmount||0).toLocaleString("en-IN")}</div></div><div style="width:1px;height:40px;background:rgba(204,171,74,.2)"></div><div class="amount-item"><div class="amount-label">Advance Due</div><div class="amount-value">₹${Number(tcForm.advanceAmount||0).toLocaleString("en-IN")}</div></div></div>`:""}<h3 style="margin-bottom:16px">Terms & Conditions</h3><ul style="list-style:none;padding:0">${terms}</ul><div class="sig-grid"><div><div style="height:50px"></div><div class="sig-line">Service Provider — ${vName}</div></div><div><div style="height:50px"></div><div class="sig-line">Client — ${tcForm.clientName||"________________"}</div></div></div></div><div class="footer">This agreement is binding once signed by both parties &nbsp;·&nbsp; Generated via Tendr</div></div></body></html>`);
+    addDocHistory({type:"Contract",client:tcForm.clientName,event:tcForm.eventType,date:tcForm.eventDate,value:Number(tcForm.totalAmount||0)});
+  };
+
   // ── Links hub ─────────────────────────────────────────────────────────────────
   const LNK_KEY=`tendr:links:${vId}`;
   const [links,setLinks]=useState(()=>ls(LNK_KEY,[{id:1,label:"Instagram",url:"",icon:"📸"},{id:2,label:"YouTube",url:"",icon:"▶️"},{id:3,label:"WhatsApp",url:"",icon:"💬"}]));
@@ -372,18 +434,17 @@ export default function VendorDashboardNew(){
   const typeTabKey=typeTab?.key;
   const NAV=[
     {key:"home",    label:t("home"),     group:"OVERVIEW", icon:"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"},
-    {key:"work",    label:t("work"),     group:"EVENTS",   icon:"M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2",badge:pendingBkgs.length},
+    {key:"work",    label:"My Work",     group:"EVENTS",   icon:"M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2",badge:pendingBkgs.length},
     {key:"calendar",label:t("calendar"), group:"EVENTS",   icon:"M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z",badge:conflicts.length,badgeColor:"#DC2626"},
     {key:"clients", label:t("clients"),  group:"MANAGE",   icon:"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"},
     {key:"quotes",  label:t("quotes"),   group:"MANAGE",   icon:"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M16 13H8M16 17H8M10 9H8"},
     {key:"money",   label:t("money"),    group:"MANAGE",   icon:"M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"},
+    {key:"tools",   label:"Tools",       group:"MANAGE",   icon:"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"},
     ...(typeTab?[{key:typeTabKey,label:t(typeTabKey),group:"MANAGE",icon:typeTab.icon}]:[]),
-    {key:"packages",label:"Packages",   group:"MANAGE",   icon:"M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"},
-    {key:"reviews", label:t("reviews"), group:"MANAGE",   icon:"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"},
     {key:"insights",label:t("insights"),group:"GROW",     icon:"M18 20V10M12 20V4M6 20v-6"},
     {key:"flyer",   label:t("flyer"),   group:"GROW",     icon:"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"},
-    {key:"profile", label:t("profile"), group:"GROW",     icon:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"},
-    {key:"grow",    label:t("grow"),    group:"GROW",     icon:"M13 2L3 14h9l-1 8 10-12h-9l1-8z"},
+    {key:"mypage",  label:"My Page",    group:"MY PAGE",  icon:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"},
+    {key:"grow",    label:t("grow"),    group:"MY PAGE",  icon:"M13 2L3 14h9l-1 8 10-12h-9l1-8z"},
   ];
 
   // ── Sidebar ───────────────────────────────────────────────────────────────────
@@ -635,11 +696,12 @@ export default function VendorDashboardNew(){
         {expenses.length===0?<p style={{color:muted,fontSize:13.5}}>No expenses logged.</p>:
           <div style={{overflowX:"auto"}}>
             <table style={{width:"100%",borderCollapse:"collapse",minWidth:400}}>
-              <thead><tr style={{background:cream}}>{["Date","Description","Category","Amount",""].map(h=><th key={h} style={{padding:"8px 10px",fontSize:11,fontWeight:700,color:muted,textAlign:h==="Amount"?"right":"left",textTransform:"uppercase",letterSpacing:"0.06em"}}>{h}</th>)}</tr></thead>
+              <thead><tr style={{background:cream}}>{["Date","Description","Event","Category","Amount",""].map(h=><th key={h} style={{padding:"8px 10px",fontSize:11,fontWeight:700,color:muted,textAlign:h==="Amount"?"right":"left",textTransform:"uppercase",letterSpacing:"0.06em"}}>{h}</th>)}</tr></thead>
               <tbody>{expenses.map((e,i)=>(
                 <tr key={e.id||i} style={{borderTop:"1px solid rgba(196,122,46,0.07)"}}>
                   <td style={{padding:"8px 10px",fontSize:13,color:muted}}>{e.date}</td>
                   <td style={{padding:"8px 10px",fontSize:13,color:ink}}>{e.desc}</td>
+                  <td style={{padding:"8px 10px"}}>{e.eventLabel?<span style={{background:"rgba(196,122,46,0.1)",color:gold,borderRadius:100,padding:"2px 8px",fontSize:11,fontWeight:600}}>{e.eventLabel}</span>:<span style={{color:"rgba(155,116,80,0.4)",fontSize:12}}>—</span>}</td>
                   <td style={{padding:"8px 10px",fontSize:13,color:muted}}>{e.category}</td>
                   <td style={{padding:"8px 10px",fontSize:13,fontWeight:700,color:"#DC2626",textAlign:"right"}}>{fmt(e.amount)}</td>
                   <td style={{padding:"8px 10px",textAlign:"center"}}><button onClick={()=>saveExpenses(expenses.filter(x=>x.id!==e.id))} style={{background:"none",border:"none",cursor:"pointer",color:muted,fontSize:16}}>×</button></td>
@@ -967,8 +1029,260 @@ export default function VendorDashboardNew(){
     </div>
   );
 
+  // ════════════ MY PAGE ═════════════════════════════════════════════════════════
+  const myPageTab=(()=>{
+    const sections=[["overview","Overview"],["packages","Packages"],["reviews","Reviews"]];
+    const bPill=(k)=>({padding:"8px 18px",borderRadius:100,border:myPageSection===k?`1.5px solid ${gold}`:"1px solid rgba(196,122,46,0.2)",background:myPageSection===k?"rgba(196,122,46,0.1)":"#fff",color:myPageSection===k?gold:muted,fontSize:13,fontWeight:myPageSection===k?700:500,cursor:"pointer",fontFamily:font,transition:"all 0.15s"});
+    return(
+      <div>
+        <h2 style={{fontFamily:serif,fontSize:"1.7rem",fontWeight:400,color:ink,marginBottom:6}}>My Page</h2>
+        <p style={{color:muted,fontSize:13.5,marginBottom:18}}>Your public profile, packages & reviews</p>
+        <div style={{display:"flex",gap:8,marginBottom:24,flexWrap:"wrap"}}>
+          {sections.map(([k,l])=><button key={k} onClick={()=>setMyPageSection(k)} style={bPill(k)}>{l}</button>)}
+        </div>
+        {myPageSection==="overview"&&(
+          <div>
+            <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20}}>
+              <div style={{width:64,height:64,borderRadius:"50%",background:`linear-gradient(135deg,${gold},${goldLt})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,fontFamily:serif,color:"#fff"}}>{vName[0]}</div>
+              <div>
+                <div style={{fontSize:18,fontFamily:serif,fontWeight:500,color:ink}}>{vName}</div>
+                <div style={{fontSize:13,color:muted}}>{sType}{user?.address?.city?` · ${user.address.city}`:""}</div>
+                <Stars r={rating}/>
+              </div>
+              <button onClick={()=>navigate(`/vendor/${vId}`)} style={{...bSecondary,marginLeft:"auto",padding:"8px 16px",fontSize:12}}>View Public Page →</button>
+            </div>
+            <Card style={{marginBottom:14}}>
+              <SL>Basic Info</SL>
+              {!profEdit
+                ?<div>
+                  {[["name","Name"],["phoneNumber","Phone"],["yearsOfExperience","Experience"],["teamSize","Team Size"],["gstNumber","GST"]].map(([k,l])=>(
+                    <div key={k} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid rgba(196,122,46,0.07)"}}>
+                      <span style={{fontSize:12,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.06em"}}>{l}</span>
+                      <span style={{fontSize:14,color:ink,fontFamily:k==="gstNumber"?"monospace":font}}>{user?.[k]||<span style={{color:"rgba(155,116,80,0.4)",fontStyle:"italic"}}>Not set</span>}</span>
+                    </div>
+                  ))}
+                  <button onClick={()=>{setProfDraft({...user});setProfEdit(true);}} style={{...bSecondary,marginTop:14}}>Edit Profile</button>
+                </div>
+                :<div>
+                  {[["name","Name"],["phoneNumber","Phone"],["yearsOfExperience","Years of Experience","number"],["teamSize","Team Size","number"],["gstNumber","GST Number"]].map(([k,l,tp])=>(
+                    <div key={k} style={{marginBottom:12}}>
+                      <label style={{fontSize:11,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.07em",display:"block",marginBottom:4}}>{l}</label>
+                      <input type={tp||"text"} value={profDraft[k]||""} onChange={e=>setProfDraft(p=>({...p,[k]:e.target.value}))} style={{width:"100%",padding:"9px 13px",borderRadius:10,border:"1px solid rgba(196,122,46,0.2)",fontSize:14,fontFamily:font,color:ink,background:cream,boxSizing:"border-box"}}/>
+                    </div>
+                  ))}
+                  <div style={{display:"flex",gap:8}}>
+                    <button onClick={saveProfile} disabled={profSaving} style={{...bPrimary,flex:1,padding:12}}>{profSaving?t("saving"):t("save")}</button>
+                    <button onClick={()=>setProfEdit(false)} style={{...bSecondary,padding:"12px 20px"}}>{t("cancel")}</button>
+                  </div>
+                </div>
+              }
+            </Card>
+            {(user?.portfolioPhotos||[]).length>0&&(
+              <Card>
+                <SL>Portfolio</SL>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+                  {(user.portfolioPhotos||[]).slice(0,9).map((p,i)=>(
+                    <div key={i} style={{aspectRatio:"1",borderRadius:10,overflow:"hidden",background:cream}}>
+                      <img src={p} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+          </div>
+        )}
+        {myPageSection==="packages"&&(
+          <div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
+              <SL>Your Packages</SL>
+              <button onClick={()=>{setPkgDraft({name:"",price:"",unit:"per event",items:""});setPkgModal("new");}} style={bPrimary}>+ Add Package</button>
+            </div>
+            {packages.length===0&&<Card><p style={{color:muted,fontSize:13.5}}>No packages yet. Add packages to show clients what you offer.</p></Card>}
+            {packages.map((pkg,i)=>(
+              <Card key={pkg.id||i} style={{marginBottom:14}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+                  <div><div style={{fontSize:16,fontWeight:700,color:ink}}>{pkg.name}</div><div style={{fontSize:14,color:gold,fontWeight:700}}>{fmt(pkg.price)} <span style={{fontSize:12,color:muted,fontWeight:400}}>/ {pkg.unit}</span></div></div>
+                  {pkg.badge&&<span style={{background:gold,color:"#fff",borderRadius:100,padding:"3px 10px",fontSize:11,fontWeight:700}}>{pkg.badge}</span>}
+                </div>
+                <ul style={{margin:"0 0 14px 18px",padding:0}}>{(pkg.items||"").split("\n").filter(Boolean).map((it,j)=><li key={j} style={{fontSize:13,color:"#4A3020",marginBottom:3}}>{it}</li>)}</ul>
+                <div style={{display:"flex",gap:8}}>
+                  <button onClick={()=>{setPkgDraft({...pkg});setPkgModal(pkg);}} style={bSecondary}>{t("edit")}</button>
+                  <button onClick={()=>savePkgs(packages.filter(x=>x.id!==pkg.id))} style={bDanger}>{t("delete")}</button>
+                </div>
+              </Card>
+            ))}
+            {pkgModal&&(
+              <Modal title={pkgModal==="new"?"New Package":"Edit Package"} onClose={()=>setPkgModal(null)}>
+                <Inp label="Package Name" value={pkgDraft.name} onChange={v=>setPkgDraft(p=>({...p,name:v}))}/>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                  <Inp label="Price (₹)" value={pkgDraft.price} onChange={v=>setPkgDraft(p=>({...p,price:v}))} type="number"/>
+                  <Inp label="Unit" value={pkgDraft.unit} onChange={v=>setPkgDraft(p=>({...p,unit:v}))}/>
+                </div>
+                <Inp label="Badge (optional)" value={pkgDraft.badge} onChange={v=>setPkgDraft(p=>({...p,badge:v}))}/>
+                <div style={{marginBottom:16}}>
+                  <label style={{fontSize:11,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.08em",display:"block",marginBottom:5}}>Inclusions (one per line)</label>
+                  <textarea value={pkgDraft.items||""} onChange={e=>setPkgDraft(p=>({...p,items:e.target.value}))} rows={4} style={{width:"100%",padding:"10px 14px",borderRadius:10,border:"1px solid rgba(196,122,46,0.2)",fontSize:13,fontFamily:font,color:ink,background:cream,resize:"vertical",boxSizing:"border-box"}}/>
+                </div>
+                <div style={{display:"flex",gap:10}}>
+                  <button onClick={()=>{const e={...pkgDraft,id:pkgModal==="new"?Date.now():pkgModal.id,price:Number(pkgDraft.price)};savePkgs(pkgModal==="new"?[...packages,e]:packages.map(x=>x.id===pkgModal.id?e:x));setPkgModal(null);showToast("Package saved!");}} style={{...bPrimary,flex:1,padding:12}}>Save Package</button>
+                  <button onClick={()=>setPkgModal(null)} style={{...bSecondary,padding:"12px 20px"}}>{t("cancel")}</button>
+                </div>
+              </Modal>
+            )}
+          </div>
+        )}
+        {myPageSection==="reviews"&&(
+          <div>
+            <SL>Client Reviews</SL>
+            {reviews.length===0?<Card><p style={{color:muted,fontSize:13.5}}>No reviews yet.</p></Card>:
+              reviews.map((r,i)=>(
+                <Card key={r._id||i} style={{marginBottom:14}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+                    <div><div style={{fontSize:15,fontWeight:700,color:ink}}>{r.consumerName||r.name||"Customer"}</div><div style={{fontSize:12,color:muted}}>{r.eventType||r.event}</div></div>
+                    <div style={{display:"flex",alignItems:"center",gap:6}}><Stars r={r.averageRating||r.rating||0}/><span style={{fontSize:13,color:ink,fontWeight:700}}>{(r.averageRating||r.rating||0).toFixed(1)}</span></div>
+                  </div>
+                  <p style={{fontSize:13.5,color:"#4A3020",lineHeight:1.65,margin:0}}>{r.reviewText||r.text}</p>
+                </Card>
+              ))
+            }
+          </div>
+        )}
+      </div>
+    );
+  })();
+
+  // ════════════ TOOLS ═══════════════════════════════════════════════════════════
+  const toolsTab=(()=>{
+    const bTool=(active)=>({padding:"9px 20px",borderRadius:100,border:active?`1.5px solid ${gold}`:"1px solid rgba(196,122,46,0.2)",background:active?"rgba(196,122,46,0.1)":"#fff",color:active?gold:muted,fontSize:13,fontWeight:active?700:500,cursor:"pointer",fontFamily:font,transition:"all 0.15s"});
+    const bGen={padding:"12px 24px",borderRadius:10,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:font};
+    const addItem=(setter)=>setter(p=>({...p,items:[...p.items,{desc:"",qty:1,rate:""}]}));
+    const removeItem=(setter,i)=>setter(p=>({...p,items:p.items.filter((_,j)=>j!==i)}));
+    const updateItem=(setter,i,field,val)=>setter(p=>({...p,items:p.items.map((it,j)=>j===i?{...it,[field]:val}:it)}));
+    return(
+      <div>
+        <h2 style={{fontFamily:serif,fontSize:"1.7rem",fontWeight:400,color:ink,marginBottom:6}}>Business Tools</h2>
+        <p style={{color:muted,fontSize:13.5,marginBottom:20}}>Generate professional quotes, invoices & contracts — opens print-ready in a new tab</p>
+        {docHistory.length>0&&(
+          <div style={{marginBottom:24}}>
+            <div style={{fontSize:11,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Recent Documents</div>
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              {docHistory.map((d,i)=>{
+                const typeColor={Estimate:"#7C3AED",Invoice:"#0369A1",Contract:"#065F46"}[d.type]||gold;
+                const typeBg={Estimate:"rgba(124,58,237,0.08)",Invoice:"rgba(3,105,161,0.08)",Contract:"rgba(6,95,70,0.08)"}[d.type]||"rgba(196,122,46,0.08)";
+                return(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 14px",borderRadius:10,background:cream,border:"1px solid rgba(196,122,46,0.12)"}}>
+                    <span style={{background:typeBg,color:typeColor,borderRadius:6,padding:"3px 10px",fontSize:11,fontWeight:700,minWidth:64,textAlign:"center"}}>{d.type}</span>
+                    <span style={{fontWeight:600,color:ink,fontSize:13,flex:1}}>{d.client||"—"}</span>
+                    <span style={{fontSize:12,color:muted}}>{d.event||""}</span>
+                    {d.date&&<span style={{fontSize:12,color:muted}}>{new Date(d.date).toLocaleDateString("en-IN",{day:"numeric",month:"short"})}</span>}
+                    <span style={{fontSize:13,fontWeight:700,color:gold,marginLeft:"auto"}}>
+                      {d.total!=null?`₹${d.total.toLocaleString("en-IN")}`:d.value!=null?`₹${d.value.toLocaleString("en-IN")}`:null}
+                    </span>
+                    <button onClick={()=>{const up=docHistory.filter((_,j)=>j!==i);setDocHistory(up);lsSet(DOC_HIST_KEY,up);}} style={{background:"none",border:"none",cursor:"pointer",color:muted,fontSize:16,lineHeight:1,padding:"0 4px"}}>×</button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        <div style={{display:"flex",gap:8,marginBottom:24,flexWrap:"wrap"}}>
+          {[["quote","Estimate / Quote"],["invoice","Invoice"],["contract","Contract"]].map(([k,l])=>(
+            <button key={k} onClick={()=>setToolSection(k)} style={bTool(toolSection===k)}>{l}</button>
+          ))}
+        </div>
+        {toolSection==="quote"&&(
+          <Card>
+            <SL>Estimate / Quote</SL>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+              <Inp label="Client Name" value={tqForm.clientName} onChange={v=>setTqForm(p=>({...p,clientName:v}))} placeholder="Rahul Sharma"/>
+              <Inp label="Client Phone" value={tqForm.clientPhone} onChange={v=>setTqForm(p=>({...p,clientPhone:v}))} placeholder="9876543210"/>
+              <Inp label="Event Type" value={tqForm.eventType} onChange={v=>setTqForm(p=>({...p,eventType:v}))} placeholder="Birthday Party"/>
+              <Inp label="Event Date" value={tqForm.eventDate} onChange={v=>setTqForm(p=>({...p,eventDate:v}))} type="date"/>
+            </div>
+            <div style={{marginBottom:14}}>
+              <label style={{fontSize:11,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.08em",display:"block",marginBottom:8}}>Line Items</label>
+              {tqForm.items.map((it,i)=>(
+                <div key={i} style={{display:"grid",gridTemplateColumns:"1fr 60px 100px 28px",gap:8,marginBottom:8,alignItems:"center"}}>
+                  <input value={it.desc} onChange={e=>updateItem(setTqForm,i,"desc",e.target.value)} placeholder="Service description" style={{padding:"9px 12px",borderRadius:8,border:"1px solid rgba(196,122,46,0.2)",fontSize:13,fontFamily:font,color:ink,background:cream}}/>
+                  <input value={it.qty} onChange={e=>updateItem(setTqForm,i,"qty",e.target.value)} placeholder="Qty" type="number" style={{padding:"9px 8px",borderRadius:8,border:"1px solid rgba(196,122,46,0.2)",fontSize:13,fontFamily:font,color:ink,background:cream,textAlign:"center"}}/>
+                  <input value={it.rate} onChange={e=>updateItem(setTqForm,i,"rate",e.target.value)} placeholder="₹ Rate" type="number" style={{padding:"9px 10px",borderRadius:8,border:"1px solid rgba(196,122,46,0.2)",fontSize:13,fontFamily:font,color:ink,background:cream}}/>
+                  {tqForm.items.length>1&&<button onClick={()=>removeItem(setTqForm,i)} style={{background:"none",border:"none",cursor:"pointer",color:muted,fontSize:18,lineHeight:1}}>×</button>}
+                </div>
+              ))}
+              <button onClick={()=>addItem(setTqForm)} style={{fontSize:12.5,color:gold,fontWeight:600,background:"none",border:"none",cursor:"pointer",fontFamily:font,padding:"4px 0"}}>+ Add Line Item</button>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+              <Inp label="Discount (₹)" value={tqForm.discount} onChange={v=>setTqForm(p=>({...p,discount:v}))} type="number" placeholder="0"/>
+              <Inp label="Notes (optional)" value={tqForm.notes} onChange={v=>setTqForm(p=>({...p,notes:v}))} placeholder="Payment terms, notes…"/>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8}}>
+              <div style={{fontSize:13,color:muted}}>Total: <strong style={{color:ink,fontSize:16}}>₹{(tqForm.items.reduce((s,it)=>s+Number(it.qty||1)*Number(it.rate||0),0)-Number(tqForm.discount||0)).toLocaleString("en-IN")}</strong></div>
+              <button onClick={generateQuote} style={bGen}>Generate Estimate →</button>
+            </div>
+          </Card>
+        )}
+        {toolSection==="invoice"&&(
+          <Card>
+            <SL>Tax Invoice</SL>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+              <Inp label="Client Name" value={tiForm.clientName} onChange={v=>setTiForm(p=>({...p,clientName:v}))} placeholder="Priya Mehta"/>
+              <Inp label="Client Phone" value={tiForm.clientPhone} onChange={v=>setTiForm(p=>({...p,clientPhone:v}))} placeholder="9876543210"/>
+              <Inp label="Client Email" value={tiForm.clientEmail} onChange={v=>setTiForm(p=>({...p,clientEmail:v}))} placeholder="priya@email.com"/>
+              <Sel label="Payment Status" value={tiForm.status} onChange={v=>setTiForm(p=>({...p,status:v}))} options={["PENDING","PARTIAL","PAID"]}/>
+              <Inp label="Event Type" value={tiForm.eventType} onChange={v=>setTiForm(p=>({...p,eventType:v}))} placeholder="Wedding Reception"/>
+              <Inp label="Event Date" value={tiForm.eventDate} onChange={v=>setTiForm(p=>({...p,eventDate:v}))} type="date"/>
+            </div>
+            <div style={{marginBottom:14}}>
+              <label style={{fontSize:11,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.08em",display:"block",marginBottom:8}}>Line Items</label>
+              {tiForm.items.map((it,i)=>(
+                <div key={i} style={{display:"grid",gridTemplateColumns:"1fr 60px 100px 28px",gap:8,marginBottom:8,alignItems:"center"}}>
+                  <input value={it.desc} onChange={e=>updateItem(setTiForm,i,"desc",e.target.value)} placeholder="Service description" style={{padding:"9px 12px",borderRadius:8,border:"1px solid rgba(196,122,46,0.2)",fontSize:13,fontFamily:font,color:ink,background:cream}}/>
+                  <input value={it.qty} onChange={e=>updateItem(setTiForm,i,"qty",e.target.value)} placeholder="Qty" type="number" style={{padding:"9px 8px",borderRadius:8,border:"1px solid rgba(196,122,46,0.2)",fontSize:13,fontFamily:font,color:ink,background:cream,textAlign:"center"}}/>
+                  <input value={it.rate} onChange={e=>updateItem(setTiForm,i,"rate",e.target.value)} placeholder="₹ Rate" type="number" style={{padding:"9px 10px",borderRadius:8,border:"1px solid rgba(196,122,46,0.2)",fontSize:13,fontFamily:font,color:ink,background:cream}}/>
+                  {tiForm.items.length>1&&<button onClick={()=>removeItem(setTiForm,i)} style={{background:"none",border:"none",cursor:"pointer",color:muted,fontSize:18,lineHeight:1}}>×</button>}
+                </div>
+              ))}
+              <button onClick={()=>addItem(setTiForm)} style={{fontSize:12.5,color:gold,fontWeight:600,background:"none",border:"none",cursor:"pointer",fontFamily:font,padding:"4px 0"}}>+ Add Line Item</button>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+              <Inp label="Discount (₹)" value={tiForm.discount} onChange={v=>setTiForm(p=>({...p,discount:v}))} type="number" placeholder="0"/>
+              <Inp label="Notes (optional)" value={tiForm.notes} onChange={v=>setTiForm(p=>({...p,notes:v}))} placeholder="Bank details, UPI…"/>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:8}}>
+              <div style={{fontSize:13,color:muted}}>Total: <strong style={{color:ink,fontSize:16}}>₹{(tiForm.items.reduce((s,it)=>s+Number(it.qty||1)*Number(it.rate||0),0)-Number(tiForm.discount||0)).toLocaleString("en-IN")}</strong></div>
+              <button onClick={generateInvoice} style={bGen}>Generate Invoice →</button>
+            </div>
+          </Card>
+        )}
+        {toolSection==="contract"&&(
+          <Card>
+            <SL>Service Agreement / Contract</SL>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+              <Inp label="Client Name" value={tcForm.clientName} onChange={v=>setTcForm(p=>({...p,clientName:v}))} placeholder="Amit & Neha Kapoor"/>
+              <Inp label="Client Phone" value={tcForm.clientPhone} onChange={v=>setTcForm(p=>({...p,clientPhone:v}))} placeholder="9876543210"/>
+              <Inp label="Event Type" value={tcForm.eventType} onChange={v=>setTcForm(p=>({...p,eventType:v}))} placeholder="Wedding"/>
+              <Inp label="Event Date" value={tcForm.eventDate} onChange={v=>setTcForm(p=>({...p,eventDate:v}))} type="date"/>
+              <Inp label="Venue / Location" value={tcForm.location} onChange={v=>setTcForm(p=>({...p,location:v}))} placeholder="The Grand Hyatt, Delhi"/>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                <Inp label="Contract Value (₹)" value={tcForm.totalAmount} onChange={v=>setTcForm(p=>({...p,totalAmount:v}))} type="number" placeholder="50000"/>
+                <Inp label="Advance Due (₹)" value={tcForm.advanceAmount} onChange={v=>setTcForm(p=>({...p,advanceAmount:v}))} type="number" placeholder="25000"/>
+              </div>
+            </div>
+            <div style={{marginBottom:14}}>
+              <label style={{fontSize:11,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.08em",display:"block",marginBottom:5}}>Custom Terms (optional)</label>
+              <textarea value={tcForm.terms} onChange={e=>setTcForm(p=>({...p,terms:e.target.value}))} placeholder={"One term per line — leave blank to use 8 standard Tendr clauses\n(Payment, Cancellation, Rescheduling, Services, Setup, Liability, Portfolio, Governing Law)"} style={{width:"100%",padding:"10px 14px",borderRadius:10,border:"1px solid rgba(196,122,46,0.2)",fontSize:13,fontFamily:font,color:ink,background:cream,minHeight:90,resize:"vertical",boxSizing:"border-box"}}/>
+            </div>
+            <div style={{display:"flex",justifyContent:"flex-end",marginTop:8}}>
+              <button onClick={generateContract} style={bGen}>Generate Contract →</button>
+            </div>
+          </Card>
+        )}
+      </div>
+    );
+  })();
+
   // ════════════ TAB ROUTER ══════════════════════════════════════════════════════
-  const TABS={home:homeTab,calendar:calTab,clients:crmTab,quotes:quotesTab,money:moneyTab,reviews:reviewsTab,insights:insightsTab,flyer:flyerTab,profile:profileTab,packages:packagesTab,grow:growTab,...(typeTabKey?{[typeTabKey]:typeSpecTab}:{})};
+  const TABS={home:homeTab,calendar:calTab,clients:crmTab,quotes:quotesTab,money:moneyTab,insights:insightsTab,flyer:flyerTab,grow:growTab,tools:toolsTab,mypage:myPageTab,...(typeTabKey?{[typeTabKey]:typeSpecTab}:{})};
 
   // ════════════ RENDER ══════════════════════════════════════════════════════════
   const BOTTOM_NAV=[
@@ -976,7 +1290,7 @@ export default function VendorDashboardNew(){
     {key:"work",    label:t("work"),    icon:"M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2",badge:pendingBkgs.length},
     {key:"calendar",label:t("calendar"),icon:"M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z",badge:conflicts.length,badgeColor:"#DC2626"},
     {key:"clients", label:t("clients"), icon:"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"},
-    {key:"profile", label:t("profile"), icon:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"},
+    {key:"mypage",  label:"My Page",   icon:"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"},
   ];
 
   const mobileBottomNav=(
@@ -1066,7 +1380,20 @@ export default function VendorDashboardNew(){
 @keyframes vd-tour-pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}`}</style>
       <div className="vd-sidebar">{sidebar}</div>
       <div className="vd-main" style={{flex:1,padding:"32px 36px",overflowY:"auto",maxWidth:920}}>
-        {tab==="work"?<WorkTab bookings={bookings} outside={outside} loading={loading} lang={lang}/>:TABS[tab]||homeTab}
+        {tab==="work"
+          ? workBooking
+            ? <BookingWorkspace
+                booking={workBooking}
+                onBack={()=>setWorkBooking(null)}
+                vName={vName} sType={sType} vId={vId}
+                quotes={quotes} saveQuotes={saveQuotes}
+                expenses={expenses} saveExpenses={saveExpenses}
+                bkgPayments={bkgPayments} saveBkgPayments={saveBkgPayments}
+                navigate={navigate}
+              />
+            : <WorkTab bookings={bookings} outside={outside} loading={loading} lang={lang} onSelectBooking={setWorkBooking}/>
+          : TABS[tab]||homeTab
+        }
       </div>
       {mobileBottomNav}
       {toast&&<div style={{position:"fixed",bottom:28,right:28,background:toast.ok?ink:"#BE123C",color:"#fff",borderRadius:12,padding:"12px 20px",fontSize:13.5,fontWeight:600,fontFamily:font,boxShadow:"0 8px 30px rgba(0,0,0,0.2)",zIndex:999}}>{toast.msg}</div>}
@@ -1076,52 +1403,345 @@ export default function VendorDashboardNew(){
 }
 
 // ── Work Tab ──────────────────────────────────────────────────────────────────
-function WorkTab({bookings,outside,loading,lang}){
+function WorkTab({bookings,outside,loading,lang,onSelectBooking}){
   const [view,setView]=useState("tendr");
-  const t=(k)=>TR[lang]?.[k]||TR.EN[k]||k;
-  const grps=[{l:"Pending",arr:bookings.filter(b=>b.status==="PENDING"),bg:"#FEF9C3",tc:"#CA8A04"},{l:"Confirmed",arr:bookings.filter(b=>b.status==="CONFIRMED"),bg:"#DCFCE7",tc:"#16A34A"},{l:"Past",arr:bookings.filter(b=>["CANCELLED","COMPLETED"].includes(b.status)),bg:"#F3F4F6",tc:"#6B7280"}];
+  const tendrOnly=bookings.filter(b=>b.source!=="profile");
+  const viaProfile=bookings.filter(b=>b.source==="profile");
+  const statusMeta={PENDING:{bg:"#FEF9C3",tc:"#CA8A04"},CONFIRMED:{bg:"#DCFCE7",tc:"#16A34A"},COMPLETED:{bg:"#EFF6FF",tc:"#2563EB"},CANCELLED:{bg:"#F3F4F6",tc:"#6B7280"}};
+  const BkgCard=({b,isOutside})=>{
+    const sm=statusMeta[b.status]||{bg:"#F3F4F6",tc:"#6B7280"};
+    return(
+      <div onClick={()=>onSelectBooking({...b,_isOutside:isOutside})}
+        style={{background:"#fff",borderRadius:16,padding:20,marginBottom:10,border:"1px solid rgba(196,122,46,0.1)",cursor:"pointer",transition:"box-shadow 0.15s,transform 0.15s"}}
+        onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 4px 18px rgba(196,122,46,0.13)";e.currentTarget.style.transform="translateY(-1px)";}}
+        onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="none";}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+          <div>
+            <div style={{fontSize:15,fontWeight:700,color:ink}}>{b.consumerName||b.consumer?.name||b.clientName||"Client"}</div>
+            <div style={{fontSize:12.5,color:muted}}>{b.eventType||"Event"}{b.eventDate?" · "+b.eventDate.slice(0,10):""}</div>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
+            <span style={{background:sm.bg,color:sm.tc,borderRadius:100,padding:"2px 10px",fontSize:11,fontWeight:700}}>{b.status||"Active"}</span>
+            <span style={{fontSize:11,color:muted,fontWeight:500}}>Open workspace →</span>
+          </div>
+        </div>
+        {(b.amount||b.paidAmount)&&(
+          <div style={{display:"flex",gap:20,marginTop:4}}>
+            {b.amount&&<div><span style={{fontSize:11,color:muted}}>Billed </span><span style={{fontSize:14,fontWeight:700,color:ink}}>₹{Number(b.amount).toLocaleString("en-IN")}</span></div>}
+            {b.paidAmount&&<div><span style={{fontSize:11,color:muted}}>Paid </span><span style={{fontSize:14,fontWeight:700,color:"#16A34A"}}>₹{Number(b.paidAmount).toLocaleString("en-IN")}</span></div>}
+          </div>
+        )}
+      </div>
+    );
+  };
+  const EmptyState=({msg})=>(
+    <div style={{background:"#fff",borderRadius:16,padding:28,border:"1px solid rgba(196,122,46,0.1)",color:muted,fontSize:13.5,textAlign:"center"}}>{msg}</div>
+  );
   return(
     <div>
-      <h2 style={{fontFamily:serif,fontSize:"1.7rem",fontWeight:400,color:ink,marginBottom:18}}>{t("work")}</h2>
+      <h2 style={{fontFamily:serif,fontSize:"1.7rem",fontWeight:400,color:ink,marginBottom:18}}>My Work</h2>
       <div style={{display:"flex",gap:4,marginBottom:20,background:"#fff",borderRadius:100,padding:4,width:"fit-content",border:"1px solid rgba(196,122,46,0.15)"}}>
-        {[["tendr","Tendr Bookings"],["outside","Outside Orders"]].map(([k,l])=>(
+        {[["tendr","Tendr"],["profile","Via Profile"],["outside","Outside"]].map(([k,l])=>(
           <button key={k} onClick={()=>setView(k)} style={{padding:"8px 20px",borderRadius:100,fontSize:13,fontWeight:view===k?700:500,background:view===k?`linear-gradient(135deg,${gold},${goldLt})`:"transparent",color:view===k?"#fff":muted,border:"none",cursor:"pointer",fontFamily:font}}>{l}</button>
         ))}
       </div>
       {view==="tendr"&&(
         loading?<div style={{color:muted,fontSize:13.5}}>Loading…</div>:
-        bookings.length===0?<div style={{background:"#fff",borderRadius:16,padding:24,border:"1px solid rgba(196,122,46,0.1)",color:muted,fontSize:13.5}}>No Tendr bookings yet.</div>:
-        grps.map(({l,arr,bg,tc})=>arr.length>0&&(
-          <div key={l} style={{marginBottom:20}}>
-            <div style={{fontSize:11,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>{l} ({arr.length})</div>
-            {arr.map((b,i)=>(
-              <div key={b._id||i} style={{background:"#fff",borderRadius:16,padding:20,marginBottom:10,border:"1px solid rgba(196,122,46,0.1)"}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
-                  <div><div style={{fontSize:15,fontWeight:700,color:ink}}>{b.consumerName||b.consumer?.name||"Client"}</div><div style={{fontSize:12.5,color:muted}}>{b.eventType} · {b.eventDate?.slice(0,10)}</div></div>
-                  <span style={{background:bg,color:tc,borderRadius:100,padding:"2px 10px",fontSize:11,fontWeight:700}}>{b.status}</span>
-                </div>
-                {b.amount&&<div style={{fontSize:13.5,fontWeight:700,color:gold}}>₹{Number(b.amount).toLocaleString("en-IN")}</div>}
-                {b.message&&<p style={{fontSize:13,color:"#4A3020",marginTop:8,lineHeight:1.5,margin:"8px 0 0"}}>{b.message}</p>}
+        tendrOnly.length===0?<EmptyState msg="No Tendr bookings yet. Bookings made through the platform will appear here."/>:
+        tendrOnly.map((b,i)=><BkgCard key={b._id||i} b={b}/>)
+      )}
+      {view==="profile"&&(
+        viaProfile.length===0?<EmptyState msg="No bookings via your profile link yet. Share your Tendr profile link to get bookings here."/>:
+        viaProfile.map((b,i)=><BkgCard key={b._id||i} b={b}/>)
+      )}
+      {view==="outside"&&(
+        outside.length===0?<EmptyState msg="No outside bookings added yet. Add bookings from outside Tendr to track them here."/>:
+        outside.map((o,i)=><BkgCard key={o._id||i} b={o} isOutside/>)
+      )}
+    </div>
+  );
+}
+
+function BookingWorkspace({booking,onBack,vName,sType,vId,quotes,saveQuotes,expenses,saveExpenses,bkgPayments,saveBkgPayments,navigate}){
+  const bId=booking._id||booking.id||"local";
+  const payments=bkgPayments[bId]||[];
+  const bkgExpenses=expenses.filter(e=>e.eventId===bId);
+  const linkedQuotes=quotes.filter(q=>q.eventId===bId);
+  const totalPaid=payments.reduce((s,p)=>s+Number(p.amount||0),0);
+  const totalExpenses=bkgExpenses.reduce((s,e)=>s+Number(e.amount||0),0);
+  const totalBilled=Number(booking.amount||0);
+  const outstanding=totalBilled-totalPaid;
+  const profit=totalPaid-totalExpenses;
+  const clientName=booking.consumerName||booking.consumer?.name||booking.clientName||"Client";
+  const eventLabel=booking.eventType||"Event";
+  const eventDate=booking.eventDate?.slice(0,10)||"";
+
+  const [payForm,setPayForm]=useState({amount:"",date:new Date().toISOString().slice(0,10),note:""});
+  const [expForm,setExpForm]=useState({desc:"",amount:"",date:new Date().toISOString().slice(0,10),category:"Misc"});
+  const [invoiceGenerated,setInvoiceGenerated]=useState(false);
+  const [contractGenerated,setContractGenerated]=useState(false);
+
+  // Step completion — derive from actual data
+  const stepDone={
+    event:true,
+    client:!!(clientName&&clientName!=="Client"),
+    quote:linkedQuotes.length>0,
+    invoice:invoiceGenerated||totalPaid>0,
+    payment:totalPaid>0,
+    expense:bkgExpenses.length>0,
+    profit:totalPaid>0,
+  };
+  const STEPS=[
+    {key:"event",   label:"Event"},
+    {key:"client",  label:"Client"},
+    {key:"quote",   label:"Quote"},
+    {key:"invoice", label:"Invoice"},
+    {key:"payment", label:"Payment"},
+    {key:"expense", label:"Expense"},
+    {key:"profit",  label:"Profit"},
+  ];
+  const firstPending=STEPS.findIndex(s=>!stepDone[s.key]);
+  const [activeStep,setActiveStep]=useState(()=>STEPS[firstPending>=0?firstPending:STEPS.length-1].key);
+
+  const WInp=({label,value,onChange,type="text",placeholder=""})=>(
+    <label style={{display:"flex",flexDirection:"column",gap:5}}>
+      <span style={{fontSize:11,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.08em"}}>{label}</span>
+      <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder}
+        style={{padding:"9px 12px",borderRadius:8,border:"1px solid rgba(196,122,46,0.2)",fontSize:13,fontFamily:font,color:ink,background:cream,outline:"none"}}/>
+    </label>
+  );
+
+  const addPayment=()=>{
+    if(!payForm.amount)return;
+    const up={...bkgPayments,[bId]:[...payments,{...payForm,id:Date.now()}]};
+    saveBkgPayments(up);
+    setPayForm({amount:"",date:new Date().toISOString().slice(0,10),note:""});
+  };
+  const removePayment=(pid)=>saveBkgPayments({...bkgPayments,[bId]:payments.filter(p=>p.id!==pid)});
+
+  const addExpense=()=>{
+    if(!expForm.desc||!expForm.amount)return;
+    saveExpenses([...expenses,{id:Date.now(),...expForm,eventId:bId,eventLabel:clientName+" · "+eventLabel}]);
+    setExpForm({desc:"",amount:"",date:new Date().toISOString().slice(0,10),category:"Misc"});
+  };
+
+  // Inline doc generators pre-filled from booking
+  const genEstimate=()=>{
+    const amount=totalBilled||0;
+    const validTill=new Date(Date.now()+7*24*60*60*1000).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
+    const evDate=eventDate?new Date(eventDate).toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"}):"";
+    docOpen(`<!doctype html><html><head><style>${docStyles}.doc{background:#fff;max-width:800px;margin:auto;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1)}.header{background:linear-gradient(135deg,#1C0A04,#3A1A08);padding:32px 36px;display:flex;justify-content:space-between;align-items:flex-start}.logo{color:#CCAB4A;font-size:1.8rem;font-weight:400;letter-spacing:.04em}.badge{background:rgba(204,171,74,.15);border:1px solid rgba(204,171,74,.3);color:#CCAB4A;padding:6px 18px;border-radius:6px;font-size:.75rem;font-weight:700;letter-spacing:.12em}.body{padding:32px 36px}.meta{display:flex;justify-content:space-between;margin-bottom:28px}.info-block p{font-size:13px;color:#666;margin:2px 0}h3{font-size:.7rem;font-weight:700;color:#9B7450;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}.total-box{background:#FAF7F2;border-radius:10px;padding:16px 20px;text-align:right;margin-top:16px}.footer{background:#FAF7F2;padding:14px 36px;font-size:11px;color:#9B7450;text-align:center;border-top:1px solid #EDE8E1}</style></head><body><div class="doc"><div class="header"><div><div class="logo">tendr</div><div style="color:rgba(255,248,236,.5);font-size:12px;margin-top:4px">${vName||""} · ${sType||"Vendor"}</div></div><div style="text-align:right"><div class="badge">ESTIMATE</div><div style="color:rgba(255,248,236,.5);font-size:12px;margin-top:8px">${new Date().toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}</div></div></div><div class="body"><div class="meta"><div class="info-block"><h3>Bill To</h3><p style="font-size:15px;font-weight:700;color:#1C0A04">${clientName}</p><p>${booking.consumerPhone||booking.consumer?.phone||""}</p></div><div class="info-block" style="text-align:right"><h3>Event Details</h3><p style="font-size:15px;font-weight:700;color:#1C0A04">${eventLabel}</p>${evDate?`<p>${evDate}</p>`:""}</div></div><div class="total-box"><div style="font-size:.65rem;font-weight:700;color:#9B7450;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Total Estimate</div><div style="font-size:1.8rem;font-weight:800;color:#C47A2E">₹${amount.toLocaleString("en-IN")}</div></div></div><div class="footer">Valid until ${validTill} &nbsp;·&nbsp; This is an estimate only &nbsp;·&nbsp; Generated via Tendr</div></div></body></html>`);
+  };
+
+  const genInvoice=()=>{
+    const invNum="INV-"+Math.floor(100000+Math.random()*900000);
+    const evDate=eventDate?new Date(eventDate).toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"}):"";
+    docOpen(`<!doctype html><html><head><style>${docStyles}.doc{background:#fff;max-width:800px;margin:auto;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1)}.header{background:linear-gradient(135deg,#1C0A04,#3A1A08);padding:32px 36px;display:flex;justify-content:space-between;align-items:flex-start}.logo{color:#CCAB4A;font-size:1.8rem;font-weight:400;letter-spacing:.04em}.badge{background:rgba(204,171,74,.15);border:1px solid rgba(204,171,74,.3);color:#CCAB4A;padding:6px 18px;border-radius:6px;font-size:.75rem;font-weight:700;letter-spacing:.12em}.body{padding:32px 36px}.meta{display:flex;justify-content:space-between;margin-bottom:28px}.info-block p{font-size:13px;color:#666;margin:2px 0}h3{font-size:.7rem;font-weight:700;color:#9B7450;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}.total-box{background:#FAF7F2;border-radius:10px;padding:16px 20px;text-align:right;margin-top:16px}.footer{background:#FAF7F2;padding:14px 36px;font-size:11px;color:#9B7450;text-align:center;border-top:1px solid #EDE8E1}</style></head><body><div class="doc"><div class="header"><div><div class="logo">tendr</div><div style="color:rgba(255,248,236,.5);font-size:12px;margin-top:4px">${vName||""} · ${sType||"Vendor"}</div></div><div style="text-align:right"><div class="badge">TAX INVOICE</div><div style="color:rgba(255,248,236,.5);font-size:12px;margin-top:6px">${invNum}</div><div style="color:rgba(255,248,236,.5);font-size:12px;margin-top:2px">${new Date().toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}</div></div></div><div class="body"><div class="meta"><div class="info-block"><h3>Bill To</h3><p style="font-size:15px;font-weight:700;color:#1C0A04">${clientName}</p><p>${booking.consumerPhone||booking.consumer?.phone||""}</p></div><div class="info-block" style="text-align:right"><h3>Event</h3><p style="font-size:15px;font-weight:700;color:#1C0A04">${eventLabel}</p>${evDate?`<p>${evDate}</p>`:""}<div style="margin-top:8px;background:#FEE2E2;color:#DC2626;border-radius:100px;padding:3px 14px;font-size:11px;font-weight:700;display:inline-block">PENDING</div></div></div><div class="total-box"><div style="font-size:.65rem;font-weight:700;color:#9B7450;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Total Amount</div><div style="font-size:1.8rem;font-weight:800;color:#C47A2E">₹${totalBilled.toLocaleString("en-IN")}</div></div></div><div class="footer">Thank you for your business · Generated via Tendr</div></div></body></html>`);
+    setInvoiceGenerated(true);
+  };
+
+  const genContract=()=>{
+    const terms=["Payment: An advance of the agreed amount is due before the event date. Balance to be cleared on or before the event day.","Cancellation: Cancellations made more than 15 days before the event will receive a 50% refund of the advance. Cancellations within 15 days are non-refundable.","Rescheduling: One free reschedule is permitted with a minimum 10-day notice. Subsequent changes attract a rescheduling fee of ₹500.","Services: The vendor will provide services as agreed during booking. Any additions or changes on the day are subject to availability and additional charges.","Setup Access: The client must ensure that the venue is accessible at least 2 hours before the event start time for setup.","Liability: The vendor is not liable for any damage, loss, or injury arising from circumstances beyond their control, including venue issues or force majeure events.","Portfolio: The vendor reserves the right to use photos/videos from this event for promotional purposes unless the client explicitly opts out in writing.","Governing Law: This agreement is subject to the laws of Delhi, India. Any disputes shall be resolved through mutual discussion or, if required, in the courts of Delhi."];
+    const termsHtml=terms.map((t,i)=>`<li style="margin-bottom:10px;padding-left:8px;border-left:2px solid rgba(204,171,74,.3);color:#4A3020;font-size:13px;line-height:1.6"><strong>${i+1}.</strong> ${t}</li>`).join("");
+    const evDate=eventDate?new Date(eventDate).toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"}):"—";
+    docOpen(`<!doctype html><html><head><style>${docStyles}.doc{background:#fff;max-width:800px;margin:auto;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1)}.header{background:linear-gradient(135deg,#1C0A04,#3A1A08);padding:32px 36px}.logo{color:#CCAB4A;font-size:1.8rem;font-weight:400;letter-spacing:.04em}.body{padding:32px 36px}.parties{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}.party-box{background:#FAF7F2;border-radius:10px;padding:16px 18px}h3{font-size:.7rem;font-weight:700;color:#9B7450;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}.amount-bar{background:linear-gradient(135deg,#1C0A04,#3A1A08);border-radius:10px;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}.sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:32px}.sig-line{border-top:2px solid #1C0A04;padding-top:8px;font-size:12px;color:#9B7450;font-weight:700;text-transform:uppercase;letter-spacing:.08em}.footer{background:#FAF7F2;padding:14px 36px;font-size:11px;color:#9B7450;text-align:center;border-top:1px solid #EDE8E1}</style></head><body><div class="doc"><div class="header"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="logo">tendr</div><div style="color:rgba(255,248,236,.5);font-size:.65rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;margin-top:4px">Service Agreement</div></div><div style="text-align:right;color:rgba(255,248,236,.5);font-size:12px">${new Date().toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"})}</div></div></div><div class="body"><div class="parties"><div class="party-box"><h3>Service Provider</h3><div style="font-size:15px;font-weight:700;color:#1C0A04">${vName||""}</div><div style="font-size:13px;color:#666;margin-top:4px">${sType||"Vendor"}</div></div><div class="party-box"><h3>Client</h3><div style="font-size:15px;font-weight:700;color:#1C0A04">${clientName}</div></div></div><div style="background:#FAF7F2;border-radius:10px;padding:16px 18px;margin-bottom:20px;display:flex;justify-content:space-between"><div><h3>Event</h3><div style="font-size:15px;font-weight:700;color:#1C0A04">${eventLabel}</div></div><div><h3>Date</h3><div style="font-size:15px;font-weight:700;color:#1C0A04">${evDate}</div></div></div>${totalBilled?`<div class="amount-bar"><div style="text-align:center"><div style="font-size:.65rem;font-weight:700;color:rgba(255,248,236,.5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Contract Value</div><div style="font-size:1.5rem;font-weight:800;color:#CCAB4A">₹${totalBilled.toLocaleString("en-IN")}</div></div></div>`:""}<h3 style="margin-bottom:16px">Terms &amp; Conditions</h3><ul style="list-style:none;padding:0">${termsHtml}</ul><div class="sig-grid"><div><div style="height:50px"></div><div class="sig-line">Service Provider — ${vName||""}</div></div><div><div style="height:50px"></div><div class="sig-line">Client — ${clientName}</div></div></div></div><div class="footer">This agreement is binding once signed by both parties &nbsp;·&nbsp; Generated via Tendr</div></div></body></html>`);
+    setContractGenerated(true);
+  };
+
+  const genBtn=(label,onClick,done)=>(
+    <button onClick={onClick} style={{padding:"9px 18px",borderRadius:8,border:done?"none":`1px solid ${gold}`,background:done?`linear-gradient(135deg,${gold},${goldLt})`:"transparent",color:done?"#fff":gold,fontWeight:700,fontSize:12.5,cursor:"pointer",fontFamily:font,display:"flex",alignItems:"center",gap:6}}>
+      {done&&<span style={{fontSize:10}}>✓</span>}{label}
+    </button>
+  );
+
+  const stepContent={
+    event:(
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14}}>
+        <div><div style={{fontSize:11,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Event</div><div style={{fontSize:15,fontWeight:700,color:ink}}>{eventLabel}</div></div>
+        <div><div style={{fontSize:11,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Date</div><div style={{fontSize:15,fontWeight:700,color:ink}}>{eventDate||"—"}</div></div>
+        <div><div style={{fontSize:11,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Status</div>
+          <span style={{background:booking.status==="CONFIRMED"?"#DCFCE7":booking.status==="PENDING"?"#FEF9C3":"#F3F4F6",color:booking.status==="CONFIRMED"?"#16A34A":booking.status==="PENDING"?"#CA8A04":"#6B7280",borderRadius:100,padding:"3px 10px",fontSize:12,fontWeight:700}}>{booking.status||"Active"}</span>
+        </div>
+        {booking.amount&&<div><div style={{fontSize:11,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Booking Value</div><div style={{fontSize:15,fontWeight:700,color:gold}}>{fmt(booking.amount)}</div></div>}
+        {booking.message&&<div style={{gridColumn:"1/-1"}}><div style={{fontSize:11,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Client Note</div><div style={{fontSize:13,color:ink,lineHeight:1.5}}>{booking.message}</div></div>}
+      </div>
+    ),
+    client:(
+      <div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:16}}>
+          <div><div style={{fontSize:11,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Name</div><div style={{fontSize:15,fontWeight:700,color:ink}}>{clientName}</div></div>
+          <div><div style={{fontSize:11,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Phone</div><div style={{fontSize:14,color:ink}}>{booking.consumerPhone||booking.consumer?.phone||"—"}</div></div>
+          {(booking.consumerEmail||booking.consumer?.email)&&<div><div style={{fontSize:11,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Email</div><div style={{fontSize:14,color:ink}}>{booking.consumerEmail||booking.consumer?.email}</div></div>}
+        </div>
+        {booking.consumerId&&(
+          <button onClick={()=>navigate&&navigate(`/chat/${booking.consumerId}`)}
+            style={{padding:"9px 20px",borderRadius:8,border:`1.5px solid ${gold}`,background:"transparent",color:gold,fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:font}}>
+            💬 Open Chat
+          </button>
+        )}
+      </div>
+    ),
+    quote:(
+      <div>
+        {linkedQuotes.length>0?(
+          <div style={{marginBottom:16}}>
+            {linkedQuotes.map((q,i)=>(
+              <div key={q.id||i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",borderRadius:10,background:cream,marginBottom:8}}>
+                <div><div style={{fontSize:13,fontWeight:700,color:ink}}>{q.clientName} · {q.status}</div><div style={{fontSize:11,color:muted}}>{q.eventDate}</div></div>
+                <span style={{fontSize:14,fontWeight:800,color:gold}}>{fmt(q.items?.reduce((s,it)=>s+Number(it.qty||1)*Number(it.rate||0),0)||0)}</span>
               </div>
             ))}
           </div>
-        ))
-      )}
-      {view==="outside"&&(
-        outside.length===0?<div style={{background:"#fff",borderRadius:16,padding:24,border:"1px solid rgba(196,122,46,0.1)",color:muted,fontSize:13.5}}>No outside orders yet.</div>:
-        outside.map((o,i)=>(
-          <div key={o._id||i} style={{background:"#fff",borderRadius:16,padding:20,marginBottom:10,border:"1px solid rgba(196,122,46,0.1)"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
-              <div><div style={{fontSize:15,fontWeight:700,color:ink}}>{o.clientName}</div><div style={{fontSize:12.5,color:muted}}>{o.eventType} · {o.eventDate?.slice(0,10)}</div></div>
-              <span style={{background:o.status==="Completed"?"#EFF6FF":"#FEF9C3",color:o.status==="Completed"?"#2563EB":"#CA8A04",borderRadius:100,padding:"2px 10px",fontSize:11,fontWeight:700}}>{o.status}</span>
+        ):(
+          <p style={{fontSize:13,color:muted,marginBottom:16}}>No quote saved yet. You can generate a print-ready estimate below or save a quote from the Quotes tab.</p>
+        )}
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          {genBtn("Generate Estimate",genEstimate,false)}
+          {genBtn("Generate Contract",genContract,contractGenerated)}
+        </div>
+      </div>
+    ),
+    invoice:(
+      <div>
+        <p style={{fontSize:13,color:muted,marginBottom:16}}>{invoiceGenerated?"Invoice generated and sent for this booking.":"Generate a tax invoice to send to your client. It will open print-ready in a new tab."}</p>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          {genBtn("Generate Invoice",genInvoice,invoiceGenerated)}
+        </div>
+        {invoiceGenerated&&(
+          <div style={{marginTop:12,padding:"10px 14px",borderRadius:10,background:"#DCFCE7",color:"#16A34A",fontSize:13,fontWeight:600}}>Invoice opened in new tab. Share with client to request payment.</div>
+        )}
+      </div>
+    ),
+    payment:(
+      <div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:16}}>
+          {[["Billed",totalBilled,ink],["Paid",totalPaid,"#16A34A"],["Outstanding",outstanding,outstanding>0?"#DC2626":muted]].map(([l,v,c])=>(
+            <div key={l} style={{background:cream,borderRadius:10,padding:"12px 14px"}}>
+              <div style={{fontSize:10,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{l}</div>
+              <div style={{fontSize:18,fontWeight:800,color:c}}>{fmt(v)}</div>
             </div>
-            <div style={{display:"flex",gap:20}}>
-              <div><span style={{fontSize:11,color:muted}}>Billed </span><span style={{fontSize:14,fontWeight:700,color:ink}}>₹{Number(o.amount||0).toLocaleString("en-IN")}</span></div>
-              <div><span style={{fontSize:11,color:muted}}>Paid </span><span style={{fontSize:14,fontWeight:700,color:"#16A34A"}}>₹{Number(o.paidAmount||0).toLocaleString("en-IN")}</span></div>
+          ))}
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:12}}>
+          <WInp label="Amount (₹)" value={payForm.amount} onChange={v=>setPayForm(p=>({...p,amount:v}))} type="number" placeholder="5000"/>
+          <WInp label="Date" value={payForm.date} onChange={v=>setPayForm(p=>({...p,date:v}))} type="date"/>
+          <WInp label="Note" value={payForm.note} onChange={v=>setPayForm(p=>({...p,note:v}))} placeholder="Advance / Balance"/>
+        </div>
+        <button onClick={addPayment} style={{padding:"9px 20px",borderRadius:8,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:font,marginBottom:16}}>+ Record Payment</button>
+        {payments.length>0&&payments.map((p,i)=>(
+          <div key={p.id||i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:8,background:cream,marginBottom:6}}>
+            <div style={{display:"flex",gap:14,alignItems:"center"}}>
+              <span style={{fontSize:14,fontWeight:700,color:"#16A34A"}}>{fmt(p.amount)}</span>
+              <span style={{fontSize:12,color:muted}}>{p.date}{p.note?" · "+p.note:""}</span>
             </div>
+            <button onClick={()=>removePayment(p.id)} style={{background:"none",border:"none",cursor:"pointer",color:muted,fontSize:16,lineHeight:1}}>×</button>
           </div>
-        ))
-      )}
+        ))}
+      </div>
+    ),
+    expense:(
+      <div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:12}}>
+          <WInp label="Description" value={expForm.desc} onChange={v=>setExpForm(p=>({...p,desc:v}))} placeholder="Decoration materials"/>
+          <WInp label="Amount (₹)" value={expForm.amount} onChange={v=>setExpForm(p=>({...p,amount:v}))} type="number" placeholder="2000"/>
+          <WInp label="Date" value={expForm.date} onChange={v=>setExpForm(p=>({...p,date:v}))} type="date"/>
+        </div>
+        <button onClick={addExpense} style={{padding:"9px 20px",borderRadius:8,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:font,marginBottom:16}}>+ Log Expense</button>
+        {bkgExpenses.length>0?(
+          bkgExpenses.map((e,i)=>(
+            <div key={e.id||i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:8,background:cream,marginBottom:6}}>
+              <div style={{display:"flex",gap:14,alignItems:"center"}}>
+                <span style={{fontSize:13,fontWeight:700,color:ink}}>{e.desc}</span>
+                <span style={{fontSize:12,color:muted}}>{e.date} · {e.category}</span>
+              </div>
+              <span style={{fontSize:14,fontWeight:700,color:muted}}>{fmt(e.amount)}</span>
+            </div>
+          ))
+        ):<p style={{fontSize:13,color:muted}}>No expenses logged yet. Add any costs you incurred for this event.</p>}
+      </div>
+    ),
+    profit:(
+      <div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:16}}>
+          {[["Revenue (Paid)",totalPaid,"#16A34A"],["Total Expenses",totalExpenses,muted],["Net Profit",profit,profit>=0?"#16A34A":"#DC2626"]].map(([l,v,c])=>(
+            <div key={l} style={{background:cream,borderRadius:10,padding:"14px 16px",border:l==="Net Profit"?`1.5px solid ${profit>=0?"#16A34A":"#DC2626"}`:"none"}}>
+              <div style={{fontSize:10,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>{l}</div>
+              <div style={{fontSize:22,fontWeight:800,color:c}}>{fmt(v)}</div>
+            </div>
+          ))}
+        </div>
+        {totalPaid>0&&(
+          <div style={{background:profit>=0?"#DCFCE7":"#FEE2E2",borderRadius:10,padding:"12px 16px",fontSize:13,fontWeight:600,color:profit>=0?"#16A34A":"#DC2626"}}>
+            {profit>=0?`Margin: ${totalBilled>0?Math.round((profit/totalBilled)*100):100}% · You kept ${fmt(profit)} from this booking`:`You're ${fmt(Math.abs(profit))} over on this booking — expenses exceed revenue collected`}
+          </div>
+        )}
+        {totalPaid===0&&<p style={{fontSize:13,color:muted}}>Profit will show once you record payments in the Payment step.</p>}
+      </div>
+    ),
+  };
+
+  return(
+    <div>
+      {/* Header */}
+      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24}}>
+        <button onClick={onBack} style={{background:"none",border:"1px solid rgba(196,122,46,0.3)",borderRadius:8,padding:"7px 14px",cursor:"pointer",color:gold,fontWeight:600,fontSize:13,fontFamily:font}}>← Back</button>
+        <div style={{flex:1}}>
+          <h2 style={{fontFamily:serif,fontSize:"1.5rem",fontWeight:400,color:ink,margin:0}}>{clientName}</h2>
+          <div style={{fontSize:12.5,color:muted}}>{eventLabel}{eventDate?" · "+eventDate:""}</div>
+        </div>
+      </div>
+
+      {/* Step progress bar */}
+      <div style={{background:"#fff",borderRadius:16,padding:"18px 20px",marginBottom:20,border:"1px solid rgba(196,122,46,0.1)",overflowX:"auto"}}>
+        <div style={{display:"flex",alignItems:"center",minWidth:500}}>
+          {STEPS.map((s,i)=>{
+            const done=stepDone[s.key];
+            const active=activeStep===s.key;
+            return(
+              <React.Fragment key={s.key}>
+                <button onClick={()=>setActiveStep(s.key)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,background:"none",border:"none",cursor:"pointer",flex:1,padding:"4px 0"}}>
+                  <div style={{width:32,height:32,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:13,transition:"all 0.2s",
+                    background:done?`linear-gradient(135deg,${gold},${goldLt})`:active?"transparent":"transparent",
+                    border:done?"none":active?`2px solid ${gold}`:"2px solid #E5DDD5",
+                    color:done?"#fff":active?gold:"#C4B8AC"}}>
+                    {done?"✓":i+1}
+                  </div>
+                  <span style={{fontSize:11,fontWeight:active?700:500,color:active?ink:done?gold:muted,letterSpacing:"0.03em"}}>{s.label}</span>
+                </button>
+                {i<STEPS.length-1&&(
+                  <div style={{height:2,flex:"0 0 20px",background:stepDone[STEPS[i+1]?.key]||done?`linear-gradient(90deg,${gold},${goldLt})`:"#E5DDD5",borderRadius:2,margin:"0 2px",marginBottom:18}}/>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Active step content */}
+      <div style={{background:"#fff",borderRadius:16,padding:24,border:`1.5px solid rgba(196,122,46,0.2)`,minHeight:120}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
+          <div>
+            <div style={{fontSize:11,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:2}}>Step {STEPS.findIndex(s=>s.key===activeStep)+1} of {STEPS.length}</div>
+            <div style={{fontSize:16,fontWeight:700,color:ink}}>{STEPS.find(s=>s.key===activeStep)?.label}</div>
+          </div>
+          <span style={{background:stepDone[activeStep]?"#DCFCE7":"#FEF9C3",color:stepDone[activeStep]?"#16A34A":"#CA8A04",borderRadius:100,padding:"3px 12px",fontSize:11,fontWeight:700}}>
+            {stepDone[activeStep]?"Done":"Pending"}
+          </span>
+        </div>
+        {stepContent[activeStep]}
+      </div>
+
+      {/* Done/Pending summary */}
+      <div style={{display:"flex",gap:8,marginTop:14,flexWrap:"wrap"}}>
+        {STEPS.map(s=>(
+          <span key={s.key} onClick={()=>setActiveStep(s.key)} style={{padding:"4px 12px",borderRadius:100,fontSize:11.5,fontWeight:600,cursor:"pointer",
+            background:stepDone[s.key]?"rgba(22,163,74,0.1)":"rgba(202,138,4,0.08)",
+            color:stepDone[s.key]?"#16A34A":"#CA8A04",
+            border:`1px solid ${stepDone[s.key]?"rgba(22,163,74,0.25)":"rgba(202,138,4,0.2)"}`}}>
+            {stepDone[s.key]?"✓":"○"} {s.label}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
