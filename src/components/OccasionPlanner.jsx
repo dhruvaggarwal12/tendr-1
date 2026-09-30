@@ -1630,64 +1630,107 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
               )}
 
               {/* Step 5 — Results */}
-              {step === 5 && (
-                <div>
-                  {/* Header */}
-                  <div style={{ marginBottom: 20 }}>
-                    <p style={{ fontSize: 12, fontWeight: 800, color: occColor, textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 6px', fontFamily: "'Outfit',sans-serif" }}>
-                      {showAll ? `All ${results.length} themes` : `${results.length} theme${results.length !== 1 ? 's' : ''} matched`}
-                    </p>
-                    <h2 style={{ ...h2Style, margin: '0 0 10px' }}>
-                      {showAll ? `All ${occasion} Themes` : `${occasion} themes for you`}
-                    </h2>
-                    {!showAll && (
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        {budget    && <span style={{ fontSize: 11, padding: '4px 11px', borderRadius: 100, background: `${occColor}18`, border: `1px solid ${occColor}44`, color: occColor, fontFamily: "'Outfit',sans-serif", fontWeight: 600 }}>{BUDGET_OPTIONS.find(b => b.key === budget)?.label}</span>}
-                        {guests    && <span style={{ fontSize: 11, padding: '4px 11px', borderRadius: 100, background: 'rgba(245,236,216,0.07)', border: '1px solid rgba(245,236,216,0.14)', color: 'rgba(245,236,216,0.80)', fontFamily: "'Outfit',sans-serif" }}>{guests} guests</span>}
-                        {venue     && <span style={{ fontSize: 11, padding: '4px 11px', borderRadius: 100, background: 'rgba(245,236,216,0.07)', border: '1px solid rgba(245,236,216,0.14)', color: 'rgba(245,236,216,0.80)', fontFamily: "'Outfit',sans-serif" }}>{VENUE_OPTIONS.find(v => v.key === venue)?.label}</span>}
-                        {timeOfDay && <span style={{ fontSize: 11, padding: '4px 11px', borderRadius: 100, background: 'rgba(245,236,216,0.07)', border: '1px solid rgba(245,236,216,0.14)', color: 'rgba(245,236,216,0.80)', fontFamily: "'Outfit',sans-serif" }}>{timeOfDay}</span>}
+              {step === 5 && (() => {
+                const hasThemeData = (THEME_DATA_MAP[occasion] || []).length > 0;
+                if (!hasThemeData) {
+                  return (
+                    <div>
+                      <button onClick={goBack} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.6)', fontSize: 13, cursor: 'pointer', padding: '0 0 22px', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', outline: 'none', display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                        Back
+                      </button>
+                      <div style={{ textAlign: 'center', padding: '8px 0 32px' }}>
+                        <div style={{ fontSize: 48, marginBottom: 18, opacity: 0.55 }}>✦</div>
+                        <p style={{ fontSize: 10, fontWeight: 800, color: occColor, textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 10px', fontFamily: "'Outfit',sans-serif" }}>Coming Soon</p>
+                        <h2 style={{ ...h2Style, fontSize: 'clamp(1.6rem,4vw,2.2rem)', margin: '0 0 12px' }}>
+                          Curated themes for {occasion} are on their way
+                        </h2>
+                        <p style={{ fontSize: 13, color: 'rgba(245,236,216,0.55)', lineHeight: 1.7, margin: '0 0 28px', fontFamily: "'Outfit',sans-serif" }}>
+                          We're putting together the perfect{' '}
+                          <span style={{ color: 'rgba(245,236,216,0.82)' }}>{occasion}</span> theme collection.<br/>
+                          In the meantime, browse our vendors and get quotes directly.
+                        </p>
+                        <button
+                          onClick={() => { onClose(); navigate('/booking'); }}
+                          style={{
+                            width: '100%', padding: '15px 20px', borderRadius: 14, border: 'none',
+                            background: occColor, color: '#fff',
+                            fontSize: 15, fontWeight: 700, cursor: 'pointer',
+                            fontFamily: "'Outfit',sans-serif", marginBottom: 12,
+                            boxShadow: `0 4px 20px ${occColor}40`,
+                          }}
+                        >
+                          Browse Vendors Now →
+                        </button>
+                        <button
+                          onClick={onClose}
+                          style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.45)', fontSize: 13, cursor: 'pointer', fontFamily: "'Outfit',sans-serif" }}
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <div>
+                    {/* Header */}
+                    <div style={{ marginBottom: 20 }}>
+                      <p style={{ fontSize: 12, fontWeight: 800, color: occColor, textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 6px', fontFamily: "'Outfit',sans-serif" }}>
+                        {showAll ? `All ${results.length} themes` : `${results.length} theme${results.length !== 1 ? 's' : ''} matched`}
+                      </p>
+                      <h2 style={{ ...h2Style, margin: '0 0 10px' }}>
+                        {showAll ? `All ${occasion} Themes` : `${occasion} themes for you`}
+                      </h2>
+                      {!showAll && (
+                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                          {budget    && <span style={{ fontSize: 11, padding: '4px 11px', borderRadius: 100, background: `${occColor}18`, border: `1px solid ${occColor}44`, color: occColor, fontFamily: "'Outfit',sans-serif", fontWeight: 600 }}>{BUDGET_OPTIONS.find(b => b.key === budget)?.label}</span>}
+                          {guests    && <span style={{ fontSize: 11, padding: '4px 11px', borderRadius: 100, background: 'rgba(245,236,216,0.07)', border: '1px solid rgba(245,236,216,0.14)', color: 'rgba(245,236,216,0.80)', fontFamily: "'Outfit',sans-serif" }}>{guests} guests</span>}
+                          {venue     && <span style={{ fontSize: 11, padding: '4px 11px', borderRadius: 100, background: 'rgba(245,236,216,0.07)', border: '1px solid rgba(245,236,216,0.14)', color: 'rgba(245,236,216,0.80)', fontFamily: "'Outfit',sans-serif" }}>{VENUE_OPTIONS.find(v => v.key === venue)?.label}</span>}
+                          {timeOfDay && <span style={{ fontSize: 11, padding: '4px 11px', borderRadius: 100, background: 'rgba(245,236,216,0.07)', border: '1px solid rgba(245,236,216,0.14)', color: 'rgba(245,236,216,0.80)', fontFamily: "'Outfit',sans-serif" }}>{timeOfDay}</span>}
+                        </div>
+                      )}
+                    </div>
+
+                    {results.length > 0 ? (
+                      <div className="op-theme-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10 }}>
+                        {results.map(theme => (
+                          <ThemeCard key={theme.id} theme={theme} occasion={occasion} occColor={occColor} onExpand={() => setExpandedTheme(theme)} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{ textAlign: 'center', padding: '40px 16px' }}>
+                        <div style={{ fontSize: 36, opacity: 0.25, marginBottom: 10 }}>✦</div>
+                        <p style={{ color: 'rgba(245,236,216,0.56)', fontSize: 14, fontFamily: "'Outfit',sans-serif" }}>No themes matched — try adjusting your filters</p>
                       </div>
                     )}
-                  </div>
 
-                  {results.length > 0 ? (
-                    <div className="op-theme-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10 }}>
-                      {results.map(theme => (
-                        <ThemeCard key={theme.id} theme={theme} occasion={occasion} occColor={occColor} onExpand={() => setExpandedTheme(theme)} />
-                      ))}
-                    </div>
-                  ) : (
-                    <div style={{ textAlign: 'center', padding: '40px 16px' }}>
-                      <div style={{ fontSize: 36, opacity: 0.25, marginBottom: 10 }}>✦</div>
-                      <p style={{ color: 'rgba(245,236,216,0.56)', fontSize: 14, fontFamily: "'Outfit',sans-serif" }}>No themes matched — try adjusting your filters</p>
-                    </div>
-                  )}
-
-                  {/* Action buttons below results */}
-                  <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
-                    {!showAll && (
-                      <button onClick={() => setShowAll(true)} style={{
-                        width: '100%', padding: '12px 20px', borderRadius: 12,
-                        background: `${occColor}14`, border: `1.5px solid ${occColor}38`,
-                        color: occColor, fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                        fontFamily: "'Outfit',sans-serif", transition: 'all 0.18s',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                      }}>
-                        See all {occasion} themes →
-                      </button>
-                    )}
-                    <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-                      <button onClick={adjustFilters} style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.62)', fontSize: 13, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", textDecoration: 'underline', textUnderlineOffset: 3 }}>
-                        Adjust filters
-                      </button>
-                      <span style={{ color: 'rgba(245,236,216,0.18)' }}>·</span>
-                      <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.62)', fontSize: 13, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", textDecoration: 'underline', textUnderlineOffset: 3 }}>
-                        Continue without theme
-                      </button>
+                    {/* Action buttons below results */}
+                    <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
+                      {!showAll && (
+                        <button onClick={() => setShowAll(true)} style={{
+                          width: '100%', padding: '12px 20px', borderRadius: 12,
+                          background: `${occColor}14`, border: `1.5px solid ${occColor}38`,
+                          color: occColor, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                          fontFamily: "'Outfit',sans-serif", transition: 'all 0.18s',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                        }}>
+                          See all {occasion} themes →
+                        </button>
+                      )}
+                      <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+                        <button onClick={adjustFilters} style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.62)', fontSize: 13, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", textDecoration: 'underline', textUnderlineOffset: 3 }}>
+                          Adjust filters
+                        </button>
+                        <span style={{ color: 'rgba(245,236,216,0.18)' }}>·</span>
+                        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.62)', fontSize: 13, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", textDecoration: 'underline', textUnderlineOffset: 3 }}>
+                          Continue without theme
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
             </div>{/* /step content */}
           </div>
