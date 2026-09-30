@@ -235,6 +235,8 @@ const LIVE_GAME_IDS = new Set([
   "dontlaugh","nameplaceanimal","fastestfinger",
   // Voting / party interactive tools
   "babynamevote","genderpoll","luckydraw",
+  // Solo → multiplayer upgraded
+  "spin","charades","bingo","birthdayquiz","rapidfire",
 ]);
 
 const GAME_DESCRIPTIONS = {
@@ -870,6 +872,9 @@ function TruthOrDare({ onClose, accent, room, myName: liveName, players: livePla
   const [completedBy, setCompletedBy] = useState({});
   const [spinIdx, setSpinIdx] = useState(0);
   const spinRef = useRef(null);
+  const [tdAnswer, setTdAnswer] = useState("");
+  const [dareTimer, setDareTimer] = useState(60);
+  const dareTimerRef = useRef(null);
 
   // Live derived
   const activePlayers = live ? livePlayers : players;
@@ -878,6 +883,18 @@ function TruthOrDare({ onClose, accent, room, myName: liveName, players: livePla
   const liveCard = live && liveMode ? (liveMode === 'truth' ? TRUTHS : DARES)[liveCardIdx % (liveMode === 'truth' ? TRUTHS : DARES).length] : card;
   const liveCurrent = live && activePlayers.length ? activePlayers[liveCardIdx % activePlayers.length] : current;
   const liveLastDone = live ? (gameState?.lastDone || null) : null;
+
+  // Sync dare timer from gameState.dareTimerEnd
+  useEffect(() => {
+    if (!live || !gameState?.dareTimerEnd) return;
+    const update = () => {
+      const t = Math.max(0, Math.ceil((gameState.dareTimerEnd - Date.now()) / 1000));
+      setDareTimer(t);
+    };
+    update();
+    dareTimerRef.current = setInterval(update, 1000);
+    return () => clearInterval(dareTimerRef.current);
+  }, [live, gameState?.dareTimerEnd]); // eslint-disable-line
 
   // Sync live phase
   useEffect(() => {
@@ -907,19 +924,35 @@ function TruthOrDare({ onClose, accent, room, myName: liveName, players: livePla
   };
   useEffect(() => () => clearTimeout(spinRef.current), []);
   const pickMode = (m) => {
-    if (live) { sendAction('pick', { mode: m }); return; }
+    if (live) {
+      sendAction('pick', { mode: m });
+      if (m === 'dare') sendAction('td_start_dare', { dareTimerEnd: Date.now() + 60000 });
+      return;
+    }
     setMode(m);
     setCard(rand(m === "truth" ? TRUTHS : DARES));
     setFlipping(true);
     setTimeout(() => setFlipping(false), 400);
     setPhase("card");
   };
+  const submitTdAnswer = () => {
+    if (live && tdAnswer.trim()) { sendAction('td_answer', { answer: tdAnswer.trim() }); setTdAnswer(""); }
+  };
   const done = () => {
-    if (live) { sendAction(liveMode === 'truth' ? 'truth-done' : 'dare-done', {}); sendAction('next', {}); return; }
+    if (live) {
+      if (!isHost) return; // only host can advance
+      sendAction(liveMode === 'truth' ? 'truth-done' : 'dare-done', {});
+      sendAction('next', {});
+      return;
+    }
     if (current) setCompletedBy(c => ({ ...c, [current]: (c[current] || 0) + 1 })); goNext();
   };
   const skip = () => {
-    if (live) { sendAction('next', {}); return; }
+    if (live) {
+      if (!isHost) return;
+      sendAction('next', {});
+      return;
+    }
     goNext();
   };
   const goNext = () => {
@@ -1021,9 +1054,38 @@ function TruthOrDare({ onClose, accent, room, myName: liveName, players: livePla
         </div>
         <div style={{fontSize:17,color:"#fff",lineHeight:1.78,fontWeight:500,position:"relative"}}>{activeCard}</div>
       </div>
+      {/* Synced dare timer in live mode */}
+      {live && activeMode === "dare" && gameState?.dareTimerEnd && (
+        <div style={{marginBottom:12}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+            <div style={{flex:1,height:5,background:"rgba(0,0,0,0.08)",borderRadius:4,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${(dareTimer/60)*100}%`,background:dareTimer>20?"#22c55e":dareTimer>8?"#f59e0b":"#ef4444",transition:"width 1s linear",borderRadius:4}}/>
+            </div>
+            <div style={{fontSize:14,fontWeight:900,color:dareTimer>20?"#22c55e":dareTimer>8?"#f59e0b":"#ef4444",minWidth:32,textAlign:"right",fontVariantNumeric:"tabular-nums"}}>{dareTimer}s</div>
+          </div>
+          <div style={{fontSize:11,color:"rgba(28,9,0,0.40)",textAlign:"center"}}>{dareTimer>0?"Complete the dare!":"⏰ Time's up!"}</div>
+        </div>
+      )}
+      {/* Truth answer input for current player */}
+      {live && activeMode === "truth" && isMyTurn && (
+        <div style={{marginBottom:10,display:"flex",gap:6}}>
+          <input value={tdAnswer} onChange={e=>setTdAnswer(e.target.value)} placeholder="Type your answer…" style={{...linp,flex:1,fontSize:13}} />
+          <button onClick={submitTdAnswer} style={{...lBtn(accent),width:"auto",padding:"10px 12px",fontSize:12}}>Share</button>
+        </div>
+      )}
+      {/* Show last truth answer */}
+      {live && gameState?.lastAnswer && (
+        <div style={{marginBottom:10,background:"rgba(0,0,0,0.04)",borderRadius:10,padding:"8px 12px",fontSize:12,color:"rgba(28,9,0,0.65)"}}>
+          <span style={{fontWeight:700,color:accent}}>{displayPlayer}:</span> {gameState.lastAnswer}
+        </div>
+      )}
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-        <button onClick={done} disabled={!isMyTurn} style={{...lBtn("#059669"),flex:2,fontSize:14,opacity:isMyTurn?1:0.45}}>✓ Done</button>
-        <button onClick={skip} disabled={!isMyTurn} style={{...lBtn("rgba(0,0,0,0.07)"),flex:1,fontSize:13,color:"#1C1410",opacity:isMyTurn?1:0.45}}>Skip</button>
+        {(!live || isHost) ? (<>
+          <button onClick={done} style={{...lBtn("#059669"),flex:2,fontSize:14}}>✓ Done / Next →</button>
+          <button onClick={skip} style={{...lBtn("rgba(0,0,0,0.07)"),flex:1,fontSize:13,color:"#1C1410"}}>Skip</button>
+        </>) : (
+          <div style={{textAlign:"center",color:"#9CA3AF",fontSize:13,flex:1,paddingTop:4}}>Waiting for host…</div>
+        )}
         {!live && <button onClick={()=>pickMode(activeMode==="truth"?"dare":"truth")} style={{...lBtn(activeMode==="truth"?"#DC2626":"#1D4ED8"),flex:1,fontSize:13}}>{activeMode==="truth"?"🔥":"🤔"}</button>}
       </div>
       {!live && Object.keys(completedBy).length>0&&(
@@ -1064,20 +1126,20 @@ function NeverHaveI({ onClose, accent, room, myName: liveName, players: livePlay
   }, [liveIdx, live]);
 
   const add = () => { if (newP.trim() && !players.includes(newP.trim())) { setPlayers(p => [...p, newP.trim()]); setNewP(""); } };
+  // In live mode: show marks from gameState.roundMarks for all players
+  const effectiveMarks = live ? { ...(gameState?.roundMarks || {}), [liveName]: roundHave[liveName] || false } : roundHave;
   const toggleHave = (name) => {
     if (revealed) return;
     if (live && name !== liveName) return; // can only mark yourself in live mode
-    setRoundHave(r => ({ ...r, [name]: !r[name] }));
+    const newVal = !roundHave[name];
+    setRoundHave(r => ({ ...r, [name]: newVal }));
+    if (live) sendAction('nhi_mark', { player: liveName, hasHad: newVal });
   };
   const reveal = () => {
+    if (live) { sendAction('nhi_reveal', {}); }
     setRevealed(true);
-    if (live) {
-      if (roundHave[liveName]) {
-        sendAction('mark', {});
-        sendAction('score-add', { player: liveName, points: 1 });
-      }
-    } else {
-      Object.entries(roundHave).forEach(([name, has]) => { if (has) setScores(s => ({ ...s, [name]: (s[name] || 0) + 1 })); });
+    if (!live) {
+      Object.entries(effectiveMarks).forEach(([name, has]) => { if (has) setScores(s => ({ ...s, [name]: (s[name] || 0) + 1 })); });
     }
   };
   const next = () => {
@@ -1085,6 +1147,8 @@ function NeverHaveI({ onClose, accent, room, myName: liveName, players: livePlay
     else { setIdx(i => (i + 1) % NEVER_HAVE_I.length); }
     setRoundHave({}); setRevealed(false);
   };
+  const [nhiCustom, setNhiCustom] = useState("");
+  const submitCustom = () => { if (nhiCustom.trim() && live) { sendAction('nhi_custom', { text: nhiCustom.trim() }); setNhiCustom(""); } };
 
   const tablePositions = (count) => {
     const r = 88;
@@ -1109,17 +1173,19 @@ function NeverHaveI({ onClose, accent, room, myName: liveName, players: livePlay
   );
 
   const positions = tablePositions(activePlayers.length);
-  const haveCount = Object.values(roundHave).filter(Boolean).length;
+  const haveCount = Object.values(effectiveMarks).filter(Boolean).length;
 
   return (
     <LightFormModal onClose={onClose} emoji="🙅" title="Never Have I Ever" accent={accent} onLeaderboard={onLeaderboard} system="truth">
-      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={revealed ? Object.fromEntries(Object.entries(roundHave).filter(([,v])=>v).map(([n])=>[n,true])) : {}} />
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={revealed ? Object.fromEntries(Object.entries(effectiveMarks).filter(([,v])=>v).map(([n])=>[n,true])) : {}} />
       {/* Statement card */}
       <div style={{ background: "#fff", border: `1.5px solid ${accent}30`, borderRadius: 18, padding: "20px 18px", textAlign: "center", marginBottom: 6, boxShadow: `0 4px 20px ${accent}10` }}>
         <div style={{ fontSize: 10, fontWeight: 800, color: accent, textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 10 }}>Never Have I Ever…</div>
-        <div style={{ fontSize: 17, color: "#1C1410", lineHeight: 1.5, fontWeight: 600 }}>{NEVER_HAVE_I[activeIdx % NEVER_HAVE_I.length]}</div>
+        <div style={{ fontSize: 17, color: "#1C1410", lineHeight: 1.5, fontWeight: 600 }}>
+          {gameState?.customText || NEVER_HAVE_I[activeIdx % NEVER_HAVE_I.length]}
+        </div>
       </div>
-      {live && <div style={{ fontSize:11, color:"rgba(28,9,0,0.45)", textAlign:"center", marginBottom:8 }}>Tap your token if you <strong>have</strong> done this — then hit Reveal</div>}
+      {live && <div style={{ fontSize:11, color:"rgba(28,9,0,0.45)", textAlign:"center", marginBottom:8 }}>Tap your token if you <strong>have</strong> done this — then host reveals</div>}
 
       {/* Virtual round table */}
       <div style={{ position: "relative", width: "100%", paddingBottom: "70%", marginBottom: 10, overflow: "visible" }}>
@@ -1128,7 +1194,7 @@ function NeverHaveI({ onClose, accent, room, myName: liveName, players: livePlay
         {/* Player tokens around table */}
         {activePlayers.map((p, i) => {
           const pos = positions[i];
-          const has = roundHave[p];
+          const has = effectiveMarks[p];
           const raised = revealed && has;
           const notHave = revealed && !has;
           const canTap = !revealed && (!live || p === liveName);
@@ -1154,11 +1220,27 @@ function NeverHaveI({ onClose, accent, room, myName: liveName, players: livePlay
         </div>
       </div>
 
+      {/* Custom statement input (live, host only) */}
+      {live && isHost && (
+        <div style={{display:"flex",gap:6,marginBottom:8}}>
+          <input value={nhiCustom} onChange={e=>setNhiCustom(e.target.value)} placeholder="Submit a custom statement…" style={{...linp,flex:1,fontSize:12}} />
+          <button onClick={submitCustom} style={{...lBtn(accent),width:"auto",padding:"8px 12px",fontSize:12}}>Set</button>
+        </div>
+      )}
+
       <div style={{ display: "flex", gap: 8 }}>
         {!revealed ? (
-          <button onClick={reveal} style={{ flex: 1, ...lBtn(accent), fontSize: 15 }}>Reveal! 👀</button>
+          (!live || isHost) ? (
+            <button onClick={reveal} style={{ flex: 1, ...lBtn(accent), fontSize: 15 }}>Reveal! 👀</button>
+          ) : (
+            <div style={{textAlign:"center",color:"#9CA3AF",fontSize:13,flex:1,paddingTop:10}}>Waiting for host to reveal…</div>
+          )
         ) : (
-          <button onClick={next} style={{ flex: 1, ...lBtn(accent), fontSize: 15 }}>Next →</button>
+          (!live || isHost) ? (
+            <button onClick={next} style={{ flex: 1, ...lBtn(accent), fontSize: 15 }}>Next →</button>
+          ) : (
+            <div style={{textAlign:"center",color:"#9CA3AF",fontSize:13,flex:1,paddingTop:10}}>Waiting for host…</div>
+          )
         )}
       </div>
     </LightFormModal>
@@ -1176,6 +1258,7 @@ function WouldYouRather({ onClose, accent, room, myName: liveName, players: live
   const [debateTimer, setDebateTimer] = useState(90);
   const [timerActive, setTimerActive] = useState(false);
   const wyrTimerRef = useRef(null);
+  const [wyrReason, setWyrReason] = useState("");
 
   // Derived — live overrides local
   const pairIdx = live ? (gameState?.pairIdx || 0) : localPairIdx;
@@ -1234,10 +1317,22 @@ function WouldYouRather({ onClose, accent, room, myName: liveName, players: live
     clearInterval(wyrTimerRef.current);
     setTimerActive(false);
     setDebateTimer(90);
-    if (live) { sendAction('next', {}); }
+    if (live) { sendAction('next', { timerEnd: Date.now() + 90000 }); }
     else { setLocalPairIdx(i => i + 1); setLocalMyPick(null); setLocalVotes({ a: 0, b: 0 }); }
     setRound(r => r + 1);
   };
+  // Sync debate timer from gameState.timerEnd in live mode
+  useEffect(() => {
+    if (!live || !gameState?.timerEnd) return;
+    const update = () => {
+      const t = Math.max(0, Math.ceil((gameState.timerEnd - Date.now()) / 1000));
+      setDebateTimer(t);
+      if (t <= 0) clearInterval(syncId);
+    };
+    update();
+    const syncId = setInterval(update, 1000);
+    return () => clearInterval(syncId);
+  }, [live, gameState?.timerEnd]); // eslint-disable-line
   const debatePrompts = ["Defend your choice!", "Convince the other side!", "Why would anyone pick the other?!", "No backtracking now!", "Explain yourself!"];
   const SIDE_GRADS = ["linear-gradient(145deg,#1E3A8A,#2563EB)","linear-gradient(145deg,#5B21B6,#9333EA)"];
   const SIDE_GLOWS = ["rgba(37,99,235,0.55)","rgba(147,51,234,0.55)"];
@@ -1308,9 +1403,35 @@ function WouldYouRather({ onClose, accent, room, myName: liveName, players: live
           <div style={{textAlign:"center",background:`${accent}18`,borderRadius:12,padding:"11px 14px",fontSize:14,color:accent,fontWeight:700,border:`1px solid ${accent}30`}}>
             {debateTimer>0 ? rand(debatePrompts) : "⏰ Time's up — vote on the winner!"}
           </div>
+          {/* Text reason input */}
+          <div style={{marginTop:8}}>
+            <input
+              value={wyrReason}
+              onChange={e => setWyrReason(e.target.value)}
+              placeholder={`Why ${myPick==="a"?pair.a:pair.b}? (optional)`}
+              style={{...linp, fontSize:12}}
+              onBlur={() => { if (live && wyrReason.trim()) { sendAction('wyr_reason', { choice: myPick, reason: wyrReason.trim() }); setWyrReason(""); } }}
+            />
+          </div>
+          {/* Show reasons from all players */}
+          {live && Object.keys(gameState?.reasons || {}).length > 0 && (
+            <div style={{marginTop:6, display:"flex", flexDirection:"column", gap:4}}>
+              {Object.entries(gameState.reasons || {}).map(([player, r]) => (
+                <div key={player} style={{fontSize:11, background:"rgba(0,0,0,0.04)", borderRadius:8, padding:"5px 10px", border:"1px solid rgba(0,0,0,0.07)"}}>
+                  <span style={{fontWeight:700, color:accent}}>{player === liveName ? "You" : player}:</span>{" "}
+                  <span style={{color:"rgba(28,9,0,0.65)"}}>{r.reason}</span>
+                  <span style={{marginLeft:4, fontSize:9, background:r.choice==="a"?"rgba(37,99,235,0.15)":"rgba(147,51,234,0.15)", color:r.choice==="a"?"#2563EB":"#9333EA", borderRadius:6, padding:"1px 5px"}}>{r.choice==="a"?"A":"B"}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
-      <button onClick={next} style={{...lBtn(myPick?accent:"rgba(0,0,0,0.08)"),color:myPick?"#fff":"#1C1410",marginTop:4}}>{myPick?"Next Question →":"Skip"}</button>
+      {(!live || isHost) ? (
+        <button onClick={next} style={{...lBtn(myPick?accent:"rgba(0,0,0,0.08)"),color:myPick?"#fff":"#1C1410",marginTop:4}}>{myPick?"Next Question →":"Skip"}</button>
+      ) : (
+        <div style={{textAlign:"center",color:"rgba(0,0,0,0.40)",fontSize:13,marginTop:12}}>Waiting for host to advance…</div>
+      )}
     </LightFormModal>
   );
 }
@@ -1350,8 +1471,16 @@ function HotTakes({ onClose, accent, room, myName: liveName, players: livePlayer
     setTemp(v => Math.max(-100, Math.min(100, v + (emoji === "🔥" ? 12 : emoji === "💀" ? 8 : -10))));
   };
 
-  const tempColor = temp > 40 ? "#EF4444" : temp > 0 ? "#F97316" : temp < -40 ? "#3B82F6" : "#A3A3A3";
-  const tempLabel = temp > 60 ? "🔥 CHAOS" : temp > 20 ? "🌶️ Spicy" : temp < -60 ? "🧊 Dead Crowd" : temp < -20 ? "😐 Lukewarm" : "🌡️ Warming Up";
+  // Derive room temp from live votes so all devices agree
+  const liveTemp = live ? (() => {
+    let t = 0;
+    Object.values(liveVotesMap || {}).forEach(e => { t += e === "🔥" ? 12 : e === "💀" ? 8 : -10; });
+    return Math.max(-100, Math.min(100, t));
+  })() : temp;
+  const activeTemp = live ? liveTemp : temp;
+  const tempColor = activeTemp > 40 ? "#EF4444" : activeTemp > 0 ? "#F97316" : activeTemp < -40 ? "#3B82F6" : "#A3A3A3";
+  const tempLabel = activeTemp > 60 ? "🔥 CHAOS" : activeTemp > 20 ? "🌶️ Spicy" : activeTemp < -60 ? "🧊 Dead Crowd" : activeTemp < -20 ? "😐 Lukewarm" : "🌡️ Warming Up";
+  const [htReason, setHtReason] = useState("");
 
   // Who voted for each emoji
   const emojiVoters = live ? [["🔥","#EF4444"],["💀","#8B5CF6"],["👎","#3B82F6"]].reduce((acc,[e]) => {
@@ -1367,7 +1496,7 @@ function HotTakes({ onClose, accent, room, myName: liveName, players: livePlayer
       {/* Room temperature meter */}
       <div style={{ background: "rgba(0,0,0,0.03)", borderRadius: 14, padding: "12px 16px", marginBottom: 14, display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{ flex: 1, height: 8, borderRadius: 4, background: "rgba(0,0,0,0.07)", overflow: "hidden", position: "relative" }}>
-          <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: `${Math.abs(temp) / 2}%`, background: tempColor, borderRadius: 4, transition: "all 0.4s", transform: temp >= 0 ? "none" : "translateX(-100%)", transformOrigin: temp >= 0 ? "left" : "right" }} />
+          <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: `${Math.abs(activeTemp) / 2}%`, background: tempColor, borderRadius: 4, transition: "all 0.4s", transform: activeTemp >= 0 ? "none" : "translateX(-100%)", transformOrigin: activeTemp >= 0 ? "left" : "right" }} />
         </div>
         <div style={{ fontSize: 13, fontWeight: 800, color: tempColor, minWidth: 110, textAlign: "right" }}>{tempLabel}</div>
       </div>
@@ -1395,6 +1524,28 @@ function HotTakes({ onClose, accent, room, myName: liveName, players: livePlayer
               );
             })}
           </div>
+          {/* Optional "Why?" text input */}
+          {myLiveVote && (
+            <div style={{marginTop:10}}>
+              <input
+                value={htReason}
+                onChange={e => setHtReason(e.target.value)}
+                placeholder="Why? (optional)"
+                style={{...linp, fontSize:12}}
+                onBlur={() => { if (htReason.trim()) { sendAction('ht_reason', { reason: htReason.trim() }); setHtReason(""); } }}
+              />
+            </div>
+          )}
+          {/* Show all reasons */}
+          {Object.keys(gameState?.reasons || {}).length > 0 && (
+            <div style={{marginTop:6, display:"flex", flexDirection:"column", gap:3}}>
+              {Object.entries(gameState.reasons || {}).map(([player, reason]) => (
+                <div key={player} style={{fontSize:11, color:"rgba(28,9,0,0.55)", background:"rgba(0,0,0,0.03)", borderRadius:8, padding:"4px 8px"}}>
+                  <span style={{fontWeight:700, color:accent}}>{player===liveName?"You":player}:</span> {reason}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         takes.slice(0, 3).map((take, idx) => (
@@ -1412,75 +1563,110 @@ function HotTakes({ onClose, accent, room, myName: liveName, players: livePlayer
         ))
       )}
 
-      <button onClick={addTake} style={lBtn(accent)}>🌶️ Next Hot Take</button>
+      {(!live || isHost) ? (
+        <button onClick={addTake} style={lBtn(accent)}>🌶️ Next Hot Take →</button>
+      ) : (
+        <div style={{textAlign:"center",color:"#9CA3AF",fontSize:13}}>Waiting for host…</div>
+      )}
     </LightFormModal>
   );
 }
 
-function SpinBottle({ onClose, accent }) {
-  const [players, setPlayers] = useState([]);
+function SpinBottle({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'spin') setGame?.('spin', {}); }, [live, isHost]); // eslint-disable-line
+  // Solo state
+  const [soloPlayers, setSoloPlayers] = useState([]);
   const [newP, setNewP] = useState("");
-  const [spinning, setSpinning] = useState(false);
-  const [result, setResult] = useState(null);
-  const [angle, setAngle] = useState(0);
-  const [revealing, setRevealing] = useState(false);
-  const addP = () => { if (newP.trim() && !players.includes(newP.trim())) { setPlayers(p=>[...p,newP.trim()]); setNewP(""); } };
+  const [soloSpinning, setSoloSpinning] = useState(false);
+  const [soloResult, setSoloResult] = useState(null);
+  const [soloAngle, setSoloAngle] = useState(0);
+  const [soloRevealing, setSoloRevealing] = useState(false);
+  const [category, setCategory] = useState(null); // for both solo + live
+  const SPIN_CATS = ["Truth", "Dare", "Challenge"];
+
+  // Derived — live overrides solo
+  const players = live ? livePlayers : soloPlayers;
+  const spinning = live ? (gameState?.spinning || false) : soloSpinning;
+  const result = live ? (gameState?.spinResult || null) : soloResult;
+  const angle = live ? (gameState?.angle || 0) : soloAngle;
+  const revealing = live ? false : soloRevealing;
+  const liveCategory = live ? (gameState?.category || null) : category;
+
+  const addP = () => { if (newP.trim() && !soloPlayers.includes(newP.trim())) { setSoloPlayers(p=>[...p,newP.trim()]); setNewP(""); } };
   const spin = () => {
     if (players.length < 2) return;
-    setSpinning(true); setResult(null); setRevealing(false);
-    const extra = 1440 + Math.random() * 1080;
-    setAngle(a=>a+extra);
-    setTimeout(()=>{ setSpinning(false); setRevealing(true); setTimeout(()=>{ setResult(rand(players)); setRevealing(false); },600); },3200);
+    if (live) {
+      if (!isHost) return;
+      const pickedPlayer = players[Math.floor(Math.random() * players.length)];
+      const extra = 1440 + Math.random() * 1080;
+      const newAngle = (gameState?.angle || 0) + extra;
+      sendAction('spin_bottle', { result: pickedPlayer, angle: newAngle, spinning: true, category: liveCategory });
+      setTimeout(() => sendAction('spin_settle', { spinning: false }), 3200);
+    } else {
+      setSoloSpinning(true); setSoloResult(null); setSoloRevealing(false);
+      const extra = 1440 + Math.random() * 1080;
+      setSoloAngle(a => a + extra);
+      setTimeout(() => { setSoloSpinning(false); setSoloRevealing(true); setTimeout(() => { setSoloResult(rand(players)); setSoloRevealing(false); }, 600); }, 3200);
+    }
   };
+  const BottleRing = ({ pl, ang, spin: isSpinning }) => (
+    <div style={{display:"flex",justifyContent:"center",marginBottom:20,position:"relative"}}>
+      <div style={{position:"relative",width:220,height:220}}>
+        <div style={{position:"absolute",inset:0,borderRadius:"50%",border:`3px solid ${accent}30`,boxShadow:`0 0 40px ${accent}18,inset 0 0 40px ${accent}08`,background:`radial-gradient(circle,${accent}0a 0%,transparent 70%)`}}/>
+        {pl.slice(0,8).map((p,i,arr)=>{
+          const deg=(i/arr.length)*360;
+          const rad=deg*(Math.PI/180);
+          const r=88;
+          const x=110+r*Math.sin(rad);
+          const y=110-r*Math.cos(rad);
+          return <div key={p} style={{position:"absolute",left:x,top:y,transform:"translate(-50%,-50%)",background:(result===p&&!isSpinning)?accent+"44":accent+"18",border:`1px solid ${(result===p&&!isSpinning)?accent:accent+"40"}`,borderRadius:14,padding:"3px 8px",fontSize:9.5,fontWeight:(result===p&&!isSpinning)?900:700,color:accent,whiteSpace:"nowrap",maxWidth:60,overflow:"hidden",textOverflow:"ellipsis"}}>{p}</div>;
+        })}
+        <div style={{position:"absolute",bottom:"50%",left:"calc(50% - 5px)",transformOrigin:"50% 100%",transform:`rotate(${ang}deg)`,transition:isSpinning?"transform 3.2s cubic-bezier(0.17,0.67,0.08,0.99)":"none",width:10,height:100}}>
+          <svg width="10" height="100" viewBox="0 0 10 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="0" width="4" height="20" rx="2" fill={accent}/>
+            <path d="M1 20 Q0 35 0 50 L10 50 Q10 35 9 20Z" fill={accent}/>
+            <rect x="0" y="50" width="10" height="46" rx="2" fill={accent}/>
+            <rect x="1.5" y="25" width="2" height="60" rx="1" fill="rgba(255,255,255,0.25)"/>
+            <rect x="2.5" y="0" width="5" height="6" rx="1" fill="#fff" opacity="0.6"/>
+          </svg>
+        </div>
+        <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:14,height:14,borderRadius:"50%",background:accent,boxShadow:`0 0 20px ${accent}cc`,zIndex:2}}/>
+      </div>
+    </div>
+  );
+
   return (
     <LightFormModal onClose={onClose} emoji="🍾" title="Spin & Pick" accent={accent} system="celebration">
-      <div style={{display:"flex",gap:8,marginBottom:10}}>
-        <input value={newP} onChange={e=>setNewP(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addP()} placeholder="Add a name" style={{...linp,flex:1}}/>
-        <button onClick={addP} style={{...lBtn(accent),width:"auto",padding:"10px 16px"}}>+</button>
+      {live && <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />}
+      {/* Category chooser */}
+      <div style={{display:"flex",gap:6,marginBottom:12,justifyContent:"center"}}>
+        {SPIN_CATS.map(c => (
+          <button key={c} onClick={() => { if (!live || isHost) { setCategory(c); if (live) sendAction('spin_category', { category: c }); } }}
+            style={{padding:"6px 14px",borderRadius:20,border:`1.5px solid ${(liveCategory||category)===c?accent:"rgba(0,0,0,0.10)"}`,background:(liveCategory||category)===c?accent+"18":"transparent",color:(liveCategory||category)===c?accent:"rgba(28,9,0,0.55)",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:font}}>
+            {c}
+          </button>
+        ))}
       </div>
-      <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:16}}>
-        {players.map(p=><span key={p} style={{background:accent+"18",color:accent,padding:"5px 12px",borderRadius:20,fontSize:13,display:"flex",alignItems:"center",gap:6}}>
-          {p}<span onClick={()=>{setPlayers(pl=>pl.filter(x=>x!==p));setResult(null);}} style={{cursor:"pointer",opacity:0.5}}>✕</span>
-        </span>)}
-      </div>
-      {players.length>=2&&(
-        <div style={{display:"flex",justifyContent:"center",marginBottom:20,position:"relative"}}>
-          {/* Player name ring */}
-          <div style={{position:"relative",width:220,height:220}}>
-            {/* Outer glow ring */}
-            <div style={{position:"absolute",inset:0,borderRadius:"50%",border:`3px solid ${accent}30`,boxShadow:`0 0 40px ${accent}18,inset 0 0 40px ${accent}08`,background:`radial-gradient(circle,${accent}0a 0%,transparent 70%)`}}/>
-            {/* Player name chips around the ring */}
-            {players.slice(0,8).map((p,i,arr)=>{
-              const deg=(i/arr.length)*360;
-              const rad=deg*(Math.PI/180);
-              const r=88;
-              const x=110+r*Math.sin(rad);
-              const y=110-r*Math.cos(rad);
-              return <div key={p} style={{position:"absolute",left:x,top:y,transform:"translate(-50%,-50%)",background:accent+"18",border:`1px solid ${accent}40`,borderRadius:14,padding:"3px 8px",fontSize:9.5,fontWeight:700,color:accent,whiteSpace:"nowrap",maxWidth:60,overflow:"hidden",textOverflow:"ellipsis"}}>{p}</div>;
-            })}
-            {/* Bottle SVG — spins around its base */}
-            <div style={{position:"absolute",bottom:"50%",left:"calc(50% - 5px)",transformOrigin:"50% 100%",transform:`rotate(${angle}deg)`,transition:spinning?"transform 3.2s cubic-bezier(0.17,0.67,0.08,0.99)":"none",width:10,height:100}}>
-              <svg width="10" height="100" viewBox="0 0 10 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* Bottle neck */}
-                <rect x="3" y="0" width="4" height="20" rx="2" fill={accent}/>
-                {/* Bottle shoulder */}
-                <path d="M1 20 Q0 35 0 50 L10 50 Q10 35 9 20Z" fill={accent}/>
-                {/* Bottle body */}
-                <rect x="0" y="50" width="10" height="46" rx="2" fill={accent}/>
-                {/* Glass shine */}
-                <rect x="1.5" y="25" width="2" height="60" rx="1" fill="rgba(255,255,255,0.25)"/>
-                {/* Cap */}
-                <rect x="2.5" y="0" width="5" height="6" rx="1" fill="#fff" opacity="0.6"/>
-              </svg>
-            </div>
-            {/* Center pivot */}
-            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:14,height:14,borderRadius:"50%",background:accent,boxShadow:`0 0 20px ${accent}cc`,zIndex:2}}/>
+      {!live && (
+        <>
+          <div style={{display:"flex",gap:8,marginBottom:10}}>
+            <input value={newP} onChange={e=>setNewP(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addP()} placeholder="Add a name" style={{...linp,flex:1}}/>
+            <button onClick={addP} style={{...lBtn(accent),width:"auto",padding:"10px 16px"}}>+</button>
           </div>
-        </div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:16}}>
+            {soloPlayers.map(p=><span key={p} style={{background:accent+"18",color:accent,padding:"5px 12px",borderRadius:20,fontSize:13,display:"flex",alignItems:"center",gap:6}}>
+              {p}<span onClick={()=>{setSoloPlayers(pl=>pl.filter(x=>x!==p));setSoloResult(null);}} style={{cursor:"pointer",opacity:0.5}}>✕</span>
+            </span>)}
+          </div>
+        </>
       )}
+      {players.length>=2 && <BottleRing pl={players} ang={angle} spin={spinning} />}
       {(result&&!spinning&&!revealing)?(
         <div style={{textAlign:"center",padding:"18px",background:accent+"14",borderRadius:14,marginBottom:14,border:`1.5px solid ${accent}40`,animation:"card-flip 0.3s ease-out"}}>
-          <div style={{fontSize:11,color:accent,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>🎯 Picked!</div>
+          <div style={{fontSize:11,color:accent,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>
+            🎯 {liveCategory ? liveCategory + "!" : "Picked!"}
+          </div>
           <div style={{fontSize:28,fontWeight:900,color:"#1C1410"}}>{result}</div>
         </div>
       ):revealing?(
@@ -1488,14 +1674,26 @@ function SpinBottle({ onClose, accent }) {
           <div style={{fontSize:32,animation:"splash-pulse 0.6s ease-in-out"}}>🎯</div>
         </div>
       ):null}
-      <button onClick={spin} disabled={players.length<2||spinning} style={{...lBtn(accent),opacity:players.length<2?0.5:1}}>
-        {spinning?"Spinning…":players.length<2?"Add at least 2 names":result?"Spin Again! 🍾":"SPIN! 🍾"}
-      </button>
+      {live ? (
+        isHost ? (
+          <button onClick={spin} disabled={players.length<2||spinning} style={{...lBtn(accent),opacity:players.length<2?0.5:1}}>
+            {spinning?"Spinning…":result?"Spin Again! 🍾":"SPIN! 🍾"}
+          </button>
+        ) : (
+          <div style={{textAlign:"center",color:"#9CA3AF",fontSize:13}}>Waiting for host to spin…</div>
+        )
+      ) : (
+        <button onClick={spin} disabled={players.length<2||spinning} style={{...lBtn(accent),opacity:players.length<2?0.5:1}}>
+          {spinning?"Spinning…":players.length<2?"Add at least 2 names":result?"Spin Again! 🍾":"SPIN! 🍾"}
+        </button>
+      )}
     </LightFormModal>
   );
 }
 
-function Charades({ onClose, accent }) {
+function Charades({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'charades') setGame?.('charades', {}); }, [live, isHost]); // eslint-disable-line
   const cats = { bollywood: "🎬 Bollywood", webshows: "📺 Web Shows", celebs: "🌟 Celebs", memesphrases: "😂 Memes & Phrases" };
   const [cat, setCat] = useState(null);
   const [word, setWord] = useState(null);
@@ -1504,109 +1702,244 @@ function Charades({ onClose, accent }) {
   const [teamScores, setTeamScores] = useState({ A: 0, B: 0 });
   const [currentTeam, setCurrentTeam] = useState("A");
   const [round, setRound] = useState(1);
+  const [charGuess, setCharGuess] = useState("");
   const ref = useRef(null);
-  const pick = (c) => { setCat(c); setWord(rand(CHARADES[c])); setTimer(60); setTimerKey(k => k + 1); };
-  const nextWord = () => { setWord(rand(CHARADES[cat])); setTimer(60); setTimerKey(k => k + 1); };
-  const correct = () => {
-    setTeamScores(s => ({ ...s, [currentTeam]: s[currentTeam] + 1 }));
-    nextWord();
-    setCurrentTeam(t => t === "A" ? "B" : "A");
-    setRound(r => r + 1);
+
+  // Live derived
+  const livePhase = live ? (gameState?.phase || 'lobby') : (cat ? 'acting' : 'lobby');
+  const liveActorIdx = live ? (gameState?.actorIdx || 0) : 0;
+  const liveActor = live ? (livePlayers[liveActorIdx % Math.max(livePlayers.length, 1)] || null) : null;
+  const isActor = live ? liveName === liveActor : true;
+  const liveWord = live ? (gameState?.word || '') : word;
+  const liveCategory = live ? (gameState?.category || null) : cat;
+  const liveScores = live ? (gameState?.scores || {}) : null;
+  const liveGuesses = live ? (gameState?.guesses || []) : [];
+  const liveTimerEnd = live ? (gameState?.timerEnd || 0) : 0;
+  const [liveTimer, setLiveTimer] = useState(60);
+  useEffect(() => {
+    if (!live || !liveTimerEnd) return;
+    const update = () => { const t = Math.max(0, Math.ceil((liveTimerEnd - Date.now()) / 1000)); setLiveTimer(t); };
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, [live, liveTimerEnd]); // eslint-disable-line
+
+  const pick = (c) => {
+    if (live) {
+      sendAction('charades_start', { category: c, actorIdx: 0, word: rand(CHARADES[c]), timerEnd: Date.now() + 60000, phase: 'acting' });
+    } else {
+      setCat(c); setWord(rand(CHARADES[c])); setTimer(60); setTimerKey(k => k + 1);
+    }
   };
-  const skip = () => { nextWord(); setCurrentTeam(t => t === "A" ? "B" : "A"); setRound(r => r + 1); };
+  const nextWord = () => { setWord(rand(CHARADES[cat])); setTimer(60); setTimerKey(k => k + 1); };
+  const correct = (guesser) => {
+    if (live) {
+      const newActorIdx = liveActorIdx + 1;
+      const nextActor = livePlayers[newActorIdx % livePlayers.length];
+      sendAction('charades_correct', { scorer: guesser, actorIdx: newActorIdx, word: rand(CHARADES[liveCategory || 'bollywood']), timerEnd: Date.now() + 60000 });
+    } else {
+      setTeamScores(s => ({ ...s, [currentTeam]: s[currentTeam] + 1 }));
+      nextWord();
+      setCurrentTeam(t => t === "A" ? "B" : "A");
+      setRound(r => r + 1);
+    }
+  };
+  const skip = () => {
+    if (live) {
+      const newActorIdx = liveActorIdx + 1;
+      sendAction('charades_skip', { actorIdx: newActorIdx, word: rand(CHARADES[liveCategory || 'bollywood']), timerEnd: Date.now() + 60000 });
+    } else {
+      nextWord(); setCurrentTeam(t => t === "A" ? "B" : "A"); setRound(r => r + 1);
+    }
+  };
+  const submitGuess = () => {
+    if (charGuess.trim() && live) { sendAction('charades_guess', { guess: charGuess.trim() }); setCharGuess(""); }
+  };
   useEffect(() => {
     if (timer === null || timer <= 0) { clearInterval(ref.current); return; }
     ref.current = setInterval(() => setTimer(t => t - 1), 1000);
     return () => clearInterval(ref.current);
   }, [timerKey]);
-  if (!cat) return (
+  const CategoryPicker = () => (
     <LightFormModal onClose={onClose} emoji="🎭" title="Dumb Charades" accent={accent} system="performance">
+      {live && <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />}
       {/* Theater marquee header */}
       <div style={{ position:"relative", borderRadius:14, overflow:"hidden", marginBottom:16, background:"linear-gradient(180deg,#1A0808,#0F0505)", border:"1px solid rgba(220,38,38,0.2)", padding:"18px 20px 14px" }}>
-        {/* Marquee light bulbs */}
         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:10 }}>
           {[...Array(9)].map((_,i) => <div key={i} style={{ width:8, height:8, borderRadius:"50%", background:i%2===0?"#FBBF24":"#FDE68A", boxShadow:i%2===0?"0 0 6px #FBBF24":"none", opacity:0.9 }} />)}
         </div>
         <div style={{ textAlign:"center", marginBottom:10 }}>
           <div style={{ fontSize:11, color:"rgba(251,191,36,0.6)", fontWeight:800, letterSpacing:"0.3em", textTransform:"uppercase" }}>NOW PLAYING</div>
           <div style={{ fontSize:18, fontWeight:900, color:"#FDE68A", letterSpacing:"0.08em", fontFamily:"Georgia,serif" }}>DUMB CHARADES</div>
-          <div style={{ fontSize:11, color:"rgba(255,255,255,0.5)", marginTop:4 }}>Team A vs Team B · 60s per word</div>
+          <div style={{ fontSize:11, color:"rgba(255,255,255,0.5)", marginTop:4 }}>{live ? "Host picks category · 60s per actor" : "Team A vs Team B · 60s per word"}</div>
         </div>
         <div style={{ display:"flex", justifyContent:"space-between" }}>
           {[...Array(9)].map((_,i) => <div key={i} style={{ width:8, height:8, borderRadius:"50%", background:i%2===1?"#FBBF24":"#FDE68A", boxShadow:i%2===1?"0 0 6px #FBBF24":"none", opacity:0.9 }} />)}
         </div>
       </div>
-      <div style={{ fontSize:12, color:"rgba(28,9,0,0.40)", marginBottom:10, textAlign:"center", letterSpacing:"0.05em" }}>CHOOSE YOUR CATEGORY</div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {Object.entries(cats).map(([k, v]) => (
-          <button key={k} onClick={() => pick(k)} style={{ ...lBtn("rgba(0,0,0,0.03)"), border:"1.5px solid rgba(220,38,38,0.2)", textAlign:"left", padding:"14px 16px", fontSize:15, borderLeft:`4px solid #DC2626`, borderRadius:10, color:"#1C1410" }}>
-            <span style={{ marginRight:8 }}>{v.split(" ")[0]}</span>
-            <span style={{ color:"rgba(28,9,0,0.80)" }}>{v.split(" ").slice(1).join(" ")}</span>
-          </button>
-        ))}
-      </div>
+      {(!live || isHost) ? (<>
+        <div style={{ fontSize:12, color:"rgba(28,9,0,0.40)", marginBottom:10, textAlign:"center", letterSpacing:"0.05em" }}>CHOOSE YOUR CATEGORY</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {Object.entries(cats).map(([k, v]) => (
+            <button key={k} onClick={() => pick(k)} style={{ ...lBtn("rgba(0,0,0,0.03)"), border:"1.5px solid rgba(220,38,38,0.2)", textAlign:"left", padding:"14px 16px", fontSize:15, borderLeft:`4px solid #DC2626`, borderRadius:10, color:"#1C1410" }}>
+              <span style={{ marginRight:8 }}>{v.split(" ")[0]}</span>
+              <span style={{ color:"rgba(28,9,0,0.80)" }}>{v.split(" ").slice(1).join(" ")}</span>
+            </button>
+          ))}
+        </div>
+      </>) : (
+        <div style={{ textAlign:"center", color:"#9CA3AF", fontSize:13, padding:"20px 0" }}>Waiting for host to pick a category…</div>
+      )}
     </LightFormModal>
   );
-  const timerColor = timer > 15 ? "#34D399" : timer > 5 ? "#FBBF24" : "#F87171";
+
+  if (livePhase === 'lobby' || (!live && !cat)) return <CategoryPicker />;
+
+  const activeTimer = live ? liveTimer : timer;
+  const timerColor = activeTimer > 15 ? "#34D399" : activeTimer > 5 ? "#FBBF24" : "#F87171";
+  const displayWord = live ? (isActor ? liveWord : null) : word;
+  const displayCat = live ? liveCategory : cat;
+
   return (
     <LightFormModal onClose={onClose} emoji="🎭" title="Dumb Charades" accent={accent} system="performance">
+      {live && <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />}
       {/* Scoreboard */}
-      <div style={{ display:"flex", gap:8, marginBottom:12 }}>
-        {["A","B"].map(t => (
-          <div key={t} style={{ flex:1, textAlign:"center", padding:"10px 8px", borderRadius:12, background:currentTeam===t?"rgba(220,38,38,0.10)":"rgba(0,0,0,0.03)", border:`1.5px solid ${currentTeam===t?"#DC2626":"rgba(0,0,0,0.07)"}`, transition:"all 0.2s" }}>
-            <div style={{ fontSize:10, color:currentTeam===t?"#DC2626":"rgba(28,9,0,0.35)", textTransform:"uppercase", letterSpacing:"0.08em", fontWeight:700, marginBottom:3 }}>Team {t}{currentTeam===t?" ★":""}</div>
-            <div style={{ fontSize:26, fontWeight:900, color:currentTeam===t?"#DC2626":"rgba(28,9,0,0.55)", fontVariantNumeric:"tabular-nums" }}>{teamScores[t]}</div>
-          </div>
-        ))}
-      </div>
+      {live ? (
+        <div style={{ display:"flex", gap:6, marginBottom:12, flexWrap:"wrap" }}>
+          {livePlayers.map(p => (
+            <div key={p} style={{ flex:1, minWidth:60, textAlign:"center", padding:"8px 6px", borderRadius:10, background:p===liveActor?"rgba(220,38,38,0.10)":"rgba(0,0,0,0.03)", border:`1.5px solid ${p===liveActor?"#DC2626":"rgba(0,0,0,0.07)"}` }}>
+              <div style={{ fontSize:9, color:p===liveActor?"#DC2626":"rgba(28,9,0,0.40)", textTransform:"uppercase", fontWeight:700, marginBottom:2 }}>{p===liveActor?"🎭 Acting":p===liveName?"You":p}</div>
+              <div style={{ fontSize:20, fontWeight:900, color:p===liveActor?"#DC2626":"rgba(28,9,0,0.55)", fontVariantNumeric:"tabular-nums" }}>{(liveScores||{})[p]||0}</div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={{ display:"flex", gap:8, marginBottom:12 }}>
+          {["A","B"].map(t => (
+            <div key={t} style={{ flex:1, textAlign:"center", padding:"10px 8px", borderRadius:12, background:currentTeam===t?"rgba(220,38,38,0.10)":"rgba(0,0,0,0.03)", border:`1.5px solid ${currentTeam===t?"#DC2626":"rgba(0,0,0,0.07)"}`, transition:"all 0.2s" }}>
+              <div style={{ fontSize:10, color:currentTeam===t?"#DC2626":"rgba(28,9,0,0.35)", textTransform:"uppercase", letterSpacing:"0.08em", fontWeight:700, marginBottom:3 }}>Team {t}{currentTeam===t?" ★":""}</div>
+              <div style={{ fontSize:26, fontWeight:900, color:currentTeam===t?"#DC2626":"rgba(28,9,0,0.55)", fontVariantNumeric:"tabular-nums" }}>{teamScores[t]}</div>
+            </div>
+          ))}
+        </div>
+      )}
       {/* Stage */}
       <div style={{ position:"relative", borderRadius:14, overflow:"hidden", marginBottom:12, background:"linear-gradient(180deg,#0A0505 0%,#120808 40%,#1A0F0A 100%)" }}>
-        {/* Stage floor boards */}
         <div style={{ position:"absolute", inset:0, backgroundImage:"repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,255,255,0.03) 39px,rgba(255,255,255,0.03) 40px)", pointerEvents:"none" }} />
-        {/* Spotlight cone from top */}
         <div style={{ position:"absolute", top:0, left:"50%", transform:"translateX(-50%)", width:"70%", height:"100%", background:"radial-gradient(ellipse 55% 70% at 50% 0%,rgba(251,191,36,0.12) 0%,transparent 70%)", pointerEvents:"none" }} />
-        {/* Left curtain */}
         <div style={{ position:"absolute", top:0, left:0, width:18, height:"100%", background:"linear-gradient(90deg,#7F1D1D,#991B1B,rgba(153,27,27,0))", pointerEvents:"none", borderRadius:"14px 0 0 14px" }} />
-        {/* Right curtain */}
         <div style={{ position:"absolute", top:0, right:0, width:18, height:"100%", background:"linear-gradient(270deg,#7F1D1D,#991B1B,rgba(153,27,27,0))", pointerEvents:"none", borderRadius:"0 14px 14px 0" }} />
         <div style={{ padding:"20px 24px 16px", position:"relative", zIndex:1 }}>
-          <div style={{ fontSize:11, color:"rgba(251,191,36,0.7)", fontWeight:700, textAlign:"center", letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:12 }}>{cats[cat]} · Round {round}</div>
+          <div style={{ fontSize:11, color:"rgba(251,191,36,0.7)", fontWeight:700, textAlign:"center", letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:12 }}>
+            {cats[displayCat || 'bollywood']} · {live ? `${liveActor}'s turn` : `Round ${round}`}
+          </div>
           {/* Cue card */}
           <div style={{ background:"linear-gradient(135deg,#FFFBF0,#FFF8E7)", borderRadius:8, padding:"22px 16px", marginBottom:14, boxShadow:"0 8px 24px rgba(0,0,0,0.5)", border:"1px solid rgba(255,255,255,0.1)", position:"relative" }}>
-            {/* Punched hole */}
             <div style={{ position:"absolute", top:10, left:"50%", transform:"translateX(-50%)", width:12, height:12, borderRadius:"50%", background:"rgba(0,0,0,0.15)", border:"1px solid rgba(0,0,0,0.1)" }} />
-            <div style={{ fontSize:22, fontWeight:900, color:"#1A0A05", textAlign:"center", letterSpacing:"-0.01em", fontFamily:"Georgia,serif", marginTop:4 }}>{word}</div>
+            {displayWord ? (
+              <div style={{ fontSize:22, fontWeight:900, color:"#1A0A05", textAlign:"center", letterSpacing:"-0.01em", fontFamily:"Georgia,serif", marginTop:4 }}>{displayWord}</div>
+            ) : (
+              <div style={{ textAlign:"center", marginTop:4 }}>
+                <div style={{ fontSize:28 }}>🤫</div>
+                <div style={{ fontSize:13, color:"rgba(28,9,0,0.55)", marginTop:4 }}>{liveActor} is acting…</div>
+              </div>
+            )}
           </div>
-          {/* Timer ring */}
+          {/* Timer */}
           <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:12, marginBottom:4 }}>
             <div style={{ width:1, flex:1, background:`linear-gradient(90deg,transparent,${timerColor}40)` }} />
             <div style={{ textAlign:"center" }}>
-              <div style={{ fontSize:42, fontWeight:900, color:timerColor, fontVariantNumeric:"tabular-nums", lineHeight:1, transition:"color 0.3s", textShadow:`0 0 20px ${timerColor}60` }}>{timer}</div>
+              <div style={{ fontSize:42, fontWeight:900, color:timerColor, fontVariantNumeric:"tabular-nums", lineHeight:1, transition:"color 0.3s", textShadow:`0 0 20px ${timerColor}60` }}>{activeTimer}</div>
               <div style={{ fontSize:10, color:"rgba(255,255,255,0.4)", letterSpacing:"0.1em", textTransform:"uppercase" }}>seconds</div>
             </div>
             <div style={{ width:1, flex:1, background:`linear-gradient(270deg,transparent,${timerColor}40)` }} />
           </div>
         </div>
       </div>
+      {/* Guesser input in live mode */}
+      {live && !isActor && (
+        <div style={{ display:"flex", gap:6, marginBottom:8 }}>
+          <input value={charGuess} onChange={e=>setCharGuess(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submitGuess()} placeholder="Type your guess…" style={{...linp,flex:1,fontSize:13}} />
+          <button onClick={submitGuess} style={{...lBtn(accent),width:"auto",padding:"10px 12px",fontSize:12}}>Guess</button>
+        </div>
+      )}
+      {/* Recent guesses */}
+      {live && liveGuesses.length > 0 && (
+        <div style={{marginBottom:8,maxHeight:80,overflowY:"auto",display:"flex",flexDirection:"column",gap:3}}>
+          {liveGuesses.slice(-4).map((g,i)=>(
+            <div key={i} style={{fontSize:11,color:"rgba(28,9,0,0.55)",background:"rgba(0,0,0,0.03)",borderRadius:6,padding:"3px 8px"}}>
+              <span style={{fontWeight:700,color:accent}}>{g.player===liveName?"You":g.player}:</span> {g.text}
+            </div>
+          ))}
+        </div>
+      )}
       <div style={{ display:"flex", gap:8 }}>
-        <button onClick={correct} style={{ ...lBtn("#059669"), flex:2, fontSize:14 }}>✓ Correct +1</button>
-        <button onClick={skip} style={{ ...lBtn("rgba(0,0,0,0.06)"), flex:1, fontSize:13, color:"#1C1410" }}>Skip</button>
-        <button onClick={() => { setCat(null); setWord(null); clearInterval(ref.current); }} style={{ ...lBtn("rgba(0,0,0,0.05)"), flex:1, fontSize:12, color:"#1C1410" }}>◀</button>
+        {live ? (
+          isActor ? (<>
+            <button onClick={() => correct(null)} style={{ ...lBtn("#059669"), flex:2, fontSize:14 }}>✓ Correct!</button>
+            <button onClick={skip} style={{ ...lBtn("rgba(0,0,0,0.06)"), flex:1, fontSize:13, color:"#1C1410" }}>Skip</button>
+          </>) : (isHost ? (
+            <button onClick={() => correct(null)} style={{ ...lBtn("#059669"), flex:2, fontSize:14 }}>✓ Mark Correct</button>
+          ) : (
+            <div style={{textAlign:"center",color:"#9CA3AF",fontSize:13,flex:1,paddingTop:4}}>{isActor?"Your turn to act!":"Guess the word above"}</div>
+          ))
+        ) : (<>
+          <button onClick={() => correct(null)} style={{ ...lBtn("#059669"), flex:2, fontSize:14 }}>✓ Correct +1</button>
+          <button onClick={skip} style={{ ...lBtn("rgba(0,0,0,0.06)"), flex:1, fontSize:13, color:"#1C1410" }}>Skip</button>
+          <button onClick={() => { setCat(null); setWord(null); clearInterval(ref.current); }} style={{ ...lBtn("rgba(0,0,0,0.05)"), flex:1, fontSize:12, color:"#1C1410" }}>◀</button>
+        </>)}
       </div>
     </LightFormModal>
   );
 }
 
-function Bingo({ onClose, accent, squares }) {
+// Seeded deterministic shuffle for Bingo cards
+function seededShuffle(arr, seed) {
+  let hash = Array.from(seed || 'x').reduce((h, c) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0);
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    hash = Math.abs((Math.imul(hash, 1664525) + 1013904223) | 0);
+    const j = hash % (i + 1);
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+function Bingo({ onClose, accent, squares, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'bingo') setGame?.('bingo', {}); }, [live, isHost]); // eslint-disable-line
   const src = squares || BINGO_SQUARES;
-  const [card] = useState(() => shuffle(src).slice(0, 25));
+  // In live mode: deterministic card from seed = roomCode + playerName
+  const [card] = useState(() => {
+    if (live) return seededShuffle(src, ((room?.code || room?.id || '') + (liveName || ''))).slice(0, 25);
+    return shuffle(src).slice(0, 25);
+  });
   const [marked, setMarked] = useState({ 12: true });
   const [bingo, setBingo] = useState(false);
   const [winLines, setWinLines] = useState([]);
   const [justMarked, setJustMarked] = useState(null);
   const LINES = [[0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],[0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],[0,6,12,18,24],[4,8,12,16,20]];
+  // In live mode: auto-mark called squares
+  const calledNumbers = live ? (gameState?.calledNumbers || []) : [];
+  const livePhase = live ? (gameState?.phase || 'playing') : 'playing';
+  const winnerName = live ? (gameState?.winnerName || null) : null;
+  useEffect(() => {
+    if (!live) return;
+    const newMarked = { 12: true };
+    calledNumbers.forEach(sq => {
+      const idx = card.indexOf(sq);
+      if (idx !== -1) newMarked[idx] = true;
+    });
+    setMarked(newMarked);
+    const wins = LINES.filter(line => line.every(j => newMarked[j]));
+    if (wins.length > 0 && !bingo) {
+      setBingo(true); setWinLines(wins);
+      sendAction('bingo_win', { pattern: wins.length > 2 ? 'full' : 'line', winner: liveName });
+    }
+  }, [calledNumbers.length]); // eslint-disable-line
+
   const toggle = (i) => {
-    if (i === 12) return;
+    if (i === 12 || live) return; // in live mode marks are automatic
     const next = { ...marked, [i]: !marked[i] };
     setMarked(next);
     setJustMarked(next[i] ? i : null);
@@ -1615,14 +1948,30 @@ function Bingo({ onClose, accent, squares }) {
     setBingo(wins.length > 0);
     setWinLines(wins);
   };
+  const callNext = () => {
+    if (!isHost) return;
+    const uncalled = src.filter(sq => !calledNumbers.includes(sq));
+    if (uncalled.length === 0) return;
+    const sq = uncalled[Math.floor(Math.random() * uncalled.length)];
+    sendAction('bingo_call', { square: sq });
+  };
   const inWinLine = (i) => winLines.some(line => line.includes(i));
   const markedCount = Object.values(marked).filter(Boolean).length;
   return (
     <LightFormModal onClose={onClose} emoji="🎱" title="Bingo" accent={accent} wide system="celebration">
-      {bingo&&(
+      {live && <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />}
+      {(bingo || winnerName) && (
         <div style={{textAlign:"center",marginBottom:16,background:"linear-gradient(135deg,rgba(251,191,36,0.12),rgba(251,191,36,0.06))",borderRadius:16,padding:"16px",border:"2px solid rgba(251,191,36,0.4)",animation:"splash-pulse 0.6s ease-out"}}>
           <div style={{fontSize:30,fontWeight:900,color:"#D97706",letterSpacing:"0.06em"}}>🎉 B I N G O !</div>
-          <div style={{fontSize:13,color:"rgba(28,9,0,0.50)",marginTop:6}}>Shout it out loud!</div>
+          <div style={{fontSize:13,color:"rgba(28,9,0,0.50)",marginTop:6}}>{winnerName ? `${winnerName} got BINGO!` : "Shout it out loud!"}</div>
+        </div>
+      )}
+      {/* Live: show last called square */}
+      {live && calledNumbers.length > 0 && (
+        <div style={{textAlign:"center",marginBottom:10,padding:"8px",background:`${accent}14`,borderRadius:10,border:`1px solid ${accent}30`}}>
+          <div style={{fontSize:10,fontWeight:700,color:accent,textTransform:"uppercase",letterSpacing:"0.1em"}}>Last Called</div>
+          <div style={{fontSize:16,fontWeight:900,color:"#1C1410"}}>{calledNumbers[calledNumbers.length-1]}</div>
+          <div style={{fontSize:11,color:"rgba(28,9,0,0.40)"}}>{calledNumbers.length} called so far</div>
         </div>
       )}
       {/* B-I-N-G-O column headers */}
@@ -1639,7 +1988,7 @@ function Bingo({ onClose, accent, squares }) {
           return (
             <div key={i} onClick={()=>toggle(i)} style={{
               aspectRatio:"1",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",
-              padding:4,cursor:isCenter?"default":"pointer",transition:"transform 0.15s",
+              padding:4,cursor:(isCenter||live)?"default":"pointer",transition:"transform 0.15s",
               background:isCenter?"#B45309":isWin?"rgba(251,191,36,0.12)":"rgba(0,0,0,0.04)",
               border:`1.5px solid ${isCenter?"#D97706":isWin?"#FBBF24":isMarked?dauberClr+"80":"rgba(0,0,0,0.07)"}`,
               transform:isJust?"scale(1.18)":"scale(1)",
@@ -1661,6 +2010,16 @@ function Bingo({ onClose, accent, squares }) {
         <p style={{fontSize:12,color:"rgba(28,9,0,0.35)",margin:0}}>5 in a row — horizontal, vertical, diagonal</p>
         <div style={{fontSize:12,fontWeight:700,color:accent}}>{markedCount}/25</div>
       </div>
+      {/* Host "Call Next" button in live mode */}
+      {live && (
+        isHost ? (
+          <button onClick={callNext} disabled={calledNumbers.length >= src.length} style={{...lBtn(accent),marginTop:10}}>
+            📢 Call Next Square
+          </button>
+        ) : (
+          <div style={{textAlign:"center",color:"#9CA3AF",fontSize:13,marginTop:10}}>Waiting for host to call the next square…</div>
+        )
+      )}
     </LightFormModal>
   );
 }
@@ -1771,7 +2130,78 @@ function WishWall({ onClose, accent, celebrant, placeholder, room, myName: liveN
 }
 
 // Birthday: Birthday Quiz
-function BirthdayQuiz({ onClose, accent, celebrant }) {
+function BirthdayQuiz({ onClose, accent, celebrant, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'birthdayquiz') setGame?.('birthdayquiz', {}); }, [live, isHost]); // eslint-disable-line
+  // Live derived
+  const livePhase = live ? (gameState?.phase || 'answering') : null;
+  const liveQIdx = live ? (gameState?.qIdx || 0) : null;
+  const liveAnswers = live ? (gameState?.answers || {}) : null;
+  const liveScores = live ? (gameState?.scores || {}) : null;
+  const liveCorrectAnswer = live ? (gameState?.correctAnswer || null) : null;
+  const liveRevealed = live ? (gameState?.phase === 'reveal') : false;
+  // In live mode: answering phase — show current question, players type answers
+  if (live) {
+    const questions_live = [
+      { q: `What is ${celebrant || "the birthday person"}'s favourite food?` },
+      { q: `What would ${celebrant || "they"} most likely spend a windfall on?` },
+      { q: `What's ${celebrant || "their"} go-to excuse to skip plans?` },
+      { q: `${celebrant || "They"} get 1 free day — what do they do?` },
+      { q: `What's ${celebrant || "their"} spirit animal?` },
+    ];
+    const liveQ = questions_live[liveQIdx % questions_live.length];
+    const myAnswer = liveAnswers?.[liveName] || '';
+    const answeredCount = Object.keys(liveAnswers || {}).length;
+    const [myAnswerInput, setMyAnswerInput] = useState(myAnswer);
+    return (
+      <LightFormModal onClose={onClose} emoji="🎯" title={`How well do you know ${celebrant || "them"}?`} accent={accent} wide system="quiz">
+        <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={Object.fromEntries(Object.keys(liveAnswers||{}).map(n=>[n,true]))} />
+        {/* Question */}
+        <div style={{background:"#fff",border:`2px solid ${accent}30`,borderRadius:18,padding:"24px 18px",marginBottom:14,textAlign:"center",boxShadow:`0 4px 24px ${accent}12`}}>
+          <div style={{fontSize:11,fontWeight:800,color:accent,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>Q{(liveQIdx%questions_live.length)+1}/{questions_live.length}</div>
+          <div style={{fontSize:17,fontWeight:800,color:"#1C1410",lineHeight:1.45}}>{liveQ?.q}</div>
+          <div style={{fontSize:11,color:"rgba(28,9,0,0.40)",marginTop:8}}>{answeredCount}/{livePlayers.length} answered</div>
+        </div>
+        {/* Answer input */}
+        {!liveAnswers?.[liveName] ? (
+          <div style={{display:"flex",gap:6,marginBottom:10}}>
+            <input value={myAnswerInput} onChange={e=>setMyAnswerInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&myAnswerInput.trim()&&sendAction('bq_answer',{qIdx:liveQIdx,answer:myAnswerInput.trim()})} placeholder="Type your answer…" style={{...linp,flex:1}} autoFocus />
+            <button onClick={()=>myAnswerInput.trim()&&sendAction('bq_answer',{qIdx:liveQIdx,answer:myAnswerInput.trim()})} style={{...lBtn(accent),width:"auto",padding:"10px 14px"}}>Submit</button>
+          </div>
+        ) : (
+          <div style={{textAlign:"center",background:"#05966918",borderRadius:10,padding:"8px",color:"#059669",fontWeight:700,fontSize:13,marginBottom:10}}>✓ Your answer: {liveAnswers[liveName]}</div>
+        )}
+        {/* Reveal phase */}
+        {liveRevealed && (
+          <div style={{marginTop:8}}>
+            <div style={{fontSize:12,color:accent,fontWeight:700,marginBottom:8}}>Correct answer: {liveCorrectAnswer || "(not set)"}</div>
+            <div style={{display:"flex",flexDirection:"column",gap:4}}>
+              {Object.entries(liveAnswers||{}).map(([player,ans])=>(
+                <div key={player} style={{display:"flex",justifyContent:"space-between",padding:"6px 12px",background:"rgba(0,0,0,0.03)",borderRadius:8,fontSize:12}}>
+                  <span style={{fontWeight:700,color:accent}}>{player===liveName?"You":player}</span>
+                  <span style={{color:"rgba(28,9,0,0.70)"}}>{ans}</span>
+                  {liveScores?.[player] !== undefined && <span style={{color:"#059669",fontWeight:700}}>{liveScores[player]>0?"✓":""}</span>}
+                </div>
+              ))}
+            </div>
+            {isHost && (
+              <div style={{marginTop:10}}>
+                <div style={{fontSize:11,color:"rgba(28,9,0,0.45)",marginBottom:6}}>Correct answer was:</div>
+                <input placeholder="Set the correct answer" style={{...linp,fontSize:13}} onBlur={e=>e.target.value.trim()&&sendAction('bq_reveal',{correctAnswer:e.target.value.trim()})} />
+              </div>
+            )}
+          </div>
+        )}
+        {isHost && !liveRevealed && (
+          <button onClick={()=>sendAction('bq_reveal',{correctAnswer:''})} style={{...lBtn(accent),marginTop:8}}>Reveal All Answers</button>
+        )}
+        {isHost && liveRevealed && (
+          <button onClick={()=>sendAction('bq_next',{qIdx:(liveQIdx+1)%questions_live.length})} style={{...lBtn(accent),marginTop:8}}>Next Question →</button>
+        )}
+      </LightFormModal>
+    );
+  }
+  // Below: solo mode unchanged (original code)
   const questions = [
     { q: `What is ${celebrant || "the birthday person"}'s favourite food?`, opts: ["Biryani", "Pizza", "Chinese", "Anything I cook"] },
     { q: `What would ${celebrant || "they"} most likely spend a windfall on?`, opts: ["Travel", "Gadgets", "Clothes", "Saving it"] },
@@ -3340,13 +3770,21 @@ function MostLikelyTo({ onClose, accent, room, myName: liveName, players: livePl
         </div>
 
         {!revealed ? (
-          <button onClick={reveal} disabled={totalVotes === 0} style={{ ...lBtn(accent), opacity: totalVotes === 0 ? 0.4 : 1 }}>Reveal 🎉</button>
+          (!live || isHost) ? (
+            <button onClick={reveal} disabled={totalVotes === 0} style={{ ...lBtn(accent), opacity: totalVotes === 0 ? 0.4 : 1 }}>Reveal 🎉</button>
+          ) : (
+            <div style={{ textAlign:"center", color:"#9CA3AF", fontSize:13 }}>Waiting for host to reveal…</div>
+          )
         ) : (<>
           <div style={{ textAlign: "center", marginBottom: 14 }}>
             <div style={{ fontSize: 15, fontWeight: 800, color: accent, marginBottom: 3 }}>{winner} takes the crown! 👑</div>
             <div style={{ fontSize: 12, color: "rgba(28,9,0,0.45)" }}>{maxVotes} of {totalVotes} vote{totalVotes !== 1 ? "s" : ""}</div>
           </div>
-          <button onClick={next} style={lBtn(accent)}>Next Prompt →</button>
+          {(!live || isHost) ? (
+            <button onClick={next} style={lBtn(accent)}>Next Prompt →</button>
+          ) : (
+            <div style={{ textAlign:"center", color:"#9CA3AF", fontSize:13 }}>Waiting for host…</div>
+          )}
           {history.length > 1 && (
             <div style={{ marginTop: 14 }}>
               <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(28,9,0,0.40)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Previous rounds</div>
@@ -3566,7 +4004,9 @@ const RF_DECKS = {
 
 function shuffleArr(arr) { return [...arr].sort(()=>Math.random()-0.5); }
 
-function RapidFire({ onClose, accent }) {
+function RapidFire({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'rapidfire') setGame?.('rapidfire', {}); }, [live, isHost]); // eslint-disable-line
   const [deck, setDeck]           = useState(null);
   const [idx, setIdx]             = useState(0);
   const [timeLeft, setTimeLeft]   = useState(30);
@@ -3576,6 +4016,116 @@ function RapidFire({ onClose, accent }) {
   const [chosen, setChosen]       = useState(null);      // selected option
   const [shuffledOpts, setShuffledOpts] = useState([]); // randomised 4 opts
   const timerRef                  = useRef(null);
+  // Live derived
+  const livePhase = live ? (gameState?.phase || 'lobby') : null;
+  const liveHotSeatIdx = live ? (gameState?.hotSeatIdx || 0) : 0;
+  const liveHotSeat = live ? (livePlayers[liveHotSeatIdx % Math.max(livePlayers.length,1)] || null) : null;
+  const isHotSeat = live ? liveName === liveHotSeat : true;
+  const liveQIdx = live ? (gameState?.qIdx || 0) : 0;
+  const liveTimerEnd = live ? (gameState?.timerEnd || 0) : 0;
+  const liveScores = live ? (gameState?.scores || {}) : {};
+  const liveDeck = live ? (gameState?.deck || null) : null;
+  const liveQuestions = liveDeck ? RF_DECKS[liveDeck] || [] : [];
+  const liveQObj = liveQuestions[liveQIdx] || null;
+  const [liveTimer, setLiveTimer] = useState(30);
+  useEffect(() => {
+    if (!live || !liveTimerEnd) return;
+    const update = () => { const t = Math.max(0, Math.ceil((liveTimerEnd - Date.now()) / 1000)); setLiveTimer(t); };
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, [live, liveTimerEnd]); // eslint-disable-line
+  // Live: deck picker shown to host in lobby phase
+  if (live && livePhase === 'lobby') {
+    return (
+      <LightFormModal onClose={onClose} accent={accent} emoji="⚡" title="Rapid Fire" wide system="truth">
+        <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
+        <div style={{textAlign:"center",marginBottom:16,background:"linear-gradient(180deg,#1A0A00,#2D1000)",borderRadius:14,padding:"16px",border:"2px solid rgba(251,146,60,0.3)"}}>
+          <div style={{fontSize:32,marginBottom:6}}>⚡</div>
+          <div style={{fontSize:11,fontWeight:900,letterSpacing:"0.2em",color:"rgba(251,146,60,0.9)",textTransform:"uppercase"}}>RAPID FIRE — HOT SEAT</div>
+          <div style={{fontSize:12,color:"rgba(255,255,255,0.4)",marginTop:4}}>Each player takes the hot seat · 30s each</div>
+        </div>
+        {isHost ? (<>
+          <div style={{fontSize:12,color:"rgba(28,9,0,0.50)",textAlign:"center",marginBottom:10}}>Pick a category to start:</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+            {Object.keys(RF_DECKS).map((d,i) => {
+              const cols=[["#EA580C","#FB923C"],["#7C3AED","#A78BFA"],["#0369A1","#38BDF8"],["#B45309","#FCD34D"]];
+              const [c1,c2]=cols[i%cols.length];
+              return (
+                <button key={d} onClick={() => sendAction('rf_start', { deck: d, hotSeatIdx: 0, qIdx: 0, timerEnd: Date.now() + 30000, phase: 'hotSeat' })}
+                  style={{ padding:"16px 12px", borderRadius:14, background:`linear-gradient(145deg,${c1}18,${c2}0d)`, border:`2px solid ${c1}55`, color:c1, fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:font, textAlign:"center", lineHeight:1.5 }}>
+                  {d}
+                </button>
+              );
+            })}
+          </div>
+        </>) : (
+          <div style={{textAlign:"center",color:"#9CA3AF",fontSize:13,padding:"20px 0"}}>Waiting for host to pick a category…</div>
+        )}
+      </LightFormModal>
+    );
+  }
+  // Live hot-seat phase
+  if (live && livePhase === 'hotSeat') {
+    const liveTimerColor = liveTimer > 15 ? "#4ADE80" : liveTimer > 7 ? "#FBBF24" : "#F87171";
+    return (
+      <LightFormModal onClose={onClose} accent={accent} emoji="⚡" title="Rapid Fire" wide system="truth">
+        <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
+        {/* Scoreboard */}
+        <div style={{display:"flex",gap:4,marginBottom:10,flexWrap:"wrap"}}>
+          {livePlayers.map(p=>(
+            <div key={p} style={{flex:1,minWidth:50,textAlign:"center",padding:"6px 4px",borderRadius:8,background:p===liveHotSeat?"rgba(251,146,60,0.12)":"rgba(0,0,0,0.03)",border:`1.5px solid ${p===liveHotSeat?"#EA580C":"rgba(0,0,0,0.07)"}`}}>
+              <div style={{fontSize:8,color:p===liveHotSeat?"#EA580C":"rgba(28,9,0,0.35)",fontWeight:700}}>{p===liveHotSeat?"🔥":p===liveName?"you":p}</div>
+              <div style={{fontSize:16,fontWeight:900,color:p===liveHotSeat?"#EA580C":"rgba(28,9,0,0.55)"}}>{liveScores[p]||0}</div>
+            </div>
+          ))}
+        </div>
+        {/* Hot seat indicator */}
+        <div style={{textAlign:"center",marginBottom:10,padding:"8px",background:"rgba(251,146,60,0.08)",borderRadius:10,border:"1px solid rgba(251,146,60,0.2)"}}>
+          <div style={{fontSize:13,fontWeight:800,color:"#EA580C"}}>{isHotSeat?"🔥 You're in the hot seat!":` ${liveHotSeat} is in the hot seat`}</div>
+        </div>
+        {/* Timer */}
+        <div style={{display:"flex",justifyContent:"center",marginBottom:12}}>
+          <div style={{position:"relative",width:52,height:52}}>
+            <svg width="52" height="52" style={{transform:"rotate(-90deg)",display:"block"}}>
+              <circle cx="26" cy="26" r="21" fill="none" stroke="rgba(0,0,0,0.10)" strokeWidth="4"/>
+              <circle cx="26" cy="26" r="21" fill="none" stroke={liveTimerColor} strokeWidth="4"
+                strokeDasharray={String(2*Math.PI*21)} strokeDashoffset={String(2*Math.PI*21*(1-liveTimer/30))}
+                style={{transition:"stroke-dashoffset 1s linear,stroke 0.3s"}} strokeLinecap="round"/>
+            </svg>
+            <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:900,color:liveTimerColor,fontVariantNumeric:"tabular-nums"}}>{liveTimer}</div>
+          </div>
+        </div>
+        {/* Question */}
+        {liveQObj && (
+          <div style={{background:"linear-gradient(180deg,#1A0800,#2D1200)",borderRadius:14,padding:"18px 16px",marginBottom:12,border:"2px solid rgba(251,146,60,0.2)",textAlign:"center"}}>
+            <div style={{fontSize:isHotSeat?17:14,fontWeight:700,color:isHotSeat?"#FFF8EC":"rgba(255,255,255,0.50)",lineHeight:1.55,filter:isHotSeat?"none":"blur(5px)"}}>{liveQObj.q}</div>
+            {!isHotSeat && <div style={{fontSize:11,color:"rgba(255,255,255,0.40)",marginTop:4}}>Only {liveHotSeat} can see the question</div>}
+          </div>
+        )}
+        {/* Answer options — only for hot-seat player */}
+        {isHotSeat && liveQObj && (
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+            {shuffleArr(liveQObj.opts).map((opt,oi)=>{
+              const OPT_COLORS=["#2563EB","#7C3AED","#EA580C","#059669"];
+              const col=OPT_COLORS[oi%4];
+              return (
+                <button key={opt} onClick={()=>sendAction('rf_answer',{answer:opt,correct:opt===liveQObj.a})}
+                  style={{padding:"14px 10px",borderRadius:12,border:`2px solid ${col}55`,background:`${col}12`,color:col,fontFamily:font,fontSize:13,fontWeight:700,cursor:"pointer",textAlign:"center",lineHeight:1.3}}>
+                  {opt}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {isHost && (
+          <button onClick={()=>sendAction('rf_next',{hotSeatIdx:liveHotSeatIdx+1,qIdx:0,timerEnd:Date.now()+30000})} style={{...lBtn(accent),marginTop:4,fontSize:13}}>
+            Next Player →
+          </button>
+        )}
+      </LightFormModal>
+    );
+  }
 
   const questions = deck ? RF_DECKS[deck] : [];
   const qObj = questions[idx] || null;
@@ -11192,14 +11742,14 @@ export default function OccasionHub({ occasion }) {
       case "neverhavei":     return <NeverHaveI onClose={close} accent={accent} {...liveProps} />;
       case "wouldyou":       return <WouldYouRather onClose={close} accent={accent} {...liveProps} />;
       case "hottakes":       return <HotTakes onClose={close} accent={accent} {...liveProps} />;
-      case "spin":           return <SpinBottle onClose={close} accent={accent} />;
-      case "charades":       return <Charades onClose={close} accent={accent} />;
-      case "bingo":          return <Bingo onClose={close} accent={accent} squares={occasion === "birthday" ? BIRTHDAY_BINGO : occasion === "office-party" ? OFFICE_BINGO : undefined} />;
+      case "spin":           return <SpinBottle onClose={close} accent={accent} {...liveProps} />;
+      case "charades":       return <Charades onClose={close} accent={accent} {...liveProps} />;
+      case "bingo":          return <Bingo onClose={close} accent={accent} squares={occasion === "birthday" ? BIRTHDAY_BINGO : occasion === "office-party" ? OFFICE_BINGO : undefined} {...liveProps} />;
       case "awardsceremony": return <AwardsCeremony onClose={close} accent={accent} />;
       case "runofshow":      return <RunOfShow onClose={close} accent={accent} />;
       case "appreciationwall": return <AppreciationWall onClose={close} accent={accent} />;
       case "wishwall":       return <WishWall onClose={close} accent={accent} celebrant={celebrantName} {...liveProps} />;
-      case "birthdayquiz":   return <BirthdayQuiz onClose={close} accent={accent} />;
+      case "birthdayquiz":   return <BirthdayQuiz onClose={close} accent={accent} celebrant={celebrantName} {...liveProps} />;
       case "lovenotes":      return <LoveNotes onClose={close} accent={accent} {...liveProps} />;
       case "couplequiz":     return <CoupleQuiz onClose={close} accent={accent} />;
       case "blessingswall":  return <BlessingsWall onClose={close} accent={accent} placeholder="Share your blessings and wishes for the couple…" {...liveProps} />;
@@ -11213,7 +11763,7 @@ export default function OccasionHub({ occasion }) {
       case "blessings":      return <BlessingsWall onClose={close} accent={accent} placeholder="Share a blessing for the child's journey ahead…" {...liveProps} />;
       case "mostlikelyto":   return <MostLikelyTo onClose={close} accent={accent} {...liveProps} />;
       case "t2l":            return <TwoTruthsOneLie onClose={close} accent={accent} />;
-      case "rapidfire":      return <RapidFire onClose={close} accent={accent} />;
+      case "rapidfire":      return <RapidFire onClose={close} accent={accent} {...liveProps} />;
       case "moodmeter":      return <MoodMeter onClose={close} accent={accent} {...liveProps} />;
       case "secretmessage":  return <SecretMessage onClose={close} accent={accent} {...liveProps} />;
       case "emojiDecoder":   return <EmojiDecoder onClose={close} accent={accent} occasion={occasion} {...liveProps} />;
