@@ -3,7 +3,6 @@ import React, { useEffect, useState, useRef } from "react";
 import { PERFORMER_TYPES } from "../../components/PerformerSuggestions";
 import { getVendors } from "../../apis/vendorApi";
 import { useNavigate as useNav, useSearchParams } from "react-router-dom";
-import PageTour from "../../components/PageTour";
 import { GUIDES } from "../guides/guideData";
 import SEO from "../../components/SEO";
 import { useNavigate } from "react-router-dom";
@@ -1283,7 +1282,6 @@ const Home = () => {
         )}
       </AnimatePresence>
 
-      <PageTour pageKey="home" steps={HOME_TOUR_STEPS} onDone={() => window.dispatchEvent(new CustomEvent("tendr:show-signin"))} />
       <SEO title="Tendr — Celebration & Event Planning Platform in Delhi NCR" description="Plan birthdays, anniversaries, balloon decorations, surprise parties, baby showers, house parties and corporate events across Delhi, Noida, Gurgaon, Ghaziabad and Greater Noida. Compare 100+ verified vendors and book instantly." path="/" />
       {/* Speed dial (floating) */}
       <div
