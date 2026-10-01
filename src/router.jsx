@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import MobileBottomNav from "./components/MobileBottomNav";
 import UpcomingEventNudge from "./components/UpcomingEventNudge";
+import FirstTimeExperience from "./components/FirstTimeExperience";
 import { fetchEventData } from "./redux/eventPlanningSlice";
 import { syncProgressOnLogin } from "./utils/progressSync";
 
@@ -135,6 +136,7 @@ function RootLayout() {
       <PageTransition />
       <UpcomingEventNudge />
       <FloatingHubBubble />
+      <FirstTimeExperience />
     </>
   );
 }
