@@ -29,7 +29,7 @@ const TOUR_STOPS = [
 const INTENT_OPTIONS = [
   { label: 'Book Vendors',      emoji: '🛍️', path: '/' },
   { label: 'Plan an Occasion',  emoji: '📋', path: '/occasion-picker' },
-  { label: 'Party Hub',         emoji: '🎮', path: '/join' },
+  { label: 'Party Hub',         emoji: '🎮', path: '/join-room' },
   { label: 'Use Tools',         emoji: '✨', path: '/occasion-picker' },
   { label: 'Book for Others',   emoji: '🎁', path: '/' },
   { label: 'Just Exploring',    emoji: '👀', path: null },
