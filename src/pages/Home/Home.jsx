@@ -158,7 +158,7 @@ function TipsByTendrSection() {
   const guides = GUIDES.slice(0, 3);
 
   return (
-    <section style={{ background: "#FFFCF5", fontFamily: sans }}>
+    <section id="home-journal" style={{ background: "#FFFCF5", fontFamily: sans }}>
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "72px 24px 80px" }}>
 
         {/* ── Header ── */}
@@ -235,6 +235,7 @@ function TipsByTendrSection() {
 
         {/* ── Community strip ── */}
         <motion.div
+          id="home-community"
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
@@ -1306,6 +1307,7 @@ const Home = () => {
 
       {/* Hero Section */}
       <section
+        id="home-hero"
         className="hero-section-wrap"
         style={{
           height: "92vh",
