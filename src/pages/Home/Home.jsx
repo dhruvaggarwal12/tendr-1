@@ -164,7 +164,7 @@ function TipsByTendrSection() {
         {/* ── Header ── */}
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 24, flexWrap: "wrap", marginBottom: 40 }}>
           <div>
-            <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(180,83,9,0.5)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 10, fontFamily: sans }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(180,83,9,0.5)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 10, fontFamily: sans }}>
               Tendr Journal
             </div>
             <h2 style={{ fontFamily: serif, fontSize: "clamp(1.8rem,3.5vw,2.5rem)", fontWeight: 400, color: "#2C1A0E", letterSpacing: "-0.01em", lineHeight: 1.1, margin: "0 0 8px" }}>
@@ -176,7 +176,7 @@ function TipsByTendrSection() {
           </div>
           <button
             onClick={() => navigate("/guides")}
-            style={{ background: "none", border: "1px solid rgba(196,122,46,0.3)", color: "#C47A2E", fontSize: 12.5, cursor: "pointer", fontFamily: sans, padding: "7px 16px", borderRadius: 100, whiteSpace: "nowrap", flexShrink: 0, transition: "all 0.15s" }}
+            style={{ background: "none", border: "1px solid rgba(196,122,46,0.3)", color: "#C47A2E", fontSize: 12.5, cursor: "pointer", fontFamily: sans, padding: "10px 18px", minHeight: 44, borderRadius: 100, whiteSpace: "nowrap", flexShrink: 0, transition: "all 0.15s" }}
             onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.6)"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
           >
@@ -210,13 +210,13 @@ function TipsByTendrSection() {
               </div>
               {/* Meta */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <span style={{ fontSize: 9.5, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.18em", fontFamily: sans }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.18em", fontFamily: sans }}>
                   {i === 0 ? "Featured" : guide.tags?.[0] || "Guide"}
                 </span>
                 {guide.readTime && (
                   <>
                     <span style={{ color: "rgba(44,26,14,0.2)", fontSize: 10 }}>·</span>
-                    <span style={{ fontSize: 11, color: "rgba(44,26,14,0.4)", fontFamily: sans }}>{guide.readTime}</span>
+                    <span style={{ fontSize: 12, color: "rgba(44,26,14,0.4)", fontFamily: sans }}>{guide.readTime}</span>
                   </>
                 )}
               </div>
@@ -242,7 +242,7 @@ function TipsByTendrSection() {
           style={{ borderTop: "1px solid rgba(44,26,14,0.1)", paddingTop: 36, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}
         >
           <div>
-            <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(180,83,9,0.5)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 8, fontFamily: sans }}>Community</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(180,83,9,0.5)", textTransform: "uppercase", letterSpacing: "0.24em", marginBottom: 8, fontFamily: sans }}>Community</div>
             <h3 style={{ fontFamily: serif, fontSize: "clamp(1.4rem,2.4vw,1.9rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 6px", lineHeight: 1.15 }}>
               Steal their setup.
             </h3>
@@ -252,7 +252,7 @@ function TipsByTendrSection() {
           </div>
           <button
             onClick={() => navigate("/community")}
-            style={{ background: "none", border: "1px solid rgba(196,122,46,0.3)", color: "#C47A2E", fontSize: 12.5, cursor: "pointer", fontFamily: sans, padding: "9px 20px", borderRadius: 100, whiteSpace: "nowrap", flexShrink: 0, transition: "all 0.15s" }}
+            style={{ background: "none", border: "1px solid rgba(196,122,46,0.3)", color: "#C47A2E", fontSize: 12.5, cursor: "pointer", fontFamily: sans, padding: "11px 22px", minHeight: 44, borderRadius: 100, whiteSpace: "nowrap", flexShrink: 0, transition: "all 0.15s" }}
             onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.6)"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "none"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
           >
@@ -461,7 +461,7 @@ function FaqSection() {
                             transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}
                             style={{ overflow: "hidden" }}
                           >
-                            <p style={{ fontSize: 14, color: "rgba(255,248,236,0.46)", lineHeight: 1.8, margin: 0, padding: "2px 22px 22px 72px", maxWidth: 700 }}>{a}</p>
+                            <p style={{ fontSize: 14, color: "rgba(255,248,236,0.46)", lineHeight: 1.8, margin: 0, padding: "2px 22px 22px 24px", maxWidth: 700 }}>{a}</p>
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -1309,7 +1309,7 @@ const Home = () => {
         className="hero-section-wrap"
         style={{
           height: "92vh",
-          minHeight: 600,
+          minHeight: "auto",
           paddingTop: 74,
           background: "#1C0E04",
           display: "flex",

@@ -13745,7 +13745,7 @@ export default function OccasionHub({ occasion }) {
                 boxShadow: isActive ? `0 0 14px ${tColor}30` : "none",
               }}>
                 <div style={{ color:isActive ? tColor : "rgba(255,255,255,0.45)", transition:"color 0.18s" }}>{t.icon}</div>
-                <div style={{ fontSize:9.5, fontWeight:isActive?800:600, color:isActive ? tColor : "rgba(255,255,255,0.45)", letterSpacing:"0.07em", textTransform:"uppercase", transition:"color 0.18s", marginTop:1 }}>{t.label}</div>
+                <div style={{ fontSize:12, fontWeight:isActive?800:600, color:isActive ? tColor : "rgba(255,255,255,0.45)", letterSpacing:"0.07em", textTransform:"uppercase", transition:"color 0.18s", marginTop:1 }}>{t.label}</div>
               </button>
             );
           })}
@@ -13753,7 +13753,7 @@ export default function OccasionHub({ occasion }) {
       </div>
 
       {/* ── CHAT floating button ── */}
-      <button onClick={()=>setOpen("wabroadcast")} style={{ position:"fixed", bottom:"calc(72px + env(safe-area-inset-bottom,0px))", right:16, zIndex:3000, display:"flex", alignItems:"center", gap:6, padding:"8px 18px 8px 14px", borderRadius:100, border:`1.5px solid ${PH.violet}55`, background:`${PH.violet}18`, color:PH.violet, fontSize:12, fontWeight:600, cursor:"pointer", boxShadow:`0 2px 16px rgba(0,0,0,0.4)`, letterSpacing:"0.01em" }}>
+      <button onClick={()=>setOpen("wabroadcast")} style={{ position:"fixed", bottom:"calc(72px + env(safe-area-inset-bottom,0px))", right:16, zIndex:3000, display:"flex", alignItems:"center", gap:6, padding:"11px 18px 11px 14px", minHeight:44, borderRadius:100, border:`1.5px solid ${PH.violet}55`, background:`${PH.violet}18`, color:PH.violet, fontSize:12, fontWeight:600, cursor:"pointer", boxShadow:`0 2px 16px rgba(0,0,0,0.4)`, letterSpacing:"0.01em" }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         Chat
       </button>

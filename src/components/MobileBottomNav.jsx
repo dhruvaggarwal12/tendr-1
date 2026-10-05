@@ -540,7 +540,7 @@ function BottomNavInner() {
                 )}
               </div>
               <span style={{
-                fontSize: 9, fontWeight: isOn ? 700 : 400,
+                fontSize: 12, fontWeight: isOn ? 700 : 400,
                 color: isOn ? navColor.active : "#B08060",
                 lineHeight: 1, letterSpacing: "0.01em",
                 transition: "color 0.18s, font-weight 0.18s",
