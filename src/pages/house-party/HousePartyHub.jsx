@@ -38,6 +38,7 @@ const TOOL_ICONS = {
   bills:          hpic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>),
   theme:          hpic(<><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></>),
   photowall:      hpic(<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></>),
+  photochallenge: hpic(<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/><path d="M17 2l-1 3"/><path d="M7 2l1 3"/></>),
   countdown:      hpic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>),
   playlist:       hpic(<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>),
   truthordare:    hpic(<><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="22" y1="12" x2="19" y2="12"/><line x1="5" y1="12" x2="2" y2="12"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/></>),
@@ -2179,7 +2180,8 @@ const TOOLS = [
   { id: "wabroadcast", section: "manage", emoji: "📣", title: "WA Broadcasts",   desc: "Save the date · reminder · thank you",        color: "#25D366" },
   // Fun
   { id: "theme", section: "fun", emoji: "🎨", title: "Theme Picker", desc: "Vote as a group on party theme", color: "#C47A2E" },
-  { id: "photowall", section: "fun", emoji: "📸", title: "Photo Wall", desc: "Shared album · everyone uploads", color: "#DB2777" },
+  { id: "photowall",      section: "fun", emoji: "📸", title: "Photo Wall",      desc: "Shared album · everyone uploads",                  color: "#DB2777" },
+  { id: "photochallenge", section: "fun", emoji: "📷", title: "Photo Challenge", desc: "Timed scavenger hunt · race to snap photos",        color: "#7C3AED" },
   { id: "countdown", section: "fun", emoji: "⏱️", title: "Countdown Timer", desc: "Visual countdown to party time", color: "#0891B2" },
   { id: "playlist", section: "fun", emoji: "🎵", title: "Playlist Builder", desc: "Everyone adds 2 songs", color: "#059669" },
   { id: "wishwall", section: "fun", emoji: "⭐", title: "Wish Wall", desc: "Everyone adds wishes · react together", color: "#F59E0B", live: true },
@@ -2989,6 +2991,127 @@ function RoastBattleGame({ onClose }) {
             ))}
           </div>
           <button onClick={()=>{setPhase('setup');setPlayers(['','']);}} style={{ width:'100%', background:'linear-gradient(135deg,#F43F5E,#F97316)', border:'none', borderRadius:12, padding:'14px 0', color:'#fff', fontSize:15, fontWeight:800, cursor:'pointer', fontFamily:font }}>New Battle 🎤</button>
+        </>
+      )}
+    </Modal>
+  );
+}
+
+// ── Photo Challenge (House Party) ─────────────────────────────────────────────
+
+const HP_CHALLENGES = [
+  "Take a group selfie with everyone doing the same pose 📸",
+  "Capture someone mid-laugh 😂",
+  "Get a photo of the most colourful outfit tonight 🌈",
+  "Snap the food / snack table before it's empty 🍕",
+  "Group pic imitating a Bollywood movie poster 🎬",
+  "Photo of two people doing a dramatic handshake 🤝",
+  "Capture someone pulling their best surprised face 😱",
+  "Group selfie with the background saying something funny 🤳",
+  "Photo of the oldest and youngest person together 👴👶",
+  "Snap someone in mid-dance 💃",
+];
+
+function PhotoChallengeHPB({ onClose }) {
+  const [phase, setPhase] = useState('lobby');
+  const [photos, setPhotos] = useState({}); // {idx: dataUrl}
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const timerRef = useRef(null);
+  const fileRef = useRef(null);
+
+  const start = (mins) => {
+    setPhotos({}); setActiveIdx(0);
+    setTimeLeft(mins * 60);
+    setPhase('playing');
+    timerRef.current = setInterval(() => {
+      setTimeLeft(t => { if (t <= 1) { clearInterval(timerRef.current); setPhase('results'); return 0; } return t - 1; });
+    }, 1000);
+  };
+  useEffect(() => () => clearInterval(timerRef.current), []);
+
+  const uploadPhoto = (e) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 500; const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width * scale; canvas.height = img.height * scale;
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        setPhotos(p => ({ ...p, [activeIdx]: canvas.toDataURL('image/jpeg', 0.65) }));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const done = Object.keys(photos).length;
+  const pct = Math.round((timeLeft % 60)).toString().padStart(2, '0');
+  const mins = Math.floor(timeLeft / 60);
+
+  return (
+    <Modal onClose={onClose} title="Photo Challenge" emoji="📷">
+      {phase === 'lobby' && (
+        <>
+          <div style={{ background:"linear-gradient(135deg,#120828,#0d0520)", borderRadius:14, padding:"16px", marginBottom:16, border:"1px solid rgba(139,92,246,0.25)", textAlign:"center" }}>
+            <div style={{ fontSize:32, marginBottom:6 }}>📷</div>
+            <div style={{ fontSize:9, fontWeight:800, color:"rgba(139,92,246,0.7)", textTransform:"uppercase", letterSpacing:"0.2em" }}>PHOTO SCAVENGER HUNT</div>
+            <div style={{ fontSize:11, color:"rgba(255,255,255,0.35)", marginTop:4 }}>10 challenges · race the clock · most snapped wins</div>
+          </div>
+          <div style={{ display:"flex", gap:10, marginBottom:8 }}>
+            {[5,10,15].map(m => (
+              <button key={m} onClick={()=>start(m)} style={{ flex:1, padding:"14px 0", background:"linear-gradient(135deg,#7C3AED,#5B21B6)", border:"none", borderRadius:12, color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:font }}>
+                {m} min
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+      {phase === 'playing' && (
+        <>
+          <div style={{ background:"rgba(139,92,246,0.1)", borderRadius:12, padding:"10px 14px", marginBottom:12, display:"flex", justifyContent:"space-between", alignItems:"center", border:"1px solid rgba(139,92,246,0.2)" }}>
+            <span style={{ fontSize:12, color:"rgba(255,255,255,0.5)", fontWeight:700 }}>⏱ {mins}:{pct}</span>
+            <span style={{ fontSize:12, color:"#A78BFA", fontWeight:800 }}>{done}/10 snapped</span>
+          </div>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:8, marginBottom:12 }}>
+            {HP_CHALLENGES.map((c, i) => (
+              <button key={i} onClick={()=>setActiveIdx(i)} style={{ flex:"1 1 calc(50% - 4px)", padding:"10px", background: activeIdx===i?"rgba(139,92,246,0.2)":"rgba(255,255,255,0.04)", border:`1.5px solid ${activeIdx===i?"rgba(139,92,246,0.5)":photos[i]?"rgba(34,197,94,0.4)":"rgba(255,255,255,0.07)"}`, borderRadius:10, cursor:"pointer", textAlign:"left" }}>
+                <div style={{ fontSize:11, color: photos[i]?"#4ade80":(activeIdx===i?"#A78BFA":"rgba(255,255,255,0.4)"), fontWeight:700, marginBottom:3 }}>{photos[i]?"✅":"📷"} #{i+1}</div>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,0.65)", lineHeight:1.4 }}>{c}</div>
+              </button>
+            ))}
+          </div>
+          {photos[activeIdx] && <img src={photos[activeIdx]} alt="" style={{ width:"100%", borderRadius:12, marginBottom:10, maxHeight:180, objectFit:"cover" }} />}
+          <button onClick={()=>fileRef.current?.click()} style={{ width:"100%", padding:"13px 0", background:"linear-gradient(135deg,#7C3AED,#5B21B6)", border:"none", borderRadius:12, color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:font, marginBottom:8 }}>
+            📷 {photos[activeIdx] ? "Replace Photo" : "Snap Photo #" + (activeIdx+1)}
+          </button>
+          <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={uploadPhoto} style={{ display:"none" }} />
+          <button onClick={()=>{clearInterval(timerRef.current);setPhase('results');}} style={{ width:"100%", padding:"11px 0", background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:12, color:"rgba(255,255,255,0.5)", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:font }}>
+            Finish Early
+          </button>
+        </>
+      )}
+      {phase === 'results' && (
+        <>
+          <div style={{ textAlign:"center", marginBottom:14 }}>
+            <div style={{ fontSize:36 }}>🏆</div>
+            <div style={{ fontSize:18, fontWeight:900, color:"#A78BFA", marginBottom:4 }}>Challenge Complete!</div>
+            <div style={{ fontSize:12, color:"rgba(255,255,255,0.45)" }}>{done} of 10 challenges captured</div>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:12 }}>
+            {HP_CHALLENGES.map((c, i) => photos[i] ? (
+              <div key={i} style={{ borderRadius:10, overflow:"hidden", position:"relative" }}>
+                <img src={photos[i]} alt={`#${i+1}`} style={{ width:"100%", height:90, objectFit:"cover", display:"block" }} />
+                <div style={{ position:"absolute", bottom:0, left:0, right:0, background:"rgba(0,0,0,0.6)", padding:"4px 6px", fontSize:9, color:"#fff", fontWeight:700 }}>{c.slice(0, 40)}…</div>
+              </div>
+            ) : null)}
+          </div>
+          <button onClick={()=>{setPhase('lobby');setPhotos({});}} style={{ width:"100%", padding:"13px 0", background:"linear-gradient(135deg,#7C3AED,#5B21B6)", border:"none", borderRadius:12, color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:font }}>
+            Play Again 📷
+          </button>
         </>
       )}
     </Modal>
@@ -4832,6 +4955,7 @@ export default function HousePartyHub() {
           ]}
         />
       );
+      case "photochallenge": return <PhotoChallengeHPB onClose={close} />;
       case "guestlist":   return <GuestListModal onClose={close} />;
       case "menu":        return <MenuPlannerModal onClose={close} />;
       case "seating":     return <SeatingChartModal onClose={close} />;

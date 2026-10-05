@@ -59,6 +59,7 @@ const TOOL_ICONS = {
   countdown:      occic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>),
   playlist:       occic(<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>),
   photowall:      occic(<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></>),
+  photochallenge: occic(<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/><path d="M17 2l-1 3"/><path d="M7 2l1 3"/></>),
   secretmessage:  occic(<><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>),
   moodmeter:      occic(<><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></>),
   lovenotes:      occic(<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>),
@@ -237,6 +238,8 @@ const LIVE_GAME_IDS = new Set([
   "babynamevote","genderpoll","luckydraw",
   // Solo → multiplayer upgraded
   "spin","charades","bingo","birthdayquiz","rapidfire",
+  // New live games
+  "t2l","couplequiz","photowall","photochallenge",
 ]);
 
 const GAME_DESCRIPTIONS = {
@@ -275,6 +278,59 @@ function RoomGate({ onClose, onHost, onJoin, onSoloPreview, toolTitle, toolId, a
         Solo preview →
       </button>
     </LightFormModal>
+  );
+}
+
+// ── Game Countdown Overlay ────────────────────────────────────────────────────
+function GameCountdown({ onDone }) {
+  const [count, setCount] = useState(3);
+  useEffect(() => {
+    if (count === 0) { const t = setTimeout(onDone, 600); return () => clearTimeout(t); }
+    const t = setTimeout(() => setCount(c => c - 1), 900);
+    return () => clearTimeout(t);
+  }, [count]); // eslint-disable-line
+  return (
+    <div style={{
+      position:"fixed", inset:0, background:"rgba(0,0,0,0.82)", backdropFilter:"blur(12px)",
+      zIndex:5000, display:"flex", alignItems:"center", justifyContent:"center",
+      fontFamily:"'Outfit',sans-serif",
+    }}>
+      <div key={count} style={{
+        fontSize:120, fontWeight:900,
+        color: count === 0 ? "#C4973A" : "#FFFFFF",
+        animation:"countdown-pulse 0.4s cubic-bezier(0.22,1,0.36,1)",
+        lineHeight:1, userSelect:"none",
+      }}>
+        {count === 0 ? "GO!" : count}
+      </div>
+      <style>{`@keyframes countdown-pulse{from{transform:scale(1.6);opacity:0.2}to{transform:scale(1);opacity:1}}`}</style>
+    </div>
+  );
+}
+
+// ── Game Over Screen ──────────────────────────────────────────────────────────
+function GameOverScreen({ title, scores = {}, players = [], extra, onPlayAgain, onClose, isHost }) {
+  const ranked = [...players].sort((a,b) => (scores[b]||0) - (scores[a]||0));
+  const medals = ["🥇","🥈","🥉"];
+  return (
+    <div style={{textAlign:"center",padding:"8px 0 4px"}}>
+      <div style={{fontSize:40,marginBottom:4}}>🏆</div>
+      <div style={{fontSize:18,fontWeight:900,color:"#1C1410",marginBottom:4}}>{title}</div>
+      {extra && <div style={{fontSize:12,color:"rgba(28,9,0,0.45)",marginBottom:14}}>{extra}</div>}
+      <div style={{marginBottom:16}}>
+        {ranked.map((p,i)=>(
+          <div key={p} style={{display:"flex",alignItems:"center",gap:10,background:i===0?"#FFF8E7":"rgba(0,0,0,0.03)",borderRadius:10,padding:"10px 14px",marginBottom:6,border:i===0?"1.5px solid #C4973A55":"1px solid rgba(0,0,0,0.06)"}}>
+            <span style={{fontSize:i<3?20:14,width:28,textAlign:"center"}}>{i<3?medals[i]:i+1}</span>
+            <span style={{flex:1,textAlign:"left",fontSize:14,fontWeight:i===0?800:500,color:"#1C1410"}}>{p}</span>
+            <span style={{fontSize:15,fontWeight:700,color:i===0?"#C4973A":"rgba(28,9,0,0.55)"}}>{scores[p]||0} pts</span>
+          </div>
+        ))}
+      </div>
+      <div style={{display:"flex",gap:8}}>
+        {isHost && onPlayAgain && <button onClick={onPlayAgain} style={{flex:1,padding:"12px",borderRadius:12,border:"none",background:"#C4973A",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}>▶ Play Again</button>}
+        <button onClick={onClose} style={{flex:1,padding:"12px",borderRadius:12,border:"1px solid rgba(0,0,0,0.10)",background:"transparent",color:"rgba(28,9,0,0.55)",fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"'Outfit',sans-serif"}}>Exit</button>
+      </div>
+    </div>
   );
 }
 
@@ -875,6 +931,8 @@ function TruthOrDare({ onClose, accent, room, myName: liveName, players: livePla
   const [tdAnswer, setTdAnswer] = useState("");
   const [dareTimer, setDareTimer] = useState(60);
   const dareTimerRef = useRef(null);
+  const [localGameOver, setLocalGameOver] = useState(false);
+  const liveGameOver = live ? (gameState?.phase === 'gameover') : localGameOver;
 
   // Live derived
   const activePlayers = live ? livePlayers : players;
@@ -961,6 +1019,12 @@ function TruthOrDare({ onClose, accent, room, myName: liveName, players: livePla
   };
   const totalDone = Object.values(completedBy).reduce((a, b) => a + b, 0);
 
+  if (liveGameOver) return (
+    <LightFormModal onClose={onClose} emoji="🎯" title="Truth or Dare" accent={accent} system="truth">
+      <GameOverScreen title="Game Over!" scores={live?(gameState?.completedBy||{}):(completedBy||{})} players={live?livePlayers:players.length?players:[current].filter(Boolean)}
+        extra="Who completed the most?" onPlayAgain={isHost?()=>sendAction('reset_game',{}):null} onClose={onClose} isHost={isHost} />
+    </LightFormModal>
+  );
   if (phase === "setup" && !live) return (
     <LightFormModal onClose={onClose} emoji="🎯" title="Truth or Dare" accent={accent} system="truth">
       <p style={{ fontSize: 13, color: "rgba(28,9,0,0.50)", marginBottom: 14 }}>Add players for turn-based, or skip straight to cards.</p>
@@ -1079,6 +1143,21 @@ function TruthOrDare({ onClose, accent, room, myName: liveName, players: livePla
           <span style={{fontWeight:700,color:accent}}>{displayPlayer}:</span> {gameState.lastAnswer}
         </div>
       )}
+      {/* Emoji reactions for live mode */}
+      {live && (
+        <div style={{display:"flex",gap:6,marginBottom:10,justifyContent:"center"}}>
+          {["😂","😱","🔥","👏","💀"].map(e => {
+            const count = (gameState?.tdReacts?.[e] || 0);
+            const myReact = gameState?.tdReactBy?.[liveName] === e;
+            return (
+              <button key={e} onClick={() => { if (!gameState?.tdReactBy?.[liveName]) sendAction('td_react', { emoji: e }); }}
+                style={{padding:"5px 10px", borderRadius:20, border:`1.5px solid ${myReact?accent:"rgba(0,0,0,0.10)"}`, background:myReact?`${accent}18`:"transparent", fontSize:13, cursor:gameState?.tdReactBy?.[liveName]?"default":"pointer", fontFamily:font, fontWeight:700, color:myReact?accent:"rgba(28,9,0,0.45)"}}>
+                {e} {count > 0 ? count : ""}
+              </button>
+            );
+          })}
+        </div>
+      )}
       <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
         {(!live || isHost) ? (<>
           <button onClick={done} style={{...lBtn("#059669"),flex:2,fontSize:14}}>✓ Done / Next →</button>
@@ -1095,6 +1174,8 @@ function TruthOrDare({ onClose, accent, room, myName: liveName, players: livePla
           ))}
         </div>
       )}
+      {isHost && live && <button onClick={()=>sendAction('end_game',{})} style={{marginTop:8,width:"100%",padding:"8px",borderRadius:10,border:"1px solid rgba(220,38,38,0.3)",background:"rgba(220,38,38,0.08)",color:"#ef4444",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font}}>End Game</button>}
+      {!live && <button onClick={()=>setLocalGameOver(true)} style={{marginTop:8,width:"100%",padding:"8px",borderRadius:10,border:"1px solid rgba(220,38,38,0.3)",background:"rgba(220,38,38,0.08)",color:"#ef4444",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font}}>Finish Game</button>}
     </LightFormModal>
   );
 }
@@ -1108,6 +1189,8 @@ function NeverHaveI({ onClose, accent, room, myName: liveName, players: livePlay
   const [newP, setNewP] = useState("");
   const [roundHave, setRoundHave] = useState({});  // local per-round marks
   const [revealed, setRevealed] = useState(false);
+  const [localGameOver, setLocalGameOver] = useState(false);
+  const liveGameOver = live ? (gameState?.phase === 'gameover') : localGameOver;
 
   // Live derived
   const liveIdx = live ? (gameState?.idx || 0) : idx;
@@ -1175,6 +1258,12 @@ function NeverHaveI({ onClose, accent, room, myName: liveName, players: livePlay
   const positions = tablePositions(activePlayers.length);
   const haveCount = Object.values(effectiveMarks).filter(Boolean).length;
 
+  if (liveGameOver) return (
+    <LightFormModal onClose={onClose} emoji="🙅" title="Never Have I Ever" accent={accent} system="truth">
+      <GameOverScreen title="Final Scores" scores={live?liveScores:scores} players={live?livePlayers:players}
+        extra="Most 'have done' marks wins!" onPlayAgain={isHost?()=>sendAction('reset_game',{}):null} onClose={onClose} isHost={isHost} />
+    </LightFormModal>
+  );
   return (
     <LightFormModal onClose={onClose} emoji="🙅" title="Never Have I Ever" accent={accent} onLeaderboard={onLeaderboard} system="truth">
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={revealed ? Object.fromEntries(Object.entries(effectiveMarks).filter(([,v])=>v).map(([n])=>[n,true])) : {}} />
@@ -1243,6 +1332,8 @@ function NeverHaveI({ onClose, accent, room, myName: liveName, players: livePlay
           )
         )}
       </div>
+      {isHost && live && <button onClick={()=>sendAction('end_game',{})} style={{marginTop:8,width:"100%",padding:"8px",borderRadius:10,border:"1px solid rgba(220,38,38,0.3)",background:"rgba(220,38,38,0.08)",color:"#ef4444",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font}}>End Game</button>}
+      {!live && <button onClick={()=>setLocalGameOver(true)} style={{marginTop:8,width:"100%",padding:"8px",borderRadius:10,border:"1px solid rgba(220,38,38,0.3)",background:"rgba(220,38,38,0.08)",color:"#ef4444",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font}}>Finish Game</button>}
     </LightFormModal>
   );
 }
@@ -1259,6 +1350,9 @@ function WouldYouRather({ onClose, accent, room, myName: liveName, players: live
   const [timerActive, setTimerActive] = useState(false);
   const wyrTimerRef = useRef(null);
   const [wyrReason, setWyrReason] = useState("");
+  // Game-over
+  const [localGameOver, setLocalGameOver] = useState(false);
+  const liveGameOver = live ? (gameState?.phase === 'gameover') : localGameOver;
 
   // Derived — live overrides local
   const pairIdx = live ? (gameState?.pairIdx || 0) : localPairIdx;
@@ -1338,6 +1432,12 @@ function WouldYouRather({ onClose, accent, room, myName: liveName, players: live
   const SIDE_GLOWS = ["rgba(37,99,235,0.55)","rgba(147,51,234,0.55)"];
   const SIDE_PCTS  = ["#93C5FD","#D8B4FE"];
   const SIDE_LABELS = ["OPTION A","OPTION B"];
+  if (liveGameOver) return (
+    <LightFormModal onClose={onClose} emoji="🤷" title="Would You Rather" accent={accent} system="choice">
+      <GameOverScreen title="Game Over!" scores={live?(gameState?.reasonVotes||{}):{}} players={live?livePlayers:[]} extra={`${pairIdx} questions played`}
+        onPlayAgain={isHost?()=>sendAction('reset_game',{}):null} onClose={onClose} isHost={isHost} />
+    </LightFormModal>
+  );
   return (
     <LightFormModal onClose={onClose} emoji="🤷" title="Would You Rather" accent={accent} onLeaderboard={onLeaderboard} system="choice">
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={Object.fromEntries(Object.keys(liveVotesMap || {}).map(n => [n, true]))} />
@@ -1416,13 +1516,25 @@ function WouldYouRather({ onClose, accent, room, myName: liveName, players: live
           {/* Show reasons from all players */}
           {live && Object.keys(gameState?.reasons || {}).length > 0 && (
             <div style={{marginTop:6, display:"flex", flexDirection:"column", gap:4}}>
-              {Object.entries(gameState.reasons || {}).map(([player, r]) => (
-                <div key={player} style={{fontSize:11, background:"rgba(0,0,0,0.04)", borderRadius:8, padding:"5px 10px", border:"1px solid rgba(0,0,0,0.07)"}}>
-                  <span style={{fontWeight:700, color:accent}}>{player === liveName ? "You" : player}:</span>{" "}
-                  <span style={{color:"rgba(28,9,0,0.65)"}}>{r.reason}</span>
-                  <span style={{marginLeft:4, fontSize:9, background:r.choice==="a"?"rgba(37,99,235,0.15)":"rgba(147,51,234,0.15)", color:r.choice==="a"?"#2563EB":"#9333EA", borderRadius:6, padding:"1px 5px"}}>{r.choice==="a"?"A":"B"}</span>
-                </div>
-              ))}
+              {Object.entries(gameState.reasons || {}).map(([player, r]) => {
+                const upvotes = gameState?.upvotes?.[player] || 0;
+                const myUpvote = (gameState?.upvoteBy?.[liveName] || []).includes(player);
+                return (
+                  <div key={player} style={{fontSize:11, background:"rgba(0,0,0,0.04)", borderRadius:8, padding:"5px 10px", border:"1px solid rgba(0,0,0,0.07)", display:"flex", alignItems:"flex-start", gap:6}}>
+                    <div style={{flex:1}}>
+                      <span style={{fontWeight:700, color:accent}}>{player === liveName ? "You" : player}:</span>{" "}
+                      <span style={{color:"rgba(28,9,0,0.65)"}}>{r.reason}</span>
+                      <span style={{marginLeft:4, fontSize:9, background:r.choice==="a"?"rgba(37,99,235,0.15)":"rgba(147,51,234,0.15)", color:r.choice==="a"?"#2563EB":"#9333EA", borderRadius:6, padding:"1px 5px"}}>{r.choice==="a"?"A":"B"}</span>
+                    </div>
+                    {player !== liveName && (
+                      <button onClick={() => { if (!myUpvote) sendAction('wyr_upvote', { player }); }}
+                        style={{background:myUpvote?`${accent}20`:"rgba(0,0,0,0.05)", border:`1px solid ${myUpvote?accent+"44":"rgba(0,0,0,0.08)"}`, borderRadius:20, padding:"2px 7px", fontSize:10, color:myUpvote?accent:"rgba(28,9,0,0.40)", cursor:myUpvote?"default":"pointer", fontWeight:700, whiteSpace:"nowrap", flexShrink:0}}>
+                        👍 {upvotes || ""}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -1432,6 +1544,8 @@ function WouldYouRather({ onClose, accent, room, myName: liveName, players: live
       ) : (
         <div style={{textAlign:"center",color:"rgba(0,0,0,0.40)",fontSize:13,marginTop:12}}>Waiting for host to advance…</div>
       )}
+      {isHost && live && <button onClick={()=>sendAction('end_game',{})} style={{marginTop:8,width:"100%",padding:"8px",borderRadius:10,border:"1px solid rgba(220,38,38,0.3)",background:"rgba(220,38,38,0.08)",color:"#ef4444",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font}}>End Game</button>}
+      {!live && <button onClick={()=>setLocalGameOver(true)} style={{marginTop:8,width:"100%",padding:"8px",borderRadius:10,border:"1px solid rgba(220,38,38,0.3)",background:"rgba(220,38,38,0.08)",color:"#ef4444",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font}}>Finish Game</button>}
     </LightFormModal>
   );
 }
@@ -1442,6 +1556,8 @@ function HotTakes({ onClose, accent, room, myName: liveName, players: livePlayer
   const [takes, setTakes] = useState([{ id: Date.now(), text: rand(HOT_TAKES), reactions: {} }]);
   const [agreed, setAgreed] = useState({});
   const [temp, setTemp] = useState(0);
+  const [localGameOver, setLocalGameOver] = useState(false);
+  const liveGameOver = live ? (gameState?.phase === 'gameover') : localGameOver;
 
   // In live mode derive the current take from gameState
   const liveIdx = live ? (gameState?.idx || 0) : null;
@@ -1490,6 +1606,12 @@ function HotTakes({ onClose, accent, room, myName: liveName, players: livePlayer
 
   const currentTake = live ? { id: liveIdx, text: liveTakeText, reactions: liveReactions || {} } : takes[0];
 
+  if (liveGameOver) return (
+    <LightFormModal onClose={onClose} emoji="🌶️" title="Hot Takes" accent={accent} system="choice">
+      <GameOverScreen title="Game Over!" scores={{}} players={live?livePlayers:[]} extra={`${live?liveIdx:takes.length} takes played`}
+        onPlayAgain={isHost?()=>sendAction('reset_game',{}):null} onClose={onClose} isHost={isHost} />
+    </LightFormModal>
+  );
   return (
     <LightFormModal onClose={onClose} emoji="🌶️" title="Hot Takes" accent={accent} wide onLeaderboard={onLeaderboard} system="choice">
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={Object.fromEntries(Object.keys(liveVotesMap||{}).map(n=>[n,true]))} />
@@ -1536,14 +1658,24 @@ function HotTakes({ onClose, accent, room, myName: liveName, players: livePlayer
               />
             </div>
           )}
-          {/* Show all reasons */}
+          {/* Show all reasons with upvotes */}
           {Object.keys(gameState?.reasons || {}).length > 0 && (
             <div style={{marginTop:6, display:"flex", flexDirection:"column", gap:3}}>
-              {Object.entries(gameState.reasons || {}).map(([player, reason]) => (
-                <div key={player} style={{fontSize:11, color:"rgba(28,9,0,0.55)", background:"rgba(0,0,0,0.03)", borderRadius:8, padding:"4px 8px"}}>
-                  <span style={{fontWeight:700, color:accent}}>{player===liveName?"You":player}:</span> {reason}
-                </div>
-              ))}
+              {Object.entries(gameState.reasons || {}).map(([player, reason]) => {
+                const upvotes = gameState?.upvotes?.[player] || 0;
+                const myUpvote = (gameState?.upvoteBy?.[liveName] || []).includes(player);
+                return (
+                  <div key={player} style={{fontSize:11, color:"rgba(28,9,0,0.55)", background:"rgba(0,0,0,0.03)", borderRadius:8, padding:"4px 8px", display:"flex", alignItems:"center", gap:6}}>
+                    <div style={{flex:1}}><span style={{fontWeight:700, color:accent}}>{player===liveName?"You":player}:</span> {reason}</div>
+                    {player !== liveName && (
+                      <button onClick={() => { if (!myUpvote) sendAction('ht_upvote', { player }); }}
+                        style={{background:myUpvote?`${accent}20`:"rgba(0,0,0,0.05)", border:`1px solid ${myUpvote?accent+"44":"rgba(0,0,0,0.08)"}`, borderRadius:20, padding:"2px 7px", fontSize:10, color:myUpvote?accent:"rgba(28,9,0,0.40)", cursor:myUpvote?"default":"pointer", fontWeight:700, whiteSpace:"nowrap", flexShrink:0}}>
+                        👍 {upvotes || ""}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -1568,6 +1700,8 @@ function HotTakes({ onClose, accent, room, myName: liveName, players: livePlayer
       ) : (
         <div style={{textAlign:"center",color:"#9CA3AF",fontSize:13}}>Waiting for host…</div>
       )}
+      {isHost && live && <button onClick={()=>sendAction('end_game',{})} style={{marginTop:8,width:"100%",padding:"8px",borderRadius:10,border:"1px solid rgba(220,38,38,0.3)",background:"rgba(220,38,38,0.08)",color:"#ef4444",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font}}>End Game</button>}
+      {!live && <button onClick={()=>setLocalGameOver(true)} style={{marginTop:8,width:"100%",padding:"8px",borderRadius:10,border:"1px solid rgba(220,38,38,0.3)",background:"rgba(220,38,38,0.08)",color:"#ef4444",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font}}>Finish Game</button>}
     </LightFormModal>
   );
 }
@@ -2461,7 +2595,13 @@ function LoveNotes({ onClose, accent, room, myName: liveName, players: livePlaye
 }
 
 // Anniversary: Couple Quiz
-function CoupleQuiz({ onClose, accent }) {
+function CoupleQuiz({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 'couplequiz') setGame?.('couplequiz', {}); }, [live, isHost]); // eslint-disable-line
+  // Live: both partners submit answers → reveal → score
+  const liveAnswers = live ? (gameState?.answers || {}) : null;
+  const liveCorrect = live ? (gameState?.correct || {}) : null;
+  const liveScores  = live ? (gameState?.scores  || {}) : null;
   const questions = [
     { q: "Where did they first meet?", opts: ["College", "Work", "Common friends", "Online"] },
     { q: "Who said 'I love you' first?", opts: ["Person 1", "Person 2", "Both at once", "Still waiting 😅"] },
@@ -3657,6 +3797,8 @@ function MostLikelyTo({ onClose, accent, room, myName: liveName, players: livePl
   const [phase, setPhase] = useState("setup");
   const [revealed, setRevealed] = useState(false);
   const [history, setHistory] = useState([]);
+  const [localGameOver, setLocalGameOver] = useState(false);
+  const liveGameOver = live ? (gameState?.phase === 'gameover') : localGameOver;
 
   // Live derived
   const livePromptIdx = live ? (gameState?.idx || 0) : promptIdx;
@@ -3698,6 +3840,17 @@ function MostLikelyTo({ onClose, accent, room, myName: liveName, players: livePl
   // In live mode, jump straight to voting (room players are already known)
   const effectivePhase = live ? "voting" : phase;
 
+  if (liveGameOver) {
+    // build overall winner counts from history
+    const totalWins = {};
+    (live ? (gameState?.history||[]) : history).forEach(h => { if (h.winner) totalWins[h.winner] = (totalWins[h.winner]||0) + 1; });
+    return (
+      <LightFormModal onClose={onClose} accent={accent} emoji="🏆" title="Most Likely To" system="choice">
+        <GameOverScreen title="Final Results" scores={totalWins} players={live?livePlayers:players} extra="Overall 'Most Likely To' rankings"
+          onPlayAgain={isHost?()=>sendAction('reset_game',{}):null} onClose={onClose} isHost={isHost} />
+      </LightFormModal>
+    );
+  }
   return (
     <LightFormModal onClose={onClose} accent={accent} emoji="🏆" title="Most Likely To" wide onLeaderboard={onLeaderboard} system="choice">
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={liveVotesMap ? Object.fromEntries(Object.keys(liveVotesMap).map(n=>[n,true])) : {}} />
@@ -3798,12 +3951,83 @@ function MostLikelyTo({ onClose, accent, room, myName: liveName, players: livePl
           )}
         </>)}
       </>)}
+      {isHost && live && <button onClick={()=>sendAction('end_game',{})} style={{marginTop:8,width:"100%",padding:"8px",borderRadius:10,border:"1px solid rgba(220,38,38,0.3)",background:"rgba(220,38,38,0.08)",color:"#ef4444",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font}}>End Game</button>}
+      {!live && effectivePhase==="voting" && <button onClick={()=>setLocalGameOver(true)} style={{marginTop:8,width:"100%",padding:"8px",borderRadius:10,border:"1px solid rgba(220,38,38,0.3)",background:"rgba(220,38,38,0.08)",color:"#ef4444",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font}}>Finish Game</button>}
     </LightFormModal>
   );
 }
 
 // ── Two Truths One Lie ────────────────────────────────────────────────────────
-function TwoTruthsOneLie({ onClose, accent }) {
+function TwoTruthsOneLie({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
+  const live = !!room;
+  useEffect(() => { if (live && isHost && currentGame !== 't2l') setGame?.('t2l', {}); }, [live, isHost]); // eslint-disable-line
+  // Live phase handling
+  const livePhase = live ? (gameState?.phase || 'lobby') : null;
+  const liveHotseat = live ? (gameState?.hotseat || null) : null;
+  const liveStatements = live ? (gameState?.statements || []) : null;
+  const liveGuesses = live ? (gameState?.guesses || {}) : null;
+  const liveRevealed = live ? (gameState?.revealed || false) : null;
+  const liveScores = live ? (gameState?.scores || {}) : null;
+  const liveSubmitted = live ? (gameState?.submitted || {}) : null;
+  // For live lobby: show who has submitted
+  if (live && livePhase === 'lobby') return (
+    <LightFormModal onClose={onClose} emoji="🕵️" title="Two Truths One Lie" accent={accent} system="mystery">
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={liveSubmitted||{}} />
+      <div style={{textAlign:"center",marginBottom:14,background:"linear-gradient(135deg,#1a1a2e,#16213e)",borderRadius:14,padding:"16px",border:`2px solid ${accent}40`}}>
+        <div style={{fontSize:28,marginBottom:6}}>🕵️</div>
+        <div style={{fontSize:13,fontWeight:800,color:accent}}>Two Truths One Lie</div>
+        <div style={{fontSize:11,color:"rgba(255,255,255,0.40)",marginTop:4}}>Everyone writes 2 truths and 1 lie — then the group guesses</div>
+      </div>
+      {!(liveSubmitted||{})[liveName] ? (<>
+        <div style={{marginBottom:10}}>
+          {[["s1","Truth 1","Something true about you…"],["s2","Truth 2","Another truth…"],["lie","The Lie 🤥","Make it convincing…"]].map(([k,lbl,ph])=>(
+            <div key={k} style={{marginBottom:8}}><label style={llbl}>{lbl}</label><input placeholder={ph} id={`t2l-${k}`} style={linp}/></div>
+          ))}
+        </div>
+        <button onClick={()=>{
+          const s1=(document.getElementById('t2l-s1')||{}).value||"";
+          const s2=(document.getElementById('t2l-s2')||{}).value||"";
+          const lie=(document.getElementById('t2l-lie')||{}).value||"";
+          if(s1.trim()&&s2.trim()&&lie.trim()) sendAction('t2l_submit',{s1:s1.trim(),s2:s2.trim(),s3:lie.trim(),lieIdx:2});
+        }} style={lBtn(accent)}>Submit Statements 🔒</button>
+      </>) : (
+        <div style={{textAlign:"center",color:"rgba(28,9,0,0.45)",fontSize:13,padding:"8px 0"}}>✅ Submitted! Waiting for others…<br/>
+          {Object.keys(liveSubmitted||{}).length}/{livePlayers.length} ready
+        </div>
+      )}
+      {isHost && Object.keys(liveSubmitted||{}).length>=2 && <button onClick={()=>sendAction('t2l_start_round',{})} style={{...lBtn("#8B5CF6"),marginTop:10}}>Start Guessing 🎭</button>}
+    </LightFormModal>
+  );
+  if (live && (livePhase==='guessing'||livePhase==='reveal')) return (
+    <LightFormModal onClose={onClose} emoji="🕵️" title="Two Truths One Lie" accent={accent} system="mystery">
+      <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} checked={liveGuesses||{}} />
+      <div style={{textAlign:"center",marginBottom:12}}>
+        <div style={{fontSize:11,fontWeight:800,color:"rgba(139,92,246,0.7)",textTransform:"uppercase",letterSpacing:"0.15em",marginBottom:4}}>Which is the LIE?</div>
+        <div style={{fontSize:22,fontWeight:900,color:"#1C1410"}}>{liveHotseat}'s turn</div>
+      </div>
+      {(liveStatements||[]).map((s,i)=>{
+        const myGuess = liveGuesses?.[liveName];
+        const revealed = livePhase==='reveal';
+        const isLie = revealed && i === (gameState?.lieIdx||0);
+        return (
+          <button key={i} onClick={()=>{if(!myGuess&&!revealed&&liveName!==liveHotseat) sendAction('t2l_guess',{guessIdx:i});}}
+            disabled={!!myGuess||revealed||liveName===liveHotseat}
+            style={{width:"100%",marginBottom:8,padding:"14px 16px",borderRadius:14,border:`2px solid ${revealed?(isLie?"#EF4444":"#22C55E"):myGuess===i?"#8B5CF6":"rgba(0,0,0,0.10)"}`,background:revealed?(isLie?"rgba(239,68,68,0.1)":"rgba(34,197,94,0.06)"):(myGuess===i?"rgba(139,92,246,0.10)":"transparent"),textAlign:"left",cursor:(myGuess||revealed||liveName===liveHotseat)?"default":"pointer",fontFamily:font,fontSize:14,color:"#1C1410",fontWeight:500}}>
+            {revealed&&<span style={{marginRight:8}}>{isLie?"🤥":"✓"}</span>}{s}
+          </button>
+        );
+      })}
+      {livePhase==='reveal'&&<div style={{textAlign:"center",marginTop:8,marginBottom:12,fontSize:13,color:"rgba(28,9,0,0.55)"}}>Scores: {Object.entries(liveScores||{}).map(([p,s])=>`${p}: ${s}`).join(" · ")}</div>}
+      {isHost&&livePhase==='guessing'&&<button onClick={()=>sendAction('t2l_reveal',{})} style={{...lBtn(accent),marginTop:4}}>Reveal 🎭</button>}
+      {isHost&&livePhase==='reveal'&&<button onClick={()=>sendAction('t2l_next',{})} style={{...lBtn(accent),marginTop:4}}>Next Player →</button>}
+    </LightFormModal>
+  );
+  if (live && livePhase==='gameover') return (
+    <LightFormModal onClose={onClose} emoji="🕵️" title="Two Truths One Lie" accent={accent} system="mystery">
+      <GameOverScreen title="Final Scores" scores={liveScores||{}} players={livePlayers} extra="+10 per correct guess · +5 per person fooled"
+        onPlayAgain={isHost?()=>sendAction('reset_game',{}):null} onClose={onClose} isHost={isHost} />
+    </LightFormModal>
+  );
   const [players, setPlayers] = useState([]);
   const [input, setInput]     = useState("");
   const [hotseat, setHotseat] = useState(null);
@@ -4016,6 +4240,9 @@ function RapidFire({ onClose, accent, room, myName: liveName, players: livePlaye
   const [chosen, setChosen]       = useState(null);      // selected option
   const [shuffledOpts, setShuffledOpts] = useState([]); // randomised 4 opts
   const timerRef                  = useRef(null);
+  const [showCountdown, setShowCountdown] = useState(false);
+  const pendingDeckRef            = useRef(null);
+  const liveGameOver = live ? (gameState?.phase === 'gameover') : false;
   // Live derived
   const livePhase = live ? (gameState?.phase || 'lobby') : null;
   const liveHotSeatIdx = live ? (gameState?.hotSeatIdx || 0) : 0;
@@ -4035,10 +4262,18 @@ function RapidFire({ onClose, accent, room, myName: liveName, players: livePlaye
     const id = setInterval(update, 1000);
     return () => clearInterval(id);
   }, [live, liveTimerEnd]); // eslint-disable-line
+  // Live gameover
+  if (liveGameOver) return (
+    <LightFormModal onClose={onClose} accent={accent} emoji="⚡" title="Rapid Fire" system="truth">
+      <GameOverScreen title="Hot Seat Leaderboard" scores={liveScores} players={livePlayers} extra="Final scores from all hot seats"
+        onPlayAgain={isHost?()=>sendAction('reset_game',{}):null} onClose={onClose} isHost={isHost} />
+    </LightFormModal>
+  );
   // Live: deck picker shown to host in lobby phase
   if (live && livePhase === 'lobby') {
     return (
       <LightFormModal onClose={onClose} accent={accent} emoji="⚡" title="Rapid Fire" wide system="truth">
+        {showCountdown && <GameCountdown onDone={() => { setShowCountdown(false); sendAction('rf_start', { deck: pendingDeckRef.current, hotSeatIdx: 0, qIdx: 0, timerEnd: Date.now() + 30000, phase: 'hotSeat' }); }} />}
         <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent} />
         <div style={{textAlign:"center",marginBottom:16,background:"linear-gradient(180deg,#1A0A00,#2D1000)",borderRadius:14,padding:"16px",border:"2px solid rgba(251,146,60,0.3)"}}>
           <div style={{fontSize:32,marginBottom:6}}>⚡</div>
@@ -4052,7 +4287,7 @@ function RapidFire({ onClose, accent, room, myName: liveName, players: livePlaye
               const cols=[["#EA580C","#FB923C"],["#7C3AED","#A78BFA"],["#0369A1","#38BDF8"],["#B45309","#FCD34D"]];
               const [c1,c2]=cols[i%cols.length];
               return (
-                <button key={d} onClick={() => sendAction('rf_start', { deck: d, hotSeatIdx: 0, qIdx: 0, timerEnd: Date.now() + 30000, phase: 'hotSeat' })}
+                <button key={d} onClick={() => { pendingDeckRef.current = d; setShowCountdown(true); }}
                   style={{ padding:"16px 12px", borderRadius:14, background:`linear-gradient(145deg,${c1}18,${c2}0d)`, border:`2px solid ${c1}55`, color:c1, fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:font, textAlign:"center", lineHeight:1.5 }}>
                   {d}
                 </button>
@@ -4118,11 +4353,12 @@ function RapidFire({ onClose, accent, room, myName: liveName, players: livePlaye
             })}
           </div>
         )}
-        {isHost && (
+        {isHost && (<>
           <button onClick={()=>sendAction('rf_next',{hotSeatIdx:liveHotSeatIdx+1,qIdx:0,timerEnd:Date.now()+30000})} style={{...lBtn(accent),marginTop:4,fontSize:13}}>
             Next Player →
           </button>
-        )}
+          <button onClick={()=>sendAction('end_game',{})} style={{marginTop:6,width:"100%",padding:"8px",borderRadius:10,border:"1px solid rgba(220,38,38,0.3)",background:"rgba(220,38,38,0.08)",color:"#ef4444",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font}}>End Game</button>
+        </>)}
       </LightFormModal>
     );
   }
@@ -5984,6 +6220,7 @@ const OCCASIONS = {
         { id: "countdown",     emoji: "⏱️", title: "Countdown Timer",    desc: "Count down to the big day",                   color: "#0891B2" },
         { id: "playlist",      emoji: "🎵", title: "Playlist Builder",   desc: "Everyone adds their song",                    color: "#059669" },
         { id: "photowall",     emoji: "📸", title: "Shared Photo Wall",  desc: "Everyone uploads memories",                   color: "#DB2777" },
+        { id: "photochallenge",emoji: "📷", title: "Photo Challenge",    desc: "Timed scavenger hunt · race to snap photos",  color: "#7C3AED" },
         { id: "secretmessage", emoji: "💌", title: "Secret Messages",    desc: "Anonymous wishes for the birthday star",       color: "#F59E0B" },
         { id: "moodmeter",     emoji: "🌡️", title: "Mood Meter",         desc: "Live party vibe tracker",                     color: "#10B981" },
       ]},
@@ -6705,6 +6942,7 @@ const OCCASIONS = {
         { id: "theme",         emoji: "🎨", title: "Theme Picker",       desc: "Vote on tonight's vibe",                  color: "#7C3AED" },
         { id: "playlist",      emoji: "🎵", title: "Playlist Builder",   desc: "Everyone adds their anthem",              color: "#059669" },
         { id: "photowall",     emoji: "📸", title: "Photo Wall",         desc: "Shared album of the wild night",          color: "#DB2777" },
+        { id: "photochallenge",emoji: "📷", title: "Photo Challenge",    desc: "Timed photo scavenger hunt · best shots win", color: "#7C3AED" },
         { id: "secretmessage", emoji: "💌", title: "Secret Messages",    desc: "Anonymous advice for the bride/groom",    color: "#F59E0B" },
         { id: "moodmeter",     emoji: "🌡️", title: "Mood Meter",         desc: "Live party vibe tracker",                 color: "#10B981" },
         { id: "countdown",     emoji: "⏱️", title: "Countdown Timer",    desc: "Count down to the wedding day",           color: "#0891B2" },
@@ -8613,6 +8851,22 @@ const WAO_QUESTIONS = [
   { q:"What happens when you sleep?", hint:"Not resting…" },
   { q:"Why do we laugh?",             hint:"Not because it's funny…" },
   { q:"What is money for?",           hint:"Not for buying things…" },
+  // Wave 2 additions
+  { q:"What do you call someone who always replies 'haan haan' but never does anything?", hint:"We all know one" },
+  { q:"What's the WiFi password at a haunted house?", hint:"Think spooky" },
+  { q:"What does a cat say when it wins an argument?", hint:"Very smug" },
+  { q:"How do you politely tell someone their biryani is terrible?", hint:"Be creative, not rude" },
+  { q:"What's a superhero power that's actually completely useless?", hint:"The more useless, the better" },
+  { q:"What would your autopilot do if you fell asleep mid-conversation?", hint:"Very specific to you" },
+  { q:"What's the first rule of Dilli ke traffic?", hint:"Honking involved" },
+  { q:"How would you explain Instagram to someone from the 1800s?", hint:"Make it dramatic" },
+  { q:"What's the most Indian way to compliment someone's cooking?", hint:"Backhanded counts" },
+  { q:"What would a lazy ghost haunt?", hint:"Minimum effort required" },
+  { q:"How do you win a staring contest with a cow?", hint:"Very specific technique" },
+  { q:"What's your villain origin story if someone eats your leftover food?", hint:"Go full dramatic" },
+  { q:"What would you name a restaurant that only serves burnt food?", hint:"Make it sound fancy" },
+  { q:"How do you explain Indian weddings to someone who's never been to one?", hint:"Don't hold back" },
+  { q:"What's the perfect excuse to get out of a family function?", hint:"Must be believable" },
 ];
 
 function WrongAnswersOnly({ onClose, accent, room, myName: liveName, players: livePlayers = [], gameState, currentGame, sendAction, isHost, setGame }) {
@@ -8630,7 +8884,9 @@ function WrongAnswersOnly({ onClose, accent, room, myName: liveName, players: li
   const [localScores,   setLocalScores]   = useState({});
   const [timeLeft,      setTimeLeft]      = useState(30);
   const [numRounds,     setNumRounds]     = useState(5);
+  const [showCountdown, setShowCountdown] = useState(false);
   const timerRef = useRef(null);
+  const pendingStartRef = useRef(null);
 
   const phase      = live ? (gameState?.phase || "lobby") : localPhase;
   const qIdx       = live ? (gameState?.qIdx || 0) : localQIdx;
@@ -8686,8 +8942,11 @@ function WrongAnswersOnly({ onClose, accent, room, myName: liveName, players: li
   };
   const startGame = () => {
     const shuffled = [...WAO_QUESTIONS].sort(() => Math.random() - 0.5);
-    if (live) { sendAction('start_wao', { questions: shuffled.slice(0, numRounds), numRounds, timerEnd: Date.now() + 30000 }); return; }
-    setLocalQIdx(0); setLocalAnswers({}); setLocalVotes({}); setLocalScores({}); setMyAnswer(""); setSubmitted(false); setLocalPhase("answering");
+    pendingStartRef.current = () => {
+      if (live) sendAction('start_wao', { questions: shuffled.slice(0, numRounds), numRounds, timerEnd: Date.now() + 30000 });
+      else { setLocalQIdx(0); setLocalAnswers({}); setLocalVotes({}); setLocalScores({}); setMyAnswer(""); setSubmitted(false); setLocalPhase("answering"); }
+    };
+    setShowCountdown(true);
   };
   const addPlayer = () => { const n = playerInput.trim(); if (n && !localPlayers.includes(n)) { setLocalPlayers(p => [...p, n]); setPlayerInput(""); } };
   const submittedCount = Object.keys(answers).length;
@@ -8697,6 +8956,7 @@ function WrongAnswersOnly({ onClose, accent, room, myName: liveName, players: li
 
   return (
     <LightFormModal onClose={onClose} accent={accent} emoji="🤪" title="Wrong Answers Only" wide system="truth">
+      {showCountdown && <GameCountdown onDone={() => { setShowCountdown(false); pendingStartRef.current?.(); }} />}
       <PlayerRail room={room} players={livePlayers} myName={liveName} accent={accent}
         checked={phase==="answering" ? Object.fromEntries(Object.keys(answers).map(n=>[n,true])) : {}} />
 
@@ -10289,7 +10549,7 @@ const PLAY_IDS = new Set([
   "dontlaugh","nameplaceanimal","fastestfinger",
 ]);
 const MOMENTS_IDS = new Set([
-  "photowall","wishwall","lovenotes","blessingswall","blessings","appreciationwall",
+  "photowall","photochallenge","wishwall","lovenotes","blessingswall","blessings","appreciationwall",
   "secretmessage","reportcard","awardsceremony","playlist","moodmeter",
 ]);
 const PLAN_IDS = new Set([
@@ -10881,6 +11141,240 @@ function GameQueuePanel({ onClose, queue, setQueue, onLaunchGame, accent = "#C49
         </div>
       </div>
     </div>
+  );
+}
+
+// ── Photo Wall ────────────────────────────────────────────────────────────────
+function PhotoWall({ onClose, accent, room, myName, players = [], gameState, sendAction, isHost }) {
+  const live = !!room;
+  const [localPhotos, setLocalPhotos] = useState([]);
+  const [caption, setCaption] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef(null);
+
+  const photos = live ? (gameState?.photos || []) : localPhotos;
+
+  const compress = (file) => new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const max = 600;
+        const ratio = Math.min(max / img.width, max / img.height, 1);
+        canvas.width = img.width * ratio; canvas.height = img.height * ratio;
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const dataUrl = await compress(file);
+      const entry = { dataUrl, caption: caption.trim(), player: myName || "You", timestamp: Date.now() };
+      if (live) { sendAction('photo_add', entry); }
+      else { setLocalPhotos(p => [entry, ...p]); }
+      setCaption("");
+    } catch(err) { console.error(err); }
+    setUploading(false);
+    e.target.value = "";
+  };
+
+  const sorted = [...photos].sort((a,b) => (b.timestamp||0) - (a.timestamp||0));
+
+  return (
+    <LightFormModal onClose={onClose} emoji="📸" title="Photo Wall" accent={accent} wide>
+      <PlayerRail room={room} players={players} myName={myName} accent={accent} />
+      {/* Upload section */}
+      <div style={{background:"rgba(0,0,0,0.03)",borderRadius:14,padding:"12px 14px",marginBottom:14,border:"1.5px dashed rgba(0,0,0,0.12)"}}>
+        <input value={caption} onChange={e=>setCaption(e.target.value)} placeholder="Add a caption… (optional)" style={{...linp,marginBottom:8,fontSize:12}} />
+        <input ref={fileRef} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={handleFile} />
+        <button onClick={()=>fileRef.current?.click()} disabled={uploading}
+          style={{...lBtn(accent),opacity:uploading?0.6:1}}>
+          {uploading ? "Uploading…" : "📷 Add Photo"}
+        </button>
+      </div>
+      {/* Photo grid */}
+      {sorted.length === 0 ? (
+        <div style={{textAlign:"center",padding:"32px 0",color:"rgba(28,9,0,0.35)",fontSize:13}}>
+          <div style={{fontSize:40,marginBottom:8}}>📷</div>
+          Be the first to share a photo!
+        </div>
+      ) : (
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          {sorted.map((p,i)=>(
+            <div key={i} style={{borderRadius:12,overflow:"hidden",background:"rgba(0,0,0,0.04)",border:"1px solid rgba(0,0,0,0.07)"}}>
+              <img src={p.dataUrl} alt={p.caption||"photo"} style={{width:"100%",display:"block",objectFit:"cover",maxHeight:160}} />
+              <div style={{padding:"6px 8px"}}>
+                {p.caption && <div style={{fontSize:11,color:"rgba(28,9,0,0.70)",marginBottom:2,lineHeight:1.3}}>{p.caption}</div>}
+                <div style={{fontSize:9,color:p.player===myName?accent:"rgba(28,9,0,0.35)",fontWeight:700}}>{p.player===myName?"you":p.player}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </LightFormModal>
+  );
+}
+
+// ── Photo Challenge ───────────────────────────────────────────────────────────
+const PHOTO_CHALLENGES = [
+  "📸 Get a group selfie with everyone smiling",
+  "🤝 Photo with someone you just met tonight",
+  "🍽️ Best food photo on the table",
+  "💃 Action shot of someone dancing",
+  "🎂 Photo with the guest of honour",
+  "🤳 Most creative selfie angle",
+  "👯 Mirror pose with someone",
+  "🌟 Capture the most photogenic moment",
+  "😂 Funniest face from anyone",
+  "🥂 Cheers shot with your drinks",
+];
+
+function PhotoChallenge({ onClose, accent, room, myName, players = [], gameState, sendAction, isHost }) {
+  const live = !!room;
+  const [localPhase, setLocalPhase] = useState("lobby");
+  const [numChallenges, setNumChallenges] = useState(5);
+  const [minutes, setMinutes] = useState(10);
+  const [localSubmissions, setLocalSubmissions] = useState({});
+  const [uploading, setUploading] = useState(null);
+  const [captionFor, setCaptionFor] = useState({});
+  const fileRef = useRef(null);
+  const uploadTarget = useRef(null);
+
+  const phase = live ? (gameState?.phase || "lobby") : localPhase;
+  const challenges = live ? (gameState?.challenges || []) : PHOTO_CHALLENGES.slice(0, numChallenges);
+  const timeEnd = live ? (gameState?.timeEnd || 0) : 0;
+  const submissions = live ? (gameState?.submissions || {}) : localSubmissions;
+  const [timeLeft, setTimeLeft] = useState(0);
+  useEffect(() => {
+    if (!live || !timeEnd) return;
+    const update = () => setTimeLeft(Math.max(0, Math.ceil((timeEnd - Date.now()) / 1000)));
+    update(); const id = setInterval(update, 1000); return () => clearInterval(id);
+  }, [live, timeEnd]); // eslint-disable-line
+
+  const compress = (file) => new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const max = 600;
+        const ratio = Math.min(max / img.width, max / img.height, 1);
+        canvas.width = img.width * ratio; canvas.height = img.height * ratio;
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  const handleFile = async (e, idx) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(idx);
+    try {
+      const dataUrl = await compress(file);
+      const cap = captionFor[idx] || "";
+      if (live) { sendAction('pc_submit', { challengeIdx: idx, dataUrl, player: myName, caption: cap }); }
+      else {
+        setLocalSubmissions(s => ({ ...s, [idx]: [...(s[idx]||[]), { dataUrl, player: myName || "You", caption: cap, reactions: {} }] }));
+      }
+      setCaptionFor(c => ({ ...c, [idx]: "" }));
+    } catch(err) { console.error(err); }
+    setUploading(null);
+    e.target.value = "";
+  };
+
+  const reactPhoto = (idx, pIdx, emoji) => {
+    if (live) sendAction('pc_react', { challengeIdx: idx, photoIdx: pIdx, emoji });
+  };
+
+  const fmtTime = (s) => `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
+
+  if (phase === "lobby") return (
+    <LightFormModal onClose={onClose} emoji="📷" title="Photo Challenge" accent={accent} wide>
+      <PlayerRail room={room} players={players} myName={myName} accent={accent} />
+      <div style={{textAlign:"center",marginBottom:16,background:"rgba(0,0,0,0.04)",borderRadius:14,padding:"16px",border:"1.5px solid rgba(0,0,0,0.08)"}}>
+        <div style={{fontSize:32,marginBottom:6}}>📷</div>
+        <div style={{fontSize:14,fontWeight:800,color:"#1C1410",marginBottom:4}}>Photo Scavenger Hunt</div>
+        <div style={{fontSize:12,color:"rgba(28,9,0,0.45)"}}>Race to complete photo challenges before time runs out!</div>
+      </div>
+      {isHost && (<>
+        <div style={{marginBottom:10}}>
+          <label style={llbl}>Number of Challenges</label>
+          <div style={{display:"flex",gap:8}}>
+            {[3,5,10].map(n=><button key={n} onClick={()=>setNumChallenges(n)} style={{...lBtn(numChallenges===n?accent:"rgba(0,0,0,0.06)"),flex:1,padding:"10px",color:numChallenges===n?"#fff":"#1C1410"}}>{n}</button>)}
+          </div>
+        </div>
+        <div style={{marginBottom:14}}>
+          <label style={llbl}>Time Limit</label>
+          <div style={{display:"flex",gap:8}}>
+            {[5,10,15].map(m=><button key={m} onClick={()=>setMinutes(m)} style={{...lBtn(minutes===m?accent:"rgba(0,0,0,0.06)"),flex:1,padding:"10px",color:minutes===m?"#fff":"#1C1410"}}>{m} min</button>)}
+          </div>
+        </div>
+        <button onClick={()=>{
+          const sel = PHOTO_CHALLENGES.slice(0, numChallenges);
+          if(live) sendAction('pc_start',{challenges:sel,timeEnd:Date.now()+minutes*60000,phase:"playing"});
+          else { setLocalPhase("playing"); }
+        }} style={lBtn(accent)}>🚀 Start Challenge!</button>
+      </>)}
+      {!isHost && <div style={{textAlign:"center",color:"rgba(28,9,0,0.45)",fontSize:13,padding:"12px 0"}}>Waiting for host to set up…</div>}
+    </LightFormModal>
+  );
+
+  return (
+    <LightFormModal onClose={onClose} emoji="📷" title="Photo Challenge" accent={accent} wide>
+      <input ref={fileRef} type="file" accept="image/*" capture="environment" style={{display:"none"}} onChange={e=>handleFile(e, uploadTarget.current)} />
+      <PlayerRail room={room} players={players} myName={myName} accent={accent} />
+      {live && timeEnd > 0 && (
+        <div style={{marginBottom:12,textAlign:"center",padding:"6px 14px",borderRadius:10,background:timeLeft<60?"rgba(239,68,68,0.08)":"rgba(0,0,0,0.04)",border:`1px solid ${timeLeft<60?"rgba(239,68,68,0.3)":"rgba(0,0,0,0.07)"}`}}>
+          <span style={{fontSize:14,fontWeight:900,color:timeLeft<60?"#ef4444":"#1C1410"}}>⏱ {fmtTime(timeLeft)}</span>
+          {timeLeft === 0 && <span style={{marginLeft:8,fontSize:12,color:"#ef4444"}}>Time's up!</span>}
+        </div>
+      )}
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        {challenges.map((c,idx)=>{
+          const subs = submissions[idx] || [];
+          return (
+            <div key={idx} style={{background:"rgba(0,0,0,0.03)",borderRadius:14,padding:"12px 14px",border:"1px solid rgba(0,0,0,0.07)"}}>
+              <div style={{fontSize:13,fontWeight:700,color:"#1C1410",marginBottom:8}}>{c}</div>
+              {subs.length > 0 && (
+                <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
+                  {subs.map((s,pi)=>(
+                    <div key={pi} style={{position:"relative",borderRadius:8,overflow:"hidden",width:72,height:72,border:"1px solid rgba(0,0,0,0.10)"}}>
+                      <img src={s.dataUrl} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+                      <div style={{position:"absolute",bottom:0,left:0,right:0,background:"rgba(0,0,0,0.55)",padding:"2px 4px",display:"flex",gap:4}}>
+                        {["🔥","❤️","😂"].map(e=>(
+                          <span key={e} onClick={()=>reactPhoto(idx,pi,e)} style={{fontSize:11,cursor:"pointer"}}>
+                            {e}{(s.reactions||{})[e]||""}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div style={{display:"flex",gap:6}}>
+                <input value={captionFor[idx]||""} onChange={e=>setCaptionFor(c=>({...c,[idx]:e.target.value}))} placeholder="Caption…" style={{...linp,flex:1,fontSize:11,padding:"6px 10px"}} />
+                <button onClick={()=>{uploadTarget.current=idx; fileRef.current?.click();}} disabled={uploading===idx}
+                  style={{...lBtn(accent),width:"auto",padding:"6px 12px",fontSize:12,flexShrink:0}}>
+                  {uploading===idx?"…":"📷"}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {isHost && live && <button onClick={()=>sendAction('end_game',{})} style={{marginTop:10,width:"100%",padding:"8px",borderRadius:10,border:"1px solid rgba(220,38,38,0.3)",background:"rgba(220,38,38,0.08)",color:"#ef4444",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font}}>End Challenge</button>}
+    </LightFormModal>
   );
 }
 
@@ -11737,7 +12231,8 @@ export default function OccasionHub({ occasion }) {
       case "invite":         return occasion === "naming-ceremony"
           ? <NamingCeremonyInvite onClose={close} accent={accent} celebrantName={celebrantName} />
           : <ShareableTool onClose={close} accent={accent} emoji="📨" title="Digital Invite & RSVP" description="Create an invite. Share the link — guests RSVP instantly." path="/house-party/invite" fields={[{ key: "partyName", label: "Event Name", placeholder: "Meera's Birthday Bash", required: true }, { key: "hostName", label: "Host Name", placeholder: "Meera", required: true }, { key: "date", label: "Date", placeholder: "19 July 2026" }, { key: "time", label: "Time", placeholder: "7:00 PM" }, { key: "location", label: "Location", placeholder: "Aman's place, Noida" }, { key: "note", label: "Note (optional)", placeholder: "Dress code: yellow!" }]} />;
-      case "photowall":      return <ShareableTool onClose={close} accent={accent} emoji="📸" title="Shared Photo Wall" description="Create a photo wall. Share the link — everyone uploads their photos." path="/house-party/photo-wall" fields={[{ key: "partyName", label: "Event Name", placeholder: "Priya's Baby Shower 🎀", required: true }]} />;
+      case "photowall":      return <PhotoWall onClose={close} accent={accent} {...liveProps} />;
+      case "photochallenge": return <PhotoChallenge onClose={close} accent={accent} {...liveProps} />;
       case "truthordare":    return <TruthOrDare onClose={close} accent={accent} {...liveProps} />;
       case "neverhavei":     return <NeverHaveI onClose={close} accent={accent} {...liveProps} />;
       case "wouldyou":       return <WouldYouRather onClose={close} accent={accent} {...liveProps} />;
@@ -11751,7 +12246,7 @@ export default function OccasionHub({ occasion }) {
       case "wishwall":       return <WishWall onClose={close} accent={accent} celebrant={celebrantName} {...liveProps} />;
       case "birthdayquiz":   return <BirthdayQuiz onClose={close} accent={accent} celebrant={celebrantName} {...liveProps} />;
       case "lovenotes":      return <LoveNotes onClose={close} accent={accent} {...liveProps} />;
-      case "couplequiz":     return <CoupleQuiz onClose={close} accent={accent} />;
+      case "couplequiz":     return <CoupleQuiz onClose={close} accent={accent} {...liveProps} />;
       case "blessingswall":  return <BlessingsWall onClose={close} accent={accent} placeholder="Share your blessings and wishes for the couple…" {...liveProps} />;
       case "babynamevote":   return <BabyNameVote onClose={close} accent={accent} />;
       case "genderpoll":     return <GenderPoll onClose={close} accent={accent} />;
@@ -11762,7 +12257,7 @@ export default function OccasionHub({ occasion }) {
       case "namesuggestions":return <NameSuggestions onClose={close} accent={accent} />;
       case "blessings":      return <BlessingsWall onClose={close} accent={accent} placeholder="Share a blessing for the child's journey ahead…" {...liveProps} />;
       case "mostlikelyto":   return <MostLikelyTo onClose={close} accent={accent} {...liveProps} />;
-      case "t2l":            return <TwoTruthsOneLie onClose={close} accent={accent} />;
+      case "t2l":            return <TwoTruthsOneLie onClose={close} accent={accent} {...liveProps} />;
       case "rapidfire":      return <RapidFire onClose={close} accent={accent} {...liveProps} />;
       case "moodmeter":      return <MoodMeter onClose={close} accent={accent} {...liveProps} />;
       case "secretmessage":  return <SecretMessage onClose={close} accent={accent} {...liveProps} />;

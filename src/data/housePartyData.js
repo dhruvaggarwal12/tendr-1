@@ -111,6 +111,27 @@ export const WOULD_YOU_RATHER = [
   { a: "Have a pause button for your life", b: "Have a rewind button — but you can only use it once" },
   { a: "Only communicate through voice notes forever", b: "Never use voice notes — only texts forever" },
   { a: "Always arrive 30 minutes early everywhere", b: "Always arrive 30 minutes late everywhere" },
+  // Wave 2 additions
+  { a: "Unlimited chai for life", b: "Unlimited biryani for life" },
+  { a: "Speak every language in the world", b: "Play every instrument in the world" },
+  { a: "Be famous but completely broke", b: "Be rich but completely unknown" },
+  { a: "Only be able to whisper forever", b: "Only be able to shout forever" },
+  { a: "Know exactly when you'll die", b: "Know exactly how you'll die" },
+  { a: "Live in a hill station forever", b: "Live at a beach forever" },
+  { a: "Have a photographic memory", b: "Be able to forget anything at will" },
+  { a: "Eat only spicy food forever", b: "Eat only bland food forever" },
+  { a: "Be able to fly", b: "Be completely invisible whenever you want" },
+  { a: "Always know what people are thinking", b: "Never know what anyone is thinking" },
+  { a: "Go back in time 10 years with your current knowledge", b: "Fast forward 10 years into the future" },
+  { a: "No phone for a full month", b: "No friends for a full month" },
+  { a: "Be able to speak to animals", b: "Speak every human language fluently" },
+  { a: "Live without AC through Indian summers forever", b: "Live without heating through winters abroad forever" },
+  { a: "Have your crush know you like them", b: "Have your crush never find out" },
+  { a: "Be embarrassed in front of 10 people you know", b: "Be embarrassed in front of 1000 strangers" },
+  { a: "Have 10 truly loyal friends", b: "Have 1000 casual friends" },
+  { a: "Be able to pause time whenever you want", b: "Be able to rewind time — but only once" },
+  { a: "Lose all memories from your past", b: "Never be able to make any new memories" },
+  { a: "Your crush sees all your texts", b: "Your parents see all your texts" },
 ];
 
 // ── Charades ─────────────────────────────────────────────────────────────────
