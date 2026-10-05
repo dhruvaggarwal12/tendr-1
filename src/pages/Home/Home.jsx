@@ -340,8 +340,8 @@ function FaqSection() {
           </div>
 
           {/* Right: decorative SVG illustration */}
-          <div style={{ flexShrink: 0, display: "flex", justifyContent: "flex-end", alignItems: "flex-end", alignSelf: "flex-end", opacity: 0.9 }}>
-            <svg width="290" height="220" viewBox="0 0 290 220" fill="none" style={{ display: "block" }}>
+          <div style={{ flexShrink: 0, display: "flex", justifyContent: "flex-end", alignItems: "flex-end", alignSelf: "flex-end", opacity: 0.9, maxWidth: "100%" }}>
+            <svg width="290" height="220" viewBox="0 0 290 220" fill="none" style={{ display: "block", maxWidth: "100%", height: "auto" }}>
               {/* Dotted grid background */}
               {Array.from({ length: 8 }).map((_, row) =>
                 Array.from({ length: 10 }).map((_, col) => (

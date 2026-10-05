@@ -203,7 +203,13 @@ function Bubble({ text }) {
 /* ── Main component ───────────────────────────────────────────────────────── */
 export default function FirstTimeExperience() {
   const [done, setDone] = useState(() => {
-    try { return !!localStorage.getItem(LS_KEY); } catch { return true; }
+    try {
+      // Don't show if already completed, or if WebsiteIntro hasn't been seen yet
+      // (WebsiteIntro takes priority on first mobile visit)
+      if (localStorage.getItem(LS_KEY)) return true;
+      if (window.innerWidth <= 768 && !localStorage.getItem('tendr_intro_seen')) return true;
+      return false;
+    } catch { return true; }
   });
   const [phase, setPhase] = useState('tour');   // 'tour' | 'intent'
   const [stop,  setStop]  = useState(0);
@@ -261,6 +267,7 @@ export default function FirstTimeExperience() {
         animation:'ftv-overlay 0.3s ease-out',
         display:'flex', alignItems:'center', justifyContent:'center',
         padding:'20px 16px', fontFamily:"'Outfit',sans-serif",
+        zIndex: 10000,
       }}>
 
         {/* Skip — top right, always visible during tour */}

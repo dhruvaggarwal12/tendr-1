@@ -101,7 +101,7 @@ function FloatingHubBubble() {
       onClick={restore}
       title={`Return to ${hubState.name} Hub`}
       style={{
-        position: 'fixed', bottom: 'calc(20px + env(safe-area-inset-bottom, 0px))', left: 16,
+        position: 'fixed', bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))', left: 16,
         zIndex: 8000, width: 56, height: 56, borderRadius: '50%',
         background: 'linear-gradient(135deg, #1a0d30 0%, #0d0520 100%)',
         border: '2px solid rgba(196,151,58,0.7)',

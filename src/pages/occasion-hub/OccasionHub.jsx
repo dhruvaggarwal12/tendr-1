@@ -12466,6 +12466,10 @@ export default function OccasionHub({ occasion }) {
           .occ-colored-card   { padding: 16px 10px 12px !important; }
           .occ-colored-card-emoji { font-size: 30px !important; }
           .occ-colored-card-label { font-size: 11.5px !important; }
+          .occ-game-grid-4 { grid-template-columns: repeat(2,1fr) !important; gap: 10px !important; }
+        }
+        @media (max-width:400px) {
+          .occ-game-grid-4 { grid-template-columns: repeat(2,1fr) !important; }
         }
       `}</style>
 
@@ -13494,7 +13498,7 @@ export default function OccasionHub({ occasion }) {
                     <div style={{ fontSize:10, color:PH.violet, fontWeight:600 }}>{sectionTools.length}</div>
                   </div>
                   {isGameSection ? (
-                    <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }}>
+                    <div className="occ-game-grid-4" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8 }}>
                       {sectionTools.map(t => {
                         const isEnabled  = ENABLED_GAME_IDS.has(t.id);
                         const unlockDate = gameUnlockDate(t.id);
