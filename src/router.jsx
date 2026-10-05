@@ -1,5 +1,6 @@
 import { createBrowserRouter, Outlet, ScrollRestoration, Navigate, useLocation, useSearchParams, useNavigate } from "react-router-dom";
-import { lazy, useEffect, useState } from "react";
+import { lazy, useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import MobileBottomNav from "./components/MobileBottomNav";
@@ -45,26 +46,53 @@ function AppInit() {
   return null;
 }
 
+// Route depth — determines slide direction (higher = navigate forward/right, lower = back/left)
+const ROUTE_DEPTH = {
+  '/': 0,
+  '/search': 1, '/guides': 1, '/community': 1, '/gift-hampers-cakes': 1, '/stationery': 1,
+  '/tools': 2, '/plan': 2, '/booking': 2, '/join-room': 2, '/occasion-hub': 2, '/occasion': 2,
+  '/dashboard': 3, '/chat': 3, '/vendor': 3,
+  '/profile': 4,
+};
+function pathDepth(p) {
+  if (p === '/') return 0;
+  for (const [prefix, d] of Object.entries(ROUTE_DEPTH)) {
+    if (prefix !== '/' && p.startsWith(prefix)) return d;
+  }
+  return 2;
+}
+
+const slideVariants = {
+  enter: (dir) => ({ opacity: 0, x: dir * 24 }),
+  center: { opacity: 1, x: 0 },
+  exit: (dir) => ({ opacity: 0, x: dir * -24 }),
+};
+
 function PageTransition() {
   const { pathname } = useLocation();
+  const prevRef = useRef(pathname);
+  const dirRef = useRef(1);
+
+  if (prevRef.current !== pathname) {
+    dirRef.current = pathDepth(pathname) >= pathDepth(prevRef.current) ? 1 : -1;
+    prevRef.current = pathname;
+  }
+
   return (
-    <>
-      <style>{`
-        @keyframes tendr-page-in {
-          from { opacity: 0; transform: translateY(6px); }
-          to   { opacity: 1; }
-        }
-        .tendr-page-wrapper {
-          animation: tendr-page-in 0.18s ease-out backwards;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .tendr-page-wrapper { animation: none; }
-        }
-      `}</style>
-      <div key={pathname} className="tendr-page-wrapper">
+    <AnimatePresence mode="popLayout" initial={false} custom={dirRef.current}>
+      <motion.div
+        key={pathname}
+        custom={dirRef.current}
+        variants={slideVariants}
+        initial="enter"
+        animate="center"
+        exit="exit"
+        transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+        style={{ willChange: 'transform, opacity' }}
+      >
         <Outlet />
-      </div>
-    </>
+      </motion.div>
+    </AnimatePresence>
   );
 }
 

@@ -13508,7 +13508,7 @@ export default function OccasionHub({ occasion }) {
                         return (
                           <div key={t.id}
                             onClick={() => isEnabled ? openTool(t.id) : undefined}
-                            className={isEnabled ? "occ-tool-card" : undefined}
+                            className={isEnabled ? "occ-tool-card tap-scale" : undefined}
                             style={{ background: isLocked ? 'rgba(0,0,0,0.06)' : T.cardBg, border:`1.5px solid ${isLocked ? 'rgba(0,0,0,0.08)' : T.cardBd}`, borderRadius:14, padding:"14px 6px 12px", cursor: isEnabled ? "pointer" : "default", display:"flex", flexDirection:"column", alignItems:"center", gap:8, textAlign:"center", position:"relative", overflow:"hidden", opacity: isLocked ? 0.7 : 1 }}>
                             {isNew && <div style={{ position:"absolute", top:5, right:5, fontSize:7, fontWeight:800, color:"#fff", background:"#F59E0B", borderRadius:20, padding:"2px 5px", letterSpacing:0.5 }}>NEW</div>}
                             {isLocked && isBuilt && unlockDate && <div style={{ position:"absolute", top:5, left:5, fontSize:7, fontWeight:800, color:"#6B7280", background:"rgba(0,0,0,0.08)", borderRadius:20, padding:"2px 5px" }}>{fmtUnlockDate(unlockDate)}</div>}

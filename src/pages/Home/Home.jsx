@@ -195,6 +195,7 @@ function TipsByTendrSection() {
           {guides.map((guide, i) => (
             <div
               key={guide.slug}
+              className="tap-scale"
               onClick={() => navigate(`/guides/${guide.slug}`)}
               style={{ cursor: "pointer" }}
               onMouseEnter={e => { e.currentTarget.querySelector("img").style.transform = "scale(1.04)"; e.currentTarget.querySelector(".guide-title").style.color = "#C47A2E"; }}
@@ -1454,14 +1455,21 @@ const Home = () => {
                 background: "#2C1A0E",
               }}
             >
-              {/* Loading state while gallery fetches */}
+              {/* Skeleton while gallery fetches */}
               {!galleryLoaded && (
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,#2C1A0E,#4A2810)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <div style={{ textAlign: "center", color: "rgba(204,171,74,0.6)" }}>
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(204,171,74,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 12, display: "block", margin: "0 auto 12px" }}>
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                    </svg>
-                    <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase" }}>Loading gallery</div>
+                <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+                  <div className="ske-dark" style={{ position: "absolute", inset: 0, borderRadius: 0 }} />
+                  {/* Simulated photo regions */}
+                  <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", gap: 0, padding: "12% 10%" }}>
+                    <div className="ske-dark" style={{ flex: 1, borderRadius: 10, marginBottom: 8, opacity: 0.7 }} />
+                    <div style={{ display: "flex", gap: 8, height: "28%" }}>
+                      <div className="ske-dark" style={{ flex: 1, borderRadius: 8, opacity: 0.6 }} />
+                      <div className="ske-dark" style={{ flex: 1, borderRadius: 8, opacity: 0.5 }} />
+                    </div>
+                  </div>
+                  {/* Category label skeleton at bottom */}
+                  <div style={{ position: "absolute", bottom: 14, left: 16 }}>
+                    <div className="ske-dark" style={{ height: 14, width: 80, opacity: 0.8 }} />
                   </div>
                 </div>
               )}

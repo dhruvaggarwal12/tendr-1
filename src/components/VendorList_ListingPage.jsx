@@ -223,19 +223,24 @@ const VendorList_ListingPage = ({
 
         <div>
           {isLoading ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 24px 60px", fontFamily: font }}>
-              <div style={{ width: 48, height: 48, borderRadius: "50%", border: "3px solid rgba(196,122,46,0.15)", borderTopColor: "#C47A2E", animation: "curateSpin 0.7s linear infinite", marginBottom: 20 }} />
-              <h3 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px", letterSpacing: "-0.02em" }}>Curating your list...</h3>
-              <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 28px" }}>Finding the best vendors for your event</p>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                {[0, 1, 2].map(i => (
-                  <div key={i} style={{ width: 9, height: 9, borderRadius: "50%", background: "#C47A2E", animation: `curateDot 1.2s ${i * 0.18}s ease-in-out infinite` }} />
-                ))}
-              </div>
-              <style>{`
-                @keyframes curateSpin { to { transform: rotate(360deg); } }
-                @keyframes curateDot { 0%, 100% { opacity: 0.25; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1.2); } }
-              `}</style>
+            <div className="vl-grid" style={{ padding: "4px 0" }}>
+              {[0, 1, 2, 3, 4, 5].map(i => (
+                <div key={i} style={{ borderRadius: 16, overflow: "hidden", background: "#FFFCF5", border: "1.5px solid rgba(196,122,46,0.1)" }}>
+                  <div className="ske" style={{ height: 220, borderRadius: 0 }} />
+                  <div style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div className="ske" style={{ height: 14, width: "70%" }} />
+                    <div className="ske" style={{ height: 12, width: "45%" }} />
+                    <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                      <div className="ske" style={{ height: 10, width: "30%" }} />
+                      <div className="ske" style={{ height: 10, width: "25%" }} />
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
+                      <div className="ske" style={{ height: 13, width: "38%" }} />
+                      <div className="ske" style={{ height: 28, width: 80, borderRadius: 100 }} />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : vendors.length === 0 ? (
             <div style={{ textAlign: "center", padding: "60px 24px 40px", fontFamily: font }}>
@@ -293,7 +298,7 @@ const VendorList_ListingPage = ({
                 return (
                   <div
                     key={vendor._id || index}
-                    className="vendor-card"
+                    className="vendor-card tap-scale"
                     onClick={() => {
                       if (window.innerWidth >= 1024) {
                         window.open(`/vendor/${vendor._id}${isFromPlanFlow ? "?fromPlan=1" : ""}`, "_blank");
