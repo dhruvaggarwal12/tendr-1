@@ -254,6 +254,8 @@ const GuidePreview        = lazy(() => import('./pages/guides/GuidePreview'));
 const GuideReader         = lazy(() => import('./pages/guides/GuideReader'));
 const RefundPolicy        = lazy(() => import("./pages/info/RefundPolicy"));
 const CancellationPolicy  = lazy(() => import("./pages/info/CancellationPolicy"));
+const PrivacyPolicy       = lazy(() => import("./pages/info/PrivacyPolicy"));
+const TermsOfService      = lazy(() => import("./pages/info/TermsOfService"));
 const ContactUs           = lazy(() => import("./pages/info/ContactUs.jsx"));
 const AboutUs             = lazy(() => import("./pages/info/AboutUs.jsx"));
 const InstallApp          = lazy(() => import("./pages/install/InstallApp.jsx"));
@@ -587,9 +589,19 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage /> 
   },
 
-  { 
+  {
     path: "/cancellation-policy",
     element: <CancellationPolicy />,
+    errorElement: <ErrorPage />
+  },
+  {
+    path: "/privacy",
+    element: <PrivacyPolicy />,
+    errorElement: <ErrorPage />
+  },
+  {
+    path: "/terms",
+    element: <TermsOfService />,
     errorElement: <ErrorPage />
   },
   {
