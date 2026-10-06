@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { AnimatePresence, motion } from "framer-motion";
 import { loadPlan, PlanSummaryModal } from "./PlanSummaryModal";
 
 const font = "'Outfit', sans-serif";
@@ -35,7 +36,7 @@ const NAV_COLORS = {
   Tools: { active: "#C47A2E", bg: "rgba(196,122,46,0.14)", shadow: "rgba(196,122,46,0.5)" },
   Plan:     { active: "#C47A2E", bg: "rgba(196,122,46,0.14)", shadow: "rgba(196,122,46,0.5)" },
   Profile:  { active: "#C47A2E", bg: "rgba(196,122,46,0.14)", shadow: "rgba(196,122,46,0.5)" },
-  Tips:     { active: "#4F8EF7", bg: "rgba(79,142,247,0.12)", shadow: "rgba(79,142,247,0.4)" },
+  Tips:     { active: "#C47A2E", bg: "rgba(196,122,46,0.14)", shadow: "rgba(196,122,46,0.5)" },
 };
 
 const NAV_ICONS = {
@@ -275,23 +276,30 @@ function BottomNavInner() {
       })()}
 
       {/* Browse category picker — pops up just above the bottom nav */}
+      <AnimatePresence>
       {browseOpen && (
         <>
           {/* Backdrop */}
-          <div
+          <motion.div
+            key="browse-bd"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
             onClick={() => setBrowseOpen(false)}
             style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 99991, pointerEvents: "auto" }}
           />
           {/* Sheet — sits just above the nav bar */}
-          <div style={{
-            position: "fixed", bottom: "calc(60px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0,
+          <motion.div
+            key="browse-sheet"
+            initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+            transition={{ type: "spring", stiffness: 380, damping: 30, mass: 0.8 }}
+            style={{
+            position: "fixed", bottom: "calc(65px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0,
             zIndex: 99992, pointerEvents: "auto",
             background: "#FFFCF5",
             borderRadius: "20px 20px 0 0",
             boxShadow: "0 -6px 32px rgba(139,69,19,0.18)",
             padding: "10px 20px 20px",
             fontFamily: font,
-            animation: "sheet-up 0.24s cubic-bezier(0.4,0,0.2,1)",
           }}>
             {/* Handle */}
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
@@ -340,16 +348,20 @@ function BottomNavInner() {
               style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
               Browse All Vendors →
             </button>
-          </div>
+          </motion.div>
         </>
       )}
+      </AnimatePresence>
 
       {/* Plan options sheet */}
+      <AnimatePresence>
       {planOpen && (
         <>
-          <div onClick={() => setPlanOpen(false)}
+          <motion.div key="plan-bd" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:0.18 }}
+            onClick={() => setPlanOpen(false)}
             style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 99991, pointerEvents: "auto" }} />
-          <div style={{ position: "fixed", bottom: "calc(60px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, pointerEvents: "auto", background: "#FFFCF5", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(139,69,19,0.18)", padding: "10px 20px 20px", fontFamily: font, animation: "sheet-up 0.24s cubic-bezier(0.4,0,0.2,1)" }}>
+          <motion.div key="plan-sheet" initial={{ y:"100%" }} animate={{ y:0 }} exit={{ y:"100%" }} transition={{ type:"spring", stiffness:380, damping:30, mass:0.8 }}
+            style={{ position: "fixed", bottom: "calc(65px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, pointerEvents: "auto", background: "#FFFCF5", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(139,69,19,0.18)", padding: "10px 20px 20px", fontFamily: font }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
               <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(196,122,46,0.25)" }} />
             </div>
@@ -377,16 +389,20 @@ function BottomNavInner() {
                 </button>
               ))}
             </div>
-          </div>
+          </motion.div>
         </>
       )}
+      </AnimatePresence>
 
       {/* Our Products popup sheet */}
+      <AnimatePresence>
       {productsOpen && (
         <>
-          <div onClick={() => setProductsOpen(false)}
+          <motion.div key="products-bd" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:0.18 }}
+            onClick={() => setProductsOpen(false)}
             style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 99991, pointerEvents: "auto" }} />
-          <div style={{ position: "fixed", bottom: "calc(60px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, pointerEvents: "auto", background: "#FFFCF5", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(139,69,19,0.18)", padding: "10px 20px 20px", fontFamily: font, animation: "sheet-up 0.24s cubic-bezier(0.4,0,0.2,1)" }}>
+          <motion.div key="products-sheet" initial={{ y:"100%" }} animate={{ y:0 }} exit={{ y:"100%" }} transition={{ type:"spring", stiffness:380, damping:30, mass:0.8 }}
+            style={{ position: "fixed", bottom: "calc(65px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, pointerEvents: "auto", background: "#FFFCF5", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(139,69,19,0.18)", padding: "10px 20px 20px", fontFamily: font }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
               <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(196,122,46,0.25)" }} />
             </div>
@@ -409,56 +425,61 @@ function BottomNavInner() {
                 );
               })}
             </div>
-          </div>
+          </motion.div>
         </>
       )}
+      </AnimatePresence>
 
       {/* Tips by Tendr popup sheet */}
+      <AnimatePresence>
       {tipsOpen && (
         <>
-          <div onClick={() => setTipsOpen(false)}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 99991, pointerEvents: "auto" }} />
-          <div style={{ position: "fixed", bottom: "calc(60px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, pointerEvents: "auto", background: "#0F1629", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(0,0,0,0.5)", padding: "10px 20px 24px", fontFamily: font, animation: "sheet-up 0.24s cubic-bezier(0.4,0,0.2,1)", borderTop: "1px solid rgba(79,142,247,0.2)" }}>
+          <motion.div key="tips-bd" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:0.18 }}
+            onClick={() => setTipsOpen(false)}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 99991, pointerEvents: "auto" }} />
+          <motion.div key="tips-sheet" initial={{ y:"100%" }} animate={{ y:0 }} exit={{ y:"100%" }} transition={{ type:"spring", stiffness:380, damping:30, mass:0.8 }}
+            style={{ position: "fixed", bottom: "calc(65px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, pointerEvents: "auto", background: "#FFFCF5", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(139,69,19,0.18)", padding: "10px 20px 24px", fontFamily: font, borderTop: "1px solid rgba(196,122,46,0.2)" }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
-              <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(79,142,247,0.25)" }} />
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(196,122,46,0.25)" }} />
             </div>
-            <p style={{ fontSize: 12, fontWeight: 700, color: "#4F8EF7", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 16px" }}>Tips by Tendr</p>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 16px" }}>Tips by Tendr</p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {/* Guide Store */}
               <button
                 onClick={() => { navigate("/guides"); setTipsOpen(false); }}
-                style={{ display: "flex", alignItems: "center", gap: 14, padding: "15px 16px", borderRadius: 14, border: "1px solid rgba(79,142,247,0.2)", background: "#0A0E1A", cursor: "pointer", fontFamily: font, textAlign: "left" }}
-                onTouchStart={(e) => e.currentTarget.style.background = "rgba(79,142,247,0.08)"}
-                onTouchEnd={(e) => e.currentTarget.style.background = "#0A0E1A"}
+                style={{ display: "flex", alignItems: "center", gap: 14, padding: "15px 16px", borderRadius: 14, border: "1px solid rgba(196,122,46,0.2)", background: "#fff", cursor: "pointer", fontFamily: font, textAlign: "left", boxShadow: "0 2px 8px rgba(196,122,46,0.08)" }}
+                onTouchStart={(e) => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
+                onTouchEnd={(e) => e.currentTarget.style.background = "#fff"}
               >
-                <span style={{ color: "#4F8EF7", display: "flex", alignItems: "center", flexShrink: 0 }}>
+                <span style={{ color: "#C47A2E", display: "flex", alignItems: "center", flexShrink: 0 }}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                 </span>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>Guide Store</div>
-                  <div style={{ fontSize: 12, color: "#7A8BA8", marginTop: 2 }}>Free event planning guides — unlock with WhatsApp</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>Guide Store</div>
+                  <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>Free event planning guides — unlock with WhatsApp</div>
                 </div>
               </button>
               {/* Community Wall */}
               <button
                 onClick={() => { navigate("/community"); setTipsOpen(false); }}
-                style={{ display: "flex", alignItems: "center", gap: 14, padding: "15px 16px", borderRadius: 14, border: "1px solid rgba(79,142,247,0.2)", background: "#0A0E1A", cursor: "pointer", fontFamily: font, textAlign: "left" }}
-                onTouchStart={(e) => e.currentTarget.style.background = "rgba(79,142,247,0.08)"}
-                onTouchEnd={(e) => e.currentTarget.style.background = "#0A0E1A"}
+                style={{ display: "flex", alignItems: "center", gap: 14, padding: "15px 16px", borderRadius: 14, border: "1px solid rgba(196,122,46,0.2)", background: "#fff", cursor: "pointer", fontFamily: font, textAlign: "left", boxShadow: "0 2px 8px rgba(196,122,46,0.08)" }}
+                onTouchStart={(e) => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
+                onTouchEnd={(e) => e.currentTarget.style.background = "#fff"}
               >
-                <span style={{ color: "#4F8EF7", display: "flex", alignItems: "center", flexShrink: 0 }}>
+                <span style={{ color: "#C47A2E", display: "flex", alignItems: "center", flexShrink: 0 }}>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </span>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>Community Wall</div>
-                  <div style={{ fontSize: 12, color: "#7A8BA8", marginTop: 2 }}>See real events shared by customers — photos, setups, ideas</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>Community Wall</div>
+                  <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>See real events shared by customers — photos, setups, ideas</div>
                 </div>
               </button>
             </div>
-          </div>
+          </motion.div>
         </>
       )}
+      </AnimatePresence>
 
       {/* Bottom nav bar */}
       <nav
@@ -468,7 +489,7 @@ function BottomNavInner() {
           position: "fixed",
           bottom: 0, left: 0, right: 0,
           zIndex: 99990,
-          height: "calc(60px + env(safe-area-inset-bottom, 0px))",
+          height: "calc(65px + env(safe-area-inset-bottom, 0px))",
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
           background: "rgba(255,252,245,0.96)",
           backdropFilter: "blur(16px)",
