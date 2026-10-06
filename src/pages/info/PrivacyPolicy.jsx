@@ -147,6 +147,42 @@ export default function PrivacyPolicy() {
       </div>
 
       <Footer />
+
+      <noscript>
+        <div style={{padding:"40px 24px",maxWidth:800,margin:"0 auto",fontFamily:"sans-serif",lineHeight:1.7,color:"#2C1A0E"}}>
+          <h1>Privacy Policy — Tendr</h1>
+          <p>Last updated: October 2026</p>
+          <h2>Information We Collect</h2>
+          <p><strong>Account Information:</strong> When you sign up, we collect your name, phone number, email address, and city. If you sign in with Google, we also receive your Google account name and profile picture.</p>
+          <p><strong>Event &amp; Planning Data:</strong> Information you provide while using planning tools — vendor selections, event dates, guest counts, budgets, checklists, and timelines — is stored to power your dashboard.</p>
+          <p><strong>Usage Data:</strong> We collect standard server logs including IP address, device type, browser, and pages visited to diagnose issues and improve the product.</p>
+          <p><strong>Payment Information:</strong> Payments are processed by Razorpay. Tendr does not store your card or bank details — only the transaction reference and status.</p>
+          <p><strong>Community Content:</strong> Photos, reviews, and posts you share on the Community Wall are stored and displayed to other users.</p>
+          <h2>How We Use Your Information</h2>
+          <p><strong>Service Delivery:</strong> To create your account, match you with vendors, process bookings, and send event reminders.</p>
+          <p><strong>Communication:</strong> We send transactional messages via WhatsApp and SMS. You can opt out of product updates at any time.</p>
+          <p><strong>Improvement:</strong> Aggregated, anonymised usage data is used to improve features. We do not sell your personal data.</p>
+          <p><strong>Legal Compliance:</strong> We may disclose data when required by law or to protect rights and safety.</p>
+          <h2>How We Share Your Information</h2>
+          <p><strong>With Vendors:</strong> When you send a booking enquiry, your name, event details, and contact number are shared with the relevant vendor.</p>
+          <p><strong>Service Providers:</strong> We use Cloudinary (file storage), Razorpay (payments), and Redis Cloud (session data).</p>
+          <p><strong>No Sale of Data:</strong> We do not sell, rent, or trade your personal information to any third party for marketing purposes.</p>
+          <h2>Data Retention</h2>
+          <p>We retain your data for as long as your account is active. You can request deletion by emailing support@tendr.co.in. We will delete your data within 30 days, except where retention is required by law.</p>
+          <h2>Your Rights</h2>
+          <p>You can view and update your profile at any time. You may request a copy of your data or withdraw consent by emailing support@tendr.co.in.</p>
+          <h2>Security</h2>
+          <p>All data is transmitted over HTTPS. Passwords are hashed using bcrypt. JWTs are signed and expire after 7 days.</p>
+          <h2>Cookies &amp; Local Storage</h2>
+          <p>We use browser localStorage to remember your session token and UI preferences. We do not use advertising cookies or third-party trackers.</p>
+          <h2>Children's Privacy</h2>
+          <p>Tendr is not directed at children under 13. We do not knowingly collect personal information from anyone under 13.</p>
+          <h2>Changes to This Policy</h2>
+          <p>We may update this Privacy Policy from time to time and will notify you of significant changes in the app.</p>
+          <h2>Contact Us</h2>
+          <p>Email: support@tendr.co.in — New Delhi, India.</p>
+        </div>
+      </noscript>
     </div>
   );
 }
