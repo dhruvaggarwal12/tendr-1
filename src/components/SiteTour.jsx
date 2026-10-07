@@ -227,20 +227,20 @@ function TourTooltip({ continuous, index, step, backProps, closeProps, primaryPr
   );
 }
 
-export default function SiteTour() {
+export default function SiteTour({ onDone } = {}) {
   const { tourActive, endTour } = useTour();
 
   const handleCallback = useCallback(
     (data) => {
       if ([STATUS.FINISHED, STATUS.SKIPPED].includes(data.status)) {
         endTour();
+        onDone?.();
       }
     },
-    [endTour]
+    [endTour, onDone]
   );
 
-  // Global one-shot tour replaced by per-page PageTour components
-  if (!tourActive || true) return null;
+  if (!tourActive) return null;
 
   return (
     <Joyride

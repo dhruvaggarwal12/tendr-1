@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTour } from '../context/TourContext';
+import SiteTour from './SiteTour';
 
 const LS_KEY = 'tendr-ftv-done';
 const MOBILE_INTRO_KEY = 'tendr_intro_seen';
@@ -15,29 +17,6 @@ const INTENTS = [
   { label: 'Just Exploring', emoji: '👀', path: null, desc: 'Have a look around at my own pace' },
 ];
 
-const TOUR_STOPS = [
-  {
-    targetId: 'home-hero',
-    title: 'Book verified vendors',
-    desc: 'Caterers, decorators, photographers — all verified across Delhi NCR.',
-    mood: 'point',
-    side: 'bottom',
-  },
-  {
-    targetId: 'home-journal',
-    title: 'Read before you spend',
-    desc: 'Expert guides that save you money and stress before the big day.',
-    mood: 'idle',
-    side: 'top',
-  },
-  {
-    targetId: 'home-community',
-    title: 'Learn from others',
-    desc: 'Real photos and ideas from events just like yours.',
-    mood: 'wave',
-    side: 'top',
-  },
-];
 
 const CSS = `
   @keyframes fte-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
@@ -287,146 +266,6 @@ function AskTour({ onYes, onNo }) {
   );
 }
 
-// ── Phase: Spotlight tour ─────────────────────────────────────────────────
-function SpotlightTour({ stops, onDone }) {
-  const [step, setStep] = useState(0);
-  const [spotRect, setSpotRect] = useState(null);
-  const [visible, setVisible] = useState(false);
-  const stop = stops[step];
-  const PAD = 14;
-
-  const captureRect = useCallback(() => {
-    const el = document.getElementById(stop.targetId);
-    if (!el) {
-      if (step < stops.length - 1) setStep(s => s + 1);
-      else onDone();
-      return;
-    }
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setTimeout(() => {
-      const r = el.getBoundingClientRect();
-      setSpotRect(r);
-      setVisible(true);
-    }, 680);
-  }, [step, stop.targetId, stops.length, onDone]);
-
-  useEffect(() => {
-    setVisible(false);
-    setSpotRect(null);
-    captureRect();
-  }, [captureRect]);
-
-  const next = () => {
-    setVisible(false);
-    setTimeout(() => {
-      if (step < stops.length - 1) setStep(s => s + 1);
-      else onDone();
-    }, 200);
-  };
-
-  const vw = typeof window !== 'undefined' ? window.innerWidth : 400;
-  const vh = typeof window !== 'undefined' ? window.innerHeight : 700;
-  const TT_W = Math.min(310, vw - 32);
-  const TT_H = 175;
-  let tooltipTop = 0;
-  let tooltipLeft = 0;
-
-  if (spotRect) {
-    tooltipLeft = Math.max(16, Math.min(spotRect.left, vw - TT_W - 16));
-    if (stop.side === 'bottom') {
-      tooltipTop = Math.min(spotRect.bottom + PAD + 10, vh - TT_H - 16);
-    } else {
-      tooltipTop = Math.max(16, spotRect.top - PAD - TT_H - 10);
-    }
-  }
-
-  return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9900, fontFamily: SANS }}>
-      <style>{CSS}</style>
-      {/* Blocks page interaction */}
-      <div style={{ position: 'fixed', inset: 0 }} />
-
-      {spotRect && visible && (
-        <div className="fte-spot-in">
-          {/* Spotlight hole via box-shadow */}
-          <div style={{
-            position: 'fixed',
-            top: spotRect.top - PAD,
-            left: spotRect.left - PAD,
-            width: spotRect.width + PAD * 2,
-            height: spotRect.height + PAD * 2,
-            borderRadius: 14,
-            boxShadow: '0 0 0 9999px rgba(8,3,0,0.83)',
-            border: '2px solid rgba(196,122,46,0.55)',
-            pointerEvents: 'none',
-            zIndex: 9901,
-            transition: 'all 0.38s ease',
-          }} />
-
-          {/* Tooltip */}
-          <div style={{
-            position: 'fixed',
-            top: tooltipTop,
-            left: tooltipLeft,
-            width: TT_W,
-            background: 'rgba(18,6,1,0.97)',
-            border: '1px solid rgba(196,122,46,0.35)',
-            borderRadius: 18,
-            padding: '16px 18px 14px',
-            zIndex: 9902,
-            backdropFilter: 'blur(10px)',
-          }}>
-            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 12 }}>
-              <Mascot mood={stop.mood} size={64} />
-              <div style={{ flex: 1, paddingTop: 4 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: '#F5E6CC', marginBottom: 5, lineHeight: 1.25 }}>
-                  {stop.title}
-                </div>
-                <div style={{ fontSize: 12.5, color: 'rgba(245,230,204,0.55)', lineHeight: 1.65 }}>
-                  {stop.desc}
-                </div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <button
-                onClick={onDone}
-                style={{
-                  background: 'none', border: 'none',
-                  color: 'rgba(245,230,204,0.32)', fontSize: 12,
-                  cursor: 'pointer', padding: '6px 0', fontFamily: SANS,
-                }}
-              >
-                Skip tour
-              </button>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                {stops.map((_, i) => (
-                  <div key={i} style={{
-                    width: i === step ? 16 : 6, height: 6, borderRadius: 3,
-                    background: i === step ? '#C47A2E' : 'rgba(245,230,204,0.2)',
-                    transition: 'all 0.25s',
-                  }} />
-                ))}
-                <button
-                  onClick={next}
-                  style={{
-                    background: 'linear-gradient(135deg,#C47A2E,#E8943F)',
-                    border: 'none', borderRadius: 100,
-                    color: 'white', fontSize: 13, fontWeight: 700,
-                    cursor: 'pointer', padding: '8px 18px', marginLeft: 6,
-                    fontFamily: SANS,
-                  }}
-                >
-                  {step === stops.length - 1 ? 'Done →' : 'Next →'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── Phase: Intent picker ──────────────────────────────────────────────────
 function IntentPicker({ onSelect }) {
   return (
@@ -493,6 +332,7 @@ function IntentPicker({ onSelect }) {
 // ── Main export ───────────────────────────────────────────────────────────
 export default function FirstTimeExperience() {
   const navigate = useNavigate();
+  const { startTour } = useTour();
 
   const [phase, setPhase] = useState(() => {
     try {
@@ -508,9 +348,14 @@ export default function FirstTimeExperience() {
     if (path) navigate(path);
   };
 
+  const handleYes = () => {
+    startTour();
+    setPhase('tour');
+  };
+
   if (phase === 'done') return null;
-  if (phase === 'ask') return <AskTour onYes={() => setPhase('tour')} onNo={() => setPhase('intent')} />;
-  if (phase === 'tour') return <SpotlightTour stops={TOUR_STOPS} onDone={() => setPhase('intent')} />;
+  if (phase === 'ask') return <AskTour onYes={handleYes} onNo={() => setPhase('intent')} />;
+  if (phase === 'tour') return <SiteTour onDone={() => setPhase('intent')} />;
   if (phase === 'intent') return <IntentPicker onSelect={finish} />;
   return null;
 }
