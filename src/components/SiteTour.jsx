@@ -216,7 +216,7 @@ export default function SiteTour({ onDone } = {}) {
       continuous
       scrollToFirstStep
       showSkipButton
-      disableOverlayClose
+      disableOverlay
       floaterProps={{ disableAnimation: false }}
       styles={{
         options: {
@@ -224,8 +224,6 @@ export default function SiteTour({ onDone } = {}) {
           primaryColor: GOLD,
           arrowColor: "#FFFCF5",
         },
-        overlay: { backgroundColor: "rgba(28, 9, 0, 0.38)" },
-        spotlight: { borderRadius: 12 },
       }}
     />
   );
