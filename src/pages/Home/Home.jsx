@@ -1831,45 +1831,45 @@ const Home = () => {
               { label: "Holi Party",      photo: "/occasions/house-party-mobile.png" },
               { label: "Navratri Garba",  photo: "/occasions/house-party-mobile.png" },
             ].map(({ label, photo }, i) => {
+              const slugMap = {
+                "Birthday":"birthday-party","Anniversary":"anniversary","Baby Shower":"baby-shower",
+                "First Birthday":"first-birthday","House Party":"get-together","Housewarming":"housewarming",
+                "Get Together":"get-together","Naming Ceremony":"naming-ceremony",
+                "Gender Reveal":"gender-reveal","Newborn Welcome":"newborn-welcome",
+                "Kitty Party":"kitty-party","Graduation":"graduation",
+                "Office Party":"office-party","Wedding":"wedding","Bachelorette":"bachelorette",
+                "Farewell":"farewell","Retirement":"retirement","Diwali Party":"diwali-party",
+                "Holi Party":"holi-party","Navratri Garba":"navratri-garba",
+              };
+              const hubMap = {
+                "birthday-party":"/birthday-hub","first-birthday":"/first-birthday-hub",
+                "anniversary":"/anniversary-hub","baby-shower":"/baby-shower-hub",
+                "gender-reveal":"/gender-reveal-hub","newborn-welcome":"/newborn-welcome-hub",
+                "get-together":"/get-together-hub","housewarming":"/housewarming-hub",
+                "naming-ceremony":"/naming-ceremony-hub","graduation":"/graduation-hub",
+                "office-party":"/office-party-hub","kitty-party":"/kitty-party-hub",
+                "wedding":"/wedding-hub","bachelorette":"/bachelorette-hub",
+                "farewell":"/farewell-hub","retirement":"/retirement-hub",
+                "diwali-party":"/diwali-party-hub","holi-party":"/holi-party-hub",
+                "navratri-garba":"/navratri-garba-hub",
+              };
+              const slug = slugMap[label] || "birthday-party";
+              const _occ = OCCASIONS.find(o => o.id === slug) || {};
+              const emoji = _occ.icon || "🎉";
+              const accent = _occ.color || "#C47A2E";
               const isHovered = hoveredOcc === label;
               const isDimmed  = hoveredOcc !== null && !isHovered;
-              const _tg = ["linear-gradient(150deg,#2D1205,#1A0A03)","linear-gradient(150deg,#1E0A20,#2A0E2E)","linear-gradient(150deg,#0C1A08,#162A0E)","linear-gradient(150deg,#0A1528,#0F1E38)","linear-gradient(150deg,#201005,#301808)"];
-              const tileBg = _tg[i % _tg.length];
               return (
                 <motion.button
                   key={label}
                   onClick={() => {
-                    const slugMap = {
-                      "Birthday":"birthday-party","Anniversary":"anniversary","Baby Shower":"baby-shower",
-                      "First Birthday":"first-birthday","House Party":"get-together","Housewarming":"housewarming",
-                      "Get Together":"get-together","Naming Ceremony":"naming-ceremony",
-                      "Gender Reveal":"gender-reveal","Newborn Welcome":"newborn-welcome",
-                      "Kitty Party":"kitty-party","Graduation":"graduation",
-                      "Office Party":"office-party","Wedding":"wedding","Bachelorette":"bachelorette",
-                      "Farewell":"farewell","Retirement":"retirement","Diwali Party":"diwali-party",
-                      "Holi Party":"holi-party","Navratri Garba":"navratri-garba",
-                    };
-                    const hubMap = {
-                      "birthday-party":"/birthday-hub","first-birthday":"/first-birthday-hub",
-                      "anniversary":"/anniversary-hub","baby-shower":"/baby-shower-hub",
-                      "gender-reveal":"/gender-reveal-hub","newborn-welcome":"/newborn-welcome-hub",
-                      "get-together":"/get-together-hub","housewarming":"/housewarming-hub",
-                      "naming-ceremony":"/naming-ceremony-hub","graduation":"/graduation-hub",
-                      "office-party":"/office-party-hub","kitty-party":"/kitty-party-hub",
-                      "wedding":"/wedding-hub","bachelorette":"/bachelorette-hub",
-                      "farewell":"/farewell-hub","retirement":"/retirement-hub",
-                      "diwali-party":"/diwali-party-hub","holi-party":"/holi-party-hub",
-                      "navratri-garba":"/navratri-garba-hub",
-                    };
-                    const slug = slugMap[label] || "birthday-party";
-                    const _occ = OCCASIONS.find(o=>o.id===slug)||{};
-                    setOccModal({ label, slug, hub: hubMap[slug] || "/birthday-hub", photo, icon: _occ.icon||"🎉", color: _occ.color||"#C47A2E", step: 1 });
+                    setOccModal({ label, slug, hub: hubMap[slug] || "/birthday-hub", photo, icon: emoji, color: accent, step: 1 });
                   }}
                   initial={{ opacity: 0, y: 20, scale: 0.95 }}
                   whileInView={{ opacity: 1, y: 0, scale: 1 }}
                   viewport={{ once: true, amount: 0.1 }}
                   transition={{ type: "spring", stiffness: 260, damping: 22, delay: i * 0.04 }}
-                  whileHover={{ y: -5, scale: 1.02, boxShadow: "0 14px 36px rgba(28,14,4,0.22)" }}
+                  whileHover={{ y: -6, scale: 1.03 }}
                   onHoverStart={() => setHoveredOcc(label)}
                   onHoverEnd={() => setHoveredOcc(null)}
                   className="occ-strip-card"
@@ -1877,34 +1877,97 @@ const Home = () => {
                     position: "relative",
                     flexShrink: 0,
                     width: 136,
-                    height: 192,
-                    borderRadius: 16,
+                    height: 200,
+                    borderRadius: 18,
                     overflow: "hidden",
-                    border: "none",
-                    background: tileBg,
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    background: "#0E0603",
                     cursor: "pointer",
                     padding: 0,
-                    display: "block",
-                    opacity: isDimmed ? 0.52 : 1,
-                    transition: "opacity 0.28s ease",
-                    boxShadow: "0 2px 8px rgba(28,14,4,0.08)",
+                    display: "flex",
+                    flexDirection: "column",
+                    opacity: isDimmed ? 0.45 : 1,
+                    transition: "opacity 0.25s ease, box-shadow 0.25s ease",
+                    boxShadow: isHovered
+                      ? `0 16px 40px rgba(0,0,0,0.35), 0 0 0 1.5px ${accent}70`
+                      : "0 2px 12px rgba(0,0,0,0.18)",
                   }}
                 >
-                  <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 25% 75%, rgba(196,122,46,0.18) 0%, transparent 55%), radial-gradient(circle at 80% 20%, rgba(255,247,235,0.06) 0%, transparent 50%)" }} />
+                  {/* Emoji area — top 58% */}
+                  <div style={{
+                    flex: "0 0 58%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    position: "relative",
+                    overflow: "hidden",
+                  }}>
+                    {/* Accent glow behind emoji */}
+                    <div style={{
+                      position: "absolute",
+                      inset: 0,
+                      background: `radial-gradient(ellipse 75% 75% at 50% 60%, ${accent}28 0%, transparent 70%)`,
+                    }} />
+                    {/* Subtle top-edge shimmer */}
+                    <div style={{
+                      position: "absolute",
+                      top: 0, left: 0, right: 0,
+                      height: 40,
+                      background: `linear-gradient(to bottom, ${accent}12, transparent)`,
+                    }} />
+                    <motion.span
+                      animate={{ scale: isHovered ? 1.15 : 1 }}
+                      transition={{ type: "spring", stiffness: 320, damping: 22 }}
+                      style={{ fontSize: 44, lineHeight: 1, position: "relative", zIndex: 1, filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.4))" }}
+                    >
+                      {emoji}
+                    </motion.span>
+                  </div>
+
+                  {/* Divider */}
+                  <div style={{ height: 1, background: `linear-gradient(to right, transparent, ${accent}50, transparent)`, margin: "0 16px" }} />
+
+                  {/* Label area — bottom 42% */}
+                  <div style={{
+                    flex: "0 0 42%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "10px 12px 14px",
+                    background: `linear-gradient(to bottom, transparent, rgba(0,0,0,0.3))`,
+                    gap: 6,
+                  }}>
+                    <span style={{
+                      fontFamily: "'Cormorant Garamond', Georgia, serif",
+                      fontWeight: 700,
+                      fontStyle: "italic",
+                      color: "#FFF8EC",
+                      fontSize: label.length > 10 ? 13.5 : 15,
+                      lineHeight: 1.2,
+                      textAlign: "center",
+                      letterSpacing: "-0.01em",
+                    }}>
+                      {label}
+                    </span>
+                    <motion.div
+                      animate={{ opacity: isHovered ? 1 : 0.55, x: isHovered ? 2 : 0 }}
+                      transition={{ duration: 0.18 }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 4,
+                      }}
+                    >
+                      <span style={{ fontSize: 8.5, color: accent, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase" }}>Explore</span>
+                      <span style={{ fontSize: 10, color: accent, lineHeight: 1 }}>→</span>
+                    </motion.div>
+                  </div>
+
+                  {/* Hover border glow */}
                   <motion.div
                     animate={{ opacity: isHovered ? 1 : 0 }}
                     transition={{ duration: 0.18 }}
-                    style={{ position: "absolute", inset: 0, borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.55)", pointerEvents: "none" }}
+                    style={{ position: "absolute", inset: 0, borderRadius: 17, border: `1.5px solid ${accent}60`, pointerEvents: "none" }}
                   />
-                  <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", padding: "16px 12px", textAlign: "center" }}>
-                    <span className="occ-strip-label" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 700, fontStyle: "italic", color: "#FFF8EC", lineHeight: 1.2, textShadow: "0 2px 10px rgba(0,0,0,0.55)", letterSpacing: "-0.01em" }}>{label}</span>
-                    <div style={{ width: 22, height: 1, background: "rgba(196,122,46,0.6)", margin: "10px auto 8px" }} />
-                    <motion.span
-                      animate={{ opacity: isHovered ? 1 : 0.5 }}
-                      transition={{ duration: 0.18 }}
-                      style={{ fontSize: 9, color: "#CCAB4A", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}
-                    >Explore →</motion.span>
-                  </div>
                 </motion.button>
               );
             })}
