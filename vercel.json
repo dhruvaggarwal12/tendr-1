@@ -32,6 +32,10 @@
       "destination": "/qr.html"
     },
     {
+      "source": "/privacy",
+      "destination": "/privacy.html"
+    },
+    {
       "source": "/links",
       "destination": "/social.html"
     },
