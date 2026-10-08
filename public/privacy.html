@@ -40,8 +40,46 @@
   <p><strong>Service Providers:</strong> We use Cloudinary (file storage), Razorpay (payments), and Redis Cloud (temporary session data). These providers process data only as necessary to deliver their service and are bound by confidentiality obligations.</p>
   <p><strong>No Sale of Data:</strong> We do not sell, rent, or trade your personal information to any third party for marketing or advertising purposes.</p>
 
-  <h2>4. Google Sign-In</h2>
-  <p>If you choose to sign in with Google, we request the following scopes: your email address, your name, and your profile picture. We use this information solely to create and identify your Tendr account. We do not access any other Google account data. Your use of Google Sign-In is also subject to <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>.</p>
+  <h2>4. Google User Data — Full Disclosure</h2>
+  <p>Tendr offers Google Sign-In as an optional authentication method, powered by Google OAuth 2.0. This section explains exactly how we access, use, store, and delete Google user data in compliance with the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a>.</p>
+
+  <p><strong>4a. Data Accessed</strong><br/>
+  When you choose to sign in with Google, Tendr requests access to the following scopes only:
+  <br/>— <strong>openid</strong> — to verify your identity via Google's authentication service
+  <br/>— <strong>email</strong> — your Google account email address
+  <br/>— <strong>profile</strong> — your full name and profile picture URL as stored in your Google account
+  <br/><br/>
+  We do not request access to Gmail, Google Drive, Google Calendar, Google Contacts, or any other Google service. We do not access any data beyond the three scopes listed above. We do not store Google OAuth refresh tokens.</p>
+
+  <p><strong>4b. Data Usage</strong><br/>
+  The Google user data we receive is used exclusively for the following purposes:
+  <br/>— <strong>Email address:</strong> Used as your login identifier on Tendr and to send transactional messages (booking confirmations, event reminders, OTPs). Never used for advertising.
+  <br/>— <strong>Name:</strong> Displayed as your display name on your Tendr profile and used to personalise planning documents and vendor communications you initiate.
+  <br/>— <strong>Profile picture URL:</strong> Displayed as your avatar in your Tendr dashboard.
+  <br/><br/>
+  Google user data is never used for advertising, behavioural profiling, or any purpose beyond creating and operating your Tendr account. It is never combined with data from third-party sources for advertising or profiling purposes.</p>
+
+  <p><strong>4c. Data Sharing</strong><br/>
+  Google user data is not sold, rented, or shared with any third party for marketing, advertising, or any commercial purpose. It is processed only by:
+  <br/>— <strong>Our backend infrastructure (Render.com):</strong> The server that verifies your Google token and creates your account. This is a standard cloud hosting provider bound by confidentiality obligations.
+  <br/>— <strong>Our database (MongoDB Atlas):</strong> Where your name, email, and profile picture URL are securely stored as part of your user record.
+  <br/><br/>
+  Vendors on Tendr do not receive your Google user data. When you send a booking enquiry, only the event details you explicitly provide (event type, date, guest count) are shared with the relevant vendor — not your Google account data, and not the fact that you signed in with Google.</p>
+
+  <p><strong>4d. Data Storage and Protection</strong><br/>
+  — All data is transmitted over HTTPS/TLS encryption.
+  <br/>— Your Google-sourced name, email, and profile picture URL are stored in MongoDB Atlas, which encrypts data at rest.
+  <br/>— Google OAuth access tokens used during sign-in are not persisted to our database. Only the resulting profile data (name, email, profile picture URL) is stored.
+  <br/>— Google sign-in pending tokens (used during the authentication handshake) are stored in Redis with a 5–10 minute TTL and are automatically and permanently deleted after expiry.
+  <br/>— Access to the database is restricted to authorised backend services only, with no public access.</p>
+
+  <p><strong>4e. Data Retention and Deletion</strong><br/>
+  — Google user data (name, email, profile picture URL) is retained for as long as your Tendr account is active.
+  <br/>— You may request deletion of your account and all associated data, including Google-sourced data, by emailing <a href="mailto:support@tendr.co.in">support@tendr.co.in</a>. We will complete deletion within 30 days.
+  <br/>— Temporary authentication tokens (Redis) are automatically deleted within 5–10 minutes of creation regardless of account status.
+  <br/>— On account deletion, your Google-sourced name, email, and profile picture URL are permanently removed from our database and are not retained in any backup beyond our standard 30-day backup rotation window.</p>
+
+  <p>Your use of Google Sign-In is also governed by <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>.</p>
 
   <h2>5. Data Retention</h2>
   <p>We retain your personal data for as long as your account is active or as needed to provide the service. You can request account deletion by contacting us at <a href="mailto:support@tendr.co.in">support@tendr.co.in</a>. We will delete your personal data within 30 days of your request, except where retention is required by applicable law.</p>
