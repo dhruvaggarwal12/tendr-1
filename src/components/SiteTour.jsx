@@ -6,6 +6,18 @@ const GOLD = "#C47A2E";
 const GOLD_LIGHT = "#E8A84A";
 const font = "'Outfit', sans-serif";
 
+const FEATURES = [
+  { emoji: "💌", label: "Wedding Stationeries" },
+  { emoji: "🎁", label: "Gift Hampers" },
+  { emoji: "🎊", label: "Fun Activities" },
+  { emoji: "🏛️", label: "Party Places" },
+  { emoji: "✨", label: "Occasions" },
+  { emoji: "📸", label: "Community Wall" },
+  { emoji: "🎞️", label: "Memories" },
+  { emoji: "📄", label: "Event Documents" },
+  { emoji: "🏠", label: "Your Dashboard" },
+];
+
 // Only what's visible on the landing page — other pages have their own tours
 const STEPS = [
   {
@@ -13,14 +25,21 @@ const STEPS = [
     placement: "center",
     disableBeacon: true,
     title: "Welcome to Tendr 🎉",
-    content: "Plan your event, find verified vendors, and book everything across Delhi NCR — all in one place. Here's a quick look at what's on this page.",
+    content: "Plan your event, find verified vendors, and book everything across Delhi NCR — all in one place. Here's a quick look at what's here.",
+  },
+  {
+    target: '[data-tour="hero-ctas"]',
+    placement: "bottom",
+    disableBeacon: true,
+    title: "Two ways to start",
+    content: '"Book Vendors" lets you browse and filter the full directory. "Plan an Occasion" walks you through a step-by-step flow — pick your occasion, date, budget and we do the rest.',
   },
   {
     target: '[data-tour="search-bar"]',
     placement: "bottom",
     disableBeacon: true,
     title: "Search anything 🔍",
-    content: 'Type naturally — "photographer under ₹20K in Noida" or "decorator for 150 guests". It finds vendors, navigates to tools, and understands budgets and locations.',
+    content: 'Type naturally — "photographer under ₹20K in Noida" or "decorator for 150 guests". Finds vendors, navigates to tools, understands budgets and locations.',
   },
   {
     target: '[data-tour="nav-browse"]',
@@ -34,27 +53,35 @@ const STEPS = [
     placement: "bottom",
     disableBeacon: true,
     title: "Plan Your Event",
-    content: "Pick vendors one by one, or let Smart Plan pick the best combination within your total budget automatically. Two modes, same great result.",
+    content: "Pick vendors one by one, or let Smart Plan pick the best combo within your total budget automatically.",
   },
   {
     target: '[data-tour="nav-tools"]',
     placement: "bottom",
     disableBeacon: true,
     title: "Event Tools",
-    content: "Budget Allocator, Timeline Builder, Guest List, Seating Chart and more — free tools that make event planning actually manageable.",
+    content: "Budget Allocator, Timeline Builder, Guest List, Seating Chart and more — free tools that make event planning manageable.",
+  },
+  {
+    target: "body",
+    placement: "center",
+    disableBeacon: true,
+    title: "And there's a lot more…",
+    content: "__FEATURES__",
   },
 ];
 
 function TourTooltip({ continuous, index, step, backProps, closeProps, primaryProps, tooltipProps, size }) {
   const isLast = index === size - 1;
+  const isFeaturesStep = step.content === "__FEATURES__";
   return (
     <div
       {...tooltipProps}
       style={{
         background: "#FFFCF5",
         borderRadius: 18,
-        maxWidth: 360,
-        width: 340,
+        maxWidth: isFeaturesStep ? 440 : 360,
+        width: isFeaturesStep ? 420 : 340,
         boxShadow: "0 20px 60px rgba(28,9,0,0.14), 0 0 0 1.5px rgba(196,122,46,0.18)",
         fontFamily: font,
         overflow: "hidden",
@@ -92,14 +119,32 @@ function TourTooltip({ continuous, index, step, backProps, closeProps, primaryPr
         </div>
 
         {step.title && (
-          <div style={{ fontSize: 18, fontWeight: 800, color: "#1C0900", marginBottom: 8, lineHeight: 1.25, letterSpacing: "-0.01em" }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "#1C0900", marginBottom: isFeaturesStep ? 14 : 8, lineHeight: 1.25, letterSpacing: "-0.01em" }}>
             {step.title}
           </div>
         )}
 
-        <div style={{ fontSize: 13.5, lineHeight: 1.7, color: "#5A3520" }}>
-          {step.content}
-        </div>
+        {isFeaturesStep ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+            {FEATURES.map(({ emoji, label }) => (
+              <div key={label} style={{
+                background: "#fff",
+                border: "1.5px solid rgba(196,122,46,0.14)",
+                borderRadius: 12,
+                padding: "10px 8px",
+                textAlign: "center",
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
+              }}>
+                <span style={{ fontSize: 22 }}>{emoji}</span>
+                <span style={{ fontSize: 10.5, fontWeight: 700, color: "#3A1E0A", lineHeight: 1.3 }}>{label}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ fontSize: 13.5, lineHeight: 1.7, color: "#5A3520" }}>
+            {step.content}
+          </div>
+        )}
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 18, gap: 10 }}>
           <button
