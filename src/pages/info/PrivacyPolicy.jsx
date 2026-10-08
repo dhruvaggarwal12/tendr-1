@@ -58,6 +58,16 @@ const SECTIONS = [
     ],
   },
   {
+    title: "Google User Data — Full Disclosure",
+    items: [
+      { heading: "Data Accessed", body: "When you sign in with Google, Tendr requests three scopes only: openid (to verify your identity), email (your Google account email address), and profile (your full name and profile picture URL). We do not request access to Gmail, Google Drive, Google Calendar, Google Contacts, or any other Google service. We do not store Google OAuth refresh tokens." },
+      { heading: "Data Usage", body: "Email address: used as your login identifier and for transactional messages (booking confirmations, event reminders). Name: displayed on your Tendr profile and used to personalise planning documents. Profile picture URL: displayed as your avatar in your dashboard.\n\nGoogle user data is never used for advertising, behavioural profiling, or any purpose beyond operating your Tendr account. It is never combined with third-party data for advertising." },
+      { heading: "Data Sharing", body: "Google user data is not sold, rented, or shared with any third party for marketing or advertising. It is processed only by our backend infrastructure (Render.com, standard cloud hosting) and our database (MongoDB Atlas) for the purpose of running your account.\n\nVendors on Tendr do not receive your Google user data. Only the event details you explicitly provide in a booking enquiry are shared with vendors." },
+      { heading: "Data Storage & Protection", body: "All data is transmitted over HTTPS/TLS. Your name, email, and profile picture URL are stored in MongoDB Atlas, encrypted at rest. Google OAuth access tokens used during sign-in are not persisted — only the resulting profile data is stored. Google sign-in pending tokens are held in Redis with a 5–10 minute TTL and auto-deleted after expiry. Database access is restricted to authorised backend services only." },
+      { heading: "Data Retention & Deletion", body: "Google-sourced data (name, email, profile picture URL) is retained for as long as your Tendr account is active. To request deletion, email support@tendr.co.in — we will delete all Google-sourced data within 30 days. Temporary authentication tokens in Redis are deleted automatically within 10 minutes. On account deletion, Google-sourced data is permanently removed and not retained beyond our 30-day backup rotation window." },
+    ],
+  },
+  {
     title: "Cookies & Local Storage",
     items: [
       { heading: "What We Store", body: "We use browser localStorage to remember your session token, UI preferences (e.g. dark mode), and tool data (timelines, budgets) you create locally." },
