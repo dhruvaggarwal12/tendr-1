@@ -211,19 +211,15 @@ export default function SiteTour({ onDone } = {}) {
     <Joyride
       steps={STEPS}
       run={tourActive}
-      callback={handleCallback}
+      onEvent={handleCallback}
       tooltipComponent={TourTooltip}
       continuous
       scrollToFirstStep
-      showSkipButton
-      disableOverlay
-      floaterProps={{ disableAnimation: false }}
-      styles={{
-        options: {
-          zIndex: 10000,
-          primaryColor: GOLD,
-          arrowColor: "#FFFCF5",
-        },
+      options={{
+        hideOverlay: true,
+        zIndex: 10000,
+        primaryColor: GOLD,
+        arrowColor: "#FFFCF5",
       }}
     />
   );
