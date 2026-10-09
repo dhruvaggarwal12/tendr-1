@@ -284,6 +284,7 @@ const Navbar = ({
         { label: "📷 Decor Analyser",   href: "/decor-analyser" },
         { label: "Planning Timeline",   href: "/timeline-picker" },
         { label: "Budget Allocator",    href: "/budget-picker" },
+        { label: "Price Estimator",     href: "/price-estimator" },
         { label: "Find by Style",       href: "/find-by-style" },
       ],
     },

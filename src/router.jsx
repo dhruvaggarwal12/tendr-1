@@ -234,6 +234,7 @@ const Timeline            = lazy(() => import('./pages/timeline/Timeline'));
 const TimelinePicker      = lazy(() => import('./pages/timeline/TimelinePicker'));
 const BudgetPicker        = lazy(() => import('./pages/budget/BudgetPicker.jsx'));
 const BudgetAllocator     = lazy(() => import('./pages/budget/BudgetAllocator.jsx'));
+const PriceEstimator      = lazy(() => import('./pages/budget/PriceEstimator.jsx'));
 const WeddingStationery   = lazy(() => import('./pages/stationery/WeddingStationery.jsx'));
 const StationeryCustomizer= lazy(() => import('./pages/stationery/StationeryCustomizer.jsx'));
 const BookingReviewPage   = lazy(() => import('./pages/booking/BookingReviewPage'));
@@ -665,6 +666,11 @@ const router = createBrowserRouter([
   {
     path: '/budget-allocator',
     element: <BudgetAllocator />,
+    errorElement: <ErrorPage />
+  },
+  {
+    path: '/price-estimator',
+    element: <PriceEstimator />,
     errorElement: <ErrorPage />
   },
   {
