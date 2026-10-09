@@ -9,11 +9,15 @@ const MOBILE_INTRO_KEY = 'tendr_intro_seen';
 const SERIF = "'Cormorant Garamond', Georgia, serif";
 const SANS = "'Outfit', sans-serif";
 
+// Note: '/plan' and '/tools' aren't real routes — there's no single page for either.
+// "Plan an Occasion" scrolls to the occasion picker on the homepage (same anchor
+// HamburgerNav's own "Plan by Occasion" link uses); "Use Tools" goes to the Budget
+// Allocator as the single most representative tool page.
 const INTENTS = [
   { label: 'Book Vendors', emoji: '🛍️', path: '/search', desc: 'Caterers, decorators, photographers & more' },
-  { label: 'Plan an Occasion', emoji: '📋', path: '/plan', desc: 'Budget, guest list, timelines & checklist' },
+  { label: 'Plan an Occasion', emoji: '📋', path: '/', anchor: 'plan-by-occasion', desc: 'Budget, guest list, timelines & checklist' },
   { label: 'Party Hub', emoji: '🎮', path: '/join-room', desc: 'Games & activities for your guests' },
-  { label: 'Use Tools', emoji: '✨', path: '/tools', desc: 'Seating chart, budget planner & more' },
+  { label: 'Use Tools', emoji: '✨', path: '/budget-picker', desc: 'Seating chart, budget planner & more' },
   { label: 'Just Exploring', emoji: '👀', path: null, desc: 'Have a look around at my own pace' },
 ];
 
@@ -297,7 +301,7 @@ function IntentPicker({ onSelect }) {
             <button
               key={intent.label}
               className="fte-intent-card"
-              onClick={() => onSelect(intent.path)}
+              onClick={() => onSelect(intent.path, intent.anchor)}
               style={{
                 background: 'rgba(196,122,46,0.09)',
                 border: '1px solid rgba(196,122,46,0.22)',
@@ -342,10 +346,15 @@ export default function FirstTimeExperience() {
     } catch { return 'done'; }
   });
 
-  const finish = (path) => {
+  const finish = (path, anchor) => {
     try { localStorage.setItem(LS_KEY, '1'); } catch {}
     setPhase('done');
-    if (path) navigate(path);
+    if (path) {
+      navigate(path);
+      if (anchor) {
+        setTimeout(() => document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth' }), 150);
+      }
+    }
   };
 
   const handleYes = () => {

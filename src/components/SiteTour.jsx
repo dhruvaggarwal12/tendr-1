@@ -71,8 +71,20 @@ const STEPS = [
   },
 ];
 
-function TourTooltip({ continuous, index, step, backProps, closeProps, primaryProps, tooltipProps, size }) {
+function TourTooltip({ index, step, backProps, skipProps, primaryProps, tooltipProps, size, onFinish }) {
   const isLast = index === size - 1;
+  // Belt-and-suspenders: in addition to onEvent's STATUS.FINISHED/SKIPPED detection,
+  // call onFinish directly from the buttons that end the tour, so a library-side
+  // quirk in status propagation can't leave the app stuck thinking the tour is
+  // still active (which was blocking clicks sitewide — see SiteTour fix history).
+  const handlePrimaryClick = (e) => {
+    primaryProps.onClick(e);
+    if (isLast) onFinish?.();
+  };
+  const handleSkipClick = (e) => {
+    skipProps.onClick(e);
+    onFinish?.();
+  };
   const isFeaturesStep = step.content === "__FEATURES__";
   return (
     <div
@@ -148,7 +160,8 @@ function TourTooltip({ continuous, index, step, backProps, closeProps, primaryPr
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 18, gap: 10 }}>
           <button
-            {...closeProps}
+            {...skipProps}
+            onClick={handleSkipClick}
             style={{
               background: "none", border: "none", fontSize: 12,
               color: "rgba(90,53,32,0.4)", cursor: "pointer",
@@ -174,6 +187,7 @@ function TourTooltip({ continuous, index, step, backProps, closeProps, primaryPr
             )}
             <button
               {...primaryProps}
+              onClick={handlePrimaryClick}
               style={{
                 padding: "9px 22px", borderRadius: 10, border: "none",
                 background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`,
@@ -195,14 +209,23 @@ function TourTooltip({ continuous, index, step, backProps, closeProps, primaryPr
 export default function SiteTour({ onDone } = {}) {
   const { tourActive, endTour } = useTour();
 
+  const finishTour = useCallback(() => {
+    endTour();
+    onDone?.();
+  }, [endTour, onDone]);
+
   const handleCallback = useCallback(
     (data) => {
       if ([STATUS.FINISHED, STATUS.SKIPPED].includes(data.status)) {
-        endTour();
-        onDone?.();
+        finishTour();
       }
     },
-    [endTour, onDone]
+    [finishTour]
+  );
+
+  const tooltipComponent = useCallback(
+    (props) => <TourTooltip {...props} onFinish={finishTour} />,
+    [finishTour]
   );
 
   if (!tourActive) return null;
@@ -212,7 +235,7 @@ export default function SiteTour({ onDone } = {}) {
       steps={STEPS}
       run={tourActive}
       onEvent={handleCallback}
-      tooltipComponent={TourTooltip}
+      tooltipComponent={tooltipComponent}
       continuous
       scrollToFirstStep
       options={{
