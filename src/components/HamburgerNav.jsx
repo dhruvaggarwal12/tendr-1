@@ -264,6 +264,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         onClickOverride: () => { try { const d = localStorage.getItem("tendr_timeline_v2"); const s = d ? JSON.parse(d) : null; if (s?.phases?.length > 0) { setTimelinePopupOpen(true); } else { window.open("/timeline-picker", "_blank"); } } catch { window.open("/timeline-picker", "_blank"); } } },
       { label: "Budget Allocator", href: "/budget-picker", activePaths: ["/budget-picker","/budget-allocator"],
         onClickOverride: () => { try { const d = localStorage.getItem("tendr_budget_v2"); const s = d ? JSON.parse(d) : null; if (s?.totalBudget) { setBudgetPopupOpen(true); } else { window.open("/budget-picker", "_blank"); } } catch { window.open("/budget-picker", "_blank"); } } },
+      { label: "Price Estimator",  href: "/price-estimator", activePaths: ["/price-estimator"] },
       { label: "Equipment Planner", href: "/equipment-list", activePaths: ["/equipment-list"], onClickOverride: () => { close(); window.open("/equipment-list", "_blank"); } },
       { label: "Invitation Builder", href: "/invitation-builder", activePaths: ["/invitation-builder"], onClickOverride: () => { close(); window.open("/invitation-builder", "_blank"); } },
     ]},

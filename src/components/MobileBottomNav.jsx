@@ -172,6 +172,7 @@ function BottomNavInner() {
   const PRODUCTS = [
     { icon: ic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>), label: "Timeline",         href: "/timeline-picker" },
     { icon: ic(<><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></>), label: "Budget Allocator", href: "/budget-picker" },
+    { icon: ic(<><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="11" y2="15"/><line x1="14" y1="15" x2="16" y2="15"/><line x1="8" y1="18" x2="11" y2="18"/><line x1="14" y1="18" x2="16" y2="18"/></>), label: "Price Estimator", href: "/price-estimator" },
     { icon: ic(<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></>), label: "Find by Style",    href: "/find-by-style" },
   ];
 

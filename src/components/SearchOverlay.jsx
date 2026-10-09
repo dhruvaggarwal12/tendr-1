@@ -37,6 +37,7 @@ const ALL_PAGES = [
   { text: "Fun Activities",         href: "/fun-activities",     icon: "🎭" },
   { text: "Wedding Stationeries",   href: "/stationery",         icon: "💒" },
   { text: "Budget Allocator",       href: "/budget-picker",      icon: "💰" },
+  { text: "Price Estimator",        href: "/price-estimator",    icon: "🧮" },
   { text: "Event Checklist",        href: "/checklist",          icon: "✅" },
   { text: "Timeline Planner",       href: "/timeline-picker",    icon: "🕐" },
   { text: "Invitation Builder",     href: "/invitation",         icon: "💌" },
