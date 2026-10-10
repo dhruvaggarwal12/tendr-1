@@ -81,6 +81,13 @@ const HUB_ROUTES = {
   "navratri-garba":  "/navratri-garba-hub",
 };
 
+// Occasion slug -> the occasion name used as a key in src/data/pricingData.json.
+// Most occasion names match directly; only these two differ.
+const PRICE_ESTIMATOR_OCCASION = {
+  "birthday-party": "Birthday",
+  "anniversary":    "Anniversary",
+};
+
 const HERO_FEATURES = [
   {
     tag: "Budget Allocator",
@@ -3352,6 +3359,17 @@ const Home = () => {
                         <div style={{fontSize:15,fontWeight:700,color:"#1C0900",marginBottom:2}}>Jump Straight In</div>
                         <div style={{fontSize:11.5,color:"rgba(28,9,0,0.5)",lineHeight:1.4}}>Skip theme — go directly to vendors</div>
                       </div>
+                    </button>
+                    {/* Price estimate — only shown inside "Plan the Party", not alongside Party Hub */}
+                    <button
+                      onClick={()=>{
+                        setOccModal(null);
+                        const occName = PRICE_ESTIMATOR_OCCASION[occModal.slug] || occModal.label;
+                        navigate(`/price-estimator?occasion=${encodeURIComponent(occName)}`);
+                      }}
+                      style={{display:"block",width:"100%",textAlign:"center",marginTop:4,padding:"9px 0",border:"none",background:"none",color:g,fontSize:12.5,fontWeight:700,cursor:"pointer",fontFamily:f}}
+                    >
+                      Not sure on budget? Get a quick estimate →
                     </button>
                   </div>
                 )}

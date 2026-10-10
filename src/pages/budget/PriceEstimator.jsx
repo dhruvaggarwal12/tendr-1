@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import HamburgerNav from "../../components/HamburgerNav";
 import {
   getOccasionNames,
@@ -27,7 +28,11 @@ function keyOf(category, idx) {
 }
 
 export default function PriceEstimator() {
-  const [occasion, setOccasion] = useState(OCCASIONS[0]);
+  const [searchParams] = useSearchParams();
+  const requestedOccasion = searchParams.get("occasion");
+  const [occasion, setOccasion] = useState(
+    OCCASIONS.includes(requestedOccasion) ? requestedOccasion : OCCASIONS[0]
+  );
   const [guestCount, setGuestCount] = useState(50);
   const [selected, setSelected] = useState({}); // key -> { qty }
   const [expandedCats, setExpandedCats] = useState({}); // category -> bool
