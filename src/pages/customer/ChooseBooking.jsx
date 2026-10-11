@@ -21,31 +21,37 @@ const IconSearch = () => (
     <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
   </svg>
 );
+const IconGrid = () => (
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+    <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+  </svg>
+);
+const IconBuild = () => (
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+  </svg>
+);
 const IconSparkle = () => (
   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-6.26L4 10l5.91-1.74z"/>
   </svg>
 );
-const IconChat = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-  </svg>
-);
 
 const FLOWS = [
   {
-    type: "you-do-it",
+    type: "search",
     Icon: IconSearch,
-    title: "Book It Yourself",
-    tag: "DIY",
-    subtitle: "Browse profiles, compare vendors, book at your own pace — full control, zero commitment.",
+    title: "Search",
+    tag: "Fastest",
+    subtitle: "Best when you already know what you want — type it and jump straight to matching vendors.",
     steps: [
-      "Fill event details in 2 minutes",
-      "Browse vendors by category & budget",
-      "Chat directly to confirm pricing",
-      "Finalise & pay when you're ready",
+      "Type what you need",
+      "e.g. \"photographer under ₹20K\"",
+      "Jump straight to matches",
+      "Chat & book directly",
     ],
-    cta: "Browse Vendors",
+    cta: "Search Now",
     accent: gold,
     cardBg: "#FFFDF7",
     borderColor: `rgba(196,122,46,0.22)`,
@@ -54,21 +60,67 @@ const FLOWS = [
     ctaBg: `linear-gradient(135deg,${gold},${goldLt})`,
     ctaShadow: "rgba(196,122,46,0.4)",
     tag3D: "rgba(196,122,46,0.12)",
+    route: "/search",
+  },
+  {
+    type: "browse",
+    Icon: IconGrid,
+    title: "Browse",
+    tag: "Explore",
+    subtitle: "Best when you're not sure yet — browse the full directory and filter by category, budget, location.",
+    steps: [
+      "Filter by category & budget",
+      "Compare vendor profiles",
+      "Shortlist your favourites",
+      "Chat to confirm pricing",
+    ],
+    cta: "Browse Vendors",
+    accent: "#2563eb",
+    cardBg: "#F7FAFF",
+    borderColor: "rgba(37,99,235,0.2)",
+    shadowColor: "rgba(37,99,235,0.16)",
+    iconBg: "rgba(37,99,235,0.1)",
+    ctaBg: "linear-gradient(135deg,#2563eb,#3b82f6)",
+    ctaShadow: "rgba(37,99,235,0.4)",
+    tag3D: "rgba(37,99,235,0.1)",
+    route: "/listings",
+  },
+  {
+    type: "you-do-it",
+    Icon: IconBuild,
+    title: "Build a Package",
+    tag: "Full Control",
+    subtitle: "Best when you want to choose every vendor yourself — pick one by one and build your own package.",
+    steps: [
+      "Fill event details in 2 minutes",
+      "Pick a vendor per category",
+      "Chat directly to confirm pricing",
+      "Finalise & pay when you're ready",
+    ],
+    cta: "Start Building",
+    accent: "#7c3aed",
+    cardBg: "#FAF8FF",
+    borderColor: "rgba(124,58,237,0.2)",
+    shadowColor: "rgba(124,58,237,0.16)",
+    iconBg: "rgba(124,58,237,0.1)",
+    ctaBg: "linear-gradient(135deg,#7c3aed,#9333ea)",
+    ctaShadow: "rgba(124,58,237,0.4)",
+    tag3D: "rgba(124,58,237,0.1)",
     route: null,
   },
   {
     type: "let-us-do-it",
     Icon: IconSparkle,
-    title: "Smart Booking",
+    title: "Get a Package",
     tag: "Recommended",
-    subtitle: "Tell us your budget once. We auto-select the best vendor package and coordinate everything.",
+    subtitle: "Best when you're short on time — tell us your budget and we'll assemble a complete package instantly.",
     steps: [
       "Fill event details in 2 minutes",
       "Set budget per service category",
       "Get a complete package instantly",
       "Confirm & we handle the rest",
     ],
-    cta: "Build My Package",
+    cta: "Get My Package",
     accent: "#fff",
     cardBg: `linear-gradient(145deg,${inkMid},${ink})`,
     borderColor: `rgba(204,171,74,0.35)`,
@@ -79,29 +131,6 @@ const FLOWS = [
     tag3D: "rgba(204,171,74,0.15)",
     route: null,
     dark: true,
-  },
-  {
-    type: "baat-karo",
-    Icon: IconChat,
-    title: "Baat Karo",
-    tag: "Just Chat",
-    subtitle: "Bas likh do apni requirements — Tendr Team 2 ghante mein reply karegi aur sab handle kar legi.",
-    steps: [
-      "Apni requirements likh do",
-      "Send tap karo",
-      "Team 2 ghante mein reply karegi",
-      "Hum sab coordinate kar lete hain",
-    ],
-    cta: "Start Chat",
-    accent: "#0a7a6e",
-    cardBg: "#F5FFFD",
-    borderColor: "rgba(18,140,126,0.22)",
-    shadowColor: "rgba(18,140,126,0.18)",
-    iconBg: "rgba(37,211,102,0.1)",
-    ctaBg: "linear-gradient(135deg,#25D366,#128C7E)",
-    ctaShadow: "rgba(18,140,126,0.4)",
-    tag3D: "rgba(37,211,102,0.1)",
-    route: "/baat-karo",
   },
 ];
 
@@ -132,7 +161,6 @@ export default function ChooseBooking() {
   const [hoveredCard, setHoveredCard] = useState(null);
 
   const handleChoose = (type, route) => {
-    if (type === "baat-karo") { navigate("/baat-karo"); return; }
     if (route) { navigate(route); return; }
     dispatch(clearVendorCompare());
     dispatch(setBookingType(type));
@@ -154,7 +182,7 @@ export default function ChooseBooking() {
   const CHOOSE_BOOKING_STEPS = [{
     target: "body", placement: "center", disableBeacon: true,
     title: "How would you like to book?",
-    content: "Book yourself, use our Smart Booking, or just chat with our team — all lead to perfect vendors.",
+    content: "Search, browse, build your own package, or let us put one together for you — pick what fits.",
   }];
 
   return (
@@ -203,9 +231,9 @@ export default function ChooseBooking() {
 
           <p style={{
             fontSize:16, fontWeight:400, color:"rgba(255,248,236,0.62)",
-            margin:"0 auto", maxWidth:440, lineHeight:1.7,
+            margin:"0 auto", maxWidth:480, lineHeight:1.7,
           }}>
-            Pick your style — from full DIY to total hands-off. All options start with the same 2-minute form.
+            Pick your style — from a quick search to a fully hands-off package. Each card tells you who it's best for.
           </p>
         </div>
       </div>
@@ -214,7 +242,7 @@ export default function ChooseBooking() {
       <div style={{ maxWidth:1100, margin:"0 auto", padding:"0 20px 80px" }}>
 
         {/* Cards grid — overlaps header slightly */}
-        <div className="cb-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20, marginTop:-36 }}>
+        <div className="cb-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:18, marginTop:-36 }}>
           {FLOWS.map((flow) => {
             const { Icon } = flow;
             const isHovered = hoveredCard === flow.type;
@@ -347,7 +375,7 @@ export default function ChooseBooking() {
           .cb-grid { grid-template-columns: 1fr !important; gap: 14px !important; margin-top: -20px !important; }
           .cb-card { padding: 22px 18px 18px !important; border-radius: 18px !important; }
         }
-        @media (min-width: 681px) and (max-width: 960px) {
+        @media (min-width: 681px) and (max-width: 1100px) {
           .cb-grid { grid-template-columns: repeat(2,1fr) !important; }
         }
       `}</style>

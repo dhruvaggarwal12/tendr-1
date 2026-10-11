@@ -242,19 +242,14 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
   const NAV_SECTIONS = [
     { label: "Vendors", items: [
-      { label: "Browse Vendors",     href: "/listings", onClickOverride: handleBrowseVendors, disabled: browseDisabled, activePaths: ["/listings", "/search", "/vendor/"] },
+      { label: "Book Vendors",       href: "/booking", activePaths: ["/booking", "/plan-event", "/listings", "/search", "/baat-karo"] },
+      { label: "Plan an Occasion",   href: "/", onClickOverride: () => { close(); navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 150); } },
       { label: "Register as Vendor", href: "/vendor/register" },
     ]},
     { label: "Our Products", items: [
       { label: "Gift Hampers",          href: "/gifting" },
       { label: "Wedding Stationeries",  href: "/stationery" },
       { label: "Fun Activities",        href: "/fun-activities" },
-    ]},
-    { label: "Plan Your Event", items: [
-      { label: "You Do It",       href: "/booking", activePaths: ["/plan-event"], activeBookingType: "you-do-it" },
-      { label: "Smart Planner",   href: "/booking", activePaths: ["/plan-event"], activeBookingType: "let-us-do-it" },
-      { label: "Baat Karo",       href: "/baat-karo", activePaths: ["/baat-karo"] },
-      { label: "Plan by Occasion", href: "/", onClickOverride: () => { close(); navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 150); } },
     ]},
     { label: "Tools", items: [
       { label: "✦ Plan My Event",  href: "/plan", activePaths: ["/plan","/checklist-picker","/prebuilt-checklist"], tag: "hub", onClickOverride: () => { close(); navigate("/plan"); } },

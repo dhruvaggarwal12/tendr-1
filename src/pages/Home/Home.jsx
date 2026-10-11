@@ -870,15 +870,9 @@ const Home = () => {
   const [roomCodeInput, setRoomCodeInput] = useState("");
   const [hoveredOcc, setHoveredOcc] = useState(null);
   const [occModal, setOccModal] = useState(null);
-  const [showIntro, setShowIntro] = useState(() => {
-    try {
-      if (new URLSearchParams(window.location.search).get("skip_intro") === "1") {
-        localStorage.setItem("tendr_intro_seen", "1");
-        return false;
-      }
-      return !localStorage.getItem("tendr_intro_seen") && window.innerWidth <= 768;
-    } catch { return false; }
-  });
+  // Mobile first-visit intro carousel retired — FirstTimeExperience (mascot + "want a
+  // tour?" prompt) now runs on mobile the same way it already did on desktop.
+  const [showIntro, setShowIntro] = useState(false);
   const [searchParams] = useSearchParams();
   useEffect(() => {
     const occ = searchParams.get("occasion");

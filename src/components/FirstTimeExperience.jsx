@@ -4,7 +4,6 @@ import { useTour } from '../context/TourContext';
 import SiteTour from './SiteTour';
 
 const LS_KEY = 'tendr-ftv-done';
-const MOBILE_INTRO_KEY = 'tendr_intro_seen';
 
 const SERIF = "'Cormorant Garamond', Georgia, serif";
 const SANS = "'Outfit', sans-serif";
@@ -14,7 +13,7 @@ const SANS = "'Outfit', sans-serif";
 // HamburgerNav's own "Plan by Occasion" link uses); "Use Tools" goes to the Budget
 // Allocator as the single most representative tool page.
 const INTENTS = [
-  { label: 'Book Vendors', emoji: '🛍️', path: '/search', desc: 'Caterers, decorators, photographers & more' },
+  { label: 'Book Vendors', emoji: '🛍️', path: '/booking', desc: 'Caterers, decorators, photographers & more' },
   { label: 'Plan an Occasion', emoji: '📋', path: '/', anchor: 'plan-by-occasion', desc: 'Budget, guest list, timelines & checklist' },
   { label: 'Party Hub', emoji: '🎮', path: '/join-room', desc: 'Games & activities for your guests' },
   { label: 'Use Tools', emoji: '✨', path: '/budget-picker', desc: 'Seating chart, budget planner & more' },
@@ -341,7 +340,6 @@ export default function FirstTimeExperience() {
   const [phase, setPhase] = useState(() => {
     try {
       if (localStorage.getItem(LS_KEY)) return 'done';
-      if (window.innerWidth <= 768 && !localStorage.getItem(MOBILE_INTRO_KEY)) return 'done';
       return 'ask';
     } catch { return 'done'; }
   });
