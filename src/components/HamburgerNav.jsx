@@ -243,7 +243,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const NAV_SECTIONS = [
     { label: "Vendors", items: [
       { label: "Book Vendors",       href: "/booking", activePaths: ["/booking", "/plan-event", "/listings", "/search", "/baat-karo"] },
-      { label: "Plan an Occasion",   href: "/", onClickOverride: () => { close(); navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 150); } },
+      { label: "Plan an Occasion",   href: "/", onClickOverride: () => { close(); navigate("/?openOccasionFlow=1"); } },
       { label: "Register as Vendor", href: "/vendor/register" },
     ]},
     { label: "Our Products", items: [

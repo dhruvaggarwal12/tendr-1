@@ -197,8 +197,7 @@ function BottomNavInner() {
     { label: "Tools", paths: ["/checklist","/timeline","/budget","/decor"], onTap: () => { setBrowseOpen(false); setTipsOpen(false); setProductsOpen(o => !o); } },
     { label: "Plan an Occasion", paths: [], onTap: () => {
         setBrowseOpen(false); setProductsOpen(false); setTipsOpen(false);
-        navigate("/");
-        setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 150);
+        navigate("/?openOccasionFlow=1");
       }},
     { label: "Tips", paths: ["/guides","/community"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setPlanOpen(false); setTipsOpen(o => !o); } },
     { label: "Profile",

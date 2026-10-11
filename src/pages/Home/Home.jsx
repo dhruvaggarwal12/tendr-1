@@ -878,6 +878,16 @@ const Home = () => {
     const occ = searchParams.get("occasion");
     if (occ) setPlannerOccasion(occ);
   }, []);
+  // Lets "Plan an Occasion" in the sidebar/bottom-nav open the same picker
+  // modal the homepage's own hero button does, from any page — those links
+  // navigate to "/?openOccasionFlow=1" and this reacts whether that's a full
+  // navigation or just a query-string change while already on the homepage.
+  useEffect(() => {
+    if (searchParams.get("openOccasionFlow") === "1") {
+      setOccasionFlow("grid");
+      setOccasionSearch("");
+    }
+  }, [searchParams]);
   const scrollFaCarousel = (dir) => {
     const el = faCarouselRef.current;
     if (!el) return;
