@@ -4,15 +4,18 @@ const F    = "'Outfit', sans-serif";
 const GOLD = "#C47A2E";
 const CARD = "#FFFCF5";
 
-// Artist/performer service types that belong in People Hub (not in vendor queue)
+// Artist/performer service types — these applications go in the Performers
+// tab. DJ is deliberately NOT here: it's classified as a Vendor application
+// (alongside Caterer/Decorator/Photographer), per explicit instruction.
 const ARTIST_SERVICE_TYPES = [
-  "DJ", "Anchor", "Emcee/Host", "Band", "Singer", "Musician",
+  "Anchor", "Emcee/Host", "Band", "Singer", "Musician",
   "Performer", "Stand-up Comedian", "Magician", "AV Setup",
 ];
 
-// Performer types used for filtering the registered-vendor stats
+// Performer types used for filtering the registered-vendor stats (same
+// DJ-as-vendor classification applies here too, for consistency).
 const PERFORMER_TYPES = [
-  "Anchor", "Band", "Choreographer", "DJ", "Vocalist",
+  "Anchor", "Band", "Choreographer", "Vocalist",
   "Musician", "Comedian", "Magician", "Dancer",
 ];
 
@@ -33,15 +36,19 @@ export default function PeopleHubTab({
   chatRequests = [],
   vendorApplications = [],
 }) {
-  const [subTab, setSubTab]           = useState("applications");
+  const [subTab, setSubTab]           = useState("vendors");
   const [coords, setCoords]           = useState([]);
   const [coordsLoaded, setCoordsLoaded] = useState(false);
   const [coordFilter, setCoordFilter] = useState("all");
   const [coordSearch, setCoordSearch] = useState("");
   const [perfFilter, setPerfFilter]   = useState("all");
   const [perfSearch, setPerfSearch]   = useState("");
+  // Vendor-applications tab (Caterer/Decorator/DJ/Photographer/etc.)
   const [appSearch, setAppSearch]     = useState("");
   const [appFilter, setAppFilter]     = useState("all"); // all | pending | form_sent | approved | rejected
+  // Performer-applications section (within the Performers tab)
+  const [perfAppSearch, setPerfAppSearch] = useState("");
+  const [perfAppFilter, setPerfAppFilter] = useState("all");
   const [appStatusOverrides, setAppStatusOverrides] = useState({}); // { [id]: status }
   const [waPopup, setWaPopup]         = useState(null); // { msg, phone } after approve
 
@@ -75,25 +82,21 @@ export default function PeopleHubTab({
   const performers         = vendorStats.filter(v => PERFORMER_TYPES.includes(v.serviceType));
   const coordAssignedChats = chatRequests.filter(c => c.coordinatorId);
 
-  // Artist applications: VendorApplication entries flagged as isArtist
+  // Artist/performer applications: VendorApplication entries flagged as isArtist
   const artistApplications = vendorApplications.filter(a =>
     a.isArtist === true || ARTIST_SERVICE_TYPES.includes(a.serviceType)
   );
 
-  // Unified applications list: coordinator pending registrations + artist applications
-  // Tag each entry with _kind so the renderer knows which API to call
-  const coordApplications = coords
-    .filter(c => ["pending", "rejected"].includes(c.status))
-    .map(c => ({ ...c, _kind: "coordinator" }));
+  // Everything else (Caterer/Decorator/DJ/Photographer/Venue/etc.) — the
+  // business/vendor applications. These used to have their own duplicate
+  // section in the admin Vendors tab; that's been removed in favour of
+  // showing them here only.
+  const businessApplications = vendorApplications.filter(a =>
+    !(a.isArtist === true || ARTIST_SERVICE_TYPES.includes(a.serviceType))
+  );
 
-  const allApplications = [
-    ...coordApplications,
-    ...artistApplications.map(a => ({ ...a, _kind: "artist" })),
-  ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-  const pendingCoords  = coords.filter(c => c.status === "pending").length;
-  const pendingArtists = artistApplications.filter(a => ["pending", "form_sent"].includes(a.status)).length;
-  const totalPending   = pendingCoords + pendingArtists;
+  const pendingArtists  = artistApplications.filter(a => ["pending", "form_sent"].includes(a.status)).length;
+  const pendingBusiness = businessApplications.filter(a => ["pending", "form_sent"].includes(a.status)).length;
 
   // Filtered lists
   const filteredCoords = coords.filter(c => {
@@ -112,21 +115,31 @@ export default function PeopleHubTab({
     return matchFilter && matchSearch;
   });
 
-  // appFilter: "all" | "pending" | "form_sent" | "approved" | "rejected" | "coordinator" | "artist"
-  const filteredApps = allApplications.filter(a => {
+  // Vendor (business) applications — Caterer/Decorator/DJ/Photographer/etc.
+  const filteredBusinessApps = businessApplications.filter(a => {
     const curStatus = appStatusOverrides[a._id] ?? a.status;
-    let matchFilter = true;
-    if (appFilter === "coordinator") matchFilter = a._kind === "coordinator";
-    else if (appFilter === "artist")  matchFilter = a._kind === "artist";
-    else if (appFilter !== "all")     matchFilter = curStatus === appFilter;
+    const matchFilter = appFilter === "all" || curStatus === appFilter;
     const matchSearch = !appSearch ||
       a.name?.toLowerCase().includes(appSearch.toLowerCase()) ||
-      (a._kind === "artist" ? a.serviceType?.toLowerCase().includes(appSearch.toLowerCase()) : false) ||
-      (a._kind === "artist" ? a.performerArtForm?.toLowerCase().includes(appSearch.toLowerCase()) : false) ||
+      a.serviceType?.toLowerCase().includes(appSearch.toLowerCase()) ||
+      a.businessName?.toLowerCase().includes(appSearch.toLowerCase()) ||
       a.city?.toLowerCase().includes(appSearch.toLowerCase()) ||
       a.address?.toLowerCase().includes(appSearch.toLowerCase());
     return matchFilter && matchSearch;
-  });
+  }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  // Performer/artist applications — shown inside the Performers tab
+  const filteredPerformerApps = artistApplications.filter(a => {
+    const curStatus = appStatusOverrides[a._id] ?? a.status;
+    const matchFilter = perfAppFilter === "all" || curStatus === perfAppFilter;
+    const matchSearch = !perfAppSearch ||
+      a.name?.toLowerCase().includes(perfAppSearch.toLowerCase()) ||
+      a.serviceType?.toLowerCase().includes(perfAppSearch.toLowerCase()) ||
+      a.performerArtForm?.toLowerCase().includes(perfAppSearch.toLowerCase()) ||
+      a.city?.toLowerCase().includes(perfAppSearch.toLowerCase()) ||
+      a.address?.toLowerCase().includes(perfAppSearch.toLowerCase());
+    return matchFilter && matchSearch;
+  }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const coordStats = {
     total:    coords.length,
@@ -138,11 +151,11 @@ export default function PeopleHubTab({
   const perfTypesPresent = PERFORMER_TYPES.filter(t => performers.some(v => v.serviceType === t));
 
   const summaryCards = [
-    { label: "Pending Applications", value: totalPending,               icon: "📥", color: "#D97706" },
-    { label: "Coordinators",          value: coordStats.total,            icon: "🎯", color: "#4F46E5" },
-    { label: "Active Coordinators",   value: coordStats.approved,         icon: "✅", color: "#15803D" },
-    { label: "Registered Performers", value: performers.length,           icon: "🎤", color: GOLD     },
-    { label: "Chats Assigned",        value: coordAssignedChats.length,   icon: "💬", color: "#7C3AED" },
+    { label: "Pending Vendor Apps",    value: pendingBusiness,             icon: "🏪", color: "#D97706" },
+    { label: "Pending Performer Apps", value: pendingArtists,              icon: "🎤", color: "#D97706" },
+    { label: "Coordinators",           value: coordStats.total,            icon: "🎯", color: "#4F46E5" },
+    { label: "Active Coordinators",    value: coordStats.approved,         icon: "✅", color: "#15803D" },
+    { label: "Chats Assigned",         value: coordAssignedChats.length,   icon: "💬", color: "#7C3AED" },
   ];
 
   // ── Shared button helper ──────────────────────────────────────────────────
@@ -154,6 +167,170 @@ export default function PeopleHubTab({
       {children}
     </button>
   );
+
+  // ── Shared application card — used by both the Vendors tab (business apps)
+  // and the Performers tab's pending-applications section (artist apps) ──────
+  const renderAppCard = (app) => {
+    const isCoord = app._kind === "coordinator"; // always false for vendor/performer apps
+    const waNum = app.whatsappNumber || app.phoneNumber;
+    const artEmoji = app.performerArtForm ? (ART_FORM_EMOJI[app.performerArtForm] || "🎨") : null;
+
+    const updateAppStatus = (newStatus) => {
+      const url = isCoord
+        ? `${BASE_URL}/admin/coordinators/${app._id}/status`
+        : `${BASE_URL}/vendor-applications/${app._id}/status`;
+      fetch(url, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        credentials: "include",
+        body: JSON.stringify({ status: newStatus }),
+      })
+        .then(r => r.json())
+        .then(d => {
+          setAppStatusOverrides(prev => ({ ...prev, [app._id]: newStatus }));
+          if (isCoord && d.coordinator) {
+            setCoords(prev => prev.map(c => c._id === app._id ? d.coordinator : c));
+          }
+          if (!isCoord && d.whatsappMsg && d.whatsappPhone) {
+            setWaPopup({ msg: d.whatsappMsg, phone: d.whatsappPhone });
+          }
+        })
+        .catch(() => {});
+    };
+
+    const curStatus = appStatusOverrides[app._id] ?? app.status;
+    const STATUS_STYLES = {
+      pending:    { bg: "#fffbeb", color: "#b45309", border: "#fde68a",  label: "Pending" },
+      form_sent:  { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe",  label: "Form Sent" },
+      approved:   { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0",  label: "Approved" },
+      registered: { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0",  label: "Registered ✓" },
+      rejected:   { bg: "#fff5f5", color: "#c0392b", border: "#fca5a5",  label: "Rejected" },
+    };
+    const curStyle = STATUS_STYLES[curStatus] || STATUS_STYLES.pending;
+
+    return (
+      <div key={app._id} style={{ background: "#fff", borderRadius: 14, border: isCoord ? "1.5px solid rgba(99,102,241,0.25)" : "1.5px solid rgba(196,122,46,0.2)", padding: "16px 20px", boxShadow: "0 2px 10px rgba(139,69,19,0.05)", fontFamily: F }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14, flexWrap: "wrap", marginBottom: 12 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
+              <span style={{ fontWeight: 800, fontSize: 16, color: "#2C1A0E" }}>{app.name}</span>
+
+              {/* Kind badge */}
+              <span style={{ fontSize: 11, fontWeight: 700, background: isCoord ? "rgba(99,102,241,0.1)" : "rgba(196,122,46,0.1)", color: isCoord ? "#4F46E5" : GOLD, border: isCoord ? "1.5px solid rgba(99,102,241,0.25)" : "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "2px 10px" }}>
+                {isCoord ? "🎯 Event Coordinator" : `${app.isArtist ? "🎤" : "🏪"} ${app.serviceType || (app.isArtist ? "Artist" : "Vendor")}`}
+              </span>
+
+              {/* Art form chip (artists only) */}
+              {!isCoord && app.performerArtForm && (
+                <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(99,102,241,0.07)", color: "#4F46E5", border: "1.5px solid rgba(99,102,241,0.2)", borderRadius: 100, padding: "2px 10px" }}>
+                  {artEmoji} {app.performerArtForm}
+                </span>
+              )}
+
+              {/* Business name chip (vendors only) */}
+              {!isCoord && !app.isArtist && app.businessName && (
+                <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(196,122,46,0.07)", color: GOLD, border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "2px 10px" }}>
+                  {app.businessName}
+                </span>
+              )}
+
+              {/* Status badge */}
+              <span style={{ fontSize: 12, fontWeight: 600, padding: "2px 10px", borderRadius: 100, background: curStyle.bg, color: curStyle.color, border: `1px solid ${curStyle.border}` }}>
+                {curStyle.label}
+              </span>
+            </div>
+
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "#5a3a1a" }}>
+              <span>📞 {app.phoneNumber}</span>
+              {app.whatsappNumber && app.whatsappNumber !== app.phoneNumber && <span>💬 {app.whatsappNumber}</span>}
+              {app.email && <span>✉️ {app.email}</span>}
+            </div>
+
+            <div style={{ fontSize: 12, color: "#9B7450", marginTop: 4 }}>
+              📍 {app.city || app.address || "—"} · {app.createdAt ? new Date(app.createdAt).toLocaleDateString("en-IN") : "—"}
+              {isCoord && app.experience && ` · ${app.experience}`}
+              {isCoord && app.eventsPerMonth && ` · ${app.eventsPerMonth} events/mo`}
+            </div>
+
+            {/* Coordinator specializations */}
+            {isCoord && app.specializations?.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 8 }}>
+                {app.specializations.map(s => (
+                  <span key={s} style={{ background: "#F3F4FF", border: "1.5px solid rgba(99,102,241,0.2)", borderRadius: 100, padding: "2px 9px", fontSize: 11, fontWeight: 600, color: "#4F46E5" }}>{s}</span>
+                ))}
+              </div>
+            )}
+
+            {/* Coordinator bio */}
+            {isCoord && app.bio && (
+              <p style={{ fontSize: 12.5, color: "#5A3A1A", lineHeight: 1.6, margin: "8px 0 0", background: "#FFF8EE", borderRadius: 8, padding: "8px 12px", borderLeft: "3px solid #4F46E5" }}>
+                {app.bio}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", borderTop: "1px solid rgba(204,171,74,0.12)", paddingTop: 10 }}>
+          {/* Coordinator flow: pending → approve or reject directly */}
+          {isCoord && curStatus === "pending" && (
+            <>
+              <Btn onClick={() => updateAppStatus("approved")} bg="#15803D" color="#fff">✅ Approve</Btn>
+              <Btn onClick={() => updateAppStatus("rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">❌ Reject</Btn>
+            </>
+          )}
+          {isCoord && curStatus === "approved" && (
+            <span style={{ fontSize: 12, color: "#15803D", fontWeight: 700 }}>✅ Active coordinator</span>
+          )}
+          {isCoord && curStatus === "rejected" && (
+            <Btn onClick={() => updateAppStatus("pending")} bg="#FEF3C7" color="#D97706" border="#FDE68A">↩ Move to Pending</Btn>
+          )}
+
+          {/* Artist flow */}
+          {!isCoord && curStatus === "pending" && app.isArtist && (
+            <>
+              <Btn onClick={() => updateAppStatus("approved")} bg="#15803D" color="#fff">✅ Approve & List</Btn>
+              <Btn onClick={() => updateAppStatus("rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">❌ Reject</Btn>
+            </>
+          )}
+          {/* Legacy non-isArtist pending (old flow) — business/vendor applications */}
+          {!isCoord && curStatus === "pending" && !app.isArtist && (
+            <>
+              <a
+                href={`https://wa.me/91${waNum}?text=${encodeURIComponent(`Hi ${app.name}! 🎉 Your interest in joining Tendr as a ${app.serviceType || "vendor"} has been reviewed.\n\nPlease complete your profile registration here:\n${window.location.origin}/vendor/register\n\nOnce you register, you'll be live on the platform. Welcome to Tendr! 🙌`)}`}
+                target="_blank" rel="noopener noreferrer"
+                onClick={() => setTimeout(() => updateAppStatus("form_sent"), 500)}
+                style={{ padding: "7px 14px", borderRadius: 8, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5 }}
+              >
+                📲 Invite to Register on Tendr
+              </a>
+              <Btn onClick={() => updateAppStatus("rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">❌ Reject</Btn>
+            </>
+          )}
+          {!isCoord && curStatus === "form_sent" && (
+            <>
+              <span style={{ fontSize: 12, color: "#0369a1", fontWeight: 600 }}>📲 Invite sent — waiting for them to register</span>
+              <a
+                href={`https://wa.me/91${waNum}?text=${encodeURIComponent(`Hi ${app.name}! 👋 Just a reminder to complete your Tendr registration:\n${window.location.origin}/vendor/register`)}`}
+                target="_blank" rel="noopener noreferrer"
+                style={{ padding: "6px 12px", borderRadius: 8, background: "#EFF6FF", color: "#0369a1", fontSize: 12, fontWeight: 700, textDecoration: "none", border: "1.5px solid #BFDBFE" }}
+              >
+                🔁 Resend Link
+              </a>
+              <Btn onClick={() => updateAppStatus("registered")} bg="#15803D" color="#fff">✅ Mark Registered</Btn>
+              <Btn onClick={() => updateAppStatus("rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">❌ Reject</Btn>
+            </>
+          )}
+          {!isCoord && curStatus === "rejected" && (
+            <Btn onClick={() => updateAppStatus("pending")} bg="#FEF3C7" color="#D97706" border="#FDE68A">↩ Move to Pending</Btn>
+          )}
+          {!isCoord && (curStatus === "approved" || curStatus === "registered") && (
+            <span style={{ fontSize: 12, color: "#15803D", fontWeight: 700 }}>✅ Registered on platform</span>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-6 overflow-y-auto">
@@ -207,10 +384,10 @@ export default function PeopleHubTab({
       {/* Sub-tab switcher */}
       <div style={{ display: "flex", gap: 8, marginBottom: 24, borderBottom: "2px solid rgba(196,122,46,0.1)", paddingBottom: 14, flexWrap: "wrap" }}>
         {[
-          ["applications", "📥 Applications",  totalPending],
-          ["coordinators", "🎯 Coordinators",  coordStats.total],
-          ["performers",   "🎤 Performers",    performers.length],
+          ["vendors",      "🏪 Vendors",        pendingBusiness],
+          ["performers",   "🎤 Performers",     pendingArtists],
           ["chats",        "💬 Chat Transfers", coordAssignedChats.length],
+          ["coordinators", "🎯 Coordinators",   coordStats.total],
         ].map(([val, label, count]) => (
           <button
             key={val} onClick={() => setSubTab(val)}
@@ -238,28 +415,25 @@ export default function PeopleHubTab({
         ))}
       </div>
 
-      {/* ─── APPLICATIONS ─────────────────────────────────────────────────── */}
-      {subTab === "applications" && (
+      {/* ─── VENDORS (business applications: Caterer/Decorator/DJ/Photographer/etc.) ── */}
+      {subTab === "vendors" && (
         <div>
           <p style={{ fontSize: 13, color: "#9B7450", fontFamily: F, marginBottom: 16 }}>
-            All new registrations — event coordinators and artists/performers — in one queue, newest first.
+            New business/vendor applications — newest first. Artist &amp; performer applications are in the <strong style={{ color: "#2C1A0E" }}>Performers</strong> tab.
           </p>
 
-          {/* Filters */}
           <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
             <input
               value={appSearch}
               onChange={e => setAppSearch(e.target.value)}
-              placeholder="Search by name, type, art form, city…"
+              placeholder="Search by name, category, business, city…"
               style={{ flex: "1 1 220px", padding: "8px 14px", borderRadius: 100, border: "1.5px solid #E5D5C0", fontFamily: F, fontSize: 13, color: "#2C1A0E", background: CARD, outline: "none" }}
             />
             {[
-              ["all",         "All",              allApplications.length],
-              ["pending",     "⏳ Pending",        allApplications.filter(a => (appStatusOverrides[a._id] ?? a.status) === "pending").length],
-              ["form_sent",   "📤 Form Sent",      artistApplications.filter(a => (appStatusOverrides[a._id] ?? a.status) === "form_sent").length],
-              ["coordinator", "🎯 Coordinators",   coordApplications.length],
-              ["artist",      "🎤 Artists",        artistApplications.length],
-              ["rejected",    "❌ Rejected",       allApplications.filter(a => (appStatusOverrides[a._id] ?? a.status) === "rejected").length],
+              ["all",       "All",             businessApplications.length],
+              ["pending",   "⏳ Pending",       businessApplications.filter(a => (appStatusOverrides[a._id] ?? a.status) === "pending").length],
+              ["form_sent", "📤 Form Sent",     businessApplications.filter(a => (appStatusOverrides[a._id] ?? a.status) === "form_sent").length],
+              ["rejected",  "❌ Rejected",      businessApplications.filter(a => (appStatusOverrides[a._id] ?? a.status) === "rejected").length],
             ].map(([val, lbl, cnt]) => (
               <button
                 key={val} onClick={() => setAppFilter(val)}
@@ -271,169 +445,15 @@ export default function PeopleHubTab({
             ))}
           </div>
 
-          {filteredApps.length === 0 ? (
+          {filteredBusinessApps.length === 0 ? (
             <div style={{ textAlign: "center", padding: "56px 0", color: "#9B7450", fontFamily: F }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
-              <p style={{ fontWeight: 700, color: "#2C1A0E", marginBottom: 4 }}>No applications found</p>
-              <p style={{ fontSize: 13 }}>New coordinator and artist registrations appear here automatically.</p>
+              <p style={{ fontWeight: 700, color: "#2C1A0E", marginBottom: 4 }}>No vendor applications found</p>
+              <p style={{ fontSize: 13 }}>New Caterer/Decorator/DJ/Photographer etc. applications appear here automatically.</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {filteredApps.map(app => {
-                const isCoord = app._kind === "coordinator";
-                const waNum = app.whatsappNumber || app.phoneNumber;
-                const artEmoji = app.performerArtForm ? (ART_FORM_EMOJI[app.performerArtForm] || "🎨") : null;
-
-                const updateAppStatus = (newStatus) => {
-                  const url = isCoord
-                    ? `${BASE_URL}/admin/coordinators/${app._id}/status`
-                    : `${BASE_URL}/vendor-applications/${app._id}/status`;
-                  fetch(url, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                    credentials: "include",
-                    body: JSON.stringify({ status: newStatus }),
-                  })
-                    .then(r => r.json())
-                    .then(d => {
-                      setAppStatusOverrides(prev => ({ ...prev, [app._id]: newStatus }));
-                      if (isCoord && d.coordinator) {
-                        setCoords(prev => prev.map(c => c._id === app._id ? d.coordinator : c));
-                      }
-                      // Show WhatsApp popup when backend returns a message
-                      if (!isCoord && d.whatsappMsg && d.whatsappPhone) {
-                        setWaPopup({ msg: d.whatsappMsg, phone: d.whatsappPhone });
-                      }
-                    })
-                    .catch(() => {});
-                };
-
-                const curStatus = appStatusOverrides[app._id] ?? app.status;
-                const STATUS_STYLES = {
-                  pending:    { bg: "#fffbeb", color: "#b45309", border: "#fde68a",  label: "Pending" },
-                  form_sent:  { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe",  label: "Form Sent" },
-                  approved:   { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0",  label: "Approved" },
-                  registered: { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0",  label: "Registered ✓" },
-                  rejected:   { bg: "#fff5f5", color: "#c0392b", border: "#fca5a5",  label: "Rejected" },
-                };
-                const curStyle = STATUS_STYLES[curStatus] || STATUS_STYLES.pending;
-
-                return (
-                  <div key={app._id} style={{ background: "#fff", borderRadius: 14, border: isCoord ? "1.5px solid rgba(99,102,241,0.25)" : "1.5px solid rgba(196,122,46,0.2)", padding: "16px 20px", boxShadow: "0 2px 10px rgba(139,69,19,0.05)", fontFamily: F }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14, flexWrap: "wrap", marginBottom: 12 }}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
-                          <span style={{ fontWeight: 800, fontSize: 16, color: "#2C1A0E" }}>{app.name}</span>
-
-                          {/* Kind badge */}
-                          <span style={{ fontSize: 11, fontWeight: 700, background: isCoord ? "rgba(99,102,241,0.1)" : "rgba(196,122,46,0.1)", color: isCoord ? "#4F46E5" : GOLD, border: isCoord ? "1.5px solid rgba(99,102,241,0.25)" : "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "2px 10px" }}>
-                            {isCoord ? "🎯 Event Coordinator" : `🎤 ${app.serviceType || "Artist"}`}
-                          </span>
-
-                          {/* Art form chip (artists only) */}
-                          {!isCoord && app.performerArtForm && (
-                            <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(99,102,241,0.07)", color: "#4F46E5", border: "1.5px solid rgba(99,102,241,0.2)", borderRadius: 100, padding: "2px 10px" }}>
-                              {artEmoji} {app.performerArtForm}
-                            </span>
-                          )}
-
-                          {/* Status badge */}
-                          <span style={{ fontSize: 12, fontWeight: 600, padding: "2px 10px", borderRadius: 100, background: curStyle.bg, color: curStyle.color, border: `1px solid ${curStyle.border}` }}>
-                            {curStyle.label}
-                          </span>
-                        </div>
-
-                        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "#5a3a1a" }}>
-                          <span>📞 {app.phoneNumber}</span>
-                          {app.whatsappNumber && app.whatsappNumber !== app.phoneNumber && <span>💬 {app.whatsappNumber}</span>}
-                          {app.email && <span>✉️ {app.email}</span>}
-                        </div>
-
-                        <div style={{ fontSize: 12, color: "#9B7450", marginTop: 4 }}>
-                          📍 {app.city || app.address || "—"} · {app.createdAt ? new Date(app.createdAt).toLocaleDateString("en-IN") : "—"}
-                          {isCoord && app.experience && ` · ${app.experience}`}
-                          {isCoord && app.eventsPerMonth && ` · ${app.eventsPerMonth} events/mo`}
-                        </div>
-
-                        {/* Coordinator specializations */}
-                        {isCoord && app.specializations?.length > 0 && (
-                          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 8 }}>
-                            {app.specializations.map(s => (
-                              <span key={s} style={{ background: "#F3F4FF", border: "1.5px solid rgba(99,102,241,0.2)", borderRadius: 100, padding: "2px 9px", fontSize: 11, fontWeight: 600, color: "#4F46E5" }}>{s}</span>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Coordinator bio */}
-                        {isCoord && app.bio && (
-                          <p style={{ fontSize: 12.5, color: "#5A3A1A", lineHeight: 1.6, margin: "8px 0 0", background: "#FFF8EE", borderRadius: 8, padding: "8px 12px", borderLeft: "3px solid #4F46E5" }}>
-                            {app.bio}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Action buttons */}
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", borderTop: "1px solid rgba(204,171,74,0.12)", paddingTop: 10 }}>
-                      {/* Coordinator flow: pending → approve or reject directly */}
-                      {isCoord && curStatus === "pending" && (
-                        <>
-                          <Btn onClick={() => updateAppStatus("approved")} bg="#15803D" color="#fff">✅ Approve</Btn>
-                          <Btn onClick={() => updateAppStatus("rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">❌ Reject</Btn>
-                        </>
-                      )}
-                      {isCoord && curStatus === "approved" && (
-                        <span style={{ fontSize: 12, color: "#15803D", fontWeight: 700 }}>✅ Active coordinator</span>
-                      )}
-                      {isCoord && curStatus === "rejected" && (
-                        <Btn onClick={() => updateAppStatus("pending")} bg="#FEF3C7" color="#D97706" border="#FDE68A">↩ Move to Pending</Btn>
-                      )}
-
-                      {/* Artist flow */}
-                      {!isCoord && curStatus === "pending" && app.isArtist && (
-                        <>
-                          <Btn onClick={() => updateAppStatus("approved")} bg="#15803D" color="#fff">✅ Approve & List</Btn>
-                          <Btn onClick={() => updateAppStatus("rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">❌ Reject</Btn>
-                        </>
-                      )}
-                      {/* Legacy non-isArtist pending (old flow) */}
-                      {!isCoord && curStatus === "pending" && !app.isArtist && (
-                        <>
-                          <a
-                            href={`https://wa.me/91${waNum}?text=${encodeURIComponent(`Hi ${app.name}! 🎉 Your interest in joining Tendr as a ${app.serviceType || "performer"} has been reviewed.\n\nPlease complete your profile registration here:\n${window.location.origin}/vendor/register\n\nOnce you register, you'll be live on the platform. Welcome to Tendr! 🙌`)}`}
-                            target="_blank" rel="noopener noreferrer"
-                            onClick={() => setTimeout(() => updateAppStatus("form_sent"), 500)}
-                            style={{ padding: "7px 14px", borderRadius: 8, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5 }}
-                          >
-                            📲 Invite to Register on Tendr
-                          </a>
-                          <Btn onClick={() => updateAppStatus("rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">❌ Reject</Btn>
-                        </>
-                      )}
-                      {!isCoord && curStatus === "form_sent" && (
-                        <>
-                          <span style={{ fontSize: 12, color: "#0369a1", fontWeight: 600 }}>📲 Invite sent — waiting for them to register</span>
-                          <a
-                            href={`https://wa.me/91${waNum}?text=${encodeURIComponent(`Hi ${app.name}! 👋 Just a reminder to complete your Tendr registration:\n${window.location.origin}/vendor/register`)}`}
-                            target="_blank" rel="noopener noreferrer"
-                            style={{ padding: "6px 12px", borderRadius: 8, background: "#EFF6FF", color: "#0369a1", fontSize: 12, fontWeight: 700, textDecoration: "none", border: "1.5px solid #BFDBFE" }}
-                          >
-                            🔁 Resend Link
-                          </a>
-                          <Btn onClick={() => updateAppStatus("registered")} bg="#15803D" color="#fff">✅ Mark Registered</Btn>
-                          <Btn onClick={() => updateAppStatus("rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">❌ Reject</Btn>
-                        </>
-                      )}
-                      {!isCoord && curStatus === "rejected" && (
-                        <Btn onClick={() => updateAppStatus("pending")} bg="#FEF3C7" color="#D97706" border="#FDE68A">↩ Move to Pending</Btn>
-                      )}
-                      {!isCoord && (curStatus === "approved" || curStatus === "registered") && (
-                        <span style={{ fontSize: 12, color: "#15803D", fontWeight: 700 }}>✅ Registered on platform</span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+              {filteredBusinessApps.map(renderAppCard)}
             </div>
           )}
         </div>
@@ -551,8 +571,56 @@ export default function PeopleHubTab({
       {/* ─── PERFORMERS (registered on platform) ──────────────────────────── */}
       {subTab === "performers" && (
         <div>
+          {/* New performer applications */}
+          <div style={{ marginBottom: 28 }}>
+            <p style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", fontFamily: F, marginBottom: 4 }}>
+              📥 New Applications
+            </p>
+            <p style={{ fontSize: 13, color: "#9B7450", fontFamily: F, marginBottom: 14 }}>
+              Singer, Band, Anchor, Choreographer, Musician, Emcee etc. — newest first.
+            </p>
+
+            <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap", alignItems: "center" }}>
+              <input
+                value={perfAppSearch}
+                onChange={e => setPerfAppSearch(e.target.value)}
+                placeholder="Search by name, art form, city…"
+                style={{ flex: "1 1 220px", padding: "8px 14px", borderRadius: 100, border: "1.5px solid #E5D5C0", fontFamily: F, fontSize: 13, color: "#2C1A0E", background: CARD, outline: "none" }}
+              />
+              {[
+                ["all",       "All",         artistApplications.length],
+                ["pending",   "⏳ Pending",   artistApplications.filter(a => (appStatusOverrides[a._id] ?? a.status) === "pending").length],
+                ["form_sent", "📤 Form Sent", artistApplications.filter(a => (appStatusOverrides[a._id] ?? a.status) === "form_sent").length],
+                ["rejected",  "❌ Rejected",  artistApplications.filter(a => (appStatusOverrides[a._id] ?? a.status) === "rejected").length],
+              ].map(([val, lbl, cnt]) => (
+                <button
+                  key={val} onClick={() => setPerfAppFilter(val)}
+                  style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 700, fontFamily: F, cursor: "pointer", background: perfAppFilter === val ? GOLD : "#fff", color: perfAppFilter === val ? "#fff" : "#9B7450", border: perfAppFilter === val ? "none" : "1.5px solid #E5D5C0", display: "flex", alignItems: "center", gap: 5 }}
+                >
+                  {lbl}
+                  <span style={{ fontSize: 10, background: perfAppFilter === val ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)", color: perfAppFilter === val ? "#fff" : GOLD, borderRadius: 100, padding: "1px 6px" }}>{cnt}</span>
+                </button>
+              ))}
+            </div>
+
+            {filteredPerformerApps.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "32px 0", color: "#9B7450", fontFamily: F }}>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
+                <p style={{ fontWeight: 700, color: "#2C1A0E", fontSize: 13 }}>No performer applications found</p>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {filteredPerformerApps.map(renderAppCard)}
+              </div>
+            )}
+          </div>
+
+          {/* Registered performers */}
+          <p style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", fontFamily: F, marginBottom: 4 }}>
+            ✅ Registered on Platform
+          </p>
           <p style={{ fontSize: 13, color: "#9B7450", fontFamily: F, marginBottom: 14 }}>
-            Performers already registered and active on the platform. For new applications, see the <strong style={{ color: "#2C1A0E" }}>Applications</strong> tab.
+            Performers already live and bookable.
           </p>
           <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap", alignItems: "center" }}>
             <input
