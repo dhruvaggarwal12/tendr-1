@@ -1,5 +1,6 @@
 ﻿// src/pages/Home/Home.jsx
 import React, { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { PERFORMER_TYPES } from "../../components/PerformerSuggestions";
 import { getVendors } from "../../apis/vendorApi";
 import { useNavigate as useNav, useSearchParams } from "react-router-dom";
@@ -3080,7 +3081,13 @@ const Home = () => {
           </button>
         );
 
-        return (
+        // Portal straight to document.body — the router's page-transition wrapper
+        // keeps a permanent transform/will-change on <Outlet/>'s container, which
+        // turns any position:fixed descendant's containing block into that full
+        // page (not the viewport). On a tall page like this one, a "fixed,
+        // top:50%" modal then centers on the page's total height instead of what's
+        // actually visible, landing far off-screen from true center once scrolled.
+        return createPortal(
           <>
             <style>{`
               .occ-flow-row {
@@ -3264,7 +3271,8 @@ const Home = () => {
                 </div>
               </div>
             </div>
-          </>
+          </>,
+          document.body
         );
       })()}
 
@@ -3274,7 +3282,7 @@ const Home = () => {
         const ser="'Cormorant Garamond',Georgia,serif";
         const g="#C47A2E";
         const step=occModal.step||1;
-        return(
+        return createPortal(
           <div
             style={{position:"fixed",inset:0,zIndex:3000,background:"rgba(8,4,0,0.7)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}
             onClick={()=>setOccModal(null)}
@@ -3380,7 +3388,8 @@ const Home = () => {
                 <button onClick={()=>setOccModal(null)} style={{display:"block",width:"100%",marginTop:12,padding:"9px 0",border:"none",background:"none",color:"rgba(28,9,0,0.3)",fontSize:12,cursor:"pointer",fontFamily:f}}>Cancel</button>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         );
       })()}
     </div>
