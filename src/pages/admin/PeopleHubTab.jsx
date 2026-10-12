@@ -36,13 +36,16 @@ export default function PeopleHubTab({
   chatRequests = [],
   vendorApplications = [],
 }) {
-  const [subTab, setSubTab]           = useState("vendors");
+  const [section, setSection]         = useState("applications"); // applications | active | chats
+  const [subTab, setSubTab]           = useState("vendors");       // vendors | performers | coordinators
   const [coords, setCoords]           = useState([]);
   const [coordsLoaded, setCoordsLoaded] = useState(false);
   const [coordFilter, setCoordFilter] = useState("all");
   const [coordSearch, setCoordSearch] = useState("");
   const [perfFilter, setPerfFilter]   = useState("all");
   const [perfSearch, setPerfSearch]   = useState("");
+  const [vendorActiveFilter, setVendorActiveFilter] = useState("all");
+  const [vendorActiveSearch, setVendorActiveSearch] = useState("");
   // Vendor-applications tab (Caterer/Decorator/DJ/Photographer/etc.)
   const [appSearch, setAppSearch]     = useState("");
   const [appFilter, setAppFilter]     = useState("all"); // all | pending | form_sent | approved | rejected
@@ -80,7 +83,10 @@ export default function PeopleHubTab({
 
   // --- Derived data ---
   const performers         = vendorStats.filter(v => PERFORMER_TYPES.includes(v.serviceType));
+  const activeVendors      = vendorStats.filter(v => !PERFORMER_TYPES.includes(v.serviceType));
   const coordAssignedChats = chatRequests.filter(c => c.coordinatorId);
+  const pendingOrRejectedCoords = coords.filter(c => c.status !== "approved");
+  const approvedCoords          = coords.filter(c => c.status === "approved");
 
   // Artist/performer applications: VendorApplication entries flagged as isArtist
   const artistApplications = vendorApplications.filter(a =>
@@ -99,8 +105,10 @@ export default function PeopleHubTab({
   const pendingBusiness = businessApplications.filter(a => ["pending", "form_sent"].includes(a.status)).length;
 
   // Filtered lists
-  const filteredCoords = coords.filter(c => {
-    const matchFilter = coordFilter === "all" || c.status === coordFilter;
+  // Coordinators: Applications tab = pending/rejected only; Active tab = approved only.
+  const coordBaseList = section === "active" ? approvedCoords : pendingOrRejectedCoords;
+  const filteredCoords = coordBaseList.filter(c => {
+    const matchFilter = section === "active" || coordFilter === "all" || c.status === coordFilter;
     const matchSearch = !coordSearch ||
       c.name?.toLowerCase().includes(coordSearch.toLowerCase()) ||
       c.city?.toLowerCase().includes(coordSearch.toLowerCase());
@@ -112,6 +120,15 @@ export default function PeopleHubTab({
     const matchSearch = !perfSearch ||
       v.name?.toLowerCase().includes(perfSearch.toLowerCase()) ||
       v.city?.toLowerCase().includes(perfSearch.toLowerCase());
+    return matchFilter && matchSearch;
+  });
+
+  const vendorTypesPresent = [...new Set(activeVendors.map(v => v.serviceType))].filter(Boolean);
+  const filteredActiveVendors = activeVendors.filter(v => {
+    const matchFilter = vendorActiveFilter === "all" || v.serviceType === vendorActiveFilter;
+    const matchSearch = !vendorActiveSearch ||
+      v.name?.toLowerCase().includes(vendorActiveSearch.toLowerCase()) ||
+      v.city?.toLowerCase().includes(vendorActiveSearch.toLowerCase());
     return matchFilter && matchSearch;
   });
 
@@ -332,6 +349,120 @@ export default function PeopleHubTab({
     );
   };
 
+  // ── Coordinator card — used by both Applications>Coordinators (pending/
+  // rejected, with approve/reject) and Active>Coordinators (approved, with
+  // revoke) — same card, the action row already branches on c.status ──────
+  const renderCoordCard = (c) => {
+    const assignedCount = chatRequests.filter(cr => cr.coordinatorId === c._id || cr.coordinatorName === c.name).length;
+    return (
+      <div key={c._id} style={{ background: CARD, borderRadius: 14, padding: "18px 20px", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 2px 8px rgba(44,26,14,0.04)", fontFamily: F }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 10, marginBottom: 12 }}>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <div style={{ width: 42, height: 42, borderRadius: "50%", background: GOLD, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
+              {c.name?.[0]?.toUpperCase()}
+            </div>
+            <div>
+              <p style={{ margin: 0, fontWeight: 800, color: "#2C1A0E", fontSize: 15 }}>{c.name}</p>
+              <p style={{ margin: "2px 0 0", fontSize: 11.5, color: "#9B7450" }}>
+                {c.city}{c.experience ? ` · ${c.experience}` : ""}{c.eventsPerMonth ? ` · ${c.eventsPerMonth} events/mo` : ""}
+              </p>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            {assignedCount > 0 && (
+              <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(99,102,241,0.08)", color: "#4F46E5", border: "1.5px solid rgba(99,102,241,0.2)", borderRadius: 100, padding: "3px 10px" }}>
+                💬 {assignedCount} chat{assignedCount > 1 ? "s" : ""}
+              </span>
+            )}
+            <span style={{ fontSize: 11, fontWeight: 700, borderRadius: 100, padding: "4px 12px",
+              background: c.status === "approved" ? "#F0FDF4" : c.status === "rejected" ? "#FFF1F2" : "#FEF3C7",
+              color: c.status === "approved" ? "#15803D" : c.status === "rejected" ? "#BE123C" : "#D97706" }}>
+              {c.status === "approved" ? "✅ Active" : c.status === "rejected" ? "❌ Rejected" : "⏳ Pending"}
+            </span>
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 8, marginBottom: 10 }}>
+          {[
+            ["📞 Phone",   c.phoneNumber],
+            ["📧 Email",   c.email],
+            ["📅 Joined",  c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN") : "—"],
+            ...(c.referralCode ? [["🔑 Referral", c.referralCode]] : []),
+          ].map(([k, v]) => (
+            <div key={k} style={{ background: "#F8F4EF", borderRadius: 8, padding: "6px 10px" }}>
+              <p style={{ margin: 0, fontSize: 10, color: "#9B7450", fontWeight: 600 }}>{k}</p>
+              <p style={{ margin: "2px 0 0", fontSize: 12, fontWeight: 700, color: "#2C1A0E", wordBreak: "break-all" }}>{v || "—"}</p>
+            </div>
+          ))}
+        </div>
+
+        {c.specializations?.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+            {c.specializations.map(s => (
+              <span key={s} style={{ background: "#FFF8EE", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "2px 9px", fontSize: 11, fontWeight: 600, color: GOLD }}>{s}</span>
+            ))}
+          </div>
+        )}
+
+        {c.bio && (
+          <p style={{ fontSize: 12.5, color: "#5A3A1A", lineHeight: 1.6, margin: "0 0 10px", background: "#FFF8EE", borderRadius: 8, padding: "8px 12px", borderLeft: "3px solid " + GOLD }}>
+            {c.bio}
+          </p>
+        )}
+
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {c.status === "pending" && (
+            <>
+              <Btn onClick={() => updateCoordStatus(c._id, "approved")} bg="#15803D" color="#fff">✅ Approve</Btn>
+              <Btn onClick={() => updateCoordStatus(c._id, "rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">❌ Reject</Btn>
+            </>
+          )}
+          {c.status === "approved" && (
+            <Btn onClick={() => updateCoordStatus(c._id, "rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">Revoke Access</Btn>
+          )}
+          {c.status === "rejected" && (
+            <Btn onClick={() => updateCoordStatus(c._id, "approved")} bg="#15803D" color="#fff">Re-Approve</Btn>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // ── Registered-vendor row — used by Active>Vendors and Active>Performers ──
+  const renderVendorRow = (v, i) => (
+    <div key={v._id || i} style={{ background: CARD, borderRadius: 12, padding: "16px 20px", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 2px 8px rgba(44,26,14,0.04)", fontFamily: F, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 12, alignItems: "center", flex: 1, minWidth: 0 }}>
+        {v.mainPhotoUrl ? (
+          <img src={v.mainPhotoUrl} alt={v.name} style={{ width: 42, height: 42, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "2px solid rgba(196,122,46,0.2)" }} />
+        ) : (
+          <div style={{ width: 42, height: 42, borderRadius: "50%", background: GOLD, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
+            {v.name?.[0]?.toUpperCase()}
+          </div>
+        )}
+        <div style={{ minWidth: 0 }}>
+          <p style={{ margin: 0, fontWeight: 800, color: "#2C1A0E", fontSize: 15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name}</p>
+          <p style={{ margin: "2px 0 0", fontSize: 11.5, color: "#9B7450" }}>{v.city || "—"} · {v.phoneNumber || v.phone || "—"}</p>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", flexShrink: 0 }}>
+        <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(196,122,46,0.1)", color: GOLD, border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "3px 10px" }}>{v.serviceType}</span>
+        {(v.bookingsCount > 0 || v.totalBookings > 0) && (
+          <span style={{ fontSize: 11, fontWeight: 700, background: "#F0FDF4", color: "#15803D", border: "1.5px solid #86EFAC", borderRadius: 100, padding: "3px 10px" }}>
+            📅 {v.bookingsCount || v.totalBookings} bookings
+          </span>
+        )}
+        {v.avgReviewScore > 0 && (
+          <span style={{ fontSize: 11, fontWeight: 700, background: "#FEF3C7", color: "#D97706", borderRadius: 100, padding: "3px 10px" }}>
+            ⭐ {Number(v.avgReviewScore).toFixed(1)}
+          </span>
+        )}
+        <span style={{ fontSize: 11, fontWeight: 700, background: v.isActive === false ? "#FFF1F2" : "#F0FDF4", color: v.isActive === false ? "#BE123C" : "#15803D", borderRadius: 100, padding: "3px 10px" }}>
+          {v.isActive === false ? "Inactive" : "Active"}
+        </span>
+      </div>
+    </div>
+  );
+
   return (
     <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-6 overflow-y-auto">
 
@@ -381,32 +512,31 @@ export default function PeopleHubTab({
         ))}
       </div>
 
-      {/* Sub-tab switcher */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 24, borderBottom: "2px solid rgba(196,122,46,0.1)", paddingBottom: 14, flexWrap: "wrap" }}>
+      {/* ─── Top-level: Applications vs Active vs Chat Transfers ──────────── */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 18, flexWrap: "wrap" }}>
         {[
-          ["vendors",      "🏪 Vendors",        pendingBusiness],
-          ["performers",   "🎤 Performers",     pendingArtists],
+          ["applications", "📥 Applications",  pendingBusiness + pendingArtists + pendingOrRejectedCoords.length],
+          ["active",       "✅ Active",         activeVendors.length + performers.length + approvedCoords.length],
           ["chats",        "💬 Chat Transfers", coordAssignedChats.length],
-          ["coordinators", "🎯 Coordinators",   coordStats.total],
         ].map(([val, label, count]) => (
           <button
-            key={val} onClick={() => setSubTab(val)}
+            key={val} onClick={() => setSection(val)}
             style={{
-              padding: "8px 18px", borderRadius: 100, fontSize: 13, fontWeight: 700, fontFamily: F,
+              padding: "10px 20px", borderRadius: 12, fontSize: 14, fontWeight: 800, fontFamily: F,
               cursor: "pointer",
-              background: subTab === val ? GOLD : "transparent",
-              color: subTab === val ? "#fff" : "#9B7450",
-              border: subTab === val ? "none" : "1.5px solid #E5D5C0",
-              transition: "all .15s",
-              display: "flex", alignItems: "center", gap: 6,
+              background: section === val ? "linear-gradient(135deg,#2C1A0E,#4A2C14)" : "#fff",
+              color: section === val ? "#fff" : "#2C1A0E",
+              border: section === val ? "none" : "1.5px solid rgba(44,26,14,0.15)",
+              boxShadow: section === val ? "0 4px 14px rgba(44,26,14,0.22)" : "0 1px 4px rgba(44,26,14,0.04)",
+              display: "flex", alignItems: "center", gap: 8,
             }}
           >
             {label}
             {count > 0 && (
               <span style={{
-                background: subTab === val ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)",
-                color: subTab === val ? "#fff" : GOLD,
-                borderRadius: 100, padding: "1px 7px", fontSize: 11,
+                background: section === val ? "rgba(255,255,255,0.2)" : "rgba(196,122,46,0.1)",
+                color: section === val ? "#fff" : GOLD,
+                borderRadius: 100, padding: "2px 9px", fontSize: 12,
               }}>
                 {count}
               </span>
@@ -415,11 +545,46 @@ export default function PeopleHubTab({
         ))}
       </div>
 
-      {/* ─── VENDORS (business applications: Caterer/Decorator/DJ/Photographer/etc.) ── */}
-      {subTab === "vendors" && (
+      {/* ─── Type sub-tabs (Applications and Active only) ─────────────────── */}
+      {section !== "chats" && (
+        <div style={{ display: "flex", gap: 8, marginBottom: 24, borderBottom: "2px solid rgba(196,122,46,0.1)", paddingBottom: 14, flexWrap: "wrap" }}>
+          {[
+            ["vendors",      "🏪 Vendors",      section === "active" ? activeVendors.length : pendingBusiness],
+            ["performers",   "🎤 Performers",   section === "active" ? performers.length    : pendingArtists],
+            ["coordinators", "🎯 Coordinators", section === "active" ? approvedCoords.length : pendingOrRejectedCoords.length],
+          ].map(([val, label, count]) => (
+            <button
+              key={val} onClick={() => setSubTab(val)}
+              style={{
+                padding: "8px 18px", borderRadius: 100, fontSize: 13, fontWeight: 700, fontFamily: F,
+                cursor: "pointer",
+                background: subTab === val ? GOLD : "transparent",
+                color: subTab === val ? "#fff" : "#9B7450",
+                border: subTab === val ? "none" : "1.5px solid #E5D5C0",
+                transition: "all .15s",
+                display: "flex", alignItems: "center", gap: 6,
+              }}
+            >
+              {label}
+              {count > 0 && (
+                <span style={{
+                  background: subTab === val ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)",
+                  color: subTab === val ? "#fff" : GOLD,
+                  borderRadius: 100, padding: "1px 7px", fontSize: 11,
+                }}>
+                  {count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* ─── APPLICATIONS > VENDORS ─────────────────────────────────────── */}
+      {section === "applications" && subTab === "vendors" && (
         <div>
           <p style={{ fontSize: 13, color: "#9B7450", fontFamily: F, marginBottom: 16 }}>
-            New business/vendor applications — newest first. Artist &amp; performer applications are in the <strong style={{ color: "#2C1A0E" }}>Performers</strong> tab.
+            New business/vendor applications — Caterer, Decorator, DJ, Photographer, etc. — newest first.
           </p>
 
           <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
@@ -459,17 +624,64 @@ export default function PeopleHubTab({
         </div>
       )}
 
-      {/* ─── COORDINATORS ─────────────────────────────────────────────────── */}
-      {subTab === "coordinators" && (
+      {/* ─── APPLICATIONS > PERFORMERS ──────────────────────────────────── */}
+      {section === "applications" && subTab === "performers" && (
         <div>
+          <p style={{ fontSize: 13, color: "#9B7450", fontFamily: F, marginBottom: 16 }}>
+            New artist/performer applications — Singer, Band, Anchor, Choreographer, Musician, Emcee etc. — newest first.
+          </p>
+
+          <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
+            <input
+              value={perfAppSearch}
+              onChange={e => setPerfAppSearch(e.target.value)}
+              placeholder="Search by name, art form, city…"
+              style={{ flex: "1 1 220px", padding: "8px 14px", borderRadius: 100, border: "1.5px solid #E5D5C0", fontFamily: F, fontSize: 13, color: "#2C1A0E", background: CARD, outline: "none" }}
+            />
+            {[
+              ["all",       "All",         artistApplications.length],
+              ["pending",   "⏳ Pending",   artistApplications.filter(a => (appStatusOverrides[a._id] ?? a.status) === "pending").length],
+              ["form_sent", "📤 Form Sent", artistApplications.filter(a => (appStatusOverrides[a._id] ?? a.status) === "form_sent").length],
+              ["rejected",  "❌ Rejected",  artistApplications.filter(a => (appStatusOverrides[a._id] ?? a.status) === "rejected").length],
+            ].map(([val, lbl, cnt]) => (
+              <button
+                key={val} onClick={() => setPerfAppFilter(val)}
+                style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 700, fontFamily: F, cursor: "pointer", background: perfAppFilter === val ? GOLD : "#fff", color: perfAppFilter === val ? "#fff" : "#9B7450", border: perfAppFilter === val ? "none" : "1.5px solid #E5D5C0", display: "flex", alignItems: "center", gap: 5 }}
+              >
+                {lbl}
+                <span style={{ fontSize: 10, background: perfAppFilter === val ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)", color: perfAppFilter === val ? "#fff" : GOLD, borderRadius: 100, padding: "1px 6px" }}>{cnt}</span>
+              </button>
+            ))}
+          </div>
+
+          {filteredPerformerApps.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "56px 0", color: "#9B7450", fontFamily: F }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
+              <p style={{ fontWeight: 700, color: "#2C1A0E", marginBottom: 4 }}>No performer applications found</p>
+              <p style={{ fontSize: 13 }}>New Singer/Band/Anchor/Choreographer etc. applications appear here automatically.</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {filteredPerformerApps.map(renderAppCard)}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─── APPLICATIONS > COORDINATORS ────────────────────────────────── */}
+      {section === "applications" && subTab === "coordinators" && (
+        <div>
+          <p style={{ fontSize: 13, color: "#9B7450", fontFamily: F, marginBottom: 16 }}>
+            New Event Coordinator applications — approve to move them into Active and activate their login.
+          </p>
           <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
             <input
               value={coordSearch} onChange={e => setCoordSearch(e.target.value)}
               placeholder="Search by name or city…"
               style={{ flex: "1 1 200px", padding: "8px 14px", borderRadius: 100, border: "1.5px solid #E5D5C0", fontFamily: F, fontSize: 13, color: "#2C1A0E", background: CARD, outline: "none" }}
             />
-            {[["all","All"],["pending","⏳ Pending"],["approved","✅ Active"],["rejected","❌ Rejected"]].map(([val, lbl]) => {
-              const cnt = val === "all" ? coords.length : coords.filter(c => c.status === val).length;
+            {[["all","All"],["pending","⏳ Pending"],["rejected","❌ Rejected"]].map(([val, lbl]) => {
+              const cnt = val === "all" ? pendingOrRejectedCoords.length : pendingOrRejectedCoords.filter(c => c.status === val).length;
               return (
                 <button key={val} onClick={() => setCoordFilter(val)}
                   style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 700, fontFamily: F, cursor: "pointer", background: coordFilter === val ? GOLD : "#fff", color: coordFilter === val ? "#fff" : "#9B7450", border: coordFilter === val ? "none" : "1.5px solid #E5D5C0", display: "flex", alignItems: "center", gap: 5 }}>
@@ -484,143 +696,58 @@ export default function PeopleHubTab({
           {coordsLoaded && filteredCoords.length === 0 && (
             <div style={{ textAlign: "center", padding: "48px 0", color: "#9B7450", fontFamily: F }}>
               <div style={{ fontSize: 36, marginBottom: 10 }}>📭</div>
-              <p style={{ fontWeight: 700, color: "#2C1A0E" }}>No {coordFilter !== "all" ? coordFilter : ""} coordinators found</p>
+              <p style={{ fontWeight: 700, color: "#2C1A0E" }}>No {coordFilter !== "all" ? coordFilter : ""} coordinator applications found</p>
             </div>
           )}
 
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {filteredCoords.map(c => {
-              const assignedCount = chatRequests.filter(cr => cr.coordinatorId === c._id || cr.coordinatorName === c.name).length;
-              return (
-                <div key={c._id} style={{ background: CARD, borderRadius: 14, padding: "18px 20px", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 2px 8px rgba(44,26,14,0.04)", fontFamily: F }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 10, marginBottom: 12 }}>
-                    <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                      <div style={{ width: 42, height: 42, borderRadius: "50%", background: GOLD, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
-                        {c.name?.[0]?.toUpperCase()}
-                      </div>
-                      <div>
-                        <p style={{ margin: 0, fontWeight: 800, color: "#2C1A0E", fontSize: 15 }}>{c.name}</p>
-                        <p style={{ margin: "2px 0 0", fontSize: 11.5, color: "#9B7450" }}>
-                          {c.city}{c.experience ? ` · ${c.experience}` : ""}{c.eventsPerMonth ? ` · ${c.eventsPerMonth} events/mo` : ""}
-                        </p>
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                      {assignedCount > 0 && (
-                        <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(99,102,241,0.08)", color: "#4F46E5", border: "1.5px solid rgba(99,102,241,0.2)", borderRadius: 100, padding: "3px 10px" }}>
-                          💬 {assignedCount} chat{assignedCount > 1 ? "s" : ""}
-                        </span>
-                      )}
-                      <span style={{ fontSize: 11, fontWeight: 700, borderRadius: 100, padding: "4px 12px",
-                        background: c.status === "approved" ? "#F0FDF4" : c.status === "rejected" ? "#FFF1F2" : "#FEF3C7",
-                        color: c.status === "approved" ? "#15803D" : c.status === "rejected" ? "#BE123C" : "#D97706" }}>
-                        {c.status === "approved" ? "✅ Active" : c.status === "rejected" ? "❌ Rejected" : "⏳ Pending"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 8, marginBottom: 10 }}>
-                    {[
-                      ["📞 Phone",   c.phoneNumber],
-                      ["📧 Email",   c.email],
-                      ["📅 Joined",  c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN") : "—"],
-                      ...(c.referralCode ? [["🔑 Referral", c.referralCode]] : []),
-                    ].map(([k, v]) => (
-                      <div key={k} style={{ background: "#F8F4EF", borderRadius: 8, padding: "6px 10px" }}>
-                        <p style={{ margin: 0, fontSize: 10, color: "#9B7450", fontWeight: 600 }}>{k}</p>
-                        <p style={{ margin: "2px 0 0", fontSize: 12, fontWeight: 700, color: "#2C1A0E", wordBreak: "break-all" }}>{v || "—"}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {c.specializations?.length > 0 && (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
-                      {c.specializations.map(s => (
-                        <span key={s} style={{ background: "#FFF8EE", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "2px 9px", fontSize: 11, fontWeight: 600, color: GOLD }}>{s}</span>
-                      ))}
-                    </div>
-                  )}
-
-                  {c.bio && (
-                    <p style={{ fontSize: 12.5, color: "#5A3A1A", lineHeight: 1.6, margin: "0 0 10px", background: "#FFF8EE", borderRadius: 8, padding: "8px 12px", borderLeft: "3px solid " + GOLD }}>
-                      {c.bio}
-                    </p>
-                  )}
-
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    {c.status === "pending" && (
-                      <>
-                        <Btn onClick={() => updateCoordStatus(c._id, "approved")} bg="#15803D" color="#fff">✅ Approve</Btn>
-                        <Btn onClick={() => updateCoordStatus(c._id, "rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">❌ Reject</Btn>
-                      </>
-                    )}
-                    {c.status === "approved" && (
-                      <Btn onClick={() => updateCoordStatus(c._id, "rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">Revoke Access</Btn>
-                    )}
-                    {c.status === "rejected" && (
-                      <Btn onClick={() => updateCoordStatus(c._id, "approved")} bg="#15803D" color="#fff">Re-Approve</Btn>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            {filteredCoords.map(renderCoordCard)}
           </div>
         </div>
       )}
 
-      {/* ─── PERFORMERS (registered on platform) ──────────────────────────── */}
-      {subTab === "performers" && (
+      {/* ─── ACTIVE > VENDORS ───────────────────────────────────────────── */}
+      {section === "active" && subTab === "vendors" && (
         <div>
-          {/* New performer applications */}
-          <div style={{ marginBottom: 28 }}>
-            <p style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", fontFamily: F, marginBottom: 4 }}>
-              📥 New Applications
-            </p>
-            <p style={{ fontSize: 13, color: "#9B7450", fontFamily: F, marginBottom: 14 }}>
-              Singer, Band, Anchor, Choreographer, Musician, Emcee etc. — newest first.
-            </p>
-
-            <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap", alignItems: "center" }}>
-              <input
-                value={perfAppSearch}
-                onChange={e => setPerfAppSearch(e.target.value)}
-                placeholder="Search by name, art form, city…"
-                style={{ flex: "1 1 220px", padding: "8px 14px", borderRadius: 100, border: "1.5px solid #E5D5C0", fontFamily: F, fontSize: 13, color: "#2C1A0E", background: CARD, outline: "none" }}
-              />
-              {[
-                ["all",       "All",         artistApplications.length],
-                ["pending",   "⏳ Pending",   artistApplications.filter(a => (appStatusOverrides[a._id] ?? a.status) === "pending").length],
-                ["form_sent", "📤 Form Sent", artistApplications.filter(a => (appStatusOverrides[a._id] ?? a.status) === "form_sent").length],
-                ["rejected",  "❌ Rejected",  artistApplications.filter(a => (appStatusOverrides[a._id] ?? a.status) === "rejected").length],
-              ].map(([val, lbl, cnt]) => (
-                <button
-                  key={val} onClick={() => setPerfAppFilter(val)}
-                  style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 700, fontFamily: F, cursor: "pointer", background: perfAppFilter === val ? GOLD : "#fff", color: perfAppFilter === val ? "#fff" : "#9B7450", border: perfAppFilter === val ? "none" : "1.5px solid #E5D5C0", display: "flex", alignItems: "center", gap: 5 }}
-                >
-                  {lbl}
-                  <span style={{ fontSize: 10, background: perfAppFilter === val ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)", color: perfAppFilter === val ? "#fff" : GOLD, borderRadius: 100, padding: "1px 6px" }}>{cnt}</span>
+          <p style={{ fontSize: 13, color: "#9B7450", fontFamily: F, marginBottom: 16 }}>
+            Business/vendor accounts already registered and live on the platform.
+          </p>
+          <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap", alignItems: "center" }}>
+            <input
+              value={vendorActiveSearch} onChange={e => setVendorActiveSearch(e.target.value)}
+              placeholder="Search vendor…"
+              style={{ flex: "1 1 180px", padding: "8px 14px", borderRadius: 100, border: "1.5px solid #E5D5C0", fontFamily: F, fontSize: 13, color: "#2C1A0E", background: CARD, outline: "none" }}
+            />
+            {["all", ...vendorTypesPresent].map(t => {
+              const cnt = t === "all" ? activeVendors.length : activeVendors.filter(v => v.serviceType === t).length;
+              return (
+                <button key={t} onClick={() => setVendorActiveFilter(t)}
+                  style={{ padding: "6px 13px", borderRadius: 100, fontSize: 12, fontWeight: 700, fontFamily: F, cursor: "pointer", background: vendorActiveFilter === t ? GOLD : "#fff", color: vendorActiveFilter === t ? "#fff" : "#9B7450", border: vendorActiveFilter === t ? "none" : "1.5px solid #E5D5C0", display: "flex", alignItems: "center", gap: 4 }}>
+                  {t === "all" ? "All" : t}
+                  <span style={{ fontSize: 10, background: vendorActiveFilter === t ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)", color: vendorActiveFilter === t ? "#fff" : GOLD, borderRadius: 100, padding: "1px 6px" }}>{cnt}</span>
                 </button>
-              ))}
-            </div>
-
-            {filteredPerformerApps.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "32px 0", color: "#9B7450", fontFamily: F }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
-                <p style={{ fontWeight: 700, color: "#2C1A0E", fontSize: 13 }}>No performer applications found</p>
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {filteredPerformerApps.map(renderAppCard)}
-              </div>
-            )}
+              );
+            })}
           </div>
 
-          {/* Registered performers */}
-          <p style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", fontFamily: F, marginBottom: 4 }}>
-            ✅ Registered on Platform
-          </p>
-          <p style={{ fontSize: 13, color: "#9B7450", fontFamily: F, marginBottom: 14 }}>
-            Performers already live and bookable.
+          {filteredActiveVendors.length === 0 && (
+            <div style={{ textAlign: "center", padding: "48px 0", color: "#9B7450", fontFamily: F }}>
+              <div style={{ fontSize: 36, marginBottom: 10 }}>🏪</div>
+              <p style={{ fontWeight: 700, color: "#2C1A0E" }}>No vendors found</p>
+            </div>
+          )}
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {filteredActiveVendors.map(renderVendorRow)}
+          </div>
+        </div>
+      )}
+
+      {/* ─── ACTIVE > PERFORMERS ────────────────────────────────────────── */}
+      {section === "active" && subTab === "performers" && (
+        <div>
+          <p style={{ fontSize: 13, color: "#9B7450", fontFamily: F, marginBottom: 16 }}>
+            Performers already registered and live on the platform.
           </p>
           <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap", alignItems: "center" }}>
             <input
@@ -644,50 +771,45 @@ export default function PeopleHubTab({
             <div style={{ textAlign: "center", padding: "48px 0", color: "#9B7450", fontFamily: F }}>
               <div style={{ fontSize: 36, marginBottom: 10 }}>🎤</div>
               <p style={{ fontWeight: 700, color: "#2C1A0E" }}>No performers found</p>
-              <p style={{ fontSize: 13 }}>Registered performers with types like Anchor, Band, DJ, Vocalist etc. appear here.</p>
+              <p style={{ fontSize: 13 }}>Registered performers with types like Anchor, Band, Vocalist etc. appear here.</p>
             </div>
           )}
 
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {filteredPerformers.map((v, i) => (
-              <div key={v._id || i} style={{ background: CARD, borderRadius: 12, padding: "16px 20px", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 2px 8px rgba(44,26,14,0.04)", fontFamily: F, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                <div style={{ display: "flex", gap: 12, alignItems: "center", flex: 1, minWidth: 0 }}>
-                  {v.mainPhotoUrl ? (
-                    <img src={v.mainPhotoUrl} alt={v.name} style={{ width: 42, height: 42, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "2px solid rgba(196,122,46,0.2)" }} />
-                  ) : (
-                    <div style={{ width: 42, height: 42, borderRadius: "50%", background: GOLD, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
-                      {v.name?.[0]?.toUpperCase()}
-                    </div>
-                  )}
-                  <div style={{ minWidth: 0 }}>
-                    <p style={{ margin: 0, fontWeight: 800, color: "#2C1A0E", fontSize: 15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name}</p>
-                    <p style={{ margin: "2px 0 0", fontSize: 11.5, color: "#9B7450" }}>{v.city || "—"} · {v.phoneNumber || v.phone || "—"}</p>
-                  </div>
-                </div>
-                <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", flexShrink: 0 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, background: "rgba(196,122,46,0.1)", color: GOLD, border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "3px 10px" }}>{v.serviceType}</span>
-                  {(v.bookingsCount > 0 || v.totalBookings > 0) && (
-                    <span style={{ fontSize: 11, fontWeight: 700, background: "#F0FDF4", color: "#15803D", border: "1.5px solid #86EFAC", borderRadius: 100, padding: "3px 10px" }}>
-                      📅 {v.bookingsCount || v.totalBookings} bookings
-                    </span>
-                  )}
-                  {v.avgReviewScore > 0 && (
-                    <span style={{ fontSize: 11, fontWeight: 700, background: "#FEF3C7", color: "#D97706", borderRadius: 100, padding: "3px 10px" }}>
-                      ⭐ {Number(v.avgReviewScore).toFixed(1)}
-                    </span>
-                  )}
-                  <span style={{ fontSize: 11, fontWeight: 700, background: v.isActive === false ? "#FFF1F2" : "#F0FDF4", color: v.isActive === false ? "#BE123C" : "#15803D", borderRadius: 100, padding: "3px 10px" }}>
-                    {v.isActive === false ? "Inactive" : "Active"}
-                  </span>
-                </div>
-              </div>
-            ))}
+            {filteredPerformers.map(renderVendorRow)}
           </div>
         </div>
       )}
 
-      {/* ─── CHAT TRANSFERS ───────────────────────────────────────────────── */}
-      {subTab === "chats" && (
+      {/* ─── ACTIVE > COORDINATORS ──────────────────────────────────────── */}
+      {section === "active" && subTab === "coordinators" && (
+        <div>
+          <p style={{ fontSize: 13, color: "#9B7450", fontFamily: F, marginBottom: 16 }}>
+            Approved, active coordinators.
+          </p>
+          <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
+            <input
+              value={coordSearch} onChange={e => setCoordSearch(e.target.value)}
+              placeholder="Search by name or city…"
+              style={{ flex: "1 1 200px", padding: "8px 14px", borderRadius: 100, border: "1.5px solid #E5D5C0", fontFamily: F, fontSize: 13, color: "#2C1A0E", background: CARD, outline: "none" }}
+            />
+          </div>
+
+          {coordsLoaded && filteredCoords.length === 0 && (
+            <div style={{ textAlign: "center", padding: "48px 0", color: "#9B7450", fontFamily: F }}>
+              <div style={{ fontSize: 36, marginBottom: 10 }}>📭</div>
+              <p style={{ fontWeight: 700, color: "#2C1A0E" }}>No active coordinators yet</p>
+            </div>
+          )}
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {filteredCoords.map(renderCoordCard)}
+          </div>
+        </div>
+      )}
+
+      {/* ─── CHAT TRANSFERS ─────────────────────────────────────────────── */}
+      {section === "chats" && (
         <div>
           <p style={{ fontSize: 13, color: "#9B7450", fontFamily: F, marginBottom: 16 }}>
             Chats transferred to a coordinator. <strong style={{ color: "#2C1A0E" }}>{coordAssignedChats.length}</strong> total.
