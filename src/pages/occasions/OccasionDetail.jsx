@@ -2107,6 +2107,10 @@ export default function OccasionDetail(){
                       <input type="number" value={budget} onChange={e=>setBudget(e.target.value)}
                         placeholder={String(mid)}
                         style={{width:"100%",padding:"9px 12px",borderRadius:8,border:`1px solid ${budget?occAccent:`rgba(28,9,0,0.12)`}`,background:budget?`${occAccent}05`:"rgba(28,9,0,0.02)",fontSize:13,fontFamily:font,fontWeight:budget?500:400,color:budget?ink:muted,outline:"none",boxSizing:"border-box"}}/>
+                      <button onClick={()=>window.open(`/price-estimator?occasion=${encodeURIComponent(occasion.name||"")}`,"_blank")}
+                        style={{background:"none",border:"none",padding:0,marginTop:6,fontSize:11,fontWeight:700,color:occAccent,cursor:"pointer",fontFamily:font,textDecoration:"underline"}}>
+                        Not sure? Try the Price Estimator →
+                      </button>
                     </div>
                   </div>
                   <div style={{padding:"0 18px 14px"}}>

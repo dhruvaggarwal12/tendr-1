@@ -583,6 +583,10 @@ export default function BudgetAllocator() {
           <div style={{ flex: 1, minWidth: 140 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Total Budget</div>
             <div style={{ fontSize: 11, color: "#9B7450" }}>Recalculates all category allocations</div>
+            <button onClick={() => navigate("/price-estimator")}
+              style={{ background: "none", border: "none", padding: 0, marginTop: 4, fontSize: 11, fontWeight: 700, color: "#C47A2E", cursor: "pointer", fontFamily: font, textDecoration: "underline" }}>
+              Not sure what to budget? Try the Price Estimator →
+            </button>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#fff", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 10, padding: "8px 14px" }}>
             <span style={{ fontSize: 16, fontWeight: 700, color: "#9B7450" }}>₹</span>

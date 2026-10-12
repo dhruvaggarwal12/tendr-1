@@ -245,8 +245,15 @@ const EventCreationModal = ({ isOpen, onClose, onSubmit }) => {
             className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
             placeholder="e.g., 45000"
           />
+          <button
+            type="button"
+            onClick={() => window.open('/price-estimator', '_blank')}
+            className="mt-1 text-xs font-semibold text-orange-600 underline"
+          >
+            Not sure? Try the Price Estimator →
+          </button>
         </div>
-        
+
         <div>
           <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Location *</label>
           <input

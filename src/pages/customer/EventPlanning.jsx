@@ -2118,6 +2118,10 @@ const EventPlanning = () => {
                     <div>
                       <h3 style={{ fontSize: 15, fontWeight: 800, color: "#CCAB4A", margin: "0 0 2px" }}>How would you like to set your budget?</h3>
                       <p style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", margin: 0 }}>Choose the approach that works best for you</p>
+                      <button onClick={() => window.open("/price-estimator", "_blank")}
+                        style={{ background: "none", border: "none", padding: 0, marginTop: 5, fontSize: 11, fontWeight: 700, color: "#CCAB4A", cursor: "pointer", fontFamily: "'Outfit', sans-serif", textDecoration: "underline" }}>
+                        Not sure what to set? Try the Price Estimator →
+                      </button>
                     </div>
                     <button onClick={() => setShowBudgetModal(false)}
                       style={{ background: "transparent", border: "none", color: "#fff", width: 28, height: 28, borderRadius: "50%", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
