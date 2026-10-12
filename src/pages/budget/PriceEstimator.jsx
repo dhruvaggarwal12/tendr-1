@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import HamburgerNav from "../../components/HamburgerNav";
 import { useBookVendors } from "../../context/BookVendorsContext";
@@ -15,41 +15,8 @@ const font = "'Outfit', sans-serif";
 const GOLD = "#C47A2E";
 const GOLD_LIGHT = "#CCAB4A";
 const BG = "#F8F4EF";
-const BASE_URL = import.meta.env.VITE_BASE_URL;
-
-function resizePhoto(file, maxPx = 1200) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
-      const w = Math.round(img.width * scale);
-      const h = Math.round(img.height * scale);
-      const canvas = document.createElement("canvas");
-      canvas.width = w; canvas.height = h;
-      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-      resolve(canvas.toDataURL("image/jpeg", 0.82));
-    };
-    img.src = url;
-  });
-}
-
-const PRIORITY_RANK = { Critical: 0, High: 1, Medium: 2, Low: 3 };
-const isEssential = (priority) => priority === "Critical" || priority === "High";
 
 const OCCASIONS = getOccasionNames();
-
-const LOCATIONS = [
-  { label: "At Home", tip: "You likely don't need the Venue category — a rented hall/garden doesn't apply. Do check with your society/RWA about decor, DJ volume or late-night noise rules." },
-  { label: "Banquet Hall / Party Hall", tip: "Ask the hall about their outside-catering and outside-decorator policy before booking other vendors — some halls charge extra or don't allow it." },
-  { label: "Outdoor (Garden / Lawn)", tip: "Budget for a weather backup (tent/canopy) and confirm the venue allows a generator — outdoor power supply is often unreliable." },
-  { label: "Farmhouse", tip: "Factor in travel time and cab/parking arrangements for guests — farmhouses are usually outside the main city." },
-  { label: "Restaurant / Private Dining", tip: "Most restaurants have a minimum food & beverage spend — confirm it covers your guest count before locking the date." },
-  { label: "Rooftop / Terrace", tip: "Check the venue's rain/wind backup plan and sound curfew timing — rooftops often have earlier cutoffs." },
-  { label: "Community Hall / Club", tip: "Ask about the booking deposit's refund policy and cleaning charges — community halls are often strict here." },
-  { label: "Still deciding", tip: "Once you pick a venue, come back and re-check your Venue category — costs vary a lot between home, hall, and outdoor setups." },
-];
 
 function keyOf(category, idx) {
   return `${category}::${idx}`;
@@ -57,22 +24,19 @@ function keyOf(category, idx) {
 
 // The actual wizard. Reused by both the standalone /price-estimator page and
 // PriceEstimatorModal (the centered popup opened from everywhere else in the app).
+// Deliberately minimal: ask for the occasion, guest count and which services/items
+// are needed, then show the price — no pre-ticked picks, no tips, no recommendations.
 // `onFinalise(avgPrice)`, when provided, shows an "apply this to your budget?"
 // prompt on the results screen instead of just the generic Start Over / Book Vendors actions.
 export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFinalise }) {
   const { openBookVendors } = useBookVendors();
-  const [step, setStep] = useState(0); // 0 occasion, 1 guests, 2 categories, 3 location, 4..4+n-1 per-category items, final = 4+n
+  const [step, setStep] = useState(0); // 0 occasion, 1 guests, 2 categories, 3..3+n-1 per-category items, final = 3+n
   const [occasion, setOccasion] = useState(
     OCCASIONS.includes(initialOccasion) ? initialOccasion : OCCASIONS[0]
   );
   const [guestCount, setGuestCount] = useState(50);
   const [chosenCategories, setChosenCategories] = useState([]);
-  const [location, setLocation] = useState(null);
   const [selected, setSelected] = useState({}); // "category::idx" -> { qty }
-  const [expandedCats, setExpandedCats] = useState({});
-  const [visitedCats, setVisitedCats] = useState(() => new Set());
-  const [photoMatch, setPhotoMatch] = useState({ phase: "idle", preview: null, result: null, error: "" }); // idle | analyzing | done | error
-  const photoInputRef = useRef(null);
   const [finaliseChoice, setFinaliseChoice] = useState(null); // null | "applied" | "declined"
 
   const allCategories = useMemo(() => getCategoriesForOccasion(occasion), [occasion]);
@@ -81,22 +45,15 @@ export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFina
   // Reset the whole wizard whenever the occasion changes (fresh start = less confusing
   // than carrying over category/item picks that may not even exist for the new occasion).
   useEffect(() => {
-    const essentialCats = allCategories.filter((cat) =>
-      (allServices[cat] || []).some((item) => item.priority === "Critical")
-    );
-    setChosenCategories(essentialCats);
-    setLocation(null);
+    setChosenCategories([]);
     setSelected({});
-    setExpandedCats({});
-    setVisitedCats(new Set());
-    setPhotoMatch({ phase: "idle", preview: null, result: null, error: "" });
     setFinaliseChoice(null);
     setStep(0);
-  }, [occasion]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [occasion]);
 
   const itemStepCategories = chosenCategories;
-  const totalSteps = 4 + itemStepCategories.length; // + final results screen beyond this
-  const currentCategory = step >= 4 && step < totalSteps ? itemStepCategories[step - 4] : null;
+  const totalSteps = 3 + itemStepCategories.length; // + final results screen beyond this
+  const currentCategory = step >= 3 && step < totalSteps ? itemStepCategories[step - 3] : null;
 
   const toggleCategory = (cat) => {
     setChosenCategories((prev) =>
@@ -119,60 +76,6 @@ export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFina
     setSelected((prev) => ({ ...prev, [k]: { qty: Math.max(1, qty) } }));
   };
 
-  // Photo -> real catalog match. Sends the actual Decor line items for this
-  // occasion as a closed set the model must pick from, so every matched price
-  // is a real pricingData.json entry rather than an AI-guessed number.
-  const analyzeDecorPhoto = async (file) => {
-    if (!file || !file.type.startsWith("image/")) return;
-    const dataUrl = await resizePhoto(file);
-    setPhotoMatch({ phase: "analyzing", preview: dataUrl, result: null, error: "" });
-    try {
-      const decorItems = allServices["Decor"] || [];
-      const catalog = decorItems.map((it) => ({ service: it.service, spec: it.spec }));
-      const base64 = dataUrl.split(",")[1];
-      const res = await fetch(`${BASE_URL}/decor-photo-match`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: base64, mediaType: "image/jpeg", occasion, catalog }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Analysis failed");
-
-      // Tick the matched items using the exact same selection mechanism as
-      // manual picks, so qty/price math and the final summary stay identical.
-      setSelected((prev) => {
-        const next = { ...prev };
-        (data.matches || []).forEach((m) => {
-          const idx = decorItems.findIndex((it) => it.service === m.service);
-          if (idx === -1) return;
-          next[keyOf("Decor", idx)] = { qty: Math.max(1, Number(m.qty) || 1) };
-        });
-        return next;
-      });
-
-      setPhotoMatch({ phase: "done", preview: dataUrl, result: data, error: "" });
-    } catch (e) {
-      setPhotoMatch({ phase: "error", preview: dataUrl, result: null, error: e.message || "Couldn't analyze that photo. Please try again." });
-    }
-  };
-
-  // Pre-tick a category's essentials the first time we land on its item step —
-  // tracked by visitedCats (not by what's currently selected) so deliberately
-  // unticking everything in a category doesn't make it look "unvisited" and
-  // get re-ticked if the user navigates back to it later.
-  useEffect(() => {
-    if (!currentCategory || visitedCats.has(currentCategory)) return;
-    const items = allServices[currentCategory] || [];
-    setSelected((prev) => {
-      const next = { ...prev };
-      items.forEach((item, idx) => {
-        if (isEssential(item.priority)) next[keyOf(currentCategory, idx)] = { qty: 1 };
-      });
-      return next;
-    });
-    setVisitedCats((prev) => new Set(prev).add(currentCategory));
-  }, [currentCategory]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const { total, byCategory, lineCount } = useMemo(() => {
     let min = 0, max = 0, count = 0;
     const cats = {};
@@ -192,63 +95,14 @@ export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFina
     return { total: { min, max }, byCategory: cats, lineCount: count };
   }, [chosenCategories, allServices, selected, guestCount]);
 
-  // Recommendations for the final screen — built only from real selected data
-  // (lead times, priority, category costs) plus the chosen venue type's canned tip.
-  const recommendations = useMemo(() => {
-    const recs = [];
-
-    const locTip = LOCATIONS.find((l) => l.label === location)?.tip;
-    if (locTip) recs.push(locTip);
-
-    // Missing essentials: Critical items in a chosen category that weren't ticked.
-    const missing = [];
-    for (const cat of chosenCategories) {
-      (allServices[cat] || []).forEach((item, idx) => {
-        if (item.priority === "Critical" && !selected[keyOf(cat, idx)]) {
-          missing.push(item.service);
-        }
-      });
-    }
-    if (missing.length) {
-      recs.push(`You haven't picked ${missing.slice(0, 3).join(", ")}${missing.length > 3 ? "..." : ""} — most ${occasion} events include ${missing.length > 1 ? "these" : "this"}. Worth double-checking.`);
-    }
-
-    // Longest lead time among what's actually selected.
-    let longest = null, longestNum = -1;
-    for (const cat of chosenCategories) {
-      (allServices[cat] || []).forEach((item, idx) => {
-        if (!selected[keyOf(cat, idx)]) return;
-        const m = (item.lead || "").match(/(\d+)/g);
-        const n = m ? Math.max(...m.map(Number)) : -1;
-        if (n > longestNum) { longestNum = n; longest = item; }
-      });
-    }
-    if (longest && longestNum > 7) {
-      recs.push(`Book ${longest.service} first — it needs the most lead time (${longest.lead}).`);
-    }
-
-    // Biggest-cost category — worth comparing vendors on.
-    const biggest = Object.entries(byCategory).sort((a, b) => b[1].max - a[1].max)[0];
-    if (biggest && biggest[1].max > 0) {
-      recs.push(`${biggest[0]} is your biggest cost — get at least 2–3 vendor quotes before booking it.`);
-    }
-
-    recs.push("Keep a buffer of about 15–20% on top of this total for GST, service charges, and last-minute additions.");
-
-    return recs;
-  }, [location, chosenCategories, allServices, selected, byCategory, occasion]);
-
   const isFinal = step === totalSteps;
   const stepLabel = isFinal ? "Your estimate" :
-    step === 0 ? "Occasion" : step === 1 ? "Guests" : step === 2 ? "Categories" : step === 3 ? "Location" : currentCategory;
+    step === 0 ? "Occasion" : step === 1 ? "Guests" : step === 2 ? "Categories" : currentCategory;
 
   const goNext = () => setStep((s) => Math.min(s + 1, totalSteps));
   const goBack = () => setStep((s) => Math.max(s - 1, 0));
 
-  const canProceed =
-    step === 2 ? chosenCategories.length > 0 :
-    step === 3 ? !!location :
-    true;
+  const canProceed = step === 2 ? chosenCategories.length > 0 : true;
 
   return (
     <div style={{ minHeight: embedded ? "auto" : "100vh", background: BG, fontFamily: font, paddingBottom: embedded ? 0 : "calc(140px + env(safe-area-inset-bottom, 0px))" }}>
@@ -304,7 +158,7 @@ export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFina
         )}
 
         {step === 2 && (
-          <StepCard title="What do you need for this event?" subtitle="We've pre-ticked the categories most people need — adjust as you like.">
+          <StepCard title="What do you need for this event?" subtitle="Tick everything you want priced.">
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {allCategories.map((cat) => {
                 const checked = chosenCategories.includes(cat);
@@ -321,38 +175,13 @@ export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFina
           </StepCard>
         )}
 
-        {step === 3 && (
-          <StepCard title="Where will this be hosted?" subtitle="This doesn't change the numbers, but we'll use it for a few tips at the end.">
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {LOCATIONS.map((loc) => (
-                <Checkbox
-                  key={loc.label}
-                  checked={location === loc.label}
-                  onClick={() => setLocation(loc.label)}
-                  label={loc.label}
-                  radio
-                />
-              ))}
-            </div>
-          </StepCard>
-        )}
-
         {currentCategory && (
-          <StepCard title={currentCategory} subtitle="Tick what you want. We've pre-ticked the essentials — untick anything you don't need.">
-            {currentCategory === "Decor" && (
-              <DecorPhotoMatch
-                photoMatch={photoMatch}
-                onPickFile={(file) => analyzeDecorPhoto(file)}
-                inputRef={photoInputRef}
-              />
-            )}
+          <StepCard title={currentCategory} subtitle="Tick what you want for this category.">
             <ItemList
               category={currentCategory}
               items={allServices[currentCategory] || []}
               selected={selected}
               guestCount={guestCount}
-              expanded={!!expandedCats[currentCategory]}
-              onToggleExpand={() => setExpandedCats((p) => ({ ...p, [currentCategory]: !p[currentCategory] }))}
               onToggleItem={toggleItem}
               onSetQty={setQty}
             />
@@ -420,17 +249,6 @@ export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFina
                 </div>
               </StepCard>
             )}
-
-            <StepCard title="Recommended things to do next">
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {recommendations.map((r, i) => (
-                  <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-                    <span style={{ fontSize: 14, flexShrink: 0 }}>💡</span>
-                    <span style={{ fontSize: 13, color: "#5A3520", lineHeight: 1.5 }}>{r}</span>
-                  </div>
-                ))}
-              </div>
-            </StepCard>
 
             <div style={{
               background: "rgba(196,122,46,0.08)", border: "1.5px solid rgba(196,122,46,0.18)",
@@ -525,93 +343,8 @@ function Checkbox({ checked, onClick, label, radio }) {
   );
 }
 
-function DecorPhotoMatch({ photoMatch, onPickFile, inputRef }) {
-  const { phase, preview, result, error } = photoMatch;
-  const matchCount = result?.matches?.length || 0;
-
-  return (
-    <div style={{
-      background: "rgba(196,122,46,0.06)", border: "1.5px dashed rgba(196,122,46,0.3)",
-      borderRadius: 12, padding: "14px", marginBottom: 14,
-    }}>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        style={{ display: "none" }}
-        onChange={(e) => { onPickFile(e.target.files?.[0]); e.target.value = ""; }}
-      />
-
-      {phase === "idle" && (
-        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 22, flexShrink: 0 }}>📷</span>
-          <div style={{ flex: 1, minWidth: 180 }}>
-            <div style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E" }}>Have a decor photo you like?</div>
-            <div style={{ fontSize: 11.5, color: "#8a6a4a", marginTop: 2 }}>Upload it — we'll match what's in it to real prices below.</div>
-          </div>
-          <button onClick={() => inputRef.current?.click()} style={{ ...navBtnStyle, padding: "9px 14px", fontSize: 12.5 }}>
-            Upload photo
-          </button>
-        </div>
-      )}
-
-      {phase === "analyzing" && (
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {preview && <img src={preview} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />}
-          <div>
-            <div style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E" }}>Analysing your photo…</div>
-            <div style={{ fontSize: 11.5, color: "#8a6a4a", marginTop: 2 }}>Matching it against real Decor prices for this occasion.</div>
-          </div>
-        </div>
-      )}
-
-      {phase === "error" && (
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-            {preview && <img src={preview} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />}
-            <div style={{ fontSize: 13, color: "#c0392b", fontWeight: 600 }}>{error}</div>
-          </div>
-          <button onClick={() => inputRef.current?.click()} style={{ ...navBtnStyle, padding: "8px 14px", fontSize: 12.5 }}>Try another photo</button>
-        </div>
-      )}
-
-      {phase === "done" && (
-        <div>
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-            {preview && <img src={preview} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />}
-            <div style={{ flex: 1, minWidth: 180 }}>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: "#15803d" }}>
-                {matchCount > 0 ? `✓ Matched ${matchCount} item${matchCount === 1 ? "" : "s"} from your photo` : "No exact catalog matches found in this photo"}
-              </div>
-              {result?.styleNote && (
-                <div style={{ fontSize: 11.5, color: "#8a6a4a", marginTop: 3, lineHeight: 1.4 }}>{result.styleNote}</div>
-              )}
-              {result?.unmatchedNote && (
-                <div style={{ fontSize: 11, color: "#8a6a4a", marginTop: 3, lineHeight: 1.4, fontStyle: "italic" }}>{result.unmatchedNote}</div>
-              )}
-              {matchCount > 0 && (
-                <div style={{ fontSize: 11, color: "#8a6a4a", marginTop: 4 }}>Ticked below — adjust anything before continuing.</div>
-              )}
-            </div>
-          </div>
-          <button onClick={() => inputRef.current?.click()} style={{ ...navBtnStyle, padding: "8px 14px", fontSize: 12.5, marginTop: 10 }}>Try another photo</button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ItemList({ category, items, selected, guestCount, expanded, onToggleExpand, onToggleItem, onSetQty }) {
-  const sortedIdx = items
-    .map((item, idx) => idx)
-    .sort((a, b) => (PRIORITY_RANK[items[a].priority] ?? 9) - (PRIORITY_RANK[items[b].priority] ?? 9));
-  const essentialIdx = sortedIdx.filter((idx) => isEssential(items[idx].priority));
-  const extraIdx = sortedIdx.filter((idx) => !isEssential(items[idx].priority));
-  const visibleEssential = essentialIdx.length > 0 ? essentialIdx : sortedIdx.slice(0, 2);
-  const visibleExtra = essentialIdx.length > 0 ? extraIdx : sortedIdx.slice(2);
-
-  const renderRow = (idx) => {
-    const item = items[idx];
+function ItemList({ category, items, selected, guestCount, onToggleItem, onSetQty }) {
+  const renderRow = (item, idx) => {
     const k = keyOf(category, idx);
     const sel = selected[k];
     const checked = !!sel;
@@ -643,11 +376,6 @@ function ItemList({ category, items, selected, guestCount, expanded, onToggleExp
             {item.spec && (
               <span style={{ fontSize: 10.5, fontWeight: 700, color: "#8a6a4a", background: "rgba(196,122,46,0.1)", padding: "2px 8px", borderRadius: 100 }}>
                 {item.spec}
-              </span>
-            )}
-            {isEssential(item.priority) && (
-              <span style={{ fontSize: 10, fontWeight: 800, color: "#15803d", background: "rgba(34,197,94,0.1)", padding: "2px 8px", borderRadius: 100 }}>
-                Recommended
               </span>
             )}
           </div>
@@ -682,16 +410,8 @@ function ItemList({ category, items, selected, guestCount, expanded, onToggleExp
   };
 
   return (
-    <div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {visibleEssential.map(renderRow)}
-        {expanded && visibleExtra.map(renderRow)}
-      </div>
-      {visibleExtra.length > 0 && (
-        <button onClick={onToggleExpand} style={{ marginTop: 8, background: "none", border: "none", color: GOLD, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: font, padding: "4px 2px" }}>
-          {expanded ? "– Show fewer options" : `+ Show ${visibleExtra.length} more option${visibleExtra.length === 1 ? "" : "s"}`}
-        </button>
-      )}
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {items.map(renderRow)}
     </div>
   );
 }
