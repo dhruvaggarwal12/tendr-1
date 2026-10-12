@@ -1,5 +1,5 @@
 import { createBrowserRouter, Outlet, ScrollRestoration, Navigate, useLocation, useSearchParams, useNavigate } from "react-router-dom";
-import { lazy, useEffect, useRef, useState } from "react";
+import { lazy, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
@@ -46,49 +46,34 @@ function AppInit() {
   return null;
 }
 
-// Route depth — determines slide direction (higher = navigate forward/right, lower = back/left)
-const ROUTE_DEPTH = {
-  '/': 0,
-  '/search': 1, '/guides': 1, '/community': 1, '/gift-hampers-cakes': 1, '/stationery': 1,
-  '/tools': 2, '/plan': 2, '/booking': 2, '/join-room': 2, '/occasion-hub': 2, '/occasion': 2,
-  '/dashboard': 3, '/chat': 3, '/vendor': 3,
-  '/profile': 4,
-};
-function pathDepth(p) {
-  if (p === '/') return 0;
-  for (const [prefix, d] of Object.entries(ROUTE_DEPTH)) {
-    if (prefix !== '/' && p.startsWith(prefix)) return d;
-  }
-  return 2;
-}
-
-const slideVariants = {
-  enter: (dir) => ({ opacity: 0, x: dir * 24 }),
-  center: { opacity: 1, x: 0 },
-  exit: (dir) => ({ opacity: 0, x: dir * -24 }),
+// Page transitions are a plain opacity fade — NOT a slide. A slide needs an
+// animated `x`, and framer-motion leaves that as a live inline `transform`
+// on this wrapper even at rest (x:0 still renders `transform: translateX(0px)`,
+// not an absence of the property). Any CSS transform on an ancestor changes
+// the containing block for every `position: fixed` descendant — so every
+// fixed-position modal, overlay and sidebar rendered inside a routed page
+// (as opposed to the global RootLayout) would anchor to this wrapper's full
+// page height instead of the real viewport. That's what was causing modals
+// to render off-position and the sidebar to scroll with the page instead of
+// staying fixed. Fade-only never touches `transform`, so it doesn't happen.
+const fadeVariants = {
+  enter: { opacity: 0 },
+  center: { opacity: 1 },
+  exit: { opacity: 0 },
 };
 
 function PageTransition() {
   const { pathname } = useLocation();
-  const prevRef = useRef(pathname);
-  const dirRef = useRef(1);
-
-  if (prevRef.current !== pathname) {
-    dirRef.current = pathDepth(pathname) >= pathDepth(prevRef.current) ? 1 : -1;
-    prevRef.current = pathname;
-  }
 
   return (
-    <AnimatePresence mode="popLayout" initial={false} custom={dirRef.current}>
+    <AnimatePresence mode="popLayout" initial={false}>
       <motion.div
         key={pathname}
-        custom={dirRef.current}
-        variants={slideVariants}
+        variants={fadeVariants}
         initial="enter"
         animate="center"
         exit="exit"
-        transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
-        style={{ willChange: 'transform, opacity' }}
+        transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
         <Outlet />
       </motion.div>
