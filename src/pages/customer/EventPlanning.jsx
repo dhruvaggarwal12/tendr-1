@@ -6,6 +6,7 @@ import { EventIdeasPanel } from "../../utils/eventIdeas";
 import { useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
 import { useChatOverlay, useOpenBaatKaroChat } from "../../context/ChatContext";
+import { usePriceEstimator } from "../../context/PriceEstimatorContext";
 import { useInstallPrompt } from "../../hooks/useInstallPrompt";
 
 import {
@@ -74,6 +75,7 @@ const EventPlanning = () => {
     navigate('/prebuilt-timeline');
   };
   const navigate = useNavigate();
+  const { openPriceEstimator } = usePriceEstimator();
   const location = useLocation();
   const { openConciergeChat, openVendorChat } = useChatOverlay();
   const openBaatKaroChat = useOpenBaatKaroChat();
@@ -2118,7 +2120,7 @@ const EventPlanning = () => {
                     <div>
                       <h3 style={{ fontSize: 15, fontWeight: 800, color: "#CCAB4A", margin: "0 0 2px" }}>How would you like to set your budget?</h3>
                       <p style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", margin: 0 }}>Choose the approach that works best for you</p>
-                      <button onClick={() => window.open("/price-estimator", "_blank")}
+                      <button onClick={() => openPriceEstimator({ occasion: formData?.eventType, onFinalise: (avg) => setTotalDraftBudget(avg) })}
                         style={{ background: "none", border: "none", padding: 0, marginTop: 5, fontSize: 11, fontWeight: 700, color: "#CCAB4A", cursor: "pointer", fontFamily: "'Outfit', sans-serif", textDecoration: "underline" }}>
                         Not sure what to set? Try the Price Estimator →
                       </button>

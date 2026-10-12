@@ -6,6 +6,7 @@ import { logout } from "../redux/authSlice";
 import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFiltersSlice";
 import { useChatOverlay } from "../context/ChatContext";
 import { useTour } from "../context/TourContext";
+import { usePriceEstimator } from "../context/PriceEstimatorContext";
 import SearchOverlay from "./SearchOverlay";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import tendrIcon from "../assets/logos/tendr.png";
@@ -151,6 +152,7 @@ const Navbar = ({
 }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { openPriceEstimator } = usePriceEstimator();
   const { resetAllTours } = useTour() || {};
   const { user, token } = useSelector((state) => state.auth);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -280,11 +282,11 @@ const Navbar = ({
     {
       label: "Tools",
       items: [
-        { label: "🎮 Occasion Hub",     href: "/occasion-hub" },
-        { label: "📷 Decor Analyser",   href: "/decor-analyser" },
+        { label: "Occasion Hub",        href: "/occasion-hub" },
+        { label: "Decor Analyser",      href: "/decor-analyser" },
         { label: "Planning Timeline",   href: "/timeline-picker" },
         { label: "Budget Allocator",    href: "/budget-picker" },
-        { label: "Price Estimator",     href: "/price-estimator" },
+        { label: "Price Estimator",     onClick: () => openPriceEstimator() },
         { label: "Find by Style",       href: "/find-by-style" },
       ],
     },

@@ -6,6 +6,7 @@ import { logout } from "../redux/authSlice";
 import { removeVendorFromCompare, clearVendorCompare, clearFinalisedVendor, setFilters } from "../redux/listingFiltersSlice";
 import { useChatOverlay } from "../context/ChatContext";
 import { useBookVendors } from "../context/BookVendorsContext";
+import { usePriceEstimator } from "../context/PriceEstimatorContext";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import { FaChevronDown, FaTimes, FaInstagram, FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import SearchOverlay from "./SearchOverlay";
@@ -55,6 +56,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const dispatch   = useDispatch();
   const { openVendorChat } = useChatOverlay();
   const { openBookVendors } = useBookVendors();
+  const { openPriceEstimator } = usePriceEstimator();
 
   // Track viewport width — sidebar only on desktop (≥1024px)
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== "undefined" && window.innerWidth >= 1024);
@@ -261,7 +263,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         onClickOverride: () => { try { const d = localStorage.getItem("tendr_timeline_v2"); const s = d ? JSON.parse(d) : null; if (s?.phases?.length > 0) { setTimelinePopupOpen(true); } else { window.open("/timeline-picker", "_blank"); } } catch { window.open("/timeline-picker", "_blank"); } } },
       { label: "Budget Allocator", href: "/budget-picker", activePaths: ["/budget-picker","/budget-allocator"],
         onClickOverride: () => { try { const d = localStorage.getItem("tendr_budget_v2"); const s = d ? JSON.parse(d) : null; if (s?.totalBudget) { setBudgetPopupOpen(true); } else { window.open("/budget-picker", "_blank"); } } catch { window.open("/budget-picker", "_blank"); } } },
-      { label: "Price Estimator",  href: "/price-estimator", activePaths: ["/price-estimator"] },
+      { label: "Price Estimator",  href: "/price-estimator", activePaths: ["/price-estimator"], onClickOverride: () => { close(); openPriceEstimator(); } },
       { label: "Equipment Planner", href: "/equipment-list", activePaths: ["/equipment-list"], onClickOverride: () => { close(); window.open("/equipment-list", "_blank"); } },
       { label: "Invitation Builder", href: "/invitation-builder", activePaths: ["/invitation-builder"], onClickOverride: () => { close(); window.open("/invitation-builder", "_blank"); } },
     ]},

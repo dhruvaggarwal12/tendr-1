@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useChatOverlay } from "../../context/ChatContext";
+import { usePriceEstimator } from "../../context/PriceEstimatorContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 import { setMultipleFormData, setBookingType, setSelectedPerformer } from "../../redux/eventPlanningSlice";
@@ -1341,6 +1342,7 @@ export default function OccasionDetail(){
   const dispatch=useDispatch();
   const token=useSelector(s=>s.auth?.token);
   const { openOccasionsChat } = useChatOverlay();
+  const { openPriceEstimator } = usePriceEstimator();
   const [searchParams]=useSearchParams();
   const cardRef=useRef(null);
   const planRef=useRef(null);
@@ -2118,7 +2120,7 @@ export default function OccasionDetail(){
                       <input type="number" value={budget} onChange={e=>setBudget(e.target.value)}
                         placeholder={String(mid)}
                         style={{width:"100%",padding:"9px 12px",borderRadius:8,border:`1px solid ${budget?occAccent:`rgba(28,9,0,0.12)`}`,background:budget?`${occAccent}05`:"rgba(28,9,0,0.02)",fontSize:13,fontFamily:font,fontWeight:budget?500:400,color:budget?ink:muted,outline:"none",boxSizing:"border-box"}}/>
-                      <button onClick={()=>window.open(`/price-estimator?occasion=${encodeURIComponent(occasion.name||"")}`,"_blank")}
+                      <button onClick={()=>openPriceEstimator({occasion:occasion.name,onFinalise:(avg)=>setBudget(String(avg))})}
                         style={{background:"none",border:"none",padding:0,marginTop:6,fontSize:11,fontWeight:700,color:occAccent,cursor:"pointer",fontFamily:font,textDecoration:"underline"}}>
                         Not sure? Try the Price Estimator →
                       </button>
@@ -3509,7 +3511,7 @@ export default function OccasionDetail(){
               // ── Make it even better — exactly 2, most relevant first ──
               const longestLead=itinerary.length>0?null:null; // itinerary slots don't carry lead time; use vendor-count heuristic instead
               const tips=[];
-              if(!budget||Number(budget)<=0) tips.push({t:"Confirm your budget",d:`Run the Price Estimator for ${occasion.name} with ${guestStr} to get real ₹ ranges before you start calling vendors — it stops the first few quotes from anchoring you too high.`,action:()=>window.open(`/price-estimator?occasion=${encodeURIComponent(occasion.name||"")}`,"_blank")});
+              if(!budget||Number(budget)<=0) tips.push({t:"Confirm your budget",d:`Run the Price Estimator for ${occasion.name} with ${guestStr} to get real ₹ ranges before you start calling vendors — it stops the first few quotes from anchoring you too high.`,action:()=>openPriceEstimator({occasion:occasion.name,onFinalise:(avg)=>setBudget(String(avg))})});
               if(vendors.length<2) tips.push({t:"Add more services",d:`Only ${vendors.length} service${vendors.length===1?"":"s"} picked so far — most ${occasion.name} plans need at least catering and decor booked together so timings don't clash.`,action:()=>setStep(3)});
               if(date){
                 const daysOut=Math.ceil((new Date(date+"T00:00:00")-new Date())/86400000);
@@ -3525,7 +3527,7 @@ export default function OccasionDetail(){
               if(gifts.length===0) crossSell.push({label:"Gift Hampers",icon:"🎁",href:"/gifting"});
               if(!inviteType) crossSell.push({label:"Invitations & Stationery",icon:"💌",href:"/stationery"});
               if(selectedActivities.length===0&&customActivities.length===0) crossSell.push({label:"Fun Activities",icon:"🎮",href:"/fun-activities"});
-              if(!budget||Number(budget)<=0) crossSell.push({label:"Price Estimator",icon:"💰",href:`/price-estimator?occasion=${encodeURIComponent(occasion.name||"")}`});
+              if(!budget||Number(budget)<=0) crossSell.push({label:"Price Estimator",icon:"💰",onClick:()=>openPriceEstimator({occasion:occasion.name,onFinalise:(avg)=>setBudget(String(avg))})});
               crossSell.push({label:"Event Timeline",icon:"🗓️",href:"/timeline-picker"});
 
               return(
@@ -3566,7 +3568,7 @@ export default function OccasionDetail(){
                     <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:9}}>You can also add, from Tendr</div>
                     <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
                       {crossSell.map((c,i)=>(
-                        <button key={i} onClick={()=>window.open(c.href,"_blank")}
+                        <button key={i} onClick={()=>c.onClick?c.onClick():window.open(c.href,"_blank")}
                           style={{display:"flex",alignItems:"center",gap:6,padding:"7px 12px",borderRadius:100,border:"1.5px solid rgba(196,122,46,0.2)",background:"rgba(196,122,46,0.03)",color:ink,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font}}>
                           <span>{c.icon}</span>{c.label}
                         </button>

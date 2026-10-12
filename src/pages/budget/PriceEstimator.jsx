@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import HamburgerNav from "../../components/HamburgerNav";
+import { useBookVendors } from "../../context/BookVendorsContext";
 import {
   getOccasionNames,
   getCategoriesForOccasion,
@@ -54,13 +55,15 @@ function keyOf(category, idx) {
   return `${category}::${idx}`;
 }
 
-export default function PriceEstimator() {
-  const [searchParams] = useSearchParams();
-  const requestedOccasion = searchParams.get("occasion");
-
+// The actual wizard. Reused by both the standalone /price-estimator page and
+// PriceEstimatorModal (the centered popup opened from everywhere else in the app).
+// `onFinalise(avgPrice)`, when provided, shows an "apply this to your budget?"
+// prompt on the results screen instead of just the generic Start Over / Book Vendors actions.
+export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFinalise }) {
+  const { openBookVendors } = useBookVendors();
   const [step, setStep] = useState(0); // 0 occasion, 1 guests, 2 categories, 3 location, 4..4+n-1 per-category items, final = 4+n
   const [occasion, setOccasion] = useState(
-    OCCASIONS.includes(requestedOccasion) ? requestedOccasion : OCCASIONS[0]
+    OCCASIONS.includes(initialOccasion) ? initialOccasion : OCCASIONS[0]
   );
   const [guestCount, setGuestCount] = useState(50);
   const [chosenCategories, setChosenCategories] = useState([]);
@@ -70,6 +73,7 @@ export default function PriceEstimator() {
   const [visitedCats, setVisitedCats] = useState(() => new Set());
   const [photoMatch, setPhotoMatch] = useState({ phase: "idle", preview: null, result: null, error: "" }); // idle | analyzing | done | error
   const photoInputRef = useRef(null);
+  const [finaliseChoice, setFinaliseChoice] = useState(null); // null | "applied" | "declined"
 
   const allCategories = useMemo(() => getCategoriesForOccasion(occasion), [occasion]);
   const allServices = useMemo(() => getServicesForOccasion(occasion), [occasion]);
@@ -86,6 +90,7 @@ export default function PriceEstimator() {
     setExpandedCats({});
     setVisitedCats(new Set());
     setPhotoMatch({ phase: "idle", preview: null, result: null, error: "" });
+    setFinaliseChoice(null);
     setStep(0);
   }, [occasion]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -246,11 +251,11 @@ export default function PriceEstimator() {
     true;
 
   return (
-    <div style={{ minHeight: "100vh", background: BG, fontFamily: font, paddingBottom: "calc(140px + env(safe-area-inset-bottom, 0px))" }}>
-      <HamburgerNav title="Price Estimator" showBack />
+    <div style={{ minHeight: embedded ? "auto" : "100vh", background: BG, fontFamily: font, paddingBottom: embedded ? 0 : "calc(140px + env(safe-area-inset-bottom, 0px))" }}>
+      {!embedded && <HamburgerNav title="Price Estimator" showBack />}
 
-      <div style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, padding: "clamp(16px,3vw,26px) clamp(16px,4vw,40px)" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+      <div style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, padding: "clamp(16px,3vw,26px) clamp(16px,4vw,40px)", borderRadius: embedded ? "20px 20px 0 0" : 0 }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", paddingRight: embedded ? 36 : 0 }}>
           <div style={{ color: "#fff", fontSize: "clamp(18px,3vw,24px)", fontWeight: 800, marginBottom: 10 }}>
             What will your event cost?
           </div>
@@ -368,6 +373,41 @@ export default function PriceEstimator() {
               </div>
             </div>
 
+            {onFinalise && (
+              <div style={{
+                background: finaliseChoice === "applied" ? "rgba(34,197,94,0.08)" : "#fff",
+                border: `1.5px solid ${finaliseChoice === "applied" ? "rgba(34,197,94,0.35)" : "rgba(196,122,46,0.25)"}`,
+                borderRadius: 14, padding: "16px 18px", marginBottom: 14,
+              }}>
+                {finaliseChoice === "applied" ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, fontWeight: 700, color: "#15803d" }}>
+                    <span>✓</span> Applied {formatINR(Math.round((total.min + total.max) / 2))} to your budget
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E", marginBottom: 2 }}>Finalise this estimate?</div>
+                    <div style={{ fontSize: 12, color: "#8a6a4a", marginBottom: 12, lineHeight: 1.5 }}>
+                      We'll set your budget to {formatINR(Math.round((total.min + total.max) / 2))} — the middle of this range.
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button
+                        onClick={() => { setFinaliseChoice("applied"); onFinalise(Math.round((total.min + total.max) / 2)); }}
+                        style={{ flex: 1, padding: "10px 14px", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer" }}
+                      >
+                        Yes, use this
+                      </button>
+                      <button
+                        onClick={() => setFinaliseChoice("declined")}
+                        style={{ flex: 1, padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: GOLD, fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer" }}
+                      >
+                        Not yet
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
             {Object.keys(byCategory).length > 0 && (
               <StepCard title="Breakdown by category">
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -403,7 +443,7 @@ export default function PriceEstimator() {
       </div>
 
       <div style={{
-        position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 500,
+        position: embedded ? "sticky" : "fixed", left: 0, right: 0, bottom: 0, zIndex: 500,
         background: "#fff", borderTop: "1.5px solid rgba(196,122,46,0.18)",
         boxShadow: "0 -6px 24px rgba(28,9,0,0.08)",
         padding: "14px 16px calc(14px + env(safe-area-inset-bottom, 0px))",
@@ -433,7 +473,7 @@ export default function PriceEstimator() {
           ) : (
             <>
               <button onClick={() => setStep(0)} style={navBtnStyle}>↺ Start over</button>
-              <a href="/booking" style={{ ...primaryBtnStyle, textDecoration: "none", display: "inline-block" }}>
+              <a href="/booking" onClick={embedded ? (e) => { e.preventDefault(); openBookVendors(); } : undefined} style={{ ...primaryBtnStyle, textDecoration: "none", display: "inline-block" }}>
                 Book vendors for this →
               </a>
             </>
@@ -442,6 +482,13 @@ export default function PriceEstimator() {
       </div>
     </div>
   );
+}
+
+// Standalone page at /price-estimator — kept as a fallback for direct links/bookmarks.
+// Everywhere else in the app opens PriceEstimatorModal instead.
+export default function PriceEstimator() {
+  const [searchParams] = useSearchParams();
+  return <PriceEstimatorWizard initialOccasion={searchParams.get("occasion")} />;
 }
 
 function StepCard({ title, subtitle, children }) {

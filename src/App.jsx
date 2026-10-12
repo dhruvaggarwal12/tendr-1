@@ -17,6 +17,8 @@ import { StationeryCartProvider } from "./context/StationeryCartContext";
 import { TourProvider } from "./context/TourContext";
 import { BookVendorsProvider } from "./context/BookVendorsContext";
 import BookVendorsModal from "./components/BookVendorsModal";
+import { PriceEstimatorProvider } from "./context/PriceEstimatorContext";
+import PriceEstimatorModal from "./components/PriceEstimatorModal";
 import ComingSoon from "./pages/ComingSoon";
 import CommunityWall from "./pages/community/CommunityWall";
 import tendrLogo from "./assets/logos/tendr-logo-secondary.png";
@@ -136,6 +138,7 @@ function App() {
             <TourProvider>
             <ChatProvider>
             <BookVendorsProvider>
+            <PriceEstimatorProvider>
               <SignInPromptController />
               {!splashDone && <SplashScreen onDone={handleSplashDone} />}
               <Suspense fallback={
@@ -152,6 +155,8 @@ function App() {
               <ShortlistFloat />
               <VendorChatModal />
               <BookVendorsModal />
+              <PriceEstimatorModal />
+            </PriceEstimatorProvider>
             </BookVendorsProvider>
             </ChatProvider>
             </TourProvider>
@@ -178,6 +183,7 @@ function App() {
         <TourProvider>
         <ChatProvider>
         <BookVendorsProvider>
+        <PriceEstimatorProvider>
           <SignInPromptController />
           {!splashDone && <SplashScreen onDone={handleSplashDone} />}
           <Suspense fallback={
@@ -194,6 +200,8 @@ function App() {
           <ShortlistFloat />
           <VendorChatModal />
           <BookVendorsModal />
+          <PriceEstimatorModal />
+        </PriceEstimatorProvider>
         </BookVendorsProvider>
         </ChatProvider>
         </TourProvider>

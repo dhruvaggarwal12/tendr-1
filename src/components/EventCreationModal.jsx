@@ -15,8 +15,10 @@ import {
   FiGift,
   FiAward
 } from 'react-icons/fi';
+import { usePriceEstimator } from '../context/PriceEstimatorContext';
 
 const EventCreationModal = ({ isOpen, onClose, onSubmit }) => {
+  const { openPriceEstimator } = usePriceEstimator();
   const [formData, setFormData] = useState({
     name: '',
     date: '',
@@ -247,7 +249,7 @@ const EventCreationModal = ({ isOpen, onClose, onSubmit }) => {
           />
           <button
             type="button"
-            onClick={() => window.open('/price-estimator', '_blank')}
+            onClick={() => openPriceEstimator({ occasion: formData.type, onFinalise: (avg) => setFormData(prev => ({ ...prev, budget: String(avg) })) })}
             className="mt-1 text-xs font-semibold text-orange-600 underline"
           >
             Not sure? Try the Price Estimator →

@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { AnimatePresence, motion } from "framer-motion";
 import { loadPlan, PlanSummaryModal } from "./PlanSummaryModal";
 import { useBookVendors } from "../context/BookVendorsContext";
+import { usePriceEstimator } from "../context/PriceEstimatorContext";
 
 const font = "'Outfit', sans-serif";
 
@@ -109,6 +110,7 @@ function BottomNavInner() {
   const navigate = useNavigate();
   const location = useLocation();
   const { openBookVendors } = useBookVendors();
+  const { openPriceEstimator } = usePriceEstimator();
   const { token, user } = useSelector((s) => s.auth);
   const finalisedVendors = useSelector((s) => s.listingFilters?.finalisedVendors || {});
   const finalisedCount = Object.keys(finalisedVendors).length;
@@ -428,7 +430,7 @@ function BottomNavInner() {
                 const isSaved = savedKey ? (() => { try { return !!localStorage.getItem(savedKey); } catch { return false; } })() : false;
                 return (
                   <button key={label}
-                    onClick={() => { if (newTab) { window.open(path, "_blank"); } else { navigate(href); } setProductsOpen(false); }}
+                    onClick={() => { if (label === "Price Estimator") { openPriceEstimator(); } else if (newTab) { window.open(path, "_blank"); } else { navigate(href); } setProductsOpen(false); }}
                     style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 14px", borderRadius: 14, border: `1.5px solid ${isSaved ? "rgba(34,197,94,0.3)" : "rgba(196,122,46,0.15)"}`, background: isSaved ? "rgba(34,197,94,0.04)" : "#fff", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.08)", position: "relative" }}
                     onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
                     onTouchEnd={e => e.currentTarget.style.background = isSaved ? "rgba(34,197,94,0.04)" : "#fff"}

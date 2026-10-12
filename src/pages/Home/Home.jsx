@@ -32,6 +32,7 @@ import Navbar from "../../components/Navbar.jsx";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
 import { useSelector } from "react-redux";
 import { useBookVendors } from "../../context/BookVendorsContext";
+import { usePriceEstimator } from "../../context/PriceEstimatorContext";
 import { FUN_ACTIVITIES } from "../../data/funActivitiesData";
 import { OCCASIONS } from "../../data/occasions";
 import { PARTY_PLACES } from "../../data/partyPlaces";
@@ -781,6 +782,7 @@ function WebsiteIntro({ onDone }) {
 const Home = () => {
   const navigate = useNavigate();
   const { openBookVendors } = useBookVendors();
+  const { openPriceEstimator } = usePriceEstimator();
   const bookingType = useSelector((s) => s.eventPlanning.bookingType);
   const formEventName = useSelector((s) => s.eventPlanning.formData.eventName);
   const showVendorScreen = useSelector((s) => s.eventPlanning.showVendorScreen);
@@ -3388,7 +3390,7 @@ const Home = () => {
                       onClick={()=>{
                         setOccModal(null);
                         const occName = PRICE_ESTIMATOR_OCCASION[occModal.slug] || occModal.label;
-                        navigate(`/price-estimator?occasion=${encodeURIComponent(occName)}`);
+                        openPriceEstimator({ occasion: occName });
                       }}
                       style={{display:"block",width:"100%",textAlign:"center",marginTop:4,padding:"9px 0",border:"none",background:"none",color:g,fontSize:12.5,fontWeight:700,cursor:"pointer",fontFamily:f}}
                     >

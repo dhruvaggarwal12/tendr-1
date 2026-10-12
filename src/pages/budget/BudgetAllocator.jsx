@@ -8,6 +8,7 @@ import BasicSpeedDial from "../../components/BasicSpeedDial";
 import HamburgerNav from "../../components/HamburgerNav";
 import AuthModal from "../../components/AuthModal";
 import { useChatOverlay, useOpenBaatKaroChat } from "../../context/ChatContext";
+import { usePriceEstimator } from "../../context/PriceEstimatorContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -265,6 +266,7 @@ const VENDOR_TO_BUDGET = {
 export default function BudgetAllocator() {
   const location = useLocation();
   const navigate  = useNavigate();
+  const { openPriceEstimator } = usePriceEstimator();
   const dispatch  = useDispatch();
   const routeEventType    = location.state?.eventType;
   const prefillBudget     = location.state?.prefillBudget;
@@ -583,7 +585,7 @@ export default function BudgetAllocator() {
           <div style={{ flex: 1, minWidth: 140 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Total Budget</div>
             <div style={{ fontSize: 11, color: "#9B7450" }}>Recalculates all category allocations</div>
-            <button onClick={() => navigate("/price-estimator")}
+            <button onClick={() => openPriceEstimator({ onFinalise: (avg) => setTotalBudget(avg) })}
               style={{ background: "none", border: "none", padding: 0, marginTop: 4, fontSize: 11, fontWeight: 700, color: "#C47A2E", cursor: "pointer", fontFamily: font, textDecoration: "underline" }}>
               Not sure what to budget? Try the Price Estimator →
             </button>
