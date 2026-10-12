@@ -13,13 +13,28 @@ const SANS = "'Outfit', sans-serif";
 // "Plan an Occasion" scrolls to the occasion picker on the homepage (same anchor
 // HamburgerNav's own "Plan by Occasion" link uses); "Use Tools" goes to the Budget
 // Allocator as the single most representative tool page.
+// "Just Exploring" is handled separately as a de-emphasized skip link, not a grid card —
+// it's a dismiss action, not a peer of the other four, so it shouldn't compete visually.
 const INTENTS = [
-  { label: 'Book Vendors', emoji: '🛍️', path: '/booking', desc: 'Caterers, decorators, photographers & more' },
-  { label: 'Plan an Occasion', emoji: '📋', path: '/', anchor: 'plan-by-occasion', desc: 'Budget, guest list, timelines & checklist' },
-  { label: 'Party Hub', emoji: '🎮', path: '/join-room', desc: 'Games & activities for your guests' },
-  { label: 'Use Tools', emoji: '✨', path: '/budget-picker', desc: 'Seating chart, budget planner & more' },
-  { label: 'Just Exploring', emoji: '👀', path: null, desc: 'Have a look around at my own pace' },
+  { label: 'Book Vendors', path: '/booking', desc: 'Caterers, decorators, photographers & more' },
+  { label: 'Plan an Occasion', path: '/', anchor: 'plan-by-occasion', desc: 'Budget, guest list, timelines & checklist' },
+  { label: 'Party Hub', path: '/join-room', desc: 'Games & activities for your guests' },
+  { label: 'Use Tools', path: '/budget-picker', desc: 'Seating chart, budget planner & more' },
 ];
+
+const IconBag = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+);
+const IconList = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg>
+);
+const IconGame = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="6"/><line x1="7" y1="12" x2="9" y2="12"/><line x1="8" y1="11" x2="8" y2="13"/><circle cx="15" cy="10.5" r="1"/><circle cx="17.5" cy="13" r="1"/></svg>
+);
+const IconSparkleTool = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-6.26L4 10l5.91-1.74z"/></svg>
+);
+const INTENT_ICONS = [IconBag, IconList, IconGame, IconSparkleTool];
 
 
 const CSS = `
@@ -44,9 +59,10 @@ const CSS = `
     .fte-intent-heading { margin-top: 0 !important; margin-bottom: 12px !important; }
     .fte-intent-heading .fte-title { font-size: 1.25rem !important; margin-bottom: 4px !important; }
     .fte-intent-heading .fte-sub { font-size: 12px !important; }
-    .fte-intent-grid { gap: 7px !important; }
-    .fte-intent-card { padding: 12px 10px !important; border-radius: 12px !important; }
-    .fte-intent-card .fte-emoji { font-size: 17px !important; margin-bottom: 3px !important; }
+    .fte-intent-grid { gap: 8px !important; }
+    .fte-intent-card { padding: 12px 10px !important; border-radius: 12px !important; gap: 7px !important; }
+    .fte-intent-card .fte-icon-chip { width: 28px !important; height: 28px !important; border-radius: 9px !important; }
+    .fte-intent-card .fte-icon-chip svg { width: 15px !important; height: 15px !important; }
     .fte-intent-card .fte-label { font-size: 12px !important; margin-bottom: 2px !important; }
     .fte-intent-card .fte-desc { font-size: 9.5px !important; line-height: 1.3 !important; }
   }
@@ -286,61 +302,89 @@ function IntentPicker({ onSelect }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 10000,
-      background: 'rgba(10,4,0,0.92)',
+      background: 'radial-gradient(ellipse at 50% 20%, rgba(74,40,16,0.5), rgba(10,4,0,0.95))',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       padding: '20px 16px',
       fontFamily: SANS,
       overflowY: 'auto',
     }}>
       <style>{CSS}</style>
-      <div className="fte-fadein" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 440, width: '100%' }}>
+      <div className="fte-fadein" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 460, width: '100%' }}>
         <div className="fte-mascot-wrap">
           <Mascot mood="celebrate" size={110} />
         </div>
-        <div className="fte-intent-heading" style={{ marginTop: 14, marginBottom: 22, textAlign: 'center' }}>
+        <div className="fte-intent-heading" style={{ marginTop: 14, marginBottom: 24, textAlign: 'center' }}>
           <div className="fte-title" style={{
             fontFamily: SERIF,
-            fontSize: 'clamp(1.5rem,4vw,1.9rem)',
-            fontWeight: 400, color: '#F5E6CC', lineHeight: 1.2, marginBottom: 8,
+            fontSize: 'clamp(1.6rem,4vw,2.1rem)',
+            fontWeight: 400, color: '#F5E6CC', lineHeight: 1.2, marginBottom: 8, textWrap: 'balance',
           }}>
             What brings you here today?
           </div>
           <div className="fte-sub" style={{ fontSize: 13.5, color: 'rgba(245,230,204,0.48)', lineHeight: 1.6 }}>
-            I'll take you right there.
+            Pick one — we'll take you right there.
           </div>
         </div>
-        <div className="fte-intent-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, width: '100%' }}>
-          {INTENTS.map(intent => (
-            <button
-              key={intent.label}
-              className="fte-intent-card"
-              onClick={() => onSelect(intent.path, intent.anchor)}
-              style={{
-                background: 'rgba(196,122,46,0.09)',
-                border: '1px solid rgba(196,122,46,0.22)',
-                borderRadius: 16, padding: '18px 14px',
-                cursor: 'pointer', textAlign: 'left',
-                color: 'white', fontFamily: SANS,
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = 'rgba(196,122,46,0.18)';
-                e.currentTarget.style.borderColor = 'rgba(196,122,46,0.5)';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = 'rgba(196,122,46,0.09)';
-                e.currentTarget.style.borderColor = 'rgba(196,122,46,0.22)';
-              }}
-            >
-              <div className="fte-emoji" style={{ fontSize: 22, marginBottom: 7 }}>{intent.emoji}</div>
-              <div className="fte-label" style={{ fontSize: 13.5, fontWeight: 700, color: '#F5E6CC', marginBottom: 4, lineHeight: 1.2 }}>
-                {intent.label}
-              </div>
-              <div className="fte-desc" style={{ fontSize: 11, color: 'rgba(245,230,204,0.42)', lineHeight: 1.45 }}>
-                {intent.desc}
-              </div>
-            </button>
-          ))}
+        <div className="fte-intent-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, width: '100%' }}>
+          {INTENTS.map((intent, i) => {
+            const Icon = INTENT_ICONS[i];
+            return (
+              <button
+                key={intent.label}
+                className="fte-intent-card"
+                onClick={() => onSelect(intent.path, intent.anchor)}
+                style={{
+                  background: 'linear-gradient(160deg, rgba(196,122,46,0.1), rgba(196,122,46,0.04))',
+                  border: '1px solid rgba(196,122,46,0.24)',
+                  borderRadius: 16, padding: '18px 16px',
+                  cursor: 'pointer', textAlign: 'left',
+                  color: 'white', fontFamily: SANS,
+                  display: 'flex', flexDirection: 'column', gap: 10,
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'linear-gradient(160deg, rgba(196,122,46,0.22), rgba(196,122,46,0.08))';
+                  e.currentTarget.style.borderColor = 'rgba(204,171,74,0.6)';
+                  e.currentTarget.style.boxShadow = '0 8px 28px rgba(196,122,46,0.25)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'linear-gradient(160deg, rgba(196,122,46,0.1), rgba(196,122,46,0.04))';
+                  e.currentTarget.style.borderColor = 'rgba(196,122,46,0.24)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <div className="fte-icon-chip" style={{
+                  width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+                  background: 'rgba(204,171,74,0.14)', border: '1px solid rgba(204,171,74,0.3)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#E8C878',
+                }}>
+                  <Icon />
+                </div>
+                <div>
+                  <div className="fte-label" style={{ fontSize: 13.5, fontWeight: 700, color: '#F5E6CC', marginBottom: 4, lineHeight: 1.2 }}>
+                    {intent.label}
+                  </div>
+                  <div className="fte-desc" style={{ fontSize: 11, color: 'rgba(245,230,204,0.42)', lineHeight: 1.45 }}>
+                    {intent.desc}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
         </div>
+
+        {/* Skip — a dismiss action, not a peer choice, so it's a quiet link rather than a 5th card */}
+        <button
+          onClick={() => onSelect(null)}
+          style={{
+            marginTop: 20, background: 'none', border: 'none', cursor: 'pointer',
+            color: 'rgba(245,230,204,0.4)', fontSize: 12.5, fontWeight: 600, fontFamily: SANS,
+            textDecoration: 'underline', textUnderlineOffset: 3,
+          }}
+          onMouseEnter={e => { e.currentTarget.style.color = 'rgba(245,230,204,0.65)'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(245,230,204,0.4)'; }}
+        >
+          Just exploring — let me look around on my own
+        </button>
       </div>
     </div>
   );
