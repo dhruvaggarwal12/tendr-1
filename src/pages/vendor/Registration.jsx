@@ -61,6 +61,51 @@ const COORDINATOR_SPECIALIZATIONS = [
   "Musical Nights / Concerts", "Exhibitions & Product Launches", "Sports Events",
 ];
 
+// ── Coordinator application questionnaire options ──────────────────────────
+const COORD_WHAT_YOU_CAN_DO = [
+  "Bring new event orders to Tendr",
+  "Coordinate with customers virtually through chat/calls",
+  "Conduct home visits when required",
+  "Coordinate with Tendr vendors",
+  "Conduct venue visits when required",
+  "Be present on event day when required",
+  "Help resolve customer/vendor issues",
+  "Represent Tendr professionally",
+];
+
+const COORD_PAYOUT_YOU_BRING = [
+  { contribution: "Bring Order Only",                                    payout: "20%" },
+  { contribution: "Bring + Virtual/Chat Coordination",                   payout: "30%" },
+  { contribution: "Bring + Virtual + Home Visit",                        payout: "30%" },
+  { contribution: "Bring + Virtual + Event Day",                         payout: "30%" },
+  { contribution: "Bring + Virtual + Home Visit + Event Day",            payout: "35%" },
+];
+const COORD_PAYOUT_TENDR_GIVES = [
+  { contribution: "Virtual/Chat Coordination",            payout: "10%" },
+  { contribution: "Virtual + Home Visit",                 payout: "20%" },
+  { contribution: "Virtual + Event Day",                  payout: "20%" },
+  { contribution: "Virtual + Home Visit + Event Day",      payout: "30%" },
+];
+
+const COORD_WHAT_YOU_GET = [
+  "Performance-based earning",
+  "Flexible work opportunities across Delhi NCR",
+  "No need to maintain your own vendor network",
+  "Earn by bringing your own event leads",
+  "Virtual, home-visit and on-ground opportunities",
+  "Work with Tendr's technology and vendor ecosystem",
+  "Opportunity to grow with an emerging event-tech startup",
+];
+
+const COORD_LANGUAGE_OPTIONS = ["English", "Hindi", "Both", "Other"];
+const COORD_HOURS_OPTIONS = ["2–5 hrs/week", "5–10 hrs/week", "10–20 hrs/week", "20+ hrs/week", "Flexible/full-time"];
+const COORD_AVAILABLE_FOR_OPTIONS = ["Virtual coordination", "Home visits", "Venue visits", "Event day coordination", "Short notice assignments"];
+const COORD_TRAVEL_AREAS = ["Ghaziabad", "Noida", "Greater Noida", "Gurgaon"];
+const COORD_APP_COMFORT_OPTIONS = ["Comfortable", "Can try", "Not comfortable"];
+const COORD_HOME_VISIT_OPTIONS = ["YES", "Depend on event", "Only in preferred area", "NO"];
+const COORD_EVENT_PRESENCE_OPTIONS = ["Yes", "No", "Maybe"];
+const COORD_LATE_WORK_OPTIONS = ["Until 8 pm", "Until 10 pm", "Flexible", "Until midnight"];
+
 const CITY_OPTIONS = [
   "Delhi", "Noida", "Gurugram", "Ghaziabad", "Faridabad",
   "Mumbai", "Pune", "Bengaluru", "Hyderabad", "Chennai", "Kolkata", "Jaipur", "Chandigarh",
@@ -202,7 +247,7 @@ function StepBar({ step, steps = ["Category", "Specialty", "Details"] }) {
 const FREE_FEATS = ["Profile & portfolio", "Discovered by clients", "Receive leads", "15% only on Tendr bookings", "Always free to list"];
 const PAID_FEATS = ["Bookings & availability calendar", "Client CRM & reviews", "Quotes, invoices & contracts", "Payments & profit tracking", "Smart reminders & alerts", "Business insights & analytics", "Flyer builder & link hub", "Hindi & English support", "0% commission on outside bookings"];
 
-function Shell({ children, step, steps, narrow = true, sideTitle, sideSub, sideTiers }) {
+function Shell({ children, step, steps, narrow = true, sideTitle, sideSub, sideTiers, hideTrustStrip }) {
   return (
     <div style={{ minHeight: "100vh", background: "#F9F6F1", fontFamily: font }}>
       <style>{`
@@ -255,7 +300,7 @@ function Shell({ children, step, steps, narrow = true, sideTitle, sideSub, sideT
                 <div style={{ fontSize: 11, color: "rgba(196,122,46,0.6)", marginTop: 6 }}>+{PAID_FEATS.length - 5} more features</div>
               </div>
             </div>
-          ) : (
+          ) : hideTrustStrip ? null : (
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               {TRUST.map(t => (
                 <div key={t.n} style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
@@ -337,11 +382,69 @@ function SuccessScreen({ name, isCoordinator, navigate }) {
 
 // ─── Coordinator Registration Flow ────────────────────────────────────────────
 
+function InfoCard({ title, children }) {
+  return (
+    <div style={{ background: "#fff", borderRadius: 14, padding: "20px 22px", border: "1px solid rgba(28,14,4,0.07)", marginBottom: 14 }}>
+      <h3 style={{ fontSize: 14, fontWeight: 800, color: ink, margin: "0 0 10px" }}>{title}</h3>
+      <div style={{ fontSize: 13, color: muted, lineHeight: 1.7 }}>{children}</div>
+    </div>
+  );
+}
+
+function CoordChipGroup({ options, selected, multi, onToggle, error }) {
+  return (
+    <div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        {options.map(opt => {
+          const on = multi ? selected.includes(opt) : selected === opt;
+          return (
+            <button key={opt} type="button" onClick={() => onToggle(opt)}
+              style={{ padding: "8px 14px", borderRadius: 100, fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+      <FieldError msg={error} />
+    </div>
+  );
+}
+
+function CoordRatingScale({ value, onChange, error }) {
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <span style={{ fontSize: 10, fontWeight: 700, color: muted, letterSpacing: "0.04em" }}>POOR</span>
+        <div style={{ display: "flex", gap: 6 }}>
+          {[1, 2, 3, 4, 5].map(n => (
+            <button key={n} type="button" onClick={() => onChange(n)}
+              style={{
+                width: 34, height: 34, borderRadius: "50%", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer",
+                border: value === n ? "none" : "1.5px solid rgba(28,14,4,0.14)",
+                background: value === n ? gold : "#fff",
+                color: value === n ? "#fff" : muted,
+                transition: "all 0.15s",
+              }}>
+              {n}
+            </button>
+          ))}
+        </div>
+        <span style={{ fontSize: 10, fontWeight: 700, color: muted, letterSpacing: "0.04em" }}>BEST</span>
+      </div>
+      <FieldError msg={error} />
+    </div>
+  );
+}
+
 function CoordinatorForm({ onBack, onSuccess }) {
   const [form, setForm] = useState({
-    name: "", phoneNumber: "", email: "", city: "",
-    experience: "", eventsPerMonth: "", specializations: [],
-    bio: "", instagram: "", portfolioLink: "",
+    name: "", phoneNumber: "", email: "", address: "",
+    age: "", preferredLanguage: "", currentOccupation: "",
+    hasOrganizedEvents: "", eventsOrganizedCount: "", hasVendorNetwork: "",
+    availableHoursPerWeek: "", availableFor: [], travelAreas: [],
+    planningExperience: "", qualification: "", canBringLeads: "", instagram: "",
+    customerInteractionComfort: 0, callComfort: 0, inPersonMeetingComfort: 0, problemHandlingComfort: 0,
+    appComfort: "", homeVisitComfort: "", eventPresenceComfort: "", lateWorkComfort: "",
     password: "", confirmPassword: "",
   });
   const [errors, setErrors]   = useState({});
@@ -351,24 +454,38 @@ function CoordinatorForm({ onBack, onSuccess }) {
   const [showPw, setShowPw]   = useState(false);
 
   const iStyle = (f) => inputStyle(focused, errors, f, gold, ink);
-
-  const toggle = (spec) => setForm(p => ({
-    ...p,
-    specializations: p.specializations.includes(spec)
-      ? p.specializations.filter(s => s !== spec)
-      : [...p.specializations, spec],
-  }));
+  const set = (k, v) => { setForm(p => ({ ...p, [k]: v })); setErrors(p => ({ ...p, [k]: "" })); };
+  const toggleMulti = (k, val) => { setForm(p => ({ ...p, [k]: p[k].includes(val) ? p[k].filter(x => x !== val) : [...p[k], val] })); setErrors(p => ({ ...p, [k]: "" })); };
 
   const validate = () => {
     const e = {};
-    if (!form.name.trim())            e.name = "Name is required";
-    if (!form.phoneNumber.trim())     e.phoneNumber = "Phone is required";
+    if (!form.name.trim())                e.name = "Name is required";
+    if (!form.phoneNumber.trim())         e.phoneNumber = "Contact no. is required";
     else if (!/^[6-9]\d{9}$/.test(form.phoneNumber)) e.phoneNumber = "Enter a valid 10-digit number";
-    if (!form.email.trim())           e.email = "Email is required";
+    if (!form.email.trim())               e.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Enter a valid email";
-    if (!form.city.trim())            e.city = "City is required";
-    if (!form.password)               e.password = "Password is required";
-    else if (form.password.length < 8) e.password = "Password must be at least 8 characters";
+    if (!form.address.trim())             e.address = "Address is required";
+    if (!form.age || Number(form.age) < 16 || Number(form.age) > 80) e.age = "Enter a valid age";
+    if (!form.preferredLanguage)          e.preferredLanguage = "Please select one";
+    if (!form.currentOccupation.trim())   e.currentOccupation = "Current occupation is required";
+    if (!form.hasOrganizedEvents)         e.hasOrganizedEvents = "Please select Yes or No";
+    if (!form.hasVendorNetwork)           e.hasVendorNetwork = "Please select Yes or No";
+    if (!form.availableHoursPerWeek)      e.availableHoursPerWeek = "Please select one";
+    if (form.availableFor.length === 0)   e.availableFor = "Select at least one";
+    if (form.travelAreas.length === 0)    e.travelAreas = "Select at least one area";
+    if (!form.planningExperience.trim())  e.planningExperience = "This field is required";
+    if (!form.qualification.trim())       e.qualification = "Qualification is required";
+    if (!form.canBringLeads)              e.canBringLeads = "Please select Yes or No";
+    if (!form.customerInteractionComfort) e.customerInteractionComfort = "Please rate this";
+    if (!form.callComfort)                e.callComfort = "Please rate this";
+    if (!form.inPersonMeetingComfort)     e.inPersonMeetingComfort = "Please rate this";
+    if (!form.problemHandlingComfort)     e.problemHandlingComfort = "Please rate this";
+    if (!form.appComfort)                 e.appComfort = "Please select one";
+    if (!form.homeVisitComfort)           e.homeVisitComfort = "Please select one";
+    if (!form.eventPresenceComfort)       e.eventPresenceComfort = "Please select one";
+    if (!form.lateWorkComfort)            e.lateWorkComfort = "Please select one";
+    if (!form.password)                   e.password = "Password is required";
+    else if (form.password.length < 8)    e.password = "Password must be at least 8 characters";
     if (form.confirmPassword !== form.password) e.confirmPassword = "Passwords do not match";
     return e;
   };
@@ -376,7 +493,7 @@ function CoordinatorForm({ onBack, onSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const v = validate();
-    if (Object.keys(v).length) { setErrors(v); return; }
+    if (Object.keys(v).length) { setErrors(v); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
     setLoading(true);
     setApiError("");
     try {
@@ -387,14 +504,30 @@ function CoordinatorForm({ onBack, onSuccess }) {
           name:             form.name.trim(),
           phoneNumber:      form.phoneNumber.trim(),
           email:            form.email.trim(),
-          city:             form.city.trim(),
-          experience:       form.experience,
-          eventsPerMonth:   form.eventsPerMonth,
-          specializations:  form.specializations,
-          bio:              form.bio.trim(),
+          address:          form.address.trim(),
+          city:             form.address.trim(), // form only asks for Address, not City separately — mirrored for existing city-based admin search/filters
+          age:              Number(form.age),
+          preferredLanguage: form.preferredLanguage,
+          currentOccupation: form.currentOccupation.trim(),
+          hasOrganizedEvents: form.hasOrganizedEvents,
+          eventsOrganizedCount: form.eventsOrganizedCount.trim(),
+          hasVendorNetwork: form.hasVendorNetwork,
+          availableHoursPerWeek: form.availableHoursPerWeek,
+          availableFor:     form.availableFor,
+          travelAreas:      form.travelAreas,
+          planningExperience: form.planningExperience.trim(),
+          qualification:    form.qualification.trim(),
+          canBringLeads:    form.canBringLeads,
           instagram:        form.instagram.trim(),
-          portfolioLink:    form.portfolioLink.trim(),
-          password:         form.password,
+          customerInteractionComfort: form.customerInteractionComfort,
+          callComfort:       form.callComfort,
+          inPersonMeetingComfort: form.inPersonMeetingComfort,
+          problemHandlingComfort: form.problemHandlingComfort,
+          appComfort:        form.appComfort,
+          homeVisitComfort:  form.homeVisitComfort,
+          eventPresenceComfort: form.eventPresenceComfort,
+          lateWorkComfort:   form.lateWorkComfort,
+          password:          form.password,
         }),
         credentials: "include",
       });
@@ -415,168 +548,279 @@ function CoordinatorForm({ onBack, onSuccess }) {
   return (
     <Shell
       step={2}
-      steps={["Category", "Your Details"]}
-      narrow
+      steps={["Category", "Application"]}
+      narrow={false}
+      hideTrustStrip
       sideTitle="Manage real events, earn real income."
       sideSub="Tendr's Event Coordinator program — handle client chats, plan events, earn commissions."
     >
-      <button onClick={onBack} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
-        ← Back
-      </button>
+      <div style={{ maxWidth: 680, margin: "0 auto" }}>
+        <button onClick={onBack} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
+          ← Back
+        </button>
 
-      <div style={{ marginBottom: 24 }}>
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 8 }}>Event Coordinator</p>
-        <h1 style={{ fontSize: "clamp(1.4rem,3vw,1.8rem)", fontWeight: 800, color: ink, margin: "0 0 4px" }}>Tell us about yourself</h1>
-        <p style={{ fontSize: 14, color: muted, margin: 0 }}>Our team will review and reach you within 24–48 hours.</p>
-      </div>
+        <div style={{ marginBottom: 20 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 8 }}>Event Coordinator</p>
+          <h1 style={{ fontSize: "clamp(1.5rem,3.5vw,2rem)", fontWeight: 800, color: ink, margin: "0 0 10px", lineHeight: 1.2 }}>Become a Tendr Event Coordinator</h1>
+          <p style={{ fontSize: 14, color: muted, lineHeight: 1.7, margin: 0 }}>
+            You don't need your own vendor network or an event company. Tendr provides the platform, vendor ecosystem and support — you bring your communication, planning and coordination skills.
+          </p>
+        </div>
 
-      <div style={{ background: "#fff", borderRadius: 16, padding: "24px 22px", border: "1px solid rgba(28,14,4,0.07)", boxShadow: "0 2px 12px rgba(28,14,4,0.05)" }}>
-        {apiError && (
-          <div style={{ background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 10, padding: "11px 16px", fontSize: 13, color: "#c0392b", marginBottom: 20 }}>{apiError}</div>
-        )}
+        <InfoCard title="What you can do">
+          <ul style={{ margin: 0, paddingLeft: 18 }}>
+            {COORD_WHAT_YOU_CAN_DO.map(i => <li key={i} style={{ marginBottom: 4 }}>{i}</li>)}
+          </ul>
+        </InfoCard>
 
-        <form onSubmit={handleSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        <InfoCard title="💰 Coordinator Earnings">
+          <p style={{ margin: "0 0 14px" }}>Your commission is calculated on <strong>Tendr's earnings</strong> from the booking, NOT on the customer's total event value.</p>
 
-          {/* Name */}
-          <div>
-            <Label required>Full Name</Label>
-            <input value={form.name} onChange={e => { setForm(p => ({...p, name: e.target.value})); setErrors(p => ({...p, name: ""})); }}
-              onFocus={() => setFocused("name")} onBlur={() => setFocused("")}
-              placeholder="e.g. Priya Sharma" style={iStyle("name")} />
-            <FieldError msg={errors.name} />
+          <p style={{ fontWeight: 700, color: ink, margin: "0 0 6px" }}>If you bring the customer</p>
+          <div style={{ overflowX: "auto", marginBottom: 14 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+              <tbody>
+                {COORD_PAYOUT_YOU_BRING.map(row => (
+                  <tr key={row.contribution} style={{ borderBottom: "1px solid rgba(28,14,4,0.07)" }}>
+                    <td style={{ padding: "7px 10px 7px 0", color: muted }}>{row.contribution}</td>
+                    <td style={{ padding: "7px 0", textAlign: "right", fontWeight: 700, color: gold, whiteSpace: "nowrap" }}>{row.payout}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
-          {/* Phone + Email */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <p style={{ fontWeight: 700, color: ink, margin: "0 0 6px" }}>If Tendr gives you the customer</p>
+          <div style={{ overflowX: "auto", marginBottom: 14 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+              <tbody>
+                {COORD_PAYOUT_TENDR_GIVES.map(row => (
+                  <tr key={row.contribution} style={{ borderBottom: "1px solid rgba(28,14,4,0.07)" }}>
+                    <td style={{ padding: "7px 10px 7px 0", color: muted }}>{row.contribution}</td>
+                    <td style={{ padding: "7px 0", textAlign: "right", fontWeight: 700, color: gold, whiteSpace: "nowrap" }}>{row.payout}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p style={{ margin: "0 0 8px" }}><strong>No booking = No commission.</strong> Home visits are free for eligible Tendr customers. Approved home visits will receive separate visit/travel compensation, even if the customer does not ultimately book.</p>
+          <p style={{ margin: 0 }}>All bookings and customer payments must happen through Tendr.</p>
+        </InfoCard>
+
+        <InfoCard title="What you get">
+          <ul style={{ margin: 0, paddingLeft: 18 }}>
+            {COORD_WHAT_YOU_GET.map(i => <li key={i} style={{ marginBottom: 4 }}>{i}</li>)}
+          </ul>
+        </InfoCard>
+
+        <InfoCard title="Social Media Requirement">
+          <p style={{ margin: "0 0 8px" }}>As a Tendr Event Coordinator, you will represent the Tendr brand. You are expected to follow, interact with and share Tendr's social media content.</p>
+          <p style={{ margin: "0 0 8px" }}>📸 Instagram: <strong>@justtendrit</strong></p>
+          <p style={{ margin: "0 0 8px" }}>We'd also appreciate you adding <strong>@justtendr</strong> to your Instagram bio while working with Tendr.</p>
+          <p style={{ margin: 0 }}>📍 Location: Delhi NCR</p>
+        </InfoCard>
+
+        <p style={{ fontSize: 14, color: ink, fontWeight: 600, margin: "4px 0 20px" }}>
+          If you enjoy events, people, planning, coordination and taking ownership, apply below.
+        </p>
+
+        <div style={{ background: "#fff", borderRadius: 16, padding: "24px 22px", border: "1px solid rgba(28,14,4,0.07)", boxShadow: "0 2px 12px rgba(28,14,4,0.05)" }}>
+          {apiError && (
+            <div style={{ background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 10, padding: "11px 16px", fontSize: 13, color: "#c0392b", marginBottom: 20 }}>{apiError}</div>
+          )}
+
+          <form onSubmit={handleSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
             <div>
-              <Label required>Phone</Label>
-              <input value={form.phoneNumber} onChange={e => { setForm(p => ({...p, phoneNumber: e.target.value})); setErrors(p => ({...p, phoneNumber: ""})); }}
-                onFocus={() => setFocused("phoneNumber")} onBlur={() => setFocused("")}
-                placeholder="10-digit" maxLength={10} type="tel" style={iStyle("phoneNumber")} />
-              <FieldError msg={errors.phoneNumber} />
+              <Label required>Name</Label>
+              <input value={form.name} onChange={e => set("name", e.target.value)}
+                onFocus={() => setFocused("name")} onBlur={() => setFocused("")}
+                placeholder="e.g. Priya Sharma" style={iStyle("name")} />
+              <FieldError msg={errors.name} />
             </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div>
+                <Label required>Contact no.</Label>
+                <input value={form.phoneNumber} onChange={e => set("phoneNumber", e.target.value)}
+                  onFocus={() => setFocused("phoneNumber")} onBlur={() => setFocused("")}
+                  placeholder="10-digit" maxLength={10} type="tel" style={iStyle("phoneNumber")} />
+                <FieldError msg={errors.phoneNumber} />
+              </div>
+              <div>
+                <Label required>Email</Label>
+                <input value={form.email} onChange={e => set("email", e.target.value)}
+                  onFocus={() => setFocused("email")} onBlur={() => setFocused("")}
+                  placeholder="you@email.com" type="email" style={iStyle("email")} />
+                <FieldError msg={errors.email} />
+              </div>
+            </div>
+
             <div>
-              <Label required>Email</Label>
-              <input value={form.email} onChange={e => { setForm(p => ({...p, email: e.target.value})); setErrors(p => ({...p, email: ""})); }}
-                onFocus={() => setFocused("email")} onBlur={() => setFocused("")}
-                placeholder="you@email.com" type="email" style={iStyle("email")} />
-              <FieldError msg={errors.email} />
+              <Label required>Address</Label>
+              <input value={form.address} onChange={e => set("address", e.target.value)}
+                onFocus={() => setFocused("address")} onBlur={() => setFocused("")}
+                placeholder="e.g. Sector 62, Noida" style={iStyle("address")} />
+              <FieldError msg={errors.address} />
             </div>
-          </div>
 
-          {/* City */}
-          <div>
-            <Label required>Primary City</Label>
-            <input value={form.city} onChange={e => { setForm(p => ({...p, city: e.target.value})); setErrors(p => ({...p, city: ""})); }}
-              onFocus={() => setFocused("city")} onBlur={() => setFocused("")}
-              placeholder="e.g. Delhi, Noida, Gurgaon" style={iStyle("city")} />
-            <FieldError msg={errors.city} />
-          </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div>
+                <Label required>Age</Label>
+                <input value={form.age} onChange={e => set("age", e.target.value.replace(/\D/g, ""))}
+                  onFocus={() => setFocused("age")} onBlur={() => setFocused("")}
+                  placeholder="e.g. 24" inputMode="numeric" maxLength={2} style={iStyle("age")} />
+                <FieldError msg={errors.age} />
+              </div>
+              <div>
+                <Label required>Preferred language</Label>
+                <CoordChipGroup options={COORD_LANGUAGE_OPTIONS} selected={form.preferredLanguage} onToggle={v => set("preferredLanguage", v)} error={errors.preferredLanguage} />
+              </div>
+            </div>
 
-          {/* Experience + Events/Month */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <div>
-              <Label optional>Years of Experience</Label>
-              <select value={form.experience} onChange={e => setForm(p => ({...p, experience: e.target.value}))}
-                onFocus={() => setFocused("experience")} onBlur={() => setFocused("")}
-                style={{ ...iStyle("experience"), appearance: "none" }}>
-                <option value="">Select</option>
-                {["< 1 year", "1–2 years", "3–5 years", "5–10 years", "10+ years"].map(o => <option key={o} value={o}>{o}</option>)}
-              </select>
+              <Label required>Current occupation</Label>
+              <input value={form.currentOccupation} onChange={e => set("currentOccupation", e.target.value)}
+                onFocus={() => setFocused("currentOccupation")} onBlur={() => setFocused("")}
+                placeholder="e.g. Student, Working professional" style={iStyle("currentOccupation")} />
+              <FieldError msg={errors.currentOccupation} />
             </div>
+
             <div>
-              <Label optional>Events per Month</Label>
-              <select value={form.eventsPerMonth} onChange={e => setForm(p => ({...p, eventsPerMonth: e.target.value}))}
-                onFocus={() => setFocused("eventsPerMonth")} onBlur={() => setFocused("")}
-                style={{ ...iStyle("eventsPerMonth"), appearance: "none" }}>
-                <option value="">Select</option>
-                {["1–2", "3–5", "6–10", "10+"].map(o => <option key={o} value={o}>{o}</option>)}
-              </select>
+              <Label required>Have you ever organized or managed any event?</Label>
+              <CoordChipGroup options={["Yes", "No"]} selected={form.hasOrganizedEvents} onToggle={v => set("hasOrganizedEvents", v)} error={errors.hasOrganizedEvents} />
             </div>
-          </div>
 
-          {/* Specializations */}
-          <div>
-            <Label optional>Event Specializations</Label>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
-              {COORDINATOR_SPECIALIZATIONS.map(spec => {
-                const sel = form.specializations.includes(spec);
-                return (
-                  <button
-                    key={spec} type="button" onClick={() => toggle(spec)}
-                    style={{
-                      padding: "7px 12px", borderRadius: 8, fontSize: 12, fontFamily: font, cursor: "pointer",
-                      border: `1.5px solid ${sel ? gold : "rgba(28,14,4,0.12)"}`,
-                      background: sel ? "rgba(196,122,46,0.08)" : "#fff",
-                      color: sel ? gold : muted, fontWeight: sel ? 700 : 500,
-                      transition: "all 0.15s",
-                    }}
-                  >
-                    {spec}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+            {form.hasOrganizedEvents === "Yes" && (
+              <div>
+                <Label optional>If yes, how many?</Label>
+                <input value={form.eventsOrganizedCount} onChange={e => set("eventsOrganizedCount", e.target.value)}
+                  onFocus={() => setFocused("eventsOrganizedCount")} onBlur={() => setFocused("")}
+                  placeholder="e.g. 5" style={iStyle("eventsOrganizedCount")} />
+              </div>
+            )}
 
-          {/* Bio */}
-          <div>
-            <Label optional>Short Bio</Label>
-            <textarea value={form.bio} onChange={e => setForm(p => ({...p, bio: e.target.value}))}
-              onFocus={() => setFocused("bio")} onBlur={() => setFocused("")}
-              rows={3} placeholder="Tell us about your event planning style and experience…"
-              style={{ ...iStyle("bio"), resize: "vertical" }} />
-          </div>
-
-          {/* Instagram + Portfolio */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
             <div>
-              <Label optional>Instagram Handle</Label>
-              <input value={form.instagram} onChange={e => setForm(p => ({...p, instagram: e.target.value}))}
+              <Label required>Do you have vendor network?</Label>
+              <CoordChipGroup options={["Yes", "No"]} selected={form.hasVendorNetwork} onToggle={v => set("hasVendorNetwork", v)} error={errors.hasVendorNetwork} />
+            </div>
+
+            <div>
+              <Label required>How much time can you give to Tendr?</Label>
+              <CoordChipGroup options={COORD_HOURS_OPTIONS} selected={form.availableHoursPerWeek} onToggle={v => set("availableHoursPerWeek", v)} error={errors.availableHoursPerWeek} />
+            </div>
+
+            <div>
+              <Label required>Available for?</Label>
+              <CoordChipGroup options={COORD_AVAILABLE_FOR_OPTIONS} selected={form.availableFor} multi onToggle={v => toggleMulti("availableFor", v)} error={errors.availableFor} />
+            </div>
+
+            <div>
+              <Label required>Which all places are you comfortable to travel in case of a home visit?</Label>
+              <CoordChipGroup options={COORD_TRAVEL_AREAS} selected={form.travelAreas} multi onToggle={v => toggleMulti("travelAreas", v)} error={errors.travelAreas} />
+            </div>
+
+            <div>
+              <Label required>Any event planning/managing experience? (Not necessary to have some)</Label>
+              <textarea value={form.planningExperience} onChange={e => set("planningExperience", e.target.value)}
+                onFocus={() => setFocused("planningExperience")} onBlur={() => setFocused("")}
+                rows={3} placeholder="Tell us briefly, or write 'None' if you haven't yet"
+                style={{ ...iStyle("planningExperience"), resize: "vertical" }} />
+              <FieldError msg={errors.planningExperience} />
+            </div>
+
+            <div>
+              <Label required>Qualification</Label>
+              <input value={form.qualification} onChange={e => set("qualification", e.target.value)}
+                onFocus={() => setFocused("qualification")} onBlur={() => setFocused("")}
+                placeholder="e.g. B.Com, 12th pass" style={iStyle("qualification")} />
+              <FieldError msg={errors.qualification} />
+            </div>
+
+            <div>
+              <Label required>Can you bring leads to Tendr? (Not for free)</Label>
+              <CoordChipGroup options={["Yes", "No"]} selected={form.canBringLeads} onToggle={v => set("canBringLeads", v)} error={errors.canBringLeads} />
+            </div>
+
+            <div>
+              <Label optional>Instagram handle</Label>
+              <input value={form.instagram} onChange={e => set("instagram", e.target.value)}
                 onFocus={() => setFocused("instagram")} onBlur={() => setFocused("")}
                 placeholder="@yourhandle" style={iStyle("instagram")} />
             </div>
+
+            <div style={{ height: 1, background: "rgba(28,14,4,0.07)" }} />
+
             <div>
-              <Label optional>Portfolio / Website</Label>
-              <input value={form.portfolioLink} onChange={e => setForm(p => ({...p, portfolioLink: e.target.value}))}
-                onFocus={() => setFocused("portfolioLink")} onBlur={() => setFocused("")}
-                placeholder="https://…" style={iStyle("portfolioLink")} />
+              <Label required>How comfortable are you interacting with customers?</Label>
+              <CoordRatingScale value={form.customerInteractionComfort} onChange={v => set("customerInteractionComfort", v)} error={errors.customerInteractionComfort} />
             </div>
-          </div>
-
-          {/* Password */}
-          <div>
-            <Label required>Create Password</Label>
-            <div style={{ position: "relative" }}>
-              <input value={form.password}
-                onChange={e => { setForm(p => ({...p, password: e.target.value})); setErrors(p => ({...p, password: ""})); }}
-                onFocus={() => setFocused("password")} onBlur={() => setFocused("")}
-                type={showPw ? "text" : "password"} placeholder="Min 8 characters"
-                style={{ ...iStyle("password"), paddingRight: 44 }} />
-              <button type="button" onClick={() => setShowPw(v => !v)}
-                style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: muted, fontSize: 12, fontFamily: font, fontWeight: 600 }}>
-                {showPw ? "Hide" : "Show"}
-              </button>
+            <div>
+              <Label required>How comfortable are you with making calls?</Label>
+              <CoordRatingScale value={form.callComfort} onChange={v => set("callComfort", v)} error={errors.callComfort} />
             </div>
-            <FieldError msg={errors.password} />
-          </div>
-          <div>
-            <Label required>Confirm Password</Label>
-            <input value={form.confirmPassword}
-              onChange={e => { setForm(p => ({...p, confirmPassword: e.target.value})); setErrors(p => ({...p, confirmPassword: ""})); }}
-              onFocus={() => setFocused("confirmPassword")} onBlur={() => setFocused("")}
-              type="password" placeholder="Re-enter password"
-              style={iStyle("confirmPassword")} />
-            <FieldError msg={errors.confirmPassword} />
-          </div>
+            <div>
+              <Label required>How comfortable are you meeting customers in person?</Label>
+              <CoordRatingScale value={form.inPersonMeetingComfort} onChange={v => set("inPersonMeetingComfort", v)} error={errors.inPersonMeetingComfort} />
+            </div>
+            <div>
+              <Label required>How comfortable are you handling unexpected problems?</Label>
+              <CoordRatingScale value={form.problemHandlingComfort} onChange={v => set("problemHandlingComfort", v)} error={errors.problemHandlingComfort} />
+            </div>
 
-          <button type="submit" disabled={loading}
-            style={{ width: "100%", padding: "14px", borderRadius: 10, border: "none", background: loading ? "#e5e7eb" : gold, color: loading ? "#9ca3af" : "#fff", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: loading ? "not-allowed" : "pointer", boxShadow: loading ? "none" : "0 4px 14px rgba(196,122,46,0.3)", transition: "all 0.2s" }}>
-            {loading ? "Submitting…" : "Submit Application →"}
-          </button>
-        </form>
+            <div>
+              <Label required>Are you comfortable using mobile apps and online platforms?</Label>
+              <CoordChipGroup options={COORD_APP_COMFORT_OPTIONS} selected={form.appComfort} onToggle={v => set("appComfort", v)} error={errors.appComfort} />
+            </div>
+            <div>
+              <Label required>Are you comfortable visiting a customer's home when assigned by Tendr?</Label>
+              <CoordChipGroup options={COORD_HOME_VISIT_OPTIONS} selected={form.homeVisitComfort} onToggle={v => set("homeVisitComfort", v)} error={errors.homeVisitComfort} />
+            </div>
+            <div>
+              <Label required>Are you comfortable being present at an event when required?</Label>
+              <CoordChipGroup options={COORD_EVENT_PRESENCE_OPTIONS} selected={form.eventPresenceComfort} onToggle={v => set("eventPresenceComfort", v)} error={errors.eventPresenceComfort} />
+            </div>
+            <div>
+              <Label required>How late are you comfortable working on event days?</Label>
+              <CoordChipGroup options={COORD_LATE_WORK_OPTIONS} selected={form.lateWorkComfort} onToggle={v => set("lateWorkComfort", v)} error={errors.lateWorkComfort} />
+            </div>
+
+            <div style={{ height: 1, background: "rgba(28,14,4,0.07)" }} />
+
+            <div>
+              <Label required>Create Password</Label>
+              <div style={{ position: "relative" }}>
+                <input value={form.password}
+                  onChange={e => set("password", e.target.value)}
+                  onFocus={() => setFocused("password")} onBlur={() => setFocused("")}
+                  type={showPw ? "text" : "password"} placeholder="Min 8 characters"
+                  style={{ ...iStyle("password"), paddingRight: 44 }} />
+                <button type="button" onClick={() => setShowPw(v => !v)}
+                  style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: muted, fontSize: 12, fontFamily: font, fontWeight: 600 }}>
+                  {showPw ? "Hide" : "Show"}
+                </button>
+              </div>
+              <FieldError msg={errors.password} />
+            </div>
+            <div>
+              <Label required>Confirm Password</Label>
+              <input value={form.confirmPassword}
+                onChange={e => set("confirmPassword", e.target.value)}
+                onFocus={() => setFocused("confirmPassword")} onBlur={() => setFocused("")}
+                type="password" placeholder="Re-enter password"
+                style={iStyle("confirmPassword")} />
+              <FieldError msg={errors.confirmPassword} />
+            </div>
+
+            <button type="submit" disabled={loading}
+              style={{ width: "100%", padding: "14px", borderRadius: 10, border: "none", background: loading ? "#e5e7eb" : gold, color: loading ? "#9ca3af" : "#fff", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: loading ? "not-allowed" : "pointer", boxShadow: loading ? "none" : "0 4px 14px rgba(196,122,46,0.3)", transition: "all 0.2s" }}>
+              {loading ? "Submitting…" : "Submit Application →"}
+            </button>
+          </form>
+        </div>
+        <p style={{ textAlign: "center", fontSize: 12, color: muted, marginTop: 16 }}>Free to register · No joining fee</p>
       </div>
-      <p style={{ textAlign: "center", fontSize: 12, color: muted, marginTop: 16 }}>Free to register · No joining fee</p>
     </Shell>
   );
 }

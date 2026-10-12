@@ -404,6 +404,61 @@ export default function PeopleHubTab({
           </div>
         )}
 
+        {/* Application questionnaire summary */}
+        {(c.age || c.preferredLanguage || c.currentOccupation) && (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 8, marginBottom: 10 }}>
+            {[
+              ["🎂 Age",          c.age],
+              ["🗣️ Language",     c.preferredLanguage],
+              ["💼 Occupation",   c.currentOccupation],
+              ["⏱️ Availability", c.availableHoursPerWeek],
+              ["🎓 Qualification", c.qualification],
+              ["🏢 Vendor network", c.hasVendorNetwork],
+              ["📋 Can bring leads", c.canBringLeads],
+              ["🏠 Organized events?", c.hasOrganizedEvents === "Yes" ? `Yes${c.eventsOrganizedCount ? ` (${c.eventsOrganizedCount})` : ""}` : c.hasOrganizedEvents],
+            ].filter(([, v]) => v).map(([k, v]) => (
+              <div key={k} style={{ background: "#F8F4EF", borderRadius: 8, padding: "6px 10px" }}>
+                <p style={{ margin: 0, fontSize: 10, color: "#9B7450", fontWeight: 600 }}>{k}</p>
+                <p style={{ margin: "2px 0 0", fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{v}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {(c.availableFor?.length > 0 || c.travelAreas?.length > 0) && (
+          <div style={{ marginBottom: 10 }}>
+            {c.availableFor?.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: c.travelAreas?.length > 0 ? 6 : 0 }}>
+                {c.availableFor.map(a => (
+                  <span key={a} style={{ background: "#EFF6FF", border: "1.5px solid rgba(37,99,235,0.2)", borderRadius: 100, padding: "2px 9px", fontSize: 11, fontWeight: 600, color: "#2563eb" }}>{a}</span>
+                ))}
+              </div>
+            )}
+            {c.travelAreas?.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                {c.travelAreas.map(a => (
+                  <span key={a} style={{ background: "#F0FDF4", border: "1.5px solid rgba(21,128,61,0.2)", borderRadius: 100, padding: "2px 9px", fontSize: 11, fontWeight: 600, color: "#15803D" }}>📍 {a}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {c.customerInteractionComfort > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 10, fontSize: 11, color: "#9B7450" }}>
+            <span>Customers {c.customerInteractionComfort}/5</span>
+            <span>Calls {c.callComfort}/5</span>
+            <span>In-person {c.inPersonMeetingComfort}/5</span>
+            <span>Problem-solving {c.problemHandlingComfort}/5</span>
+          </div>
+        )}
+
+        {c.planningExperience && (
+          <p style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.5, margin: "0 0 10px" }}>
+            <strong style={{ color: "#5A3A1A" }}>Experience: </strong>{c.planningExperience}
+          </p>
+        )}
+
         {c.bio && (
           <p style={{ fontSize: 12.5, color: "#5A3A1A", lineHeight: 1.6, margin: "0 0 10px", background: "#FFF8EE", borderRadius: 8, padding: "8px 12px", borderLeft: "3px solid " + GOLD }}>
             {c.bio}
