@@ -3120,6 +3120,15 @@ const Home = () => {
               }
               .occ-flow-row:hover .occ-flow-arr { color: ${CHAMP}; }
               .occ-flow-body::-webkit-scrollbar { display: none; }
+              @media (max-width: 620px) {
+                .occ-flow-columns { flex-direction: column !important; }
+                .occ-flow-col { padding: 0 18px 16px !important; border-right: none !important; border-bottom: 1px solid rgba(0,0,0,0.07); }
+                .occ-flow-col:last-child { border-bottom: none; }
+                .occ-flow-or-circle { display: none; }
+                .occ-flow-business { padding: 0 18px 24px !important; }
+                .occ-flow-row { padding: 12px 4px !important; font-size: 13.5px !important; gap: 12px !important; }
+                .occ-num { font-size: 11px !important; min-width: 20px !important; }
+              }
             `}</style>
 
             {/* Backdrop */}
@@ -3179,9 +3188,9 @@ const Home = () => {
                 ) : (
                   /* Two-column directory */
                   <>
-                    <div style={{ display: "flex", position: "relative" }}>
+                    <div className="occ-flow-columns" style={{ display: "flex", position: "relative" }}>
                       {FLOW_GROUPS.map((group, gi) => (
-                        <div key={group.label} style={{ flex: 1, padding: "0 32px 28px", borderRight: gi === 0 ? "1px solid rgba(0,0,0,0.07)" : "none" }}>
+                        <div key={group.label} className="occ-flow-col" style={{ flex: 1, padding: "0 32px 28px", borderRight: gi === 0 ? "1px solid rgba(0,0,0,0.07)" : "none" }}>
                           {/* Category header with icon */}
                           <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "22px 0 18px" }}>
                             <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#F5F0E8", border: "1.5px solid rgba(196,122,46,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -3208,11 +3217,11 @@ const Home = () => {
                         </div>
                       ))}
                       {/* OR circle centered on divider line */}
-                      <div style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: 34, height: 34, borderRadius: "50%", background: "#fff", border: "1px solid rgba(0,0,0,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "rgba(44,26,14,0.45)", letterSpacing: "0.06em", fontFamily: f, zIndex: 2, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>OR</div>
+                      <div className="occ-flow-or-circle" style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)", width: 34, height: 34, borderRadius: "50%", background: "#fff", border: "1px solid rgba(0,0,0,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "rgba(44,26,14,0.45)", letterSpacing: "0.06em", fontFamily: f, zIndex: 2, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>OR</div>
                     </div>
 
                     {/* Business — full width with centered divider label */}
-                    <div style={{ padding: "0 32px 32px", position: "relative" }}>
+                    <div className="occ-flow-business" style={{ padding: "0 32px 32px", position: "relative" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "4px 0 14px" }}>
                         <div style={{ flex: 1, height: 1, background: "rgba(0,0,0,0.07)" }} />
                         <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(44,26,14,0.4)", textTransform: "uppercase", letterSpacing: "0.22em", fontFamily: f }}>BUSINESS</span>

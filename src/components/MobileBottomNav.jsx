@@ -574,10 +574,12 @@ function BottomNavInner() {
                 )}
               </div>
               <span style={{
-                fontSize: 12, fontWeight: isOn ? 700 : 400,
+                fontSize: 10.5, fontWeight: isOn ? 700 : 500,
                 color: isOn ? navColor.active : "#B08060",
-                lineHeight: 1, letterSpacing: "0.01em",
+                lineHeight: 1.2, letterSpacing: "0.01em",
                 transition: "color 0.18s, font-weight 0.18s",
+                minHeight: 24, display: "flex", alignItems: "center", justifyContent: "center",
+                textAlign: "center", maxWidth: "100%", padding: "0 2px",
               }}>
                 {label}
               </span>

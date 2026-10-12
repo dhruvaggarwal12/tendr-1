@@ -38,6 +38,17 @@ const CSS = `
   .fte-spot-in { animation: fte-spot-in 0.3s ease forwards; }
   .fte-intent-card { transition: background 0.15s, border-color 0.15s, transform 0.12s; }
   .fte-intent-card:hover { transform: translateY(-2px) !important; }
+  @media (max-height: 740px), (max-width: 380px) {
+    .fte-mascot-wrap { transform: scale(0.68); margin-bottom: -18px; }
+    .fte-intent-heading { margin-top: 0 !important; margin-bottom: 12px !important; }
+    .fte-intent-heading .fte-title { font-size: 1.25rem !important; margin-bottom: 4px !important; }
+    .fte-intent-heading .fte-sub { font-size: 12px !important; }
+    .fte-intent-grid { gap: 7px !important; }
+    .fte-intent-card { padding: 12px 10px !important; border-radius: 12px !important; }
+    .fte-intent-card .fte-emoji { font-size: 17px !important; margin-bottom: 3px !important; }
+    .fte-intent-card .fte-label { font-size: 12px !important; margin-bottom: 2px !important; }
+    .fte-intent-card .fte-desc { font-size: 9.5px !important; line-height: 1.3 !important; }
+  }
   .fte-intent-card:active { transform: scale(0.97) !important; }
   .fte-ask-yes:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(196,122,46,0.55) !important; }
 `;
@@ -282,20 +293,22 @@ function IntentPicker({ onSelect }) {
     }}>
       <style>{CSS}</style>
       <div className="fte-fadein" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 440, width: '100%' }}>
-        <Mascot mood="celebrate" size={110} />
-        <div style={{ marginTop: 14, marginBottom: 22, textAlign: 'center' }}>
-          <div style={{
+        <div className="fte-mascot-wrap">
+          <Mascot mood="celebrate" size={110} />
+        </div>
+        <div className="fte-intent-heading" style={{ marginTop: 14, marginBottom: 22, textAlign: 'center' }}>
+          <div className="fte-title" style={{
             fontFamily: SERIF,
             fontSize: 'clamp(1.5rem,4vw,1.9rem)',
             fontWeight: 400, color: '#F5E6CC', lineHeight: 1.2, marginBottom: 8,
           }}>
             What brings you here today?
           </div>
-          <div style={{ fontSize: 13.5, color: 'rgba(245,230,204,0.48)', lineHeight: 1.6 }}>
+          <div className="fte-sub" style={{ fontSize: 13.5, color: 'rgba(245,230,204,0.48)', lineHeight: 1.6 }}>
             I'll take you right there.
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, width: '100%' }}>
+        <div className="fte-intent-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, width: '100%' }}>
           {INTENTS.map(intent => (
             <button
               key={intent.label}
@@ -317,11 +330,11 @@ function IntentPicker({ onSelect }) {
                 e.currentTarget.style.borderColor = 'rgba(196,122,46,0.22)';
               }}
             >
-              <div style={{ fontSize: 22, marginBottom: 7 }}>{intent.emoji}</div>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: '#F5E6CC', marginBottom: 4, lineHeight: 1.2 }}>
+              <div className="fte-emoji" style={{ fontSize: 22, marginBottom: 7 }}>{intent.emoji}</div>
+              <div className="fte-label" style={{ fontSize: 13.5, fontWeight: 700, color: '#F5E6CC', marginBottom: 4, lineHeight: 1.2 }}>
                 {intent.label}
               </div>
-              <div style={{ fontSize: 11, color: 'rgba(245,230,204,0.42)', lineHeight: 1.45 }}>
+              <div className="fte-desc" style={{ fontSize: 11, color: 'rgba(245,230,204,0.42)', lineHeight: 1.45 }}>
                 {intent.desc}
               </div>
             </button>

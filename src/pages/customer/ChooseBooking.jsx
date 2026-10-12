@@ -289,8 +289,8 @@ export default function ChooseBooking() {
                 )}
 
                 {/* Icon + tag row */}
-                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:24 }}>
-                  <div style={{
+                <div className="cb-icon-row" style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:24 }}>
+                  <div className="cb-icon" style={{
                     width:52, height:52, borderRadius:16,
                     background:flow.iconBg, border:`1.5px solid ${flow.borderColor}`,
                     display:"flex", alignItems:"center", justifyContent:"center",
@@ -299,7 +299,7 @@ export default function ChooseBooking() {
                   }}>
                     <Icon />
                   </div>
-                  <span style={{
+                  <span className="cb-tag" style={{
                     fontSize:9.5, fontWeight:800, letterSpacing:"0.14em", textTransform:"uppercase",
                     color: isDark ? goldLt : flow.accent,
                     background:flow.tag3D, padding:"5px 12px", borderRadius:100,
@@ -310,7 +310,7 @@ export default function ChooseBooking() {
                 </div>
 
                 {/* Title */}
-                <h2 style={{
+                <h2 className="cb-title" style={{
                   fontFamily:font,
                   fontSize:"clamp(1.15rem,2vw,1.4rem)",
                   fontWeight:800,
@@ -323,31 +323,32 @@ export default function ChooseBooking() {
                 </h2>
 
                 {/* Subtitle */}
-                <p style={{ fontSize:13.5, fontWeight:400, color:subColor, margin:"0 0 22px", lineHeight:1.65 }}>
+                <p className="cb-subtitle" style={{ fontSize:13.5, fontWeight:400, color:subColor, margin:"0 0 22px", lineHeight:1.65 }}>
                   {flow.subtitle}
                 </p>
 
                 {/* Divider */}
-                <div style={{ height:1, background:dividerColor, marginBottom:20 }} />
+                <div className="cb-divider" style={{ height:1, background:dividerColor, marginBottom:20 }} />
 
                 {/* Steps */}
-                <div style={{ display:"flex", flexDirection:"column", gap:13, flex:1, marginBottom:26 }}>
+                <div className="cb-steps" style={{ display:"flex", flexDirection:"column", gap:13, flex:1, marginBottom:26 }}>
                   {flow.steps.map((step, i) => (
-                    <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
-                      <span style={{
+                    <div key={i} className="cb-step-row" style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
+                      <span className="cb-step-check" style={{
                         width:20, height:20, borderRadius:"50%", flexShrink:0, marginTop:1,
                         background:flow.iconBg, border:`1.5px solid ${flow.borderColor}`,
                         display:"flex", alignItems:"center", justifyContent:"center",
                       }}>
                         <CheckIcon color={isDark ? goldLt : flow.accent} />
                       </span>
-                      <span style={{ fontSize:13, fontWeight:500, color:stepColor, lineHeight:1.55 }}>{step}</span>
+                      <span className="cb-step-text" style={{ fontSize:13, fontWeight:500, color:stepColor, lineHeight:1.55 }}>{step}</span>
                     </div>
                   ))}
                 </div>
 
                 {/* CTA */}
                 <button
+                  className="cb-cta"
                   onClick={e => { e.stopPropagation(); handleChoose(flow.type, flow.route); }}
                   style={{
                     width:"100%", padding:"14px 0", borderRadius:14, border:"none",
@@ -372,8 +373,20 @@ export default function ChooseBooking() {
 
       <style>{`
         @media (max-width: 680px) {
-          .cb-grid { grid-template-columns: 1fr !important; gap: 14px !important; margin-top: -20px !important; }
-          .cb-card { padding: 22px 18px 18px !important; border-radius: 18px !important; }
+          .cb-grid { grid-template-columns: 1fr !important; gap: 10px !important; margin-top: -16px !important; }
+          .cb-card { padding: 16px 16px 14px !important; border-radius: 16px !important; }
+          .cb-icon-row { margin-bottom: 12px !important; }
+          .cb-icon { width: 38px !important; height: 38px !important; border-radius: 11px !important; }
+          .cb-icon svg { width: 19px !important; height: 19px !important; }
+          .cb-tag { font-size: 8.5px !important; padding: 4px 9px !important; }
+          .cb-title { font-size: 1.05rem !important; margin-bottom: 4px !important; }
+          .cb-subtitle { font-size: 12px !important; margin-bottom: 12px !important; line-height: 1.5 !important; }
+          .cb-divider { margin-bottom: 12px !important; }
+          .cb-steps { gap: 7px !important; margin-bottom: 14px !important; }
+          .cb-step-check { width: 16px !important; height: 16px !important; }
+          .cb-step-check svg { width: 8px !important; height: 8px !important; }
+          .cb-step-text { font-size: 11.5px !important; line-height: 1.4 !important; }
+          .cb-cta { padding: 11px 0 !important; font-size: 13px !important; border-radius: 11px !important; }
         }
         @media (min-width: 681px) and (max-width: 1100px) {
           .cb-grid { grid-template-columns: repeat(2,1fr) !important; }
