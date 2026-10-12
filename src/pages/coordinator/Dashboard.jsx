@@ -306,7 +306,10 @@ export default function CoordinatorDashboard() {
                         <p style={{ margin: 0, fontWeight: 700, color: ink, fontSize: 14 }}>{lead.customerName}</p>
                         <p style={{ margin: "2px 0 0", fontSize: 12, color: muted }}>{lead.eventType} · {lead.eventDate ? new Date(lead.eventDate).toLocaleDateString("en-IN") : "Date TBD"}</p>
                       </div>
-                      <StatusBadge status={lead.status} map={LEAD_STATUS_COLORS} />
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: gold, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "2px 8px", whiteSpace: "nowrap" }}>🎯 Assigned by Admin</span>
+                        <StatusBadge status={lead.status} map={LEAD_STATUS_COLORS} />
+                      </div>
                     </div>
                   ))}
                   {leads.length > 3 && <button onClick={() => setActiveTab("Leads")} style={{ background: "none", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 10, padding: "10px", color: gold, fontFamily: font, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>View all {leads.length} leads →</button>}
@@ -340,7 +343,10 @@ export default function CoordinatorDashboard() {
                       <p style={{ margin: 0, fontWeight: 800, color: ink, fontSize: 16 }}>{lead.customerName}</p>
                       <p style={{ margin: "3px 0 0", fontSize: 13, color: muted }}>{lead.eventType}{lead.location ? ` · ${lead.location}` : ""}</p>
                     </div>
-                    <StatusBadge status={lead.status} map={LEAD_STATUS_COLORS} />
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: gold, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "2px 8px", whiteSpace: "nowrap" }}>🎯 Assigned by Admin</span>
+                      <StatusBadge status={lead.status} map={LEAD_STATUS_COLORS} />
+                    </div>
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 10, marginBottom: 14 }}>
                     {[
