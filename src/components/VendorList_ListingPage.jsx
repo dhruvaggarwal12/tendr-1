@@ -122,9 +122,6 @@ const VendorList_ListingPage = ({
   const [inviteVenueAddress, setInviteVenueAddress] = useState(() => { try { return localStorage.getItem('tendr_venue_address') || ''; } catch { return ''; } });
   // Page-session pre-fill for search/top-rated — isolated from Redux planning data
   const [localFormData, setLocalFormData] = useState(() => getDiscoverySession() || { eventType: "", guests: "", date: "", budget: "", location: "", eventTime: "" });
-  const [shareCopiedId, setShareCopiedId] = useState(null);
-  const [activePhotoIdx, setActivePhotoIdx] = useState(0);
-  const [brokenQvPhotos, setBrokenQvPhotos] = useState(new Set());
   const [unavailModal, setUnavailModal] = useState(null); // null or { vendor, date, alternatives[] }
   const [checkingAvail, setCheckingAvail] = useState(false);
   // Shortlist re-render tick (DIY flow)
@@ -148,35 +145,16 @@ const VendorList_ListingPage = ({
     }
   }, [vendors]);
 
-  // Reset photo index + broken photos when quick view opens
-  useEffect(() => {
-    setActivePhotoIdx(0);
-    setBrokenQvPhotos(new Set());
-  }, [quickViewVendor?._id]);
-
-  // Signal quick view open/close to navbar + FAB
-  useEffect(() => {
-    if (!window.__tendrDrawers) window.__tendrDrawers = new Set();
-    quickViewVendor ? window.__tendrDrawers.add('quick-view') : window.__tendrDrawers.delete('quick-view');
-    window.dispatchEvent(new Event('tendr:drawer'));
-    return () => { window.__tendrDrawers?.delete('quick-view'); window.dispatchEvent(new Event('tendr:drawer')); };
-  }, [quickViewVendor]);
-
-  // Keyboard: Esc closes QuickView/form, arrows navigate between vendors in QuickView
+  // Keyboard: Esc un-flips the quick view / closes the pre-chat form
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === "Escape") {
-        if (chatFormVendor) { setChatFormVendor(null); return; }
-        if (quickViewVendor) { setQuickViewVendor(null); return; }
-      }
-      if (!quickViewVendor || vendors.length < 2) return;
-      const idx = vendors.findIndex(v => v._id === quickViewVendor._id);
-      if (e.key === "ArrowRight" && idx < vendors.length - 1) setQuickViewVendor(vendors[idx + 1]);
-      if (e.key === "ArrowLeft"  && idx > 0)                  setQuickViewVendor(vendors[idx - 1]);
+      if (e.key !== "Escape") return;
+      if (chatFormVendor) { setChatFormVendor(null); return; }
+      if (quickViewVendor) { setQuickViewVendor(null); return; }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [quickViewVendor, chatFormVendor, vendors]);
+  }, [quickViewVendor, chatFormVendor]);
 
   const handleViewProfile = (e, vendorId) => {
     e.stopPropagation();
@@ -192,8 +170,6 @@ const VendorList_ListingPage = ({
       navigate(url, { state });
     }
   };
-
-  const closePanel = () => setQuickViewVendor(null);
 
   const handleTalkToTendr = () => {
     if (!token) {
@@ -213,10 +189,14 @@ const VendorList_ListingPage = ({
         @media (min-width: 1280px) { .vl-grid { grid-template-columns: repeat(4,1fr); } }
         .vendor-card { animation: vl-card-in 0.4s both; }
         @keyframes vl-card-in { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+        .vendor-card-flip-wrap { display: block; }
         @media (max-width: 540px) {
           .vendor-card-mobile-overlay { display: block !important; }
           .vendor-card-info-text { display: none !important; }
           .vendor-card-img { height: 200px !important; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .vendor-card-flip-inner { transition: none !important; }
         }
       `}</style>
       <div style={{ width: "100%", maxWidth: 1400, margin: "0 auto", padding: "0 12px" }}>
@@ -294,29 +274,96 @@ const VendorList_ListingPage = ({
               }).map((vendor, index) => {
                 const isSelected = compareSelected.some((v) => v._id === vendor._id);
                 const rating = vendor.avgReviewScore ?? vendor.rating;
+                const isFlipped = quickViewVendor?._id === vendor._id;
+                const cardPhotoUrl = [vendor.image, ...(vendor.portfolioPhotos || [])].find(u => u && typeof u === "string" && u.startsWith("http"));
+
+                const openFullProfile = (e) => {
+                  e.stopPropagation();
+                  setQuickViewVendor(null);
+                  const url = `/vendor/${vendor._id}${isFromPlanFlow ? "?fromPlan=1" : ""}`;
+                  const state = { from: "listing", compareInProfile, filters: { eventType, serviceType, locationType, date, guestCount, sortBy, sortOrder } };
+                  if (window.innerWidth >= 768) {
+                    window.open(url, "_blank");
+                  } else {
+                    sessionStorage.setItem("listings_scroll_y", String(window.scrollY));
+                    navigate(url, { state });
+                  }
+                };
+
+                const bookNow = async (e) => {
+                  e.stopPropagation();
+                  if (!token) {
+                    setPendingChatVendor(vendor);
+                    setAuthModalOpen(true);
+                    return;
+                  }
+                  if (getChatSave(vendor._id)) {
+                    document.dispatchEvent(new CustomEvent("tendr:open-active-chats"));
+                    setQuickViewVendor(null);
+                    return;
+                  }
+                  setQuickViewVendor(null);
+                  if (requireFormBeforeChat) {
+                    const discoveryData = getDiscoverySession();
+                    setChatFormVendor(vendor);
+                    setChatEventForm({ eventType: "", guests: "", date: "", location: "", eventTime: "", ...(discoveryData || {}), budget: "" });
+                    return;
+                  }
+                  const saved = getChatSave(vendor._id);
+                  if (saved) {
+                    try {
+                      const res = await fetch(`${BASE_URL}/conversations`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" });
+                      if (res.ok) {
+                        const data = await res.json();
+                        const convo = (data.conversations || []).find(c => {
+                          const cvid = typeof c.vendorId === "object" ? c.vendorId?._id : c.vendorId;
+                          return String(cvid) === String(vendor._id);
+                        });
+                        if (convo) {
+                          openExistingChat(convo._id, { _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, approved: convo.chatApproved, addToCompare: true });
+                          return;
+                        }
+                      }
+                    } catch {}
+                    openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, addToCompare: true });
+                    return;
+                  }
+                  openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, addToCompare: true });
+                };
 
                 return (
-                  <div
-                    key={vendor._id || index}
-                    className="vendor-card tap-scale"
-                    onClick={() => {
-                      if (window.innerWidth >= 1024) {
-                        window.open(`/vendor/${vendor._id}${isFromPlanFlow ? "?fromPlan=1" : ""}`, "_blank");
-                      } else {
-                        setQuickViewVendor(vendor);
-                      }
-                    }}
-                    style={{
-                      animationDelay: `${Math.min(index, 8) * 55}ms`,
-                      background: "#FFFCF5", borderRadius: 16,
-                      border: "1.5px solid rgba(196,122,46,0.13)",
-                      boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
-                      overflow: "hidden", transition: "transform 0.22s, box-shadow 0.22s, border-color 0.22s",
-                      fontFamily: font, cursor: "pointer",
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(139,69,19,0.1)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.28)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.13)"; }}
-                  >
+                  <div key={vendor._id || index} style={{ perspective: 1400 }} className="vendor-card-flip-wrap">
+                    <div
+                      className="vendor-card-flip-inner"
+                      style={{
+                        position: "relative", width: "100%",
+                        transformStyle: "preserve-3d",
+                        transition: "transform 0.55s cubic-bezier(0.4,0.15,0.2,1)",
+                        transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                      }}
+                    >
+                    {/* ═══ FRONT ═══ */}
+                    <div
+                      className="vendor-card tap-scale"
+                      onClick={() => {
+                        if (window.innerWidth >= 1024) {
+                          window.open(`/vendor/${vendor._id}${isFromPlanFlow ? "?fromPlan=1" : ""}`, "_blank");
+                        } else {
+                          setQuickViewVendor(vendor);
+                        }
+                      }}
+                      style={{
+                        animationDelay: `${Math.min(index, 8) * 55}ms`,
+                        background: "#FFFCF5", borderRadius: 16,
+                        border: "1.5px solid rgba(196,122,46,0.13)",
+                        boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
+                        overflow: "hidden", transition: "transform 0.22s, box-shadow 0.22s, border-color 0.22s",
+                        fontFamily: font, cursor: "pointer",
+                        backfaceVisibility: "hidden",
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(139,69,19,0.1)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.28)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.13)"; }}
+                    >
                     {/* Image — full bleed */}
                     <div className="vendor-card-img" style={{ height: 260, overflow: "hidden", position: "relative" }}>
                       {(() => {
@@ -436,7 +483,7 @@ const VendorList_ListingPage = ({
                           onMouseEnter={(e) => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
                           onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#C47A2E"; }}
                         >
-                          View Profile
+                          Quick View
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); onToggleCompare?.(vendor); }}
@@ -446,6 +493,86 @@ const VendorList_ListingPage = ({
                           {isSelected ? "♥" : "♡"}
                         </button>
                       </div>
+                    </div>
+                    </div>
+
+                    {/* ═══ BACK — quick view ═══ */}
+                    <div
+                      style={{
+                        position: "absolute", inset: 0, backfaceVisibility: "hidden", transform: "rotateY(180deg)",
+                        background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.3)",
+                        boxShadow: "0 8px 28px rgba(139,69,19,0.16)",
+                        padding: "16px 14px", display: "flex", flexDirection: "column",
+                        fontFamily: font,
+                      }}
+                    >
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setQuickViewVendor(null); }}
+                        aria-label="Close quick view"
+                        style={{ position: "absolute", top: 10, right: 10, width: 26, height: 26, borderRadius: "50%", border: "none", background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                      >✕</button>
+
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, paddingRight: 26 }}>
+                        {cardPhotoUrl ? (
+                          <img src={cardPhotoUrl} alt={vendor.name} style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1.5px solid rgba(196,122,46,0.2)" }} />
+                        ) : (
+                          <div style={{ width: 48, height: 48, borderRadius: "50%", flexShrink: 0, background: "rgba(196,122,46,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🏷️</div>
+                        )}
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: 14.5, fontWeight: 800, color: "#2C1A0E", lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vendor.name}</div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em" }}>{vendor.serviceType}</div>
+                        </div>
+                      </div>
+
+                      {rating > 0 && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 8 }}>
+                          <span style={{ color: "#C47A2E", fontSize: 12 }}>{"★".repeat(Math.min(5, Math.round(rating)))}{"☆".repeat(Math.max(0, 5 - Math.round(rating)))}</span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{Number(rating).toFixed(1)}</span>
+                          {(vendor.reviewCount > 0 || vendor.totalReviews > 0) && (
+                            <span style={{ fontSize: 11, color: "#9B7450" }}>({(vendor.reviewCount || vendor.totalReviews).toLocaleString("en-IN")})</span>
+                          )}
+                        </div>
+                      )}
+
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#5a3a1a", marginBottom: 4 }}>
+                        {(vendor.price > 0 || vendor.startingPrice > 0)
+                          ? `Starting at ₹${Number(vendor.price || vendor.startingPrice).toLocaleString("en-IN")} / event`
+                          : "Price on request"}
+                      </div>
+                      {(vendor.locations?.[0] || vendor.city) && (
+                        <div style={{ fontSize: 11.5, color: "#9B7450" }}>📍 {vendor.locations?.[0] || vendor.city}</div>
+                      )}
+
+                      <div style={{ flex: 1 }} />
+
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        <button
+                          onClick={openFullProfile}
+                          style={{ width: "100%", padding: "11px", borderRadius: 11, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}
+                        >
+                          Full Profile →
+                        </button>
+                        {isFromPlanFlow ? (() => {
+                          void shortlistTick;
+                          const slActive = isInShortlist(serviceType, vendor._id);
+                          return (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); if (slActive) return; addToShortlist(serviceType, vendor); setQuickViewVendor(null); }}
+                              style={{ width: "100%", padding: "11px", borderRadius: 11, border: slActive ? "1.5px solid rgba(34,197,94,0.4)" : "1.5px solid rgba(196,122,46,0.25)", background: slActive ? "rgba(34,197,94,0.08)" : "#fff", color: slActive ? "#16a34a" : "#C47A2E", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: slActive ? "default" : "pointer" }}
+                            >
+                              {slActive ? "✓ Shortlisted" : "Shortlist"}
+                            </button>
+                          );
+                        })() : (
+                          <button
+                            onClick={bookNow}
+                            style={{ width: "100%", padding: "11px", borderRadius: 11, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer" }}
+                          >
+                            {!token ? "Sign In to Book" : getChatSave(vendor._id) ? "View Active Chat" : "Book Now"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
                     </div>
                   </div>
                 );
@@ -480,343 +607,6 @@ const VendorList_ListingPage = ({
           </div>
         )}
       </div>
-
-      {/* ── Quick-view side panel ── */}
-      {quickViewVendor && (
-        <>
-          {/* Backdrop — z-index must beat MobileBottomNav (99990) */}
-          <div
-            onClick={closePanel}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 99994, animation: "qv-fade 0.2s ease" }}
-          />
-
-          {/* Panel */}
-          <div
-            style={window.innerWidth < 768 ? {
-              position: "fixed", left: 0, right: 0, bottom: 0, top: 0,
-              width: "100vw", height: "100%",
-              background: "#FFFCF5", zIndex: 99995,
-              overflowY: "auto", fontFamily: font,
-              animation: "qv-up 0.32s cubic-bezier(0.4,0,0.2,1)",
-              paddingBottom: "env(safe-area-inset-bottom, 16px)",
-            } : {
-              position: "fixed", right: 0, top: 0, height: "100dvh",
-              width: 420, maxWidth: "92vw",
-              background: "#FFFCF5", zIndex: 99995,
-              boxShadow: "-8px 0 48px rgba(139,69,19,0.18)",
-              overflowY: "auto", fontFamily: font,
-              animation: "qv-slide 0.32s cubic-bezier(0.4,0,0.2,1)",
-              paddingBottom: "env(safe-area-inset-bottom, 0px)",
-            }}
-          >
-            {/* Cover image with browsing arrows */}
-            {(() => {
-              const allPhotos = (quickViewVendor.portfolioPhotos || []).filter(u => u && typeof u === "string" && u.startsWith("http"));
-              const photos = allPhotos.filter((_, i) => !brokenQvPhotos.has(i));
-              const hasPhoto = photos.length > 0;
-              const safeIdx = Math.min(activePhotoIdx, Math.max(0, photos.length - 1));
-              const imgSrc = photos[safeIdx] || null;
-              const total = photos.length;
-              const qvRating = quickViewVendor.avgReviewScore ?? quickViewVendor.rating;
-              return (
-                <div style={{ position: "relative", height: 230, flexShrink: 0 }}>
-                  {hasPhoto ? (
-                    <img
-                      src={imgSrc}
-                      alt={quickViewVendor.name}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                      onError={() => {
-                        const origIdx = allPhotos.indexOf(imgSrc);
-                        if (origIdx !== -1) setBrokenQvPhotos(prev => new Set([...prev, origIdx]));
-                      }}
-                    />
-                  ) : (
-                    <VendorPhotoPlaceholder serviceType={quickViewVendor.serviceType} style={{ height: 230 }} />
-                  )}
-                  {/* Close + nav hint */}
-                  <div style={{ position: "absolute", top: 12, right: 12, display: "flex", alignItems: "center", gap: 6 }}>
-                    {vendors.length > 1 && (
-                      <div style={{ background: "rgba(0,0,0,0.5)", color: "rgba(255,255,255,0.75)", borderRadius: 20, padding: "3px 9px", fontSize: 10, fontWeight: 600, letterSpacing: "0.04em" }}>← → vendors</div>
-                    )}
-                    <button onClick={closePanel}
-                      style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(0,0,0,0.55)", border: "none", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
-                  </div>
-                  {/* Photo prev/next arrows */}
-                  {total > 1 && (
-                    <>
-                      <button onClick={() => setActivePhotoIdx(i => (i - 1 + total) % total)}
-                        style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", width: 30, height: 30, borderRadius: "50%", background: "rgba(0,0,0,0.5)", border: "none", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>‹</button>
-                      <button onClick={() => setActivePhotoIdx(i => (i + 1) % total)}
-                        style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", width: 30, height: 30, borderRadius: "50%", background: "rgba(0,0,0,0.5)", border: "none", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>›</button>
-                      {/* Dot indicators */}
-                      <div style={{ position: "absolute", bottom: 8, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 4 }}>
-                        {photos.slice(0, 6).map((_, i) => (
-                          <div key={i} onClick={() => setActivePhotoIdx(i)}
-                            style={{ width: i === activePhotoIdx ? 14 : 5, height: 5, borderRadius: 100, background: i === activePhotoIdx ? "#fff" : "rgba(255,255,255,0.5)", cursor: "pointer", transition: "all 0.2s" }} />
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-              );
-            })()}
-
-            {/* Content */}
-            <div style={{ padding: "22px 24px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
-              {/* Name + type */}
-              <div style={{ marginBottom: 14 }}>
-                <h2 style={{ fontSize: 21, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px", letterSpacing: "-0.01em" }}>
-                  {quickViewVendor.name}
-                </h2>
-                <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 12px", borderRadius: 100, background: "rgba(196,122,46,0.12)", color: "#C47A2E" }}>
-                  {quickViewVendor.serviceType}
-                </span>
-              </div>
-
-              {/* Starting price */}
-              <div style={{ display: "inline-flex", alignItems: "baseline", gap: 4, marginBottom: 14, background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 10, padding: "8px 16px" }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Starting price</span>
-                <span style={{ fontSize: 18, fontWeight: 900, color: "#fff" }}>
-                  {(quickViewVendor.price || quickViewVendor.startingPrice) ? `₹${Number(quickViewVendor.price || quickViewVendor.startingPrice).toLocaleString("en-IN")}` : "Price based on request"}
-                </span>
-              </div>
-              {/* Stats pills */}
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
-                {[
-                  (quickViewVendor.city || quickViewVendor.address?.city || quickViewVendor.locations?.[0]) && {
-                    icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
-                    val: quickViewVendor.city || quickViewVendor.address?.city || quickViewVendor.locations?.[0],
-                  },
-                  quickViewVendor.yearsOfExperience > 0 && { icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>, val: `${quickViewVendor.yearsOfExperience}y exp` },
-                  quickViewVendor.teamSize > 0 && { icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, val: `Team of ${quickViewVendor.teamSize}` },
-                ]
-                  .filter(Boolean)
-                  .map(({ icon, val }) => (
-                    <div key={val} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "5px 12px", border: "1px solid rgba(196,122,46,0.12)" }}>
-                      {icon} {val}
-                    </div>
-                  ))}
-              </div>
-
-              {/* ── About (base schema) ── */}
-              {(() => {
-                const v = quickViewVendor;
-                const base = [
-                  v.totalEventsCompleted > 0 && { label: "Events completed", value: v.totalEventsCompleted },
-                  v.teamSize > 0             && { label: "Team size",         value: v.teamSize },
-                  v.yearsOfExperience > 0    && { label: "Experience",        value: `${v.yearsOfExperience} years` },
-                  v.locations?.length > 0    && { label: "Serves",            value: v.locations.join(", ") },
-                ].filter(Boolean);
-                if (!base.length) return null;
-                return (
-                  <div style={{ marginBottom: 20 }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px" }}>About</p>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                      {base.map(({ label, value }) => (
-                        <div key={label} style={{ background: "rgba(196,122,46,0.05)", borderRadius: 10, padding: "8px 12px", border: "1px solid rgba(196,122,46,0.1)" }}>
-                          <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>{label}</div>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E", lineHeight: 1.35 }}>{value}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* ── Specialties (service-specific) ── */}
-              {(() => {
-                const v = quickViewVendor;
-                const specific = [
-                  // DJ
-                  v.setup?.length          && { label: "Setup",            value: v.setup.join(", ") },
-                  v.eventTypes?.length     && { label: "Event types",      value: v.eventTypes.join(", ") },
-                  v.lightsIncluded != null && { label: "Lights",           value: v.lightsIncluded ? "Included ✓" : "Not included" },
-                  // Decorator
-                  v.themes?.length             && { label: "Themes",           value: v.themes.join(", ") },
-                  v.typesOfDecoration?.length  && { label: "Decor types",      value: v.typesOfDecoration.join(", ") },
-                  v.venueCoverage?.length      && { label: "Venue coverage",   value: v.venueCoverage.join(", ") },
-                  // Caterer
-                  v.cuisine?.length            && { label: "Cuisine",          value: v.cuisine.join(", ") },
-                  v.serviceStyle?.length       && { label: "Service style",    value: v.serviceStyle.join(", ") },
-                  v.menuType?.length           && { label: "Menu type",        value: v.menuType.join(", ") },
-                  v.beveragesIncluded != null  && { label: "Beverages",        value: v.beveragesIncluded ? "Included ✓" : "Not included" },
-                  // Photographer
-                  v.services?.length           && { label: "Services",         value: v.services.join(", ") },
-                  v.photographyType?.length    && { label: "Style",            value: v.photographyType.join(", ") },
-                  v.hoursIncluded > 0          && { label: "Hours included",   value: `${v.hoursIncluded}h` },
-                  v.editingTimeDays > 0        && { label: "Editing time",     value: `${v.editingTimeDays} days` },
-                  v.photographersCount > 0     && { label: "Photographers",    value: v.photographersCount },
-                  v.videographersCount > 0     && { label: "Videographers",    value: v.videographersCount },
-                ].filter(Boolean);
-                if (!specific.length) return null;
-                return (
-                  <div style={{ marginBottom: 20 }}>
-                    <div style={{ height: 1, background: "rgba(196,122,46,0.1)", margin: "0 0 14px" }} />
-                    <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px" }}>Specialties</p>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                      {specific.map(({ label, value }) => (
-                        <div key={label} style={{ background: "rgba(196,122,46,0.05)", borderRadius: 10, padding: "8px 12px", border: "1px solid rgba(196,122,46,0.1)" }}>
-                          <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>{label}</div>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E", lineHeight: 1.35 }}>{value}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Portfolio thumbnails */}
-              {quickViewVendor.portfolioPhotos?.length > 1 && (
-                <div style={{ marginBottom: 22 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px" }}>
-                    Portfolio
-                  </p>
-                  <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
-                    {quickViewVendor.portfolioPhotos.slice(0, 5).map((photo, i) => (
-                      <img
-                        key={i}
-                        src={photo}
-                        alt=""
-                        style={{ width: 82, height: 72, objectFit: "cover", borderRadius: 10, flexShrink: 0, border: "1.5px solid rgba(196,122,46,0.12)" }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Divider */}
-              <div style={{ height: 1, background: "rgba(196,122,46,0.1)", margin: "4px 0 20px" }} />
-
-              {/* CTAs */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const vendorId = quickViewVendor._id || quickViewVendor.id;
-                      if (!vendorId) return;
-                      closePanel();
-                      const url = `/vendor/${vendorId}${isFromPlanFlow ? "?fromPlan=1" : ""}`;
-                      const state = { from: "listing", compareInProfile, filters: { eventType, serviceType, locationType, date, guestCount, sortBy, sortOrder } };
-                      if (window.innerWidth >= 768) {
-                        window.open(url, "_blank");
-                      } else {
-                        sessionStorage.setItem("listings_scroll_y", String(window.scrollY));
-                        navigate(url, { state });
-                      }
-                    }}
-                    style={{ flex: 1, padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}
-                  >
-                    View Full Profile →
-                  </button>
-                  {/* Share button — uses shareCopiedId from component state (no hooks-in-IIFE) */}
-                  {(() => {
-                    const copied = shareCopiedId === quickViewVendor._id;
-                    const share = async () => {
-                      const url = `${window.location.origin}/vendor/${quickViewVendor._id}`;
-                      if (navigator.share) { try { await navigator.share({ title: quickViewVendor.name, url }); } catch {} }
-                      else { await navigator.clipboard.writeText(url); setShareCopiedId(quickViewVendor._id); setTimeout(() => setShareCopiedId(null), 2000); }
-                    };
-                    return (
-                      <button onClick={share} title={copied ? "Copied!" : "Share"}
-                        style={{ padding: "13px 14px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: copied ? "rgba(196,122,46,0.08)" : "#fff", color: "#C47A2E", cursor: "pointer", flexShrink: 0, fontSize: 16, transition: "all 0.2s" }}>
-                        {copied ? "✓" : (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                          </svg>
-                        )}
-                      </button>
-                    );
-                  })()}
-                </div>
-                {/* DIY flow: Shortlist button — replaces Chat & Finalise */}
-                {isFromPlanFlow ? (() => {
-                  void shortlistTick;
-                  const slActive = isInShortlist(serviceType, quickViewVendor._id);
-                  return (
-                    <button
-                      onClick={() => {
-                        if (slActive) return; // already shortlisted — no-op on main button
-                        addToShortlist(serviceType, quickViewVendor);
-                        closePanel();
-                      }}
-                      style={{ width: "100%", padding: "12px", borderRadius: 12, border: slActive ? "1.5px solid rgba(34,197,94,0.4)" : "none", background: slActive ? "rgba(34,197,94,0.08)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: slActive ? "#16a34a" : "#fff", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: slActive ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
-                      {slActive ? (
-                        <>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-                          Shortlisted
-                        </>
-                      ) : (
-                        <>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-                          Shortlist
-                        </>
-                      )}
-                    </button>
-                  );
-                })() : (
-                  <button
-                    onClick={async () => {
-                      if (!token) {
-                        setPendingChatVendor(quickViewVendor);
-                        setAuthModalOpen(true);
-                        return;
-                      }
-                      if (getChatSave(quickViewVendor._id)) {
-                        document.dispatchEvent(new CustomEvent("tendr:open-active-chats"));
-                        closePanel();
-                        return;
-                      }
-                      const vendor = quickViewVendor;
-                      closePanel();
-                      if (requireFormBeforeChat) {
-                        const discoveryData = getDiscoverySession();
-                        setChatFormVendor(vendor);
-                        setChatEventForm({ eventType: "", guests: "", date: "", location: "", eventTime: "", ...(discoveryData || {}), budget: "" });
-                        return;
-                      }
-                      const saved = getChatSave(vendor._id);
-                      if (saved) {
-                        try {
-                          const res = await fetch(`${BASE_URL}/conversations`, {
-                            headers: { Authorization: `Bearer ${token}` },
-                            credentials: "include",
-                          });
-                          if (res.ok) {
-                            const data = await res.json();
-                            const convo = (data.conversations || []).find(c => {
-                              const cvid = typeof c.vendorId === "object" ? c.vendorId?._id : c.vendorId;
-                              return String(cvid) === String(vendor._id);
-                            });
-                            if (convo) {
-                              openExistingChat(convo._id, { _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, approved: convo.chatApproved, addToCompare: true });
-                              return;
-                            }
-                          }
-                        } catch {}
-                        openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, addToCompare: true });
-                        return;
-                      }
-                      openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, addToCompare: true });
-                    }}
-                    style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    {!token ? "Sign In to Chat" : getChatSave(quickViewVendor._id) ? "View Active Chat" : "Chat & Finalise"}
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <style>{`
-            @keyframes qv-fade  { from { opacity: 0 } to { opacity: 1 } }
-            @keyframes qv-slide { from { transform: translateX(100%) } to { transform: translateX(0) } }
-            @keyframes qv-up    { from { transform: translateY(100%) } to { transform: translateY(0) } }
-          `}</style>
-        </>
-      )}
-
 
       {/* Pre-chat event form — shown when "Request to Chat" is clicked without event details */}
       {chatFormVendor && (
