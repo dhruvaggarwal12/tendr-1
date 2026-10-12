@@ -1,8 +1,8 @@
-import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useBookVendors } from "../context/BookVendorsContext";
 import { setBookingType } from "../redux/eventPlanningSlice";
 import { clearVendorCompare } from "../redux/listingFiltersSlice";
+import router from "../router";
 
 const font = "'Outfit', sans-serif";
 const gold = "#C47A2E";
@@ -73,17 +73,19 @@ const CARDS = [
 
 export default function BookVendorsModal() {
   const { open, closeBookVendors } = useBookVendors();
-  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   if (!open) return null;
 
+  // Rendered as a sibling of <RouterProvider> in App.jsx (so it can float above every
+  // route), which means it's outside Router context — useNavigate() would throw here.
+  // router.navigate() is the data-router API for navigating from outside that context.
   const handleChoose = (type, route) => {
     closeBookVendors();
-    if (route) { navigate(route); return; }
+    if (route) { router.navigate(route); return; }
     dispatch(clearVendorCompare());
     dispatch(setBookingType(type));
-    navigate("/plan-event/form?bookingType=" + type);
+    router.navigate("/plan-event/form?bookingType=" + type);
   };
 
   return (
