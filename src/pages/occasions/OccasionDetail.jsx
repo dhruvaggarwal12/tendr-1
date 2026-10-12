@@ -3423,7 +3423,7 @@ export default function OccasionDetail(){
           <div className="os">
             <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.3,marginBottom:4}}>Your plan is ready ✦</p>
 
-            {/* paragraph summary */}
+            {/* paragraph summary + conclusion + improvement tips + cross-sell */}
             {(()=>{
               const parts=[];
               const who=celebrantName?`${celebrantName}'s ${occasion.name}`:`a ${occasion.name}`;
@@ -3449,25 +3449,94 @@ export default function OccasionDetail(){
                 parts.push(`Your event runs from ${firstSlot.time} to ${lastSlot.time} — a ${itinerary.length}-slot itinerary is ready below.`);
               }
               if(budget&&Number(budget)>0) parts.push(`Total budget: ₹${Number(budget).toLocaleString("en-IN")}.`);
-              // Suggestions
-              const suggestions=[];
-              if(!date) suggestions.push("Set a date to unlock booking timelines");
-              if(!city.trim()) suggestions.push("add your city to see local vendors");
-              if(vendors.length===0) suggestions.push("pick services in step 3 to get pricing");
-              if(gifts.length===0) suggestions.push("browse gift ideas in step 5");
+
+              // ── Completeness score — drives the conclusion's tone ──
+              const pieces=[vendors.length>0,selectedActivities.length>0||customActivities.length>0,gifts.length>0,!!date,!!city.trim(),budget&&Number(budget)>0,!!theme];
+              const doneCount=pieces.filter(Boolean).length;
+              const completeness=doneCount/pieces.length;
+
+              // ── Conclusion paragraph — qualitative read on how the event will go ──
+              const lo=occasion.budgetMin||5000, hi=occasion.budgetMax||200000;
+              const perGuest=budget&&Number(guests)>0?Number(budget)/Number(guests):null;
+              let tone;
+              if(completeness>=0.85) tone=`This plan is in strong shape — ${who} has most of what it needs locked in, so the lead-up should feel calm rather than chaotic.`;
+              else if(completeness>=0.5) tone=`This plan has a solid foundation, but a few pieces are still open — filling those in now will save you last-minute scrambling closer to the date.`;
+              else tone=`This is a good starting point, but there's real work left before ${who.includes("'s")?who:"this event"} is booking-ready — treat today's plan as a draft to build on, not the final version.`;
+              let budgetNote="";
+              if(budget&&Number(budget)>0){
+                if(perGuest&&perGuest<300) budgetNote=` At roughly ₹${Math.round(perGuest)} per guest, keep an eye on catering — it's the category most likely to go over.`;
+                else if(Number(budget)<lo) budgetNote=` Your budget is a little below what similar ${occasion.name} events in Delhi NCR typically run (₹${fmtNum(lo)}–₹${fmtNum(hi)}), so you may need to trim scope somewhere.`;
+                else if(Number(budget)>hi) budgetNote=` Your budget has healthy room in it compared to a typical ${occasion.name} (₹${fmtNum(lo)}–₹${fmtNum(hi)}) — that gives you space to upgrade decor or add an activity.`;
+              }
+              const conclusion=`${tone}${budgetNote}`;
+
+              // ── Make it even better — exactly 2, most relevant first ──
+              const longestLead=itinerary.length>0?null:null; // itinerary slots don't carry lead time; use vendor-count heuristic instead
+              const tips=[];
+              if(!budget||Number(budget)<=0) tips.push({t:"Confirm your budget",d:`Run the Price Estimator for ${occasion.name} with ${guestStr} to get real ₹ ranges before you start calling vendors — it stops the first few quotes from anchoring you too high.`,action:()=>window.open(`/price-estimator?occasion=${encodeURIComponent(occasion.name||"")}`,"_blank")});
+              if(vendors.length<2) tips.push({t:"Add more services",d:`Only ${vendors.length} service${vendors.length===1?"":"s"} picked so far — most ${occasion.name} plans need at least catering and decor booked together so timings don't clash.`,action:()=>setStep(3)});
+              if(date){
+                const daysOut=Math.ceil((new Date(date+"T00:00:00")-new Date())/86400000);
+                if(daysOut>=0&&daysOut<14) tips.push({t:"Book soon — date is close",d:`Your event is ${daysOut<=0?"today or has passed":`only ${daysOut} day${daysOut===1?"":"s"} away`} — decorators and photographers get booked out fastest, so confirm those first.`,action:()=>setStep(3)});
+              }
+              if(selectedActivities.length===0&&customActivities.length===0) tips.push({t:"Add an activity",d:"No entertainment or games added yet — even one simple activity keeps guests engaged once the main event winds down.",action:()=>setStep(4)});
+              if(gifts.length===0) tips.push({t:"Pick return gifts",d:"You haven't chosen any gifts or favours yet — these are easy to forget until the week of the event.",action:()=>setStep(5)});
+              if(!city.trim()) tips.push({t:"Add your city",d:"Without a city we can't match you to local vendors or show realistic pricing — add it in step 2.",action:()=>setStep(2)});
+              const topTips=tips.slice(0,2);
+
+              // ── Things you can add from Tendr — only what isn't already in this plan ──
+              const crossSell=[];
+              if(gifts.length===0) crossSell.push({label:"Gift Hampers",icon:"🎁",href:"/gifting"});
+              if(!inviteType) crossSell.push({label:"Invitations & Stationery",icon:"💌",href:"/stationery"});
+              if(selectedActivities.length===0&&customActivities.length===0) crossSell.push({label:"Fun Activities",icon:"🎮",href:"/fun-activities"});
+              if(!budget||Number(budget)<=0) crossSell.push({label:"Price Estimator",icon:"💰",href:`/price-estimator?occasion=${encodeURIComponent(occasion.name||"")}`});
+              crossSell.push({label:"Event Timeline",icon:"🗓️",href:"/timeline-picker"});
+
               return(
-                <div style={{marginBottom:16,padding:"14px 16px",borderRadius:12,background:"rgba(196,122,46,0.04)",border:"1px solid rgba(196,122,46,0.12)"}}>
-                  <p style={{fontSize:13,color:muted,lineHeight:1.7,margin:"0 0 8px"}}>
-                    {parts.join(" ")}
-                  </p>
-                  {suggestions.length>0&&(
-                    <div style={{borderTop:"1px solid rgba(196,122,46,0.1)",paddingTop:8,marginTop:4}}>
-                      <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:5}}>Next steps</div>
-                      <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                        {suggestions.map((s,i)=><div key={i} style={{fontSize:11.5,color:muted,lineHeight:1.4}}>→ {s}</div>)}
+                <div style={{marginBottom:16,display:"flex",flexDirection:"column",gap:12}}>
+                  {/* Summary paragraph */}
+                  <div style={{padding:"14px 16px",borderRadius:12,background:"rgba(196,122,46,0.04)",border:"1px solid rgba(196,122,46,0.12)"}}>
+                    <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>Summary</div>
+                    <p style={{fontSize:13,color:muted,lineHeight:1.7,margin:0}}>{parts.join(" ")}</p>
+                  </div>
+
+                  {/* Conclusion */}
+                  <div style={{padding:"14px 16px",borderRadius:12,background:"#fff",border:`1px solid rgba(196,122,46,0.14)`}}>
+                    <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>How this event will go</div>
+                    <p style={{fontSize:13,color:ink,lineHeight:1.7,margin:0}}>{conclusion}</p>
+                  </div>
+
+                  {/* Make it even better — 2 points */}
+                  {topTips.length>0&&(
+                    <div style={{padding:"14px 16px",borderRadius:12,background:"rgba(196,122,46,0.04)",border:"1px solid rgba(196,122,46,0.12)"}}>
+                      <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>Make it even better</div>
+                      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                        {topTips.map((tip,i)=>(
+                          <button key={i} onClick={tip.action}
+                            style={{display:"flex",alignItems:"flex-start",gap:10,textAlign:"left",background:"none",border:"none",padding:0,cursor:"pointer",fontFamily:font}}>
+                            <span style={{flexShrink:0,width:20,height:20,borderRadius:"50%",background:"rgba(196,122,46,0.12)",color:gold,fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",marginTop:1}}>{i+1}</span>
+                            <span>
+                              <div style={{fontSize:12.5,fontWeight:700,color:ink,marginBottom:2}}>{tip.t}</div>
+                              <div style={{fontSize:11.5,color:muted,lineHeight:1.5}}>{tip.d}</div>
+                            </span>
+                          </button>
+                        ))}
                       </div>
                     </div>
                   )}
+
+                  {/* Cross-sell — things you can add from the platform */}
+                  <div style={{padding:"14px 16px",borderRadius:12,background:"#fff",border:`1px solid rgba(196,122,46,0.14)`}}>
+                    <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:9}}>You can also add, from Tendr</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+                      {crossSell.map((c,i)=>(
+                        <button key={i} onClick={()=>window.open(c.href,"_blank")}
+                          style={{display:"flex",alignItems:"center",gap:6,padding:"7px 12px",borderRadius:100,border:"1.5px solid rgba(196,122,46,0.2)",background:"rgba(196,122,46,0.03)",color:ink,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font}}>
+                          <span>{c.icon}</span>{c.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               );
             })()}
