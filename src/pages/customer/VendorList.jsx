@@ -649,6 +649,23 @@ const VendorList = () => {
             </div>
           )}
 
+          {/* Decor Analyser banner — Decorator listing only */}
+          {serviceType === "Decorator" && (
+            <div
+              onClick={() => window.open("/decor-analyser", "_blank")}
+              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, padding: "14px 18px", marginBottom: 10, borderRadius: 14, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.22)", cursor: "pointer", fontFamily: font }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>AI Tool · Decor Analyser</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E", lineHeight: 1.4 }}>Upload a photo of your venue</div>
+                <div style={{ fontSize: 11.5, color: "#9B7450", marginTop: 3, lineHeight: 1.5 }}>We'll suggest decor zones, colours and a budget for your actual space — then match you to decorators who can do it.</div>
+              </div>
+              <div style={{ flexShrink: 0, padding: "9px 16px", borderRadius: 10, background: "#C47A2E", color: "#fff", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>
+                Analyse →
+              </div>
+            </div>
+          )}
+
           {/* Find by Style banner — Decorator listing only */}
           {serviceType === "Decorator" && (
             <div

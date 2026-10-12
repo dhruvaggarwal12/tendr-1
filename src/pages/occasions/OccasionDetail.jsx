@@ -483,6 +483,17 @@ function getDecorOptions(occasion, {guests=20, venueType="", theme=null, ageGrou
   ];
 }
 
+// Turns a decor option's item list into one plain-English paragraph, personalised
+// with what's actually been filled in so far (occasion, guest count, venue).
+function buildDecorParagraph(opt, {occasionName="your event", guests=20, venueType=""}={}) {
+  const items = opt.items || [];
+  const joined = items.length > 1
+    ? `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`
+    : (items[0] || "");
+  const venueClause = venueType ? ` at your ${venueType.toLowerCase()}` : "";
+  return `For your ${guests}-guest ${occasionName}${venueClause}, the ${opt.style} look means ${joined.toLowerCase()} — ${opt.tagline.toLowerCase()}. This sits in the ${opt.tier.toLowerCase()} price tier.`;
+}
+
 /* ── equipment calculator ── */
 function getEquipment(id, guests) {
   const g=guests, t=Math.ceil(g/6);
@@ -2872,31 +2883,56 @@ export default function OccasionDetail(){
                         {/* Options panel — only when expanded */}
                         {isOpen&&(<>
                         <div style={{borderTop:`1px solid rgba(196,122,46,0.07)`,padding:"10px 14px 0"}}>
+
+                          {/* Ask venue type inline — only if it hasn't been set yet, since the
+                              paragraph below reads better once we know where this is happening */}
+                          {!venueType&&(
+                            <div style={{marginBottom:10,padding:"9px 11px",borderRadius:10,background:"rgba(196,122,46,0.05)",border:"1px dashed rgba(196,122,46,0.25)"}}>
+                              <div style={{fontSize:10.5,fontWeight:700,color:ink,marginBottom:6,lineHeight:1.4}}>
+                                Quick question — where's this happening? <span style={{fontWeight:500,color:muted}}>(so we can describe the setup accurately)</span>
+                              </div>
+                              <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                                {VENUE_TYPES.map(v=>(
+                                  <button key={v.id} onClick={()=>setVenueType(v.id)}
+                                    style={{fontSize:11,fontWeight:600,padding:"5px 10px",borderRadius:100,border:"1.5px solid rgba(196,122,46,0.25)",background:"#fff",color:ink,cursor:"pointer",fontFamily:font,display:"flex",alignItems:"center",gap:4}}>
+                                    {v.icon} {v.id}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
                           <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:8}}>Choose your decor style</div>
-                          <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:2}}>
+                          <div style={{display:"flex",flexDirection:"column",gap:8}}>
                             {dOpts.map((opt,oi)=>{
                               const sel=chosen===oi;
+                              const paragraph=buildDecorParagraph(opt,{occasionName:occasion.name,guests,venueType});
                               return(
                                 <button key={oi} onClick={()=>{setVendorPackages(vp=>({...vp,Decorator:oi}));setShowDecorBuilder(false);}}
-                                  style={{flex:"0 0 auto",width:"31%",minWidth:108,maxWidth:145,textAlign:"left",padding:"10px 11px",borderRadius:12,border:`1.5px solid ${sel?gold:opt.popular?"rgba(34,197,94,0.3)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:4}}>
-                                  <div style={{display:"flex",alignItems:"center",gap:4,justifyContent:"space-between",flexWrap:"wrap"}}>
-                                    <span style={{fontSize:16}}>{opt.icon}</span>
-                                    {opt.popular&&!sel&&<span style={{fontSize:7.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"1px 5px"}}>Recommended</span>}
-                                    {sel&&<span style={{fontSize:7.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"1px 5px"}}>✓</span>}
+                                  style={{textAlign:"left",padding:"12px 13px",borderRadius:12,border:`1.5px solid ${sel?gold:opt.popular?"rgba(34,197,94,0.3)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:6}}>
+                                  <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                                    <span style={{fontSize:18,flexShrink:0}}>{opt.icon}</span>
+                                    <span style={{fontSize:13,fontWeight:700,color:sel?gold:ink,flex:1,minWidth:80}}>{opt.style}</span>
+                                    {opt.tier&&<span style={{fontSize:9,fontWeight:700,color:opt.tier==="Premium"?"#7C3AED":opt.tier==="Mid-range"?gold:"#16a34a",background:opt.tier==="Premium"?"rgba(124,58,237,0.08)":opt.tier==="Mid-range"?"rgba(196,122,46,0.08)":"rgba(22,163,74,0.08)",borderRadius:100,padding:"2px 8px",flexShrink:0}}>{opt.tier}</span>}
+                                    {opt.popular&&!sel&&<span style={{fontSize:8.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>Recommended</span>}
+                                    {sel&&<span style={{fontSize:8.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>✓ Selected</span>}
                                   </div>
-                                  <div style={{fontSize:11.5,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{opt.style}</div>
-                                  {opt.tier&&<span style={{fontSize:9,fontWeight:700,color:opt.tier==="Premium"?"#7C3AED":opt.tier==="Mid-range"?gold:"#16a34a",background:opt.tier==="Premium"?"rgba(124,58,237,0.08)":opt.tier==="Mid-range"?"rgba(196,122,46,0.08)":"rgba(22,163,74,0.08)",borderRadius:100,padding:"2px 7px",alignSelf:"flex-start"}}>{opt.tier}</span>}
-                                  <div style={{display:"flex",flexDirection:"column",gap:2}}>
-                                    {(sel&&editedPackageItems!==null?editedPackageItems:opt.items).map((it,ii)=>(
-                                      <div key={ii} style={{fontSize:11,color:muted,lineHeight:1.45,display:"flex",alignItems:"flex-start",gap:3}}>
-                                        <span style={{flexShrink:0}}>·</span><span>{it}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                  {sel&&<button onClick={e=>{e.stopPropagation();if(showDecorBuilder&&editedPackageItems!==null){setShowDecorBuilder(false);setEditedPackageItems(null);}else{setEditedPackageItems([...opt.items]);setShowDecorBuilder(true);}}}
-                                    style={{marginTop:4,fontSize:10,fontWeight:700,color:gold,background:"rgba(196,122,46,0.08)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:8,padding:"4px 8px",cursor:"pointer",fontFamily:font,textAlign:"center"}}>
-                                    {showDecorBuilder&&editedPackageItems!==null?"✓ Done":"✏️ Edit items"}
-                                  </button>}
+                                  <div style={{fontSize:12,color:sel?"#4A2810":muted,lineHeight:1.6}}>{paragraph}</div>
+
+                                  {sel&&(
+                                    <div style={{marginTop:2,paddingTop:9,borderTop:"1px solid rgba(196,122,46,0.14)",display:"flex",flexDirection:"column",gap:4}}>
+                                      <div style={{fontSize:9,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:3}}>What's included</div>
+                                      {(editedPackageItems!==null?editedPackageItems:opt.items).map((it,ii)=>(
+                                        <div key={ii} style={{fontSize:11.5,color:ink,lineHeight:1.5,display:"flex",alignItems:"flex-start",gap:5}}>
+                                          <span style={{flexShrink:0,color:gold}}>·</span><span>{it}</span>
+                                        </div>
+                                      ))}
+                                      <button onClick={e=>{e.stopPropagation();if(showDecorBuilder&&editedPackageItems!==null){setShowDecorBuilder(false);setEditedPackageItems(null);}else{setEditedPackageItems([...opt.items]);setShowDecorBuilder(true);}}}
+                                        style={{marginTop:4,alignSelf:"flex-start",fontSize:10,fontWeight:700,color:gold,background:"rgba(196,122,46,0.08)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:8,padding:"4px 10px",cursor:"pointer",fontFamily:font,textAlign:"center"}}>
+                                        {showDecorBuilder&&editedPackageItems!==null?"✓ Done":"✏️ Edit items"}
+                                      </button>
+                                    </div>
+                                  )}
                                 </button>
                               );
                             })}
