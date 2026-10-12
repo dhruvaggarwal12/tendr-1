@@ -31,6 +31,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import Navbar from "../../components/Navbar.jsx";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
 import { useSelector } from "react-redux";
+import { useBookVendors } from "../../context/BookVendorsContext";
 import { FUN_ACTIVITIES } from "../../data/funActivitiesData";
 import { OCCASIONS } from "../../data/occasions";
 import { PARTY_PLACES } from "../../data/partyPlaces";
@@ -779,6 +780,7 @@ function WebsiteIntro({ onDone }) {
 
 const Home = () => {
   const navigate = useNavigate();
+  const { openBookVendors } = useBookVendors();
   const bookingType = useSelector((s) => s.eventPlanning.bookingType);
   const formEventName = useSelector((s) => s.eventPlanning.formData.eventName);
   const showVendorScreen = useSelector((s) => s.eventPlanning.showVendorScreen);
@@ -1418,7 +1420,7 @@ const Home = () => {
             >
               {/* Primary CTA */}
               <button
-                onClick={() => navigate("/booking")}
+                onClick={openBookVendors}
                 className="home-hero-cta"
                 style={{ background: "linear-gradient(135deg, #C47A2E 0%, #D4A848 100%)", color: "#fff", fontSize: 14.5, fontWeight: 600, letterSpacing: "0.02em", padding: "11px 28px", borderRadius: 11, border: "none", cursor: "pointer", boxShadow: "0 4px 22px rgba(196,122,46,0.5)", transition: "transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(196,122,46,0.65)"; }}

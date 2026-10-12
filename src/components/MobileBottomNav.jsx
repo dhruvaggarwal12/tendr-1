@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { AnimatePresence, motion } from "framer-motion";
 import { loadPlan, PlanSummaryModal } from "./PlanSummaryModal";
+import { useBookVendors } from "../context/BookVendorsContext";
 
 const font = "'Outfit', sans-serif";
 
@@ -107,6 +108,7 @@ const NAV_ICONS = {
 function BottomNavInner() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { openBookVendors } = useBookVendors();
   const { token, user } = useSelector((s) => s.auth);
   const finalisedVendors = useSelector((s) => s.listingFilters?.finalisedVendors || {});
   const finalisedCount = Object.keys(finalisedVendors).length;
@@ -192,7 +194,7 @@ function BottomNavInner() {
     { label: "Home",     paths: ["/"],                                onTap: () => navigate("/") },
     { label: "Book Vendors", paths: ["/booking","/plan-event","/listings","/search","/baat-karo"], onTap: () => {
         setBrowseOpen(false); setProductsOpen(false); setTipsOpen(false);
-        navigate("/booking");
+        openBookVendors();
       }},
     { label: "Tools", paths: ["/checklist","/timeline","/budget","/decor"], onTap: () => { setBrowseOpen(false); setTipsOpen(false); setProductsOpen(o => !o); } },
     { label: "Plan an Occasion", paths: [], onTap: () => {

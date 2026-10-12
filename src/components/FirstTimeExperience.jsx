@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTour } from '../context/TourContext';
+import { useBookVendors } from '../context/BookVendorsContext';
 import SiteTour from './SiteTour';
 
 const LS_KEY = 'tendr-ftv-done';
@@ -349,6 +350,7 @@ function IntentPicker({ onSelect }) {
 export default function FirstTimeExperience() {
   const navigate = useNavigate();
   const { startTour } = useTour();
+  const { openBookVendors } = useBookVendors();
 
   const [phase, setPhase] = useState(() => {
     try {
@@ -360,6 +362,7 @@ export default function FirstTimeExperience() {
   const finish = (path, anchor) => {
     try { localStorage.setItem(LS_KEY, '1'); } catch {}
     setPhase('done');
+    if (path === '/booking') { openBookVendors(); return; }
     if (path) {
       navigate(path);
       if (anchor) {

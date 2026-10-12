@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../redux/authSlice";
 import { removeVendorFromCompare, clearVendorCompare, clearFinalisedVendor, setFilters } from "../redux/listingFiltersSlice";
 import { useChatOverlay } from "../context/ChatContext";
+import { useBookVendors } from "../context/BookVendorsContext";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import { FaChevronDown, FaTimes, FaInstagram, FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import SearchOverlay from "./SearchOverlay";
@@ -53,6 +54,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const location   = useLocation();
   const dispatch   = useDispatch();
   const { openVendorChat } = useChatOverlay();
+  const { openBookVendors } = useBookVendors();
 
   // Track viewport width — sidebar only on desktop (≥1024px)
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== "undefined" && window.innerWidth >= 1024);
@@ -242,7 +244,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
   const NAV_SECTIONS = [
     { label: "Vendors", items: [
-      { label: "Book Vendors",       href: "/booking", activePaths: ["/booking", "/plan-event", "/listings", "/search", "/baat-karo"] },
+      { label: "Book Vendors",       href: "/booking", activePaths: ["/booking", "/plan-event", "/listings", "/search", "/baat-karo"], onClickOverride: () => { close(); openBookVendors(); } },
       { label: "Plan an Occasion",   href: "/", onClickOverride: () => { close(); navigate("/?openOccasionFlow=1"); } },
       { label: "Register as Vendor", href: "/vendor/register" },
     ]},
