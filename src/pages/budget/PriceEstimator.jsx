@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import HamburgerNav from "../../components/HamburgerNav";
 import {
@@ -14,6 +14,25 @@ const font = "'Outfit', sans-serif";
 const GOLD = "#C47A2E";
 const GOLD_LIGHT = "#CCAB4A";
 const BG = "#F8F4EF";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+function resizePhoto(file, maxPx = 1200) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL("image/jpeg", 0.82));
+    };
+    img.src = url;
+  });
+}
 
 const PRIORITY_RANK = { Critical: 0, High: 1, Medium: 2, Low: 3 };
 const isEssential = (priority) => priority === "Critical" || priority === "High";
@@ -49,6 +68,8 @@ export default function PriceEstimator() {
   const [selected, setSelected] = useState({}); // "category::idx" -> { qty }
   const [expandedCats, setExpandedCats] = useState({});
   const [visitedCats, setVisitedCats] = useState(() => new Set());
+  const [photoMatch, setPhotoMatch] = useState({ phase: "idle", preview: null, result: null, error: "" }); // idle | analyzing | done | error
+  const photoInputRef = useRef(null);
 
   const allCategories = useMemo(() => getCategoriesForOccasion(occasion), [occasion]);
   const allServices = useMemo(() => getServicesForOccasion(occasion), [occasion]);
@@ -64,6 +85,7 @@ export default function PriceEstimator() {
     setSelected({});
     setExpandedCats({});
     setVisitedCats(new Set());
+    setPhotoMatch({ phase: "idle", preview: null, result: null, error: "" });
     setStep(0);
   }, [occasion]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -90,6 +112,43 @@ export default function PriceEstimator() {
   const setQty = (cat, idx, qty) => {
     const k = keyOf(cat, idx);
     setSelected((prev) => ({ ...prev, [k]: { qty: Math.max(1, qty) } }));
+  };
+
+  // Photo -> real catalog match. Sends the actual Decor line items for this
+  // occasion as a closed set the model must pick from, so every matched price
+  // is a real pricingData.json entry rather than an AI-guessed number.
+  const analyzeDecorPhoto = async (file) => {
+    if (!file || !file.type.startsWith("image/")) return;
+    const dataUrl = await resizePhoto(file);
+    setPhotoMatch({ phase: "analyzing", preview: dataUrl, result: null, error: "" });
+    try {
+      const decorItems = allServices["Decor"] || [];
+      const catalog = decorItems.map((it) => ({ service: it.service, spec: it.spec }));
+      const base64 = dataUrl.split(",")[1];
+      const res = await fetch(`${BASE_URL}/decor-photo-match`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: base64, mediaType: "image/jpeg", occasion, catalog }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Analysis failed");
+
+      // Tick the matched items using the exact same selection mechanism as
+      // manual picks, so qty/price math and the final summary stay identical.
+      setSelected((prev) => {
+        const next = { ...prev };
+        (data.matches || []).forEach((m) => {
+          const idx = decorItems.findIndex((it) => it.service === m.service);
+          if (idx === -1) return;
+          next[keyOf("Decor", idx)] = { qty: Math.max(1, Number(m.qty) || 1) };
+        });
+        return next;
+      });
+
+      setPhotoMatch({ phase: "done", preview: dataUrl, result: data, error: "" });
+    } catch (e) {
+      setPhotoMatch({ phase: "error", preview: dataUrl, result: null, error: e.message || "Couldn't analyze that photo. Please try again." });
+    }
   };
 
   // Pre-tick a category's essentials the first time we land on its item step —
@@ -275,6 +334,13 @@ export default function PriceEstimator() {
 
         {currentCategory && (
           <StepCard title={currentCategory} subtitle="Tick what you want. We've pre-ticked the essentials — untick anything you don't need.">
+            {currentCategory === "Decor" && (
+              <DecorPhotoMatch
+                photoMatch={photoMatch}
+                onPickFile={(file) => analyzeDecorPhoto(file)}
+                inputRef={photoInputRef}
+              />
+            )}
             <ItemList
               category={currentCategory}
               items={allServices[currentCategory] || []}
@@ -408,6 +474,82 @@ function Checkbox({ checked, onClick, label, radio }) {
         {checked && <span style={{ color: "#fff", fontSize: 11, fontWeight: 900 }}>{radio ? "" : "✓"}</span>}
       </div>
       <span style={{ fontSize: 14, fontWeight: 600, color: "#2C1A0E" }}>{label}</span>
+    </div>
+  );
+}
+
+function DecorPhotoMatch({ photoMatch, onPickFile, inputRef }) {
+  const { phase, preview, result, error } = photoMatch;
+  const matchCount = result?.matches?.length || 0;
+
+  return (
+    <div style={{
+      background: "rgba(196,122,46,0.06)", border: "1.5px dashed rgba(196,122,46,0.3)",
+      borderRadius: 12, padding: "14px", marginBottom: 14,
+    }}>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={(e) => { onPickFile(e.target.files?.[0]); e.target.value = ""; }}
+      />
+
+      {phase === "idle" && (
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 22, flexShrink: 0 }}>📷</span>
+          <div style={{ flex: 1, minWidth: 180 }}>
+            <div style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E" }}>Have a decor photo you like?</div>
+            <div style={{ fontSize: 11.5, color: "#8a6a4a", marginTop: 2 }}>Upload it — we'll match what's in it to real prices below.</div>
+          </div>
+          <button onClick={() => inputRef.current?.click()} style={{ ...navBtnStyle, padding: "9px 14px", fontSize: 12.5 }}>
+            Upload photo
+          </button>
+        </div>
+      )}
+
+      {phase === "analyzing" && (
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {preview && <img src={preview} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />}
+          <div>
+            <div style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E" }}>Analysing your photo…</div>
+            <div style={{ fontSize: 11.5, color: "#8a6a4a", marginTop: 2 }}>Matching it against real Decor prices for this occasion.</div>
+          </div>
+        </div>
+      )}
+
+      {phase === "error" && (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+            {preview && <img src={preview} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />}
+            <div style={{ fontSize: 13, color: "#c0392b", fontWeight: 600 }}>{error}</div>
+          </div>
+          <button onClick={() => inputRef.current?.click()} style={{ ...navBtnStyle, padding: "8px 14px", fontSize: 12.5 }}>Try another photo</button>
+        </div>
+      )}
+
+      {phase === "done" && (
+        <div>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+            {preview && <img src={preview} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />}
+            <div style={{ flex: 1, minWidth: 180 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: "#15803d" }}>
+                {matchCount > 0 ? `✓ Matched ${matchCount} item${matchCount === 1 ? "" : "s"} from your photo` : "No exact catalog matches found in this photo"}
+              </div>
+              {result?.styleNote && (
+                <div style={{ fontSize: 11.5, color: "#8a6a4a", marginTop: 3, lineHeight: 1.4 }}>{result.styleNote}</div>
+              )}
+              {result?.unmatchedNote && (
+                <div style={{ fontSize: 11, color: "#8a6a4a", marginTop: 3, lineHeight: 1.4, fontStyle: "italic" }}>{result.unmatchedNote}</div>
+              )}
+              {matchCount > 0 && (
+                <div style={{ fontSize: 11, color: "#8a6a4a", marginTop: 4 }}>Ticked below — adjust anything before continuing.</div>
+              )}
+            </div>
+          </div>
+          <button onClick={() => inputRef.current?.click()} style={{ ...navBtnStyle, padding: "8px 14px", fontSize: 12.5, marginTop: 10 }}>Try another photo</button>
+        </div>
+      )}
     </div>
   );
 }
