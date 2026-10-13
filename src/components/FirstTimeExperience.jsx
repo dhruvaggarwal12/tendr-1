@@ -302,7 +302,8 @@ function IntentPicker({ onSelect }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 10000,
-      background: 'radial-gradient(ellipse at 50% 20%, rgba(74,40,16,0.5), rgba(10,4,0,0.95))',
+      background: 'rgba(8,3,0,0.93)',
+      backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       padding: '20px 16px',
       fontFamily: SANS,
@@ -334,22 +335,23 @@ function IntentPicker({ onSelect }) {
                 className="fte-intent-card"
                 onClick={() => onSelect(intent.path, intent.anchor)}
                 style={{
-                  background: 'linear-gradient(160deg, rgba(196,122,46,0.1), rgba(196,122,46,0.04))',
-                  border: '1px solid rgba(196,122,46,0.24)',
+                  background: 'linear-gradient(160deg, #3D2410, #2A1608)',
+                  border: '1px solid rgba(196,122,46,0.35)',
                   borderRadius: 16, padding: '18px 16px',
                   cursor: 'pointer', textAlign: 'left',
                   color: 'white', fontFamily: SANS,
                   display: 'flex', flexDirection: 'column', gap: 10,
+                  boxShadow: '0 4px 18px rgba(0,0,0,0.3)',
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.background = 'linear-gradient(160deg, rgba(196,122,46,0.22), rgba(196,122,46,0.08))';
-                  e.currentTarget.style.borderColor = 'rgba(204,171,74,0.6)';
-                  e.currentTarget.style.boxShadow = '0 8px 28px rgba(196,122,46,0.25)';
+                  e.currentTarget.style.background = 'linear-gradient(160deg, #4A2C14, #331C0A)';
+                  e.currentTarget.style.borderColor = 'rgba(204,171,74,0.7)';
+                  e.currentTarget.style.boxShadow = '0 8px 28px rgba(196,122,46,0.3)';
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.background = 'linear-gradient(160deg, rgba(196,122,46,0.1), rgba(196,122,46,0.04))';
-                  e.currentTarget.style.borderColor = 'rgba(196,122,46,0.24)';
-                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.background = 'linear-gradient(160deg, #3D2410, #2A1608)';
+                  e.currentTarget.style.borderColor = 'rgba(196,122,46,0.35)';
+                  e.currentTarget.style.boxShadow = '0 4px 18px rgba(0,0,0,0.3)';
                 }}
               >
                 <div className="fte-icon-chip" style={{
@@ -363,7 +365,7 @@ function IntentPicker({ onSelect }) {
                   <div className="fte-label" style={{ fontSize: 13.5, fontWeight: 700, color: '#F5E6CC', marginBottom: 4, lineHeight: 1.2 }}>
                     {intent.label}
                   </div>
-                  <div className="fte-desc" style={{ fontSize: 11, color: 'rgba(245,230,204,0.42)', lineHeight: 1.45 }}>
+                  <div className="fte-desc" style={{ fontSize: 11, color: 'rgba(245,230,204,0.55)', lineHeight: 1.45 }}>
                     {intent.desc}
                   </div>
                 </div>
