@@ -194,3 +194,39 @@ export function getCateringItem(occasion, mealType, isVeg) {
   const name = CATERING_ITEM_NAME[mealType];
   return items.find((i) => i.service === name) || null;
 }
+
+// ── Ready-made packages — 3 alternatives spanning every category the customer
+// already said they want. Reuses tierBuckets' existing Basic/Standard/Premium
+// bands (one real representative item per band) for each category rather than
+// summing every item at a priority level — summing would double-count items
+// that are really alternatives to each other (e.g. a basic vs. premium backdrop
+// aren't two things to buy, they're two versions of the same one thing).
+const PACKAGE_TIER_LABELS = ["Smart Saver", "Balanced", "Premium"];
+const PACKAGE_TIER_KEYS = ["saver", "balanced", "premium"];
+
+// `cateringChoice` ({ mealType, isVeg }), if the customer already answered the
+// catering question, keeps that real preference the same across all 3 tiers
+// instead of re-guessing it.
+export function buildPackageTiers(occasion, chosenCategoryKeys, cateringChoice, guestCount) {
+  const defs = getSimpleCategories(occasion).filter((c) => chosenCategoryKeys.includes(c.key));
+
+  return PACKAGE_TIER_LABELS.map((label, tierIdx) => {
+    const rows = [];
+    defs.forEach((def) => {
+      if (def.key === "catering") {
+        if (!cateringChoice?.mealType) return;
+        const item = getCateringItem(occasion, cateringChoice.mealType, cateringChoice.isVeg !== false);
+        if (!item) return;
+        const r = narrowRange(item.min, item.max, 0.5);
+        rows.push({ key: def.key, label: def.label, min: r.min * guestCount, max: r.max * guestCount, items: [item.service] });
+        return;
+      }
+      const bands = tierBuckets(occasion, def.raw);
+      if (!bands.length) return;
+      const band = bands[bands.length === 1 ? 0 : Math.round((tierIdx * (bands.length - 1)) / 2)];
+      rows.push({ key: def.key, label: def.label, min: band.min, max: band.max, items: [band.service] });
+    });
+    const total = rows.reduce((a, r) => ({ min: a.min + r.min, max: a.max + r.max }), { min: 0, max: 0 });
+    return { key: PACKAGE_TIER_KEYS[tierIdx], label, rows, total };
+  });
+}

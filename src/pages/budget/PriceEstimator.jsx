@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import HamburgerNav from "../../components/HamburgerNav";
+import DecorAnalyzer from "../../components/DecorAnalyzer";
 import { useBookVendors } from "../../context/BookVendorsContext";
 import {
   getOccasionNames,
@@ -15,8 +16,32 @@ import {
   narrowRange,
   lineTotal,
   isPerGuest,
+  buildPackageTiers,
   formatINR,
 } from "../../utils/priceEstimator";
+
+// Screenshots the given DOM node and saves it as a PDF — same technique already
+// used for the occasion planner's "Download Plan" button.
+async function downloadPlanPdf(el, name) {
+  try {
+    const h2c = (await import("html2canvas")).default;
+    const { jsPDF } = await import("jspdf");
+    const canvas = await h2c(el, { scale: 2, useCORS: true, backgroundColor: "#FFFFFF" });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pW = pdf.internal.pageSize.getWidth();
+    const pH = pdf.internal.pageSize.getHeight();
+    const ratio = pW / canvas.width;
+    const totalH = canvas.height * ratio;
+    let yOff = 0;
+    while (yOff < totalH) {
+      if (yOff > 0) pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, -yOff, pW, totalH);
+      yOff += pH;
+    }
+    pdf.save(`${name.replace(/\s+/g, "-").toLowerCase()}-plan.pdf`);
+  } catch { window.print(); }
+}
 
 const font = "'Outfit', sans-serif";
 const GOLD = "#C47A2E";
@@ -66,7 +91,13 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
   const [categoryChoice, setCategoryChoice] = useState({}); // catering only -> { mealType, isVeg }
   const [selectedItems, setSelectedItems] = useState({}); // "simpleKey::rawCat::idx" -> { qty }
   const [finaliseChoice, setFinaliseChoice] = useState(null); // null | "applied" | "declined"
+  // Post-estimate flow: results -> packages -> optional venue photo -> downloadable plan
+  const [postStage, setPostStage] = useState("idle"); // idle | packages | photo | done
+  const [selectedPackageKey, setSelectedPackageKey] = useState(null);
+  const [decorAnalyserOpen, setDecorAnalyserOpen] = useState(false);
+  const [venueAnalysis, setVenueAnalysis] = useState(null);
   const didMountRef = useRef(false);
+  const planRef = useRef(null);
 
   const simpleCategories = useMemo(() => getSimpleCategories(occasion), [occasion]);
   const allServices = useMemo(() => getServicesForOccasion(occasion), [occasion]);
@@ -86,6 +117,9 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
     setCategoryChoice({});
     setSelectedItems({});
     setFinaliseChoice(null);
+    setPostStage("idle");
+    setSelectedPackageKey(null);
+    setVenueAnalysis(null);
     setStep(0);
   }, [occasion]);
 
@@ -181,6 +215,15 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
 
     return { rows, total, venue };
   }, [chosenCategories, categoryChoice, selectedItems, occasion, allServices, guestBucket, guestBucketKey, simpleCategories, venueType, venueAlreadyBooked]);
+
+  // 3 ready-made alternatives spanning the categories already chosen — only computed
+  // once the customer asks for them, from buildPackageTiers() (see utils for why it
+  // reuses tierBuckets instead of summing every item at a priority level).
+  const packages = useMemo(() => {
+    if (postStage === "idle" || !guestBucket) return [];
+    return buildPackageTiers(occasion, chosenCategories, categoryChoice.catering, guestBucket.guests);
+  }, [postStage, occasion, chosenCategories, categoryChoice.catering, guestBucket]);
+  const selectedPackage = packages.find((p) => p.key === selectedPackageKey) || null;
 
   const isFinal = step === totalSteps;
   const stepLabel = isFinal ? "Your estimate" :
@@ -398,9 +441,133 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
                 <li style={{ fontSize: 12, color: "#5A3520", lineHeight: 1.5 }}>This is an estimate, not a final vendor quote.</li>
               </ul>
             </StepCard>
+
+            {postStage === "idle" && (
+              <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 16, padding: "18px 20px", textAlign: "center" }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "#F5E6CC", marginBottom: 4 }}>Want a ready-made package instead?</div>
+                <div style={{ fontSize: 12, color: "rgba(245,230,204,0.6)", marginBottom: 12, lineHeight: 1.5 }}>
+                  See your budget split 3 ways across what you picked, choose one, and get a downloadable plan.
+                </div>
+                <button onClick={() => setPostStage("packages")}
+                  style={{ padding: "11px 22px", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${GOLD_LIGHT}, ${GOLD})`, color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: font }}>
+                  Get splits &amp; packages →
+                </button>
+              </div>
+            )}
+
+            {postStage === "packages" && (
+              <StepCard title="Pick a package" subtitle="Each one is a real option built from your selected categories — a single representative item per category, so nothing's double-counted.">
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {packages.map((p) => {
+                    const mid = (p.total.min + p.total.max) / 2;
+                    return (
+                      <div key={p.key} style={{ border: `1.5px solid rgba(196,122,46,0.2)`, borderRadius: 14, padding: "14px 16px", background: "#FAF7F2" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                          <span style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E" }}>{p.label}</span>
+                          <span style={{ fontSize: 14, fontWeight: 900, color: GOLD }}>{formatINR(p.total.min)}–{formatINR(p.total.max)}</span>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
+                          {p.rows.map((r) => {
+                            const pct = mid > 0 ? Math.round(((r.min + r.max) / 2 / mid) * 100) : 0;
+                            return (
+                              <div key={r.key}>
+                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, marginBottom: 2 }}>
+                                  <span style={{ color: "#5A3520", fontWeight: 600 }}>{r.label} <span style={{ color: "#aaa" }}>({pct}%)</span></span>
+                                  <span style={{ color: "#8a6a4a" }}>{formatINR(r.min)}–{formatINR(r.max)}</span>
+                                </div>
+                                <div style={{ height: 4, borderRadius: 2, background: "rgba(196,122,46,0.12)" }}>
+                                  <div style={{ height: "100%", width: `${pct}%`, borderRadius: 2, background: GOLD }} />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <button onClick={() => { setSelectedPackageKey(p.key); setPostStage("photo"); }}
+                          style={{ width: "100%", padding: "9px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                          Choose {p.label} →
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </StepCard>
+            )}
+
+            {postStage === "photo" && selectedPackage && (
+              <StepCard title="One more thing" subtitle="Optional — upload a photo of your venue for a free decor read before you download your plan.">
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, padding: "10px 12px", borderRadius: 10, background: "rgba(34,197,94,0.07)", border: "1px solid rgba(34,197,94,0.2)" }}>
+                  <span style={{ fontSize: 16 }}>✓</span>
+                  <span style={{ fontSize: 12.5, color: "#15803d", fontWeight: 600 }}>{selectedPackage.label} package selected — {formatINR(selectedPackage.total.min)}–{formatINR(selectedPackage.total.max)}</span>
+                </div>
+                <button onClick={() => setDecorAnalyserOpen(true)}
+                  style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "12px 14px", borderRadius: 11, border: `1.5px solid ${venueAnalysis ? "rgba(34,197,94,0.35)" : "rgba(196,122,46,0.25)"}`, background: venueAnalysis ? "rgba(34,197,94,0.05)" : "rgba(196,122,46,0.04)", cursor: "pointer", fontFamily: font, textAlign: "left", marginBottom: 10 }}>
+                  <span style={{ fontSize: 18 }}>{venueAnalysis ? "✅" : "📷"}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#2C1A0E" }}>{venueAnalysis ? "Venue analysed — tap to re-analyse" : "Upload a photo of your venue"}</div>
+                    <div style={{ fontSize: 10.5, color: "#8a6a4a", marginTop: 1 }}>{venueAnalysis ? venueAnalysis.spaceType : "Get decor zone ideas for your actual space"}</div>
+                  </div>
+                </button>
+                <button onClick={() => setPostStage("done")}
+                  style={{ width: "100%", padding: "11px", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: font }}>
+                  {venueAnalysis ? "Continue to plan →" : "Skip — continue to plan →"}
+                </button>
+              </StepCard>
+            )}
+
+            {postStage === "done" && selectedPackage && (
+              <>
+                <div ref={planRef} style={{ background: "#fff", borderRadius: 16, padding: 20, marginBottom: 14, border: "1.5px solid rgba(196,122,46,0.15)" }}>
+                  <div style={{ textAlign: "center", marginBottom: 16 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: GOLD, textTransform: "uppercase", letterSpacing: "0.1em" }}>Your Plan</div>
+                    <div style={{ fontSize: 18, fontWeight: 900, color: "#2C1A0E", marginTop: 4 }}>{occasion} · {guestBucket?.label}{city ? ` · ${city}` : ""}</div>
+                    <div style={{ fontSize: 22, fontWeight: 900, color: GOLD, marginTop: 8 }}>{formatINR(selectedPackage.total.min)}–{formatINR(selectedPackage.total.max)}</div>
+                    <div style={{ fontSize: 11, color: "#8a6a4a", marginTop: 2 }}>{selectedPackage.label} package</div>
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: venueAnalysis ? 16 : 0 }}>
+                    {selectedPackage.rows.map((r) => (
+                      <div key={r.key} style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(196,122,46,0.1)", paddingBottom: 8 }}>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{r.label}</div>
+                          <div style={{ fontSize: 11, color: "#8a6a4a" }}>{r.items.join(", ")}</div>
+                        </div>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: GOLD, whiteSpace: "nowrap" }}>{formatINR(r.min)}–{formatINR(r.max)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {venueAnalysis && (
+                    <div style={{ padding: "12px 14px", borderRadius: 10, background: "rgba(196,122,46,0.05)" }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: GOLD, textTransform: "uppercase", marginBottom: 4 }}>Venue read</div>
+                      <div style={{ fontSize: 12, color: "#5A3520", lineHeight: 1.5 }}>{venueAnalysis.spaceType} — {venueAnalysis.styleNote || venueAnalysis.spaceSummary}</div>
+                    </div>
+                  )}
+                </div>
+                <button onClick={() => downloadPlanPdf(planRef.current, occasion)}
+                  style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 16px rgba(196,122,46,0.35)" }}>
+                  ⬇ Download Plan (PDF)
+                </button>
+              </>
+            )}
           </>
         )}
       </div>
+
+      {decorAnalyserOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 10050, background: "rgba(28,9,0,0.65)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setDecorAnalyserOpen(false); }}>
+          <div style={{ width: "100%", maxWidth: 640, background: "#FFFCF5", borderRadius: "20px 20px 0 0", padding: "20px 18px 32px", maxHeight: "93dvh", overflowY: "auto", fontFamily: font }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <div>
+                <div style={{ fontSize: 10.5, fontWeight: 800, color: GOLD, textTransform: "uppercase", letterSpacing: "0.12em" }}>AI Tool</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: "#1C0900", marginTop: 2 }}>Venue Decor Analyser</div>
+              </div>
+              <button onClick={() => setDecorAnalyserOpen(false)}
+                style={{ width: 32, height: 32, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", cursor: "pointer", fontSize: 16, color: "#9B7450", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
+            </div>
+            <DecorAnalyzer onClose={() => setDecorAnalyserOpen(false)} initialEventType={occasion || ""} compact
+              onAnalysisComplete={(a) => { setVenueAnalysis(a); setDecorAnalyserOpen(false); }} />
+          </div>
+        </div>
+      )}
 
       <div style={{ position: embedded ? "sticky" : "fixed", left: 0, right: 0, bottom: 0, zIndex: 500, background: "#fff", borderTop: "1.5px solid rgba(196,122,46,0.18)", boxShadow: "0 -6px 24px rgba(28,9,0,0.08)", padding: "14px 16px calc(14px + env(safe-area-inset-bottom, 0px))" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
@@ -413,7 +580,7 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
             </>
           ) : (
             <>
-              <button onClick={() => setStep(2)} style={navBtnStyle}>← Edit requirements</button>
+              <button onClick={() => { setPostStage("idle"); setSelectedPackageKey(null); setStep(2); }} style={navBtnStyle}>← Edit requirements</button>
               <a href="/booking" onClick={embedded ? (e) => { e.preventDefault(); openBookVendors(); } : undefined} style={{ ...primaryBtnStyle, textDecoration: "none", display: "inline-block" }}>
                 Book vendors for this →
               </a>
