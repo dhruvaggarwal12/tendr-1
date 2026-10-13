@@ -372,7 +372,7 @@ const VendorList = () => {
               const range = CAT_RANGES[serviceType] || { min: 2000, max: 300000, step: 2000 };
               const val = currentCatBudget || range.max;
               return (
-                <div className="vendor-budget-strip" style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10, padding: "8px 16px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", fontFamily: "'Outfit',sans-serif", maxWidth: "calc(100vw - 40px)", boxSizing: "border-box" }}>
+                <div className="vendor-budget-strip" style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10, padding: "8px 16px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", fontFamily: "'Outfit',sans-serif", maxWidth: "100%", boxSizing: "border-box" }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color: "#5a3a1a", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5 }}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                     {serviceType}
