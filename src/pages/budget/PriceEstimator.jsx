@@ -4,6 +4,7 @@ import HamburgerNav from "../../components/HamburgerNav";
 import { useBookVendors } from "../../context/BookVendorsContext";
 import {
   getOccasionNames,
+  getServicesForOccasion,
   getSimpleCategories,
   GUEST_BUCKETS,
   VENUE_TYPES,
@@ -11,6 +12,8 @@ import {
   tierBuckets,
   getCateringItem,
   narrowRange,
+  lineTotal,
+  isPerGuest,
   formatINR,
 } from "../../utils/priceEstimator";
 
@@ -22,10 +25,17 @@ const BG = "#F8F4EF";
 const OCCASIONS = getOccasionNames();
 const CITIES = ["Delhi", "Gurugram", "Noida", "Ghaziabad", "Faridabad", "Other NCR"];
 
-// Non-per-guest package categories (decor, cake, photography, DJ, activities, "other")
-// get a simple multiplier so a bigger guest count nudges a fixed-package price up —
-// an honest, disclosed assumption rather than an invented per-item number.
+// Venue is asked about as its own step rather than an item pick, so it still gets a
+// simple guest-count multiplier on top of a representative catalog price.
 const SIZE_MULTIPLIER = { "10-20": 0.85, "21-50": 1, "51-100": 1.15, "101-200": 1.35, "200+": 1.6 };
+
+// Catering's own meal-format items (Veg/Non-Veg Catering, Plated Meal, etc.) are picked
+// via the veg/meal-type question, not the extras checklist, so they're filtered out of it.
+const CATERING_PRIMARY_NAMES = new Set(["Veg Catering", "Non-Veg Catering", "Full Meal Buffet", "Plated Meal", "High Tea", "Breakfast", "Brunch"]);
+
+function itemKeyOf(simpleKey, rawCat, idx) {
+  return `${simpleKey}::${rawCat}::${idx}`;
+}
 
 // The actual wizard. Reused by both the standalone /price-estimator page and
 // PriceEstimatorModal (the centered popup opened from everywhere else in the app).
@@ -44,10 +54,12 @@ export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFina
   const [venueTypeKey, setVenueTypeKey] = useState(null);
   const [venueAlreadyBooked, setVenueAlreadyBooked] = useState(null); // null | true | false
   const [chosenCategories, setChosenCategories] = useState([]); // simple category keys
-  const [categoryChoice, setCategoryChoice] = useState({}); // key -> { tier } | { mealType, isVeg }
+  const [categoryChoice, setCategoryChoice] = useState({}); // catering only -> { mealType, isVeg }
+  const [selectedItems, setSelectedItems] = useState({}); // "simpleKey::rawCat::idx" -> { qty }
   const [finaliseChoice, setFinaliseChoice] = useState(null); // null | "applied" | "declined"
 
   const simpleCategories = useMemo(() => getSimpleCategories(occasion), [occasion]);
+  const allServices = useMemo(() => getServicesForOccasion(occasion), [occasion]);
   const guestBucket = GUEST_BUCKETS.find((g) => g.key === guestBucketKey) || null;
   const venueType = VENUE_TYPES.find((v) => v.key === venueTypeKey) || null;
 
@@ -60,6 +72,7 @@ export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFina
     setVenueAlreadyBooked(null);
     setChosenCategories([]);
     setCategoryChoice({});
+    setSelectedItems({});
     setFinaliseChoice(null);
     setStep(0);
   }, [occasion]);
@@ -74,50 +87,71 @@ export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFina
     );
   };
 
-  const setTier = (key, tier) => setCategoryChoice((prev) => ({ ...prev, [key]: { tier } }));
   const setCateringChoice = (patch) => setCategoryChoice((prev) => ({ ...prev, catering: { ...prev.catering, mealType: "buffet", isVeg: true, ...patch } }));
 
-  // ── Pricing ──────────────────────────────────────────────────────────────
+  const toggleSelectedItem = (simpleKey, rawCat, idx, defaultQty = 1) => {
+    const k = itemKeyOf(simpleKey, rawCat, idx);
+    setSelectedItems((prev) => {
+      const next = { ...prev };
+      if (next[k]) delete next[k];
+      else next[k] = { qty: defaultQty };
+      return next;
+    });
+  };
+  const setItemQty = (simpleKey, rawCat, idx, qty) => {
+    const k = itemKeyOf(simpleKey, rawCat, idx);
+    setSelectedItems((prev) => ({ ...prev, [k]: { qty: Math.max(1, qty) } }));
+  };
+
+  // ── Pricing — sums the real catalog items the customer actually ticked ───
   const priced = useMemo(() => {
     const rows = [];
     for (const key of chosenCategories) {
       const def = simpleCategories.find((c) => c.key === key);
-      if (!def) continue;
-      const choice = categoryChoice[key];
-      if (!choice) continue;
+      if (!def || !guestBucket) continue;
 
       if (key === "catering") {
-        const item = getCateringItem(occasion, choice.mealType || "buffet", choice.isVeg !== false);
-        if (!item || !guestBucket) continue;
-        const mealLabel = CATERING_MEAL_TYPES.find((m) => m.key === (choice.mealType || "buffet"))?.label || "Buffet";
-        // No quality tier was asked for catering, so take the middle slice of the
-        // item's own range rather than its full basic-to-premium span.
-        const perGuestRange = narrowRange(item.min, item.max, 0.5);
-        rows.push({
-          key, label: def.label,
-          sub: `${choice.isVeg !== false ? "Veg" : "Non-veg"} ${mealLabel.toLowerCase()} · ${guestBucket.guests} guests`,
-          min: perGuestRange.min * guestBucket.guests, max: perGuestRange.max * guestBucket.guests,
+        const choice = categoryChoice.catering;
+        if (!choice?.mealType) continue;
+        let min = 0, max = 0;
+        const parts = [];
+        const item = getCateringItem(occasion, choice.mealType, choice.isVeg !== false);
+        if (item) {
+          // No quality tier was asked for the main meal, so take the middle slice of
+          // the item's own range rather than its full basic-to-premium span.
+          const r = narrowRange(item.min, item.max, 0.5);
+          min += r.min * guestBucket.guests; max += r.max * guestBucket.guests;
+          const mealLabel = CATERING_MEAL_TYPES.find((m) => m.key === choice.mealType)?.label || "Buffet";
+          parts.push(`${choice.isVeg !== false ? "Veg" : "Non-veg"} ${mealLabel.toLowerCase()}`);
+        }
+        let extraCount = 0;
+        (allServices.Catering || []).forEach((it, idx) => {
+          const sel = selectedItems[itemKeyOf("catering", "Catering", idx)];
+          if (!sel) return;
+          const t = lineTotal(it, { guestCount: guestBucket.guests, qty: sel.qty });
+          min += t.min; max += t.max; extraCount++;
         });
+        if (extraCount) parts.push(`+${extraCount} extra${extraCount === 1 ? "" : "s"}`);
+        rows.push({ key, label: def.label, sub: `${parts.join(" · ")} · ${guestBucket.guests} guests`, min, max });
         continue;
       }
 
-      const tiers = tierBuckets(occasion, def.raw);
-      const sel = tiers.find((t) => t.tier === choice.tier) || tiers[0];
-      if (!sel || !guestBucket) continue;
-
-      if (key === "gifting") {
-        // "Per gift" items scale by guests under the assumption of one gift per guest.
-        rows.push({
-          key, label: def.label, sub: `${sel.tier} · ${guestBucket.guests} gifts`,
-          min: sel.min * guestBucket.guests, max: sel.max * guestBucket.guests,
+      let min = 0, max = 0;
+      const pickedNames = [];
+      def.raw.forEach((rawCat) => {
+        (allServices[rawCat] || []).forEach((item, idx) => {
+          const sel = selectedItems[itemKeyOf(key, rawCat, idx)];
+          if (!sel) return;
+          const t = lineTotal(item, { guestCount: guestBucket.guests, qty: sel.qty });
+          min += t.min; max += t.max;
+          pickedNames.push(item.service);
         });
-        continue;
-      }
-
-      const mult = SIZE_MULTIPLIER[guestBucketKey] ?? 1;
+      });
+      if (!pickedNames.length) continue;
       rows.push({
-        key, label: def.label, sub: `${sel.tier} package`,
-        min: Math.round(sel.min * mult), max: Math.round(sel.max * mult),
+        key, label: def.label,
+        sub: pickedNames.length <= 2 ? pickedNames.join(", ") : `${pickedNames.slice(0, 2).join(", ")} +${pickedNames.length - 2} more`,
+        min, max,
       });
     }
 
@@ -134,7 +168,7 @@ export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFina
     }
 
     return { rows, total, venue };
-  }, [chosenCategories, categoryChoice, occasion, guestBucket, guestBucketKey, simpleCategories, venueType, venueAlreadyBooked]);
+  }, [chosenCategories, categoryChoice, selectedItems, occasion, allServices, guestBucket, guestBucketKey, simpleCategories, venueType, venueAlreadyBooked]);
 
   const isFinal = step === totalSteps;
   const stepLabel = isFinal ? "Your estimate" :
@@ -148,7 +182,7 @@ export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFina
     step === 1 ? !!venueTypeKey && (!venueType?.needsVenue || venueAlreadyBooked !== null) :
     step === 2 ? chosenCategories.length > 0 :
     currentCategory === "catering" ? !!(categoryChoice.catering?.mealType) :
-    currentCategory ? !!categoryChoice[currentCategory]?.tier :
+    currentCategory ? (currentCategoryDef?.raw || []).some((rawCat) => (allServices[rawCat] || []).some((_, idx) => selectedItems[itemKeyOf(currentCategory, rawCat, idx)])) :
     true;
 
   return (
@@ -245,15 +279,31 @@ export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFina
                 ))}
               </div>
             </Field>
+            <div style={{ marginTop: 6, paddingTop: 16, borderTop: "1px solid rgba(196,122,46,0.12)" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Add extras (optional)</div>
+              <ItemChecklist
+                rows={(allServices.Catering || [])
+                  .map((item, idx) => ({ rawCat: "Catering", idx, item }))
+                  .filter((r) => !CATERING_PRIMARY_NAMES.has(r.item.service))}
+                simpleKey="catering"
+                selected={selectedItems}
+                guestCount={guestBucket?.guests || 1}
+                onToggle={(rawCat, idx) => toggleSelectedItem("catering", rawCat, idx, 1)}
+                onSetQty={(rawCat, idx, qty) => setItemQty("catering", rawCat, idx, qty)}
+              />
+            </div>
           </StepCard>
         )}
 
         {currentCategory && currentCategory !== "catering" && (
-          <StepCard title={currentCategoryDef?.label} subtitle="Only asked because you picked this category.">
-            <TierPicker
-              tiers={tierBuckets(occasion, currentCategoryDef.raw)}
-              selected={categoryChoice[currentCategory]?.tier}
-              onSelect={(tier) => setTier(currentCategory, tier)}
+          <StepCard title={currentCategoryDef?.label} subtitle="Tick what you want — this is what gets priced.">
+            <ItemChecklist
+              rows={(currentCategoryDef?.raw || []).flatMap((rawCat) => (allServices[rawCat] || []).map((item, idx) => ({ rawCat, idx, item })))}
+              simpleKey={currentCategory}
+              selected={selectedItems}
+              guestCount={guestBucket?.guests || 1}
+              onToggle={(rawCat, idx) => toggleSelectedItem(currentCategory, rawCat, idx, currentCategory === "gifting" ? (guestBucket?.guests || 1) : 1)}
+              onSetQty={(rawCat, idx, qty) => setItemQty(currentCategory, rawCat, idx, qty)}
             />
           </StepCard>
         )}
@@ -325,9 +375,9 @@ export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFina
             <StepCard title="Assumptions & exclusions">
               <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
                 <li style={{ fontSize: 12, color: "#5A3520", lineHeight: 1.5 }}>Prices reflect typical Delhi NCR rates for {guestBucket?.label || "your guest count"} — actual cost varies by vendor and season.</li>
-                <li style={{ fontSize: 12, color: "#5A3520", lineHeight: 1.5 }}>Decor, cake, photography, DJ, activities and "other" prices are scaled for your guest count as a fixed package, not priced per person.</li>
+                <li style={{ fontSize: 12, color: "#5A3520", lineHeight: 1.5 }}>Only priced for the specific things you ticked in each category — anything you didn't select isn't included.</li>
                 {chosenCategories.includes("gifting") && (
-                  <li style={{ fontSize: 12, color: "#5A3520", lineHeight: 1.5 }}>Return gifts assume one gift per guest.</li>
+                  <li style={{ fontSize: 12, color: "#5A3520", lineHeight: 1.5 }}>Return gift quantities default to one per guest — adjust them if that's not right for you.</li>
                 )}
                 <li style={{ fontSize: 12, color: "#5A3520", lineHeight: 1.5 }}>GST, transport, setup/teardown and vendor minimum order values aren't included — budget an extra 10–15%.</li>
                 {priced.venue && (
@@ -408,21 +458,47 @@ function Chip({ checked, onClick, label }) {
   );
 }
 
-function TierPicker({ tiers, selected, onSelect }) {
-  if (!tiers.length) return <div style={{ fontSize: 13, color: "#8a6a4a" }}>No pricing data for this category yet.</div>;
+// The actual "what do you want in this category" question: every real catalog row
+// for the category, as a plain tick list — no tiers, no pre-ticked picks.
+function ItemChecklist({ rows, simpleKey, selected, guestCount, onToggle, onSetQty }) {
+  if (!rows.length) return <div style={{ fontSize: 13, color: "#8a6a4a" }}>No pricing data for this category yet.</div>;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      {tiers.map((t) => {
-        const checked = selected === t.tier;
+      {rows.map(({ rawCat, idx, item }) => {
+        const k = itemKeyOf(simpleKey, rawCat, idx);
+        const sel = selected[k];
+        const checked = !!sel;
+        const perGuest = isPerGuest(item.basis);
+        const t = lineTotal(item, { guestCount, qty: sel?.qty ?? 1 });
         return (
-          <div key={t.tier} onClick={() => onSelect(t.tier)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${checked ? GOLD : "rgba(196,122,46,0.14)"}`, background: checked ? "rgba(196,122,46,0.07)" : "#fff", cursor: "pointer" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 20, height: 20, borderRadius: "50%", flexShrink: 0, border: `2px solid ${checked ? GOLD : "rgba(196,122,46,0.35)"}`, background: checked ? GOLD : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                {checked && <span style={{ color: "#fff", fontSize: 11, fontWeight: 900 }}>✓</span>}
-              </div>
-              <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{t.tier}</span>
+          <div key={k} onClick={() => onToggle(rawCat, idx)}
+            style={{ display: "flex", alignItems: "flex-start", gap: 12, background: "#fff", borderRadius: 12, padding: "12px 14px", border: `1.5px solid ${checked ? GOLD : "rgba(196,122,46,0.14)"}`, cursor: "pointer" }}>
+            <div style={{ width: 20, height: 20, borderRadius: 6, flexShrink: 0, marginTop: 1, border: `2px solid ${checked ? GOLD : "rgba(196,122,46,0.35)"}`, background: checked ? GOLD : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {checked && <span style={{ color: "#fff", fontSize: 12, fontWeight: 900 }}>✓</span>}
             </div>
-            <span style={{ fontSize: 13, fontWeight: 700, color: GOLD, whiteSpace: "nowrap" }}>{formatINR(t.min)}–{formatINR(t.max)}{t.perGuest ? " /guest" : ""}</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{item.service}</span>
+                {item.spec && <span style={{ fontSize: 10.5, fontWeight: 700, color: "#8a6a4a", background: "rgba(196,122,46,0.1)", padding: "2px 8px", borderRadius: 100 }}>{item.spec}</span>}
+              </div>
+              {item.includes && <div style={{ fontSize: 12, color: "#8a6a4a", marginTop: 3, lineHeight: 1.4 }}>Includes: {item.includes}</div>}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 13.5, fontWeight: 800, color: GOLD }}>{formatINR(item.min)}–{formatINR(item.max)}</span>
+                {perGuest && <span style={{ fontSize: 11, color: "#aaa" }}>per guest</span>}
+                {checked && perGuest && (
+                  <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E" }}>× {guestCount} guests = {formatINR(t.min)}–{formatINR(t.max)}</span>
+                )}
+                {checked && !perGuest && (
+                  <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: 11, color: "#aaa" }}>qty</span>
+                    <button onClick={() => onSetQty(rawCat, idx, (sel.qty ?? 1) - 1)} style={qtyBtnStyle}>−</button>
+                    <span style={{ fontSize: 12.5, fontWeight: 700, minWidth: 18, textAlign: "center" }}>{sel.qty ?? 1}</span>
+                    <button onClick={() => onSetQty(rawCat, idx, (sel.qty ?? 1) + 1)} style={qtyBtnStyle}>+</button>
+                    <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E" }}>= {formatINR(t.min)}–{formatINR(t.max)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         );
       })}
@@ -446,4 +522,11 @@ const primaryBtnStyle = {
   padding: "12px 24px", borderRadius: 12, border: "none",
   background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: "#fff",
   fontSize: 14, fontWeight: 800, fontFamily: font, boxShadow: "0 4px 16px rgba(196,122,46,0.35)",
+};
+
+const qtyBtnStyle = {
+  width: 22, height: 22, borderRadius: 6, border: "1.5px solid rgba(196,122,46,0.3)",
+  background: "rgba(196,122,46,0.06)", color: GOLD, fontWeight: 800, fontSize: 13,
+  cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "center",
+  padding: 0, lineHeight: 1,
 };
