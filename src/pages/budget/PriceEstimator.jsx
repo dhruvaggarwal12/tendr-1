@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import HamburgerNav from "../../components/HamburgerNav";
 import { useBookVendors } from "../../context/BookVendorsContext";
@@ -7,6 +7,7 @@ import {
   getServicesForOccasion,
   getSimpleCategories,
   GUEST_BUCKETS,
+  nearestGuestBucket,
   VENUE_TYPES,
   CATERING_MEAL_TYPES,
   tierBuckets,
@@ -41,31 +42,42 @@ function itemKeyOf(simpleKey, rawCat, idx) {
 // PriceEstimatorModal (the centered popup opened from everywhere else in the app).
 // Flow: tell us about the event -> venue -> what you need -> a quick level per thing
 // you picked -> the price. No pre-ticked picks, no tips, no recommendations.
-// `onFinalise(avgPrice)`, when provided, shows an "apply this to your budget?"
-// prompt on the results screen instead of just the generic Start Over / Book Vendors actions.
-export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFinalise }) {
+// `onFinalise(avgPrice, priced)`, when provided, shows an "apply this to your budget?"
+// prompt on the results screen instead of just the generic Start Over / Book Vendors
+// actions, and calls back with the overall average plus the full { rows, total, venue }
+// breakdown. initialGuestCount (a raw number) and initialCategories (simple-category
+// keys) seed the wizard when the caller already knows them — e.g. a screen where the
+// customer already filled in guests and which services they need.
+export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initialCategories, embedded = false, onFinalise }) {
   const { openBookVendors } = useBookVendors();
   const [step, setStep] = useState(0); // 0 about, 1 venue, 2 categories, 3..3+n-1 per-category level, final
   const [occasion, setOccasion] = useState(
     OCCASIONS.includes(initialOccasion) ? initialOccasion : OCCASIONS[0]
   );
-  const [guestBucketKey, setGuestBucketKey] = useState(null);
+  const [guestBucketKey, setGuestBucketKey] = useState(() => nearestGuestBucket(initialGuestCount));
   const [city, setCity] = useState(null);
   const [venueTypeKey, setVenueTypeKey] = useState(null);
   const [venueAlreadyBooked, setVenueAlreadyBooked] = useState(null); // null | true | false
-  const [chosenCategories, setChosenCategories] = useState([]); // simple category keys
+  const [chosenCategories, setChosenCategories] = useState(() => {
+    if (!initialCategories?.length) return [];
+    const valid = new Set(getSimpleCategories(OCCASIONS.includes(initialOccasion) ? initialOccasion : OCCASIONS[0]).map((c) => c.key));
+    return initialCategories.filter((k) => valid.has(k));
+  });
   const [categoryChoice, setCategoryChoice] = useState({}); // catering only -> { mealType, isVeg }
   const [selectedItems, setSelectedItems] = useState({}); // "simpleKey::rawCat::idx" -> { qty }
   const [finaliseChoice, setFinaliseChoice] = useState(null); // null | "applied" | "declined"
+  const didMountRef = useRef(false);
 
   const simpleCategories = useMemo(() => getSimpleCategories(occasion), [occasion]);
   const allServices = useMemo(() => getServicesForOccasion(occasion), [occasion]);
   const guestBucket = GUEST_BUCKETS.find((g) => g.key === guestBucketKey) || null;
   const venueType = VENUE_TYPES.find((v) => v.key === venueTypeKey) || null;
 
-  // Reset the whole wizard whenever the occasion changes — fresh start, since the
-  // categories/items available can differ completely between occasions.
+  // Reset the whole wizard whenever the occasion changes after the first render —
+  // fresh start, since the categories/items available can differ completely between
+  // occasions. Skipped on mount so the initial seed values above actually stick.
   useEffect(() => {
+    if (!didMountRef.current) { didMountRef.current = true; return; }
     setGuestBucketKey(null);
     setCity(null);
     setVenueTypeKey(null);
@@ -333,7 +345,7 @@ export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFina
                       We'll set your budget to {formatINR(Math.round((priced.total.min + priced.total.max) / 2))} — the middle of this range.
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
-                      <button onClick={() => { setFinaliseChoice("applied"); onFinalise(Math.round((priced.total.min + priced.total.max) / 2)); }}
+                      <button onClick={() => { setFinaliseChoice("applied"); onFinalise(Math.round((priced.total.min + priced.total.max) / 2), priced); }}
                         style={{ flex: 1, padding: "10px 14px", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer" }}>
                         Yes, use this
                       </button>

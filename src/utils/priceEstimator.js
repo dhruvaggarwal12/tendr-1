@@ -65,6 +65,21 @@ export const SIMPLE_CATEGORIES = [
   { key: "gifting",    label: "Return gifts & hampers",     raw: ["Gifting"] },
 ];
 
+// Maps the vendor-booking flow's serviceType vocabulary (Caterer/Decorator/
+// Photographer/DJ, as used in CAT_BUDGET_RANGES etc.) to this estimator's simple
+// category keys, so a screen that already knows "services required" can hand
+// them straight to the estimator instead of asking the customer to re-pick them.
+const SERVICE_TYPE_TO_SIMPLE_KEY = {
+  Caterer: "catering",
+  Decorator: "decor",
+  Photographer: "photo",
+  Videographer: "photo",
+  DJ: "dj",
+};
+export function mapServiceTypeToSimpleCategory(serviceType) {
+  return SERVICE_TYPE_TO_SIMPLE_KEY[serviceType] || null;
+}
+
 export const GUEST_BUCKETS = [
   { key: "10-20",   label: "10–20 guests",   guests: 15 },
   { key: "21-50",   label: "21–50 guests",   guests: 35 },
@@ -72,6 +87,18 @@ export const GUEST_BUCKETS = [
   { key: "101-200", label: "101–200 guests", guests: 150 },
   { key: "200+",    label: "200+ guests",    guests: 250 },
 ];
+
+// Maps an actual guest count (e.g. from a form the customer already filled in) to
+// its nearest bucket, so that number doesn't have to be re-entered as a band.
+export function nearestGuestBucket(count) {
+  const n = Number(count);
+  if (!n || n <= 0) return null;
+  if (n <= 20) return GUEST_BUCKETS[0].key;
+  if (n <= 50) return GUEST_BUCKETS[1].key;
+  if (n <= 100) return GUEST_BUCKETS[2].key;
+  if (n <= 200) return GUEST_BUCKETS[3].key;
+  return GUEST_BUCKETS[4].key;
+}
 
 export const VENUE_TYPES = [
   { key: "home",    label: "At home / apartment",        needsVenue: false },

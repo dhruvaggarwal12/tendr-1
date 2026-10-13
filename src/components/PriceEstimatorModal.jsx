@@ -2,12 +2,12 @@ import { usePriceEstimator } from "../context/PriceEstimatorContext";
 import { PriceEstimatorWizard } from "../pages/budget/PriceEstimator";
 
 export default function PriceEstimatorModal() {
-  const { open, occasion, onFinalise, closePriceEstimator } = usePriceEstimator();
+  const { open, occasion, guestCount, categories, onFinalise, closePriceEstimator } = usePriceEstimator();
 
   if (!open) return null;
 
   const handleFinalise = onFinalise
-    ? (avgPrice) => { onFinalise(avgPrice); setTimeout(() => closePriceEstimator(), 900); }
+    ? (avgPrice, priced) => { onFinalise(avgPrice, priced); setTimeout(() => closePriceEstimator(), 900); }
     : null;
 
   return (
@@ -21,7 +21,7 @@ export default function PriceEstimatorModal() {
           aria-label="Close"
           style={{ position: "absolute", top: 14, right: 14, width: 32, height: 32, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.4)", background: "rgba(0,0,0,0.2)", cursor: "pointer", fontSize: 16, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}
         >×</button>
-        <PriceEstimatorWizard initialOccasion={occasion} embedded onFinalise={handleFinalise} />
+        <PriceEstimatorWizard initialOccasion={occasion} initialGuestCount={guestCount} initialCategories={categories} embedded onFinalise={handleFinalise} />
       </div>
     </div>
   );

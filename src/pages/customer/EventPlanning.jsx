@@ -7,6 +7,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
 import { useChatOverlay, useOpenBaatKaroChat } from "../../context/ChatContext";
 import { usePriceEstimator } from "../../context/PriceEstimatorContext";
+import { mapServiceTypeToSimpleCategory } from "../../utils/priceEstimator";
 import { useInstallPrompt } from "../../hooks/useInstallPrompt";
 
 import {
@@ -2249,6 +2250,23 @@ const EventPlanning = () => {
                   </div>
                   {/* Per-category sliders */}
                   <div style={{ padding: "14px 18px 18px", display: "flex", flexDirection: "column", gap: 14, maxHeight: "60vh", overflowY: "auto" }}>
+                    <button
+                      onClick={() => openPriceEstimator({
+                        occasion: formData?.eventType,
+                        guestCount: Number(formData?.guests) || undefined,
+                        categories: selectedVendors.map(mapServiceTypeToSimpleCategory).filter(Boolean),
+                        onFinalise: (_avg, priced) => {
+                          const updates = { ...savedCategoryBudgets };
+                          (priced?.rows || []).forEach(r => {
+                            const amt = Math.round((r.min + r.max) / 2);
+                            selectedVendors.filter(sv => mapServiceTypeToSimpleCategory(sv) === r.key).forEach(sv => { updates[sv] = amt; });
+                          });
+                          dispatch(setCategoryBudgets(updates));
+                        },
+                      })}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", padding: "9px", borderRadius: 10, border: "1.5px dashed rgba(204,171,74,0.4)", background: "rgba(204,171,74,0.08)", color: "#CCAB4A", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                      Not sure? Try the Price Estimator →
+                    </button>
                     {selectedVendors.map(cat => {
                       const range = CAT_BUDGET_RANGES[cat] || { min: 0, max: 1000000, step: 5000, default: 15000 };
                       const val = savedCategoryBudgets[cat] || range.default;
