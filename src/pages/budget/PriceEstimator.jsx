@@ -11,6 +11,7 @@ import {
   CATERING_MEAL_TYPES,
   tierBuckets,
   getCateringItem,
+  narrowRange,
   formatINR,
 } from "../../utils/priceEstimator";
 
@@ -106,10 +107,13 @@ export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFina
         const item = getCateringItem(occasion, choice.mealType || "buffet", choice.isVeg !== false);
         if (!item || !guestBucket) continue;
         const mealLabel = CATERING_MEAL_TYPES.find((m) => m.key === (choice.mealType || "buffet"))?.label || "Buffet";
+        // No quality tier was asked for catering, so take the middle slice of the
+        // item's own range rather than its full basic-to-premium span.
+        const perGuestRange = narrowRange(item.min, item.max, 0.5);
         rows.push({
           key, label: def.label,
           sub: `${choice.isVeg !== false ? "Veg" : "Non-veg"} ${mealLabel.toLowerCase()} · ${guestBucket.guests} guests`,
-          min: item.min * guestBucket.guests, max: item.max * guestBucket.guests,
+          min: perGuestRange.min * guestBucket.guests, max: perGuestRange.max * guestBucket.guests,
         });
         continue;
       }

@@ -104,11 +104,23 @@ const TIER_LABEL_SETS = {
   3: ["Basic", "Standard", "Premium"],
 };
 
+// A catalog row's own min–max often already spans cheap-to-fancy versions of that one
+// service (that's real — it's why a single "Entrance Decoration" row can run
+// ₹3,000–₹20,000). Presenting that whole span as the price for one tier overstates the
+// range, so this takes a 40%-wide slice of the row's real span, positioned at `center`
+// (0 = bottom of the row's range, 1 = top) — still only ever real numbers off that row,
+// just the portion of it that matches the tier being priced.
+export function narrowRange(min, max, center) {
+  const span = max - min;
+  const lo = Math.max(0, center - 0.2);
+  const hi = Math.min(1, center + 0.2);
+  return { min: Math.round(min + span * lo), max: Math.round(min + span * hi) };
+}
+
 // Sorts a category's real line items by price and splits into (up to) three bands,
 // then picks the median-priced item within each band as that tier's representative
-// price. Using one real item's own range (instead of unioning a whole band's min/max)
-// keeps each tier a realistic single-package price instead of an inflated, meaningless
-// spread — and it never invents a number, only selects a real catalog row.
+// row, narrowed to the slice of that row's own range matching the tier's position —
+// never invents a number, only selects and slices a real catalog row.
 export function tierBuckets(occasion, rawCategories) {
   const services = getServicesForOccasion(occasion);
   const items = rawCategories.flatMap((c) => services[c] || []);
@@ -121,10 +133,12 @@ export function tierBuckets(occasion, rawCategories) {
   const labels = TIER_LABEL_SETS[buckets.length] || TIER_LABEL_SETS[3];
   return buckets.map((b, i) => {
     const rep = b[Math.floor((b.length - 1) / 2)];
+    const center = buckets.length > 1 ? i / (buckets.length - 1) : 0.5;
+    const r = narrowRange(rep.min, rep.max, center);
     return {
       tier: labels[i],
-      min: rep.min,
-      max: rep.max,
+      min: r.min,
+      max: r.max,
       perGuest: isPerGuest(rep.basis),
       service: rep.service,
     };
