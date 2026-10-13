@@ -5,7 +5,6 @@ import { useBookVendors } from "../../context/BookVendorsContext";
 import {
   getOccasionNames,
   getSimpleCategories,
-  ESSENTIAL_SIMPLE_KEYS,
   GUEST_BUCKETS,
   VENUE_TYPES,
   CATERING_MEAL_TYPES,
@@ -46,7 +45,6 @@ export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFina
   const [venueAlreadyBooked, setVenueAlreadyBooked] = useState(null); // null | true | false
   const [chosenCategories, setChosenCategories] = useState([]); // simple category keys
   const [categoryChoice, setCategoryChoice] = useState({}); // key -> { tier } | { mealType, isVeg }
-  const [essentialsMode, setEssentialsMode] = useState(false);
   const [finaliseChoice, setFinaliseChoice] = useState(null); // null | "applied" | "declined"
 
   const simpleCategories = useMemo(() => getSimpleCategories(occasion), [occasion]);
@@ -62,33 +60,18 @@ export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFina
     setVenueAlreadyBooked(null);
     setChosenCategories([]);
     setCategoryChoice({});
-    setEssentialsMode(false);
     setFinaliseChoice(null);
     setStep(0);
   }, [occasion]);
 
-  const detailSteps = essentialsMode ? 0 : chosenCategories.length;
-  const totalSteps = 3 + detailSteps;
-  const currentCategory = !essentialsMode && step >= 3 && step < totalSteps ? chosenCategories[step - 3] : null;
+  const totalSteps = 3 + chosenCategories.length;
+  const currentCategory = step >= 3 && step < totalSteps ? chosenCategories[step - 3] : null;
   const currentCategoryDef = currentCategory ? simpleCategories.find((c) => c.key === currentCategory) : null;
 
   const toggleCategory = (key) => {
-    setEssentialsMode(false);
     setChosenCategories((prev) =>
       prev.includes(key) ? prev.filter((c) => c !== key) : [...prev, key]
     );
-  };
-
-  const pickEssentials = () => {
-    const keys = ESSENTIAL_SIMPLE_KEYS.filter((k) => simpleCategories.some((c) => c.key === k));
-    const choices = {};
-    keys.forEach((k) => {
-      choices[k] = k === "catering" ? { mealType: "buffet", isVeg: true } : { tier: "Standard" };
-    });
-    setEssentialsMode(true);
-    setChosenCategories(keys);
-    setCategoryChoice(choices);
-    setStep(3); // essentials mode has 0 detail steps, so 3 is straight to the final screen
   };
 
   const setTier = (key, tier) => setCategoryChoice((prev) => ({ ...prev, [key]: { tier } }));
@@ -235,18 +218,14 @@ export function PriceEstimatorWizard({ initialOccasion, embedded = false, onFina
         )}
 
         {step === 2 && (
-          <StepCard title="What do you want for your event?" subtitle="Pick everything you need priced, or let us estimate the essentials.">
-            <button onClick={pickEssentials}
-              style={{ width: "100%", textAlign: "left", padding: "12px 14px", borderRadius: 12, border: `1.5px dashed ${essentialsMode ? GOLD : "rgba(196,122,46,0.3)"}`, background: essentialsMode ? "rgba(196,122,46,0.08)" : "transparent", color: GOLD, fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", marginBottom: 12 }}>
-              {essentialsMode ? "✓ Estimating essentials for you" : "Not sure? Estimate essentials for me →"}
-            </button>
+          <StepCard title="What do you want for your event?" subtitle="Tick everything you want priced — we'll ask one quick question per thing you pick.">
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {simpleCategories.map((cat) => (
                 <Checkbox key={cat.key} checked={chosenCategories.includes(cat.key)} onClick={() => toggleCategory(cat.key)} label={cat.label} />
               ))}
             </div>
             {chosenCategories.length === 0 && (
-              <div style={{ color: "#c0392b", fontSize: 12.5, marginTop: 10, fontWeight: 600 }}>Pick at least one, or use "estimate essentials for me".</div>
+              <div style={{ color: "#c0392b", fontSize: 12.5, marginTop: 10, fontWeight: 600 }}>Pick at least one category to continue.</div>
             )}
           </StepCard>
         )}

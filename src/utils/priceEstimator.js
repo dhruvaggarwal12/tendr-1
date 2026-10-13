@@ -65,9 +65,6 @@ export const SIMPLE_CATEGORIES = [
   { key: "gifting",    label: "Return gifts & hampers",     raw: ["Gifting"] },
 ];
 
-// Pre-ticked when someone taps "Not sure — estimate essentials for me".
-export const ESSENTIAL_SIMPLE_KEYS = ["decor", "catering", "cake", "photo"];
-
 export const GUEST_BUCKETS = [
   { key: "10-20",   label: "10–20 guests",   guests: 15 },
   { key: "21-50",   label: "21–50 guests",   guests: 35 },
