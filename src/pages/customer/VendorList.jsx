@@ -23,6 +23,7 @@ import BasicSpeedDial from "../../components/BasicSpeedDial.jsx";
 import JourneyProgress from "../../components/JourneyProgress";
 import HamburgerNav from "../../components/HamburgerNav";
 import PullToRefresh from "../../components/PullToRefresh";
+import { usePriceEstimator } from "../../context/PriceEstimatorContext";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 
 const font = "'Outfit', sans-serif";
@@ -32,6 +33,7 @@ const VendorList = () => {
   usePlanningResume();
   const navigate = useNavigate();
   const location = useLocation();
+  const { openPriceEstimator } = usePriceEstimator();
 
   const dispatch = useDispatch();
   const { token, user } = useSelector((state) => state.auth);
@@ -415,27 +417,30 @@ const VendorList = () => {
               </div>
             )}
 
-            {/* Category switcher — mobile only dropdown; hidden on desktop (sidebar handles it) */}
-            <div className="mobile-cat-switcher" style={{ display: "none", marginBottom: 12 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#9B7450", flexShrink: 0 }}>Category:</span>
-                <select value={serviceType || ""}
-                  onChange={e => dispatch(setFilters({ serviceType: e.target.value }))}
-                  style={{ flex: 1, padding: "7px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#2C1A0E", fontSize: 14, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer", outline: "none" }}>
-                  {[
-                    { id: "Photographer", label: "📸 Photography" },
-                    { id: "Caterer",      label: "🍽 Catering" },
-                    { id: "Decorator",    label: "🎀 Decoration" },
-                    { id: "DJ",           label: "🎵 DJ" },
-                  ].map(({ id, label }) => (
-                    <option key={id} value={id}>{label}</option>
-                  ))}
-                </select>
-              </div>
+            {/* Category switcher — always visible so Browse always starts on a real
+                category instead of a blank "All Vendors" view, and switching is one tap */}
+            <div className="vendor-cat-switcher" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "#9B7450", flexShrink: 0 }}>Category:</span>
+              <select value={serviceType || ""}
+                onChange={e => dispatch(setFilters({ serviceType: e.target.value }))}
+                style={{ flex: "1 1 180px", minWidth: 150, padding: "7px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#2C1A0E", fontSize: 14, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer", outline: "none" }}>
+                {[
+                  { id: "Photographer", label: "📸 Photography" },
+                  { id: "Caterer",      label: "🍽 Catering" },
+                  { id: "Decorator",    label: "🎀 Decoration" },
+                  { id: "DJ",           label: "🎵 DJ" },
+                ].map(({ id, label }) => (
+                  <option key={id} value={id}>{label}</option>
+                ))}
+              </select>
+              <button onClick={() => openPriceEstimator()}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", flexShrink: 0 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="11" y2="15"/></svg>
+                Price Estimator
+              </button>
             </div>
             <style>{`
               @media (max-width: 639px) {
-                .mobile-cat-switcher { display: block !important; }
                 .vendor-filter-chips { flex-wrap: nowrap !important; overflow-x: auto !important; scrollbar-width: none !important; padding-bottom: 4px !important; }
                 .vendor-filter-chips::-webkit-scrollbar { display: none; }
                 .vendor-filter-chips span { font-size: 12px !important; padding: 4px 10px !important; }

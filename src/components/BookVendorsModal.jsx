@@ -40,7 +40,7 @@ const CARDS = [
     borderColor: "rgba(37,99,235,0.2)",
     iconBg: "rgba(37,99,235,0.1)",
     ctaBg: "linear-gradient(135deg,#2563eb,#3b82f6)",
-    route: "/listings",
+    route: "/listings?serviceType=Caterer",
   },
   {
     type: "you-do-it",

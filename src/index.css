@@ -67,7 +67,7 @@ button, a, input, select, textarea, [role="button"] {
   .vendor-sort-row span, .vendor-sort-row select, .vendor-sort-row button { font-size: 11px !important; padding: 2px 8px !important; }
   .listings-sort-sticky { margin-top: 6px !important; }
   /* Category switcher */
-  .mobile-cat-switcher select { font-size: 13px !important; padding: 5px 10px !important; }
+  .vendor-cat-switcher select { font-size: 13px !important; padding: 5px 10px !important; }
   /* How to book strip */
   .vendor-hint-strip { padding: 7px 12px !important; }
   .vendor-hint-strip span { font-size: 10px !important; padding: 2px 8px !important; }
