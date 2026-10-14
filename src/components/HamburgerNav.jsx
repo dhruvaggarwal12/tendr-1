@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { EventIdeasPanel } from "../utils/eventIdeas";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -138,8 +138,14 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const finalisedCount   = Object.keys(finalisedVendors).length;
   const ghCartCount      = useSelector(s => s.giftHamperCart?.items?.length || 0);
 
-  // Push body content right when sidebar is active and open
-  useEffect(() => {
+  // Push body content right when sidebar is active and open. Uses useLayoutEffect
+  // (not useEffect) so this applies synchronously before paint — on a page-to-page
+  // navigation, the outgoing page's cleanup and the incoming page's own HamburgerNav
+  // mount can otherwise interleave with a regular effect, leaving body.marginLeft
+  // cleared after the new page already rendered, which visually hides the first
+  // ~220px of content behind the (opaque, fixed) sidebar until something else
+  // triggers a re-render.
+  useLayoutEffect(() => {
     if (isSidebar && sidebarOpen) {
       document.body.style.marginLeft = `${SIDEBAR_W}px`;
     } else {
