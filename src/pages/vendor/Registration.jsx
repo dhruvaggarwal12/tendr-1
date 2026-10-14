@@ -889,6 +889,7 @@ export default function VendorRegistration() {
   const [genres, setGenres] = useState([]);
   const [artistForm, setArtistForm] = useState({
     name: "", phoneNumber: "", whatsappNumber: "", email: "", city: "",
+    password: "", confirmPassword: "",
     bio: "", packages: [{ name: "", price: "" }], duration: "", sampleLink: "", instagram: "", setlist: "",
   });
 
@@ -897,6 +898,7 @@ export default function VendorRegistration() {
   const [serviceType, setServiceType] = useState("");
   const [vendorForm, setVendorForm]   = useState({
     businessName: "", name: "", phoneNumber: "", whatsappNumber: "", email: "", address: "",
+    password: "", confirmPassword: "",
   });
   const [categoryAnswers, setCatAns]  = useState({});
 
@@ -1122,6 +1124,8 @@ export default function VendorRegistration() {
       if (!/^[6-9]\d{9}$/.test(artistForm.whatsappNumber)) er.whatsappNumber = "Enter a valid 10-digit number";
       if (!artistForm.city)                er.city = "City is required";
       if (artistForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(artistForm.email)) er.email = "Enter a valid email";
+      if (artistForm.password.length < 8)  er.password = "Password must be at least 8 characters";
+      if (artistForm.confirmPassword !== artistForm.password) er.confirmPassword = "Passwords don't match";
       if (Object.keys(er).length) { setErrors(er); return; }
 
       const ok = await submitApplication({
@@ -1130,6 +1134,7 @@ export default function VendorRegistration() {
         whatsappNumber: artistForm.whatsappNumber,
         email: artistForm.email || "",
         address: artistForm.city,
+        password: artistForm.password,
         serviceType: performerType,
         isArtist: true,
         genres,
@@ -1191,6 +1196,11 @@ export default function VendorRegistration() {
                 <FieldError msg={errors.whatsappNumber} />
               </div>
             </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              {aInput("password", "Password", true, { type: "password", placeholder: "At least 8 characters" })}
+              {aInput("confirmPassword", "Confirm Password", true, { type: "password", placeholder: "Re-enter password" })}
+            </div>
+            <p style={{ fontSize: 11.5, color: muted, margin: "-10px 0 0" }}>You'll use this to sign in to your dashboard once approved.</p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               {aInput("email", "Email", false, { type: "email", placeholder: "you@email.com" })}
               <div>
@@ -1464,6 +1474,8 @@ export default function VendorRegistration() {
       if (!vendorForm.address.trim())       er.address = "City / area is required";
       if (!serviceType)                     er.serviceType = "Please select your service category";
       if (vendorForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(vendorForm.email)) er.email = "Enter a valid email";
+      if (vendorForm.password.length < 8)   er.password = "Password must be at least 8 characters";
+      if (vendorForm.confirmPassword !== vendorForm.password) er.confirmPassword = "Passwords don't match";
       if (Object.keys(er).length) { setErrors(er); return; }
 
       const ok = await submitApplication({
@@ -1473,6 +1485,7 @@ export default function VendorRegistration() {
         whatsappNumber: vendorForm.whatsappNumber,
         email: vendorForm.email || "",
         address: vendorForm.address,
+        password: vendorForm.password,
         serviceType,
         isArtist: false,
         plan,
@@ -1555,6 +1568,13 @@ export default function VendorRegistration() {
             </div>
             {vInput("email", "Email Address", false, { type: "email", placeholder: "business@email.com" })}
             {vInput("address", "City / Area you serve", true, { placeholder: "e.g. South Delhi, Noida, Gurgaon" })}
+
+            <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "4px 0 0" }}>Dashboard Login</p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              {vInput("password", "Password", true, { type: "password", placeholder: "At least 8 characters" })}
+              {vInput("confirmPassword", "Confirm Password", true, { type: "password", placeholder: "Re-enter password" })}
+            </div>
+            <p style={{ fontSize: 11.5, color: muted, margin: "-10px 0 0" }}>You'll use this to sign in to your vendor dashboard once approved.</p>
 
             {/* Plan summary */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 10, background: plan === "paid" ? "rgba(196,122,46,0.06)" : "#F9F6F1", border: plan === "paid" ? `1px solid rgba(196,122,46,0.28)` : "1px solid rgba(28,14,4,0.09)" }}>

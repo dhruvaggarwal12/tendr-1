@@ -11,6 +11,7 @@ import CommunityModerationTab from "./CommunityModerationTab";
 import EditVendorModal from "./EditVendorModal";
 import CatererMenuEditor from "./CatererMenuEditor";
 import PeopleHubTab from "./PeopleHubTab";
+import QuestionBankTab from "./QuestionBankTab";
 import { io } from "socket.io-client";
 import EastIcon from "@mui/icons-material/East";
 
@@ -306,6 +307,7 @@ const sidebar_arr = [
   { label: "Coordinators",         icon: <span style={{ fontSize: 16 }}>🎯</span>,  key: "Coordinators" },
   { label: "People Hub",           icon: <span style={{ fontSize: 16 }}>👥</span>,  key: "PeopleHub" },
   { label: "Quotation Builder",    icon: <span style={{ fontSize: 16 }}>📋</span>,  key: "QuotationBuilder" },
+  { label: "Question Bank",        icon: <span style={{ fontSize: 16 }}>📝</span>,  key: "QuestionBank" },
 ];
 
 // Simple inline markdown renderer — handles *bold*, _italic_, line breaks, [img:...] images
@@ -6242,6 +6244,11 @@ const AdminDashboard = () => {
         {/* ── COORDINATORS TAB ── */}
         {activeDropdown === "coordinators" && (
           <CoordinatorsTab token={token} BASE_URL={BASE_URL} />
+        )}
+
+        {/* ── QUESTION BANK TAB ── */}
+        {activeDropdown === "questionbank" && (
+          <QuestionBankTab token={token} BASE_URL={BASE_URL} />
         )}
 
         {false && (() => {

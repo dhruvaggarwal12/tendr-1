@@ -303,27 +303,17 @@ export default function PeopleHubTab({
             <Btn onClick={() => updateAppStatus("pending")} bg="#FEF3C7" color="#D97706" border="#FDE68A">↩ Move to Pending</Btn>
           )}
 
-          {/* Artist flow */}
-          {!isCoord && curStatus === "pending" && app.isArtist && (
+          {/* Pending → Approve directly lists them live (creates the real vendor/artist
+              account from what they already submitted) or Reject. Same action for both
+              artist and business applications — approval no longer requires them to fill
+              out a second registration form. */}
+          {!isCoord && curStatus === "pending" && (
             <>
               <Btn onClick={() => updateAppStatus("approved")} bg="#15803D" color="#fff">✅ Approve & List</Btn>
               <Btn onClick={() => updateAppStatus("rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">❌ Reject</Btn>
             </>
           )}
-          {/* Legacy non-isArtist pending (old flow) — business/vendor applications */}
-          {!isCoord && curStatus === "pending" && !app.isArtist && (
-            <>
-              <a
-                href={`https://wa.me/91${waNum}?text=${encodeURIComponent(`Hi ${app.name}! 🎉 Your interest in joining Tendr as a ${app.serviceType || "vendor"} has been reviewed.\n\nPlease complete your profile registration here:\n${window.location.origin}/vendor/register\n\nOnce you register, you'll be live on the platform. Welcome to Tendr! 🙌`)}`}
-                target="_blank" rel="noopener noreferrer"
-                onClick={() => setTimeout(() => updateAppStatus("form_sent"), 500)}
-                style={{ padding: "7px 14px", borderRadius: 8, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5 }}
-              >
-                📲 Invite to Register on Tendr
-              </a>
-              <Btn onClick={() => updateAppStatus("rejected")} bg="#FFF1F2" color="#BE123C" border="#FCA5A5">❌ Reject</Btn>
-            </>
-          )}
+          {/* Legacy applications already sitting in form_sent from before this flow changed */}
           {!isCoord && curStatus === "form_sent" && (
             <>
               <span style={{ fontSize: 12, color: "#0369a1", fontWeight: 600 }}>📲 Invite sent — waiting for them to register</span>
@@ -341,7 +331,10 @@ export default function PeopleHubTab({
           {!isCoord && curStatus === "rejected" && (
             <Btn onClick={() => updateAppStatus("pending")} bg="#FEF3C7" color="#D97706" border="#FDE68A">↩ Move to Pending</Btn>
           )}
-          {!isCoord && (curStatus === "approved" || curStatus === "registered") && (
+          {!isCoord && curStatus === "approved" && (
+            <span style={{ fontSize: 12, color: "#15803D", fontWeight: 700 }}>✅ Live on Tendr — dashboard access enabled</span>
+          )}
+          {!isCoord && curStatus === "registered" && (
             <span style={{ fontSize: 12, color: "#15803D", fontWeight: 700 }}>✅ Registered on platform</span>
           )}
         </div>
