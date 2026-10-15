@@ -310,9 +310,34 @@ const sidebar_arr = [
   { label: "Question Bank",        icon: <span style={{ fontSize: 16 }}>📝</span>,  key: "QuestionBank" },
 ];
 
-// Simple inline markdown renderer — handles *bold*, _italic_, line breaks, [img:...] images
+// Simple inline markdown renderer — handles *bold*, _italic_, line breaks, [img:...] images,
+// and a [pdf:filename|dataURI] attachment (same "embed as a data URI, download via <a download>"
+// convention as [img:...], just a document bubble instead of an inline image).
 function RenderMessage({ text }) {
   if (!text) return null;
+  const pdfMatch = text.match(/\[pdf:([^|]+)\|(data:[^\]]+)\]/);
+  if (pdfMatch) {
+    const [fullMatch, fileName, dataUri] = pdfMatch;
+    const restText = text.replace(fullMatch, "").trim();
+    return (
+      <div>
+        {restText && <RenderMessage text={restText} />}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 10, background: "rgba(0,0,0,0.04)", marginTop: restText ? 6 : 0, maxWidth: 220 }}>
+          <span style={{ fontSize: 18 }}>📄</span>
+          <span style={{ fontSize: 11.5, fontWeight: 600, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{fileName}</span>
+          <a
+            href={dataUri}
+            download={fileName}
+            onClick={e => e.stopPropagation()}
+            title="Download PDF"
+            style={{ width: 24, height: 24, borderRadius: "50%", background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", color: "#fff", fontSize: 12, flexShrink: 0 }}
+          >
+            ⬇
+          </a>
+        </div>
+      </div>
+    );
+  }
   if (text.startsWith("[img:")) {
     const src = text.slice(5, -1);
     return (

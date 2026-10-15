@@ -9,11 +9,14 @@ import { setMultipleFormData, setBookingType, setSelectedPerformer } from "../..
 import { PERFORMER_TYPES } from "../../components/PerformerSuggestions";
 import { getVendors } from "../../apis/vendorApi";
 import { getOccasionById } from "../../data/occasions";
+import { getEntryExperienceById } from "../../data/entryExperiences";
+import { DECOR_FOCUS_AREAS, DECOR_FOCUS_AREA_IDS } from "../../data/decorFocusAreas";
 import { saveResumeUrl } from "../../utils/planningResume";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 import PerformerSuggestions from "../../components/PerformerSuggestions";
 import DecorAnalyzer from "../../components/DecorAnalyzer";
+import EntryExperiences from "../../components/EntryExperiences";
 
 /* ── tokens ── */
 const font  = "'Outfit', sans-serif";
@@ -70,6 +73,35 @@ const ALL_VENDORS = [
   "Lighting Setup","Sound System","Makeup Artist","Balloon Artist","Cake Artist",
   "AV Setup",
 ];
+
+// A few ALL_VENDORS display labels don't match the backend's SERVICE_TYPES enum exactly
+// (the backend already has an equivalent under a different string). Translate only at
+// the POST/PATCH boundary — never rename ALL_VENDORS itself, since these exact strings
+// are used as lookup keys in ~30 places across this file (getVendorTips, getVendorPackages,
+// getRecommended, buildItinerary, notesKeywords, etc.).
+const SERVICE_TYPE_BACKEND_MAP = { "Live Band":"Band", "Emcee / Host":"Emcee/Host", "Cake Artist":"Cake" };
+const toBackendServiceType = v => SERVICE_TYPE_BACKEND_MAP[v] || v;
+
+// Presentational copy + images for the Services step's card picker (spec section 4).
+// Purely cosmetic — keyed by the exact ALL_VENDORS strings, never renamed/translated.
+const SERVICE_CARD_INFO = {
+  "Decorator":      { emoji:"🎊", description:"Backdrops, balloons, florals and lighting that set the scene.", image:"https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=400&h=240&q=75" },
+  "Caterer":        { emoji:"🍽️", description:"Buffets, live counters and multi-cuisine menus for your guest count.", image:"https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=400&h=240&q=75" },
+  "DJ":             { emoji:"🎧", description:"Music, mixing and dance-floor energy for the whole event.", image:"https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?auto=format&fit=crop&w=400&h=240&q=75" },
+  "Photographer":   { emoji:"📷", description:"Candid and traditional coverage to capture every moment.", image:"https://images.unsplash.com/photo-1500259571355-332da5cb07aa?auto=format&fit=crop&w=400&h=240&q=75" },
+  "Videographer":   { emoji:"🎥", description:"Cinematic highlight reels and full-event video coverage.", image:"https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=400&h=240&q=75" },
+  "Florist":        { emoji:"💐", description:"Fresh floral arrangements for stages, tables and entryways.", image:"https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=400&h=240&q=75" },
+  "Entertainer":    { emoji:"🎭", description:"Dancers, performers and acts that keep guests engaged.", image:"https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=400&h=240&q=75" },
+  "Photo Booth":    { emoji:"📸", description:"Props, backdrops and instant prints guests love.", image:"https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=400&h=240&q=75" },
+  "Live Band":      { emoji:"🎸", description:"Live musicians for a warmer, more personal soundtrack.", image:"https://images.unsplash.com/photo-1511192336575-5a79af67a629?auto=format&fit=crop&w=400&h=240&q=75" },
+  "Emcee / Host":   { emoji:"🎤", description:"A confident host to keep the event flowing smoothly.", image:"https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=400&h=240&q=75" },
+  "Lighting Setup": { emoji:"💡", description:"Ambient and stage lighting that transforms any venue.", image:"https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=400&h=240&q=75" },
+  "Sound System":   { emoji:"🔊", description:"Clear, powerful audio for speeches, music and announcements.", image:"https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=400&h=240&q=75" },
+  "Makeup Artist":  { emoji:"💄", description:"Professional makeup and styling for you and your guests.", image:"https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&h=240&q=75" },
+  "Balloon Artist": { emoji:"🎈", description:"Balloon decor, arches and sculptures for a festive look.", image:"https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=400&h=240&q=75" },
+  "Cake Artist":    { emoji:"🎂", description:"Custom cakes and desserts designed around your theme.", image:"https://images.unsplash.com/photo-1535254973040-607b474cb50d?auto=format&fit=crop&w=400&h=240&q=75" },
+  "AV Setup":       { emoji:"📽️", description:"Screens, projectors and AV support for presentations or visuals.", image:"https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=400&h=240&q=75" },
+};
 
 /* catering service styles — shown inside the Caterer tip card */
 const CATERING_STYLES = [
@@ -333,34 +365,43 @@ function buildItinerary(occasion, {guests=20, vendors=[], selectedActivities=[],
   return slots.filter(s=>s.type!=="setup");
 }
 
-/* ── decorator items builder data ── */
-const DECOR_ITEMS = {
-  "Backdrop & Wall":    ["Backdrop wall (printed/fabric)","Balloon wall","Flower wall","Neon sign (custom name)","Photo frame wall","Sequin backdrop","Fairy light curtain","Tulle backdrop"],
-  "Balloons":           ["Balloon arch at entry","Balloon arch at backdrop","Table centrepiece balloons","Ceiling balloons","Foil number / letter balloons","Chrome / metallic balloons","Balloon bouquets (per table)","Organic balloon installation"],
-  "Flowers":            ["Floral arch at entrance","Table floral centrepieces","Flower wall panel","Flower petals on pathway","Marigold garlands","Flower ceiling hanging","Loose flower bunches"],
-  "Lighting":           ["String lights overhead","Fairy light curtain","Uplighting on walls","Spotlights on key areas","Neon LED signs","RGB colour wash","Warm Edison bulbs","Lanterns along pathway","Candle clusters"],
-  "Table & Seating":    ["Table runner","Centrepieces per table","Candle holders","Charger plates","Napkin folds / rings","Menu cards per seat","Chair bows or sashes"],
-  "Entry & Walkway":    ["Welcome signboard / easel","Entrance arch","Pathway decor (petals / lanterns)","Name or message board","Ribbon / floral gate"],
-  "Photo Corner":       ["Photo booth setup","Props box","Selfie corner backdrop","Polaroid station","Memory jar station"],
-  "Theme Items":        ["Character cutouts / standees","Themed banners","Custom bunting","Themed table covers","Personalized name boards"],
+// Old DECOR_CATEGORIES names → closest new focus-area id, so an in-progress
+// localStorage draft saved before this redesign doesn't lose its decor picks.
+const LEGACY_DECOR_CATEGORY_MAP = {
+  "Backdrop & Wall":"stage-backdrop", "Balloons":"hall-space", "Flowers":"table-seating",
+  "Lighting":"lighting", "Table & Seating":"table-seating", "Entry & Walkway":"entrance",
+  "Photo Corner":"photo-booth", "Theme Items":"personalised",
 };
-const DECOR_CATEGORIES = Object.keys(DECOR_ITEMS);
+function migrateDecorAreaKeys(customDecorObj){
+  if(!customDecorObj) return customDecorObj;
+  const out={};
+  Object.entries(customDecorObj).forEach(([key,items])=>{
+    const newKey = DECOR_FOCUS_AREAS[key] ? key : (LEGACY_DECOR_CATEGORY_MAP[key]||key);
+    out[newKey]=[...new Set([...(out[newKey]||[]),...items])];
+  });
+  return out;
+}
 
-/* ── Suggested decor quick-picks per occasion ── */
-const SUGGESTED_DECOR = {
-  default:          [["Backdrop & Wall","Welcome signboard / easel"],["Balloons","Balloon arch at entry"],["Balloons","Table centrepiece balloons"],["Photo Corner","Photo booth setup"],["Lighting","String lights overhead"],["Table & Seating","Table runner"],["Flowers","Table floral centrepieces"],["Theme Items","Personalized name boards"],["Entry & Walkway","Entrance arch"],["Balloons","Foil number / letter balloons"]],
-  "birthday-party": [["Backdrop & Wall","Welcome signboard / easel"],["Balloons","Balloon arch at entry"],["Balloons","Foil number / letter balloons"],["Photo Corner","Photo booth setup"],["Balloons","Table centrepiece balloons"],["Lighting","String lights overhead"],["Theme Items","Personalized name boards"],["Photo Corner","Props box"],["Entry & Walkway","Entrance arch"],["Lighting","Warm Edison bulbs"]],
-  "first-birthday": [["Backdrop & Wall","Welcome signboard / easel"],["Balloons","Balloon arch at entry"],["Balloons","Foil number / letter balloons"],["Theme Items","Character cutouts / standees"],["Photo Corner","Photo booth setup"],["Balloons","Ceiling balloons"],["Theme Items","Themed banners"],["Lighting","Fairy light curtain"],["Table & Seating","Table runner"],["Flowers","Table floral centrepieces"]],
-  "baby-shower":    [["Backdrop & Wall","Flower wall"],["Backdrop & Wall","Welcome signboard / easel"],["Photo Corner","Photo booth setup"],["Balloons","Balloon arch at backdrop"],["Flowers","Table floral centrepieces"],["Lighting","Fairy light curtain"],["Photo Corner","Props box"],["Table & Seating","Table runner"],["Balloons","Foil number / letter balloons"],["Entry & Walkway","Welcome signboard / easel"]],
-  "anniversary":    [["Backdrop & Wall","Flower wall"],["Lighting","Fairy light curtain"],["Flowers","Table floral centrepieces"],["Lighting","Candle clusters"],["Photo Corner","Photo booth setup"],["Backdrop & Wall","Welcome signboard / easel"],["Lighting","String lights overhead"],["Flowers","Floral arch at entrance"],["Table & Seating","Candle holders"],["Table & Seating","Chair bows or sashes"]],
-  "housewarming":   [["Entry & Walkway","Floral arch at entrance"],["Flowers","Marigold garlands"],["Flowers","Flower petals on pathway"],["Backdrop & Wall","Welcome signboard / easel"],["Lighting","Lanterns along pathway"],["Lighting","String lights overhead"],["Table & Seating","Table runner"],["Flowers","Table floral centrepieces"],["Photo Corner","Photo booth setup"],["Entry & Walkway","Ribbon / floral gate"]],
-  "get-together":   [["Backdrop & Wall","Welcome signboard / easel"],["Balloons","Balloon arch at entry"],["Lighting","String lights overhead"],["Photo Corner","Photo booth setup"],["Table & Seating","Table runner"],["Balloons","Table centrepiece balloons"],["Lighting","Uplighting on walls"],["Photo Corner","Props box"],["Entry & Walkway","Entrance arch"],["Balloons","Chrome / metallic balloons"]],
-  "naming-ceremony":[["Entry & Walkway","Floral arch at entrance"],["Flowers","Marigold garlands"],["Backdrop & Wall","Welcome signboard / easel"],["Flowers","Table floral centrepieces"],["Lighting","Fairy light curtain"],["Balloons","Balloon arch at backdrop"],["Photo Corner","Photo booth setup"],["Table & Seating","Table runner"],["Theme Items","Personalized name boards"],["Lighting","String lights overhead"]],
-  "office-party":   [["Backdrop & Wall","Welcome signboard / easel"],["Lighting","Uplighting on walls"],["Lighting","String lights overhead"],["Photo Corner","Photo booth setup"],["Table & Seating","Table runner"],["Balloons","Balloon arch at entry"],["Photo Corner","Props box"],["Theme Items","Custom bunting"],["Entry & Walkway","Entrance arch"],["Lighting","Warm Edison bulbs"]],
-};
-
-function getSuggestedDecor(occasionId) {
-  return SUGGESTED_DECOR[occasionId] || SUGGESTED_DECOR.default;
+/* ── Suggest 3 of the 8 focus areas based on occasion/venue/guest count,
+   optionally biased by areas matched from an analysed venue photo ── */
+function getSuggestedDecorFocusAreas(occasion, {venueType="", guests=20, matchedAreas=[]}={}) {
+  const id=occasion?.id||"";
+  const venue=venueType.toLowerCase();
+  const outdoor=venue.includes("garden")||venue.includes("outdoor")||venue.includes("farmhouse")||venue.includes("rooftop")||venue.includes("terrace");
+  const large=Number(guests)>=100;
+  let picks;
+  if(id==="birthday-party"||id==="first-birthday") picks=["stage-backdrop","personalised","photo-booth"];
+  else if(["baby-shower","newborn-welcome","gender-reveal","naming-ceremony"].includes(id)) picks=["stage-backdrop","table-seating","personalised"];
+  else if(id==="anniversary") picks=["stage-backdrop","ceiling-draping","table-seating"];
+  else if(id==="office-party") picks=["entrance","lighting","stage-backdrop"];
+  else if(id==="housewarming"||id==="get-together") picks=["entrance","table-seating","lighting"];
+  else picks=["stage-backdrop","entrance","lighting"];
+  if(outdoor&&!picks.includes("lighting")) picks=[picks[0],picks[1],"lighting"];
+  if(large&&!picks.includes("hall-space")) picks=[picks[0],picks[1],"hall-space"];
+  if(matchedAreas.length){
+    return [...new Set([...matchedAreas,...picks])].slice(0,3);
+  }
+  return picks.slice(0,3);
 }
 
 /* ── Suggested food quick-picks per occasion ── */
@@ -486,13 +527,54 @@ function getDecorOptions(occasion, {guests=20, venueType="", theme=null, ageGrou
 
 // Turns a decor option's item list into one plain-English paragraph, personalised
 // with what's actually been filled in so far (occasion, guest count, venue).
-function buildDecorParagraph(opt, {occasionName="your event", guests=20, venueType=""}={}) {
+function buildDecorParagraph(opt, {occasionName="your event", guests=20, venueType="", decorFocusAreas=[]}={}) {
   const items = opt.items || [];
   const joined = items.length > 1
     ? `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`
     : (items[0] || "");
   const venueClause = venueType ? ` at your ${venueType.toLowerCase()}` : "";
-  return `For your ${guests}-guest ${occasionName}${venueClause}, the ${opt.style} look means ${joined.toLowerCase()} — ${opt.tagline.toLowerCase()}. This sits in the ${opt.tier.toLowerCase()} price tier.`;
+  const areaNames = decorFocusAreas.map(id=>DECOR_FOCUS_AREAS[id]?.name).filter(Boolean);
+  const areaClause = areaNames.length
+    ? ` with a focus on ${areaNames.length>1?`${areaNames.slice(0,-1).join(", ")} and ${areaNames[areaNames.length-1]}`:areaNames[0]}`
+    : "";
+  return `For your ${guests}-guest ${occasionName}${venueClause}${areaClause}, the ${opt.style} look means ${joined.toLowerCase()} — ${opt.tagline.toLowerCase()}. This sits in the ${opt.tier.toLowerCase()} price tier.`;
+}
+
+/* ── generic paragraph for any category's package tier (used by every category
+   that isn't Decorator/Caterer, which have their own richer paragraph builders) ── */
+function buildGenericPackageParagraph(type, pkg, {occasionName="your event", guests=20, venueType=""}={}) {
+  const venueClause = venueType ? ` at your ${venueType.toLowerCase()}` : "";
+  const noteClause = pkg.note ? ` — ${pkg.note.toLowerCase()}` : "";
+  return `The ${pkg.label} ${type} package suits your ${guests}-guest ${occasionName}${venueClause}${noteClause}.`;
+}
+
+function buildCateringParagraph(opt, {occasionName="your event", guests=20, venueType=""}={}) {
+  const dishes = opt.dishes || [];
+  const joined = dishes.length > 1
+    ? `${dishes.slice(0, -1).join(", ")} and ${dishes[dishes.length - 1]}`
+    : (dishes[0] || "");
+  const venueClause = venueType ? ` at your ${venueType.toLowerCase()}` : "";
+  return `For your ${guests}-guest ${occasionName}${venueClause}, the ${opt.style} menu covers ${joined.toLowerCase()} — ${opt.tagline.toLowerCase()}. This sits in the ${opt.tier.toLowerCase()} price tier.`;
+}
+
+/* ── lightweight client-side photo resize — same approach as DecorAnalyzer.jsx's
+   resizeImage(), duplicated here since this is a plain, non-AI upload gate (not
+   worth coupling to that component's export surface for one small helper). ── */
+function resizeVenuePhoto(file, maxPx=1200) {
+  return new Promise((resolve)=>{
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      const scale=Math.min(1,maxPx/Math.max(img.width,img.height));
+      const w=Math.round(img.width*scale), h=Math.round(img.height*scale);
+      const canvas=document.createElement("canvas");
+      canvas.width=w; canvas.height=h;
+      canvas.getContext("2d").drawImage(img,0,0,w,h);
+      resolve(canvas.toDataURL("image/jpeg",0.82));
+    };
+    img.src=url;
+  });
 }
 
 /* ── equipment calculator ── */
@@ -1116,7 +1198,7 @@ function buildBaatKaroMsg(occasion, {guests, date, city, venueType, theme, vendo
 }
 
 /* ── build plain-text plan for in-app chat ── */
-function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors, vendorPackages, budget, ageGroups=[], selectedActivities=[], customActivities=[], customCatering={}, customDecor={}, celebrantName=""}) {
+function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors, vendorPackages, budget, ageGroups=[], selectedActivities=[], customActivities=[], customCatering={}, customDecor={}, celebrantName="", gifts=[], giftQuantities={}, selectedEntryExperiences=[]}) {
   const vLines = vendors.filter(v => ALL_VENDORS.includes(v)).map(v => {
     const pi = vendorPackages[v];
     if (pi === undefined) return `• ${v} — no package selected`;
@@ -1146,6 +1228,19 @@ function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors,
   const actLines = allActItemsText.length
     ? "\nFun activities:\n"+allActItemsText.join("\n")
     : null;
+  const giftLines = gifts.length
+    ? "\nGifts:\n"+gifts.map(name=>{
+        const g=(occasion.giftIdeas||[]).find(gi=>gi.name===name);
+        const qty=giftQuantities[name]>1?` ×${giftQuantities[name]}`:"";
+        return g?`• ${g.name}${qty} (${g.price})`:`• ${name}${qty}`;
+      }).join("\n")
+    : null;
+  const entryExpLines = selectedEntryExperiences.length
+    ? "\nEntry Experience:\n"+selectedEntryExperiences.map(id=>{
+        const e=getEntryExperienceById(id);
+        return e?`• ${e.title} (${e.priceDisplay})`:`• ${id}`;
+      }).join("\n")
+    : null;
   const dateStr = date ? new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"}) : "";
   return [
     `Hi Tendr Team! Here's my ${celebrantName?`${celebrantName}'s `:``}${occasion.name} plan — please help me book:`,
@@ -1156,7 +1251,9 @@ function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors,
     theme ? `🎨 Theme: ${theme.name}` : null,
     budget ? `💰 Budget: ₹${Number(budget).toLocaleString("en-IN")}` : null,
     allLines ? `\nServices needed:\n\n${allLines}` : null,
+    entryExpLines,
     actLines,
+    giftLines,
     "\nCan you help me book these?",
   ].filter(x => x !== null).join("\n");
 }
@@ -1257,26 +1354,64 @@ function approxCost(priceStr, guests) {
   return isPerHead?mid*guests:mid;
 }
 
-/* ── plan card download (PDF) ── */
+/* ── estimated gift spend — shared by the step-6 tracker and the step-7 budget summary,
+     so the two never disagree on the same number ── */
+function computeGiftSpend(gifts, giftQuantities, sortedGifts, guests) {
+  return gifts.reduce((sum,name)=>{
+    const g=sortedGifts.find(x=>x.name===name);
+    const unit=g?(approxCost(g.price,guests)||0):0;
+    return sum+unit*(giftQuantities[name]||1);
+  },0);
+}
+
+/* ── estimated Entry Experience spend — same approxCost parser, over each selected
+     idea's priceDisplay (e.g. "₹6K–11K") ── */
+function computeEntryExperienceSpend(selectedEntryExperiences) {
+  return selectedEntryExperiences.reduce((sum,id)=>{
+    const e=getEntryExperienceById(id);
+    return sum+(e?(approxCost(e.priceDisplay,1)||0):0);
+  },0);
+}
+
+/* ── plan card PDF generation — shared by the Download-PDF button and the
+   Send-to-Chat flow, which also attaches the same PDF as a [pdf:...] message. ── */
+async function generatePlanPdf(el){
+  const h2c=(await import("html2canvas")).default;
+  const {jsPDF}=await import("jspdf");
+  const canvas=await h2c(el,{scale:2,useCORS:true,backgroundColor:"#FDFAF5"});
+  const imgData=canvas.toDataURL("image/png");
+  const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+  const pW=pdf.internal.pageSize.getWidth();
+  const pH=pdf.internal.pageSize.getHeight();
+  const ratio=pW/canvas.width;
+  const totalH=canvas.height*ratio;
+  let yOff=0;
+  while(yOff<totalH){
+    if(yOff>0)pdf.addPage();
+    pdf.addImage(imgData,"PNG",0,-yOff,pW,totalH);
+    yOff+=pH;
+  }
+  return pdf;
+}
+
 async function downloadPlanCard(el,name){
   try{
-    const h2c=(await import("html2canvas")).default;
-    const {jsPDF}=await import("jspdf");
-    const canvas=await h2c(el,{scale:2,useCORS:true,backgroundColor:"#FDFAF5"});
-    const imgData=canvas.toDataURL("image/png");
-    const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
-    const pW=pdf.internal.pageSize.getWidth();
-    const pH=pdf.internal.pageSize.getHeight();
-    const ratio=pW/canvas.width;
-    const totalH=canvas.height*ratio;
-    let yOff=0;
-    while(yOff<totalH){
-      if(yOff>0)pdf.addPage();
-      pdf.addImage(imgData,"PNG",0,-yOff,pW,totalH);
-      yOff+=pH;
-    }
+    const pdf=await generatePlanPdf(el);
     pdf.save(`${name.replace(/\s+/g,"-").toLowerCase()}-plan.pdf`);
   }catch{window.print();}
+}
+
+/* Builds the [pdf:filename|dataURI] chat-attachment token for the plan PDF,
+   reusing the same base64-embed convention already used for [img:...] photos
+   in chat (no backend/schema change needed). Returns "" if generation fails —
+   caller still sends the text summary even if the PDF attach silently fails. */
+async function buildPlanPdfChatToken(el,name){
+  try{
+    const pdf=await generatePlanPdf(el);
+    const fileName=`${name.replace(/\s+/g,"-").toLowerCase()}-plan.pdf`;
+    const dataUri=pdf.output("datauristring");
+    return `[pdf:${fileName}|${dataUri}]`;
+  }catch{ return ""; }
 }
 
 const fmtNum=n=>`₹${Number(n).toLocaleString("en-IN")}`;
@@ -1313,11 +1448,13 @@ function TabBar({step,withTheme,occAccent,onTab}){
   const tabs=[
     {label:"DETAILS",targetStep:1},
     {label:"SERVICES",targetStep:withTheme?3:3},
-    {label:"FUN",targetStep:4},
-    {label:"GIFTS",targetStep:5},
-    {label:"PLAN",targetStep:6},
+    {label:"FUN",targetStep:5},
+    {label:"GIFTS",targetStep:6},
+    {label:"PLAN",targetStep:7},
   ];
-  const activeIdx=step<=1?0:step===2?0:step===3?1:step===4?2:step===5?3:4;
+  // step 4 (Entry Experiences) keeps the SERVICES tab highlighted — it's an optional
+  // substep of Services, not a peer stage with its own tab.
+  const activeIdx=step<=1?0:step===2?0:step===3?1:step===4?1:step===5?2:step===6?3:4;
   return(
     <div style={{display:"flex",borderBottom:"1.5px solid rgba(0,0,0,0.06)",background:"#fff",overflow:"hidden"}}>
       {tabs.map((t,i)=>{
@@ -1381,19 +1518,23 @@ export default function OccasionDetail(){
   const [vibeFilter,setVibeFilter]=useState(null);
   const [decorAnalyserOpen,setDecorAnalyserOpen]=useState(false);
   const [venueAnalysis,setVenueAnalysis]=useState(null); // result from DecorAnalyzer
+  const [venuePhoto,setVenuePhoto]=useState(null); // data URL — from the Decor Analyser upload, or the standalone pre-Plan gate
+  const [venuePhotoGateSeen,setVenuePhotoGateSeen]=useState(false); // true once the pre-Plan upload gate has been shown+dismissed/skipped
+  const [planSectionsOpen,setPlanSectionsOpen]=useState({itinerary:true,timeline:true,checklist:true,equipment:true}); // Final Plan accordions — default open
+  const togglePlanSection=(key)=>setPlanSectionsOpen(s=>({...s,[key]:!s[key]}));
 
-  /* Map analysis → DECOR_ITEMS suggestions */
+  /* Map analysis → DECOR_FOCUS_AREAS suggestions */
   const matchDecorFromAnalysis = useCallback((analysis)=>{
     if(!analysis) return {};
     const KEYWORD_MAP = {
-      "Backdrop & Wall":  ["backdrop","wall","banner","neon","sequin","tulle","photo frame","fairy light curtain","flower wall","balloon wall"],
-      "Balloons":         ["balloon","chrome","metallic","foil","organic"],
-      "Flowers":          ["flower","floral","marigold","petal","roses","garland"],
-      "Lighting":         ["light","lamp","lantern","candle","glow","edison","string light","uplighting","spotlight","led","warm","fairy"],
-      "Table & Seating":  ["table","chair","centrepiece","runner","charger","napkin","menu card"],
-      "Entry & Walkway":  ["entry","entrance","walkway","gate","pathway","arch","ribbon","welcome","signboard"],
-      "Photo Corner":     ["photo","booth","selfie","polaroid","props","memory"],
-      "Theme Items":      ["character","standee","cutout","bunting","banner","themed","custom","personalized"],
+      "entrance":        ["entry","entrance","walkway","gate","pathway","arch","ribbon","welcome","signboard"],
+      "stage-backdrop":  ["backdrop","wall","banner","stage","signage","cake table","milestone","neon","sequin","tulle"],
+      "ceiling-draping": ["ceiling","drape","draping","canopy","hanging","streamer","overhead"],
+      "hall-space":      ["hall","column","pillar","corner","venue styling","balloon pillar"],
+      "table-seating":   ["table","chair","centrepiece","runner","charger","napkin","menu card","seating"],
+      "photo-booth":     ["photo","booth","selfie","polaroid","props","memory","standee"],
+      "personalised":    ["character","cutout","themed","custom","personalized","personalised","name board"],
+      "lighting":        ["light","lamp","lantern","candle","glow","edison","string light","uplighting","spotlight","led","warm","fairy"],
     };
     const allText = [
       ...(analysis.topPicks||[]).map(p=>`${p.title} ${p.description}`),
@@ -1404,29 +1545,31 @@ export default function OccasionDetail(){
     ].join(" ").toLowerCase();
 
     const result = {};
-    Object.entries(KEYWORD_MAP).forEach(([cat, keywords])=>{
-      const matched = (DECOR_ITEMS[cat]||[]).filter(item=>
-        keywords.some(kw=>allText.includes(kw)) &&
-        keywords.some(kw=>item.toLowerCase().includes(kw.split(" ")[0]))
-      );
-      if(matched.length) result[cat] = matched.slice(0,3);
+    Object.entries(KEYWORD_MAP).forEach(([areaId, keywords])=>{
+      if(!keywords.some(kw=>allText.includes(kw))) return;
+      const areaItems = DECOR_FOCUS_AREAS[areaId]?.items||[];
+      const matched = areaItems.filter(item=>keywords.some(kw=>item.toLowerCase().includes(kw.split(" ")[0])));
+      result[areaId] = matched.length ? matched.slice(0,3) : areaItems.slice(0,2);
     });
     return result;
   },[]);
 
-  const handleVenueAnalysisDone = useCallback((analysis)=>{
+  const handleVenueAnalysisDone = useCallback((analysis,photoDataUrl)=>{
     setVenueAnalysis(analysis);
     setDecorAnalyserOpen(false);
-    // Auto-populate decor items from analysis
+    if(photoDataUrl) setVenuePhoto(photoDataUrl);
+    // Auto-populate decor items + pre-check matched focus areas from the photo analysis
     const suggested = matchDecorFromAnalysis(analysis);
-    if(Object.keys(suggested).length>0){
+    const matchedIds = Object.keys(suggested);
+    if(matchedIds.length>0){
       setCustomDecor(prev=>{
         const merged={...prev};
-        Object.entries(suggested).forEach(([cat,items])=>{
-          merged[cat]=[...new Set([...(merged[cat]||[]),...items])];
+        Object.entries(suggested).forEach(([areaId,items])=>{
+          merged[areaId]=[...new Set([...(merged[areaId]||[]),...items])];
         });
         return merged;
       });
+      setDecorFocusAreas(prev=>[...new Set([...prev,...matchedIds])]);
     }
   },[matchDecorFromAnalysis]);
   const [vendors,setVendors]=useState([]);
@@ -1435,7 +1578,10 @@ export default function OccasionDetail(){
   const [inviteType,setInviteType]=useState("");
   const [customVendor,setCustomVendor]=useState("");
   const [expandedTip,setExpandedTip]=useState(null);
+  const [createdPlanId,setCreatedPlanId]=useState(null); // set once the one-shot POST /event-plans succeeds this session
   const [gifts,setGifts]=useState([]);
+  const [giftQuantities,setGiftQuantities]=useState({}); // {giftName: qty} — only meaningful for names present in `gifts`
+  const setGiftQty=(name,qty)=>setGiftQuantities(q=>({...q,[name]:Math.max(1,qty)}));
   const [checked,setChecked]=useState({});
   const [vendorPackages,setVendorPackages]=useState({});
   const [downloading,setDownloading]=useState(false);
@@ -1450,8 +1596,10 @@ export default function OccasionDetail(){
 
   /* decor builder */
   const [showDecorBuilder,setShowDecorBuilder]=useState(false);
-  const [customDecor,setCustomDecor]=useState({}); // {category:[items]}
+  const [customDecor,setCustomDecor]=useState({}); // {focusAreaId:[items]}
   const [editedPackageItems,setEditedPackageItems]=useState(null); // null | string[] — package item editing
+  const [decorFocusAreas,setDecorFocusAreas]=useState([]); // string[] — selected DECOR_FOCUS_AREAS ids
+  const [decorSuggestionsOpen,setDecorSuggestionsOpen]=useState(false);
 
   /* suggested quick-picks */
   const [suggestedFood,setSuggestedFood]=useState([]); // string[]
@@ -1459,6 +1607,11 @@ export default function OccasionDetail(){
   /* fun activities */
   const [selectedActivities,setSelectedActivities]=useState([]); // array of activity ids
   const toggleActivity=id=>setSelectedActivities(a=>a.includes(id)?a.filter(x=>x!==id):[...a,id]);
+
+  /* entry experiences (optional step between Services and Fun) */
+  const [selectedEntryExperiences,setSelectedEntryExperiences]=useState([]); // array of entry-experience ids
+  const toggleEntryExperience=id=>setSelectedEntryExperiences(a=>a.includes(id)?a.filter(x=>x!==id):[...a,id]);
+  const [entryExperiencesSkipped,setEntryExperiencesSkipped]=useState(false);
 
   /* custom activities (free-text) */
   const [customActivities,setCustomActivities]=useState([]);
@@ -1491,6 +1644,14 @@ export default function OccasionDetail(){
 
   /* which vendor's package panel is open */
   const [expandedVendor,setExpandedVendor]=useState(null);
+
+  /* Pre-check the 3 suggested decor focus areas the first time the Decorator
+     panel is opened (customer can freely deselect/add afterwards). */
+  useEffect(()=>{
+    if(expandedVendor==="Decorator"&&decorFocusAreas.length===0){
+      setDecorFocusAreas(getSuggestedDecorFocusAreas(occasion,{venueType,guests,matchedAreas:venueAnalysis?Object.keys(matchDecorFromAnalysis(venueAnalysis)):[]}));
+    }
+  },[expandedVendor]);
 
   /* activity category expansion */
   const [expandedActivityType,setExpandedActivityType]=useState(null);
@@ -1540,13 +1701,23 @@ export default function OccasionDetail(){
     budgetMin:5000,budgetMax:500000,typicalGuests:"10–500",
   } : rawOccasion;
 
+  /* Step renumbering migration (Entry Experiences inserted as new step 4 — everything
+     from old step 4 onward shifted up by one). A draft saved before this change would
+     otherwise reopen on the wrong stage. */
+  function migrateStepNumber(saved){
+    if(saved.planVersion>=2) return saved;
+    if(saved.step>=4) return {...saved, step:saved.step+1};
+    return saved;
+  }
+
   /* load saved plan on mount — restores all form state including step */
   useEffect(()=>{
     try{
       const saved=JSON.parse(localStorage.getItem(PLAN_KEY)||"null");
       if(saved&&saved.step>0){
-        setSavedPlan(saved);
-        restorePlan(saved);
+        const migrated=migrateStepNumber(saved);
+        setSavedPlan(migrated);
+        restorePlan(migrated);
       }
     }catch{}
   },[slug]);
@@ -1555,14 +1726,16 @@ export default function OccasionDetail(){
   useEffect(()=>{
     if(step>0){
       localStorage.setItem(PLAN_KEY,JSON.stringify({
+        planVersion:2,
         planMode,step,guests,date,budget,city,venueType,venueProvides,celebrantName,
-        ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,checked,
-        selectedActivities,customCatering,customDecor,customActivities,customEventName,customEventDesc,
+        ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,giftQuantities,checked,
+        selectedActivities,customCatering,customDecor,decorFocusAreas,customActivities,customEventName,customEventDesc,
+        selectedEntryExperiences,entryExperiencesSkipped,
         savedAt:new Date().toISOString(),
       }));
       saveResumeUrl(`/occasions/${slug}`);
     }
-  },[planMode,step,guests,date,budget,city,venueType,venueProvides,ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,checked]);
+  },[planMode,step,guests,date,budget,city,venueType,venueProvides,ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,giftQuantities,checked,selectedEntryExperiences,entryExperiencesSkipped]);
 
   /* Sync to main eventPlanning session so the Navbar plan icon activates.
      Placed after `occasion` is declared to avoid TDZ in the production bundle. */
@@ -1614,10 +1787,14 @@ export default function OccasionDetail(){
     setVendorPackages(s.vendorPackages||{});
     setCateringType(s.cateringType||"");setCakeType(s.cakeType||"");
     setInviteType(s.inviteType||"");setGifts(s.gifts||[]);
+    setGiftQuantities(s.giftQuantities||{});
     setChecked(s.checked||{});
     setSelectedActivities(s.selectedActivities||[]);
+    setSelectedEntryExperiences(s.selectedEntryExperiences||[]);
+    setEntryExperiencesSkipped(!!s.entryExperiencesSkipped);
     if(s.customCatering) setCustomCatering(s.customCatering);
-    if(s.customDecor) setCustomDecor(s.customDecor);
+    if(s.customDecor) setCustomDecor(migrateDecorAreaKeys(s.customDecor));
+    setDecorFocusAreas((s.decorFocusAreas||[]).filter(id=>DECOR_FOCUS_AREAS[id]));
     if(s.customActivities) setCustomActivities(s.customActivities);
     if(s.customEventName) setCustomEventName(s.customEventName);
     if(s.customEventDesc) setCustomEventDesc(s.customEventDesc);
@@ -1631,6 +1808,101 @@ export default function OccasionDetail(){
   const equipment=getEquipment(slug,guests);
   const withTheme=planMode==="with";
   const recommended=getRecommended(occasion,theme,ageGroups,venueType);
+
+  /* Theme gallery — rendered both in the (rarely-reached) legacy THEME step and inside
+     the Services step's Decorator panel ("Find Your Decor Style"). Same `theme` state
+     either way, so picking a theme from either spot is the same preference, never a
+     second Decorator entry. */
+  const renderThemeGallery=()=>{
+    const VIBES=[
+      {label:"Soft & Intimate",  tags:["pastel","floral","soft","pink","dreamy","nursery","gentle","light","baby","minimal","white"]},
+      {label:"Grand & Celebratory",tags:["gold","royal","elegant","glam","red-carpet","luxe","premium","formal","opulent"]},
+      {label:"Playful & Fun",    tags:["fun","neon","glow","dance","teen","colourful","bold","jungle","safari","teddy","bear","cute","cartoon","vibrant"]},
+      {label:"Warm & Traditional",tags:["bollywood","indian","marigold","ghazal","sufi","classic","heritage","traditional","stars","twinkle"]},
+    ];
+    const filteredThemes=(occasion.decorThemes||[]).filter(t=>{
+      if(!vibeFilter) return true;
+      const vibe=VIBES.find(v=>v.label===vibeFilter);
+      if(!vibe) return true;
+      return (t.tags||[]).some(tag=>vibe.tags.some(vt=>tag.toLowerCase().includes(vt)||vt.includes(tag.toLowerCase())));
+    });
+    const displayThemes=filteredThemes.length>0?filteredThemes:(occasion.decorThemes||[]);
+    return(
+      <>
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:10,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:7}}>Filter by vibe</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+            {VIBES.map(v=>{
+              const sel=vibeFilter===v.label;
+              return(
+                <button key={v.label} onClick={()=>setVibeFilter(sel?null:v.label)}
+                  style={{fontSize:11.5,fontWeight:sel?700:500,color:sel?gold:muted,background:sel?"rgba(196,122,46,0.1)":"rgba(28,9,0,0.04)",border:`1px solid ${sel?"rgba(196,122,46,0.3)":"rgba(28,9,0,0.1)"}`,borderRadius:100,padding:"5px 12px",cursor:"pointer",fontFamily:font,transition:"all 0.15s"}}>
+                  {v.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          {displayThemes.map((t,i)=>{
+            const sel=theme?.name===t.name;
+            const tc=themeColor(t.tags);
+            const te=themeEmoji(t.tags);
+            const isLast=i===(occasion.decorThemes||[]).length-1;
+            const isOdd=(occasion.decorThemes||[]).length%2===1;
+            return(
+              <button key={i} onClick={()=>setTheme(sel?null:t)}
+                style={{padding:0,borderRadius:16,border:`2px solid ${sel?gold:"rgba(196,122,46,0.13)"}`,background:"#fff",cursor:"pointer",textAlign:"left",transition:"all 0.18s",overflow:"hidden",boxShadow:sel?"0 4px 20px rgba(196,122,46,0.22)":"0 1px 5px rgba(0,0,0,0.06)",gridColumn:(isOdd&&isLast)?"1 / -1":"auto"}}
+              >
+                <div style={{position:"relative",height:isOdd&&isLast?160:140,overflow:"hidden",background:`linear-gradient(160deg,${tc}66,${tc}28)`}}>
+                  {t.photo&&(
+                    <img src={t.photo} alt={t.name}
+                      style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}
+                      onError={e=>{e.currentTarget.style.display="none";}}
+                    />
+                  )}
+                  {!t.photo&&(
+                    <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{fontSize:isOdd&&isLast?44:36,filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.12))"}}>{te}</span>
+                    </div>
+                  )}
+                  <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.62) 0%,transparent 55%)"}}/>
+                  <div style={{position:"absolute",bottom:10,left:10,right:32}}>
+                    <span style={{fontSize:12,fontWeight:800,color:"#fff",lineHeight:1.25,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{t.name}</span>
+                  </div>
+                  {sel&&(
+                    <div style={{position:"absolute",top:8,right:8,width:22,height:22,borderRadius:"50%",background:gold,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,0.2)"}}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                  )}
+                </div>
+                <div style={{padding:"9px 11px 11px"}}>
+                  <div style={{fontSize:11,color:muted,lineHeight:1.5,marginBottom:6}}>{t.desc}</div>
+                  <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
+                    {(t.tags||[]).slice(0,2).map(tag=>(
+                      <span key={tag} style={{fontSize:9,fontWeight:600,color:"rgba(30,15,0,0.38)",background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"2px 7px"}}>{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+        {!theme&&<p style={{fontSize:12,color:"rgba(30,15,0,0.28)",textAlign:"center",marginTop:16}}>Tap any style to select — or press "Skip" to continue without one</p>}
+        {theme&&(
+          <div style={{marginTop:16,padding:"12px 16px",borderRadius:12,background:`rgba(196,122,46,0.06)`,border:`1px solid rgba(196,122,46,0.18)`,display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:16}}>{themeEmoji(theme.tags)}</span>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:12,fontWeight:700,color:gold}}>"{theme.name}" selected</div>
+              <div style={{fontSize:11,color:muted,marginTop:1}}>Décor, gifts and tips will all match this look</div>
+            </div>
+            <button onClick={()=>setTheme(null)} style={{fontSize:11,color:muted,background:"none",border:"none",cursor:"pointer",padding:"4px 8px",fontFamily:font}}>Clear</button>
+          </div>
+        )}
+      </>
+    );
+  };
   const tasksDone=Object.values(checked).filter(Boolean).length;
   const tasksTotal=(occasion.checklist||[]).length;
   const catVendors=vendors.filter(v=>(occasion.vendorCategories||[]).includes(v)||ALL_VENDORS.includes(v));
@@ -1645,11 +1917,128 @@ export default function OccasionDetail(){
     return `/listings?${params.toString()}`;
   };
 
+  /* ── Plan step, section C: "Selected services & experiences" — grouped into
+     paragraph-led mini-sections (one sentence naming what's included, then the
+     items below) instead of a flat invoice-style row list, per the redesign. */
+  const renderSelectedItemsSection=()=>{
+    const STATUS_STYLE={
+      "Selected":{bg:"rgba(34,197,94,0.1)",color:"#16a34a"},
+      "Estimate available":{bg:"rgba(196,122,46,0.1)",color:gold},
+      "Quote required":{bg:"rgba(28,9,0,0.06)",color:muted},
+    };
+    const joinNames=(arr)=>arr.length>1?`${arr.slice(0,-1).join(", ")} and ${arr[arr.length-1]}`:(arr[0]||"");
+
+    const serviceRows=catVendors.map(v=>{
+      const pkgIdx=vendorPackages[v];
+      const pkgs=ALL_VENDORS.includes(v)?getVendorPackages(v,{guests,venueType,theme,ageGroups}):null;
+      const hasPkg=pkgIdx==="custom"||(typeof pkgIdx==="number"&&pkgs);
+      const pkgLabel=pkgIdx==="custom"?"Custom":typeof pkgIdx==="number"&&pkgs?pkgs[pkgIdx]?.label:null;
+      const pkgPrice=pkgIdx==="custom"?null:typeof pkgIdx==="number"&&pkgs?pkgs[pkgIdx]?.price:null;
+      return{key:`v-${v}`,icon:"🛠️",title:v,sub:pkgLabel,status:hasPkg?"Selected":"Quote required",price:pkgPrice,onEdit:()=>setStep(3)};
+    });
+    if(theme) serviceRows.push({key:"theme",icon:"🎨",title:theme.name,sub:"Decor style",status:"Selected",price:null,onEdit:()=>setStep(3)});
+    if(decorFocusAreas.length) serviceRows.push({key:"decor-areas",icon:"📍",title:decorFocusAreas.map(id=>DECOR_FOCUS_AREAS[id]?.name).filter(Boolean).join(", "),sub:"Decor focus areas",status:"Selected",price:null,onEdit:()=>setStep(3)});
+
+    const entryRows=selectedEntryExperiences.map(id=>{
+      const e=getEntryExperienceById(id);
+      if(!e) return null;
+      return{key:`ee-${id}`,image:e.images?.[0],title:e.title,sub:"Entry Experience",status:"Estimate available",price:e.priceDisplay,onEdit:()=>setStep(4)};
+    }).filter(Boolean);
+
+    const activityRows=[
+      ...selectedActivities.map(id=>{
+        const a=ALL_ACTIVITY_ITEMS.find(x=>x.id===id);
+        if(!a) return null;
+        const typeEntry=ACTIVITY_TYPES.find(t=>ALL_ACTIVITIES[t.key]?.some(x=>x.id===id));
+        return{key:`act-${id}`,icon:a.icon,title:a.name,sub:typeEntry?.singular||"Activity",status:"Estimate available",price:a.price,onEdit:()=>setStep(5)};
+      }).filter(Boolean),
+      ...customActivities.map((act,i)=>({key:`cact-${i}`,icon:"✦",title:act,sub:"Custom · Added by you",status:"Selected",price:null,onEdit:()=>setStep(5)})),
+    ];
+
+    const giftRows=gifts.map(name=>{
+      const g=(occasion.giftIdeas||[]).find(g=>g.name===name);
+      if(!g) return null;
+      const qty=giftQuantities[name]||1;
+      return{key:`gift-${name}`,image:g.image,title:qty>1?`${g.name} ×${qty}`:g.name,sub:"Gift",status:"Estimate available",price:g.price,onEdit:()=>setStep(6)};
+    }).filter(Boolean);
+
+    const groups=[
+      {label:"Services", rows:serviceRows, paragraph: serviceRows.length?`You've booked ${serviceRows.length} service${serviceRows.length!==1?"s":""} for ${occasion.name.toLowerCase()} — ${joinNames(serviceRows.map(r=>r.title))}.`:null},
+      {label:"Entrance experience", rows:entryRows, paragraph: entryRows.length?`Guests will be welcomed with ${entryRows.length>1?"these entry experiences":"this entry experience"}: ${joinNames(entryRows.map(r=>r.title))}.`:null},
+      {label:"Fun & activities", rows:activityRows, paragraph: activityRows.length?`You've added ${activityRows.length} activit${activityRows.length!==1?"ies":"y"} to keep guests engaged: ${joinNames(activityRows.map(r=>r.title))}.`:null},
+      {label:"Gifts", rows:giftRows, paragraph: giftRows.length?`You've picked ${giftRows.length} gift${giftRows.length!==1?"s":""} for your guests: ${joinNames(giftRows.map(r=>r.title))}.`:null},
+    ].filter(g=>g.rows.length>0);
+
+    if(!groups.length) return null;
+
+    return(
+      <div style={{marginBottom:20}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+          <div style={{width:26,height:26,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          </div>
+          <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>Selected services & experiences</span>
+          <div style={{flex:1,height:1,background:`rgba(196,122,46,0.12)`}}/>
+        </div>
+        {groups.map(g=>(
+          <div key={g.label} style={{marginBottom:16,padding:"13px 14px",borderRadius:14,background:"#fff",border:`1px solid ${border}`}}>
+            <div style={{fontSize:9.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>{g.label}</div>
+            <div style={{fontSize:12.5,color:ink,lineHeight:1.6,marginBottom:10}}>{g.paragraph}</div>
+            {g.rows.map(r=>{
+              const s=STATUS_STYLE[r.status]||STATUS_STYLE["Selected"];
+              return(
+                <div key={r.key} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 9px",borderRadius:10,background:"#FAFAF8",marginBottom:6}}>
+                  {r.image?(
+                    <img src={r.image} alt="" style={{width:34,height:34,borderRadius:8,objectFit:"cover",flexShrink:0}} onError={e=>{e.currentTarget.style.display="none";}}/>
+                  ):(
+                    <span style={{fontSize:14,flexShrink:0,width:34,height:34,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(196,122,46,0.08)",borderRadius:8}}>{r.icon}</span>
+                  )}
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",marginBottom:r.sub?2:0}}>
+                      <span style={{fontSize:12,fontWeight:700,color:ink}}>{r.title}</span>
+                      <span style={{fontSize:9,fontWeight:700,color:s.color,background:s.bg,borderRadius:100,padding:"2px 7px",flexShrink:0}}>{r.status}</span>
+                    </div>
+                    {r.sub&&<div style={{fontSize:10,color:muted}}>{r.sub}</div>}
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:3,flexShrink:0}}>
+                    {r.price&&<span style={{fontSize:10.5,fontWeight:700,color:gold}}>{r.price}</span>}
+                    <button onClick={r.onEdit} style={{fontSize:10,fontWeight:700,color:gold,background:"none",border:"none",cursor:"pointer",padding:0,fontFamily:font}}>Edit</button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const smartVendors=getSmartVendors(occasion,theme,ageGroups,venueType,budget);
   const mainVendors=vendors.filter(v=>ALL_VENDORS.includes(v));
   const allVendorsChosen=mainVendors.length>0&&mainVendors.every(v=>vendorPackages[v]!==undefined&&vendorPackages[v]!==null);
   // per-vendor budget allocation (used for package tier highlighting)
   const perVendorBudget=budget&&mainVendors.length?Math.round(Number(budget)/mainVendors.length):null;
+
+  /* Cross-sell strip — shown under a category's chosen package, pointing at up to 2
+     other already-recommended categories (from getRecommended()) the customer hasn't
+     added yet. Reuses the existing recommendation data, just a new presentation layer. */
+  const renderCrossSell=(excludeV)=>{
+    const picks=[...recommended].filter(c=>c!==excludeV&&!vendors.includes(c)&&ALL_VENDORS.includes(c)).slice(0,2);
+    if(!picks.length) return null;
+    return(
+      <div style={{marginTop:10,paddingTop:10,borderTop:"1px dashed rgba(196,122,46,0.15)"}}>
+        <div style={{fontSize:9.5,fontWeight:700,color:muted,marginBottom:7}}>Pairs well with your event:</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+          {picks.map(c=>(
+            <button key={c} onClick={()=>toggleVendor(c)}
+              style={{display:"inline-flex",alignItems:"center",gap:5,padding:"6px 11px",borderRadius:100,border:"1.5px solid rgba(196,122,46,0.25)",background:"#fff",color:gold,fontSize:11.5,fontWeight:700,cursor:"pointer",fontFamily:font}}>
+              <span style={{fontSize:12}}>+</span>{c}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   /* navigation */
   const next=()=>{
@@ -1660,29 +2049,61 @@ export default function OccasionDetail(){
     }
     if(step===2){setStep(3);return;}
     if(step===3){setStep(4);return;}
-    if(step===5 && token && occasion && date && guests && city){
-      try{ if(!sessionStorage.getItem('tendr_early_plan_created')){
-        sessionStorage.setItem('tendr_early_plan_created','1');
-        fetch(`${BASE_URL}/event-plans`,{
-          method:'POST',
+    if(step===4){
+      if(selectedEntryExperiences.length===0) setEntryExperiencesSkipped(true);
+      setStep(5);
+      return;
+    }
+    if(step===6 && token && occasion && date && guests && city){
+      const patchWizardSelections=(planId)=>{
+        fetch(`${BASE_URL}/event-plans/${planId}/wizard-selections`,{
+          method:'PATCH',
           headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
           credentials:'include',
           body:JSON.stringify({
-            bookingType:'you-do-it',
-            eventName: occasion.name,
-            eventType: occasion.name,
-            guests: String(guests),
-            location: city,
-            date,
-            budget: budget ? String(budget) : '',
-            additionalInfo: '',
-            selectedServices: vendors,
-            finalisedVendors: {},
+            selectedTheme: theme?.name||'',
+            giftSelections: gifts.map(name=>({name,qty:giftQuantities[name]||1})),
+            selectedActivities,
+            customActivities,
+            selectedEntryExperiences,
           }),
-        }).catch(()=>{ try{sessionStorage.removeItem('tendr_early_plan_created');}catch{} });
-      }}catch{}
+        }).catch(()=>{});
+      };
+      try{
+        if(createdPlanId){
+          // Already created earlier this session (e.g. user went back to step 6 and forward again) — just sync selections.
+          patchWizardSelections(createdPlanId);
+        } else if(!sessionStorage.getItem('tendr_early_plan_created')){
+          sessionStorage.setItem('tendr_early_plan_created','1');
+          fetch(`${BASE_URL}/event-plans`,{
+            method:'POST',
+            headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+            credentials:'include',
+            body:JSON.stringify({
+              bookingType:'you-do-it',
+              eventName: occasion.name,
+              eventType: occasion.name,
+              guests: String(guests),
+              location: city,
+              date,
+              budget: budget ? String(budget) : '',
+              additionalInfo: '',
+              selectedServices: vendors.map(toBackendServiceType),
+              finalisedVendors: {},
+            }),
+          }).then(res=>{
+            if(!res.ok){ console.warn('[event-plan] create failed', res.status); return null; }
+            return res.json();
+          }).then(data=>{
+            if(data?.eventPlan?._id){
+              setCreatedPlanId(data.eventPlan._id);
+              patchWizardSelections(data.eventPlan._id);
+            }
+          }).catch(()=>{ try{sessionStorage.removeItem('tendr_early_plan_created');}catch{} });
+        }
+      }catch{}
     }
-    setStep(s=>Math.min(s+1,6));
+    setStep(s=>Math.min(s+1,7));
   };
   const back=()=>{
     if(step===1){navigate(-1);return;}
@@ -1703,7 +2124,13 @@ export default function OccasionDetail(){
   };
 
   const toggleVendor=c=>setVendors(v=>v.includes(c)?v.filter(x=>x!==c):[...v,c]);
-  const toggleGift=n=>setGifts(g=>g.includes(n)?g.filter(x=>x!==n):[...g,n]);
+  const toggleGift=n=>setGifts(g=>{
+    if(g.includes(n)){
+      setGiftQuantities(q=>{const nq={...q};delete nq[n];return nq;});
+      return g.filter(x=>x!==n);
+    }
+    return [...g,n];
+  });
   const toggleAge=id=>setAgeGroups(a=>a.includes(id)?a.filter(x=>x!==id):[...a,id]);
 
   const addCustomVendor=()=>{
@@ -2281,109 +2708,13 @@ export default function OccasionDetail(){
                   </div>
                 )}
                 <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                  <div style={{fontSize:11,color:gold,fontWeight:700}}>✓ Decor items auto-suggested in step 5</div>
+                  <div style={{fontSize:11,color:gold,fontWeight:700}}>✓ Decor items auto-suggested when you pick Decorator in Services</div>
                   <button onClick={()=>setDecorAnalyserOpen(true)} style={{fontSize:11,fontWeight:600,color:muted,background:"none",border:"none",cursor:"pointer",fontFamily:font,textDecoration:"underline",padding:0}}>Re-analyse</button>
                 </div>
               </div>
             )}
 
-            {/* Vibe filter pills */}
-            {(()=>{
-              const VIBES=[
-                {label:"Soft & Intimate",  tags:["pastel","floral","soft","pink","dreamy","nursery","gentle","light","baby","minimal","white"]},
-                {label:"Grand & Celebratory",tags:["gold","royal","elegant","glam","red-carpet","luxe","premium","formal","opulent"]},
-                {label:"Playful & Fun",    tags:["fun","neon","glow","dance","teen","colourful","bold","jungle","safari","teddy","bear","cute","cartoon","vibrant"]},
-                {label:"Warm & Traditional",tags:["bollywood","indian","marigold","ghazal","sufi","classic","heritage","traditional","stars","twinkle"]},
-              ];
-              const filteredThemes=(occasion.decorThemes||[]).filter(t=>{
-                if(!vibeFilter) return true;
-                const vibe=VIBES.find(v=>v.label===vibeFilter);
-                if(!vibe) return true;
-                return (t.tags||[]).some(tag=>vibe.tags.some(vt=>tag.toLowerCase().includes(vt)||vt.includes(tag.toLowerCase())));
-              });
-              const displayThemes=filteredThemes.length>0?filteredThemes:(occasion.decorThemes||[]);
-              return(
-                <>
-                  <div style={{marginBottom:14}}>
-                    <div style={{fontSize:10,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:7}}>Filter by vibe</div>
-                    <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                      {VIBES.map(v=>{
-                        const sel=vibeFilter===v.label;
-                        return(
-                          <button key={v.label} onClick={()=>setVibeFilter(sel?null:v.label)}
-                            style={{fontSize:11.5,fontWeight:sel?700:500,color:sel?gold:muted,background:sel?"rgba(196,122,46,0.1)":"rgba(28,9,0,0.04)",border:`1px solid ${sel?"rgba(196,122,46,0.3)":"rgba(28,9,0,0.1)"}`,borderRadius:100,padding:"5px 12px",cursor:"pointer",fontFamily:font,transition:"all 0.15s"}}>
-                            {v.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-            {/* theme cards — 2-col image grid */}
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-              {displayThemes.map((t,i)=>{
-                const sel=theme?.name===t.name;
-                const tc=themeColor(t.tags);
-                const te=themeEmoji(t.tags);
-                const isLast=i===(occasion.decorThemes||[]).length-1;
-                const isOdd=(occasion.decorThemes||[]).length%2===1;
-                return(
-                  <button key={i} onClick={()=>setTheme(sel?null:t)}
-                    style={{padding:0,borderRadius:16,border:`2px solid ${sel?gold:"rgba(196,122,46,0.13)"}`,background:"#fff",cursor:"pointer",textAlign:"left",transition:"all 0.18s",overflow:"hidden",boxShadow:sel?"0 4px 20px rgba(196,122,46,0.22)":"0 1px 5px rgba(0,0,0,0.06)",gridColumn:(isOdd&&isLast)?"1 / -1":"auto"}}
-                  >
-                    {/* photo / gradient fallback */}
-                    <div style={{position:"relative",height:isOdd&&isLast?160:140,overflow:"hidden",background:`linear-gradient(160deg,${tc}66,${tc}28)`}}>
-                      {t.photo&&(
-                        <img src={t.photo} alt={t.name}
-                          style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}
-                          onError={e=>{e.currentTarget.style.display="none";}}
-                        />
-                      )}
-                      {!t.photo&&(
-                        <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                          <span style={{fontSize:isOdd&&isLast?44:36,filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.12))"}}>{te}</span>
-                        </div>
-                      )}
-                      {/* bottom gradient for text legibility */}
-                      <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.62) 0%,transparent 55%)"}}/>
-                      {/* theme name on photo */}
-                      <div style={{position:"absolute",bottom:10,left:10,right:32}}>
-                        <span style={{fontSize:12,fontWeight:800,color:"#fff",lineHeight:1.25,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{t.name}</span>
-                      </div>
-                      {/* selected check */}
-                      {sel&&(
-                        <div style={{position:"absolute",top:8,right:8,width:22,height:22,borderRadius:"50%",background:gold,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,0.2)"}}>
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        </div>
-                      )}
-                    </div>
-                    {/* desc + tags */}
-                    <div style={{padding:"9px 11px 11px"}}>
-                      <div style={{fontSize:11,color:muted,lineHeight:1.5,marginBottom:6}}>{t.desc}</div>
-                      <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
-                        {(t.tags||[]).slice(0,2).map(tag=>(
-                          <span key={tag} style={{fontSize:9,fontWeight:600,color:"rgba(30,15,0,0.38)",background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"2px 7px"}}>{tag}</span>
-                        ))}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-            {!theme&&<p style={{fontSize:12,color:"rgba(30,15,0,0.28)",textAlign:"center",marginTop:16}}>Tap any style to select — or press "Skip" to continue without one</p>}
-            {theme&&(
-              <div style={{marginTop:16,padding:"12px 16px",borderRadius:12,background:`rgba(196,122,46,0.06)`,border:`1px solid rgba(196,122,46,0.18)`,display:"flex",alignItems:"center",gap:10}}>
-                <span style={{fontSize:16}}>{themeEmoji(theme.tags)}</span>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:12,fontWeight:700,color:gold}}>"{theme.name}" selected</div>
-                  <div style={{fontSize:11,color:muted,marginTop:1}}>Décor, gifts and tips will all match this look</div>
-                </div>
-                <button onClick={()=>setTheme(null)} style={{fontSize:11,color:muted,background:"none",border:"none",cursor:"pointer",padding:"4px 8px",fontFamily:font}}>Clear</button>
-              </div>
-            )}
-                </>
-              );
-            })()}
+            {renderThemeGallery()}
           </div>
         )}
 
@@ -2494,38 +2825,51 @@ export default function OccasionDetail(){
               // e.g. "DJ / Sound" → "DJ", "Decoration" → "Decorator"
               const VP_MAP={"DJ / Sound":"DJ","Decoration":"Decorator","Lighting":"Lighting Setup"};
               const venueCovers=venueProvides.filter(p=>p!=="__none__").map(p=>VP_MAP[p]||p);
-              const chip=(v,forceGreyed=false,sizeHint="normal")=>{
+              // Image-led card — same visual pattern as renderThemeGallery()/the gift-card
+              // grid: height:120 image block, gold selected border+checkmark, content strip below.
+              const serviceCard=(v)=>{
                 const sel=vendors.includes(v);
                 const byVenue=venueCovers.includes(v);
+                if(byVenue) return null;
                 const isRec=recommended.has(v);
-                if(byVenue&&!forceGreyed) return null;
-                const grey=byVenue||forceGreyed;
-                const sz=sizeHint==="large"?"10px 17px":sizeHint==="small"?"7px 12px":"9px 15px";
-                const fsz=sizeHint==="large"?14:sizeHint==="small"?12:13.5;
+                const info=SERVICE_CARD_INFO[v]||{};
+                let priceLabel="";
+                try{
+                  const pkgs=getVendorPackages(v,{guests,venueType,theme,ageGroups});
+                  priceLabel=(pkgs&&pkgs[0]&&pkgs[0].price)||"";
+                }catch(e){}
                 return(
-                  <button key={v} id={`chip-${v}`}
-                    onClick={()=>{if(!grey){toggleVendor(v);const el=document.getElementById(`chip-${v}`);if(el){el.classList.remove("chip-pop");void el.offsetWidth;el.classList.add("chip-pop");}}}}
-                    style={{
-                      display:"inline-flex",alignItems:"center",gap:6,
-                      padding:sz,borderRadius:100,
-                      border:`1.5px solid ${grey?"rgba(28,9,0,0.08)":sel?gold:"rgba(196,122,46,0.22)"}`,
-                      background:grey?"rgba(28,9,0,0.03)":sel?`rgba(196,122,46,0.1)`:"#fff",
-                      color:grey?"rgba(28,9,0,0.3)":sel?gold:ink,
-                      fontSize:fsz,fontWeight:sel?700:600,
-                      letterSpacing:"-0.01em",
-                      cursor:grey?"default":"pointer",fontFamily:font,
-                      transition:"border-color 0.18s,background 0.18s,color 0.18s,box-shadow 0.18s",
-                      boxShadow:grey?"none":sel?`0 0 0 3px rgba(196,122,46,0.08)`:"0 1px 3px rgba(0,0,0,0.06)",
-                    }}>
-                    {grey
-                      ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(28,9,0,0.2)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      : sel
-                        ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(196,122,46,0.4)" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    }
-                    {v}
-                    {isRec&&!sel&&!grey&&<span style={{fontSize:9,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"1px 5px",marginLeft:1}}>✦</span>}
-                  </button>
+                  <div key={v} id={`chip-${v}`}
+                    style={{padding:0,borderRadius:16,overflow:"hidden",border:`2px solid ${sel?gold:"rgba(196,122,46,0.13)"}`,background:"#fff",transition:"all 0.18s",boxShadow:sel?"0 4px 20px rgba(196,122,46,0.22)":"0 1px 5px rgba(0,0,0,0.06)"}}>
+                    <button onClick={()=>{toggleVendor(v);const el=document.getElementById(`chip-${v}`);if(el){el.classList.remove("chip-pop");void el.offsetWidth;el.classList.add("chip-pop");}}}
+                      style={{display:"block",width:"100%",padding:0,border:"none",background:"none",cursor:"pointer",textAlign:"left",fontFamily:font}}>
+                      <div style={{position:"relative",height:120,overflow:"hidden",background:"linear-gradient(160deg,rgba(196,122,46,0.4),rgba(196,122,46,0.15))"}}>
+                        {info.image&&(
+                          <img src={info.image} alt={v} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}
+                            onError={e=>{e.currentTarget.style.display="none";}} />
+                        )}
+                        {!info.image&&(
+                          <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                            <span style={{fontSize:32}}>{info.emoji||"🎉"}</span>
+                          </div>
+                        )}
+                        <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 55%)"}}/>
+                        <div style={{position:"absolute",bottom:9,left:10,right:32}}>
+                          <span style={{fontSize:12,fontWeight:800,color:"#fff",lineHeight:1.25,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{v}</span>
+                        </div>
+                        {sel
+                          ? <div style={{position:"absolute",top:8,right:8,width:22,height:22,borderRadius:"50%",background:gold,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,0.2)"}}>
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            </div>
+                          : isRec&&<div style={{position:"absolute",top:8,right:8,fontSize:9,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"2px 6px",boxShadow:"0 2px 6px rgba(0,0,0,0.2)"}}>✦</div>
+                        }
+                      </div>
+                      <div style={{padding:"9px 11px 11px"}}>
+                        {info.description&&<div style={{fontSize:10.5,color:muted,lineHeight:1.45,marginBottom:priceLabel?5:0}}>{info.description}</div>}
+                        {priceLabel&&<div style={{fontSize:11,fontWeight:700,color:ink}}>From {priceLabel}</div>}
+                      </div>
+                    </button>
+                  </div>
                 );
               };
               const byVenueTier=ALL_VENDORS.filter(v=>venueCovers.includes(v));
@@ -2534,22 +2878,29 @@ export default function OccasionDetail(){
                   {essential.length>0&&(
                     <div style={{background:"rgba(146,64,14,0.04)",border:"1px solid rgba(146,64,14,0.1)",borderRadius:12,padding:"12px 14px",marginBottom:14}}>
                       {tierLabel(city.trim()?`Every ${occasion.name} in ${city} books these`:"Every event books these","#92400E")}
-                      <div style={{display:"flex",flexWrap:"wrap",gap:7}}>{essential.filter(v=>ALL_VENDORS.includes(v)).map(v=>chip(v,false,"large"))}</div>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>{essential.filter(v=>ALL_VENDORS.includes(v)).map(serviceCard)}</div>
                     </div>
                   )}
-                  {recOnly.length>0&&<>{tierLabel(`Most people add these${city.trim()?` · ${city}`:""}`,gold,"Based on your venue, guests & theme")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{recOnly.filter(v=>ALL_VENDORS.includes(v)).map(v=>chip(v,false,"normal"))}</div></>}
-                  {addOns.length>0&&<>{tierLabel("Nice to have","rgba(28,9,0,0.4)","Browse extras — add anything that fits")}<div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>{addOns.filter(v=>!venueCovers.includes(v)).map(v=>chip(v,false,"small"))}
+                  {recOnly.length>0&&<>{tierLabel(`Most people add these${city.trim()?` · ${city}`:""}`,gold,"Based on your venue, guests & theme")}<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>{recOnly.filter(v=>ALL_VENDORS.includes(v)).map(serviceCard)}</div></>}
+                  {addOns.length>0&&<>{tierLabel("Nice to have","rgba(28,9,0,0.4)","Browse extras — add anything that fits")}<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+                    {addOns.filter(v=>!venueCovers.includes(v)).map(serviceCard)}
                     <button onClick={()=>setShowCustomVendorInput(v=>!v)}
-                      style={{display:"inline-flex",alignItems:"center",gap:6,padding:"9px 15px",borderRadius:100,border:`1.5px dashed ${showCustomVendorInput?"rgba(196,122,46,0.5)":"rgba(196,122,46,0.28)"}`,background:showCustomVendorInput?"rgba(196,122,46,0.06)":"#fff",color:"rgba(196,122,46,0.7)",fontSize:13.5,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s",letterSpacing:"-0.01em"}}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                      Other
+                      style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,minHeight:120,borderRadius:16,border:`1.5px dashed ${showCustomVendorInput?"rgba(196,122,46,0.5)":"rgba(196,122,46,0.28)"}`,background:showCustomVendorInput?"rgba(196,122,46,0.06)":"#fff",color:"rgba(196,122,46,0.7)",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s",letterSpacing:"-0.01em"}}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      Add other service
                     </button>
                   </div></>}
                   {byVenueTier.length>0&&(
                     <>
-                      {tierLabel("By your venue","rgba(28,9,0,0.28)","Already included — tap to add back if upgrading")}
-                      <div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>
-                        {byVenueTier.map(v=>chip(v,true))}
+                      {tierLabel("By your venue","rgba(28,9,0,0.28)","Already included in your venue booking")}
+                      <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:14}}>
+                        {byVenueTier.map(v=>(
+                          <div key={v}
+                            style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",padding:"9px 13px",borderRadius:10,border:"1px solid rgba(28,9,0,0.08)",background:"rgba(28,9,0,0.03)",color:"rgba(28,9,0,0.4)",fontSize:12.5,fontWeight:600,fontFamily:font}}>
+                            <span>{v}</span>
+                            <span style={{fontSize:10,fontWeight:700,color:"rgba(28,9,0,0.3)",textTransform:"uppercase",letterSpacing:"0.06em"}}>Included</span>
+                          </div>
+                        ))}
                       </div>
                     </>
                   )}
@@ -2716,30 +3067,40 @@ export default function OccasionDetail(){
                         {isOpen&&(<>
                         <div style={{borderTop:`1px solid rgba(196,122,46,0.07)`,padding:"10px 14px 0"}}>
                           <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:8}}>Choose your catering style</div>
-                          <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:2}}>
+                          <div style={{display:"flex",flexDirection:"column",gap:8}}>
                             {cOpts.map((opt,oi)=>{
                               const sel=chosen===oi;
+                              const paragraph=buildCateringParagraph(opt,{occasionName:occasion.name,guests,venueType});
                               return(
                                 <button key={oi} onClick={()=>{setVendorPackages(vp=>({...vp,Caterer:oi}));setShowCateringBuilder(false);}}
-                                  style={{flex:"0 0 auto",width:"31%",minWidth:108,maxWidth:145,textAlign:"left",padding:"10px 11px",borderRadius:12,border:`1.5px solid ${sel?gold:opt.popular?"rgba(34,197,94,0.3)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:4}}>
-                                  <div style={{display:"flex",alignItems:"center",gap:4,justifyContent:"space-between",flexWrap:"wrap"}}>
-                                    <span style={{fontSize:16}}>{opt.icon}</span>
-                                    {opt.popular&&!sel&&<span style={{fontSize:7.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"1px 5px"}}>Recommended</span>}
-                                    {sel&&<span style={{fontSize:7.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"1px 5px"}}>✓</span>}
+                                  style={{textAlign:"left",padding:"12px 13px",borderRadius:12,border:`1.5px solid ${sel?gold:opt.popular?"rgba(34,197,94,0.3)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:6}}>
+                                  <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                                    <span style={{fontSize:18,flexShrink:0}}>{opt.icon}</span>
+                                    <span style={{fontSize:13,fontWeight:700,color:sel?gold:ink,flex:1,minWidth:80}}>{opt.style}</span>
+                                    {opt.tier&&<span style={{fontSize:9,fontWeight:700,color:opt.tier==="Premium"?"#7C3AED":opt.tier==="Mid-range"?gold:"#16a34a",background:opt.tier==="Premium"?"rgba(124,58,237,0.08)":opt.tier==="Mid-range"?"rgba(196,122,46,0.08)":"rgba(22,163,74,0.08)",borderRadius:100,padding:"2px 8px",flexShrink:0}}>{opt.tier}</span>}
+                                    {opt.popular&&!sel&&<span style={{fontSize:8.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>Recommended</span>}
+                                    {sel&&<span style={{fontSize:8.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>✓ Selected</span>}
                                   </div>
-                                  <div style={{fontSize:11.5,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{opt.style}</div>
-                                  {opt.tier&&<span style={{fontSize:9,fontWeight:700,color:opt.tier==="Premium"?"#7C3AED":opt.tier==="Mid-range"?gold:"#16a34a",background:opt.tier==="Premium"?"rgba(124,58,237,0.08)":opt.tier==="Mid-range"?"rgba(196,122,46,0.08)":"rgba(22,163,74,0.08)",borderRadius:100,padding:"2px 7px",alignSelf:"flex-start"}}>{opt.tier}</span>}
-                                  <div style={{display:"flex",flexDirection:"column",gap:2}}>
-                                    {opt.dishes.map((d,di)=><div key={di} style={{fontSize:10,color:muted,lineHeight:1.4}}>· {d}</div>)}
-                                  </div>
-                                  {sel&&<button onClick={e=>{e.stopPropagation();setShowCateringBuilder(b=>!b);setCateringBuilderStep("cuisine");}}
-                                    style={{marginTop:4,fontSize:10,fontWeight:700,color:gold,background:"rgba(196,122,46,0.08)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:8,padding:"4px 8px",cursor:"pointer",fontFamily:font,textAlign:"center"}}>
-                                    ✏️ Edit dishes
-                                  </button>}
+                                  <div style={{fontSize:12,color:sel?"#4A2810":muted,lineHeight:1.6}}>{paragraph}</div>
+                                  {sel&&(
+                                    <div style={{marginTop:2,paddingTop:9,borderTop:"1px solid rgba(196,122,46,0.14)",display:"flex",flexDirection:"column",gap:4}}>
+                                      <div style={{fontSize:9,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:3}}>What's included</div>
+                                      {opt.dishes.map((d,di)=>(
+                                        <div key={di} style={{fontSize:11.5,color:ink,lineHeight:1.5,display:"flex",alignItems:"flex-start",gap:5}}>
+                                          <span style={{flexShrink:0,color:gold}}>·</span><span>{d}</span>
+                                        </div>
+                                      ))}
+                                      <button onClick={e=>{e.stopPropagation();setShowCateringBuilder(b=>!b);setCateringBuilderStep("cuisine");}}
+                                        style={{marginTop:4,alignSelf:"flex-start",fontSize:10,fontWeight:700,color:gold,background:"rgba(196,122,46,0.08)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:8,padding:"4px 10px",cursor:"pointer",fontFamily:font,textAlign:"center"}}>
+                                        ✏️ Edit dishes
+                                      </button>
+                                    </div>
+                                  )}
                                 </button>
                               );
                             })}
                           </div>
+                          {typeof chosen==="number"&&renderCrossSell("Caterer")}
                         </div>
 
                         {/* Suggested food items */}
@@ -2904,11 +3265,66 @@ export default function OccasionDetail(){
                             </div>
                           )}
 
+                          {/* Which places need decor? — 8 focus areas, 3 suggested via a dropdown */}
+                          {(()=>{
+                            const suggested=getSuggestedDecorFocusAreas(occasion,{venueType,guests,matchedAreas:venueAnalysis?Object.keys(matchDecorFromAnalysis(venueAnalysis)):[]});
+                            const toggleArea=id=>setDecorFocusAreas(prev=>prev.includes(id)?prev.filter(x=>x!==id):[...prev,id]);
+                            return(
+                              <div style={{marginBottom:16}}>
+                                <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:2}}>Which places need decor?</div>
+                                <div style={{fontSize:11,color:muted,marginBottom:10,lineHeight:1.5}}>Pick the areas you want styled — we'll shape your packages around them.</div>
+
+                                <button onClick={()=>setDecorSuggestionsOpen(o=>!o)}
+                                  style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:"9px 12px",borderRadius:11,border:`1.5px solid ${gold}`,background:"rgba(196,122,46,0.08)",cursor:"pointer",fontFamily:font,marginBottom:decorSuggestionsOpen?8:12}}>
+                                  <span style={{fontSize:14}}>✨</span>
+                                  <span style={{flex:1,textAlign:"left",fontSize:12,fontWeight:700,color:gold}}>{suggested.length} picks for your {occasion.name} — tap to view</span>
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round" style={{transform:decorSuggestionsOpen?"rotate(180deg)":"none",transition:"transform 0.2s",flexShrink:0}}><polyline points="6 9 12 15 18 9"/></svg>
+                                </button>
+                                {decorSuggestionsOpen&&(
+                                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:7,marginBottom:12}}>
+                                    {suggested.map(id=>{
+                                      const area=DECOR_FOCUS_AREAS[id]; if(!area) return null;
+                                      const sel=decorFocusAreas.includes(id);
+                                      return(
+                                        <button key={id} onClick={()=>toggleArea(id)}
+                                          style={{textAlign:"center",padding:"10px 6px",borderRadius:11,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.25)"}`,background:sel?"rgba(196,122,46,0.1)":"#fff",cursor:"pointer",fontFamily:font,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                                          <span style={{fontSize:20}}>{area.emoji}</span>
+                                          <span style={{fontSize:10,fontWeight:700,color:sel?gold:ink,lineHeight:1.25}}>{area.name}</span>
+                                          {sel&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+
+                                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                                  {DECOR_FOCUS_AREA_IDS.map(id=>{
+                                    const area=DECOR_FOCUS_AREAS[id];
+                                    const sel=decorFocusAreas.includes(id);
+                                    const isSuggested=suggested.includes(id);
+                                    return(
+                                      <button key={id} onClick={()=>toggleArea(id)}
+                                        style={{textAlign:"left",padding:"10px 11px",borderRadius:12,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:4,position:"relative"}}>
+                                        <div style={{display:"flex",alignItems:"center",gap:7}}>
+                                          <span style={{fontSize:18,flexShrink:0}}>{area.emoji}</span>
+                                          <span style={{fontSize:12,fontWeight:700,color:sel?gold:ink,flex:1,lineHeight:1.25}}>{area.name}</span>
+                                          {sel&&<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3" strokeLinecap="round" style={{flexShrink:0}}><polyline points="20 6 9 17 4 12"/></svg>}
+                                        </div>
+                                        <div style={{fontSize:10,color:sel?"#4A2810":muted,lineHeight:1.4}}>{area.tagline}</div>
+                                        {isSuggested&&!sel&&<span style={{position:"absolute",top:6,right:6,fontSize:7.5,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"1px 5px"}}>✦</span>}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })()}
+
                           <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:8}}>Choose your decor style</div>
                           <div style={{display:"flex",flexDirection:"column",gap:8}}>
                             {dOpts.map((opt,oi)=>{
                               const sel=chosen===oi;
-                              const paragraph=buildDecorParagraph(opt,{occasionName:occasion.name,guests,venueType});
+                              const paragraph=buildDecorParagraph(opt,{occasionName:occasion.name,guests,venueType,decorFocusAreas});
                               return(
                                 <button key={oi} onClick={()=>{setVendorPackages(vp=>({...vp,Decorator:oi}));setShowDecorBuilder(false);}}
                                   style={{textAlign:"left",padding:"12px 13px",borderRadius:12,border:`1.5px solid ${sel?gold:opt.popular?"rgba(34,197,94,0.3)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:6}}>
@@ -2939,6 +3355,7 @@ export default function OccasionDetail(){
                               );
                             })}
                           </div>
+                          {typeof chosen==="number"&&renderCrossSell("Decorator")}
                         </div>
 
                         {/* Decor Analyser CTA — inside services card */}
@@ -2954,35 +3371,24 @@ export default function OccasionDetail(){
                           </button>
                         </div>
 
-                        {/* Suggested decor items */}
-                        {(()=>{
-                          const suggestions=getSuggestedDecor(occasion.id);
-                          return(
-                            <div style={{padding:"8px 14px 4px",borderTop:`1px solid rgba(196,122,46,0.06)`}}>
-                              <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:8}}>Suggested items — tap to add</div>
-                              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-                                {suggestions.map(([cat,item])=>{
-                                  const picked=customDecor[cat]||[];
-                                  const isSel=picked.includes(item);
-                                  return(
-                                    <button key={`${cat}__${item}`}
-                                      onClick={()=>setCustomDecor(prev=>({...prev,[cat]:isSel?picked.filter(x=>x!==item):[...picked,item]}))}
-                                      style={{padding:"5px 12px",borderRadius:100,border:`1.5px solid ${isSel?gold:"rgba(196,122,46,0.18)"}`,background:isSel?"rgba(196,122,46,0.1)":"transparent",color:isSel?gold:ink,fontSize:12,fontWeight:isSel?700:400,cursor:"pointer",fontFamily:font,transition:"all 0.15s",minHeight:30}}>
-                                      {item}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          );
-                        })()}
+                        {/* Find Your Decor Style — theme gallery, relocated here per redesign.
+                            Same `theme` state as the legacy step-2 gallery — picking one here is
+                            a preference on this same Decorator pick, never a second booking. */}
+                        {(occasion.decorThemes||[]).length>0&&(
+                          <div style={{padding:"14px 14px 2px"}}>
+                            <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:2}}>Find Your Decor Style</div>
+                            <div style={{fontSize:11,color:muted,marginBottom:12,lineHeight:1.5}}>Pick a look — this won't create a second Decorator booking, just styles the one you've already added.</div>
+                            {renderThemeGallery()}
+                          </div>
+                        )}
 
-                        {/* Fix the things required option */}
+                        {/* Fix the things required option — browses items within the focus areas just picked above */}
                         <div style={{padding:"10px 14px 12px"}}>
                           <button onClick={()=>{setVendorPackages(vp=>({...vp,Decorator:"custom"}));setShowDecorBuilder(true);}}
-                            style={{width:"100%",padding:"10px 14px",borderRadius:11,border:`1.5px dashed ${isCustom?gold:"rgba(196,122,46,0.3)"}`,background:isCustom?"rgba(196,122,46,0.05)":"transparent",color:isCustom?gold:muted,fontSize:12.5,fontWeight:700,cursor:"pointer",fontFamily:font,display:"flex",alignItems:"center",gap:8,transition:"all 0.18s"}}>
+                            disabled={decorFocusAreas.length===0}
+                            style={{width:"100%",padding:"10px 14px",borderRadius:11,border:`1.5px dashed ${isCustom?gold:"rgba(196,122,46,0.3)"}`,background:isCustom?"rgba(196,122,46,0.05)":"transparent",color:decorFocusAreas.length===0?"rgba(28,9,0,0.25)":isCustom?gold:muted,fontSize:12.5,fontWeight:700,cursor:decorFocusAreas.length===0?"default":"pointer",fontFamily:font,display:"flex",alignItems:"center",gap:8,transition:"all 0.18s"}}>
                             <span style={{fontSize:16}}>🎨</span>
-                            <span style={{flex:1,textAlign:"left"}}>Fix the items yourself</span>
+                            <span style={{flex:1,textAlign:"left"}}>{decorFocusAreas.length===0?"Pick a place above to fix items":"Fix the items yourself"}</span>
                             {isCustom&&totalDecorItems>0&&<span style={{fontSize:10,fontWeight:600,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"2px 8px"}}>{totalDecorItems} items picked</span>}
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                           </button>
@@ -3039,8 +3445,8 @@ export default function OccasionDetail(){
                               {editedPackageItems===null&&<div style={{fontSize:11,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em"}}>Pick what you need</div>}
                               {editedPackageItems===null&&totalDecorItems>0&&<button onClick={()=>setCustomDecor({})} style={{fontSize:11,fontWeight:600,color:"rgba(196,122,46,0.6)",background:"none",border:"none",cursor:"pointer",fontFamily:font,padding:0,textDecoration:"underline"}}>Clear all</button>}
                             </div>
-                            {DECOR_CATEGORIES.map(cat=>{
-                              const items=DECOR_ITEMS[cat]||[];
+                            {decorFocusAreas.map(cat=>{
+                              const items=DECOR_FOCUS_AREAS[cat]?.items||[];
                               const picked=editedPackageItems!==null
                                 ? editedPackageItems.filter(i=>items.includes(i))
                                 : (customDecor[cat]||[]);
@@ -3048,7 +3454,7 @@ export default function OccasionDetail(){
                               return(
                                 <div key={cat} style={{marginBottom:14}}>
                                   <div style={{fontSize:11,fontWeight:700,color:ink,marginBottom:7,display:"flex",alignItems:"center",gap:6}}>
-                                    {cat}
+                                    {DECOR_FOCUS_AREAS[cat]?.emoji} {DECOR_FOCUS_AREAS[cat]?.name}
                                     {picked.length>0&&<span style={{fontSize:9,fontWeight:800,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"1px 6px"}}>{picked.length} picked</span>}
                                     {picked.length>0&&editedPackageItems===null&&<button onClick={()=>setCustomDecor(prev=>({...prev,[cat]:[]}))} style={{fontSize:9,fontWeight:600,color:muted,background:"none",border:"none",cursor:"pointer",fontFamily:font,padding:"0 4px",marginLeft:"auto",textDecoration:"underline"}}>Clear</button>}
                                   </div>
@@ -3122,29 +3528,38 @@ export default function OccasionDetail(){
                       {/* packages — only when expanded */}
                       {isOpen&&pkgs&&(
                         <div style={{borderTop:`1px solid rgba(196,122,46,0.07)`,padding:"10px 14px 12px"}}>
-                          <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:2}}>
+                          <div style={{display:"flex",flexDirection:"column",gap:8}}>
                             {pkgs.slice(0,3).map((pkg,pi)=>{
                               const sel=chosen===pi;
                               const cost=approxCost(pkg.price,guests);
                               const budgetFit=perVendorBudget&&cost?(cost<=perVendorBudget*1.25?"fits":cost<=perVendorBudget*2?"stretch":"over"):null;
+                              const paragraph=buildGenericPackageParagraph(v,pkg,{occasionName:occasion.name,guests,venueType});
                               return(
-                                <button key={pkg.label} onClick={()=>{setVendorPackages(vp=>({...vp,[v]:pi}));setExpandedVendor(null);}}
-                                  style={{flex:"0 0 auto",width:"31%",minWidth:100,maxWidth:140,textAlign:"left",padding:"10px 11px",borderRadius:12,border:`1.5px solid ${sel?gold:budgetFit==="fits"?"rgba(34,197,94,0.35)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:4}}>
-                                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:4,flexWrap:"wrap"}}>
-                                    <span style={{fontSize:12,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{pkg.label}</span>
-                                    {budgetFit==="fits"&&!sel&&<span style={{fontSize:7.5,fontWeight:800,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"1px 5px",flexShrink:0}}>✓ Budget</span>}
-                                    {pkg.popular&&!sel&&<span style={{fontSize:7.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.1)",borderRadius:100,padding:"1px 5px",flexShrink:0}}>Recommended</span>}
+                                <button key={pkg.label} onClick={()=>setVendorPackages(vp=>({...vp,[v]:pi}))}
+                                  style={{textAlign:"left",padding:"12px 13px",borderRadius:12,border:`1.5px solid ${sel?gold:budgetFit==="fits"?"rgba(34,197,94,0.35)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:6}}>
+                                  <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                                    <span style={{fontSize:13,fontWeight:700,color:sel?gold:ink,flex:1,minWidth:80}}>{pkg.label}</span>
+                                    <span style={{fontSize:11.5,fontWeight:700,color:sel?gold:muted}}>{pkg.price}</span>
+                                    {budgetFit==="fits"&&!sel&&<span style={{fontSize:8.5,fontWeight:800,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>✓ Budget</span>}
+                                    {pkg.popular&&!sel&&<span style={{fontSize:8.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>Recommended</span>}
+                                    {sel&&<span style={{fontSize:8.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>✓ Selected</span>}
                                   </div>
-                                  <div style={{display:"flex",flexDirection:"column",gap:1.5}}>
-                                    {pkg.items.map((it,ii)=><div key={ii} style={{fontSize:10,color:muted,lineHeight:1.4}}>· {it}</div>)}
-                                  </div>
-                                  {sel&&<div style={{width:16,height:16,borderRadius:"50%",background:gold,display:"flex",alignItems:"center",justifyContent:"center",alignSelf:"flex-end",marginTop:2}}>
-                                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                  </div>}
+                                  <div style={{fontSize:12,color:sel?"#4A2810":muted,lineHeight:1.6}}>{paragraph}</div>
+                                  {sel&&(
+                                    <div style={{marginTop:2,paddingTop:9,borderTop:"1px solid rgba(196,122,46,0.14)",display:"flex",flexDirection:"column",gap:4}}>
+                                      <div style={{fontSize:9,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:3}}>What's included</div>
+                                      {pkg.items.map((it,ii)=>(
+                                        <div key={ii} style={{fontSize:11.5,color:ink,lineHeight:1.5,display:"flex",alignItems:"flex-start",gap:5}}>
+                                          <span style={{flexShrink:0,color:gold}}>·</span><span>{it}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
                                 </button>
                               );
                             })}
                           </div>
+                          {typeof chosen==="number"&&renderCrossSell(v)}
                         </div>
                       )}
                     </div>
@@ -3172,8 +3587,26 @@ export default function OccasionDetail(){
           </div>
         )}
 
-        {/* ══ STEP 4: entertainment & activities ══ */}
+        {/* ══ STEP 4: entry experiences (optional) ══ */}
         {step===4&&(
+          <div className="os">
+            <EntryExperiences
+              occasion={occasion}
+              ageGroups={ageGroups}
+              guests={guests}
+              venueType={venueType}
+              budget={budget}
+              vendors={vendors}
+              onToggleVendor={toggleVendor}
+              selectedIds={selectedEntryExperiences}
+              onToggleSelect={toggleEntryExperience}
+              occAccent={occAccent}
+            />
+          </div>
+        )}
+
+        {/* ══ STEP 5: entertainment & activities ══ */}
+        {step===5&&(
           <div className="os">
             <p style={{fontFamily:serif,fontSize:"clamp(1.3rem,3vw,1.7rem)",color:ink,lineHeight:1.3,marginBottom:6}}>Add entertainment</p>
             <p style={{fontSize:12.5,color:muted,marginBottom:16,lineHeight:1.55}}>All options below are bookable through Tendr — tap a category to browse.</p>
@@ -3375,8 +3808,8 @@ export default function OccasionDetail(){
           </div>
         )}
 
-        {/* ══ STEP 5: gifts ══ */}
-        {step===5&&(
+        {/* ══ STEP 6: gifts ══ */}
+        {step===6&&(
           <div className="os">
             <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.3,marginBottom:6}}>Any gifts?</p>
             <p style={{fontSize:13,color:muted,marginBottom:16,lineHeight:1.6}}>
@@ -3390,6 +3823,31 @@ export default function OccasionDetail(){
               {ageGroups.map(ag=><span key={ag} style={{fontSize:11,fontWeight:600,color:muted,background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"3px 10px"}}>{ag}</span>)}
               {budget&&Number(budget)>0&&<span style={{fontSize:11,fontWeight:600,color:muted,background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"3px 10px"}}>₹{Number(budget).toLocaleString("en-IN")} total</span>}
             </div>
+            {/* Gift budget tracker — estimate only, never claims exact precision since
+                prices are free-text ranges, not numbers */}
+            {(()=>{
+              const giftBudgetAlloc=budget&&Number(budget)>0?Number(budget)*0.12:null;
+              const estimatedGiftSpend=computeGiftSpend(gifts,giftQuantities,sortedGifts,guests);
+              if(!gifts.length&&!giftBudgetAlloc) return null;
+              const pct=giftBudgetAlloc?Math.min(100,Math.round((estimatedGiftSpend/giftBudgetAlloc)*100)):0;
+              const over=giftBudgetAlloc&&estimatedGiftSpend>giftBudgetAlloc;
+              return(
+                <div style={{marginBottom:16,borderRadius:12,border:`1px solid ${over?"rgba(239,68,68,0.3)":border}`,background:over?"rgba(239,68,68,0.04)":"#fff",padding:"12px 14px"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:giftBudgetAlloc?8:0}}>
+                    <span style={{fontSize:11.5,fontWeight:700,color:ink}}>
+                      ~₹{Math.round(estimatedGiftSpend).toLocaleString("en-IN")}{giftBudgetAlloc&&` of ~₹${Math.round(giftBudgetAlloc).toLocaleString("en-IN")} gift budget`}
+                    </span>
+                    {over&&<span style={{fontSize:10.5,fontWeight:700,color:"#dc2626"}}>Over estimate</span>}
+                  </div>
+                  {giftBudgetAlloc&&(
+                    <div style={{height:6,borderRadius:100,background:"rgba(28,9,0,0.06)",overflow:"hidden"}}>
+                      <div style={{height:"100%",width:`${pct}%`,borderRadius:100,background:over?"#dc2626":gold,transition:"width 0.25s"}}/>
+                    </div>
+                  )}
+                  <div style={{fontSize:10,color:muted,marginTop:6}}>Estimated from typical price ranges — exact cost depends on the vendor you choose.</div>
+                </div>
+              );
+            })()}
             {/* Gift tips */}
             {(()=>{
               const occ=occasion.id||"";
@@ -3421,47 +3879,334 @@ export default function OccasionDetail(){
               const good=sortedGifts.filter(g=>g.score>0&&g.score<4);
               const more=sortedGifts.filter(g=>g.score<=0);
               const tierLabel=(label,color,sub)=><div style={{marginBottom:8,marginTop:4}}><span style={{fontSize:10,fontWeight:800,color,textTransform:"uppercase",letterSpacing:"0.13em"}}>{label}</span>{sub&&<span style={{fontSize:10,fontWeight:500,color:"rgba(28,9,0,0.35)",marginLeft:7}}>{sub}</span>}</div>;
+              // Image-led card — same visual pattern as renderThemeGallery()/EntryExperiences.jsx's
+              // EntryCard: height:140 image block, gold selected border+checkmark, tag-style chips.
               const giftCard=(g,i)=>{
                 const sel=gifts.includes(g.name);
+                const qty=giftQuantities[g.name]||1;
                 return(
-                  <button key={i} onClick={()=>toggleGift(g.name)}
-                    style={{padding:"15px 16px",borderRadius:14,textAlign:"left",cursor:"pointer",border:`1.5px solid ${sel?gold:g.score>0?"rgba(196,122,46,0.22)":"rgba(196,122,46,0.12)"}`,background:sel?"rgba(196,122,46,0.06)":"#fff",fontFamily:font,transition:"all 0.18s",minHeight:44}}
-                    onMouseEnter={e=>{if(!sel)e.currentTarget.style.borderColor="rgba(196,122,46,0.3)";}}
-                    onMouseLeave={e=>{if(!sel)e.currentTarget.style.borderColor=g.score>0?"rgba(196,122,46,0.22)":"rgba(196,122,46,0.12)";}}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:4}}>
-                      <div>
-                        <div style={{fontSize:13,fontWeight:700,color:sel?gold:ink,lineHeight:1.3,marginBottom:3}}>{g.name}</div>
-                        {g.reason&&!sel&&<span style={{fontSize:9.5,fontWeight:700,color:g.reason.includes("Budget")||g.reason.includes("budget")?"#16a34a":gold,background:g.reason.includes("Budget")||g.reason.includes("budget")?"rgba(34,197,94,0.09)":"rgba(196,122,46,0.08)",borderRadius:100,padding:"2px 8px"}}>{g.reason}</span>}
+                  <div key={i}
+                    style={{padding:0,borderRadius:16,overflow:"hidden",border:`2px solid ${sel?gold:"rgba(196,122,46,0.13)"}`,background:"#fff",transition:"all 0.18s",boxShadow:sel?"0 4px 20px rgba(196,122,46,0.22)":"0 1px 5px rgba(0,0,0,0.06)"}}>
+                    <button onClick={()=>toggleGift(g.name)} style={{display:"block",width:"100%",padding:0,border:"none",background:"none",cursor:"pointer",textAlign:"left",fontFamily:font}}>
+                      <div style={{position:"relative",height:140,overflow:"hidden",background:"linear-gradient(160deg,rgba(196,122,46,0.4),rgba(196,122,46,0.15))"}}>
+                        {g.image&&(
+                          <img src={g.image} alt={g.name} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}
+                            onError={e=>{e.currentTarget.style.display="none";}} />
+                        )}
+                        {!g.image&&(
+                          <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                            <span style={{fontSize:36}}>🎁</span>
+                          </div>
+                        )}
+                        <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 55%)"}}/>
+                        <div style={{position:"absolute",bottom:9,left:10,right:32}}>
+                          <span style={{fontSize:12,fontWeight:800,color:"#fff",lineHeight:1.25,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{g.name}</span>
+                        </div>
+                        {sel&&(
+                          <div style={{position:"absolute",top:8,right:8,width:22,height:22,borderRadius:"50%",background:gold,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,0.2)"}}>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          </div>
+                        )}
                       </div>
-                      <div style={{width:20,height:20,borderRadius:"50%",border:`2px solid ${sel?gold:"rgba(196,122,46,0.18)"}`,background:sel?gold:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.18s",marginTop:1}}>
-                        {sel&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                      <div style={{padding:"9px 11px 4px"}}>
+                        {g.reason&&!sel&&<div style={{marginBottom:5}}><span style={{fontSize:9,fontWeight:700,color:g.reason.includes("Budget")||g.reason.includes("budget")?"#16a34a":gold,background:g.reason.includes("Budget")||g.reason.includes("budget")?"rgba(34,197,94,0.09)":"rgba(196,122,46,0.08)",borderRadius:100,padding:"2px 8px"}}>{g.reason}</span></div>}
+                        <div style={{fontSize:11,color:muted,lineHeight:1.5,marginBottom:6}}>{(g.desc||"").slice(0,70)}{(g.desc||"").length>70?"…":""}</div>
+                        <div style={{fontSize:11.5,fontWeight:700,color:ink}}>{g.price}</div>
                       </div>
-                    </div>
-                    <div style={{fontSize:11.5,color:muted,lineHeight:1.5}}>{(g.desc||"").slice(0,70)}{(g.desc||"").length>70?"…":""}</div>
-                  </button>
+                    </button>
+                    {sel&&(
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 11px 11px"}}>
+                        <span style={{fontSize:10,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Quantity</span>
+                        <div style={{display:"flex",alignItems:"center",gap:8}}>
+                          <button onClick={()=>setGiftQty(g.name,qty-1)} disabled={qty<=1}
+                            style={{width:24,height:24,borderRadius:"50%",border:`1.5px solid ${border}`,background:"#fff",color:qty<=1?"rgba(28,9,0,0.2)":gold,fontSize:14,fontWeight:700,cursor:qty<=1?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:font}}>−</button>
+                          <span style={{fontSize:13,fontWeight:700,color:ink,minWidth:16,textAlign:"center"}}>{qty}</span>
+                          <button onClick={()=>setGiftQty(g.name,qty+1)}
+                            style={{width:24,height:24,borderRadius:"50%",border:"none",background:gold,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:font}}>+</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 );
               };
               // Fallback: if no tier has gifts, show all flat
               if(!curated.length&&!good.length&&!more.length){
-                return <div className="g2" style={{display:"grid",gridTemplateColumns:"1fr",gap:10}}>{sortedGifts.map(giftCard)}</div>;
+                return <div className="g2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>{sortedGifts.map(giftCard)}</div>;
               }
               return(
                 <div>
-                  {curated.length>0&&<>{tierLabel("Perfect picks","#92400E","Matched to your event & theme")}<div className="g2" style={{display:"grid",gridTemplateColumns:"1fr",gap:10,marginBottom:14}}>{curated.map(giftCard)}</div></>}
-                  {good.length>0&&<>{tierLabel("Also great",gold,"Good choices for most guests")}<div className="g2" style={{display:"grid",gridTemplateColumns:"1fr",gap:10,marginBottom:14}}>{good.map(giftCard)}</div></>}
-                  {more.length>0&&<>{tierLabel("More options","rgba(28,9,0,0.4)","Browse everything else")}<div className="g2" style={{display:"grid",gridTemplateColumns:"1fr",gap:10,marginBottom:14}}>{more.map(giftCard)}</div></>}
+                  {curated.length>0&&<>{tierLabel("Perfect picks","#92400E","Matched to your event & theme")}<div className="g2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>{curated.map(giftCard)}</div></>}
+                  {good.length>0&&<>{tierLabel("Also great",gold,"Good choices for most guests")}<div className="g2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>{good.map(giftCard)}</div></>}
+                  {more.length>0&&<>{tierLabel("More options","rgba(28,9,0,0.4)","Browse everything else")}<div className="g2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>{more.map(giftCard)}</div></>}
                 </div>
               );
             })()}
           </div>
         )}
 
-        {/* ══ STEP 6: blueprint ══ */}
-        {step===6&&(
+        {/* ══ STEP 7: blueprint ══ */}
+        {step===7&&(
           <div className="os">
             <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.3,marginBottom:4}}>Your plan is ready ✦</p>
 
-            {/* paragraph summary + conclusion + improvement tips + cross-sell */}
+            {/* Upload-venue-photo gate — shown once before the plan, unless a photo was
+                already captured via the Decor Analyser earlier in the flow. Dismissible
+                (upload or skip); never asked twice in the same session. */}
+            {!venuePhoto&&!venueAnalysis&&!venuePhotoGateSeen&&(
+              <div style={{marginBottom:16,borderRadius:16,border:"1.5px solid rgba(196,122,46,0.22)",background:"rgba(196,122,46,0.04)",padding:"14px 16px"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                  <span style={{fontSize:16}}>📷</span>
+                  <span style={{fontSize:13,fontWeight:700,color:ink}}>Add a photo of your venue</span>
+                  <span style={{fontSize:10,fontWeight:600,color:muted}}>(optional)</span>
+                </div>
+                <div style={{fontSize:11.5,color:muted,lineHeight:1.5,marginBottom:10}}>Helps your Tendr coordinator understand the space — and sharpens our decor suggestions.</div>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <input id="venue-photo-gate-input" type="file" accept="image/*" style={{display:"none"}}
+                    onChange={async e=>{
+                      const file=e.target.files?.[0];
+                      if(file){ const dataUrl=await resizeVenuePhoto(file); setVenuePhoto(dataUrl); }
+                      setVenuePhotoGateSeen(true);
+                      e.target.value="";
+                    }}/>
+                  <button onClick={()=>document.getElementById("venue-photo-gate-input").click()}
+                    style={{padding:"9px 16px",borderRadius:100,background:gold,color:"#fff",fontFamily:font,fontWeight:700,fontSize:12.5,border:"none",cursor:"pointer"}}>
+                    Upload photo
+                  </button>
+                  <button onClick={()=>setVenuePhotoGateSeen(true)}
+                    style={{padding:"9px 14px",borderRadius:100,background:"none",border:"none",color:muted,fontFamily:font,fontWeight:600,fontSize:12.5,cursor:"pointer",textDecoration:"underline"}}>
+                    Skip for now
+                  </button>
+                </div>
+              </div>
+            )}
+            {venuePhoto&&(
+              <div style={{marginBottom:16,display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:14,border:"1px solid rgba(196,122,46,0.15)",background:"#fff"}}>
+                <img src={venuePhoto} alt="Venue" style={{width:48,height:48,borderRadius:10,objectFit:"cover",flexShrink:0}}/>
+                <div style={{flex:1,fontSize:11.5,color:ink,fontWeight:600}}>Venue photo added</div>
+                <button onClick={()=>{setVenuePhoto(null);setVenuePhotoGateSeen(false);}}
+                  style={{fontSize:11,fontWeight:600,color:muted,background:"none",border:"none",cursor:"pointer",textDecoration:"underline",fontFamily:font}}>Change</button>
+              </div>
+            )}
+
+            {/* everything below this is captured by planRef — A. Overview → B. Budget →
+                C. Selected items → D. Itinerary → E. Prep timeline, in that order */}
+            <div ref={planRef} style={{background:"#FDFAF5",borderRadius:20,padding:"20px",border:`1px solid rgba(196,122,46,0.1)`}}>
+
+            {/* plan overview card */}
+            <div ref={cardRef} style={{background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",border:`1.5px solid rgba(196,122,46,0.2)`,borderRadius:20,overflow:"hidden",marginBottom:12}}>
+              <div style={{background:`linear-gradient(135deg,${gold},${goldLt})`,padding:"18px 20px 16px",position:"relative",overflow:"hidden"}}>
+                <div aria-hidden style={{position:"absolute",top:-24,right:-24,width:90,height:90,borderRadius:"50%",border:"1.5px solid rgba(255,255,255,0.14)"}}/>
+                <div style={{display:"flex",alignItems:"center",gap:10,position:"relative"}}>
+                  <span style={{fontSize:30}}>{occasion.icon}</span>
+                  <div>
+                    <div style={{fontFamily:serif,fontSize:18,fontWeight:400,color:"#fff",lineHeight:1.1}}>{celebrantName?`${celebrantName}'s ${occasion.name}`:occasion.name}</div>
+                    <div style={{fontSize:10,color:"rgba(255,255,255,0.7)",fontWeight:600,marginTop:2,fontFamily:font}}>Celebration Plan · Tendr</div>
+                  </div>
+                </div>
+              </div>
+              <div style={{padding:"16px 18px"}}>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+                  {[
+                    celebrantName?{icon:"🎀",label:"For",val:celebrantName}:null,
+                    {icon:"👥",label:"Guests",val:`${guests} people`},
+                    {icon:"💰",label:"Budget",val:budget?fmtNum(Number(budget)):`${fmtNum(occasion.budgetMin)}–${fmtNum(occasion.budgetMax)}`},
+                    {icon:"📅",label:"Date",val:date?new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}):"TBD"},
+                    {icon:"📍",label:"Location",val:city?(venueType?`${city} · ${venueType}`:city):(venueType||"TBD")},
+                  ].filter(Boolean).map(({icon,label,val})=>(
+                    <div key={label} style={{background:"#fff",borderRadius:10,padding:"10px 12px",border:`1px solid rgba(196,122,46,0.1)`}}>
+                      <div style={{fontSize:9,fontWeight:700,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:2}}>{icon} {label}</div>
+                      <div style={{fontSize:12.5,fontWeight:700,color:val==="TBD"?"rgba(30,15,0,0.25)":ink}}>{val}</div>
+                    </div>
+                  ))}
+                </div>
+                {theme&&<div style={{marginBottom:8,fontSize:11.5,fontWeight:700,color:gold}}>🎨 {theme.name} theme</div>}
+                {cateringType&&<div style={{marginBottom:8,fontSize:11.5,color:muted}}>🍽️ {cateringType}{cakeType&&` · ${cakeType}`}{inviteType&&` · ${inviteType}`}</div>}
+                <div style={{borderTop:`1px solid rgba(196,122,46,0.1)`,paddingTop:10,marginTop:2,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span style={{fontSize:9.5,color:muted,fontFamily:font}}>Generated with Tendr</span>
+                  <span style={{fontSize:10,letterSpacing:2}}>★★★★★</span>
+                </div>
+              </div>
+            </div>
+
+            {/* budget split — centrepiece */}
+            {budgetSplit&&(
+              <div style={{marginBottom:20,padding:"18px 18px 16px",borderRadius:16,background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",border:`1.5px solid rgba(196,122,46,0.18)`}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
+                  <div style={{width:26,height:26,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  </div>
+                  <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>{vendors.length>0?"How your budget is split":"How budgets are typically split"}</span>
+                  <div style={{flex:1,height:1,background:`rgba(196,122,46,0.12)`}}/>
+                </div>
+                {budget&&Number(budget)>0&&(
+                  <div style={{textAlign:"center",marginBottom:16,padding:"10px 0 4px"}}>
+                    <div style={{fontSize:10,fontWeight:700,color:"rgba(196,122,46,0.5)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:2}}>Total budget</div>
+                    <div style={{fontFamily:serif,fontSize:28,fontWeight:400,color:gold,lineHeight:1}}>₹{Number(budget).toLocaleString("en-IN")}</div>
+                  </div>
+                )}
+                {budgetSplit.map(c=>(
+                  <div key={c.label} style={{marginBottom:10}}>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                      <span style={{fontSize:12,fontWeight:600,color:ink}}>{c.label}</span>
+                      <div style={{display:"flex",alignItems:"center",gap:6}}>
+                        {budget&&Number(budget)>0&&<span style={{fontSize:11,color:muted}}>~₹{Math.round(Number(budget)*c.pct/100).toLocaleString("en-IN")}</span>}
+                        <span style={{fontSize:12,fontWeight:700,color:gold}}>{c.pct}%</span>
+                      </div>
+                    </div>
+                    <div style={{height:7,borderRadius:3.5,background:"rgba(196,122,46,0.1)",overflow:"hidden"}}>
+                      <div style={{height:"100%",width:`${c.pct}%`,background:c.color,borderRadius:3.5,transition:"width 0.8s ease"}}/>
+                    </div>
+                  </div>
+                ))}
+                {/* Entry Experience + gift estimates — separate from the vendor-package split
+                    above since they're absolute ₹ estimates, not a percentage of one total. */}
+                {selectedEntryExperiences.length>0&&(
+                  <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderTop:"1px solid rgba(196,122,46,0.1)",marginTop:4}}>
+                    <span style={{fontSize:12,fontWeight:600,color:ink}}>Entry Experiences (estimate)</span>
+                    <span style={{fontSize:12,fontWeight:700,color:gold}}>~₹{Math.round(computeEntryExperienceSpend(selectedEntryExperiences)).toLocaleString("en-IN")}</span>
+                  </div>
+                )}
+                {gifts.length>0&&(
+                  <div style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderTop:"1px solid rgba(196,122,46,0.1)"}}>
+                    <span style={{fontSize:12,fontWeight:600,color:ink}}>Gifts (estimate)</span>
+                    <span style={{fontSize:12,fontWeight:700,color:gold}}>~₹{Math.round(computeGiftSpend(gifts,giftQuantities,sortedGifts,guests)).toLocaleString("en-IN")}</span>
+                  </div>
+                )}
+                <div style={{fontSize:11,color:muted,marginTop:12,lineHeight:1.6,padding:"10px 12px",background:"rgba(196,122,46,0.04)",borderRadius:8,border:`1px solid rgba(196,122,46,0.12)`}}>
+                  Exact pricing will be shared by your Tendr coordinator once you connect — Entry Experience and gift totals above are estimates based on typical price ranges.
+                </div>
+              </div>
+            )}
+
+            {/* C. Selected services & experiences */}
+            {renderSelectedItemsSection()}
+
+            {/* event itinerary — hero of the plan */}
+            {(()=>{
+              const itinerary=buildItinerary(occasion,{guests,vendors,selectedActivities,venueType,ageGroups});
+              if(!itinerary.length) return null;
+              const open=planSectionsOpen.itinerary;
+              return(
+                <div style={{marginBottom:20}}>
+                  <div onClick={()=>togglePlanSection("itinerary")} style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,cursor:"pointer"}}>
+                    <div style={{width:26,height:26,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </div>
+                    <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>Your event itinerary</span>
+                    <div style={{flex:1,height:1,background:`rgba(196,122,46,0.12)`}}/>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round" style={{transform:open?"rotate(180deg)":"none",transition:"transform 0.2s",flexShrink:0}}><polyline points="6 9 12 15 18 9"/></svg>
+                  </div>
+                  {open&&<>
+                  <div style={{background:"#fff",borderRadius:14,border:`1px solid ${border}`,overflow:"hidden"}}>
+                    {itinerary.map((slot,i)=>{
+                      const isHighlight=slot.type==="highlight";
+                      const isFun=slot.type==="fun";
+                      const isLast=i===itinerary.length-1;
+                      return(
+                        <div key={i} style={{display:"flex",gap:0,position:"relative"}}>
+                          <div style={{width:72,flexShrink:0,padding:"12px 10px 12px 14px",display:"flex",flexDirection:"column",alignItems:"flex-end",justifyContent:"flex-start",paddingTop:14}}>
+                            <span style={{fontSize:10.5,fontWeight:700,color:isHighlight?gold:muted,lineHeight:1.2,textAlign:"right",letterSpacing:"-0.01em"}}>{slot.time}</span>
+                          </div>
+                          <div style={{width:24,flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",position:"relative"}}>
+                            <div style={{width:10,height:10,borderRadius:"50%",background:isHighlight?gold:isFun?"#7C3AED":"rgba(196,122,46,0.3)",border:`2px solid ${isHighlight?gold:isFun?"#7C3AED":"rgba(196,122,46,0.15)"}`,marginTop:16,flexShrink:0,zIndex:1}}/>
+                            {!isLast&&<div style={{width:2,flex:1,background:"rgba(196,122,46,0.08)",marginTop:2}}/>}
+                          </div>
+                          <div style={{flex:1,padding:"12px 14px 12px 8px",borderBottom:isLast?"none":`1px solid rgba(196,122,46,0.06)`}}>
+                            <div style={{fontSize:12.5,fontWeight:isHighlight?800:700,color:isHighlight?gold:ink,lineHeight:1.3,marginBottom:slot.desc?3:0}}>{slot.title}</div>
+                            {slot.desc&&<div style={{fontSize:11.5,color:muted,lineHeight:1.45}}>{slot.desc}</div>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div style={{marginTop:10,padding:"9px 12px",borderRadius:8,background:"rgba(196,122,46,0.04)",border:"1px solid rgba(196,122,46,0.09)"}}>
+                    <div style={{fontSize:10,fontWeight:700,color:gold,marginBottom:3}}>How is this itinerary built?</div>
+                    <div style={{fontSize:11,color:muted,lineHeight:1.55}}>Based on: your <strong style={{color:ink}}>services selected</strong> (Decorator, Caterer, DJ, etc.), any <strong style={{color:ink}}>entertainment & activities</strong> you've added, your <strong style={{color:ink}}>venue type</strong>, and standard timings for a {occasion.name.toLowerCase()}. Timings are estimates — adjust to fit your actual event flow.</div>
+                  </div>
+                  </>}
+                </div>
+              );
+            })()}
+
+            {/* timeline — booking countdown */}
+            {timeline&&(()=>{
+              const open=planSectionsOpen.timeline;
+              return(
+              <div style={{marginBottom:24}}>
+                <div onClick={()=>togglePlanSection("timeline")} style={{display:"flex",alignItems:"center",gap:8,marginBottom:16,cursor:"pointer"}}>
+                  <div style={{width:26,height:26,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  </div>
+                  <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>Your timeline · {timeline.days} days to go</span>
+                  <div style={{flex:1,height:1,background:`rgba(196,122,46,0.12)`}}/>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round" style={{transform:open?"rotate(180deg)":"none",transition:"transform 0.2s",flexShrink:0}}><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                {open&&
+                <div style={{position:"relative",paddingLeft:24}}>
+                  <div style={{position:"absolute",left:7,top:8,bottom:8,width:1.5,background:`linear-gradient(180deg,${gold},rgba(196,122,46,0.1))`}}/>
+                  {timeline.phases.map((p,i)=>(
+                    <div key={i} style={{position:"relative",marginBottom:i<timeline.phases.length-1?20:0}}>
+                      <div style={{position:"absolute",left:-21,top:2,width:10,height:10,borderRadius:"50%",background:i===timeline.phases.length-1?gold:"#fff",border:`2px solid ${gold}`}}/>
+                      <div style={{fontSize:10.5,fontWeight:700,color:gold,marginBottom:4}}>{p.when}{p.date&&<span style={{color:muted,fontWeight:400,marginLeft:6}}>{p.date}</span>}</div>
+                      {p.tasks.map((t,j)=><div key={j} style={{fontSize:12,color:muted,lineHeight:1.5,marginBottom:1}}>· {t}</div>)}
+                    </div>
+                  ))}
+                </div>}
+              </div>
+              );
+            })()}
+
+            {/* checklist */}
+            <div style={{marginBottom:20}}>
+              <div onClick={()=>togglePlanSection("checklist")} style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,cursor:"pointer"}}>
+                <div style={{width:26,height:26,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                </div>
+                <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>Checklist</span>
+                <div style={{flex:1,height:1,background:`rgba(196,122,46,0.12)`}}/>
+                {tasksDone>0&&<span style={{fontSize:11,fontWeight:700,color:gold,flexShrink:0}}>{tasksDone}/{tasksTotal}</span>}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round" style={{transform:planSectionsOpen.checklist?"rotate(180deg)":"none",transition:"transform 0.2s",flexShrink:0}}><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              {planSectionsOpen.checklist&&<>
+              {tasksDone>0&&(
+                <div style={{height:4,background:"rgba(196,122,46,0.1)",borderRadius:2,overflow:"hidden",marginBottom:10}}>
+                  <div style={{height:"100%",width:`${(tasksDone/tasksTotal)*100}%`,background:`linear-gradient(90deg,${gold},${goldLt})`,borderRadius:2,transition:"width 0.3s"}}/>
+                </div>
+              )}
+              {(occasion.checklist||[]).map((item,i)=>(
+                <div key={i} onClick={()=>setChecked(c=>({...c,[i]:!c[i]}))}
+                  style={{display:"flex",alignItems:"flex-start",gap:10,padding:"11px 13px",background:checked[i]?"rgba(196,122,46,0.04)":"#fff",borderRadius:10,border:`1.5px solid ${checked[i]?"rgba(196,122,46,0.18)":border}`,marginBottom:5,cursor:"pointer",transition:"all 0.15s",minHeight:44,boxSizing:"border-box"}}>
+                  <div style={{width:20,height:20,borderRadius:6,border:`2px solid ${checked[i]?gold:"rgba(196,122,46,0.2)"}`,background:checked[i]?gold:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",marginTop:1,transition:"all 0.15s"}}>
+                    {checked[i]&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                  </div>
+                  <span style={{fontSize:12.5,color:checked[i]?"rgba(30,15,0,0.3)":ink,textDecoration:checked[i]?"line-through":"none",lineHeight:1.55,transition:"all 0.15s"}}>{item}</span>
+                </div>
+              ))}
+              </>}
+            </div>
+
+            {/* equipment */}
+            <div style={{marginBottom:8}}>
+              <div onClick={()=>togglePlanSection("equipment")} style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,cursor:"pointer"}}>
+                <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font,flex:1}}>What to arrange · {guests} guests</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round" style={{transform:planSectionsOpen.equipment?"rotate(180deg)":"none",transition:"transform 0.2s",flexShrink:0}}><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              {planSectionsOpen.equipment&&equipment.map(({cat,items})=>(
+                <div key={cat} style={{marginBottom:12}}>
+                  <div style={{fontSize:9.5,fontWeight:700,color:"rgba(196,122,46,0.5)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>{cat}</div>
+                  {items.map(({name,qty})=>(
+                    <div key={name} style={{display:"flex",justifyContent:"space-between",padding:"8px 12px",background:"#fff",borderRadius:8,marginBottom:4,border:`1px solid rgba(196,122,46,0.08)`}}>
+                      <span style={{fontSize:12.5,color:ink}}>{name}</span>
+                      <span style={{fontSize:11.5,fontWeight:700,color:gold,flexShrink:0,marginLeft:8}}>{qty}</span>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            </div>{/* end planRef */}
+
+            {/* F. Recommendations — paragraph summary + conclusion + improvement tips + cross-sell */}
             {(()=>{
               const parts=[];
               const who=celebrantName?`${celebrantName}'s ${occasion.name}`:`a ${occasion.name}`;
@@ -3509,7 +4254,6 @@ export default function OccasionDetail(){
               const conclusion=`${tone}${budgetNote}`;
 
               // ── Make it even better — exactly 2, most relevant first ──
-              const longestLead=itinerary.length>0?null:null; // itinerary slots don't carry lead time; use vendor-count heuristic instead
               const tips=[];
               if(!budget||Number(budget)<=0) tips.push({t:"Confirm your budget",d:`Run the Price Estimator for ${occasion.name} with ${guestStr} to get real ₹ ranges before you start calling vendors — it stops the first few quotes from anchoring you too high.`,action:()=>openPriceEstimator({occasion:occasion.name,onFinalise:(avg)=>setBudget(String(avg))})});
               if(vendors.length<2) tips.push({t:"Add more services",d:`Only ${vendors.length} service${vendors.length===1?"":"s"} picked so far — most ${occasion.name} plans need at least catering and decor booked together so timings don't clash.`,action:()=>setStep(3)});
@@ -3517,9 +4261,10 @@ export default function OccasionDetail(){
                 const daysOut=Math.ceil((new Date(date+"T00:00:00")-new Date())/86400000);
                 if(daysOut>=0&&daysOut<14) tips.push({t:"Book soon — date is close",d:`Your event is ${daysOut<=0?"today or has passed":`only ${daysOut} day${daysOut===1?"":"s"} away`} — decorators and photographers get booked out fastest, so confirm those first.`,action:()=>setStep(3)});
               }
-              if(selectedActivities.length===0&&customActivities.length===0) tips.push({t:"Add an activity",d:"No entertainment or games added yet — even one simple activity keeps guests engaged once the main event winds down.",action:()=>setStep(4)});
-              if(gifts.length===0) tips.push({t:"Pick return gifts",d:"You haven't chosen any gifts or favours yet — these are easy to forget until the week of the event.",action:()=>setStep(5)});
-              if(!city.trim()) tips.push({t:"Add your city",d:"Without a city we can't match you to local vendors or show realistic pricing — add it in step 2.",action:()=>setStep(2)});
+              if(selectedEntryExperiences.length===0&&!entryExperiencesSkipped) tips.push({t:"Explore entrance ideas",d:"You haven't looked at Entry Experiences yet — a balloon tunnel or themed welcome is an easy way to make the arrival memorable.",action:()=>setStep(4)});
+              if(selectedActivities.length===0&&customActivities.length===0) tips.push({t:"Add an activity",d:"No entertainment or games added yet — even one simple activity keeps guests engaged once the main event winds down.",action:()=>setStep(5)});
+              if(gifts.length===0) tips.push({t:"Pick return gifts",d:"You haven't chosen any gifts or favours yet — these are easy to forget until the week of the event.",action:()=>setStep(6)});
+              if(!city.trim()) tips.push({t:"Add your city",d:"Without a city we can't match you to local vendors or show realistic pricing — add it in the first step.",action:()=>setStep(1)});
               const topTips=tips.slice(0,2);
 
               // ── Things you can add from Tendr — only what isn't already in this plan ──
@@ -3579,7 +4324,7 @@ export default function OccasionDetail(){
               );
             })()}
 
-            {/* action buttons */}
+            {/* G. Share actions */}
             <div style={{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap"}}>
               <button onClick={async()=>{setDownloading(true);await downloadPlanCard(planRef.current,occasion.name);setDownloading(false);}} disabled={downloading}
                 style={{flex:1,minWidth:120,padding:"12px 14px",borderRadius:12,border:`1px solid rgba(196,122,46,0.25)`,background:"#fff",color:gold,fontSize:12.5,fontWeight:700,cursor:downloading?"wait":"pointer",fontFamily:font,transition:"all 0.2s",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
@@ -3587,7 +4332,7 @@ export default function OccasionDetail(){
               </button>
               <button
                 onClick={()=>{
-                  const msg=buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,customCatering,customDecor,celebrantName});
+                  const msg=buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,customCatering,customDecor,celebrantName,gifts,giftQuantities,selectedEntryExperiences});
                   const who=celebrantName?`${celebrantName}'s `:"";
                   const shareText=`🎉 ${who}${occasion.name} Plan\n\n${msg}\n\n— Made with Tendr`;
                   window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`,"_blank","noopener");
@@ -3597,9 +4342,10 @@ export default function OccasionDetail(){
                 WhatsApp
               </button>
               <button
-                onClick={()=>{
-                  const msg=buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,customCatering,customDecor,celebrantName});
-                  openOccasionsChat(msg);
+                onClick={async()=>{
+                  const msg=buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,customCatering,customDecor,celebrantName,gifts,giftQuantities,selectedEntryExperiences});
+                  const pdfToken=planRef.current?await buildPlanPdfChatToken(planRef.current,occasion.name):"";
+                  openOccasionsChat(pdfToken?`${msg}\n\n${pdfToken}`:msg);
                   try{
                     const sp={eventDetails:{eventType:occasion.name,date,location:city,guests,budget},vendorSlots:vendors.map(cat=>({category:cat,vendorName:"",estimatedCost:0,status:"Pending"})),selectedPackages:vendorPackages,chatSent:true,slug};
                     localStorage.setItem("tendr_smart_plan",JSON.stringify(sp));
@@ -3611,285 +4357,6 @@ export default function OccasionDetail(){
                 Send to Chat
               </button>
             </div>
-
-            {/* everything below this is captured by planRef */}
-            <div ref={planRef} style={{background:"#FDFAF5",borderRadius:20,padding:"20px",border:`1px solid rgba(196,122,46,0.1)`}}>
-
-            {/* plan overview card */}
-            <div ref={cardRef} style={{background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",border:`1.5px solid rgba(196,122,46,0.2)`,borderRadius:20,overflow:"hidden",marginBottom:12}}>
-              <div style={{background:`linear-gradient(135deg,${gold},${goldLt})`,padding:"18px 20px 16px",position:"relative",overflow:"hidden"}}>
-                <div aria-hidden style={{position:"absolute",top:-24,right:-24,width:90,height:90,borderRadius:"50%",border:"1.5px solid rgba(255,255,255,0.14)"}}/>
-                <div style={{display:"flex",alignItems:"center",gap:10,position:"relative"}}>
-                  <span style={{fontSize:30}}>{occasion.icon}</span>
-                  <div>
-                    <div style={{fontFamily:serif,fontSize:18,fontWeight:400,color:"#fff",lineHeight:1.1}}>{celebrantName?`${celebrantName}'s ${occasion.name}`:occasion.name}</div>
-                    <div style={{fontSize:10,color:"rgba(255,255,255,0.7)",fontWeight:600,marginTop:2,fontFamily:font}}>Celebration Plan · Tendr</div>
-                  </div>
-                </div>
-              </div>
-              <div style={{padding:"16px 18px"}}>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
-                  {[
-                    celebrantName?{icon:"🎀",label:"For",val:celebrantName}:null,
-                    {icon:"👥",label:"Guests",val:`${guests} people`},
-                    {icon:"💰",label:"Budget",val:budget?fmtNum(Number(budget)):`${fmtNum(occasion.budgetMin)}–${fmtNum(occasion.budgetMax)}`},
-                    {icon:"📅",label:"Date",val:date?new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}):"TBD"},
-                    {icon:"📍",label:"Location",val:city?(venueType?`${city} · ${venueType}`:city):(venueType||"TBD")},
-                  ].filter(Boolean).map(({icon,label,val})=>(
-                    <div key={label} style={{background:"#fff",borderRadius:10,padding:"10px 12px",border:`1px solid rgba(196,122,46,0.1)`}}>
-                      <div style={{fontSize:9,fontWeight:700,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:2}}>{icon} {label}</div>
-                      <div style={{fontSize:12.5,fontWeight:700,color:val==="TBD"?"rgba(30,15,0,0.25)":ink}}>{val}</div>
-                    </div>
-                  ))}
-                </div>
-                {theme&&<div style={{marginBottom:8,fontSize:11.5,fontWeight:700,color:gold}}>🎨 {theme.name} theme</div>}
-                {cateringType&&<div style={{marginBottom:8,fontSize:11.5,color:muted}}>🍽️ {cateringType}{cakeType&&` · ${cakeType}`}{inviteType&&` · ${inviteType}`}</div>}
-                {catVendors.length>0&&(
-                  <div style={{marginBottom:10}}>
-                    <div style={{fontSize:9,fontWeight:700,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>Services planned</div>
-                    <div style={{display:"flex",flexDirection:"column",gap:5}}>
-                      {catVendors.map(v=>{
-                        const pkgIdx=vendorPackages[v];
-                        const pkgs=ALL_VENDORS.includes(v)?getVendorPackages(v,{guests,venueType,theme,ageGroups}):null;
-                        const pkgLabel=pkgIdx==="custom"?"Custom":typeof pkgIdx==="number"&&pkgs?pkgs[pkgIdx]?.label:null;
-                        const pkgPrice=pkgIdx==="custom"?null:typeof pkgIdx==="number"&&pkgs?pkgs[pkgIdx]?.price:null;
-                        const pkgItems=pkgIdx==="custom"
-                          ?(v==="Decorator"?Object.values(customDecor).flat().slice(0,3):v==="Caterer"?Object.values(customCatering.dishes).flat().slice(0,3):[])
-                          :typeof pkgIdx==="number"&&pkgs?pkgs[pkgIdx]?.items||[]:[];
-                        return(
-                          <div key={v} style={{display:"flex",alignItems:"flex-start",gap:10,background:"rgba(196,122,46,0.06)",border:"1px solid rgba(196,122,46,0.13)",borderRadius:10,padding:"8px 11px"}}>
-                            <div style={{flex:1,minWidth:0}}>
-                              <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:pkgItems?.length?3:0}}>
-                                <span style={{fontSize:11,fontWeight:700,color:gold}}>{v}</span>
-                                {pkgLabel&&<span style={{fontSize:9,fontWeight:700,color:muted,background:"rgba(28,9,0,0.06)",borderRadius:6,padding:"1px 6px"}}>{pkgLabel}</span>}
-                              </div>
-                              {pkgItems&&pkgItems.length>0&&(
-                                <div style={{display:"flex",flexWrap:"wrap",gap:3}}>
-                                  {pkgItems.map((it,ii)=><span key={ii} style={{fontSize:9,color:muted}}>· {it}</span>)}
-                                </div>
-                              )}
-                            </div>
-                            {pkgPrice&&v!=="Decorator"&&<span style={{fontSize:9.5,fontWeight:700,color:gold,flexShrink:0}}>{pkgPrice}</span>}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-                <div style={{borderTop:`1px solid rgba(196,122,46,0.1)`,paddingTop:10,marginTop:2,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <span style={{fontSize:9.5,color:muted,fontFamily:font}}>Generated with Tendr</span>
-                  <span style={{fontSize:10,letterSpacing:2}}>★★★★★</span>
-                </div>
-              </div>
-            </div>
-
-            {/* budget split — centrepiece */}
-            {budgetSplit&&(
-              <div style={{marginBottom:20,padding:"18px 18px 16px",borderRadius:16,background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",border:`1.5px solid rgba(196,122,46,0.18)`}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
-                  <div style={{width:26,height:26,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                  </div>
-                  <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>{vendors.length>0?"How your budget is split":"How budgets are typically split"}</span>
-                  <div style={{flex:1,height:1,background:`rgba(196,122,46,0.12)`}}/>
-                </div>
-                {budget&&Number(budget)>0&&(
-                  <div style={{textAlign:"center",marginBottom:16,padding:"10px 0 4px"}}>
-                    <div style={{fontSize:10,fontWeight:700,color:"rgba(196,122,46,0.5)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:2}}>Total budget</div>
-                    <div style={{fontFamily:serif,fontSize:28,fontWeight:400,color:gold,lineHeight:1}}>₹{Number(budget).toLocaleString("en-IN")}</div>
-                  </div>
-                )}
-                {budgetSplit.map(c=>(
-                  <div key={c.label} style={{marginBottom:10}}>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                      <span style={{fontSize:12,fontWeight:600,color:ink}}>{c.label}</span>
-                      <div style={{display:"flex",alignItems:"center",gap:6}}>
-                        {budget&&Number(budget)>0&&<span style={{fontSize:11,color:muted}}>~₹{Math.round(Number(budget)*c.pct/100).toLocaleString("en-IN")}</span>}
-                        <span style={{fontSize:12,fontWeight:700,color:gold}}>{c.pct}%</span>
-                      </div>
-                    </div>
-                    <div style={{height:7,borderRadius:3.5,background:"rgba(196,122,46,0.1)",overflow:"hidden"}}>
-                      <div style={{height:"100%",width:`${c.pct}%`,background:c.color,borderRadius:3.5,transition:"width 0.8s ease"}}/>
-                    </div>
-                  </div>
-                ))}
-                <div style={{fontSize:11,color:muted,marginTop:12,lineHeight:1.6,padding:"10px 12px",background:"rgba(196,122,46,0.04)",borderRadius:8,border:`1px solid rgba(196,122,46,0.12)`}}>
-                  Exact pricing will be shared by your Tendr coordinator once you connect.
-                </div>
-              </div>
-            )}
-
-            {/* event itinerary — hero of the plan */}
-            {(()=>{
-              const itinerary=buildItinerary(occasion,{guests,vendors,selectedActivities,venueType,ageGroups});
-              if(!itinerary.length) return null;
-              return(
-                <div style={{marginBottom:20}}>
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-                    <div style={{width:26,height:26,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    </div>
-                    <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>Your event itinerary</span>
-                    <div style={{flex:1,height:1,background:`rgba(196,122,46,0.12)`}}/>
-                  </div>
-                  <div style={{background:"#fff",borderRadius:14,border:`1px solid ${border}`,overflow:"hidden"}}>
-                    {itinerary.map((slot,i)=>{
-                      const isHighlight=slot.type==="highlight";
-                      const isFun=slot.type==="fun";
-                      const isLast=i===itinerary.length-1;
-                      return(
-                        <div key={i} style={{display:"flex",gap:0,position:"relative"}}>
-                          <div style={{width:72,flexShrink:0,padding:"12px 10px 12px 14px",display:"flex",flexDirection:"column",alignItems:"flex-end",justifyContent:"flex-start",paddingTop:14}}>
-                            <span style={{fontSize:10.5,fontWeight:700,color:isHighlight?gold:muted,lineHeight:1.2,textAlign:"right",letterSpacing:"-0.01em"}}>{slot.time}</span>
-                          </div>
-                          <div style={{width:24,flexShrink:0,display:"flex",flexDirection:"column",alignItems:"center",position:"relative"}}>
-                            <div style={{width:10,height:10,borderRadius:"50%",background:isHighlight?gold:isFun?"#7C3AED":"rgba(196,122,46,0.3)",border:`2px solid ${isHighlight?gold:isFun?"#7C3AED":"rgba(196,122,46,0.15)"}`,marginTop:16,flexShrink:0,zIndex:1}}/>
-                            {!isLast&&<div style={{width:2,flex:1,background:"rgba(196,122,46,0.08)",marginTop:2}}/>}
-                          </div>
-                          <div style={{flex:1,padding:"12px 14px 12px 8px",borderBottom:isLast?"none":`1px solid rgba(196,122,46,0.06)`}}>
-                            <div style={{fontSize:12.5,fontWeight:isHighlight?800:700,color:isHighlight?gold:ink,lineHeight:1.3,marginBottom:slot.desc?3:0}}>{slot.title}</div>
-                            {slot.desc&&<div style={{fontSize:11.5,color:muted,lineHeight:1.45}}>{slot.desc}</div>}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div style={{marginTop:10,padding:"9px 12px",borderRadius:8,background:"rgba(196,122,46,0.04)",border:"1px solid rgba(196,122,46,0.09)"}}>
-                    <div style={{fontSize:10,fontWeight:700,color:gold,marginBottom:3}}>How is this itinerary built?</div>
-                    <div style={{fontSize:11,color:muted,lineHeight:1.55}}>Based on: your <strong style={{color:ink}}>services selected</strong> (Decorator, Caterer, DJ, etc.), any <strong style={{color:ink}}>entertainment & activities</strong> you've added, your <strong style={{color:ink}}>venue type</strong>, and standard timings for a {occasion.name.toLowerCase()}. Timings are estimates — adjust to fit your actual event flow.</div>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* timeline — booking countdown */}
-            {timeline&&(
-              <div style={{marginBottom:24}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
-                  <div style={{width:26,height:26,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  </div>
-                  <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>Your timeline · {timeline.days} days to go</span>
-                  <div style={{flex:1,height:1,background:`rgba(196,122,46,0.12)`}}/>
-                </div>
-                <div style={{position:"relative",paddingLeft:24}}>
-                  <div style={{position:"absolute",left:7,top:8,bottom:8,width:1.5,background:`linear-gradient(180deg,${gold},rgba(196,122,46,0.1))`}}/>
-                  {timeline.phases.map((p,i)=>(
-                    <div key={i} style={{position:"relative",marginBottom:i<timeline.phases.length-1?20:0}}>
-                      <div style={{position:"absolute",left:-21,top:2,width:10,height:10,borderRadius:"50%",background:i===timeline.phases.length-1?gold:"#fff",border:`2px solid ${gold}`}}/>
-                      <div style={{fontSize:10.5,fontWeight:700,color:gold,marginBottom:4}}>{p.when}{p.date&&<span style={{color:muted,fontWeight:400,marginLeft:6}}>{p.date}</span>}</div>
-                      {p.tasks.map((t,j)=><div key={j} style={{fontSize:12,color:muted,lineHeight:1.5,marginBottom:1}}>· {t}</div>)}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* fun activities in plan */}
-            {(selectedActivities.length>0||customActivities.length>0)&&(
-              <div style={{marginBottom:20}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-                  <div style={{width:26,height:26,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                  </div>
-                  <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>Entertainment & Activities</span>
-                  <div style={{flex:1,height:1,background:`rgba(196,122,46,0.12)`}}/>
-                </div>
-                {selectedActivities.map(id=>{
-                  const a=ALL_ACTIVITY_ITEMS.find(x=>x.id===id);
-                  if(!a) return null;
-                  const typeEntry=ACTIVITY_TYPES.find(t=>ALL_ACTIVITIES[t.key]?.some(x=>x.id===id));
-                  const typeLabel=typeEntry?.singular||"Activity";
-                  return(
-                    <div key={id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:10,background:"#fff",border:`1px solid ${border}`,marginBottom:6}}>
-                      <span style={{fontSize:18,flexShrink:0}}>{a.icon}</span>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontSize:12.5,fontWeight:700,color:ink}}>{a.name}</div>
-                        <div style={{fontSize:10.5,color:muted}}>{typeLabel}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-                {customActivities.map((act,i)=>(
-                  <div key={`custom-${i}`} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:10,background:"#fff",border:`1px solid ${border}`,marginBottom:6}}>
-                    <span style={{fontSize:18,flexShrink:0}}>✦</span>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:12.5,fontWeight:700,color:ink}}>{act}</div>
-                      <div style={{fontSize:10.5,color:muted}}>Custom · Added by you</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* gifts */}
-            {gifts.length>0&&(
-              <div style={{marginBottom:20}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-                  <div style={{width:26,height:26,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
-                  </div>
-                  <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>Gift ideas</span>
-                  <div style={{flex:1,height:1,background:`rgba(196,122,46,0.12)`}}/>
-                </div>
-                {gifts.map(name=>{
-                  const g=(occasion.giftIdeas||[]).find(g=>g.name===name);
-                  return g?(
-                    <div key={name} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"11px 14px",borderRadius:10,background:"#fff",border:`1px solid ${border}`,marginBottom:6}}>
-                      <div>
-                        <div style={{fontSize:13,fontWeight:700,color:ink}}>{g.name}</div>
-                        <div style={{fontSize:11,fontWeight:700,color:gold,marginTop:1}}>{g.price}</div>
-                      </div>
-                      <button onClick={()=>window.open("/gift-hampers-cakes","_blank","noopener")} style={{fontSize:11,fontWeight:700,color:gold,background:"rgba(196,122,46,0.07)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:8,padding:"5px 10px",cursor:"pointer",fontFamily:font}}>View ↗</button>
-                    </div>
-                  ):null;
-                })}
-              </div>
-            )}
-
-            {/* checklist */}
-            <div style={{marginBottom:20}}>
-              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
-                <div style={{width:26,height:26,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                </div>
-                <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>Checklist</span>
-                <div style={{flex:1,height:1,background:`rgba(196,122,46,0.12)`}}/>
-                {tasksDone>0&&<span style={{fontSize:11,fontWeight:700,color:gold,flexShrink:0}}>{tasksDone}/{tasksTotal}</span>}
-              </div>
-              {tasksDone>0&&(
-                <div style={{height:4,background:"rgba(196,122,46,0.1)",borderRadius:2,overflow:"hidden",marginBottom:10}}>
-                  <div style={{height:"100%",width:`${(tasksDone/tasksTotal)*100}%`,background:`linear-gradient(90deg,${gold},${goldLt})`,borderRadius:2,transition:"width 0.3s"}}/>
-                </div>
-              )}
-              {(occasion.checklist||[]).map((item,i)=>(
-                <div key={i} onClick={()=>setChecked(c=>({...c,[i]:!c[i]}))}
-                  style={{display:"flex",alignItems:"flex-start",gap:10,padding:"11px 13px",background:checked[i]?"rgba(196,122,46,0.04)":"#fff",borderRadius:10,border:`1.5px solid ${checked[i]?"rgba(196,122,46,0.18)":border}`,marginBottom:5,cursor:"pointer",transition:"all 0.15s",minHeight:44,boxSizing:"border-box"}}>
-                  <div style={{width:20,height:20,borderRadius:6,border:`2px solid ${checked[i]?gold:"rgba(196,122,46,0.2)"}`,background:checked[i]?gold:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",marginTop:1,transition:"all 0.15s"}}>
-                    {checked[i]&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
-                  </div>
-                  <span style={{fontSize:12.5,color:checked[i]?"rgba(30,15,0,0.3)":ink,textDecoration:checked[i]?"line-through":"none",lineHeight:1.55,transition:"all 0.15s"}}>{item}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* equipment */}
-            <div style={{marginBottom:8}}>
-              <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:12,fontFamily:font}}>What to arrange · {guests} guests</div>
-              {equipment.map(({cat,items})=>(
-                <div key={cat} style={{marginBottom:12}}>
-                  <div style={{fontSize:9.5,fontWeight:700,color:"rgba(196,122,46,0.5)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>{cat}</div>
-                  {items.map(({name,qty})=>(
-                    <div key={name} style={{display:"flex",justifyContent:"space-between",padding:"8px 12px",background:"#fff",borderRadius:8,marginBottom:4,border:`1px solid rgba(196,122,46,0.08)`}}>
-                      <span style={{fontSize:12.5,color:ink}}>{name}</span>
-                      <span style={{fontSize:11.5,fontWeight:700,color:gold,flexShrink:0,marginLeft:8}}>{qty}</span>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-
-            </div>{/* end planRef */}
 
             {/* hub banner */}
             {hub&&(
@@ -3912,20 +4379,22 @@ export default function OccasionDetail(){
         <div style={{flexShrink:0,background:"#fff",borderTop:"1px solid rgba(0,0,0,0.07)",padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
           <div style={{maxWidth:680,margin:"0 auto",display:"flex",gap:10}}>
             {step>0&&<button onClick={back} style={btnGhost}>← Back</button>}
-            {step<6&&(
+            {step<7&&(
               <button onClick={next} disabled={!canNext()} style={btnPrimary}>
                 {step===1&&step1Hint()}
                 {step===2&&(theme?`Use "${theme.name}" →`:"Skip — no theme →")}
-                {step===3&&(vendors.length>0?"Next: Entertainment →":"Skip →")}
-                {step===4&&(selectedActivities.length>0?"Next: Gifts →":"Skip — pick gifts →")}
-                {step===5&&(gifts.length>0?"See my plan →":"Skip — see plan →")}
+                {step===3&&(vendors.length>0?"Next: Grand Entrance →":"Skip →")}
+                {step===4&&(selectedEntryExperiences.length>0?"Next: Entertainment →":"Skip — explore entertainment →")}
+                {step===5&&(selectedActivities.length>0?"Next: Gifts →":"Skip — pick gifts →")}
+                {step===6&&(gifts.length>0?"See my plan →":"Skip — see plan →")}
               </button>
             )}
-            {step===6&&(
-              <button onClick={()=>{
+            {step===7&&(
+              <button onClick={async()=>{
                 if(token){
-                  const planText = buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,celebrantName});
-                  openOccasionsChat(planText);
+                  const planText = buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,celebrantName,gifts,giftQuantities,selectedEntryExperiences});
+                  const pdfToken=planRef.current?await buildPlanPdfChatToken(planRef.current,occasion.name):"";
+                  openOccasionsChat(pdfToken?`${planText}\n\n${pdfToken}`:planText);
                   try{
                     const sp={eventDetails:{eventType:occasion.name,date,location:city,guests,budget},vendorSlots:vendors.map(cat=>({category:cat,vendorName:"",estimatedCost:0,status:"Pending"})),selectedPackages:vendorPackages,chatSent:true,slug};
                     localStorage.setItem("tendr_smart_plan",JSON.stringify(sp));

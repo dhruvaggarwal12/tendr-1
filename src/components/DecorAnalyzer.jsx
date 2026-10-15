@@ -128,7 +128,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
       if (!res.ok || !data.analysis) throw new Error(data.error || "Analysis failed");
       setAnalysis(data.analysis);
       setPhase("done");
-      if (onAnalysisComplete) onAnalysisComplete(data.analysis);
+      if (onAnalysisComplete) onAnalysisComplete(data.analysis, preview);
     } catch (e) {
       setErrMsg(e.message || "Something went wrong. Please try again.");
       setPhase("error");

@@ -9,6 +9,7 @@ import { useChatOverlay, useOpenBaatKaroChat } from "../../context/ChatContext";
 import { usePriceEstimator } from "../../context/PriceEstimatorContext";
 import { mapServiceTypeToSimpleCategory } from "../../utils/priceEstimator";
 import { useInstallPrompt } from "../../hooks/useInstallPrompt";
+import { DECOR_FOCUS_AREAS, DECOR_FOCUS_AREA_IDS } from "../../data/decorFocusAreas";
 
 import {
   ChevronRight,
@@ -670,12 +671,18 @@ const EventPlanning = () => {
     });
 
     const wizardCatOrder = ['Caterer', 'Decorator', 'Photographer', 'DJ'];
+    // Any other selected category (e.g. a specific vendor added via Browse/Listings,
+    // which can be any backend service type — Florist, Makeup Artist, Band, etc.) still
+    // gets a short question step, via the generic fallback in renderWizardStep() below —
+    // just appended after the 4 categories that have a bespoke step.
+    const otherCats = selectedVendors.filter(c => !wizardCatOrder.includes(c));
     const wizardSteps = [
       { id: 'confirm', label: 'Confirm Details' },
       ...wizardCatOrder.filter(c => selectedVendors.includes(c)).map(c => ({
         id: c.toLowerCase(),
         label: c === 'Caterer' ? 'Food & Catering' : c === 'Decorator' ? 'Decoration' : c === 'Photographer' ? 'Photography' : 'DJ & Music',
       })),
+      ...otherCats.map(c => ({ id: `other:${c}`, label: c })),
     ];
     const isLastStep = wizardStep === wizardSteps.length - 1;
 
@@ -688,6 +695,11 @@ const EventPlanning = () => {
     const submitPlan = async () => {
       setSubmitLoading(true);
       try {
+        // The venue photo (if any) is sent as its own [img:...] chat message below —
+        // keep it out of wizardAnswers here so the backend's text summary (which prints
+        // every wizardAnswers field inline) doesn't embed a giant base64 string.
+        const { venuePhoto: _omitVenuePhoto, ...decorationWithoutPhoto } = wizardAnswers.decoration || {};
+        const wizardAnswersForSummary = { ...wizardAnswers, decoration: decorationWithoutPhoto };
         const result = await confirmSmartPlan({
           customerId: authUser?._id || null,
           customerName: authUser?.name || '',
@@ -700,7 +712,7 @@ const EventPlanning = () => {
             vendorId: vendor?._id || null, vendorName: vendor?.name || '',
             status: 'Pending',
           })),
-          wizardAnswers: { ...wizardAnswers, selectedPackages },
+          wizardAnswers: { ...wizardAnswersForSummary, selectedPackages },
         });
         const eventDate = formData?.date;
         const expiresAt = eventDate ? new Date(eventDate).getTime() + 86400000 : Date.now() + 7 * 86400000;
@@ -709,7 +721,25 @@ const EventPlanning = () => {
         window.dispatchEvent(new CustomEvent('tendr:plan-confirmed'));
         try { const t = localStorage.getItem("tendr_token") || localStorage.getItem("jwt"); if (t) import("../../utils/progressSync").then(m => m.scheduleSyncToServer(t)); } catch {}
         setConfirmedPlan(planData);
-        if (result.conversationId) setCreatedConversationId(result.conversationId);
+        if (result.conversationId) {
+          setCreatedConversationId(result.conversationId);
+          // Attach the decorator's venue photo (if provided) as a chat image — same
+          // [img:dataURI] convention the chat UI already renders/downloads.
+          const venuePhoto = wizardAnswers.decoration?.venuePhoto;
+          if (venuePhoto) {
+            try {
+              const authToken = localStorage.getItem("tendr_token") || localStorage.getItem("jwt");
+              if (authToken) {
+                fetch(`${BASE_URL}/messages/${result.conversationId}/message`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+                  credentials: "include",
+                  body: JSON.stringify({ sender: "user", content: `[img:${venuePhoto}]` }),
+                }).catch(() => {});
+              }
+            } catch {}
+          }
+        }
       } catch (e) {
         console.error('Plan submit failed:', e);
       }
@@ -830,10 +860,8 @@ const EventPlanning = () => {
       }
       if (id === 'decorator') return (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {[{ label: "Venue Type", field: "venueType", opts: ["Indoor hall", "Outdoor", "Home", "Farmhouse"], multi: false },
-            { label: "Theme Preference", field: "theme", opts: ["Floral", "Balloon Art", "Minimalist", "Traditional", "Themed", "Surprise me"], multi: false },
-            { label: "Must-have Elements (multi-select)", field: "mustHave", opts: ["Entrance arch", "Stage setup", "Photo booth", "Table décor", "Ceiling work"], multi: true }
-          ].map(({ label, field, opts, multi }) => (
+          {[{ label: "Venue Type", field: "venueType", opts: ["Indoor hall", "Outdoor", "Home", "Farmhouse"], multi: false }]
+          .map(({ label, field, opts, multi }) => (
             <div key={field}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>{label}</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
@@ -841,6 +869,50 @@ const EventPlanning = () => {
               </div>
             </div>
           ))}
+          {/* Which places need decor? — same 8-focus-area picker as the Plan-an-Occasion Decorator panel */}
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>Which places need decor? (multi-select)</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
+              {DECOR_FOCUS_AREA_IDS.map(areaId => {
+                const area = DECOR_FOCUS_AREAS[areaId];
+                const sel = (wizardAnswers.decoration?.focusAreas || []).includes(areaId);
+                return (
+                  <button key={areaId} onClick={() => togMulti("decoration", "focusAreas", areaId)}
+                    style={{ textAlign: "left", padding: "9px 11px", borderRadius: 10, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.08)" : "#FFFCF5", cursor: "pointer", fontFamily: "'Outfit', sans-serif", display: "flex", alignItems: "center", gap: 7 }}>
+                    <span style={{ fontSize: 16, flexShrink: 0 }}>{area.emoji}</span>
+                    <span style={{ fontSize: 12, fontWeight: sel ? 700 : 500, color: "#2C1A0E", lineHeight: 1.25 }}>{area.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          {/* Venue photo — optional, helps the decorator plan the space */}
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>Add a photo of your venue <span style={{ fontSize: 10, color: "#9B7450", textTransform: "none" }}>(optional)</span></div>
+            {wizardAnswers.decoration?.venuePhoto ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "#FFFCF5" }}>
+                <img src={wizardAnswers.decoration.venuePhoto} alt="Venue" style={{ width: 42, height: 42, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
+                <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: "#2C1A0E" }}>Photo added</span>
+                <button onClick={() => updAns("decoration", "venuePhoto", null)} style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", background: "none", border: "none", cursor: "pointer", textDecoration: "underline", fontFamily: "'Outfit',sans-serif" }}>Remove</button>
+              </div>
+            ) : (
+              <>
+                <input id="decor-wizard-photo-input" type="file" accept="image/*" style={{ display: "none" }}
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = ev => updAns("decoration", "venuePhoto", ev.target.result);
+                    reader.readAsDataURL(file);
+                    e.target.value = "";
+                  }} />
+                <button onClick={() => document.getElementById("decor-wizard-photo-input").click()}
+                  style={{ padding: "9px 14px", borderRadius: 100, background: "#C47A2E", color: "#fff", fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: 12.5, border: "none", cursor: "pointer" }}>
+                  Upload photo
+                </button>
+              </>
+            )}
+          </div>
           <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 14 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Choose a Package</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -919,6 +991,28 @@ const EventPlanning = () => {
           </div>
         </div>
       );
+      // Generic fallback — any selected category outside the 4 bespoke ones above
+      // (e.g. a specific vendor added via Browse/Listings: Florist, Makeup Artist,
+      // Band, etc.) still gets a short question so its requirements reach the chat summary.
+      if (id?.startsWith('other:')) {
+        const cat = id.slice('other:'.length);
+        const sec = `other_${cat}`;
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>Priority for {cat}</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 7 }}>
+                {["Budget-friendly", "Balanced", "Premium"].map(v => <OptBtn key={v} sec={sec} field="priority" val={v} multi={false} />)}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Any specific requirements? <span style={{ fontSize: 10, color: "#9B7450", textTransform: "none" }}>(optional)</span></div>
+              <input type="text" placeholder={`e.g. preferences for your ${cat.toLowerCase()}...`} value={wizardAnswers[sec]?.notes || ""} onChange={e => updAns(sec, "notes", e.target.value)}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: "'Outfit', sans-serif", fontSize: 13, color: "#2C1A0E", outline: "none", background: "#FFFCF5", boxSizing: "border-box" }} />
+            </div>
+          </div>
+        );
+      }
       return null;
     };
 
