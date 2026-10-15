@@ -21,6 +21,24 @@ const parseJwt = (t) => { try { return JSON.parse(atob(t.split('.')[1])); } catc
 
 const authHeaders = (token) => ({ 'Content-Type': 'application/json', Authorization: `Bearer ${token}` });
 
+// Shown instead of a tab's real content when the vendor is on the Free plan.
+function LockedFeaturePanel({ label, onUpgrade, upgrading, upgradeError }) {
+  return (
+    <div style={{ background:'#fff', borderRadius:18, padding:'32px 24px', border:'1.5px solid rgba(196,122,46,0.18)', textAlign:'center', maxWidth:440, margin:'40px auto' }}>
+      <div style={{ width:48, height:48, borderRadius:14, background:'rgba(196,122,46,0.08)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 14px' }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div style={{ fontSize:16, fontWeight:800, color:ink, marginBottom:6 }}>{label} is a Paid plan feature</div>
+      <div style={{ fontSize:13, color:'#9B7450', lineHeight:1.55, marginBottom:18 }}>Upgrade to Tendr Business Dashboard to unlock {label.toLowerCase()} and everything else that comes with it.</div>
+      {upgradeError && <div style={{ fontSize:11.5, color:'#DC2626', background:'rgba(220,38,38,0.06)', border:'1px solid rgba(220,38,38,0.15)', borderRadius:8, padding:'8px 10px', marginBottom:12 }}>{upgradeError}</div>}
+      <button onClick={onUpgrade} disabled={upgrading}
+        style={{ padding:'12px 28px', borderRadius:11, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:14, fontWeight:800, cursor:upgrading?'wait':'pointer', boxShadow:'0 3px 14px rgba(196,122,46,0.3)', opacity:upgrading?0.75:1 }}>
+        {upgrading ? 'Opening checkout…' : 'Upgrade — ₹399/mo'}
+      </button>
+    </div>
+  );
+}
+
 // ── Color helpers ──────────────────────────────────────────────────────────────
 const STATUS_COLOR = {
   Pending:   { bg: '#FEF9C3', color: '#92400E', dot: '#F59E0B' },
@@ -2168,6 +2186,62 @@ const [tab, setTab] = useState('home');
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
 
+  // ── Dashboard-feature plan (free|paid, set at registration / upgradeable here) ──
+  // Distinct from the vendor's search-visibility subscriptionTier — see Vendor.js comment.
+  const isPro = user?.plan === 'paid';
+  const PLAN_GATED_TABS = ['money', 'tools', 'clients', 'inventory', 'insights', 'market'];
+  const tabLocked = PLAN_GATED_TABS.includes(tab) && !isPro;
+  const [upgrading, setUpgrading] = useState(false);
+  const [upgradeError, setUpgradeError] = useState('');
+  const handleUpgradePlan = async () => {
+    setUpgradeError('');
+    setUpgrading(true);
+    try {
+      const orderRes = await fetch(`${BASE_URL}/vendor-plan/create-order`, {
+        method: 'POST', headers: authHeaders(token),
+      });
+      const orderData = await orderRes.json();
+      if (!orderRes.ok) throw new Error(orderData.error || 'Could not start checkout');
+
+      const options = {
+        key: orderData.razorpayKey,
+        amount: orderData.amount * 100,
+        currency: 'INR',
+        name: 'Tendr',
+        description: 'Tendr Business Dashboard — Paid Plan',
+        order_id: orderData.orderId,
+        handler: async (response) => {
+          try {
+            const verifyRes = await fetch(`${BASE_URL}/vendor-plan/verify`, {
+              method: 'POST', headers: authHeaders(token),
+              body: JSON.stringify({
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              }),
+            });
+            const verifyData = await verifyRes.json();
+            if (!verifyRes.ok || verifyData.plan !== 'paid') throw new Error(verifyData.error || 'Payment could not be verified');
+            const updatedUser = { ...user, plan: 'paid' };
+            localStorage.setItem('tendr_user', JSON.stringify(updatedUser));
+            dispatch({ type: 'auth/login/fulfilled', payload: { consumer: updatedUser, token } });
+          } catch (e) {
+            setUpgradeError(e.message || 'Payment verification failed — contact support if you were charged.');
+          } finally {
+            setUpgrading(false);
+          }
+        },
+        modal: { ondismiss: () => setUpgrading(false) },
+        theme: { color: '#C47A2E' },
+      };
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (e) {
+      setUpgradeError(e.message || 'Something went wrong. Please try again.');
+      setUpgrading(false);
+    }
+  };
+
   // Language
   const [lang, setLang] = useState(() => { try { return localStorage.getItem('tendr_dash_lang') || 'en'; } catch { return 'en'; } });
   const t = (key) => T[lang]?.[key] ?? T.en[key] ?? key;
@@ -2994,7 +3068,7 @@ const [tab, setTab] = useState('home');
             )}
             {tab==='work' && (workSubTab==='tendr'||workSubTab==='outside') && <button onClick={() => setModal('add')}    style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>+ {terms==='Shows'?t('addShow'):t('addGig')}</button>}
             {tab==='work' && workSubTab==='quotes'   && <button onClick={() => { setEditQuote(null); setQuoteModal(true); }}    style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>{t('newQuote')}</button>}
-            {tab==='inventory' && <button onClick={() => setInvModal(true)}  style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>{t('addItem')}</button>}
+            {tab==='inventory' && !tabLocked && <button onClick={() => setInvModal(true)}  style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>{t('addItem')}</button>}
             {tab==='profile'   && <button onClick={() => { navigator.clipboard?.writeText(`${window.location.origin}/vendor/${vendorId}`).then(() => showToast(t('profileLinkCopied'))); }}
               style={{ padding:'7px 14px', borderRadius:9, border:`1.5px solid ${gold}`, background:'transparent', color:gold, fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>{t('copyLink')}</button>}
             {tab==='profile'   && <button onClick={() => { navigator.clipboard?.writeText(`${window.location.origin}/vendor/${vendorId}?src=direct`).then(() => showToast(t('directLinkCopied'))); }}
@@ -3774,8 +3848,16 @@ const [tab, setTab] = useState('home');
             </div>
           )}
 
+          {/* Free-plan lock — shown in place of any gated tab's real content */}
+          {tabLocked && (
+            <LockedFeaturePanel
+              label={{money:'Money & P&L tracking',tools:'Quotes, invoices & contracts',clients:'Client CRM',inventory:isArtist?'Equipment tracker':'Inventory tracker',insights:'Analytics & Insights',market:'Grow (Flyer Builder & promoted placement)'}[tab] || 'This'}
+              onUpgrade={handleUpgradePlan} upgrading={upgrading} upgradeError={upgradeError}
+            />
+          )}
+
           {/* ── EARNINGS / P&L ── */}
-          {tab === 'money' && (() => {
+          {tab === 'money' && !tabLocked && (() => {
             const earnNow = new Date();
             const plMonths = Array.from({ length: 6 }, (_, i) => {
               const d = new Date(earnNow.getFullYear(), earnNow.getMonth() - (5 - i), 1);
@@ -3968,7 +4050,7 @@ const [tab, setTab] = useState('home');
           })()}
 
           {/* ── STATS (inside Money tab) ── */}
-          {tab === 'money' && moneySubTab === 'stats' && (() => {
+          {tab === 'money' && !tabLocked && moneySubTab === 'stats' && (() => {
             const totalGigs      = allGigs.length;
             const completedGigs  = allGigs.filter(g => g.status === 'Completed').length;
             const tendrCount     = bookings.length;
@@ -4128,7 +4210,7 @@ const [tab, setTab] = useState('home');
           })()}
 
           {/* ── INVENTORY / EQUIPMENT ── */}
-          {tab === 'inventory' && (() => {
+          {tab === 'inventory' && !tabLocked && (() => {
             const grouped = INV_CATS.reduce((acc,cat) => { acc[cat]=inventory.filter(i=>i.category===cat); return acc; }, {});
             const uncategorized = inventory.filter(i => !i.category||!INV_CATS.includes(i.category));
             const needsService = inventory.filter(i => i.condition === 'Needs Service');
@@ -4321,7 +4403,6 @@ const [tab, setTab] = useState('home');
 
                 {/* My Plan */}
                 {(() => {
-                  const isPro = !!(user?.isPro || user?.plan === 'pro' || user?.subscriptionActive);
                   const FREE_FEATURES = [
                     { label:'Listed on Tendr', included:true },
                     { label:'Public profile page', included:true },
@@ -4360,9 +4441,13 @@ const [tab, setTab] = useState('home');
                           </div>
                         ))}
                       </div>
+                      {!isPro && upgradeError && (
+                        <div style={{ fontSize:11.5, color:'#DC2626', background:'rgba(220,38,38,0.06)', border:'1px solid rgba(220,38,38,0.15)', borderRadius:8, padding:'8px 10px', marginBottom:10 }}>{upgradeError}</div>
+                      )}
                       {!isPro && (
-                        <button style={{ marginTop:2, width:'100%', padding:'12px', borderRadius:11, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:14, fontWeight:800, cursor:'pointer', boxShadow:'0 3px 14px rgba(196,122,46,0.3)' }}>
-                          Run your event business on Tendr — ₹399/mo
+                        <button onClick={handleUpgradePlan} disabled={upgrading}
+                          style={{ marginTop:2, width:'100%', padding:'12px', borderRadius:11, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:14, fontWeight:800, cursor:upgrading?'wait':'pointer', boxShadow:'0 3px 14px rgba(196,122,46,0.3)', opacity:upgrading?0.75:1 }}>
+                          {upgrading ? 'Opening checkout…' : 'Run your event business on Tendr — ₹399/mo'}
                         </button>
                       )}
                       {!isPro && <div style={{ textAlign:'center', fontSize:11, color:'#9B7450', marginTop:6 }}>Cancel anytime · No hidden fees · Instant activation</div>}
@@ -4788,7 +4873,7 @@ const [tab, setTab] = useState('home');
           })()}
 
           {/* ── CLIENT CRM (now inside Work tab → clients sub-tab) ── */}
-          {tab === 'clients' && (() => {
+          {tab === 'clients' && !tabLocked && (() => {
             const fmtAmt = n => n > 0 ? `₹${n.toLocaleString('en-IN')}` : '₹0';
             const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '—';
             const pending = (c) => Math.max(0, (c.totalAmount||0) - (c.paidAmount||0));
@@ -4994,7 +5079,7 @@ const [tab, setTab] = useState('home');
           )}
 
           {/* ── BUSINESS TOOLS ── */}
-          {tab === 'tools' && (() => {
+          {tab === 'tools' && !tabLocked && (() => {
             const toolInp = { width:'100%', padding:'8px 11px', borderRadius:9, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13, color:ink, outline:'none', background:'#FFFCF5', boxSizing:'border-box' };
             const toolLbl = (t) => <label style={{ display:'block', fontSize:11, fontWeight:700, color:'#6B3A1F', marginBottom:3 }}>{t}</label>;
             const TOOL_PILLS = [
@@ -5519,7 +5604,7 @@ const [tab, setTab] = useState('home');
           })()}
 
           {/* ── GROW (Flyer Builder + Link Hub) ── */}
-          {tab === 'market' && (
+          {tab === 'market' && !tabLocked && (
             <div style={{ display:'flex', flexDirection:'column', gap:24 }}>
               {/* Flyer Builder */}
               <div>
@@ -5543,7 +5628,7 @@ const [tab, setTab] = useState('home');
           )}
 
           {/* ── INSIGHTS ── */}
-          {tab === 'insights' && (() => {
+          {tab === 'insights' && !tabLocked && (() => {
             const totalGigs = outsideOrders.length + bookings.length;
             const confirmedGigs = outsideOrders.filter(o => ['Confirmed','Completed'].includes(o.status)).length + bookings.filter(b => ['Confirmed','Completed'].includes(b.status)).length;
             const convRate = totalGigs > 0 ? Math.round((confirmedGigs / totalGigs) * 100) : 0;

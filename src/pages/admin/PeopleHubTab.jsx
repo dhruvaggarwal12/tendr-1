@@ -255,6 +255,13 @@ export default function PeopleHubTab({
               <span style={{ fontSize: 12, fontWeight: 600, padding: "2px 10px", borderRadius: 100, background: curStyle.bg, color: curStyle.color, border: `1px solid ${curStyle.border}` }}>
                 {curStyle.label}
               </span>
+
+              {/* Dashboard plan badge — what they picked at registration (approved apps: matches the live Vendor's plan) */}
+              {!isCoord && (
+                <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 10px", borderRadius: 100, background: app.plan === "paid" ? "rgba(22,163,74,0.1)" : "rgba(28,9,0,0.05)", color: app.plan === "paid" ? "#16A34A" : "#6B5B4D", border: `1px solid ${app.plan === "paid" ? "rgba(22,163,74,0.25)" : "rgba(28,9,0,0.12)"}` }}>
+                  {app.plan === "paid" ? "Paid plan" : "Free plan"}
+                </span>
+              )}
             </div>
 
             <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "#5a3a1a" }}>

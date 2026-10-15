@@ -120,6 +120,7 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
     portfolioPhotos:     (vendor.portfolioPhotos || []).join("\n"),
     newPassword:         "",
     status:              vendor.status || "approved",
+    plan:                vendor.plan || "free",
   });
   const set = (k, v) => setF(p => ({ ...p, [k]: v }));
 
@@ -229,6 +230,7 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
         maxConcurrentEvents: Number(f.maxConcurrentEvents) || 5,
         price: Number(f.price) || 0,
         status: f.status,
+        plan: f.plan,
         ...(f.avgReviewScore !== null && f.avgReviewScore !== undefined && f.avgReviewScore !== "" && { avgReviewScore: Number(f.avgReviewScore) }),
         ...(f.newPassword.length >= 8 && { password: f.newPassword }),
         // Category-specific
@@ -280,6 +282,9 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
             </Field>
             <Field label="Status">
               <SI value={f.status} onChange={v => set("status", v)} options={["pending","approved","rejected","suspended"]} />
+            </Field>
+            <Field label="Dashboard Plan">
+              <SI value={f.plan} onChange={v => set("plan", v)} options={["free","paid"]} />
             </Field>
             <Field label="New Password (leave blank to keep)"><TI value={f.newPassword} onChange={v => set("newPassword", v)} placeholder="Min 8 chars" type="password" /></Field>
           </div>
