@@ -1896,19 +1896,28 @@ const Home = () => {
                     height: 200,
                     borderRadius: 18,
                     overflow: "hidden",
-                    border: "1px solid rgba(255,255,255,0.06)",
+                    border: `1px solid ${isHovered ? accent + "4d" : "rgba(255,255,255,0.07)"}`,
                     background: "#0E0603",
+                    backgroundImage: `
+                      radial-gradient(ellipse 90% 60% at 50% 0%, ${accent}22 0%, transparent 65%),
+                      radial-gradient(ellipse 80% 50% at 50% 100%, ${accent}17 0%, transparent 70%),
+                      radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0),
+                      linear-gradient(170deg, #160B05 0%, #0E0603 55%, #0A0402 100%)
+                    `,
+                    backgroundSize: "auto, auto, 13px 13px, auto",
                     cursor: "pointer",
                     padding: 0,
                     display: "flex",
                     flexDirection: "column",
                     opacity: isDimmed ? 0.45 : 1,
-                    transition: "opacity 0.25s ease, box-shadow 0.25s ease",
+                    transition: "opacity 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
                     boxShadow: isHovered
                       ? `0 16px 40px rgba(0,0,0,0.35), 0 0 0 1.5px ${accent}70`
                       : "0 2px 12px rgba(0,0,0,0.18)",
                   }}
                 >
+                  {/* top glass-shine edge */}
+                  <div aria-hidden style={{ position: "absolute", top: 0, left: 14, right: 14, height: 1, background: `linear-gradient(to right, transparent, ${accent}90, transparent)`, opacity: isHovered ? 0.8 : 0.4, transition: "opacity 0.25s", zIndex: 2 }} />
                   {/* Emoji area — top 58% */}
                   <div style={{
                     flex: "0 0 58%",
@@ -1951,7 +1960,8 @@ const Home = () => {
                     alignItems: "center",
                     justifyContent: "center",
                     padding: "10px 12px 14px",
-                    background: `linear-gradient(to bottom, transparent, rgba(0,0,0,0.3))`,
+                    background: `linear-gradient(to bottom, ${accent}0d, rgba(0,0,0,0.26))`,
+                    position: "relative",
                     gap: 6,
                   }}>
                     <span style={{

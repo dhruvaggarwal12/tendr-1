@@ -35,6 +35,8 @@ const IconSparkleTool = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-6.26L4 10l5.91-1.74z"/></svg>
 );
 const INTENT_ICONS = [IconBag, IconList, IconGame, IconSparkleTool];
+// Same warm gold/amber family throughout — just a subtle per-card variation for rhythm, not a palette change.
+const INTENT_ACCENTS = ['#E8943F', '#D4A54A', '#C47A2E', '#E0A050'];
 
 
 const CSS = `
@@ -52,8 +54,11 @@ const CSS = `
   .fte-sp3 { animation: fte-sparkle 1.3s ease-in-out infinite 0.86s; }
   .fte-fadein { animation: fte-fadein 0.4s ease forwards; }
   .fte-spot-in { animation: fte-spot-in 0.3s ease forwards; }
-  .fte-intent-card { transition: background 0.15s, border-color 0.15s, transform 0.12s; }
-  .fte-intent-card:hover { transform: translateY(-2px) !important; }
+  .fte-intent-card { transition: border-color 0.2s, transform 0.15s, box-shadow 0.25s; position: relative; isolation: isolate; }
+  .fte-intent-card:hover { transform: translateY(-3px) !important; }
+  .fte-intent-card:hover .fte-card-glow { opacity: 1 !important; }
+  .fte-intent-card:hover .fte-card-shine { opacity: 0.9 !important; }
+  .fte-intent-card:hover .fte-desc { color: rgba(245,230,204,0.72) !important; }
   @media (max-height: 740px), (max-width: 380px) {
     .fte-mascot-wrap { transform: scale(0.68); margin-bottom: -18px; }
     .fte-intent-heading { margin-top: 0 !important; margin-bottom: 12px !important; }
@@ -302,7 +307,13 @@ function IntentPicker({ onSelect }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 10000,
-      background: 'rgba(8,3,0,0.93)',
+      background: '#0A0400',
+      backgroundImage: `
+        radial-gradient(ellipse 60% 45% at 50% 8%, rgba(196,122,46,0.22) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 85% 90%, rgba(232,148,63,0.1) 0%, transparent 70%),
+        radial-gradient(circle at 1.5px 1.5px, rgba(255,255,255,0.035) 1.5px, transparent 0)
+      `,
+      backgroundSize: 'auto, auto, 22px 22px',
       backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       padding: '20px 16px',
@@ -318,54 +329,63 @@ function IntentPicker({ onSelect }) {
           <div className="fte-title" style={{
             fontFamily: SERIF,
             fontSize: 'clamp(1.6rem,4vw,2.1rem)',
-            fontWeight: 400, color: '#F5E6CC', lineHeight: 1.2, marginBottom: 8, textWrap: 'balance',
+            fontWeight: 400, lineHeight: 1.2, marginBottom: 10, textWrap: 'balance',
+            background: 'linear-gradient(135deg, #FDF3DE 0%, #F5E6CC 45%, #E8C878 100%)',
+            WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
           }}>
             What brings you here today?
           </div>
-          <div className="fte-sub" style={{ fontSize: 13.5, color: 'rgba(245,230,204,0.48)', lineHeight: 1.6 }}>
+          <div className="fte-sub" style={{ fontSize: 13.5, color: 'rgba(245,230,204,0.6)', lineHeight: 1.6 }}>
             Pick one — we'll take you right there.
           </div>
         </div>
         <div className="fte-intent-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, width: '100%' }}>
           {INTENTS.map((intent, i) => {
             const Icon = INTENT_ICONS[i];
+            const accent = INTENT_ACCENTS[i];
             return (
               <button
                 key={intent.label}
                 className="fte-intent-card"
                 onClick={() => onSelect(intent.path, intent.anchor)}
                 style={{
-                  background: 'linear-gradient(160deg, #3D2410, #2A1608)',
-                  border: '1px solid rgba(196,122,46,0.35)',
+                  background: 'linear-gradient(155deg, #2E1B0C 0%, #1C1006 60%, #140B04 100%)',
+                  backgroundImage: `
+                    radial-gradient(ellipse 120% 80% at 15% -10%, ${accent}26 0%, transparent 55%),
+                    radial-gradient(circle at 1px 1px, rgba(255,255,255,0.045) 1px, transparent 0),
+                    linear-gradient(155deg, #2E1B0C 0%, #1C1006 60%, #140B04 100%)
+                  `,
+                  backgroundSize: 'auto, 13px 13px, auto',
+                  border: `1px solid ${accent}3d`,
                   borderRadius: 16, padding: '18px 16px',
                   cursor: 'pointer', textAlign: 'left',
                   color: 'white', fontFamily: SANS,
                   display: 'flex', flexDirection: 'column', gap: 10,
-                  boxShadow: '0 4px 18px rgba(0,0,0,0.3)',
+                  boxShadow: '0 4px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)',
+                  overflow: 'hidden',
                 }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = 'linear-gradient(160deg, #4A2C14, #331C0A)';
-                  e.currentTarget.style.borderColor = 'rgba(204,171,74,0.7)';
-                  e.currentTarget.style.boxShadow = '0 8px 28px rgba(196,122,46,0.3)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'linear-gradient(160deg, #3D2410, #2A1608)';
-                  e.currentTarget.style.borderColor = 'rgba(196,122,46,0.35)';
-                  e.currentTarget.style.boxShadow = '0 4px 18px rgba(0,0,0,0.3)';
-                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = `${accent}99`; e.currentTarget.style.boxShadow = `0 10px 30px ${accent}2e, inset 0 1px 0 rgba(255,255,255,0.08)`; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = `${accent}3d`; e.currentTarget.style.boxShadow = '0 4px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)'; }}
               >
+                {/* top glass-shine edge */}
+                <div className="fte-card-shine" style={{ position: 'absolute', top: 0, left: 14, right: 14, height: 1, background: `linear-gradient(to right, transparent, ${accent}b0, transparent)`, opacity: 0.55, transition: 'opacity 0.25s' }} />
+                {/* corner glow, brightens on hover */}
+                <div className="fte-card-glow" aria-hidden style={{ position: 'absolute', top: -30, right: -30, width: 90, height: 90, borderRadius: '50%', background: `radial-gradient(circle, ${accent}3d 0%, transparent 72%)`, opacity: 0.5, transition: 'opacity 0.3s', pointerEvents: 'none' }} />
+
                 <div className="fte-icon-chip" style={{
-                  width: 38, height: 38, borderRadius: 11, flexShrink: 0,
-                  background: 'rgba(204,171,74,0.14)', border: '1px solid rgba(204,171,74,0.3)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#E8C878',
+                  width: 38, height: 38, borderRadius: 11, flexShrink: 0, position: 'relative',
+                  background: `linear-gradient(145deg, ${accent}3d, ${accent}12)`,
+                  border: `1px solid ${accent}55`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F8DC8E',
+                  boxShadow: `0 2px 10px ${accent}25`,
                 }}>
                   <Icon />
                 </div>
-                <div>
-                  <div className="fte-label" style={{ fontSize: 13.5, fontWeight: 700, color: '#F5E6CC', marginBottom: 4, lineHeight: 1.2 }}>
+                <div style={{ position: 'relative' }}>
+                  <div className="fte-label" style={{ fontSize: 13.5, fontWeight: 700, color: '#F8EDD8', marginBottom: 4, lineHeight: 1.2 }}>
                     {intent.label}
                   </div>
-                  <div className="fte-desc" style={{ fontSize: 11, color: 'rgba(245,230,204,0.55)', lineHeight: 1.45 }}>
+                  <div className="fte-desc" style={{ fontSize: 11, color: 'rgba(245,230,204,0.58)', lineHeight: 1.45, transition: 'color 0.2s' }}>
                     {intent.desc}
                   </div>
                 </div>

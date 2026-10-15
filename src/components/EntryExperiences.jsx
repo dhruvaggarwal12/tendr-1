@@ -195,15 +195,14 @@ function DetailDrawer({ idea, selected, vendors, onToggleVendor, onToggleSelect,
 
         {idea.relatedConcepts?.length > 0 && (
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 10, fontWeight: 800, color: "rgba(196,122,46,0.6)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 7 }}>Similar ideas at other budgets</div>
+            <div style={{ fontSize: 10, fontWeight: 800, color: "rgba(196,122,46,0.6)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 7 }}>Similar ideas</div>
             <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 2 }}>
               {idea.relatedConcepts.map((id) => {
                 const rel = getEntryExperienceById(id);
                 if (!rel) return null;
                 return (
                   <button key={id} onClick={() => onOpenRelated(rel)} style={{ flexShrink: 0, width: 140, textAlign: "left", padding: "9px 10px", borderRadius: 10, border: `1px solid ${border}`, background: "#fff", cursor: "pointer", fontFamily: font }}>
-                    <div style={{ fontSize: 11.5, fontWeight: 700, color: ink, marginBottom: 2 }}>{rel.title}</div>
-                    <div style={{ fontSize: 10.5, color: muted }}>{rel.priceDisplay}</div>
+                    <div style={{ fontSize: 11.5, fontWeight: 700, color: ink }}>{rel.title}</div>
                   </button>
                 );
               })}

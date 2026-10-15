@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useChatOverlay } from "../../context/ChatContext";
@@ -11,6 +12,7 @@ import { getVendors } from "../../apis/vendorApi";
 import { getOccasionById } from "../../data/occasions";
 import { getEntryExperienceById } from "../../data/entryExperiences";
 import { DECOR_FOCUS_AREAS, DECOR_FOCUS_AREA_IDS } from "../../data/decorFocusAreas";
+import { ALL_INDIAN_CITIES, SERVICED_CITIES } from "../../data/indianCities";
 import { saveResumeUrl } from "../../utils/planningResume";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
@@ -527,34 +529,40 @@ function getDecorOptions(occasion, {guests=20, venueType="", theme=null, ageGrou
 
 // Turns a decor option's item list into one plain-English paragraph, personalised
 // with what's actually been filled in so far (occasion, guest count, venue).
+// Combines the occasion-style package's base items with the full item list of
+// every focus area the customer picked, so "What's included" genuinely reflects
+// what they selected (not just a generic occasion template).
+function buildDecorDisplayItems(opt, decorFocusAreas=[]) {
+  const base = opt.items || [];
+  const fromAreas = decorFocusAreas.flatMap(id => DECOR_FOCUS_AREAS[id]?.items || []);
+  return [...new Set([...base, ...fromAreas])];
+}
+
+// Plain, simple sentences — written the way you'd explain this to someone who
+// has never planned an event before, not formal/technical phrasing.
 function buildDecorParagraph(opt, {occasionName="your event", guests=20, venueType="", decorFocusAreas=[]}={}) {
-  const items = opt.items || [];
-  const joined = items.length > 1
-    ? `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`
-    : (items[0] || "");
   const venueClause = venueType ? ` at your ${venueType.toLowerCase()}` : "";
   const areaNames = decorFocusAreas.map(id=>DECOR_FOCUS_AREAS[id]?.name).filter(Boolean);
-  const areaClause = areaNames.length
-    ? ` with a focus on ${areaNames.length>1?`${areaNames.slice(0,-1).join(", ")} and ${areaNames[areaNames.length-1]}`:areaNames[0]}`
+  const areaSentence = areaNames.length
+    ? ` You told us to focus on ${areaNames.length>1?`${areaNames.slice(0,-1).join(", ")} and ${areaNames[areaNames.length-1]}`:areaNames[0]}, so your decorator will spend the most time and budget there.`
     : "";
-  return `For your ${guests}-guest ${occasionName}${venueClause}${areaClause}, the ${opt.style} look means ${joined.toLowerCase()} — ${opt.tagline.toLowerCase()}. This sits in the ${opt.tier.toLowerCase()} price tier.`;
+  const tierPlain = opt.tier==="Premium" ? "the most expensive, full option" : opt.tier==="Mid-range" ? "a mid-priced, balanced option" : "the simplest, lowest-cost option";
+  return `This is the ${opt.style} package for your ${guests}-guest ${occasionName}${venueClause}. ${opt.tagline}.${areaSentence} It's ${tierPlain} — you can see everything that's included below.`;
 }
 
 /* ── generic paragraph for any category's package tier (used by every category
    that isn't Decorator/Caterer, which have their own richer paragraph builders) ── */
+// Plain, simple sentences — written the way you'd explain this to someone who
+// has never planned an event before, not formal/technical phrasing.
 function buildGenericPackageParagraph(type, pkg, {occasionName="your event", guests=20, venueType=""}={}) {
   const venueClause = venueType ? ` at your ${venueType.toLowerCase()}` : "";
-  const noteClause = pkg.note ? ` — ${pkg.note.toLowerCase()}` : "";
-  return `The ${pkg.label} ${type} package suits your ${guests}-guest ${occasionName}${venueClause}${noteClause}.`;
+  return `This is the ${pkg.label} option for ${type} at your ${guests}-guest ${occasionName}${venueClause}. ${pkg.note||""}. You can see exactly what's included below.`;
 }
 
 function buildCateringParagraph(opt, {occasionName="your event", guests=20, venueType=""}={}) {
-  const dishes = opt.dishes || [];
-  const joined = dishes.length > 1
-    ? `${dishes.slice(0, -1).join(", ")} and ${dishes[dishes.length - 1]}`
-    : (dishes[0] || "");
   const venueClause = venueType ? ` at your ${venueType.toLowerCase()}` : "";
-  return `For your ${guests}-guest ${occasionName}${venueClause}, the ${opt.style} menu covers ${joined.toLowerCase()} — ${opt.tagline.toLowerCase()}. This sits in the ${opt.tier.toLowerCase()} price tier.`;
+  const tierPlain = opt.tier==="Premium" ? "the most expensive, full option" : opt.tier==="Mid-range" ? "a mid-priced, balanced option" : "the simplest, lowest-cost option";
+  return `This is the ${opt.style} menu for your ${guests}-guest ${occasionName}${venueClause}. ${opt.tagline}. It's ${tierPlain} — the dishes you'll get are listed below.`;
 }
 
 /* ── lightweight client-side photo resize — same approach as DecorAnalyzer.jsx's
@@ -1510,6 +1518,7 @@ export default function OccasionDetail(){
     return [...new Set(hits)].filter(v=>ALL_VENDORS.includes(v));
   },[notes]);
   const [city,setCity]=useState("");
+  const [cityDropdownOpen,setCityDropdownOpen]=useState(false);
   const [venueType,setVenueType]=useState("");
   const [venueProvides,setVenueProvides]=useState([]);
   const [showVenueOthersModal,setShowVenueOthersModal]=useState(false);
@@ -1522,6 +1531,18 @@ export default function OccasionDetail(){
   const [venuePhotoGateSeen,setVenuePhotoGateSeen]=useState(false); // true once the pre-Plan upload gate has been shown+dismissed/skipped
   const [planSectionsOpen,setPlanSectionsOpen]=useState({itinerary:true,timeline:true,checklist:true,equipment:true}); // Final Plan accordions — default open
   const togglePlanSection=(key)=>setPlanSectionsOpen(s=>({...s,[key]:!s[key]}));
+  const [planPage,setPlanPage]=useState(0); // 0,1,2 — which of the 3 flippable Final Plan pages is showing
+  const [planDirection,setPlanDirection]=useState(1); // animation direction for the page flip
+  const PLAN_PAGE_LABELS=["Your Event","What You've Planned","Get Ready"];
+  const goToPlanPage=(n)=>{setPlanDirection(n>planPage?1:-1);setPlanPage(n);};
+  const [planExportMode,setPlanExportMode]=useState(false); // true only while generating a PDF — briefly shows all 3 plan pages stacked so the capture is complete
+  // Expands the flip-pager to all 3 pages (normal document flow, so html2canvas captures
+  // it correctly), waits for layout, runs fn, then restores the paginated view.
+  const withPlanExportMode=async(fn)=>{
+    setPlanExportMode(true);
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    try{ return await fn(); } finally { setPlanExportMode(false); }
+  };
 
   /* Map analysis → DECOR_FOCUS_AREAS suggestions */
   const matchDecorFromAnalysis = useCallback((analysis)=>{
@@ -2512,9 +2533,35 @@ export default function OccasionDetail(){
                     {city.trim()&&<span style={{fontSize:9,color:occAccent,fontWeight:700}}>✓ {city}</span>}
                   </div>
                   <div style={{fontSize:11.5,color:muted,lineHeight:1.4,marginBottom:9}}>We'll show vendors near you.</div>
-                  <input type="text" value={city} onChange={e=>setCity(e.target.value)}
-                    placeholder="Delhi, Mumbai, Bengaluru…"
-                    style={{width:"100%",padding:"9px 12px",borderRadius:8,border:`1px solid ${city?occAccent:`rgba(28,9,0,0.12)`}`,background:city?`${occAccent}05`:"rgba(28,9,0,0.02)",fontSize:13,fontFamily:font,fontWeight:city?500:400,color:city?ink:muted,outline:"none",boxSizing:"border-box"}}/>
+                  <div style={{position:"relative"}}>
+                    <input type="text" value={city}
+                      onChange={e=>{setCity(e.target.value);setCityDropdownOpen(true);}}
+                      onFocus={()=>setCityDropdownOpen(true)}
+                      onBlur={()=>setTimeout(()=>setCityDropdownOpen(false),150)}
+                      placeholder="Search for your city…"
+                      style={{width:"100%",padding:"9px 12px",borderRadius:8,border:`1px solid ${city?occAccent:`rgba(28,9,0,0.12)`}`,background:city?`${occAccent}05`:"rgba(28,9,0,0.02)",fontSize:13,fontFamily:font,fontWeight:city?500:400,color:city?ink:muted,outline:"none",boxSizing:"border-box"}}/>
+                    {cityDropdownOpen&&(()=>{
+                      const q=city.trim().toLowerCase();
+                      const matches=ALL_INDIAN_CITIES.filter(c=>c.toLowerCase().includes(q)).slice(0,30);
+                      if(!matches.length) return null;
+                      return(
+                        <div style={{position:"absolute",top:"calc(100% + 4px)",left:0,right:0,zIndex:20,background:"#fff",borderRadius:10,border:"1px solid rgba(28,9,0,0.1)",boxShadow:"0 10px 30px rgba(0,0,0,0.12)",maxHeight:240,overflowY:"auto"}}>
+                          {matches.map(c=>{
+                            const serviced=SERVICED_CITIES.includes(c);
+                            return(
+                              <button key={c}
+                                onMouseDown={e=>e.preventDefault()}
+                                onClick={()=>{setCity(c);setCityDropdownOpen(false);}}
+                                style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,padding:"9px 12px",border:"none",background:c===city?`${occAccent}10`:"#fff",cursor:"pointer",fontFamily:font,fontSize:12.5,color:ink,textAlign:"left"}}>
+                                <span>{c}</span>
+                                {serviced&&<span style={{fontSize:9,fontWeight:700,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>Vendors here</span>}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+                  </div>
                   <div style={{marginTop:7,padding:"7px 10px",borderRadius:7,background:"rgba(196,122,46,0.04)",border:"1px solid rgba(196,122,46,0.1)",fontSize:10.5,color:muted,lineHeight:1.5}}>
                     📍 We currently have vendors in <span style={{fontWeight:700,color:ink}}>Delhi, Noida, Ghaziabad & Greater Noida</span>. From other cities? You can still plan — we'll coordinate for you.
                   </div>
@@ -2827,47 +2874,45 @@ export default function OccasionDetail(){
               const venueCovers=venueProvides.filter(p=>p!=="__none__").map(p=>VP_MAP[p]||p);
               // Image-led card — same visual pattern as renderThemeGallery()/the gift-card
               // grid: height:120 image block, gold selected border+checkmark, content strip below.
-              const serviceCard=(v)=>{
+              const serviceCard=(v,size="large")=>{
                 const sel=vendors.includes(v);
                 const byVenue=venueCovers.includes(v);
                 if(byVenue) return null;
                 const isRec=recommended.has(v);
                 const info=SERVICE_CARD_INFO[v]||{};
-                let priceLabel="";
-                try{
-                  const pkgs=getVendorPackages(v,{guests,venueType,theme,ageGroups});
-                  priceLabel=(pkgs&&pkgs[0]&&pkgs[0].price)||"";
-                }catch(e){}
+                const isSmall=size==="small";
+                const imgH=isSmall?84:150;
                 return(
                   <div key={v} id={`chip-${v}`}
-                    style={{padding:0,borderRadius:16,overflow:"hidden",border:`2px solid ${sel?gold:"rgba(196,122,46,0.13)"}`,background:"#fff",transition:"all 0.18s",boxShadow:sel?"0 4px 20px rgba(196,122,46,0.22)":"0 1px 5px rgba(0,0,0,0.06)"}}>
+                    style={{padding:0,borderRadius:isSmall?13:16,overflow:"hidden",border:`2px solid ${sel?gold:"rgba(196,122,46,0.13)"}`,background:"#fff",transition:"all 0.18s",boxShadow:sel?"0 4px 20px rgba(196,122,46,0.22)":"0 1px 5px rgba(0,0,0,0.06)"}}>
                     <button onClick={()=>{toggleVendor(v);const el=document.getElementById(`chip-${v}`);if(el){el.classList.remove("chip-pop");void el.offsetWidth;el.classList.add("chip-pop");}}}
                       style={{display:"block",width:"100%",padding:0,border:"none",background:"none",cursor:"pointer",textAlign:"left",fontFamily:font}}>
-                      <div style={{position:"relative",height:120,overflow:"hidden",background:"linear-gradient(160deg,rgba(196,122,46,0.4),rgba(196,122,46,0.15))"}}>
+                      <div style={{position:"relative",height:imgH,overflow:"hidden",background:"linear-gradient(160deg,rgba(196,122,46,0.4),rgba(196,122,46,0.15))"}}>
                         {info.image&&(
                           <img src={info.image} alt={v} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}
                             onError={e=>{e.currentTarget.style.display="none";}} />
                         )}
                         {!info.image&&(
                           <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                            <span style={{fontSize:32}}>{info.emoji||"🎉"}</span>
+                            <span style={{fontSize:isSmall?24:36}}>{info.emoji||"🎉"}</span>
                           </div>
                         )}
                         <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 55%)"}}/>
-                        <div style={{position:"absolute",bottom:9,left:10,right:32}}>
-                          <span style={{fontSize:12,fontWeight:800,color:"#fff",lineHeight:1.25,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{v}</span>
+                        <div style={{position:"absolute",bottom:isSmall?6:10,left:isSmall?8:12,right:32}}>
+                          <span style={{fontSize:isSmall?11.5:15,fontWeight:800,color:"#fff",lineHeight:1.25,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{v}</span>
                         </div>
                         {sel
-                          ? <div style={{position:"absolute",top:8,right:8,width:22,height:22,borderRadius:"50%",background:gold,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,0.2)"}}>
-                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          ? <div style={{position:"absolute",top:7,right:7,width:isSmall?18:24,height:isSmall?18:24,borderRadius:"50%",background:gold,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,0.2)"}}>
+                              <svg width={isSmall?8:11} height={isSmall?8:11} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                             </div>
-                          : isRec&&<div style={{position:"absolute",top:8,right:8,fontSize:9,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"2px 6px",boxShadow:"0 2px 6px rgba(0,0,0,0.2)"}}>✦</div>
+                          : isRec&&<div style={{position:"absolute",top:7,right:7,fontSize:isSmall?8:9.5,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"2px 6px",boxShadow:"0 2px 6px rgba(0,0,0,0.2)"}}>✦</div>
                         }
                       </div>
-                      <div style={{padding:"9px 11px 11px"}}>
-                        {info.description&&<div style={{fontSize:10.5,color:muted,lineHeight:1.45,marginBottom:priceLabel?5:0}}>{info.description}</div>}
-                        {priceLabel&&<div style={{fontSize:11,fontWeight:700,color:ink}}>From {priceLabel}</div>}
-                      </div>
+                      {(!isSmall||info.description)&&(
+                        <div style={{padding:isSmall?"7px 9px 9px":"11px 13px 13px"}}>
+                          {info.description&&<div style={{fontSize:isSmall?10.5:13,color:muted,lineHeight:1.45}}>{isSmall?info.description.split(".")[0]+".":info.description}</div>}
+                        </div>
+                      )}
                     </button>
                   </div>
                 );
@@ -2878,15 +2923,15 @@ export default function OccasionDetail(){
                   {essential.length>0&&(
                     <div style={{background:"rgba(146,64,14,0.04)",border:"1px solid rgba(146,64,14,0.1)",borderRadius:12,padding:"12px 14px",marginBottom:14}}>
                       {tierLabel(city.trim()?`Every ${occasion.name} in ${city} books these`:"Every event books these","#92400E")}
-                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>{essential.filter(v=>ALL_VENDORS.includes(v)).map(serviceCard)}</div>
+                      <div style={{display:"flex",flexDirection:"column",gap:10}}>{essential.filter(v=>ALL_VENDORS.includes(v)).map(v=>serviceCard(v,"large"))}</div>
                     </div>
                   )}
-                  {recOnly.length>0&&<>{tierLabel(`Most people add these${city.trim()?` · ${city}`:""}`,gold,"Based on your venue, guests & theme")}<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>{recOnly.filter(v=>ALL_VENDORS.includes(v)).map(serviceCard)}</div></>}
-                  {addOns.length>0&&<>{tierLabel("Nice to have","rgba(28,9,0,0.4)","Browse extras — add anything that fits")}<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
-                    {addOns.filter(v=>!venueCovers.includes(v)).map(serviceCard)}
+                  {recOnly.length>0&&<>{tierLabel(`Most people add these${city.trim()?` · ${city}`:""}`,gold,"Based on your venue, guests & theme")}<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>{recOnly.filter(v=>ALL_VENDORS.includes(v)).map(v=>serviceCard(v,"small"))}</div></>}
+                  {addOns.length>0&&<>{tierLabel("Nice to have","rgba(28,9,0,0.4)","Browse extras — add anything that fits")}<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
+                    {addOns.filter(v=>!venueCovers.includes(v)).map(v=>serviceCard(v,"small"))}
                     <button onClick={()=>setShowCustomVendorInput(v=>!v)}
-                      style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,minHeight:120,borderRadius:16,border:`1.5px dashed ${showCustomVendorInput?"rgba(196,122,46,0.5)":"rgba(196,122,46,0.28)"}`,background:showCustomVendorInput?"rgba(196,122,46,0.06)":"#fff",color:"rgba(196,122,46,0.7)",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s",letterSpacing:"-0.01em"}}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,minHeight:84,borderRadius:13,border:`1.5px dashed ${showCustomVendorInput?"rgba(196,122,46,0.5)":"rgba(196,122,46,0.28)"}`,background:showCustomVendorInput?"rgba(196,122,46,0.06)":"#fff",color:"rgba(196,122,46,0.7)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s",letterSpacing:"-0.01em"}}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                       Add other service
                     </button>
                   </div></>}
@@ -3073,25 +3118,25 @@ export default function OccasionDetail(){
                               const paragraph=buildCateringParagraph(opt,{occasionName:occasion.name,guests,venueType});
                               return(
                                 <button key={oi} onClick={()=>{setVendorPackages(vp=>({...vp,Caterer:oi}));setShowCateringBuilder(false);}}
-                                  style={{textAlign:"left",padding:"12px 13px",borderRadius:12,border:`1.5px solid ${sel?gold:opt.popular?"rgba(34,197,94,0.3)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:6}}>
+                                  style={{textAlign:"left",padding:"13px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:opt.popular?"rgba(34,197,94,0.3)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:7}}>
                                   <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-                                    <span style={{fontSize:18,flexShrink:0}}>{opt.icon}</span>
-                                    <span style={{fontSize:13,fontWeight:700,color:sel?gold:ink,flex:1,minWidth:80}}>{opt.style}</span>
-                                    {opt.tier&&<span style={{fontSize:9,fontWeight:700,color:opt.tier==="Premium"?"#7C3AED":opt.tier==="Mid-range"?gold:"#16a34a",background:opt.tier==="Premium"?"rgba(124,58,237,0.08)":opt.tier==="Mid-range"?"rgba(196,122,46,0.08)":"rgba(22,163,74,0.08)",borderRadius:100,padding:"2px 8px",flexShrink:0}}>{opt.tier}</span>}
-                                    {opt.popular&&!sel&&<span style={{fontSize:8.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>Recommended</span>}
-                                    {sel&&<span style={{fontSize:8.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>✓ Selected</span>}
+                                    <span style={{fontSize:19,flexShrink:0}}>{opt.icon}</span>
+                                    <span style={{fontSize:14.5,fontWeight:700,color:sel?gold:ink,flex:1,minWidth:80}}>{opt.style}</span>
+                                    {opt.tier&&<span style={{fontSize:10,fontWeight:700,color:opt.tier==="Premium"?"#7C3AED":opt.tier==="Mid-range"?gold:"#16a34a",background:opt.tier==="Premium"?"rgba(124,58,237,0.08)":opt.tier==="Mid-range"?"rgba(196,122,46,0.08)":"rgba(22,163,74,0.08)",borderRadius:100,padding:"2px 8px",flexShrink:0}}>{opt.tier}</span>}
+                                    {opt.popular&&!sel&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>Recommended</span>}
+                                    {sel&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>✓ Selected</span>}
                                   </div>
-                                  <div style={{fontSize:12,color:sel?"#4A2810":muted,lineHeight:1.6}}>{paragraph}</div>
+                                  <div style={{fontSize:13.5,color:sel?"#4A2810":muted,lineHeight:1.65}}>{paragraph}</div>
                                   {sel&&(
-                                    <div style={{marginTop:2,paddingTop:9,borderTop:"1px solid rgba(196,122,46,0.14)",display:"flex",flexDirection:"column",gap:4}}>
-                                      <div style={{fontSize:9,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:3}}>What's included</div>
+                                    <div style={{marginTop:2,paddingTop:10,borderTop:"1px solid rgba(196,122,46,0.14)",display:"flex",flexDirection:"column",gap:5}}>
+                                      <div style={{fontSize:10.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:3}}>What's included</div>
                                       {opt.dishes.map((d,di)=>(
-                                        <div key={di} style={{fontSize:11.5,color:ink,lineHeight:1.5,display:"flex",alignItems:"flex-start",gap:5}}>
+                                        <div key={di} style={{fontSize:13,color:ink,lineHeight:1.55,display:"flex",alignItems:"flex-start",gap:6}}>
                                           <span style={{flexShrink:0,color:gold}}>·</span><span>{d}</span>
                                         </div>
                                       ))}
                                       <button onClick={e=>{e.stopPropagation();setShowCateringBuilder(b=>!b);setCateringBuilderStep("cuisine");}}
-                                        style={{marginTop:4,alignSelf:"flex-start",fontSize:10,fontWeight:700,color:gold,background:"rgba(196,122,46,0.08)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:8,padding:"4px 10px",cursor:"pointer",fontFamily:font,textAlign:"center"}}>
+                                        style={{marginTop:4,alignSelf:"flex-start",fontSize:11,fontWeight:700,color:gold,background:"rgba(196,122,46,0.08)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:8,padding:"5px 11px",cursor:"pointer",fontFamily:font,textAlign:"center"}}>
                                         ✏️ Edit dishes
                                       </button>
                                     </div>
@@ -3265,20 +3310,35 @@ export default function OccasionDetail(){
                             </div>
                           )}
 
-                          {/* Which places need decor? — 8 focus areas, 3 suggested via a dropdown */}
+                          {/* Decor Analyser CTA — moved above the focus-area picker so an
+                              analysed photo can influence which areas get suggested below. */}
+                          <div style={{marginBottom:16}}>
+                            <button onClick={()=>setDecorAnalyserOpen(true)}
+                              style={{display:"flex",alignItems:"center",gap:9,padding:"11px 13px",borderRadius:11,border:`1.5px solid ${venueAnalysis?"rgba(34,197,94,0.35)":"rgba(196,122,46,0.25)"}`,background:venueAnalysis?"rgba(34,197,94,0.05)":"rgba(196,122,46,0.04)",cursor:"pointer",width:"100%",fontFamily:font,textAlign:"left"}}>
+                              <span style={{fontSize:19,flexShrink:0}}>{venueAnalysis?"✅":"📷"}</span>
+                              <div style={{flex:1,minWidth:0}}>
+                                <div style={{fontSize:13,fontWeight:700,color:ink}}>{venueAnalysis?"Venue analysed — tap to re-analyse":"Analyse your venue with AI"}</div>
+                                <div style={{fontSize:11.5,color:muted,marginTop:1}}>{venueAnalysis?`${venueAnalysis.spaceType} · ${venueAnalysis.style}`:"Upload a photo — get decor zones, colours & package recs"}</div>
+                              </div>
+                              <span style={{color:venueAnalysis?"#16a34a":gold,fontSize:13,flexShrink:0,fontWeight:700}}>{venueAnalysis?"✓":"→"}</span>
+                            </button>
+                          </div>
+
+                          {/* Which places need decor? — 8 focus areas, suggested ones shown first */}
                           {(()=>{
                             const suggested=getSuggestedDecorFocusAreas(occasion,{venueType,guests,matchedAreas:venueAnalysis?Object.keys(matchDecorFromAnalysis(venueAnalysis)):[]});
+                            const orderedAreaIds=[...DECOR_FOCUS_AREA_IDS].sort((a,b)=>(suggested.includes(b)?1:0)-(suggested.includes(a)?1:0));
                             const toggleArea=id=>setDecorFocusAreas(prev=>prev.includes(id)?prev.filter(x=>x!==id):[...prev,id]);
                             return(
                               <div style={{marginBottom:16}}>
-                                <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:2}}>Which places need decor?</div>
-                                <div style={{fontSize:11,color:muted,marginBottom:10,lineHeight:1.5}}>Pick the areas you want styled — we'll shape your packages around them.</div>
+                                <div style={{fontSize:10.5,fontWeight:800,color:"rgba(196,122,46,0.5)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:3}}>Which places need decor?</div>
+                                <div style={{fontSize:12.5,color:muted,marginBottom:10,lineHeight:1.5}}>Pick the areas you want styled — we'll shape your packages around them.</div>
 
                                 <button onClick={()=>setDecorSuggestionsOpen(o=>!o)}
-                                  style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:"9px 12px",borderRadius:11,border:`1.5px solid ${gold}`,background:"rgba(196,122,46,0.08)",cursor:"pointer",fontFamily:font,marginBottom:decorSuggestionsOpen?8:12}}>
-                                  <span style={{fontSize:14}}>✨</span>
-                                  <span style={{flex:1,textAlign:"left",fontSize:12,fontWeight:700,color:gold}}>{suggested.length} picks for your {occasion.name} — tap to view</span>
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round" style={{transform:decorSuggestionsOpen?"rotate(180deg)":"none",transition:"transform 0.2s",flexShrink:0}}><polyline points="6 9 12 15 18 9"/></svg>
+                                  style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:11,border:`1.5px solid ${gold}`,background:"rgba(196,122,46,0.08)",cursor:"pointer",fontFamily:font,marginBottom:decorSuggestionsOpen?8:12}}>
+                                  <span style={{fontSize:15}}>✨</span>
+                                  <span style={{flex:1,textAlign:"left",fontSize:13,fontWeight:700,color:gold}}>{suggested.length} picks for your {occasion.name} — tap to view</span>
+                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round" style={{transform:decorSuggestionsOpen?"rotate(180deg)":"none",transition:"transform 0.2s",flexShrink:0}}><polyline points="6 9 12 15 18 9"/></svg>
                                 </button>
                                 {decorSuggestionsOpen&&(
                                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:7,marginBottom:12}}>
@@ -3288,8 +3348,8 @@ export default function OccasionDetail(){
                                       return(
                                         <button key={id} onClick={()=>toggleArea(id)}
                                           style={{textAlign:"center",padding:"10px 6px",borderRadius:11,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.25)"}`,background:sel?"rgba(196,122,46,0.1)":"#fff",cursor:"pointer",fontFamily:font,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
-                                          <span style={{fontSize:20}}>{area.emoji}</span>
-                                          <span style={{fontSize:10,fontWeight:700,color:sel?gold:ink,lineHeight:1.25}}>{area.name}</span>
+                                          <span style={{fontSize:21}}>{area.emoji}</span>
+                                          <span style={{fontSize:11,fontWeight:700,color:sel?gold:ink,lineHeight:1.25}}>{area.name}</span>
                                           {sel&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
                                         </button>
                                       );
@@ -3298,7 +3358,7 @@ export default function OccasionDetail(){
                                 )}
 
                                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                                  {DECOR_FOCUS_AREA_IDS.map(id=>{
+                                  {orderedAreaIds.map(id=>{
                                     const area=DECOR_FOCUS_AREAS[id];
                                     const sel=decorFocusAreas.includes(id);
                                     const isSuggested=suggested.includes(id);
@@ -3306,12 +3366,12 @@ export default function OccasionDetail(){
                                       <button key={id} onClick={()=>toggleArea(id)}
                                         style={{textAlign:"left",padding:"10px 11px",borderRadius:12,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:4,position:"relative"}}>
                                         <div style={{display:"flex",alignItems:"center",gap:7}}>
-                                          <span style={{fontSize:18,flexShrink:0}}>{area.emoji}</span>
-                                          <span style={{fontSize:12,fontWeight:700,color:sel?gold:ink,flex:1,lineHeight:1.25}}>{area.name}</span>
+                                          <span style={{fontSize:19,flexShrink:0}}>{area.emoji}</span>
+                                          <span style={{fontSize:13,fontWeight:700,color:sel?gold:ink,flex:1,lineHeight:1.25}}>{area.name}</span>
                                           {sel&&<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3" strokeLinecap="round" style={{flexShrink:0}}><polyline points="20 6 9 17 4 12"/></svg>}
                                         </div>
-                                        <div style={{fontSize:10,color:sel?"#4A2810":muted,lineHeight:1.4}}>{area.tagline}</div>
-                                        {isSuggested&&!sel&&<span style={{position:"absolute",top:6,right:6,fontSize:7.5,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"1px 5px"}}>✦</span>}
+                                        <div style={{fontSize:11,color:sel?"#4A2810":muted,lineHeight:1.4}}>{area.tagline}</div>
+                                        {isSuggested&&!sel&&<span style={{position:"absolute",top:6,right:6,fontSize:8,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"1px 5px"}}>✦</span>}
                                       </button>
                                     );
                                   })}
@@ -3325,28 +3385,29 @@ export default function OccasionDetail(){
                             {dOpts.map((opt,oi)=>{
                               const sel=chosen===oi;
                               const paragraph=buildDecorParagraph(opt,{occasionName:occasion.name,guests,venueType,decorFocusAreas});
+                              const displayItems=buildDecorDisplayItems(opt,decorFocusAreas);
                               return(
                                 <button key={oi} onClick={()=>{setVendorPackages(vp=>({...vp,Decorator:oi}));setShowDecorBuilder(false);}}
-                                  style={{textAlign:"left",padding:"12px 13px",borderRadius:12,border:`1.5px solid ${sel?gold:opt.popular?"rgba(34,197,94,0.3)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:6}}>
+                                  style={{textAlign:"left",padding:"13px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:opt.popular?"rgba(34,197,94,0.3)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:7}}>
                                   <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-                                    <span style={{fontSize:18,flexShrink:0}}>{opt.icon}</span>
-                                    <span style={{fontSize:13,fontWeight:700,color:sel?gold:ink,flex:1,minWidth:80}}>{opt.style}</span>
-                                    {opt.tier&&<span style={{fontSize:9,fontWeight:700,color:opt.tier==="Premium"?"#7C3AED":opt.tier==="Mid-range"?gold:"#16a34a",background:opt.tier==="Premium"?"rgba(124,58,237,0.08)":opt.tier==="Mid-range"?"rgba(196,122,46,0.08)":"rgba(22,163,74,0.08)",borderRadius:100,padding:"2px 8px",flexShrink:0}}>{opt.tier}</span>}
-                                    {opt.popular&&!sel&&<span style={{fontSize:8.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>Recommended</span>}
-                                    {sel&&<span style={{fontSize:8.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>✓ Selected</span>}
+                                    <span style={{fontSize:19,flexShrink:0}}>{opt.icon}</span>
+                                    <span style={{fontSize:14.5,fontWeight:700,color:sel?gold:ink,flex:1,minWidth:80}}>{opt.style}</span>
+                                    {opt.tier&&<span style={{fontSize:10,fontWeight:700,color:opt.tier==="Premium"?"#7C3AED":opt.tier==="Mid-range"?gold:"#16a34a",background:opt.tier==="Premium"?"rgba(124,58,237,0.08)":opt.tier==="Mid-range"?"rgba(196,122,46,0.08)":"rgba(22,163,74,0.08)",borderRadius:100,padding:"2px 8px",flexShrink:0}}>{opt.tier}</span>}
+                                    {opt.popular&&!sel&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>Recommended</span>}
+                                    {sel&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>✓ Selected</span>}
                                   </div>
-                                  <div style={{fontSize:12,color:sel?"#4A2810":muted,lineHeight:1.6}}>{paragraph}</div>
+                                  <div style={{fontSize:13.5,color:sel?"#4A2810":muted,lineHeight:1.65}}>{paragraph}</div>
 
                                   {sel&&(
-                                    <div style={{marginTop:2,paddingTop:9,borderTop:"1px solid rgba(196,122,46,0.14)",display:"flex",flexDirection:"column",gap:4}}>
-                                      <div style={{fontSize:9,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:3}}>What's included</div>
-                                      {(editedPackageItems!==null?editedPackageItems:opt.items).map((it,ii)=>(
-                                        <div key={ii} style={{fontSize:11.5,color:ink,lineHeight:1.5,display:"flex",alignItems:"flex-start",gap:5}}>
+                                    <div style={{marginTop:2,paddingTop:10,borderTop:"1px solid rgba(196,122,46,0.14)",display:"flex",flexDirection:"column",gap:5}}>
+                                      <div style={{fontSize:10.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:3}}>What's included</div>
+                                      {(editedPackageItems!==null?editedPackageItems:displayItems).map((it,ii)=>(
+                                        <div key={ii} style={{fontSize:13,color:ink,lineHeight:1.55,display:"flex",alignItems:"flex-start",gap:6}}>
                                           <span style={{flexShrink:0,color:gold}}>·</span><span>{it}</span>
                                         </div>
                                       ))}
-                                      <button onClick={e=>{e.stopPropagation();if(showDecorBuilder&&editedPackageItems!==null){setShowDecorBuilder(false);setEditedPackageItems(null);}else{setEditedPackageItems([...opt.items]);setShowDecorBuilder(true);}}}
-                                        style={{marginTop:4,alignSelf:"flex-start",fontSize:10,fontWeight:700,color:gold,background:"rgba(196,122,46,0.08)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:8,padding:"4px 10px",cursor:"pointer",fontFamily:font,textAlign:"center"}}>
+                                      <button onClick={e=>{e.stopPropagation();if(showDecorBuilder&&editedPackageItems!==null){setShowDecorBuilder(false);setEditedPackageItems(null);}else{setEditedPackageItems([...displayItems]);setShowDecorBuilder(true);}}}
+                                        style={{marginTop:4,alignSelf:"flex-start",fontSize:11,fontWeight:700,color:gold,background:"rgba(196,122,46,0.08)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:8,padding:"5px 11px",cursor:"pointer",fontFamily:font,textAlign:"center"}}>
                                         {showDecorBuilder&&editedPackageItems!==null?"✓ Done":"✏️ Edit items"}
                                       </button>
                                     </div>
@@ -3357,30 +3418,6 @@ export default function OccasionDetail(){
                           </div>
                           {typeof chosen==="number"&&renderCrossSell("Decorator")}
                         </div>
-
-                        {/* Decor Analyser CTA — inside services card */}
-                        <div style={{padding:"6px 14px 2px"}}>
-                          <button onClick={()=>setDecorAnalyserOpen(true)}
-                            style={{display:"flex",alignItems:"center",gap:9,padding:"10px 13px",borderRadius:11,border:`1.5px solid ${venueAnalysis?"rgba(34,197,94,0.35)":"rgba(196,122,46,0.25)"}`,background:venueAnalysis?"rgba(34,197,94,0.05)":"rgba(196,122,46,0.04)",cursor:"pointer",width:"100%",fontFamily:font,textAlign:"left"}}>
-                            <span style={{fontSize:18,flexShrink:0}}>{venueAnalysis?"✅":"📷"}</span>
-                            <div style={{flex:1,minWidth:0}}>
-                              <div style={{fontSize:12,fontWeight:700,color:ink}}>{venueAnalysis?"Venue analysed — tap to re-analyse":"Analyse your venue with AI"}</div>
-                              <div style={{fontSize:10.5,color:muted,marginTop:1}}>{venueAnalysis?`${venueAnalysis.spaceType} · ${venueAnalysis.style}`:"Upload a photo — get decor zones, colours & package recs"}</div>
-                            </div>
-                            <span style={{color:venueAnalysis?"#16a34a":gold,fontSize:12,flexShrink:0,fontWeight:700}}>{venueAnalysis?"✓":"→"}</span>
-                          </button>
-                        </div>
-
-                        {/* Find Your Decor Style — theme gallery, relocated here per redesign.
-                            Same `theme` state as the legacy step-2 gallery — picking one here is
-                            a preference on this same Decorator pick, never a second booking. */}
-                        {(occasion.decorThemes||[]).length>0&&(
-                          <div style={{padding:"14px 14px 2px"}}>
-                            <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:2}}>Find Your Decor Style</div>
-                            <div style={{fontSize:11,color:muted,marginBottom:12,lineHeight:1.5}}>Pick a look — this won't create a second Decorator booking, just styles the one you've already added.</div>
-                            {renderThemeGallery()}
-                          </div>
-                        )}
 
                         {/* Fix the things required option — browses items within the focus areas just picked above */}
                         <div style={{padding:"10px 14px 12px"}}>
@@ -3536,20 +3573,20 @@ export default function OccasionDetail(){
                               const paragraph=buildGenericPackageParagraph(v,pkg,{occasionName:occasion.name,guests,venueType});
                               return(
                                 <button key={pkg.label} onClick={()=>setVendorPackages(vp=>({...vp,[v]:pi}))}
-                                  style={{textAlign:"left",padding:"12px 13px",borderRadius:12,border:`1.5px solid ${sel?gold:budgetFit==="fits"?"rgba(34,197,94,0.35)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:6}}>
+                                  style={{textAlign:"left",padding:"13px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:budgetFit==="fits"?"rgba(34,197,94,0.35)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:7}}>
                                   <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-                                    <span style={{fontSize:13,fontWeight:700,color:sel?gold:ink,flex:1,minWidth:80}}>{pkg.label}</span>
-                                    <span style={{fontSize:11.5,fontWeight:700,color:sel?gold:muted}}>{pkg.price}</span>
-                                    {budgetFit==="fits"&&!sel&&<span style={{fontSize:8.5,fontWeight:800,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>✓ Budget</span>}
-                                    {pkg.popular&&!sel&&<span style={{fontSize:8.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>Recommended</span>}
-                                    {sel&&<span style={{fontSize:8.5,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>✓ Selected</span>}
+                                    <span style={{fontSize:14.5,fontWeight:700,color:sel?gold:ink,flex:1,minWidth:80}}>{pkg.label}</span>
+                                    <span style={{fontSize:13,fontWeight:700,color:sel?gold:muted}}>{pkg.price}</span>
+                                    {budgetFit==="fits"&&!sel&&<span style={{fontSize:9,fontWeight:800,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>✓ Budget</span>}
+                                    {pkg.popular&&!sel&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>Recommended</span>}
+                                    {sel&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>✓ Selected</span>}
                                   </div>
-                                  <div style={{fontSize:12,color:sel?"#4A2810":muted,lineHeight:1.6}}>{paragraph}</div>
+                                  <div style={{fontSize:13.5,color:sel?"#4A2810":muted,lineHeight:1.65}}>{paragraph}</div>
                                   {sel&&(
-                                    <div style={{marginTop:2,paddingTop:9,borderTop:"1px solid rgba(196,122,46,0.14)",display:"flex",flexDirection:"column",gap:4}}>
-                                      <div style={{fontSize:9,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:3}}>What's included</div>
+                                    <div style={{marginTop:2,paddingTop:10,borderTop:"1px solid rgba(196,122,46,0.14)",display:"flex",flexDirection:"column",gap:5}}>
+                                      <div style={{fontSize:10.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:3}}>What's included</div>
                                       {pkg.items.map((it,ii)=>(
-                                        <div key={ii} style={{fontSize:11.5,color:ink,lineHeight:1.5,display:"flex",alignItems:"flex-start",gap:5}}>
+                                        <div key={ii} style={{fontSize:13,color:ink,lineHeight:1.55,display:"flex",alignItems:"flex-start",gap:6}}>
                                           <span style={{flexShrink:0,color:gold}}>·</span><span>{it}</span>
                                         </div>
                                       ))}
@@ -3988,10 +4025,13 @@ export default function OccasionDetail(){
               </div>
             )}
 
-            {/* everything below this is captured by planRef — A. Overview → B. Budget →
-                C. Selected items → D. Itinerary → E. Prep timeline, in that order */}
-            <div ref={planRef} style={{background:"#FDFAF5",borderRadius:20,padding:"20px",border:`1px solid rgba(196,122,46,0.1)`}}>
-
+            {/* Final Plan content, grouped into 3 "pages" for the flip view below —
+                page 0: A. Overview + B. Budget · page 1: C. Selected items + D. Itinerary ·
+                page 2: E. Prep timeline + Checklist + Equipment. Defined once here as an
+                array so the on-screen paginated view and the off-screen full-content PDF
+                capture (further below) both render the exact same JSX, never duplicated. */}
+            {(()=>{ const planSections=[
+            <React.Fragment key="plan-p0">
             {/* plan overview card */}
             <div ref={cardRef} style={{background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",border:`1.5px solid rgba(196,122,46,0.2)`,borderRadius:20,overflow:"hidden",marginBottom:12}}>
               <div style={{background:`linear-gradient(135deg,${gold},${goldLt})`,padding:"18px 20px 16px",position:"relative",overflow:"hidden"}}>
@@ -4078,6 +4118,8 @@ export default function OccasionDetail(){
               </div>
             )}
 
+            </React.Fragment>,
+            <React.Fragment key="plan-p1">
             {/* C. Selected services & experiences */}
             {renderSelectedItemsSection()}
 
@@ -4128,6 +4170,8 @@ export default function OccasionDetail(){
               );
             })()}
 
+            </React.Fragment>,
+            <React.Fragment key="plan-p2">
             {/* timeline — booking countdown */}
             {timeline&&(()=>{
               const open=planSectionsOpen.timeline;
@@ -4204,7 +4248,57 @@ export default function OccasionDetail(){
               ))}
             </div>
 
-            </div>{/* end planRef */}
+            </React.Fragment>,
+            ]; return (<>
+            {/* ── Visible, interactive flip-pager ── */}
+            <div style={{position:"relative",borderRadius:20,overflow:"hidden",marginBottom:16,border:"1px solid rgba(196,122,46,0.15)",boxShadow:"0 10px 32px rgba(0,0,0,0.08)"}}>
+              {occasion.coverImage&&(
+                <div aria-hidden style={{position:"absolute",inset:0,backgroundImage:`url(${occasion.coverImage})`,backgroundSize:"cover",backgroundPosition:"center",opacity:0.1}}/>
+              )}
+              <div aria-hidden style={{position:"absolute",inset:0,background:"linear-gradient(165deg,#FDFAF5 0%,rgba(253,250,245,0.96) 55%,#FDFAF5 100%)"}}/>
+              <div style={{position:"relative",padding:"18px 18px 16px"}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:16,flexWrap:"wrap"}}>
+                  {PLAN_PAGE_LABELS.map((label,i)=>(
+                    <button key={label} onClick={()=>goToPlanPage(i)}
+                      style={{display:"flex",alignItems:"center",gap:6,padding:"6px 12px",borderRadius:100,border:"none",background:planPage===i?gold:"rgba(196,122,46,0.08)",cursor:"pointer",fontFamily:font,transition:"all 0.2s"}}>
+                      <span style={{width:6,height:6,borderRadius:"50%",background:planPage===i?"#fff":"rgba(196,122,46,0.35)",flexShrink:0}}/>
+                      <span style={{fontSize:11.5,fontWeight:700,color:planPage===i?"#fff":muted}}>{label}</span>
+                    </button>
+                  ))}
+                </div>
+                <div style={{position:"relative",overflow:planExportMode?"visible":"hidden"}}>
+                  {planExportMode ? (
+                    // Briefly expanded to all 3 pages, in normal flow, so html2canvas
+                    // captures the complete plan — never shown to the user otherwise.
+                    <div ref={planRef} style={{background:"#FDFAF5",borderRadius:14,padding:"4px 2px"}}>{planSections}</div>
+                  ) : (
+                    <AnimatePresence mode="wait" initial={false} custom={planDirection}>
+                      <motion.div key={planPage}
+                        initial={{opacity:0,x:planDirection>0?44:-44}}
+                        animate={{opacity:1,x:0}}
+                        exit={{opacity:0,x:planDirection>0?-44:44}}
+                        transition={{duration:0.3,ease:[0.25,0.46,0.45,0.94]}}>
+                        <div ref={planRef} style={{background:"#FDFAF5",borderRadius:14,padding:"4px 2px"}}>{planSections[planPage]}</div>
+                      </motion.div>
+                    </AnimatePresence>
+                  )}
+                </div>
+                {!planExportMode&&(
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:18,gap:10}}>
+                    <button onClick={()=>planPage>0&&goToPlanPage(planPage-1)} disabled={planPage===0}
+                      style={{padding:"10px 16px",borderRadius:100,border:`1.5px solid ${planPage===0?"rgba(28,9,0,0.08)":"rgba(196,122,46,0.3)"}`,background:"#fff",color:planPage===0?"rgba(28,9,0,0.2)":gold,fontSize:12.5,fontWeight:700,cursor:planPage===0?"default":"pointer",fontFamily:font}}>
+                      ← Back
+                    </button>
+                    <span style={{fontSize:11,color:muted,fontWeight:600}}>Page {planPage+1} of 3</span>
+                    <button onClick={()=>planPage<2&&goToPlanPage(planPage+1)} disabled={planPage===2}
+                      style={{padding:"10px 16px",borderRadius:100,border:"none",background:planPage===2?"rgba(28,9,0,0.06)":`linear-gradient(135deg,${gold},${goldLt})`,color:planPage===2?"rgba(28,9,0,0.2)":"#fff",fontSize:12.5,fontWeight:700,cursor:planPage===2?"default":"pointer",fontFamily:font}}>
+                      Next →
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+            </>); })()}
 
             {/* F. Recommendations — paragraph summary + conclusion + improvement tips + cross-sell */}
             {(()=>{
@@ -4326,7 +4420,7 @@ export default function OccasionDetail(){
 
             {/* G. Share actions */}
             <div style={{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap"}}>
-              <button onClick={async()=>{setDownloading(true);await downloadPlanCard(planRef.current,occasion.name);setDownloading(false);}} disabled={downloading}
+              <button onClick={async()=>{setDownloading(true);await withPlanExportMode(()=>downloadPlanCard(planRef.current,occasion.name));setDownloading(false);}} disabled={downloading}
                 style={{flex:1,minWidth:120,padding:"12px 14px",borderRadius:12,border:`1px solid rgba(196,122,46,0.25)`,background:"#fff",color:gold,fontSize:12.5,fontWeight:700,cursor:downloading?"wait":"pointer",fontFamily:font,transition:"all 0.2s",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
                 {downloading?<><div style={{width:13,height:13,borderRadius:"50%",border:`2px solid rgba(196,122,46,0.2)`,borderTopColor:gold,animation:"spin 0.7s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>Generating…</>:<><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download PDF</>}
               </button>
@@ -4344,7 +4438,7 @@ export default function OccasionDetail(){
               <button
                 onClick={async()=>{
                   const msg=buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,customCatering,customDecor,celebrantName,gifts,giftQuantities,selectedEntryExperiences});
-                  const pdfToken=planRef.current?await buildPlanPdfChatToken(planRef.current,occasion.name):"";
+                  const pdfToken=planRef.current?await withPlanExportMode(()=>buildPlanPdfChatToken(planRef.current,occasion.name)):"";
                   openOccasionsChat(pdfToken?`${msg}\n\n${pdfToken}`:msg);
                   try{
                     const sp={eventDetails:{eventType:occasion.name,date,location:city,guests,budget},vendorSlots:vendors.map(cat=>({category:cat,vendorName:"",estimatedCost:0,status:"Pending"})),selectedPackages:vendorPackages,chatSent:true,slug};
@@ -4393,7 +4487,7 @@ export default function OccasionDetail(){
               <button onClick={async()=>{
                 if(token){
                   const planText = buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,celebrantName,gifts,giftQuantities,selectedEntryExperiences});
-                  const pdfToken=planRef.current?await buildPlanPdfChatToken(planRef.current,occasion.name):"";
+                  const pdfToken=planRef.current?await withPlanExportMode(()=>buildPlanPdfChatToken(planRef.current,occasion.name)):"";
                   openOccasionsChat(pdfToken?`${planText}\n\n${pdfToken}`:planText);
                   try{
                     const sp={eventDetails:{eventType:occasion.name,date,location:city,guests,budget},vendorSlots:vendors.map(cat=>({category:cat,vendorName:"",estimatedCost:0,status:"Pending"})),selectedPackages:vendorPackages,chatSent:true,slug};
