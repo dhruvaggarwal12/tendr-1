@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTour } from '../context/TourContext';
 import { useBookVendors } from '../context/BookVendorsContext';
 import SiteTour from './SiteTour';
+import tendrLogo from '../assets/logos/tendr-logo-secondary.png';
 
 const LS_KEY = 'tendr-ftv-done';
 
@@ -16,27 +17,43 @@ const SANS = "'Outfit', sans-serif";
 // "Just Exploring" is handled separately as a de-emphasized skip link, not a grid card —
 // it's a dismiss action, not a peer of the other four, so it shouldn't compete visually.
 const INTENTS = [
-  { label: 'Book Vendors', path: '/booking', desc: 'Caterers, decorators, photographers & more' },
-  { label: 'Plan an Occasion', path: '/', anchor: 'plan-by-occasion', desc: 'Budget, guest list, timelines & checklist' },
-  { label: 'Party Hub', path: '/join-room', desc: 'Games & activities for your guests' },
-  { label: 'Use Tools', path: '/budget-picker', desc: 'Seating chart, budget planner & more' },
+  { label: 'Book Vendors', path: '/booking', desc: 'Find caterers, decorators, photographers & more.' },
+  { label: 'Plan an Occasion', path: '/', anchor: 'plan-by-occasion', desc: 'Build your celebration plan, from ideas to details.' },
+  { label: 'Party Hub', path: '/join-room', desc: 'Discover games and activities for your guests.' },
+  { label: 'Explore Tools', path: '/budget-picker', desc: 'Use practical tools for seating, budgets and more.' },
 ];
 
-const IconBag = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+// Each card gets its own soft pastel family — bg (card), chip (icon container,
+// one shade deeper), ink (icon stroke colour, dark so it reads on the pastel).
+const INTENT_PALETTE = [
+  { bg: '#FDEEE0', chip: '#FBD7B8', ink: '#8A4A1E' }, // Book Vendors — light peach
+  { bg: '#FDF4C9', chip: '#FAE98C', ink: '#7A6412' }, // Plan an Occasion — butter yellow
+  { bg: '#EDE3F7', chip: '#D9C5F0', ink: '#5B3C8A' }, // Party Hub — lavender
+  { bg: '#E2EFDC', chip: '#C3DFB7', ink: '#3E6B2C' }, // Explore Tools — sage green
+];
+const ORANGE = '#F47735';
+
+// Small organically-cropped celebration photos for the edges — reusing already-verified
+// Unsplash assets from elsewhere in the app rather than sourcing new ones.
+const CORNER_PHOTOS = [
+  { url: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=300&q=80', pos: { top: '8%', left: '3%' }, size: 92, rotate: -6 },
+  { url: 'https://images.unsplash.com/photo-1555244162-803834f70033?w=300&q=80', pos: { top: '12%', right: '4%' }, size: 78, rotate: 5 },
+  { url: 'https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=300&q=80', pos: { bottom: '6%', left: '6%' }, size: 86, rotate: 4 },
+];
+
+const IconBag = ({ accent }) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0" stroke={accent}/></svg>
 );
-const IconList = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg>
+const IconCalendar = ({ accent }) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2.5"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="8" cy="15" r="1.3" fill={accent} stroke="none"/></svg>
 );
-const IconGame = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="6"/><line x1="7" y1="12" x2="9" y2="12"/><line x1="8" y1="11" x2="8" y2="13"/><circle cx="15" cy="10.5" r="1"/><circle cx="17.5" cy="13" r="1"/></svg>
+const IconGame = ({ accent }) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="6"/><line x1="7" y1="12" x2="9" y2="12"/><line x1="8" y1="11" x2="8" y2="13"/><circle cx="15" cy="10.5" r="1" fill={accent} stroke="none"/><circle cx="17.5" cy="13" r="1" fill={accent} stroke="none"/></svg>
 );
-const IconSparkleTool = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-6.26L4 10l5.91-1.74z"/></svg>
+const IconSliders = ({ accent }) => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="4" x2="5" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="19" y1="4" x2="19" y2="20"/><circle cx="5" cy="9" r="2.4" fill={accent} stroke={accent}/><circle cx="12" cy="15" r="2.4" fill={accent} stroke={accent}/><circle cx="19" cy="7" r="2.4" fill={accent} stroke={accent}/></svg>
 );
-const INTENT_ICONS = [IconBag, IconList, IconGame, IconSparkleTool];
-// Same warm gold/amber family throughout — just a subtle per-card variation for rhythm, not a palette change.
-const INTENT_ACCENTS = ['#E8943F', '#D4A54A', '#C47A2E', '#E0A050'];
+const INTENT_ICONS = [IconBag, IconCalendar, IconGame, IconSliders];
 
 
 const CSS = `
@@ -55,10 +72,10 @@ const CSS = `
   .fte-fadein { animation: fte-fadein 0.4s ease forwards; }
   .fte-spot-in { animation: fte-spot-in 0.3s ease forwards; }
   .fte-intent-card { transition: border-color 0.2s, transform 0.15s, box-shadow 0.25s; position: relative; isolation: isolate; }
-  .fte-intent-card:hover { transform: translateY(-3px) !important; }
-  .fte-intent-card:hover .fte-card-glow { opacity: 1 !important; }
-  .fte-intent-card:hover .fte-card-shine { opacity: 0.9 !important; }
-  .fte-intent-card:hover .fte-desc { color: rgba(245,230,204,0.72) !important; }
+  .fte-intent-card:hover { transform: translateY(-3px) !important; box-shadow: 0 10px 26px rgba(28,14,4,0.1) !important; border-color: rgba(42,22,6,0.16) !important; }
+  .fte-intent-card:hover .fte-card-arrow { transform: translateX(3px); }
+  .fte-intent-card:focus-visible { outline: 2.5px solid #F47735; outline-offset: 2px; }
+  .fte-skip-link:focus-visible { outline: 2.5px solid #F47735; outline-offset: 3px; border-radius: 4px; }
   @media (max-height: 740px), (max-width: 380px) {
     .fte-mascot-wrap { transform: scale(0.68); margin-bottom: -18px; }
     .fte-intent-heading { margin-top: 0 !important; margin-bottom: 12px !important; }
@@ -70,9 +87,14 @@ const CSS = `
     .fte-intent-card .fte-icon-chip svg { width: 15px !important; height: 15px !important; }
     .fte-intent-card .fte-label { font-size: 12px !important; margin-bottom: 2px !important; }
     .fte-intent-card .fte-desc { font-size: 9.5px !important; line-height: 1.3 !important; }
+    .fte-corner-photo { display: none !important; }
   }
   .fte-intent-card:active { transform: scale(0.97) !important; }
   .fte-ask-yes:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(196,122,46,0.55) !important; }
+  @media (prefers-reduced-motion: reduce) {
+    .fte-float, .fte-celebrate, .fte-wave-arm, .fte-sp1, .fte-sp2, .fte-sp3, .fte-fadein { animation: none !important; }
+    .fte-intent-card, .fte-intent-card:hover, .fte-card-arrow { transition: none !important; transform: none !important; }
+  }
 `;
 
 // ── Mascot SVG ─────────────────────────────────────────────────────────────
@@ -307,85 +329,117 @@ function IntentPicker({ onSelect }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 10000,
-      background: '#0A0400',
-      backgroundImage: `
-        radial-gradient(ellipse 60% 45% at 50% 8%, rgba(196,122,46,0.22) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 40% at 85% 90%, rgba(232,148,63,0.1) 0%, transparent 70%),
-        radial-gradient(circle at 1.5px 1.5px, rgba(255,255,255,0.035) 1.5px, transparent 0)
-      `,
-      backgroundSize: 'auto, auto, 22px 22px',
-      backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+      background: '#FFF9F0',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       padding: '20px 16px',
       fontFamily: SANS,
       overflowY: 'auto',
     }}>
       <style>{CSS}</style>
-      <div className="fte-fadein" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 460, width: '100%' }}>
-        <div className="fte-mascot-wrap">
-          <Mascot mood="celebrate" size={110} />
+
+      {/* Decorative peach blobs + orange sparkle doodles — background only, never over content */}
+      <div aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+        <div style={{ position: 'absolute', top: '-8%', left: '-10%', width: 320, height: 320, borderRadius: '42% 58% 61% 39% / 48% 42% 58% 52%', background: 'radial-gradient(circle, rgba(244,119,53,0.14) 0%, transparent 72%)' }} />
+        <div style={{ position: 'absolute', bottom: '-12%', right: '-8%', width: 380, height: 380, borderRadius: '55% 45% 38% 62% / 55% 58% 42% 45%', background: 'radial-gradient(circle, rgba(250,201,71,0.16) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', top: '38%', right: '10%', width: 160, height: 160, borderRadius: '50%', background: 'radial-gradient(circle, rgba(217,197,240,0.18) 0%, transparent 75%)' }} />
+        {[
+          { top: '6%', left: '46%', size: 16, delay: 0 },
+          { top: '22%', left: '9%', size: 11, delay: 0.4 },
+          { top: '70%', right: '13%', size: 14, delay: 0.8 },
+          { top: '16%', right: '20%', size: 10, delay: 1.1 },
+          { bottom: '10%', left: '38%', size: 12, delay: 1.5 },
+        ].map((s, i) => (
+          <svg key={i} className={`fte-sp${(i % 3) + 1}`} viewBox="0 0 24 24" width={s.size} height={s.size}
+            style={{ position: 'absolute', top: s.top, left: s.left, right: s.right, bottom: s.bottom, animationDelay: `${s.delay}s` }}>
+            <path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z" fill={ORANGE} opacity="0.55" />
+          </svg>
+        ))}
+      </div>
+
+      {/* Small organically-masked celebration photos near the edges */}
+      {CORNER_PHOTOS.map((p, i) => (
+        <div key={i} className="fte-corner-photo" aria-hidden style={{
+          position: 'absolute', ...p.pos, width: p.size, height: p.size,
+          borderRadius: '42% 58% 63% 37% / 55% 45% 55% 45%',
+          overflow: 'hidden', transform: `rotate(${p.rotate}deg)`,
+          boxShadow: '0 10px 24px rgba(138,74,30,0.18)',
+          border: '3px solid #FFFCF6',
+          opacity: 0.9,
+        }}>
+          <img src={p.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
-        <div className="fte-intent-heading" style={{ marginTop: 14, marginBottom: 24, textAlign: 'center' }}>
+      ))}
+
+      <div className="fte-fadein" style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 480, width: '100%' }}>
+        <img src={tendrLogo} alt="Tendr" style={{ height: 30, objectFit: 'contain', marginBottom: 6 }} />
+        <div className="fte-mascot-wrap">
+          <Mascot mood="celebrate" size={96} />
+        </div>
+        <div className="fte-intent-heading" style={{ marginTop: 10, marginBottom: 26, textAlign: 'center' }}>
           <div className="fte-title" style={{
             fontFamily: SERIF,
-            fontSize: 'clamp(1.6rem,4vw,2.1rem)',
-            fontWeight: 400, lineHeight: 1.2, marginBottom: 10, textWrap: 'balance',
-            background: 'linear-gradient(135deg, #FDF3DE 0%, #F5E6CC 45%, #E8C878 100%)',
-            WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
+            fontSize: 'clamp(1.7rem,4.2vw,2.3rem)',
+            fontWeight: 500, lineHeight: 1.2, marginBottom: 10, textWrap: 'balance',
+            color: '#2A1606',
+            position: 'relative', display: 'inline-block',
           }}>
-            What brings you here today?
+            What brings you here{' '}
+            <span style={{ position: 'relative', color: ORANGE, display: 'inline-block' }}>
+              today?
+              <svg aria-hidden viewBox="0 0 110 14" width="100%" height="12" style={{ position: 'absolute', left: 0, bottom: -8, width: '100%' }} preserveAspectRatio="none">
+                <path d="M2 9 Q 28 1, 55 7 T 108 5" stroke={ORANGE} strokeWidth="3" fill="none" strokeLinecap="round" />
+              </svg>
+            </span>
           </div>
-          <div className="fte-sub" style={{ fontSize: 13.5, color: 'rgba(245,230,204,0.6)', lineHeight: 1.6 }}>
-            Pick one — we'll take you right there.
+          <div className="fte-sub" style={{ fontSize: 14, color: 'rgba(42,22,6,0.56)', lineHeight: 1.6, marginTop: 10 }}>
+            Choose a starting point — we'll help with the rest.
           </div>
         </div>
-        <div className="fte-intent-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, width: '100%' }}>
+        <div className="fte-intent-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14, width: '100%' }}>
           {INTENTS.map((intent, i) => {
             const Icon = INTENT_ICONS[i];
-            const accent = INTENT_ACCENTS[i];
+            const pal = INTENT_PALETTE[i];
             return (
               <button
                 key={intent.label}
                 className="fte-intent-card"
                 onClick={() => onSelect(intent.path, intent.anchor)}
                 style={{
-                  background: 'linear-gradient(155deg, #2E1B0C 0%, #1C1006 60%, #140B04 100%)',
-                  backgroundImage: `
-                    radial-gradient(ellipse 120% 80% at 15% -10%, ${accent}26 0%, transparent 55%),
-                    radial-gradient(circle at 1px 1px, rgba(255,255,255,0.045) 1px, transparent 0),
-                    linear-gradient(155deg, #2E1B0C 0%, #1C1006 60%, #140B04 100%)
-                  `,
-                  backgroundSize: 'auto, 13px 13px, auto',
-                  border: `1px solid ${accent}3d`,
-                  borderRadius: 16, padding: '18px 16px',
+                  background: pal.bg,
+                  border: '1px solid rgba(42,22,6,0.06)',
+                  borderRadius: 24, padding: '20px 18px',
                   cursor: 'pointer', textAlign: 'left',
-                  color: 'white', fontFamily: SANS,
+                  color: '#2A1606', fontFamily: SANS,
                   display: 'flex', flexDirection: 'column', gap: 10,
-                  boxShadow: '0 4px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)',
+                  boxShadow: '0 2px 10px rgba(138,74,30,0.07)',
                   overflow: 'hidden',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = `${accent}99`; e.currentTarget.style.boxShadow = `0 10px 30px ${accent}2e, inset 0 1px 0 rgba(255,255,255,0.08)`; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = `${accent}3d`; e.currentTarget.style.boxShadow = '0 4px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)'; }}
               >
-                {/* top glass-shine edge */}
-                <div className="fte-card-shine" style={{ position: 'absolute', top: 0, left: 14, right: 14, height: 1, background: `linear-gradient(to right, transparent, ${accent}b0, transparent)`, opacity: 0.55, transition: 'opacity 0.25s' }} />
-                {/* corner glow, brightens on hover */}
-                <div className="fte-card-glow" aria-hidden style={{ position: 'absolute', top: -30, right: -30, width: 90, height: 90, borderRadius: '50%', background: `radial-gradient(circle, ${accent}3d 0%, transparent 72%)`, opacity: 0.5, transition: 'opacity 0.3s', pointerEvents: 'none' }} />
+                {/* organic corner detail */}
+                <div aria-hidden style={{ position: 'absolute', top: -22, right: -22, width: 72, height: 72, borderRadius: '50%', background: pal.chip, opacity: 0.45, pointerEvents: 'none' }} />
 
-                <div className="fte-icon-chip" style={{
-                  width: 38, height: 38, borderRadius: 11, flexShrink: 0, position: 'relative',
-                  background: `linear-gradient(145deg, ${accent}3d, ${accent}12)`,
-                  border: `1px solid ${accent}55`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F8DC8E',
-                  boxShadow: `0 2px 10px ${accent}25`,
-                }}>
-                  <Icon />
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', position: 'relative' }}>
+                  <div className="fte-icon-chip" style={{
+                    width: 40, height: 40, borderRadius: 13, flexShrink: 0,
+                    background: pal.chip,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: pal.ink,
+                  }}>
+                    <Icon accent={pal.ink} />
+                  </div>
+                  <div className="fte-card-arrow" aria-hidden style={{
+                    width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
+                    border: `1.5px solid ${pal.ink}`, color: pal.ink,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'transform 0.2s',
+                  }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  </div>
                 </div>
                 <div style={{ position: 'relative' }}>
-                  <div className="fte-label" style={{ fontSize: 13.5, fontWeight: 700, color: '#F8EDD8', marginBottom: 4, lineHeight: 1.2 }}>
+                  <div className="fte-label" style={{ fontSize: 14.5, fontWeight: 700, color: '#2A1606', marginBottom: 4, lineHeight: 1.2 }}>
                     {intent.label}
                   </div>
-                  <div className="fte-desc" style={{ fontSize: 11, color: 'rgba(245,230,204,0.58)', lineHeight: 1.45, transition: 'color 0.2s' }}>
+                  <div className="fte-desc" style={{ fontSize: 12, color: 'rgba(42,22,6,0.6)', lineHeight: 1.45 }}>
                     {intent.desc}
                   </div>
                 </div>
@@ -396,16 +450,17 @@ function IntentPicker({ onSelect }) {
 
         {/* Skip — a dismiss action, not a peer choice, so it's a quiet link rather than a 5th card */}
         <button
+          className="fte-skip-link"
           onClick={() => onSelect(null)}
           style={{
-            marginTop: 20, background: 'none', border: 'none', cursor: 'pointer',
-            color: 'rgba(245,230,204,0.4)', fontSize: 12.5, fontWeight: 600, fontFamily: SANS,
-            textDecoration: 'underline', textUnderlineOffset: 3,
+            marginTop: 22, background: 'none', border: 'none', cursor: 'pointer',
+            color: 'rgba(42,22,6,0.62)', fontSize: 13, fontWeight: 600, fontFamily: SANS,
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            borderBottom: `1.5px solid ${ORANGE}`, paddingBottom: 2,
           }}
-          onMouseEnter={e => { e.currentTarget.style.color = 'rgba(245,230,204,0.65)'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(245,230,204,0.4)'; }}
         >
-          Just exploring — let me look around on my own
+          Just exploring? Let me look around
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={ORANGE} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </button>
       </div>
     </div>
