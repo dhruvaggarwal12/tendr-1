@@ -575,18 +575,6 @@ function buildDecorDisplayItems(opt, decorFocusAreas=[]) {
   return [...new Set([...base, ...fromAreas])];
 }
 
-// Plain, simple sentences — written the way you'd explain this to someone who
-// has never planned an event before, not formal/technical phrasing.
-function buildDecorParagraph(opt, {occasionName="your event", guests=20, venueType="", decorFocusAreas=[]}={}) {
-  const venueClause = venueType ? ` at your ${venueType.toLowerCase()}` : "";
-  const areaNames = decorFocusAreas.map(id=>DECOR_FOCUS_AREAS[id]?.name).filter(Boolean);
-  const areaSentence = areaNames.length
-    ? ` You told us to focus on ${areaNames.length>1?`${areaNames.slice(0,-1).join(", ")} and ${areaNames[areaNames.length-1]}`:areaNames[0]}, so your decorator will spend the most time and budget there.`
-    : "";
-  const tierPlain = opt.tier==="Premium" ? "the most expensive, full option" : opt.tier==="Mid-range" ? "a mid-priced, balanced option" : "the simplest, lowest-cost option";
-  return `This is the ${opt.style} package for your ${guests}-guest ${occasionName}${venueClause}. ${opt.tagline}.${areaSentence} It's ${tierPlain} — you can see everything that's included below.`;
-}
-
 /* ── generic paragraph for any category's package tier (used by every category
    that isn't Decorator/Caterer, which have their own richer paragraph builders) ── */
 // Plain, simple sentences — written the way you'd explain this to someone who
@@ -3522,8 +3510,8 @@ export default function OccasionDetail(){
                           <div style={{display:"flex",flexDirection:"column",gap:8}}>
                             {dOpts.map((opt,oi)=>{
                               const sel=chosen===oi;
-                              const paragraph=buildDecorParagraph(opt,{occasionName:occasion.name,guests,venueType,decorFocusAreas});
                               const displayItems=buildDecorDisplayItems(opt,decorFocusAreas);
+                              const itemsToShow=(sel&&editedPackageItems!==null)?editedPackageItems:displayItems;
                               return(
                                 <button key={oi} onClick={()=>{setVendorPackages(vp=>({...vp,Decorator:oi}));setShowDecorBuilder(false);}}
                                   style={{textAlign:"left",padding:"13px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:opt.popular?"rgba(34,197,94,0.3)":"rgba(196,122,46,0.14)"}`,background:sel?`rgba(${goldRgb},0.07)`:"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:7}}>
@@ -3534,18 +3522,19 @@ export default function OccasionDetail(){
                                     {opt.popular&&!sel&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>Recommended</span>}
                                     {sel&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>✓ Selected</span>}
                                   </div>
-                                  <div style={{fontSize:13.5,color:sel?"#4A2810":muted,lineHeight:1.65}}>{paragraph}</div>
+
+                                  <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                                    {itemsToShow.map((it,ii)=>(
+                                      <div key={ii} style={{fontSize:13,color:sel?"#4A2810":muted,lineHeight:1.5,display:"flex",alignItems:"flex-start",gap:6}}>
+                                        <span style={{flexShrink:0,color:sel?gold:"rgba(196,122,46,0.5)"}}>·</span><span>{it}</span>
+                                      </div>
+                                    ))}
+                                  </div>
 
                                   {sel&&(
-                                    <div style={{marginTop:2,paddingTop:10,borderTop:"1px solid rgba(196,122,46,0.14)",display:"flex",flexDirection:"column",gap:5}}>
-                                      <div style={{fontSize:10.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:3}}>What's included</div>
-                                      {(editedPackageItems!==null?editedPackageItems:displayItems).map((it,ii)=>(
-                                        <div key={ii} style={{fontSize:13,color:ink,lineHeight:1.55,display:"flex",alignItems:"flex-start",gap:6}}>
-                                          <span style={{flexShrink:0,color:gold}}>·</span><span>{it}</span>
-                                        </div>
-                                      ))}
+                                    <div style={{marginTop:2,paddingTop:10,borderTop:"1px solid rgba(196,122,46,0.14)"}}>
                                       <button onClick={e=>{e.stopPropagation();if(showDecorBuilder&&editedPackageItems!==null){setShowDecorBuilder(false);setEditedPackageItems(null);}else{setEditedPackageItems([...displayItems]);setShowDecorBuilder(true);}}}
-                                        style={{marginTop:4,alignSelf:"flex-start",fontSize:11,fontWeight:700,color:gold,background:"rgba(196,122,46,0.08)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:8,padding:"5px 11px",cursor:"pointer",fontFamily:font,textAlign:"center"}}>
+                                        style={{alignSelf:"flex-start",fontSize:11,fontWeight:700,color:gold,background:"rgba(196,122,46,0.08)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:8,padding:"5px 11px",cursor:"pointer",fontFamily:font,textAlign:"center"}}>
                                         {showDecorBuilder&&editedPackageItems!==null?"✓ Done":"✏️ Edit items"}
                                       </button>
                                     </div>
