@@ -29,12 +29,29 @@ const EyeIcon = ({ open }) => (
 
 const HAS_GOOGLE = !!import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-function GoogleAuthBtn({ accountType, isBusy }) {
+function GoogleAuthBtn({ isBusy }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [gError, setGError] = useState("");
+  const [phoneStep, setPhoneStep] = useState(null); // { pendingToken } once a new Google user needs a phone number
+  const [phone, setPhone] = useState("");
+
+  // Shared post-login path for both a returning Google user (handled inline below) and a
+  // brand-new one who just completed the phone step — same navigation/sync side effects
+  // the password login path already triggers.
+  const finishLogin = (data) => {
+    dispatch({ type: "auth/login/fulfilled", payload: data });
+    const loggedUser = data.consumer;
+    if (loggedUser?.isAdmin) { navigate("/AdminDashboard"); return; }
+    if (loggedUser?.accountType === "vendor") { navigate("/vendor/register"); return; }
+    if (loggedUser?.accountType === "company") { navigate("/dashboard"); return; }
+    syncCartToBackend(data.token);
+    window.dispatchEvent(new CustomEvent("tendr:show-pwa-prompt", { detail: { source: "signup" } }));
+    navigate(location.state?.returnTo || "/");
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "instant" }), 0);
+  };
 
   const handleAuth = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -45,20 +62,13 @@ function GoogleAuthBtn({ accountType, isBusy }) {
         const res = await fetch(`${BASE_URL}/auth/google`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: tokenResponse.access_token, accountType }),
+          body: JSON.stringify({ accessToken: tokenResponse.access_token }),
           credentials: "include",
         });
         const data = await res.json();
-        if (!res.ok) { setGError(data.message || "Google sign-in failed. Please try again."); return; }
-        dispatch({ type: "auth/login/fulfilled", payload: data });
-        const loggedUser = data.consumer;
-        if (loggedUser?.isAdmin) { navigate("/AdminDashboard"); return; }
-        if (loggedUser?.accountType === "vendor") { navigate("/vendor/register"); return; }
-        if (loggedUser?.accountType === "company") { navigate("/dashboard"); return; }
-        syncCartToBackend(data.token);
-        window.dispatchEvent(new CustomEvent("tendr:show-pwa-prompt", { detail: { source: "signup" } }));
-        navigate(location.state?.returnTo || "/");
-        setTimeout(() => window.scrollTo({ top: 0, behavior: "instant" }), 0);
+        if (!res.ok) { setGError(data.error || data.message || "Google sign-in failed. Please try again."); return; }
+        if (data.needsPhone) { setPhoneStep({ pendingToken: data.pendingToken }); return; }
+        finishLogin(data);
       } catch {
         setGError("Google sign-in failed. Please try again.");
       } finally {
@@ -67,6 +77,55 @@ function GoogleAuthBtn({ accountType, isBusy }) {
     },
     onError: () => setGError("Google sign-in was cancelled or failed."),
   });
+
+  const handleCompletePhone = async () => {
+    if (!phone || !/^[6-9]\d{9}$/.test(phone)) { setGError("Enter a valid 10-digit Indian mobile number"); return; }
+    setLoading(true);
+    setGError("");
+    try {
+      const BASE_URL = import.meta.env.VITE_BASE_URL;
+      const res = await fetch(`${BASE_URL}/auth/google/complete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pendingToken: phoneStep.pendingToken, phoneNumber: phone }),
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) { setGError(data.error || data.message || "Failed to complete sign-up."); return; }
+      finishLogin(data);
+    } catch {
+      setGError("Failed to complete sign-up. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (phoneStep) {
+    return (
+      <div style={{ margin: "20px 0 4px" }}>
+        <p style={{ fontSize: 13, color: "#2C1A0E", textAlign: "center", lineHeight: 1.55, margin: "0 0 12px", fontFamily: font }}>
+          One last step — enter your mobile number to complete your account.
+        </p>
+        {gError && (
+          <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.2)", borderRadius: 10, padding: "10px 14px", marginBottom: 10, fontSize: 13, color: "#C0392B", textAlign: "center", fontFamily: font }}>
+            {gError}
+          </div>
+        )}
+        <input type="tel" value={phone}
+          onChange={e => { setPhone(e.target.value.replace(/\D/g, "").slice(0, 10)); setGError(""); }}
+          style={{ ...inputStyle, marginBottom: 10 }}
+          placeholder="10-digit mobile number" maxLength={10} disabled={loading} autoFocus />
+        <button type="button" onClick={handleCompletePhone} disabled={loading}
+          style={{ width: "100%", padding: "12px", marginBottom: 8, background: loading ? "#e5e7eb" : "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: loading ? "#9ca3af" : "#fff", fontSize: 14, fontWeight: 700, fontFamily: font, border: "none", borderRadius: 12, cursor: loading ? "not-allowed" : "pointer", boxShadow: !loading ? "0 4px 14px rgba(196,122,46,0.35)" : "none" }}>
+          {loading ? "Creating account…" : "Complete Sign Up"}
+        </button>
+        <button type="button" onClick={() => { setPhoneStep(null); setPhone(""); setGError(""); }}
+          style={{ display: "block", width: "100%", background: "none", border: "none", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, textAlign: "center", padding: "4px 0" }}>
+          ← Back
+        </button>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -845,7 +904,7 @@ const Auth = () => {
 
           {/* Google Sign-In — customer only; hidden for vendor/coordinator login and non-personal signup */}
           {!(isSignup && signupStep === "form" && accountType !== "personal") && !(!isSignup && loginType !== "customer") && HAS_GOOGLE && (
-            <GoogleAuthBtn accountType={accountType} isBusy={isBusy} />
+            <GoogleAuthBtn isBusy={isBusy} />
           )}
 
           {/* Toggle */}
