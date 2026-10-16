@@ -188,6 +188,7 @@ export default function ShortlistFloat() {
         },
         vendorSlots,
         bookingType: "you-do-it",
+        wizardAnswers: answers,
         selectedPackages,
         funActivities: funActivitiesItems.map(a => ({ id: a.id, name: a.name, emoji: a.emoji, totalPrice: a.totalPrice || 0 })),
         giftHampers: giftHamperItems.map(h => ({ name: h.name, quantity: h.quantity, pricePerUnit: h.pricePerUnit, subtotal: h.subtotal })),
