@@ -1205,6 +1205,55 @@ function buildBaatKaroMsg(occasion, {guests, date, city, venueType, theme, vendo
   return `https://wa.me/919211668427?text=${encodeURIComponent(parts)}`;
 }
 
+/* ── "Your event, start to end" — a short narrative walkthrough for the Final
+   Plan's first page, built from what's actually been selected (never invented).
+   Not a timestamped itinerary (that's a separate section later in the plan) —
+   this is the emotional arc: arrival → setting → celebration → send-off. ── */
+function buildEventJourney(occasion, {celebrantName="", guests=20, venueType="", city="", theme=null, decorFocusAreas=[], selectedEntryExperiences=[], vendors=[], selectedActivities=[], customActivities=[], gifts=[]}={}) {
+  const who = celebrantName || null;
+  const venueClause = venueType ? ` at your ${venueType.toLowerCase()}` : "";
+  const beats = [];
+
+  // 1. Arrival
+  const entry = selectedEntryExperiences[0] ? getEntryExperienceById(selectedEntryExperiences[0]) : null;
+  beats.push({
+    icon: "🚪", title: "Guests arrive",
+    text: entry
+      ? `As guests step in${venueClause}, they're welcomed with ${entry.title.toLowerCase()} — ${(entry.shortDesc||"").split(".")[0].toLowerCase()}.`
+      : `Guests arrive${venueClause}${city?` in ${city}`:""}, stepping straight into the mood of ${who?`${who}'s`:"your"} ${occasion.name.toLowerCase()}.`,
+  });
+
+  // 2. The setting — decor/theme
+  const areaNames = decorFocusAreas.map(id=>DECOR_FOCUS_AREAS[id]?.name).filter(Boolean);
+  let settingText;
+  if (theme && areaNames.length) settingText = `The space carries a ${theme.name} look, with ${areaNames.slice(0,2).join(" and ").toLowerCase()} styled to match.`;
+  else if (theme) settingText = `A ${theme.name} theme runs through the décor, setting the tone the moment guests look around.`;
+  else if (areaNames.length) settingText = `${areaNames.slice(0,2).join(" and ")} are styled for the occasion, giving the space its character.`;
+  else settingText = `The venue is dressed to suit a ${occasion.name.toLowerCase()} — simple, warm, and ready for guests.`;
+  beats.push({ icon: "🎨", title: "The setting", text: settingText });
+
+  // 3. The celebration — food + entertainment + activities
+  const hasCaterer = vendors.includes("Caterer");
+  const entertainers = vendors.filter(v => ["DJ","Live Band","Entertainer","Emcee / Host"].includes(v));
+  const actCount = selectedActivities.length + customActivities.length;
+  let midText;
+  if (hasCaterer && entertainers.length) midText = `Food keeps flowing while ${entertainers.join(" and ").toLowerCase()} keeps the energy up`;
+  else if (hasCaterer) midText = `Guests settle in for a spread crafted for ${who?`${who}'s`:"your"} ${occasion.name.toLowerCase()}`;
+  else if (entertainers.length) midText = `${entertainers.join(" and ")} keeps the room alive through the celebration`;
+  else midText = `The celebration settles into its own easy rhythm`;
+  if (actCount > 0) midText += `, with ${actCount} ${actCount===1?"activity":"activities"} woven in to keep guests engaged`;
+  midText += ".";
+  beats.push({ icon: "🎉", title: "The celebration", text: midText });
+
+  // 4. Send-off — gifts
+  const giftText = gifts.length
+    ? `Before heading home, guests leave with ${gifts.length>1?`${gifts.length} thoughtful favours`:String(gifts[0]).toLowerCase()} to remember the day by.`
+    : `As the evening winds down, guests head home with the day's memories — nothing more needed.`;
+  beats.push({ icon: "🎁", title: "The send-off", text: giftText });
+
+  return beats;
+}
+
 /* ── build plain-text plan for in-app chat ── */
 function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors, vendorPackages, budget, ageGroups=[], selectedActivities=[], customActivities=[], customCatering={}, customDecor={}, celebrantName="", gifts=[], giftQuantities={}, selectedEntryExperiences=[]}) {
   const vLines = vendors.filter(v => ALL_VENDORS.includes(v)).map(v => {
@@ -2881,7 +2930,7 @@ export default function OccasionDetail(){
                 const isRec=recommended.has(v);
                 const info=SERVICE_CARD_INFO[v]||{};
                 const isSmall=size==="small";
-                const imgH=isSmall?84:150;
+                const imgH=isSmall?58:150;
                 return(
                   <div key={v} id={`chip-${v}`}
                     style={{padding:0,borderRadius:isSmall?13:16,overflow:"hidden",border:`2px solid ${sel?gold:"rgba(196,122,46,0.13)"}`,background:"#fff",transition:"all 0.18s",boxShadow:sel?"0 4px 20px rgba(196,122,46,0.22)":"0 1px 5px rgba(0,0,0,0.06)"}}>
@@ -2894,23 +2943,23 @@ export default function OccasionDetail(){
                         )}
                         {!info.image&&(
                           <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                            <span style={{fontSize:isSmall?24:36}}>{info.emoji||"🎉"}</span>
+                            <span style={{fontSize:isSmall?18:36}}>{info.emoji||"🎉"}</span>
                           </div>
                         )}
                         <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 55%)"}}/>
-                        <div style={{position:"absolute",bottom:isSmall?6:10,left:isSmall?8:12,right:32}}>
-                          <span style={{fontSize:isSmall?11.5:15,fontWeight:800,color:"#fff",lineHeight:1.25,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{v}</span>
+                        <div style={{position:"absolute",bottom:isSmall?5:10,left:isSmall?6:12,right:isSmall?6:32}}>
+                          <span style={{fontSize:isSmall?9.5:15,fontWeight:800,color:"#fff",lineHeight:1.2,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{v}</span>
                         </div>
                         {sel
-                          ? <div style={{position:"absolute",top:7,right:7,width:isSmall?18:24,height:isSmall?18:24,borderRadius:"50%",background:gold,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,0.2)"}}>
-                              <svg width={isSmall?8:11} height={isSmall?8:11} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          ? <div style={{position:"absolute",top:5,right:5,width:isSmall?14:24,height:isSmall?14:24,borderRadius:"50%",background:gold,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,0.2)"}}>
+                              <svg width={isSmall?6:11} height={isSmall?6:11} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                             </div>
-                          : isRec&&<div style={{position:"absolute",top:7,right:7,fontSize:isSmall?8:9.5,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"2px 6px",boxShadow:"0 2px 6px rgba(0,0,0,0.2)"}}>✦</div>
+                          : isRec&&<div style={{position:"absolute",top:5,right:5,fontSize:isSmall?6.5:9.5,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:isSmall?"1px 4px":"2px 6px",boxShadow:"0 2px 6px rgba(0,0,0,0.2)"}}>✦</div>
                         }
                       </div>
-                      {(!isSmall||info.description)&&(
-                        <div style={{padding:isSmall?"7px 9px 9px":"11px 13px 13px"}}>
-                          {info.description&&<div style={{fontSize:isSmall?10.5:13,color:muted,lineHeight:1.45}}>{isSmall?info.description.split(".")[0]+".":info.description}</div>}
+                      {!isSmall&&info.description&&(
+                        <div style={{padding:"11px 13px 13px"}}>
+                          <div style={{fontSize:13,color:muted,lineHeight:1.45}}>{info.description}</div>
                         </div>
                       )}
                     </button>
@@ -2926,13 +2975,13 @@ export default function OccasionDetail(){
                       <div style={{display:"flex",flexDirection:"column",gap:10}}>{essential.filter(v=>ALL_VENDORS.includes(v)).map(v=>serviceCard(v,"large"))}</div>
                     </div>
                   )}
-                  {recOnly.length>0&&<>{tierLabel(`Most people add these${city.trim()?` · ${city}`:""}`,gold,"Based on your venue, guests & theme")}<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>{recOnly.filter(v=>ALL_VENDORS.includes(v)).map(v=>serviceCard(v,"small"))}</div></>}
-                  {addOns.length>0&&<>{tierLabel("Nice to have","rgba(28,9,0,0.4)","Browse extras — add anything that fits")}<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
+                  {recOnly.length>0&&<>{tierLabel(`Most people add these${city.trim()?` · ${city}`:""}`,gold,"Based on your venue, guests & theme")}<div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:7,marginBottom:14}}>{recOnly.filter(v=>ALL_VENDORS.includes(v)).map(v=>serviceCard(v,"small"))}</div></>}
+                  {addOns.length>0&&<>{tierLabel("Nice to have","rgba(28,9,0,0.4)","Browse extras — add anything that fits")}<div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:7,marginBottom:14}}>
                     {addOns.filter(v=>!venueCovers.includes(v)).map(v=>serviceCard(v,"small"))}
                     <button onClick={()=>setShowCustomVendorInput(v=>!v)}
-                      style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,minHeight:84,borderRadius:13,border:`1.5px dashed ${showCustomVendorInput?"rgba(196,122,46,0.5)":"rgba(196,122,46,0.28)"}`,background:showCustomVendorInput?"rgba(196,122,46,0.06)":"#fff",color:"rgba(196,122,46,0.7)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s",letterSpacing:"-0.01em"}}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                      Add other service
+                      style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,minHeight:58,borderRadius:13,border:`1.5px dashed ${showCustomVendorInput?"rgba(196,122,46,0.5)":"rgba(196,122,46,0.28)"}`,background:showCustomVendorInput?"rgba(196,122,46,0.06)":"#fff",color:"rgba(196,122,46,0.7)",fontSize:9.5,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s",letterSpacing:"-0.01em"}}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      Add other
                     </button>
                   </div></>}
                   {byVenueTier.length>0&&(
@@ -4032,6 +4081,30 @@ export default function OccasionDetail(){
                 capture (further below) both render the exact same JSX, never duplicated. */}
             {(()=>{ const planSections=[
             <React.Fragment key="plan-p0">
+            {/* "Your event, start to end" — narrative walkthrough, built from real selections */}
+            {(()=>{
+              const journey=buildEventJourney(occasion,{celebrantName,guests,venueType,city,theme,decorFocusAreas,selectedEntryExperiences,vendors,selectedActivities,customActivities,gifts});
+              return(
+                <div style={{marginBottom:16}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+                    <span style={{fontSize:16}}>✦</span>
+                    <span style={{fontFamily:serif,fontSize:17,color:ink,fontWeight:400}}>Your {occasion.name.toLowerCase()}, start to end</span>
+                  </div>
+                  <div style={{fontSize:11.5,color:muted,marginBottom:14,lineHeight:1.5}}>Here's a picture of how the day will actually feel, based on everything you've chosen so far.</div>
+                  <div style={{position:"relative",paddingLeft:30}}>
+                    <div aria-hidden style={{position:"absolute",left:13,top:6,bottom:6,width:1.5,background:`linear-gradient(180deg,${gold},rgba(196,122,46,0.1))`}}/>
+                    {journey.map((beat,i)=>(
+                      <div key={i} style={{position:"relative",marginBottom:i<journey.length-1?18:0}}>
+                        <div aria-hidden style={{position:"absolute",left:-30,top:0,width:26,height:26,borderRadius:"50%",background:"#fff",border:`1.5px solid ${gold}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>{beat.icon}</div>
+                        <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:3}}>{beat.title}</div>
+                        <div style={{fontSize:13,color:ink,lineHeight:1.6}}>{beat.text}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* plan overview card */}
             <div ref={cardRef} style={{background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",border:`1.5px solid rgba(196,122,46,0.2)`,borderRadius:20,overflow:"hidden",marginBottom:12}}>
               <div style={{background:`linear-gradient(135deg,${gold},${goldLt})`,padding:"18px 20px 16px",position:"relative",overflow:"hidden"}}>

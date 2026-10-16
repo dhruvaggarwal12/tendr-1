@@ -100,8 +100,7 @@ function EntryCard({ idea, selected, occAccent, onExplore }) {
             <span key={tag} style={{ fontSize: 9, fontWeight: 600, color: "rgba(30,15,0,0.38)", background: "rgba(28,9,0,0.05)", borderRadius: 100, padding: "2px 7px" }}>{tag}</span>
           ))}
         </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: idea.priceDisplay === "Quote required" ? muted : ink }}>{idea.priceDisplay}</span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
           <span style={{ fontSize: 11.5, fontWeight: 700, color: occAccent }}>Explore idea →</span>
         </div>
       </div>

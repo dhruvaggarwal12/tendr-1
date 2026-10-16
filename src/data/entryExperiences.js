@@ -37,7 +37,7 @@ export const ENTRY_EXPERIENCES = [
     id: "balloon-tunnel",
     title: "Balloon Tunnel Welcome",
     shortDesc: "Guests of honour walk through a glowing arch of balloons as everyone cheers — simple, visual, and unmistakably festive.",
-    images: ["https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80"],
+    images: ["https://images.unsplash.com/photo-1527490087278-9c75be0b8052?w=800&q=80"],
     suitableOccasions: ["birthday-party", "first-birthday", "baby-shower", "get-together"],
     ageGroups: [],
     tags: ["budget-friendly", "colourful", "photo-moment"],

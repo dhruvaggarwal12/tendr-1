@@ -12,6 +12,7 @@ import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import PlatformFlow from "../../components/PlatformFlow";
 import OccasionPlanner from "../../components/OccasionPlanner";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
+import OccasionCardArt, { OCCASION_CARD_PALETTE } from "../../components/OccasionCardArt";
 import Footer from "../../components/Footer";
 import ChatNudge from "../../components/ChatNudge";
 import { AnimatePresence, easeIn, motion } from "framer-motion";
@@ -1803,7 +1804,15 @@ const Home = () => {
       `}</style>
 
       {/* ── Plan by Occasion ── */}
-      <section id="plan-by-occasion" data-tour="occasion-strip" style={{ background: "#ffffff", padding: "72px 28px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+      <section id="plan-by-occasion" data-tour="occasion-strip" style={{ background: "#F1E7D9", padding: "72px 28px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+        {/* Soft decorative shapes + sparse gold sparkles — kept low-opacity so the cards stay the focus */}
+        <div aria-hidden style={{ position: "absolute", top: "-12%", right: "-8%", width: 420, height: 420, borderRadius: "50%", background: "radial-gradient(circle, rgba(185,120,80,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
+        <div aria-hidden style={{ position: "absolute", bottom: "-18%", left: "-10%", width: 480, height: 480, borderRadius: "50%", background: "radial-gradient(circle, rgba(185,120,80,0.09) 0%, transparent 70%)", pointerEvents: "none" }} />
+        {[[6, 14], [92, 10], [12, 88], [88, 92], [48, 6]].map(([lx, ty], i) => (
+          <svg key={i} aria-hidden width="14" height="14" viewBox="0 0 24 24" style={{ position: "absolute", left: `${lx}%`, top: `${ty}%`, opacity: 0.3, pointerEvents: "none" }}>
+            <path d="M12 2l2.3 7.2L22 12l-7.7 2.8L12 22l-2.3-7.2L2 12l7.7-2.8z" fill="#B97850" />
+          </svg>
+        ))}
 
         <div style={{ maxWidth: 1120, margin: "0 auto", position: "relative" }}>
 
@@ -1813,13 +1822,15 @@ const Home = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-            style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 40, flexWrap: "wrap", gap: 16 }}
+            style={{ marginBottom: 40 }}
           >
-            <div>
-              <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(1.9rem,3.2vw,2.6rem)", fontWeight: 700, color: "#1C0E04", margin: 0, lineHeight: 1.04, letterSpacing: "-0.03em" }}>
-                Pick your occasion
-              </h2>
-            </div>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "#B97850", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 10 }}>Tendr · Celebrate Your Way</div>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.9rem,3.4vw,2.7rem)", fontWeight: 500, color: "#302017", margin: 0, lineHeight: 1.12 }}>
+              Every occasion has a story.
+            </h2>
+            <p style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14.5, color: "rgba(48,32,23,0.62)", margin: "8px 0 0", lineHeight: 1.5 }}>
+              Find the right way to celebrate your special moments.
+            </p>
           </motion.div>
 
           {/* Single-row strip — hover-reveal: non-hovered cards dim */}
@@ -1872,7 +1883,12 @@ const Home = () => {
               const slug = slugMap[label] || "birthday-party";
               const _occ = OCCASIONS.find(o => o.id === slug) || {};
               const emoji = _occ.icon || "🎉";
-              const accent = _occ.color || "#C47A2E";
+              // "House Party" and "Get Together" both navigate to the same "get-together"
+              // occasion page (no separate slug exists for House Party) — but the card art
+              // should still look distinct, so look the palette up by label for this one case.
+              const paletteKey = label === "House Party" ? "house-party" : slug;
+              const pal = OCCASION_CARD_PALETTE[paletteKey] || OCCASION_CARD_PALETTE["birthday-party"];
+              const accent = pal.footer;
               const isHovered = hoveredOcc === label;
               const isDimmed  = hoveredOcc !== null && !isHovered;
               return (
@@ -1894,73 +1910,39 @@ const Home = () => {
                     flexShrink: 0,
                     width: 136,
                     height: 200,
-                    borderRadius: 18,
+                    borderRadius: 20,
                     overflow: "hidden",
-                    border: `1px solid ${isHovered ? accent + "4d" : "rgba(255,255,255,0.07)"}`,
-                    background: "#0E0603",
-                    backgroundImage: `
-                      radial-gradient(ellipse 90% 60% at 50% 0%, ${accent}22 0%, transparent 65%),
-                      radial-gradient(ellipse 80% 50% at 50% 100%, ${accent}17 0%, transparent 70%),
-                      radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0),
-                      linear-gradient(170deg, #160B05 0%, #0E0603 55%, #0A0402 100%)
-                    `,
-                    backgroundSize: "auto, auto, 13px 13px, auto",
+                    border: `1px solid ${isHovered ? accent + "55" : "rgba(48,32,23,0.08)"}`,
+                    background: pal.bg2,
                     cursor: "pointer",
                     padding: 0,
                     display: "flex",
                     flexDirection: "column",
-                    opacity: isDimmed ? 0.45 : 1,
+                    opacity: isDimmed ? 0.55 : 1,
                     transition: "opacity 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
                     boxShadow: isHovered
-                      ? `0 16px 40px rgba(0,0,0,0.35), 0 0 0 1.5px ${accent}70`
-                      : "0 2px 12px rgba(0,0,0,0.18)",
+                      ? `0 16px 36px rgba(48,32,23,0.18), 0 0 0 1.5px ${accent}55`
+                      : "0 2px 10px rgba(48,32,23,0.08)",
                   }}
                 >
-                  {/* top glass-shine edge */}
-                  <div aria-hidden style={{ position: "absolute", top: 0, left: 14, right: 14, height: 1, background: `linear-gradient(to right, transparent, ${accent}90, transparent)`, opacity: isHovered ? 0.8 : 0.4, transition: "opacity 0.25s", zIndex: 2 }} />
-                  {/* Emoji area — top 58% */}
-                  <div style={{
-                    flex: "0 0 58%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    position: "relative",
-                    overflow: "hidden",
-                  }}>
-                    {/* Accent glow behind emoji */}
-                    <div style={{
-                      position: "absolute",
-                      inset: 0,
-                      background: `radial-gradient(ellipse 75% 75% at 50% 60%, ${accent}28 0%, transparent 70%)`,
-                    }} />
-                    {/* Subtle top-edge shimmer */}
-                    <div style={{
-                      position: "absolute",
-                      top: 0, left: 0, right: 0,
-                      height: 40,
-                      background: `linear-gradient(to bottom, ${accent}12, transparent)`,
-                    }} />
-                    <motion.span
-                      animate={{ scale: isHovered ? 1.15 : 1 }}
-                      transition={{ type: "spring", stiffness: 320, damping: 22 }}
-                      style={{ fontSize: 44, lineHeight: 1, position: "relative", zIndex: 1, filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.4))" }}
-                    >
-                      {emoji}
-                    </motion.span>
-                  </div>
+                  {/* Illustration area — top 62% */}
+                  <motion.div
+                    animate={{ scale: isHovered ? 1.06 : 1 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 24 }}
+                    style={{ flex: "0 0 62%", position: "relative", overflow: "hidden" }}
+                  >
+                    <OccasionCardArt slug={paletteKey} />
+                  </motion.div>
 
-                  {/* Divider */}
-                  <div style={{ height: 1, background: `linear-gradient(to right, transparent, ${accent}50, transparent)`, margin: "0 16px" }} />
-
-                  {/* Label area — bottom 42% */}
+                  {/* Dark occasion-specific footer — bottom 38% */}
                   <div style={{
-                    flex: "0 0 42%",
+                    flex: "0 0 38%",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
                     padding: "10px 12px 14px",
-                    background: `linear-gradient(to bottom, ${accent}0d, rgba(0,0,0,0.26))`,
+                    background: accent,
                     position: "relative",
                     gap: 6,
                   }}>
@@ -1977,14 +1959,14 @@ const Home = () => {
                       {label}
                     </span>
                     <motion.div
-                      animate={{ opacity: isHovered ? 1 : 0.55, x: isHovered ? 2 : 0 }}
+                      animate={{ opacity: isHovered ? 1 : 0.6, x: isHovered ? 2 : 0 }}
                       transition={{ duration: 0.18 }}
                       style={{
                         display: "flex", alignItems: "center", gap: 4,
                       }}
                     >
-                      <span style={{ fontSize: 8.5, color: accent, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase" }}>Explore</span>
-                      <span style={{ fontSize: 10, color: accent, lineHeight: 1 }}>→</span>
+                      <span style={{ fontSize: 8.5, color: "#FFF8EC", fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase" }}>Explore</span>
+                      <span style={{ fontSize: 10, color: "#FFF8EC", lineHeight: 1 }}>→</span>
                     </motion.div>
                   </div>
 
@@ -1992,14 +1974,14 @@ const Home = () => {
                   <motion.div
                     animate={{ opacity: isHovered ? 1 : 0 }}
                     transition={{ duration: 0.18 }}
-                    style={{ position: "absolute", inset: 0, borderRadius: 17, border: `1.5px solid ${accent}60`, pointerEvents: "none" }}
+                    style={{ position: "absolute", inset: 0, borderRadius: 19, border: `1.5px solid ${accent}70`, pointerEvents: "none" }}
                   />
                 </motion.button>
               );
             })}
           </div>
 
-          <div style={{ position: "absolute", right: 0, top: 0, bottom: 6, width: 80, background: "linear-gradient(to right, transparent, #ffffff)", pointerEvents: "none", zIndex: 1 }} />
+          <div style={{ position: "absolute", right: 0, top: 0, bottom: 6, width: 80, background: "linear-gradient(to right, transparent, #F1E7D9)", pointerEvents: "none", zIndex: 1 }} />
           </div>
           <style>{`
             .occ-strip::-webkit-scrollbar { display: none; }
@@ -3394,17 +3376,6 @@ const Home = () => {
                         <div style={{fontSize:15,fontWeight:700,color:"#1C0900",marginBottom:2}}>Jump Straight In</div>
                         <div style={{fontSize:11.5,color:"rgba(28,9,0,0.5)",lineHeight:1.4}}>Skip theme — go directly to vendors</div>
                       </div>
-                    </button>
-                    {/* Price estimate — only shown inside "Plan the Party", not alongside Party Hub */}
-                    <button
-                      onClick={()=>{
-                        setOccModal(null);
-                        const occName = PRICE_ESTIMATOR_OCCASION[occModal.slug] || occModal.label;
-                        openPriceEstimator({ occasion: occName });
-                      }}
-                      style={{display:"block",width:"100%",textAlign:"center",marginTop:4,padding:"9px 0",border:"none",background:"none",color:g,fontSize:12.5,fontWeight:700,cursor:"pointer",fontFamily:f}}
-                    >
-                      Not sure on budget? Get a quick estimate →
                     </button>
                   </div>
                 )}
