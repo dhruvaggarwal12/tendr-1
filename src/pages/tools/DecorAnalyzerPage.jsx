@@ -15,10 +15,10 @@ export default function DecorAnalyzerPage() {
             AI Tool
           </div>
           <h1 style={{ fontSize: 26, fontWeight: 800, color: "#1C0900", margin: 0, lineHeight: 1.2 }}>
-            Venue Decor Analyser
+            Decor Analyser
           </h1>
           <p style={{ fontSize: 14, color: "rgba(28,9,0,0.55)", marginTop: 8, lineHeight: 1.6 }}>
-            Upload a photo of your venue and get AI-powered decoration suggestions — colour palette, zones, lighting, and top picks tailored to your space.
+            Upload a photo of your own venue for decoration ideas tailored to your space — or upload a reference/inspiration photo you like, and we'll break down exactly what it'd take to recreate it.
           </p>
         </div>
 

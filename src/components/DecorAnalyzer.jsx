@@ -92,6 +92,11 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
   const [drag, setDrag]         = useState(false);
   const [errMsg, setErrMsg]     = useState("");
   const [expandSection, setExpandSection] = useState({ zones: true, lighting: false, tips: false });
+  // "venue" — a photo of the customer's own space, analysed for what would suit it.
+  // "reference" — an inspiration/reference photo they like, broken down into what's
+  // needed to recreate it. Same backend route, same result shape, different prompt.
+  const [mode, setMode] = useState("venue");
+  const isRef = mode === "reference";
 
   const processFile = useCallback(async (file) => {
     if (!file || !file.type.startsWith("image/")) return;
@@ -122,6 +127,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
           image: imageData.base64,
           mediaType: imageData.mediaType,
           context: { eventType, colorPreference: colorPref },
+          mode,
         }),
       });
       const data = await res.json();
@@ -139,18 +145,18 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
     if (!analysis) return;
     const a = analysis;
     const lines = [
-      `🎨 *Venue Decor Analysis*`,
+      isRef ? `✨ *Reference Look Breakdown*` : `🎨 *Venue Decor Analysis*`,
       eventType ? `Event: ${eventType}` : "",
       ``,
-      `*Space*: ${a.spaceType || "Your venue"} — ${a.style || ""}`,
+      isRef ? `*Look*: ${a.spaceType || "Reference look"} — ${a.style || ""}` : `*Space*: ${a.spaceType || "Your venue"} — ${a.style || ""}`,
       ``,
-      `*Top Decoration Ideas:*`,
+      isRef ? `*Worth Prioritising:*` : `*Top Decoration Ideas:*`,
       ...(a.topPicks || []).map(p => `• ${p.title} (${p.cost || ""})`),
       ``,
-      `*Decoration Zones:*`,
+      isRef ? `*What's Needed:*` : `*Decoration Zones:*`,
       ...(a.decorZones || []).map(z => `• ${z.zone}: ${z.suggestion}`),
       ``,
-      "Can you help me decorate based on this analysis?",
+      isRef ? "Can you help me recreate this look?" : "Can you help me decorate based on this analysis?",
     ].filter(l => l !== undefined);
     openOccasionsChat(lines.join("\n"));
     if (onClose) onClose();
@@ -165,6 +171,20 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
   // ── Upload screen ─────────────────────────────────────────────────────────
   if (phase === "idle" && !preview) return (
     <div style={{ fontFamily: F, display: "flex", flexDirection: "column", gap: 20, padding: compact ? 0 : "4px 0" }}>
+      {/* Mode toggle — my venue vs. a reference/inspiration photo */}
+      <div style={{ display: "flex", gap: 8 }}>
+        <button onClick={() => setMode("venue")}
+          style={{ flex: 1, textAlign: "left", padding: "12px 13px", borderRadius: 13, border: `1.5px solid ${!isRef ? GOLD : "rgba(196,122,46,0.18)"}`, background: !isRef ? "rgba(196,122,46,0.07)" : "#fff", cursor: "pointer", fontFamily: F }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: !isRef ? GOLD : INK, marginBottom: 2 }}>📷 My Venue</div>
+          <div style={{ fontSize: 10.5, color: MUTED, lineHeight: 1.35 }}>What would suit my actual space</div>
+        </button>
+        <button onClick={() => setMode("reference")}
+          style={{ flex: 1, textAlign: "left", padding: "12px 13px", borderRadius: 13, border: `1.5px solid ${isRef ? GOLD : "rgba(196,122,46,0.18)"}`, background: isRef ? "rgba(196,122,46,0.07)" : "#fff", cursor: "pointer", fontFamily: F }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: isRef ? GOLD : INK, marginBottom: 2 }}>✨ A Look I Like</div>
+          <div style={{ fontSize: 10.5, color: MUTED, lineHeight: 1.35 }}>What it'd take to recreate it</div>
+        </button>
+      </div>
+
       {/* Drop zone */}
       <div
         onDragOver={e => { e.preventDefault(); setDrag(true); }}
@@ -178,9 +198,9 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
           transition: "all 0.18s",
         }}
       >
-        <div style={{ fontSize: 40, marginBottom: 12 }}>📷</div>
-        <div style={{ fontSize: 15, fontWeight: 700, color: INK, marginBottom: 6 }}>Upload your venue photo</div>
-        <div style={{ fontSize: 12.5, color: MUTED, lineHeight: 1.5 }}>Drop a photo or tap to browse</div>
+        <div style={{ fontSize: 40, marginBottom: 12 }}>{isRef ? "✨" : "📷"}</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: INK, marginBottom: 6 }}>{isRef ? "Upload a reference photo" : "Upload your venue photo"}</div>
+        <div style={{ fontSize: 12.5, color: MUTED, lineHeight: 1.5 }}>{isRef ? "A decor look you found online or liked somewhere" : "Drop a photo or tap to browse"}</div>
         <div style={{ fontSize: 11, color: "rgba(196,122,46,0.6)", marginTop: 8 }}>JPG, PNG · Auto-resized · Not stored</div>
         <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFile} />
       </div>
@@ -225,7 +245,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
       </div>
       <button onClick={analyse}
         style={{ padding: "14px", borderRadius: 12, border: "none", background: `linear-gradient(135deg,${GOLD},#D4A848)`, color: "#fff", fontSize: 14.5, fontWeight: 800, cursor: "pointer", fontFamily: F, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 6px 20px rgba(196,122,46,0.35)" }}>
-        ✨ Analyse Venue Decor
+        {isRef ? "✨ Break Down This Look" : "✨ Analyse Venue Decor"}
       </button>
     </div>
   );
@@ -241,10 +261,10 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
       </div>
       <style>{`@keyframes da-spin{to{transform:rotate(360deg)}}`}</style>
       <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: 16, fontWeight: 700, color: INK, marginBottom: 4 }}>Analysing your venue…</div>
-        <div style={{ fontSize: 12.5, color: MUTED, lineHeight: 1.5 }}>Our AI is reading the space, colours and layout<br />to suggest the best decor ideas for you.</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: INK, marginBottom: 4 }}>{isRef ? "Breaking down this look…" : "Analysing your venue…"}</div>
+        <div style={{ fontSize: 12.5, color: MUTED, lineHeight: 1.5 }}>{isRef ? <>Our AI is reading the decor elements and colours<br />to work out what it'd take to recreate this.</> : <>Our AI is reading the space, colours and layout<br />to suggest the best decor ideas for you.</>}</div>
       </div>
-      {["Identifying zones & focal points", "Matching colours to the space", "Building decoration suggestions"].map((s, i) => (
+      {(isRef ? ["Identifying decor elements", "Matching the colour palette", "Working out what's needed"] : ["Identifying zones & focal points", "Matching colours to the space", "Building decoration suggestions"]).map((s, i) => (
         <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: MUTED }}>
           <div style={{ width: 6, height: 6, borderRadius: "50%", background: GOLD, animation: `da-pulse ${1.2 + i * 0.4}s ease-in-out infinite alternate` }} />
           <style>{`@keyframes da-pulse{from{opacity:0.3}to{opacity:1}}`}</style>
@@ -288,10 +308,10 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
         </div>
       )}
 
-      {/* What AI sees in your space */}
+      {/* What AI sees in the photo */}
       {a.existingElements?.length > 0 && (
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 10.5, fontWeight: 800, color: MUTED, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>What we see in your space</div>
+          <div style={{ fontSize: 10.5, fontWeight: 800, color: MUTED, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{isRef ? "Elements in this look" : "What we see in your space"}</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {a.existingElements.map((el, i) => (
               <span key={i} style={{ fontSize: 11.5, padding: "4px 10px", borderRadius: 20, background: "rgba(28,9,0,0.05)", color: "#4A2810", border: "1px solid rgba(28,9,0,0.08)" }}>
@@ -323,7 +343,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
       {/* Top picks */}
       {a.topPicks?.length > 0 && (
         <div style={{ marginBottom: 18 }}>
-          <div style={{ fontSize: 10.5, fontWeight: 800, color: GOLD, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>Top picks for this space</div>
+          <div style={{ fontSize: 10.5, fontWeight: 800, color: GOLD, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>{isRef ? "Worth prioritising" : "Top picks for this space"}</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {a.topPicks.map((p, i) => (
               <div key={i} style={{ background: "#fff", border: "1.5px solid rgba(196,122,46,0.15)", borderRadius: 12, padding: "12px 14px" }}>
@@ -344,7 +364,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
         <div style={{ marginBottom: 18 }}>
           <button onClick={() => toggleSection("zones")}
             style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: "none", border: "none", cursor: "pointer", padding: "0 0 10px", fontFamily: F }}>
-            <div style={{ fontSize: 10.5, fontWeight: 800, color: GOLD, textTransform: "uppercase", letterSpacing: "0.12em" }}>Decoration zones ({a.decorZones.length})</div>
+            <div style={{ fontSize: 10.5, fontWeight: 800, color: GOLD, textTransform: "uppercase", letterSpacing: "0.12em" }}>{isRef ? `What you'll need (${a.decorZones.length})` : `Decoration zones (${a.decorZones.length})`}</div>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2" strokeLinecap="round" style={{ transform: expandSection.zones ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           {expandSection.zones && (
