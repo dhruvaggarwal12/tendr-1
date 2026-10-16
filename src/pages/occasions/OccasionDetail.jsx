@@ -422,8 +422,23 @@ const SUGGESTED_FOOD = {
   "office-party":   ["Sandwiches","Wraps","Salad bar","Mocktail bar","Tea & coffee","Mini desserts","Cookies","Fries","Pasta","Fruit platter"],
 };
 
+// One menu touch per theme mood, layered onto the mid-tier catering option so the
+// theme shows up in what's actually served, not just how the page looks.
+function themedCateringTouch(tags) {
+  if(tags.includes("bollywood")||tags.includes("indian")||tags.includes("desi")) return "Live chaat / pani puri counter with regional specialties";
+  if(tags.includes("pastel")||tags.includes("floral")) return "High-tea styling with floral-themed mini desserts";
+  if(tags.includes("neon")||tags.includes("glow")||tags.includes("disco")) return "Late-night snack bar with a neon-lit dessert station";
+  if(tags.includes("gold")||tags.includes("elegant")||tags.includes("glam")) return "Plated fine-dining presentation with premium garnish";
+  if(tags.includes("jungle")||tags.includes("safari")||tags.includes("nature")||tags.includes("green")) return "Live BBQ / grill station with rustic plating";
+  if(tags.includes("minimal")||tags.includes("white")||tags.includes("modern")) return "Clean, minimalist plated service";
+  if(tags.includes("royal")||tags.includes("mughal")) return "Mughlai specialty counter with a royal thali presentation";
+  if(tags.includes("corporate")||tags.includes("professional")) return "Branded napkins and professional plated service";
+  if(tags.includes("colourful")||tags.includes("rainbow")) return "Candy-colour dessert bar with rainbow treats";
+  return null;
+}
+
 /* ── 3 personalised catering style options ── */
-function getCateringOptions(occasion, {guests=20, venueType="", ageGroups=[], budget=0}) {
+function getCateringOptions(occasion, {guests=20, venueType="", ageGroups=[], budget=0, theme=null}) {
   const id     = occasion?.id||"";
   const venue  = venueType.toLowerCase();
   const ages   = ageGroups;
@@ -432,6 +447,9 @@ function getCateringOptions(occasion, {guests=20, venueType="", ageGroups=[], bu
   const isBig  = guests>50;
   const isFormal= venue.includes("banquet")||venue.includes("hall");
   const isOutdoor= venue.includes("garden")||venue.includes("outdoor")||venue.includes("rooftop")||venue.includes("farmhouse");
+  const tags   = (theme?.tags||[]).join(" ").toLowerCase();
+  const themeTouch = themedCateringTouch(tags);
+  const withTouch = (dishes) => themeTouch ? [...dishes, themeTouch] : dishes;
   /* occasion-specific overrides */
   const isOffice    = id==="office-party";
   const isAnniv     = id==="anniversary";
@@ -440,25 +458,25 @@ function getCateringOptions(occasion, {guests=20, venueType="", ageGroups=[], bu
 
   if(isOffice) return [
     { style:"Corporate Buffet", tagline:"Professional, clean — works for all teams", tier:"Budget-friendly", icon:"🍽️", dishes:["Sandwiches & wraps station","Salad bar","1 veg + 1 non-veg main","Dal + rice","Dessert corner"] },
-    { style:"Buffet + Live Counters", tagline:"Popular for office dos — interactive and fun", tier:"Mid-range", icon:"🧑‍🍳", popular:true, dishes:["Waiter-served starters","Live pasta / pizza counter","2 mains","Mocktail bar","Dessert table"] },
+    { style:"Buffet + Live Counters", tagline:"Popular for office dos — interactive and fun", tier:"Mid-range", icon:"🧑‍🍳", popular:true, dishes:withTouch(["Waiter-served starters","Live pasta / pizza counter","2 mains","Mocktail bar","Dessert table"]) },
     { style:"Full Service Dinner", tagline:"Awards night or annual party — premium feel", tier:"Premium", icon:"✨", dishes:["Welcome drink + starters","Plated main course","Live dessert station","Custom menu cards","Dedicated service staff"] },
   ];
 
   if(isAnniv) return [
     { style:"Intimate Dinner Setup", tagline:"Romantic plating, courses served at the table", tier:"Budget-friendly", icon:"🍽️", dishes:["Welcome champagne mocktail","Soup + salad","Plated main with 2 sides","Candle-lit dessert presentation"] },
-    { style:"Buffet + Live Counter", tagline:"Great for a larger anniversary with family & friends", tier:"Mid-range", icon:"🧑‍🍳", popular:true, dishes:["Starter round by waiter","3 mains + live pasta/chaat counter","Salad bar","Dessert table with couple's cake"] },
+    { style:"Buffet + Live Counter", tagline:"Great for a larger anniversary with family & friends", tier:"Mid-range", icon:"🧑‍🍳", popular:true, dishes:withTouch(["Starter round by waiter","3 mains + live pasta/chaat counter","Salad bar","Dessert table with couple's cake"]) },
     { style:"Full Waiter Service", tagline:"Formal, sophisticated — a true celebration dinner", tier:"Premium", icon:"✨", dishes:["Multi-course plated meal","4+ mains with accompaniments","Custom anniversary cake served","Personalised menu cards"] },
   ];
 
   if(isBabyEvent) return [
     { style:"Light Snacks & High Tea", tagline:"Ideal for daytime baby events — easy, elegant", tier:"Budget-friendly", icon:"☕", dishes:["Sandwiches & wraps","Mini pastries & biscuits","Juice / mocktail bar","Fruit platter","Cake station"] },
-    { style:"Buffet with Kids Corner", tagline:"Feeds all ages — most popular for baby events", tier:"Mid-range", icon:"🍽️", popular:true, dishes:["1 veg + 1 non-veg main","Dal + rice + roti","Kids corner: mini pizza & fries","Dessert table","Juice station (no aerated drinks)"] },
+    { style:"Buffet with Kids Corner", tagline:"Feeds all ages — most popular for baby events", tier:"Mid-range", icon:"🍽️", popular:true, dishes:withTouch(["1 veg + 1 non-veg main","Dal + rice + roti","Kids corner: mini pizza & fries","Dessert table","Juice station (no aerated drinks)"]) },
     { style:"Finger Food & Live Counters", tagline:"Fun and casual — great if guests will be standing", tier:"Mid-range", icon:"🧆", dishes:["Live chaat counter","Mini sandwiches & sliders","Healthy fruit skewers","Cake + dessert table","Mocktails"] },
   ];
 
   if(isHouse) return [
     { style:"Traditional Thali", tagline:"Warm, homely, auspicious — perfect for housewarming", tier:"Budget-friendly", icon:"🍛", dishes:["Puja prasad (halwa/puri)","Full North/South Indian thali","Dal + rice + roti","Sweet mithai plate","Aam panna / chaas"] },
-    { style:"Buffet with Live Starters", tagline:"Traditional + a touch of fun — crowd pleaser", tier:"Mid-range", icon:"🧑‍🍳", popular:true, dishes:["Live chaat / samosa counter","Thali-style mains","Dessert platter","Fresh juices + mocktails"] },
+    { style:"Buffet with Live Starters", tagline:"Traditional + a touch of fun — crowd pleaser", tier:"Mid-range", icon:"🧑‍🍳", popular:true, dishes:withTouch(["Live chaat / samosa counter","Thali-style mains","Dessert platter","Fresh juices + mocktails"]) },
     { style:"Full Buffet & Service", tagline:"If you want to go all out for the housewarming", tier:"Premium", icon:"✨", dishes:["Welcome sherbet + starters","4 mains + dal + rice + breads","Live dessert counter","Service staff throughout"] },
   ];
 
@@ -477,9 +495,9 @@ function getCateringOptions(occasion, {guests=20, venueType="", ageGroups=[], bu
       style: (isFormal||isBig) ? "Buffet + Waiter Service" : "Buffet + Live Counter",
       tagline: (isFormal||isBig) ? "Most popular for halls & big events" : "Fun, interactive — guests love it",
       tier:"Mid-range", icon:"🧑‍🍳", popular:true,
-      dishes: (isFormal||isBig)
+      dishes: withTouch((isFormal||isBig)
         ? ["Waiter-served starters","3 mains + live counter",hasKids?"Kids corner":"Salad bar","Dessert table"]
-        : ["Live chaat / pav bhaji counter","2–3 mains",hasKids?"Kids corner":"Salad bar","Dessert station"],
+        : ["Live chaat / pav bhaji counter","2–3 mains",hasKids?"Kids corner":"Salad bar","Dessert station"]),
     },
     {
       style:"Full Waiter Service",
@@ -491,11 +509,27 @@ function getCateringOptions(occasion, {guests=20, venueType="", ageGroups=[], bu
   ];
 }
 
+// One decor item per theme mood, layered onto the mid-tier decor option of every
+// occasion branch below — mirrors themedCateringTouch's role for catering.
+function themedDecorTouch(tags) {
+  if(tags.includes("pastel")||tags.includes("floral")) return "Fresh floral centrepieces in soft pastel tones";
+  if(tags.includes("neon")||tags.includes("glow")||tags.includes("disco")) return "Neon sign with the celebrant's name/age";
+  if(tags.includes("bollywood")||tags.includes("indian")||tags.includes("desi")) return "Marigold garlands and colourful dupatta draping";
+  if(tags.includes("gold")||tags.includes("elegant")||tags.includes("glam")) return "Gold balloon arch with warm uplighting";
+  if(tags.includes("jungle")||tags.includes("safari")||tags.includes("nature")||tags.includes("green")) return "Tropical leaf backdrop with terracotta pot accents";
+  if(tags.includes("minimal")||tags.includes("white")||tags.includes("modern")) return "White balloon wall with geometric frames";
+  if(tags.includes("royal")||tags.includes("mughal")) return "Regal drapery with chandelier-style lighting";
+  if(tags.includes("colourful")||tags.includes("rainbow")) return "Rainbow balloon garland with cloud cutouts";
+  return null;
+}
+
 /* ── 3 personalised decorator style options (occasion-aware) ── */
 function getDecorOptions(occasion, {guests=20, venueType="", theme=null, ageGroups=[]}) {
   const id     = occasion?.id||"";
   const venue  = venueType.toLowerCase();
   const tags   = (theme?.tags||[]).join(" ").toLowerCase();
+  const decorTouch = themedDecorTouch(tags);
+  const withDecorTouch = (items) => decorTouch ? [...items, decorTouch] : items;
   const outdoor= venue.includes("garden")||venue.includes("outdoor")||venue.includes("farmhouse")||venue.includes("rooftop");
   const hasKids= (ageGroups||[]).includes("Kids")||(ageGroups||[]).includes("Toddlers");
   const isBaby = ["baby-shower","newborn-welcome","first-birthday","naming-ceremony","gender-reveal"].includes(id);
@@ -505,22 +539,22 @@ function getDecorOptions(occasion, {guests=20, venueType="", theme=null, ageGrou
 
   if(isBaby) return [
     { style:"Soft & Sweet",       tagline:"Pastel setup — gentle, airy, baby-perfect",       tier:"Budget-friendly", icon:"🍼", items:["Pastel balloon clusters at entry","Soft backdrop with baby motifs","Table centrepieces","Cradle / highchair decor"] },
-    { style:"Full Baby Setup",    tagline:"Full venue coverage — most popular for baby events",tier:"Mid-range",      icon:"🎀",popular:true, items:["Balloon arch at entry","Themed backdrop + name board","All table décor",id==="gender-reveal"?"Pink & Blue reveal corner":"Dedicated cake/gift table area"] },
+    { style:"Full Baby Setup",    tagline:"Full venue coverage — most popular for baby events",tier:"Mid-range",      icon:"🎀",popular:true, items:withDecorTouch(["Balloon arch at entry","Themed backdrop + name board","All table décor",id==="gender-reveal"?"Pink & Blue reveal corner":"Dedicated cake/gift table area"]) },
     { style:"Premium Baby Event", tagline:"Every corner styled, photo-ready throughout",      tier:"Premium",         icon:"✨", items:["Custom floral installation","Balloon ceiling or canopy","Personalised name / age banner","Photo corner with full props","Cake table centrepiece"] },
   ];
   if(isAnniv) return [
     { style:"Romantic Essentials",tagline:"Intimate candle-lit setup — couple-focused",       tier:"Budget-friendly", icon:"🕯️",items:["Fairy light backdrop","Rose & candle centrepieces","Couple photo timeline wall","Welcome garland at entry"] },
-    { style:"Full Celebration",   tagline:"Guests + couple — full venue dressed beautifully", tier:"Mid-range",       icon:"💍",popular:true,items:["Floral arch at entry","Backdrop + couple photos","All table décor (candles + flowers)",outdoor?"String lights overhead":"Balloon ceiling or draping"] },
+    { style:"Full Celebration",   tagline:"Guests + couple — full venue dressed beautifully", tier:"Mid-range",       icon:"💍",popular:true,items:withDecorTouch(["Floral arch at entry","Backdrop + couple photos","All table décor (candles + flowers)",outdoor?"String lights overhead":"Balloon ceiling or draping"]) },
     { style:"Grand Anniversary",  tagline:"Golden or silver jubilee — nothing held back",     tier:"Premium",         icon:"👑", items:["Floral wall or floral arch installation","Custom milestone backdrop (25/50 years)","Lighting setup included","Photo corner + memory wall","Floating candles or lantern arrangement"] },
   ];
   if(isOffice) return [
     { style:"Corporate Clean",    tagline:"Professional branded setup — minimal & sharp",     tier:"Budget-friendly", icon:"🏢", items:["Company branding backdrop","Branded table signage","Clean floral centrepieces","Award / recognition display area"] },
-    { style:"Corporate Festive",  tagline:"Professional + a warm festive feel",               tier:"Mid-range",       icon:"🎊",popular:true,items:["Branded backdrop + balloon columns","Themed table décor","Recognition board / award wall","Photo corner with company branding"] },
+    { style:"Corporate Festive",  tagline:"Professional + a warm festive feel",               tier:"Mid-range",       icon:"🎊",popular:true,items:withDecorTouch(["Branded backdrop + balloon columns","Themed table décor","Recognition board / award wall","Photo corner with company branding"]) },
     { style:"Premium Office Event",tagline:"Awards night or big team party — full setup",     tier:"Premium",         icon:"✨", items:["Full venue branding","Stage décor for awards ceremony","LED lighting + ambience","Photo wall + step & repeat backdrop","Custom table naming"] },
   ];
   if(isHouse) return [
     { style:"Auspicious & Warm",  tagline:"Traditional feel — flowers, diyas, warm tones",   tier:"Budget-friendly", icon:"🪔", items:["Marigold garlands at entry","Diya clusters on tables","Traditional flower centrepieces","Welcome rangoli at door"] },
-    { style:"Full House Décor",   tagline:"Entire home / venue dressed — most popular",       tier:"Mid-range",       icon:"🏠",popular:true,items:["Flower arch at main entrance","Table centrepieces for all areas","Living room focal point (arch or wall)",outdoor?"String lights in garden":"Fairy light interior setup"] },
+    { style:"Full House Décor",   tagline:"Entire home / venue dressed — most popular",       tier:"Mid-range",       icon:"🏠",popular:true,items:withDecorTouch(["Flower arch at main entrance","Table centrepieces for all areas","Living room focal point (arch or wall)",outdoor?"String lights in garden":"Fairy light interior setup"]) },
     { style:"Grand Housewarming", tagline:"Statement event — every room styled",              tier:"Premium",         icon:"✨", items:["Full venue transformation","Outdoor lighting setup","Custom welcome board","Flower wall installation","Puja area decorated separately"] },
   ];
   return [
@@ -813,6 +847,8 @@ function getVendorTips(type, {theme, venueType, ageGroups, cateringType, budget,
     } else {
       menu.push("Discuss service style with caterer","2–3 main options","Starters + mains + dessert","Beverage station");
     }
+    const cateringTouch = themedCateringTouch(tags);
+    if(cateringTouch) menu.push(cateringTouch);
     if(ages.includes("Kids")||ages.includes("Toddlers")) {
       menu.push("Kids corner: mini pizza + pasta + fries","Juice station (no aerated drinks)");
     }
@@ -1014,7 +1050,7 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
       items:["Buffet service","1 veg + 1 non-veg main","Dal, rice & bread","Basic dessert",hasKids?"Kids-friendly options":"Water station"],
       note:"Simple & reliable for any occasion"},
     {label:"Standard",price:"₹550–750/head",popular:true,
-      items:["Buffet + waiter service","2–3 main options","Live starters counter","Salad bar & dessert station",hasKids?"Kids corner (mini pizza, fries)":"Custom beverage station"],
+      items:["Buffet + waiter service","2–3 main options","Live starters counter","Salad bar & dessert station",hasKids?"Kids corner (mini pizza, fries)":(themedCateringTouch(tags)||"Custom beverage station")],
       note:"Covers all tastes — most popular"},
     {label:"Premium",price:"₹850–1,200/head",
       items:["Full waiter service","4+ mains + live counters","Cocktail starter round","Curated dessert table","Custom menu cards"],
@@ -1026,7 +1062,7 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
       items:["3-hour set","Basic speaker setup","Standard playlist"],
       note:"Solid music — no frills"},
     {label:"Standard",price:"₹15K–22K",popular:true,
-      items:["4-hour set","DJ + LED light effects","Custom playlist coordination","Mic for announcements"],
+      items:["4-hour set","DJ + LED light effects",tags.includes("bollywood")||tags.includes("indian")?"Bollywood & regional playlist":tags.includes("neon")||tags.includes("glow")?"EDM / dance-floor playlist":tags.includes("gold")||tags.includes("elegant")?"Lounge + dinner playlist":"Custom playlist coordination","Mic for announcements"],
       note:"Dance floor guaranteed"},
     {label:"Premium",price:"₹28K–45K",
       items:["5-hour set","Moving heads + smoke machine","Custom mashups & remixing","Dedicated setup engineer"],
@@ -1038,7 +1074,7 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
       items:["3-hour coverage","150–200 edited photos","Delivery in 7 days"],
       note:"Key moments captured"},
     {label:"Standard",price:"₹18K–28K",popular:true,
-      items:["5-hour coverage","400+ edited photos","Candid + group shots","Delivery in 5 days"],
+      items: theme ? ["5-hour coverage","400+ edited photos","Candid + group shots",`Shots styled around your "${theme.name}" look`] : ["5-hour coverage","400+ edited photos","Candid + group shots","Delivery in 5 days"],
       note:"Full event covered — most popular"},
     {label:"Premium",price:"₹35K–55K",
       items:["Full-day coverage","600+ edited photos","2nd photographer","Printed photo album"],
@@ -1050,7 +1086,7 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
       items:["3-hour coverage","3–5 min edited highlight reel","Basic colour grade"],
       note:"Key moments in a shareable reel"},
     {label:"Standard",price:"₹22K–35K",popular:true,
-      items:["5-hour coverage","Full event + highlight reel","Licensed background music","Delivery in 7 days"],
+      items: theme ? ["5-hour coverage","Full event + highlight reel",`Reel edited to match your "${theme.name}" mood`,"Delivery in 7 days"] : ["5-hour coverage","Full event + highlight reel","Licensed background music","Delivery in 7 days"],
       note:"Cinematic full coverage"},
     {label:"Premium",price:"₹45K–70K",
       items:["Full-day coverage","Drone aerial shots","Cinematic edit + reel","2 videographers"],
@@ -1074,7 +1110,7 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
       items:[hasKids?"Magician (45 min)":"Games host (1 hr)","Basic props","1 activity"],
       note:"One solid act for the crowd"},
     {label:"Standard",price:"₹12K–18K",popular:true,
-      items:[hasKids?"Magician + balloon twisting":"Interactive games MC","2 activities / acts","Tailored to your age groups"],
+      items:[hasKids?"Magician + balloon twisting":tags.includes("bollywood")||tags.includes("indian")?"Bollywood dance performance":tags.includes("neon")||tags.includes("glow")?"Glow / LED performance act":"Interactive games MC","2 activities / acts","Tailored to your age groups"],
       note:"Keeps the crowd engaged throughout"},
     {label:"Premium",price:"₹22K–35K",
       items:[hasKids?"Multi-act kids package":"Full event host","Face painting + crafts + show","Customised for your theme"],
@@ -1086,7 +1122,7 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
       items:["Digital photo booth","Basic props box","QR share to phone"],
       note:"Instant fun — guests love it"},
     {label:"Standard",price:"₹11K–17K",popular:true,
-      items:["Prints + digital","Themed backdrop","Full props collection","Unlimited sessions"],
+      items:["Prints + digital",theme?`Backdrop matching "${theme.name}"`:"Themed backdrop","Full props collection","Unlimited sessions"],
       note:"Most popular party setup"},
     {label:"Premium",price:"₹20K–32K",
       items:["GIF + Boomerang + video booth","Custom overlay with event name","Roaming camera option","Full digital album"],
@@ -1098,7 +1134,7 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
       items:["3-piece band","2-hour performance","Standard setlist"],
       note:"Live music energy on a budget"},
     {label:"Standard",price:"₹28K–45K",popular:true,
-      items:["5-piece band","3-hour performance","Customised song requests","Sound system included"],
+      items:["5-piece band","3-hour performance",tags.includes("bollywood")||tags.includes("indian")?"Bollywood & regional setlist":tags.includes("gold")||tags.includes("elegant")?"Jazz & lounge setlist":"Customised song requests","Sound system included"],
       note:"Full live band experience"},
     {label:"Premium",price:"₹55K+",
       items:["7+ piece band","4-hour set","Original arrangements","Lighting & sound engineer"],
@@ -3188,7 +3224,7 @@ export default function OccasionDetail(){
 
                   /* ── Caterer card with 3 style options + menu builder ── */
                   if(v==="Caterer"){
-                    const cOpts=getCateringOptions(occasion,{guests,venueType,ageGroups,budget});
+                    const cOpts=getCateringOptions(occasion,{guests,venueType,ageGroups,budget,theme});
                     const isCustom=chosen==="custom";
                     const hasCustomDishes=Object.values(customCatering.dishes).some(arr=>arr.length>0);
                     const isOpen=expandedVendor==="Caterer";

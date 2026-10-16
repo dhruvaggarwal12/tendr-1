@@ -22,6 +22,10 @@ const vendorPath = (svc, fromPlan) =>
     ? `/artists/${encodeURIComponent(svc)}`
     : `/listings?serviceType=${encodeURIComponent(svc)}${fromPlan ? '&fromPlan=1' : ''}`;
 const SIDEBAR_W = 220; // px
+// How many currently-mounted HamburgerNav instances have applied the body.marginLeft
+// sidebar offset — see the useLayoutEffect below for why this needs to be a count,
+// not a boolean.
+let sidebarMarginRefCount = 0;
 
 const BASE_SPLITS = {
   Caterer:      { pct: 40, emoji: "🍽️", label: "Catering" },
@@ -138,20 +142,27 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const finalisedCount   = Object.keys(finalisedVendors).length;
   const ghCartCount      = useSelector(s => s.giftHamperCart?.items?.length || 0);
 
-  // Push body content right when sidebar is active and open. Uses useLayoutEffect
-  // (not useEffect) so this applies synchronously before paint — on a page-to-page
-  // navigation, the outgoing page's cleanup and the incoming page's own HamburgerNav
-  // mount can otherwise interleave with a regular effect, leaving body.marginLeft
-  // cleared after the new page already rendered, which visually hides the first
-  // ~220px of content behind the (opaque, fixed) sidebar until something else
-  // triggers a re-render.
+  // Push body content right when sidebar is active and open. Uses useLayoutEffect (not
+  // useEffect) so this applies synchronously before paint, and ref-counts across mounts
+  // (see sidebarMarginRefCount) because on a page-to-page navigation the outgoing and
+  // incoming HamburgerNav instances can both be mounted at once — an unconditional clear
+  // in the first one's cleanup would otherwise wipe out the margin the second just set,
+  // hiding the first ~220px of the new page behind the (opaque) sidebar.
   useLayoutEffect(() => {
     if (isSidebar && sidebarOpen) {
+      sidebarMarginRefCount++;
       document.body.style.marginLeft = `${SIDEBAR_W}px`;
-    } else {
-      document.body.style.marginLeft = "";
+      return () => {
+        sidebarMarginRefCount = Math.max(0, sidebarMarginRefCount - 1);
+        // Only the LAST sidebar instance to unmount clears the margin — during a route
+        // transition into/out of a sidebar page, the outgoing and incoming HamburgerNav
+        // can briefly both be mounted with this effect having already run on both, and
+        // an unconditional clear in the first one's cleanup would wipe out the margin the
+        // second one just set, leaving page content rendered behind the (opaque) sidebar.
+        if (sidebarMarginRefCount === 0) document.body.style.marginLeft = "";
+      };
     }
-    return () => { document.body.style.marginLeft = ""; };
+    document.body.style.marginLeft = "";
   }, [isSidebar, sidebarOpen]);
   const FALLBACK = "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=200&q=80";
 
