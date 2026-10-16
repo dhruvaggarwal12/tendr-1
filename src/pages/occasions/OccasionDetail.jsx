@@ -23,12 +23,15 @@ import EntryExperiences from "../../components/EntryExperiences";
 /* ── tokens ── */
 const font  = "'Outfit', sans-serif";
 const serif = "'Cormorant Garamond', Georgia, serif";
-const gold  = "#C47A2E";
-const goldLt= "#D4A848";
+// Brand defaults — used as-is when planning without a theme. When planning WITH a theme,
+// OccasionDetail() shadows these with theme-derived values (see themeColor()) so the whole
+// flow from step 3 onward reads as "this event, in this theme" rather than generic brand gold.
+const BRAND_GOLD   = "#C47A2E";
+const BRAND_GOLD_LT= "#D4A848";
+const BRAND_BORDER = "rgba(196,122,46,0.2)";
 const bg    = "#FDFAF5";
 const ink   = "#1C0900";
 const muted = "rgba(28,9,0,0.55)";
-const border= "rgba(196,122,46,0.2)";
 
 const HUB_ROUTES = {
   "birthday-party":"\/birthday-hub","first-birthday":"\/birthday-hub",
@@ -615,17 +618,39 @@ function getEquipment(id, guests) {
 }
 
 /* ── theme helpers ── */
+// Blends a hex color toward white by `amt` (0-1) — used to derive a "light" companion
+// shade for theme-driven gradients, mirroring the brand's gold/goldLt pairing.
+function lightenHex(hex, amt=0.3) {
+  const h = hex.replace("#","");
+  const r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
+  const mix = (c) => Math.round(c + (255-c)*amt).toString(16).padStart(2,"0");
+  return `#${mix(r)}${mix(g)}${mix(b)}`;
+}
+// Returns "r,g,b" for use inside an rgba(...) string.
+function hexToRgb(hex) {
+  const h = hex.replace("#","");
+  return `${parseInt(h.substring(0,2),16)},${parseInt(h.substring(2,4),16)},${parseInt(h.substring(4,6),16)}`;
+}
+
 function themeColor(tags=[]) {
   const t=tags.join(" ").toLowerCase();
-  if(t.includes("pastel")||t.includes("floral")||t.includes("pink")) return "#FFB6C1";
-  if(t.includes("neon")||t.includes("glow"))  return "#A855F7";
-  if(t.includes("green")||t.includes("nature")||t.includes("garden")||t.includes("jungle")) return "#4D8C6F";
+  if(t.includes("pastel")||t.includes("floral")||t.includes("pink")||t.includes("blush")||t.includes("instagram")) return "#FFB6C1";
+  if(t.includes("neon")||t.includes("glow")||t.includes("disco")) return "#A855F7";
+  if(t.includes("green")||t.includes("nature")||t.includes("garden")||t.includes("jungle")||t.includes("casual")) return "#4D8C6F";
   if(t.includes("navy")||t.includes("stars")) return "#2D3A8C";
-  if(t.includes("bollywood")||t.includes("indian")) return "#FF6B35";
-  if(t.includes("red")||t.includes("red-carpet")) return "#C0392B";
-  if(t.includes("gold")||t.includes("elegant")||t.includes("glam")) return "#D4A848";
-  if(t.includes("minimal")||t.includes("white")||t.includes("modern")) return "#A09080";
-  return "#C47A2E";
+  if(t.includes("bollywood")||t.includes("indian")||t.includes("desi")||t.includes("ethnic")||t.includes("saree")) return "#FF6B35";
+  if(t.includes("red")||t.includes("red-carpet")||t.includes("romantic")) return "#C0392B";
+  if(t.includes("royal")||t.includes("mughal")||t.includes("palace")) return "#6B3FA0";
+  if(t.includes("gold")||t.includes("elegant")||t.includes("glam")||t.includes("luxe")||t.includes("golden-jubilee")) return "#D4A848";
+  if(t.includes("corporate")||t.includes("professional")||t.includes("office")) return "#4A6FA5";
+  if(t.includes("travel")||t.includes("destination")||t.includes("world")||t.includes("freedom")) return "#2A9D8F";
+  if(t.includes("rooftop")||t.includes("outdoor")||t.includes("water")||t.includes("pool")||t.includes("spa")) return "#5FA8D3";
+  if(t.includes("yellow")||t.includes("bee")||t.includes("bright")||t.includes("optimistic")) return "#E8B339";
+  if(t.includes("casino")||t.includes("dark")||t.includes("gothic")) return "#3A3A3A";
+  if(t.includes("silver")) return "#9CA3AF";
+  if(t.includes("minimal")||t.includes("white")||t.includes("modern")||t.includes("classic")) return "#A09080";
+  if(t.includes("colourful")||t.includes("rainbow")||t.includes("confetti")||t.includes("lego")) return "#E54B8A";
+  return BRAND_GOLD;
 }
 
 function themeEmoji(tags=[]) {
@@ -1489,9 +1514,9 @@ const css=`
   @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
   @keyframes chipPop{0%{transform:scale(1)}40%{transform:scale(1.12)}70%{transform:scale(0.96)}100%{transform:scale(1)}}
   .os{animation:fadeUp 0.24s cubic-bezier(0.22,1,0.36,1);}
-  .chip{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:10px;border:1.5px solid rgba(196,122,46,0.22);background:rgba(196,122,46,0.03);color:${ink};font-size:14px;font-weight:500;cursor:pointer;transition:all 0.14s;font-family:${font};white-space:nowrap;position:relative;}
-  .chip:hover{border-color:rgba(196,122,46,0.45);background:rgba(196,122,46,0.06);}
-  .chip.sel{border-color:${gold};background:rgba(196,122,46,0.10);color:${gold};font-weight:600;}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:10px;border:1.5px solid var(--plan-border,rgba(196,122,46,0.22));background:var(--plan-wash,rgba(196,122,46,0.03));color:${ink};font-size:14px;font-weight:500;cursor:pointer;transition:all 0.14s;font-family:${font};white-space:nowrap;position:relative;}
+  .chip:hover{border-color:var(--plan-border-hover,rgba(196,122,46,0.45));background:var(--plan-wash-hover,rgba(196,122,46,0.06));}
+  .chip.sel{border-color:var(--plan-accent,${BRAND_GOLD});background:var(--plan-wash-sel,rgba(196,122,46,0.10));color:var(--plan-accent,${BRAND_GOLD});font-weight:600;}
   .chip-pop{animation:chipPop 0.25s cubic-bezier(0.34,1.56,0.64,1);}
   input[type="date"]::-webkit-calendar-picker-indicator{opacity:0.45;cursor:pointer;filter:invert(60%) sepia(60%) saturate(400%) hue-rotate(5deg);}
   ::-webkit-scrollbar{display:none;}
@@ -1541,7 +1566,14 @@ export default function OccasionDetail(){
   const cardRef=useRef(null);
   const planRef=useRef(null);
 
-  const [planMode,setPlanMode]=useState("without");
+  // Home.jsx's "Plan with a Theme"/"Jump Straight In" buttons navigate here with
+  // ?planMode=with|without — read it once as the initial mode so step 2 (the theme
+  // picker, gated on withTheme) actually opens instead of silently defaulting to "without".
+  // A saved draft's own planMode (restorePlan, below) still takes over once it loads.
+  const [planMode,setPlanMode]=useState(()=>{
+    const m=searchParams.get("planMode");
+    return m==="with"?"with":"without";
+  });
   const [step,setStep]=useState(1);
   const [guests,setGuests]=useState(20);
   const [date,setDate]=useState("");
@@ -1874,9 +1906,18 @@ export default function OccasionDetail(){
   if(!occasion){navigate("/occasions");return null;}
 
   const hub=HUB_ROUTES[slug];
-  const occAccent=OCC_ACCENT[slug]||gold;
-  const equipment=getEquipment(slug,guests);
   const withTheme=planMode==="with";
+  // Once a theme is picked, it becomes the page's accent + background for every step from
+  // here on — Services, Fun, Gifts, Plan all read as "this event, in this theme" instead of
+  // generic brand gold. Falls back to the brand defaults for the un-themed "Jump Straight In"
+  // path, so that flow is pixel-identical to before.
+  const themed = withTheme && !!theme;
+  const gold = themed ? themeColor(theme.tags) : BRAND_GOLD;
+  const goldLt = themed ? lightenHex(gold, 0.3) : BRAND_GOLD_LT;
+  const goldRgb = themed ? hexToRgb(gold) : "196,122,46";
+  const border = themed ? `rgba(${goldRgb},0.2)` : BRAND_BORDER;
+  const occAccent = themed ? gold : (OCC_ACCENT[slug]||gold);
+  const equipment=getEquipment(slug,guests);
   const recommended=getRecommended(occasion,theme,ageGroups,venueType);
 
   /* Theme gallery — rendered both in the (rarely-reached) legacy THEME step and inside
@@ -1906,7 +1947,7 @@ export default function OccasionDetail(){
               const sel=vibeFilter===v.label;
               return(
                 <button key={v.label} onClick={()=>setVibeFilter(sel?null:v.label)}
-                  style={{fontSize:11.5,fontWeight:sel?700:500,color:sel?gold:muted,background:sel?"rgba(196,122,46,0.1)":"rgba(28,9,0,0.04)",border:`1px solid ${sel?"rgba(196,122,46,0.3)":"rgba(28,9,0,0.1)"}`,borderRadius:100,padding:"5px 12px",cursor:"pointer",fontFamily:font,transition:"all 0.15s"}}>
+                  style={{fontSize:11.5,fontWeight:sel?700:500,color:sel?gold:muted,background:sel?`rgba(${goldRgb},0.1)`:"rgba(28,9,0,0.04)",border:`1px solid ${sel?`rgba(${goldRgb},0.3)`:"rgba(28,9,0,0.1)"}`,borderRadius:100,padding:"5px 12px",cursor:"pointer",fontFamily:font,transition:"all 0.15s"}}>
                   {v.label}
                 </button>
               );
@@ -2221,9 +2262,21 @@ export default function OccasionDetail(){
     ...g,...scoreGift(g,{theme,ageGroups,budget,guests})
   })).sort((a,b)=>b.score-a.score);
 
-  const pageBg = step>0 ? "#F5F3F0" : bg;
+  const pageBg = step>0
+    ? (themed
+        ? `radial-gradient(ellipse 85% 45% at 50% 0%, ${gold}22 0%, transparent 60%), radial-gradient(ellipse 70% 40% at 100% 100%, ${gold}14 0%, transparent 65%), #F5F3F0`
+        : "#F5F3F0")
+    : bg;
+  const planCssVars = themed ? {
+    "--plan-accent": gold,
+    "--plan-border": border,
+    "--plan-border-hover": `rgba(${goldRgb},0.45)`,
+    "--plan-wash": `rgba(${goldRgb},0.03)`,
+    "--plan-wash-hover": `rgba(${goldRgb},0.06)`,
+    "--plan-wash-sel": `rgba(${goldRgb},0.10)`,
+  } : {};
   return(
-    <div style={{height:"100dvh",background:pageBg,fontFamily:font,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+    <div style={{height:"100dvh",background:pageBg,fontFamily:font,display:"flex",flexDirection:"column",overflow:"hidden",...planCssVars}}>
       <style>{css}</style>
       <SEO title={`Plan your ${occasion.name} — Tendr`} description={`Guided ${occasion.name} planner`} path={`/occasions/${slug}`}/>
 
@@ -2895,7 +2948,7 @@ export default function OccasionDetail(){
                     const sel=vendors.includes(v);
                     return(
                       <button key={v} onClick={()=>!sel&&toggleVendor(v)}
-                        style={{fontSize:12,fontWeight:700,color:sel?gold:ink,background:sel?"rgba(196,122,46,0.12)":"rgba(28,9,0,0.04)",border:`1px solid ${sel?"rgba(196,122,46,0.35)":"rgba(28,9,0,0.1)"}`,borderRadius:100,padding:"4px 11px",cursor:sel?"default":"pointer",fontFamily:font,display:"inline-flex",alignItems:"center",gap:5}}>
+                        style={{fontSize:12,fontWeight:700,color:sel?gold:ink,background:sel?`rgba(${goldRgb},0.12)`:"rgba(28,9,0,0.04)",border:`1px solid ${sel?`rgba(${goldRgb},0.35)`:"rgba(28,9,0,0.1)"}`,borderRadius:100,padding:"4px 11px",cursor:sel?"default":"pointer",fontFamily:font,display:"inline-flex",alignItems:"center",gap:5}}>
                         {sel?<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>:<span>+</span>}
                         {v}
                       </button>
@@ -3144,7 +3197,7 @@ export default function OccasionDetail(){
                       <div key={v} style={{marginBottom:10,borderRadius:14,border:`1.5px solid ${chosen!==undefined?gold:isOpen?"rgba(196,122,46,0.4)":border}`,background:"#fff",overflow:"hidden",transition:"border-color 0.2s"}}>
                         {/* header — clickable to expand */}
                         <div onClick={()=>setExpandedVendor(ev=>ev==="Caterer"?null:"Caterer")}
-                          style={{padding:"12px 14px",background:chosen!==undefined?"rgba(196,122,46,0.04)":"#fff",display:"flex",alignItems:"center",cursor:"pointer",gap:10}}>
+                          style={{padding:"12px 14px",background:chosen!==undefined?`rgba(${goldRgb},0.04)`:"#fff",display:"flex",alignItems:"center",cursor:"pointer",gap:10}}>
                           <div style={{flex:1,minWidth:0}}>
                             <div style={{display:"flex",alignItems:"center",gap:7}}>
                               <span style={{fontSize:13,fontWeight:700,color:chosen!==undefined?gold:ink}}>Caterer</span>
@@ -3167,7 +3220,7 @@ export default function OccasionDetail(){
                               const paragraph=buildCateringParagraph(opt,{occasionName:occasion.name,guests,venueType});
                               return(
                                 <button key={oi} onClick={()=>{setVendorPackages(vp=>({...vp,Caterer:oi}));setShowCateringBuilder(false);}}
-                                  style={{textAlign:"left",padding:"13px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:opt.popular?"rgba(34,197,94,0.3)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:7}}>
+                                  style={{textAlign:"left",padding:"13px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:opt.popular?"rgba(34,197,94,0.3)":"rgba(196,122,46,0.14)"}`,background:sel?`rgba(${goldRgb},0.07)`:"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:7}}>
                                   <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
                                     <span style={{fontSize:19,flexShrink:0}}>{opt.icon}</span>
                                     <span style={{fontSize:14.5,fontWeight:700,color:sel?gold:ink,flex:1,minWidth:80}}>{opt.style}</span>
@@ -3241,7 +3294,7 @@ export default function OccasionDetail(){
                                     const sel=customCatering.cuisine===c.id;
                                     return(
                                       <button key={c.id} onClick={()=>{setCustomCatering(prev=>({...prev,cuisine:c.id,dishes:{}}));setCateringBuilderStep("dishes");}}
-                                        style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:10,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.15)"}`,background:sel?"rgba(196,122,46,0.07)":"#fff",cursor:"pointer",fontFamily:font,transition:"all 0.15s",minHeight:44}}>
+                                        style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:10,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.15)"}`,background:sel?`rgba(${goldRgb},0.07)`:"#fff",cursor:"pointer",fontFamily:font,transition:"all 0.15s",minHeight:44}}>
                                         <span style={{fontSize:18}}>{c.icon}</span>
                                         <span style={{fontSize:12.5,fontWeight:sel?700:500,color:sel?gold:ink,textAlign:"left",lineHeight:1.3}}>{c.label}</span>
                                         {sel&&<svg style={{marginLeft:"auto",flexShrink:0}} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
@@ -3324,7 +3377,7 @@ export default function OccasionDetail(){
                       <div key={v} style={{marginBottom:10,borderRadius:14,border:`1.5px solid ${chosen!==undefined?gold:isOpen?"rgba(196,122,46,0.4)":border}`,background:"#fff",overflow:"hidden",transition:"border-color 0.2s"}}>
                         {/* header — clickable */}
                         <div onClick={()=>setExpandedVendor(ev=>ev==="Decorator"?null:"Decorator")}
-                          style={{padding:"12px 14px",background:chosen!==undefined?"rgba(196,122,46,0.04)":"#fff",display:"flex",alignItems:"center",cursor:"pointer",gap:10}}>
+                          style={{padding:"12px 14px",background:chosen!==undefined?`rgba(${goldRgb},0.04)`:"#fff",display:"flex",alignItems:"center",cursor:"pointer",gap:10}}>
                           <div style={{flex:1,minWidth:0}}>
                             <div style={{display:"flex",alignItems:"center",gap:7}}>
                               <span style={{fontSize:13,fontWeight:700,color:chosen!==undefined?gold:ink}}>Decorator</span>
@@ -3396,7 +3449,7 @@ export default function OccasionDetail(){
                                       const sel=decorFocusAreas.includes(id);
                                       return(
                                         <button key={id} onClick={()=>toggleArea(id)}
-                                          style={{textAlign:"center",padding:"10px 6px",borderRadius:11,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.25)"}`,background:sel?"rgba(196,122,46,0.1)":"#fff",cursor:"pointer",fontFamily:font,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                                          style={{textAlign:"center",padding:"10px 6px",borderRadius:11,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.25)"}`,background:sel?`rgba(${goldRgb},0.1)`:"#fff",cursor:"pointer",fontFamily:font,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
                                           <span style={{fontSize:21}}>{area.emoji}</span>
                                           <span style={{fontSize:11,fontWeight:700,color:sel?gold:ink,lineHeight:1.25}}>{area.name}</span>
                                           {sel&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
@@ -3413,7 +3466,7 @@ export default function OccasionDetail(){
                                     const isSuggested=suggested.includes(id);
                                     return(
                                       <button key={id} onClick={()=>toggleArea(id)}
-                                        style={{textAlign:"left",padding:"10px 11px",borderRadius:12,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:4,position:"relative"}}>
+                                        style={{textAlign:"left",padding:"10px 11px",borderRadius:12,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.14)"}`,background:sel?`rgba(${goldRgb},0.07)`:"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:4,position:"relative"}}>
                                         <div style={{display:"flex",alignItems:"center",gap:7}}>
                                           <span style={{fontSize:19,flexShrink:0}}>{area.emoji}</span>
                                           <span style={{fontSize:13,fontWeight:700,color:sel?gold:ink,flex:1,lineHeight:1.25}}>{area.name}</span>
@@ -3437,7 +3490,7 @@ export default function OccasionDetail(){
                               const displayItems=buildDecorDisplayItems(opt,decorFocusAreas);
                               return(
                                 <button key={oi} onClick={()=>{setVendorPackages(vp=>({...vp,Decorator:oi}));setShowDecorBuilder(false);}}
-                                  style={{textAlign:"left",padding:"13px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:opt.popular?"rgba(34,197,94,0.3)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:7}}>
+                                  style={{textAlign:"left",padding:"13px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:opt.popular?"rgba(34,197,94,0.3)":"rgba(196,122,46,0.14)"}`,background:sel?`rgba(${goldRgb},0.07)`:"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:7}}>
                                   <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
                                     <span style={{fontSize:19,flexShrink:0}}>{opt.icon}</span>
                                     <span style={{fontSize:14.5,fontWeight:700,color:sel?gold:ink,flex:1,minWidth:80}}>{opt.style}</span>
@@ -3599,7 +3652,7 @@ export default function OccasionDetail(){
                     <div key={v} style={{marginBottom:10,borderRadius:14,border:`1.5px solid ${chosen!==undefined?gold:isOpen?"rgba(196,122,46,0.4)":border}`,background:"#fff",overflow:"hidden",transition:"border-color 0.2s"}}>
                       {/* header row — clickable */}
                       <div onClick={()=>setExpandedVendor(ev=>ev===v?null:v)}
-                        style={{padding:"12px 14px",background:chosen!==undefined?"rgba(196,122,46,0.04)":"#fff",display:"flex",alignItems:"center",cursor:"pointer",gap:10}}>
+                        style={{padding:"12px 14px",background:chosen!==undefined?`rgba(${goldRgb},0.04)`:"#fff",display:"flex",alignItems:"center",cursor:"pointer",gap:10}}>
                         <div style={{flex:1,minWidth:0}}>
                           <div style={{display:"flex",alignItems:"center",gap:7}}>
                             <span style={{fontSize:13,fontWeight:700,color:chosen!==undefined?gold:ink}}>{v}</span>
@@ -3622,7 +3675,7 @@ export default function OccasionDetail(){
                               const paragraph=buildGenericPackageParagraph(v,pkg,{occasionName:occasion.name,guests,venueType});
                               return(
                                 <button key={pkg.label} onClick={()=>setVendorPackages(vp=>({...vp,[v]:pi}))}
-                                  style={{textAlign:"left",padding:"13px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:budgetFit==="fits"?"rgba(34,197,94,0.35)":"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:7}}>
+                                  style={{textAlign:"left",padding:"13px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:budgetFit==="fits"?"rgba(34,197,94,0.35)":"rgba(196,122,46,0.14)"}`,background:sel?`rgba(${goldRgb},0.07)`:"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:7}}>
                                   <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
                                     <span style={{fontSize:14.5,fontWeight:700,color:sel?gold:ink,flex:1,minWidth:80}}>{pkg.label}</span>
                                     <span style={{fontSize:13,fontWeight:700,color:sel?gold:muted}}>{pkg.price}</span>
@@ -3815,8 +3868,8 @@ export default function OccasionDetail(){
                               <React.Fragment key={a.id}>
                               {tierBreak}
                               <button onClick={()=>toggleActivity(a.id)}
-                                style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.14)"}`,background:sel?"rgba(196,122,46,0.06)":"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.16s",textAlign:"left"}}>
-                                <div style={{width:38,height:38,borderRadius:10,background:sel?"rgba(196,122,46,0.12)":"rgba(196,122,46,0.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,flexShrink:0}}>
+                                style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.14)"}`,background:sel?`rgba(${goldRgb},0.06)`:"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.16s",textAlign:"left"}}>
+                                <div style={{width:38,height:38,borderRadius:10,background:sel?`rgba(${goldRgb},0.12)`:"rgba(196,122,46,0.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:19,flexShrink:0}}>
                                   {a.icon}
                                 </div>
                                 <div style={{flex:1,minWidth:0}}>
