@@ -149,6 +149,15 @@ function DetailDrawer({ idea, selected, vendors, onToggleVendor, onToggleSelect,
           </div>
         )}
 
+        {idea.howItFeels && (
+          <div style={{ marginBottom: 16, padding: "14px 16px", borderRadius: 14, background: "rgba(196,122,46,0.05)", border: `1px solid ${border}` }}>
+            <div style={{ fontSize: 9.5, fontWeight: 800, color: occAccent, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 7, display: "flex", alignItems: "center", gap: 6 }}>
+              <span>✦</span>Picture this
+            </div>
+            <p style={{ fontFamily: serif, fontSize: 15, fontStyle: "italic", color: ink, lineHeight: 1.6, margin: 0 }}>{idea.howItFeels}</p>
+          </div>
+        )}
+
         <p style={{ fontSize: 13.5, color: ink, lineHeight: 1.65, marginBottom: 18 }}>{idea.shortDesc}</p>
 
         <ListSection title="What's included" items={idea.inclusions} />
