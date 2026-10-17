@@ -1717,6 +1717,14 @@ export default function OccasionDetail(){
   const [savedPlan,setSavedPlan]=useState(null);
   const dateInputRef=useRef(null);
   const contentRef=useRef(null);
+  const themeTrackRef=useRef(null);
+  const scrollThemeCarousel=(dir)=>{
+    const el=themeTrackRef.current;
+    if(!el) return;
+    const card=el.querySelector(".theme-carousel-card");
+    const w=(card?.getBoundingClientRect().width||300)+14;
+    el.scrollBy({left:dir*w,behavior:"smooth"});
+  };
 
   /* catering builder */
   const [showCateringBuilder,setShowCateringBuilder]=useState(false);
@@ -2336,10 +2344,15 @@ export default function OccasionDetail(){
             .theme-carousel-track{scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;}
             .theme-carousel-track::-webkit-scrollbar{display:none;}
             .theme-carousel-card{scroll-snap-align:center;}
+            .theme-carousel-card:hover{transform:translateY(-6px) scale(1.015);box-shadow:0 28px 60px -10px rgba(0,0,0,0.45),0 10px 22px rgba(0,0,0,0.2)!important;}
+            .theme-carousel-card:active{transform:translateY(-2px) scale(0.985);}
+            .theme-carousel-arrow{transition:transform 0.15s ease,background 0.15s ease;}
+            .theme-carousel-arrow:hover{background:rgba(255,255,255,0.55)!important;transform:translateY(-50%) scale(1.08);}
+            .theme-carousel-arrow:active{transform:translateY(-50%) scale(0.92);}
           `}</style>
           <div
             onClick={e=>e.stopPropagation()}
-            style={{background:"#FFFCF5",borderRadius:26,maxWidth:420,width:"100%",maxHeight:"88dvh",overflow:"hidden",boxShadow:"0 32px 90px rgba(0,0,0,0.42)",display:"flex",flexDirection:"column",animation:"themeCarouselIn 0.26s cubic-bezier(0.22,1,0.36,1)"}}
+            style={{background:"rgba(255,252,245,0.6)",backdropFilter:"blur(32px) saturate(180%)",WebkitBackdropFilter:"blur(32px) saturate(180%)",border:"none",borderRadius:26,maxWidth:420,width:"100%",maxHeight:"88dvh",overflow:"hidden",boxShadow:"0 1px 0 rgba(255,255,255,0.6) inset, 0 18px 46px -12px rgba(0,0,0,0.4), 0 50px 130px rgba(0,0,0,0.6)",display:"flex",flexDirection:"column",animation:"themeCarouselIn 0.26s cubic-bezier(0.22,1,0.36,1)"}}
           >
             <div style={{padding:"26px 22px 16px",textAlign:"center",flexShrink:0}}>
               <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:6}}>Choose your look</div>
@@ -2347,37 +2360,56 @@ export default function OccasionDetail(){
               <div style={{fontSize:12.5,color:muted,lineHeight:1.5}}>Swipe to browse — pick one and we'll tailor decor, gifts and vendor tips to it.</div>
             </div>
 
-            <div className="theme-carousel-track" style={{display:"flex",overflowX:"auto",gap:14,padding:"4px 22px 6px",flexShrink:0}}>
-              {occasion.decorThemes.map((t,i)=>{
-                const tc=themeColor(t.tags);
-                const te=themeEmoji(t.tags);
-                return(
-                  <button key={i} className="theme-carousel-card" onClick={()=>{setTheme(t);setThemeChoiceMade(true);}}
-                    style={{flex:"0 0 76%",padding:0,borderRadius:18,border:"2px solid rgba(196,122,46,0.14)",background:"#fff",cursor:"pointer",textAlign:"left",overflow:"hidden",boxShadow:"0 6px 22px rgba(0,0,0,0.1)"}}>
-                    <div style={{position:"relative",height:190,overflow:"hidden",background:`linear-gradient(160deg,${tc}66,${tc}28)`}}>
-                      {t.photo?(
-                        <img src={t.photo} alt={t.name} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} onError={e=>{e.currentTarget.style.display="none";}}/>
-                      ):(
-                        <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                          <span style={{fontSize:54,filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.12))"}}>{te}</span>
+            <div style={{position:"relative",flexShrink:0}}>
+              <div className="theme-carousel-track" ref={themeTrackRef} style={{display:"flex",overflowX:"auto",gap:14,padding:"4px 22px 6px"}}>
+                {occasion.decorThemes.map((t,i)=>{
+                  const tc=themeColor(t.tags);
+                  const te=themeEmoji(t.tags);
+                  return(
+                    <button key={i} className="theme-carousel-card" onClick={()=>{setTheme(t);setThemeChoiceMade(true);}}
+                      style={{flex:"0 0 76%",padding:0,borderRadius:18,border:"none",background:"rgba(255,255,255,0.16)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",cursor:"pointer",textAlign:"left",overflow:"hidden",boxShadow:"0 20px 46px -12px rgba(0,0,0,0.4), 0 8px 18px rgba(0,0,0,0.18)",transition:"transform 0.2s cubic-bezier(0.22,1,0.36,1), box-shadow 0.2s"}}>
+                      <div style={{position:"relative",height:190,overflow:"hidden",background:`linear-gradient(160deg,${tc}66,${tc}28)`}}>
+                        {t.photo?(
+                          <img src={t.photo} alt={t.name} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} onError={e=>{e.currentTarget.style.display="none";}}/>
+                        ):(
+                          <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                            <span style={{fontSize:54,filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.12))"}}>{te}</span>
+                          </div>
+                        )}
+                        <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.65) 0%,transparent 55%)"}}/>
+                        <div style={{position:"absolute",bottom:12,left:14,right:14}}>
+                          <span style={{fontSize:15,fontWeight:800,color:"#fff",lineHeight:1.25,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{t.name}</span>
                         </div>
-                      )}
-                      <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.65) 0%,transparent 55%)"}}/>
-                      <div style={{position:"absolute",bottom:12,left:14,right:14}}>
-                        <span style={{fontSize:15,fontWeight:800,color:"#fff",lineHeight:1.25,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{t.name}</span>
                       </div>
-                    </div>
-                    <div style={{padding:"12px 14px 16px"}}>
-                      <div style={{fontSize:12,color:muted,lineHeight:1.5,marginBottom:8}}>{t.desc}</div>
-                      <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
-                        {(t.tags||[]).slice(0,3).map(tag=>(
-                          <span key={tag} style={{fontSize:9.5,fontWeight:600,color:"rgba(30,15,0,0.4)",background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"2px 8px"}}>{tag}</span>
-                        ))}
+                      <div style={{padding:"12px 14px 16px"}}>
+                        <div style={{fontSize:12,color:muted,lineHeight:1.5,marginBottom:8}}>{t.desc}</div>
+                        <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+                          {(t.tags||[]).slice(0,3).map(tag=>(
+                            <span key={tag} style={{fontSize:9.5,fontWeight:600,color:"rgba(30,15,0,0.4)",background:"rgba(28,9,0,0.08)",borderRadius:100,padding:"2px 8px"}}>{tag}</span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                );
-              })}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {occasion.decorThemes.length>1&&(<>
+                <button
+                  className="theme-carousel-arrow"
+                  onClick={()=>scrollThemeCarousel(-1)}
+                  aria-label="Previous theme"
+                  style={{position:"absolute",top:95,left:6,transform:"translateY(-50%)",width:38,height:38,borderRadius:"50%",border:"none",background:"rgba(255,255,255,0.4)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",boxShadow:"0 8px 20px rgba(0,0,0,0.28),0 2px 6px rgba(0,0,0,0.15)",zIndex:5}}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={ink} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <button
+                  className="theme-carousel-arrow"
+                  onClick={()=>scrollThemeCarousel(1)}
+                  aria-label="Next theme"
+                  style={{position:"absolute",top:95,right:6,transform:"translateY(-50%)",width:38,height:38,borderRadius:"50%",border:"none",background:"rgba(255,255,255,0.4)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",boxShadow:"0 8px 20px rgba(0,0,0,0.28),0 2px 6px rgba(0,0,0,0.15)",zIndex:5}}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={ink} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+              </>)}
             </div>
 
             <div style={{padding:"14px 22px 22px",textAlign:"center",flexShrink:0}}>
