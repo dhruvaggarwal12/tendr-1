@@ -1591,9 +1591,9 @@ export default function OccasionDetail(){
   const planRef=useRef(null);
 
   // Home.jsx's "Plan with a Theme"/"Jump Straight In" buttons navigate here with
-  // ?planMode=with|without — read it once as the initial mode so step 2 (the theme
-  // picker, gated on withTheme) actually opens instead of silently defaulting to "without".
-  // A saved draft's own planMode (restorePlan, below) still takes over once it loads.
+  // ?planMode=with|without — read it once as the initial mode so the upfront theme-pick
+  // carousel (gated on withTheme, below) actually opens instead of silently defaulting to
+  // "without". A saved draft's own planMode (restorePlan, below) still takes over once it loads.
   const [planMode,setPlanMode]=useState(()=>{
     const m=searchParams.get("planMode");
     return m==="with"?"with":"without";
@@ -1630,6 +1630,9 @@ export default function OccasionDetail(){
   const [ageGroups,setAgeGroups]=useState([]);
   const [theme,setTheme]=useState(null);
   const [vibeFilter,setVibeFilter]=useState(null);
+  // Tracks whether the upfront "pick your theme" carousel has been resolved (picked or
+  // skipped) this session, so it only ever appears once — never re-asked mid-wizard.
+  const [themeChoiceMade,setThemeChoiceMade]=useState(false);
   const [decorAnalyserOpen,setDecorAnalyserOpen]=useState(false);
   const [venueAnalysis,setVenueAnalysis]=useState(null); // result from DecorAnalyzer
   const [venuePhoto,setVenuePhoto]=useState(null); // data URL — from the Decor Analyser upload, or the standalone pre-Plan gate
@@ -1854,14 +1857,14 @@ export default function OccasionDetail(){
       localStorage.setItem(PLAN_KEY,JSON.stringify({
         planVersion:2,
         planMode,step,guests,date,budget,city,venueType,venueProvides,celebrantName,
-        ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,giftQuantities,checked,
+        ageGroups,theme,themeChoiceMade,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,giftQuantities,checked,
         selectedActivities,customCatering,customDecor,decorFocusAreas,customActivities,customEventName,customEventDesc,
         selectedEntryExperiences,entryExperiencesSkipped,
         savedAt:new Date().toISOString(),
       }));
       saveResumeUrl(`/occasions/${slug}`);
     }
-  },[planMode,step,guests,date,budget,city,venueType,venueProvides,ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,giftQuantities,checked,selectedEntryExperiences,entryExperiencesSkipped]);
+  },[planMode,step,guests,date,budget,city,venueType,venueProvides,ageGroups,theme,themeChoiceMade,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,giftQuantities,checked,selectedEntryExperiences,entryExperiencesSkipped]);
 
   /* Sync to main eventPlanning session so the Navbar plan icon activates.
      Placed after `occasion` is declared to avoid TDZ in the production bundle. */
@@ -1906,6 +1909,10 @@ export default function OccasionDetail(){
 
   function restorePlan(s){
     setPlanMode(s.planMode);setStep(s.step);setGuests(s.guests||20);
+    // Restore the real prior choice rather than assuming "any restore means resolved" — a
+    // draft auto-saved moments after mount (before the user ever saw the carousel) would
+    // otherwise silently cancel it on the next render.
+    setThemeChoiceMade(!!s.themeChoiceMade);
     setDate(s.date||"");setBudget(s.budget||"");setCity(s.city||"");
     setCelebrantName(s.celebrantName||"");
     setVenueType(s.venueType||"");setVenueProvides(s.venueProvides||[]);setAgeGroups(s.ageGroups||[]);
@@ -1944,10 +1951,10 @@ export default function OccasionDetail(){
   const equipment=getEquipment(slug,guests);
   const recommended=getRecommended(occasion,theme,ageGroups,venueType);
 
-  /* Theme gallery — rendered both in the (rarely-reached) legacy THEME step and inside
-     the Services step's Decorator panel ("Find Your Decor Style"). Same `theme` state
-     either way, so picking a theme from either spot is the same preference, never a
-     second Decorator entry. */
+  /* Theme gallery grid — superseded by the upfront carousel overlay (above) for normal
+     navigation; next()/back() no longer route through step 2, so this only still renders
+     for an old saved draft that happens to be sitting on step 2. Left in place rather than
+     deleted so such a draft doesn't hit a blank step. */
   const renderThemeGallery=()=>{
     const VIBES=[
       {label:"Soft & Intimate",  tags:["pastel","floral","soft","pink","dreamy","nursery","gentle","light","baby","minimal","white"]},
@@ -2177,11 +2184,10 @@ export default function OccasionDetail(){
 
   /* navigation */
   const next=()=>{
-    if(step===1){
-      const toStep=withTheme?2:3;
-      setStep(toStep);
-      return;
-    }
+    // Theme (when wanted) is resolved upfront by the carousel overlay below, before step 1
+    // is even interactive — so step 1 always moves straight to Services, never back through
+    // the legacy embedded theme step.
+    if(step===1){setStep(3);return;}
     if(step===2){setStep(3);return;}
     if(step===3){setStep(4);return;}
     if(step===4){
@@ -2243,8 +2249,7 @@ export default function OccasionDetail(){
   const back=()=>{
     if(step===1){navigate(-1);return;}
     if(step===2){setStep(1);return;}
-    if(step===3&&withTheme){setStep(2);return;}
-    if(step===3&&!withTheme){setStep(1);return;}
+    if(step===3){setStep(1);return;}
     setStep(s=>s-1);
   };
   const canNext=()=>{
@@ -2318,6 +2323,72 @@ export default function OccasionDetail(){
         </div>
         {step>0&&<TabBar step={step} withTheme={withTheme} occAccent={occAccent} onTab={setStep}/>}
       </div>
+
+      {/* Upfront theme-pick carousel — shown once, right when "Plan with a Theme" lands here,
+          before step 1 is interactive. Picking (or skipping) resolves it for the rest of the
+          session, so the old embedded theme step never needs to ask again. */}
+      {withTheme&&!theme&&!themeChoiceMade&&step===1&&(occasion.decorThemes||[]).length>0&&(
+        <div
+          style={{position:"fixed",inset:0,zIndex:9000,background:"rgba(20,10,0,0.55)",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)",display:"flex",alignItems:"center",justifyContent:"center",padding:18}}
+        >
+          <style>{`
+            @keyframes themeCarouselIn{from{opacity:0;transform:scale(0.94) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+            .theme-carousel-track{scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;}
+            .theme-carousel-track::-webkit-scrollbar{display:none;}
+            .theme-carousel-card{scroll-snap-align:center;}
+          `}</style>
+          <div
+            onClick={e=>e.stopPropagation()}
+            style={{background:"#FFFCF5",borderRadius:26,maxWidth:420,width:"100%",maxHeight:"88dvh",overflow:"hidden",boxShadow:"0 32px 90px rgba(0,0,0,0.42)",display:"flex",flexDirection:"column",animation:"themeCarouselIn 0.26s cubic-bezier(0.22,1,0.36,1)"}}
+          >
+            <div style={{padding:"26px 22px 16px",textAlign:"center",flexShrink:0}}>
+              <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:6}}>Choose your look</div>
+              <div style={{fontFamily:serif,fontSize:"clamp(1.3rem,4vw,1.6rem)",fontWeight:500,color:ink,lineHeight:1.2,marginBottom:6}}>How should your {occasion.name.toLowerCase()} look?</div>
+              <div style={{fontSize:12.5,color:muted,lineHeight:1.5}}>Swipe to browse — pick one and we'll tailor decor, gifts and vendor tips to it.</div>
+            </div>
+
+            <div className="theme-carousel-track" style={{display:"flex",overflowX:"auto",gap:14,padding:"4px 22px 6px",flexShrink:0}}>
+              {occasion.decorThemes.map((t,i)=>{
+                const tc=themeColor(t.tags);
+                const te=themeEmoji(t.tags);
+                return(
+                  <button key={i} className="theme-carousel-card" onClick={()=>{setTheme(t);setThemeChoiceMade(true);}}
+                    style={{flex:"0 0 76%",padding:0,borderRadius:18,border:"2px solid rgba(196,122,46,0.14)",background:"#fff",cursor:"pointer",textAlign:"left",overflow:"hidden",boxShadow:"0 6px 22px rgba(0,0,0,0.1)"}}>
+                    <div style={{position:"relative",height:190,overflow:"hidden",background:`linear-gradient(160deg,${tc}66,${tc}28)`}}>
+                      {t.photo?(
+                        <img src={t.photo} alt={t.name} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} onError={e=>{e.currentTarget.style.display="none";}}/>
+                      ):(
+                        <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                          <span style={{fontSize:54,filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.12))"}}>{te}</span>
+                        </div>
+                      )}
+                      <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.65) 0%,transparent 55%)"}}/>
+                      <div style={{position:"absolute",bottom:12,left:14,right:14}}>
+                        <span style={{fontSize:15,fontWeight:800,color:"#fff",lineHeight:1.25,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{t.name}</span>
+                      </div>
+                    </div>
+                    <div style={{padding:"12px 14px 16px"}}>
+                      <div style={{fontSize:12,color:muted,lineHeight:1.5,marginBottom:8}}>{t.desc}</div>
+                      <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+                        {(t.tags||[]).slice(0,3).map(tag=>(
+                          <span key={tag} style={{fontSize:9.5,fontWeight:600,color:"rgba(30,15,0,0.4)",background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"2px 8px"}}>{tag}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div style={{padding:"14px 22px 22px",textAlign:"center",flexShrink:0}}>
+              <button onClick={()=>setThemeChoiceMade(true)}
+                style={{background:"none",border:"none",cursor:"pointer",color:"rgba(30,15,0,0.4)",fontSize:12.5,fontWeight:600,fontFamily:font,textDecoration:"underline",textUnderlineOffset:3}}>
+                Skip — no theme
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* content */}
       <div ref={contentRef} style={{flex:1,overflowY:"auto",padding:"28px 20px 32px",maxWidth:680,margin:"0 auto",width:"100%",boxSizing:"border-box",scrollBehavior:"smooth"}}>
