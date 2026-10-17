@@ -190,6 +190,7 @@ function BottomNavInner() {
     { icon: ic(<><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></>), label: "Budget Allocator", href: "/budget-picker" },
     { icon: ic(<><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="11" y2="15"/><line x1="14" y1="15" x2="16" y2="15"/><line x1="8" y1="18" x2="11" y2="18"/><line x1="14" y1="18" x2="16" y2="18"/></>), label: "Price Estimator", href: "/price-estimator" },
     { icon: ic(<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></>), label: "Find by Style",    href: "/find-by-style" },
+    { icon: ic(<><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8"/><path d="M16.5 8a2.5 2.5 0 0 0 0-5C13 3 12 8 12 8"/></>), label: "Refer & Earn",    href: "/dashboard#refer-earn" },
   ];
 
   const items = [
@@ -430,7 +431,16 @@ function BottomNavInner() {
                 const isSaved = savedKey ? (() => { try { return !!localStorage.getItem(savedKey); } catch { return false; } })() : false;
                 return (
                   <button key={label}
-                    onClick={() => { if (label === "Price Estimator") { openPriceEstimator(); } else if (newTab) { window.open(path, "_blank"); } else { navigate(href); } setProductsOpen(false); }}
+                    onClick={() => {
+                      if (label === "Price Estimator") { openPriceEstimator(); }
+                      else if (label === "Refer & Earn") {
+                        if (!user?._id) { navigate("/login", { state: { returnTo: "/dashboard#refer-earn" } }); }
+                        else { navigate("/dashboard"); setTimeout(() => document.getElementById("refer-earn")?.scrollIntoView({ behavior: "smooth", block: "center" }), 400); }
+                      }
+                      else if (newTab) { window.open(path, "_blank"); }
+                      else { navigate(href); }
+                      setProductsOpen(false);
+                    }}
                     style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 14px", borderRadius: 14, border: `1.5px solid ${isSaved ? "rgba(34,197,94,0.3)" : "rgba(196,122,46,0.15)"}`, background: isSaved ? "rgba(34,197,94,0.04)" : "#fff", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.08)", position: "relative" }}
                     onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
                     onTouchEnd={e => e.currentTarget.style.background = isSaved ? "rgba(34,197,94,0.04)" : "#fff"}

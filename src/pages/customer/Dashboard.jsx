@@ -173,6 +173,16 @@ export default function CustomerDashboard() {
   const [showInstallBanner, setShowInstallBanner] = useState(() => !sessionStorage.getItem("tendr_install_dismissed"));
   const [referralCopied, setReferralCopied] = useState(false);
 
+  // Coming back from a login redirect (e.g. "Refer & Earn" when logged out) —
+  // scroll to the referral section once its data-dependent card has mounted.
+  useEffect(() => {
+    if (location.hash !== "#refer-earn") return;
+    const t = setTimeout(() => {
+      document.getElementById("refer-earn")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 400);
+    return () => clearTimeout(t);
+  }, [location.hash, plans]);
+
   const openChangeReq = (planId) =>
     setChangeReqState(prev => ({ ...prev, [planId]: { open: true, message: "", submitting: false, done: false } }));
 
@@ -940,8 +950,25 @@ export default function CustomerDashboard() {
           </div>
         )}
 
-        {/* Referral Card — only shown after user completes their first paid booking */}
-        {user?._id && plans.some(p => p.paymentStatus === 'paid') && (() => {
+        {/* Referral Card — real code once the customer has a paid booking, teaser before that */}
+        {user?._id && (() => {
+          const eligible = plans.some(p => p.paymentStatus === 'paid');
+
+          if (!eligible) {
+            return (
+              <div id="refer-earn" style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", borderRadius: 20, padding: "24px 28px", marginBottom: 28, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", boxShadow: "0 6px 24px rgba(44,26,14,0.18)" }}>
+                <div style={{ fontSize: 36, flexShrink: 0, opacity: 0.6 }}>🔒</div>
+                <div>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>Refer &amp; Earn</p>
+                  <p style={{ fontSize: 14.5, fontWeight: 700, color: "#fff", margin: "0 0 4px" }}>Unlock your referral code after your first booking</p>
+                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: 0, lineHeight: 1.5 }}>
+                    Complete and pay for your first event on Tendr, then share your personal code — friends get {DISCOUNT_PERCENT}% off their first booking too.
+                  </p>
+                </div>
+              </div>
+            );
+          }
+
           const code = generateReferralCode(user._id);
           const formatted = formatCode(code);
           const handleCopy = () => {
@@ -951,7 +978,7 @@ export default function CustomerDashboard() {
             });
           };
           return (
-            <div style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", borderRadius: 20, padding: "24px 28px", marginBottom: 28, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, flexWrap: "wrap", boxShadow: "0 6px 24px rgba(44,26,14,0.18)" }}>
+            <div id="refer-earn" style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", borderRadius: 20, padding: "24px 28px", marginBottom: 28, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, flexWrap: "wrap", boxShadow: "0 6px 24px rgba(44,26,14,0.18)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                 <div style={{ fontSize: 36, flexShrink: 0 }}>🎁</div>
                 <div>

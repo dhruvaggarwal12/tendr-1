@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { EventIdeasPanel } from "../utils/eventIdeas";
+import { DISCOUNT_PERCENT } from "../utils/referral";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../redux/authSlice";
@@ -282,6 +283,12 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         onClickOverride: () => { try { const d = localStorage.getItem("tendr_budget_v2"); const s = d ? JSON.parse(d) : null; if (s?.totalBudget) { setBudgetPopupOpen(true); } else { window.open("/budget-picker", "_blank"); } } catch { window.open("/budget-picker", "_blank"); } } },
       { label: "Price Estimator",  href: "/price-estimator", activePaths: ["/price-estimator"], onClickOverride: () => { close(); openPriceEstimator(); } },
       { label: "Equipment Planner", href: "/equipment-list", activePaths: ["/equipment-list"], onClickOverride: () => { close(); window.open("/equipment-list", "_blank"); } },
+      { label: "🎁 Refer & Earn", href: "/dashboard#refer-earn", tag: `${DISCOUNT_PERCENT}% off`, onClickOverride: () => {
+          close();
+          if (!user?._id) { navigate("/login", { state: { returnTo: "/dashboard#refer-earn" } }); return; }
+          navigate("/dashboard");
+          setTimeout(() => document.getElementById("refer-earn")?.scrollIntoView({ behavior: "smooth", block: "center" }), 400);
+        } },
     ]},
     { label: "Community", items: [
       { label: "Guide Store",     href: "/guides",     activePaths: ["/guides"] },
