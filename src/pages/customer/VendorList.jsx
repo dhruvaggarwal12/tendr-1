@@ -181,6 +181,10 @@ const VendorList = () => {
   // Gate: redirect to /booking if user hasn't filled ALL 5 event form fields
   useEffect(() => {
     if (user?.isAdmin) return;
+    // Never redirect crawlers away from this page — robots.txt, the sitemap, and our
+    // schema.org data all point here as the canonical vendor-browsing URL, and the
+    // onboarding gate below is meant for real anonymous visitors only.
+    if (/bot|crawl|spider|googlebot|bingbot|slurp|duckduckbot|baiduspider|yandex/i.test(navigator.userAgent)) return;
     if (finalisedCount > 0) return;
     if (location.state?.selectedCategories?.length) return;
     // Bypass when URL already carries filter context (direct links, SEO, WA rejection links)

@@ -2763,7 +2763,8 @@ const Home = () => {
       </section>
 
 
-      {/* ── Party Places ── */}
+      {/* ── Party Places — hidden from production, page not in router (see router.jsx) ── */}
+      {false && (
       <section style={{ background: "linear-gradient(180deg, #FBF4EA 0%, #FFFCF5 100%)", padding: "48px 24px 52px", fontFamily: "'Outfit', sans-serif", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
         <div style={{ maxWidth: 1060, margin: "0 auto" }}>
           <motion.div
@@ -2892,6 +2893,7 @@ const Home = () => {
           `}</style>
         </div>
       </section>
+      )}
 
       {/* ── Tips by Tendr ── */}
       <TipsByTendrSection />

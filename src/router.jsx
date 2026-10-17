@@ -268,8 +268,8 @@ const OccasionHub         = lazy(() => import("./pages/occasion-hub/OccasionHub.
 const JoinRoom            = lazy(() => import("./pages/JoinRoom.jsx"));
 const PujaKits            = lazy(() => import("./pages/puja-kits/PujaKits.jsx"));
 const PartyRoomPage       = lazy(() => import("./pages/party-room/PartyRoomPage.jsx"));
-const PartyPlacesPage     = lazy(() => import("./pages/party-places/PartyPlacesPage.jsx"));
-const PartyPlaceProfile   = lazy(() => import("./pages/party-places/PartyPlaceProfile.jsx"));
+// const PartyPlacesPage     = lazy(() => import("./pages/party-places/PartyPlacesPage.jsx"));
+// const PartyPlaceProfile   = lazy(() => import("./pages/party-places/PartyPlaceProfile.jsx"));
 
 
 import LaunchLivePage from "./pages/LaunchLivePage";
@@ -739,8 +739,8 @@ const router = createBrowserRouter([
   { path: '/navratri-garba-hub', element: <OccasionHub occasion="navratri-garba" />, errorElement: <ErrorPage /> },
 
 
-  { path: '/party-places',      element: <PartyPlacesPage />,   errorElement: <ErrorPage /> },
-  { path: '/party-places/:id', element: <PartyPlaceProfile />, errorElement: <ErrorPage /> },
+  // { path: '/party-places',      element: <PartyPlacesPage />,   errorElement: <ErrorPage /> },
+  // { path: '/party-places/:id', element: <PartyPlaceProfile />, errorElement: <ErrorPage /> },
   { path: '/top-rated/:category', element: <TopRatedVendors />, errorElement: <ErrorPage /> },
 
 
