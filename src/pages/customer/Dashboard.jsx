@@ -172,6 +172,56 @@ export default function CustomerDashboard() {
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [showInstallBanner, setShowInstallBanner] = useState(() => !sessionStorage.getItem("tendr_install_dismissed"));
   const [referralCopied, setReferralCopied] = useState(false);
+  const [referralModalOpen, setReferralModalOpen] = useState(false);
+  const [referralWallet, setReferralWallet] = useState(null); // { balance, tier, tierAnswered, earnings }
+  const [tierQuestions, setTierQuestions] = useState(null);
+  const [tierQuizOpen, setTierQuizOpen] = useState(false);
+  const [tierAnswers, setTierAnswers] = useState([]);
+  const [tierSubmitting, setTierSubmitting] = useState(false);
+
+  // Referral wallet — fetched once a paid booking exists, since that's when the card first shows
+  useEffect(() => {
+    if (!token || !user?._id) return;
+    const eligible = plans.some(p => p.paymentStatus === 'paid');
+    if (!eligible || referralWallet) return;
+    fetch(`${BASE_URL}/referrals/wallet`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setReferralWallet(d); })
+      .catch(() => {});
+  }, [token, user?._id, plans, referralWallet]);
+
+  const openTierQuiz = () => {
+    if (!tierQuestions) {
+      fetch(`${BASE_URL}/referrals/tier-questions`)
+        .then(r => r.ok ? r.json() : null)
+        .then(d => { if (d?.questions) { setTierQuestions(d.questions); setTierAnswers(new Array(d.questions.length).fill(null)); } })
+        .catch(() => {});
+    }
+    setTierQuizOpen(true);
+  };
+
+  const submitTierQuiz = async () => {
+    if (tierAnswers.some(a => a === null) || tierSubmitting) return;
+    setTierSubmitting(true);
+    try {
+      const res = await fetch(`${BASE_URL}/referrals/tier-submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        credentials: "include",
+        body: JSON.stringify({ answers: tierAnswers }),
+      });
+      const d = await res.json();
+      if (res.ok) {
+        setReferralWallet(prev => ({ ...(prev || {}), tier: d.tier, tierScore: d.score, tierAnswered: true }));
+        setTierQuizOpen(false);
+      } else {
+        alert(d.error || "Couldn't save your answers — please try again.");
+      }
+    } catch {
+      alert("Couldn't save your answers — please try again.");
+    }
+    setTierSubmitting(false);
+  };
 
   // Coming back from a login redirect (e.g. "Refer & Earn" when logged out) —
   // scroll to the referral section once its data-dependent card has mounted.
@@ -971,6 +1021,44 @@ export default function CustomerDashboard() {
 
           const code = generateReferralCode(user._id);
           const formatted = formatCode(code);
+          const tierLabel = { bronze: "Bronze", silver: "Silver", gold: "Gold" }[referralWallet?.tier || "bronze"];
+          const tierColor = { bronze: "#C47A2E", silver: "#B8C0C8", gold: "#D4AF37" }[referralWallet?.tier || "bronze"];
+          return (
+            <div id="refer-earn" style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", borderRadius: 20, padding: "24px 28px", marginBottom: 28, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, flexWrap: "wrap", boxShadow: "0 6px 24px rgba(44,26,14,0.18)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                <div style={{ fontSize: 36, flexShrink: 0 }}>🎁</div>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>Refer &amp; Earn</p>
+                    <span style={{ fontSize: 9.5, fontWeight: 800, color: tierColor, background: `${tierColor}22`, border: `1px solid ${tierColor}55`, borderRadius: 100, padding: "2px 8px", textTransform: "uppercase", letterSpacing: "0.04em" }}>{tierLabel} tier</span>
+                  </div>
+                  <p style={{ fontSize: 18, fontWeight: 900, color: "#fff", margin: "0 0 4px" }}>
+                    {referralWallet?.balance > 0 ? `₹${referralWallet.balance.toLocaleString("en-IN")} earned` : "Earn ₹100–₹500 a month"}
+                  </p>
+                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: 0, lineHeight: 1.5 }}>
+                    Friends get {DISCOUNT_PERCENT}% off with your code. Your next successful referral this month earns{" "}
+                    <strong style={{ color: "#CCAB4A" }}>₹{referralWallet?.nextReferralReward ?? 100}</strong>
+                    {referralWallet?.monthlyReferrals > 0 ? ` (referral #${referralWallet.monthlyReferrals + 1} this month)` : ""} — resets to ₹100 each new month.
+                  </p>
+                  {!referralWallet?.tierAnswered && (
+                    <button onClick={openTierQuiz} style={{ marginTop: 6, background: "none", border: "none", cursor: "pointer", padding: 0, color: "#CCAB4A", fontSize: 12, fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 3, fontFamily: font }}>
+                      Answer 3 quick questions to boost your tier →
+                    </button>
+                  )}
+                </div>
+              </div>
+              <button onClick={() => setReferralModalOpen(true)}
+                style={{ flexShrink: 0, padding: "11px 20px", borderRadius: 12, border: "1.5px solid rgba(204,171,74,0.4)", background: "rgba(204,171,74,0.12)", color: "#CCAB4A", fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
+                View &amp; Share Code →
+              </button>
+            </div>
+          );
+        })()}
+
+        {/* Referral code modal — centred, dismissible ONLY via the × button (no backdrop/Escape close) */}
+        {referralModalOpen && user?._id && (() => {
+          const code = generateReferralCode(user._id);
+          const formatted = formatCode(code);
           const handleCopy = () => {
             navigator.clipboard.writeText(formatted).then(() => {
               setReferralCopied(true);
@@ -978,30 +1066,72 @@ export default function CustomerDashboard() {
             });
           };
           return (
-            <div id="refer-earn" style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", borderRadius: 20, padding: "24px 28px", marginBottom: 28, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, flexWrap: "wrap", boxShadow: "0 6px 24px rgba(44,26,14,0.18)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                <div style={{ fontSize: 36, flexShrink: 0 }}>🎁</div>
-                <div>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>Your Referral Code</p>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                    <span style={{ fontSize: 24, fontWeight: 900, color: "#fff", letterSpacing: "0.1em", fontFamily: "'Courier New', monospace" }}>{formatted}</span>
-                    <button onClick={handleCopy}
-                      style={{ padding: "5px 14px", borderRadius: 8, border: "1.5px solid rgba(204,171,74,0.4)", background: referralCopied ? "rgba(204,171,74,0.2)" : "transparent", color: "#CCAB4A", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
-                      {referralCopied ? "✓ Copied!" : "Copy"}
-                    </button>
-                  </div>
-                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: "5px 0 0", lineHeight: 1.5 }}>
-                    Share this code — friends get {DISCOUNT_PERCENT}% off their first booking
-                  </p>
+            <div style={{ position: "fixed", inset: 0, zIndex: 9500, background: "rgba(20,10,0,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 18 }}>
+              <div style={{ position: "relative", width: "100%", maxWidth: 380, background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", borderRadius: 22, padding: "32px 28px 28px", boxShadow: "0 24px 70px rgba(0,0,0,0.5)", textAlign: "center" }}>
+                <button onClick={() => setReferralModalOpen(false)} aria-label="Close"
+                  style={{ position: "absolute", top: 14, right: 14, width: 30, height: 30, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.1)", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  ✕
+                </button>
+                <div style={{ fontSize: 40, marginBottom: 10 }}>🎁</div>
+                <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 10px" }}>Your Referral Code</p>
+                <div style={{ fontSize: 30, fontWeight: 900, color: "#fff", letterSpacing: "0.08em", fontFamily: "'Courier New', monospace", marginBottom: 18 }}>{formatted}</div>
+                <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+                  <button onClick={handleCopy}
+                    style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1.5px solid rgba(204,171,74,0.4)", background: referralCopied ? "rgba(204,171,74,0.2)" : "transparent", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                    {referralCopied ? "✓ Copied!" : "Copy Code"}
+                  </button>
+                  <a href={`https://wa.me/?text=${encodeURIComponent(`Plan your event on Tendr and get ${DISCOUNT_PERCENT}% off with my code: ${formatted}\n\n${window.location.origin}`)}`}
+                    target="_blank" rel="noopener noreferrer"
+                    style={{ flex: 1, padding: "11px", borderRadius: 10, border: "none", background: "#25D366", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    Share
+                  </a>
                 </div>
-              </div>
-              <div style={{ background: "rgba(204,171,74,0.12)", border: "1px solid rgba(204,171,74,0.25)", borderRadius: 14, padding: "14px 18px", textAlign: "center", minWidth: 120 }}>
-                <div style={{ fontSize: 22, fontWeight: 900, color: "#CCAB4A" }}>{DISCOUNT_PERCENT}%</div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>Discount for<br />your friends</div>
+                <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 12, padding: "12px 14px", fontSize: 12, color: "rgba(255,255,255,0.65)", lineHeight: 1.6 }}>
+                  Friends get <strong style={{ color: "#CCAB4A" }}>{DISCOUNT_PERCENT}% off</strong> their first booking.<br />
+                  Each month, your referrals pay <strong style={{ color: "#CCAB4A" }}>₹100, then ₹200, ₹300…</strong> up to <strong style={{ color: "#CCAB4A" }}>₹500</strong> — a higher tier raises how far you can climb, and it resets to ₹100 every new month.
+                </div>
               </div>
             </div>
           );
         })()}
+
+        {/* Referral tier quiz modal */}
+        {tierQuizOpen && (
+          <div onClick={() => setTierQuizOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 9500, background: "rgba(20,10,0,0.55)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 18 }}>
+            <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 420, maxHeight: "85dvh", overflowY: "auto", background: "#FFFCF5", borderRadius: 22, padding: "26px 24px", boxShadow: "0 24px 70px rgba(0,0,0,0.4)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                <p style={{ fontSize: 17, fontWeight: 900, color: "#2C1A0E", margin: 0 }}>Boost your tier</p>
+                <button onClick={() => setTierQuizOpen(false)} aria-label="Close"
+                  style={{ width: 28, height: 28, borderRadius: "50%", border: "none", background: "rgba(196,122,46,0.1)", color: "#6B3A1F", fontSize: 14, cursor: "pointer" }}>✕</button>
+              </div>
+              <p style={{ fontSize: 12.5, color: "#9B7450", margin: "0 0 18px", lineHeight: 1.5 }}>3 quick questions — a higher tier means more rupees per booking.</p>
+
+              {!tierQuestions ? (
+                <p style={{ fontSize: 13, color: "#9B7450", textAlign: "center", padding: "20px 0" }}>Loading…</p>
+              ) : (
+                <>
+                  {tierQuestions.map((q, qi) => (
+                    <div key={qi} style={{ marginBottom: 18 }}>
+                      <p style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E", margin: "0 0 9px", lineHeight: 1.4 }}>{q.question}</p>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                        {q.options.map((opt, oi) => (
+                          <button key={oi} onClick={() => setTierAnswers(prev => prev.map((a, i) => i === qi ? oi : a))}
+                            style={{ textAlign: "left", padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${tierAnswers[qi] === oi ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: tierAnswers[qi] === oi ? "rgba(196,122,46,0.1)" : "#fff", color: tierAnswers[qi] === oi ? "#C47A2E" : "#4A3420", fontSize: 13, fontWeight: tierAnswers[qi] === oi ? 700 : 500, cursor: "pointer", fontFamily: font }}>
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  <button disabled={tierAnswers.some(a => a === null) || tierSubmitting} onClick={submitTierQuiz}
+                    style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: tierAnswers.some(a => a === null) ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: tierAnswers.some(a => a === null) ? "#9ca3af" : "#fff", fontSize: 14.5, fontWeight: 800, cursor: tierAnswers.some(a => a === null) ? "not-allowed" : "pointer", fontFamily: font }}>
+                    {tierSubmitting ? "Saving…" : "Save Answers"}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* 12h silence reminder banner */}
         {(() => {
