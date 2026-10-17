@@ -4,6 +4,7 @@ import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import ToolIntroWrapper from "../../components/ToolIntroWrapper";
 import ToolNav from "../../components/ToolNav";
+import { EVENT_TYPES } from "../../data/invitationTemplates";
 
 const font = "'Outfit', sans-serif";
 
@@ -20,21 +21,8 @@ const INTRO = {
   ],
 };
 
-const EVENT_TYPES = [
-  { id: "dinner-eve",           name: "Dinner Eve",             icon: "🍽️" },
-  { id: "family-gathering",     name: "Family Gathering",       icon: "👨‍👩‍👧‍👦" },
-  { id: "lunch-celebrations",   name: "Lunch Celebrations",     icon: "🥗" },
-  { id: "marriage-ceremony",    name: "Marriage Ceremony",      icon: "💒" },
-  { id: "magical-ring-ceremony", name: "Ring Ceremony",         icon: "💍" },
-  { id: "birthday-party",       name: "Birthday Party",         icon: "🎂" },
-  { id: "marriage-anniversary", name: "Anniversary",            icon: "💕" },
-];
-
 const InvitationFlyerPicker = () => {
   const navigate = useNavigate();
-  // Redirect directly to the customizer — skip the event type picker for now
-  React.useEffect(() => { navigate("/invitation/customize", { replace: true }); }, []);
-  return null;
 
   const content = (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font, position: "relative" }}>
@@ -67,6 +55,13 @@ const InvitationFlyerPicker = () => {
               <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.3 }}>{name}</span>
             </button>
           ))}
+        </div>
+
+        <div style={{ textAlign: "center", marginTop: 36 }}>
+          <button onClick={() => navigate("/invitation/customize")}
+            style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 13, fontWeight: 600, fontFamily: font, textDecoration: "underline", textUnderlineOffset: 3 }}>
+            Skip — start with a blank design
+          </button>
         </div>
       </div>
       <style>{`@media(max-width:640px){.invitation-grid{grid-template-columns:repeat(2,1fr) !important;}}`}</style>

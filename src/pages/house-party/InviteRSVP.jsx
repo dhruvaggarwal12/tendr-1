@@ -58,20 +58,39 @@ export default function InviteRSVP() {
 
   return (
     <Screen>
-      <div style={{ padding: "30px 18px", maxWidth: 440, margin: "0 auto", width: "100%" }}>
-        <div style={{ background: "transparent", borderRadius: 20, padding: "28px 22px", marginBottom: 24, textAlign: "center", border: "1.5px solid rgba(255,255,255,0.1)" }}>
-          <div style={{ fontSize: 46 }}>🎉</div>
-          <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", margin: "10px 0 6px" }}>{invite.partyName}</h1>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", margin: 0 }}>Hosted by {invite.hostName}</p>
-          {(invite.date || invite.time || invite.location) && (
-            <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 6 }}>
-              {invite.date && <Chip emoji="📅" text={invite.date} />}
-              {invite.time && <Chip emoji="🕗" text={invite.time} />}
-              {invite.location && <Chip emoji="📍" text={invite.location} />}
+      <div style={{ padding: invite.templateImage ? "0 0 30px" : "30px 18px", maxWidth: 440, margin: "0 auto", width: "100%" }}>
+        {invite.templateImage ? (
+          <div style={{ position: "relative", borderRadius: "0 0 20px 20px", overflow: "hidden", marginBottom: 24 }}>
+            <img src={invite.templateImage} alt="" style={{ width: "100%", height: 280, objectFit: "cover", display: "block" }} />
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,6,2,0.95) 0%, rgba(10,6,2,0.55) 45%, rgba(10,6,2,0.1) 75%, transparent 100%)" }} />
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 22px 22px", textAlign: "center" }}>
+              <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", margin: "0 0 6px" }}>{invite.partyName}</h1>
+              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", margin: 0 }}>Hosted by {invite.hostName}</p>
+              {(invite.date || invite.time || invite.location) && (
+                <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 6 }}>
+                  {invite.date && <Chip emoji="📅" text={invite.date} />}
+                  {invite.time && <Chip emoji="🕗" text={invite.time} />}
+                  {invite.location && <Chip emoji="📍" text={invite.location} />}
+                </div>
+              )}
             </div>
-          )}
-          {invite.note && <div style={{ marginTop: 14, background: "rgba(124,58,237,0.15)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#C4B5FD", fontStyle: "italic" }}>{invite.note}</div>}
-        </div>
+          </div>
+        ) : (
+          <div style={{ background: "transparent", borderRadius: 20, padding: "28px 22px", marginBottom: 24, textAlign: "center", border: "1.5px solid rgba(255,255,255,0.1)" }}>
+            <div style={{ fontSize: 46 }}>🎉</div>
+            <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", margin: "10px 0 6px" }}>{invite.partyName}</h1>
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", margin: 0 }}>Hosted by {invite.hostName}</p>
+            {(invite.date || invite.time || invite.location) && (
+              <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 6 }}>
+                {invite.date && <Chip emoji="📅" text={invite.date} />}
+                {invite.time && <Chip emoji="🕗" text={invite.time} />}
+                {invite.location && <Chip emoji="📍" text={invite.location} />}
+              </div>
+            )}
+          </div>
+        )}
+        {invite.note && <div style={{ margin: invite.templateImage ? "0 18px 24px" : "0 0 24px", background: "rgba(124,58,237,0.15)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#C4B5FD", fontStyle: "italic" }}>{invite.note}</div>}
+        <div style={{ padding: invite.templateImage ? "0 18px" : 0 }}>
 
         {!done ? (
           <div style={{ background: "transparent", borderRadius: 16, padding: 20, marginBottom: 24 }}>
@@ -113,6 +132,7 @@ export default function InviteRSVP() {
               </div>
             </>
           )}
+        </div>
         </div>
       </div>
     </Screen>

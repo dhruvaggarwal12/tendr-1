@@ -264,6 +264,10 @@ const HousePartyHub       = lazy(() => import("./pages/house-party/HousePartyHub
 const PotluckJoin         = lazy(() => import("./pages/house-party/PotluckJoin.jsx"));
 const InviteRSVP          = lazy(() => import("./pages/house-party/InviteRSVP.jsx"));
 const PhotoWallPage       = lazy(() => import("./pages/house-party/PhotoWallPage.jsx"));
+const InvitationFlyerPicker = lazy(() => import("./pages/invitation/InvitationFlyerPicker.jsx"));
+const TemplateGallery      = lazy(() => import("./pages/invitation/TemplateGallery.jsx"));
+const InvitationCustomizer = lazy(() => import("./pages/invitation/InvitationCustomizer.jsx"));
+const CustomTemplateRequest = lazy(() => import("./pages/invitation/CustomTemplateRequest.jsx"));
 const OccasionHub         = lazy(() => import("./pages/occasion-hub/OccasionHub.jsx"));
 const JoinRoom            = lazy(() => import("./pages/JoinRoom.jsx"));
 const PujaKits            = lazy(() => import("./pages/puja-kits/PujaKits.jsx"));
@@ -717,6 +721,13 @@ const router = createBrowserRouter([
   { path: '/house-party/invite/:inviteId', element: <InviteRSVP />, errorElement: <ErrorPage /> },
   { path: '/house-party/photo-wall/:wallId', element: <PhotoWallPage />, errorElement: <ErrorPage /> },
   { path: '/join-room', element: <JoinRoom />, errorElement: <ErrorPage /> },
+
+  // ── Invitation Builder ──────────────────────────────────────────────────
+  { path: '/invitation', element: <InvitationFlyerPicker />, errorElement: <ErrorPage /> },
+  { path: '/invitation/templates/:eventType', element: <TemplateGallery />, errorElement: <ErrorPage /> },
+  { path: '/invitation/customize', element: <InvitationCustomizer />, errorElement: <ErrorPage /> },
+  { path: '/invitation/customize/:eventType/:id', element: <InvitationCustomizer />, errorElement: <ErrorPage /> },
+  { path: '/invitation/custom-request/:eventType', element: <CustomTemplateRequest />, errorElement: <ErrorPage /> },
 
   { path: '/birthday-hub', element: <OccasionHub occasion="birthday" />, errorElement: <ErrorPage /> },
   { path: '/first-birthday-hub', element: <OccasionHub occasion="first-birthday" />, errorElement: <ErrorPage /> },
