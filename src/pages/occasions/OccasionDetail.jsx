@@ -698,6 +698,33 @@ function themeEmoji(tags=[]) {
   return "🎨";
 }
 
+// A handful of related motifs per theme family — used to scatter a few different icons as
+// ambient background decoration, instead of repeating the single themeEmoji() pick everywhere.
+function themeProps(tags=[]) {
+  const t=tags.join(" ").toLowerCase();
+  if(t.includes("bollywood")||t.includes("indian")||t.includes("dance")) return ["💃","🎵","🪔","✨"];
+  if(t.includes("neon")||t.includes("glow")||t.includes("rave")) return ["🌈","💿","⚡","🎉"];
+  if(t.includes("floral")||t.includes("garden")||t.includes("flower")) return ["🌸","🌷","🌺","🍃"];
+  if(t.includes("pastel")||t.includes("pink")||t.includes("baby")) return ["🩷","🎀","🧸","⭐"];
+  if(t.includes("gold")||t.includes("glam")||t.includes("royal")) return ["👑","✨","🎊","🥂"];
+  if(t.includes("elegant")||t.includes("luxury")||t.includes("red-carpet")) return ["✨","🥂","🎩","💎"];
+  if(t.includes("jungle")||t.includes("safari")||t.includes("animal")) return ["🦁","🐾","🌿","🦋"];
+  if(t.includes("nature")||t.includes("green")||t.includes("earth")) return ["🌿","🍃","🌳","🦋"];
+  if(t.includes("stars")||t.includes("dreamy")||t.includes("navy")||t.includes("night")) return ["⭐","🌙","✨","🪐"];
+  if(t.includes("minimal")||t.includes("modern")||t.includes("white")||t.includes("clean")) return ["🤍","◻️","✨"];
+  if(t.includes("red")||t.includes("romantic")||t.includes("valentine")) return ["🌹","💕","🕯️","✨"];
+  if(t.includes("brown")||t.includes("bear")||t.includes("cute")||t.includes("teddy")) return ["🧸","🎈","🍼","⭐"];
+  if(t.includes("clouds")||t.includes("sky")||t.includes("blue")) return ["☁️","⭐","🎈","🩵"];
+  if(t.includes("entrance")||t.includes("arch")) return ["🌺","🎈","✨"];
+  if(t.includes("personal")||t.includes("footprint")) return ["💝","🎈","✨"];
+  if(t.includes("sufi")||t.includes("ghazal")||t.includes("classical")) return ["🎵","🕯️","✨"];
+  if(t.includes("retro")||t.includes("vintage")) return ["📷","🎞️","✨"];
+  if(t.includes("dark")||t.includes("black")||t.includes("gothic")) return ["🖤","🕯️","✨"];
+  if(t.includes("corporate")||t.includes("professional")||t.includes("office")) return ["🎉","🎊","⭐"];
+  if(t.includes("colourful")||t.includes("rainbow")||t.includes("confetti")||t.includes("lego")) return ["🎊","🎉","🌈","⭐"];
+  return ["🎈","🎉","✨"];
+}
+
 /* ── vendor recommendations based on theme + age groups + venue ── */
 function getRecommended(occasion, theme, ageGroups, venueType) {
   const recs = new Set(occasion.vendorCategories||[]);
@@ -2301,9 +2328,10 @@ export default function OccasionDetail(){
 
   const pageBg = step>0
     ? (themed
-        ? `radial-gradient(ellipse 85% 45% at 50% 0%, ${gold}22 0%, transparent 60%), radial-gradient(ellipse 70% 40% at 100% 100%, ${gold}14 0%, transparent 65%), #F5F3F0`
+        ? `radial-gradient(ellipse 90% 50% at 10% 0%, ${gold}4a 0%, transparent 58%), radial-gradient(ellipse 80% 45% at 100% 100%, ${gold}3c 0%, transparent 62%), ${lightenHex(gold,0.88)}`
         : "#F5F3F0")
     : bg;
+  const themeIcons = themed ? themeProps(theme.tags) : [];
   const planCssVars = themed ? {
     "--plan-accent": gold,
     "--plan-border": border,
@@ -2313,9 +2341,26 @@ export default function OccasionDetail(){
     "--plan-wash-sel": `rgba(${goldRgb},0.10)`,
   } : {};
   return(
-    <div style={{height:"100dvh",background:pageBg,fontFamily:font,display:"flex",flexDirection:"column",overflow:"hidden",...planCssVars}}>
+    <div style={{height:"100dvh",background:pageBg,fontFamily:font,display:"flex",flexDirection:"column",overflow:"hidden",position:"relative",...planCssVars}}>
       <style>{css}</style>
       <SEO title={`Plan your ${occasion.name} — Tendr`} description={`Guided ${occasion.name} planner`} path={`/occasions/${slug}`}/>
+
+      {/* Ambient theme props — a handful of soft, oversized motifs matching the chosen theme,
+          anchored to the viewport so they stay put behind the scrolling content on every step. */}
+      {themeIcons.length>0 && (
+        <div style={{position:"absolute",inset:0,zIndex:1,pointerEvents:"none",overflow:"hidden"}}>
+          {[
+            {top:"6%",left:"-4%",size:72,rot:-16},
+            {top:"2%",right:"-5%",size:60,rot:14},
+            {bottom:"16%",left:"-5%",size:66,rot:10},
+            {bottom:"4%",right:"-4%",size:58,rot:-12},
+          ].map((p,i)=>themeIcons[i%themeIcons.length]&&(
+            <span key={i} style={{position:"absolute",top:p.top,left:p.left,right:p.right,bottom:p.bottom,fontSize:p.size,opacity:0.22,transform:`rotate(${p.rot}deg)`,filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.05))"}}>
+              {themeIcons[i%themeIcons.length]}
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* sticky header */}
       <div style={{position:"sticky",top:0,zIndex:100,background:"#fff",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
@@ -2423,7 +2468,7 @@ export default function OccasionDetail(){
       )}
 
       {/* content */}
-      <div ref={contentRef} style={{flex:1,overflowY:"auto",padding:"28px 20px 32px",maxWidth:680,margin:"0 auto",width:"100%",boxSizing:"border-box",scrollBehavior:"smooth"}}>
+      <div ref={contentRef} style={{flex:1,overflowY:"auto",padding:"28px 20px 32px",maxWidth:680,margin:"0 auto",width:"100%",boxSizing:"border-box",scrollBehavior:"smooth",position:"relative",zIndex:2}}>
 
         {/* ══ STEP 0: CUSTOM OCCASION — name & describe ══ */}
         {step===0&&isCustomOccasion&&(
