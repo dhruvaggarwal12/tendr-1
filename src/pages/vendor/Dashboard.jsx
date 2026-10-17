@@ -1034,7 +1034,12 @@ function OrderModal({ initial, onSave, onClose, saving, existingClients = [], se
                   const c = STATUS_COLOR[s];
                   const active = form.status === s;
                   return (
-                    <button key={s} onClick={() => set('status', s)}
+                    <button key={s} onClick={() => {
+                        if (s === 'Cancelled' && form.status === 'Confirmed') {
+                          if (!window.confirm('Cancel this confirmed booking?\n\nRepeated cancellations affect your account — rating drops, higher commission, or suspension on confirmed bookings (see Cancellation Policy). The client won\'t be notified automatically, so message them directly.')) return;
+                        }
+                        set('status', s);
+                      }}
                       style={{ flex: 1, padding: '7px 4px', borderRadius: 9, fontSize: 12, fontWeight: 700, fontFamily: font, cursor: 'pointer', border: '1.5px solid', transition: 'all 0.15s',
                         borderColor: active ? c.dot : 'rgba(196,122,46,0.15)',
                         background: active ? c.bg : 'transparent',
@@ -2720,10 +2725,10 @@ const [tab, setTab] = useState('home');
     return d >= today && d <= next7 && g.status !== 'Cancelled';
   }).sort((a,b) => new Date(a.eventDate)-new Date(b.eventDate));
 
-  // Gig conflict detection (artist only)
+  // Gig conflict detection — same date/time overlap, any vendor type (nobody can be in two places at once)
   const gigConflicts = new Set();
-  if (isArtist) {
-    const wt = outsideOrders.filter(o => o.eventDate && o.startTime);
+  {
+    const wt = outsideOrders.filter(o => o.eventDate && o.startTime && o.status !== 'Cancelled');
     wt.forEach((a, i) => { wt.slice(i+1).forEach(b => {
       const aD = new Date(a.eventDate).toISOString().split('T')[0];
       const bD = new Date(b.eventDate).toISOString().split('T')[0];
@@ -2752,6 +2757,35 @@ const [tab, setTab] = useState('home');
   const MILESTONES = [10, 25, 50, 100, 200, 500];
   const currentMilestone = MILESTONES.filter(m => totalEventsDone >= m).slice(-1)[0] || 0;
   const showMilestone = currentMilestone > 0 && currentMilestone > lastMilestone;
+
+  // Equipment double-booked on the same date (same gear can't be at two events)
+  const equipmentConflicts = new Map(); // orderId -> [{ withOrder, items }]
+  {
+    const withEquip = outsideOrders.filter(o => o.eventDate && o.status !== 'Cancelled' && (o.equipment||[]).length > 0);
+    withEquip.forEach((a, i) => withEquip.slice(i+1).forEach(b => {
+      if (new Date(a.eventDate).toISOString().split('T')[0] !== new Date(b.eventDate).toISOString().split('T')[0]) return;
+      const shared = (a.equipment||[]).filter(e => (b.equipment||[]).includes(e));
+      if (shared.length === 0) return;
+      equipmentConflicts.set(a._id, [...(equipmentConflicts.get(a._id)||[]), { withOrder: b, items: shared }]);
+      equipmentConflicts.set(b._id, [...(equipmentConflicts.get(b._id)||[]), { withOrder: a, items: shared }]);
+    }));
+  }
+
+  // Completed gigs with no review requested yet
+  const pendingReviewRequests = outsideOrders.filter(o => o.status === 'Completed' && o.reviewToken && o.clientPhone && !o.reviewedAt);
+
+  // Quotes sent 3+ days ago with no client response
+  const staleQuotes = quotes.filter(q => q.status === 'Sent' && q.createdAt && (Date.now() - new Date(q.createdAt).getTime()) > 3 * 86400000);
+
+  // Out-of-town gigs in the next 5 days still missing hotel arrangements
+  const travelGaps = outsideOrders.filter(o => {
+    if (!o.eventDate || o.status === 'Cancelled') return false;
+    const d = new Date(o.eventDate); d.setHours(0,0,0,0);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const daysOut = Math.ceil((d - today) / 86400000);
+    if (daysOut < 0 || daysOut > 5) return false;
+    return !!(o.travel?.hotelNeeded && !o.travel?.hotelName);
+  }).sort((a,b) => new Date(a.eventDate) - new Date(b.eventDate));
 
   // Event type breakdown from outside orders
   const evtTypeCounts = outsideOrders.reduce((acc, o) => {
@@ -3257,8 +3291,8 @@ const [tab, setTab] = useState('home');
                 </div>
               )}
 
-              {/* Conflict alert (artist) */}
-              {isArtist && gigConflicts.size>0 && (
+              {/* Date clash alert — same date/time overlap, any vendor type */}
+              {gigConflicts.size>0 && (
                 <div style={{ background:'rgba(220,38,38,0.05)', border:'1.5px solid rgba(220,38,38,0.18)', borderRadius:14, padding:'12px 16px', marginBottom:16, display:'flex', gap:10, alignItems:'flex-start' }}>
                   <span style={{ color:'#DC2626', flexShrink:0 }}>{dsic(<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>)}</span>
                   <div style={{ flex:1 }}>
@@ -3266,6 +3300,31 @@ const [tab, setTab] = useState('home');
                     <div style={{ fontSize:12, color:'#9B7450' }}>{gigConflicts.size} {lang==='en'?`gig${gigConflicts.size!==1?'s':''} overlap on the same date and time.`:t('conflictMsg')}</div>
                   </div>
                   <button onClick={() => setTab('work')} style={{ fontSize:12, fontWeight:700, color:'#DC2626', background:'none', border:'none', cursor:'pointer', fontFamily:font, flexShrink:0, padding:0 }}>View →</button>
+                </div>
+              )}
+
+              {/* Equipment clash alert — same gear booked for two same-day events */}
+              {equipmentConflicts.size>0 && (
+                <div style={{ background:'rgba(220,38,38,0.05)', border:'1.5px solid rgba(220,38,38,0.18)', borderRadius:14, padding:'12px 16px', marginBottom:16, display:'flex', gap:10, alignItems:'flex-start' }}>
+                  <span style={{ color:'#DC2626', flexShrink:0 }}>{dsic(<><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3v4M8 3v4"/></>)}</span>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:'#DC2626', marginBottom:2 }}>Equipment double-booked</div>
+                    <div style={{ fontSize:12, color:'#9B7450' }}>{equipmentConflicts.size} order{equipmentConflicts.size!==1?'s':''} share gear with another event on the same date — check what's actually free.</div>
+                  </div>
+                  <button onClick={() => setTab('work')} style={{ fontSize:12, fontWeight:700, color:'#DC2626', background:'none', border:'none', cursor:'pointer', fontFamily:font, flexShrink:0, padding:0 }}>View →</button>
+                </div>
+              )}
+
+              {/* UPI / payout not set up */}
+              {!vendorUPI.trim() && (
+                <div style={{ background:'rgba(217,119,6,0.05)', border:'1.5px solid rgba(217,119,6,0.18)', borderRadius:14, padding:'12px 16px', marginBottom:16, display:'flex', gap:10, alignItems:'center' }}>
+                  <span style={{ fontSize:20, flexShrink:0 }}>💳</span>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:'#D97706', marginBottom:2 }}>No UPI ID on file</div>
+                    <div style={{ fontSize:12, color:'#9B7450' }}>Add one so clients can pay you directly from a payment request link.</div>
+                  </div>
+                  <button onClick={() => { const upi = window.prompt('Enter your UPI ID (e.g. yourname@okaxis)'); if (upi && upi.trim()) saveUPI(upi.trim()); }}
+                    style={{ fontSize:12, fontWeight:700, color:'#D97706', background:'none', border:'none', cursor:'pointer', fontFamily:font, flexShrink:0, padding:0, whiteSpace:'nowrap' }}>Add →</button>
                 </div>
               )}
 
@@ -3370,6 +3429,46 @@ const [tab, setTab] = useState('home');
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Travel/logistics gap — out-of-town gig soon, hotel not arranged */}
+              {travelGaps.length>0 && (
+                <div style={{ background:'rgba(217,119,6,0.05)', border:'1.5px solid rgba(217,119,6,0.2)', borderRadius:14, padding:'12px 16px', marginBottom:16, display:'flex', flexDirection:'column', gap:8 }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:'#D97706' }}>🧳 Travel not sorted yet</div>
+                  {travelGaps.slice(0,3).map(o => (
+                    <div key={o._id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:10, fontSize:12, color:'#9B7450' }}>
+                      <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{o.clientName} · {o.eventType||'Event'} — {new Date(o.eventDate).toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})}</span>
+                      <button onClick={() => setModal(o)} style={{ fontSize:11.5, fontWeight:700, color:'#D97706', background:'none', border:'none', cursor:'pointer', fontFamily:font, flexShrink:0 }}>Fix →</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Stale quotes — sent 3+ days ago, no client response */}
+              {staleQuotes.length>0 && (
+                <div style={{ background:'rgba(37,99,235,0.05)', border:'1.5px solid rgba(37,99,235,0.18)', borderRadius:14, padding:'12px 16px', marginBottom:16, display:'flex', alignItems:'center', gap:10 }}>
+                  <span style={{ fontSize:18, flexShrink:0 }}>📄</span>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:'#1D4ED8', marginBottom:2 }}>{staleQuotes.length} quote{staleQuotes.length!==1?'s':''} awaiting a reply</div>
+                    <div style={{ fontSize:12, color:'#9B7450' }}>Sent 3+ days ago with no response — a follow-up often closes it.</div>
+                  </div>
+                  <button onClick={() => { setTab('tools'); setToolSection('quotes'); }} style={{ fontSize:12, fontWeight:700, color:'#2563EB', background:'none', border:'none', cursor:'pointer', fontFamily:font, flexShrink:0 }}>View →</button>
+                </div>
+              )}
+
+              {/* Ask for a review — completed gigs with no review requested yet */}
+              {pendingReviewRequests.length>0 && (
+                <div style={{ background:'rgba(22,163,74,0.05)', border:'1.5px solid rgba(22,163,74,0.18)', borderRadius:14, padding:'12px 16px', marginBottom:18, display:'flex', flexDirection:'column', gap:8 }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:'#16A34A' }}>⭐ Ask for a review</div>
+                  {pendingReviewRequests.slice(0,3).map(o => (
+                    <div key={o._id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:10 }}>
+                      <span style={{ fontSize:12, color:'#9B7450', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{o.clientName} · {o.eventType||'Event'}</span>
+                      <a href={`https://wa.me/91${o.clientPhone.replace(/\D/g,'')}?text=${encodeURIComponent(`Hi ${o.clientName||'there'}, thank you for having me at your ${o.eventType||'event'}! 🎉 A quick review would mean a lot to me 🙏\n\n${window.location.origin}/rate/${o.reviewToken}`)}`}
+                        target="_blank" rel="noopener noreferrer"
+                        style={{ padding:'5px 10px', borderRadius:8, background:'#25D366', color:'#fff', fontSize:11, fontWeight:700, textDecoration:'none', flexShrink:0 }}>WA</a>
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -3648,7 +3747,7 @@ const [tab, setTab] = useState('home');
                     <div style={{ fontSize:12, color:'#9B7450' }}>Bookings sent to you through the Tendr platform</div>
                     <button onClick={() => navigate('/vendor/bookings')} style={{ fontSize:12, fontWeight:700, color:gold, background:'none', border:'none', cursor:'pointer', fontFamily:font, flexShrink:0 }}>Full page →</button>
                   </div>
-                  {isArtist && gigConflicts.size>0 && (
+                  {gigConflicts.size>0 && (
                     <div style={{ padding:'10px 14px', borderRadius:12, background:'rgba(220,38,38,0.05)', border:'1.5px solid rgba(220,38,38,0.18)', marginBottom:12, display:'flex', alignItems:'center', gap:10 }}>
                       <span style={{ color:'#DC2626' }}>{dsic(<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>)}</span>
                       <span style={{ fontSize:12.5, color:'#DC2626', fontWeight:600 }}>{gigConflicts.size} time conflict{gigConflicts.size!==1?'s':''} detected</span>
