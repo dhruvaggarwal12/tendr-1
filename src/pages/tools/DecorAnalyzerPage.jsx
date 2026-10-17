@@ -18,7 +18,7 @@ export default function DecorAnalyzerPage() {
             Decor Analyser
           </h1>
           <p style={{ fontSize: 14, color: "rgba(28,9,0,0.55)", marginTop: 8, lineHeight: 1.6 }}>
-            Upload a photo of your own venue for decoration ideas tailored to your space — or upload a reference/inspiration photo you like, and we'll break down exactly what it'd take to recreate it.
+            Upload a photo of your own venue for decoration ideas tailored to your space — or upload a look you like alongside your venue, and we'll show exactly how it translates to your actual space.
           </p>
         </div>
 
