@@ -445,12 +445,11 @@ const VendorDetailsPage = () => {
       }
       return;
     }
-    if (!token && isGigPro) {
+    if (!token) {
       setDirectChatName('');
       setDirectChatPrompt(true);
       return;
     }
-    if (!token) { setAuthModalOpen(true); return; }
     if (hasActiveChatSave) { openExistingChatForVendor(vendor._id, vendor, token, openExistingChat, openVendorChat); return; }
     if (isFromListingFlow) { openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType }); return; }
     if (hasEventContext) { dispatch(setBookingType("you-do-it")); openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType }); return; }
@@ -1105,23 +1104,11 @@ const VendorDetailsPage = () => {
                     </button>
                   ) : (
                   <button
-                    onClick={() => {
-                      if (!token) { setAuthModalOpen(true); return; }
-                      if (hasActiveChatSave) { openExistingChatForVendor(vendor._id, vendor, token, openExistingChat, openVendorChat); return; }
-                      if (isFromListingFlow) {
-                        openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
-                      } else if (hasEventContext) {
-                        dispatch(setBookingType("you-do-it"));
-                        openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
-                      } else {
-                        setChatEventForm({ eventType: formEventType || "", guests: formGuests ? String(formGuests) : "", date: formDate || "", location: formLocation || "" });
-                        setChatFormOpen(true);
-                      }
-                    }}
+                    onClick={openGigHeroChat}
                     style={{ flex: 1, padding: "12px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(196,122,46,0.4)", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}
                   >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
+                    {!token ? "Chat Now" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
                   </button>
                 )}
               </div>
@@ -1464,23 +1451,11 @@ const VendorDetailsPage = () => {
                     );
                   })() : (
                     <button
-                      onClick={() => {
-                        if (!token) { setAuthModalOpen(true); return; }
-                        if (hasActiveChatSave) { openExistingChatForVendor(vendor._id, vendor, token, openExistingChat, openVendorChat); return; }
-                        if (isFromListingFlow) {
-                          openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
-                        } else if (hasEventContext) {
-                          dispatch(setBookingType("you-do-it"));
-                          openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
-                        } else {
-                          setChatEventForm({ eventType: formEventType || "", guests: formGuests ? String(formGuests) : "", date: formDate || "", location: formLocation || "" });
-                          setChatFormOpen(true);
-                        }
-                      }}
+                      onClick={openGigHeroChat}
                       style={{ flex: 1, padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                      {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
+                      {!token ? "Chat Now" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
                     </button>
                   )}
                 </div>
