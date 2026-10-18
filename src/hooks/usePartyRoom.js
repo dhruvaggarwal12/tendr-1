@@ -58,10 +58,15 @@ export function usePartyRoom() {
       s.on('party:game-changed', ({ game, gameState: gs }) => {
         setCurrentGame(game);
         setGameState(gs || {});
+        // Keep room.currentGame/room.gameState in sync too — components that read them
+        // straight off `room` (rather than the separate currentGame/gameState values)
+        // would otherwise see a permanently stale snapshot from whenever the room was joined.
+        setRoom(prev => prev ? { ...prev, currentGame: game, gameState: gs || {} } : prev);
       });
 
       s.on('party:state-update', ({ gameState: gs }) => {
         setGameState(gs || {});
+        setRoom(prev => prev ? { ...prev, gameState: gs || {} } : prev);
       });
 
       s.on('party:closed', () => {

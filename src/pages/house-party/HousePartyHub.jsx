@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import {
   TRUTHS, DARES, NEVER_HAVE_I, WOULD_YOU_RATHER,
   CHARADES, HOT_TAKES, BINGO_SQUARES, PARTY_THEMES, CHECKLIST_TEMPLATE,
@@ -7,6 +8,11 @@ import {
 } from "../../data/housePartyData";
 import { usePartyRoom } from "../../hooks/usePartyRoom";
 import DesignerWall from "../../components/DesignerWall";
+import { MostLikelyGame, WouldYouGame, HotTakesGame, NeverHaveIGame, TruthDareGame } from "../party-room/PartyRoomPage.jsx";
+import { linkToHostParty, ensureHostParty } from "../../utils/partySession";
+import { usePartyToolSync } from "../../hooks/usePartyToolSync";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Syne', sans-serif";
@@ -28,6 +34,12 @@ const THEME_DATA = [
 function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 function copyLink(text) { navigator.clipboard?.writeText(text).catch(() => {}); }
+
+// ── Logged-in host tracking — silent, best-effort, never blocks the (anonymous-first) flow ──
+// Guests never touch this; only a logged-in host linking their own created tools to a Party
+// record so it shows up in their Dashboard later. If the host isn't logged in, every call
+// below is a no-op — Party Hub keeps working exactly as it did before for anyone who skips it.
+const LINK_TYPE_BY_PATH = { "/house-party/potluck": "potluck", "/house-party/invite": "invite", "/house-party/photo-wall": "photoWall" };
 
 const hpic = (d, sz = 20) => <svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
 
@@ -675,8 +687,7 @@ function Bingo({ onClose }) {
 // ════════════════════════════════════════════════════════════════════════════
 
 function Checklist({ onClose }) {
-  const SK = 'tendr-hp-checklist-v2';
-  const [savedItems, setSavedItems] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || 'null'); } catch { return null; } });
+  const [savedItems, setSavedItems] = usePartyToolSync('checklist', 'tendr-hp-checklist-v2', null);
   const [newItem, setNewItem] = useState({ name: '', cat: 'decor', person: '' });
 
   const TEMPLATES = {
@@ -720,10 +731,9 @@ function Checklist({ onClose }) {
   const loadTemplate = (key) => {
     const items = TEMPLATES[key].items.map((it, i) => ({ id: Date.now()+i, ...it, person: '', done: false }));
     setSavedItems(items);
-    try { localStorage.setItem(SK, JSON.stringify(items)); } catch {}
   };
 
-  const persist = (items) => { setSavedItems(items); try { localStorage.setItem(SK, JSON.stringify(items)); } catch {} };
+  const persist = (items) => setSavedItems(items);
   const toggleDone = (id) => persist(savedItems.map(it => it.id === id ? { ...it, done: !it.done } : it));
   const updatePerson = (id, person) => persist(savedItems.map(it => it.id === id ? { ...it, person } : it));
   const addItem = () => {
@@ -825,7 +835,7 @@ function Checklist({ onClose }) {
       </div>
       <div style={{ display:'flex', gap:8, marginTop:12 }}>
         {done > 0 && <button onClick={() => persist(savedItems.filter(it => !it.done))} style={{ flex:1, background:'rgba(34,197,94,0.08)', border:'1px solid rgba(34,197,94,0.25)', borderRadius:9, padding:'9px', color:'#86efac', fontSize:12, cursor:'pointer', fontFamily:font, fontWeight:700 }}>✓ Clear Done ({done})</button>}
-        <button onClick={() => { setSavedItems(null); try { localStorage.removeItem(SK); } catch {} }} style={{ flex:1, background:'transparent', border:'1px solid rgba(255,255,255,0.08)', borderRadius:9, padding:'9px', color:'rgba(255,255,255,0.25)', fontSize:12, cursor:'pointer', fontFamily:font }}>Change template</button>
+        <button onClick={() => setSavedItems(null)} style={{ flex:1, background:'transparent', border:'1px solid rgba(255,255,255,0.08)', borderRadius:9, padding:'9px', color:'rgba(255,255,255,0.25)', fontSize:12, cursor:'pointer', fontFamily:font }}>Change template</button>
       </div>
     </Modal>
   );
@@ -1791,10 +1801,29 @@ function PartyReportCard({ onClose }) {
   const gradeColor = { "A+": "#22C55E", A: "#34D399", B: "#FBBF24", C: "#F97316", D: "#EF4444", "—": "#6B7280" };
   const teacherLines = { "A+": "Outstanding! Exceeds all expectations.", A: "Excellent performance. Well done.", B: "Satisfactory. Room for improvement.", C: "Below average. Must try harder.", D: "Disappointing. See me after class.", "—": "Not yet assessed." };
 
-  const SK = 'tendr-hp-reportcard';
-  const [ratings, setRatings] = useState(() => { try { return JSON.parse(localStorage.getItem(SK)||'{}'); } catch { return {}; } });
-  const [submitted, setSubmitted] = useState(false);
-  const [comment, setComment] = useState('');
+  const [saved, setSaved] = usePartyToolSync('reportcard', 'tendr-hp-reportcard', { ratings: {}, comment: '', submitted: false });
+  const ratings = saved.ratings || {};
+  const comment = saved.comment || '';
+  const submitted = !!saved.submitted;
+  const setRatings = (updater) => setSaved({ ...saved, ratings: typeof updater === 'function' ? updater(ratings) : updater });
+  const setComment = (val) => setSaved({ ...saved, comment: val });
+  const setSubmitted = (val) => setSaved({ ...saved, submitted: val });
+  const cardRef = useRef(null);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const downloadPdf = async () => {
+    if (!cardRef.current || downloadingPdf) return;
+    setDownloadingPdf(true);
+    try {
+      const canvas = await html2canvas(cardRef.current, { scale: 2, useCORS: true, backgroundColor: "#FFFBEB" });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: [canvas.width / 2, canvas.height / 2] });
+      pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
+      pdf.save("party-report-card.pdf");
+    } catch (e) {
+      console.error("Report card PDF download failed", e);
+    }
+    setDownloadingPdf(false);
+  };
 
   const allRated = subjects.every(s => ratings[s.key]);
   const overallGrade = allRated ? (() => {
@@ -1804,7 +1833,7 @@ function PartyReportCard({ onClose }) {
 
   if (submitted && overallGrade) return (
     <Modal onClose={onClose} emoji="📝" title="Party Report Card" wide>
-      <div style={{ background: "#FFFBEB", borderRadius: 16, overflow: "hidden", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}>
+      <div ref={cardRef} style={{ background: "#FFFBEB", borderRadius: 16, overflow: "hidden", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}>
         <div style={{ background: "#DC2626", padding: "14px 18px", textAlign: "center" }}>
           <div style={{ fontSize: 10, fontWeight: 800, color: "rgba(255,255,255,0.85)", letterSpacing: "0.18em", textTransform: "uppercase" }}>Official Party Report Card</div>
           <div style={{ fontSize: 18, fontWeight: 900, color: "#fff", marginTop: 4 }}>ANNUAL ASSESSMENT</div>
@@ -1842,11 +1871,14 @@ function PartyReportCard({ onClose }) {
         </div>
       </div>
       <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+        <button onClick={downloadPdf} disabled={downloadingPdf} style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.1)", color: "#FBBF24", fontSize: 13, fontWeight: 700, cursor: downloadingPdf ? "default" : "pointer", fontFamily: font, opacity: downloadingPdf ? 0.6 : 1 }}>
+          {downloadingPdf ? "Saving…" : "⬇️ PDF"}
+        </button>
         <button onClick={() => {
           const text = `🎓 Party Report Card\n\n${subjects.map(s => `${s.emoji} ${s.label}: ${gradeMap[ratings[s.key]||0]}`).join('\n')}\n\nOverall Grade: ${overallGrade}\n\n${comment||teacherLines[overallGrade]}`;
           window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         }} style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1px solid rgba(37,211,102,0.3)", background: "rgba(37,211,102,0.08)", color: "#25D366", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>📲 Share</button>
-        <button onClick={() => { setSubmitted(false); setRatings({}); setComment(''); try { localStorage.removeItem(SK); } catch {} }} style={{ ...btn("rgba(255,255,255,0.08)"), flex: 1 }}>Fill Again</button>
+        <button onClick={() => setSaved({ ratings: {}, comment: '', submitted: false })} style={{ ...btn("rgba(255,255,255,0.08)"), flex: 1 }}>Fill Again</button>
       </div>
     </Modal>
   );
@@ -1871,7 +1903,7 @@ function PartyReportCard({ onClose }) {
         <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginBottom: 6 }}>Teacher's Special Comment (optional)</div>
         <textarea value={comment} onChange={e => setComment(e.target.value)} placeholder="What would Mrs Sharma say about this night..." style={{ ...inp, minHeight: 56, resize: "vertical" }} />
       </div>
-      <button onClick={() => { setSubmitted(true); try { localStorage.setItem(SK, JSON.stringify(ratings)); } catch {} }} disabled={!allRated} style={{ ...btn("#C47A2E"), opacity: allRated ? 1 : 0.45 }}>Generate Report Card 📝</button>
+      <button onClick={() => setSaved({ ...saved, submitted: true })} disabled={!allRated} style={{ ...btn("#C47A2E"), opacity: allRated ? 1 : 0.45 }}>Generate Report Card 📝</button>
     </Modal>
   );
 }
@@ -1991,6 +2023,7 @@ function ShareableTool({ onClose, emoji, title, description, path, fields }) {
   const [link, setLink] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { token } = useSelector(s => s.auth || {});
 
   const create = async () => {
     setLoading(true);
@@ -2008,6 +2041,7 @@ function ShareableTool({ onClose, emoji, title, description, path, fields }) {
       const id = json.roomId || json.inviteId || json.wallId;
       const url = `${window.location.origin}${path}/${id}`;
       setLink(url);
+      linkToHostParty(token, LINK_TYPE_BY_PATH[path], id); // fire-and-forget, logged-in hosts only
     } catch {
       alert("Something went wrong. Please try again.");
     } finally {
@@ -2189,14 +2223,14 @@ const TOOLS = [
   { id: "secretmsg", section: "fun", emoji: "🤫", title: "Secret Messages", desc: "Anonymous notes for anyone in the room", color: "#1A7A8A", live: true },
   { id: "lovenotes", section: "fun", emoji: "💌", title: "Love Notes Wall", desc: "Leave sweet notes for your crew", color: "#F43F5E", live: true },
   // Games
-  { id: "truthordare", section: "games", emoji: "🎯", title: "Truth or Dare", desc: "Indian youth decks — 25 truths + 25 dares", color: "#DC2626" },
-  { id: "neverhavei", section: "games", emoji: "🙅", title: "Never Have I Ever", desc: "30 statements · score tracker", color: "#059669" },
-  { id: "wouldyou", section: "games", emoji: "🤷", title: "Would You Rather", desc: "20 spicy choices — defend your answer", color: "#C47A2E" },
-  { id: "hottakes", section: "games", emoji: "🌶️", title: "Hot Takes", desc: "25 hot takes · agree or disagree", color: "#DC2626" },
+  { id: "truthordare", section: "games", emoji: "🎯", title: "Truth or Dare", desc: "Indian youth decks — 25 truths + 25 dares", color: "#DC2626", live: true },
+  { id: "neverhavei", section: "games", emoji: "🙅", title: "Never Have I Ever", desc: "30 statements · score tracker", color: "#059669", live: true },
+  { id: "wouldyou", section: "games", emoji: "🤷", title: "Would You Rather", desc: "20 spicy choices — defend your answer", color: "#C47A2E", live: true },
+  { id: "hottakes", section: "games", emoji: "🌶️", title: "Hot Takes", desc: "25 hot takes · agree or disagree", color: "#DC2626", live: true },
   { id: "spin", section: "games", emoji: "🍾", title: "Spin the Bottle", desc: "Add names → random picker with spinner", color: "#2563EB" },
   { id: "charades", section: "games", emoji: "🎭", title: "Dumb Charades", desc: "Bollywood · Web Shows · Celebs · Memes", color: "#D97706" },
   { id: "bingo", section: "games", emoji: "🎱", title: "Party Bingo", desc: "5×5 party scenario bingo cards", color: "#0891B2" },
-  { id: "mostlikelyto",  section: "games", emoji: "🎲", title: "Most Likely To",      desc: "Point at whoever fits — most fingers wins",      color: "#D4631A" },
+  { id: "mostlikelyto",  section: "games", emoji: "🎲", title: "Most Likely To",      desc: "Point at whoever fits — most fingers wins",      color: "#D4631A", live: true },
   { id: "twotruthslie", section: "games", emoji: "🤥", title: "Two Truths One Lie",  desc: "Spot the lie · everyone submits · vote as a group", color: "#1A7A8A" },
   { id: "hotseat",      section: "games", emoji: "🔥", title: "Hot Seat",            desc: "One player · rapid-fire questions · 60 seconds",    color: "#F43F5E" },
   { id: "darewheel",    section: "games", emoji: "🎡", title: "Dare Wheel",          desc: "Spin the wheel · land on someone · get a dare",     color: "#C85A2A" },
@@ -3012,11 +3046,12 @@ const HP_CHALLENGES = [
   "Snap someone in mid-dance 💃",
 ];
 
-function PhotoChallengeHPB({ onClose }) {
+function PhotoChallengeHPB({ onClose, myName }) {
   const [phase, setPhase] = useState('lobby');
-  const [photos, setPhotos] = useState({}); // {idx: dataUrl}
+  const [photos, setPhotos] = useState({}); // {idx: dataUrl} — local preview, always set immediately
   const [timeLeft, setTimeLeft] = useState(0);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [wallId, setWallId] = useState(null); // lazily created on first capture, so photos actually survive
   const timerRef = useRef(null);
   const fileRef = useRef(null);
 
@@ -3030,17 +3065,43 @@ function PhotoChallengeHPB({ onClose }) {
   };
   useEffect(() => () => clearInterval(timerRef.current), []);
 
+  // Make sure a shared Photo Wall exists for this challenge, creating one on first capture.
+  const ensureWall = async () => {
+    if (wallId) return wallId;
+    try {
+      const res = await fetch(`${BASE_URL}/house-party/photo-wall`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ partyName: "Photo Challenge" }),
+      });
+      const d = await res.json();
+      if (d?.wallId) { setWallId(d.wallId); return d.wallId; }
+    } catch {}
+    return null;
+  };
+
   const uploadPhoto = (e) => {
     const file = e.target.files?.[0]; if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
       const img = new Image();
-      img.onload = () => {
+      img.onload = async () => {
         const MAX = 500; const scale = Math.min(1, MAX / Math.max(img.width, img.height));
         const canvas = document.createElement('canvas');
         canvas.width = img.width * scale; canvas.height = img.height * scale;
         canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-        setPhotos(p => ({ ...p, [activeIdx]: canvas.toDataURL('image/jpeg', 0.65) }));
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.65);
+        setPhotos(p => ({ ...p, [activeIdx]: dataUrl })); // instant preview, independent of upload
+
+        // Also save it for real, so it doesn't vanish when this modal closes.
+        const id = await ensureWall();
+        if (!id) return;
+        canvas.toBlob(async (blob) => {
+          if (!blob) return;
+          const fd = new FormData();
+          fd.append("photo", blob, `challenge-${activeIdx + 1}.jpg`);
+          fd.append("uploadedBy", myName || "Guest");
+          try { await fetch(`${BASE_URL}/house-party/photo-wall/${id}/upload`, { method: "POST", body: fd }); } catch {}
+        }, 'image/jpeg', 0.75);
       };
       img.src = ev.target.result;
     };
@@ -3109,9 +3170,21 @@ function PhotoChallengeHPB({ onClose }) {
               </div>
             ) : null)}
           </div>
-          <button onClick={()=>{setPhase('lobby');setPhotos({});}} style={{ width:"100%", padding:"13px 0", background:"linear-gradient(135deg,#7C3AED,#5B21B6)", border:"none", borderRadius:12, color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:font }}>
-            Play Again 📷
-          </button>
+          {wallId && (
+            <div style={{ background:"rgba(34,197,94,0.1)", border:"1px solid rgba(34,197,94,0.25)", borderRadius:12, padding:"10px 14px", marginBottom:10, fontSize:12, color:"#4ade80", textAlign:"center" }}>
+              ✅ Saved to a shared photo wall — everyone's captures land in the same place.
+            </div>
+          )}
+          <div style={{ display:"flex", gap:8 }}>
+            <button onClick={()=>{setPhase('lobby');setPhotos({});}} style={{ flex:1, padding:"13px 0", background:"linear-gradient(135deg,#7C3AED,#5B21B6)", border:"none", borderRadius:12, color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:font }}>
+              Play Again 📷
+            </button>
+            {wallId && (
+              <button onClick={()=>{ copyLink(`${window.location.origin}/house-party/photo-wall/${wallId}`); }} style={{ flex:1, padding:"13px 0", background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", borderRadius:12, color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:font }}>
+                📋 Copy Wall Link
+              </button>
+            )}
+          </div>
         </>
       )}
     </Modal>
@@ -3121,11 +3194,10 @@ function PhotoChallengeHPB({ onClose }) {
 // ── Coordination tool modals ──────────────────────────────────────────────────
 
 function GuestListModal({ onClose }) {
-  const SK = 'tendr-hp-guestlist';
-  const [guests, setGuests] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || '[]'); } catch { return []; } });
+  const [guests, setGuests] = usePartyToolSync('guestlist', 'tendr-hp-guestlist', []);
   const [form, setForm] = useState({ name:'', phone:'', plusOne:false, meal:'veg', rsvp:'pending' });
   const [showAdd, setShowAdd] = useState(false);
-  const save = (g) => { setGuests(g); try { localStorage.setItem(SK, JSON.stringify(g)); } catch {} };
+  const save = (g) => setGuests(g);
 
   const add = () => {
     if (!form.name.trim()) return;
@@ -3248,13 +3320,12 @@ function GuestListModal({ onClose }) {
 }
 
 function MenuPlannerModal({ onClose }) {
-  const SK = 'tendr-hp-menu';
-  const [items, setItems] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || '[]'); } catch { return []; } });
+  const [items, setItems] = usePartyToolSync('menu', 'tendr-hp-menu', []);
   const [name, setName] = useState('');
   const [cat, setCat] = useState('food');
   const [diet, setDiet] = useState('veg');
   const [person, setPerson] = useState('');
-  const save = (it) => { setItems(it); try { localStorage.setItem(SK, JSON.stringify(it)); } catch {} };
+  const save = (it) => setItems(it);
   const add = () => {
     if (!name.trim()) return;
     save([...items, { id: Date.now(), name: name.trim(), cat, diet, person: person.trim(), status: 'pending', done: false }]);
@@ -3339,8 +3410,7 @@ function MenuPlannerModal({ onClose }) {
 }
 
 function DayTimelineModal({ onClose }) {
-  const SK = 'tendr-hp-daytimeline';
-  const [entries, setEntries] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || '[]'); } catch { return []; } });
+  const [entries, setEntries] = usePartyToolSync('daytimeline', 'tendr-hp-daytimeline', []);
   const [time, setTime] = useState('');
   const [event, setEvent] = useState('');
   const [now, setNow] = useState(new Date());
@@ -3382,7 +3452,7 @@ function DayTimelineModal({ onClose }) {
     ],
   };
 
-  const saveEntries = (e) => { setEntries(e); try { localStorage.setItem(SK, JSON.stringify(e)); } catch {} };
+  const saveEntries = (e) => setEntries(e);
   const loadTemplate = (key) => { saveEntries(TEMPLATES[key].map((it,i)=>({id:Date.now()+i,...it,done:false}))); setShowTpl(false); };
   const add = () => { if (!time||!event.trim()) return; saveEntries([...entries,{id:Date.now(),time,event:event.trim(),note:'',done:false}].sort((a,b)=>a.time.localeCompare(b.time))); setTime(''); setEvent(''); };
   const toggle = (id) => saveEntries(entries.map(e=>e.id===id?{...e,done:!e.done}:e));
@@ -3471,9 +3541,8 @@ function DayTimelineModal({ onClose }) {
 }
 
 function VenueNotesModal({ onClose }) {
-  const SK = 'tendr-hp-venue';
-  const [data, setData] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || '{}'); } catch { return {}; } });
-  const update = (key, val) => { const d = { ...data, [key]: val }; setData(d); try { localStorage.setItem(SK, JSON.stringify(d)); } catch {} };
+  const [data, setData] = usePartyToolSync('venue', 'tendr-hp-venue', {});
+  const update = (key, val) => setData({ ...data, [key]: val });
   const fields = [
     { key:'address', label:'📍 Address', placeholder:'42, Sector 18, Noida, UP 201301', rows:2 },
     { key:'parking', label:'🅿️ Parking', placeholder:'Free parking in basement, enter from Gate B', rows:2 },
@@ -3659,10 +3728,9 @@ function SeatingChartModal({ onClose }) {
 // ── Budget Planner / Vendor Tracker / WA Broadcasts ─────────────────────────
 
 function BudgetPlannerModal({ onClose }) {
-  const SK = 'tendr-hp-budget';
   const gold = '#C47A2E', goldLt = '#CCAB4A';
-  const [data, setData] = useState(() => { try { return JSON.parse(localStorage.getItem(SK)||'{}'); } catch { return {}; } });
-  const upd = (k,v) => { const d={...data,[k]:v}; setData(d); try { localStorage.setItem(SK,JSON.stringify(d)); } catch {} };
+  const [data, setData] = usePartyToolSync('budget', 'tendr-hp-budget', {});
+  const upd = (k,v) => setData({ ...data, [k]: v });
   const CATS = [
     {id:'venue',label:'🏠 Venue',color:'#3b82f6'},{id:'food',label:'🍽️ Food & Drinks',color:'#f97316'},
     {id:'decor',label:'🎨 Decor',color:'#8b5cf6'},{id:'entertainment',label:'🎵 Entertainment',color:'#ec4899'},{id:'other',label:'📦 Other',color:'#6b7280'},
@@ -3739,14 +3807,13 @@ function BudgetPlannerModal({ onClose }) {
 }
 
 function VendorTrackerModal({ onClose }) {
-  const SK = 'tendr-hp-vendors';
   const gold = '#C47A2E';
-  const [vendors, setVendors] = useState(() => { try { return JSON.parse(localStorage.getItem(SK)||'[]'); } catch { return []; } });
+  const [vendors, setVendors] = usePartyToolSync('vendors', 'tendr-hp-vendors', []);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ name:'', cat:'Caterer', contact:'', total:'', deposit:'', status:'enquired', notes:'' });
   const CATS = ['Caterer','Decorator','Venue','DJ / Music','Photographer','Transport','Florist','Baker','MC / Host','Other'];
   const STATUS = { enquired:{label:'Enquired',color:'#6b7280'}, quoted:{label:'Quote Received',color:'#f59e0b'}, booked:{label:'Booked',color:'#3b82f6'}, confirmed:{label:'Confirmed',color:'#22c55e'}, cancelled:{label:'Cancelled',color:'#ef4444'} };
-  const save = (v)=>{ setVendors(v); try { localStorage.setItem(SK,JSON.stringify(v)); } catch {} };
+  const save = (v)=>setVendors(v);
   const add = ()=>{ if(!form.name.trim()) return; save([...vendors,{id:Date.now(),...form,name:form.name.trim()}]); setForm({name:'',cat:'Caterer',contact:'',total:'',deposit:'',status:'enquired',notes:''}); setShowAdd(false); };
   const totalCost=vendors.reduce((s,v)=>s+Number(v.total||0),0);
   const totalPaid=vendors.reduce((s,v)=>s+Number(v.deposit||0),0);
@@ -4839,10 +4906,12 @@ export default function HousePartyHub() {
   const [open, setOpen]           = useState(null);
   const [entryMode, setEntryMode] = useState(null); // null | 'exploring' | 'hosting' | 'joined'
   const navigate = useNavigate();
+  const { token, user } = useSelector(s => s.auth || {});
+  const [loginNudgeDismissed, setLoginNudgeDismissed] = useState(() => sessionStorage.getItem("tendr_hp_nudge_dismissed") === "1");
 
   const {
     room, players, gameState, currentGame, myName, isHost, effect, error, activityLog, playerActivities, playerRoles,
-    createRoom, joinRoom, closeRoom, leaveRoom, sendAction, sendEffect, setActivity, assignRole, clearError,
+    createRoom, joinRoom, closeRoom, leaveRoom, sendAction, sendEffect, setActivity, assignRole, clearError, setGame,
   } = usePartyRoom();
 
   const ACTIVITY_LABELS = {
@@ -4877,9 +4946,12 @@ export default function HousePartyHub() {
 
   const handleHostCreate = useCallback(async (args) => {
     const res = await createRoom(args);
-    if (res?.ok) setEntryMode('hosting');
+    if (res?.ok) {
+      setEntryMode('hosting');
+      linkToHostParty(token, 'room', res.room?.code);
+    }
     return res;
-  }, [createRoom]);
+  }, [createRoom, token]);
 
   const handleGuestJoin = useCallback(async (args) => {
     const res = await joinRoom(args);
@@ -4887,11 +4959,49 @@ export default function HousePartyHub() {
     return res;
   }, [joinRoom]);
 
-  // When a live game tool is opened in a room, push game state to room
+  // The 5 games with a real synced implementation (see PartyRoomPage.jsx) — Hub tool id -> backend game id
+  const SYNCED_GAME_ID = { truthordare: 'truth-dare', neverhavei: 'never-have-i', wouldyou: 'would-you', hottakes: 'hot-takes', mostlikelyto: 'most-likely' };
+
+  // Record a finished game in the room's history, for the post-event recap. Best-effort — no
+  // "winner" logic here (these games don't have one), just a "this was played" timeline entry.
+  const logGameResult = (backendGame) => {
+    if (!room?.code || !backendGame) return;
+    const name = TOOLS.find(t => SYNCED_GAME_ID[t.id] === backendGame)?.title || backendGame;
+    fetch(`${BASE_URL}/house-party/party-rooms/${room.code}/game-result`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ gameId: backendGame, gameName: name, players: players || [] }),
+    }).catch(() => {});
+    // Also mirror into the permanent Party record (logged-in hosts only) — the live room
+    // above expires after 30 days of inactivity, this is what the recap relies on long-term.
+    if (token) {
+      (async () => {
+        const partyId = await ensureHostParty(token);
+        if (!partyId) return;
+        fetch(`${BASE_URL}/parties/${partyId}/game-result`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          credentials: "include",
+          body: JSON.stringify({ gameId: backendGame, gameName: name, players: players || [] }),
+        }).catch(() => {});
+      })();
+    }
+  };
+
+  // When a live tool is opened in a room, push/sync the right state to the room
   const openTool = (id) => {
     const tool = TOOLS.find(t => t.id === id);
     if (tool?.live && room) {
-      if (isHost) sendAction('next', {}).catch?.(() => {});
+      const backendGame = SYNCED_GAME_ID[id];
+      if (backendGame) {
+        // Only the host (re)starts the game; a guest opening it just watches the host's state
+        if (isHost && currentGame !== backendGame) {
+          if (currentGame && SYNCED_GAME_COMPONENT[currentGame]) logGameResult(currentGame);
+          setGame(backendGame, {}).catch?.(() => {});
+        }
+      } else if (isHost) {
+        sendAction('next', {}).catch?.(() => {});
+      }
     }
     setOpen(id);
   };
@@ -4900,17 +5010,40 @@ export default function HousePartyHub() {
 
   // Shared room props for live tools
   const liveProps = { room, myName, players, gameState, sendAction, sendEffect, isHost };
+  const onScore = (player, points) => sendAction('score-add', { player, points });
+
+  // For the 5 games with a real synced version: in a room, render the live component
+  // (ask the host to start it if it's not the room's active game yet); otherwise, same
+  // local "pass the phone" component as always — nothing changes when exploring/no room.
+  const SYNCED_GAME_COMPONENT = { 'truth-dare': TruthDareGame, 'never-have-i': NeverHaveIGame, 'would-you': WouldYouGame, 'hot-takes': HotTakesGame, 'most-likely': MostLikelyGame };
+  const renderLiveGame = (toolId, emoji, title, localFallback) => {
+    const backendGame = SYNCED_GAME_ID[toolId];
+    if (!room) return localFallback();
+    const GameComponent = SYNCED_GAME_COMPONENT[backendGame];
+    const live = room.currentGame === backendGame;
+    return (
+      <Modal onClose={close} emoji={emoji} title={title}>
+        {live ? (
+          <GameComponent room={room} myName={myName} isHost={isHost} dispatch={sendAction} accent={TOOLS.find(t => t.id === toolId)?.color || "#C47A2E"} onScore={onScore} />
+        ) : (
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", textAlign: "center", padding: "24px 0" }}>
+            {isHost ? "Starting…" : "Ask your host to start this game from their screen."}
+          </p>
+        )}
+      </Modal>
+    );
+  };
 
   const renderModal = () => {
     switch (open) {
-      case "truthordare": return <TruthOrDare onClose={close} />;
-      case "neverhavei": return <NeverHaveI onClose={close} />;
-      case "wouldyou": return <WouldYouRather onClose={close} />;
-      case "hottakes": return <HotTakes onClose={close} />;
+      case "truthordare": return renderLiveGame("truthordare", "🎯", "Truth or Dare", () => <TruthOrDare onClose={close} />);
+      case "neverhavei": return renderLiveGame("neverhavei", "🙅", "Never Have I Ever", () => <NeverHaveI onClose={close} />);
+      case "wouldyou": return renderLiveGame("wouldyou", "🤷", "Would You Rather", () => <WouldYouRather onClose={close} />);
+      case "hottakes": return renderLiveGame("hottakes", "🌶️", "Hot Takes", () => <HotTakes onClose={close} />);
       case "spin": return <SpinBottle onClose={close} />;
       case "charades": return <Charades onClose={close} />;
       case "bingo": return <Bingo onClose={close} />;
-      case "mostlikelyto": return <MostLikelyTo onClose={close} />;
+      case "mostlikelyto": return renderLiveGame("mostlikelyto", "🎲", "Most Likely To", () => <MostLikelyTo onClose={close} />);
       case "checklist": return <Checklist onClose={close} />;
       case "bills": return <BillSplitter onClose={close} />;
       case "theme": return <ThemePicker onClose={close} />;
@@ -4955,7 +5088,7 @@ export default function HousePartyHub() {
           ]}
         />
       );
-      case "photochallenge": return <PhotoChallengeHPB onClose={close} />;
+      case "photochallenge": return <PhotoChallengeHPB onClose={close} myName={myName} />;
       case "guestlist":   return <GuestListModal onClose={close} />;
       case "menu":        return <MenuPlannerModal onClose={close} />;
       case "seating":     return <SeatingChartModal onClose={close} />;
@@ -5022,12 +5155,34 @@ export default function HousePartyHub() {
         <div style={{ marginBottom: 20 }} />
       </div>
 
+      {/* ── Login nudge — hosts only; dismissible; never blocks anonymous use ── */}
+      {!token && !loginNudgeDismissed && (
+        <div style={{ margin: "0 16px 12px", background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 14, padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ fontSize: 20, flexShrink: 0 }}>💾</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#FFE4B8" }}>Hosting? Sign in to save this party</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>Track guests, RSVPs and photos from your Dashboard later. Guests never need an account.</div>
+          </div>
+          <button
+            onClick={() => navigate("/login", { state: { returnTo: "/house-party" } })}
+            style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", borderRadius: 8, padding: "7px 13px", color: "#fff", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0 }}
+          >
+            Sign In
+          </button>
+          <button
+            onClick={() => { setLoginNudgeDismissed(true); sessionStorage.setItem("tendr_hp_nudge_dismissed", "1"); }}
+            aria-label="Dismiss"
+            style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", fontSize: 14, cursor: "pointer", flexShrink: 0, padding: 2 }}
+          >✕</button>
+        </div>
+      )}
+
       {/* ── Room banner (hosting / joined) ── */}
       {room && (
         <RoomBanner
           room={room} players={players} isHost={isHost} myName={myName}
           activityLog={activityLog} playerActivities={playerActivities} playerRoles={playerRoles}
-          onClose={async () => { await closeRoom(); }}
+          onClose={async () => { if (currentGame && SYNCED_GAME_COMPONENT[currentGame]) logGameResult(currentGame); await closeRoom(); }}
           onLeave={async () => { await leaveRoom(); }}
           onAssignRole={assignRole}
         />

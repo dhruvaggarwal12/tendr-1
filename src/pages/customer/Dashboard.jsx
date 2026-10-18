@@ -20,7 +20,7 @@ import DashboardAssistant, { CUSTOMER_TOUR_STEPS } from "../../components/Dashbo
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
-const TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled", "Chats", "Gift Hampers"];
+const TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled", "Chats", "Gift Hampers", "Party Hub"];
 
 const statusMap = {
   Upcoming:  ["in_progress"],
@@ -189,6 +189,16 @@ export default function CustomerDashboard() {
       .then(d => { if (d) setReferralWallet(d); })
       .catch(() => {});
   }, [token, user?._id, plans, referralWallet]);
+
+  // My Parties — House Party Hub events this user has hosted while logged in
+  const [myParties, setMyParties] = useState(null); // null = not loaded yet, [] = loaded, none
+  useEffect(() => {
+    if (!token || !user?._id || myParties !== null) return;
+    fetch(`${BASE_URL}/parties`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setMyParties(d.parties || []); })
+      .catch(() => {});
+  }, [token, user?._id, myParties]);
 
   const openTierQuiz = () => {
     if (!tierQuestions) {
@@ -587,6 +597,7 @@ export default function CustomerDashboard() {
     Cancelled: plans.filter(p => p.status === "cancelled" || isPastUnbooked(p)).length,
     Chats:     visibleChats.length,
     "Gift Hampers": ghOrders.length,
+    "Party Hub": myParties?.length || 0,
   };
 
   return (
@@ -1133,6 +1144,52 @@ export default function CustomerDashboard() {
           </div>
         )}
 
+        {/* Party Hub tab — every House Party Hub event this user has hosted while logged in */}
+        {activeTab === "Party Hub" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {myParties === null ? (
+              <div style={{ textAlign: "center", padding: "40px", color: "#9B7450" }}>Loading…</div>
+            ) : myParties.length === 0 ? (
+              <EmptyState
+                icon="🎉"
+                title="No parties hosted yet"
+                description="Host a house party — invites, RSVPs, photos, games and the night's memories all land here automatically."
+                action={{ label: "Open Party Hub →", onClick: () => navigate("/house-party") }}
+              />
+            ) : (
+              myParties.map(p => {
+                const statusColor = { upcoming: "#C47A2E", live: "#16A34A", completed: "#9B7450" }[p.status] || "#9B7450";
+                return (
+                  <div key={p._id} style={{ background: "#fff", borderRadius: 16, border: "1px solid rgba(196,122,46,0.15)", padding: "16px 18px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+                    <div style={{ fontSize: 28, flexShrink: 0 }}>🎉</div>
+                    <div style={{ flex: 1, minWidth: 160 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
+                        <span style={{ fontSize: 14.5, fontWeight: 700, color: "#2C1A0E" }}>{p.eventName || "My House Party"}</span>
+                        <span style={{ fontSize: 9.5, fontWeight: 800, color: statusColor, background: `${statusColor}18`, border: `1px solid ${statusColor}44`, borderRadius: 100, padding: "2px 8px", textTransform: "uppercase", letterSpacing: "0.04em" }}>{p.status}</span>
+                      </div>
+                      <div style={{ fontSize: 12, color: "#9B7450" }}>
+                        {[p.eventDate, p.venue].filter(Boolean).join(" · ") || "No date or venue added yet"}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      {p.inviteId && (
+                        <button onClick={() => navigate(`/house-party/invite/${p.inviteId}`)} style={{ padding: "7px 13px", borderRadius: 9, border: "1px solid rgba(196,122,46,0.25)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>RSVPs →</button>
+                      )}
+                      {p.photoWallId && (
+                        <button onClick={() => navigate(`/house-party/photo-wall/${p.photoWallId}`)} style={{ padding: "7px 13px", borderRadius: 9, border: "1px solid rgba(196,122,46,0.25)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Photos →</button>
+                      )}
+                      {p.potluckRoomId && (
+                        <button onClick={() => navigate(`/house-party/potluck/${p.potluckRoomId}`)} style={{ padding: "7px 13px", borderRadius: 9, border: "1px solid rgba(196,122,46,0.25)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Potluck →</button>
+                      )}
+                      <button onClick={() => navigate(`/house-party/recap/${p._id}`)} style={{ padding: "7px 13px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>🎁 Memories</button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+
         {/* 12h silence reminder banner */}
         {(() => {
           const hasPending = plans.some(p => p.status === "submitted" || p.status === "draft");
@@ -1668,7 +1725,7 @@ export default function CustomerDashboard() {
           )}
 
           {/* Event cards — all tabs except Ongoing, Chats, Gift Hampers */}
-          {activeTab !== "Ongoing" && activeTab !== "Chats" && activeTab !== "Gift Hampers" && (loading ? (
+          {activeTab !== "Ongoing" && activeTab !== "Chats" && activeTab !== "Gift Hampers" && activeTab !== "Party Hub" && (loading ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {[0,1,2].map(i => (
                 <div key={i} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(139,69,19,0.1)", padding: "20px 24px", display: "flex", flexDirection: "column", gap: 12 }}>

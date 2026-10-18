@@ -117,7 +117,7 @@ function Scores({ players, scores, myName, accent }) {
 
 // ── Game components ────────────────────────────────────────────────────────
 
-function MostLikelyGame({ room, myName, isHost, dispatch, accent, onScore }) {
+export function MostLikelyGame({ room, myName, isHost, dispatch, accent, onScore }) {
   const gs     = room.gameState || {};
   const idx    = gs.idx || 0;
   const prompt = MOST_LIKELY[idx % MOST_LIKELY.length];
@@ -207,7 +207,7 @@ function MostLikelyGame({ room, myName, isHost, dispatch, accent, onScore }) {
   );
 }
 
-function WouldYouGame({ room, myName, isHost, dispatch, accent }) {
+export function WouldYouGame({ room, myName, isHost, dispatch, accent }) {
   const gs    = room.gameState || {};
   const idx   = gs.pairIdx || 0;
   const pair  = WOULD_YOU_RATHER[idx % WOULD_YOU_RATHER.length] || {};
@@ -282,7 +282,7 @@ function WouldYouGame({ room, myName, isHost, dispatch, accent }) {
   );
 }
 
-function HotTakesGame({ room, myName, isHost, dispatch, accent }) {
+export function HotTakesGame({ room, myName, isHost, dispatch, accent }) {
   const gs    = room.gameState || {};
   const idx   = gs.idx || 0;
   const take  = HOT_TAKES[idx % HOT_TAKES.length] || "Hot take…";
@@ -351,7 +351,7 @@ function HotTakesGame({ room, myName, isHost, dispatch, accent }) {
   );
 }
 
-function NeverHaveIGame({ room, myName, isHost, dispatch, accent }) {
+export function NeverHaveIGame({ room, myName, isHost, dispatch, accent }) {
   const gs  = room.gameState || {};
   const idx = gs.idx || 0;
   const stmt = NEVER_HAVE_I[idx % NEVER_HAVE_I.length] || "Never have I ever…";
@@ -403,7 +403,7 @@ function NeverHaveIGame({ room, myName, isHost, dispatch, accent }) {
   );
 }
 
-function TruthDareGame({ room, myName, isHost, dispatch, accent }) {
+export function TruthDareGame({ room, myName, isHost, dispatch, accent }) {
   const gs      = room.gameState || {};
   const cardIdx = gs.cardIdx || 0;
   const mode    = gs.mode;
@@ -569,7 +569,7 @@ function GameView({ room, myName, isHost, dispatch, accent, onScore }) {
 export default function PartyRoomPage() {
   const navigate    = useNavigate();
   const [params]    = useSearchParams();
-  const { room, connected, error: sockError, myName, createRoom, joinRoom, dispatch, setGame, leaveRoom } = usePartyRoom();
+  const { room, connected, error: sockError, myName, createRoom, joinRoom, sendAction: dispatch, setGame, leaveRoom } = usePartyRoom();
 
   // Local UI state
   const [phase, setPhase]       = useState("lobby"); // lobby | creating | joining | room

@@ -263,6 +263,7 @@ const TopRatedVendors     = lazy(() => import("./pages/customer/TopRatedVendors.
 const HousePartyHub       = lazy(() => import("./pages/house-party/HousePartyHub.jsx"));
 const PotluckJoin         = lazy(() => import("./pages/house-party/PotluckJoin.jsx"));
 const InviteRSVP          = lazy(() => import("./pages/house-party/InviteRSVP.jsx"));
+const PartyRecap          = lazy(() => import("./pages/house-party/PartyRecap.jsx"));
 const PhotoWallPage       = lazy(() => import("./pages/house-party/PhotoWallPage.jsx"));
 const InvitationFlyerPicker = lazy(() => import("./pages/invitation/InvitationFlyerPicker.jsx"));
 const TemplateGallery      = lazy(() => import("./pages/invitation/TemplateGallery.jsx"));
@@ -719,6 +720,7 @@ const router = createBrowserRouter([
   { path: '/play', element: <PartyRoomPage />, errorElement: <ErrorPage /> },
   { path: '/house-party/potluck/:roomId', element: <PotluckJoin />, errorElement: <ErrorPage /> },
   { path: '/house-party/invite/:inviteId', element: <InviteRSVP />, errorElement: <ErrorPage /> },
+  { path: '/house-party/recap/:partyId', element: <PartyRecap />, errorElement: <ErrorPage /> },
   { path: '/house-party/photo-wall/:wallId', element: <PhotoWallPage />, errorElement: <ErrorPage /> },
   { path: '/join-room', element: <JoinRoom />, errorElement: <ErrorPage /> },
 
