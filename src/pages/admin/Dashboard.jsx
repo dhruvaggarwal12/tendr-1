@@ -315,6 +315,17 @@ const sidebar_arr = [
 // convention as [img:...], just a document bubble instead of an inline image).
 function RenderMessage({ text }) {
   if (!text) return null;
+  if (text.startsWith("__PRICE_FINALIZED__:")) {
+    try {
+      const { label, price } = JSON.parse(text.slice("__PRICE_FINALIZED__:".length));
+      return (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 10, background: "rgba(21,128,61,0.12)", border: "1.5px solid rgba(21,128,61,0.3)" }}>
+          <span style={{ fontSize: 15 }}>✅</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#15803d" }}>{label} price finalized — ₹{Number(price).toLocaleString("en-IN")}</span>
+        </div>
+      );
+    } catch { /* fall through to plain text */ }
+  }
   const pdfMatch = text.match(/\[pdf:([^|]+)\|(data:[^\]]+)\]/);
   if (pdfMatch) {
     const [fullMatch, fileName, dataUri] = pdfMatch;
@@ -4090,17 +4101,35 @@ const AdminDashboard = () => {
                                   if (r.ok) setEventPlans(prev => prev.map(p => p._id === pid ? { ...p, quotedPrice: val } : p));
                                 } catch {} finally { setSavingBkPrice(p => ({ ...p, [pid]: false })); }
                               };
+                              const finalizePrice = async () => {
+                                const val = Number(String(current).replace(/[^0-9.]/g, ''));
+                                if (!val || val <= 0) return;
+                                setSavingBkPrice(p => ({ ...p, [pid]: true }));
+                                try {
+                                  const r = await fetch(`${BASE_URL}/admin/event-plans/${pid}/finalize-price`, {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                    credentials: 'include',
+                                    body: JSON.stringify({ quotedPrice: val }),
+                                  });
+                                  if (r.ok) setEventPlans(prev => prev.map(p => p._id === pid ? { ...p, quotedPrice: val, priceFinalized: true } : p));
+                                } catch {} finally { setSavingBkPrice(p => ({ ...p, [pid]: false })); }
+                              };
                               return (
                                 <div key={pid} style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.18)", padding: "4px 10px" }}>
                                   <span style={{ fontSize: 11, fontWeight: 600, color: "#7a5c1e", whiteSpace: "nowrap" }}>{name}</span>
                                   <span style={{ fontSize: 12, fontWeight: 700, color: "#9B7450" }}>₹</span>
-                                  <input type="number" placeholder="0" value={current}
+                                  <input type="number" placeholder="0" value={current} disabled={plan.priceFinalized}
                                     onChange={e => setMyBookingPrices(p => ({ ...p, [pid]: e.target.value }))}
                                     onBlur={savePrice} onKeyDown={e => e.key === 'Enter' && savePrice()}
                                     style={{ width: 70, padding: "3px 5px", border: "none", outline: "none", fontSize: 12, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color: "#2C1A0E", background: "transparent" }}
                                   />
                                   {savingBkPrice[pid] && <span style={{ fontSize: 10, color: "#9B7450" }}>…</span>}
-                                  {!savingBkPrice[pid] && current > 0 && <span style={{ fontSize: 10, color: "#15803d" }}>✓</span>}
+                                  {!savingBkPrice[pid] && plan.priceFinalized ? (
+                                    <span style={{ fontSize: 10, fontWeight: 700, color: "#15803d" }}>✓ Finalized</span>
+                                  ) : !savingBkPrice[pid] && current > 0 ? (
+                                    <button onClick={finalizePrice} style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: "#15803d", border: "none", borderRadius: 100, padding: "2px 8px", cursor: "pointer" }}>Finalize</button>
+                                  ) : null}
                                 </div>
                               );
                             })}
@@ -4472,6 +4501,20 @@ const AdminDashboard = () => {
                                     if (r.ok) setEventPlans(prev => prev.map(p => p._id === pid ? {...p, quotedPrice: val} : p));
                                   } catch {} finally { setSavingBkPrice(p => ({...p, [pid]: false})); }
                                 };
+                                const finalizePrice = async () => {
+                                  const val = Number(String(current).replace(/[^0-9.]/g, ''));
+                                  if (!val || val <= 0) return;
+                                  setSavingBkPrice(p => ({...p, [pid]: true}));
+                                  try {
+                                    const r = await fetch(`${BASE_URL}/admin/event-plans/${pid}/finalize-price`, {
+                                      method: 'PATCH',
+                                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                      credentials: 'include',
+                                      body: JSON.stringify({ quotedPrice: val }),
+                                    });
+                                    if (r.ok) setEventPlans(prev => prev.map(p => p._id === pid ? {...p, quotedPrice: val, priceFinalized: true} : p));
+                                  } catch {} finally { setSavingBkPrice(p => ({...p, [pid]: false})); }
+                                };
                                 return (
                                   <div key={pid} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                                     <span style={{ fontSize: 11, fontWeight: 600, color: "#2C1A0E", minWidth: 90 }}>{label}</span>
@@ -4480,12 +4523,18 @@ const AdminDashboard = () => {
                                       type="number"
                                       placeholder="0"
                                       value={current}
+                                      disabled={plan.priceFinalized}
                                       onChange={e => setMyBookingPrices(p => ({...p, [pid]: e.target.value}))}
                                       onBlur={savePrice}
                                       onKeyDown={e => e.key === 'Enter' && savePrice()}
                                       style={{ flex: 1, padding: "5px 8px", borderRadius: 7, border: "1.5px solid rgba(196,122,46,0.2)", fontSize: 12, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color: "#2C1A0E", outline: "none" }}
                                     />
                                     {savingBkPrice[pid] && <span style={{ fontSize: 10, color: "#9B7450" }}>…</span>}
+                                    {!savingBkPrice[pid] && plan.priceFinalized ? (
+                                      <span style={{ fontSize: 10, fontWeight: 700, color: "#15803d", flexShrink: 0 }}>✓ Finalized</span>
+                                    ) : !savingBkPrice[pid] && current > 0 ? (
+                                      <button onClick={finalizePrice} style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: "#15803d", border: "none", borderRadius: 100, padding: "3px 9px", cursor: "pointer", flexShrink: 0 }}>Finalize</button>
+                                    ) : null}
                                   </div>
                                 );
                               })}

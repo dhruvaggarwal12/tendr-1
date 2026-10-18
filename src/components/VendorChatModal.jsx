@@ -1346,6 +1346,17 @@ export default function VendorChatModal() {
 
   const renderMsg = (text) => {
     if (!text) return null;
+    if (text.startsWith("__PRICE_FINALIZED__:")) {
+      try {
+        const { label, price } = JSON.parse(text.slice("__PRICE_FINALIZED__:".length));
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", borderRadius: 10, background: "rgba(21,128,61,0.12)", border: "1.5px solid rgba(21,128,61,0.3)" }}>
+            <span style={{ fontSize: 15 }}>✅</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#15803d" }}>{label} price finalized — ₹{Number(price).toLocaleString("en-IN")}</span>
+          </div>
+        );
+      } catch { /* fall through to plain text */ }
+    }
     if (text.startsWith("[img:")) {
       const src = text.replace("[img:", "").replace(/\]$/, "");
       return (
