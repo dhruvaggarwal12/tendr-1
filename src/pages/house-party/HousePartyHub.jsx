@@ -2217,7 +2217,11 @@ function HotSeatLive({ room, myName, isHost, dispatch, players }) {
   const scores = gs.scores || {};
   const answered = gs.answered || [];
   const current = queue[idx % (queue.length || 1)];
-  const question = HOT_SEAT_QUESTIONS[answered.length % HOT_SEAT_QUESTIONS.length];
+  // `questions` is a shuffled deck set once per game (by whoever starts it) and synced via
+  // gameState, so every player sees the same sequence; `qPtr` walks it across the whole game
+  // (not reset per player) so no two turns repeat the same question until the deck wraps.
+  const questions = gs.questions && gs.questions.length ? gs.questions : HOT_SEAT_QUESTIONS;
+  const question = questions[(gs.qPtr || 0) % questions.length];
   const [timeLeft, setTimeLeft] = useState(60);
 
   useEffect(() => {
@@ -2232,7 +2236,7 @@ function HotSeatLive({ room, myName, isHost, dispatch, players }) {
     return (
       <div style={{ textAlign: "center" }}>
         <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>One player in the hot seat, everyone else fires rapid questions out loud.</p>
-        {isHost && <button onClick={() => dispatch('set-queue', { players: shuffle(players) })} style={btn("#F43F5E")}>Shuffle & Start →</button>}
+        {isHost && <button onClick={() => dispatch('set-queue', { players: shuffle(players), questions: shuffle(HOT_SEAT_QUESTIONS) })} style={btn("#F43F5E")}>Shuffle & Start →</button>}
       </div>
     );
   }
@@ -2248,7 +2252,7 @@ function HotSeatLive({ room, myName, isHost, dispatch, players }) {
       </div>
       <div style={{ fontSize: 13, fontWeight: 700, color: "#FBBF24", marginBottom: 14 }}>Score: {scores[current] || 0}</div>
       {amCurrent && (
-        <button onClick={() => dispatch('answered', { qIdx: answered.length })} style={{ ...btn("rgba(255,255,255,0.08)"), border: "1.5px solid rgba(255,255,255,0.15)", marginBottom: 10 }}>Next Question →</button>
+        <button onClick={() => dispatch('answered', { qIdx: gs.qPtr || 0 })} style={{ ...btn("rgba(255,255,255,0.08)"), border: "1.5px solid rgba(255,255,255,0.15)", marginBottom: 10 }}>Next Question →</button>
       )}
       {isHost && (
         <div style={{ display: "flex", gap: 8 }}>
@@ -2383,9 +2387,14 @@ function CategoryBlitzLive({ room, myName, isHost, dispatch, players }) {
   const scores = gs.scores || {};
   const eliminated = gs.eliminated || [];
   const history = gs.history || [];
+  // `order` is the fixed turn sequence set once per round; `currentIdx` is the backend's
+  // pointer into it and is always kept pointing at a non-eliminated player there (see
+  // nextActiveIdx in party.socket.js) — so it's read directly, never re-derived from the
+  // shrinking `active` list, which is what caused turns to skip as players got eliminated.
+  const order = gs.order && gs.order.length ? gs.order : players;
   const active = players.filter(p => !eliminated.includes(p));
   const currentIdx = gs.currentIdx || 0;
-  const currentPlayer = active[currentIdx % (active.length || 1)];
+  const currentPlayer = order[currentIdx % (order.length || 1)];
   const amCurrent = myName === currentPlayer;
 
   const sayIt = () => { dispatch('answered', { word: '✓' }); dispatch('point', {}); };
@@ -2396,7 +2405,7 @@ function CategoryBlitzLive({ room, myName, isHost, dispatch, players }) {
         <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 14, textAlign: "center" }}>Pick a category — go around naming items, no repeats, no hesitating.</p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
           {CATEGORY_BLITZ.slice(0, 12).map(c => (
-            <button key={c.name} onClick={() => isHost && dispatch('set-category', { category: c })} disabled={!isHost} style={{ padding: '12px 10px', background: 'rgba(245,158,11,0.08)', border: '1.5px solid rgba(245,158,11,0.2)', borderRadius: 12, color: '#fff', fontSize: 12, fontWeight: 700, cursor: isHost ? 'pointer' : 'default', fontFamily: font, textAlign: 'left', lineHeight: 1.4, opacity: isHost ? 1 : 0.5 }}>
+            <button key={c.name} onClick={() => isHost && dispatch('set-category', { category: c, order: shuffle(players) })} disabled={!isHost} style={{ padding: '12px 10px', background: 'rgba(245,158,11,0.08)', border: '1.5px solid rgba(245,158,11,0.2)', borderRadius: 12, color: '#fff', fontSize: 12, fontWeight: 700, cursor: isHost ? 'pointer' : 'default', fontFamily: font, textAlign: 'left', lineHeight: 1.4, opacity: isHost ? 1 : 0.5 }}>
               <div style={{ fontSize: 18, marginBottom: 4 }}>{c.emoji}</div>
               {c.name}
             </button>
