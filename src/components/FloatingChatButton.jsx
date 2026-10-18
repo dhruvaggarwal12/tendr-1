@@ -860,37 +860,18 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                     style={{ position: "absolute", top: -4, left: -4, width: 18, height: 18, borderRadius: "50%", border: "2px solid #fff", background: "#c0392b", color: "#fff", fontSize: 9, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1, padding: 0, lineHeight: 1 }}>✕</button>
                 </div>
               )}
-              {funCartCount > 0 && !funConfirmed && (
-                <div className={newlyAdded === 'fun' ? 'lstack-new-item' : ''} style={{ position: "relative" }}>
-                  <button className="lstack-btn" onClick={() => { setLauncherOpen(false); if (!token) { setPendingCartAction("fun"); setAuthModalOpen(true); } else { setFunCartOpen(true); } }}
-                    title="Fun Activities Cart"
-                    style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#CCAB4A", boxShadow: "0 4px 14px rgba(44,26,14,0.45)", flexShrink: 0 }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                    <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#5b21b6", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{funCartCount}</span>
-                  </button>
-                  <button onClick={(e) => { e.stopPropagation(); dispatch(clearFunCart()); dispatch(setFunConfirmed(false)); }}
-                    style={{ position: "absolute", top: -4, left: -4, width: 18, height: 18, borderRadius: "50%", border: "2px solid #fff", background: "#c0392b", color: "#fff", fontSize: 9, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1, padding: 0, lineHeight: 1 }}>✕</button>
-                </div>
-              )}
-              {ghCartCount > 0 && !ghConfirmed && (
-                <div style={{ position: "relative" }}>
-                  <button className="lstack-btn" onClick={() => { setLauncherOpen(false); if (!token) { setPendingCartAction("gh"); setAuthModalOpen(true); } else { setGhCartOpen(true); } }}
-                    title="Gift Hampers Cart"
-                    style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 4px 14px rgba(196,122,46,0.45)", flexShrink: 0 }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
-                    <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#2C1A0E", color: "#CCAB4A", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{ghCartCount}</span>
-                  </button>
-                  <button onClick={(e) => { e.stopPropagation(); dispatch(clearGhCart()); dispatch(setGhConfirmed(false)); }}
-                    style={{ position: "absolute", top: -4, left: -4, width: 18, height: 18, borderRadius: "50%", border: "2px solid #fff", background: "#c0392b", color: "#fff", fontSize: 9, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1, padding: 0, lineHeight: 1 }}>✕</button>
-                </div>
-              )}
-              {stCartCount > 0 && !stConfirmed && (
-                <div className={newlyAdded === 'st' ? 'lstack-new-item' : ''} style={{ position: "relative" }}>
-                  <button className="lstack-btn" onClick={() => { setLauncherOpen(false); if (!token) { setPendingCartAction("st"); setAuthModalOpen(true); } else { openStCart(); } }}
-                    title="Stationery Cart"
-                    style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#7A3A1E,#C47A2E)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 4px 14px rgba(122,58,30,0.5)", flexShrink: 0, fontSize: 20 }}>
-                    💒
-                    <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{stCartCount}</span>
+              {/* Fun Activities + Gift Hampers + Stationery — unified into one shortlist icon
+                  (was 3 separate pop-out buttons here); opens the shared review page at
+                  /my-extras instead of 3 different per-category drawers. */}
+              {((funCartCount > 0 && !funConfirmed) || (ghCartCount > 0 && !ghConfirmed) || (stCartCount > 0 && !stConfirmed)) && (
+                <div className={(newlyAdded === 'fun' || newlyAdded === 'st') ? 'lstack-new-item' : ''} style={{ position: "relative" }}>
+                  <button className="lstack-btn" onClick={() => { setLauncherOpen(false); router.navigate('/my-extras'); }}
+                    title="Fun Activities · Gift Hampers · Stationery"
+                    style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#0C2A3A,#164E63)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#7DD3FC", boxShadow: "0 4px 14px rgba(12,42,58,0.45)", flexShrink: 0 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7DD3FC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#0EA5E9", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>
+                      {(funConfirmed?0:funCartCount) + (ghConfirmed?0:ghCartCount) + (stConfirmed?0:stCartCount)}
+                    </span>
                   </button>
                 </div>
               )}

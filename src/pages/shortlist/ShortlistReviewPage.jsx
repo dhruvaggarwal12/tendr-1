@@ -4,8 +4,9 @@ import { useSelector, useDispatch } from "react-redux";
 import { selectFunCartItems, removeActivity, setFunConfirmed } from "../../redux/funActivitiesCartSlice";
 import { selectCartItems as selectGhCartItems, removeFromCart as removeFromGhCart, setGhConfirmed } from "../../redux/giftHamperCartSlice";
 import { useStationeryCart } from "../../context/StationeryCartContext";
+import { setStBooking } from "../../redux/stationeryBookingSlice";
 import { useChatOverlay } from "../../context/ChatContext";
-import { CAT_META } from "../../components/TripleShortlistFloat";
+import { CAT_META } from "./categoryMeta";
 import AuthModal from "../../components/AuthModal";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -102,7 +103,10 @@ export default function ShortlistReviewPage() {
       }
       if (funItems.length > 0) dispatch(setFunConfirmed(true));
       if (ghItems.length > 0) dispatch(setGhConfirmed(true));
-      if (stCart.length > 0) clearStCart();
+      if (stCart.length > 0) {
+        dispatch(setStBooking({ form: { ...(forms.stationery || {}) }, cartSnapshot: stCart }));
+        clearStCart();
+      }
       openAllBookingsChat();
       setDone(true);
     } catch (e) {
