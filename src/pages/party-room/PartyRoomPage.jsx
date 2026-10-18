@@ -405,24 +405,48 @@ export function NeverHaveIGame({ room, myName, isHost, dispatch, accent }) {
 
 export function TruthDareGame({ room, myName, isHost, dispatch, accent }) {
   const gs      = room.gameState || {};
-  const cardIdx = gs.cardIdx || 0;
+  const order   = gs.order || [];
+  const turnIdx = gs.turnIdx || 0;
   const mode    = gs.mode;
   const cards   = mode === "truth" ? TRUTHS : DARES;
+  const cardIdx = gs.cardIdx || 0;
   const card    = cards[cardIdx % cards.length];
+  const currentPlayer = order[turnIdx % (order.length || 1)];
+  const amCurrent = myName === currentPlayer;
+
+  if (order.length === 0) {
+    return (
+      <div style={{ textAlign: "center", padding: "30px 0" }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#2563EB", textTransform: "uppercase", letterSpacing: "0.18em", marginBottom: 14 }}>
+          Truth or Dare
+        </div>
+        <p style={{ fontSize: 13, color: C.muted, marginBottom: 20 }}>Everyone takes a turn in order — truth or dare, your call.</p>
+        {isHost ? (
+          <button onClick={() => dispatch("start-rotation", { order: [...(room.players || [])].sort(() => Math.random() - 0.5) })}
+            style={{ padding: "13px 28px", borderRadius: 14, border: "none", background: accent, color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font }}>
+            Shuffle Order & Start →
+          </button>
+        ) : (
+          <div style={{ fontSize: 12, color: C.muted }}>Waiting for host to start…</div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       <div style={{ textAlign: "center", padding: "24px 8px 8px" }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#2563EB", textTransform: "uppercase", letterSpacing: "0.18em", marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#2563EB", textTransform: "uppercase", letterSpacing: "0.18em", marginBottom: 8 }}>
           Truth or Dare
         </div>
+        <div style={{ fontSize: 20, fontWeight: 900, color: C.text }}>{currentPlayer}'s turn{amCurrent ? " (you!)" : ""}</div>
       </div>
       {!mode ? (
         <>
           <div style={{ textAlign: "center", fontSize: 15, color: C.muted, marginBottom: 8 }}>
-            {isHost ? "Pick a card type to deal" : "Waiting for host…"}
+            {amCurrent ? "Pick truth or dare" : `Waiting for ${currentPlayer}…`}
           </div>
-          {isHost && (
+          {amCurrent && (
             <div style={{ display: "flex", gap: 12 }}>
               <button onClick={() => dispatch("pick", { mode: "truth" })}
                 style={{ flex: 1, padding: "18px", borderRadius: 18, border: "2px solid #2563EB66", background: "#2563EB18", color: "#60a5fa", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font }}>
@@ -450,17 +474,18 @@ export function TruthDareGame({ room, myName, isHost, dispatch, accent }) {
               {card}
             </div>
           </div>
-          {isHost && (
-            <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => dispatch("pick", { mode: null })}
-                style={{ flex: 1, padding: "13px", borderRadius: 14, border: `1.5px solid ${C.dim}`, background: C.card, color: C.muted, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                ← Back
-              </button>
-              <button onClick={() => dispatch("next", {})}
-                style={{ flex: 1, padding: "13px", borderRadius: 14, border: "none", background: accent, color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font }}>
-                Next Card →
-              </button>
-            </div>
+          {amCurrent ? (
+            <button onClick={() => { dispatch(mode === "truth" ? "truth-done" : "dare-done", {}); dispatch("next", {}); }}
+              style={{ padding: "13px", borderRadius: 14, border: "none", background: accent, color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font }}>
+              Done — Next Player →
+            </button>
+          ) : isHost ? (
+            <button onClick={() => dispatch("next", {})}
+              style={{ padding: "13px", borderRadius: 14, border: `1.5px solid ${C.dim}`, background: C.card, color: C.muted, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+              Skip to Next Player →
+            </button>
+          ) : (
+            <div style={{ textAlign: "center", fontSize: 12, color: C.muted }}>Waiting for {currentPlayer}…</div>
           )}
         </>
       )}

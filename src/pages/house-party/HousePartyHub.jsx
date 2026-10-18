@@ -2079,6 +2079,618 @@ function ShareableTool({ onClose, emoji, title, description, path, fields }) {
   );
 }
 
+// ── Ready check — generic pre-game lobby every live game is wrapped in ────────────────────
+// Resets automatically each time a new game starts, since gameState always begins empty.
+function ReadyGate({ room, myName, isHost, dispatch, children }) {
+  const gs = room.gameState || {};
+  const ready = gs._ready || [];
+  const started = gs._started;
+  const players = room.players || [];
+  const amReady = ready.includes(myName);
+  const allReady = players.length > 0 && players.every(p => ready.includes(p));
+
+  if (started) return children;
+
+  return (
+    <div style={{ textAlign: "center", padding: "8px 0" }}>
+      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>Everyone ready up, then the host starts it for the room</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginBottom: 20 }}>
+        {players.map(p => (
+          <span key={p} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 100, border: `1.5px solid ${ready.includes(p) ? "rgba(34,197,94,0.4)" : "rgba(255,255,255,0.12)"}`, background: ready.includes(p) ? "rgba(34,197,94,0.12)" : "rgba(255,255,255,0.04)", fontSize: 13, fontWeight: 600, color: ready.includes(p) ? "#4ade80" : "rgba(255,255,255,0.5)" }}>
+            {ready.includes(p) ? "✓ " : ""}{p}
+          </span>
+        ))}
+      </div>
+      <button onClick={() => dispatch('ready-toggle', {})}
+        style={{ ...btn(amReady ? "rgba(34,197,94,0.18)" : "#C47A2E"), border: amReady ? "1.5px solid rgba(34,197,94,0.4)" : "none", marginBottom: 10 }}>
+        {amReady ? "✓ You're Ready" : "I'm Ready"}
+      </button>
+      {isHost ? (
+        <button onClick={() => dispatch('game-start', {})} style={{ ...btn("rgba(255,255,255,0.08)"), border: "1.5px solid rgba(255,255,255,0.15)" }}>
+          {allReady ? "Start Game →" : `Start Anyway (${ready.length}/${players.length} ready) →`}
+        </button>
+      ) : (
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 4 }}>Waiting for host to start…</div>
+      )}
+    </div>
+  );
+}
+
+// ── Live (synced) versions of the remaining pass-the-phone games ──────────────
+// Each drives entirely off room.gameState / room.currentGame via the shared
+// usePartyRoom contract, mirroring the 5 games already synced via PartyRoomPage.
+
+function TwoTruthsLieLive({ room, myName, isHost, dispatch, players }) {
+  const gs = room.gameState || {};
+  const submissions = gs.submissions || {};
+  const judged = gs.judged || [];
+  const currentTarget = gs.currentTarget;
+  const votes = gs.votes || {};
+  const revealed = gs.revealed;
+  const hasSubmitted = !!submissions[myName];
+  const unjudged = Object.keys(submissions).filter(n => !judged.includes(n));
+
+  const [stmts, setStmts] = useState(['', '', '']);
+  const [lieIdx, setLieIdx] = useState(null);
+
+  const submit = () => {
+    if (stmts.some(s => !s.trim()) || lieIdx === null) return;
+    dispatch('submit', { statements: stmts, lieIdx });
+  };
+
+  if (!currentTarget && !revealed) {
+    return (
+      <div>
+        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 14, textAlign: "center" }}>Everyone writes 2 truths and 1 lie about themselves — then the room guesses.</p>
+        {!hasSubmitted ? (
+          <>
+            {stmts.map((s, i) => (
+              <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "center" }}>
+                <button onClick={() => setLieIdx(i)} style={{ flexShrink: 0, width: 36, height: 36, borderRadius: 8, border: `1.5px solid ${lieIdx === i ? "#EF4444" : "rgba(255,255,255,0.15)"}`, background: lieIdx === i ? "rgba(239,68,68,0.2)" : "transparent", color: lieIdx === i ? "#f87171" : "rgba(255,255,255,0.3)", fontSize: 10, fontWeight: 800, cursor: "pointer" }}>{lieIdx === i ? "LIE" : ""}</button>
+                <input value={s} onChange={e => setStmts(a => a.map((x, j) => j === i ? e.target.value : x))} placeholder={`Statement ${i + 1}`} style={{ ...inp, flex: 1 }} />
+              </div>
+            ))}
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginBottom: 10 }}>Tap a box to mark which one's the lie.</p>
+            <button onClick={submit} disabled={stmts.some(s => !s.trim()) || lieIdx === null} style={{ ...btn("#1A7A8A"), opacity: (stmts.some(s => !s.trim()) || lieIdx === null) ? 0.4 : 1 }}>Submit →</button>
+          </>
+        ) : (
+          <div style={{ textAlign: "center", padding: "20px 0" }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>Submitted! Waiting for others… ({Object.keys(submissions).length}/{players.length})</p>
+          </div>
+        )}
+        {isHost && unjudged.length > 0 && (
+          <button onClick={() => dispatch('next', { target: unjudged[0] })} style={{ ...btn("#1A7A8A"), marginTop: 14 }}>Start Guessing: {unjudged[0]} →</button>
+        )}
+      </div>
+    );
+  }
+
+  const target = revealed || currentTarget;
+  const sub = submissions[target];
+  if (!sub) return null;
+  const amTarget = myName === target;
+  const remaining = unjudged.filter(n => n !== target);
+
+  return (
+    <div>
+      <div style={{ textAlign: "center", marginBottom: 16 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: "#60a5fa", textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 6 }}>{target}'s statements</div>
+      </div>
+      {sub.statements.map((s, i) => {
+        const isLie = revealed && i === sub.lieIdx;
+        const chosen = votes[myName]?.guessIdx === i;
+        return (
+          <button key={i} disabled={amTarget || !!votes[myName] || !!revealed}
+            onClick={() => dispatch('vote', { target, guessIdx: i })}
+            style={{ width: "100%", textAlign: "left", padding: "12px 14px", borderRadius: 12, marginBottom: 8, border: `1.5px solid ${revealed ? (isLie ? "#EF4444" : "rgba(255,255,255,0.1)") : (chosen ? "#3B82F6" : "rgba(255,255,255,0.12)")}`, background: revealed ? (isLie ? "rgba(239,68,68,0.15)" : "transparent") : (chosen ? "rgba(59,130,246,0.15)" : "rgba(255,255,255,0.04)"), color: "#fff", fontSize: 13, cursor: (amTarget || votes[myName] || revealed) ? "default" : "pointer", fontFamily: font }}>
+            {s} {revealed && isLie && " 🤥 LIE"}
+          </button>
+        );
+      })}
+      {amTarget && !revealed && <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", textAlign: "center" }}>Stay quiet while the room guesses your lie…</p>}
+      {isHost && !revealed && (
+        <button onClick={() => dispatch('reveal', { target })} style={{ ...btn("#EF4444"), marginTop: 10 }}>Reveal the Lie →</button>
+      )}
+      {revealed && (
+        <>
+          <div style={{ marginTop: 12, fontSize: 12, color: "rgba(255,255,255,0.5)", textAlign: "center" }}>
+            {Object.entries(votes).filter(([, v]) => v.guessIdx === sub.lieIdx).map(([n]) => n).join(', ') || 'Nobody'} guessed right
+          </div>
+          {isHost && (
+            remaining.length > 0 ? (
+              <button onClick={() => dispatch('next', { target: remaining[0] })} style={{ ...btn("#1A7A8A"), marginTop: 10 }}>Next: {remaining[0]} →</button>
+            ) : (
+              <div style={{ textAlign: "center", marginTop: 10, fontSize: 13, color: "rgba(255,255,255,0.5)" }}>Everyone's been judged! 🎉</div>
+            )
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function HotSeatLive({ room, myName, isHost, dispatch, players }) {
+  const gs = room.gameState || {};
+  const queue = gs.queue || [];
+  const idx = gs.currentIdx || 0;
+  const scores = gs.scores || {};
+  const answered = gs.answered || [];
+  const current = queue[idx % (queue.length || 1)];
+  const question = HOT_SEAT_QUESTIONS[answered.length % HOT_SEAT_QUESTIONS.length];
+  const [timeLeft, setTimeLeft] = useState(60);
+
+  useEffect(() => {
+    if (!gs.timerStart) return;
+    const tick = () => setTimeLeft(Math.max(0, 60 - Math.floor((Date.now() - gs.timerStart) / 1000)));
+    tick();
+    const t = setInterval(tick, 1000);
+    return () => clearInterval(t);
+  }, [gs.timerStart]);
+
+  if (queue.length === 0) {
+    return (
+      <div style={{ textAlign: "center" }}>
+        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>One player in the hot seat, everyone else fires rapid questions out loud.</p>
+        {isHost && <button onClick={() => dispatch('set-queue', { players: shuffle(players) })} style={btn("#F43F5E")}>Shuffle & Start →</button>}
+      </div>
+    );
+  }
+
+  const amCurrent = myName === current;
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div style={{ fontSize: 11, fontWeight: 800, color: "#f43f5e", textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 10 }}>On the hot seat</div>
+      <div style={{ fontSize: 24, fontWeight: 900, color: "#fff", marginBottom: 10 }}>{current}{amCurrent ? " (you!)" : ""}</div>
+      <div style={{ fontSize: 36, fontWeight: 900, color: timeLeft > 15 ? "#4ade80" : "#f87171", marginBottom: 14 }}>{timeLeft}s</div>
+      <div style={{ background: "linear-gradient(135deg,#FFFBF0,#FFF8E7)", borderRadius: 12, padding: "18px 16px", marginBottom: 14, minHeight: 60, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 20px rgba(0,0,0,0.4)" }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: "#1A0A05", fontFamily: "Georgia,serif", textAlign: "center", lineHeight: 1.5 }}>{question}</div>
+      </div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: "#FBBF24", marginBottom: 14 }}>Score: {scores[current] || 0}</div>
+      {amCurrent && (
+        <button onClick={() => dispatch('answered', { qIdx: answered.length })} style={{ ...btn("rgba(255,255,255,0.08)"), border: "1.5px solid rgba(255,255,255,0.15)", marginBottom: 10 }}>Next Question →</button>
+      )}
+      {isHost && (
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={() => dispatch('point', {})} style={{ ...btn("rgba(34,197,94,0.2)"), border: "1.5px solid rgba(34,197,94,0.4)", flex: 1 }}>+1 Point</button>
+          <button onClick={() => dispatch('next-seat', {})} style={{ ...btn("#F43F5E"), flex: 1 }}>Next Player →</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DareWheelLive({ room, myName, isHost, dispatch, players }) {
+  const gs = room.gameState || {};
+  const history = gs.history || [];
+  const landed = gs.landed;
+  const dare = gs.dare;
+  const [spinning, setSpinning] = useState(false);
+  const prevSpinKey = useRef(null);
+
+  useEffect(() => {
+    const key = `${landed || ''}|${dare || ''}|${history.length}`;
+    if (prevSpinKey.current !== null && prevSpinKey.current !== key) {
+      setSpinning(true);
+      const t = setTimeout(() => setSpinning(false), 2200);
+      prevSpinKey.current = key;
+      return () => clearTimeout(t);
+    }
+    prevSpinKey.current = key;
+  }, [landed, dare, history.length]);
+
+  const spin = () => {
+    if (!players.length) return;
+    const target = players[Math.floor(Math.random() * players.length)];
+    dispatch('spin', { player: target, dare: rand(DARES) });
+  };
+
+  if (players.length < 2) return <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", textAlign: "center" }}>Need at least 2 players in the room.</p>;
+
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div style={{ fontSize: 60, marginBottom: 10, transition: spinning ? "transform 2.2s cubic-bezier(0.15,0.6,0.1,1)" : "none", transform: spinning ? "rotate(1080deg)" : "none" }}>🎡</div>
+      {landed && !spinning && (
+        <div style={{ background: "rgba(200,90,42,0.12)", border: "2px solid rgba(200,90,42,0.4)", borderRadius: 16, padding: "16px", marginBottom: 14 }}>
+          <div style={{ fontSize: 12, color: "#C85A2A", fontWeight: 800, textTransform: "uppercase", marginBottom: 6 }}>🎯 {landed} gets a dare</div>
+          <div style={{ fontSize: 14, color: "#fff", lineHeight: 1.6 }}>{dare}</div>
+        </div>
+      )}
+      {isHost && <button onClick={spin} disabled={spinning} style={btn("#C85A2A")}>{spinning ? "Spinning…" : "🎡 Spin the Wheel"}</button>}
+      {history.length > 0 && (
+        <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 6 }}>
+          {history.slice(0, 4).map((h, i) => (
+            <div key={i} style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>{h.player}: {h.dare?.slice(0, 40)}…</div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WordWolfLive({ room, myName, isHost, dispatch, players }) {
+  const gs = room.gameState || {};
+  const assignments = gs.assignments || {};
+  const votes = gs.votes || {};
+  const wolfRevealed = gs.wolfRevealed;
+  const myWord = assignments[myName];
+  const hasStarted = Object.keys(assignments).length > 0;
+
+  const start = () => {
+    if (players.length < 3) return;
+    const pair = rand(WORD_WOLF_PAIRS);
+    const wolfCount = players.length >= 6 ? 2 : 1;
+    const wolfIdxs = [...players.keys()].sort(() => Math.random() - 0.5).slice(0, wolfCount);
+    const asn = {};
+    players.forEach((p, i) => { asn[p] = wolfIdxs.includes(i) ? pair.minority : pair.majority; });
+    dispatch('assign', { assignments: asn });
+  };
+
+  if (!hasStarted) {
+    return (
+      <div style={{ textAlign: "center" }}>
+        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16, lineHeight: 1.6 }}>Everyone gets the same secret word — except the wolf, who gets something close but different. Describe your word naturally, find the wolf.</p>
+        {isHost ? (
+          <button onClick={start} disabled={players.length < 3} style={btn("#10B981")}>{players.length < 3 ? `Need ${3 - players.length} more player${players.length === 2 ? '' : 's'}` : "Deal Words →"}</button>
+        ) : (
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>Waiting for host…</div>
+        )}
+      </div>
+    );
+  }
+
+  const myVote = votes[myName];
+  const tally = {};
+  Object.values(votes).forEach(v => { tally[v] = (tally[v] || 0) + 1; });
+  const wordCounts = {};
+  Object.values(assignments).forEach(w => { wordCounts[w] = (wordCounts[w] || 0) + 1; });
+  const majorityWord = Object.entries(wordCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const wolfNames = Object.entries(assignments).filter(([, w]) => w !== majorityWord).map(([n]) => n);
+  const mostVoted = Object.entries(tally).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const caught = mostVoted && wolfNames.includes(mostVoted);
+
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div style={{ background: "rgba(16,185,129,0.1)", border: "2px solid rgba(16,185,129,0.3)", borderRadius: 16, padding: "20px", marginBottom: 16 }}>
+        <div style={{ fontSize: 11, color: "#10B981", fontWeight: 800, textTransform: "uppercase", marginBottom: 8 }}>Your secret word</div>
+        <div style={{ fontSize: 24, fontWeight: 900, color: "#fff" }}>{myWord}</div>
+      </div>
+      {!wolfRevealed ? (
+        <>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 10 }}>Describe your word without saying it. Vote who you think is the wolf.</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginBottom: 14 }}>
+            {players.filter(p => p !== myName).map(p => (
+              <button key={p} onClick={() => dispatch('vote', { suspect: p })} style={{ padding: "8px 16px", borderRadius: 100, border: `1.5px solid ${myVote === p ? "#10B981" : "rgba(255,255,255,0.15)"}`, background: myVote === p ? "rgba(16,185,129,0.2)" : "transparent", color: myVote === p ? "#4ade80" : "rgba(255,255,255,0.6)", fontSize: 13, cursor: "pointer", fontFamily: font }}>{p}</button>
+            ))}
+          </div>
+          {isHost && <button onClick={() => dispatch('reveal', {})} style={btn("#10B981")}>Reveal the Wolf →</button>}
+        </>
+      ) : (
+        <>
+          <div style={{ fontSize: 11, fontWeight: 700, color: caught ? '#22c55e' : '#EF4444', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 6 }}>{caught ? 'Wolf caught!' : 'Wolf escaped!'}</div>
+          <div style={{ fontSize: 20, fontWeight: 900, color: "#fff", marginBottom: 10 }}>{wolfNames.join(' & ')} was the Wolf 🐺</div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", marginBottom: 10 }}>Votes: {Object.entries(tally).sort((a, b) => b[1] - a[1]).map(([n, c]) => `${n} (${c})`).join(', ') || 'none'}</div>
+          {isHost && <button onClick={() => dispatch('next', {})} style={btn("#10B981")}>Play Again →</button>}
+        </>
+      )}
+    </div>
+  );
+}
+
+function CategoryBlitzLive({ room, myName, isHost, dispatch, players }) {
+  const gs = room.gameState || {};
+  const category = gs.category;
+  const scores = gs.scores || {};
+  const eliminated = gs.eliminated || [];
+  const history = gs.history || [];
+  const active = players.filter(p => !eliminated.includes(p));
+  const currentIdx = gs.currentIdx || 0;
+  const currentPlayer = active[currentIdx % (active.length || 1)];
+  const amCurrent = myName === currentPlayer;
+
+  const sayIt = () => { dispatch('answered', { word: '✓' }); dispatch('point', {}); };
+
+  if (!category) {
+    return (
+      <div>
+        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 14, textAlign: "center" }}>Pick a category — go around naming items, no repeats, no hesitating.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          {CATEGORY_BLITZ.slice(0, 12).map(c => (
+            <button key={c.name} onClick={() => isHost && dispatch('set-category', { category: c })} disabled={!isHost} style={{ padding: '12px 10px', background: 'rgba(245,158,11,0.08)', border: '1.5px solid rgba(245,158,11,0.2)', borderRadius: 12, color: '#fff', fontSize: 12, fontWeight: 700, cursor: isHost ? 'pointer' : 'default', fontFamily: font, textAlign: 'left', lineHeight: 1.4, opacity: isHost ? 1 : 0.5 }}>
+              <div style={{ fontSize: 18, marginBottom: 4 }}>{c.emoji}</div>
+              {c.name}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div style={{ fontSize: 11, color: "#F59E0B", fontWeight: 800, textTransform: "uppercase", marginBottom: 6 }}>{category.emoji} {category.name}</div>
+      {active.length > 1 ? (
+        <>
+          <div style={{ fontSize: 20, fontWeight: 900, color: "#fff", marginBottom: 4 }}>{currentPlayer}'s turn{amCurrent ? " (you!)" : ""}</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 16 }}>Name something — out loud — then tap below</div>
+          {amCurrent && (
+            <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+              <button onClick={sayIt} style={{ ...btn("rgba(34,197,94,0.2)"), border: "1.5px solid rgba(34,197,94,0.4)", flex: 1 }}>✓ Said it</button>
+              <button onClick={() => dispatch('fail', {})} style={{ ...btn("rgba(239,68,68,0.2)"), border: "1.5px solid rgba(239,68,68,0.4)", flex: 1 }}>✗ Stuck — out</button>
+            </div>
+          )}
+        </>
+      ) : (
+        <div style={{ fontSize: 18, fontWeight: 900, color: "#FBBF24", marginBottom: 14 }}>🏆 {active[0] || "Everyone"} wins!</div>
+      )}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center", marginTop: 10 }}>
+        {players.map(p => (
+          <span key={p} style={{ padding: "5px 12px", borderRadius: 100, fontSize: 11, fontWeight: 700, background: eliminated.includes(p) ? "rgba(239,68,68,0.1)" : "rgba(255,255,255,0.06)", color: eliminated.includes(p) ? "rgba(239,68,68,0.5)" : "rgba(255,255,255,0.6)", textDecoration: eliminated.includes(p) ? "line-through" : "none" }}>{p}{scores[p] ? ` ⭐${scores[p]}` : ''}</span>
+        ))}
+      </div>
+      {isHost && (
+        <button onClick={() => dispatch('set-category', { category: null })} style={{ ...btn("rgba(255,255,255,0.08)"), marginTop: 14, border: "1.5px solid rgba(255,255,255,0.15)" }}>New Round</button>
+      )}
+    </div>
+  );
+}
+
+function RoastBattleLive({ room, myName, isHost, dispatch, players }) {
+  const gs = room.gameState || {};
+  const p1 = gs.player1, p2 = gs.player2;
+  const votes = gs.votes || {};
+  const history = gs.history || [];
+  const round = gs.round || 0;
+  const [sel1, setSel1] = useState('');
+  const [sel2, setSel2] = useState('');
+  const myVote = votes[myName];
+  const v1 = Object.values(votes).filter(v => v === p1).length;
+  const v2 = Object.values(votes).filter(v => v === p2).length;
+  const prompt = p1 && p2 ? ROAST_PROMPTS[round % ROAST_PROMPTS.length].replace(/{A}/g, p1).replace(/{B}/g, p2) : '';
+
+  if (!p1 || !p2) {
+    return (
+      <div>
+        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 14, textAlign: "center" }}>Pick two players to battle — the room votes who got the bigger laugh.</p>
+        {isHost ? (
+          <>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10, justifyContent: "center" }}>
+              {players.map(p => <button key={p} onClick={() => setSel1(p)} style={{ padding: "6px 14px", borderRadius: 100, border: `1.5px solid ${sel1 === p ? "#EF4444" : "rgba(255,255,255,0.12)"}`, background: sel1 === p ? "rgba(239,68,68,0.2)" : "transparent", color: sel1 === p ? "#f87171" : "rgba(255,255,255,0.5)", fontSize: 12, cursor: "pointer", fontFamily: font }}>{p}</button>)}
+            </div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginBottom: 6 }}>vs</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14, justifyContent: "center" }}>
+              {players.filter(p => p !== sel1).map(p => <button key={p} onClick={() => setSel2(p)} style={{ padding: "6px 14px", borderRadius: 100, border: `1.5px solid ${sel2 === p ? "#F97316" : "rgba(255,255,255,0.12)"}`, background: sel2 === p ? "rgba(249,115,22,0.2)" : "transparent", color: sel2 === p ? "#fb923c" : "rgba(255,255,255,0.5)", fontSize: 12, cursor: "pointer", fontFamily: font }}>{p}</button>)}
+            </div>
+            <button onClick={() => dispatch('set-players', { player1: sel1, player2: sel2 })} disabled={!sel1 || !sel2} style={{ ...btn("#EF4444"), opacity: (!sel1 || !sel2) ? 0.4 : 1 }}>🎤 Let the Roast Begin</button>
+          </>
+        ) : (
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", textAlign: "center" }}>Waiting for host to pick roasters…</div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div style={{ fontSize: 11, color: "#EF4444", fontWeight: 800, textTransform: "uppercase", marginBottom: 10 }}>Round {round}</div>
+      <div style={{ fontSize: 20, fontWeight: 900, color: "#fff", marginBottom: 16 }}>{p1} 🆚 {p2}</div>
+      <div style={{ background: "transparent", borderRadius: 16, padding: '18px 16px', marginBottom: 16, border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', fontFamily: 'Georgia,serif', textAlign: 'center', lineHeight: 1.6, fontStyle: "italic" }}>"{prompt}"</div>
+      </div>
+      <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+        {[p1, p2].map(p => (
+          <button key={p} onClick={() => dispatch('vote', { player: p })} disabled={!!myVote} style={{ flex: 1, padding: "16px", borderRadius: 14, border: `2px solid ${myVote === p ? "#EF4444" : "rgba(255,255,255,0.12)"}`, background: myVote === p ? "rgba(239,68,68,0.15)" : "rgba(255,255,255,0.04)", color: "#fff", cursor: myVote ? "default" : "pointer", fontFamily: font }}>
+            <div style={{ fontSize: 15, fontWeight: 800 }}>{p}</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>{p === p1 ? v1 : v2} votes</div>
+          </button>
+        ))}
+      </div>
+      {isHost && (
+        <button onClick={() => dispatch('next-battle', { winner: v1 >= v2 ? p1 : p2 })} style={btn("#EF4444")}>Declare Winner & Next →</button>
+      )}
+      {history.length > 0 && <div style={{ marginTop: 14, fontSize: 11, color: "rgba(255,255,255,0.3)" }}>Last winner: {history[history.length - 1]?.winner}</div>}
+    </div>
+  );
+}
+
+function BingoLive({ room, myName, isHost, dispatch, players }) {
+  const [card] = useState(() => shuffle(BINGO_SQUARES).slice(0, 25));
+  const gs = room.gameState || {};
+  const marked = gs.marked?.[myName] || [];
+  const bingos = gs.bingos || {};
+  const ROWS = [[0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24]];
+  const COLS = [[0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24]];
+  const DIAGS = [[0,6,12,18,24],[4,8,12,16,20]];
+  const LINES = [...ROWS, ...COLS, ...DIAGS];
+
+  const toggle = (i) => dispatch('mark', { idx: i });
+  const hasBingo = LINES.some(line => line.every(j => marked.includes(j)));
+
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div style={{ background: "#FFFBEB", borderRadius: 16, padding: 12, marginBottom: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.9)" }}>
+        <div style={{ display: "flex", gap: 2, marginBottom: 8 }}>
+          {["B","I","N","G","O"].map((l, i) => (
+            <div key={l} style={{ flex: 1, textAlign: "center", fontWeight: 900, fontSize: 18, color: ["#EF4444","#F97316","#3B82F6","#22C55E","#8B5CF6"][i], letterSpacing: "0.05em", fontFamily: font }}>{l}</div>
+          ))}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 3 }}>
+          {card.map((sq, i) => {
+            const isMarked = marked.includes(i);
+            return (
+              <div key={i} onClick={() => toggle(i)} style={{ aspectRatio: "1", background: "#FFFBEB", border: "1.5px solid #E5D5A0", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", padding: 3, cursor: "pointer", position: "relative", overflow: "hidden" }}>
+                {isMarked && (
+                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>
+                    <div style={{ width: "78%", height: "78%", borderRadius: "50%", background: "rgba(220,38,38,0.85)", border: "2.5px solid rgba(180,20,20,0.9)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontSize: 14, color: "#fff", fontWeight: 900 }}>✓</span>
+                    </div>
+                  </div>
+                )}
+                <span style={{ fontSize: 8, color: isMarked ? "transparent" : "#5C4A1E", textAlign: "center", lineHeight: 1.15, fontWeight: 600 }}>{sq}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <button onClick={() => dispatch('bingo', {})} disabled={!hasBingo} style={{ ...btn(hasBingo ? "#0891B2" : "rgba(255,255,255,0.08)"), opacity: hasBingo ? 1 : 0.5 }}>{hasBingo ? "BINGO! Claim It 🎉" : "Mark a full line to claim"}</button>
+      {Object.keys(bingos).length > 0 && (
+        <div style={{ marginTop: 14, fontSize: 13, color: "#22d3ee", fontWeight: 700 }}>🎉 Bingo: {Object.keys(bingos).join(', ')}</div>
+      )}
+    </div>
+  );
+}
+
+function SpinBottleLive({ room, myName, isHost, dispatch, players }) {
+  const gs = room.gameState || {};
+  const [spinning, setSpinning] = useState(false);
+  const prevSpinId = useRef(gs.spinId || 0);
+
+  useEffect(() => {
+    if ((gs.spinId || 0) !== prevSpinId.current) {
+      setSpinning(true);
+      const t = setTimeout(() => setSpinning(false), 3000);
+      prevSpinId.current = gs.spinId;
+      return () => clearTimeout(t);
+    }
+  }, [gs.spinId]);
+
+  const spin = () => {
+    if (players.length < 2) return;
+    const targetIdx = Math.floor(Math.random() * players.length);
+    dispatch('spin', { targetIdx, target: players[targetIdx], extraDeg: 1440 + Math.random() * 720 });
+  };
+
+  if (players.length < 2) return <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", textAlign: "center" }}>Need at least 2 players in the room.</p>;
+
+  const radius = 110, cx = 140, cy = 140;
+  const positions = players.map((_, i) => {
+    const a = (i / players.length) * 2 * Math.PI - Math.PI / 2;
+    return { x: cx + Math.cos(a) * radius, y: cy + Math.sin(a) * radius };
+  });
+
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+        <svg width={280} height={280} style={{ overflow: "visible" }}>
+          <ellipse cx={cx} cy={cy} rx={116} ry={116} fill="rgba(196,122,46,0.07)" stroke="rgba(196,122,46,0.2)" strokeWidth={1.5} />
+          {players.map((p, i) => {
+            const pos = positions[i];
+            const lit = !spinning && gs.targetIdx === i;
+            return (
+              <g key={p} transform={`translate(${pos.x},${pos.y})`}>
+                {lit && <circle r={26} fill="rgba(251,191,36,0.25)" />}
+                <circle r={18} fill={lit ? "#FBBF24" : "rgba(255,255,255,0.12)"} stroke={lit ? "#FBBF24" : "rgba(255,255,255,0.2)"} strokeWidth={2} />
+                <text x={0} y={6} textAnchor="middle" fontSize={13} fontWeight={900} fill={lit ? "#1a0a00" : "#fff"}>{p[0]?.toUpperCase()}</text>
+                <text x={0} y={36} textAnchor="middle" fontSize={8} fontWeight={700} fill={lit ? "#FBBF24" : "rgba(255,255,255,0.45)"}>{p.slice(0, 8)}</text>
+              </g>
+            );
+          })}
+          <g transform={`translate(${cx},${cy})`}>
+            <g transform={`rotate(${gs.angle || 0})`} style={{ transition: spinning ? "transform 3s cubic-bezier(0.15,0.6,0.1,1)" : "none" }}>
+              <rect x={-4} y={-90} width={8} height={40} rx={4} fill="url(#bottleGradLive)" />
+              <ellipse cx={0} cy={-32} rx={14} ry={22} fill="url(#bottleGradLive)" />
+              <ellipse cx={0} cy={10} rx={14} ry={8} fill="url(#bottleGradLive2)" />
+              <rect x={-5} y={-95} width={10} height={8} rx={2} fill="#8B4513" />
+            </g>
+            <circle r={6} fill="#C47A2E" />
+          </g>
+          <defs>
+            <linearGradient id="bottleGradLive" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#2D6A2D" /><stop offset="40%" stopColor="#4CAF50" /><stop offset="100%" stopColor="#1B4B1B" />
+            </linearGradient>
+            <linearGradient id="bottleGradLive2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#3A7A3A" /><stop offset="100%" stopColor="#1B4B1B" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      {gs.targetIdx != null && !spinning && (
+        <div style={{ textAlign: "center", padding: "14px", background: "rgba(251,191,36,0.15)", border: "2px solid rgba(251,191,36,0.4)", borderRadius: 16, marginBottom: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: "#FBBF24", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>🎯 The bottle chose…</div>
+          <div style={{ fontSize: 26, fontWeight: 900, color: "#fff" }}>{players[gs.targetIdx]}!</div>
+        </div>
+      )}
+      {isHost && <button onClick={spin} disabled={spinning} style={{ ...btn("#C47A2E"), fontSize: 17, fontWeight: 900 }}>{spinning ? "Spinning…" : "SPIN! 🍾"}</button>}
+      {!isHost && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>Only the host can spin</div>}
+    </div>
+  );
+}
+
+function CharadesLive({ room, myName, isHost, dispatch, players }) {
+  const gs = room.gameState || {};
+  const cats = { bollywood: "🎬 Bollywood", webshows: "📺 Web Shows", celebs: "🌟 Celebs", memesphrases: "😂 Memes & Phrases" };
+  const category = gs.category;
+  const word = gs.word;
+  const actor = gs.actor;
+  const score = gs.score || { correct: 0, skip: 0 };
+  const history = gs.history || [];
+  const amActor = myName === actor;
+
+  if (!category) {
+    return (
+      <div>
+        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16, textAlign: "center" }}>Pick a category — actor takes centre stage</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {Object.entries(cats).map(([k, v]) => (
+            <button key={k} onClick={() => dispatch('set-category', { category: k, word: rand(CHARADES[k]) })} style={{ background: "rgba(196,122,46,0.12)", border: "1.5px solid rgba(196,122,46,0.4)", borderRadius: 14, padding: "16px 18px", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: font, textAlign: "left" }}>{v}</button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const nextWord = () => rand(CHARADES[category]);
+
+  return (
+    <div style={{ textAlign: "center" }}>
+      <div style={{ fontSize: 12, color: "#CCAB4A", fontWeight: 700, marginBottom: 10 }}>{cats[category]}</div>
+      {!actor ? (
+        <>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 14 }}>Who's acting next?</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
+            {players.map(p => <button key={p} onClick={() => dispatch('set-actor', { actor: p })} style={{ padding: "8px 16px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#fff", fontSize: 13, cursor: "pointer", fontFamily: font }}>{p}</button>)}
+          </div>
+        </>
+      ) : amActor ? (
+        <div style={{ padding: "30px 20px", background: "rgba(239,68,68,0.08)", border: "2px dashed rgba(239,68,68,0.3)", borderRadius: 16, marginBottom: 14 }}>
+          <div style={{ fontSize: 30, marginBottom: 8 }}>🙈</div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>You're acting — don't look! Everyone else can see the word.</div>
+        </div>
+      ) : (
+        <div style={{ margin: "0 0 16px", background: "transparent", border: "2px solid rgba(196,122,46,0.4)", borderRadius: 16, padding: "28px 20px" }}>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginBottom: 10, letterSpacing: "0.1em" }}>🎭 {actor} ACTS THIS OUT</div>
+          <div style={{ fontSize: 26, fontWeight: 900, color: "#fff" }}>{word}</div>
+        </div>
+      )}
+      {actor && (
+        <div style={{ display: "flex", justifyContent: "center", gap: 20, marginBottom: 14, fontSize: 12 }}>
+          <span style={{ color: "#34D399", fontWeight: 700 }}>✓ {score.correct} correct</span>
+          <span style={{ color: "rgba(255,255,255,0.35)", fontWeight: 700 }}>↩ {score.skip} skipped</span>
+        </div>
+      )}
+      {actor && !amActor && (
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={() => dispatch('skip', { nextWord: nextWord() })} style={{ flex: 1, padding: "13px", borderRadius: 14, border: "1.5px solid rgba(255,255,255,0.15)", background: "transparent", color: "rgba(255,255,255,0.6)", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>↩ Skip</button>
+          <button onClick={() => dispatch('correct', { nextWord: nextWord() })} style={{ flex: 2, ...btn("#22C55E"), fontSize: 16, fontWeight: 900 }}>✓ Correct!</button>
+        </div>
+      )}
+      {actor && (
+        <button onClick={() => dispatch('set-actor', { actor: null })} style={{ marginTop: 10, background: "none", border: "none", color: "rgba(255,255,255,0.3)", fontSize: 11, cursor: "pointer" }}>Change actor</button>
+      )}
+      {history.length > 0 && (
+        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginTop: 14 }}>
+          {history.map((h, i) => (
+            <div key={i} style={{ flexShrink: 0, background: h.result === "correct" ? "rgba(34,197,94,0.15)" : "transparent", border: `1px solid ${h.result === "correct" ? "rgba(34,197,94,0.3)" : "rgba(255,255,255,0.08)"}`, borderRadius: 8, padding: "6px 10px", textAlign: "center", minWidth: 70 }}>
+              <div style={{ fontSize: 14 }}>{h.result === "correct" ? "✓" : "↩"}</div>
+              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", marginTop: 2, lineHeight: 1.2 }}>{h.word?.slice(0, 12)}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Polygon Layout (triangle for 3, square for 4, pentagon for 5 … octagon for 8) ──
 function ToolGrid({ tools, onOpen }) {
   return (
@@ -2227,16 +2839,16 @@ const TOOLS = [
   { id: "neverhavei", section: "games", emoji: "🙅", title: "Never Have I Ever", desc: "30 statements · score tracker", color: "#059669", live: true },
   { id: "wouldyou", section: "games", emoji: "🤷", title: "Would You Rather", desc: "20 spicy choices — defend your answer", color: "#C47A2E", live: true },
   { id: "hottakes", section: "games", emoji: "🌶️", title: "Hot Takes", desc: "25 hot takes · agree or disagree", color: "#DC2626", live: true },
-  { id: "spin", section: "games", emoji: "🍾", title: "Spin the Bottle", desc: "Add names → random picker with spinner", color: "#2563EB" },
-  { id: "charades", section: "games", emoji: "🎭", title: "Dumb Charades", desc: "Bollywood · Web Shows · Celebs · Memes", color: "#D97706" },
-  { id: "bingo", section: "games", emoji: "🎱", title: "Party Bingo", desc: "5×5 party scenario bingo cards", color: "#0891B2" },
+  { id: "spin", section: "games", emoji: "🍾", title: "Spin the Bottle", desc: "Add names → random picker with spinner", color: "#2563EB", live: true },
+  { id: "charades", section: "games", emoji: "🎭", title: "Dumb Charades", desc: "Bollywood · Web Shows · Celebs · Memes", color: "#D97706", live: true },
+  { id: "bingo", section: "games", emoji: "🎱", title: "Party Bingo", desc: "5×5 party scenario bingo cards", color: "#0891B2", live: true },
   { id: "mostlikelyto",  section: "games", emoji: "🎲", title: "Most Likely To",      desc: "Point at whoever fits — most fingers wins",      color: "#D4631A", live: true },
-  { id: "twotruthslie", section: "games", emoji: "🤥", title: "Two Truths One Lie",  desc: "Spot the lie · everyone submits · vote as a group", color: "#1A7A8A" },
-  { id: "hotseat",      section: "games", emoji: "🔥", title: "Hot Seat",            desc: "One player · rapid-fire questions · 60 seconds",    color: "#F43F5E" },
-  { id: "darewheel",    section: "games", emoji: "🎡", title: "Dare Wheel",          desc: "Spin the wheel · land on someone · get a dare",     color: "#C85A2A" },
-  { id: "wordwolf",     section: "games", emoji: "🐺", title: "Word Wolf",           desc: "One imposter gets a different word · find them",    color: "#10B981" },
-  { id: "categoryblitz",section: "games", emoji: "⚡", title: "Category Blitz",      desc: "Name items in a category · go around · fail = out", color: "#F59E0B" },
-  { id: "roastbattle",  section: "games", emoji: "🎤", title: "Roast Battle",        desc: "Two players · 30 sec each · audience votes",        color: "#EF4444" },
+  { id: "twotruthslie", section: "games", emoji: "🤥", title: "Two Truths One Lie",  desc: "Spot the lie · everyone submits · vote as a group", color: "#1A7A8A", live: true },
+  { id: "hotseat",      section: "games", emoji: "🔥", title: "Hot Seat",            desc: "One player · rapid-fire questions · 60 seconds",    color: "#F43F5E", live: true },
+  { id: "darewheel",    section: "games", emoji: "🎡", title: "Dare Wheel",          desc: "Spin the wheel · land on someone · get a dare",     color: "#C85A2A", live: true },
+  { id: "wordwolf",     section: "games", emoji: "🐺", title: "Word Wolf",           desc: "One imposter gets a different word · find them",    color: "#10B981", live: true },
+  { id: "categoryblitz",section: "games", emoji: "⚡", title: "Category Blitz",      desc: "Name items in a category · go around · fail = out", color: "#F59E0B", live: true },
+  { id: "roastbattle",  section: "games", emoji: "🎤", title: "Roast Battle",        desc: "Two players · 30 sec each · audience votes",        color: "#EF4444", live: true },
   // Other
   { id: "reportcard", section: "fun", emoji: "🏆", title: "Party Report Card", desc: "Rate the night · get a grade + verdict", color: "#FBBF24" },
 ];
@@ -4960,7 +5572,11 @@ export default function HousePartyHub() {
   }, [joinRoom]);
 
   // The 5 games with a real synced implementation (see PartyRoomPage.jsx) — Hub tool id -> backend game id
-  const SYNCED_GAME_ID = { truthordare: 'truth-dare', neverhavei: 'never-have-i', wouldyou: 'would-you', hottakes: 'hot-takes', mostlikelyto: 'most-likely' };
+  const SYNCED_GAME_ID = {
+    truthordare: 'truth-dare', neverhavei: 'never-have-i', wouldyou: 'would-you', hottakes: 'hot-takes', mostlikelyto: 'most-likely',
+    twotruthslie: 'two-truths-lie', hotseat: 'hot-seat', darewheel: 'dare-wheel', wordwolf: 'word-wolf',
+    categoryblitz: 'category-blitz', roastbattle: 'roast-battle', bingo: 'bingo', spin: 'spin-bottle', charades: 'charades',
+  };
 
   // Record a finished game in the room's history, for the post-event recap. Best-effort — no
   // "winner" logic here (these games don't have one), just a "this was played" timeline entry.
@@ -5012,19 +5628,25 @@ export default function HousePartyHub() {
   const liveProps = { room, myName, players, gameState, sendAction, sendEffect, isHost };
   const onScore = (player, points) => sendAction('score-add', { player, points });
 
-  // For the 5 games with a real synced version: in a room, render the live component
-  // (ask the host to start it if it's not the room's active game yet); otherwise, same
-  // local "pass the phone" component as always — nothing changes when exploring/no room.
-  const SYNCED_GAME_COMPONENT = { 'truth-dare': TruthDareGame, 'never-have-i': NeverHaveIGame, 'would-you': WouldYouGame, 'hot-takes': HotTakesGame, 'most-likely': MostLikelyGame };
+  // For games with a real synced version: in a room, render the live component — gated behind
+  // a ready-check every player confirms — otherwise same local "pass the phone" component as
+  // always (nothing changes when exploring/no room).
+  const SYNCED_GAME_COMPONENT = {
+    'truth-dare': TruthDareGame, 'never-have-i': NeverHaveIGame, 'would-you': WouldYouGame, 'hot-takes': HotTakesGame, 'most-likely': MostLikelyGame,
+    'two-truths-lie': TwoTruthsLieLive, 'hot-seat': HotSeatLive, 'dare-wheel': DareWheelLive, 'word-wolf': WordWolfLive,
+    'category-blitz': CategoryBlitzLive, 'roast-battle': RoastBattleLive, 'bingo': BingoLive, 'spin-bottle': SpinBottleLive, 'charades': CharadesLive,
+  };
   const renderLiveGame = (toolId, emoji, title, localFallback) => {
     const backendGame = SYNCED_GAME_ID[toolId];
     if (!room) return localFallback();
     const GameComponent = SYNCED_GAME_COMPONENT[backendGame];
     const live = room.currentGame === backendGame;
     return (
-      <Modal onClose={close} emoji={emoji} title={title}>
+      <Modal onClose={close} emoji={emoji} title={title} wide>
         {live ? (
-          <GameComponent room={room} myName={myName} isHost={isHost} dispatch={sendAction} accent={TOOLS.find(t => t.id === toolId)?.color || "#C47A2E"} onScore={onScore} />
+          <ReadyGate room={room} myName={myName} isHost={isHost} dispatch={sendAction}>
+            <GameComponent room={room} myName={myName} isHost={isHost} dispatch={sendAction} players={players} accent={TOOLS.find(t => t.id === toolId)?.color || "#C47A2E"} onScore={onScore} />
+          </ReadyGate>
         ) : (
           <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", textAlign: "center", padding: "24px 0" }}>
             {isHost ? "Starting…" : "Ask your host to start this game from their screen."}
@@ -5040,9 +5662,9 @@ export default function HousePartyHub() {
       case "neverhavei": return renderLiveGame("neverhavei", "🙅", "Never Have I Ever", () => <NeverHaveI onClose={close} />);
       case "wouldyou": return renderLiveGame("wouldyou", "🤷", "Would You Rather", () => <WouldYouRather onClose={close} />);
       case "hottakes": return renderLiveGame("hottakes", "🌶️", "Hot Takes", () => <HotTakes onClose={close} />);
-      case "spin": return <SpinBottle onClose={close} />;
-      case "charades": return <Charades onClose={close} />;
-      case "bingo": return <Bingo onClose={close} />;
+      case "spin": return renderLiveGame("spin", "🍾", "Spin the Bottle", () => <SpinBottle onClose={close} />);
+      case "charades": return renderLiveGame("charades", "🎭", "Dumb Charades", () => <Charades onClose={close} />);
+      case "bingo": return renderLiveGame("bingo", "🎱", "Party Bingo", () => <Bingo onClose={close} />);
       case "mostlikelyto": return renderLiveGame("mostlikelyto", "🎲", "Most Likely To", () => <MostLikelyTo onClose={close} />);
       case "checklist": return <Checklist onClose={close} />;
       case "bills": return <BillSplitter onClose={close} />;
@@ -5097,12 +5719,12 @@ export default function HousePartyHub() {
       case "budget":       return <BudgetPlannerModal onClose={close} />;
       case "vendors":      return <VendorTrackerModal onClose={close} />;
       case "wabroadcast":  return <WABroadcastModal   onClose={close} />;
-      case "twotruthslie": return <TwoTruthsLieGame onClose={close} />;
-      case "hotseat":      return <HotSeatGame onClose={close} />;
-      case "darewheel":    return <DareWheelGame onClose={close} />;
-      case "wordwolf":     return <WordWolfGame onClose={close} />;
-      case "categoryblitz": return <CategoryBlitzGame onClose={close} />;
-      case "roastbattle":  return <RoastBattleGame onClose={close} />;
+      case "twotruthslie": return renderLiveGame("twotruthslie", "🤥", "Two Truths One Lie", () => <TwoTruthsLieGame onClose={close} />);
+      case "hotseat":      return renderLiveGame("hotseat", "🔥", "Hot Seat", () => <HotSeatGame onClose={close} />);
+      case "darewheel":    return renderLiveGame("darewheel", "🎡", "Dare Wheel", () => <DareWheelGame onClose={close} />);
+      case "wordwolf":     return renderLiveGame("wordwolf", "🐺", "Word Wolf", () => <WordWolfGame onClose={close} />);
+      case "categoryblitz": return renderLiveGame("categoryblitz", "⚡", "Category Blitz", () => <CategoryBlitzGame onClose={close} />);
+      case "roastbattle":  return renderLiveGame("roastbattle", "🔥", "Roast Battle", () => <RoastBattleGame onClose={close} />);
       default: return null;
     }
   };
