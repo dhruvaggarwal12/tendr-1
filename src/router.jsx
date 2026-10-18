@@ -182,6 +182,7 @@ const VendorDashboard     = lazy(() => import("./pages/vendor/Dashboard"));
 const VendorProfile       = lazy(() => import("./pages/vendor/Profile"));
 const VendorBookings      = lazy(() => import("./pages/vendor/Bookings"));
 const VendorChatList      = lazy(() => import("./pages/vendor/ChatList"));
+const VendorDirectChatPage = lazy(() => import("./pages/vendor/DirectChatPage"));
 const VendorChat          = lazy(() => import("./pages/vendor/Chat"));
 const DirectChat          = lazy(() => import("./pages/guest/DirectChat"));
 const VendorHowToUse     = lazy(() => import("./pages/vendor/HowToUse"));
@@ -472,6 +473,7 @@ const router = createBrowserRouter([
       { path: "bookings",  element: <VendorBookings /> },
       { path: "chats",     element: <VendorChatList /> },
       { path: "chat",      element: <VendorChat /> },
+      { path: "direct-chat/:conversationId", element: <VendorDirectChatPage /> },
       { path: "guide",     element: <VendorHowToUse /> },
       { path: "pricing",   element: <VendorPricing /> },
       { path: "login",     element: <VendorLogin /> },

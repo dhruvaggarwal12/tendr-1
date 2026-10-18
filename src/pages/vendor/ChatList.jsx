@@ -101,7 +101,7 @@ function DirectMessagesTab({ token }) {
           preview={convo.lastMessage?.content || ''}
           badge={null}
           pill="Direct"
-          onClick={() => navigate(`/chat/direct/${convo._id}`)}
+          onClick={() => navigate(`/vendor/direct-chat/${convo._id}`)}
         />
       ))}
     </div>

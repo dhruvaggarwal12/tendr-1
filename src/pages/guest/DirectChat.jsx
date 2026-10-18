@@ -8,6 +8,12 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || BASE_URL;
 const GOLD = "#c49b30";
 const INK  = "#0c0702";
 const BG   = "#100c07";
+const DOC_MARKER = "__TENDR_DOC__:";
+
+function parseDocMessage(content) {
+  if (typeof content !== "string" || !content.startsWith(DOC_MARKER)) return null;
+  try { return JSON.parse(content.slice(DOC_MARKER.length)); } catch { return null; }
+}
 
 export default function DirectChat() {
   const { conversationId } = useParams();
@@ -151,25 +157,36 @@ export default function DirectChat() {
         )}
         {messages.map((msg, i) => {
           const isGuest = msg.sender === "user";
+          const doc = parseDocMessage(msg.content);
           return (
             <div key={msg._id || i} style={{ display: "flex", justifyContent: isGuest ? "flex-end" : "flex-start" }}>
-              <div style={{
-                maxWidth: "72%", padding: "10px 14px", borderRadius: isGuest ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
-                background: isGuest ? GOLD : "rgba(255,255,255,0.07)",
-                color: isGuest ? INK : "#f5f0e8",
-                fontSize: 14, lineHeight: 1.6, fontWeight: isGuest ? 500 : 400,
-                boxShadow: isGuest ? "0 2px 8px rgba(196,155,48,0.25)" : "0 1px 4px rgba(0,0,0,0.3)",
-              }}>
-                {!isGuest && (
-                  <div style={{ fontSize: 10, fontWeight: 700, color: GOLD, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                    {vendorName}
-                  </div>
-                )}
-                {msg.content}
-                <div style={{ fontSize: 10, marginTop: 4, opacity: 0.55, textAlign: "right" }}>
-                  {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
+              {doc ? (
+                <div style={{ maxWidth: "80%", background: "rgba(196,155,48,0.1)", border: "1.5px solid rgba(196,155,48,0.35)", borderRadius: 12, padding: "12px 14px" }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, color: GOLD, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>📄 {doc.kind?.charAt(0).toUpperCase() + doc.kind?.slice(1)} from {vendorName}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#f5f0e8", marginBottom: 8 }}>{doc.label}</div>
+                  <a href={doc.dataUri} download={`${doc.kind}.pdf`} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, background: GOLD, color: INK, fontSize: 12.5, fontWeight: 700, textDecoration: "none" }}>
+                    View / Download PDF
+                  </a>
                 </div>
-              </div>
+              ) : (
+                <div style={{
+                  maxWidth: "72%", padding: "10px 14px", borderRadius: isGuest ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
+                  background: isGuest ? GOLD : "rgba(255,255,255,0.07)",
+                  color: isGuest ? INK : "#f5f0e8",
+                  fontSize: 14, lineHeight: 1.6, fontWeight: isGuest ? 500 : 400,
+                  boxShadow: isGuest ? "0 2px 8px rgba(196,155,48,0.25)" : "0 1px 4px rgba(0,0,0,0.3)",
+                }}>
+                  {!isGuest && (
+                    <div style={{ fontSize: 10, fontWeight: 700, color: GOLD, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                      {vendorName}
+                    </div>
+                  )}
+                  {msg.content}
+                  <div style={{ fontSize: 10, marginTop: 4, opacity: 0.55, textAlign: "right" }}>
+                    {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}
