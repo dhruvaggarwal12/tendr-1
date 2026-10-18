@@ -2486,7 +2486,7 @@ const [tab, setTab] = useState('home');
   };
 
   // Work tab sub-tab
-  const [workSubTab, setWorkSubTab] = useState('tendr'); // 'tendr' | 'outside' | 'calendar' | 'quotes'
+  const [workSubTab, setWorkSubTab] = useState('jobs'); // 'jobs' (Tendr + Outside merged) | 'calendar' | 'quotes' | 'clients'
   const [moneySubTab, setMoneySubTab] = useState('pl'); // 'pl' | 'stats'
 
   // Calendar month navigation
@@ -2790,10 +2790,17 @@ const [tab, setTab] = useState('home');
   const thisMonthExpenses = outsideOrders.filter(o => new Date(o.createdAt) >= monthStart).reduce((s, o) => s + (o.expenses||[]).reduce((ss,e) => ss+(Number(e.amount)||0),0), 0);
   const thisMonthProfit = thisMonthCollected - thisMonthExpenses;
 
-  // Outside orders: filter + search
-  const visibleOutside = outsideOrders
-    .filter(o => oFilter === 'all' || oFilter === 'outside' || oFilter === 'tendr' ? true : o.status === oFilter)
-    .filter(o => !oSearch || o.clientName?.toLowerCase().includes(oSearch.toLowerCase()) || o.eventType?.toLowerCase().includes(oSearch.toLowerCase()) || o.clientPhone?.includes(oSearch));
+  // Unified Work list — Tendr bookings/requests + manually-logged Outside orders, merged into
+  // one pipeline and sorted together by date, instead of two separate tabs with separate
+  // filtering. Both sides already share the same 4 status strings (Pending/Confirmed/
+  // Completed/Cancelled), so no new status vocabulary is needed to combine them.
+  const allJobs = [
+    ...bookings.map(b => ({ ...b, _source: 'Tendr', _sortDate: b.eventDate || b.createdAt })),
+    ...outsideOrders.map(o => ({ ...o, _source: 'Outside', _sortDate: o.eventDate || o.createdAt })),
+  ].sort((a, b) => new Date(b._sortDate || 0) - new Date(a._sortDate || 0));
+  const visibleJobs = allJobs
+    .filter(j => oFilter === 'all' ? true : j.status === oFilter)
+    .filter(j => !oSearch || (j.customerName || j.clientName)?.toLowerCase().includes(oSearch.toLowerCase()) || j.eventType?.toLowerCase().includes(oSearch.toLowerCase()) || j.clientPhone?.includes(oSearch));
 
   // Reminders firing today or overdue (not yet completed/cancelled)
   const reminderCheckDate = new Date().toISOString().split('T')[0];
@@ -3242,7 +3249,7 @@ const [tab, setTab] = useState('home');
                 {t('langToggle')}
               </button>
             )}
-            {tab==='work' && (workSubTab==='tendr'||workSubTab==='outside') && <button onClick={() => setModal('add')}    style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>+ {terms==='Shows'?t('addShow'):t('addGig')}</button>}
+            {tab==='work' && workSubTab==='jobs' && <button onClick={() => setModal('add')}    style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>+ {terms==='Shows'?t('addShow'):t('addGig')}</button>}
             {tab==='work' && workSubTab==='quotes'   && <button onClick={() => { setEditQuote(null); setQuoteModal(true); }}    style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>{t('newQuote')}</button>}
             {tab==='inventory' && !tabLocked && <button onClick={() => setInvModal(true)}  style={{ padding:'7px 14px', borderRadius:9, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontSize:12.5, fontWeight:700, cursor:'pointer', fontFamily:font }}>{t('addItem')}</button>}
             {tab==='profile'   && <button onClick={() => { navigator.clipboard?.writeText(`${window.location.origin}/vendor/${vendorId}`).then(() => showToast(t('profileLinkCopied'))); }}
@@ -3703,8 +3710,7 @@ const [tab, setTab] = useState('home');
               {/* Main sub-tab row */}
               <div style={{ display:'flex', gap:2, marginBottom:16, borderBottom:'2px solid rgba(196,122,46,0.1)', overflowX:'auto' }}>
                 {[
-                  ['tendr',   lang==='hi'?'Tendr':'Tendr',                                      tendrCount>0?tendrCount:''],
-                  ['outside', lang==='hi'?'बाहरी':'Outside',                                   outsideCount>0?outsideCount:''],
+                  ['jobs',    lang==='hi'?'काम':'Jobs',                                        (tendrCount+outsideCount)>0?(tendrCount+outsideCount):''],
                   ['calendar',lang==='hi'?'कैलेंडर':'Calendar',                                ''],
                   ['quotes',  lang==='hi'?'कोटेशन':'Quotes',                                   quotes.length > 0 ? String(quotes.length) : '+'],
                   ['clients', lang==='hi'?'क्लाइंट':'Clients',                                 clientList.length>0?clientList.length:''],
@@ -3882,12 +3888,12 @@ const [tab, setTab] = useState('home');
                 </div>
               )}
 
-              {/* ── TENDR BOOKINGS ── */}
-              {workSubTab === 'tendr' && (
+              {/* ── JOBS (Tendr + Outside, unified) ── */}
+              {workSubTab === 'jobs' && (
                 <div>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
-                    <div style={{ fontSize:12, color:'#9B7450' }}>Bookings sent to you through the Tendr platform</div>
-                    <button onClick={() => navigate('/vendor/bookings')} style={{ fontSize:12, fontWeight:700, color:gold, background:'none', border:'none', cursor:'pointer', fontFamily:font, flexShrink:0 }}>Full page →</button>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
+                    <div style={{ fontSize:12, color:'#9B7450' }}>Everything that's come your way — through Tendr or on your own — in one list</div>
+                    {outsideOrders.length>0 && <button onClick={exportCSV} style={{ padding:'5px 12px', borderRadius:8, border:'1.5px solid rgba(196,122,46,0.2)', background:'#fff', color:'#9B7450', fontFamily:font, fontSize:12, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', gap:5, flexShrink:0 }}>{dsic(<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></>)} CSV</button>}
                   </div>
                   {gigConflicts.size>0 && (
                     <div style={{ padding:'10px 14px', borderRadius:12, background:'rgba(220,38,38,0.05)', border:'1.5px solid rgba(220,38,38,0.18)', marginBottom:12, display:'flex', alignItems:'center', gap:10 }}>
@@ -3895,31 +3901,6 @@ const [tab, setTab] = useState('home');
                       <span style={{ fontSize:12.5, color:'#DC2626', fontWeight:600 }}>{gigConflicts.size} time conflict{gigConflicts.size!==1?'s':''} detected</span>
                     </div>
                   )}
-                  <input value={oSearch} onChange={e => setOSearch(e.target.value)} placeholder="Search by name or event type…"
-                    style={{ width:'100%', maxWidth:380, padding:'9px 14px', borderRadius:10, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13, color:ink, outline:'none', background:'#fff', boxSizing:'border-box', marginBottom:14 }} />
-                  {loading ? <div style={{ textAlign:'center', padding:'24px', color:'#9B7450' }}>Loading…</div>
-                  : bookings.length===0 ? (
-                    <div style={{ textAlign:'center', padding:'36px 24px', background:'#fff', borderRadius:16, border:'1.5px dashed rgba(196,122,46,0.18)' }}>
-                      <div style={{ fontSize:36, marginBottom:10 }}>🔍</div>
-                      <div style={{ fontSize:14, fontWeight:700, color:ink, marginBottom:6 }}>No Tendr bookings yet</div>
-                      <div style={{ fontSize:13, color:'#9B7450', maxWidth:280, margin:'0 auto 14px' }}>Keep your profile active and updated — clients browsing Tendr will find and book you here.</div>
-                      <button onClick={() => setWorkSubTab('outside')} style={{ padding:'8px 18px', borderRadius:9, border:'1.5px solid rgba(37,211,102,0.4)', background:'rgba(37,211,102,0.07)', color:'#15803D', fontFamily:font, fontSize:12.5, fontWeight:700, cursor:'pointer' }}>📲 Log a WhatsApp booking instead →</button>
-                    </div>
-                  ) : (
-                    <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                      {bookings.filter(b => !oSearch||b.customerName?.toLowerCase().includes(oSearch.toLowerCase())||b.eventType?.toLowerCase().includes(oSearch.toLowerCase())).map((b,i) => <BookingCard key={b.id||b._id||i} b={b} font={font} vendorName={vendorName} onDispute={bk => { setDisputeModal(bk); setDisputeText(''); setDisputeReason('Payment issue'); }} />)}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* ── OUTSIDE BOOKINGS ── */}
-              {workSubTab === 'outside' && (
-                <div>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
-                    <div style={{ fontSize:12, color:'#9B7450' }}>Direct bookings — WhatsApp, referrals, walk-ins, Tendr profile</div>
-                    {outsideOrders.length>0 && <button onClick={exportCSV} style={{ padding:'5px 12px', borderRadius:8, border:'1.5px solid rgba(196,122,46,0.2)', background:'#fff', color:'#9B7450', fontFamily:font, fontSize:12, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', gap:5 }}>{dsic(<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></>)} CSV</button>}
-                  </div>
                   <button onClick={() => setModal('add')} style={{ display:'flex', alignItems:'center', gap:10, width:'100%', padding:'12px 16px', borderRadius:12, border:'1.5px dashed rgba(37,211,102,0.45)', background:'rgba(37,211,102,0.06)', cursor:'pointer', fontFamily:font, marginBottom:12, textAlign:'left' }}>
                     <span style={{ fontSize:20 }}>📲</span>
                     <div style={{ flex:1 }}>
@@ -3928,15 +3909,15 @@ const [tab, setTab] = useState('home');
                     </div>
                     <span style={{ fontSize:14, color:'#15803D', fontWeight:700 }}>+</span>
                   </button>
-                  {/* Status pills */}
-                  {outsideOrders.length>0 && (
+                  {/* Status pills — across both Tendr and Outside */}
+                  {allJobs.length>0 && (
                     <div style={{ display:'flex', gap:8, marginBottom:12, flexWrap:'wrap' }}>
                       {['all','Pending','Confirmed','Completed','Cancelled'].map(s => {
-                        const n = s==='all' ? outsideOrders.length : outsideOrders.filter(o=>o.status===s).length;
+                        const n = s==='all' ? allJobs.length : allJobs.filter(j=>j.status===s).length;
                         if (s!=='all' && n===0) return null;
-                        const active = oFilter===s||(s==='all'&&(oFilter==='all'||oFilter==='outside'));
+                        const active = oFilter===s||(s==='all'&&oFilter==='all');
                         return (
-                          <button key={s} onClick={() => setOFilter(s==='all'?'outside':s)}
+                          <button key={s} onClick={() => setOFilter(s==='all'?'all':s)}
                             style={{ padding:'5px 13px', borderRadius:100, fontSize:12, fontWeight:700, fontFamily:font, cursor:'pointer', border:'1.5px solid', borderColor:active?gold:'rgba(196,122,46,0.2)', background:active?gold:'#fff', color:active?'#fff':'#9B7450', transition:'all 0.15s' }}>
                             {s==='all'?'All':s} ({n})
                           </button>
@@ -3946,30 +3927,41 @@ const [tab, setTab] = useState('home');
                   )}
                   <input value={oSearch} onChange={e => setOSearch(e.target.value)} placeholder="Search by name, event type, or phone…"
                     style={{ width:'100%', maxWidth:380, padding:'9px 14px', borderRadius:10, border:'1.5px solid rgba(196,122,46,0.22)', fontFamily:font, fontSize:13, color:ink, outline:'none', background:'#fff', boxSizing:'border-box', marginBottom:14 }} />
-                  {outsideLoading ? <div style={{ textAlign:'center', padding:'24px', color:'#9B7450' }}>Loading…</div>
-                  : visibleOutside.length===0 ? (
+                  {(loading || outsideLoading) ? <div style={{ textAlign:'center', padding:'24px', color:'#9B7450' }}>Loading…</div>
+                  : visibleJobs.length===0 ? (
                     <div style={{ background:'#fff', borderRadius:16, padding:'40px 24px', textAlign:'center', border:'1.5px dashed rgba(196,122,46,0.18)' }}>
                       <div style={{ fontSize:36, marginBottom:10 }}>📋</div>
-                      <div style={{ fontSize:15, fontWeight:700, color:ink, marginBottom:6 }}>{outsideOrders.length===0?`No outside ${terms.toLowerCase()} yet`:`No ${terms.toLowerCase()} match`}</div>
-                      {outsideOrders.length===0 && <>
-                        <div style={{ fontSize:13, color:'#9B7450', marginBottom:16, maxWidth:300, margin:'0 auto 16px' }}>Log bookings from WhatsApp, Instagram, referrals, or walk-ins to track your full revenue here.</div>
+                      <div style={{ fontSize:15, fontWeight:700, color:ink, marginBottom:6 }}>{allJobs.length===0?`No ${terms.toLowerCase()} yet`:`No ${terms.toLowerCase()} match`}</div>
+                      {allJobs.length===0 && <>
+                        <div style={{ fontSize:13, color:'#9B7450', marginBottom:16, maxWidth:300, margin:'0 auto 16px' }}>Clients browsing Tendr will book you here automatically — or log a WhatsApp, Instagram, referral or walk-in booking yourself to track it too.</div>
                         <button onClick={() => setModal('add')} style={{ padding:'10px 22px', borderRadius:10, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:13.5, fontWeight:700, cursor:'pointer' }}>+ Log Your First {term}</button>
                       </>}
                     </div>
                   ) : (
-                    <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                      {visibleOutside.map(o => (
-                        <div key={o._id} style={{ outline:gigConflicts.has(o._id)?'2px solid #DC2626':'none', borderRadius:14 }}>
-                          <OutsideOrderCard order={o} onEdit={setModal} onDelete={deleteOrder} onStatus={setOrderStatus} onRequestPayment={setPayReqModal} vendorName={vendorName} profileUrl={`${window.location.origin}/vendor/${vendorId}`} token={token} serviceType={serviceType} />
+                    <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                      {visibleJobs.map(j => (
+                        <div key={`${j._source}-${j._id||j.id}`}>
+                          <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:5, paddingLeft:2 }}>
+                            <span style={{ fontSize:10, fontWeight:800, padding:'2px 9px', borderRadius:100, textTransform:'uppercase', letterSpacing:'0.04em', background: j._source==='Tendr' ? 'rgba(196,122,46,0.14)' : 'rgba(37,211,102,0.14)', color: j._source==='Tendr' ? gold : '#15803D' }}>
+                              {j._source==='Tendr' ? '🔷 Tendr' : '📲 Outside'}
+                            </span>
+                          </div>
+                          {j._source==='Tendr' ? (
+                            <BookingCard b={j} font={font} vendorName={vendorName} onDispute={bk => { setDisputeModal(bk); setDisputeText(''); setDisputeReason('Payment issue'); }} />
+                          ) : (
+                            <div style={{ outline:gigConflicts.has(j._id)?'2px solid #DC2626':'none', borderRadius:14 }}>
+                              <OutsideOrderCard order={j} onEdit={setModal} onDelete={deleteOrder} onStatus={setOrderStatus} onRequestPayment={setPayReqModal} vendorName={vendorName} profileUrl={`${window.location.origin}/vendor/${vendorId}`} token={token} serviceType={serviceType} />
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
                   )}
-                  {outsideOrders.length>0 && (
+                  {allJobs.length>0 && (
                     <div style={{ display:'flex', gap:20, padding:'14px 18px', borderRadius:14, background:'#fff', border:'1px solid rgba(196,122,46,0.1)', marginTop:16, flexWrap:'wrap' }}>
-                      <div><div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em' }}>Revenue</div><div style={{ fontSize:18, fontWeight:800, color:ink }}>₹{outsideRevenue.toLocaleString('en-IN')}</div></div>
-                      <div><div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em' }}>Collected</div><div style={{ fontSize:18, fontWeight:800, color:'#16A34A' }}>₹{outsideCollected.toLocaleString('en-IN')}</div></div>
-                      <div><div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em' }}>Pending</div><div style={{ fontSize:18, fontWeight:800, color:'#D97706' }}>₹{(outsideRevenue-outsideCollected).toLocaleString('en-IN')}</div></div>
+                      <div><div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em' }}>Revenue</div><div style={{ fontSize:18, fontWeight:800, color:ink }}>₹{(outsideRevenue+tendrRevenue).toLocaleString('en-IN')}</div></div>
+                      <div><div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em' }}>Collected</div><div style={{ fontSize:18, fontWeight:800, color:'#16A34A' }}>₹{(outsideCollected+tendrCollected).toLocaleString('en-IN')}</div></div>
+                      <div><div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em' }}>Pending</div><div style={{ fontSize:18, fontWeight:800, color:'#D97706' }}>₹{Math.max(0,(outsideRevenue+tendrRevenue)-(outsideCollected+tendrCollected)).toLocaleString('en-IN')}</div></div>
                     </div>
                   )}
                 </div>
@@ -3982,7 +3974,7 @@ const [tab, setTab] = useState('home');
                       <div style={{ fontSize:40, marginBottom:12 }}>👥</div>
                       <div style={{ fontSize:15, fontWeight:700, color:ink, marginBottom:8 }}>No clients yet</div>
                       <div style={{ fontSize:13, color:'#9B7450', maxWidth:300, margin:'0 auto 18px' }}>Log outside bookings and your client history will build up automatically.</div>
-                      <button onClick={() => { setWorkSubTab('outside'); setModal('add'); }}
+                      <button onClick={() => { setWorkSubTab('jobs'); setModal('add'); }}
                         style={{ padding:'11px 24px', borderRadius:10, border:'none', background:`linear-gradient(135deg,${gold},${goldLt})`, color:'#fff', fontFamily:font, fontSize:13.5, fontWeight:700, cursor:'pointer' }}>
                         + Log First {term}
                       </button>
