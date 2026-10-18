@@ -185,6 +185,7 @@ const VendorChatList      = lazy(() => import("./pages/vendor/ChatList"));
 const VendorDirectChatPage = lazy(() => import("./pages/vendor/DirectChatPage"));
 const VendorChat          = lazy(() => import("./pages/vendor/Chat"));
 const DirectChat          = lazy(() => import("./pages/guest/DirectChat"));
+const ShortlistReviewPage = lazy(() => import("./pages/shortlist/ShortlistReviewPage"));
 const VendorHowToUse     = lazy(() => import("./pages/vendor/HowToUse"));
 const VendorPricing      = lazy(() => import("./pages/vendor/Pricing"));
 const VendorLogin        = lazy(() => import("./pages/vendor/VendorLogin"));
@@ -488,6 +489,13 @@ const router = createBrowserRouter([
   {
     path: "/chat/direct/:conversationId",
     element: <DirectChat />,
+    errorElement: <ErrorPage />
+  },
+
+  // Shortlist review — Fun Activities / Gift Hampers / Wedding Stationery, before Send to Chat
+  {
+    path: "/my-extras",
+    element: <ShortlistReviewPage />,
     errorElement: <ErrorPage />
   },
 

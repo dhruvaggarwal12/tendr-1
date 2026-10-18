@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import usePlanningResume from "../../hooks/usePlanningResume";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 import Footer from "../../components/Footer";
 import { useChatOverlay } from "../../context/ChatContext";
 import GiftQuiz from "../../components/GiftQuiz";
+import { addToCart as addToGhCart, removeFromCart as removeFromGhCart, clearCart as clearGhCart } from "../../redux/giftHamperCartSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -23,6 +24,7 @@ const GiftHampersCakes = () => {
   usePlanningResume();
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
   const { token } = useSelector(s => s.auth);
   const { openExistingChat } = useChatOverlay();
   const [samples, setSamples] = useState([]);
@@ -202,9 +204,19 @@ const GiftHampersCakes = () => {
     return s + (p ? p.pricePerUnit * qty : 0);
   }, 0);
 
+  // Also mirrors into the shared Redux gift-hamper cart (giftHamperCartSlice) so these
+  // products surface in the shortlist icon shared with Fun Activities/Stationery — kept
+  // alongside the existing local `cartItems` state the in-page checkout modal already uses,
+  // rather than replacing it, so direct checkout still works unchanged.
   const setQty = (id, delta) => setCartItems(prev => {
     const next = { ...prev, [id]: Math.max(0, (prev[id] || 0) + delta) };
-    if (next[id] === 0) delete next[id];
+    if (next[id] === 0) {
+      delete next[id];
+      dispatch(removeFromGhCart(id));
+    } else if (delta > 0) {
+      const product = products.find(p => p._id === id);
+      if (product) dispatch(addToGhCart({ product, quantity: delta }));
+    }
     return next;
   });
 
@@ -218,7 +230,7 @@ const GiftHampersCakes = () => {
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ items, customerName: checkoutForm.name, customerPhone: checkoutForm.phone, deliveryAddress: checkoutForm.address, city: checkoutForm.city, pincode: checkoutForm.pincode }),
       });
-      if (r.ok) { setOrderDone(true); setCartItems({}); }
+      if (r.ok) { setOrderDone(true); setCartItems({}); dispatch(clearGhCart()); }
     } catch {}
     setPlacing(false);
   };
