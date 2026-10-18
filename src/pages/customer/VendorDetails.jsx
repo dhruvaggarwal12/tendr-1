@@ -87,13 +87,6 @@ const VendorDetailsPage = () => {
   // resumes automatically the moment `token` becomes truthy — instead of just dropping the
   // visitor on their profile page after they sign in.
   const pendingActionRef = useRef(null);
-  // Guest name prompt for a vendor-direct chat — only used for a "cold" profile visit (no
-  // isFromListingFlow/hasEventContext), i.e. someone who opened the vendor's own shared link
-  // rather than browsing Tendr itself. That path skips login entirely (sourceType:'vendor-direct'
-  // on the backend — no commission, no admin mediation, vendor replies directly).
-  const [directChatPrompt, setDirectChatPrompt] = useState(false);
-  const [directChatName, setDirectChatName] = useState('');
-  const [directChatLoading, setDirectChatLoading] = useState(false);
   // Artist booking modal state
   const [showArtistModal, setShowArtistModal] = useState(false);
   const [showArtistTC, setShowArtistTC] = useState(false);
@@ -450,6 +443,28 @@ const VendorDetailsPage = () => {
     navigate('/booking/review');
   };
 
+  // A "cold" visit (no isFromListingFlow/hasEventContext) is how a vendor's own shared link
+  // looks — that's the Profile Share lane: vendor-direct chat, no admin mediation, no
+  // commission. Login is required either way now; this just decides which conversation type
+  // gets created once the visitor is authenticated.
+  const isColdProfileVisit = !isFromListingFlow && !hasEventContext;
+
+  const startDirectChatAuthed = async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/conversations/direct`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        body: JSON.stringify({ vendorId: vendor._id, serviceType: vendor.serviceType }),
+      });
+      if (!res.ok) throw new Error('Failed to start chat');
+      const { conversationId } = await res.json();
+      navigate(`/chat/direct/${conversationId}`);
+    } catch (err) {
+      console.error('Direct chat error:', err);
+    }
+  };
+
   const openGigHeroChat = () => {
     // Direct link visitor → go straight to WhatsApp/call, not Tendr platform chat
     if (isDirectLink) {
@@ -458,50 +473,17 @@ const VendorDetailsPage = () => {
       }
       return;
     }
-    if (!token) {
-      if (isFromListingFlow || hasEventContext) { requireAuth(openGigHeroChat); return; }
-      // Cold visit (no Tendr session context) — this is how a vendor's own shared link looks.
-      // Skip login: open the guest/vendor-direct chat instead.
-      setDirectChatName('');
-      setDirectChatPrompt(true);
+    if (isColdProfileVisit) {
+      if (!token) { requireAuth(startDirectChatAuthed); return; }
+      startDirectChatAuthed();
       return;
     }
+    if (!token) { requireAuth(openGigHeroChat); return; }
     if (hasActiveChatSave) { openExistingChatForVendor(vendor._id, vendor, token, openExistingChat, openVendorChat); return; }
     if (isFromListingFlow) { openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType }); return; }
     if (hasEventContext) { dispatch(setBookingType("you-do-it")); openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType }); return; }
     setChatEventForm({ eventType: "", guests: "", date: "", location: "" });
     setChatFormOpen(true);
-  };
-
-  const startDirectChat = async () => {
-    const name = directChatName.trim();
-    if (!name) return;
-    setDirectChatLoading(true);
-    try {
-      let visitorId = localStorage.getItem('tendr:visitor_id');
-      if (!visitorId) {
-        visitorId = `v_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-        localStorage.setItem('tendr:visitor_id', visitorId);
-      }
-      const res = await fetch(`${BASE_URL}/conversations/direct`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          vendorId:    vendor._id,
-          visitorId,
-          visitorName: name,
-          serviceType: vendor.serviceType,
-        }),
-      });
-      if (!res.ok) throw new Error('Failed to start chat');
-      const { conversationId } = await res.json();
-      setDirectChatPrompt(false);
-      navigate(`/chat/direct/${conversationId}`);
-    } catch (err) {
-      console.error('Direct chat error:', err);
-    } finally {
-      setDirectChatLoading(false);
-    }
   };
 
   const onGigProBook = () => {
@@ -526,63 +508,6 @@ const VendorDetailsPage = () => {
     }
   }, [token]);
 
-  const directChatPromptModal = directChatPrompt && (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 9000,
-      background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }} onClick={() => setDirectChatPrompt(false)}>
-      <div style={{
-        background: '#100c07', border: '1px solid rgba(196,155,48,0.3)',
-        borderRadius: 16, padding: '32px 28px', maxWidth: 360, width: '90vw',
-        boxShadow: '0 24px 60px rgba(0,0,0,0.6)',
-      }} onClick={e => e.stopPropagation()}>
-        <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.12em', color: 'rgba(196,155,48,0.7)', textTransform: 'uppercase', marginBottom: 8 }}>
-          Direct Chat
-        </div>
-        <div style={{ fontSize: 20, fontWeight: 700, color: '#f5f0e8', marginBottom: 6, lineHeight: 1.3 }}>
-          Chat with {vendor.name}
-        </div>
-        <div style={{ fontSize: 13, color: 'rgba(245,240,232,0.5)', marginBottom: 22, lineHeight: 1.6 }}>
-          This is a direct conversation — no Tendr account needed. Just tell us your name to get started.
-        </div>
-        <input
-          autoFocus
-          type="text"
-          placeholder="Your name"
-          value={directChatName}
-          onChange={e => setDirectChatName(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && startDirectChat()}
-          style={{
-            width: '100%', boxSizing: 'border-box',
-            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(196,155,48,0.25)',
-            borderRadius: 8, padding: '11px 14px', color: '#f5f0e8', fontSize: 15, outline: 'none',
-            marginBottom: 16,
-          }}
-        />
-        <button
-          onClick={startDirectChat}
-          disabled={!directChatName.trim() || directChatLoading}
-          style={{
-            width: '100%', padding: '12px 0', borderRadius: 8, border: 'none',
-            background: directChatName.trim() ? '#c49b30' : 'rgba(196,155,48,0.25)',
-            color: directChatName.trim() ? '#0c0702' : 'rgba(245,240,232,0.4)',
-            fontWeight: 700, fontSize: 15, cursor: directChatName.trim() ? 'pointer' : 'not-allowed',
-            transition: 'background 0.2s',
-          }}
-        >
-          {directChatLoading ? 'Starting…' : 'Start Chat →'}
-        </button>
-        <div style={{ fontSize: 12, color: 'rgba(245,240,232,0.3)', marginTop: 14, textAlign: 'center', lineHeight: 1.5 }}>
-          Already on Tendr?{' '}
-          <span style={{ color: 'rgba(196,155,48,0.7)', cursor: 'pointer' }} onClick={() => { setDirectChatPrompt(false); setAuthModalOpen(true); }}>
-            Sign in
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-
   if (isGigPro) {
     return (
       <>
@@ -599,7 +524,6 @@ const VendorDetailsPage = () => {
           onChat={openGigHeroChat}
         />
         <AuthModal open={authModalOpen} onClose={() => { setAuthModalOpen(false); pendingActionRef.current = null; }} />
-        {directChatPromptModal}
       </>
     );
   }
@@ -1136,7 +1060,7 @@ const VendorDetailsPage = () => {
                     style={{ flex: 1, padding: "12px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(196,122,46,0.4)", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}
                   >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    {!token ? (isFromListingFlow||hasEventContext ? "Sign In to Chat" : "Chat Now") : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
+                    {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
                   </button>
                 )}
               </div>
@@ -1483,7 +1407,7 @@ const VendorDetailsPage = () => {
                       style={{ flex: 1, padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                      {!token ? (isFromListingFlow||hasEventContext ? "Sign In to Chat" : "Chat Now") : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
+                      {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
                     </button>
                   )}
                 </div>
@@ -2107,7 +2031,6 @@ const VendorDetailsPage = () => {
         onSuccess={() => setAuthModalOpen(false)}
         defaultMode="login"
       />
-      {directChatPromptModal}
     </div>
   );
 };

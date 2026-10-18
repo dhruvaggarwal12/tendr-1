@@ -34,6 +34,52 @@ function DocBubble({ doc }) {
   );
 }
 
+// ── Price + Confirm Order — the lightweight alternative to a full Quote: type a number,
+// confirm, and it logs straight into the Work tab (source:'Tendr Profile') without needing
+// a PDF built first.
+function ConfirmOrderModal({ onConfirm, onClose }) {
+  const [amount, setAmount] = useState("");
+  const [eventType, setEventType] = useState("");
+  const [confirming, setConfirming] = useState(false);
+
+  const confirm = async () => {
+    const amt = Number(amount);
+    if (!amt || amt <= 0 || confirming) return;
+    setConfirming(true);
+    try {
+      await onConfirm({ amount: amt, eventType });
+      onClose();
+    } finally {
+      setConfirming(false);
+    }
+  };
+
+  const inp = { width: "100%", padding: "10px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 14, color: INK, outline: "none", background: "#FFFCF5", boxSizing: "border-box" };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 16, width: "100%", maxWidth: 360, padding: 20, fontFamily: font }}>
+        <div style={{ fontSize: 16, fontWeight: 800, color: INK, marginBottom: 4 }}>Confirm Order</div>
+        <div style={{ fontSize: 12.5, color: "#9B7450", marginBottom: 16 }}>Logs this straight into your Work tab as a confirmed job.</div>
+        <div style={{ marginBottom: 10 }}>
+          <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Price (₹) *</label>
+          <input type="number" min="0" style={inp} value={amount} onChange={e => setAmount(e.target.value)} placeholder="e.g. 25000" autoFocus />
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Event Type (optional)</label>
+          <input style={inp} value={eventType} onChange={e => setEventType(e.target.value)} placeholder="e.g. Wedding" />
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={onClose} style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#6B3A1F", fontFamily: font, fontWeight: 700, cursor: "pointer" }}>Cancel</button>
+          <button onClick={confirm} disabled={!amount || Number(amount) <= 0 || confirming} style={{ flex: 2, padding: "11px", borderRadius: 10, border: "none", background: (!amount || Number(amount) <= 0) ? "rgba(34,197,94,0.3)" : "#22C55E", color: "#fff", fontFamily: font, fontWeight: 800, cursor: (!amount || Number(amount) <= 0) ? "default" : "pointer" }}>
+            {confirming ? "Confirming…" : "✅ Confirm Order"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Document composer — Quote / Invoice / Contract, built and sent straight into the chat ──
 function DocComposer({ vendorName, serviceType, defaultClientName, defaultClientPhone, onSend, onClose }) {
   const [kind, setKind] = useState("quote"); // quote | invoice | contract
@@ -162,6 +208,7 @@ export default function VendorDirectChatPage() {
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState(null);
   const [composerOpen, setComposerOpen] = useState(false);
+  const [confirmOrderOpen, setConfirmOrderOpen] = useState(false);
 
   const socketRef = useRef(null);
   const bottomRef = useRef(null);
@@ -217,6 +264,16 @@ export default function VendorDirectChatPage() {
   const visitorName = convo?.visitorName || "Guest";
   const vendorName = user?.name || "";
 
+  const confirmOrder = async ({ amount, eventType }) => {
+    const res = await fetch(`${BASE_URL}/vendors/me/direct-chats/${conversationId}/confirm-order`, {
+      method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      credentials: "include", body: JSON.stringify({ amount, eventType }),
+    });
+    if (!res.ok) throw new Error("Failed to confirm order");
+    const { message } = await res.json();
+    if (message) setMessages(prev => prev.some(m => m._id === message._id) ? prev : [...prev, message]);
+  };
+
   if (error) {
     return <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font, color: "#9B7450" }}>{error}</div>;
   }
@@ -253,9 +310,14 @@ export default function VendorDirectChatPage() {
 
       <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", padding: "10px 12px", background: "#fff", display: "flex", gap: 8, alignItems: "center" }}>
         <button onClick={() => setComposerOpen(true)} title="Send a Quote / Invoice / Contract" style={{ width: 42, height: 42, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: GOLD, fontSize: 18, cursor: "pointer", flexShrink: 0 }}>📄</button>
+        <button onClick={() => setConfirmOrderOpen(true)} title="Confirm Order" style={{ width: 42, height: 42, borderRadius: 10, border: "1.5px solid rgba(34,197,94,0.35)", background: "rgba(34,197,94,0.08)", color: "#16A34A", fontSize: 18, cursor: "pointer", flexShrink: 0 }}>💰</button>
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && sendMessage()} placeholder="Type a message…" style={{ flex: 1, padding: "11px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.22)", fontFamily: font, fontSize: 14, outline: "none" }} />
         <button onClick={sendMessage} disabled={!input.trim()} style={{ width: 42, height: 42, borderRadius: 10, border: "none", background: input.trim() ? GOLD : "rgba(196,122,46,0.2)", color: "#fff", fontSize: 16, cursor: input.trim() ? "pointer" : "default", flexShrink: 0 }}>↑</button>
       </div>
+
+      {confirmOrderOpen && (
+        <ConfirmOrderModal onConfirm={confirmOrder} onClose={() => setConfirmOrderOpen(false)} />
+      )}
 
       {composerOpen && (
         <DocComposer

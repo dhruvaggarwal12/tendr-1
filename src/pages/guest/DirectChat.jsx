@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { io as socketIO } from "socket.io-client";
+import AuthModal from "../../components/AuthModal";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || BASE_URL;
@@ -17,6 +19,7 @@ function parseDocMessage(content) {
 
 export default function DirectChat() {
   const { conversationId } = useParams();
+  const { token } = useSelector(s => s.auth || {});
 
   const [messages, setMessages]       = useState([]);
   const [convo, setConvo]             = useState(null);
@@ -24,62 +27,53 @@ export default function DirectChat() {
   const [connected, setConnected]     = useState(false);
   const [error, setError]             = useState(null);
   const [sending, setSending]         = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   const socketRef  = useRef(null);
   const bottomRef  = useRef(null);
-  const visitorId  = useRef(null);
 
-  // Derive visitorId from localStorage on mount
+  // Login is required to chat — the account is who's talking to the vendor. Open the modal
+  // whenever there's no token; it closes itself once sign-in succeeds, and the effects below
+  // pick up the conversation as soon as `token` goes truthy.
   useEffect(() => {
-    visitorId.current = localStorage.getItem("tendr:visitor_id");
-  }, []);
+    setAuthModalOpen(!token);
+  }, [token]);
 
   // Load existing messages from REST
   useEffect(() => {
-    if (!visitorId.current) return;
-    fetch(`${BASE_URL}/conversations/direct/${conversationId}/messages?visitorId=${encodeURIComponent(visitorId.current)}`)
-      .then(r => {
-        if (!r.ok) throw new Error("Not found");
-        return r.json();
-      })
+    if (!token) return;
+    fetch(`${BASE_URL}/conversations/direct/${conversationId}/messages`, {
+      headers: { Authorization: `Bearer ${token}` }, credentials: "include",
+    })
+      .then(r => { if (!r.ok) throw new Error("Not found"); return r.json(); })
       .then(({ messages: msgs, conversation }) => {
         setMessages(msgs || []);
         setConvo(conversation || null);
       })
-      .catch(() => setError("Unable to load this conversation. The link may have expired or you're on a different device."));
-  }, [conversationId]);
+      .catch(() => setError("Unable to load this conversation. The link may have expired, or it belongs to a different account."));
+  }, [conversationId, token]);
 
-  // Connect to socket as guest
+  // Connect to socket as the logged-in customer
   useEffect(() => {
-    if (!visitorId.current) return;
+    if (!token) return;
 
-    const socket = socketIO(SOCKET_URL, {
-      transports: ["websocket"],
-      query: { visitorId: visitorId.current },
-      // No auth.token — this is the guest path
-    });
+    const socket = socketIO(SOCKET_URL, { transports: ["websocket"], auth: { token } });
     socketRef.current = socket;
 
-    socket.on("connect", () => {
-      socket.emit("join_direct_conversation", { conversationId });
-    });
-
-    socket.on("direct_joined", () => setConnected(true));
+    socket.on("connect", () => setConnected(true));
 
     socket.on("new_message", (msg) => {
+      if (String(msg.conversationId) !== String(conversationId)) return;
       setMessages(prev => {
-        // Deduplicate by _id
         if (prev.some(m => m._id === msg._id)) return prev;
         return [...prev, msg];
       });
     });
 
-    socket.on("direct_error", ({ message: msg }) => setError(msg));
-
     socket.on("disconnect", () => setConnected(false));
 
     return () => socket.disconnect();
-  }, [conversationId]);
+  }, [conversationId, token]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -88,18 +82,34 @@ export default function DirectChat() {
 
   const sendMessage = useCallback(async () => {
     const content = input.trim();
-    if (!content || sending || !connected) return;
+    if (!content || sending) return;
     setSending(true);
     setInput("");
-    socketRef.current?.emit("send_direct_message", { conversationId, content });
-    // Optimistic local add (will be deduplicated when socket echoes back)
+    if (socketRef.current && connected) {
+      socketRef.current.emit("send_customer_direct_message", { conversationId, content });
+    } else {
+      await fetch(`${BASE_URL}/messages/${conversationId}/message`, {
+        method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        credentials: "include", body: JSON.stringify({ sender: "user", content }),
+      }).catch(() => {});
+    }
     const optimistic = { _id: `opt_${Date.now()}`, sender: "user", content, timestamp: new Date().toISOString() };
     setMessages(prev => [...prev, optimistic]);
     setSending(false);
-  }, [input, sending, connected, conversationId]);
+  }, [input, sending, connected, conversationId, token]);
 
   const vendorName = convo?.vendorName || "Vendor";
-  const visitorName = convo?.visitorName || "You";
+
+  if (!token) {
+    return (
+      <div style={{ minHeight: "100dvh", background: BG, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans',sans-serif" }}>
+        <div style={{ textAlign: "center", padding: "0 24px", maxWidth: 400, color: "rgba(245,240,232,0.5)", fontSize: 14 }}>
+          Sign in to continue this chat.
+        </div>
+        <AuthModal open={authModalOpen} onClose={() => {}} defaultMode="login" />
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -219,12 +229,12 @@ export default function DirectChat() {
         />
         <button
           onClick={sendMessage}
-          disabled={!input.trim() || !connected || sending}
+          disabled={!input.trim() || sending}
           style={{
             width: 42, height: 42, borderRadius: 10, border: "none",
-            background: input.trim() && connected ? GOLD : "rgba(196,155,48,0.2)",
-            color: input.trim() && connected ? INK : "rgba(196,155,48,0.4)",
-            fontSize: 18, cursor: input.trim() && connected ? "pointer" : "not-allowed",
+            background: input.trim() ? GOLD : "rgba(196,155,48,0.2)",
+            color: input.trim() ? INK : "rgba(196,155,48,0.4)",
+            fontSize: 18, cursor: input.trim() ? "pointer" : "not-allowed",
             display: "flex", alignItems: "center", justifyContent: "center",
             flexShrink: 0, transition: "background 0.2s",
           }}
