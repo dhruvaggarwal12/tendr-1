@@ -23,7 +23,7 @@ function TendrBookingsTab({ token }) {
 
   useEffect(() => {
     if (!token) return;
-    fetch(`${BASE_URL}/vendor/chats`, {
+    fetch(`${BASE_URL}/conversations/vendor/mine`, {
       headers: { Authorization: `Bearer ${token}` },
       credentials: 'include',
     })

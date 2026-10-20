@@ -214,8 +214,11 @@ export function buildContractHTML(c, vendorName, serviceType, theme) {
     `3. RESCHEDULING: One free reschedule with ≥10 days notice, subject to availability. Subsequent reschedules: ₹500 fee per change.`,
     `4. SERVICES: As described in this agreement. Additional services on the day will be charged separately at mutually agreed rates.`,
     `5. SETUP ACCESS: Client to ensure venue access and power supply at least 2 hours before event start time.`,
-    `6. LIABILITY: ${escapeHtml(vendorName)} is not liable for delays due to force majeure, power failures, or venue access issues beyond their control.`,
-    `7. PORTFOLIO: Unless agreed otherwise in writing, ${escapeHtml(vendorName)} may use event media for portfolio and promotional purposes.`,
+    // Not escaped here — the whole defaultTerms string goes through escapeHtml() once,
+    // below, along with customTerms. Escaping vendorName here too would double-escape it
+    // (e.g. "&" becoming "&amp;amp;") whenever a vendor's name has a special character.
+    `6. LIABILITY: ${vendorName} is not liable for delays due to force majeure, power failures, or venue access issues beyond their control.`,
+    `7. PORTFOLIO: Unless agreed otherwise in writing, ${vendorName} may use event media for portfolio and promotional purposes.`,
     `8. GOVERNING LAW: This agreement is governed by Indian law. Disputes to be resolved amicably first; jurisdiction: Delhi courts.`,
   ].join('\n\n');
   const terms = c.customTerms || defaultTerms;

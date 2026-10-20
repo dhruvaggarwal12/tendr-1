@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { selectFunCartItems, removeActivity, setFunConfirmed } from "../../redux/funActivitiesCartSlice";
-import { selectCartItems as selectGhCartItems, removeFromCart as removeFromGhCart, setGhConfirmed } from "../../redux/giftHamperCartSlice";
+import { selectFunCartItems, removeActivity, setFunConfirmed, clearFunCart } from "../../redux/funActivitiesCartSlice";
+import { selectCartItems as selectGhCartItems, removeFromCart as removeFromGhCart, setGhConfirmed, clearCart as clearGhCart } from "../../redux/giftHamperCartSlice";
 import { useStationeryCart } from "../../context/StationeryCartContext";
 import { setStBooking } from "../../redux/stationeryBookingSlice";
 import { useChatOverlay } from "../../context/ChatContext";
@@ -39,6 +39,7 @@ export default function ShortlistReviewPage() {
   const [sending, setSending] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [done, setDone] = useState(false);
+  const [sendError, setSendError] = useState("");
 
   if (steps.length === 0) {
     return (
@@ -82,15 +83,24 @@ export default function ShortlistReviewPage() {
     else removeFromStCart(item.item);
   };
 
+  const buildItems = (c, its) => its.map(it => ({
+    name: c === "stationery" ? (it.item?.name || "Item") : it.name,
+    qty: c === "gift-hamper" ? (it.quantity || 1) : (c === "stationery" ? (it.quantity || 1) : 1),
+    price: itemPrice(c, it) || 0,
+  }));
+
   const sendToChat = async () => {
     if (!token) { setAuthModalOpen(true); return; }
     setSending(true);
-    try {
-      for (const c of steps) {
-        const f = forms[c] || {};
-        const its = itemsByCategory[c];
-        const message = `${CAT_META[c].emoji} ${CAT_META[c].label}: ${its.map(it => itemLabel(c, it)).join(", ")}`;
-        await fetch(`${BASE_URL}/conversations/baat-karo`, {
+    setSendError("");
+    const succeeded = [];
+    const failed = [];
+    for (const c of steps) {
+      const f = forms[c] || {};
+      const its = itemsByCategory[c];
+      const message = `${CAT_META[c].emoji} ${CAT_META[c].label}: ${its.map(it => itemLabel(c, it)).join(", ")}`;
+      try {
+        const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           credentials: "include",
@@ -98,22 +108,36 @@ export default function ShortlistReviewPage() {
             message,
             bookingCategory: c,
             eventDetails: { date: f.date || "", city: f.location || "", notes: f.notes || "" },
+            items: buildItems(c, its),
           }),
         });
+        if (res.ok) succeeded.push(c); else failed.push(c);
+      } catch (e) {
+        console.error(`Send to chat failed for ${c}:`, e);
+        failed.push(c);
       }
-      if (funItems.length > 0) dispatch(setFunConfirmed(true));
-      if (ghItems.length > 0) dispatch(setGhConfirmed(true));
-      if (stCart.length > 0) {
-        dispatch(setStBooking({ form: { ...(forms.stationery || {}) }, cartSnapshot: stCart }));
-        clearStCart();
-      }
-      openAllBookingsChat();
-      setDone(true);
-    } catch (e) {
-      console.error("Send to chat failed:", e);
-    } finally {
-      setSending(false);
     }
+
+    // Only clear/confirm what actually went through — a failed category stays in the
+    // cart so nothing silently disappears, and so it can be resent instead of resurfacing
+    // as a stale duplicate of something that already succeeded.
+    if (succeeded.includes("fun-activity")) { dispatch(setFunConfirmed(true)); dispatch(clearFunCart()); }
+    if (succeeded.includes("gift-hamper")) { dispatch(setGhConfirmed(true)); dispatch(clearGhCart()); }
+    if (succeeded.includes("stationery")) {
+      dispatch(setStBooking({ form: { ...(forms.stationery || {}) }, cartSnapshot: stCart }));
+      clearStCart();
+    }
+
+    setSending(false);
+    if (failed.length === steps.length) {
+      setSendError("Couldn't send any of this — check your connection and try again.");
+      return;
+    }
+    if (failed.length > 0) {
+      setSendError(`${failed.map(c => CAT_META[c].label).join(", ")} couldn't be sent — it's still in your shortlist so you can try again. The rest went through.`);
+    }
+    if (succeeded.length > 0) openAllBookingsChat();
+    setDone(true);
   };
 
   const inp = { width: "100%", padding: "11px 13px", borderRadius: 10, border: "1.5px solid rgba(14,165,233,0.25)", fontFamily: F, fontSize: 14, color: INK, outline: "none", background: "#F0F9FF", boxSizing: "border-box" };
@@ -123,9 +147,11 @@ export default function ShortlistReviewPage() {
     return (
       <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: F, textAlign: "center", padding: 24 }}>
         <div>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 8 }}>Sent to chat!</div>
-          <div style={{ fontSize: 13, color: "#64748B", marginBottom: 24, maxWidth: 320 }}>Tendr will confirm pricing with you in the chat you just opened.</div>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>{sendError ? "⚠️" : "🎉"}</div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: INK, marginBottom: 8 }}>{sendError ? "Partly sent" : "Sent to chat!"}</div>
+          <div style={{ fontSize: 13, color: sendError ? "#B45309" : "#64748B", marginBottom: 24, maxWidth: 320 }}>
+            {sendError || "Tendr will confirm pricing with you in the chat you just opened."}
+          </div>
           <button onClick={() => navigate("/")} style={{ padding: "12px 24px", borderRadius: 10, border: "none", background: GOLD, color: "#fff", fontFamily: F, fontWeight: 800, cursor: "pointer" }}>Done</button>
         </div>
       </div>
@@ -193,6 +219,12 @@ export default function ShortlistReviewPage() {
             <textarea style={{ ...inp, height: 70, resize: "vertical" }} value={form.notes} onChange={e => setField("notes", e.target.value)} placeholder="Anything else Tendr should know…" />
           </div>
         </div>
+
+        {sendError && (
+          <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 10, background: "#FEF3C7", border: "1px solid #FCD34D", color: "#92400E", fontSize: 12.5, lineHeight: 1.5 }}>
+            ⚠️ {sendError}
+          </div>
+        )}
 
         {/* Footer nav */}
         <div style={{ display: "flex", gap: 10, marginTop: 24 }}>

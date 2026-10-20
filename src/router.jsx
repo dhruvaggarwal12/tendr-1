@@ -657,11 +657,6 @@ const router = createBrowserRouter([
   },
 
   {
-    path: "*",
-    element: <NotFound />, 
-    errorElement: <ErrorPage /> 
-  },
-  {
     path: '/budget-picker',
     element: <BudgetPicker />,
     errorElement: <ErrorPage />

@@ -7,7 +7,7 @@ import SEO from "../../components/SEO";
 import Footer from "../../components/Footer";
 import { useChatOverlay } from "../../context/ChatContext";
 import GiftQuiz from "../../components/GiftQuiz";
-import { addToCart as addToGhCart, removeFromCart as removeFromGhCart, clearCart as clearGhCart } from "../../redux/giftHamperCartSlice";
+import { addToCart as addToGhCart, removeFromCart as removeFromGhCart, clearCart as clearGhCart, updateQuantity as updateGhQuantity, selectCartItems as selectGhCartItems } from "../../redux/giftHamperCartSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -26,6 +26,7 @@ const GiftHampersCakes = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const { token } = useSelector(s => s.auth);
+  const ghReduxItems = useSelector(selectGhCartItems);
   const { openExistingChat } = useChatOverlay();
   const [samples, setSamples] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -209,13 +210,18 @@ const GiftHampersCakes = () => {
   // alongside the existing local `cartItems` state the in-page checkout modal already uses,
   // rather than replacing it, so direct checkout still works unchanged.
   const setQty = (id, delta) => setCartItems(prev => {
-    const next = { ...prev, [id]: Math.max(0, (prev[id] || 0) + delta) };
-    if (next[id] === 0) {
+    const nextQty = Math.max(0, (prev[id] || 0) + delta);
+    const next = { ...prev, [id]: nextQty };
+    if (nextQty === 0) {
       delete next[id];
       dispatch(removeFromGhCart(id));
+    } else if (ghReduxItems.some(i => i.productId === id)) {
+      // Already tracked in the shared cart — set the absolute quantity so a decrement
+      // (or any out-of-sync local state) can't leave the shortlist badge/drawer stale.
+      dispatch(updateGhQuantity({ productId: id, quantity: nextQty }));
     } else if (delta > 0) {
       const product = products.find(p => p._id === id);
-      if (product) dispatch(addToGhCart({ product, quantity: delta }));
+      if (product) dispatch(addToGhCart({ product, quantity: nextQty }));
     }
     return next;
   });

@@ -41,14 +41,18 @@ function ConfirmOrderModal({ onConfirm, onClose }) {
   const [amount, setAmount] = useState("");
   const [eventType, setEventType] = useState("");
   const [confirming, setConfirming] = useState(false);
+  const [error, setError] = useState("");
 
   const confirm = async () => {
     const amt = Number(amount);
-    if (!amt || amt <= 0 || confirming) return;
+    if (!amt || amt <= 0 || !Number.isFinite(amt) || confirming) return;
     setConfirming(true);
+    setError("");
     try {
       await onConfirm({ amount: amt, eventType });
       onClose();
+    } catch (e) {
+      setError("Couldn't confirm the order — check your connection and try again.");
     } finally {
       setConfirming(false);
     }
@@ -69,6 +73,7 @@ function ConfirmOrderModal({ onConfirm, onClose }) {
           <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Event Type (optional)</label>
           <input style={inp} value={eventType} onChange={e => setEventType(e.target.value)} placeholder="e.g. Wedding" />
         </div>
+        {error && <div style={{ fontSize: 12, color: "#DC2626", marginBottom: 10 }}>{error}</div>}
         <div style={{ display: "flex", gap: 8 }}>
           <button onClick={onClose} style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#6B3A1F", fontFamily: font, fontWeight: 700, cursor: "pointer" }}>Cancel</button>
           <button onClick={confirm} disabled={!amount || Number(amount) <= 0 || confirming} style={{ flex: 2, padding: "11px", borderRadius: 10, border: "none", background: (!amount || Number(amount) <= 0) ? "rgba(34,197,94,0.3)" : "#22C55E", color: "#fff", fontFamily: font, fontWeight: 800, cursor: (!amount || Number(amount) <= 0) ? "default" : "pointer" }}>

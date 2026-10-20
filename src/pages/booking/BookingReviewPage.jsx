@@ -676,6 +676,16 @@ const BookingReviewPage = () => {
   const allConfirmed = isSmartPlan ? (smartPlanSlots.length > 0) : vendorEntries.every(([, v]) => isConfirmed(v));
   const anyPriceUnset = isSmartPlan ? false : vendorEntries.some(([, v]) => getPrice(v) === null);
 
+  // My Order (Fun Activities / Gift Hampers / Stationery / vendor-enquiry shortlist, priced
+  // by admin in chat) — only a plan admin has actually finalized counts toward what's charged.
+  // A typed-but-not-yet-finalized quotedPrice is shown in the list below as "Price pending",
+  // same as before, but never added to the real total or the payment amount.
+  const myOrderFinalizedPlans = myOrderPlans.filter(p => p.priceFinalized);
+  const myOrderFinalizedTotal = myOrderFinalizedPlans.reduce((s, p) => s + (p.quotedPrice || 0), 0);
+  // Pure My Order checkout: nothing from the traditional vendor/Fun-Activities booking flow
+  // is in play, so Proceed should go straight to real payment instead of the WhatsApp hand-off.
+  const isPureMyOrderCheckout = myOrderFinalizedTotal > 0 && confirmedTotal === 0 && faTotal === 0 && !isSmartPlan;
+
   // Platform fee: ₹200 flat for Smart Plan; tiered for regular bookings
   const topRatedCount = vendorEntries.filter(([, v]) => v?.isTopRated).length;
   const normalCount   = vendorEntries.filter(([, v]) => !v?.isTopRated).length;
@@ -1288,10 +1298,20 @@ const BookingReviewPage = () => {
                             ? plan.vendorName
                             : (BOOKING_LABELS[plan.bookingType] || plan.bookingType)}
                         </span>
-                        <span style={{ fontSize: 14, fontWeight: 800, color: plan.quotedPrice > 0 ? "#15803d" : "#9B7450", fontStyle: plan.quotedPrice > 0 ? "normal" : "italic" }}>
-                          {plan.quotedPrice > 0 ? `₹${plan.quotedPrice.toLocaleString("en-IN")}` : "Price pending"}
+                        <span style={{ fontSize: 14, fontWeight: 800, color: plan.priceFinalized ? "#15803d" : "#9B7450", fontStyle: plan.priceFinalized ? "normal" : "italic" }}>
+                          {plan.priceFinalized ? `✓ ₹${plan.quotedPrice.toLocaleString("en-IN")}` : plan.quotedPrice > 0 ? `₹${plan.quotedPrice.toLocaleString("en-IN")} (not yet finalized)` : "Price pending"}
                         </span>
                       </div>
+                      {Array.isArray(plan.items) && plan.items.length > 0 && (
+                        <div style={{ marginTop: 6, paddingLeft: 2, display: "flex", flexDirection: "column", gap: 3 }}>
+                          {plan.items.map((it, ii) => (
+                            <div key={ii} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#9B7450" }}>
+                              <span>{it.name}{it.qty > 1 ? ` ×${it.qty}` : ""}</span>
+                              {it.price > 0 && <span>₹{it.price.toLocaleString("en-IN")}</span>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ));
                 })()}
@@ -1308,10 +1328,10 @@ const BookingReviewPage = () => {
                     </div>
                   </div>
                 )}
-                {myOrderPlans.filter(p => p.quotedPrice > 0).length > 1 && (
+                {myOrderFinalizedPlans.length > 0 && (
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 800, color: "#C47A2E", borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 10, marginTop: 10 }}>
                     <span>My Order Total</span>
-                    <span>₹{myOrderPlans.reduce((s, p) => s + (p.quotedPrice || 0), 0).toLocaleString("en-IN")}</span>
+                    <span>₹{myOrderFinalizedTotal.toLocaleString("en-IN")}</span>
                   </div>
                 )}
               </div>
@@ -1347,16 +1367,16 @@ const BookingReviewPage = () => {
                   return (
                     <div key={plan._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14, color: "#5a3a1a" }}>
                       <span style={{ fontWeight: 500 }}>{planLabel}</span>
-                      <span style={{ fontWeight: 600, color: plan.quotedPrice > 0 ? "#2C1A0E" : "#bbb", fontStyle: plan.quotedPrice > 0 ? "normal" : "italic" }}>
-                        {plan.quotedPrice > 0 ? formatINR(plan.quotedPrice) : "Yet to be updated"}
+                      <span style={{ fontWeight: 600, color: plan.priceFinalized ? "#2C1A0E" : "#bbb", fontStyle: plan.priceFinalized ? "normal" : "italic" }}>
+                        {plan.priceFinalized ? formatINR(plan.quotedPrice) : "Yet to be updated"}
                       </span>
                     </div>
                   );
                 })}
 
                 {/* Referral discount line */}
-                {appliedCode && (confirmedTotal + faTotal) > 0 && (() => {
-                  const { discount } = applyDiscount(confirmedTotal + faTotal);
+                {appliedCode && (confirmedTotal + faTotal + myOrderFinalizedTotal) > 0 && (() => {
+                  const { discount } = applyDiscount(confirmedTotal + faTotal + myOrderFinalizedTotal);
                   return (
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14, color: "#15803d" }}>
                       <span style={{ fontWeight: 600 }}>🎁 Referral Discount ({DISCOUNT_PERCENT}%)</span>
@@ -1381,9 +1401,17 @@ const BookingReviewPage = () => {
                   </div>
                 )}
 
+                {/* My Order subtotal */}
+                {myOrderFinalizedTotal > 0 && (confirmedTotal > 0 || faTotal > 0) && (
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#9B7450", marginBottom: 4 }}>
+                    <span>My Order subtotal</span>
+                    <span style={{ fontWeight: 600 }}>₹{myOrderFinalizedTotal.toLocaleString("en-IN")}</span>
+                  </div>
+                )}
+
                 {/* Tax + fee breakdown */}
                 {(() => {
-                  const rawSum = confirmedTotal + faTotal;
+                  const rawSum = confirmedTotal + faTotal + myOrderFinalizedTotal;
                   if (rawSum <= 0) return null;
                   const discountedSum = appliedCode ? applyDiscount(rawSum).finalTotal : rawSum;
                   const gstAmount = Math.round(discountedSum * 0.18);
@@ -1561,122 +1589,6 @@ const BookingReviewPage = () => {
                 <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "6px 0 0" }}>Please agree to the terms to continue</p>
               )}
 
-              {/* Confirmation popup — MOVED TO ROOT LEVEL (see below) */}
-              {false && (
-                <>
-                  <div onClick={() => setShowConfirmPopup(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 999, backdropFilter: "blur(3px)" }} />
-                  <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 1000, background: "#FFFCF5", borderRadius: 20, padding: "32px 28px", width: "90%", maxWidth: 420, boxShadow: "0 20px 60px rgba(139,69,19,0.2)", fontFamily: "'Outfit', sans-serif", textAlign: "center" }}>
-                    <div style={{ fontSize: 40, marginBottom: 14 }}>🎉</div>
-                    <h2 style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.01em" }}>Ready to confirm?</h2>
-                    <p style={{ fontSize: 14, color: "#9B7450", lineHeight: 1.65, margin: "0 0 24px" }}>
-                      Do you want to complete this booking, or would you like to add more vendors first?
-                    </p>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                      <button
-                        disabled={saving}
-                        onClick={() => {
-                          // Build WhatsApp message synchronously from already-loaded state
-                          const vendorFaTotal = confirmedTotal + faTotal;
-                          const discTotal = appliedCode ? applyDiscount(vendorFaTotal).finalTotal : vendorFaTotal;
-                          const finalAmount = discTotal + Math.round(discTotal * 0.18) + effectivePlatformFee;
-                          const pinnedLines = (() => {
-                            const allPinned = [];
-                            Object.values(pinnedMap).forEach(msgs => {
-                              msgs.forEach(text => { if (text) allPinned.push(`  • ${text}`); });
-                            });
-                            return allPinned.length > 0 ? ["", "*Pinned Notes:*", ...allPinned] : [];
-                          })();
-                          const lines = [
-                            `*New Booking — ${formData.eventName || formData.eventType || "Event"}*`,
-                            "",
-                            `*Event:* ${formData.eventType || "—"}`,
-                            formData.date     ? `*Date:* ${formData.date}` : null,
-                            formData.location ? `*Location:* ${formData.location}` : null,
-                            formData.guests   ? `*Guests:* ${formData.guests}` : null,
-                            ...(isSmartPlan && smartPlanSlots.length > 0 ? [
-                              "",
-                              "*Smart Plan Breakdown:*",
-                              ...smartPlanSlots.map(s => `• ${s.category}: Rs.${Number(s.estimatedCost || 0).toLocaleString("en-IN")}${s.vendorName ? ` (${s.vendorName})` : ""}`),
-                            ] : vendorEntries.length > 0 ? [
-                              "",
-                              "*Finalised Vendors:*",
-                              ...vendorEntries.map(([cat, v]) =>
-                                `• ${cat}: ${v?.name || "Tendr"} — ${prices[cat] !== null ? "Rs." + Number(prices[cat]).toLocaleString("en-IN") : "TBC"}`
-                              ),
-                            ] : []),
-                            ...(selectedPerformer ? ["", `*Live Performance:* ${selectedPerformer.emoji} ${selectedPerformer.label} (Tendr will recommend the best option)`] : []),
-                            ...pinnedLines,
-                            ...(faItems.length > 0 ? [
-                              "",
-                              "*Fun Activities:*",
-                              ...faItems.filter(i => i.form).map(i => [
-                                `• ${i.name} — Rs.${Number(i.totalPrice || 0).toLocaleString("en-IN")}`,
-                                `   Date: ${i.form.date} · Time: ${i.form.time}`,
-                                `   Address: ${i.form.address}`,
-                                `   Guests: ${i.form.guests} · ${i.form.eventType}`,
-                                i.form.name ? `   Contact: ${i.form.name} · ${i.form.phone}` : null,
-                                i.form.notes ? `   Notes: ${i.form.notes}` : null,
-                              ].filter(Boolean).join("\n")),
-                            ] : []),
-                            "",
-                            effectivePlatformFee > 0 ? `*Platform Fee:* Rs.${Number(effectivePlatformFee).toLocaleString("en-IN")}` : null,
-                            appliedCode ? `*Referral Code:* ${appliedCode}` : null,
-                            `*Grand Total (incl. 18% GST):* Rs.${Number(finalAmount).toLocaleString("en-IN")}`,
-                            "",
-                            currentUser?.name ? `*Customer:* ${currentUser.name}` : null,
-                            currentUser?.phoneNumber || currentUser?.phone ? `*Phone:* ${currentUser.phoneNumber || currentUser.phone}` : null,
-                          ].filter(Boolean).join("\n");
-
-                          // Open WhatsApp immediately (synchronous — avoids popup blocker)
-                          window.open(`https://wa.me/919211668427?text=${encodeURIComponent(lines)}`, "_blank");
-
-                          // Fire-and-forget background saves
-                          setSaving(true);
-                          saveEventPlan().then(eventPlanId => {
-                            if (appliedCode && token && eventPlanId) {
-                              fetch(`${BASE_URL}/referrals/apply`, {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                                credentials: "include",
-                                body: JSON.stringify({ code: appliedCode, orderId: eventPlanId }),
-                              }).catch(() => {});
-                            }
-                          }).catch(() => {});
-
-                          vendorEntries.forEach(([, v]) => {
-                            if (v?._id) localStorage.setItem(`tendr:booking-submitted:${v._id}`, "1");
-                          });
-
-                          sessionStorage.removeItem("wr_appliedCode");
-                          sessionStorage.removeItem("wr_referralInput");
-                          sessionStorage.removeItem("wr_notes");
-                          sessionStorage.removeItem("fa_booking");
-                          dispatch(resetEventPlanning());
-                          dispatch(clearFunCart());
-                          setSaving(false);
-                          setShowConfirmPopup(false);
-                          navigate("/dashboard", { replace: true });
-                        }}
-                        style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}
-                      >
-                        {saving ? "Saving…" : "Confirm & Send to Tendr →"}
-                      </button>
-                      <button
-                        onClick={() => { setShowConfirmPopup(false); navigate("/listings"); }}
-                        style={{ width: "100%", padding: "13px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
-                      >
-                        Add More Vendors
-                      </button>
-                      <button
-                        onClick={() => { setShowConfirmPopup(false); navigate("/"); }}
-                        style={{ width: "100%", padding: "10px", borderRadius: 12, border: "none", background: "transparent", color: "#9B7450", fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
-                      >
-                        Return to Home
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
             </div>
           </div>
         </div>
@@ -1714,8 +1626,8 @@ const BookingReviewPage = () => {
       {/* Mobile-only fixed checkout bar */}
       <div className="booking-mobile-cta" style={{ flexDirection: "column", gap: 0, padding: 0, paddingBottom: 0 }}>
         {/* Price breakdown — clean card design */}
-        {(confirmedTotal + faTotal) > 0 && (() => {
-          const raw = confirmedTotal + faTotal;
+        {(confirmedTotal + faTotal + myOrderFinalizedTotal) > 0 && (() => {
+          const raw = confirmedTotal + faTotal + myOrderFinalizedTotal;
           const disc = appliedCode ? applyDiscount(raw).finalTotal : raw;
           const gst = Math.round(disc * 0.18);
           const total = disc + gst + effectivePlatformFee;
@@ -1727,6 +1639,7 @@ const BookingReviewPage = () => {
                 {[
                   ...vendorEntries.filter(([cat]) => prices[cat] !== null).map(([cat, v]) => ({ label: v?.name || cat, val: formatINR(prices[cat]) })),
                   ...(faTotal > 0 ? [{ label: "Activities", val: formatINR(faTotal) }] : []),
+                  ...(myOrderFinalizedTotal > 0 ? [{ label: "My Order", val: formatINR(myOrderFinalizedTotal) }] : []),
                   { label: "GST 18%", val: `+${formatINR(gst)}` },
                   { label: appliedCode ? "Platform" : "Platform", val: appliedCode ? "FREE" : `+₹${platformFee}` },
                 ].map(({ label, val }, i, arr) => (
@@ -1783,13 +1696,30 @@ const BookingReviewPage = () => {
             </div>
             <h2 style={{ fontSize: 19, fontWeight: 800, color: "#1C0A04", margin: "0 0 8px" }}>Ready to confirm?</h2>
             <p style={{ fontSize: 13, color: "#7A5A3A", lineHeight: 1.65, margin: "0 0 22px" }}>
-              We'll open WhatsApp with your full booking details. The Tendr team will coordinate everything from there.
+              {isPureMyOrderCheckout
+                ? "You'll be taken to secure payment to complete this booking."
+                : "We'll open WhatsApp with your full booking details. The Tendr team will coordinate everything from there."}
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
               <button disabled={saving} onClick={() => {
-                const vendorFaTotal = confirmedTotal + faTotal;
+                const vendorFaTotal = confirmedTotal + faTotal + myOrderFinalizedTotal;
                 const discTotal = appliedCode ? applyDiscount(vendorFaTotal).finalTotal : vendorFaTotal;
                 const finalAmount = discTotal + Math.round(discTotal * 0.18) + effectivePlatformFee;
+
+                // Pure My Order checkout (shortlist categories finalized by admin in chat,
+                // nothing from the traditional vendor/Fun-Activities flow) — go straight to
+                // real payment instead of the WhatsApp hand-off.
+                if (isPureMyOrderCheckout) {
+                  setShowConfirmPopup(false);
+                  navigate("/booking/payment", {
+                    state: {
+                      eventPlanIds: myOrderFinalizedPlans.map(p => p._id),
+                      totalAmount: finalAmount,
+                    },
+                  });
+                  return;
+                }
+
                 const pinnedLines = (() => {
                   const allPinned = [];
                   Object.values(pinnedMap).forEach(msgs => {
@@ -1817,6 +1747,11 @@ const BookingReviewPage = () => {
                   ] : []),
                   ...(selectedPerformer ? ["", `*Live Performance:* ${selectedPerformer.emoji} ${selectedPerformer.label} (Tendr will recommend the best option)`] : []),
                   ...pinnedLines,
+                  ...(myOrderFinalizedPlans.length > 0 ? [
+                    "",
+                    "*My Order:*",
+                    ...myOrderFinalizedPlans.map(p => `• ${p.bookingType === 'vendor-enquiry' && p.vendorName ? p.vendorName : p.bookingType} — Rs.${Number(p.quotedPrice || 0).toLocaleString("en-IN")}`),
+                  ] : []),
                   ...(faItems.length > 0 ? [
                     "",
                     "*Fun Activities:*",
@@ -1856,7 +1791,7 @@ const BookingReviewPage = () => {
                 navigate("/dashboard", { replace: true });
               }}
                 style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.35)", touchAction: "manipulation" }}>
-                {saving ? "Saving…" : "Confirm & Send to Tendr →"}
+                {saving ? "Saving…" : isPureMyOrderCheckout ? "Proceed to Payment →" : "Confirm & Send to Tendr →"}
               </button>
               <button onClick={() => { setShowConfirmPopup(false); navigate("/listings"); }}
                 style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>

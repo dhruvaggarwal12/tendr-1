@@ -2078,6 +2078,16 @@ export default function VendorDashboard() {
   const vendorName = user?.name || 'Vendor';
   const initial = vendorName.charAt(0).toUpperCase();
 
+  // No route-level guard exists for /vendor/dashboard — without this, a logged-out
+  // visitor (or a logged-in customer holding a consumer token, not a vendor one) gets
+  // the full dashboard shell rendered, with every data fetch below just silently
+  // no-op'ing instead of redirecting to login. jwt.vendorId (decoded straight from the
+  // token, not the possibly-stale shared `user` object) is what actually proves this is
+  // a vendor session.
+  useEffect(() => {
+    if (!token || !jwt.vendorId) navigate('/vendor/login', { replace: true });
+  }, [token, jwt.vendorId]); // eslint-disable-line
+
 const [tab, setTab] = useState('home');
   const [openGroup, setOpenGroup] = useState('EVENTS');
   const [profileOpen, setProfileOpen] = useState(false);
@@ -5306,7 +5316,7 @@ const [tab, setTab] = useState('home');
                         {toolLbl('PDF Template')}
                         <ThemeSwatchPicker value={toolInvoiceTheme} onChange={setToolInvoiceTheme} />
                       </div>
-                      <DocActions sectionKey="invoice" accent={gold} disabled={!toolInvoice.clientName.trim()}
+                      <DocActions sectionKey="invoice" accent={gold} disabled={!toolInvoice.clientName.trim() || !(invTotal > 0)}
                         make={(share, onDone) => generateStandaloneInvoicePDF(toolInvoice, vendorName, toolInvoiceTheme, { share, onDone })} />
                     </div>
                   </div>
@@ -5349,7 +5359,7 @@ const [tab, setTab] = useState('home');
                         {toolLbl('PDF Template')}
                         <ThemeSwatchPicker value={toolContractTheme} onChange={setToolContractTheme} />
                       </div>
-                      <DocActions sectionKey="contract" accent="#0EA5E9" disabled={!toolContract.clientName.trim() || !toolContract.amount}
+                      <DocActions sectionKey="contract" accent="#0EA5E9" disabled={!toolContract.clientName.trim() || !(Number(toolContract.amount) > 0)}
                         make={(share, onDone) => generateContractPDF(toolContract, vendorName, serviceType, toolContractTheme, { share, onDone })} />
                     </div>
                   </div>
@@ -5886,7 +5896,7 @@ const [tab, setTab] = useState('home');
                 onClick={async () => {
                   if (!disputeText.trim()) { showToast('Please describe the issue'); return; }
                   try {
-                    const res = await fetch(`${BASE_URL}/vendor/disputes`, {
+                    const res = await fetch(`${BASE_URL}/vendors/disputes`, {
                       method: 'POST',
                       headers: authHeaders(token),
                       body: JSON.stringify({

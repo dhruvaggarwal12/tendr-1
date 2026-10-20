@@ -4098,7 +4098,10 @@ const AdminDashboard = () => {
                                     credentials: 'include',
                                     body: JSON.stringify({ quotedPrice: val }),
                                   });
-                                  if (r.ok) setEventPlans(prev => prev.map(p => p._id === pid ? { ...p, quotedPrice: val } : p));
+                                  if (r.ok) {
+                                    const data = await r.json().catch(() => null);
+                                    setEventPlans(prev => prev.map(p => p._id === pid ? { ...p, quotedPrice: val, priceFinalized: data ? !!data.priceFinalized : p.priceFinalized } : p));
+                                  }
                                 } catch {} finally { setSavingBkPrice(p => ({ ...p, [pid]: false })); }
                               };
                               const finalizePrice = async () => {
@@ -4112,16 +4115,21 @@ const AdminDashboard = () => {
                                     credentials: 'include',
                                     body: JSON.stringify({ quotedPrice: val }),
                                   });
-                                  if (r.ok) setEventPlans(prev => prev.map(p => p._id === pid ? { ...p, quotedPrice: val, priceFinalized: true } : p));
+                                  if (r.ok) {
+                                    const data = await r.json().catch(() => null);
+                                    setEventPlans(prev => prev.map(p => p._id === pid ? { ...p, quotedPrice: val, priceFinalized: true } : p));
+                                    if (data && data.notified === false) alert('Price finalized, but this booking has no linked chat — the customer was not notified.');
+                                  }
                                 } catch {} finally { setSavingBkPrice(p => ({ ...p, [pid]: false })); }
                               };
                               return (
                                 <div key={pid} style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.18)", padding: "4px 10px" }}>
                                   <span style={{ fontSize: 11, fontWeight: 600, color: "#7a5c1e", whiteSpace: "nowrap" }}>{name}</span>
                                   <span style={{ fontSize: 12, fontWeight: 700, color: "#9B7450" }}>₹</span>
-                                  <input type="number" placeholder="0" value={current} disabled={plan.priceFinalized}
+                                  <input type="number" placeholder="0" value={current} min="0"
                                     onChange={e => setMyBookingPrices(p => ({ ...p, [pid]: e.target.value }))}
                                     onBlur={savePrice} onKeyDown={e => e.key === 'Enter' && savePrice()}
+                                    title={plan.priceFinalized ? "Already finalized — changing this will require re-finalizing" : undefined}
                                     style={{ width: 70, padding: "3px 5px", border: "none", outline: "none", fontSize: 12, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color: "#2C1A0E", background: "transparent" }}
                                   />
                                   {savingBkPrice[pid] && <span style={{ fontSize: 10, color: "#9B7450" }}>…</span>}
@@ -4498,7 +4506,10 @@ const AdminDashboard = () => {
                                       credentials: 'include',
                                       body: JSON.stringify({ quotedPrice: val }),
                                     });
-                                    if (r.ok) setEventPlans(prev => prev.map(p => p._id === pid ? {...p, quotedPrice: val} : p));
+                                    if (r.ok) {
+                                      const data = await r.json().catch(() => null);
+                                      setEventPlans(prev => prev.map(p => p._id === pid ? {...p, quotedPrice: val, priceFinalized: data ? !!data.priceFinalized : p.priceFinalized} : p));
+                                    }
                                   } catch {} finally { setSavingBkPrice(p => ({...p, [pid]: false})); }
                                 };
                                 const finalizePrice = async () => {
@@ -4512,7 +4523,11 @@ const AdminDashboard = () => {
                                       credentials: 'include',
                                       body: JSON.stringify({ quotedPrice: val }),
                                     });
-                                    if (r.ok) setEventPlans(prev => prev.map(p => p._id === pid ? {...p, quotedPrice: val, priceFinalized: true} : p));
+                                    if (r.ok) {
+                                      const data = await r.json().catch(() => null);
+                                      setEventPlans(prev => prev.map(p => p._id === pid ? {...p, quotedPrice: val, priceFinalized: true} : p));
+                                      if (data && data.notified === false) alert('Price finalized, but this booking has no linked chat — the customer was not notified.');
+                                    }
                                   } catch {} finally { setSavingBkPrice(p => ({...p, [pid]: false})); }
                                 };
                                 return (
@@ -4523,10 +4538,11 @@ const AdminDashboard = () => {
                                       type="number"
                                       placeholder="0"
                                       value={current}
-                                      disabled={plan.priceFinalized}
+                                      min="0"
                                       onChange={e => setMyBookingPrices(p => ({...p, [pid]: e.target.value}))}
                                       onBlur={savePrice}
                                       onKeyDown={e => e.key === 'Enter' && savePrice()}
+                                      title={plan.priceFinalized ? "Already finalized — changing this will require re-finalizing" : undefined}
                                       style={{ flex: 1, padding: "5px 8px", borderRadius: 7, border: "1.5px solid rgba(196,122,46,0.2)", fontSize: 12, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color: "#2C1A0E", outline: "none" }}
                                     />
                                     {savingBkPrice[pid] && <span style={{ fontSize: 10, color: "#9B7450" }}>…</span>}
