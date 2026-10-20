@@ -288,6 +288,7 @@ const Navbar = ({
         { label: "Budget Allocator",    href: "/budget-picker" },
         { label: "Price Estimator",     onClick: () => openPriceEstimator() },
         { label: "Find by Style",       href: "/find-by-style" },
+        { label: "Equipment Generator", href: "/equipment-generator" },
       ],
     },
     {
