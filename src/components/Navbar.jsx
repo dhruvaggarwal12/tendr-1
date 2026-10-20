@@ -288,11 +288,6 @@ const Navbar = ({
         { label: "Budget Allocator",    href: "/budget-picker" },
         { label: "Price Estimator",     onClick: () => openPriceEstimator() },
         { label: "Find by Style",       href: "/find-by-style" },
-        { label: "Refer & Earn", onClick: () => {
-            if (!user?._id) { navigate("/login", { state: { returnTo: "/dashboard#refer-earn" } }); return; }
-            navigate("/dashboard");
-            setTimeout(() => document.getElementById("refer-earn")?.scrollIntoView({ behavior: "smooth", block: "center" }), 400);
-          } },
       ],
     },
     {
@@ -307,6 +302,11 @@ const Navbar = ({
     {
       label: "Company",
       items: [
+        { label: "Refer & Earn", onClick: () => {
+            if (!user?._id) { navigate("/login", { state: { returnTo: "/dashboard#refer-earn" } }); return; }
+            navigate("/dashboard");
+            setTimeout(() => document.getElementById("refer-earn")?.scrollIntoView({ behavior: "smooth", block: "center" }), 400);
+          } },
         { label: "About Us",            href: "/about-us" },
         { label: "Contact Us",          href: "/contact-us" },
         { label: "Event Coordinators",  href: "/become-coordinator" },

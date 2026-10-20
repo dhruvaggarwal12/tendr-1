@@ -169,6 +169,11 @@ export default function CustomerDashboard() {
     const extras = (plan.selectedServices || []).flatMap(s => SERVICE_CHECKLIST_EXTRAS[s] || []);
     return [...new Set([...base, ...extras])];
   };
+  // Declared here (ahead of the referral-wallet effects below, which read it in their
+  // dependency arrays) rather than further down with the other fetch-state hooks — those
+  // deps arrays are evaluated synchronously during render, so referencing `plans` before
+  // its own declaration ran was a real "Cannot access before initialization" crash.
+  const [plans, setPlans] = useState([]);
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [showInstallBanner, setShowInstallBanner] = useState(() => !sessionStorage.getItem("tendr_install_dismissed"));
   const [referralCopied, setReferralCopied] = useState(false);
@@ -393,7 +398,6 @@ export default function CustomerDashboard() {
   const [chatsLastViewed, setChatsLastViewed] = useState(() =>
     parseInt(localStorage.getItem("tendr:chatsLastViewed") || "0")
   );
-  const [plans, setPlans] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingChats, setLoadingChats] = useState(false);

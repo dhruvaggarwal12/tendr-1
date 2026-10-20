@@ -2350,12 +2350,16 @@ export default function OccasionDetail(){
       {themeIcons.length>0 && (
         <div style={{position:"absolute",inset:0,zIndex:1,pointerEvents:"none",overflow:"hidden"}}>
           {[
-            {top:"6%",left:"-4%",size:72,rot:-16},
-            {top:"2%",right:"-5%",size:60,rot:14},
-            {bottom:"16%",left:"-5%",size:66,rot:10},
-            {bottom:"4%",right:"-4%",size:58,rot:-12},
+            {top:"4%",left:"2%",size:46,rot:-18,op:0.4},
+            {top:"9%",right:"4%",size:38,rot:16,op:0.32},
+            {top:"33%",left:"1.5%",size:30,rot:8,op:0.3},
+            {top:"46%",right:"2%",size:50,rot:-10,op:0.34},
+            {bottom:"32%",left:"3%",size:36,rot:14,op:0.32},
+            {bottom:"19%",right:"5%",size:42,rot:-14,op:0.38},
+            {bottom:"7%",left:"7%",size:28,rot:6,op:0.28},
+            {bottom:"5%",right:"20%",size:32,rot:-6,op:0.26},
           ].map((p,i)=>themeIcons[i%themeIcons.length]&&(
-            <span key={i} style={{position:"absolute",top:p.top,left:p.left,right:p.right,bottom:p.bottom,fontSize:p.size,opacity:0.22,transform:`rotate(${p.rot}deg)`,filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.05))"}}>
+            <span key={i} style={{position:"absolute",top:p.top,left:p.left,right:p.right,bottom:p.bottom,fontSize:p.size,opacity:p.op,transform:`rotate(${p.rot}deg)`,filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.08))"}}>
               {themeIcons[i%themeIcons.length]}
             </span>
           ))}
@@ -2410,17 +2414,28 @@ export default function OccasionDetail(){
                 {occasion.decorThemes.map((t,i)=>{
                   const tc=themeColor(t.tags);
                   const te=themeEmoji(t.tags);
+                  const tp=themeProps(t.tags);
                   return(
                     <button key={i} className="theme-carousel-card" onClick={()=>{setTheme(t);setThemeChoiceMade(true);}}
                       style={{flex:"0 0 76%",padding:0,borderRadius:18,border:"none",background:"rgba(255,255,255,0.16)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",cursor:"pointer",textAlign:"left",overflow:"hidden",boxShadow:"0 20px 46px -12px rgba(0,0,0,0.4), 0 8px 18px rgba(0,0,0,0.18)",transition:"transform 0.2s cubic-bezier(0.22,1,0.36,1), box-shadow 0.2s"}}>
-                      <div style={{position:"relative",height:190,overflow:"hidden",background:`linear-gradient(160deg,${tc}66,${tc}28)`}}>
-                        {t.photo?(
-                          <img src={t.photo} alt={t.name} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} onError={e=>{e.currentTarget.style.display="none";}}/>
-                        ):(
-                          <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                            <span style={{fontSize:54,filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.12))"}}>{te}</span>
-                          </div>
-                        )}
+                      <div style={{position:"relative",height:190,overflow:"hidden",background:`linear-gradient(160deg,${tc}70,${tc}2e)`}}>
+                        {/* Scattered theme props instead of a stock photo */}
+                        <div style={{position:"absolute",inset:0}}>
+                          {[
+                            {top:"10%",left:"8%",size:26,rot:-14,op:0.55},
+                            {top:"14%",right:"10%",size:20,rot:12,op:0.42},
+                            {bottom:"44%",left:"16%",size:18,rot:8,op:0.38},
+                            {bottom:"40%",right:"14%",size:24,rot:-10,op:0.48},
+                            {top:"8%",left:"42%",size:16,rot:4,op:0.32},
+                          ].map((p,pi)=>tp[pi%tp.length]&&(
+                            <span key={pi} style={{position:"absolute",top:p.top,left:p.left,right:p.right,bottom:p.bottom,fontSize:p.size,opacity:p.op,transform:`rotate(${p.rot}deg)`}}>
+                              {tp[pi%tp.length]}
+                            </span>
+                          ))}
+                        </div>
+                        <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                          <span style={{fontSize:54,filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.14))"}}>{te}</span>
+                        </div>
                         <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.65) 0%,transparent 55%)"}}/>
                         <div style={{position:"absolute",bottom:12,left:14,right:14}}>
                           <span style={{fontSize:15,fontWeight:800,color:"#fff",lineHeight:1.25,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{t.name}</span>
