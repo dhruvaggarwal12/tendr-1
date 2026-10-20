@@ -1,6 +1,6 @@
 /**
  * DashboardAssistant
- * - Floating "?" button bottom-left of screen (avoids Pay button area bottom-right)
+ * - Floating "?" button stacked directly above the chat button, bottom-right
  * - Opens a panel with:
  *   1. Tour — re-runs the guided dashboard tour
  *   2. Bot  — Q&A about the dashboard with clickable action links
@@ -257,13 +257,23 @@ export default function DashboardAssistant({ onTabChange, onStartTour }) {
 
   return (
     <>
-      {/* Floating trigger button */}
+      <style>{`
+        .dash-assistant-fab { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); right: 20px; }
+        .dash-assistant-panel { bottom: calc(214px + env(safe-area-inset-bottom, 0px)); right: 20px; }
+        @media (max-width: 767px) {
+          .dash-assistant-fab { right: 14px !important; }
+          .dash-assistant-panel { right: 14px !important; left: auto !important; }
+        }
+      `}</style>
+
+      {/* Floating trigger button — stacked directly above the chat button */}
       <button
         data-tour="dash-assistant"
+        className="dash-assistant-fab"
         onClick={() => { setOpen(o => !o); setView("home"); }}
         title="Dashboard Assistant"
         style={{
-          position: "fixed", bottom: 90, left: 18, zIndex: 1200,
+          position: "fixed", zIndex: 1200,
           width: 46, height: 46, borderRadius: "50%",
           background: open ? INK : "linear-gradient(135deg,#C47A2E,#CCAB4A)",
           color: "#fff", border: "none", cursor: "pointer",
@@ -279,8 +289,8 @@ export default function DashboardAssistant({ onTabChange, onStartTour }) {
 
       {/* Panel */}
       {open && (
-        <div style={{
-          position: "fixed", bottom: 144, left: 18, zIndex: 1201,
+        <div className="dash-assistant-panel" style={{
+          position: "fixed", zIndex: 1201,
           width: "min(340px, calc(100vw - 36px))",
           background: "#FFFCF5", borderRadius: 18,
           boxShadow: "0 16px 56px rgba(44,26,14,0.18), 0 2px 8px rgba(44,26,14,0.06)",
