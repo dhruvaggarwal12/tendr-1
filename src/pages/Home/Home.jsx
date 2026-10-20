@@ -3307,12 +3307,9 @@ const Home = () => {
                 {step===2&&occModal.hub&&(
                   <button onClick={()=>setOccModal(m=>({...m,step:1}))} style={{position:"absolute",top:14,left:14,background:"rgba(28,9,0,0.08)",border:"none",color:"rgba(28,9,0,0.45)",fontSize:11,fontWeight:600,borderRadius:100,padding:"4px 12px",cursor:"pointer",fontFamily:f}}>← Back</button>
                 )}
-                {step===3&&(
-                  <button onClick={()=>setOccModal(m=>({...m,step:2}))} style={{position:"absolute",top:14,left:14,background:"rgba(28,9,0,0.08)",border:"none",color:"rgba(28,9,0,0.45)",fontSize:11,fontWeight:600,borderRadius:100,padding:"4px 12px",cursor:"pointer",fontFamily:f}}>← Back</button>
-                )}
-                <div style={{fontSize:48,lineHeight:1,marginBottom:10}}>{step===3?"🎨":(occModal.icon||"🎉")}</div>
-                <p style={{fontSize:10,color:occModal.color||"#C47A2E",fontWeight:700,letterSpacing:"0.14em",textTransform:"uppercase",margin:"0 0 4px",fontFamily:f}}>{step===1?"Choose":step===2?"How to plan":"Theming, explained"}</p>
-                <p style={{fontFamily:ser,fontSize:22,fontWeight:500,color:"#1C0900",margin:0,lineHeight:1.15}}>{step===3?"One look, everywhere":occModal.label}</p>
+                <div style={{fontSize:48,lineHeight:1,marginBottom:10}}>{occModal.icon||"🎉"}</div>
+                <p style={{fontSize:10,color:occModal.color||"#C47A2E",fontWeight:700,letterSpacing:"0.14em",textTransform:"uppercase",margin:"0 0 4px",fontFamily:f}}>{step===1?"Choose":"How to plan"}</p>
+                <p style={{fontFamily:ser,fontSize:22,fontWeight:500,color:"#1C0900",margin:0,lineHeight:1.15}}>{occModal.label}</p>
               </div>
 
               <div style={{padding:"20px 20px 24px",animation:"occm-slide 0.2s ease both"}}>
@@ -3353,7 +3350,7 @@ const Home = () => {
                   <div style={{display:"flex",flexDirection:"column",gap:9,animation:"occm-slide 0.2s ease both"}}>
                     {/* With Theme */}
                     <button
-                      onClick={()=>setOccModal(m=>({...m,step:3}))}
+                      onClick={()=>{setOccModal(null);navigate(`/occasions/${occModal.slug}?planMode=with`);}}
                       style={{display:"flex",alignItems:"center",gap:14,padding:"15px 16px",borderRadius:16,border:"none",
                         background:`linear-gradient(135deg,rgba(196,122,46,0.12),rgba(196,122,46,0.04))`,
                         cursor:"pointer",textAlign:"left",fontFamily:f,transition:"transform 0.15s,box-shadow 0.15s",boxShadow:"0 2px 10px rgba(196,122,46,0.1)"}}
@@ -3385,35 +3382,6 @@ const Home = () => {
                   </div>
                 )}
 
-                {step===3&&(
-                  <div style={{display:"flex",flexDirection:"column",gap:14,animation:"occm-slide 0.2s ease both"}}>
-                    <p style={{fontSize:12.5,color:"rgba(28,9,0,0.55)",lineHeight:1.55,margin:0}}>
-                      Pick a visual style next — we'll carry it through the whole plan, not just the moodboard.
-                    </p>
-                    <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                      {[
-                        {icon:"🎨",title:"Decor that matches",desc:"Colours and styling suggestions pulled from your theme"},
-                        {icon:"🎁",title:"Gifts picked to fit",desc:"Hamper and favour ideas that suit the look you chose"},
-                        {icon:"🧑‍🍳",title:"Vendors who specialise",desc:"We surface vendors experienced with that style"},
-                      ].map(row=>(
-                        <div key={row.title} style={{display:"flex",alignItems:"flex-start",gap:12}}>
-                          <div style={{width:34,height:34,borderRadius:10,background:`${g}14`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{row.icon}</div>
-                          <div>
-                            <div style={{fontSize:13,fontWeight:700,color:"#1C0900",lineHeight:1.3}}>{row.title}</div>
-                            <div style={{fontSize:11.5,color:"rgba(28,9,0,0.5)",lineHeight:1.4,marginTop:1}}>{row.desc}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <p style={{fontSize:11,color:"rgba(28,9,0,0.35)",margin:0,lineHeight:1.4}}>You can skip the theme or change it later — nothing here is locked in.</p>
-                    <button
-                      onClick={()=>{setOccModal(null);navigate(`/occasions/${occModal.slug}?planMode=with`);}}
-                      style={{width:"100%",padding:"13px",borderRadius:14,border:"none",background:`linear-gradient(135deg,${g},#D4A848)`,color:"#fff",fontSize:14.5,fontWeight:700,cursor:"pointer",fontFamily:f,boxShadow:`0 6px 18px ${g}40`}}
-                    >
-                      Let's pick a theme →
-                    </button>
-                  </div>
-                )}
                 <button onClick={()=>setOccModal(null)} style={{display:"block",width:"100%",marginTop:12,padding:"9px 0",border:"none",background:"none",color:"rgba(28,9,0,0.3)",fontSize:12,cursor:"pointer",fontFamily:f}}>Cancel</button>
               </div>
             </div>

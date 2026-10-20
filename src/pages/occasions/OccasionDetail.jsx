@@ -1660,6 +1660,9 @@ export default function OccasionDetail(){
   // Tracks whether the upfront "pick your theme" carousel has been resolved (picked or
   // skipped) this session, so it only ever appears once — never re-asked mid-wizard.
   const [themeChoiceMade,setThemeChoiceMade]=useState(false);
+  // The theme a customer has tapped in the carousel but not yet committed to — shows a
+  // small per-theme intro (its own desc/tags/props) before they confirm it.
+  const [previewTheme,setPreviewTheme]=useState(null);
   const [decorAnalyserOpen,setDecorAnalyserOpen]=useState(false);
   const [venueAnalysis,setVenueAnalysis]=useState(null); // result from DecorAnalyzer
   const [venuePhoto,setVenuePhoto]=useState(null); // data URL — from the Decor Analyser upload, or the standalone pre-Plan gate
@@ -2403,10 +2406,62 @@ export default function OccasionDetail(){
             onClick={e=>e.stopPropagation()}
             style={{background:"rgba(255,252,245,0.6)",backdropFilter:"blur(32px) saturate(180%)",WebkitBackdropFilter:"blur(32px) saturate(180%)",border:"none",borderRadius:26,maxWidth:420,width:"100%",maxHeight:"88dvh",overflow:"hidden",boxShadow:"0 1px 0 rgba(255,255,255,0.6) inset, 0 18px 46px -12px rgba(0,0,0,0.4), 0 50px 130px rgba(0,0,0,0.6)",display:"flex",flexDirection:"column",animation:"themeCarouselIn 0.26s cubic-bezier(0.22,1,0.36,1)"}}
           >
+          {previewTheme?(()=>{
+            const t=previewTheme, tc=themeColor(t.tags), te=themeEmoji(t.tags), tp=themeProps(t.tags);
+            const vibe=(t.tags||[])[0]||t.name;
+            return(
+              <div style={{display:"flex",flexDirection:"column",overflowY:"auto"}}>
+                <div style={{position:"relative",height:200,flexShrink:0,overflow:"hidden",background:`linear-gradient(160deg,${tc}75,${tc}30)`}}>
+                  <button onClick={()=>setPreviewTheme(null)}
+                    style={{position:"absolute",top:14,left:14,zIndex:3,background:"rgba(255,255,255,0.4)",backdropFilter:"blur(8px)",border:"none",color:ink,fontSize:11,fontWeight:700,borderRadius:100,padding:"5px 12px",cursor:"pointer",fontFamily:font}}>
+                    ← All themes
+                  </button>
+                  <div style={{position:"absolute",inset:0}}>
+                    {[
+                      {top:"12%",left:"10%",size:30,rot:-14,op:0.55},
+                      {top:"16%",right:"12%",size:24,rot:12,op:0.42},
+                      {bottom:"48%",left:"20%",size:20,rot:8,op:0.38},
+                      {bottom:"42%",right:"16%",size:28,rot:-10,op:0.48},
+                    ].map((p,pi)=>tp[pi%tp.length]&&(
+                      <span key={pi} style={{position:"absolute",top:p.top,left:p.left,right:p.right,bottom:p.bottom,fontSize:p.size,opacity:p.op,transform:`rotate(${p.rot}deg)`}}>{tp[pi%tp.length]}</span>
+                    ))}
+                  </div>
+                  <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <span style={{fontSize:64,filter:"drop-shadow(0 2px 10px rgba(0,0,0,0.16))"}}>{te}</span>
+                  </div>
+                </div>
+                <div style={{padding:"18px 22px 22px"}}>
+                  <div style={{fontFamily:serif,fontSize:"clamp(1.25rem,4vw,1.5rem)",fontWeight:500,color:ink,lineHeight:1.2,marginBottom:6}}>{t.name}</div>
+                  <div style={{fontSize:13,color:muted,lineHeight:1.55,marginBottom:14}}>{t.desc}</div>
+                  <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:18}}>
+                    {(t.tags||[]).map(tag=>(
+                      <span key={tag} style={{fontSize:10,fontWeight:600,color:tc,background:`${tc}18`,border:`1px solid ${tc}35`,borderRadius:100,padding:"3px 10px"}}>{tag}</span>
+                    ))}
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column",gap:11,marginBottom:20}}>
+                    {[
+                      {icon:"🎨",label:`Decor styled around ${vibe}`},
+                      {icon:"🎁",label:`Gift picks that fit a ${t.name} vibe`},
+                      {icon:"🧑‍🍳",label:`Vendors experienced with this look`},
+                    ].map(row=>(
+                      <div key={row.label} style={{display:"flex",alignItems:"center",gap:11}}>
+                        <div style={{width:30,height:30,borderRadius:9,background:`${tc}16`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{row.icon}</div>
+                        <div style={{fontSize:12.5,color:ink,fontWeight:600,lineHeight:1.35}}>{row.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={()=>{setTheme(t);setThemeChoiceMade(true);}}
+                    style={{width:"100%",padding:"13px",borderRadius:14,border:"none",background:`linear-gradient(135deg,${tc},${lightenHex(tc,0.2)})`,color:"#fff",fontSize:14.5,fontWeight:700,cursor:"pointer",fontFamily:font,boxShadow:`0 6px 18px ${tc}55`}}>
+                    Use "{t.name}" →
+                  </button>
+                </div>
+              </div>
+            );
+          })():(<>
             <div style={{padding:"26px 22px 16px",textAlign:"center",flexShrink:0}}>
               <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:6}}>Choose your look</div>
               <div style={{fontFamily:serif,fontSize:"clamp(1.3rem,4vw,1.6rem)",fontWeight:500,color:ink,lineHeight:1.2,marginBottom:6}}>How should your {occasion.name.toLowerCase()} look?</div>
-              <div style={{fontSize:12.5,color:muted,lineHeight:1.5}}>Swipe to browse — pick one and we'll tailor decor, gifts and vendor tips to it.</div>
+              <div style={{fontSize:12.5,color:muted,lineHeight:1.5}}>Swipe to browse — tap one to see what it changes.</div>
             </div>
 
             <div style={{position:"relative",flexShrink:0}}>
@@ -2416,7 +2471,7 @@ export default function OccasionDetail(){
                   const te=themeEmoji(t.tags);
                   const tp=themeProps(t.tags);
                   return(
-                    <button key={i} className="theme-carousel-card" onClick={()=>{setTheme(t);setThemeChoiceMade(true);}}
+                    <button key={i} className="theme-carousel-card" onClick={()=>setPreviewTheme(t)}
                       style={{flex:"0 0 76%",padding:0,borderRadius:18,border:"none",background:"rgba(255,255,255,0.16)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",cursor:"pointer",textAlign:"left",overflow:"hidden",boxShadow:"0 20px 46px -12px rgba(0,0,0,0.4), 0 8px 18px rgba(0,0,0,0.18)",transition:"transform 0.2s cubic-bezier(0.22,1,0.36,1), box-shadow 0.2s"}}>
                       <div style={{position:"relative",height:190,overflow:"hidden",background:`linear-gradient(160deg,${tc}70,${tc}2e)`}}>
                         {/* Scattered theme props instead of a stock photo */}
@@ -2478,6 +2533,7 @@ export default function OccasionDetail(){
                 Skip — no theme
               </button>
             </div>
+          </>)}
           </div>
         </div>
       )}
