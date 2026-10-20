@@ -202,6 +202,22 @@ export default function DashboardAssistant({ onTabChange, onStartTour }) {
   const bottomRef = useRef(null);
   const inputRef  = useRef(null);
 
+  // One-time hint bubble so a first-time visitor knows what the "?" button is before
+  // they've ever clicked it. Dismisses itself after a few seconds, on click of either
+  // the hint or the button, and never shows again on this device.
+  const [introSeen, setIntroSeen] = useState(() => {
+    try { return !!localStorage.getItem("tendr_dash_assistant_intro_seen"); } catch { return true; }
+  });
+  const dismissIntro = () => {
+    setIntroSeen(true);
+    try { localStorage.setItem("tendr_dash_assistant_intro_seen", "1"); } catch {}
+  };
+  useEffect(() => {
+    if (introSeen) return;
+    const t = setTimeout(dismissIntro, 6000);
+    return () => clearTimeout(t);
+  }, [introSeen]); // eslint-disable-line
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs, typing]);
@@ -259,18 +275,31 @@ export default function DashboardAssistant({ onTabChange, onStartTour }) {
     <>
       <style>{`
         .dash-assistant-fab { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); right: 20px; }
-        .dash-assistant-panel { bottom: calc(214px + env(safe-area-inset-bottom, 0px)); right: 20px; }
+        .dash-assistant-panel { bottom: calc(190px + env(safe-area-inset-bottom, 0px)); right: 20px; }
+        .dash-assistant-hint { bottom: calc(150px + env(safe-area-inset-bottom, 0px)); right: 74px; }
         @media (max-width: 767px) {
           .dash-assistant-fab { right: 14px !important; }
           .dash-assistant-panel { right: 14px !important; left: auto !important; }
+          .dash-assistant-hint { right: 12px !important; left: 12px !important; width: auto !important; }
         }
       `}</style>
+
+      {/* One-time "what is this" hint — points at the fab, self-dismisses */}
+      {!open && !introSeen && (
+        <div className="dash-assistant-hint" role="status"
+          style={{ position: "fixed", zIndex: 1199, width: 220, background: INK, color: "#fff", borderRadius: 12, padding: "9px 12px", fontFamily: F, fontSize: 12, lineHeight: 1.4, boxShadow: "0 8px 24px rgba(44,26,14,0.3)", display: "flex", alignItems: "flex-start", gap: 6 }}
+        >
+          <span style={{ flex: 1 }}>👋 Need help? Tap here for a quick tour or to ask a question.</span>
+          <button onClick={dismissIntro} aria-label="Dismiss"
+            style={{ background: "none", border: "none", color: "rgba(255,255,255,0.6)", cursor: "pointer", fontSize: 13, lineHeight: 1, padding: 0, flexShrink: 0 }}>×</button>
+        </div>
+      )}
 
       {/* Floating trigger button — stacked directly above the chat button */}
       <button
         data-tour="dash-assistant"
         className="dash-assistant-fab"
-        onClick={() => { setOpen(o => !o); setView("home"); }}
+        onClick={() => { setOpen(o => !o); setView("home"); dismissIntro(); }}
         title="Dashboard Assistant"
         style={{
           position: "fixed", zIndex: 1200,
@@ -291,12 +320,12 @@ export default function DashboardAssistant({ onTabChange, onStartTour }) {
       {open && (
         <div className="dash-assistant-panel" style={{
           position: "fixed", zIndex: 1201,
-          width: "min(340px, calc(100vw - 36px))",
-          background: "#FFFCF5", borderRadius: 18,
+          width: "min(280px, calc(100vw - 36px))",
+          background: "#FFFCF5", borderRadius: 16,
           boxShadow: "0 16px 56px rgba(44,26,14,0.18), 0 2px 8px rgba(44,26,14,0.06)",
           border: "1.5px solid rgba(196,122,46,0.2)",
           fontFamily: F, overflow: "hidden",
-          display: "flex", flexDirection: "column", maxHeight: "70vh",
+          display: "flex", flexDirection: "column", maxHeight: "min(55vh, 380px)",
         }}>
 
           {/* Header */}
