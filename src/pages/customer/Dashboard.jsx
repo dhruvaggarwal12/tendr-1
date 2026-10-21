@@ -1087,6 +1087,16 @@ export default function CustomerDashboard() {
                   Friends get <strong style={{ color: "#CCAB4A" }}>{DISCOUNT_PERCENT}% off</strong> their first booking.<br />
                   Each month, your referrals pay <strong style={{ color: "#CCAB4A" }}>₹100, then ₹200, ₹300…</strong> up to <strong style={{ color: "#CCAB4A" }}>₹500</strong> — a higher tier raises how far you can climb, and it resets to ₹100 every new month.
                 </div>
+                {referralWallet?.tierAnswered ? (
+                  <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", margin: "12px 0 0" }}>
+                    Your tier: <strong style={{ color: "#CCAB4A", textTransform: "capitalize" }}>{referralWallet?.tier || "bronze"}</strong>
+                  </p>
+                ) : (
+                  <button onClick={() => { setReferralModalOpen(false); openTierQuiz(); }}
+                    style={{ marginTop: 12, background: "none", border: "none", cursor: "pointer", padding: 0, color: "#CCAB4A", fontSize: 12.5, fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 3, fontFamily: font }}>
+                    Answer 3 quick questions to boost your tier →
+                  </button>
+                )}
               </div>
             </div>
           );
