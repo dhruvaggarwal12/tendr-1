@@ -186,6 +186,7 @@ const VendorDirectChatPage = lazy(() => import("./pages/vendor/DirectChatPage"))
 const VendorChat          = lazy(() => import("./pages/vendor/Chat"));
 const DirectChat          = lazy(() => import("./pages/guest/DirectChat"));
 const ShortlistReviewPage = lazy(() => import("./pages/shortlist/ShortlistReviewPage"));
+const EventChallenge      = lazy(() => import("./pages/referral/EventChallenge"));
 const VendorHowToUse     = lazy(() => import("./pages/vendor/HowToUse"));
 const VendorPricing      = lazy(() => import("./pages/vendor/Pricing"));
 const VendorLogin        = lazy(() => import("./pages/vendor/VendorLogin"));
@@ -496,6 +497,11 @@ const router = createBrowserRouter([
   {
     path: "/my-extras",
     element: <ShortlistReviewPage />,
+    errorElement: <ErrorPage />
+  },
+  {
+    path: "/referral/challenge",
+    element: <EventChallenge />,
     errorElement: <ErrorPage />
   },
 

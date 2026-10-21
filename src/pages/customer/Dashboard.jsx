@@ -1052,6 +1052,29 @@ export default function CustomerDashboard() {
           );
         })()}
 
+        {/* Event Intelligence Challenge — separate, new assessment; not yet wired into the
+            referral reward ladder above (that's still driven by the 3-question tier quiz). */}
+        {user?._id && (
+          <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.18)", padding: "18px 22px", marginBottom: 28, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <div style={{ fontSize: 30, flexShrink: 0 }}>🧠</div>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                  <p style={{ fontSize: 13.5, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>Event Intelligence Challenge</p>
+                  <span style={{ fontSize: 9, fontWeight: 800, color: "#fff", background: "#0EA5E9", borderRadius: 100, padding: "2px 7px", letterSpacing: "0.05em", textTransform: "uppercase" }}>New</span>
+                </div>
+                <p style={{ fontSize: 12, color: "#9B7450", margin: 0, lineHeight: 1.5 }}>
+                  13 quick questions (MCQs, your opinion, one photo task) — see how well you know event planning.
+                </p>
+              </div>
+            </div>
+            <button onClick={() => navigate("/referral/challenge")}
+              style={{ flexShrink: 0, padding: "10px 18px", borderRadius: 11, border: "none", background: "#C47A2E", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
+              Start Challenge →
+            </button>
+          </div>
+        )}
+
         {/* Referral code modal — centred, dismissible ONLY via the × button (no backdrop/Escape close) */}
         {referralModalOpen && user?._id && (() => {
           const code = generateReferralCode(user._id);
