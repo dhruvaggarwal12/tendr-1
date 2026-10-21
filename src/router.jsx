@@ -187,6 +187,7 @@ const VendorChat          = lazy(() => import("./pages/vendor/Chat"));
 const DirectChat          = lazy(() => import("./pages/guest/DirectChat"));
 const ShortlistReviewPage = lazy(() => import("./pages/shortlist/ShortlistReviewPage"));
 const EventChallenge      = lazy(() => import("./pages/referral/EventChallenge"));
+const SharedGiftList      = lazy(() => import("./pages/gifthampers/SharedGiftList"));
 const VendorHowToUse     = lazy(() => import("./pages/vendor/HowToUse"));
 const VendorPricing      = lazy(() => import("./pages/vendor/Pricing"));
 const VendorLogin        = lazy(() => import("./pages/vendor/VendorLogin"));
@@ -499,6 +500,11 @@ const router = createBrowserRouter([
   {
     path: "/referral/challenge",
     element: <EventChallenge />,
+    errorElement: <ErrorPage />
+  },
+  {
+    path: "/gift-list/:shareToken",
+    element: <SharedGiftList />,
     errorElement: <ErrorPage />
   },
 

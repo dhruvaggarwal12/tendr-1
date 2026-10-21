@@ -7,6 +7,7 @@ import SEO from "../../components/SEO";
 import Footer from "../../components/Footer";
 import { useChatOverlay } from "../../context/ChatContext";
 import GiftQuiz from "../../components/GiftQuiz";
+import AuthModal from "../../components/AuthModal";
 import { addToCart as addToGhCart, removeFromCart as removeFromGhCart, clearCart as clearGhCart, updateQuantity as updateGhQuantity, selectCartItems as selectGhCartItems } from "../../redux/giftHamperCartSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -28,6 +29,35 @@ const GiftHampersCakes = () => {
   const { token } = useSelector(s => s.auth);
   const ghReduxItems = useSelector(selectGhCartItems);
   const { openExistingChat } = useChatOverlay();
+
+  // Shared gift list — collaborative list a creator names and shares; anyone with the
+  // link (logged in) can add items, only the creator can finalize & pay.
+  const [createListOpen, setCreateListOpen] = useState(false);
+  const [shareAuthModalOpen, setShareAuthModalOpen] = useState(false);
+  const [newListName, setNewListName] = useState("");
+  const [creatingList, setCreatingList] = useState(false);
+  const [createListError, setCreateListError] = useState("");
+  const startCreateList = () => { if (!token) { setShareAuthModalOpen(true); return; } setCreateListOpen(true); };
+  const createList = async () => {
+    if (!newListName.trim()) { setCreateListError("Give the list a name"); return; }
+    setCreatingList(true);
+    setCreateListError("");
+    try {
+      const res = await fetch(`${BASE_URL}/gift-lists`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        credentials: "include",
+        body: JSON.stringify({ name: newListName.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setCreateListError(data.error || "Couldn't create the list — try again."); return; }
+      navigate(`/gift-list/${data.list.shareToken}`);
+    } catch {
+      setCreateListError("Couldn't create the list — check your connection and try again.");
+    } finally {
+      setCreatingList(false);
+    }
+  };
   const [samples, setSamples] = useState([]);
   const [loading, setLoading] = useState(true);
   const [existingChat, setExistingChat] = useState(null);
@@ -383,6 +413,12 @@ const GiftHampersCakes = () => {
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
               Browse Collection
+            </button>
+            <button
+              onClick={startCreateList}
+              style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,248,236,0.07)", color:"rgba(255,248,236,0.78)", fontSize:13.5, fontWeight:600, padding:"12px 22px", borderRadius:100, border:"1px solid rgba(255,248,236,0.14)", cursor:"pointer", fontFamily:font, transition:"background 0.15s" }}
+            >
+              🎁 Start a Shared List
             </button>
           </div>
           {/* Meta */}
@@ -917,6 +953,29 @@ const GiftHampersCakes = () => {
           onClose={() => { setQuizOpen(false); if (Object.keys(cartItems).length > 0) setCheckoutOpen(true); }}
         />
       )}
+
+      {/* Create a shared gift list */}
+      {createListOpen && (
+        <div onClick={() => setCreateListOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 9500, background: "rgba(20,10,0,0.55)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 18 }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 380, background: "#FFFCF5", borderRadius: 20, padding: "26px 24px", boxShadow: "0 24px 70px rgba(0,0,0,0.4)" }}>
+            <div style={{ fontSize: 17, fontWeight: 900, color: "#2C1A0E", marginBottom: 6 }}>🎁 Start a Shared List</div>
+            <p style={{ fontSize: 12.5, color: "#9B7450", margin: "0 0 16px", lineHeight: 1.5 }}>
+              Give it a name, share the link, and anyone who opens it can add items. Only you can finalize and pay.
+            </p>
+            <input autoFocus value={newListName} onChange={e => setNewListName(e.target.value)} placeholder="e.g. Priya's Farewell Hamper"
+              style={{ width: "100%", padding: "11px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 10 }}
+              onKeyDown={e => e.key === "Enter" && createList()} />
+            {createListError && <div style={{ fontSize: 12, color: "#DC2626", marginBottom: 10 }}>{createListError}</div>}
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => setCreateListOpen(false)} style={{ padding: "11px 16px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#6B3A1F", fontFamily: font, fontWeight: 700, cursor: "pointer" }}>Cancel</button>
+              <button disabled={creatingList} onClick={createList} style={{ flex: 1, padding: "11px", borderRadius: 10, border: "none", background: creatingList ? "rgba(196,122,46,0.4)" : "#C47A2E", color: "#fff", fontFamily: font, fontWeight: 800, cursor: creatingList ? "default" : "pointer" }}>
+                {creatingList ? "Creating…" : "Create & Share →"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <AuthModal open={shareAuthModalOpen} onClose={() => setShareAuthModalOpen(false)} onSuccess={() => { setShareAuthModalOpen(false); setCreateListOpen(true); }} defaultMode="login" />
     </div>
   );
 };
