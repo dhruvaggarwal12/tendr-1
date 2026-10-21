@@ -223,9 +223,6 @@ const TimelinePicker      = lazy(() => import('./pages/timeline/TimelinePicker')
 const BudgetPicker        = lazy(() => import('./pages/budget/BudgetPicker.jsx'));
 const BudgetAllocator     = lazy(() => import('./pages/budget/BudgetAllocator.jsx'));
 const PriceEstimator      = lazy(() => import('./pages/budget/PriceEstimator.jsx'));
-const QuestionnaireIntro        = lazy(() => import('./pages/customer/questionnaire/QuestionnaireIntro.jsx'));
-const QuestionnaireFlow         = lazy(() => import('./pages/customer/questionnaire/QuestionnaireFlow.jsx'));
-const QuestionnaireConfirmation = lazy(() => import('./pages/customer/questionnaire/QuestionnaireConfirmation.jsx'));
 const WeddingStationery   = lazy(() => import('./pages/stationery/WeddingStationery.jsx'));
 const StationeryCustomizer= lazy(() => import('./pages/stationery/StationeryCustomizer.jsx'));
 const BookingReviewPage   = lazy(() => import('./pages/booking/BookingReviewPage'));
@@ -675,21 +672,6 @@ const router = createBrowserRouter([
   {
     path: '/price-estimator',
     element: <PriceEstimator />,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: '/refer-and-earn',
-    element: <QuestionnaireIntro />,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: '/refer-and-earn/questionnaire/:assignmentId',
-    element: <QuestionnaireFlow />,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: '/refer-and-earn/done',
-    element: <QuestionnaireConfirmation />,
     errorElement: <ErrorPage />
   },
   {

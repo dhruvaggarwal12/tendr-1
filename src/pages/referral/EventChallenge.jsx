@@ -7,7 +7,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const F = "'Outfit', sans-serif";
 const GOLD = "#C47A2E";
 const INK = "#2C1A0E";
-const MAX_IMAGE_BYTES = 1_800_000; // leaves room for base64 overhead under the server's cap
+const MAX_IMAGE_BYTES = 10_000_000; // matches the backend's Cloudinary upload limit
 
 const TIER_LABEL = { none: "Not yet qualified", starter: "Starter", achiever: "Achiever", pro: "Pro", champion: "Champion" };
 const TIER_COLOR = { none: "#9CA3AF", starter: "#C47A2E", achiever: "#0EA5E9", pro: "#7C3AED", champion: "#D4AF37" };
@@ -52,6 +52,7 @@ export default function EventChallenge() {
         (d.attempt.opinionAnswers || []).forEach(a => { if (a.text) ot[a.questionId] = a.text; });
         setOpinionText(ot);
         setPhotoExplanation(d.attempt.photoTaskAnswer?.explanation || "");
+        setPhotoImage(d.attempt.photoTaskAnswer?.imageUrl || "");
         setLoading(false);
       })
       .catch(() => { setError("Couldn't load the challenge — check your connection and try again."); setLoading(false); });
@@ -94,21 +95,33 @@ export default function EventChallenge() {
   };
 
   const [imgError, setImgError] = useState("");
-  const onPhotoFile = (file) => {
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const onPhotoFile = async (file) => {
     setImgError("");
-    if (!file) return;
-    if (file.size > MAX_IMAGE_BYTES) { setImgError("That image is too large — please use one under ~1.8MB."); return; }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUri = reader.result;
-      setPhotoImage(dataUri);
-      autosave({ photoTask: { imageDataUri: dataUri, explanation: photoExplanation } });
-    };
-    reader.readAsDataURL(file);
+    if (!file || !attempt) return;
+    if (file.size > MAX_IMAGE_BYTES) { setImgError("That image is too large — please use one under 10MB."); return; }
+    setUploadingPhoto(true);
+    try {
+      const form = new FormData();
+      form.append("photo", file);
+      const res = await fetch(`${BASE_URL}/event-challenge/${attempt._id}/photo`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+        body: form,
+      });
+      const data = await res.json();
+      if (!res.ok) { setImgError(data.error || "Upload failed — try again."); return; }
+      setPhotoImage(data.imageUrl);
+    } catch {
+      setImgError("Upload failed — check your connection and try again.");
+    } finally {
+      setUploadingPhoto(false);
+    }
   };
   const onPhotoExplanation = (text) => {
     setPhotoExplanation(text);
-    autosave({ photoTask: { explanation: text } });
+    autosave({ photoExplanation: text });
   };
 
   const submit = async () => {
@@ -125,7 +138,7 @@ export default function EventChallenge() {
         body: JSON.stringify({
           mcqAnswers,
           opinionAnswers: attempt.opinionQuestions.map(q => ({ questionId: q.id, text: opinionText[q.id] || "" })),
-          photoTask: { imageDataUri: photoImage, explanation: photoExplanation },
+          photoExplanation,
         }),
       });
       const res = await fetch(`${BASE_URL}/event-challenge/${attempt._id}/submit`, {
@@ -287,9 +300,11 @@ export default function EventChallenge() {
               <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 16, lineHeight: 1.5 }}>
                 A real photo, a sketch, or a clearly labelled mock-up all work. No need for professional equipment or venues — and please don't upload identifiable photos of other people without their permission.
               </div>
-              <label style={{ display: "block", border: `1.5px dashed ${photoImage ? GOLD : "rgba(196,122,46,0.3)"}`, borderRadius: 14, padding: "20px", textAlign: "center", cursor: "pointer", marginBottom: 14, background: photoImage ? "rgba(196,122,46,0.04)" : "#fff" }}>
-                <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => onPhotoFile(e.target.files?.[0])} />
-                {photoImage ? (
+              <label style={{ display: "block", border: `1.5px dashed ${photoImage ? GOLD : "rgba(196,122,46,0.3)"}`, borderRadius: 14, padding: "20px", textAlign: "center", cursor: uploadingPhoto ? "default" : "pointer", marginBottom: 14, background: photoImage ? "rgba(196,122,46,0.04)" : "#fff" }}>
+                <input type="file" accept="image/*" disabled={uploadingPhoto} style={{ display: "none" }} onChange={e => onPhotoFile(e.target.files?.[0])} />
+                {uploadingPhoto ? (
+                  <div style={{ color: "#9B7450", fontSize: 13 }}>Uploading…</div>
+                ) : photoImage ? (
                   <img src={photoImage} alt="Your submission" style={{ maxWidth: "100%", maxHeight: 220, borderRadius: 10, display: "block", margin: "0 auto" }} />
                 ) : (
                   <div style={{ color: "#9B7450", fontSize: 13 }}>📷 Tap to upload an image</div>

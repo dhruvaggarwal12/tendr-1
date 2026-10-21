@@ -11,7 +11,8 @@ import CommunityModerationTab from "./CommunityModerationTab";
 import EditVendorModal from "./EditVendorModal";
 import CatererMenuEditor from "./CatererMenuEditor";
 import PeopleHubTab from "./PeopleHubTab";
-import QuestionBankTab from "./QuestionBankTab";
+import EventChallengeTab from "./EventChallengeTab";
+import ReferralsTab from "./ReferralsTab";
 import { io } from "socket.io-client";
 import EastIcon from "@mui/icons-material/East";
 
@@ -307,7 +308,8 @@ const sidebar_arr = [
   { label: "Coordinators",         icon: <span style={{ fontSize: 16 }}>🎯</span>,  key: "Coordinators" },
   { label: "People Hub",           icon: <span style={{ fontSize: 16 }}>👥</span>,  key: "PeopleHub" },
   { label: "Quotation Builder",    icon: <span style={{ fontSize: 16 }}>📋</span>,  key: "QuotationBuilder" },
-  { label: "Question Bank",        icon: <span style={{ fontSize: 16 }}>📝</span>,  key: "QuestionBank" },
+  { label: "Event Challenge",      icon: <span style={{ fontSize: 16 }}>🧠</span>,  key: "EventChallenge" },
+  { label: "Referrals",            icon: <span style={{ fontSize: 16 }}>🎁</span>,  key: "Referrals" },
 ];
 
 // Simple inline markdown renderer — handles *bold*, _italic_, line breaks, [img:...] images,
@@ -6336,9 +6338,14 @@ const AdminDashboard = () => {
           <CoordinatorsTab token={token} BASE_URL={BASE_URL} />
         )}
 
-        {/* ── QUESTION BANK TAB ── */}
-        {activeDropdown === "questionbank" && (
-          <QuestionBankTab token={token} BASE_URL={BASE_URL} />
+        {/* ── EVENT CHALLENGE TAB ── */}
+        {activeDropdown === "eventchallenge" && (
+          <EventChallengeTab token={token} BASE_URL={BASE_URL} />
+        )}
+
+        {/* ── REFERRALS TAB ── */}
+        {activeDropdown === "referrals" && (
+          <ReferralsTab token={token} BASE_URL={BASE_URL} />
         )}
 
         {false && (() => {

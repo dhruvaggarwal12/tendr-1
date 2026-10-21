@@ -184,6 +184,22 @@ export default function CustomerDashboard() {
   const [tierAnswers, setTierAnswers] = useState([]);
   const [tierSubmitting, setTierSubmitting] = useState(false);
 
+  // Referral wallet withdrawal
+  const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [withdrawUpi, setWithdrawUpi] = useState("");
+  const [withdrawSubmitting, setWithdrawSubmitting] = useState(false);
+  const [withdrawError, setWithdrawError] = useState("");
+  const [payouts, setPayouts] = useState(null); // null = not loaded yet
+
+  const loadPayouts = () => {
+    if (!token) return;
+    fetch(`${BASE_URL}/referrals/withdrawals`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setPayouts(d.payouts || []); })
+      .catch(() => {});
+  };
+
   // Referral wallet — the card shows for every signed-up customer now, so fetch as soon
   // as we know who they are rather than waiting on a paid booking.
   useEffect(() => {
@@ -1044,10 +1060,18 @@ export default function CustomerDashboard() {
                   )}
                 </div>
               </div>
-              <button onClick={() => setReferralModalOpen(true)}
-                style={{ flexShrink: 0, padding: "11px 20px", borderRadius: 12, border: "1.5px solid rgba(204,171,74,0.4)", background: "rgba(204,171,74,0.12)", color: "#CCAB4A", fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
-                View &amp; Share Code →
-              </button>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
+                <button onClick={() => setReferralModalOpen(true)}
+                  style={{ flexShrink: 0, padding: "11px 20px", borderRadius: 12, border: "1.5px solid rgba(204,171,74,0.4)", background: "rgba(204,171,74,0.12)", color: "#CCAB4A", fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
+                  View &amp; Share Code →
+                </button>
+                {referralWallet?.balance >= 200 && (
+                  <button onClick={() => { setWithdrawModalOpen(true); setWithdrawAmount(String(referralWallet.balance)); loadPayouts(); }}
+                    style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 10, border: "none", background: "none", color: "#CCAB4A", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, textDecoration: "underline", textUnderlineOffset: 3 }}>
+                    Withdraw ₹{referralWallet.balance.toLocaleString("en-IN")}
+                  </button>
+                )}
+              </div>
             </div>
           );
         })()}
@@ -1124,6 +1148,91 @@ export default function CustomerDashboard() {
             </div>
           );
         })()}
+
+        {/* Withdraw earnings modal */}
+        {withdrawModalOpen && (
+          <div onClick={() => setWithdrawModalOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 9500, background: "rgba(20,10,0,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 18 }}>
+            <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 380, maxHeight: "85dvh", overflowY: "auto", background: "#FFFCF5", borderRadius: 22, padding: "26px 24px", boxShadow: "0 24px 70px rgba(0,0,0,0.4)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+                <p style={{ fontSize: 17, fontWeight: 900, color: "#2C1A0E", margin: 0 }}>Withdraw Earnings</p>
+                <button onClick={() => setWithdrawModalOpen(false)} aria-label="Close"
+                  style={{ width: 28, height: 28, borderRadius: "50%", border: "none", background: "rgba(196,122,46,0.1)", color: "#6B3A1F", fontSize: 14, cursor: "pointer" }}>✕</button>
+              </div>
+              <p style={{ fontSize: 12.5, color: "#9B7450", margin: "0 0 18px", lineHeight: 1.5 }}>
+                Available balance: <strong style={{ color: "#2C1A0E" }}>₹{(referralWallet?.balance || 0).toLocaleString("en-IN")}</strong>. Minimum withdrawal ₹200, paid by UPI.
+              </p>
+
+              {payouts && payouts.some(p => ["pending", "approved", "processing"].includes(p.status)) ? (
+                <div style={{ textAlign: "center", padding: "20px 0" }}>
+                  <div style={{ fontSize: 32, marginBottom: 10 }}>⏳</div>
+                  <p style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E", margin: "0 0 4px" }}>Request already in progress</p>
+                  <p style={{ fontSize: 12, color: "#9B7450", margin: 0 }}>We'll update the status here once it's processed.</p>
+                </div>
+              ) : (
+                <>
+                  <div style={{ marginBottom: 12 }}>
+                    <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Amount (₹)</label>
+                    <input type="number" min="200" max={referralWallet?.balance || 0} value={withdrawAmount}
+                      onChange={e => setWithdrawAmount(e.target.value)}
+                      style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 14, color: "#2C1A0E", outline: "none", background: "#fff", boxSizing: "border-box" }} />
+                  </div>
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>UPI ID</label>
+                    <input type="text" placeholder="yourname@okaxis" value={withdrawUpi}
+                      onChange={e => setWithdrawUpi(e.target.value)}
+                      style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 14, color: "#2C1A0E", outline: "none", background: "#fff", boxSizing: "border-box" }} />
+                  </div>
+                  {withdrawError && <div style={{ fontSize: 12, color: "#DC2626", marginBottom: 12 }}>{withdrawError}</div>}
+                  <button disabled={withdrawSubmitting} onClick={async () => {
+                    setWithdrawError("");
+                    const amt = Number(withdrawAmount);
+                    if (!amt || amt < 200) { setWithdrawError("Minimum withdrawal is ₹200"); return; }
+                    if (amt > (referralWallet?.balance || 0)) { setWithdrawError("Amount exceeds your available balance"); return; }
+                    if (!withdrawUpi.trim()) { setWithdrawError("Enter your UPI ID"); return; }
+                    setWithdrawSubmitting(true);
+                    try {
+                      const res = await fetch(`${BASE_URL}/referrals/withdraw`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                        credentials: "include",
+                        body: JSON.stringify({ amount: amt, upiId: withdrawUpi.trim() }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok) { setWithdrawError(data.error || "Couldn't submit — try again."); return; }
+                      setReferralWallet(prev => ({ ...(prev || {}), balance: (prev?.balance || 0) - amt }));
+                      loadPayouts();
+                      setWithdrawUpi("");
+                    } catch {
+                      setWithdrawError("Couldn't submit — check your connection and try again.");
+                    } finally {
+                      setWithdrawSubmitting(false);
+                    }
+                  }}
+                    style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: withdrawSubmitting ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: withdrawSubmitting ? "#9ca3af" : "#fff", fontSize: 14.5, fontWeight: 800, cursor: withdrawSubmitting ? "not-allowed" : "pointer", fontFamily: font }}>
+                    {withdrawSubmitting ? "Submitting…" : "Request Withdrawal"}
+                  </button>
+                </>
+              )}
+
+              {payouts && payouts.length > 0 && (
+                <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(196,122,46,0.12)" }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px" }}>History</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                    {payouts.map(p => {
+                      const statusColor = { pending: "#C47A2E", approved: "#0EA5E9", processing: "#0EA5E9", paid: "#16A34A", rejected: "#DC2626", failed: "#DC2626" }[p.status] || "#9B7450";
+                      return (
+                        <div key={p._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", borderRadius: 9, background: "#fff", border: "1px solid rgba(196,122,46,0.12)" }}>
+                          <span style={{ fontSize: 12.5, fontWeight: 700, color: "#2C1A0E" }}>₹{p.amount.toLocaleString("en-IN")}</span>
+                          <span style={{ fontSize: 10.5, fontWeight: 800, color: statusColor, textTransform: "uppercase", letterSpacing: "0.04em" }}>{p.status}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Referral tier quiz modal */}
         {tierQuizOpen && (
