@@ -184,16 +184,15 @@ export default function CustomerDashboard() {
   const [tierAnswers, setTierAnswers] = useState([]);
   const [tierSubmitting, setTierSubmitting] = useState(false);
 
-  // Referral wallet — fetched once a paid booking exists, since that's when the card first shows
+  // Referral wallet — the card shows for every signed-up customer now, so fetch as soon
+  // as we know who they are rather than waiting on a paid booking.
   useEffect(() => {
-    if (!token || !user?._id) return;
-    const eligible = plans.some(p => p.paymentStatus === 'paid');
-    if (!eligible || referralWallet) return;
+    if (!token || !user?._id || referralWallet) return;
     fetch(`${BASE_URL}/referrals/wallet`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" })
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d) setReferralWallet(d); })
       .catch(() => {});
-  }, [token, user?._id, plans, referralWallet]);
+  }, [token, user?._id, referralWallet]);
 
   // My Parties — House Party Hub events this user has hosted while logged in
   const [myParties, setMyParties] = useState(null); // null = not loaded yet, [] = loaded, none
@@ -1015,25 +1014,8 @@ export default function CustomerDashboard() {
           </div>
         )}
 
-        {/* Referral Card — real code once the customer has a paid booking, teaser before that */}
+        {/* Referral Card — code is available to every signed-up customer, no booking required */}
         {user?._id && (() => {
-          const eligible = plans.some(p => p.paymentStatus === 'paid');
-
-          if (!eligible) {
-            return (
-              <div id="refer-earn" style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", borderRadius: 20, padding: "24px 28px", marginBottom: 28, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", boxShadow: "0 6px 24px rgba(44,26,14,0.18)" }}>
-                <div style={{ fontSize: 36, flexShrink: 0, opacity: 0.6 }}>🔒</div>
-                <div>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>Refer &amp; Earn</p>
-                  <p style={{ fontSize: 14.5, fontWeight: 700, color: "#fff", margin: "0 0 4px" }}>Unlock your referral code after your first booking</p>
-                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: 0, lineHeight: 1.5 }}>
-                    Complete and pay for your first event on Tendr, then share your personal code — friends get {DISCOUNT_PERCENT}% off their first booking too.
-                  </p>
-                </div>
-              </div>
-            );
-          }
-
           const code = generateReferralCode(user._id);
           const formatted = formatCode(code);
           const tierLabel = { bronze: "Bronze", silver: "Silver", gold: "Gold" }[referralWallet?.tier || "bronze"];
