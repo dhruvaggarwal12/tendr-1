@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTour } from '../context/TourContext';
 import { useBookVendors } from '../context/BookVendorsContext';
@@ -496,6 +496,24 @@ export default function FirstTimeExperience() {
     startTour();
     setPhase('tour');
   };
+
+  // Hide the mobile bottom nav (and anything else that listens for drawers)
+  // while the intro overlay is up — it shows again once the user picks an
+  // intent / the tour finishes and phase becomes 'done'.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!window.__tendrDrawers) window.__tendrDrawers = new Set();
+    if (phase === 'done') {
+      window.__tendrDrawers.delete('ftv');
+    } else {
+      window.__tendrDrawers.add('ftv');
+    }
+    window.dispatchEvent(new Event('tendr:drawer'));
+    return () => {
+      window.__tendrDrawers?.delete('ftv');
+      window.dispatchEvent(new Event('tendr:drawer'));
+    };
+  }, [phase]);
 
   if (phase === 'done') return null;
   if (phase === 'ask') return <AskTour onYes={handleYes} onNo={() => setPhase('intent')} />;
