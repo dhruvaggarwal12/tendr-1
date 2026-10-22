@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { usePartyRoom } from "../../hooks/usePartyRoom";
 import { useNavigate } from "react-router-dom";
 import { TRUTHS, DARES, NEVER_HAVE_I, WOULD_YOU_RATHER, CHARADES, HOT_TAKES, BINGO_SQUARES } from "../../data/housePartyData";
@@ -10900,6 +10900,62 @@ const CARD_PALETTE = [
   "#C77DFF","#FF5FA0","#00C9A7","#FF6F00","#5E60CE",
 ];
 
+// Groups the flat Planning Tools list into labelled sections instead of one undifferentiated
+// grid, so a guest can scan by purpose rather than reading every card.
+const PLAN_CATEGORY_OF = {
+  invite:"guests", guestlist:"guests", seating:"guests", giftregistry:"guests",
+  namesuggestions:"guests", advicecards:"guests", countdown:"guests",
+  bills:"money", budget:"money", gifttracker:"money", kittyfund:"money", potluck:"money",
+  menu:"arrangements", daytimeline:"arrangements", venue:"arrangements",
+  vendors:"arrangements", runofshow:"arrangements",
+  wabroadcast:"comms", checklist:"comms",
+};
+const PLAN_CATEGORIES = [
+  { id:"guests",       label:"Guests & Invitations" },
+  { id:"money",        label:"Money & Gifts" },
+  { id:"arrangements", label:"Party Arrangements" },
+  { id:"comms",        label:"Communication" },
+];
+
+// Data-backed arrangement areas the Celebration Overview checks off — mirrors the keys
+// saveHubDataToRoom already snapshots, so "completed" means "has real saved data", not a guess.
+const ARRANGEMENT_AREAS = [
+  { key:"guestlist", label:"Guest list",  sk:(occ)=>`tendr-occ-${occ}-guestlist`,  done:(v)=>Array.isArray(v)&&v.length>0 },
+  { key:"budget",     label:"Budget",     sk:(occ)=>`tendr-occ-${occ}-budget`,     done:(v)=>!!v && Number(v.total)>0 },
+  { key:"venue",      label:"Venue details", sk:(occ)=>`tendr-occ-${occ}-venue`,  done:(v)=>!!v && Object.values(v).some(x=>String(x||'').trim()) },
+  { key:"menu",       label:"Menu",       sk:(occ)=>`tendr-occ-${occ}-menu`,      done:(v)=>Array.isArray(v)&&v.length>0 },
+  { key:"vendors",    label:"Vendors",    sk:(occ)=>`tendr-occ-${occ}-vendors`,   done:(v)=>Array.isArray(v)&&v.length>0 },
+  { key:"seating",    label:"Seating chart", sk:(occ)=>`tendr-occ-${occ}-seating-tables`, done:(v)=>Array.isArray(v)&&v.length>0 },
+  { key:"timeline",   label:"Day timeline", sk:(occ)=>`tendr-occ-${occ}-timeline`, done:(v)=>Array.isArray(v)&&v.length>0 },
+];
+// Which tool id to jump to for each area, and a short nudge line for when it's still open.
+const ARRANGEMENT_TOOL = {
+  guestlist:{ id:"guestlist", nudge:"Add your first guest to start tracking RSVPs." },
+  budget:   { id:"budget",    nudge:"Set a total budget so you can track spending by category." },
+  venue:    { id:"venue",     nudge:"Save the address and parking info so guests don't have to ask." },
+  menu:     { id:"menu",      nudge:"Plan what's being served and flag dietary needs." },
+  vendors:  { id:"vendors",   nudge:"Track who you've booked and what's still pending." },
+  seating:  { id:"seating",   nudge:"Set up tables once your RSVPs start coming in." },
+  timeline: { id:"daytimeline", nudge:"Lay out the day so everyone knows what happens when." },
+};
+
+function readJSON(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
+}
+
+// Reads every arrangement area's real saved data (no stub numbers) and returns completion
+// counts, a budget-spent figure, and the single highest-priority next step to suggest.
+function computeCelebrationSummary(occasion) {
+  const areas = ARRANGEMENT_AREAS.map(a => ({ ...a, isDone: a.done(readJSON(a.sk(occasion), a.key==="venue"||a.key==="budget" ? {} : [])) }));
+  const completed = areas.filter(a => a.isDone).length;
+  const budgetData = readJSON(`tendr-occ-${occasion}-budget`, {});
+  const budgetTotal = Number(budgetData.total || 0);
+  const budgetSpent = ["venue","food","decor","entertainment","other"].reduce((s,c) => s + Number(budgetData[`spent_${c}`] || 0), 0);
+  const nextArea = areas.find(a => !a.isDone);
+  const nextStep = nextArea ? { ...ARRANGEMENT_TOOL[nextArea.key], label: nextArea.label } : null;
+  return { areas, completed, total: areas.length, budgetTotal, budgetSpent, nextStep };
+}
+
 // ── Game metadata: mood tags, player count, time, preview ────────────────
 const MOOD_TAGS = [
   { id:"all",         label:"✨ All",           color:"#FFFFFF" },
@@ -11380,6 +11436,15 @@ function PhotoChallenge({ onClose, accent, room, myName, players = [], gameState
 
 export default function OccasionHub({ occasion }) {
   const [open, setOpen]         = useState(null);
+  // Recompute the Celebration Overview's real numbers whenever a tool modal closes — each
+  // tool writes straight to localStorage, which doesn't trigger a re-render on its own.
+  const [summaryTick, setSummaryTick] = useState(0);
+  const prevOpenRef = useRef(null);
+  useEffect(() => {
+    if (prevOpenRef.current && !open) setSummaryTick(t => t + 1);
+    prevOpenRef.current = open;
+  }, [open]);
+  const celebrationSummary = useMemo(() => computeCelebrationSummary(occasion), [occasion, summaryTick]);
   const [forceSoloOpen, setForceSoloOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("plan");
   const [showSplash, setShowSplash] = useState(() => {
@@ -12317,10 +12382,11 @@ export default function OccasionHub({ occasion }) {
   };
   const occTheme = OCC_THEME[occasion] || OCC_THEME["birthday-party"];
   const isDark = true; // always dark gradient for all occasions
-  const pageBg = "#050208"; // solid fallback (used in splash compat)
+  const pageBg = "#24171B"; // solid fallback (used in splash compat)
   const occAccent = occTheme.accent;
-  // Per-occasion unique dark gradient: solid near-black base + accent tint so it's always DARK
-  const darkGrad = `#050208 linear-gradient(145deg, ${occTheme.accent}22 0%, ${occTheme.accent}58 38%, ${occTheme.accent}18 72%, ${occTheme.accent}08 100%)`;
+  // One deliberate deep-burgundy background for every occasion — accent colour still drives
+  // cards/tabs/badges, but the backdrop itself stays calm instead of an accent-tinted glow.
+  const darkGrad = `linear-gradient(165deg, #24171B 0%, #2C1B20 55%, #241318 100%)`;
   const occIconBg = occTheme.iconBg;
   const occHostGrad = occTheme.hostGrad;
   const occConfetti = occTheme.confetti;
@@ -12488,26 +12554,25 @@ export default function OccasionHub({ occasion }) {
         }
       `}</style>
 
-      {/* Accent glow — occasion colour */}
-      <div style={{ position:"fixed", top:-60, right:-80, width:400, height:300, borderRadius:"50%", background:`radial-gradient(ellipse, ${accent}18 0%, transparent 65%)`, pointerEvents:"none", zIndex:0 }} />
+      {/* Accent glow — occasion colour, kept faint so it never competes with the cards */}
+      <div style={{ position:"fixed", top:-60, right:-80, width:400, height:300, borderRadius:"50%", background:`radial-gradient(ellipse, ${accent}0a 0%, transparent 65%)`, pointerEvents:"none", zIndex:0 }} />
 
       {/* ── Room backdrop — walls, floor and ceiling bunting, so the Hub reads as a space
            rather than a flat screen. Fixed (doesn't scroll with content), zIndex 0 so every
-           real card/button paints above it. ── */}
+           real card/button paints above it. Kept deliberately subtle — a texture, not a feature. ── */}
       <div aria-hidden style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, overflow:"hidden" }}>
         {/* Wall texture — faint vertical paneling */}
-        <div style={{ position:"absolute", inset:0, opacity:0.5, backgroundImage:`repeating-linear-gradient(90deg, ${occAccent}0d 0px, ${occAccent}0d 1px, transparent 1px, transparent 64px)` }} />
+        <div style={{ position:"absolute", inset:0, opacity:0.22, backgroundImage:`repeating-linear-gradient(90deg, ${occAccent}0d 0px, ${occAccent}0d 1px, transparent 1px, transparent 64px)` }} />
         {/* Floor band */}
-        <div style={{ position:"absolute", left:0, right:0, bottom:0, height:"20%", background:`linear-gradient(to top, ${occAccent}14 0%, ${occAccent}06 60%, transparent 100%)` }} />
-        <div style={{ position:"absolute", left:0, right:0, bottom:"20%", height:1, background:`linear-gradient(90deg, transparent, ${occAccent}35, transparent)` }} />
-        <div style={{ position:"absolute", left:0, right:0, bottom:0, height:"20%", opacity:0.35, backgroundImage:`repeating-linear-gradient(100deg, ${occAccent}10 0px, ${occAccent}10 2px, transparent 2px, transparent 46px)` }} />
-        {/* Ceiling bunting — strung across the top of the room */}
-        <svg width="100%" height="46" viewBox="0 0 400 46" preserveAspectRatio="none" style={{ position:"absolute", top:0, left:0, opacity:0.55 }}>
-          <path d="M0 6 Q100 34 200 8 Q300 -14 400 6" fill="none" stroke={`${occAccent}55`} strokeWidth="1.3" />
-          {[18,58,98,138,178,218,258,298,338,378].map((x,i)=>{
+        <div style={{ position:"absolute", left:0, right:0, bottom:0, height:"20%", background:`linear-gradient(to top, ${occAccent}0a 0%, ${occAccent}03 60%, transparent 100%)` }} />
+        <div style={{ position:"absolute", left:0, right:0, bottom:"20%", height:1, background:`linear-gradient(90deg, transparent, ${occAccent}1c, transparent)` }} />
+        {/* Ceiling bunting — a quiet line, not a row of glowing flags */}
+        <svg width="100%" height="46" viewBox="0 0 400 46" preserveAspectRatio="none" style={{ position:"absolute", top:0, left:0, opacity:0.3 }}>
+          <path d="M0 6 Q100 34 200 8 Q300 -14 400 6" fill="none" stroke={`${occAccent}40`} strokeWidth="1.3" />
+          {[58,178,298].map((x,i)=>{
             const y = 6 + 26*Math.sin((x/400)*Math.PI*1.35+0.3);
             const c = occConfetti[i % occConfetti.length];
-            return <path key={i} d={`M${x} ${y} L${x-6} ${y+11} L${x+6} ${y+11} Z`} fill={c} opacity="0.8" />;
+            return <path key={i} d={`M${x} ${y} L${x-6} ${y+11} L${x+6} ${y+11} Z`} fill={c} opacity="0.55" />;
           })}
         </svg>
       </div>
@@ -13075,24 +13140,18 @@ export default function OccasionHub({ occasion }) {
           </button>
           {/* Center */}
           <div style={{ position:"absolute", left:0, right:0, textAlign:"center", pointerEvents:"none" }}>
-            <div style={{ display:"inline-flex", alignItems:"center", gap:6 }}>
-              <span style={{ fontSize:9, color:occAccent, opacity:0.4 }}>✦</span>
-              <span style={{ fontFamily:"'Dancing Script', cursive", fontSize:"clamp(1.1rem,3vw,1.5rem)", fontWeight:700, color:occAccent, lineHeight:1 }}>Party Hub</span>
-              <span style={{ fontSize:9, color:occAccent, opacity:0.4 }}>✦</span>
+            <div style={{ fontSize:9, fontWeight:800, color:occAccent, opacity:0.7, textTransform:"uppercase", letterSpacing:"0.16em", marginBottom:3 }}>
+              Party Hub
             </div>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, marginTop:4 }}>
-              <div style={{ flex:1, maxWidth:60, height:1, background:`linear-gradient(to right, transparent, ${occAccent}50)` }} />
-              <div style={{ fontSize:"clamp(1rem,2.5vw,1.25rem)", fontWeight:800, color:T.main, fontFamily:font, letterSpacing:"-0.01em", whiteSpace:"nowrap" }}>
-                {occ.emoji} {occ.name}
-                {room && <span style={{ color:occAccent, fontSize:11, fontWeight:600, marginLeft:8 }}>{room.code}</span>}
+            <div style={{ fontSize:"clamp(1.15rem,3vw,1.4rem)", fontWeight:800, color:T.main, fontFamily:font, letterSpacing:"-0.01em", whiteSpace:"nowrap" }}>
+              {occ.emoji} {occ.name}
+              {room && <span style={{ color:occAccent, fontSize:11, fontWeight:600, marginLeft:8 }}>{room.code}</span>}
+            </div>
+            {celebrantName && (
+              <div style={{ fontSize:11, color:occAccent, fontWeight:700, letterSpacing:"0.01em", marginTop:2 }}>
+                ✦ {celebrantName} ✦
               </div>
-              {celebrantName && (
-                <div style={{ fontSize:11, color:occAccent, fontWeight:700, letterSpacing:"0.01em", marginTop:2 }}>
-                  ✦ {celebrantName} ✦
-                </div>
-              )}
-              <div style={{ flex:1, maxWidth:60, height:1, background:`linear-gradient(to left, transparent, ${occAccent}50)` }} />
-            </div>
+            )}
           </div>
           <div style={{ flex:1 }} />
           {/* Leaderboard button (only in a room) */}
@@ -13112,9 +13171,9 @@ export default function OccasionHub({ occasion }) {
               window.dispatchEvent(new CustomEvent('tendr:hub-minimized'));
               navigate('/');
             }}
-            title="Minimize"
+            title="Minimize to a small window"
             style={{ display:"flex", alignItems:"center", justifyContent:"center", width:34, height:34, borderRadius:"50%", border:`1.5px solid ${occAccent}40`, background:"rgba(255,255,255,0.80)", color:occAccent, fontSize:15, cursor:"pointer", flexShrink:0, zIndex:1, boxShadow:"0 1px 6px rgba(0,0,0,0.08)", marginRight:6 }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="13" y="13" width="7" height="7" rx="1.2" fill="currentColor" stroke="none"/></svg>
           </button>
           {/* Host button */}
           <button onClick={()=>setShowHostControls(true)} style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 16px", borderRadius:100, border:`1.5px solid ${occAccent}60`, background:"rgba(255,255,255,0.85)", color:occAccent, fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0, zIndex:1, boxShadow:"0 1px 6px rgba(0,0,0,0.08)" }}>
@@ -13152,11 +13211,11 @@ export default function OccasionHub({ occasion }) {
           "wedding":         [{e:"💍",x:8,y:12,s:52},{e:"🌹",x:88,y:8,s:44},{e:"🎊",x:5,y:55,s:36},{e:"💕",x:82,y:60,s:30},{e:"✨",x:45,y:85,s:40},{e:"🕊️",x:92,y:40,s:28}],
           "dussehra-party":  [{e:"🏹",x:8,y:12,s:52},{e:"🌟",x:88,y:8,s:44},{e:"🎆",x:5,y:55,s:36},{e:"🪔",x:82,y:60,s:30},{e:"✨",x:45,y:85,s:40},{e:"🔱",x:92,y:40,s:28}],
         };
-        const emojis = OCC_BG[occasion] || [{e:occ.emoji,x:8,y:12,s:52},{e:"✨",x:88,y:8,s:44},{e:"🎉",x:5,y:55,s:36},{e:"⭐",x:82,y:60,s:30},{e:"🎊",x:45,y:85,s:40},{e:occ.emoji,x:92,y:40,s:28}];
+        const emojis = (OCC_BG[occasion] || [{e:occ.emoji,x:8,y:12,s:52},{e:"✨",x:88,y:8,s:44},{e:"🎉",x:5,y:55,s:36},{e:"⭐",x:82,y:60,s:30},{e:"🎊",x:45,y:85,s:40},{e:occ.emoji,x:92,y:40,s:28}]).slice(0,3);
         return (
           <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:0, overflow:"hidden" }}>
             {emojis.map((d,i)=>(
-              <div key={i} style={{ position:"absolute", left:`${d.x}%`, top:`${d.y}%`, fontSize:d.s, opacity:0.12, lineHeight:1, userSelect:"none", transform:`rotate(${(i%2===0?1:-1)*12}deg)`, filter:"saturate(1.1)" }}>
+              <div key={i} style={{ position:"absolute", left:`${d.x}%`, top:`${d.y}%`, fontSize:d.s, opacity:0.07, lineHeight:1, userSelect:"none", transform:`rotate(${(i%2===0?1:-1)*12}deg)`, filter:"saturate(1.1)" }}>
                 {d.e}
               </div>
             ))}
@@ -13164,20 +13223,19 @@ export default function OccasionHub({ occasion }) {
         );
       })()}
 
-      {/* Confetti */}
+      {/* Confetti — a handful of specks, not a shower */}
       <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:0, overflow:"hidden" }}>
         {[
-          {x:8,y:12,s:7,c:0},{x:18,y:5,s:5,c:1},{x:32,y:18,s:6,c:2},{x:45,y:8,s:4,c:3},{x:58,y:14,s:7,c:4},
-          {x:70,y:6,s:5,c:0},{x:82,y:11,s:6,c:1},{x:92,y:18,s:4,c:2},{x:5,y:35,s:5,c:3},{x:15,y:42,s:7,c:4},
-          {x:28,y:38,s:4,c:0},{x:72,y:35,s:6,c:1},{x:85,y:42,s:5,c:2},{x:95,y:30,s:4,c:3},{x:10,y:60,s:6,c:4},
-          {x:20,y:70,s:5,c:0},{x:75,y:62,s:7,c:1},{x:88,y:72,s:4,c:2},{x:3,y:80,s:5,c:3},{x:92,y:85,s:6,c:4},
-          {x:40,y:90,s:4,c:0},{x:55,y:88,s:5,c:1},{x:65,y:92,s:7,c:2},{x:35,y:55,s:4,c:3},{x:60,y:50,s:5,c:4},
+          {x:8,y:12,s:6,c:0},{x:45,y:8,s:4,c:3},{x:82,y:11,s:5,c:1},
+          {x:15,y:42,s:5,c:4},{x:85,y:42,s:4,c:2},
+          {x:20,y:70,s:5,c:0},{x:88,y:72,s:4,c:2},{x:55,y:88,s:4,c:1},
         ].map((d,i) => (
-          <div key={i} style={{ position:"absolute", left:`${d.x}%`, top:`${d.y}%`, width:d.s, height:d.s, borderRadius: i%3===0 ? 1 : "50%", background: occConfetti[d.c % occConfetti.length], opacity:0.28 }} />
+          <div key={i} style={{ position:"absolute", left:`${d.x}%`, top:`${d.y}%`, width:d.s, height:d.s, borderRadius: i%3===0 ? 1 : "50%", background: occConfetti[d.c % occConfetti.length], opacity:0.14 }} />
         ))}
       </div>
 
-      {/* Per-occasion decorative illustrations */}
+      {/* Per-occasion decorative illustrations — dimmed further so they read as texture, not focal shapes */}
+      <div style={{ opacity:0.45 }}>
       {(() => {
         const decorStyle = { position:"absolute", pointerEvents:"none", zIndex:0 };
         switch(occasion) {
@@ -13471,8 +13529,51 @@ export default function OccasionHub({ occasion }) {
             return null;
         }
       })()}
+      </div>
 
+      {/* ── Celebration Overview — real numbers from saved tool data, not a mock-up ── */}
+      {(() => {
+        const s = celebrationSummary;
+        const guestLine = [
+          planData?.date ? new Date(planData.date + "T00:00:00").toLocaleDateString("en-IN", { weekday:"long", day:"numeric", month:"short" }) : null,
+          planData?.guests ? `${planData.guests} guests` : null,
+        ].filter(Boolean).join(" · ");
+        return (
+          <div style={{ background:"rgba(51,35,41,0.82)", border:"1px solid rgba(217,160,95,0.22)", borderRadius:16, padding:"16px 18px", marginBottom:16, position:"relative", zIndex:1 }}>
+            <div style={{ fontSize:9.5, fontWeight:800, color:"#D9A05F", textTransform:"uppercase", letterSpacing:"0.16em", marginBottom:6 }}>Your Celebration</div>
+            <div style={{ display:"flex", alignItems:"baseline", gap:8, marginBottom:guestLine?4:12, flexWrap:"wrap" }}>
+              <span style={{ fontSize:19, fontWeight:800, color:"#FFF7F0" }}>{occ.name} {occ.emoji}</span>
+            </div>
+            {guestLine && <div style={{ fontSize:12, color:"#C5B3B6", marginBottom:14 }}>{guestLine}</div>}
 
+            <div style={{ display:"flex", gap:10, marginBottom:14, flexWrap:"wrap" }}>
+              <div style={{ flex:"1 1 120px", background:"rgba(0,0,0,0.18)", borderRadius:12, padding:"10px 14px" }}>
+                <div style={{ fontSize:9, fontWeight:700, color:"#C5B3B6", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:3 }}>Arrangements</div>
+                <div style={{ fontSize:17, fontWeight:800, color:"#FFF7F0" }}>{s.completed} <span style={{ fontSize:12, fontWeight:600, color:"#C5B3B6" }}>of {s.total}</span></div>
+              </div>
+              {s.budgetTotal > 0 && (
+                <div style={{ flex:"1 1 120px", background:"rgba(0,0,0,0.18)", borderRadius:12, padding:"10px 14px" }}>
+                  <div style={{ fontSize:9, fontWeight:700, color:"#C5B3B6", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:3 }}>Budget used</div>
+                  <div style={{ fontSize:17, fontWeight:800, color:"#FFF7F0" }}>₹{s.budgetSpent.toLocaleString("en-IN")} <span style={{ fontSize:12, fontWeight:600, color:"#C5B3B6" }}>/ ₹{s.budgetTotal.toLocaleString("en-IN")}</span></div>
+                </div>
+              )}
+            </div>
+
+            {s.nextStep ? (
+              <button onClick={() => openTool(s.nextStep.id)} style={{ width:"100%", textAlign:"left", display:"flex", alignItems:"center", gap:12, padding:"12px 14px", borderRadius:12, border:"none", background:"rgba(217,160,95,0.14)", cursor:"pointer" }}>
+                <span style={{ fontSize:20, flexShrink:0 }}>{TOOL_EMOJI[s.nextStep.id] || "✨"}</span>
+                <span style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:9, fontWeight:800, color:"#D9A05F", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:2 }}>Your next step</div>
+                  <div style={{ fontSize:12.5, color:"#FFF7F0", lineHeight:1.4 }}>{s.nextStep.nudge}</div>
+                </span>
+                <span style={{ color:"#D9A05F", fontSize:16, flexShrink:0 }}>→</span>
+              </button>
+            ) : (
+              <div style={{ fontSize:12.5, color:"#C5B3B6", textAlign:"center", padding:"6px 0" }}>🎉 Every arrangement is set — just enjoy the countdown.</div>
+            )}
+          </div>
+        );
+      })()}
 
         {/* LOBBY — removed */}
         {activeTab === "lobby_removed" && (
@@ -13662,62 +13763,74 @@ export default function OccasionHub({ occasion }) {
             )}
             {visiblePlanTools.length === 0 ? (
               <div style={{ textAlign:"center", padding:"48px 20px", color:T.sub, fontSize:14 }}>No tools available.</div>
-            ) : (
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:10 }}>
-                  {visiblePlanTools.map((t,i) => {
-                    const cc = CARD_PALETTE[i % CARD_PALETTE.length];
-                    const em = TOOL_EMOJI[t.id] || "🎯";
-                    const isParticipantTool = PARTICIPANT_PLAN_IDS.has(t.id);
-                    const isHiddenFromPeers = toolVisibility[t.id] === false;
-                    const isActivated = toolActivated[t.id] || false;
-                    const lockedForParticipant = room && !isHost && isParticipantTool && !isActivated;
+            ) : (() => {
+              const renderCard = (t, i) => {
+                const cc = CARD_PALETTE[i % CARD_PALETTE.length];
+                const em = TOOL_EMOJI[t.id] || "🎯";
+                const isParticipantTool = PARTICIPANT_PLAN_IDS.has(t.id);
+                const isHiddenFromPeers = toolVisibility[t.id] === false;
+                const isActivated = toolActivated[t.id] || false;
+                const lockedForParticipant = room && !isHost && isParticipantTool && !isActivated;
+                return (
+                  <div key={t.id}
+                    onClick={() => { if (!lockedForParticipant) openTool(t.id); }}
+                    className="occ-tool-card occ-colored-card"
+                    style={{
+                      background:"rgba(51,35,41,0.82)", border:`1.5px solid ${lockedForParticipant ? cc+"28" : cc+"55"}`,
+                      borderRadius:14, padding:"16px 10px 12px",
+                      cursor: lockedForParticipant ? "default" : "pointer",
+                      display:"flex", flexDirection:"column", alignItems:"center", gap:7, textAlign:"center",
+                      position:"relative", overflow:"hidden",
+                      opacity: isHiddenFromPeers ? 0.55 : 1,
+                    }}>
+                    <div className="occ-colored-card-emoji" style={{ fontSize:28, lineHeight:1, filter:"drop-shadow(0 1px 2px rgba(0,0,0,0.35))", opacity: lockedForParticipant ? 0.45 : 1 }}>{em}</div>
+                    <div className="occ-colored-card-label" style={{ fontSize:11.5, fontWeight:700, color: lockedForParticipant ? "rgba(255,247,240,0.40)" : "#FFF7F0", lineHeight:1.3 }}>{t.title}</div>
+                    {/* Participant lock overlay when tool not yet activated by host */}
+                    {lockedForParticipant && (
+                      <div style={{ position:"absolute", inset:0, borderRadius:14, background:"rgba(2,1,8,0.70)", backdropFilter:"blur(3px)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:5, animation:"lock-shimmer 2.8s ease-in-out infinite" }}>
+                        <span style={{ fontSize:22 }}>🔒</span>
+                        <span style={{ fontSize:9, fontWeight:800, color:"rgba(255,255,255,0.55)", textAlign:"center", letterSpacing:"0.08em", textTransform:"uppercase" }}>Host Activates</span>
+                      </div>
+                    )}
+                    {/* Host controls: 🔓 activate + 👁 visibility */}
+                    {isHost && room && isParticipantTool && (
+                      <div style={{ position:"absolute", top:6, right:6, display:"flex", gap:3 }}>
+                        <button
+                          onClick={e => { e.stopPropagation(); if (!isActivated) activateTool(t.id); }}
+                          title={isActivated ? "Activated — guests can use this" : "Activate for guests"}
+                          style={{ width:26, height:26, borderRadius:7, border:`1px solid ${isActivated ? "rgba(74,222,128,0.55)" : "rgba(251,191,36,0.65)"}`, background: isActivated ? "rgba(74,222,128,0.18)" : "rgba(251,191,36,0.18)", color: isActivated ? "#4ade80" : "#FBBF24", fontSize:12, cursor: isActivated ? "default" : "pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}
+                        >{isActivated ? "✓" : "🔓"}</button>
+                        <button
+                          onClick={e => { e.stopPropagation(); toggleToolVisibility(t.id); }}
+                          title={isHiddenFromPeers ? "Hidden from guests — tap to show" : "Visible to guests — tap to hide"}
+                          style={{ width:26, height:26, borderRadius:7, border:`1px solid ${isHiddenFromPeers ? "rgba(255,80,80,0.50)" : "rgba(255,255,255,0.22)"}`, background: isHiddenFromPeers ? "rgba(255,60,60,0.22)" : "rgba(255,255,255,0.10)", color: isHiddenFromPeers ? "rgba(255,120,120,0.90)" : "rgba(255,255,255,0.65)", fontSize:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}
+                        >{isHiddenFromPeers ? "🚫" : "👁"}</button>
+                      </div>
+                    )}
+                    {/* Host nudge: show activate status */}
+                    {isHost && room && isParticipantTool && !isActivated && (
+                      <div style={{ fontSize:9, color:"rgba(251,191,36,0.7)", fontWeight:700, marginTop:-4, letterSpacing:"0.04em" }}>Tap 🔓 to activate</div>
+                    )}
+                  </div>
+                );
+              };
+              return (
+                <div style={{ display:"flex", flexDirection:"column", gap:20 }}>
+                  {PLAN_CATEGORIES.map(cat => {
+                    const toolsInCat = visiblePlanTools.filter(t => (PLAN_CATEGORY_OF[t.id] || "arrangements") === cat.id);
+                    if (toolsInCat.length === 0) return null;
                     return (
-                      <div key={t.id}
-                        onClick={() => { if (!lockedForParticipant) openTool(t.id); }}
-                        className="occ-tool-card occ-colored-card"
-                        style={{
-                          background:`${cc}38`, border:`2px solid ${lockedForParticipant ? cc+"44" : cc+"88"}`,
-                          borderRadius:14, padding:"16px 10px 12px",
-                          cursor: lockedForParticipant ? "default" : "pointer",
-                          display:"flex", flexDirection:"column", alignItems:"center", gap:6, textAlign:"center",
-                          position:"relative", overflow:"hidden",
-                          boxShadow:`0 4px 20px ${cc}25`,
-                          opacity: isHiddenFromPeers ? 0.55 : 1,
-                        }}>
-                        <div className="occ-colored-card-emoji" style={{ fontSize:32, lineHeight:1, textShadow:`0 0 18px ${cc}CC, 0 0 6px ${cc}88`, opacity: lockedForParticipant ? 0.45 : 1 }}>{em}</div>
-                        <div className="occ-colored-card-label" style={{ fontSize:11.5, fontWeight:800, color: lockedForParticipant ? "rgba(255,255,255,0.40)" : "#FFFFFF", lineHeight:1.3, textShadow:"0 1px 4px rgba(0,0,0,0.5)" }}>{t.title}</div>
-                        <div style={{ position:"absolute", top:-14, right:-14, width:48, height:48, borderRadius:"50%", background:`${cc}22`, pointerEvents:"none" }} />
-                        {/* Participant lock overlay when tool not yet activated by host */}
-                        {lockedForParticipant && (
-                          <div style={{ position:"absolute", inset:0, borderRadius:16, background:"rgba(2,1,8,0.70)", backdropFilter:"blur(3px)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:5, animation:"lock-shimmer 2.8s ease-in-out infinite" }}>
-                            <span style={{ fontSize:22 }}>🔒</span>
-                            <span style={{ fontSize:9, fontWeight:800, color:"rgba(255,255,255,0.55)", textAlign:"center", letterSpacing:"0.08em", textTransform:"uppercase" }}>Host Activates</span>
-                          </div>
-                        )}
-                        {/* Host controls: 🔓 activate + 👁 visibility */}
-                        {isHost && room && isParticipantTool && (
-                          <div style={{ position:"absolute", top:6, right:6, display:"flex", gap:3 }}>
-                            <button
-                              onClick={e => { e.stopPropagation(); if (!isActivated) activateTool(t.id); }}
-                              title={isActivated ? "Activated — guests can use this" : "Activate for guests"}
-                              style={{ width:26, height:26, borderRadius:7, border:`1px solid ${isActivated ? "rgba(74,222,128,0.55)" : "rgba(251,191,36,0.65)"}`, background: isActivated ? "rgba(74,222,128,0.18)" : "rgba(251,191,36,0.18)", color: isActivated ? "#4ade80" : "#FBBF24", fontSize:12, cursor: isActivated ? "default" : "pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}
-                            >{isActivated ? "✓" : "🔓"}</button>
-                            <button
-                              onClick={e => { e.stopPropagation(); toggleToolVisibility(t.id); }}
-                              title={isHiddenFromPeers ? "Hidden from guests — tap to show" : "Visible to guests — tap to hide"}
-                              style={{ width:26, height:26, borderRadius:7, border:`1px solid ${isHiddenFromPeers ? "rgba(255,80,80,0.50)" : "rgba(255,255,255,0.22)"}`, background: isHiddenFromPeers ? "rgba(255,60,60,0.22)" : "rgba(255,255,255,0.10)", color: isHiddenFromPeers ? "rgba(255,120,120,0.90)" : "rgba(255,255,255,0.65)", fontSize:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}
-                            >{isHiddenFromPeers ? "🚫" : "👁"}</button>
-                          </div>
-                        )}
-                        {/* Host nudge: show activate status */}
-                        {isHost && room && isParticipantTool && !isActivated && (
-                          <div style={{ fontSize:9, color:"rgba(251,191,36,0.7)", fontWeight:700, marginTop:-4, letterSpacing:"0.04em" }}>Tap 🔓 to activate</div>
-                        )}
+                      <div key={cat.id}>
+                        <div style={{ fontSize:9.5, fontWeight:800, color:"#C5B3B6", textTransform:"uppercase", letterSpacing:"0.12em", marginBottom:10 }}>{cat.label}</div>
+                        <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
+                          {toolsInCat.map((t) => renderCard(t, visiblePlanTools.indexOf(t)))}
+                        </div>
                       </div>
                     );
                   })}
                 </div>
-            )}
+              );
+            })()}
           </div>
           );
         })()}
@@ -13733,21 +13846,19 @@ export default function OccasionHub({ occasion }) {
             {momentTools.length === 0 ? (
               <div style={{ textAlign:"center", padding:"40px 20px", color:T.sub, fontSize:14 }}>No moments tools for this occasion.</div>
             ) : (
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:10 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:14 }}>
                   {momentTools.map((t,i) => {
                     const cc = CARD_PALETTE[(i + 4) % CARD_PALETTE.length];
                     const em = TOOL_EMOJI[t.id] || "✨";
                     return (
                       <div key={t.id} onClick={()=>openTool(t.id)} className="occ-tool-card occ-colored-card" style={{
-                        background:`${cc}38`, border:`2px solid ${cc}88`,
+                        background:"rgba(51,35,41,0.82)", border:`1.5px solid ${cc}55`,
                         borderRadius:14, padding:"16px 10px 12px", cursor:"pointer",
-                        display:"flex", flexDirection:"column", alignItems:"center", gap:6, textAlign:"center",
+                        display:"flex", flexDirection:"column", alignItems:"center", gap:7, textAlign:"center",
                         position:"relative", overflow:"hidden",
-                        boxShadow:`0 4px 20px ${cc}25`,
                       }}>
-                        <div className="occ-colored-card-emoji" style={{ fontSize:32, lineHeight:1, textShadow:`0 0 18px ${cc}CC, 0 0 6px ${cc}88` }}>{em}</div>
-                        <div className="occ-colored-card-label" style={{ fontSize:11.5, fontWeight:800, color:"#FFFFFF", lineHeight:1.3, textShadow:"0 1px 4px rgba(0,0,0,0.5)" }}>{t.title}</div>
-                        <div style={{ position:"absolute", top:-14, right:-14, width:48, height:48, borderRadius:"50%", background:`${cc}22`, pointerEvents:"none" }} />
+                        <div className="occ-colored-card-emoji" style={{ fontSize:28, lineHeight:1, filter:"drop-shadow(0 1px 2px rgba(0,0,0,0.35))" }}>{em}</div>
+                        <div className="occ-colored-card-label" style={{ fontSize:11.5, fontWeight:700, color:"#FFF7F0", lineHeight:1.3 }}>{t.title}</div>
                       </div>
                     );
                   })}
