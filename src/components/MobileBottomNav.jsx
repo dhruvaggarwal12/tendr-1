@@ -131,6 +131,9 @@ function BottomNavInner() {
   }, [location.pathname]);
 
   const [visible, setVisible] = useState(true);
+  // Manually collapsed via the arrow handle — independent of the scroll-based
+  // auto-hide above; stays down until the user taps the handle again.
+  const [navCollapsed, setNavCollapsed] = useState(false);
   const [browseOpen, setBrowseOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
   const [planOpen, setPlanOpen] = useState(false);
@@ -525,13 +528,29 @@ function BottomNavInner() {
           boxShadow: "0 -4px 24px rgba(139,69,19,0.16)",
           display: "flex",
           alignItems: "flex-start",
-          transform: visible ? "translateY(0)" : "translateY(100%)",
+          transform: (visible && !navCollapsed) ? "translateY(0)" : "translateY(100%)",
           transition: "transform 0.22s ease",
-          pointerEvents: visible ? "auto" : "none",
+          pointerEvents: (visible && !navCollapsed) ? "auto" : "none",
           fontFamily: font,
           boxSizing: "border-box",
         }}
       >
+        {/* Collapse handle — small tab overlapping the top edge of the bar */}
+        <button
+          onClick={() => setNavCollapsed(true)}
+          aria-label="Hide navigation bar"
+          title="Hide navigation bar"
+          style={{
+            position: "absolute", top: -16, left: "50%", transform: "translateX(-50%)",
+            width: 44, height: 18, borderRadius: "10px 10px 0 0",
+            background: "rgba(255,252,245,0.96)", backdropFilter: "blur(16px)",
+            border: "1.5px solid rgba(196,122,46,0.28)", borderBottom: "none",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", pointerEvents: "auto", WebkitTapHighlightColor: "transparent",
+          }}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B08060" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
         {items.map(({ label, paths, onTap }) => {
           const active = isActive(paths, label);
           const Icon = NAV_ICONS[label];
@@ -609,6 +628,26 @@ function BottomNavInner() {
           );
         })}
       </nav>
+
+      {/* Re-expand handle — only shown once the bar has been manually collapsed */}
+      {navCollapsed && (
+        <button
+          onClick={() => setNavCollapsed(false)}
+          aria-label="Show navigation bar"
+          title="Show navigation bar"
+          style={{
+            position: "fixed", bottom: "env(safe-area-inset-bottom, 0px)", left: "50%", transform: "translateX(-50%)",
+            zIndex: 99990, width: 52, height: 20, borderRadius: "10px 10px 0 0",
+            background: "rgba(255,252,245,0.96)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+            border: "1.5px solid rgba(196,122,46,0.28)", borderBottom: "none",
+            boxShadow: "0 -2px 12px rgba(139,69,19,0.14)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", WebkitTapHighlightColor: "transparent",
+          }}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B08060" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+        </button>
+      )}
 
       <style>{`
         @keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }

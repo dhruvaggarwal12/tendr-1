@@ -12367,6 +12367,21 @@ export default function OccasionHub({ occasion }) {
         {/* Subtle botanical tint */}
         <div style={{ position:"fixed", top:-80, right:-80, width:360, height:360, borderRadius:"50%", background:`radial-gradient(ellipse, ${accent}14 0%, transparent 70%)`, pointerEvents:"none", zIndex:0 }} />
 
+        {/* Room backdrop — same wall/floor/bunting treatment as the main Hub, so entering feels continuous */}
+        <div aria-hidden style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, overflow:"hidden" }}>
+          <div style={{ position:"absolute", inset:0, opacity:0.5, backgroundImage:`repeating-linear-gradient(90deg, ${occAccent}0d 0px, ${occAccent}0d 1px, transparent 1px, transparent 64px)` }} />
+          <div style={{ position:"absolute", left:0, right:0, bottom:0, height:"20%", background:`linear-gradient(to top, ${occAccent}14 0%, ${occAccent}06 60%, transparent 100%)` }} />
+          <div style={{ position:"absolute", left:0, right:0, bottom:"20%", height:1, background:`linear-gradient(90deg, transparent, ${occAccent}35, transparent)` }} />
+          <svg width="100%" height="46" viewBox="0 0 400 46" preserveAspectRatio="none" style={{ position:"absolute", top:0, left:0, opacity:0.55 }}>
+            <path d="M0 6 Q100 34 200 8 Q300 -14 400 6" fill="none" stroke={`${occAccent}55`} strokeWidth="1.3" />
+            {[18,58,98,138,178,218,258,298,338,378].map((x,i)=>{
+              const y = 6 + 26*Math.sin((x/400)*Math.PI*1.35+0.3);
+              const c = occConfetti[i % occConfetti.length];
+              return <path key={i} d={`M${x} ${y} L${x-6} ${y+11} L${x+6} ${y+11} Z`} fill={c} opacity="0.8" />;
+            })}
+          </svg>
+        </div>
+
         {/* Back navigation */}
         <button onClick={() => navigate(-1)} style={{ position:"absolute", top:20, left:20, zIndex:3, background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.14)", color:"rgba(255,255,255,0.70)", borderRadius:12, padding:"8px 14px", fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:6 }}>← Back</button>
 
@@ -12475,6 +12490,27 @@ export default function OccasionHub({ occasion }) {
 
       {/* Accent glow — occasion colour */}
       <div style={{ position:"fixed", top:-60, right:-80, width:400, height:300, borderRadius:"50%", background:`radial-gradient(ellipse, ${accent}18 0%, transparent 65%)`, pointerEvents:"none", zIndex:0 }} />
+
+      {/* ── Room backdrop — walls, floor and ceiling bunting, so the Hub reads as a space
+           rather than a flat screen. Fixed (doesn't scroll with content), zIndex 0 so every
+           real card/button paints above it. ── */}
+      <div aria-hidden style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, overflow:"hidden" }}>
+        {/* Wall texture — faint vertical paneling */}
+        <div style={{ position:"absolute", inset:0, opacity:0.5, backgroundImage:`repeating-linear-gradient(90deg, ${occAccent}0d 0px, ${occAccent}0d 1px, transparent 1px, transparent 64px)` }} />
+        {/* Floor band */}
+        <div style={{ position:"absolute", left:0, right:0, bottom:0, height:"20%", background:`linear-gradient(to top, ${occAccent}14 0%, ${occAccent}06 60%, transparent 100%)` }} />
+        <div style={{ position:"absolute", left:0, right:0, bottom:"20%", height:1, background:`linear-gradient(90deg, transparent, ${occAccent}35, transparent)` }} />
+        <div style={{ position:"absolute", left:0, right:0, bottom:0, height:"20%", opacity:0.35, backgroundImage:`repeating-linear-gradient(100deg, ${occAccent}10 0px, ${occAccent}10 2px, transparent 2px, transparent 46px)` }} />
+        {/* Ceiling bunting — strung across the top of the room */}
+        <svg width="100%" height="46" viewBox="0 0 400 46" preserveAspectRatio="none" style={{ position:"absolute", top:0, left:0, opacity:0.55 }}>
+          <path d="M0 6 Q100 34 200 8 Q300 -14 400 6" fill="none" stroke={`${occAccent}55`} strokeWidth="1.3" />
+          {[18,58,98,138,178,218,258,298,338,378].map((x,i)=>{
+            const y = 6 + 26*Math.sin((x/400)*Math.PI*1.35+0.3);
+            const c = occConfetti[i % occConfetti.length];
+            return <path key={i} d={`M${x} ${y} L${x-6} ${y+11} L${x+6} ${y+11} Z`} fill={c} opacity="0.8" />;
+          })}
+        </svg>
+      </div>
 
       {/* ── Splash ── */}
       {showSplash && (
@@ -13033,9 +13069,9 @@ export default function OccasionHub({ occasion }) {
       {/* ── Top Bar ── */}
       <div style={{ flexShrink:0, padding:"max(14px, env(safe-area-inset-top)) 16px 10px", background:"transparent", position:"relative", zIndex:2 }}>
         <div style={{ display:"flex", alignItems:"center", maxWidth:800, margin:"0 auto", position:"relative" }}>
-          {/* Back button */}
-          <button onClick={handleBack} style={{ width:36, height:36, borderRadius:"50%", border:"none", ...T.backBtn, boxShadow:"0 2px 8px rgba(0,0,0,0.1)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, zIndex:1 }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          {/* Close button — fully exits the hub (no minimize) */}
+          <button onClick={handleBack} title="Close" style={{ width:36, height:36, borderRadius:"50%", border:"none", ...T.backBtn, boxShadow:"0 2px 8px rgba(0,0,0,0.1)", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, zIndex:1 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
           {/* Center */}
           <div style={{ position:"absolute", left:0, right:0, textAlign:"center", pointerEvents:"none" }}>
@@ -13076,7 +13112,7 @@ export default function OccasionHub({ occasion }) {
               window.dispatchEvent(new CustomEvent('tendr:hub-minimized'));
               navigate('/');
             }}
-            title="Minimize to bubble"
+            title="Minimize"
             style={{ display:"flex", alignItems:"center", justifyContent:"center", width:34, height:34, borderRadius:"50%", border:`1.5px solid ${occAccent}40`, background:"rgba(255,255,255,0.80)", color:occAccent, fontSize:15, cursor:"pointer", flexShrink:0, zIndex:1, boxShadow:"0 1px 6px rgba(0,0,0,0.08)", marginRight:6 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
           </button>

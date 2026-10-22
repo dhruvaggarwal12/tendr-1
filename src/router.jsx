@@ -1,5 +1,5 @@
 import { createBrowserRouter, Outlet, ScrollRestoration, Navigate, useLocation, useSearchParams, useNavigate } from "react-router-dom";
-import { lazy, useEffect, useState } from "react";
+import { lazy, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
@@ -82,11 +82,19 @@ function PageTransition() {
 }
 
 const HUB_MIN_KEY = 'tendr-hub-min';
+const HUB_WIN_W = 148;
+const HUB_WIN_H = 64;
+const HUB_WIN_MARGIN = 12;
 
+// Minimized Party Hub — a small draggable window parked top-right by default.
+// Tapping it (without dragging) restores the full hub; its own × fully closes
+// the minimized session instead of restoring.
 function FloatingHubBubble() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [hubState, setHubState] = useState(null);
+  const [pos, setPos] = useState(null); // { x, y } — top-left corner
+  const dragRef = useRef({ dragging: false, moved: false, startX: 0, startY: 0, originX: 0, originY: 0 });
 
   useEffect(() => {
     const read = () => {
@@ -100,7 +108,36 @@ function FloatingHubBubble() {
     return () => window.removeEventListener('tendr:hub-minimized', read);
   }, [pathname]);
 
-  if (!hubState) return null;
+  // Default position: top-right, clear of the safe area — set fresh each time a hub is minimized.
+  useEffect(() => {
+    if (!hubState) { setPos(null); return; }
+    setPos({ x: window.innerWidth - HUB_WIN_W - HUB_WIN_MARGIN, y: HUB_WIN_MARGIN + 44 });
+  }, [hubState]);
+
+  const clamp = (x, y) => ({
+    x: Math.min(Math.max(x, HUB_WIN_MARGIN), window.innerWidth - HUB_WIN_W - HUB_WIN_MARGIN),
+    y: Math.min(Math.max(y, HUB_WIN_MARGIN), window.innerHeight - HUB_WIN_H - HUB_WIN_MARGIN),
+  });
+
+  const onPointerDown = (e) => {
+    if (!pos) return;
+    dragRef.current = { dragging: true, moved: false, startX: e.clientX, startY: e.clientY, originX: pos.x, originY: pos.y };
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+  const onPointerMove = (e) => {
+    const d = dragRef.current;
+    if (!d.dragging) return;
+    const dx = e.clientX - d.startX, dy = e.clientY - d.startY;
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) d.moved = true;
+    if (d.moved) setPos(clamp(d.originX + dx, d.originY + dy));
+  };
+  const onPointerUp = () => {
+    const d = dragRef.current;
+    if (d.dragging && !d.moved) restore(); // a tap, not a drag — restore the full hub
+    dragRef.current.dragging = false;
+  };
+
+  if (!hubState || !pos) return null;
   if (pathname === hubState.path || pathname.endsWith('-hub')) return null;
 
   const restore = () => {
@@ -108,31 +145,53 @@ function FloatingHubBubble() {
     setHubState(null);
     navigate(hubState.path);
   };
+  const closeHub = (e) => {
+    e.stopPropagation();
+    try { sessionStorage.removeItem(HUB_MIN_KEY); } catch {}
+    setHubState(null);
+  };
 
   return (
-    <button
-      onClick={restore}
-      title={`Return to ${hubState.name} Hub`}
+    <div
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      title={`${hubState.name} Hub — tap to reopen, drag to move`}
       style={{
-        position: 'fixed', bottom: 'calc(61px + env(safe-area-inset-bottom, 0px))', left: 16,
-        zIndex: 8000, width: 56, height: 56, borderRadius: '50%',
+        position: 'fixed', left: pos.x, top: pos.y, width: HUB_WIN_W, height: HUB_WIN_H,
+        zIndex: 8000, borderRadius: 16,
         background: 'linear-gradient(135deg, #1a0d30 0%, #0d0520 100%)',
-        border: '2px solid rgba(196,151,58,0.7)',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.5), 0 0 0 1px rgba(196,151,58,0.2)',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        cursor: 'pointer', gap: 1,
-        animation: 'hub-bubble-pop 0.32s cubic-bezier(0.22,1,0.36,1) both',
+        border: '1.5px solid rgba(196,151,58,0.6)',
+        boxShadow: '0 8px 28px rgba(0,0,0,0.45), 0 0 0 1px rgba(196,151,58,0.15)',
+        display: 'flex', alignItems: 'center', gap: 9, padding: '0 10px',
+        cursor: 'grab', touchAction: 'none', userSelect: 'none',
+        animation: 'hub-bubble-pop 0.26s cubic-bezier(0.22,1,0.36,1) both',
       }}
     >
       <style>{`
         @keyframes hub-bubble-pop {
-          from { opacity: 0; transform: scale(0.5); }
+          from { opacity: 0; transform: scale(0.88); }
           to   { opacity: 1; transform: scale(1); }
         }
       `}</style>
-      <span style={{ fontSize: 22, lineHeight: 1 }}>{hubState.emoji}</span>
-      <span style={{ fontSize: 7, fontWeight: 800, color: 'rgba(196,151,58,0.85)', letterSpacing: '0.04em', textTransform: 'uppercase', fontFamily: "'Outfit', sans-serif" }}>Hub</span>
-    </button>
+      <span style={{ fontSize: 24, lineHeight: 1, flexShrink: 0 }}>{hubState.emoji}</span>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ fontSize: 11.5, fontWeight: 800, color: '#FFF8EC', lineHeight: 1.25, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{hubState.name}</div>
+        <div style={{ fontSize: 8.5, fontWeight: 700, color: 'rgba(196,151,58,0.85)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Party Hub</div>
+      </div>
+      <button
+        onClick={closeHub}
+        onPointerDown={e => e.stopPropagation()}
+        aria-label="Close minimized hub"
+        style={{
+          flexShrink: 0, width: 20, height: 20, borderRadius: '50%', border: 'none',
+          background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.65)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+        }}
+      >
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
   );
 }
 
