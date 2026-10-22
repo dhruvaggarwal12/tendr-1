@@ -9,16 +9,53 @@ const GOLD = "#C47A2E";
 const INK = "#2C1A0E";
 const MAX_IMAGE_BYTES = 10_000_000; // matches the backend's Cloudinary upload limit
 
-const TIER_LABEL = { none: "Not yet qualified", starter: "Starter", achiever: "Achiever", pro: "Pro", champion: "Champion" };
+const TIER_LABEL = { none: "Not started", starter: "Starter", achiever: "Achiever", pro: "Pro", champion: "Champion" };
 const TIER_COLOR = { none: "#9CA3AF", starter: "#C47A2E", achiever: "#0EA5E9", pro: "#7C3AED", champion: "#D4AF37" };
+const LADDER = [100, 200, 300, 400, 500];
+const LADDER_TIER = ["none", "starter", "achiever", "pro", "champion"];
+
+// Horizontal ₹100→₹500 ladder, highlighting which rung the current tier has unlocked.
+// No score anywhere here — just "which step are you on".
+function BonusLadder({ tier }) {
+  const idx = Math.max(0, LADDER_TIER.indexOf(tier));
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+      {LADDER.map((amt, i) => (
+        <React.Fragment key={amt}>
+          {i > 0 && <div style={{ flex: 1, height: 3, borderRadius: 2, background: i <= idx ? GOLD : "rgba(196,122,46,0.18)" }} />}
+          <div style={{
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 3, flexShrink: 0,
+          }}>
+            <div style={{
+              width: i === idx ? 30 : 24, height: i === idx ? 30 : 24, borderRadius: "50%",
+              background: i <= idx ? `linear-gradient(135deg,${GOLD},#CCAB4A)` : "#fff",
+              border: `1.5px solid ${i <= idx ? GOLD : "rgba(196,122,46,0.25)"}`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: i === idx ? "0 2px 10px rgba(196,122,46,0.4)" : "none",
+              transition: "all 0.2s",
+            }}>
+              {i < idx ? (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+              ) : (
+                <span style={{ fontSize: 9.5, fontWeight: 800, color: i <= idx ? "#fff" : "#9B7450" }}>{i + 1}</span>
+              )}
+            </div>
+            <span style={{ fontSize: 9.5, fontWeight: 700, color: i <= idx ? GOLD : "#B08968" }}>₹{amt}</span>
+          </div>
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
 
 export default function EventChallenge() {
   const navigate = useNavigate();
   const { token } = useSelector(s => s.auth || {});
 
-  const [loading, setLoading] = useState(true);
+  // view: 'checking' | 'intro' | 'loading' | 'questionnaire' | 'result'
+  const [view, setView] = useState("checking");
   const [error, setError] = useState("");
-  const [cooldownMs, setCooldownMs] = useState(0);
+  const [existingProgress, setExistingProgress] = useState(null); // GET /result, checked on mount
   const [attempt, setAttempt] = useState(null); // { _id, mcqs, opinionQuestions, photoTask, ... }
   const [mcqAnswers, setMcqAnswers] = useState({}); // { [questionId]: optionIndex }
   const [opinionText, setOpinionText] = useState({}); // { [questionId]: text }
@@ -29,23 +66,29 @@ export default function EventChallenge() {
   const [result, setResult] = useState(null);
   const saveTimer = useRef(null);
 
+  // On mount: check whether this consumer already has a submitted attempt. If so, skip the
+  // marketing intro and go straight to their current progress; otherwise show the intro.
   useEffect(() => {
     if (!token) { navigate("/login", { state: { returnTo: "/referral/challenge" } }); return; }
+    fetch(`${BASE_URL}/event-challenge/result`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        setExistingProgress(d);
+        setView(d?.hasStartedChallenge ? "result" : "intro");
+      })
+      .catch(() => setView("intro"));
+  }, [token]); // eslint-disable-line
+
+  const startChallenge = () => {
+    setView("loading");
     fetch(`${BASE_URL}/event-challenge/start`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
       credentials: "include",
     })
-      .then(async r => {
-        if (r.status === 429) {
-          const d = await r.json();
-          setCooldownMs(d.retryAfterMs || 0);
-          return null;
-        }
-        return r.ok ? r.json() : null;
-      })
+      .then(r => r.ok ? r.json() : null)
       .then(d => {
-        if (!d) { setLoading(false); return; }
+        if (!d) { setError("Couldn't start the challenge — try again."); setView("intro"); return; }
         setAttempt(d.attempt);
         setMcqAnswers(d.attempt.mcqAnswers || {});
         const ot = {};
@@ -53,10 +96,10 @@ export default function EventChallenge() {
         setOpinionText(ot);
         setPhotoExplanation(d.attempt.photoTaskAnswer?.explanation || "");
         setPhotoImage(d.attempt.photoTaskAnswer?.imageUrl || "");
-        setLoading(false);
+        setView("questionnaire");
       })
-      .catch(() => { setError("Couldn't load the challenge — check your connection and try again."); setLoading(false); });
-  }, [token]); // eslint-disable-line
+      .catch(() => { setError("Couldn't load the challenge — check your connection and try again."); setView("intro"); });
+  };
 
   const steps = attempt ? [
     ...attempt.mcqs.map(q => ({ type: "mcq", q })),
@@ -69,6 +112,16 @@ export default function EventChallenge() {
   const opinionDone = attempt ? attempt.opinionQuestions.filter(q => (opinionText[q.id] || "").trim().length >= 10).length : 0;
   const photoDone = !!photoImage && photoExplanation.trim().length > 0;
   const answeredCount = mcqDone + opinionDone + (photoDone ? 1 : 0);
+
+  // Live tier preview while answering — mirrors the backend's completion-based ladder exactly
+  // (mcq all answered -> starter, both opinions meaningful -> achiever, photo done -> pro).
+  const liveTier = (() => {
+    if (!attempt) return "none";
+    if (photoDone && opinionDone === attempt.opinionQuestions.length && mcqDone === attempt.mcqs.length) return "pro";
+    if (opinionDone === attempt.opinionQuestions.length && mcqDone === attempt.mcqs.length) return "achiever";
+    if (mcqDone === attempt.mcqs.length) return "starter";
+    return "none";
+  })();
 
   const autosave = (patch) => {
     if (!attempt) return;
@@ -129,7 +182,7 @@ export default function EventChallenge() {
     setSubmitting(true);
     setError("");
     try {
-      // Flush any pending autosave first so the final submit scores the latest answers.
+      // Flush any pending autosave first so the final submit sees the latest answers.
       clearTimeout(saveTimer.current);
       await fetch(`${BASE_URL}/event-challenge/${attempt._id}/save`, {
         method: "PATCH",
@@ -149,6 +202,7 @@ export default function EventChallenge() {
       if (!res.ok) throw new Error("submit failed");
       const data = await res.json();
       setResult(data);
+      setView("result");
     } catch {
       setError("Couldn't submit — check your connection and try again.");
     } finally {
@@ -159,7 +213,7 @@ export default function EventChallenge() {
   const page = { minHeight: "100dvh", background: "#FFFCF5", fontFamily: F };
   const card = { maxWidth: 560, margin: "0 auto", padding: "24px 20px 60px" };
 
-  if (loading) {
+  if (view === "checking" || view === "loading") {
     return (
       <div style={{ ...page, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ width: 36, height: 36, border: "3px solid rgba(196,122,46,0.2)", borderTopColor: GOLD, borderRadius: "50%", animation: "ec-spin 0.7s linear infinite" }} />
@@ -168,59 +222,98 @@ export default function EventChallenge() {
     );
   }
 
-  if (cooldownMs > 0) {
-    const hrs = Math.ceil(cooldownMs / 3600000);
+  // ── Intro: "see what you can earn" before anything else ──
+  if (view === "intro") {
     return (
       <div style={page}>
         <HamburgerNav active="" />
-        <div style={{ ...card, textAlign: "center", paddingTop: 60 }}>
-          <div style={{ fontSize: 44, marginBottom: 14 }}>⏳</div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: INK, marginBottom: 8 }}>Give it a little time</div>
-          <div style={{ fontSize: 13.5, color: "#9B7450", lineHeight: 1.6 }}>
-            Your last attempt scored below 50. You can retake the challenge in about {hrs} hour{hrs === 1 ? "" : "s"}.
+        <div style={{ ...card, paddingTop: 36 }}>
+          <div style={{ textAlign: "center", marginBottom: 26 }}>
+            <div style={{ fontSize: 48, marginBottom: 10 }}>🎁</div>
+            <div style={{ fontSize: 21, fontWeight: 900, color: INK, marginBottom: 8 }}>Earn up to ₹500 per referral</div>
+            <p style={{ fontSize: 13.5, color: "#9B7450", lineHeight: 1.6, margin: "0 auto", maxWidth: 420 }}>
+              Every friend who books using your code gets 5% off. What <em>you</em> earn for it — ₹100 up to ₹500 — depends on how much of this you complete. No test, no right or wrong answers — we're just getting to know you.
+            </p>
           </div>
-          <button onClick={() => navigate("/dashboard")} style={{ marginTop: 20, padding: "11px 22px", borderRadius: 10, border: "none", background: GOLD, color: "#fff", fontFamily: F, fontWeight: 700, cursor: "pointer" }}>Back to Dashboard</button>
+
+          <div style={{ background: "#fff", borderRadius: 16, border: "1px solid rgba(196,122,46,0.15)", padding: "20px 18px", marginBottom: 22 }}>
+            <BonusLadder tier="none" />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 26 }}>
+            {[
+              ["📝", "A few multiple-choice questions", "About how you plan and celebrate — unlocks ₹200"],
+              ["💬", "Two short opinion questions", "In your own words, Hindi or English — unlocks ₹300"],
+              ["📷", "One photo task", "A real photo, sketch, or mock-up — unlocks ₹400"],
+              ["🤝", "Get a friend to use your code", "The last step — unlocks the full ₹500"],
+            ].map(([emoji, title, desc]) => (
+              <div key={title} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 14px", background: "#fff", borderRadius: 12, border: "1px solid rgba(196,122,46,0.12)" }}>
+                <span style={{ fontSize: 20, flexShrink: 0 }}>{emoji}</span>
+                <div>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, color: INK }}>{title}</div>
+                  <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>{desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {error && <div style={{ fontSize: 12.5, color: "#DC2626", marginBottom: 14, textAlign: "center" }}>{error}</div>}
+          <button onClick={startChallenge} style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: GOLD, color: "#fff", fontFamily: F, fontWeight: 800, fontSize: 15, cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.35)" }}>
+            Let's go →
+          </button>
+          <button onClick={() => navigate("/dashboard")} style={{ width: "100%", padding: "11px", marginTop: 8, borderRadius: 12, border: "none", background: "none", color: "#9B7450", fontFamily: F, fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
+            Maybe later
+          </button>
         </div>
       </div>
     );
   }
 
-  if (result) {
-    const tier = result.tier;
+  // ── Result / current-progress view ──
+  if (view === "result") {
+    const r = result || existingProgress;
+    const tier = r?.tier || "none";
     return (
       <div style={page}>
         <HamburgerNav active="" />
-        <div style={{ ...card, textAlign: "center", paddingTop: 50 }}>
-          <div style={{ fontSize: 48, marginBottom: 14 }}>{tier === "none" ? "📋" : "🎉"}</div>
+        <div style={{ ...card, textAlign: "center", paddingTop: 46 }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>{tier === "champion" ? "🏆" : tier === "none" ? "👋" : "🎉"}</div>
           <div style={{ fontSize: 20, fontWeight: 900, color: INK, marginBottom: 6 }}>
-            {tier === "none" ? "Not quite there yet" : "Challenge complete!"}
+            {result ? "Saved!" : "Your progress"}
           </div>
-          <div style={{ fontSize: 13.5, color: "#9B7450", marginBottom: 22 }}>
-            You scored <strong style={{ color: INK }}>{result.scores.total}/100</strong>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 100, background: `${TIER_COLOR[tier]}18`, border: `1.5px solid ${TIER_COLOR[tier]}55`, marginBottom: 20 }}>
+            <span style={{ fontSize: 14, fontWeight: 800, color: TIER_COLOR[tier] }}>
+              {TIER_LABEL[tier]} · ₹{r?.currentBonus ?? LADDER[0]} per referral
+            </span>
           </div>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 100, background: `${TIER_COLOR[tier]}18`, border: `1.5px solid ${TIER_COLOR[tier]}55`, marginBottom: 24 }}>
-            <span style={{ fontSize: 14, fontWeight: 800, color: TIER_COLOR[tier] }}>{TIER_LABEL[tier]}</span>
+
+          <div style={{ background: "#fff", borderRadius: 16, border: "1px solid rgba(196,122,46,0.15)", padding: "20px 18px", marginBottom: 20, textAlign: "left" }}>
+            <BonusLadder tier={tier} />
           </div>
-          <div style={{ background: "#fff", borderRadius: 16, border: "1px solid rgba(196,122,46,0.15)", padding: "16px 18px", textAlign: "left", marginBottom: 24 }}>
-            {[
-              ["Multiple choice", `${result.scores.mcq}/30`],
-              ["Opinion questions", `${result.scores.opinion}/40`],
-              ["Photo task", `${result.scores.photo}/20`],
-              ["Completion", `${result.scores.completion}/10`],
-            ].map(([label, val]) => (
-              <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", fontSize: 13, color: "#5a3a1a" }}>
-                <span>{label}</span><span style={{ fontWeight: 700 }}>{val}</span>
+
+          {r?.suggestions?.length > 0 ? (
+            <div style={{ textAlign: "left", marginBottom: 24 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: GOLD, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
+                Do this next to earn more — up to ₹{LADDER[LADDER.length - 1]}
               </div>
-            ))}
-          </div>
-          {tier === "none" && (
-            <div style={{ fontSize: 12.5, color: "#9B7450", marginBottom: 20, lineHeight: 1.6 }}>
-              You need a score of 50+ to qualify. You can try again in 24 hours.
+              {r.suggestions.map(s => (
+                <div key={s.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", borderRadius: 12, background: "#fff", border: "1px solid rgba(196,122,46,0.15)", marginBottom: 8 }}>
+                  <span style={{ fontSize: 13, color: INK, fontWeight: 600 }}>{s.label}</span>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: GOLD, flexShrink: 0, marginLeft: 10 }}>→ ₹{s.unlocksAmount}</span>
+                </div>
+              ))}
+              {r.suggestions.some(s => s.key !== "referral") && (
+                <button onClick={startChallenge} style={{ width: "100%", padding: "13px", marginTop: 6, borderRadius: 12, border: `1.5px solid ${GOLD}`, background: "transparent", color: GOLD, fontFamily: F, fontWeight: 700, fontSize: 13.5, cursor: "pointer" }}>
+                  Continue the challenge →
+                </button>
+              )}
+            </div>
+          ) : (
+            <div style={{ fontSize: 13, color: "#15803d", marginBottom: 24, fontWeight: 700 }}>
+              You've unlocked the maximum — ₹{LADDER[LADDER.length - 1]} per successful referral. 🎉
             </div>
           )}
-          <p style={{ fontSize: 11.5, color: "#B08968", marginBottom: 20, lineHeight: 1.5 }}>
-            This result isn't connected to your current referral reward tier yet — that's a separate system for now.
-          </p>
+
           <button onClick={() => navigate("/dashboard")} style={{ padding: "12px 24px", borderRadius: 10, border: "none", background: GOLD, color: "#fff", fontFamily: F, fontWeight: 800, cursor: "pointer" }}>Back to Dashboard</button>
         </div>
       </div>
@@ -244,13 +337,11 @@ export default function EventChallenge() {
       <HamburgerNav active="" />
       <div style={{ background: "#fff", borderBottom: "1px solid rgba(196,122,46,0.12)", padding: "14px 20px", position: "sticky", top: 0, zIndex: 10 }}>
         <div style={{ maxWidth: 560, margin: "0 auto" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <div style={{ fontSize: 14, fontWeight: 800, color: INK }}>Event Intelligence Challenge</div>
             <div style={{ fontSize: 11.5, color: "#9B7450" }}>{answeredCount}/{totalQuestions} answered</div>
           </div>
-          <div style={{ height: 5, borderRadius: 100, background: "rgba(196,122,46,0.15)", overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${(answeredCount / totalQuestions) * 100}%`, background: GOLD, transition: "width 0.25s" }} />
-          </div>
+          <BonusLadder tier={liveTier} />
         </div>
       </div>
 
@@ -332,10 +423,13 @@ export default function EventChallenge() {
                 </div>
               ))}
             </div>
+            <p style={{ fontSize: 11.5, color: "#9B7450", marginBottom: 14, lineHeight: 1.5 }}>
+              Whatever you've completed counts — there's no pass or fail. Finishing more sections raises how much you earn per successful referral, up to ₹{LADDER[LADDER.length - 1]}.
+            </p>
             {error && <div style={{ fontSize: 12.5, color: "#DC2626", marginBottom: 14 }}>{error}</div>}
             <button disabled={submitting} onClick={submit}
               style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: submitting ? "rgba(196,122,46,0.4)" : GOLD, color: "#fff", fontFamily: F, fontWeight: 800, fontSize: 15, cursor: submitting ? "default" : "pointer" }}>
-              {submitting ? "Scoring…" : "Submit Challenge →"}
+              {submitting ? "Saving…" : "Submit →"}
             </button>
           </div>
         )}

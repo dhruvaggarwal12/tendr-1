@@ -6,7 +6,7 @@ const INK = "#2C1A0E";
 const MUTED = "#9B7450";
 
 const TYPE_LABELS = { mcq: "MCQ", opinion: "Opinion", photo: "Photo" };
-const TIER_LABEL = { none: "Not qualified", starter: "Starter", achiever: "Achiever", pro: "Pro", champion: "Champion" };
+const TIER_LABEL = { none: "Not started", starter: "Starter", achiever: "Achiever", pro: "Pro", champion: "Champion" };
 const TIER_COLOR = { none: "#9CA3AF", starter: "#C47A2E", achiever: "#0EA5E9", pro: "#7C3AED", champion: "#D4AF37" };
 
 function authHeaders(token) {
@@ -20,7 +20,7 @@ export default function EventChallengeTab({ token, BASE_URL }) {
     <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-6 overflow-y-auto">
       <h2 style={{ fontSize: 22, fontWeight: 800, color: INK, fontFamily: F, marginBottom: 4 }}>🧠 Event Intelligence Challenge</h2>
       <p style={{ fontSize: 13, color: MUTED, fontFamily: F, marginBottom: 16 }}>
-        The scored competency assessment — manage its question bank and review results.
+        Nothing here is graded right or wrong — manage the question bank and review what customers actually said, and how far they've gotten.
       </p>
 
       <div style={{ display: "flex", gap: 0, marginBottom: 20, borderBottom: "1.5px solid rgba(196,122,46,0.2)" }}>
@@ -52,15 +52,23 @@ function StatsSection({ token, BASE_URL }) {
   return (
     <div>
       <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 24 }}>
-        {[["Total attempts", stats.totalAttempts], ["Average score", `${stats.averageScore}/100`]].map(([label, val]) => (
+        {[
+          ["Total attempts", stats.totalAttempts],
+          ["Avg. opinion length", `${stats.avgOpinionWords} words`],
+          ["MCQ completion", `${stats.completionRates.mcq}%`],
+          ["Opinion completion", `${stats.completionRates.opinion}%`],
+          ["Photo completion", `${stats.completionRates.photo}%`],
+        ].map(([label, val]) => (
           <div key={label} style={{ background: "#fff", borderRadius: 14, border: "1px solid rgba(196,122,46,0.15)", padding: "16px 20px", minWidth: 140 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</div>
             <div style={{ fontSize: 24, fontWeight: 900, color: INK, marginTop: 4 }}>{val}</div>
           </div>
         ))}
       </div>
-      <h3 style={{ fontSize: 14, fontWeight: 800, color: INK, fontFamily: F, marginBottom: 10 }}>Tier distribution</h3>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+
+      <h3 style={{ fontSize: 14, fontWeight: 800, color: INK, fontFamily: F, marginBottom: 10 }}>Referral-tier distribution</h3>
+      <p style={{ fontSize: 11.5, color: MUTED, fontFamily: F, marginBottom: 10 }}>Based on completion (and, for Champion, an actual successful referral) — not a score.</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 28 }}>
         {Object.entries(stats.tierCounts).map(([tier, count]) => (
           <div key={tier} style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ width: 90, fontSize: 12.5, fontWeight: 700, color: TIER_COLOR[tier] }}>{TIER_LABEL[tier]}</span>
@@ -71,6 +79,31 @@ function StatsSection({ token, BASE_URL }) {
           </div>
         ))}
       </div>
+
+      {stats.mcqInsights?.length > 0 && (
+        <>
+          <h3 style={{ fontSize: 14, fontWeight: 800, color: INK, fontFamily: F, marginBottom: 10 }}>How people answered each question</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {stats.mcqInsights.map(q => {
+              const total = q.counts.reduce((a, b) => a + b, 0) || 1;
+              return (
+                <div key={q.id} style={{ background: "#fff", borderRadius: 12, border: "1px solid rgba(196,122,46,0.15)", padding: "12px 16px" }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: INK, marginBottom: 8 }}>{q.question}</div>
+                  {q.options.map((opt, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                      <span style={{ width: 130, fontSize: 11, color: MUTED, flexShrink: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{opt}</span>
+                      <div style={{ flex: 1, height: 7, borderRadius: 4, background: "rgba(196,122,46,0.08)", overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: `${(q.counts[i] / total) * 100}%`, background: GOLD }} />
+                      </div>
+                      <span style={{ fontSize: 10.5, fontWeight: 700, color: INK, width: 26, textAlign: "right", flexShrink: 0 }}>{q.counts[i]}</span>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -160,15 +193,14 @@ function AttemptsSection({ token, BASE_URL }) {
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <span style={{ fontSize: 12, fontWeight: 800, color: TIER_COLOR[a.resultTier] }}>{TIER_LABEL[a.resultTier]}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: INK }}>{a.scores?.total}/100</span>
                 <span style={{ fontSize: 11, color: MUTED }}>{open ? "▲" : "▼"}</span>
               </div>
             </button>
             {open && (
               <div style={{ padding: "0 16px 16px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
                 <div style={{ display: "flex", gap: 14, flexWrap: "wrap", margin: "12px 0" }}>
-                  {[["MCQ", `${a.scores?.mcq}/30`], ["Opinion", `${a.scores?.opinion}/40`], ["Photo", `${a.scores?.photo}/20`], ["Completion", `${a.scores?.completion}/10`]].map(([l, v]) => (
-                    <div key={l} style={{ fontSize: 11.5, color: MUTED }}><strong style={{ color: INK }}>{l}:</strong> {v}</div>
+                  {[["MCQ section", a.completion?.mcq], ["Opinion section", a.completion?.opinion], ["Photo task", a.completion?.photo]].map(([l, done]) => (
+                    <div key={l} style={{ fontSize: 11.5, color: MUTED }}><strong style={{ color: done ? "#15803d" : "#DC2626" }}>{done ? "✓" : "✕"}</strong> {l}</div>
                   ))}
                 </div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: GOLD, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Opinion answers</div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Fragment } from "react";
 import { Helmet } from "react-helmet-async";
 import { selectCartItems, selectCartTotal } from "../../redux/giftHamperCartSlice";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -997,42 +997,75 @@ export default function CustomerDashboard() {
         {user?._id && (() => {
           const code = generateReferralCode(user._id);
           const formatted = formatCode(code);
-          const tierLabel = { none: "Unrated", starter: "Starter", achiever: "Achiever", pro: "Pro", champion: "Champion" }[referralWallet?.tier || "none"];
-          const tierColor = { none: "#9B7450", starter: "#C47A2E", achiever: "#B8C0C8", pro: "#60A5FA", champion: "#D4AF37" }[referralWallet?.tier || "none"];
+          const tier = referralWallet?.tier || "none";
+          const tierLabel = { none: "Unrated", starter: "Starter", achiever: "Achiever", pro: "Pro", champion: "Champion" }[tier];
+          const tierColor = { none: "#9B7450", starter: "#C47A2E", achiever: "#0EA5E9", pro: "#7C3AED", champion: "#D4AF37" }[tier];
+          const LADDER = [100, 200, 300, 400, 500];
+          const rungIdx = Math.max(0, ["none", "starter", "achiever", "pro", "champion"].indexOf(tier));
+          const nextSuggestion = referralWallet?.progress?.suggestions?.[0];
           return (
-            <div id="refer-earn" style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", borderRadius: 20, padding: "24px 28px", marginBottom: 28, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, flexWrap: "wrap", boxShadow: "0 6px 24px rgba(44,26,14,0.18)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                <div style={{ fontSize: 36, flexShrink: 0 }}>🎁</div>
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>Refer &amp; Earn</p>
-                    <span style={{ fontSize: 9.5, fontWeight: 800, color: tierColor, background: `${tierColor}22`, border: `1px solid ${tierColor}55`, borderRadius: 100, padding: "2px 8px", textTransform: "uppercase", letterSpacing: "0.04em" }}>{tierLabel} tier</span>
+            <div id="refer-earn" style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", borderRadius: 20, padding: "24px 28px", marginBottom: 28, boxShadow: "0 6px 24px rgba(44,26,14,0.18)" }}>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 20, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                  <div style={{ fontSize: 36, flexShrink: 0 }}>🎁</div>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>Refer &amp; Earn</p>
+                      <span style={{ fontSize: 9.5, fontWeight: 800, color: tierColor, background: `${tierColor}22`, border: `1px solid ${tierColor}55`, borderRadius: 100, padding: "2px 8px", textTransform: "uppercase", letterSpacing: "0.04em" }}>{tierLabel} tier</span>
+                    </div>
+                    <p style={{ fontSize: 19, fontWeight: 900, color: "#fff", margin: "0 0 4px" }}>
+                      Earn up to ₹{LADDER[LADDER.length - 1]} per successful booking
+                    </p>
+                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: 0, lineHeight: 1.5 }}>
+                      Friends get {DISCOUNT_PERCENT}% off with your code.{" "}
+                      {referralWallet?.balance > 0 ? <>You've earned <strong style={{ color: "#CCAB4A" }}>₹{referralWallet.balance.toLocaleString("en-IN")}</strong> so far. </> : null}
+                      Your next successful referral this month earns{" "}
+                      <strong style={{ color: "#CCAB4A" }}>₹{referralWallet?.nextReferralReward ?? 100}</strong> — resets each new month.
+                    </p>
                   </div>
-                  <p style={{ fontSize: 18, fontWeight: 900, color: "#fff", margin: "0 0 4px" }}>
-                    {referralWallet?.balance > 0 ? `₹${referralWallet.balance.toLocaleString("en-IN")} earned` : "Earn ₹100–₹500 a month"}
-                  </p>
-                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: 0, lineHeight: 1.5 }}>
-                    Friends get {DISCOUNT_PERCENT}% off with your code. Your next successful referral this month earns{" "}
-                    <strong style={{ color: "#CCAB4A" }}>₹{referralWallet?.nextReferralReward ?? 100}</strong>
-                    {referralWallet?.monthlyReferrals > 0 ? ` (referral #${referralWallet.monthlyReferrals + 1} this month)` : ""} — resets to ₹100 each new month.
-                  </p>
-                  {!referralWallet?.tierAnswered && (
-                    <button onClick={() => navigate("/referral/challenge")} style={{ marginTop: 6, background: "none", border: "none", cursor: "pointer", padding: 0, color: "#CCAB4A", fontSize: 12, fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 3, fontFamily: font }}>
-                      Take the Event Intelligence Challenge to boost your tier →
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
+                  <button onClick={() => setReferralModalOpen(true)}
+                    style={{ flexShrink: 0, padding: "11px 20px", borderRadius: 12, border: "1.5px solid rgba(204,171,74,0.4)", background: "rgba(204,171,74,0.12)", color: "#CCAB4A", fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
+                    View &amp; Share Code →
+                  </button>
+                  {referralWallet?.balance >= 200 && (
+                    <button onClick={() => { setWithdrawModalOpen(true); setWithdrawAmount(String(referralWallet.balance)); loadPayouts(); }}
+                      style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 10, border: "none", background: "none", color: "#CCAB4A", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, textDecoration: "underline", textUnderlineOffset: 3 }}>
+                      Withdraw ₹{referralWallet.balance.toLocaleString("en-IN")}
                     </button>
                   )}
                 </div>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
-                <button onClick={() => setReferralModalOpen(true)}
-                  style={{ flexShrink: 0, padding: "11px 20px", borderRadius: 12, border: "1.5px solid rgba(204,171,74,0.4)", background: "rgba(204,171,74,0.12)", color: "#CCAB4A", fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
-                  View &amp; Share Code →
-                </button>
-                {referralWallet?.balance >= 200 && (
-                  <button onClick={() => { setWithdrawModalOpen(true); setWithdrawAmount(String(referralWallet.balance)); loadPayouts(); }}
-                    style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 10, border: "none", background: "none", color: "#CCAB4A", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, textDecoration: "underline", textUnderlineOffset: 3 }}>
-                    Withdraw ₹{referralWallet.balance.toLocaleString("en-IN")}
+
+              {/* Progress ladder — which rung they've unlocked, driven by completion not a score */}
+              <div style={{ marginTop: 20, paddingTop: 18, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 3, marginBottom: 10 }}>
+                  {LADDER.map((amt, i) => (
+                    <Fragment key={amt}>
+                      {i > 0 && <div style={{ flex: 1, height: 2.5, borderRadius: 2, background: i <= rungIdx ? "#CCAB4A" : "rgba(255,255,255,0.14)" }} />}
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, flexShrink: 0 }}>
+                        <div style={{
+                          width: i === rungIdx ? 24 : 18, height: i === rungIdx ? 24 : 18, borderRadius: "50%",
+                          background: i <= rungIdx ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "rgba(255,255,255,0.08)",
+                          border: `1.5px solid ${i <= rungIdx ? "#CCAB4A" : "rgba(255,255,255,0.2)"}`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                          {i < rungIdx && <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>}
+                        </div>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: i <= rungIdx ? "#CCAB4A" : "rgba(255,255,255,0.35)" }}>₹{amt}</span>
+                      </div>
+                    </Fragment>
+                  ))}
+                </div>
+                {nextSuggestion ? (
+                  <button onClick={() => navigate("/referral/challenge")}
+                    style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "11px 16px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontFamily: font, cursor: "pointer" }}>
+                    <span style={{ fontSize: 12.5, fontWeight: 700, textAlign: "left" }}>{nextSuggestion.label}</span>
+                    <span style={{ fontSize: 12, fontWeight: 800, flexShrink: 0 }}>→ ₹{nextSuggestion.unlocksAmount}</span>
                   </button>
+                ) : (
+                  <div style={{ fontSize: 12, color: "#CCAB4A", fontWeight: 700, textAlign: "center" }}>🎉 You've unlocked the max — ₹{LADDER[LADDER.length - 1]} per referral</div>
                 )}
               </div>
             </div>
@@ -1072,16 +1105,16 @@ export default function CustomerDashboard() {
                 </div>
                 <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 12, padding: "12px 14px", fontSize: 12, color: "rgba(255,255,255,0.65)", lineHeight: 1.6 }}>
                   Friends get <strong style={{ color: "#CCAB4A" }}>{DISCOUNT_PERCENT}% off</strong> their first booking.<br />
-                  Each month, your referrals pay <strong style={{ color: "#CCAB4A" }}>₹100, then ₹200, ₹300…</strong> up to <strong style={{ color: "#CCAB4A" }}>₹500</strong> — a higher tier raises how far you can climb, and it resets to ₹100 every new month.
+                  Each month, your referrals pay <strong style={{ color: "#CCAB4A" }}>₹100, then ₹200, ₹300…</strong> up to <strong style={{ color: "#CCAB4A" }}>₹500</strong> — completing the Event Intelligence Challenge raises how far you can climb, and it resets to ₹100 every new month.
                 </div>
-                {referralWallet?.tierAnswered ? (
-                  <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", margin: "12px 0 0" }}>
-                    Your tier: <strong style={{ color: "#CCAB4A", textTransform: "capitalize" }}>{referralWallet?.tier || "none"}</strong>
-                  </p>
-                ) : (
+                <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.5)", margin: "12px 0 0" }}>
+                  Your tier: <strong style={{ color: "#CCAB4A", textTransform: "capitalize" }}>{referralWallet?.tier || "none"}</strong>
+                  {" "}· ₹{referralWallet?.progress?.currentBonus ?? 100} per referral
+                </p>
+                {referralWallet?.progress?.suggestions?.length > 0 && (
                   <button onClick={() => { setReferralModalOpen(false); navigate("/referral/challenge"); }}
-                    style={{ marginTop: 12, background: "none", border: "none", cursor: "pointer", padding: 0, color: "#CCAB4A", fontSize: 12.5, fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 3, fontFamily: font }}>
-                    Take the Event Intelligence Challenge to boost your tier →
+                    style={{ width: "100%", marginTop: 14, padding: "12px 16px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                    {referralWallet?.progress?.hasStartedChallenge ? "Continue the Challenge →" : "Take the Event Intelligence Challenge →"}
                   </button>
                 )}
               </div>
