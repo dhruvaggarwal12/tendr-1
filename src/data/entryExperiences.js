@@ -249,3 +249,31 @@ export const ENTRY_EXPERIENCES = [
 export function getEntryExperienceById(id) {
   return ENTRY_EXPERIENCES.find((e) => e.id === id) || null;
 }
+
+// A representative emoji per entry experience — used in place of the stock photos that
+// used to illustrate each card/detail-drawer. Keyed by id first (precise, since there are
+// only 10 of these), falling back to a tag-based guess for anything added later.
+const ENTRY_ID_EMOJI = {
+  "ride-on-car": "🚗",
+  "balloon-tunnel": "🎈",
+  "red-carpet-spotlight": "🌟",
+  "floral-walkway": "🌸",
+  "name-message-reveal": "🪧",
+  "memory-tunnel": "🖼️",
+  "family-photo-reveal": "👨‍👩‍👧",
+  "mascot-welcome": "🧸",
+  "traditional-welcome": "🪔",
+  "corporate-team-entrance": "🏢",
+};
+export function entryEmoji(idOrEntry) {
+  const id = typeof idOrEntry === "string" ? idOrEntry : idOrEntry?.id;
+  if (id && ENTRY_ID_EMOJI[id]) return ENTRY_ID_EMOJI[id];
+  const tags = (typeof idOrEntry === "object" && idOrEntry?.tags) || [];
+  const t = tags.join(" ").toLowerCase();
+  if (t.includes("traditional") || t.includes("festive")) return "🪔";
+  if (t.includes("emotional") || t.includes("personalised")) return "💝";
+  if (t.includes("grand") || t.includes("elegant")) return "🌟";
+  if (t.includes("fun") || t.includes("kids")) return "🎉";
+  if (t.includes("corporate") || t.includes("branded")) return "🏢";
+  return "🚪";
+}

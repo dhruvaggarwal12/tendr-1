@@ -10,7 +10,7 @@ import { setMultipleFormData, setBookingType, setSelectedPerformer } from "../..
 import { PERFORMER_TYPES } from "../../components/PerformerSuggestions";
 import { getVendors } from "../../apis/vendorApi";
 import { getOccasionById } from "../../data/occasions";
-import { getEntryExperienceById } from "../../data/entryExperiences";
+import { getEntryExperienceById, entryEmoji } from "../../data/entryExperiences";
 import { DECOR_FOCUS_AREAS, DECOR_FOCUS_AREA_IDS } from "../../data/decorFocusAreas";
 import { ALL_INDIAN_CITIES, SERVICED_CITIES } from "../../data/indianCities";
 import { saveResumeUrl } from "../../utils/planningResume";
@@ -90,22 +90,22 @@ const toBackendServiceType = v => SERVICE_TYPE_BACKEND_MAP[v] || v;
 // Presentational copy + images for the Services step's card picker (spec section 4).
 // Purely cosmetic — keyed by the exact ALL_VENDORS strings, never renamed/translated.
 const SERVICE_CARD_INFO = {
-  "Decorator":      { emoji:"🎊", description:"Backdrops, balloons, florals and lighting that set the scene.", image:"https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=400&h=240&q=75" },
-  "Caterer":        { emoji:"🍽️", description:"Buffets, live counters and multi-cuisine menus for your guest count.", image:"https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=400&h=240&q=75" },
-  "DJ":             { emoji:"🎧", description:"Music, mixing and dance-floor energy for the whole event.", image:"https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?auto=format&fit=crop&w=400&h=240&q=75" },
-  "Photographer":   { emoji:"📷", description:"Candid and traditional coverage to capture every moment.", image:"https://images.unsplash.com/photo-1500259571355-332da5cb07aa?auto=format&fit=crop&w=400&h=240&q=75" },
-  "Videographer":   { emoji:"🎥", description:"Cinematic highlight reels and full-event video coverage.", image:"https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=400&h=240&q=75" },
-  "Florist":        { emoji:"💐", description:"Fresh floral arrangements for stages, tables and entryways.", image:"https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=400&h=240&q=75" },
-  "Entertainer":    { emoji:"🎭", description:"Dancers, performers and acts that keep guests engaged.", image:"https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=400&h=240&q=75" },
-  "Photo Booth":    { emoji:"📸", description:"Props, backdrops and instant prints guests love.", image:"https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=400&h=240&q=75" },
-  "Live Band":      { emoji:"🎸", description:"Live musicians for a warmer, more personal soundtrack.", image:"https://images.unsplash.com/photo-1511192336575-5a79af67a629?auto=format&fit=crop&w=400&h=240&q=75" },
-  "Emcee / Host":   { emoji:"🎤", description:"A confident host to keep the event flowing smoothly.", image:"https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=400&h=240&q=75" },
-  "Lighting Setup": { emoji:"💡", description:"Ambient and stage lighting that transforms any venue.", image:"https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=400&h=240&q=75" },
-  "Sound System":   { emoji:"🔊", description:"Clear, powerful audio for speeches, music and announcements.", image:"https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=400&h=240&q=75" },
-  "Makeup Artist":  { emoji:"💄", description:"Professional makeup and styling for you and your guests.", image:"https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&h=240&q=75" },
-  "Balloon Artist": { emoji:"🎈", description:"Balloon decor, arches and sculptures for a festive look.", image:"https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=400&h=240&q=75" },
-  "Cake Artist":    { emoji:"🎂", description:"Custom cakes and desserts designed around your theme.", image:"https://images.unsplash.com/photo-1535254973040-607b474cb50d?auto=format&fit=crop&w=400&h=240&q=75" },
-  "AV Setup":       { emoji:"📽️", description:"Screens, projectors and AV support for presentations or visuals.", image:"https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=400&h=240&q=75" },
+  "Decorator":      { emoji:"🎊", props:["🎈","✨","🌸"], description:"Backdrops, balloons, florals and lighting that set the scene." },
+  "Caterer":        { emoji:"🍽️", props:["🍲","🥂","🍰"], description:"Buffets, live counters and multi-cuisine menus for your guest count." },
+  "DJ":             { emoji:"🎧", props:["🎵","💿","🔊"], description:"Music, mixing and dance-floor energy for the whole event." },
+  "Photographer":   { emoji:"📷", props:["📸","✨","🖼️"], description:"Candid and traditional coverage to capture every moment." },
+  "Videographer":   { emoji:"🎥", props:["🎬","📽️","✨"], description:"Cinematic highlight reels and full-event video coverage." },
+  "Florist":        { emoji:"💐", props:["🌸","🌷","🍃"], description:"Fresh floral arrangements for stages, tables and entryways." },
+  "Entertainer":    { emoji:"🎭", props:["🎪","🎶","✨"], description:"Dancers, performers and acts that keep guests engaged." },
+  "Photo Booth":    { emoji:"📸", props:["🎉","🕶️","🖼️"], description:"Props, backdrops and instant prints guests love." },
+  "Live Band":      { emoji:"🎸", props:["🎷","🥁","🎶"], description:"Live musicians for a warmer, more personal soundtrack." },
+  "Emcee / Host":   { emoji:"🎤", props:["🎙️","✨","🗣️"], description:"A confident host to keep the event flowing smoothly." },
+  "Lighting Setup": { emoji:"💡", props:["✨","🕯️","🌟"], description:"Ambient and stage lighting that transforms any venue." },
+  "Sound System":   { emoji:"🔊", props:["🎚️","🎵","📢"], description:"Clear, powerful audio for speeches, music and announcements." },
+  "Makeup Artist":  { emoji:"💄", props:["💅","✨","🪞"], description:"Professional makeup and styling for you and your guests." },
+  "Balloon Artist": { emoji:"🎈", props:["🎊","🎀","✨"], description:"Balloon decor, arches and sculptures for a festive look." },
+  "Cake Artist":    { emoji:"🎂", props:["🍰","🍫","✨"], description:"Custom cakes and desserts designed around your theme." },
+  "AV Setup":       { emoji:"📽️", props:["🖥️","🔌","✨"], description:"Screens, projectors and AV support for presentations or visuals." },
 };
 
 /* catering service styles — shown inside the Caterer tip card */
@@ -723,6 +723,28 @@ function themeProps(tags=[]) {
   if(t.includes("corporate")||t.includes("professional")||t.includes("office")) return ["🎉","🎊","⭐"];
   if(t.includes("colourful")||t.includes("rainbow")||t.includes("confetti")||t.includes("lego")) return ["🎊","🎉","🌈","⭐"];
   return ["🎈","🎉","✨"];
+}
+
+// Picks a representative emoji for a gift-idea card from its name/description, instead of
+// always showing a generic 🎁 — used wherever a stock photo used to stand in for the gift.
+function giftEmoji(name="", desc=""){
+  const t=(name+" "+desc).toLowerCase();
+  if(t.includes("hamper")||t.includes("basket")) return "🧺";
+  if(t.includes("photo")||t.includes("frame")||t.includes("album")) return "🖼️";
+  if(t.includes("candle")) return "🕯️";
+  if(t.includes("flower")||t.includes("floral")||t.includes("bouquet")) return "💐";
+  if(t.includes("cake")||t.includes("dessert")||t.includes("sweet")||t.includes("chocolate")) return "🍰";
+  if(t.includes("jewel")||t.includes("necklace")||t.includes("bracelet")||t.includes("ring")) return "💍";
+  if(t.includes("book")||t.includes("journal")||t.includes("card")) return "📔";
+  if(t.includes("spa")||t.includes("pamper")||t.includes("mask")||t.includes("skincare")) return "🧖";
+  if(t.includes("tech")||t.includes("gadget")||t.includes("speaker")||t.includes("earphone")) return "🎧";
+  if(t.includes("blanket")||t.includes("swaddle")||t.includes("clothing")||t.includes("outfit")) return "🧸";
+  if(t.includes("toy")||t.includes("game")) return "🧩";
+  if(t.includes("makeup")||t.includes("cosmetic")||t.includes("beauty")) return "💄";
+  if(t.includes("plant")||t.includes("succulent")) return "🪴";
+  if(t.includes("tea")||t.includes("coffee")) return "☕";
+  if(t.includes("box")||t.includes("kit")||t.includes("set")) return "📦";
+  return "🎁";
 }
 
 /* ── vendor recommendations based on theme + age groups + venue ── */
@@ -1858,7 +1880,6 @@ export default function OccasionDetail(){
     localName:"",
     icon:"✨",
     tagline:"Your event, your way",
-    coverImage:"https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&q=80",
     vendorCategories: getCustomRecommended(customEventDesc),
     checklist:[
       "Set your event date","Confirm guest headcount","Book key vendors",
@@ -2036,17 +2057,19 @@ export default function OccasionDetail(){
                 style={{padding:0,borderRadius:16,border:`2px solid ${sel?gold:"rgba(196,122,46,0.13)"}`,background:"#fff",cursor:"pointer",textAlign:"left",transition:"all 0.18s",overflow:"hidden",boxShadow:sel?"0 4px 20px rgba(196,122,46,0.22)":"0 1px 5px rgba(0,0,0,0.06)",gridColumn:(isOdd&&isLast)?"1 / -1":"auto"}}
               >
                 <div style={{position:"relative",height:isOdd&&isLast?160:140,overflow:"hidden",background:`linear-gradient(160deg,${tc}66,${tc}28)`}}>
-                  {t.photo&&(
-                    <img src={t.photo} alt={t.name}
-                      style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}
-                      onError={e=>{e.currentTarget.style.display="none";}}
-                    />
-                  )}
-                  {!t.photo&&(
-                    <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <span style={{fontSize:isOdd&&isLast?44:36,filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.12))"}}>{te}</span>
-                    </div>
-                  )}
+                  <div style={{position:"absolute",inset:0}}>
+                    {[
+                      {top:"10%",left:"8%",size:16,rot:-12,op:0.4},
+                      {bottom:"38%",right:"10%",size:14,rot:10,op:0.32},
+                    ].map((p,pi)=>themeProps(t.tags)[pi%themeProps(t.tags).length]&&(
+                      <span key={pi} style={{position:"absolute",top:p.top,left:p.left,right:p.right,bottom:p.bottom,fontSize:p.size,opacity:p.op,transform:`rotate(${p.rot}deg)`}}>
+                        {themeProps(t.tags)[pi%themeProps(t.tags).length]}
+                      </span>
+                    ))}
+                  </div>
+                  <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <span style={{fontSize:isOdd&&isLast?44:36,filter:"drop-shadow(0 2px 8px rgba(0,0,0,0.12))"}}>{te}</span>
+                  </div>
                   <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.62) 0%,transparent 55%)"}}/>
                   <div style={{position:"absolute",bottom:10,left:10,right:32}}>
                     <span style={{fontSize:12,fontWeight:800,color:"#fff",lineHeight:1.25,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{t.name}</span>
@@ -2122,7 +2145,7 @@ export default function OccasionDetail(){
     const entryRows=selectedEntryExperiences.map(id=>{
       const e=getEntryExperienceById(id);
       if(!e) return null;
-      return{key:`ee-${id}`,image:e.images?.[0],title:e.title,sub:"Entry Experience",status:"Estimate available",price:e.priceDisplay,onEdit:()=>setStep(4)};
+      return{key:`ee-${id}`,icon:entryEmoji(e),title:e.title,sub:"Entry Experience",status:"Estimate available",price:e.priceDisplay,onEdit:()=>setStep(4)};
     }).filter(Boolean);
 
     const activityRows=[
@@ -2139,7 +2162,7 @@ export default function OccasionDetail(){
       const g=(occasion.giftIdeas||[]).find(g=>g.name===name);
       if(!g) return null;
       const qty=giftQuantities[name]||1;
-      return{key:`gift-${name}`,image:g.image,title:qty>1?`${g.name} ×${qty}`:g.name,sub:"Gift",status:"Estimate available",price:g.price,onEdit:()=>setStep(6)};
+      return{key:`gift-${name}`,icon:giftEmoji(g.name,g.desc),title:qty>1?`${g.name} ×${qty}`:g.name,sub:"Gift",status:"Estimate available",price:g.price,onEdit:()=>setStep(6)};
     }).filter(Boolean);
 
     const groups=[
@@ -2168,11 +2191,7 @@ export default function OccasionDetail(){
               const s=STATUS_STYLE[r.status]||STATUS_STYLE["Selected"];
               return(
                 <div key={r.key} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 9px",borderRadius:10,background:"#FAFAF8",marginBottom:6}}>
-                  {r.image?(
-                    <img src={r.image} alt="" style={{width:34,height:34,borderRadius:8,objectFit:"cover",flexShrink:0}} onError={e=>{e.currentTarget.style.display="none";}}/>
-                  ):(
-                    <span style={{fontSize:14,flexShrink:0,width:34,height:34,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(196,122,46,0.08)",borderRadius:8}}>{r.icon}</span>
-                  )}
+                  <span style={{fontSize:14,flexShrink:0,width:34,height:34,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(196,122,46,0.08)",borderRadius:8}}>{r.icon}</span>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",marginBottom:r.sub?2:0}}>
                       <span style={{fontSize:12,fontWeight:700,color:ink}}>{r.title}</span>
@@ -3233,15 +3252,15 @@ export default function OccasionDetail(){
                     <button onClick={()=>{toggleVendor(v);const el=document.getElementById(`chip-${v}`);if(el){el.classList.remove("chip-pop");void el.offsetWidth;el.classList.add("chip-pop");}}}
                       style={{display:"block",width:"100%",padding:0,border:"none",background:"none",cursor:"pointer",textAlign:"left",fontFamily:font}}>
                       <div style={{position:"relative",height:imgH,overflow:"hidden",background:"linear-gradient(160deg,rgba(196,122,46,0.4),rgba(196,122,46,0.15))"}}>
-                        {info.image&&(
-                          <img src={info.image} alt={v} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}
-                            onError={e=>{e.currentTarget.style.display="none";}} />
-                        )}
-                        {!info.image&&(
-                          <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                            <span style={{fontSize:isSmall?18:36}}>{info.emoji||"🎉"}</span>
+                        {!isSmall&&info.props&&(
+                          <div style={{position:"absolute",inset:0}}>
+                            <span style={{position:"absolute",top:"10%",left:"8%",fontSize:14,opacity:0.4,transform:"rotate(-10deg)"}}>{info.props[0]}</span>
+                            <span style={{position:"absolute",top:"14%",right:"10%",fontSize:12,opacity:0.32,transform:"rotate(8deg)"}}>{info.props[1]}</span>
                           </div>
                         )}
+                        <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                          <span style={{fontSize:isSmall?18:36}}>{info.emoji||"🎉"}</span>
+                        </div>
                         <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 55%)"}}/>
                         <div style={{position:"absolute",bottom:isSmall?5:10,left:isSmall?6:12,right:isSmall?6:32}}>
                           <span style={{fontSize:isSmall?9.5:15,fontWeight:800,color:"#fff",lineHeight:1.2,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{v}</span>
@@ -4272,15 +4291,9 @@ export default function OccasionDetail(){
                     style={{padding:0,borderRadius:16,overflow:"hidden",border:`2px solid ${sel?gold:"rgba(196,122,46,0.13)"}`,background:"#fff",transition:"all 0.18s",boxShadow:sel?"0 4px 20px rgba(196,122,46,0.22)":"0 1px 5px rgba(0,0,0,0.06)"}}>
                     <button onClick={()=>toggleGift(g.name)} style={{display:"block",width:"100%",padding:0,border:"none",background:"none",cursor:"pointer",textAlign:"left",fontFamily:font}}>
                       <div style={{position:"relative",height:140,overflow:"hidden",background:"linear-gradient(160deg,rgba(196,122,46,0.4),rgba(196,122,46,0.15))"}}>
-                        {g.image&&(
-                          <img src={g.image} alt={g.name} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}
-                            onError={e=>{e.currentTarget.style.display="none";}} />
-                        )}
-                        {!g.image&&(
-                          <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                            <span style={{fontSize:36}}>🎁</span>
-                          </div>
-                        )}
+                        <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                          <span style={{fontSize:36}}>{giftEmoji(g.name,g.desc)}</span>
+                        </div>
                         <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 55%)"}}/>
                         <div style={{position:"absolute",bottom:9,left:10,right:32}}>
                           <span style={{fontSize:12,fontWeight:800,color:"#fff",lineHeight:1.25,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{g.name}</span>
@@ -4622,10 +4635,7 @@ export default function OccasionDetail(){
             ]; return (<>
             {/* ── Visible, interactive flip-pager ── */}
             <div style={{position:"relative",borderRadius:20,overflow:"hidden",marginBottom:16,border:"1px solid rgba(196,122,46,0.15)",boxShadow:"0 10px 32px rgba(0,0,0,0.08)"}}>
-              {occasion.coverImage&&(
-                <div aria-hidden style={{position:"absolute",inset:0,backgroundImage:`url(${occasion.coverImage})`,backgroundSize:"cover",backgroundPosition:"center",opacity:0.1}}/>
-              )}
-              <div aria-hidden style={{position:"absolute",inset:0,background:"linear-gradient(165deg,#FDFAF5 0%,rgba(253,250,245,0.96) 55%,#FDFAF5 100%)"}}/>
+              <div aria-hidden style={{position:"absolute",inset:0,background:`linear-gradient(165deg,${lightenHex(gold,0.85)} 0%,#FDFAF5 55%,${lightenHex(gold,0.9)} 100%)`}}/>
               <div style={{position:"relative",padding:"18px 18px 16px"}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:16,flexWrap:"wrap"}}>
                   {PLAN_PAGE_LABELS.map((label,i)=>(

@@ -3057,7 +3057,7 @@ const Home = () => {
         const pickOcc = (o) => {
           closeFlow();
           const hub = HUB_ROUTES[o.id];
-          setOccModal({ label: o.name, slug: o.id, hub: hub || null, photo: o.coverImage, icon: o.icon || "🎉", color: o.color || CHAMP, step: hub ? 1 : 2 });
+          setOccModal({ label: o.name, slug: o.id, hub: hub || null, icon: o.icon || "🎉", color: o.color || CHAMP, step: hub ? 1 : 2 });
         };
 
         const renderRow = (occ, num) => (

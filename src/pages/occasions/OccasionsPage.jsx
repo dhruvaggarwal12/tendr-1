@@ -107,12 +107,13 @@ export default function OccasionsPage() {
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(139,69,19,0.12)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 10px rgba(139,69,19,0.05)"; }}
               >
-                {/* Cover photo */}
-                <div className="occ-pg-cover" style={{ height: 120, overflow: "hidden", position: "relative", background: (occasion.color || "#C47A2E") + "22" }}>
-                  <img src={occasion.coverImage} alt={occasion.name}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.88 }} />
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(0,0,0,0.42) 0%,transparent 55%)" }} />
-                  <span style={{ position: "absolute", top: 10, left: 12, fontSize: 26 }}>{occasion.icon}</span>
+                {/* Icon banner — no stock photo */}
+                <div className="occ-pg-cover" style={{ height: 120, overflow: "hidden", position: "relative", background: `linear-gradient(160deg,${occasion.color || "#C47A2E"}3d,${occasion.color || "#C47A2E"}14)` }}>
+                  <span aria-hidden style={{ position: "absolute", top: "8%", right: "10%", fontSize: 20, opacity: 0.35, transform: "rotate(10deg)" }}>✨</span>
+                  <span aria-hidden style={{ position: "absolute", bottom: "12%", right: "20%", fontSize: 16, opacity: 0.3, transform: "rotate(-8deg)" }}>🎊</span>
+                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ fontSize: 44, filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.1))" }}>{occasion.icon}</span>
+                  </div>
                 </div>
                 {/* Name only — no tagline, no chips */}
                 <div className="occ-pg-info" style={{ padding: "10px 13px 12px" }}>

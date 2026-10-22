@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ENTRY_EXPERIENCES, getEntryExperienceById } from "../data/entryExperiences";
+import { ENTRY_EXPERIENCES, getEntryExperienceById, entryEmoji } from "../data/entryExperiences";
 
 const font = "'Outfit', sans-serif";
 const serif = "'Cormorant Garamond', Georgia, serif";
@@ -75,14 +75,10 @@ function EntryCard({ idea, selected, occAccent, onExplore }) {
       }}
     >
       <div style={{ position: "relative", height: 140, overflow: "hidden", background: "linear-gradient(160deg,#C47A2E44,#C47A2E18)" }}>
-        {idea.images?.[0] && (
-          <img
-            src={idea.images[0]}
-            alt={idea.title}
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-            onError={(e) => { e.currentTarget.style.display = "none"; }}
-          />
-        )}
+        <span aria-hidden style={{ position: "absolute", top: "10%", left: "9%", fontSize: 14, opacity: 0.35, transform: "rotate(-10deg)" }}>✨</span>
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ fontSize: 44, filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.12))" }}>{entryEmoji(idea)}</span>
+        </div>
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(0,0,0,0.62) 0%,transparent 55%)" }} />
         <div style={{ position: "absolute", bottom: 10, left: 11, right: 32 }}>
           <span style={{ fontSize: 13, fontWeight: 800, color: "#fff", lineHeight: 1.25, textShadow: "0 1px 4px rgba(0,0,0,0.4)" }}>{idea.title}</span>
@@ -143,11 +139,13 @@ function DetailDrawer({ idea, selected, vendors, onToggleVendor, onToggleSelect,
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", cursor: "pointer", fontSize: 16, color: muted, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>×</button>
         </div>
 
-        {idea.images?.[0] && (
-          <div style={{ borderRadius: 14, overflow: "hidden", marginBottom: 16, height: 180 }}>
-            <img src={idea.images[0]} alt={idea.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onError={(e) => { e.currentTarget.parentElement.style.display = "none"; }} />
+        <div style={{ position: "relative", borderRadius: 14, overflow: "hidden", marginBottom: 16, height: 150, background: `linear-gradient(160deg,${occAccent}44,${occAccent}18)` }}>
+          <span aria-hidden style={{ position: "absolute", top: "14%", left: "10%", fontSize: 20, opacity: 0.35, transform: "rotate(-10deg)" }}>✨</span>
+          <span aria-hidden style={{ position: "absolute", bottom: "16%", right: "12%", fontSize: 16, opacity: 0.3, transform: "rotate(8deg)" }}>🎊</span>
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 56, filter: "drop-shadow(0 2px 10px rgba(0,0,0,0.14))" }}>{entryEmoji(idea)}</span>
           </div>
-        )}
+        </div>
 
         {idea.howItFeels && (
           <div style={{ marginBottom: 16, padding: "14px 16px", borderRadius: 14, background: "rgba(196,122,46,0.05)", border: `1px solid ${border}` }}>
