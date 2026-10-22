@@ -3126,6 +3126,7 @@ const Home = () => {
                 .occ-flow-business { padding: 0 18px 24px !important; }
                 .occ-flow-row { padding: 12px 4px !important; font-size: 13.5px !important; gap: 12px !important; }
                 .occ-num { font-size: 11px !important; min-width: 20px !important; }
+                .occ-flow-header { padding: 18px 18px 14px !important; }
               }
             `}</style>
 
@@ -3150,13 +3151,13 @@ const Home = () => {
               position: "fixed",
             }}>
               {/* Header */}
-              <div style={{ padding: "28px 32px 22px", borderBottom: "1px solid rgba(0,0,0,0.07)", flexShrink: 0, position: "relative" }}>
+              <div className="occ-flow-header" style={{ padding: "28px 32px 22px", borderBottom: "1px solid rgba(0,0,0,0.07)", flexShrink: 0, position: "relative" }}>
                 <button
                   onClick={closeFlow}
                   style={{ position: "absolute", top: 22, right: 22, width: 32, height: 32, borderRadius: "50%", background: "rgba(44,26,14,0.06)", border: "1px solid rgba(44,26,14,0.08)", color: "rgba(44,26,14,0.55)", fontSize: 18, lineHeight: 1, cursor: "pointer", fontFamily: f, display: "flex", alignItems: "center", justifyContent: "center" }}
                 >×</button>
-                <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.18em", margin: "0 0 8px", fontFamily: f }}>PLAN AN OCCASION</p>
-                <h2 style={{ fontFamily: ser, fontSize: "clamp(2.2rem,4vw,3rem)", fontWeight: 700, color: "#2C1A0E", margin: "0 0 22px", lineHeight: 1.05 }}>What are you planning?</h2>
+                <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.18em", margin: "0 0 6px", fontFamily: f }}>PLAN AN OCCASION</p>
+                <h2 style={{ fontFamily: ser, fontSize: "clamp(1.5rem,5vw,2.2rem)", fontWeight: 700, color: "#2C1A0E", margin: "0 0 16px", lineHeight: 1.1 }}>What are you planning?</h2>
                 {/* Search */}
                 <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#F8F5F0", border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 100, padding: "0 20px" }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>

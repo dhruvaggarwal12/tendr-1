@@ -178,11 +178,7 @@ export default function CustomerDashboard() {
   const [showInstallBanner, setShowInstallBanner] = useState(() => !sessionStorage.getItem("tendr_install_dismissed"));
   const [referralCopied, setReferralCopied] = useState(false);
   const [referralModalOpen, setReferralModalOpen] = useState(false);
-  const [referralWallet, setReferralWallet] = useState(null); // { balance, tier, tierAnswered, earnings }
-  const [tierQuestions, setTierQuestions] = useState(null);
-  const [tierQuizOpen, setTierQuizOpen] = useState(false);
-  const [tierAnswers, setTierAnswers] = useState([]);
-  const [tierSubmitting, setTierSubmitting] = useState(false);
+  const [referralWallet, setReferralWallet] = useState(null); // { balance, tier, tierAnswered, earnings } — tier comes from the Event Intelligence Challenge
 
   // Referral wallet withdrawal
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
@@ -219,39 +215,6 @@ export default function CustomerDashboard() {
       .then(d => { if (d) setMyParties(d.parties || []); })
       .catch(() => {});
   }, [token, user?._id, myParties]);
-
-  const openTierQuiz = () => {
-    if (!tierQuestions) {
-      fetch(`${BASE_URL}/referrals/tier-questions`)
-        .then(r => r.ok ? r.json() : null)
-        .then(d => { if (d?.questions) { setTierQuestions(d.questions); setTierAnswers(new Array(d.questions.length).fill(null)); } })
-        .catch(() => {});
-    }
-    setTierQuizOpen(true);
-  };
-
-  const submitTierQuiz = async () => {
-    if (tierAnswers.some(a => a === null) || tierSubmitting) return;
-    setTierSubmitting(true);
-    try {
-      const res = await fetch(`${BASE_URL}/referrals/tier-submit`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        credentials: "include",
-        body: JSON.stringify({ answers: tierAnswers }),
-      });
-      const d = await res.json();
-      if (res.ok) {
-        setReferralWallet(prev => ({ ...(prev || {}), tier: d.tier, tierScore: d.score, tierAnswered: true }));
-        setTierQuizOpen(false);
-      } else {
-        alert(d.error || "Couldn't save your answers — please try again.");
-      }
-    } catch {
-      alert("Couldn't save your answers — please try again.");
-    }
-    setTierSubmitting(false);
-  };
 
   // Coming back from a login redirect (e.g. "Refer & Earn" when logged out) —
   // scroll to the referral section once its data-dependent card has mounted.
@@ -1034,8 +997,8 @@ export default function CustomerDashboard() {
         {user?._id && (() => {
           const code = generateReferralCode(user._id);
           const formatted = formatCode(code);
-          const tierLabel = { bronze: "Bronze", silver: "Silver", gold: "Gold" }[referralWallet?.tier || "bronze"];
-          const tierColor = { bronze: "#C47A2E", silver: "#B8C0C8", gold: "#D4AF37" }[referralWallet?.tier || "bronze"];
+          const tierLabel = { none: "Unrated", starter: "Starter", achiever: "Achiever", pro: "Pro", champion: "Champion" }[referralWallet?.tier || "none"];
+          const tierColor = { none: "#9B7450", starter: "#C47A2E", achiever: "#B8C0C8", pro: "#60A5FA", champion: "#D4AF37" }[referralWallet?.tier || "none"];
           return (
             <div id="refer-earn" style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", borderRadius: 20, padding: "24px 28px", marginBottom: 28, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, flexWrap: "wrap", boxShadow: "0 6px 24px rgba(44,26,14,0.18)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -1054,8 +1017,8 @@ export default function CustomerDashboard() {
                     {referralWallet?.monthlyReferrals > 0 ? ` (referral #${referralWallet.monthlyReferrals + 1} this month)` : ""} — resets to ₹100 each new month.
                   </p>
                   {!referralWallet?.tierAnswered && (
-                    <button onClick={openTierQuiz} style={{ marginTop: 6, background: "none", border: "none", cursor: "pointer", padding: 0, color: "#CCAB4A", fontSize: 12, fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 3, fontFamily: font }}>
-                      Answer 3 quick questions to boost your tier →
+                    <button onClick={() => navigate("/referral/challenge")} style={{ marginTop: 6, background: "none", border: "none", cursor: "pointer", padding: 0, color: "#CCAB4A", fontSize: 12, fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 3, fontFamily: font }}>
+                      Take the Event Intelligence Challenge to boost your tier →
                     </button>
                   )}
                 </div>
@@ -1075,29 +1038,6 @@ export default function CustomerDashboard() {
             </div>
           );
         })()}
-
-        {/* Event Intelligence Challenge — separate, new assessment; not yet wired into the
-            referral reward ladder above (that's still driven by the 3-question tier quiz). */}
-        {user?._id && (
-          <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.18)", padding: "18px 22px", marginBottom: 28, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <div style={{ fontSize: 30, flexShrink: 0 }}>🧠</div>
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-                  <p style={{ fontSize: 13.5, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>Event Intelligence Challenge</p>
-                  <span style={{ fontSize: 9, fontWeight: 800, color: "#fff", background: "#0EA5E9", borderRadius: 100, padding: "2px 7px", letterSpacing: "0.05em", textTransform: "uppercase" }}>New</span>
-                </div>
-                <p style={{ fontSize: 12, color: "#9B7450", margin: 0, lineHeight: 1.5 }}>
-                  13 quick questions (MCQs, your opinion, one photo task) — see how well you know event planning.
-                </p>
-              </div>
-            </div>
-            <button onClick={() => navigate("/referral/challenge")}
-              style={{ flexShrink: 0, padding: "10px 18px", borderRadius: 11, border: "none", background: "#C47A2E", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
-              Start Challenge →
-            </button>
-          </div>
-        )}
 
         {/* Referral code modal — centred, dismissible ONLY via the × button (no backdrop/Escape close) */}
         {referralModalOpen && user?._id && (() => {
@@ -1136,12 +1076,12 @@ export default function CustomerDashboard() {
                 </div>
                 {referralWallet?.tierAnswered ? (
                   <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", margin: "12px 0 0" }}>
-                    Your tier: <strong style={{ color: "#CCAB4A", textTransform: "capitalize" }}>{referralWallet?.tier || "bronze"}</strong>
+                    Your tier: <strong style={{ color: "#CCAB4A", textTransform: "capitalize" }}>{referralWallet?.tier || "none"}</strong>
                   </p>
                 ) : (
-                  <button onClick={() => { setReferralModalOpen(false); openTierQuiz(); }}
+                  <button onClick={() => { setReferralModalOpen(false); navigate("/referral/challenge"); }}
                     style={{ marginTop: 12, background: "none", border: "none", cursor: "pointer", padding: 0, color: "#CCAB4A", fontSize: 12.5, fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 3, fontFamily: font }}>
-                    Answer 3 quick questions to boost your tier →
+                    Take the Event Intelligence Challenge to boost your tier →
                   </button>
                 )}
               </div>
@@ -1229,44 +1169,6 @@ export default function CustomerDashboard() {
                     })}
                   </div>
                 </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Referral tier quiz modal */}
-        {tierQuizOpen && (
-          <div onClick={() => setTierQuizOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 9500, background: "rgba(20,10,0,0.55)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 18 }}>
-            <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 420, maxHeight: "85dvh", overflowY: "auto", background: "#FFFCF5", borderRadius: 22, padding: "26px 24px", boxShadow: "0 24px 70px rgba(0,0,0,0.4)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
-                <p style={{ fontSize: 17, fontWeight: 900, color: "#2C1A0E", margin: 0 }}>Boost your tier</p>
-                <button onClick={() => setTierQuizOpen(false)} aria-label="Close"
-                  style={{ width: 28, height: 28, borderRadius: "50%", border: "none", background: "rgba(196,122,46,0.1)", color: "#6B3A1F", fontSize: 14, cursor: "pointer" }}>✕</button>
-              </div>
-              <p style={{ fontSize: 12.5, color: "#9B7450", margin: "0 0 18px", lineHeight: 1.5 }}>3 quick questions — a higher tier means more rupees per booking.</p>
-
-              {!tierQuestions ? (
-                <p style={{ fontSize: 13, color: "#9B7450", textAlign: "center", padding: "20px 0" }}>Loading…</p>
-              ) : (
-                <>
-                  {tierQuestions.map((q, qi) => (
-                    <div key={qi} style={{ marginBottom: 18 }}>
-                      <p style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E", margin: "0 0 9px", lineHeight: 1.4 }}>{q.question}</p>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-                        {q.options.map((opt, oi) => (
-                          <button key={oi} onClick={() => setTierAnswers(prev => prev.map((a, i) => i === qi ? oi : a))}
-                            style={{ textAlign: "left", padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${tierAnswers[qi] === oi ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: tierAnswers[qi] === oi ? "rgba(196,122,46,0.1)" : "#fff", color: tierAnswers[qi] === oi ? "#C47A2E" : "#4A3420", fontSize: 13, fontWeight: tierAnswers[qi] === oi ? 700 : 500, cursor: "pointer", fontFamily: font }}>
-                            {opt}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                  <button disabled={tierAnswers.some(a => a === null) || tierSubmitting} onClick={submitTierQuiz}
-                    style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: tierAnswers.some(a => a === null) ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: tierAnswers.some(a => a === null) ? "#9ca3af" : "#fff", fontSize: 14.5, fontWeight: 800, cursor: tierAnswers.some(a => a === null) ? "not-allowed" : "pointer", fontFamily: font }}>
-                    {tierSubmitting ? "Saving…" : "Save Answers"}
-                  </button>
-                </>
               )}
             </div>
           </div>

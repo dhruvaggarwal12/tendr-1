@@ -68,7 +68,7 @@ function PrintButton({ theme }) {
         }
         @media (max-width: 767px) {
           .guide-dl-btn {
-            bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+            bottom: calc(61px + env(safe-area-inset-bottom, 0px)) !important;
             right: 16px !important;
           }
         }

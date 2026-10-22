@@ -642,7 +642,7 @@ const VendorList = () => {
 
           {/* 20-sec tip popup */}
           {showTip && (
-            <div style={{ position: "fixed", bottom: "calc(72px + env(safe-area-inset-bottom,0px))", left: "50%", transform: "translateX(-50%)", zIndex: 100010, background: "#FFFCF5", borderRadius: 14, padding: "14px 18px", boxShadow: "0 8px 32px rgba(44,26,14,0.2)", border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: "'Outfit',sans-serif", maxWidth: 320, width: "90%" }}>
+            <div style={{ position: "fixed", bottom: "calc(61px + env(safe-area-inset-bottom,0px))", left: "50%", transform: "translateX(-50%)", zIndex: 100010, background: "#FFFCF5", borderRadius: 14, padding: "14px 18px", boxShadow: "0 8px 32px rgba(44,26,14,0.2)", border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: "'Outfit',sans-serif", maxWidth: 320, width: "90%" }}>
               <button onClick={() => setShowTip(false)} style={{ position: "absolute", top: 8, right: 10, background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 14, lineHeight: 1 }}>✕</button>
               {isNormalFlow ? (
                 <>

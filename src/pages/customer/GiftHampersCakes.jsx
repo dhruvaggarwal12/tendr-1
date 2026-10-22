@@ -363,10 +363,14 @@ const GiftHampersCakes = () => {
           .gh-hero-center { height:200px; }
           .gh-hero-right { padding:0 16px 24px; }
           .gh-hero-step { padding:12px 14px; }
-          .gh-masonry { columns:2 140px; column-gap:8px; }
-          .gh-masonry-card { margin-bottom:8px; }
-          .gh-island { left:16px !important; right:16px !important; transform:none !important; border-radius:20px !important; animation-name:ghIslandInMobile !important; bottom:calc(72px + env(safe-area-inset-bottom,0px)) !important; }
+          .gh-masonry { columns:3 105px; column-gap:7px; }
+          .gh-masonry-card { margin-bottom:7px; }
+          .gh-island { left:16px !important; right:16px !important; transform:none !important; border-radius:20px !important; animation-name:ghIslandInMobile !important; bottom:calc(61px + env(safe-area-inset-bottom,0px)) !important; }
           .gh-cat-card { flex:0 0 130px; height:165px; }
+          .gh-masonry-card .gh-card-info { padding:7px 8px 8px !important; }
+          .gh-masonry-card .gh-card-tag { font-size:8.5px !important; padding:2px 6px !important; }
+          .gh-masonry-card .gh-card-name { font-size:10.5px !important; }
+          .gh-masonry-card .gh-card-price { font-size:9.5px !important; }
         }
       `}</style>
 
@@ -391,7 +395,7 @@ const GiftHampersCakes = () => {
             <span style={{ fontSize:10, fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase", color:"rgba(196,164,130,0.8)", fontFamily:font }}>Available Now · Delhi NCR</span>
           </div>
           {/* Headline */}
-          <h1 style={{ fontFamily:serif, fontSize:"clamp(2.1rem,3.8vw,3.2rem)", fontWeight:400, lineHeight:1.12, color:"#FFF8EC", margin:"0 0 14px", position:"relative", zIndex:1, textWrap:"balance" }}>
+          <h1 style={{ fontFamily:serif, fontSize:"clamp(1.6rem,5.5vw,2.6rem)", fontWeight:400, lineHeight:1.14, color:"#FFF8EC", margin:"0 0 14px", position:"relative", zIndex:1, textWrap:"balance" }}>
             Gifts that say exactly <em style={{ fontStyle:"italic", color:"#CCAB4A" }}>what you mean.</em>
           </h1>
           <p style={{ fontSize:14, color:"rgba(255,248,236,0.55)", lineHeight:1.72, margin:"0 0 24px", position:"relative", zIndex:1 }}>
@@ -542,7 +546,7 @@ const GiftHampersCakes = () => {
           <div style={{ display:"flex", gap:"clamp(24px,4vw,56px)", alignItems:"flex-start", marginBottom:36, flexWrap:"wrap" }}>
             <div style={{ flex:"0 0 auto", maxWidth:360 }}>
               <p style={{ fontSize:10, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.24em", margin:"0 0 10px", fontFamily:font }}>Browse Samples</p>
-              <h2 style={{ fontFamily:serif, fontSize:"clamp(1.7rem,3.5vw,2.4rem)", fontWeight:400, color:"#2C1A0E", margin:"0 0 6px", lineHeight:1.2 }}>
+              <h2 style={{ fontFamily:serif, fontSize:"clamp(1.3rem,4vw,1.8rem)", fontWeight:400, color:"#2C1A0E", margin:"0 0 6px", lineHeight:1.2 }}>
                 Real hampers, <em style={{ fontStyle:"italic", color:"#C47A2E" }}>real occasions.</em>
               </h2>
               <p style={{ fontSize:13, color:"#9B7450", margin:0, fontFamily:font }}>Click any photo to preview · select favourites · share with our team</p>
@@ -658,14 +662,14 @@ const GiftHampersCakes = () => {
                       </div>
                     </div>
                     {(s.name || s.priceRange || (Array.isArray(s.category)?s.category:[s.category||""]).filter(Boolean).length>0) && (
-                      <div style={{ padding:"10px 12px 12px" }}>
+                      <div className="gh-card-info" style={{ padding:"10px 12px 12px" }}>
                         <div style={{ display:"flex", flexDirection:"column", gap:4, marginBottom:s.name?5:0 }}>
                           {(Array.isArray(s.category)?s.category:[s.category||""]).filter(Boolean).map(c=>(
-                            <span key={c} style={{ display:"inline-flex", alignSelf:"flex-start", fontSize:9.5, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color:"#C47A2E", background:"rgba(196,122,46,0.1)", border:"1px solid rgba(196,122,46,0.22)", borderRadius:100, padding:"3px 8px", fontFamily:font, whiteSpace:"nowrap" }}>{c}</span>
+                            <span key={c} className="gh-card-tag" style={{ display:"inline-flex", alignSelf:"flex-start", fontSize:9.5, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color:"#C47A2E", background:"rgba(196,122,46,0.1)", border:"1px solid rgba(196,122,46,0.22)", borderRadius:100, padding:"3px 8px", fontFamily:font, whiteSpace:"nowrap" }}>{c}</span>
                           ))}
                         </div>
-                        {s.name && <div style={{ fontSize:12, fontWeight:700, color:"#2C1A0E", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", fontFamily:font }}>{s.name}</div>}
-                        {s.priceRange && <div style={{ fontSize:11, fontWeight:700, color:"#C47A2E", marginTop:2, fontFamily:font }}>{s.priceRange}</div>}
+                        {s.name && <div className="gh-card-name" style={{ fontSize:12, fontWeight:700, color:"#2C1A0E", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", fontFamily:font }}>{s.name}</div>}
+                        {s.priceRange && <div className="gh-card-price" style={{ fontSize:11, fontWeight:700, color:"#C47A2E", marginTop:2, fontFamily:font }}>{s.priceRange}</div>}
                       </div>
                     )}
                   </div>

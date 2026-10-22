@@ -235,7 +235,7 @@ function BottomNavInner() {
         <>
           <div onClick={() => setMyEventModal(null)} style={{ position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',zIndex:99993,pointerEvents:'auto' }} />
           <div style={{
-            position:'fixed', bottom:'calc(64px + env(safe-area-inset-bottom,0px))',
+            position:'fixed', bottom:'calc(54px + env(safe-area-inset-bottom,0px))',
             left:16, right:16, zIndex:99994, pointerEvents:'auto',
             background:'#FFFCF5', borderRadius:20,
             boxShadow:'0 -8px 40px rgba(44,26,14,0.22)',
@@ -311,7 +311,7 @@ function BottomNavInner() {
             initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 380, damping: 30, mass: 0.8 }}
             style={{
-            position: "fixed", bottom: "calc(65px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0,
+            position: "fixed", bottom: "calc(54px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0,
             zIndex: 99992, pointerEvents: "auto",
             background: "#FFFCF5",
             borderRadius: "20px 20px 0 0",
@@ -379,7 +379,7 @@ function BottomNavInner() {
             onClick={() => setPlanOpen(false)}
             style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 99991, pointerEvents: "auto" }} />
           <motion.div key="plan-sheet" initial={{ y:"100%" }} animate={{ y:0 }} exit={{ y:"100%" }} transition={{ type:"spring", stiffness:380, damping:30, mass:0.8 }}
-            style={{ position: "fixed", bottom: "calc(65px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, pointerEvents: "auto", background: "#FFFCF5", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(139,69,19,0.18)", padding: "10px 20px 20px", fontFamily: font }}>
+            style={{ position: "fixed", bottom: "calc(54px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, pointerEvents: "auto", background: "#FFFCF5", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(139,69,19,0.18)", padding: "10px 20px 20px", fontFamily: font }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
               <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(196,122,46,0.25)" }} />
             </div>
@@ -420,7 +420,7 @@ function BottomNavInner() {
             onClick={() => setProductsOpen(false)}
             style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 99991, pointerEvents: "auto" }} />
           <motion.div key="products-sheet" initial={{ y:"100%" }} animate={{ y:0 }} exit={{ y:"100%" }} transition={{ type:"spring", stiffness:380, damping:30, mass:0.8 }}
-            style={{ position: "fixed", bottom: "calc(65px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, pointerEvents: "auto", background: "#FFFCF5", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(139,69,19,0.18)", padding: "10px 20px 20px", fontFamily: font }}>
+            style={{ position: "fixed", bottom: "calc(54px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, pointerEvents: "auto", background: "#FFFCF5", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(139,69,19,0.18)", padding: "10px 20px 20px", fontFamily: font }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
               <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(196,122,46,0.25)" }} />
             </div>
@@ -465,7 +465,7 @@ function BottomNavInner() {
             onClick={() => setTipsOpen(false)}
             style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 99991, pointerEvents: "auto" }} />
           <motion.div key="tips-sheet" initial={{ y:"100%" }} animate={{ y:0 }} exit={{ y:"100%" }} transition={{ type:"spring", stiffness:380, damping:30, mass:0.8 }}
-            style={{ position: "fixed", bottom: "calc(65px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, pointerEvents: "auto", background: "#FFFCF5", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(139,69,19,0.18)", padding: "10px 20px 24px", fontFamily: font, borderTop: "1px solid rgba(196,122,46,0.2)" }}>
+            style={{ position: "fixed", bottom: "calc(54px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, pointerEvents: "auto", background: "#FFFCF5", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(139,69,19,0.18)", padding: "10px 20px 24px", fontFamily: font, borderTop: "1px solid rgba(196,122,46,0.2)" }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
               <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(196,122,46,0.25)" }} />
             </div>
@@ -516,7 +516,7 @@ function BottomNavInner() {
           position: "fixed",
           bottom: 0, left: 0, right: 0,
           zIndex: 99990,
-          height: "calc(65px + env(safe-area-inset-bottom, 0px))",
+          height: "calc(54px + env(safe-area-inset-bottom, 0px))",
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
           background: "rgba(255,252,245,0.96)",
           backdropFilter: "blur(16px)",
@@ -553,9 +553,9 @@ function BottomNavInner() {
               style={{
                 flex: 1, display: "flex", flexDirection: "column",
                 alignItems: "center", justifyContent: "center",
-                gap: 3, border: "none",
+                gap: 1, border: "none",
                 background: isOn ? navColor.bg : "transparent",
-                cursor: "pointer", padding: "6px 0 4px",
+                cursor: "pointer", padding: "4px 0 3px",
                 position: "relative",
                 WebkitTapHighlightColor: "transparent",
                 outline: "none", fontFamily: font,
@@ -566,7 +566,7 @@ function BottomNavInner() {
               {/* Active bar at top */}
               <div style={{
                 position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
-                width: isOn ? 32 : 0, height: 3, borderRadius: "0 0 6px 6px",
+                width: isOn ? 26 : 0, height: 2.5, borderRadius: "0 0 6px 6px",
                 background: navColor.active,
                 boxShadow: isOn ? `0 2px 8px ${navColor.shadow}` : "none",
                 transition: "width 0.22s cubic-bezier(0.4,0,0.2,1), box-shadow 0.22s",
@@ -574,25 +574,26 @@ function BottomNavInner() {
               {/* Icon wrapper with colored glow ring when active */}
               <div style={{
                 position: "relative",
-                padding: isOn ? "4px 6px" : "0",
-                borderRadius: 10,
+                padding: isOn ? "3px 5px" : "0",
+                borderRadius: 9,
                 background: isOn ? `${navColor.active}18` : "transparent",
                 transition: "all 0.18s",
+                transform: "scale(0.82)",
               }}>
                 {Icon(isOn, navColor.active)}
                 {hasProductsSaved && (
-                  <div style={{ position: "absolute", top: isOn ? 2 : -2, right: isOn ? 3 : -3, width: 8, height: 8, borderRadius: "50%", background: "#22c55e", border: "1.5px solid #FFFCF5" }} />
+                  <div style={{ position: "absolute", top: isOn ? 2 : -2, right: isOn ? 3 : -3, width: 7, height: 7, borderRadius: "50%", background: "#22c55e", border: "1.5px solid #FFFCF5" }} />
                 )}
                 {label === "My Event" && hasActivePlan && (
-                  <div style={{ position: "absolute", top: isOn ? 2 : -2, right: isOn ? 3 : -3, width: 8, height: 8, borderRadius: "50%", background: "#C47A2E", border: "1.5px solid #FFFCF5" }} />
+                  <div style={{ position: "absolute", top: isOn ? 2 : -2, right: isOn ? 3 : -3, width: 7, height: 7, borderRadius: "50%", background: "#C47A2E", border: "1.5px solid #FFFCF5" }} />
                 )}
               </div>
               <span style={{
-                fontSize: 10.5, fontWeight: isOn ? 700 : 500,
+                fontSize: 9.5, fontWeight: isOn ? 700 : 500,
                 color: isOn ? navColor.active : "#B08060",
-                lineHeight: 1.2, letterSpacing: "0.01em",
+                lineHeight: 1.15, letterSpacing: "0.01em",
                 transition: "color 0.18s, font-weight 0.18s",
-                minHeight: 24, display: "flex", alignItems: "center", justifyContent: "center",
+                minHeight: 18, display: "flex", alignItems: "center", justifyContent: "center",
                 textAlign: "center", maxWidth: "100%", padding: "0 2px",
               }}>
                 {label}

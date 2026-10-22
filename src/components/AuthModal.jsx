@@ -238,37 +238,37 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
       <div style={{
         position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
         zIndex: 110001,
-        width: "min(92vw, 400px)",
-        maxHeight: "calc(100dvh - 160px - env(safe-area-inset-bottom, 0px))",
+        width: "min(86vw, 360px)",
+        maxHeight: "calc(100dvh - 120px - env(safe-area-inset-bottom, 0px))",
         overflowY: "auto",
         background: "#FFFCF5",
-        borderRadius: 22,
+        borderRadius: 20,
         boxShadow: "0 20px 60px rgba(139,69,19,0.22), 0 4px 16px rgba(0,0,0,0.08)",
         border: "1px solid rgba(139,69,19,0.1)",
         fontFamily: font,
         WebkitOverflowScrolling: "touch",
       }}>
-        <div style={{ padding: "28px 26px 24px" }}>
+        <div style={{ padding: "20px 18px 16px" }}>
           {/* Close */}
           <button
             onClick={() => { if (!isBusy) onClose?.(); }}
-            style={{ position: "absolute", top: 14, right: 14, width: 30, height: 30, borderRadius: "50%", background: "rgba(44,26,14,0.07)", border: "none", cursor: "pointer", fontSize: 16, color: "#9B7450", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}
+            style={{ position: "absolute", top: 12, right: 12, width: 26, height: 26, borderRadius: "50%", background: "rgba(44,26,14,0.07)", border: "none", cursor: "pointer", fontSize: 14, color: "#9B7450", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}
           >✕</button>
 
           {/* Logo */}
-          <div style={{ textAlign: "center", marginBottom: 18 }}>
-            <img src={logo} alt="Tendr" style={{ height: 30, display: "inline-block" }} />
+          <div style={{ textAlign: "center", marginBottom: 12 }}>
+            <img src={logo} alt="Tendr" style={{ height: 24, display: "inline-block" }} />
           </div>
 
           {/* Tabs — hidden during Google phone step */}
-          <div style={{ display: googlePhoneStep ? "none" : "flex", background: "rgba(44,26,14,0.05)", borderRadius: 12, padding: 3, marginBottom: 22, gap: 3 }}>
+          <div style={{ display: googlePhoneStep ? "none" : "flex", background: "rgba(44,26,14,0.05)", borderRadius: 11, padding: 3, marginBottom: 16, gap: 3 }}>
             {["login", "signup"].map(mode => (
               <button
                 key={mode}
                 onClick={() => { setIsSignup(mode === "signup"); setLocalError(""); setPasswordError(""); }}
                 style={{
-                  flex: 1, padding: "8px 0", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: font,
-                  fontSize: 13, fontWeight: 700, transition: "all 0.18s",
+                  flex: 1, padding: "7px 0", borderRadius: 9, border: "none", cursor: "pointer", fontFamily: font,
+                  fontSize: 12.5, fontWeight: 700, transition: "all 0.18s",
                   background: (mode === "signup") === isSignup ? "#FFFCF5" : "transparent",
                   color: (mode === "signup") === isSignup ? BROWN : "#9B7450",
                   boxShadow: (mode === "signup") === isSignup ? "0 1px 6px rgba(44,26,14,0.12)" : "none",

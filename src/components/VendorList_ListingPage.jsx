@@ -503,49 +503,69 @@ const VendorList_ListingPage = ({
                         background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.3)",
                         boxShadow: "0 8px 28px rgba(139,69,19,0.16)",
                         padding: "16px 14px", display: "flex", flexDirection: "column",
-                        fontFamily: font,
+                        fontFamily: font, overflow: "hidden",
                       }}
                     >
                       <button
                         onClick={(e) => { e.stopPropagation(); setQuickViewVendor(null); }}
                         aria-label="Close quick view"
-                        style={{ position: "absolute", top: 10, right: 10, width: 26, height: 26, borderRadius: "50%", border: "none", background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                        style={{ position: "absolute", top: 10, right: 10, width: 26, height: 26, borderRadius: "50%", border: "none", background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1 }}
                       >✕</button>
 
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, paddingRight: 26 }}>
-                        {cardPhotoUrl ? (
-                          <img src={cardPhotoUrl} alt={vendor.name} style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1.5px solid rgba(196,122,46,0.2)" }} />
-                        ) : (
-                          <div style={{ width: 48, height: 48, borderRadius: "50%", flexShrink: 0, background: "rgba(196,122,46,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🏷️</div>
-                        )}
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontSize: 14.5, fontWeight: 800, color: "#2C1A0E", lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vendor.name}</div>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em" }}>{vendor.serviceType}</div>
-                        </div>
-                      </div>
-
-                      {rating > 0 && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 8 }}>
-                          <span style={{ color: "#C47A2E", fontSize: 12 }}>{"★".repeat(Math.min(5, Math.round(rating)))}{"☆".repeat(Math.max(0, 5 - Math.round(rating)))}</span>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{Number(rating).toFixed(1)}</span>
-                          {(vendor.reviewCount > 0 || vendor.totalReviews > 0) && (
-                            <span style={{ fontSize: 11, color: "#9B7450" }}>({(vendor.reviewCount || vendor.totalReviews).toLocaleString("en-IN")})</span>
+                      {/* Scrollable info — everything that doesn't fit shows via scroll instead of being cut off */}
+                      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", paddingRight: 2 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, paddingRight: 26 }}>
+                          {cardPhotoUrl ? (
+                            <img src={cardPhotoUrl} alt={vendor.name} style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1.5px solid rgba(196,122,46,0.2)" }} />
+                          ) : (
+                            <div style={{ width: 48, height: 48, borderRadius: "50%", flexShrink: 0, background: "rgba(196,122,46,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🏷️</div>
                           )}
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <div style={{ fontSize: 14.5, fontWeight: 800, color: "#2C1A0E", lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vendor.name}</div>
+                              {vendor.isVerified && (
+                                <span title="Verified" style={{ fontSize: 9.5, fontWeight: 800, color: "#fff", background: "#C47A2E", borderRadius: 100, padding: "1.5px 6px", flexShrink: 0 }}>✓</span>
+                              )}
+                            </div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em" }}>{vendor.serviceType}</div>
+                          </div>
                         </div>
-                      )}
 
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#5a3a1a", marginBottom: 4 }}>
-                        {(vendor.price > 0 || vendor.startingPrice > 0)
-                          ? `Starting at ₹${Number(vendor.price || vendor.startingPrice).toLocaleString("en-IN")} / event`
-                          : "Price on request"}
+                        {rating > 0 && (
+                          <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 8 }}>
+                            <span style={{ color: "#C47A2E", fontSize: 12 }}>{"★".repeat(Math.min(5, Math.round(rating)))}{"☆".repeat(Math.max(0, 5 - Math.round(rating)))}</span>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{Number(rating).toFixed(1)}</span>
+                            {(vendor.reviewCount > 0 || vendor.totalReviews > 0) && (
+                              <span style={{ fontSize: 11, color: "#9B7450" }}>({(vendor.reviewCount || vendor.totalReviews).toLocaleString("en-IN")})</span>
+                            )}
+                          </div>
+                        )}
+
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "#5a3a1a", marginBottom: 4 }}>
+                          {(vendor.price > 0 || vendor.startingPrice > 0)
+                            ? `Starting at ₹${Number(vendor.price || vendor.startingPrice).toLocaleString("en-IN")} / event`
+                            : "Price on request"}
+                        </div>
+                        {(vendor.locations?.[0] || vendor.city) && (
+                          <div style={{ fontSize: 11.5, color: "#9B7450", marginBottom: 8 }}>📍 {vendor.locations?.length > 1 ? vendor.locations.slice(0,3).join(" · ") : (vendor.locations?.[0] || vendor.city)}</div>
+                        )}
+
+                        {vendor.description && (
+                          <p style={{ fontSize: 11.5, color: "#6b4a28", lineHeight: 1.55, margin: "4px 0 10px" }}>
+                            {vendor.description.slice(0, 220)}{vendor.description.length > 220 ? "…" : ""}
+                          </p>
+                        )}
+
+                        {vendor.portfolioPhotos?.length > 1 && (
+                          <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 2 }}>
+                            {vendor.portfolioPhotos.slice(0, 6).map((p, i) => (
+                              <img key={i} src={p} alt="" style={{ width: 56, height: 42, objectFit: "cover", borderRadius: 7, flexShrink: 0 }} loading="lazy" />
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      {(vendor.locations?.[0] || vendor.city) && (
-                        <div style={{ fontSize: 11.5, color: "#9B7450" }}>📍 {vendor.locations?.[0] || vendor.city}</div>
-                      )}
 
-                      <div style={{ flex: 1 }} />
-
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0, paddingTop: 10 }}>
                         <button
                           onClick={openFullProfile}
                           style={{ width: "100%", padding: "11px", borderRadius: 11, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}

@@ -148,35 +148,35 @@ function LightFormModal({ onClose, emoji, title, subtitle, accent, children, onL
   const headerGrad = sys?.grad || "linear-gradient(155deg,#0D0820 0%,rgba(18,8,40,0.99) 100%)";
   const contentBg = sys?.contentBg || "#FFFAF7";
   return (
-    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,1,8,0.85)", backdropFilter:"blur(20px)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px 16px" }}>
-      <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:520, maxHeight:"90dvh", borderRadius:24, overflow:"hidden", display:"flex", flexDirection:"column", fontFamily:font, boxShadow:`0 8px 80px rgba(0,0,0,0.65), 0 0 0 1px ${glow}22`, animation:"modal-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+    <div onClick={onClose} style={{ position:"fixed", inset:0, background:"rgba(2,1,8,0.85)", backdropFilter:"blur(20px)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:"16px 14px" }}>
+      <div onClick={e=>e.stopPropagation()} style={{ width:"100%", maxWidth:440, maxHeight:"82dvh", borderRadius:20, overflow:"hidden", display:"flex", flexDirection:"column", fontFamily:font, boxShadow:`0 8px 80px rgba(0,0,0,0.65), 0 0 0 1px ${glow}22`, animation:"modal-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
         {/* System-themed header */}
-        <div style={{ background:headerGrad, padding:"24px 20px 20px", position:"relative", overflow:"hidden", flexShrink:0 }}>
+        <div style={{ background:headerGrad, padding:"18px 16px 14px", position:"relative", overflow:"hidden", flexShrink:0 }}>
           {/* Top accent line */}
           <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:`linear-gradient(90deg,transparent,${glow}90,transparent)`, pointerEvents:"none" }} />
           <div style={{ position:"absolute", top:-60, right:-60, width:220, height:220, borderRadius:"50%", background:`radial-gradient(ellipse,${glow}35 0%,transparent 70%)`, pointerEvents:"none" }} />
           <div style={{ position:"absolute", bottom:-50, left:-30, width:160, height:160, borderRadius:"50%", background:`radial-gradient(ellipse,${glow}15 0%,transparent 70%)`, pointerEvents:"none" }} />
           {/* Close + optional leaderboard button */}
-          <div style={{ position:"absolute", top:14, right:14, display:"flex", gap:6, zIndex:2 }}>
+          <div style={{ position:"absolute", top:12, right:12, display:"flex", gap:6, zIndex:2 }}>
             {onLeaderboard && (
-              <button onClick={e=>{e.stopPropagation();onLeaderboard();}} style={{ background:"rgba(255,255,255,0.10)", border:`1px solid ${glow}40`, color:"rgba(255,255,255,0.80)", height:32, borderRadius:20, cursor:"pointer", fontSize:12, fontWeight:700, padding:"0 10px", display:"flex", alignItems:"center", gap:4 }}>🏆 Board</button>
+              <button onClick={e=>{e.stopPropagation();onLeaderboard();}} style={{ background:"rgba(255,255,255,0.10)", border:`1px solid ${glow}40`, color:"rgba(255,255,255,0.80)", height:28, borderRadius:20, cursor:"pointer", fontSize:11, fontWeight:700, padding:"0 9px", display:"flex", alignItems:"center", gap:4 }}>🏆 Board</button>
             )}
-            <button onClick={onClose} style={{ background:"rgba(255,255,255,0.10)", border:"1px solid rgba(255,255,255,0.14)", color:"rgba(255,255,255,0.65)", width:32, height:32, borderRadius:"50%", cursor:"pointer", fontSize:13, display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
+            <button onClick={onClose} style={{ background:"rgba(255,255,255,0.10)", border:"1px solid rgba(255,255,255,0.14)", color:"rgba(255,255,255,0.65)", width:28, height:28, borderRadius:"50%", cursor:"pointer", fontSize:12, display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
           </div>
           {/* System tag + title row */}
-          {sys && <div style={{ fontSize:9, fontWeight:900, color:`${glow}90`, textTransform:"uppercase", letterSpacing:"0.22em", marginBottom:10, position:"relative", zIndex:1 }}>{sys.tag}</div>}
-          <div style={{ display:"flex", alignItems:"center", gap:14, position:"relative", zIndex:1 }}>
-            <div style={{ width:52, height:52, borderRadius:15, background:`${glow}22`, border:`1.5px solid ${glow}50`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:`0 0 22px ${glow}35` }}>
-              <span style={{ fontSize:26 }}>{emoji}</span>
+          {sys && <div style={{ fontSize:8.5, fontWeight:900, color:`${glow}90`, textTransform:"uppercase", letterSpacing:"0.2em", marginBottom:8, position:"relative", zIndex:1 }}>{sys.tag}</div>}
+          <div style={{ display:"flex", alignItems:"center", gap:11, position:"relative", zIndex:1 }}>
+            <div style={{ width:42, height:42, borderRadius:13, background:`${glow}22`, border:`1.5px solid ${glow}50`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, boxShadow:`0 0 18px ${glow}35` }}>
+              <span style={{ fontSize:20 }}>{emoji}</span>
             </div>
             <div>
-              <div style={{ fontSize:20, fontWeight:800, color:"#FFFFFF", letterSpacing:"-0.01em", lineHeight:1.2 }}>{title}</div>
-              {subtitle && <div style={{ fontSize:13, color:"rgba(255,255,255,0.50)", marginTop:3, lineHeight:1.4 }}>{subtitle}</div>}
+              <div style={{ fontSize:17, fontWeight:800, color:"#FFFFFF", letterSpacing:"-0.01em", lineHeight:1.2 }}>{title}</div>
+              {subtitle && <div style={{ fontSize:12, color:"rgba(255,255,255,0.50)", marginTop:2, lineHeight:1.4 }}>{subtitle}</div>}
             </div>
           </div>
         </div>
         {/* Content area — system-tinted background */}
-        <div style={{ background:contentBg, padding:"20px 20px 36px", overflowY:"auto", flex:1 }}>
+        <div style={{ background:contentBg, padding:"16px 16px 24px", overflowY:"auto", flex:1 }}>
           {children}
         </div>
       </div>
@@ -13120,7 +13120,7 @@ export default function OccasionHub({ occasion }) {
         return (
           <div style={{ position:"absolute", inset:0, pointerEvents:"none", zIndex:0, overflow:"hidden" }}>
             {emojis.map((d,i)=>(
-              <div key={i} style={{ position:"absolute", left:`${d.x}%`, top:`${d.y}%`, fontSize:d.s, opacity:0.30, lineHeight:1, userSelect:"none", transform:`rotate(${(i%2===0?1:-1)*12}deg)`, filter:"saturate(1.4) brightness(1.2)" }}>
+              <div key={i} style={{ position:"absolute", left:`${d.x}%`, top:`${d.y}%`, fontSize:d.s, opacity:0.12, lineHeight:1, userSelect:"none", transform:`rotate(${(i%2===0?1:-1)*12}deg)`, filter:"saturate(1.1)" }}>
                 {d.e}
               </div>
             ))}
@@ -13137,7 +13137,7 @@ export default function OccasionHub({ occasion }) {
           {x:20,y:70,s:5,c:0},{x:75,y:62,s:7,c:1},{x:88,y:72,s:4,c:2},{x:3,y:80,s:5,c:3},{x:92,y:85,s:6,c:4},
           {x:40,y:90,s:4,c:0},{x:55,y:88,s:5,c:1},{x:65,y:92,s:7,c:2},{x:35,y:55,s:4,c:3},{x:60,y:50,s:5,c:4},
         ].map((d,i) => (
-          <div key={i} style={{ position:"absolute", left:`${d.x}%`, top:`${d.y}%`, width:d.s, height:d.s, borderRadius: i%3===0 ? 1 : "50%", background: occConfetti[d.c % occConfetti.length], opacity:0.75, transform:`rotate(${i*17}deg)`, filter:"brightness(1.3)" }} />
+          <div key={i} style={{ position:"absolute", left:`${d.x}%`, top:`${d.y}%`, width:d.s, height:d.s, borderRadius: i%3===0 ? 1 : "50%", background: occConfetti[d.c % occConfetti.length], opacity:0.28 }} />
         ))}
       </div>
 
@@ -13754,7 +13754,7 @@ export default function OccasionHub({ occasion }) {
       </div>
 
       {/* ── CHAT floating button ── */}
-      <button onClick={()=>setOpen("wabroadcast")} style={{ position:"fixed", bottom:"calc(72px + env(safe-area-inset-bottom,0px))", right:16, zIndex:3000, display:"flex", alignItems:"center", gap:6, padding:"11px 18px 11px 14px", minHeight:44, borderRadius:100, border:`1.5px solid ${PH.violet}55`, background:`${PH.violet}18`, color:PH.violet, fontSize:12, fontWeight:600, cursor:"pointer", boxShadow:`0 2px 16px rgba(0,0,0,0.4)`, letterSpacing:"0.01em" }}>
+      <button onClick={()=>setOpen("wabroadcast")} style={{ position:"fixed", bottom:"calc(61px + env(safe-area-inset-bottom,0px))", right:16, zIndex:3000, display:"flex", alignItems:"center", gap:6, padding:"11px 18px 11px 14px", minHeight:44, borderRadius:100, border:`1.5px solid ${PH.violet}55`, background:`${PH.violet}18`, color:PH.violet, fontSize:12, fontWeight:600, cursor:"pointer", boxShadow:`0 2px 16px rgba(0,0,0,0.4)`, letterSpacing:"0.01em" }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         Chat
       </button>

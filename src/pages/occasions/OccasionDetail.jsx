@@ -1596,6 +1596,9 @@ const css=`
   @media(min-width:600px){.g2{grid-template-columns:repeat(2,1fr)!important;}}
   @media(min-width:600px){.age-g{grid-template-columns:repeat(5,1fr)!important;}}
   @media(min-width:600px){.venue-g{grid-template-columns:repeat(4,1fr)!important;}}
+  /* Below 768px the global mobile bottom nav is fixed over the page, so this footer
+     needs extra bottom padding or its Next/Back buttons sit underneath it. */
+  @media(max-width:767px){.od-step-footer{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))!important;}}
 `;
 
 /* ── Tab bar ── */
@@ -4850,7 +4853,7 @@ export default function OccasionDetail(){
 
       {/* bottom CTA — flex footer, always visible */}
       {step>0&&(
-        <div style={{flexShrink:0,background:"#fff",borderTop:"1px solid rgba(0,0,0,0.07)",padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
+        <div className="od-step-footer" style={{flexShrink:0,background:"#fff",borderTop:"1px solid rgba(0,0,0,0.07)",padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
           <div style={{maxWidth:680,margin:"0 auto",display:"flex",gap:10}}>
             {step>0&&<button onClick={back} style={btnGhost}>← Back</button>}
             {step<7&&(
