@@ -1076,45 +1076,98 @@ export default function CustomerDashboard() {
         {referralModalOpen && user?._id && (() => {
           const code = generateReferralCode(user._id);
           const formatted = formatCode(code);
+          const GOLD = "#D9A05F";
+          const WARM_WHITE = "#FFF7F0";
+          const MUTED = "rgba(255,247,240,0.55)";
           const handleCopy = () => {
             navigator.clipboard.writeText(formatted).then(() => {
               setReferralCopied(true);
               setTimeout(() => setReferralCopied(false), 2000);
             });
           };
+          const CopyIcon = () => (
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          );
+          const ShareIcon = () => (
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          );
+          const CrownIcon = () => (
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M3 18h18l1-9-5 3-5-6-5 6-5-3 1 9zm0 2h18v2H3v-2z"/></svg>
+          );
+          // Highlights specific figures/phrases in gold within the reward copy, keeping the rest warm-white.
+          const rewardText = `Friends get 5% off their first booking.\n\nEach month, your referrals pay ₹100, then ₹200, ₹300… up to ₹500 — completing the Event Intelligence Challenge raises how far you can climb, and it resets to ₹100 every new month.`;
+          const highlights = ["5% off", "₹100", "₹200", "₹300", "₹500"];
+          const rewardParts = rewardText.split(new RegExp(`(${highlights.map(h => h.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`, "g"));
+
           return (
-            <div style={{ position: "fixed", inset: 0, zIndex: 9500, background: "rgba(20,10,0,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 18 }}>
-              <div style={{ position: "relative", width: "100%", maxWidth: 380, background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", borderRadius: 22, padding: "32px 28px 28px", boxShadow: "0 24px 70px rgba(0,0,0,0.5)", textAlign: "center" }}>
-                <button onClick={() => setReferralModalOpen(false)} aria-label="Close"
-                  style={{ position: "absolute", top: 14, right: 14, width: 30, height: 30, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.1)", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ position: "fixed", inset: 0, zIndex: 9500, background: "rgba(10,4,2,0.72)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 18 }}>
+              <div style={{
+                position: "relative", width: "100%", maxWidth: 380, maxHeight: "92dvh", overflowY: "auto",
+                background: "linear-gradient(165deg,#3B1F26 0%,#2A1A18 55%,#20130F 100%)",
+                border: "1.5px solid rgba(217,160,95,0.32)",
+                borderRadius: 28, padding: "30px 26px 26px", boxShadow: "0 30px 80px rgba(0,0,0,0.55)", textAlign: "center",
+              }}>
+                <button onClick={() => setReferralModalOpen(false)} aria-label="Close referral code dialog"
+                  style={{ position: "absolute", top: 14, right: 14, width: 30, height: 30, borderRadius: "50%", border: "1px solid rgba(217,160,95,0.25)", background: "rgba(255,255,255,0.06)", color: WARM_WHITE, fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   ✕
                 </button>
-                <div style={{ fontSize: 40, marginBottom: 10 }}>🎁</div>
-                <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 10px" }}>Your Referral Code</p>
-                <div style={{ fontSize: 30, fontWeight: 900, color: "#fff", letterSpacing: "0.08em", fontFamily: "'Courier New', monospace", marginBottom: 18 }}>{formatted}</div>
-                <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+
+                {/* Header */}
+                <div style={{ width: 54, height: 54, borderRadius: "50%", background: "rgba(217,160,95,0.12)", border: "1px solid rgba(217,160,95,0.3)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", fontSize: 26 }}>🎁</div>
+                <p style={{ fontSize: 11, fontWeight: 700, color: GOLD, textTransform: "uppercase", letterSpacing: "0.16em", margin: "0 0 16px" }}>Your Referral Code</p>
+
+                {/* Referral code */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, background: "rgba(0,0,0,0.26)", border: "1px solid rgba(217,160,95,0.28)", borderRadius: 14, padding: "14px 18px", marginBottom: 18 }}>
+                  <span style={{ flex: 1, fontSize: 24, fontWeight: 900, color: WARM_WHITE, letterSpacing: "0.1em", fontFamily: "'Courier New', monospace", textAlign: "left", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{formatted}</span>
+                  <button onClick={handleCopy} aria-label="Copy referral code"
+                    style={{ flexShrink: 0, width: 32, height: 32, borderRadius: 9, border: "1px solid rgba(217,160,95,0.35)", background: "rgba(217,160,95,0.1)", color: GOLD, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <CopyIcon />
+                  </button>
+                </div>
+
+                {/* Action buttons */}
+                <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
                   <button onClick={handleCopy}
-                    style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1.5px solid rgba(204,171,74,0.4)", background: referralCopied ? "rgba(204,171,74,0.2)" : "transparent", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                    {referralCopied ? "✓ Copied!" : "Copy Code"}
+                    style={{ flex: 1, padding: "12px", borderRadius: 12, border: `1.5px solid ${referralCopied ? GOLD : "rgba(217,160,95,0.4)"}`, background: referralCopied ? "rgba(217,160,95,0.16)" : "transparent", color: GOLD, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, transition: "background 0.15s, border-color 0.15s" }}>
+                    {referralCopied ? "✓ Copied!" : <><CopyIcon /> Copy Code</>}
                   </button>
                   <a href={`https://wa.me/?text=${encodeURIComponent(`Plan your event on Tendr and get ${DISCOUNT_PERCENT}% off with my code: ${formatted}\n\n${window.location.origin}`)}`}
                     target="_blank" rel="noopener noreferrer"
-                    style={{ flex: 1, padding: "11px", borderRadius: 10, border: "none", background: "#25D366", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    Share
+                    style={{ flex: 1, padding: "12px", borderRadius: 12, border: "none", background: "#25D366", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+                    <ShareIcon /> Share
                   </a>
                 </div>
-                <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 12, padding: "12px 14px", fontSize: 12, color: "rgba(255,255,255,0.65)", lineHeight: 1.6 }}>
-                  Friends get <strong style={{ color: "#CCAB4A" }}>{DISCOUNT_PERCENT}% off</strong> their first booking.<br />
-                  Each month, your referrals pay <strong style={{ color: "#CCAB4A" }}>₹100, then ₹200, ₹300…</strong> up to <strong style={{ color: "#CCAB4A" }}>₹500</strong> — completing the Event Intelligence Challenge raises how far you can climb, and it resets to ₹100 every new month.
+
+                {/* Reward info card */}
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 12, textAlign: "left", background: "rgba(89,45,56,0.45)", border: "1px solid rgba(217,160,95,0.16)", borderRadius: 14, padding: "14px 16px", marginBottom: 16 }}>
+                  <div style={{ flexShrink: 0, width: 26, height: 26, borderRadius: "50%", border: `1.5px solid ${GOLD}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, marginTop: 1 }}>🎁</div>
+                  <div style={{ fontSize: 12, color: WARM_WHITE, lineHeight: 1.7 }}>
+                    {rewardParts.map((part, i) => highlights.includes(part)
+                      ? <strong key={i} style={{ color: GOLD, fontWeight: 800 }}>{part}</strong>
+                      : <Fragment key={i}>{part.split("\n\n").map((seg, j, arr) => <Fragment key={j}>{seg}{j < arr.length - 1 && <><br/><br/></>}</Fragment>)}</Fragment>
+                    )}
+                  </div>
                 </div>
-                <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.5)", margin: "12px 0 0" }}>
-                  Your tier: <strong style={{ color: "#CCAB4A", textTransform: "capitalize" }}>{referralWallet?.tier || "none"}</strong>
-                  {" "}· ₹{referralWallet?.progress?.currentBonus ?? 100} per referral
-                </p>
+
+                {/* Tier pill */}
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(217,160,95,0.12)", border: "1px solid rgba(217,160,95,0.3)", borderRadius: 100, padding: "7px 16px", marginBottom: 18 }}>
+                  <span style={{ color: GOLD, display: "flex", alignItems: "center" }}><CrownIcon /></span>
+                  <span style={{ fontSize: 11.5, color: MUTED }}>
+                    Your tier: <strong style={{ color: GOLD, textTransform: "capitalize", fontWeight: 800 }}>{referralWallet?.tier || "none"}</strong>
+                  </span>
+                  <span style={{ width: 3, height: 3, borderRadius: "50%", background: MUTED, flexShrink: 0 }} />
+                  <span style={{ fontSize: 11.5, color: MUTED }}>₹{referralWallet?.progress?.currentBonus ?? 100} per referral</span>
+                </div>
+
+                {/* Primary CTA */}
                 {referralWallet?.progress?.suggestions?.length > 0 && (
                   <button onClick={() => { setReferralModalOpen(false); navigate("/referral/challenge"); }}
-                    style={{ width: "100%", marginTop: 14, padding: "12px 16px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                    {referralWallet?.progress?.hasStartedChallenge ? "Continue the Challenge →" : "Take the Event Intelligence Challenge →"}
+                    style={{ width: "100%", padding: "14px 16px", borderRadius: 13, border: "none", background: "linear-gradient(135deg,#F0C77A,#D9A05F)", color: "#2A161C", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, transition: "transform 0.12s, box-shadow 0.12s", boxShadow: "0 6px 20px rgba(217,160,95,0.3)" }}
+                    onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 8px 26px rgba(217,160,95,0.42)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 6px 20px rgba(217,160,95,0.3)"; e.currentTarget.style.transform = "scale(1)"; }}
+                    onMouseDown={e => { e.currentTarget.style.transform = "scale(0.98)"; }}
+                    onMouseUp={e => { e.currentTarget.style.transform = "scale(1)"; }}>
+                    Continue the Challenge →
                   </button>
                 )}
               </div>
