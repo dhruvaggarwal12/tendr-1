@@ -1599,6 +1599,10 @@ const css=`
   /* Below 768px the global mobile bottom nav is fixed over the page, so this footer
      needs extra bottom padding or its Next/Back buttons sit underneath it. */
   @media(max-width:767px){.od-step-footer{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))!important;}}
+  /* 100vh is set inline as a safe fallback for WebViews (e.g. WhatsApp's in-app browser) that
+     don't size dvh correctly, which otherwise left a gap between the step footer and the
+     fixed bottom nav. Real browsers that support dvh get the more accurate dynamic height. */
+  @supports (height:100dvh){.od-page-wrap{height:100dvh!important;}}
 `;
 
 /* ── Tab bar ── */
@@ -1791,7 +1795,6 @@ export default function OccasionDetail(){
   const [customDecor,setCustomDecor]=useState({}); // {focusAreaId:[items]}
   const [editedPackageItems,setEditedPackageItems]=useState(null); // null | string[] — package item editing
   const [decorFocusAreas,setDecorFocusAreas]=useState([]); // string[] — selected DECOR_FOCUS_AREAS ids
-  const [decorSuggestionsOpen,setDecorSuggestionsOpen]=useState(false);
   const [expandedStyleIdx,setExpandedStyleIdx]=useState(null); // oi of the decor-style card whose full item list is expanded
 
   /* suggested quick-picks */
@@ -2367,7 +2370,7 @@ export default function OccasionDetail(){
     "--plan-wash-sel": `rgba(${goldRgb},0.10)`,
   } : {};
   return(
-    <div style={{height:"100dvh",background:pageBg,fontFamily:font,display:"flex",flexDirection:"column",overflow:"hidden",position:"relative",...planCssVars}}>
+    <div className="od-page-wrap" style={{height:"100vh",background:pageBg,fontFamily:font,display:"flex",flexDirection:"column",overflow:"hidden",position:"relative",...planCssVars}}>
       <style>{css}</style>
       <SEO title={`Plan your ${occasion.name} — Tendr`} description={`Guided ${occasion.name} planner`} path={`/occasions/${slug}`}/>
 
@@ -2392,9 +2395,10 @@ export default function OccasionDetail(){
         </div>
       )}
 
-      {/* sticky header */}
+      {/* sticky header — hidden on the final Plan view (step 7), which is its own standalone page */}
+      {step!==7&&(
       <div style={{position:"sticky",top:0,zIndex:100,background:"#fff",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
-        <HamburgerNav active="Occasions"/>
+        <HamburgerNav active="Occasions" hideTopBar/>
         <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 20px 6px"}}>
           <button onClick={back} style={{width:36,height:36,borderRadius:10,border:"none",background:`${occAccent}10`,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={occAccent} strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -2406,6 +2410,7 @@ export default function OccasionDetail(){
         </div>
         {step>0&&<TabBar step={step} withTheme={withTheme} occAccent={occAccent} onTab={setStep}/>}
       </div>
+      )}
 
       {/* Upfront theme-pick carousel — shown once, right when "Plan with a Theme" lands here,
           before step 1 is interactive. Picking (or skipping) resolves it for the rest of the
@@ -3710,26 +3715,10 @@ export default function OccasionDetail(){
                                 <div style={{fontSize:10.5,fontWeight:800,color:"rgba(196,122,46,0.5)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:3}}>Which places need decor?</div>
                                 <div style={{fontSize:12.5,color:muted,marginBottom:10,lineHeight:1.5}}>Pick the areas you want styled — we'll shape your packages around them.</div>
 
-                                <button onClick={()=>setDecorSuggestionsOpen(o=>!o)}
-                                  style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:11,border:`1.5px solid ${gold}`,background:"rgba(196,122,46,0.08)",cursor:"pointer",fontFamily:font,marginBottom:decorSuggestionsOpen?8:12}}>
-                                  <span style={{fontSize:15}}>✨</span>
-                                  <span style={{flex:1,textAlign:"left",fontSize:13,fontWeight:700,color:gold}}>{suggested.length} picks for your {occasion.name} — tap to view</span>
-                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round" style={{transform:decorSuggestionsOpen?"rotate(180deg)":"none",transition:"transform 0.2s",flexShrink:0}}><polyline points="6 9 12 15 18 9"/></svg>
-                                </button>
-                                {decorSuggestionsOpen&&(
-                                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:7,marginBottom:12}}>
-                                    {suggested.map(id=>{
-                                      const area=DECOR_FOCUS_AREAS[id]; if(!area) return null;
-                                      const sel=decorFocusAreas.includes(id);
-                                      return(
-                                        <button key={id} onClick={()=>toggleArea(id)}
-                                          style={{textAlign:"center",padding:"10px 6px",borderRadius:11,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.25)"}`,background:sel?`rgba(${goldRgb},0.1)`:"#fff",cursor:"pointer",fontFamily:font,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
-                                          <span style={{fontSize:21}}>{area.emoji}</span>
-                                          <span style={{fontSize:11,fontWeight:700,color:sel?gold:ink,lineHeight:1.25}}>{area.name}</span>
-                                          {sel&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
-                                        </button>
-                                      );
-                                    })}
+                                {suggested.length>0&&(
+                                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10,fontSize:11.5,fontWeight:700,color:gold}}>
+                                    <span>✨</span>
+                                    <span>{suggested.length} picks suggested for your {occasion.name} — marked ✦ below</span>
                                   </div>
                                 )}
 
@@ -3930,9 +3919,16 @@ export default function OccasionDetail(){
                   const isOpen=expandedVendor===v;
                   const chosenPkgLabel=typeof chosen==="number"&&pkgs?pkgs[chosen]?.label:null;
                   return(
-                    <div key={v} style={{marginBottom:10,borderRadius:14,border:`1.5px solid ${chosen!==undefined?gold:isOpen?"rgba(196,122,46,0.4)":border}`,background:"#fff",overflow:"hidden",transition:"border-color 0.2s"}}>
+                    <div key={v} id={`vendor-card-${v}`} style={{marginBottom:10,borderRadius:14,border:`1.5px solid ${chosen!==undefined?gold:isOpen?"rgba(196,122,46,0.4)":border}`,background:"#fff",overflow:"hidden",transition:"border-color 0.2s"}}>
                       {/* header row — clickable */}
-                      <div onClick={()=>setExpandedVendor(ev=>ev===v?null:v)}
+                      <div onClick={()=>{
+                        const opening=expandedVendor!==v;
+                        setExpandedVendor(ev=>ev===v?null:v);
+                        // When another category's panel is open above this one, collapsing it
+                        // shifts the whole list up the instant this one opens — re-anchor on
+                        // this card so it doesn't look like the new panel "jumped" upward.
+                        if(opening) setTimeout(()=>document.getElementById(`vendor-card-${v}`)?.scrollIntoView({behavior:"smooth",block:"start"}),80);
+                      }}
                         style={{padding:"12px 14px",background:chosen!==undefined?`rgba(${goldRgb},0.04)`:"#fff",display:"flex",alignItems:"center",cursor:"pointer",gap:10}}>
                         <div style={{flex:1,minWidth:0}}>
                           <div style={{display:"flex",alignItems:"center",gap:7}}>
@@ -4361,6 +4357,11 @@ export default function OccasionDetail(){
         {/* ══ STEP 7: blueprint ══ */}
         {step===7&&(
           <div className="os">
+            {/* Standalone plan view has no sticky header — this is its only way back */}
+            <button onClick={back} style={{display:"flex",alignItems:"center",gap:5,marginBottom:10,padding:"5px 10px 5px 6px",borderRadius:100,border:"none",background:`${occAccent}10`,color:occAccent,fontFamily:font,fontWeight:700,fontSize:11.5,cursor:"pointer"}}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={occAccent} strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              Back
+            </button>
             <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.3,marginBottom:4}}>Your plan is ready ✦</p>
 
             {/* Upload-venue-photo gate — shown once before the plan, unless a photo was
@@ -4832,21 +4833,6 @@ export default function OccasionDetail(){
                 style={{padding:"12px 14px",borderRadius:12,border:"none",background:"#25D366",color:"#fff",fontSize:12.5,fontWeight:700,cursor:"pointer",fontFamily:font,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.553 4.115 1.522 5.845L.057 23.704a.5.5 0 0 0 .614.639l5.975-1.565A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.886 0-3.645-.518-5.148-1.418l-.37-.221-3.814.999.998-3.74-.241-.381A9.956 9.956 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
                 WhatsApp
-              </button>
-              <button
-                onClick={async()=>{
-                  const msg=buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,customCatering,customDecor,celebrantName,gifts,giftQuantities,selectedEntryExperiences});
-                  const pdfToken=planRef.current?await withPlanExportMode(()=>buildPlanPdfChatToken(planRef.current,occasion.name)):"";
-                  openOccasionsChat(pdfToken?`${msg}\n\n${pdfToken}`:msg);
-                  try{
-                    const sp={eventDetails:{eventType:occasion.name,date,location:city,guests,budget},vendorSlots:vendors.map(cat=>({category:cat,vendorName:"",estimatedCost:0,status:"Pending"})),selectedPackages:vendorPackages,chatSent:true,slug};
-                    localStorage.setItem("tendr_smart_plan",JSON.stringify(sp));
-                    window.dispatchEvent(new CustomEvent("tendr:plan-confirmed"));
-                  }catch{}
-                }}
-                style={{flex:1,minWidth:120,padding:"12px 14px",borderRadius:12,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:12.5,fontWeight:700,cursor:"pointer",fontFamily:font,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Send to Chat
               </button>
             </div>
 

@@ -55,7 +55,7 @@ function fmtINR(n) { return `₹${Number(n).toLocaleString("en-IN")}`; }
 
 // title: shown in center; showReviewPay: Review & Pay button; active: journey step
 // noSidebar: force drawer mode (use on form-filling pages like EventPlanning)
-export default function HamburgerNav({ title = "", showReviewPay = false, active = "", noSidebar = false, noCompare = false, showBack = false }) {
+export default function HamburgerNav({ title = "", showReviewPay = false, active = "", noSidebar = false, noCompare = false, showBack = false, hideTopBar = false }) {
   const navigate   = useNavigate();
   const location   = useLocation();
   const dispatch   = useDispatch();
@@ -721,7 +721,11 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <>
-      {/* Compact sticky header — progress bar in center when active prop given */}
+      {/* Compact sticky header — progress bar in center when active prop given.
+          Skipped entirely when hideTopBar is set (e.g. the Plan-an-Occasion wizard, which
+          has its own compact breadcrumb/back header and doesn't need the logo/search/hamburger
+          bar competing for space above it). */}
+      {!hideTopBar && (
       <div style={{
         position: "sticky", top: 0, zIndex: 50,
         height: 54,
@@ -778,6 +782,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
         </div>
       </div>
+      )}
 
       {/* Slide-in Drawer */}
       {drawerOpen && (

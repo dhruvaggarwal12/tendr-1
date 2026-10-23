@@ -62,7 +62,7 @@ function Chip({ label, selected, onClick, disabled }) {
   );
 }
 
-function EntryCard({ idea, selected, occAccent, onExplore }) {
+function EntryCard({ idea, selected, occAccent, onExplore, isRecommended }) {
   return (
     <button
       type="button"
@@ -83,11 +83,12 @@ function EntryCard({ idea, selected, occAccent, onExplore }) {
         <div style={{ position: "absolute", bottom: 10, left: 11, right: 32 }}>
           <span style={{ fontSize: 13, fontWeight: 800, color: "#fff", lineHeight: 1.25, textShadow: "0 1px 4px rgba(0,0,0,0.4)" }}>{idea.title}</span>
         </div>
-        {selected && (
-          <div style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: occAccent, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.2)" }}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
-          </div>
-        )}
+        {selected
+          ? <div style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: occAccent, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.2)" }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+            </div>
+          : isRecommended && <div style={{ position: "absolute", top: 8, right: 8, fontSize: 9, fontWeight: 800, color: "#fff", background: occAccent, borderRadius: 100, padding: "2px 7px", boxShadow: "0 2px 6px rgba(0,0,0,0.2)" }}>✦ Recommended</div>
+        }
       </div>
       <div style={{ padding: "10px 12px 12px" }}>
         <div style={{ fontSize: 11.5, color: muted, lineHeight: 1.5, marginBottom: 8, minHeight: 34 }}>{idea.shortDesc}</div>
@@ -127,17 +128,21 @@ function DetailDrawer({ idea, selected, vendors, onToggleVendor, onToggleSelect,
 
   return (
     <div
-      style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(28,9,0,0.65)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+      style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(28,9,0,0.65)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{ width: "100%", maxWidth: 640, background: "#FFFCF5", borderRadius: "20px 20px 0 0", padding: "20px 18px 32px", maxHeight: "93dvh", overflowY: "auto", fontFamily: font }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
+      <div style={{ width: "100%", maxWidth: 520, maxHeight: "min(640px, 90vh)", background: "#FFFCF5", borderRadius: 22, display: "flex", flexDirection: "column", fontFamily: font, boxShadow: "0 24px 70px rgba(28,9,0,0.35)", overflow: "hidden" }}>
+        {/* Fixed header — title + cancel, never scrolls away */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "18px 18px 14px", flexShrink: 0, borderBottom: `1px solid ${border}` }}>
           <div>
             <div style={{ fontSize: 10.5, fontWeight: 800, color: occAccent, textTransform: "uppercase", letterSpacing: "0.12em" }}>Entry Experience</div>
             <div style={{ fontFamily: serif, fontSize: "clamp(1.2rem,3vw,1.5rem)", fontWeight: 700, color: ink, marginTop: 2 }}>{idea.title}</div>
           </div>
-          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", cursor: "pointer", fontSize: 16, color: muted, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>×</button>
+          <button onClick={onClose} aria-label="Cancel" style={{ width: 32, height: 32, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", cursor: "pointer", fontSize: 16, color: muted, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>×</button>
         </div>
+
+        {/* Scrollable content */}
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "16px 18px" }}>
 
         <div style={{ position: "relative", borderRadius: 14, overflow: "hidden", marginBottom: 16, height: 150, background: `linear-gradient(160deg,${occAccent}44,${occAccent}18)` }}>
           <span aria-hidden style={{ position: "absolute", top: "14%", left: "10%", fontSize: 20, opacity: 0.35, transform: "rotate(-10deg)" }}>✨</span>
@@ -200,7 +205,7 @@ function DetailDrawer({ idea, selected, vendors, onToggleVendor, onToggleSelect,
         )}
 
         {idea.relatedConcepts?.length > 0 && (
-          <div style={{ marginBottom: 20 }}>
+          <div style={{ marginBottom: 4 }}>
             <div style={{ fontSize: 10, fontWeight: 800, color: "rgba(196,122,46,0.6)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 7 }}>Similar ideas</div>
             <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 2 }}>
               {idea.relatedConcepts.map((id) => {
@@ -215,8 +220,10 @@ function DetailDrawer({ idea, selected, vendors, onToggleVendor, onToggleSelect,
             </div>
           </div>
         )}
+        </div>
 
-        <div style={{ display: "flex", gap: 10 }}>
+        {/* Fixed footer — the select action is always reachable, never requires scrolling to find */}
+        <div style={{ display: "flex", gap: 10, padding: "14px 18px", flexShrink: 0, borderTop: `1px solid ${border}`, background: "#FFFCF5" }}>
           <button
             onClick={() => onToggleSelect(idea.id)}
             style={{ flex: 1, padding: "13px", borderRadius: 12, border: "none", background: selected ? "rgba(34,197,94,0.1)" : occAccent, color: selected ? "#16a34a" : "#fff", fontSize: 13.5, fontWeight: 800, cursor: "pointer", fontFamily: font }}
@@ -257,8 +264,8 @@ export default function EntryExperiences({ occasion, ageGroups, guests, venueTyp
         <p style={{ fontSize: 12.5, color: muted, textAlign: "center", padding: "24px 0" }}>No specific entrance ideas for this event yet — that's fine, you can always skip ahead.</p>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          {ideas.map((idea) => (
-            <EntryCard key={idea.id} idea={idea} selected={selectedIds.includes(idea.id)} occAccent={occAccent} onExplore={() => setOpenIdea(idea)} />
+          {ideas.map((idea, idx) => (
+            <EntryCard key={idea.id} idea={idea} selected={selectedIds.includes(idea.id)} occAccent={occAccent} onExplore={() => setOpenIdea(idea)} isRecommended={idx === 0 && ideas.length > 1} />
           ))}
         </div>
       )}

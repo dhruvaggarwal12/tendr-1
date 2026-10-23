@@ -19,7 +19,7 @@ export default function OccasionsPage() {
   return (
     <div style={{ minHeight: "100vh", background: "#FFFAF5", fontFamily: font }}>
       <SEO title="What Are You Celebrating? — Tendr" description="Plan your occasion — décor ideas, gift suggestions, activities and vendor recommendations for every celebration." path="/occasions" />
-      <HamburgerNav active="Occasions" />
+      <HamburgerNav active="Occasions" hideTopBar />
 
       {/* Festive hero */}
       <div style={{
@@ -33,6 +33,11 @@ export default function OccasionsPage() {
         {/* Decorative blobs */}
         <div style={{ position:"absolute", top:-40, left:-30, width:180, height:180, borderRadius:"50%", background:"rgba(244,114,182,0.08)", pointerEvents:"none" }} />
         <div style={{ position:"absolute", bottom:-30, right:-20, width:140, height:140, borderRadius:"50%", background:"rgba(96,165,250,0.07)", pointerEvents:"none" }} />
+
+        {/* Back — the global top bar is hidden on this page, so this is the only way back */}
+        <button onClick={() => navigate(-1)} style={{ position:"absolute", top:"max(14px, env(safe-area-inset-top))", left:16, zIndex:2, width:34, height:34, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.2)", background:"rgba(255,255,255,0.85)", color:"#9B7450", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
 
         <div style={{ position:"relative" }}>
           <div style={{ fontSize: 42, letterSpacing: 6, marginBottom: 14, lineHeight: 1 }}>🎂 💍 🍼 🎓</div>

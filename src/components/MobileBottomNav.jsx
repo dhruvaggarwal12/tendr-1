@@ -631,20 +631,24 @@ function BottomNavInner() {
         })}
       </nav>
 
-      {/* Re-expand handle — only shown once the bar has been manually collapsed */}
+      {/* Re-expand handle — only shown once the bar has been manually collapsed. Kept well
+          clear of the absolute screen edge and above every other floating element's z-index,
+          since some embedded in-app browsers (e.g. WhatsApp's) don't report safe-area-inset
+          reliably, which could otherwise push a flush-to-edge tap target off-screen. */}
       {navCollapsed && (
         <button
           onClick={() => setNavCollapsed(false)}
           aria-label="Show navigation bar"
           title="Show navigation bar"
           style={{
-            position: "fixed", bottom: "env(safe-area-inset-bottom, 0px)", left: "50%", transform: "translateX(-50%)",
-            zIndex: 99990, width: 52, height: 20, borderRadius: "10px 10px 0 0",
+            position: "fixed", bottom: "calc(6px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)",
+            zIndex: 999999, width: 64, height: 32, borderRadius: 100,
             background: "rgba(255,252,245,0.96)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
-            border: "1.5px solid rgba(196,122,46,0.28)", borderBottom: "none",
-            boxShadow: "0 -2px 12px rgba(139,69,19,0.14)",
+            border: "1.5px solid rgba(196,122,46,0.28)",
+            boxShadow: "0 2px 12px rgba(139,69,19,0.22)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            cursor: "pointer", WebkitTapHighlightColor: "transparent",
+            cursor: "pointer", WebkitTapHighlightColor: "transparent", pointerEvents: "auto",
+            touchAction: "manipulation",
           }}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B08060" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
