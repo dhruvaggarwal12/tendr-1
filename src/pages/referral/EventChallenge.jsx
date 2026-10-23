@@ -236,8 +236,10 @@ export default function EventChallenge() {
             </p>
           </div>
 
-          <div style={{ background: "#fff", borderRadius: 16, border: "1px solid rgba(196,122,46,0.15)", padding: "20px 18px", marginBottom: 22 }}>
-            <BonusLadder tier="none" />
+          <div style={{ background: "#fff", borderRadius: 16, border: "1px solid rgba(196,122,46,0.15)", padding: "20px 18px", marginBottom: 22, display: "flex", justifyContent: "center" }}>
+            <div style={{ width: "100%", maxWidth: 420 }}>
+              <BonusLadder tier="none" />
+            </div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 26 }}>
@@ -287,8 +289,10 @@ export default function EventChallenge() {
             </span>
           </div>
 
-          <div style={{ background: "#fff", borderRadius: 16, border: "1px solid rgba(196,122,46,0.15)", padding: "20px 18px", marginBottom: 20, textAlign: "left" }}>
-            <BonusLadder tier={tier} />
+          <div style={{ background: "#fff", borderRadius: 16, border: "1px solid rgba(196,122,46,0.15)", padding: "20px 18px", marginBottom: 20, display: "flex", justifyContent: "center" }}>
+            <div style={{ width: "100%", maxWidth: 420 }}>
+              <BonusLadder tier={tier} />
+            </div>
           </div>
 
           {r?.suggestions?.length > 0 ? (
@@ -334,6 +338,7 @@ export default function EventChallenge() {
 
   return (
     <div style={page}>
+      <style>{`@keyframes ec-step-in { from { opacity:0; transform: translateX(18px); } to { opacity:1; transform: translateX(0); } }`}</style>
       <HamburgerNav active="" />
       <div style={{ background: "#fff", borderBottom: "1px solid rgba(196,122,46,0.12)", padding: "14px 20px", position: "sticky", top: 0, zIndex: 10 }}>
         <div style={{ maxWidth: 560, margin: "0 auto" }}>
@@ -341,11 +346,15 @@ export default function EventChallenge() {
             <div style={{ fontSize: 14, fontWeight: 800, color: INK }}>Event Intelligence Challenge</div>
             <div style={{ fontSize: 11.5, color: "#9B7450" }}>{answeredCount}/{totalQuestions} answered</div>
           </div>
-          <BonusLadder tier={liveTier} />
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <div style={{ width: "100%", maxWidth: 420 }}>
+              <BonusLadder tier={liveTier} />
+            </div>
+          </div>
         </div>
       </div>
 
-      <div style={card}>
+      <div key={stepIdx} style={{ ...card, animation: "ec-step-in 0.3s cubic-bezier(0.22,1,0.36,1)" }}>
         {step.type === "mcq" && (() => {
           const q = step.q;
           return (
