@@ -266,6 +266,11 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   if (hideOnRoutes.some((r) => path === r || path.startsWith(r + "/"))) return null;
   if (path.endsWith("-hub")) return null;
 
+  // The Plan-an-Occasion wizard has its own sticky bottom CTA bar (Back/Next/Skip) stacked
+  // above the global mobile bottom nav — on mobile the chat button needs extra clearance here
+  // only, so it stacks above that bar instead of overlapping or sitting under the bottom nav.
+  const isOccasionWizard = path.startsWith("/occasions/") && path !== "/occasions";
+
   const handleSupport = () => {
     setOpen(false);
     setShowMiniChat(true); // opens MiniChatWidget with FAQ answers
@@ -1201,7 +1206,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
       <button
         onClick={handleOpen}
         aria-label="Chat"
-        className="floating-chat-btn"
+        className={`floating-chat-btn${isOccasionWizard ? " floating-chat-btn-wizard" : ""}`}
         style={{
           position: "fixed",
           bottom: "calc(22px + env(safe-area-inset-bottom, 0px))",
@@ -1377,6 +1382,10 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
             padding: 12px !important;
             width: 50px !important;
             height: 50px !important;
+          }
+          /* Clears both the global bottom nav AND the wizard's own step-footer bar */
+          .floating-chat-btn-wizard {
+            bottom: calc(140px + env(safe-area-inset-bottom, 0px)) !important;
           }
           .chat-btn-text { display: none; }
           .launcher-fab {

@@ -2767,7 +2767,15 @@ export default function OccasionDetail(){
                       </span>
                       {date&&<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={occAccent} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
                     </div>
-                    <input ref={dateInputRef} type="date" value={date} onChange={e=>setDate(e.target.value)}
+                    <input ref={dateInputRef} type="date" value={date}
+                      onChange={e=>{
+                        const v=e.target.value;
+                        const todayStr=new Date().toISOString().split("T")[0];
+                        // Defensive clamp — some embedded WebViews (e.g. in-app browsers) don't
+                        // reliably enforce the native picker's `min` attribute in their UI.
+                        if(v && v<todayStr){ setDate(todayStr); return; }
+                        setDate(v);
+                      }}
                       min={new Date().toISOString().split("T")[0]}
                       style={{position:"absolute",inset:0,opacity:0,cursor:"pointer",width:"100%",height:"100%"}}/>
                   </div>

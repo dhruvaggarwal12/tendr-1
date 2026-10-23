@@ -124,19 +124,23 @@ export default function BookVendorsModal() {
                   background: c.cardBg, border: `1.5px solid ${c.borderColor}`, borderRadius: 18,
                   padding: "20px 16px", cursor: "pointer", display: "flex", flexDirection: "column",
                   boxShadow: "0 4px 16px rgba(28,9,0,0.08)", transition: "transform 0.15s ease",
+                  position: "relative",
                 }}
               >
                 {c.type === "let-us-do-it" && (
-                  <div style={{ alignSelf: "flex-start", background: `linear-gradient(135deg,${gold},${goldLt})`, borderRadius: 100, padding: "3px 10px", marginBottom: 10 }}>
+                  <div className="bvm-card-tag" style={{ alignSelf: "flex-start", background: `linear-gradient(135deg,${gold},${goldLt})`, borderRadius: 100, padding: "3px 10px", marginBottom: 10 }}>
                     <span style={{ fontSize: 8.5, fontWeight: 800, color: "#fff", letterSpacing: "0.08em", textTransform: "uppercase" }}>Recommended</span>
                   </div>
                 )}
-                <div style={{ width: 44, height: 44, borderRadius: 13, background: c.iconBg, border: `1.5px solid ${c.borderColor}`, display: "flex", alignItems: "center", justifyContent: "center", color: isDark ? goldLt : c.accent, marginBottom: 14 }}>
+                <div className="bvm-card-icon" style={{ width: 44, height: 44, borderRadius: 13, background: c.iconBg, border: `1.5px solid ${c.borderColor}`, display: "flex", alignItems: "center", justifyContent: "center", color: isDark ? goldLt : c.accent, marginBottom: 14 }}>
                   <Icon />
                 </div>
-                <div style={{ fontSize: 15.5, fontWeight: 800, color: textColor, marginBottom: 5 }}>{c.title}</div>
-                <div style={{ fontSize: 12.5, color: subColor, lineHeight: 1.5, marginBottom: 16, flex: 1 }}>{c.subtitle}</div>
+                <div className="bvm-card-body" style={{ flex: 1 }}>
+                  <div className="bvm-card-title" style={{ fontSize: 15.5, fontWeight: 800, color: textColor, marginBottom: 5 }}>{c.title}</div>
+                  <div className="bvm-card-desc" style={{ fontSize: 12.5, color: subColor, lineHeight: 1.5, marginBottom: 16 }}>{c.subtitle}</div>
+                </div>
                 <button
+                  className="bvm-card-cta"
                   onClick={(e) => { e.stopPropagation(); handleChoose(c.type, c.route); }}
                   style={{ width: "100%", padding: "11px 0", borderRadius: 11, border: "none", background: c.ctaBg, color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer" }}
                 >
@@ -149,7 +153,15 @@ export default function BookVendorsModal() {
 
         <style>{`
           @media (max-width: 680px) {
-            .bvm-grid { grid-template-columns: 1fr !important; }
+            .bvm-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
+            .bvm-card { padding: 14px 14px !important; flex-direction: row !important; align-items: center !important; gap: 12px !important; }
+            .bvm-card-icon { width: 36px !important; height: 36px !important; border-radius: 11px !important; margin-bottom: 0 !important; flex-shrink: 0 !important; }
+            .bvm-card-icon svg { width: 18px !important; height: 18px !important; }
+            .bvm-card-body { flex: 1 !important; min-width: 0 !important; }
+            .bvm-card-title { font-size: 13.5px !important; margin-bottom: 2px !important; }
+            .bvm-card-desc { display: none !important; }
+            .bvm-card-cta { width: auto !important; padding: 8px 14px !important; font-size: 11.5px !important; flex-shrink: 0 !important; }
+            .bvm-card-tag { position: absolute !important; top: 8px !important; right: 8px !important; margin-bottom: 0 !important; }
           }
         `}</style>
       </div>
