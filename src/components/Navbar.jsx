@@ -282,7 +282,6 @@ const Navbar = ({
     {
       label: "Tools",
       items: [
-        { label: "Occasion Hub",        href: "/occasion-hub" },
         { label: "Decor Analyser",      href: "/decor-analyser" },
         { label: "Planning Timeline",   href: "/timeline-picker" },
         { label: "Budget Allocator",    href: "/budget-picker" },

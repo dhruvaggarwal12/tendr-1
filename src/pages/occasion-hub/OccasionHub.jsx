@@ -12426,91 +12426,190 @@ export default function OccasionHub({ occasion }) {
 
   // ── ENTRY GATE ────────────────────────────────────────────────────────────
   if (!entryMode) {
-    const inpStyle = { width:"100%", padding:"13px 14px", borderRadius:12, border:isDark?"1.5px solid rgba(255,255,255,0.15)":"1.5px solid rgba(44,26,14,0.15)", background:isDark?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.8)", color:T.main, fontSize:16, outline:"none", boxSizing:"border-box", WebkitAppearance:"none", appearance:"none" };
+    // Dedicated palette for this screen — a deliberate dark-luxury look, independent of the
+    // per-occasion accent used elsewhere in the Hub (brief: deep burgundy/plum + champagne
+    // gold + rose pink, consistent across every occasion rather than occasion-tinted).
+    const EG = { bg:"#210F16", bg2:"#30151F", gold:"#FFC36A", pink:"#F27FA7", coral:"#FF8A70", white:"#FFF5EE", muted:"#D8BEC5", border:"rgba(255,190,160,0.20)" };
+    const inpStyle = { width:"100%", padding:"13px 14px", borderRadius:12, border:`1.5px solid ${EG.border}`, background:"rgba(255,255,255,0.05)", color:EG.white, fontSize:16, outline:"none", boxSizing:"border-box", WebkitAppearance:"none", appearance:"none" };
+
+    const EG_CATS = [
+      { id:"birthday",    label:"Birthdays",      icon:(c)=><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16h16"/><path d="M12 8v5"/><path d="M9 6c0-1 .5-1.5 1-2s1-1.5 0-2.5" /><path d="M15 6c0-1-.5-1.5-1-2s-1-1.5 0-2.5"/><circle cx="12" cy="4.2" r="0.6" fill={c} stroke="none"/></svg> },
+      { id:"anniversary", label:"Anniversaries",  icon:(c)=><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.8 8.6a5.5 5.5 0 0 0-9.8-3.5 5.5 5.5 0 0 0-9 6.3c1.8 4 9 9.6 9 9.6s7.2-5.6 9-9.6a5.4 5.4 0 0 0 .8-2.8z"/></svg> },
+      { id:"baby",        label:"Baby Showers",   icon:(c)=><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="9" r="4.2"/><path d="M8.5 6.2c-.6-1.4.2-2.9 1.8-2.9M15.5 6.2c.6-1.4-.2-2.9-1.8-2.9"/><path d="M4.5 20c1-3.6 4-6 7.5-6s6.5 2.4 7.5 6"/></svg> },
+      { id:"gettogether", label:"Get-Togethers",  icon:(c)=><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+      { id:"festival",    label:"Festivals",      icon:(c)=><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l1.2 3.6L17 8l-3.8 1.4L12 13l-1.2-3.6L7 8l3.8-1.4z"/><path d="M5 17l.6 1.8L7.4 19.4 5.6 20 5 21.8 4.4 20l-1.8-.6L4.4 18.8z"/><path d="M19 17l.6 1.8L21.4 19.4 19.6 20 19 21.8 18.4 20l-1.8-.6L18.4 18.8z"/></svg> },
+      { id:"corporate",   label:"Corporate",      icon:(c)=><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> },
+      { id:"more",        label:"And More",       icon:(c)=><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> },
+    ];
+    const EG_OCC_CAT = { "birthday-party":"birthday", "first-birthday":"birthday", "anniversary":"anniversary", "baby-shower":"baby", "newborn-welcome":"baby", "gender-reveal":"baby", "naming-ceremony":"baby", "get-together":"gettogether", "kitty-party":"gettogether", "house-party":"gettogether", "bachelorette":"gettogether", "housewarming":"gettogether", "diwali-party":"festival", "holi-party":"festival", "navratri-garba":"festival", "dussehra-party":"festival", "wedding":"festival", "office-party":"corporate" };
+    const egActiveCat = EG_OCC_CAT[occasion] || "more";
+
+    const EgArrow = ({ c }) => <svg className="eg-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ transition:"transform 0.18s" }}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>;
+
     return (
-      <div style={{ height:"100dvh", display:"flex", flexDirection:"column", fontFamily:font, background:darkGrad, position:"relative", overflow:"hidden", alignItems:"center", justifyContent:"center" }}>
-        <style>{`@keyframes eg-in{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}} @keyframes eg-glow{0%,100%{opacity:0.08}50%{opacity:0.14}}`}</style>
-        {/* Subtle botanical tint */}
-        <div style={{ position:"fixed", top:-80, right:-80, width:360, height:360, borderRadius:"50%", background:`radial-gradient(ellipse, ${accent}14 0%, transparent 70%)`, pointerEvents:"none", zIndex:0 }} />
+      <div style={{ minHeight:"100dvh", display:"flex", flexDirection:"column", fontFamily:font, background:`linear-gradient(160deg, ${EG.bg} 0%, ${EG.bg2} 55%, ${EG.bg} 100%)`, position:"relative", overflow:"hidden", alignItems:"center", padding:"max(20px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom))" }}>
+        <style>{`
+          @keyframes eg-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+          @keyframes eg-float{0%,100%{transform:translateY(0) rotate(var(--r,0deg))}50%{transform:translateY(-10px) rotate(var(--r,0deg))}}
+          @keyframes eg-twinkle{0%,100%{opacity:0.25}50%{opacity:0.85}}
+          @keyframes eg-glow{0%,100%{opacity:0.5}50%{opacity:0.85}}
+          .eg-prop{ animation:eg-float 5.5s ease-in-out infinite; }
+          .eg-star{ animation:eg-twinkle 3s ease-in-out infinite; }
+          .eg-cat-chip{ transition:border-color 0.15s, background 0.15s, transform 0.15s; }
+          .eg-cat-chip:hover{ transform:translateY(-2px); border-color:${EG.gold}66 !important; }
+          .eg-card{ transition:transform 0.18s, border-color 0.18s, box-shadow 0.18s; }
+          .eg-card:hover{ transform:translateY(-3px); }
+          .eg-card:hover .eg-card-arrow{ transform:translateX(3px); }
+          .eg-card:focus-visible{ outline:2px solid ${EG.gold}; outline-offset:3px; }
+          .eg-back-btn:hover{ background:rgba(255,255,255,0.12) !important; }
+          @media (prefers-reduced-motion:reduce){ .eg-prop, .eg-star{ animation:none !important; } }
+          @media (max-width:560px){ .eg-decor-prop{ display:none !important; } }
+        `}</style>
 
-        {/* Room backdrop — same wall/floor/bunting treatment as the main Hub, so entering feels continuous */}
+        {/* ── Background: radial glow + corner glows + curved edge lines + stars/confetti ── */}
         <div aria-hidden style={{ position:"fixed", inset:0, pointerEvents:"none", zIndex:0, overflow:"hidden" }}>
-          <div style={{ position:"absolute", inset:0, opacity:0.5, backgroundImage:`repeating-linear-gradient(90deg, ${occAccent}0d 0px, ${occAccent}0d 1px, transparent 1px, transparent 64px)` }} />
-          <div style={{ position:"absolute", left:0, right:0, bottom:0, height:"20%", background:`linear-gradient(to top, ${occAccent}14 0%, ${occAccent}06 60%, transparent 100%)` }} />
-          <div style={{ position:"absolute", left:0, right:0, bottom:"20%", height:1, background:`linear-gradient(90deg, transparent, ${occAccent}35, transparent)` }} />
-          <svg width="100%" height="46" viewBox="0 0 400 46" preserveAspectRatio="none" style={{ position:"absolute", top:0, left:0, opacity:0.55 }}>
-            <path d="M0 6 Q100 34 200 8 Q300 -14 400 6" fill="none" stroke={`${occAccent}55`} strokeWidth="1.3" />
-            {[18,58,98,138,178,218,258,298,338,378].map((x,i)=>{
-              const y = 6 + 26*Math.sin((x/400)*Math.PI*1.35+0.3);
-              const c = occConfetti[i % occConfetti.length];
-              return <path key={i} d={`M${x} ${y} L${x-6} ${y+11} L${x+6} ${y+11} Z`} fill={c} opacity="0.8" />;
-            })}
+          <div style={{ position:"absolute", top:"6%", left:"50%", transform:"translateX(-50%)", width:560, height:360, borderRadius:"50%", background:`radial-gradient(ellipse, ${EG.gold}1c 0%, transparent 70%)` }} />
+          <div style={{ position:"absolute", top:-100, right:-100, width:340, height:340, borderRadius:"50%", background:`radial-gradient(ellipse, ${EG.pink}16 0%, transparent 70%)` }} />
+          <div style={{ position:"absolute", bottom:-120, left:-100, width:360, height:360, borderRadius:"50%", background:`radial-gradient(ellipse, ${EG.coral}12 0%, transparent 70%)` }} />
+          <svg width="100%" height="100%" style={{ position:"absolute", inset:0, opacity:0.5 }}>
+            <path d="M-20 60 Q 200 10, 420 70" fill="none" stroke={`${EG.gold}30`} strokeWidth="1" />
+            <path d="M-20 140 Q 180 100, 400 150" fill="none" stroke={`${EG.pink}20`} strokeWidth="1" />
           </svg>
+          {[[8,14,"✦",10],[88,10,"✧",8],[14,80,"✦",7],[92,70,"✧",9],[50,6,"✦",6],[6,46,"✧",7],[94,44,"✦",8]].map(([x,y,ch,s],i)=>(
+            <span key={i} className="eg-star" style={{ position:"absolute", left:`${x}%`, top:`${y}%`, fontSize:s, color:i%2?EG.pink:EG.gold, animationDelay:`${i*0.4}s` }}>{ch}</span>
+          ))}
         </div>
 
-        {/* Back navigation */}
-        <button onClick={() => navigate(-1)} style={{ position:"absolute", top:20, left:20, zIndex:3, background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.14)", color:"rgba(255,255,255,0.70)", borderRadius:12, padding:"8px 14px", fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:6 }}>← Back</button>
-
-        {/* Header */}
-        <div style={{ position:"relative", zIndex:2, textAlign:"center", padding:"0 24px 32px" }}>
-          <div style={{ fontSize:56, marginBottom:12, lineHeight:1 }}>{occ.emoji}</div>
-          <div style={{ fontSize:9, fontWeight:700, color:PH.violet, textTransform:"uppercase", letterSpacing:"0.18em", marginBottom:6, fontFamily:font }}>Party Hub</div>
-          <div style={{ fontSize:"clamp(1.5rem,4vw,2rem)", fontWeight:700, color:T.main, fontFamily:"'Cormorant Garamond',Georgia,serif", letterSpacing:"-0.01em", marginBottom:6 }}>{occ.name}</div>
-          <div style={{ fontSize:13, color:T.sub }}>{occ.tagline}</div>
+        {/* Decorative props framing the content — CSS/SVG only, hidden on narrow screens */}
+        <div aria-hidden className="eg-decor-prop" style={{ position:"fixed", left:18, top:"20%", zIndex:0, display:"flex", flexDirection:"column", gap:26, opacity:0.8 }}>
+          <div className="eg-prop" style={{ "--r":"-6deg" }}>
+            <svg width="46" height="46" viewBox="0 0 24 24" fill="none"><rect x="3" y="9" width="18" height="12" rx="2" fill={`${EG.gold}26`} stroke={EG.gold} strokeWidth="1.3"/><path d="M3 13h18" stroke={EG.gold} strokeWidth="1.3"/><path d="M12 9v12" stroke={EG.gold} strokeWidth="1.3"/><path d="M12 9C9 9 8 6 9 4.5 10 3 12 4 12 6.5M12 9c3 0 4-3 3-4.5C14 3 12 4 12 6.5" stroke={EG.gold} strokeWidth="1.3" strokeLinecap="round"/></svg>
+          </div>
+          <div className="eg-prop" style={{ "--r":"4deg", animationDelay:"1.1s" }}>
+            <svg width="38" height="50" viewBox="0 0 24 30" fill="none"><ellipse cx="12" cy="10" rx="9" ry="10" fill={`${EG.pink}22`} stroke={EG.pink} strokeWidth="1.3"/><path d="M12 20v9" stroke={EG.pink} strokeWidth="1.1"/></svg>
+          </div>
+          <div className="eg-prop" style={{ "--r":"-3deg", animationDelay:"2.1s" }}>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke={EG.coral} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="10" width="14" height="10" rx="2"/><rect x="6" y="6" width="10" height="6" rx="2"/><line x1="6" y1="6" x2="6" y2="3"/><line x1="11" y1="6" x2="11" y2="2"/><line x1="16" y1="6" x2="16" y2="3.5"/></svg>
+          </div>
+        </div>
+        <div aria-hidden className="eg-decor-prop" style={{ position:"fixed", right:18, top:"18%", zIndex:0, display:"flex", flexDirection:"column", gap:26, opacity:0.8 }}>
+          <div className="eg-prop" style={{ "--r":"5deg" }}>
+            <svg width="54" height="46" viewBox="0 0 34 26" fill="none">
+              <ellipse cx="9" cy="10" rx="8" ry="9.5" fill={`${EG.gold}22`} stroke={EG.gold} strokeWidth="1.2"/>
+              <ellipse cx="25" cy="9" rx="7" ry="8.5" fill={`${EG.pink}22`} stroke={EG.pink} strokeWidth="1.2"/>
+              <ellipse cx="17" cy="14" rx="6.5" ry="7.5" fill={`${EG.coral}1e`} stroke={EG.coral} strokeWidth="1.2"/>
+            </svg>
+          </div>
+          <div className="eg-prop" style={{ "--r":"-5deg", animationDelay:"0.9s" }}>
+            <svg width="40" height="34" viewBox="0 0 24 20" fill="none" stroke={EG.gold} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="12" rx="6"/><circle cx="12" cy="11" r="3.4"/><line x1="18.5" y1="5.5" x2="20.5" y2="3.5"/></svg>
+          </div>
+          <div className="eg-prop" style={{ "--r":"3deg", animationDelay:"1.8s" }}>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke={EG.pink} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="13" width="6" height="7" rx="1"/><line x1="7" y1="13" x2="7" y2="4"/><circle cx="7" cy="3" r="1" fill={EG.pink} stroke="none"/><path d="M11 20c2-6 5-6 8-10" /><circle cx="19.5" cy="9.5" r="1" fill={EG.pink} stroke="none"/><circle cx="16" cy="13" r="1" fill={EG.pink} stroke="none"/></svg>
+          </div>
         </div>
 
-        {entryView === "pick" ? (
-          <div style={{ display:"flex", flexDirection:"column", gap:10, padding:"0 20px", width:"100%", maxWidth:400, position:"relative", zIndex:2, animation:"eg-in 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-            {/* Host card — dark */}
-            <button onClick={()=>setEntryView("host")} style={{ padding:"18px 20px", borderRadius:18, border:`1.5px solid ${PH.violet}44`, background:"#2A3828", color:"#fff", textAlign:"left", cursor:"pointer", display:"flex", alignItems:"center", gap:14, position:"relative", overflow:"hidden" }}>
-              <div style={{ width:40, height:40, borderRadius:12, background:"rgba(255,255,255,0.1)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#C4973A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        {/* Back navigation — translucent glass button */}
+        <button className="eg-back-btn" onClick={() => navigate(-1)} style={{ position:"absolute", top:"max(20px, env(safe-area-inset-top))", left:20, zIndex:3, background:"rgba(255,255,255,0.07)", border:`1px solid ${EG.border}`, color:EG.white, borderRadius:100, padding:"9px 16px", fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:6, fontFamily:font, backdropFilter:"blur(6px)" }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Back
+        </button>
+
+        <div style={{ width:"100%", maxWidth:800, margin:"0 auto", position:"relative", zIndex:2, display:"flex", flexDirection:"column", alignItems:"center", paddingTop:56 }}>
+          {/* Brand + heading */}
+          <div style={{ textAlign:"center", marginBottom:28 }}>
+            {occ?.emoji && (
+              <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"rgba(255,255,255,0.06)", border:`1px solid ${EG.border}`, borderRadius:100, padding:"5px 14px", marginBottom:16, fontSize:12, color:EG.muted, fontWeight:600 }}>
+                <span style={{ fontSize:14 }}>{occ.emoji}</span> {occ.name}
               </div>
-              <div>
-                <div style={{ fontSize:15, fontWeight:700, marginBottom:2 }}>I'm Hosting</div>
-                <div style={{ fontSize:12, color:"rgba(255,255,255,0.5)" }}>Create a room · control the vibe</div>
-              </div>
-            </button>
-            {/* Join card — light */}
-            <button onClick={()=>setEntryView("join")} style={{ padding:"18px 20px", borderRadius:18, border:`1.5px solid ${T.joinBd}`, background:T.joinCard, color:T.main, textAlign:"left", cursor:"pointer", display:"flex", alignItems:"center", gap:14 }}>
-              <div style={{ width:40, height:40, borderRadius:12, background:isDark?"rgba(255,255,255,0.08)":"rgba(44,26,14,0.05)", border:`1px solid ${T.joinBd}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={T.main} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              </div>
-              <div>
-                <div style={{ fontSize:15, fontWeight:700, marginBottom:2 }}>Join a Party</div>
-                <div style={{ fontSize:12, color:T.sub }}>Enter a room code to join your crew</div>
-              </div>
-            </button>
-            {/* Explore — minimal */}
-            <button onClick={()=>setEntryMode("exploring")} style={{ padding:"14px 20px", borderRadius:18, border:`1.5px solid ${T.joinBd}`, background:"transparent", color:T.sub, textAlign:"center", cursor:"pointer", fontSize:13, fontWeight:500 }}>
-              Just Exploring →
-            </button>
+            )}
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" style={{ marginBottom:10 }}><rect x="3" y="9" width="18" height="12" rx="2" fill={`${EG.gold}2a`} stroke={EG.gold} strokeWidth="1.4"/><path d="M3 13h18" stroke={EG.gold} strokeWidth="1.4"/><path d="M12 9v12" stroke={EG.gold} strokeWidth="1.4"/><path d="M12 9C9 9 8 6 9 4.5 10 3 12 4 12 6.5M12 9c3 0 4-3 3-4.5C14 3 12 4 12 6.5" stroke={EG.gold} strokeWidth="1.4" strokeLinecap="round"/></svg>
+            <div style={{ fontSize:11, fontWeight:700, color:EG.gold, textTransform:"uppercase", letterSpacing:"0.28em", marginBottom:10 }}>TENDR</div>
+            <div style={{ fontSize:"clamp(2.1rem,5.5vw,3rem)", fontWeight:600, fontFamily:"'Cormorant Garamond',Georgia,serif", letterSpacing:"-0.01em", lineHeight:1.1, marginBottom:10, background:`linear-gradient(135deg, ${EG.white} 35%, ${EG.gold} 100%)`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
+              Party Hub
+            </div>
+            <div style={{ fontSize:14.5, color:EG.muted, fontWeight:500 }}>Plan any celebration, your way</div>
           </div>
-        ) : entryView === "host" ? (
-          <div style={{ padding:"0 20px", width:"100%", maxWidth:400, position:"relative", zIndex:2, animation:"eg-in 0.22s cubic-bezier(0.22,1,0.36,1)" }}>
-            <button onClick={()=>setEntryView("pick")} style={{ background:"none", border:"none", color:T.sub, fontSize:13, cursor:"pointer", marginBottom:18, display:"flex", alignItems:"center", gap:4, padding:0 }}>← Back</button>
-            <div style={{ fontSize:18, fontWeight:700, color:T.main, marginBottom:4 }}>Host a Room</div>
-            <div style={{ fontSize:13, color:T.sub, marginBottom:22 }}>Start a live party room for your crew</div>
-            <input value={hostName} onChange={e=>setHostName(e.target.value)} placeholder="Your name" type="text" inputMode="text" autoCorrect="off" autoComplete="given-name" spellCheck={false} style={{ ...inpStyle, marginBottom:10 }} />
-            <input value={partyName} onChange={e=>setPartyName(e.target.value)} placeholder={`Party name (e.g. ${occ.name} Bash)`} type="text" inputMode="text" autoCorrect="off" autoComplete="off" spellCheck={false} style={{ ...inpStyle, marginBottom:10 }} />
-            <div style={{ fontSize:11, fontWeight:700, color:T.sub, letterSpacing:"0.06em", textTransform:"uppercase", marginBottom:6 }}>{celebrantMeta.label}</div>
-            <input value={celebrantName} onChange={e=>saveCelebrant(e.target.value)} placeholder={celebrantMeta.ph} type="text" inputMode="text" autoCorrect="off" autoComplete="name" spellCheck={false} style={{ ...inpStyle, marginBottom:14 }} />
-            <button onClick={handleHostCreate} disabled={!hostName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:hostName.trim()?PH.violet:"rgba(44,26,14,0.1)", color:hostName.trim()?"#fff":"rgba(44,26,14,0.35)", fontSize:14, fontWeight:700, cursor:hostName.trim()?"pointer":"not-allowed", minHeight:48, WebkitTapHighlightColor:"transparent", touchAction:"manipulation" }}>
-              {roomLoading ? "Creating…" : "Create Room →"}
-            </button>
+
+          {/* Occasion categories */}
+          <div style={{ display:"flex", gap:10, flexWrap:"wrap", justifyContent:"center", marginBottom:32, maxWidth:620 }}>
+            {EG_CATS.map(cat => {
+              const active = cat.id === egActiveCat;
+              const c = active ? EG.gold : EG.muted;
+              return (
+                <div key={cat.id} className="eg-cat-chip" title={cat.label} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:6, width:64, cursor:"default" }}>
+                  <div style={{ width:42, height:42, borderRadius:13, background:active ? `${EG.gold}1e` : "rgba(255,255,255,0.05)", border:`1.5px solid ${active ? EG.gold+"70" : EG.border}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    {cat.icon(c)}
+                  </div>
+                  <span style={{ fontSize:9.5, fontWeight:600, color:c, textAlign:"center", lineHeight:1.2 }}>{cat.label}</span>
+                </div>
+              );
+            })}
           </div>
-        ) : (
-          <div style={{ padding:"0 20px", width:"100%", maxWidth:400, position:"relative", zIndex:2, animation:"eg-in 0.22s cubic-bezier(0.22,1,0.36,1)" }}>
-            <button onClick={()=>setEntryView("pick")} style={{ background:"none", border:"none", color:T.sub, fontSize:13, cursor:"pointer", marginBottom:18, display:"flex", alignItems:"center", gap:4, padding:0 }}>← Back</button>
-            <div style={{ fontSize:18, fontWeight:700, color:T.main, marginBottom:4 }}>Join a Party</div>
-            <div style={{ fontSize:13, color:T.sub, marginBottom:22 }}>{joinCode ? "You were invited — just enter your name!" : "Enter the code your host shared"}</div>
-            <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="ABC123" maxLength={6} type="text" inputMode="text" autoCapitalize="characters" autoCorrect="off" autoComplete="off" spellCheck={false} style={{ ...inpStyle, fontSize:24, fontWeight:700, textAlign:"center", letterSpacing:"0.22em", marginBottom:10 }} />
-            <input value={joinName} onChange={e=>setJoinName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleJoin()} placeholder="Your name" type="text" inputMode="text" autoCorrect="off" autoComplete="given-name" style={{ ...inpStyle, marginBottom:14 }} autoFocus />
-            <button onClick={handleJoin} disabled={joinCode.length<6||!joinName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:(joinCode.length>=6&&joinName.trim())?PH.violet:"rgba(44,26,14,0.1)", color:(joinCode.length>=6&&joinName.trim())?"#fff":"rgba(44,26,14,0.35)", fontSize:14, fontWeight:700, cursor:(joinCode.length>=6&&joinName.trim())?"pointer":"not-allowed", minHeight:48, WebkitTapHighlightColor:"transparent", touchAction:"manipulation" }}>
-              {roomLoading ? "Joining…" : "Join Room →"}
-            </button>
-          </div>
-        )}
+
+          {entryView === "pick" ? (
+            <div style={{ display:"flex", flexDirection:"column", gap:12, width:"100%", maxWidth:440, animation:"eg-in 0.3s cubic-bezier(0.22,1,0.36,1)" }}>
+              {/* Host card — dominant, champagne gradient */}
+              <button className="eg-card" onClick={()=>setEntryView("host")} style={{ padding:"20px 22px", borderRadius:20, border:"none", background:`linear-gradient(135deg, ${EG.gold}, #E89A4A)`, color:"#2A1608", textAlign:"left", cursor:"pointer", display:"flex", alignItems:"center", gap:16, boxShadow:`0 10px 30px ${EG.gold}35` }}>
+                <div style={{ width:46, height:46, borderRadius:"50%", background:"rgba(42,22,8,0.14)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2A1608" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M15 4V2m0 2v2m0-2h2m-2 0h-2"/><path d="M3 21l9-9"/><path d="M12.5 7.5l4 4"/><path d="M19 4l1 1m-5 11l1 1m3-10l1 1"/></svg>
+                </div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:16, fontWeight:800, marginBottom:2 }}>I'm Hosting</div>
+                  <div style={{ fontSize:12, color:"rgba(42,22,8,0.75)", fontWeight:500 }}>Plan, manage and create your perfect celebration</div>
+                </div>
+                <EgArrow c="#2A1608" />
+              </button>
+
+              {/* Join card — burgundy glass, pink border */}
+              <button className="eg-card" onClick={()=>setEntryView("join")} style={{ padding:"20px 22px", borderRadius:20, border:`1.5px solid ${EG.pink}40`, background:"rgba(255,255,255,0.05)", color:EG.white, textAlign:"left", cursor:"pointer", display:"flex", alignItems:"center", gap:16 }}>
+                <div style={{ width:46, height:46, borderRadius:"50%", background:`${EG.pink}1e`, border:`1px solid ${EG.pink}55`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={EG.pink} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:16, fontWeight:700, marginBottom:2 }}>Join a Party</div>
+                  <div style={{ fontSize:12, color:EG.muted }}>Enter a room code to join your crew</div>
+                </div>
+                <EgArrow c={EG.pink} />
+              </button>
+
+              {/* Explore card — translucent, gold accent */}
+              <button className="eg-card" onClick={()=>setEntryMode("exploring")} style={{ padding:"18px 22px", borderRadius:20, border:`1.5px solid ${EG.border}`, background:"rgba(255,255,255,0.03)", color:EG.white, textAlign:"left", cursor:"pointer", display:"flex", alignItems:"center", gap:16 }}>
+                <div style={{ width:42, height:42, borderRadius:"50%", background:`${EG.gold}14`, border:`1px solid ${EG.gold}45`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={EG.gold} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+                </div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:14.5, fontWeight:700, marginBottom:2 }}>Just Exploring</div>
+                  <div style={{ fontSize:11.5, color:EG.muted }}>Get inspired with ideas, trends and plans</div>
+                </div>
+                <EgArrow c={EG.gold} />
+              </button>
+            </div>
+          ) : entryView === "host" ? (
+            <div style={{ width:"100%", maxWidth:420, animation:"eg-in 0.24s cubic-bezier(0.22,1,0.36,1)" }}>
+              <button onClick={()=>setEntryView("pick")} style={{ background:"none", border:"none", color:EG.muted, fontSize:13, cursor:"pointer", marginBottom:18, display:"flex", alignItems:"center", gap:4, padding:0, fontFamily:font }}>← Back</button>
+              <div style={{ fontSize:18, fontWeight:700, color:EG.white, marginBottom:4 }}>Host a Room</div>
+              <div style={{ fontSize:13, color:EG.muted, marginBottom:22 }}>Start a live party room for your crew</div>
+              <input value={hostName} onChange={e=>setHostName(e.target.value)} placeholder="Your name" type="text" inputMode="text" autoCorrect="off" autoComplete="given-name" spellCheck={false} style={{ ...inpStyle, marginBottom:10 }} />
+              <input value={partyName} onChange={e=>setPartyName(e.target.value)} placeholder={`Party name (e.g. ${occ.name} Bash)`} type="text" inputMode="text" autoCorrect="off" autoComplete="off" spellCheck={false} style={{ ...inpStyle, marginBottom:10 }} />
+              <div style={{ fontSize:11, fontWeight:700, color:EG.muted, letterSpacing:"0.06em", textTransform:"uppercase", marginBottom:6 }}>{celebrantMeta.label}</div>
+              <input value={celebrantName} onChange={e=>saveCelebrant(e.target.value)} placeholder={celebrantMeta.ph} type="text" inputMode="text" autoCorrect="off" autoComplete="name" spellCheck={false} style={{ ...inpStyle, marginBottom:14 }} />
+              <button onClick={handleHostCreate} disabled={!hostName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:hostName.trim()?`linear-gradient(135deg, ${EG.gold}, #E89A4A)`:"rgba(255,255,255,0.08)", color:hostName.trim()?"#2A1608":"rgba(255,255,255,0.3)", fontSize:14, fontWeight:700, cursor:hostName.trim()?"pointer":"not-allowed", minHeight:48, WebkitTapHighlightColor:"transparent", touchAction:"manipulation", fontFamily:font }}>
+                {roomLoading ? "Creating…" : "Create Room →"}
+              </button>
+            </div>
+          ) : (
+            <div style={{ width:"100%", maxWidth:420, animation:"eg-in 0.24s cubic-bezier(0.22,1,0.36,1)" }}>
+              <button onClick={()=>setEntryView("pick")} style={{ background:"none", border:"none", color:EG.muted, fontSize:13, cursor:"pointer", marginBottom:18, display:"flex", alignItems:"center", gap:4, padding:0, fontFamily:font }}>← Back</button>
+              <div style={{ fontSize:18, fontWeight:700, color:EG.white, marginBottom:4 }}>Join a Party</div>
+              <div style={{ fontSize:13, color:EG.muted, marginBottom:22 }}>{joinCode ? "You were invited — just enter your name!" : "Enter the code your host shared"}</div>
+              <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,6))} placeholder="ABC123" maxLength={6} type="text" inputMode="text" autoCapitalize="characters" autoCorrect="off" autoComplete="off" spellCheck={false} style={{ ...inpStyle, fontSize:24, fontWeight:700, textAlign:"center", letterSpacing:"0.22em", marginBottom:10 }} />
+              <input value={joinName} onChange={e=>setJoinName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleJoin()} placeholder="Your name" type="text" inputMode="text" autoCorrect="off" autoComplete="given-name" style={{ ...inpStyle, marginBottom:14 }} autoFocus />
+              <button onClick={handleJoin} disabled={joinCode.length<6||!joinName.trim()||roomLoading} style={{ width:"100%", padding:"14px 0", borderRadius:12, border:"none", background:(joinCode.length>=6&&joinName.trim())?`linear-gradient(135deg, ${EG.gold}, #E89A4A)`:"rgba(255,255,255,0.08)", color:(joinCode.length>=6&&joinName.trim())?"#2A1608":"rgba(255,255,255,0.3)", fontSize:14, fontWeight:700, cursor:(joinCode.length>=6&&joinName.trim())?"pointer":"not-allowed", minHeight:48, WebkitTapHighlightColor:"transparent", touchAction:"manipulation", fontFamily:font }}>
+                {roomLoading ? "Joining…" : "Join Room →"}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
