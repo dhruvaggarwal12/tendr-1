@@ -1792,6 +1792,7 @@ export default function OccasionDetail(){
   const [editedPackageItems,setEditedPackageItems]=useState(null); // null | string[] — package item editing
   const [decorFocusAreas,setDecorFocusAreas]=useState([]); // string[] — selected DECOR_FOCUS_AREAS ids
   const [decorSuggestionsOpen,setDecorSuggestionsOpen]=useState(false);
+  const [expandedStyleIdx,setExpandedStyleIdx]=useState(null); // oi of the decor-style card whose full item list is expanded
 
   /* suggested quick-picks */
   const [suggestedFood,setSuggestedFood]=useState([]); // string[]
@@ -3256,36 +3257,36 @@ export default function OccasionDetail(){
                 const isRec=recommended.has(v);
                 const info=SERVICE_CARD_INFO[v]||{};
                 const isSmall=size==="small";
-                const imgH=isSmall?58:150;
+                const imgH=isSmall?46:112;
                 return(
                   <div key={v} id={`chip-${v}`}
-                    style={{padding:0,borderRadius:isSmall?13:16,overflow:"hidden",border:`2px solid ${sel?gold:"rgba(196,122,46,0.13)"}`,background:"#fff",transition:"all 0.18s",boxShadow:sel?"0 4px 20px rgba(196,122,46,0.22)":"0 1px 5px rgba(0,0,0,0.06)"}}>
+                    style={{padding:0,borderRadius:isSmall?11:14,overflow:"hidden",border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.13)"}`,background:"#fff",transition:"all 0.18s",boxShadow:sel?"0 3px 14px rgba(196,122,46,0.2)":"0 1px 4px rgba(0,0,0,0.05)"}}>
                     <button onClick={()=>{toggleVendor(v);const el=document.getElementById(`chip-${v}`);if(el){el.classList.remove("chip-pop");void el.offsetWidth;el.classList.add("chip-pop");}}}
                       style={{display:"block",width:"100%",padding:0,border:"none",background:"none",cursor:"pointer",textAlign:"left",fontFamily:font}}>
                       <div style={{position:"relative",height:imgH,overflow:"hidden",background:"linear-gradient(160deg,rgba(196,122,46,0.4),rgba(196,122,46,0.15))"}}>
                         {!isSmall&&info.props&&(
                           <div style={{position:"absolute",inset:0}}>
-                            <span style={{position:"absolute",top:"10%",left:"8%",fontSize:14,opacity:0.4,transform:"rotate(-10deg)"}}>{info.props[0]}</span>
-                            <span style={{position:"absolute",top:"14%",right:"10%",fontSize:12,opacity:0.32,transform:"rotate(8deg)"}}>{info.props[1]}</span>
+                            <span style={{position:"absolute",top:"10%",left:"8%",fontSize:12,opacity:0.4,transform:"rotate(-10deg)"}}>{info.props[0]}</span>
+                            <span style={{position:"absolute",top:"14%",right:"10%",fontSize:10,opacity:0.32,transform:"rotate(8deg)"}}>{info.props[1]}</span>
                           </div>
                         )}
                         <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                          <span style={{fontSize:isSmall?18:36}}>{info.emoji||"🎉"}</span>
+                          <span style={{fontSize:isSmall?15:27}}>{info.emoji||"🎉"}</span>
                         </div>
                         <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 55%)"}}/>
-                        <div style={{position:"absolute",bottom:isSmall?5:10,left:isSmall?6:12,right:isSmall?6:32}}>
-                          <span style={{fontSize:isSmall?9.5:15,fontWeight:800,color:"#fff",lineHeight:1.2,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{v}</span>
+                        <div style={{position:"absolute",bottom:isSmall?4:8,left:isSmall?5:11,right:isSmall?5:30}}>
+                          <span style={{fontSize:isSmall?8.5:13.5,fontWeight:800,color:"#fff",lineHeight:1.2,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{v}</span>
                         </div>
                         {sel
-                          ? <div style={{position:"absolute",top:5,right:5,width:isSmall?14:24,height:isSmall?14:24,borderRadius:"50%",background:gold,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,0.2)"}}>
-                              <svg width={isSmall?6:11} height={isSmall?6:11} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          ? <div style={{position:"absolute",top:4,right:4,width:isSmall?12:20,height:isSmall?12:20,borderRadius:"50%",background:gold,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,0.2)"}}>
+                              <svg width={isSmall?5:9} height={isSmall?5:9} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                             </div>
-                          : isRec&&<div style={{position:"absolute",top:5,right:5,fontSize:isSmall?6.5:9.5,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:isSmall?"1px 4px":"2px 6px",boxShadow:"0 2px 6px rgba(0,0,0,0.2)"}}>✦</div>
+                          : isRec&&<div style={{position:"absolute",top:4,right:4,fontSize:isSmall?6:8.5,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:isSmall?"1px 3px":"2px 5px",boxShadow:"0 2px 6px rgba(0,0,0,0.2)"}}>✦</div>
                         }
                       </div>
                       {!isSmall&&info.description&&(
-                        <div style={{padding:"11px 13px 13px"}}>
-                          <div style={{fontSize:13,color:muted,lineHeight:1.45}}>{info.description}</div>
+                        <div style={{padding:"9px 12px 11px"}}>
+                          <div style={{fontSize:12,color:muted,lineHeight:1.4}}>{info.description}</div>
                         </div>
                       )}
                     </button>
@@ -3305,7 +3306,7 @@ export default function OccasionDetail(){
                   {addOns.length>0&&<>{tierLabel("Nice to have","rgba(28,9,0,0.4)","Browse extras — add anything that fits")}<div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:7,marginBottom:14}}>
                     {addOns.filter(v=>!venueCovers.includes(v)).map(v=>serviceCard(v,"small"))}
                     <button onClick={()=>setShowCustomVendorInput(v=>!v)}
-                      style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,minHeight:58,borderRadius:13,border:`1.5px dashed ${showCustomVendorInput?"rgba(196,122,46,0.5)":"rgba(196,122,46,0.28)"}`,background:showCustomVendorInput?"rgba(196,122,46,0.06)":"#fff",color:"rgba(196,122,46,0.7)",fontSize:9.5,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s",letterSpacing:"-0.01em"}}>
+                      style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,minHeight:46,borderRadius:11,border:`1.5px dashed ${showCustomVendorInput?"rgba(196,122,46,0.5)":"rgba(196,122,46,0.28)"}`,background:showCustomVendorInput?"rgba(196,122,46,0.06)":"#fff",color:"rgba(196,122,46,0.7)",fontSize:8.5,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s",letterSpacing:"-0.01em"}}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                       Add other
                     </button>
@@ -3732,21 +3733,18 @@ export default function OccasionDetail(){
                                   </div>
                                 )}
 
-                                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:7}}>
                                   {orderedAreaIds.map(id=>{
                                     const area=DECOR_FOCUS_AREAS[id];
                                     const sel=decorFocusAreas.includes(id);
                                     const isSuggested=suggested.includes(id);
                                     return(
-                                      <button key={id} onClick={()=>toggleArea(id)}
-                                        style={{textAlign:"left",padding:"10px 11px",borderRadius:12,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.14)"}`,background:sel?`rgba(${goldRgb},0.07)`:"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:4,position:"relative"}}>
-                                        <div style={{display:"flex",alignItems:"center",gap:7}}>
-                                          <span style={{fontSize:19,flexShrink:0}}>{area.emoji}</span>
-                                          <span style={{fontSize:13,fontWeight:700,color:sel?gold:ink,flex:1,lineHeight:1.25}}>{area.name}</span>
-                                          {sel&&<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3" strokeLinecap="round" style={{flexShrink:0}}><polyline points="20 6 9 17 4 12"/></svg>}
-                                        </div>
-                                        <div style={{fontSize:11,color:sel?"#4A2810":muted,lineHeight:1.4}}>{area.tagline}</div>
-                                        {isSuggested&&!sel&&<span style={{position:"absolute",top:6,right:6,fontSize:8,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"1px 5px"}}>✦</span>}
+                                      <button key={id} onClick={()=>toggleArea(id)} title={area.tagline}
+                                        style={{textAlign:"center",padding:"9px 5px",borderRadius:11,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.18)"}`,background:sel?`rgba(${goldRgb},0.08)`:"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",alignItems:"center",gap:3,position:"relative"}}>
+                                        <span style={{fontSize:18,lineHeight:1}}>{area.emoji}</span>
+                                        <span style={{fontSize:10.5,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{area.name}</span>
+                                        {sel&&<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                                        {isSuggested&&!sel&&<span style={{position:"absolute",top:4,right:4,fontSize:7,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"1px 4px"}}>✦</span>}
                                       </button>
                                     );
                                   })}
@@ -3761,6 +3759,9 @@ export default function OccasionDetail(){
                               const sel=chosen===oi;
                               const displayItems=buildDecorDisplayItems(opt,decorFocusAreas);
                               const itemsToShow=(sel&&editedPackageItems!==null)?editedPackageItems:displayItems;
+                              const isExpanded=expandedStyleIdx===oi||(sel&&editedPackageItems!==null);
+                              const visibleItems=isExpanded?itemsToShow:itemsToShow.slice(0,3);
+                              const hiddenCount=itemsToShow.length-visibleItems.length;
                               return(
                                 <button key={oi} onClick={()=>{setVendorPackages(vp=>({...vp,Decorator:oi}));setShowDecorBuilder(false);}}
                                   style={{textAlign:"left",padding:"13px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:opt.popular?"rgba(34,197,94,0.3)":"rgba(196,122,46,0.14)"}`,background:sel?`rgba(${goldRgb},0.07)`:"#FAFAF8",cursor:"pointer",fontFamily:font,transition:"all 0.18s",display:"flex",flexDirection:"column",gap:7}}>
@@ -3773,12 +3774,18 @@ export default function OccasionDetail(){
                                   </div>
 
                                   <div style={{display:"flex",flexDirection:"column",gap:5}}>
-                                    {itemsToShow.map((it,ii)=>(
+                                    {visibleItems.map((it,ii)=>(
                                       <div key={ii} style={{fontSize:13,color:sel?"#4A2810":muted,lineHeight:1.5,display:"flex",alignItems:"flex-start",gap:6}}>
                                         <span style={{flexShrink:0,color:sel?gold:"rgba(196,122,46,0.5)"}}>·</span><span>{it}</span>
                                       </div>
                                     ))}
                                   </div>
+                                  {(hiddenCount>0||isExpanded&&itemsToShow.length>3)&&!(sel&&editedPackageItems!==null)&&(
+                                    <button onClick={e=>{e.stopPropagation();setExpandedStyleIdx(isExpanded?null:oi);}}
+                                      style={{alignSelf:"flex-start",fontSize:11.5,fontWeight:700,color:sel?gold:"#9B7450",background:"none",border:"none",padding:0,cursor:"pointer",fontFamily:font,textDecoration:"underline",textUnderlineOffset:2}}>
+                                      {isExpanded?"Show less":`+${hiddenCount} more — tap to see all`}
+                                    </button>
+                                  )}
 
                                   {sel&&(
                                     <div style={{marginTop:2,paddingTop:10,borderTop:"1px solid rgba(196,122,46,0.14)"}}>
