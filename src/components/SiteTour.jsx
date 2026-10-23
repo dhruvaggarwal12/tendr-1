@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Joyride, STATUS } from "react-joyride";
 import { useTour } from "../context/TourContext";
 
@@ -18,22 +18,43 @@ const FEATURES = [
   { emoji: "🏠", label: "Your Dashboard" },
 ];
 
-// Only what's visible on the landing page — other pages have their own tours
-const STEPS = [
-  {
-    target: "body",
-    placement: "center",
-    disableBeacon: true,
-    title: "Welcome to Tendr 🎉",
-    content: "Plan your event, find verified vendors, and book everything across Delhi NCR — all in one place. Here's a quick look at what's here.",
-  },
-  {
-    target: '[data-tour="hero-ctas"]',
-    placement: "bottom",
-    disableBeacon: true,
-    title: "Two ways to start",
-    content: '"Book Vendors" lets you browse and filter the full directory. "Plan an Occasion" walks you through a step-by-step flow — pick your occasion, date, budget and we do the rest.',
-  },
+// Only what's visible on the landing page — other pages have their own tours.
+// Desktop and mobile get different target selectors because the desktop nav
+// (search bar + Browse/Booking/Tools dropdowns) is `display:none` under the
+// 768px breakpoint (see Navbar.jsx) — pointing a mobile run at those desktop-only
+// selectors meant Joyride couldn't find the target and silently skipped straight
+// from step 2 to the final step. Mobile points at the equivalents that are
+// actually in the DOM there: the mobile search pill and the bottom-nav tabs.
+const WELCOME_STEP = {
+  target: "body",
+  placement: "center",
+  disableBeacon: true,
+  title: "Welcome to Tendr 🎉",
+  content: "Plan your event, find verified vendors, and book everything across Delhi NCR — all in one place. Here's a quick look at what's here.",
+};
+
+const HERO_CTAS_STEP = {
+  target: '[data-tour="hero-ctas"]',
+  // "top" (not "bottom") keeps the tooltip anchored inside the hero itself —
+  // placing it below the CTAs on a short mobile hero pushed the scroll position
+  // down far enough that the next section peeked in behind the tooltip.
+  placement: "top",
+  disableBeacon: true,
+  title: "Two ways to start",
+  content: '"Book Vendors" lets you browse and filter the full directory. "Plan an Occasion" walks you through a step-by-step flow — pick your occasion, date, budget and we do the rest.',
+};
+
+const FEATURES_STEP = {
+  target: "body",
+  placement: "center",
+  disableBeacon: true,
+  title: "And there's a lot more…",
+  content: "__FEATURES__",
+};
+
+const STEPS_DESKTOP = [
+  WELCOME_STEP,
+  HERO_CTAS_STEP,
   {
     target: '[data-tour="search-bar"]',
     placement: "bottom",
@@ -62,13 +83,41 @@ const STEPS = [
     title: "Event Tools",
     content: "Budget Allocator, Timeline Builder, Guest List, Seating Chart and more — free tools that make event planning manageable.",
   },
+  FEATURES_STEP,
+];
+
+const STEPS_MOBILE = [
+  WELCOME_STEP,
+  HERO_CTAS_STEP,
   {
-    target: "body",
-    placement: "center",
+    target: '[data-tour="mob-search"]',
+    placement: "bottom",
     disableBeacon: true,
-    title: "And there's a lot more…",
-    content: "__FEATURES__",
+    title: "Search anything 🔍",
+    content: 'Type naturally — "photographer under ₹20K in Noida" or "decorator for 150 guests". Finds vendors, navigates to tools, understands budgets and locations.',
   },
+  {
+    target: '[data-tour="mob-nav-book vendors"]',
+    placement: "top",
+    disableBeacon: true,
+    title: "Browse Vendors",
+    content: "Decorators, Caterers, Photographers, DJs — filter by location, budget, guest count and ratings. Tap here any time to open the full directory.",
+  },
+  {
+    target: '[data-tour="mob-nav-plan an occasion"]',
+    placement: "top",
+    disableBeacon: true,
+    title: "Plan Your Event",
+    content: "Pick vendors one by one, or let Smart Plan pick the best combo within your total budget automatically.",
+  },
+  {
+    target: '[data-tour="mob-nav-tools"]',
+    placement: "top",
+    disableBeacon: true,
+    title: "Event Tools",
+    content: "Budget Allocator, Timeline Builder, Guest List, Seating Chart and more — free tools that make event planning manageable.",
+  },
+  FEATURES_STEP,
 ];
 
 function TourTooltip({ index, step, backProps, skipProps, primaryProps, tooltipProps, size, onFinish }) {
@@ -92,8 +141,8 @@ function TourTooltip({ index, step, backProps, skipProps, primaryProps, tooltipP
       style={{
         background: "#FFFCF5",
         borderRadius: 18,
-        maxWidth: isFeaturesStep ? 440 : 360,
-        width: isFeaturesStep ? 420 : 340,
+        maxWidth: isFeaturesStep ? "min(440px, calc(100vw - 32px))" : "min(360px, calc(100vw - 32px))",
+        width: isFeaturesStep ? "min(420px, calc(100vw - 32px))" : "min(340px, calc(100vw - 32px))",
         boxShadow: "0 20px 60px rgba(28,9,0,0.14), 0 0 0 1.5px rgba(196,122,46,0.18)",
         fontFamily: font,
         overflow: "hidden",
@@ -208,6 +257,8 @@ function TourTooltip({ index, step, backProps, skipProps, primaryProps, tooltipP
 
 export default function SiteTour({ onDone } = {}) {
   const { tourActive, endTour } = useTour();
+  const [isMobile] = useState(() => typeof window !== "undefined" && window.innerWidth < 768);
+  const steps = isMobile ? STEPS_MOBILE : STEPS_DESKTOP;
 
   const finishTour = useCallback(() => {
     endTour();
@@ -232,7 +283,7 @@ export default function SiteTour({ onDone } = {}) {
 
   return (
     <Joyride
-      steps={STEPS}
+      steps={steps}
       run={tourActive}
       onEvent={handleCallback}
       tooltipComponent={tooltipComponent}
