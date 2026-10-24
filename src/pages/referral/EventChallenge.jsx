@@ -90,12 +90,31 @@ export default function EventChallenge() {
       .then(d => {
         if (!d) { setError("Couldn't start the challenge — try again."); setView("intro"); return; }
         setAttempt(d.attempt);
-        setMcqAnswers(d.attempt.mcqAnswers || {});
+        const ma = d.attempt.mcqAnswers || {};
+        setMcqAnswers(ma);
         const ot = {};
         (d.attempt.opinionAnswers || []).forEach(a => { if (a.text) ot[a.questionId] = a.text; });
         setOpinionText(ot);
-        setPhotoExplanation(d.attempt.photoTaskAnswer?.explanation || "");
-        setPhotoImage(d.attempt.photoTaskAnswer?.imageUrl || "");
+        const photoExpl = d.attempt.photoTaskAnswer?.explanation || "";
+        const photoUrl = d.attempt.photoTaskAnswer?.imageUrl || "";
+        setPhotoExplanation(photoExpl);
+        setPhotoImage(photoUrl);
+
+        // Resume at the first unanswered step instead of always reopening at step 0 —
+        // otherwise "Continue the challenge" re-showed already-answered MCQs instead of
+        // picking up at the opinion questions (or photo task) the progress screen promised.
+        const mcqs = d.attempt.mcqs || [];
+        const opinions = d.attempt.opinionQuestions || [];
+        let resumeIdx = mcqs.findIndex(q => ma[q.id] === undefined);
+        if (resumeIdx === -1) {
+          const oi = opinions.findIndex(q => (ot[q.id] || "").trim().length < 10);
+          resumeIdx = oi === -1 ? mcqs.length + opinions.length : mcqs.length + oi;
+        }
+        if (resumeIdx === mcqs.length + opinions.length && photoUrl && photoExpl.trim().length > 0) {
+          resumeIdx = mcqs.length + opinions.length + 1; // photo already done too -> review step
+        }
+        setStepIdx(Math.max(0, resumeIdx));
+
         setView("questionnaire");
       })
       .catch(() => { setError("Couldn't load the challenge — check your connection and try again."); setView("intro"); });
