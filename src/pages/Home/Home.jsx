@@ -3127,6 +3127,14 @@ const Home = () => {
                 .occ-flow-row { padding: 12px 4px !important; font-size: 13.5px !important; gap: 12px !important; }
                 .occ-num { font-size: 11px !important; min-width: 20px !important; }
                 .occ-flow-header { padding: 18px 18px 14px !important; }
+                .occ-flow-eyebrow { font-size: 9.5px !important; margin-bottom: 4px !important; }
+                .occ-flow-title { font-size: 1.35rem !important; margin-bottom: 10px !important; }
+                .occ-flow-search-bar { padding: 0 14px !important; }
+                .occ-flow-search-input { padding: 9px 0 !important; }
+                .occ-roomcode-footer { padding: 10px 18px 11px !important; }
+                .occ-roomcode-label { font-size: 9px !important; margin-bottom: 5px !important; }
+                .occ-roomcode-input { padding: 9px 11px !important; min-height: 42px !important; }
+                .occ-roomcode-btn { padding: 9px 16px !important; min-height: 42px !important; font-size: 13px !important; }
               }
             `}</style>
 
@@ -3156,12 +3164,13 @@ const Home = () => {
                   onClick={closeFlow}
                   style={{ position: "absolute", top: 22, right: 22, width: 32, height: 32, borderRadius: "50%", background: "rgba(44,26,14,0.06)", border: "1px solid rgba(44,26,14,0.08)", color: "rgba(44,26,14,0.55)", fontSize: 18, lineHeight: 1, cursor: "pointer", fontFamily: f, display: "flex", alignItems: "center", justifyContent: "center" }}
                 >×</button>
-                <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.18em", margin: "0 0 6px", fontFamily: f }}>PLAN AN OCCASION</p>
-                <h2 style={{ fontFamily: ser, fontSize: "clamp(1.5rem,5vw,2.2rem)", fontWeight: 700, color: "#2C1A0E", margin: "0 0 16px", lineHeight: 1.1 }}>What are you planning?</h2>
+                <p className="occ-flow-eyebrow" style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.18em", margin: "0 0 6px", fontFamily: f }}>PLAN AN OCCASION</p>
+                <h2 className="occ-flow-title" style={{ fontFamily: ser, fontSize: "clamp(1.5rem,5vw,2.2rem)", fontWeight: 700, color: "#2C1A0E", margin: "0 0 16px", lineHeight: 1.1 }}>What are you planning?</h2>
                 {/* Search */}
-                <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#F8F5F0", border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 100, padding: "0 20px" }}>
+                <div className="occ-flow-search-bar" style={{ display: "flex", alignItems: "center", gap: 10, background: "#F8F5F0", border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 100, padding: "0 20px" }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                   <input
+                    className="occ-flow-search-input"
                     value={occasionSearch}
                     onChange={e => setOccasionSearch(e.target.value)}
                     placeholder="Search occasions…"
@@ -3254,10 +3263,11 @@ const Home = () => {
               </div>
 
               {/* Sticky join-room footer */}
-              <div style={{ position:"sticky", bottom:0, background:"#FFFFFF", borderTop:"1px solid rgba(0,0,0,0.07)", padding:"12px 24px 14px", paddingBottom:"max(14px,env(safe-area-inset-bottom,14px))", flexShrink:0 }}>
-                <div style={{ fontSize:10, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:7 }}>🎉 Already have a room code?</div>
+              <div className="occ-roomcode-footer" style={{ position:"sticky", bottom:0, background:"#FFFFFF", borderTop:"1px solid rgba(0,0,0,0.07)", padding:"12px 24px 14px", paddingBottom:"max(14px,env(safe-area-inset-bottom,14px))", flexShrink:0 }}>
+                <div className="occ-roomcode-label" style={{ fontSize:10, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:7 }}>🎉 Already have a room code?</div>
                 <div style={{ display:"flex", gap:8 }}>
                   <input
+                    className="occ-roomcode-input"
                     value={roomCodeInput}
                     onChange={e => setRoomCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6))}
                     onKeyDown={e => e.key === "Enter" && roomCodeInput.length === 6 && (navigate(`/join-room?code=${roomCodeInput}`), closeFlow())}
@@ -3272,6 +3282,7 @@ const Home = () => {
                     style={{ flex:1, padding:"12px 14px", borderRadius:12, border:`1.5px solid ${roomCodeInput.length===6?"#C47A2E80":"rgba(0,0,0,0.12)"}`, background:"#F8F5F0", color:"#2C1A0E", fontSize:16, fontWeight:800, outline:"none", letterSpacing:"0.20em", fontFamily:"'Outfit',sans-serif", textTransform:"uppercase", transition:"border-color 0.18s, box-shadow 0.18s", WebkitAppearance:"none", appearance:"none", boxShadow:roomCodeInput.length===6?"0 0 0 3px rgba(196,122,46,0.15)":"none", minHeight:48, boxSizing:"border-box" }}
                   />
                   <button
+                    className="occ-roomcode-btn"
                     onClick={() => { if (roomCodeInput.length === 6) { navigate(`/join-room?code=${roomCodeInput}`); closeFlow(); } }}
                     disabled={roomCodeInput.length < 6}
                     style={{ padding:"12px 20px", borderRadius:12, border:"none", background:roomCodeInput.length===6?"#C47A2E":"rgba(0,0,0,0.07)", color:roomCodeInput.length===6?"#fff":"rgba(44,26,14,0.30)", fontSize:14, fontWeight:700, cursor:roomCodeInput.length===6?"pointer":"default", transition:"all 0.18s", whiteSpace:"nowrap", WebkitTapHighlightColor:"transparent", touchAction:"manipulation", minHeight:48, flexShrink:0 }}

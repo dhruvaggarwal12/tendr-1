@@ -155,6 +155,17 @@ function BottomNavInner() {
     return () => { window.removeEventListener("scroll", onScroll); clearTimeout(scrollTimer.current); };
   }, []);
 
+  // Publish how much bottom clearance the nav currently needs as a CSS var, so a
+  // page's own fixed/sticky footer (e.g. OccasionDetail's step footer) can track
+  // it and close the gap the collapsed handle leaves behind instead of always
+  // reserving room for the full-height bar.
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      "--mobile-nav-clearance",
+      navCollapsed ? "calc(46px + env(safe-area-inset-bottom, 0px))" : "calc(66px + env(safe-area-inset-bottom, 0px))"
+    );
+  }, [navCollapsed]);
+
   // Close sheets + reset visible on route change
   useEffect(() => {
     setVisible(true);

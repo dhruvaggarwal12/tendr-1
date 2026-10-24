@@ -1597,8 +1597,11 @@ const css=`
   @media(min-width:600px){.age-g{grid-template-columns:repeat(5,1fr)!important;}}
   @media(min-width:600px){.venue-g{grid-template-columns:repeat(4,1fr)!important;}}
   /* Below 768px the global mobile bottom nav is fixed over the page, so this footer
-     needs extra bottom padding or its Next/Back buttons sit underneath it. */
-  @media(max-width:767px){.od-step-footer{padding-bottom:calc(66px + env(safe-area-inset-bottom,0px))!important;}}
+     needs extra bottom padding or its Next/Back buttons sit underneath it. The padding
+     comes from a CSS var MobileBottomNav keeps updated with its own collapsed/expanded
+     state, so this footer follows the nav down when it's collapsed instead of always
+     reserving room for the full-height bar (which left a dead gap when collapsed). */
+  @media(max-width:767px){.od-step-footer{padding-bottom:var(--mobile-nav-clearance, calc(66px + env(safe-area-inset-bottom,0px)))!important;transition:padding-bottom 0.22s ease;}}
   /* 100vh is set inline as a safe fallback for WebViews (e.g. WhatsApp's in-app browser) that
      don't size dvh correctly, which otherwise left a gap between the step footer and the
      fixed bottom nav. Real browsers that support dvh get the more accurate dynamic height. */
@@ -1645,6 +1648,14 @@ export default function OccasionDetail(){
   const [searchParams]=useSearchParams();
   const cardRef=useRef(null);
   const planRef=useRef(null);
+
+  // Landing here from the occasion picker (a tall page, often scrolled down when
+  // tapped) could otherwise leave the window scrolled from wherever the previous
+  // page was — clipping the sticky header behind the browser chrome until the
+  // user manually scrolled up. <ScrollRestoration/> in RootLayout should already
+  // cover this, but it hasn't proven reliable in the WhatsApp in-app WebView, so
+  // force it here too on every fresh landing / occasion switch.
+  useEffect(()=>{ window.scrollTo(0,0); },[slug]);
 
   // Home.jsx's "Plan with a Theme"/"Jump Straight In" buttons navigate here with
   // ?planMode=with|without — read it once as the initial mode so the upfront theme-pick
