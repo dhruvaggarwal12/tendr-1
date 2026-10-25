@@ -262,42 +262,93 @@ function Mascot({ mood = 'idle', size = 110 }) {
   );
 }
 
+// Matches the 4 cards on the Intent Picker one step later — calendar (plan), people
+// (vendors), confetti (organise), heart (fun) — so the promise made here is the same
+// language the picker delivers on right after.
+const ASK_FEATURES = [
+  { icon: '📅', label: 'Plan your occasion' },
+  { icon: '🧑‍🤝‍🧑', label: 'Explore verified vendors' },
+  { icon: '🎉', label: 'Organise with ease' },
+  { icon: '❤️', label: 'Have fun doing it' },
+];
+
 // ── Phase: Ask tour ────────────────────────────────────────────────────────
 function AskTour({ onYes, onNo }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 10000,
-      background: 'rgba(10,4,0,0.9)',
+      background: 'radial-gradient(ellipse 90% 60% at 50% 0%, rgba(196,122,46,0.22) 0%, transparent 60%), radial-gradient(ellipse 70% 50% at 10% 100%, rgba(232,148,63,0.14) 0%, transparent 65%), #130900',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      padding: '20px 16px',
+      padding: '20px 16px', overflowY: 'auto',
       fontFamily: SANS,
     }}>
       <style>{CSS}</style>
-      <div className="fte-fadein" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 380, width: '100%' }}>
-        <Mascot mood="wave" size={130} />
-        <div style={{ marginTop: 20, textAlign: 'center', marginBottom: 28 }}>
+
+      {/* Decorative sparkles around the mascot halo */}
+      <div aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+        {[
+          { top: '14%', left: '14%', size: 16, delay: 0 },
+          { top: '10%', right: '16%', size: 12, delay: 0.5 },
+          { top: '30%', right: '8%', size: 10, delay: 1 },
+          { top: '34%', left: '8%', size: 11, delay: 1.4 },
+        ].map((s, i) => (
+          <svg key={i} className={`fte-sp${(i % 3) + 1}`} viewBox="0 0 24 24" width={s.size} height={s.size}
+            style={{ position: 'absolute', top: s.top, left: s.left, right: s.right, animationDelay: `${s.delay}s` }}>
+            <path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z" fill="#F0B050" opacity="0.6" />
+          </svg>
+        ))}
+      </div>
+
+      <div className="fte-fadein" style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 420, width: '100%' }}>
+        {/* Glow halo behind the mascot */}
+        <div aria-hidden style={{ position: 'absolute', top: -20, width: 220, height: 220, borderRadius: '50%', background: 'radial-gradient(circle, rgba(196,122,46,0.35) 0%, transparent 70%)', filter: 'blur(4px)', pointerEvents: 'none' }} />
+        <div style={{ position: 'relative' }}>
+          <Mascot mood="wave" size={176} />
+        </div>
+
+        <div style={{ marginTop: 14, textAlign: 'center', marginBottom: 22 }}>
           <div style={{
             fontFamily: SERIF,
-            fontSize: 'clamp(1.6rem,4vw,2rem)',
-            fontWeight: 400, color: '#F5E6CC', lineHeight: 1.2, marginBottom: 10,
+            fontSize: 'clamp(1.9rem,5.5vw,2.5rem)',
+            fontWeight: 700, lineHeight: 1.15, marginBottom: 12,
           }}>
-            Hey! Welcome to Tendr 👋
+            <span style={{ color: '#F5E6CC' }}>Hey! Welcome to </span>
+            <span style={{ background: 'linear-gradient(135deg,#F0B050,#E8943F)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Tendr</span>
           </div>
-          <div style={{ fontSize: 14.5, color: 'rgba(245,230,204,0.58)', lineHeight: 1.68 }}>
+          <div style={{ fontSize: 14.5, color: 'rgba(245,230,204,0.62)', lineHeight: 1.65 }}>
             Plan your event, book verified vendors, and have fun doing it — all in one place.
+          </div>
+          <div style={{ fontSize: 13.5, color: 'rgba(245,230,204,0.5)', marginTop: 6 }}>
             Want a quick tour before you dive in?
           </div>
         </div>
+
+        {/* Feature chips — the promise made now, delivered on at the picker right after */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, width: '100%', marginBottom: 26 }}>
+          {ASK_FEATURES.map(f => (
+            <div key={f.label} style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+              padding: '14px 10px', borderRadius: 16,
+              background: 'rgba(245,230,204,0.05)',
+              border: '1px solid rgba(245,230,204,0.12)',
+              textAlign: 'center',
+            }}>
+              <span style={{ fontSize: 22 }}>{f.icon}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(245,230,204,0.82)', lineHeight: 1.3 }}>{f.label}</span>
+            </div>
+          ))}
+        </div>
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
           <button
             className="fte-ask-yes"
             onClick={onYes}
             style={{
-              background: 'linear-gradient(135deg, #C47A2E, #E8943F)',
-              border: 'none', borderRadius: 100, padding: '15px 28px',
-              color: 'white', fontSize: 15, fontWeight: 700,
+              background: 'linear-gradient(135deg, #E8943F, #F0B050)',
+              border: 'none', borderRadius: 100, padding: '17px 28px',
+              color: '#1C0900', fontSize: 16, fontWeight: 800,
               cursor: 'pointer', width: '100%', fontFamily: SANS,
-              boxShadow: '0 4px 20px rgba(196,122,46,0.45)',
+              boxShadow: '0 6px 28px rgba(232,148,63,0.5)',
               transition: 'transform 0.12s, box-shadow 0.12s',
             }}
           >
