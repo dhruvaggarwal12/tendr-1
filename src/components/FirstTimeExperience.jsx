@@ -104,17 +104,19 @@ function Mascot({ mood = 'idle', size = 110 }) {
   const bodyClass = mood === 'celebrate' ? 'fte-celebrate' : 'fte-float';
 
   return (
-    <div style={{ width: w, height: h, flexShrink: 0, filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.35))' }}>
+    <div style={{ width: w, height: h, flexShrink: 0, filter: 'drop-shadow(0 10px 24px rgba(0,0,0,0.45)) drop-shadow(0 2px 6px rgba(0,0,0,0.3))' }}>
       <svg viewBox="0 0 80 124" width={w} height={h} style={{ overflow: 'visible' }}>
         <defs>
-          <radialGradient id="fte-head" cx="36%" cy="30%" r="62%">
-            <stop offset="0%" stopColor="#F9C898" />
-            <stop offset="55%" stopColor="#E89050" />
-            <stop offset="100%" stopColor="#C06825" />
+          <radialGradient id="fte-head" cx="32%" cy="26%" r="65%">
+            <stop offset="0%" stopColor="#FFDCB0" />
+            <stop offset="35%" stopColor="#F2B482" />
+            <stop offset="70%" stopColor="#DD8442" />
+            <stop offset="100%" stopColor="#A8581C" />
           </radialGradient>
-          <radialGradient id="fte-body" cx="38%" cy="25%" r="70%">
-            <stop offset="0%" stopColor="#F0A040" />
-            <stop offset="100%" stopColor="#A85818" />
+          <radialGradient id="fte-body" cx="34%" cy="20%" r="75%">
+            <stop offset="0%" stopColor="#FAB868" />
+            <stop offset="45%" stopColor="#E08A2E" />
+            <stop offset="100%" stopColor="#8E4A0E" />
           </radialGradient>
           <radialGradient id="fte-hair" cx="50%" cy="25%" r="60%">
             <stop offset="0%" stopColor="#4A2A10" />
@@ -134,12 +136,18 @@ function Mascot({ mood = 'idle', size = 110 }) {
           </linearGradient>
         </defs>
 
-        {/* Ground shadow */}
-        <ellipse cx="40" cy="121" rx="19" ry="4" fill="rgba(0,0,0,0.14)" />
+        {/* Ground shadow — soft core + wider soft falloff, grounds the figure instead of
+            a single flat ellipse */}
+        <ellipse cx="40" cy="122" rx="22" ry="4.5" fill="rgba(0,0,0,0.1)" />
+        <ellipse cx="40" cy="121" rx="15" ry="3.2" fill="rgba(0,0,0,0.22)" />
 
         <g className={bodyClass}>
           {/* Saree lower */}
           <ellipse cx="40" cy="98" rx="19" ry="23" fill="url(#fte-body)" />
+          {/* Ambient-occlusion shading where the torso overlaps the saree, and a rim-light
+              on the opposite edge — both read as depth rather than a flat gradient fill */}
+          <path d="M27 82 Q24 98 29 118 Q24 110 22 98 Q22 86 27 82Z" fill="rgba(60,20,0,0.22)" />
+          <path d="M55 78 Q60 95 54 119" stroke="rgba(255,224,170,0.5)" strokeWidth="1.3" fill="none" strokeLinecap="round" />
           <ellipse cx="40" cy="98" rx="19" ry="23" fill="none" stroke="url(#fte-gold)" strokeWidth="1.2" opacity="0.75" />
           {[31, 35, 40, 45, 49].map((x, i) => (
             <line key={i} x1={x} y1={80} x2={x + (x < 40 ? -2 : x > 40 ? 2 : 0)} y2={117}
@@ -191,6 +199,11 @@ function Mascot({ mood = 'idle', size = 110 }) {
 
           {/* Head */}
           <circle cx="40" cy="36" r="22" fill="url(#fte-head)" />
+          {/* Rim-light along the lower-right edge — the lit side opposite the main highlight,
+              the classic cue that sells a rendered sphere rather than a flat gradient disc */}
+          <path d="M55 44 A22 22 0 0 1 44 57" stroke="rgba(255,228,180,0.55)" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+          {/* Specular highlight — small bright glint, upper-left where the key light hits */}
+          <ellipse cx="29" cy="25" rx="5.5" ry="3.8" fill="rgba(255,255,255,0.4)" transform="rotate(-25 29 25)" />
           <ellipse cx="30" cy="40" rx="5.5" ry="3.5" fill="rgba(210,80,40,0.18)" />
           <ellipse cx="50" cy="40" rx="5.5" ry="3.5" fill="rgba(210,80,40,0.18)" />
 
@@ -277,12 +290,26 @@ function AskTour({ onYes, onNo }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 10000,
-      background: 'radial-gradient(ellipse 90% 60% at 50% 0%, rgba(196,122,46,0.22) 0%, transparent 60%), radial-gradient(ellipse 70% 50% at 10% 100%, rgba(232,148,63,0.14) 0%, transparent 65%), #130900',
+      background: `
+        radial-gradient(ellipse 90% 55% at 50% 0%, rgba(196,122,46,0.26) 0%, transparent 58%),
+        radial-gradient(ellipse 60% 45% at 8% 95%, rgba(232,148,63,0.16) 0%, transparent 62%),
+        radial-gradient(ellipse 55% 40% at 95% 90%, rgba(123,58,21,0.22) 0%, transparent 60%),
+        linear-gradient(160deg, #1C0F03 0%, #130900 55%, #0B0500 100%)
+      `,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       padding: '20px 16px', overflowY: 'auto',
       fontFamily: SANS,
     }}>
       <style>{CSS}</style>
+
+      {/* Fine dot-grid texture, so the background reads as a surface, not a flat gradient */}
+      <div aria-hidden style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.5,
+        backgroundImage: 'radial-gradient(rgba(245,230,204,0.07) 1px, transparent 1px)',
+        backgroundSize: '26px 26px',
+      }} />
+      {/* Vignette — pulls focus to the centre instead of a flat edge-to-edge wash */}
+      <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', boxShadow: 'inset 0 0 160px 40px rgba(0,0,0,0.55)' }} />
 
       {/* Decorative sparkles around the mascot halo */}
       <div aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
@@ -299,54 +326,55 @@ function AskTour({ onYes, onNo }) {
         ))}
       </div>
 
-      <div className="fte-fadein" style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 420, width: '100%' }}>
-        {/* Glow halo behind the mascot */}
-        <div aria-hidden style={{ position: 'absolute', top: -20, width: 220, height: 220, borderRadius: '50%', background: 'radial-gradient(circle, rgba(196,122,46,0.35) 0%, transparent 70%)', filter: 'blur(4px)', pointerEvents: 'none' }} />
+      <div className="fte-fadein" style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 400, width: '100%' }}>
+        {/* Spotlight + glow halo behind the mascot — a soft light cone, not just a flat dot */}
+        <div aria-hidden style={{ position: 'absolute', top: -60, width: 320, height: 300, background: 'radial-gradient(ellipse 50% 100% at 50% 0%, rgba(248,220,114,0.16) 0%, transparent 72%)', pointerEvents: 'none' }} />
+        <div aria-hidden style={{ position: 'absolute', top: -14, width: 190, height: 190, borderRadius: '50%', background: 'radial-gradient(circle, rgba(196,122,46,0.4) 0%, transparent 70%)', filter: 'blur(4px)', pointerEvents: 'none' }} />
         <div style={{ position: 'relative' }}>
-          <Mascot mood="wave" size={176} />
+          <Mascot mood="wave" size={160} />
         </div>
 
-        <div style={{ marginTop: 14, textAlign: 'center', marginBottom: 22 }}>
+        <div style={{ marginTop: 12, textAlign: 'center', marginBottom: 20 }}>
           <div style={{
             fontFamily: SERIF,
-            fontSize: 'clamp(1.9rem,5.5vw,2.5rem)',
-            fontWeight: 700, lineHeight: 1.15, marginBottom: 12,
+            fontSize: 'clamp(1.5rem,4.2vw,1.9rem)',
+            fontWeight: 700, lineHeight: 1.15, marginBottom: 9,
           }}>
             <span style={{ color: '#F5E6CC' }}>Hey! Welcome to </span>
             <span style={{ background: 'linear-gradient(135deg,#F0B050,#E8943F)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Tendr</span>
           </div>
-          <div style={{ fontSize: 14.5, color: 'rgba(245,230,204,0.62)', lineHeight: 1.65 }}>
+          <div style={{ fontSize: 12.5, color: 'rgba(245,230,204,0.6)', lineHeight: 1.6 }}>
             Plan your event, book verified vendors, and have fun doing it — all in one place.
           </div>
-          <div style={{ fontSize: 13.5, color: 'rgba(245,230,204,0.5)', marginTop: 6 }}>
+          <div style={{ fontSize: 11.5, color: 'rgba(245,230,204,0.48)', marginTop: 5 }}>
             Want a quick tour before you dive in?
           </div>
         </div>
 
         {/* Feature chips — the promise made now, delivered on at the picker right after */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, width: '100%', marginBottom: 26 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 9, width: '100%', marginBottom: 22 }}>
           {ASK_FEATURES.map(f => (
             <div key={f.label} style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-              padding: '14px 10px', borderRadius: 16,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+              padding: '11px 8px', borderRadius: 14,
               background: 'rgba(245,230,204,0.05)',
               border: '1px solid rgba(245,230,204,0.12)',
               textAlign: 'center',
             }}>
-              <span style={{ fontSize: 22 }}>{f.icon}</span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(245,230,204,0.82)', lineHeight: 1.3 }}>{f.label}</span>
+              <span style={{ fontSize: 18 }}>{f.icon}</span>
+              <span style={{ fontSize: 10.5, fontWeight: 600, color: 'rgba(245,230,204,0.82)', lineHeight: 1.3 }}>{f.label}</span>
             </div>
           ))}
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
           <button
             className="fte-ask-yes"
             onClick={onYes}
             style={{
               background: 'linear-gradient(135deg, #E8943F, #F0B050)',
-              border: 'none', borderRadius: 100, padding: '17px 28px',
-              color: '#1C0900', fontSize: 16, fontWeight: 800,
+              border: 'none', borderRadius: 100, padding: '14px 26px',
+              color: '#1C0900', fontSize: 14.5, fontWeight: 800,
               cursor: 'pointer', width: '100%', fontFamily: SANS,
               boxShadow: '0 6px 28px rgba(232,148,63,0.5)',
               transition: 'transform 0.12s, box-shadow 0.12s',
@@ -359,8 +387,8 @@ function AskTour({ onYes, onNo }) {
             style={{
               background: 'rgba(245,230,204,0.07)',
               border: '1px solid rgba(245,230,204,0.18)',
-              borderRadius: 100, padding: '14px 28px',
-              color: 'rgba(245,230,204,0.7)', fontSize: 14, fontWeight: 500,
+              borderRadius: 100, padding: '12px 26px',
+              color: 'rgba(245,230,204,0.7)', fontSize: 12.5, fontWeight: 500,
               cursor: 'pointer', width: '100%', fontFamily: SANS,
               transition: 'background 0.15s, border-color 0.15s',
             }}

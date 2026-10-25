@@ -2502,6 +2502,24 @@ export default function OccasionDetail(){
     return "Next: Services →";
   };
 
+  // "Make it even better" tips — lives on the "Tendr wishes you" reveal page (step 7),
+  // not the final blueprint, so used from there only.
+  const getPlanTips=()=>{
+    const guestStr=guests===1?"1 guest":`${guests} guests`;
+    const tips=[];
+    if(!budget||Number(budget)<=0) tips.push({t:"Confirm your budget",d:`Run the Price Estimator for ${occasion.name} with ${guestStr} to get real ₹ ranges before you start calling vendors — it stops the first few quotes from anchoring you too high.`,action:()=>openPriceEstimator({occasion:occasion.name,onFinalise:(avg)=>setBudget(String(avg))})});
+    if(vendors.length<2) tips.push({t:"Add more services",d:`Only ${vendors.length} service${vendors.length===1?"":"s"} picked so far — most ${occasion.name} plans need at least catering and decor booked together so timings don't clash.`,action:()=>setStep(3)});
+    if(date){
+      const daysOut=Math.ceil((new Date(date+"T00:00:00")-new Date())/86400000);
+      if(daysOut>=0&&daysOut<14) tips.push({t:"Book soon — date is close",d:`Your event is ${daysOut<=0?"today or has passed":`only ${daysOut} day${daysOut===1?"":"s"} away`} — decorators and photographers get booked out fastest, so confirm those first.`,action:()=>setStep(3)});
+    }
+    if(selectedEntryExperiences.length===0&&!entryExperiencesSkipped) tips.push({t:"Explore entrance ideas",d:"You haven't looked at Entry Experiences yet — a balloon tunnel or themed welcome is an easy way to make the arrival memorable.",action:()=>setStep(4)});
+    if(selectedActivities.length===0&&customActivities.length===0) tips.push({t:"Add an activity",d:"No entertainment or games added yet — even one simple activity keeps guests engaged once the main event winds down.",action:()=>setStep(5)});
+    if(gifts.length===0) tips.push({t:"Pick return gifts",d:"You haven't chosen any gifts or favours yet — these are easy to forget until the week of the event.",action:()=>setStep(6)});
+    if(!city.trim()) tips.push({t:"Add your city",d:"Without a city we can't match you to local vendors or show realistic pricing — add it in the first step.",action:()=>setStep(1)});
+    return tips.slice(0,2);
+  };
+
   const toggleVendor=c=>setVendors(v=>v.includes(c)?v.filter(x=>x!==c):[...v,c]);
   const toggleGift=n=>setGifts(g=>{
     if(g.includes(n)){
@@ -4584,6 +4602,28 @@ export default function OccasionDetail(){
               );
             })()}
 
+            {(()=>{
+              const topTips=getPlanTips();
+              if(!topTips.length) return null;
+              return(
+                <div style={{position:"relative",padding:"16px 18px",borderRadius:18,background:"#fff",border:`1px solid ${gold}25`,marginBottom:20}}>
+                  <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Make it even better</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                    {topTips.map((tip,i)=>(
+                      <button key={i} onClick={tip.action}
+                        style={{display:"flex",alignItems:"flex-start",gap:10,textAlign:"left",background:"none",border:"none",padding:0,cursor:"pointer",fontFamily:font}}>
+                        <span style={{flexShrink:0,width:20,height:20,borderRadius:"50%",background:`${gold}1f`,color:gold,fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",marginTop:1}}>{i+1}</span>
+                        <span>
+                          <div style={{fontSize:12.5,fontWeight:700,color:ink,marginBottom:2}}>{tip.t}</div>
+                          <div style={{fontSize:11.5,color:muted,lineHeight:1.5}}>{tip.d}</div>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
             <div style={{position:"relative",display:"flex",gap:10}}>
               <button onClick={back} style={{flex:1,padding:"14px",borderRadius:14,border:`1.5px solid ${gold}30`,background:"#fff",color:gold,fontFamily:font,fontWeight:700,fontSize:13.5,cursor:"pointer"}}>
                 ← Back
@@ -5037,26 +5077,10 @@ export default function OccasionDetail(){
             )}
             </>); })()}
 
-            {/* F. Recommendations — improvement tips + cross-sell. The summary/conclusion
-                paragraphs that used to live here moved to the "Tendr wishes you" reveal
-                page (step 7) instead, so the event description exists in exactly one place. */}
+            {/* F. Recommendations — cross-sell only. The summary/conclusion paragraphs and
+                the "Make it even better" tips that used to live here both moved to the
+                "Tendr wishes you" reveal page (step 7) instead. */}
             {(()=>{
-              const guestStr=guests===1?"1 guest":`${guests} guests`;
-
-              // ── Make it even better — exactly 2, most relevant first ──
-              const tips=[];
-              if(!budget||Number(budget)<=0) tips.push({t:"Confirm your budget",d:`Run the Price Estimator for ${occasion.name} with ${guestStr} to get real ₹ ranges before you start calling vendors — it stops the first few quotes from anchoring you too high.`,action:()=>openPriceEstimator({occasion:occasion.name,onFinalise:(avg)=>setBudget(String(avg))})});
-              if(vendors.length<2) tips.push({t:"Add more services",d:`Only ${vendors.length} service${vendors.length===1?"":"s"} picked so far — most ${occasion.name} plans need at least catering and decor booked together so timings don't clash.`,action:()=>setStep(3)});
-              if(date){
-                const daysOut=Math.ceil((new Date(date+"T00:00:00")-new Date())/86400000);
-                if(daysOut>=0&&daysOut<14) tips.push({t:"Book soon — date is close",d:`Your event is ${daysOut<=0?"today or has passed":`only ${daysOut} day${daysOut===1?"":"s"} away`} — decorators and photographers get booked out fastest, so confirm those first.`,action:()=>setStep(3)});
-              }
-              if(selectedEntryExperiences.length===0&&!entryExperiencesSkipped) tips.push({t:"Explore entrance ideas",d:"You haven't looked at Entry Experiences yet — a balloon tunnel or themed welcome is an easy way to make the arrival memorable.",action:()=>setStep(4)});
-              if(selectedActivities.length===0&&customActivities.length===0) tips.push({t:"Add an activity",d:"No entertainment or games added yet — even one simple activity keeps guests engaged once the main event winds down.",action:()=>setStep(5)});
-              if(gifts.length===0) tips.push({t:"Pick return gifts",d:"You haven't chosen any gifts or favours yet — these are easy to forget until the week of the event.",action:()=>setStep(6)});
-              if(!city.trim()) tips.push({t:"Add your city",d:"Without a city we can't match you to local vendors or show realistic pricing — add it in the first step.",action:()=>setStep(1)});
-              const topTips=tips.slice(0,2);
-
               // ── Things you can add from Tendr — only what isn't already in this plan ──
               const crossSell=[];
               if(gifts.length===0) crossSell.push({label:"Gift Hampers",icon:"🎁",href:"/gifting"});
@@ -5067,25 +5091,6 @@ export default function OccasionDetail(){
 
               return(
                 <div style={{marginBottom:16,display:"flex",flexDirection:"column",gap:12}}>
-                  {/* Make it even better — 2 points */}
-                  {topTips.length>0&&(
-                    <div style={{padding:"14px 16px",borderRadius:12,background:"rgba(196,122,46,0.04)",border:"1px solid rgba(196,122,46,0.12)"}}>
-                      <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>Make it even better</div>
-                      <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                        {topTips.map((tip,i)=>(
-                          <button key={i} onClick={tip.action}
-                            style={{display:"flex",alignItems:"flex-start",gap:10,textAlign:"left",background:"none",border:"none",padding:0,cursor:"pointer",fontFamily:font}}>
-                            <span style={{flexShrink:0,width:20,height:20,borderRadius:"50%",background:"rgba(196,122,46,0.12)",color:gold,fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",marginTop:1}}>{i+1}</span>
-                            <span>
-                              <div style={{fontSize:12.5,fontWeight:700,color:ink,marginBottom:2}}>{tip.t}</div>
-                              <div style={{fontSize:11.5,color:muted,lineHeight:1.5}}>{tip.d}</div>
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
                   {/* Cross-sell — things you can add from the platform */}
                   <div style={{padding:"14px 16px",borderRadius:12,background:"#fff",border:`1px solid rgba(196,122,46,0.14)`}}>
                     <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:9}}>You can also add, from Tendr</div>
