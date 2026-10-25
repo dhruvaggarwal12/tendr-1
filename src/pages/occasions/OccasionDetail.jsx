@@ -1308,47 +1308,131 @@ function buildBaatKaroMsg(occasion, {guests, date, city, venueType, theme, vendo
    Plan's first page, built from what's actually been selected (never invented).
    Not a timestamped itinerary (that's a separate section later in the plan) —
    this is the emotional arc: arrival → setting → celebration → send-off. ── */
-function buildEventJourney(occasion, {celebrantName="", guests=20, venueType="", city="", theme=null, decorFocusAreas=[], selectedEntryExperiences=[], vendors=[], selectedActivities=[], customActivities=[], gifts=[]}={}) {
+function buildEventJourney(occasion, {celebrantName="", guests=20, venueType="", city="", theme=null, decorFocusAreas=[], customDecor={}, selectedEntryExperiences=[], vendors=[], cateringType="", cakeType="", customCatering={}, selectedActivities=[], customActivities=[], gifts=[]}={}) {
   const who = celebrantName || null;
   const venueClause = venueType ? ` at your ${venueType.toLowerCase()}` : "";
+  const hasPhotographer = vendors.includes("Photographer") || vendors.includes("Videographer");
   const beats = [];
 
-  // 1. Arrival
+  // 1. Arrival — names the actual entry experience and its feel, not just its category
   const entry = selectedEntryExperiences[0] ? getEntryExperienceById(selectedEntryExperiences[0]) : null;
+  const photoClause = hasPhotographer ? ` Your ${vendors.includes("Photographer")&&vendors.includes("Videographer")?"photographer and videographer are":"photographer is"} already there, catching these first reactions.` : "";
   beats.push({
     icon: "🚪", title: "Guests arrive",
     text: entry
-      ? `As guests step in${venueClause}, they're welcomed with ${entry.title.toLowerCase()} — ${(entry.shortDesc||"").split(".")[0].toLowerCase()}.`
-      : `Guests arrive${venueClause}${city?` in ${city}`:""}, stepping straight into the mood of ${who?`${who}'s`:"your"} ${occasion.name.toLowerCase()}.`,
+      ? `As guests step in${venueClause}, they're welcomed with ${entry.title.toLowerCase()} — ${(entry.howItFeels || entry.shortDesc || "").replace(/\.$/,"")}.${photoClause}`
+      : `Guests arrive${venueClause}${city?` in ${city}`:""}, stepping straight into the mood of ${who?`${who}'s`:"your"} ${occasion.name.toLowerCase()}.${photoClause}`,
   });
 
-  // 2. The setting — decor/theme
+  // 2. The setting — names the actual decor items chosen, not just the focus-area category
   const areaNames = decorFocusAreas.map(id=>DECOR_FOCUS_AREAS[id]?.name).filter(Boolean);
+  const decorItems = Object.values(customDecor||{}).flat().filter(Boolean);
   let settingText;
-  if (theme && areaNames.length) settingText = `The space carries a ${theme.name} look, with ${areaNames.slice(0,2).join(" and ").toLowerCase()} styled to match.`;
+  if (decorItems.length) {
+    const itemsStr = decorItems.slice(0,3).join(", ").toLowerCase() + (decorItems.length>3 ? `, and ${decorItems.length-3} more touch${decorItems.length-3===1?"":"es"}` : "");
+    settingText = theme
+      ? `The space carries a ${theme.name} look — ${itemsStr}, styled across ${areaNames.slice(0,2).join(" and ").toLowerCase()||"the venue"}.`
+      : `${areaNames.slice(0,2).join(" and ")||"The venue"} come alive with ${itemsStr}.`;
+  } else if (theme && areaNames.length) settingText = `The space carries a ${theme.name} look, with ${areaNames.slice(0,2).join(" and ").toLowerCase()} styled to match.`;
   else if (theme) settingText = `A ${theme.name} theme runs through the décor, setting the tone the moment guests look around.`;
   else if (areaNames.length) settingText = `${areaNames.slice(0,2).join(" and ")} are styled for the occasion, giving the space its character.`;
   else settingText = `The venue is dressed to suit a ${occasion.name.toLowerCase()} — simple, warm, and ready for guests.`;
   beats.push({ icon: "🎨", title: "The setting", text: settingText });
 
-  // 3. The celebration — food + entertainment + activities
+  // 3. Food — names the actual catering style, cuisine and dishes, not just "a spread"
   const hasCaterer = vendors.includes("Caterer");
-  const entertainers = vendors.filter(v => ["DJ","Live Band","Entertainer","Emcee / Host"].includes(v));
-  const actCount = selectedActivities.length + customActivities.length;
-  let midText;
-  if (hasCaterer && entertainers.length) midText = `Food keeps flowing while ${entertainers.join(" and ").toLowerCase()} keeps the energy up`;
-  else if (hasCaterer) midText = `Guests settle in for a spread crafted for ${who?`${who}'s`:"your"} ${occasion.name.toLowerCase()}`;
-  else if (entertainers.length) midText = `${entertainers.join(" and ")} keeps the room alive through the celebration`;
-  else midText = `The celebration settles into its own easy rhythm`;
-  if (actCount > 0) midText += `, with ${actCount} ${actCount===1?"activity":"activities"} woven in to keep guests engaged`;
-  midText += ".";
-  beats.push({ icon: "🎉", title: "The celebration", text: midText });
+  let foodText = null;
+  if (hasCaterer) {
+    const dishList = Object.values(customCatering?.dishes || {}).flat().filter(Boolean);
+    if (cateringType && dishList.length) {
+      foodText = `${cateringType}${customCatering.cuisine ? ` — ${customCatering.cuisine} flavours` : ""} is served, with ${dishList.slice(0,3).join(", ").toLowerCase()}${dishList.length>3?" among the highlights":""}.`;
+    } else if (cateringType) {
+      foodText = `${cateringType}${customCatering.cuisine ? ` in a ${customCatering.cuisine} spread` : ""} keeps everyone fed through the celebration.`;
+    } else {
+      foodText = `Guests settle in for a spread crafted for ${who?`${who}'s`:"your"} ${occasion.name.toLowerCase()}.`;
+    }
+    if (cakeType) foodText += ` ${cakeType} rounds things off.`;
+  }
 
-  // 4. Send-off — gifts
+  // 4. Entertainment — names the actual activities, not just a count
+  const entertainers = vendors.filter(v => ["DJ","Live Band","Band","Entertainer","Emcee / Host","Anchor"].includes(v));
+  const allActivities = [...selectedActivities, ...customActivities].filter(Boolean);
+  let funText = null;
+  if (entertainers.length || allActivities.length) {
+    const parts = [];
+    if (entertainers.length) parts.push(`${entertainers.join(" and ")} keeping the energy up`);
+    if (allActivities.length) parts.push(`${allActivities.slice(0,3).join(", ")}${allActivities.length>3?` and ${allActivities.length-3} more`:""} woven through the evening`);
+    funText = parts.join(", with ") + ".";
+  }
+
+  beats.push({ icon: "🎉", title: "The celebration", text: [foodText, funText].filter(Boolean).join(" ") || "The celebration settles into its own easy rhythm." });
+
+  // 5. Send-off — names the actual gifts, not just a count
   const giftText = gifts.length
-    ? `Before heading home, guests leave with ${gifts.length>1?`${gifts.length} thoughtful favours`:String(gifts[0]).toLowerCase()} to remember the day by.`
+    ? `Before heading home, guests leave with ${gifts.length>1?`${gifts.slice(0,2).join(" and ").toLowerCase()}${gifts.length>2?`, among ${gifts.length} favours chosen`:""}`:String(gifts[0]).toLowerCase()} to remember the day by.`
     : `As the evening winds down, guests head home with the day's memories — nothing more needed.`;
   beats.push({ icon: "🎁", title: "The send-off", text: giftText });
+
+  return beats;
+}
+
+// Mirrors buildEventJourney's shape (icon/title/text beats) but narrates the LEAD-UP instead
+// of the day itself — what's still open, what Tendr does vs what the customer still decides,
+// and how the final week actually goes. Built from the same timeline/gap data already used
+// elsewhere (the "Make it even better" tips, buildTimeline's phases) so it stays consistent
+// with the rest of the page instead of inventing a second source of truth.
+function buildPreparationJourney(occasion, {timeline=null, vendors=[], date="", budget=null, city="", selectedEntryExperiences=[], entryExperiencesSkipped=false, selectedActivities=[], customActivities=[], gifts=[]}={}) {
+  const beats = [];
+
+  // 1. What's still open — same gap conditions as the Recommendations tips, as prose
+  const gaps = [];
+  if (!date) gaps.push("a date");
+  if (!budget || Number(budget)<=0) gaps.push("a budget");
+  if (!city.trim()) gaps.push("your city");
+  if (vendors.length < 2) gaps.push("your core vendors — decor & catering");
+  if (selectedEntryExperiences.length===0 && !entryExperiencesSkipped) gaps.push("an entry experience");
+  if (selectedActivities.length===0 && customActivities.length===0) gaps.push("entertainment");
+  if (gifts.length===0) gaps.push("return gifts");
+  beats.push({
+    icon: "📝", title: "Right now",
+    text: gaps.length
+      ? `A few things are still open — ${gaps.slice(0,3).join(", ")}${gaps.length>3?`, and ${gaps.length-3} more`:""}. Nothing is locked in until you confirm it, so there's no rush, but the earlier these are set, the more choice you'll have.`
+      : `Everything that matters is already set — date, budget, vendors, and the extras. From here it's just confirmations and the countdown.`,
+  });
+
+  // 2. What Tendr handles — reassurance, grounded in the vendors actually chosen
+  beats.push({
+    icon: "🤝", title: "What we handle",
+    text: vendors.length>0
+      ? `Once you move ahead, your Tendr coordinator confirms availability with ${vendors.slice(0,3).join(", ")}${vendors.length>3?` and ${vendors.length-3} more`:""}, chases every confirmation in writing, and steps in with an alternative if anyone falls through — you're never left chasing a vendor yourself.`
+      : `Once vendors are picked, your Tendr coordinator takes over confirming availability, chasing written confirmations, and swapping in an alternative if anyone falls through.`,
+  });
+
+  // 3. What's still on the customer — the genuinely personal calls, by category
+  const onYouParts = [];
+  if (vendors.includes("Caterer")) onYouParts.push("final menu & headcount");
+  if (vendors.includes("Decorator")) onYouParts.push("décor colour/style sign-off");
+  if (gifts.length>0) onYouParts.push("gift quantities");
+  if (!onYouParts.length) onYouParts.push("final headcount and any last preferences");
+  beats.push({
+    icon: "✅", title: "What's on you",
+    text: `The big decisions are the fun part — ${onYouParts.join(", ")}. Everything else — scheduling, follow-ups, paperwork — is ours to manage.`,
+  });
+
+  // 4. The final stretch — the same buildTimeline() phases, written as a walkthrough instead of bullets
+  if (timeline?.phases?.length) {
+    const weekOut = timeline.phases.find(p => p.when === "1 week out");
+    const dayBefore = timeline.phases.find(p => p.when === "Day before");
+    const parts = [];
+    if (weekOut) parts.push(`by ${weekOut.date}, ${weekOut.tasks.map(t=>t.toLowerCase()).join(", ")}`);
+    if (dayBefore) parts.push(`the day before (${dayBefore.date}), it's ${dayBefore.tasks.map(t=>t.toLowerCase()).join(", ")}`);
+    if (parts.length) beats.push({ icon: "⏳", title: "The final stretch", text: parts.join("; then ") + "." });
+  } else {
+    beats.push({ icon: "⏳", title: "The final stretch", text: "Once a date is set, this fills in with an exact week-by-week countdown — right now there's nothing to schedule against yet." });
+  }
+
+  // 5. Bridge to the day itself — self-contained, doesn't assume page position
+  beats.push({ icon: "🎊", title: "Then, the day itself", text: "Every open item above gets closed out well before this — so on the day, nothing's being figured out live, it's simply happening." });
 
   return beats;
 }
@@ -4432,7 +4516,7 @@ export default function OccasionDetail(){
             <React.Fragment key="plan-journey">
             {/* "Your event, start to end" — narrative walkthrough, built from real selections */}
             {(()=>{
-              const journey=buildEventJourney(occasion,{celebrantName,guests,venueType,city,theme,decorFocusAreas,selectedEntryExperiences,vendors,selectedActivities,customActivities,gifts});
+              const journey=buildEventJourney(occasion,{celebrantName,guests,venueType,city,theme,decorFocusAreas,customDecor,selectedEntryExperiences,vendors,cateringType,cakeType,customCatering,selectedActivities,customActivities,gifts});
               return(
                 <div style={{marginBottom:16}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
@@ -4444,6 +4528,36 @@ export default function OccasionDetail(){
                     <div aria-hidden style={{position:"absolute",left:13,top:6,bottom:6,width:1.5,background:`linear-gradient(180deg,${gold},rgba(196,122,46,0.1))`}}/>
                     {journey.map((beat,i)=>(
                       <div key={i} style={{position:"relative",marginBottom:i<journey.length-1?18:0}}>
+                        <div aria-hidden style={{position:"absolute",left:-30,top:0,width:26,height:26,borderRadius:"50%",background:"#fff",border:`1.5px solid ${gold}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>{beat.icon}</div>
+                        <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:3}}>{beat.title}</div>
+                        <div style={{fontSize:13,color:ink,lineHeight:1.6}}>{beat.text}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+            </React.Fragment>
+            );
+
+            const prepSlide=(
+            <React.Fragment key="plan-prep">
+            {/* "How your preparation will go" — the lead-up walkthrough companion to the
+                day-of journey above: what's open, what we do, what's on the customer, and
+                how the final week actually unfolds. */}
+            {(()=>{
+              const prep=buildPreparationJourney(occasion,{timeline,vendors,date,budget,city,selectedEntryExperiences,entryExperiencesSkipped,selectedActivities,customActivities,gifts});
+              return(
+                <div style={{marginBottom:16}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+                    <span style={{fontSize:16}}>✦</span>
+                    <span style={{fontFamily:serif,fontSize:17,color:ink,fontWeight:400}}>How your preparation will go</span>
+                  </div>
+                  <div style={{fontSize:11.5,color:muted,marginBottom:14,lineHeight:1.5}}>And here's the lead-up to it — what's still open, what we take off your plate, and what's left for you.</div>
+                  <div style={{position:"relative",paddingLeft:30}}>
+                    <div aria-hidden style={{position:"absolute",left:13,top:6,bottom:6,width:1.5,background:`linear-gradient(180deg,${gold},rgba(196,122,46,0.1))`}}/>
+                    {prep.map((beat,i)=>(
+                      <div key={i} style={{position:"relative",marginBottom:i<prep.length-1?18:0}}>
                         <div aria-hidden style={{position:"absolute",left:-30,top:0,width:26,height:26,borderRadius:"50%",background:"#fff",border:`1.5px solid ${gold}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>{beat.icon}</div>
                         <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:3}}>{beat.title}</div>
                         <div style={{fontSize:13,color:ink,lineHeight:1.6}}>{beat.text}</div>
@@ -4615,6 +4729,7 @@ export default function OccasionDetail(){
             // show (no budget split yet, no itinerary yet) never appears as a blank page.
             const storyItems=[
               {label:"Your Event",content:journeySlide,show:true},
+              {label:"Preparation",content:prepSlide,show:true},
               {label:"Overview",content:overviewSlide,show:true},
               {label:"Budget",content:budgetSlide,show:!!budgetSplit},
               {label:"What You've Planned",content:selectedItemsSlide,show:true},
