@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate } from "react-router-dom";
 import { ENTRY_EXPERIENCES, getEntryExperienceById, entryEmoji } from "../data/entryExperiences";
 
 const font = "'Outfit', sans-serif";
@@ -124,8 +123,6 @@ function ListSection({ title, items, dash }) {
 }
 
 function DetailDrawer({ idea, selected, vendors, onToggleVendor, onToggleSelect, onClose, onOpenRelated, occAccent }) {
-  const navigate = useNavigate();
-  const vendorUrl = (cat) => `/listings?${new URLSearchParams({ serviceType: cat }).toString()}`;
 
   // Portaled straight to document.body — rendered inline inside OccasionDetail's per-step
   // content, this "fixed" overlay could end up contained by an ancestor instead of the real
@@ -191,26 +188,6 @@ function DetailDrawer({ idea, selected, vendors, onToggleVendor, onToggleSelect,
           </div>
         )}
 
-        <ListSection title="Safety notes" items={idea.safetyNotes} dash />
-
-        {idea.pricingComponents?.length > 0 && (
-          <div style={{ marginBottom: 18 }}>
-            <div style={{ fontSize: 10, fontWeight: 800, color: "rgba(196,122,46,0.6)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 7 }}>Estimated pricing</div>
-            <div style={{ borderRadius: 12, border: `1px solid ${border}`, overflow: "hidden" }}>
-              {idea.pricingComponents.map((p, i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "9px 12px", fontSize: 12.5, borderTop: i > 0 ? `1px solid ${border}` : "none", background: "#fff" }}>
-                  <span style={{ color: ink }}>{p.label}</span>
-                  <span style={{ color: muted, fontWeight: 600 }}>{p.range}</span>
-                </div>
-              ))}
-              <div style={{ display: "flex", justifyContent: "space-between", padding: "9px 12px", fontSize: 12.5, borderTop: `1px solid ${border}`, background: "rgba(196,122,46,0.04)" }}>
-                <span style={{ color: ink, fontWeight: 700 }}>Typical total</span>
-                <span style={{ color: occAccent, fontWeight: 800 }}>{idea.priceDisplay}</span>
-              </div>
-            </div>
-          </div>
-        )}
-
         {idea.relatedConcepts?.length > 0 && (
           <div style={{ marginBottom: 4 }}>
             <div style={{ fontSize: 10, fontWeight: 800, color: "rgba(196,122,46,0.6)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 7 }}>Similar ideas</div>
@@ -237,14 +214,6 @@ function DetailDrawer({ idea, selected, vendors, onToggleVendor, onToggleSelect,
           >
             {selected ? "✓ Added to My Plan" : "Add to My Plan"}
           </button>
-          {idea.requiredVendorCategories?.[0] && (
-            <button
-              onClick={() => navigate(vendorUrl(idea.requiredVendorCategories[0]))}
-              style={{ flex: 1, padding: "13px", borderRadius: 12, border: `1.5px solid ${border}`, background: "#fff", color: ink, fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: font }}
-            >
-              Find Vendors
-            </button>
-          )}
         </div>
       </div>
     </div>,
