@@ -1437,6 +1437,49 @@ function buildPreparationJourney(occasion, {timeline=null, vendors=[], date="", 
   return beats;
 }
 
+// Shared by the "Tendr wishes you" reveal page (step 7) and Section F's Recommendations
+// block further down — one summary/conclusion generator so both read the same, consistent
+// description of the event instead of two independently-maintained paragraphs.
+function buildEventSummary(occasion, {celebrantName="", guests=20, date="", city="", venueType="", theme=null, ageGroups=[], vendors=[], selectedActivities=[], customActivities=[], gifts=[], budget=null}={}) {
+  const parts=[];
+  const who=celebrantName?`${celebrantName}'s ${occasion.name}`:`a ${occasion.name}`;
+  const guestStr=guests===1?"1 guest":`${guests} guests`;
+  const dateStr=date?new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"long"}):null;
+  const locationStr=[city,venueType].filter(Boolean).join(", ");
+  parts.push(`You're planning ${who} for ${guestStr}${dateStr?` on ${dateStr}`:""}${locationStr?` at ${locationStr}`:""}.`);
+  if(theme) parts.push(`The ${theme.name} theme runs through the décor and gift suggestions.`);
+  if(ageGroups.length>0) parts.push(`Planned for ${ageGroups.join(" & ")} guests.`);
+  if(vendors.length>0){
+    const vList=vendors.slice(0,4).join(", ")+(vendors.length>4?` and ${vendors.length-4} more`:"");
+    parts.push(`Services covered: ${vList}.`);
+  }
+  if(selectedActivities.length>0||customActivities.length>0){
+    const actCount=selectedActivities.length+customActivities.length;
+    parts.push(`${actCount} entertainment & activit${actCount===1?"y":"ies"} added.`);
+  }
+  if(budget&&Number(budget)>0) parts.push(`Total budget: ₹${Number(budget).toLocaleString("en-IN")}.`);
+
+  const pieces=[vendors.length>0,selectedActivities.length>0||customActivities.length>0,gifts.length>0,!!date,!!city.trim(),budget&&Number(budget)>0,!!theme];
+  const doneCount=pieces.filter(Boolean).length;
+  const completeness=doneCount/pieces.length;
+
+  const lo=occasion.budgetMin||5000, hi=occasion.budgetMax||200000;
+  const perGuest=budget&&Number(guests)>0?Number(budget)/Number(guests):null;
+  let tone;
+  if(completeness>=0.85) tone=`This plan is in strong shape — ${who} has most of what it needs locked in, so the lead-up should feel calm rather than chaotic.`;
+  else if(completeness>=0.5) tone=`This plan has a solid foundation, but a few pieces are still open — filling those in now will save you last-minute scrambling closer to the date.`;
+  else tone=`This is a good starting point, but there's real work left before ${who.includes("'s")?who:"this event"} is booking-ready — treat today's plan as a draft to build on, not the final version.`;
+  let budgetNote="";
+  if(budget&&Number(budget)>0){
+    if(perGuest&&perGuest<300) budgetNote=` At roughly ₹${Math.round(perGuest)} per guest, keep an eye on catering — it's the category most likely to go over.`;
+    else if(Number(budget)<lo) budgetNote=` Your budget is a little below what similar ${occasion.name} events in Delhi NCR typically run (₹${fmtNum(lo)}–₹${fmtNum(hi)}), so you may need to trim scope somewhere.`;
+    else if(Number(budget)>hi) budgetNote=` Your budget has healthy room in it compared to a typical ${occasion.name} (₹${fmtNum(lo)}–₹${fmtNum(hi)}) — that gives you space to upgrade decor or add an activity.`;
+  }
+  const conclusion=`${tone}${budgetNote}`;
+
+  return {summary:parts.join(" "),conclusion};
+}
+
 /* ── build plain-text plan for in-app chat ── */
 function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors, vendorPackages, budget, ageGroups=[], selectedActivities=[], customActivities=[], customCatering={}, customDecor={}, celebrantName="", gifts=[], giftQuantities={}, selectedEntryExperiences=[]}) {
   const vLines = vendors.filter(v => ALL_VENDORS.includes(v)).map(v => {
@@ -1802,7 +1845,7 @@ export default function OccasionDetail(){
   const [storyIdx,setStoryIdx]=useState(0);
   const [storyDirection,setStoryDirection]=useState(1);
   const goToStory=(n)=>{setStoryDirection(n>storyIdx?1:-1);setStoryIdx(n);};
-  useEffect(()=>{ if(step===7){ setStoryIdx(0); setPlanStoryOpen(true); } },[step]);
+  useEffect(()=>{ if(step===8){ setStoryIdx(0); setPlanStoryOpen(true); } },[step]);
   const [planExportMode,setPlanExportMode]=useState(false); // true only while generating a PDF — briefly shows all 3 plan pages stacked so the capture is complete
   // Expands the flip-pager to all 3 pages (normal document flow, so html2canvas captures
   // it correctly), waits for layout, runs fn, then restores the paginated view.
@@ -2409,7 +2452,7 @@ export default function OccasionDetail(){
         }
       }catch{}
     }
-    setStep(s=>Math.min(s+1,7));
+    setStep(s=>Math.min(s+1,8));
   };
   const back=()=>{
     if(step===1){navigate(-1);return;}
@@ -2496,8 +2539,9 @@ export default function OccasionDetail(){
         </div>
       )}
 
-      {/* sticky header — hidden on the final Plan view (step 7), which is its own standalone page */}
-      {step!==7&&(
+      {/* sticky header — hidden on the "Tendr wishes you" reveal (step 7) and the final Plan
+          view (step 8), both of which are standalone pages with their own navigation */}
+      {step!==7&&step!==8&&(
       <div style={{position:"sticky",top:0,zIndex:100,background:"#fff",borderBottom:"1px solid rgba(0,0,0,0.07)"}}>
         <HamburgerNav active="Occasions" hideTopBar/>
         <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 20px 6px"}}>
@@ -4455,8 +4499,55 @@ export default function OccasionDetail(){
           </div>
         )}
 
-        {/* ══ STEP 7: blueprint ══ */}
+        {/* ══ STEP 7: "Tendr wishes you" — decorative reveal between Gifts and the full plan ══ */}
         {step===7&&(
+          <div className="os" style={{position:"relative",minHeight:"calc(100dvh - 180px)",display:"flex",flexDirection:"column",justifyContent:"center",padding:"10px 2px 20px",overflow:"hidden"}}>
+            {/* decorative glow + sparkles — this page has no sticky header, so it needs its own back control */}
+            <div aria-hidden style={{position:"absolute",top:"-14%",left:"50%",transform:"translateX(-50%)",width:380,height:380,borderRadius:"50%",background:`radial-gradient(circle,${gold}1f 0%,transparent 70%)`,pointerEvents:"none"}}/>
+            {["8%","85%","15%","78%"].map((left,i)=>(
+              <span key={i} aria-hidden style={{position:"absolute",top:`${8+i*20}%`,left,fontSize:14+((i%2)*6),opacity:0.3,transform:`rotate(${i%2?-12:14}deg)`,pointerEvents:"none"}}>✦</span>
+            ))}
+
+            <button onClick={back} style={{position:"relative",display:"flex",alignItems:"center",gap:5,marginBottom:18,padding:"5px 10px 5px 6px",borderRadius:100,border:"none",background:`${gold}10`,color:gold,fontFamily:font,fontWeight:700,fontSize:11.5,cursor:"pointer",alignSelf:"flex-start"}}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              Back
+            </button>
+
+            <div style={{position:"relative",textAlign:"center",marginBottom:22}}>
+              <div style={{fontSize:30,marginBottom:10}}>✨</div>
+              <div style={{fontSize:10.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.2em",marginBottom:8}}>Tendr wishes you</div>
+              <div style={{fontFamily:serif,fontSize:"clamp(1.6rem,5vw,2.3rem)",fontWeight:400,color:ink,lineHeight:1.25,fontStyle:"italic"}}>
+                A truly wonderful {celebrantName?`${celebrantName}'s `:""}{occasion.name.toLowerCase()}
+              </div>
+            </div>
+
+            {(()=>{
+              const {summary,conclusion}=buildEventSummary(occasion,{celebrantName,guests,date,city,venueType,theme,ageGroups,vendors,selectedActivities,customActivities,gifts,budget});
+              return(
+                <div style={{position:"relative",background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",border:`1.5px solid ${gold}30`,borderRadius:22,padding:"22px 20px",marginBottom:20,boxShadow:"0 10px 32px rgba(0,0,0,0.06)"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                    <span style={{fontSize:17}}>🎙️</span>
+                    <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.12em"}}>Here's how your event will go</span>
+                  </div>
+                  <p style={{fontSize:14,color:ink,lineHeight:1.75,margin:"0 0 14px"}}>{summary}</p>
+                  <p style={{fontSize:14,color:ink,lineHeight:1.75,margin:0,fontStyle:"italic"}}>{conclusion}</p>
+                </div>
+              );
+            })()}
+
+            <div style={{position:"relative",display:"flex",gap:10}}>
+              <button onClick={back} style={{flex:1,padding:"14px",borderRadius:14,border:`1.5px solid ${gold}30`,background:"#fff",color:gold,fontFamily:font,fontWeight:700,fontSize:13.5,cursor:"pointer"}}>
+                ← Back
+              </button>
+              <button onClick={next} style={{flex:2,padding:"14px",borderRadius:14,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontFamily:font,fontWeight:800,fontSize:13.5,cursor:"pointer",boxShadow:`0 6px 20px rgba(196,122,46,0.35)`}}>
+                See My Full Plan →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ══ STEP 8: blueprint ══ */}
+        {step===8&&(
           <div className="os">
             {/* Standalone plan view has no sticky header — this is its only way back */}
             <button onClick={back} style={{display:"flex",alignItems:"center",gap:5,marginBottom:10,padding:"5px 10px 5px 6px",borderRadius:100,border:"none",background:`${occAccent}10`,color:occAccent,fontFamily:font,fontWeight:700,fontSize:11.5,cursor:"pointer"}}>
@@ -4903,50 +4994,15 @@ export default function OccasionDetail(){
 
             {/* F. Recommendations — paragraph summary + conclusion + improvement tips + cross-sell */}
             {(()=>{
-              const parts=[];
-              const who=celebrantName?`${celebrantName}'s ${occasion.name}`:`a ${occasion.name}`;
               const guestStr=guests===1?"1 guest":`${guests} guests`;
-              const dateStr=date?new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"long"}):null;
-              const locationStr=[city,venueType].filter(Boolean).join(", ");
-              parts.push(`You're planning ${who} for ${guestStr}${dateStr?` on ${dateStr}`:""}${locationStr?` at ${locationStr}`:""}.`);
-              if(theme) parts.push(`The ${theme.name} theme runs through the décor and gift suggestions.`);
-              if(ageGroups.length>0) parts.push(`Planned for ${ageGroups.join(" & ")} guests.`);
-              if(vendors.length>0){
-                const vList=vendors.slice(0,4).join(", ")+(vendors.length>4?` and ${vendors.length-4} more`:"");
-                parts.push(`Services covered: ${vList}.`);
-              }
-              if(selectedActivities.length>0||customActivities.length>0){
-                const actCount=selectedActivities.length+customActivities.length;
-                parts.push(`${actCount} entertainment & activit${actCount===1?"y":"ies"} added.`);
-              }
-              // Itinerary reference
+              // Same generator the "Tendr wishes you" reveal page (step 7) uses — kept in
+              // sync rather than maintained twice. Only the itinerary sentence below is
+              // specific to this page, since the itinerary section only appears here.
+              const {summary:baseSummary,conclusion}=buildEventSummary(occasion,{celebrantName,guests,date,city,venueType,theme,ageGroups,vendors,selectedActivities,customActivities,gifts,budget});
               const itinerary=buildItinerary(occasion,{guests,vendors,selectedActivities,venueType,ageGroups});
-              if(itinerary.length>0){
-                const firstSlot=itinerary[0];
-                const lastSlot=itinerary[itinerary.length-1];
-                parts.push(`Your event runs from ${firstSlot.time} to ${lastSlot.time} — a ${itinerary.length}-slot itinerary is ready below.`);
-              }
-              if(budget&&Number(budget)>0) parts.push(`Total budget: ₹${Number(budget).toLocaleString("en-IN")}.`);
-
-              // ── Completeness score — drives the conclusion's tone ──
-              const pieces=[vendors.length>0,selectedActivities.length>0||customActivities.length>0,gifts.length>0,!!date,!!city.trim(),budget&&Number(budget)>0,!!theme];
-              const doneCount=pieces.filter(Boolean).length;
-              const completeness=doneCount/pieces.length;
-
-              // ── Conclusion paragraph — qualitative read on how the event will go ──
-              const lo=occasion.budgetMin||5000, hi=occasion.budgetMax||200000;
-              const perGuest=budget&&Number(guests)>0?Number(budget)/Number(guests):null;
-              let tone;
-              if(completeness>=0.85) tone=`This plan is in strong shape — ${who} has most of what it needs locked in, so the lead-up should feel calm rather than chaotic.`;
-              else if(completeness>=0.5) tone=`This plan has a solid foundation, but a few pieces are still open — filling those in now will save you last-minute scrambling closer to the date.`;
-              else tone=`This is a good starting point, but there's real work left before ${who.includes("'s")?who:"this event"} is booking-ready — treat today's plan as a draft to build on, not the final version.`;
-              let budgetNote="";
-              if(budget&&Number(budget)>0){
-                if(perGuest&&perGuest<300) budgetNote=` At roughly ₹${Math.round(perGuest)} per guest, keep an eye on catering — it's the category most likely to go over.`;
-                else if(Number(budget)<lo) budgetNote=` Your budget is a little below what similar ${occasion.name} events in Delhi NCR typically run (₹${fmtNum(lo)}–₹${fmtNum(hi)}), so you may need to trim scope somewhere.`;
-                else if(Number(budget)>hi) budgetNote=` Your budget has healthy room in it compared to a typical ${occasion.name} (₹${fmtNum(lo)}–₹${fmtNum(hi)}) — that gives you space to upgrade decor or add an activity.`;
-              }
-              const conclusion=`${tone}${budgetNote}`;
+              const summary=itinerary.length>0
+                ? `${baseSummary} Your event runs from ${itinerary[0].time} to ${itinerary[itinerary.length-1].time} — a ${itinerary.length}-slot itinerary is ready below.`
+                : baseSummary;
 
               // ── Make it even better — exactly 2, most relevant first ──
               const tips=[];
@@ -4975,7 +5031,7 @@ export default function OccasionDetail(){
                   {/* Summary paragraph */}
                   <div style={{padding:"14px 16px",borderRadius:12,background:"rgba(196,122,46,0.04)",border:"1px solid rgba(196,122,46,0.12)"}}>
                     <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>Summary</div>
-                    <p style={{fontSize:13,color:muted,lineHeight:1.7,margin:0}}>{parts.join(" ")}</p>
+                    <p style={{fontSize:13,color:muted,lineHeight:1.7,margin:0}}>{summary}</p>
                   </div>
 
                   {/* Conclusion */}
@@ -5054,8 +5110,9 @@ export default function OccasionDetail(){
         )}
       </div>
 
-      {/* bottom CTA — flex footer, always visible */}
-      {step>0&&(
+      {/* bottom CTA — flex footer, always visible except step 7 (the "Tendr wishes you"
+          reveal page), which has its own embedded Back/See Plan buttons */}
+      {step>0&&step!==7&&(
         <div className="od-step-footer" style={{flexShrink:0,background:"#fff",borderTop:"1px solid rgba(0,0,0,0.07)",padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
           <div style={{maxWidth:680,margin:"0 auto",display:"flex",gap:10}}>
             {step>0&&<button onClick={back} style={btnGhost}>← Back</button>}
@@ -5066,10 +5123,10 @@ export default function OccasionDetail(){
                 {step===3&&(vendors.length>0?"Next: Grand Entrance →":"Skip →")}
                 {step===4&&(selectedEntryExperiences.length>0?"Next: Entertainment →":"Skip — explore entertainment →")}
                 {step===5&&(selectedActivities.length>0?"Next: Gifts →":"Skip — pick gifts →")}
-                {step===6&&(gifts.length>0?"See my plan →":"Skip — see plan →")}
+                {step===6&&(gifts.length>0?"Continue →":"Skip — continue →")}
               </button>
             )}
-            {step===7&&(
+            {step===8&&(
               <button onClick={async()=>{
                 if(token){
                   const planText = buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,celebrantName,gifts,giftQuantities,selectedEntryExperiences});
