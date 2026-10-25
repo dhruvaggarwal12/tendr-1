@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -1709,10 +1710,15 @@ export default function OccasionDetail(){
   const [venuePhotoGateSeen,setVenuePhotoGateSeen]=useState(false); // true once the pre-Plan upload gate has been shown+dismissed/skipped
   const [planSectionsOpen,setPlanSectionsOpen]=useState({itinerary:true,timeline:true,checklist:true,equipment:true}); // Final Plan accordions — default open
   const togglePlanSection=(key)=>setPlanSectionsOpen(s=>({...s,[key]:!s[key]}));
-  const [planPage,setPlanPage]=useState(0); // 0,1,2 — which of the 3 flippable Final Plan pages is showing
-  const [planDirection,setPlanDirection]=useState(1); // animation direction for the page flip
-  const PLAN_PAGE_LABELS=["Your Event","What You've Planned","Get Ready"];
-  const goToPlanPage=(n)=>{setPlanDirection(n>planPage?1:-1);setPlanPage(n);};
+  // Full-screen "story" walkthrough of the plan — shown first whenever step 7 is reached,
+  // no header/tabs/bottom-nav visible underneath (portaled above everything). Timeline/
+  // Checklist/Equipment live in the normal page below instead of in the story, since
+  // they're ongoing tools rather than "the plan" itself.
+  const [planStoryOpen,setPlanStoryOpen]=useState(false);
+  const [storyIdx,setStoryIdx]=useState(0);
+  const [storyDirection,setStoryDirection]=useState(1);
+  const goToStory=(n)=>{setStoryDirection(n>storyIdx?1:-1);setStoryIdx(n);};
+  useEffect(()=>{ if(step===7){ setStoryIdx(0); setPlanStoryOpen(true); } },[step]);
   const [planExportMode,setPlanExportMode]=useState(false); // true only while generating a PDF — briefly shows all 3 plan pages stacked so the capture is complete
   // Expands the flip-pager to all 3 pages (normal document flow, so html2canvas captures
   // it correctly), waits for layout, runs fn, then restores the paginated view.
@@ -4414,13 +4420,16 @@ export default function OccasionDetail(){
               </div>
             )}
 
-            {/* Final Plan content, grouped into 3 "pages" for the flip view below —
-                page 0: A. Overview + B. Budget · page 1: C. Selected items + D. Itinerary ·
-                page 2: E. Prep timeline + Checklist + Equipment. Defined once here as an
-                array so the on-screen paginated view and the off-screen full-content PDF
-                capture (further below) both render the exact same JSX, never duplicated. */}
-            {(()=>{ const planSections=[
-            <React.Fragment key="plan-p0">
+            {/* Final Plan content. The "story" (Journey, Overview, Budget, Selected items,
+                Itinerary) is five short full-screen slides shown first in an overlay with
+                no header/tabs/bottom-nav — see planStoryOpen below. Timeline/Checklist/
+                Equipment are ongoing tools, not "the plan" itself, so they render normally
+                on the page underneath instead of being part of the story. All eight pieces
+                are still assembled into one planSections array for the PDF/share-to-chat
+                capture further below, so that output stays exactly as complete as before. */}
+            {(()=>{
+            const journeySlide=(
+            <React.Fragment key="plan-journey">
             {/* "Your event, start to end" — narrative walkthrough, built from real selections */}
             {(()=>{
               const journey=buildEventJourney(occasion,{celebrantName,guests,venueType,city,theme,decorFocusAreas,selectedEntryExperiences,vendors,selectedActivities,customActivities,gifts});
@@ -4444,7 +4453,11 @@ export default function OccasionDetail(){
                 </div>
               );
             })()}
+            </React.Fragment>
+            );
 
+            const overviewSlide=(
+            <React.Fragment key="plan-overview">
             {/* plan overview card */}
             <div ref={cardRef} style={{background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",border:`1.5px solid rgba(196,122,46,0.2)`,borderRadius:20,overflow:"hidden",marginBottom:12}}>
               <div style={{background:`linear-gradient(135deg,${gold},${goldLt})`,padding:"18px 20px 16px",position:"relative",overflow:"hidden"}}>
@@ -4480,7 +4493,11 @@ export default function OccasionDetail(){
                 </div>
               </div>
             </div>
+            </React.Fragment>
+            );
 
+            const budgetSlide=(
+            <React.Fragment key="plan-budget">
             {/* budget split — centrepiece */}
             {budgetSplit&&(
               <div style={{marginBottom:20,padding:"18px 18px 16px",borderRadius:16,background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",border:`1.5px solid rgba(196,122,46,0.18)`}}>
@@ -4530,15 +4547,24 @@ export default function OccasionDetail(){
                 </div>
               </div>
             )}
+            </React.Fragment>
+            );
 
-            </React.Fragment>,
-            <React.Fragment key="plan-p1">
+            const selectedItemsSlide=(
+            <React.Fragment key="plan-selected">
             {/* C. Selected services & experiences */}
             {renderSelectedItemsSection()}
+            </React.Fragment>
+            );
 
+            // Hoisted so both the slide content below and the emptiness check that decides
+            // whether "Itinerary" even appears in the story can share one computation.
+            const storyItinerary=buildItinerary(occasion,{guests,vendors,selectedActivities,venueType,ageGroups});
+            const itinerarySlide=(
+            <React.Fragment key="plan-itinerary">
             {/* event itinerary — hero of the plan */}
             {(()=>{
-              const itinerary=buildItinerary(occasion,{guests,vendors,selectedActivities,venueType,ageGroups});
+              const itinerary=storyItinerary;
               if(!itinerary.length) return null;
               const open=planSectionsOpen.itinerary;
               return(
@@ -4582,9 +4608,22 @@ export default function OccasionDetail(){
                 </div>
               );
             })()}
+            </React.Fragment>
+            );
 
-            </React.Fragment>,
-            <React.Fragment key="plan-p2">
+            // Paired with their labels and filtered together so a slide with nothing to
+            // show (no budget split yet, no itinerary yet) never appears as a blank page.
+            const storyItems=[
+              {label:"Your Event",content:journeySlide,show:true},
+              {label:"Overview",content:overviewSlide,show:true},
+              {label:"Budget",content:budgetSlide,show:!!budgetSplit},
+              {label:"What You've Planned",content:selectedItemsSlide,show:true},
+              {label:"Itinerary",content:itinerarySlide,show:storyItinerary.length>0},
+            ].filter(s=>s.show);
+            const storySlides=storyItems.map(s=>s.content);
+
+            const timelineSection=(
+            <React.Fragment key="plan-timeline">
             {/* timeline — booking countdown */}
             {timeline&&(()=>{
               const open=planSectionsOpen.timeline;
@@ -4612,7 +4651,11 @@ export default function OccasionDetail(){
               </div>
               );
             })()}
+            </React.Fragment>
+            );
 
+            const checklistSection=(
+            <React.Fragment key="plan-checklist">
             {/* checklist */}
             <div style={{marginBottom:20}}>
               <div onClick={()=>togglePlanSection("checklist")} style={{display:"flex",alignItems:"center",gap:8,marginBottom:10,cursor:"pointer"}}>
@@ -4641,7 +4684,11 @@ export default function OccasionDetail(){
               ))}
               </>}
             </div>
+            </React.Fragment>
+            );
 
+            const equipmentSection=(
+            <React.Fragment key="plan-equipment">
             {/* equipment */}
             <div style={{marginBottom:8}}>
               <div onClick={()=>togglePlanSection("equipment")} style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,cursor:"pointer"}}>
@@ -4660,54 +4707,83 @@ export default function OccasionDetail(){
                 </div>
               ))}
             </div>
+            </React.Fragment>
+            );
 
-            </React.Fragment>,
-            ]; return (<>
-            {/* ── Visible, interactive flip-pager ── */}
-            <div style={{position:"relative",borderRadius:20,overflow:"hidden",marginBottom:16,border:"1px solid rgba(196,122,46,0.15)",boxShadow:"0 10px 32px rgba(0,0,0,0.08)"}}>
-              <div aria-hidden style={{position:"absolute",inset:0,background:`linear-gradient(165deg,${lightenHex(gold,0.85)} 0%,#FDFAF5 55%,${lightenHex(gold,0.9)} 100%)`}}/>
-              <div style={{position:"relative",padding:"18px 18px 16px"}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:16,flexWrap:"wrap"}}>
-                  {PLAN_PAGE_LABELS.map((label,i)=>(
-                    <button key={label} onClick={()=>goToPlanPage(i)}
-                      style={{display:"flex",alignItems:"center",gap:6,padding:"6px 12px",borderRadius:100,border:"none",background:planPage===i?gold:"rgba(196,122,46,0.08)",cursor:"pointer",fontFamily:font,transition:"all 0.2s"}}>
-                      <span style={{width:6,height:6,borderRadius:"50%",background:planPage===i?"#fff":"rgba(196,122,46,0.35)",flexShrink:0}}/>
-                      <span style={{fontSize:11.5,fontWeight:700,color:planPage===i?"#fff":muted}}>{label}</span>
-                    </button>
-                  ))}
+            // Full ordered content for the PDF / share-to-chat capture — unchanged from before,
+            // just assembled from the now-separate pieces instead of 3 bundled fragments.
+            const planSections=[...storySlides,timelineSection,checklistSection,equipmentSection];
+            const storyLabels=storyItems.map(s=>s.label);
+
+            return (<>
+            {/* ── Full-screen plan story — no header/tabs/bottom-nav, shown first on arrival ── */}
+            {planStoryOpen&&createPortal(
+              <div style={{position:"fixed",inset:0,zIndex:999999,background:"#FDFAF5",display:"flex",flexDirection:"column"}}>
+                <div style={{flexShrink:0,padding:"calc(14px + env(safe-area-inset-top,0px)) 20px 10px",display:"flex",flexDirection:"column",gap:10}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                    <span style={{fontSize:11,fontWeight:700,color:muted}}>{storyLabels[storyIdx]}</span>
+                    <button onClick={()=>setPlanStoryOpen(false)} style={{width:30,height:30,borderRadius:"50%",border:"1.5px solid rgba(196,122,46,0.2)",background:"#fff",color:muted,fontSize:15,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}} aria-label="Skip to full plan">×</button>
+                  </div>
+                  <div style={{display:"flex",gap:5}}>
+                    {storySlides.map((_,i)=>(
+                      <div key={i} style={{flex:1,height:4,borderRadius:2,background:i<=storyIdx?gold:"rgba(196,122,46,0.15)",transition:"background 0.2s"}}/>
+                    ))}
+                  </div>
                 </div>
-                <div style={{position:"relative",overflow:planExportMode?"visible":"hidden"}}>
-                  {planExportMode ? (
-                    // Briefly expanded to all 3 pages, in normal flow, so html2canvas
-                    // captures the complete plan — never shown to the user otherwise.
-                    <div ref={planRef} style={{background:"#FDFAF5",borderRadius:14,padding:"4px 2px"}}>{planSections}</div>
-                  ) : (
-                    <AnimatePresence mode="wait" initial={false} custom={planDirection}>
-                      <motion.div key={planPage}
-                        initial={{opacity:0,x:planDirection>0?44:-44}}
-                        animate={{opacity:1,x:0}}
-                        exit={{opacity:0,x:planDirection>0?-44:44}}
-                        transition={{duration:0.3,ease:[0.25,0.46,0.45,0.94]}}>
-                        <div ref={planRef} style={{background:"#FDFAF5",borderRadius:14,padding:"4px 2px"}}>{planSections[planPage]}</div>
-                      </motion.div>
-                    </AnimatePresence>
-                  )}
+                <div style={{flex:1,minHeight:0,overflowY:"auto",padding:"4px 20px"}}>
+                  <AnimatePresence mode="wait" initial={false} custom={storyDirection}>
+                    <motion.div key={storyIdx}
+                      initial={{opacity:0,x:storyDirection>0?44:-44}}
+                      animate={{opacity:1,x:0}}
+                      exit={{opacity:0,x:storyDirection>0?-44:44}}
+                      transition={{duration:0.3,ease:[0.25,0.46,0.45,0.94]}}>
+                      {storySlides[storyIdx]}
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
-                {!planExportMode&&(
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:18,gap:10}}>
-                    <button onClick={()=>planPage>0&&goToPlanPage(planPage-1)} disabled={planPage===0}
-                      style={{padding:"10px 16px",borderRadius:100,border:`1.5px solid ${planPage===0?"rgba(28,9,0,0.08)":"rgba(196,122,46,0.3)"}`,background:"#fff",color:planPage===0?"rgba(28,9,0,0.2)":gold,fontSize:12.5,fontWeight:700,cursor:planPage===0?"default":"pointer",fontFamily:font}}>
-                      ← Back
-                    </button>
-                    <span style={{fontSize:11,color:muted,fontWeight:600}}>Page {planPage+1} of 3</span>
-                    <button onClick={()=>planPage<2&&goToPlanPage(planPage+1)} disabled={planPage===2}
-                      style={{padding:"10px 16px",borderRadius:100,border:"none",background:planPage===2?"rgba(28,9,0,0.06)":`linear-gradient(135deg,${gold},${goldLt})`,color:planPage===2?"rgba(28,9,0,0.2)":"#fff",fontSize:12.5,fontWeight:700,cursor:planPage===2?"default":"pointer",fontFamily:font}}>
+                <div style={{flexShrink:0,padding:"12px 20px calc(14px + env(safe-area-inset-bottom,0px))",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,borderTop:"1px solid rgba(196,122,46,0.12)",background:"#FDFAF5"}}>
+                  <button onClick={()=>storyIdx>0&&goToStory(storyIdx-1)} disabled={storyIdx===0}
+                    style={{padding:"11px 18px",borderRadius:100,border:`1.5px solid ${storyIdx===0?"rgba(28,9,0,0.08)":"rgba(196,122,46,0.3)"}`,background:"#fff",color:storyIdx===0?"rgba(28,9,0,0.2)":gold,fontSize:13,fontWeight:700,cursor:storyIdx===0?"default":"pointer",fontFamily:font}}>
+                    ← Back
+                  </button>
+                  <span style={{fontSize:11,color:muted,fontWeight:600}}>{storyIdx+1} / {storySlides.length}</span>
+                  {storyIdx<storySlides.length-1 ? (
+                    <button onClick={()=>goToStory(storyIdx+1)}
+                      style={{padding:"11px 20px",borderRadius:100,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font}}>
                       Next →
                     </button>
-                  </div>
-                )}
-              </div>
-            </div>
+                  ) : (
+                    <button onClick={()=>setPlanStoryOpen(false)}
+                      style={{padding:"11px 20px",borderRadius:100,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font}}>
+                      See full plan →
+                    </button>
+                  )}
+                </div>
+              </div>,
+              document.body
+            )}
+
+            {/* Replay — the story above only auto-opens on arrival, this reopens it later */}
+            <button onClick={()=>{setStoryIdx(0);setPlanStoryOpen(true);}}
+              style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"12px 16px",marginBottom:16,borderRadius:14,border:`1.5px solid rgba(196,122,46,0.2)`,background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",cursor:"pointer",fontFamily:font,textAlign:"left"}}>
+              <span style={{fontSize:18}}>✦</span>
+              <span style={{flex:1}}>
+                <div style={{fontSize:12.5,fontWeight:700,color:ink}}>Replay your plan</div>
+                <div style={{fontSize:11,color:muted}}>Walk through it again, one page at a time</div>
+              </span>
+              <span style={{fontSize:13,color:gold,fontWeight:700}}>→</span>
+            </button>
+
+            {/* Timeline / Checklist / Equipment — ongoing tools, always visible here (not part of the story) */}
+            {timelineSection}
+            {checklistSection}
+            {equipmentSection}
+
+            {/* Off-screen, mounted only while generating a PDF / share-to-chat token so
+                html2canvas captures the complete plan — never shown to the user otherwise. */}
+            {planExportMode&&(
+              <div ref={planRef} style={{background:"#FDFAF5",borderRadius:14,padding:"4px 2px"}}>{planSections}</div>
+            )}
             </>); })()}
 
             {/* F. Recommendations — paragraph summary + conclusion + improvement tips + cross-sell */}

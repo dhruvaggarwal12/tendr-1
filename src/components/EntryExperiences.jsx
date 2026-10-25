@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { ENTRY_EXPERIENCES, getEntryExperienceById, entryEmoji } from "../data/entryExperiences";
 
@@ -126,9 +127,15 @@ function DetailDrawer({ idea, selected, vendors, onToggleVendor, onToggleSelect,
   const navigate = useNavigate();
   const vendorUrl = (cat) => `/listings?${new URLSearchParams({ serviceType: cat }).toString()}`;
 
-  return (
+  // Portaled straight to document.body — rendered inline inside OccasionDetail's per-step
+  // content, this "fixed" overlay could end up contained by an ancestor instead of the real
+  // viewport (any transform/filter/etc. on something between here and <body> changes the
+  // containing block for position:fixed), showing as plain in-page content instead of a
+  // full-screen modal. Portaling sidesteps that entirely, the same fix already used for
+  // Home.jsx's occasion-flow modal.
+  return createPortal(
     <div
-      style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(28,9,0,0.65)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
+      style={{ position: "fixed", inset: 0, zIndex: 999999, background: "rgba(28,9,0,0.65)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div style={{ width: "100%", maxWidth: 520, maxHeight: "min(640px, 90vh)", background: "#FFFCF5", borderRadius: 22, display: "flex", flexDirection: "column", fontFamily: font, boxShadow: "0 24px 70px rgba(28,9,0,0.35)", overflow: "hidden" }}>
@@ -240,7 +247,8 @@ function DetailDrawer({ idea, selected, vendors, onToggleVendor, onToggleSelect,
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
