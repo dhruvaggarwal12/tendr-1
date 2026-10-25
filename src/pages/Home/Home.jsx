@@ -1,7 +1,7 @@
 ﻿// src/pages/Home/Home.jsx
 import React, { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
-import { PERFORMER_TYPES } from "../../components/PerformerSuggestions";
+import { PERFORMER_TYPES, PERFORMER_FALLBACK_PHOTO } from "../../components/PerformerSuggestions";
 import { getVendors } from "../../apis/vendorApi";
 import { useNavigate as useNav, useSearchParams } from "react-router-dom";
 import { GUIDES } from "../guides/guideData";
@@ -1708,33 +1708,38 @@ const Home = () => {
                 style={{ position: "fixed", inset: 0, background: "rgba(10,4,0,0.62)", zIndex: 9000, backdropFilter: "blur(4px)" }} />
               <div style={{
                 position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
-                zIndex: 9001, background: "#FFFCF5", borderRadius: 20, padding: "24px 20px",
-                width: "90%", maxWidth: 360, boxShadow: "0 24px 64px rgba(28,10,4,0.3)",
+                zIndex: 9001, background: "#FFFCF5", borderRadius: 24, padding: "28px 24px",
+                width: "92%", maxWidth: 480, maxHeight: "86vh", overflowY: "auto",
+                boxShadow: "0 24px 64px rgba(28,10,4,0.3)",
                 fontFamily: "'Outfit', sans-serif",
               }}>
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 18 }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
                   <div>
-                    <div style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E" }}>Artists & Performers</div>
-                    <div style={{ fontSize: 12, color: "#9B7450", marginTop: 3 }}>Book a live artist for your event</div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E" }}>Artists & Performers</div>
+                    <div style={{ fontSize: 13, color: "#9B7450", marginTop: 3 }}>Book a live artist for your event</div>
                   </div>
                   <button onClick={() => setShowPerformerModal(false)}
-                    style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 22, lineHeight: 1, padding: "2px 6px", marginTop: -2 }}>×</button>
+                    style={{ background: "rgba(28,14,4,0.06)", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 18, lineHeight: 1, width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>×</button>
                 </div>
                 {availablePerformers === null ? (
                   <div style={{ textAlign: "center", padding: "28px 0", color: "#C47A2E", fontSize: 13 }}>Loading…</div>
                 ) : availablePerformers.length === 0 ? (
                   <div style={{ textAlign: "center", padding: "28px 0", color: "#9B7450", fontSize: 13 }}>No artists available yet — check back soon.</div>
                 ) : (
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                     {PERFORMER_TYPES.filter(p => availablePerformers.includes(p.type)).map(p => (
                       <a key={p.type} href={`/artists/${p.type}`}
                         onClick={() => setShowPerformerModal(false)}
-                        style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "14px 6px", borderRadius: 12, background: "#fff", border: "1.5px solid rgba(196,122,46,0.18)", textDecoration: "none", transition: "all 0.15s", boxShadow: "0 2px 8px rgba(28,14,4,0.04)" }}
-                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.4)"; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.18)"; }}
+                        style={{ position: "relative", display: "block", aspectRatio: "4/3", borderRadius: 16, overflow: "hidden", textDecoration: "none", transition: "transform 0.18s, box-shadow 0.18s", boxShadow: "0 2px 10px rgba(28,14,4,0.1)" }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.03)"; e.currentTarget.style.boxShadow = "0 10px 26px rgba(28,14,4,0.22)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 2px 10px rgba(28,14,4,0.1)"; }}
                       >
-                        <span style={{ fontSize: 26 }}>{p.emoji}</span>
-                        <span style={{ fontSize: 10.5, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{p.label}</span>
+                        <img src={p.photo} alt={p.label} loading="lazy"
+                          onError={e => { e.currentTarget.src = PERFORMER_FALLBACK_PHOTO; }}
+                          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+                        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(20,8,0,0.82) 0%, rgba(20,8,0,0.1) 55%, transparent 100%)" }} />
+                        <div style={{ position: "absolute", top: 10, left: 10, fontSize: 20, filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.4))" }}>{p.emoji}</div>
+                        <div style={{ position: "absolute", bottom: 12, left: 12, right: 12, fontSize: 14, fontWeight: 800, color: "#fff", lineHeight: 1.25, textShadow: "0 1px 4px rgba(0,0,0,0.3)" }}>{p.label}</div>
                       </a>
                     ))}
                   </div>

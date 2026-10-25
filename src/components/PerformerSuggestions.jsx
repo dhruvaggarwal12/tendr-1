@@ -1,13 +1,19 @@
 import { useState, useEffect } from 'react';
 import { getVendors } from '../apis/vendorApi';
 
+// Unsplash CDN photo IDs — each resolved from its individual photo page's own
+// image URL (not the page's short URL slug, which isn't a valid CDN id) and
+// HTTP-verified to actually resolve before use.
+const _up = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=500&q=80`;
+export const PERFORMER_FALLBACK_PHOTO = _up('1516280440614-37939bbacd81');
+
 export const PERFORMER_TYPES = [
-  { type: 'Singer',        label: 'Singer',        emoji: '🎤' },
-  { type: 'Band',          label: 'Live Band',      emoji: '🎸' },
-  { type: 'Anchor',        label: 'Anchor / MC',    emoji: '🎙️' },
-  { type: 'Choreographer', label: 'Choreographer',  emoji: '💃' },
-  { type: 'Musician',      label: 'Musician',       emoji: '🎹' },
-  { type: 'Emcee',         label: 'Emcee',          emoji: '🎭' },
+  { type: 'Singer',        label: 'Singer',        emoji: '🎤', photo: _up('1767376133594-cf14a1f0f174') },
+  { type: 'Band',          label: 'Live Band',      emoji: '🎸', photo: _up('1575672913784-11a7cd4f25f4') },
+  { type: 'Anchor',        label: 'Anchor / MC',    emoji: '🎙️', photo: _up('1730875647697-eace28e2a77e') },
+  { type: 'Choreographer', label: 'Choreographer',  emoji: '💃', photo: _up('1547106510-6aec13ee41ff') },
+  { type: 'Musician',      label: 'Musician',       emoji: '🎹', photo: _up('1565841841721-30611974537f') },
+  { type: 'Emcee',         label: 'Emcee',          emoji: '🎭', photo: _up('1742558068736-004a2cb80221') },
 ];
 
 const CACHE_KEY = 'tendr_perf_avail_v1';
