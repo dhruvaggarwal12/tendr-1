@@ -8,6 +8,7 @@ import { PERFORMER_TYPES } from '../../components/PerformerSuggestions';
 import { getVendors } from '../../apis/vendorApi';
 import { setFinalisedVendor } from '../../redux/listingFiltersSlice';
 import { addSelectedVendor } from '../../redux/eventPlanningSlice';
+import { SERVICED_CITIES } from '../../data/indianCities';
 
 const font = "'Outfit', sans-serif";
 const serif = "'Cormorant Garamond', Georgia, serif";
@@ -40,6 +41,15 @@ export default function ArtistListingsPage() {
   const [animDir, setAnimDir] = useState(null); // 'left' | 'right' | null
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
+  // City filter — without this, every artist of a type showed regardless of where they're
+  // actually based, so a customer could book someone and only find out afterwards they
+  // don't serve their city. Remembered across visits like the other saved-preference fields
+  // in this app (tendr_venue_address, tendr_person_name).
+  const [cityFilter, setCityFilter] = useState(() => {
+    try { return localStorage.getItem('tendr_artist_city_filter') || ''; } catch { return ''; }
+  });
+  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+
   // Artist booking state
   const [showBookModal, setShowBookModal] = useState(false);
   const [showTCModal, setShowTCModal] = useState(false);
@@ -49,14 +59,20 @@ export default function ArtistListingsPage() {
   const touchStartX = useRef(null);
   const cardRef = useRef(null);
 
+  const setCity = (c) => {
+    setCityFilter(c);
+    try { localStorage.setItem('tendr_artist_city_filter', c); } catch {}
+    setCityDropdownOpen(false);
+  };
+
   useEffect(() => {
     setLoading(true);
     setCurrentIdx(0);
-    getVendors({ serviceTypes: [activeType.type], limit: 30, sortBy: 'rankingScore', sortOrder: 'desc', includeDemo: true })
+    getVendors({ serviceTypes: [activeType.type], limit: 30, sortBy: 'rankingScore', sortOrder: 'desc', includeDemo: true, ...(cityFilter && { location: cityFilter }) })
       .then(r => { setVendors(r?.vendors || []); })
       .catch(() => setVendors([]))
       .finally(() => setLoading(false));
-  }, [activeType.type]);
+  }, [activeType.type, cityFilter]);
 
   const go = useCallback((dir) => {
     setAnimDir(dir);
@@ -150,11 +166,41 @@ export default function ArtistListingsPage() {
           <h1 style={{ fontSize: 'clamp(1.4rem,4vw,2rem)', fontWeight: 300, fontFamily: serif, color: '#1C0900', margin: '0 0 6px', fontStyle: 'italic' }}>
             {activeType.label}s for your event
           </h1>
-          {!loading && vendors.length > 0 && (
+          {!loading && (
             <div style={{ fontSize: 12, color: '#9B7450', fontWeight: 600 }}>
-              {vendors.length} artist{vendors.length !== 1 ? 's' : ''} available
+              {vendors.length} artist{vendors.length !== 1 ? 's' : ''} available{cityFilter ? ` in ${cityFilter}` : ''}
             </div>
           )}
+
+          {/* City filter — defaults to every city; without it, customers couldn't tell an
+              artist actually serves their area until after booking. */}
+          <div style={{ position: 'relative', display: 'inline-block', marginTop: 12 }}>
+            <button
+              onClick={() => setCityDropdownOpen(o => !o)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 100, border: `1.5px solid ${cityFilter ? info.color : 'rgba(196,122,46,0.25)'}`, background: cityFilter ? info.bg : '#fff', color: cityFilter ? info.color : '#7A5535', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: font }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              {cityFilter || 'All cities'}
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ transform: cityDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            {cityDropdownOpen && (
+              <>
+                <div onClick={() => setCityDropdownOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 60 }} />
+                <div style={{ position: 'absolute', top: '110%', left: '50%', transform: 'translateX(-50%)', zIndex: 61, background: '#fff', borderRadius: 14, border: '1px solid rgba(196,122,46,0.15)', boxShadow: '0 12px 32px rgba(28,14,4,0.16)', padding: 6, minWidth: 180 }}>
+                  <button onClick={() => setCity('')}
+                    style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 12px', borderRadius: 8, border: 'none', background: !cityFilter ? 'rgba(196,122,46,0.08)' : 'transparent', color: !cityFilter ? gold : '#2C1A0E', fontSize: 13, fontWeight: !cityFilter ? 700 : 500, cursor: 'pointer', fontFamily: font }}>
+                    All cities
+                  </button>
+                  {SERVICED_CITIES.map(c => (
+                    <button key={c} onClick={() => setCity(c)}
+                      style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 12px', borderRadius: 8, border: 'none', background: cityFilter === c ? 'rgba(196,122,46,0.08)' : 'transparent', color: cityFilter === c ? gold : '#2C1A0E', fontSize: 13, fontWeight: cityFilter === c ? 700 : 500, cursor: 'pointer', fontFamily: font }}>
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Carousel area */}
@@ -250,8 +296,14 @@ export default function ArtistListingsPage() {
                   <div style={{ fontSize: 'clamp(1.2rem,4vw,1.6rem)', fontWeight: 300, fontFamily: serif, color: '#fff', fontStyle: 'italic', lineHeight: 1.2, textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
                     {vendor?.name || 'Artist'}
                   </div>
+                  {vendor?.location && (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 5, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', borderRadius: 100, padding: '3px 10px 3px 7px', fontSize: 11.5, fontWeight: 700, color: '#fff' }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      Based in {vendor.location}
+                    </div>
+                  )}
                   {vendor?.tagline && (
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 3 }}>{vendor.tagline}</div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 4 }}>{vendor.tagline}</div>
                   )}
                 </div>
               </div>
@@ -265,12 +317,6 @@ export default function ArtistListingsPage() {
                       <span style={{ color: '#F59E0B', fontSize: 14 }}>★</span>
                       <span style={{ fontSize: 14, fontWeight: 800, color: '#2C1A0E' }}>{rating}</span>
                       {vendor.reviewCount > 0 && <span style={{ fontSize: 12, color: '#9B7450' }}>({vendor.reviewCount})</span>}
-                    </div>
-                  )}
-                  {vendor?.location && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12.5, color: '#9B7450' }}>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                      {vendor.location}
                     </div>
                   )}
                   {vendor?.totalEventsCompleted > 0 && (
@@ -376,7 +422,9 @@ export default function ArtistListingsPage() {
               <div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: info.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Book Artist</div>
                 <div style={{ fontSize: 19, fontWeight: 800, color: '#2C1A0E', lineHeight: 1.2 }}>{vendor.name}</div>
-                <div style={{ fontSize: 12.5, color: '#9B7450', marginTop: 3 }}>{activeType.label} · How would you like to proceed?</div>
+                <div style={{ fontSize: 12.5, color: '#9B7450', marginTop: 3 }}>
+                  {activeType.label}{vendor.location && <> · based in <strong style={{ color: '#2C1A0E' }}>{vendor.location}</strong></>} · How would you like to proceed?
+                </div>
               </div>
               <button onClick={() => setShowBookModal(false)} style={{ background: 'rgba(196,122,46,0.08)', border: 'none', cursor: 'pointer', borderRadius: '50%', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#9B7450', flexShrink: 0 }}>✕</button>
             </div>
