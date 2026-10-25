@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font  = "'Outfit', sans-serif";
@@ -879,8 +880,18 @@ function CategoryQuestions({ serviceType, answers, onChange }) {
 
 export default function VendorRegistration() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const flow = searchParams.get("flow"); // "artist" | "vendor" | null
+  const token = useSelector(s => s.auth?.token);
+
+  // Listing a service requires a Tendr account first. Bounce straight to login/
+  // signup and bring them right back here once they're done — Auth.jsx already
+  // honors location.state.returnTo generically — landing on this form's default
+  // first step ("what type of service") since no flow= param is added here.
+  useEffect(() => {
+    if (!token) navigate("/login", { replace: true, state: { returnTo: `${location.pathname}${location.search}` } });
+  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Shared state ──────────────────────────────────────────────────────────
 
@@ -890,8 +901,13 @@ export default function VendorRegistration() {
   const [artistForm, setArtistForm] = useState({
     name: "", phoneNumber: "", whatsappNumber: "", email: "", city: "",
     password: "", confirmPassword: "",
-    bio: "", packages: [{ name: "", price: "" }], duration: "", sampleLink: "", instagram: "", setlist: "",
+    bio: "", packages: [{ name: "", price: "" }], duration: "", sampleLink: "", instagram: "", setlist: [""],
   });
+  // Photos — first one is the hero/cover photo (same convention as portfolioPhotos[0]
+  // everywhere else: VendorDetails.jsx, ArtistListingsPage.jsx, etc.)
+  const [artistPhotos, setArtistPhotos] = useState([]); // array of uploaded Cloudinary URLs
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState("");
 
   // Vendor flow
   const [plan, setPlan]               = useState("free");
@@ -922,6 +938,32 @@ export default function VendorRegistration() {
 
   const iStyle = (f) => inputStyle(focused, errors, f, gold, ink);
 
+  // ── Photo upload (artist/performer profile) ────────────────────────────────
+  // Uploads straight to Cloudinary via a public endpoint (no account exists yet at
+  // application time) and collects the returned URLs — submitted together with the
+  // rest of the form, same pattern as the venue-photo gate elsewhere in the app.
+  const uploadArtistPhotos = async (fileList) => {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+    const remaining = 10 - artistPhotos.length;
+    if (remaining <= 0) { setPhotoError("You can upload up to 10 photos."); return; }
+    setUploadingPhoto(true); setPhotoError("");
+    try {
+      const form = new FormData();
+      files.slice(0, remaining).forEach(f => form.append("photos", f));
+      const res = await fetch(`${BASE_URL}/vendor-applications/upload-photo`, { method: "POST", body: form });
+      const data = await res.json();
+      if (!res.ok) { setPhotoError(data.error || "Upload failed — try again."); return; }
+      setArtistPhotos(p => [...p, ...(data.urls || [])]);
+    } catch {
+      setPhotoError("Upload failed — check your connection and try again.");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+  const removeArtistPhoto = (idx) => setArtistPhotos(p => p.filter((_, i) => i !== idx));
+  const makeHeroPhoto = (idx) => setArtistPhotos(p => idx === 0 ? p : [p[idx], ...p.filter((_, i) => i !== idx)]);
+
   // ── Generic submit helper ──────────────────────────────────────────────────
   const submitApplication = async (payload) => {
     setLoading(true); setApiError("");
@@ -950,6 +992,8 @@ export default function VendorRegistration() {
   };
 
   // ── SUCCESS ────────────────────────────────────────────────────────────────
+  if (!token) return null; // redirecting to /login, see effect above
+
   if (submitted) return <SuccessScreen name={successName} isCoordinator={isCoordinator} navigate={navigate} />;
 
   // ── COORDINATOR FLOW (legacy) ──────────────────────────────────────────────
@@ -1108,13 +1152,19 @@ export default function VendorRegistration() {
       : performerType === "Choreographer" ? "Routines / Acts You Offer"
       : performerType === "Musician" ? "Repertoire / Sets"
       : "Setlist / Repertoire";
-    const setlistPlaceholder = ["Anchor","Emcee"].includes(performerType)
-      ? "e.g.\n• Welcome address & intro\n• Couple Q&A / fun games\n• Audience interaction rounds\n• Award or milestone moments\n• Closing & vote of thanks"
+    const setlistItemLabel = ["Anchor","Emcee"].includes(performerType) ? "segment"
+      : performerType === "Choreographer" ? "routine"
+      : "song / set";
+    // One example per row (cycled if there are more rows than examples) — a proper
+    // repeatable list instead of one free-text block, so artists just fill each
+    // line in and the profile is done; matches Vendor.setlist's [String] shape.
+    const setlistExamples = ["Anchor","Emcee"].includes(performerType)
+      ? ["Welcome address & intro", "Couple Q&A / fun games", "Audience interaction rounds", "Award or milestone moments", "Closing & vote of thanks"]
       : performerType === "Singer"
-      ? "e.g.\n• Bollywood romantic set: Tum Hi Ho, Kesariya\n• Ghazal set: Jagjit Singh classics\n• Crowd requests — open to suggestions"
+      ? ["Bollywood romantic set — Tum Hi Ho, Kesariya", "Ghazal set — Jagjit Singh classics", "Crowd requests — open to suggestions"]
       : performerType === "Choreographer"
-      ? "e.g.\n• Couple first dance — choreographed routine\n• Bride's sisters group performance\n• Flash mob coordination"
-      : "List your key sets, songs, acts or signature segments";
+      ? ["Couple first dance — choreographed routine", "Bride's sisters group performance", "Flash mob coordination"]
+      : ["Key song, act or signature segment"];
 
     const handleArtistSubmit = async (e) => {
       e.preventDefault();
@@ -1143,7 +1193,8 @@ export default function VendorRegistration() {
         duration: artistForm.duration,
         sampleLink: artistForm.sampleLink,
         instagram: artistForm.instagram,
-        setlist: artistForm.setlist,
+        setlist: artistForm.setlist.map(s => s.trim()).filter(Boolean),
+        photos: artistPhotos,
       });
       if (ok) { setSuccessName(artistForm.name); setSubmitted(true); }
     };
@@ -1218,6 +1269,37 @@ export default function VendorRegistration() {
             {/* Profile */}
             <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "4px 0 0" }}>Your Profile (Shown to customers)</p>
 
+            {/* Photos — first one is the hero/cover photo shown on your listing card */}
+            <div>
+              <Label optional>Photos <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(first photo is your cover photo — up to 10)</span></Label>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(88px, 1fr))", gap: 8, marginTop: 4 }}>
+                {artistPhotos.map((url, i) => (
+                  <div key={url} style={{ position: "relative", aspectRatio: "1/1", borderRadius: 10, overflow: "hidden", border: i === 0 ? `2px solid ${gold}` : "1.5px solid #E5D5C0" }}>
+                    <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                    {i === 0 ? (
+                      <span style={{ position: "absolute", bottom: 4, left: 4, right: 4, background: gold, color: "#fff", fontSize: 9, fontWeight: 800, textAlign: "center", borderRadius: 100, padding: "2px 0", letterSpacing: "0.04em" }}>COVER</span>
+                    ) : (
+                      <button type="button" onClick={() => makeHeroPhoto(i)}
+                        style={{ position: "absolute", bottom: 4, left: 4, right: 4, background: "rgba(0,0,0,0.55)", color: "#fff", border: "none", fontSize: 9, fontWeight: 700, borderRadius: 100, padding: "2px 0", cursor: "pointer", fontFamily: font }}>
+                        Make cover
+                      </button>
+                    )}
+                    <button type="button" onClick={() => removeArtistPhoto(i)} aria-label="Remove photo"
+                      style={{ position: "absolute", top: 4, right: 4, width: 20, height: 20, borderRadius: "50%", background: "rgba(0,0,0,0.55)", color: "#fff", border: "none", fontSize: 12, lineHeight: 1, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+                  </div>
+                ))}
+                {artistPhotos.length < 10 && (
+                  <label style={{ aspectRatio: "1/1", borderRadius: 10, border: "1.5px dashed rgba(196,122,46,0.45)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, cursor: uploadingPhoto ? "default" : "pointer", color: gold, fontSize: 11, fontWeight: 600, fontFamily: font, textAlign: "center", padding: 6 }}>
+                    <span style={{ fontSize: 20 }}>{uploadingPhoto ? "…" : "+"}</span>
+                    {uploadingPhoto ? "Uploading" : "Add photo"}
+                    <input type="file" accept="image/*" multiple disabled={uploadingPhoto} style={{ display: "none" }}
+                      onChange={e => { uploadArtistPhotos(e.target.files); e.target.value = ""; }} />
+                  </label>
+                )}
+              </div>
+              {photoError && <p style={{ fontSize: 11.5, color: "#c0392b", marginTop: 6 }}>{photoError}</p>}
+            </div>
+
             {genreOptions.length > 0 && (
               <div>
                 <Label optional>Genres / Specializations</Label>
@@ -1289,11 +1371,29 @@ export default function VendorRegistration() {
             {aInput("instagram", "Instagram Handle", false, { placeholder: "@yourhandle" })}
 
             <div>
-              <Label optional>{setlistLabel} <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(shown on your profile)</span></Label>
-              <textarea value={artistForm.setlist} onChange={e => setArtistForm(p => ({...p, setlist: e.target.value}))} rows={4} maxLength={500}
-                placeholder={setlistPlaceholder}
-                style={{ ...inputStyle(focused, errors, "setlist", gold, ink), resize: "vertical" }} />
-              <p style={{ fontSize: 11, color: muted, marginTop: 4, textAlign: "right" }}>{artistForm.setlist.length}/500</p>
+              <Label optional>{setlistLabel} <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(one per line — up to 8, shown on your profile)</span></Label>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {artistForm.setlist.map((item, i) => (
+                  <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8, alignItems: "center" }}>
+                    <input
+                      value={item} maxLength={80}
+                      onChange={e => setArtistForm(p => ({ ...p, setlist: p.setlist.map((x, j) => j === i ? e.target.value : x) }))}
+                      placeholder={setlistExamples[i % setlistExamples.length]}
+                      style={inputStyle(focused, {}, "", gold, ink)}
+                    />
+                    {artistForm.setlist.length > 1 ? (
+                      <button type="button" onClick={() => setArtistForm(p => ({ ...p, setlist: p.setlist.filter((_, j) => j !== i) }))}
+                        style={{ height: 42, width: 36, background: "none", border: "1.5px solid #fca5a5", borderRadius: 8, color: "#dc2626", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
+                    ) : <div style={{ width: 36 }} />}
+                  </div>
+                ))}
+                {artistForm.setlist.length < 8 && (
+                  <button type="button" onClick={() => setArtistForm(p => ({ ...p, setlist: [...p.setlist, ""] }))}
+                    style={{ padding: "9px", borderRadius: 8, border: `1.5px dashed rgba(196,122,46,0.45)`, background: "transparent", color: gold, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                    + Add {setlistItemLabel}
+                  </button>
+                )}
+              </div>
             </div>
 
             <button type="submit" disabled={loading}
