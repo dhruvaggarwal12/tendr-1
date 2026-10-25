@@ -12525,7 +12525,7 @@ export default function OccasionHub({ occasion }) {
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" style={{ marginBottom:10 }}><rect x="3" y="9" width="18" height="12" rx="2" fill={`${EG.gold}2a`} stroke={EG.gold} strokeWidth="1.4"/><path d="M3 13h18" stroke={EG.gold} strokeWidth="1.4"/><path d="M12 9v12" stroke={EG.gold} strokeWidth="1.4"/><path d="M12 9C9 9 8 6 9 4.5 10 3 12 4 12 6.5M12 9c3 0 4-3 3-4.5C14 3 12 4 12 6.5" stroke={EG.gold} strokeWidth="1.4" strokeLinecap="round"/></svg>
             <div style={{ fontSize:11, fontWeight:700, color:EG.gold, textTransform:"uppercase", letterSpacing:"0.28em", marginBottom:10 }}>TENDR</div>
             <div style={{ fontSize:"clamp(2.1rem,5.5vw,3rem)", fontWeight:600, fontFamily:"'Cormorant Garamond',Georgia,serif", letterSpacing:"-0.01em", lineHeight:1.1, marginBottom:10, background:`linear-gradient(135deg, ${EG.white} 35%, ${EG.gold} 100%)`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>
-              Party Hub
+              {occ?.name || "Party Hub"}
             </div>
             <div style={{ fontSize:14.5, color:EG.muted, fontWeight:500 }}>Plan any celebration, your way</div>
           </div>
