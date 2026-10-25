@@ -685,6 +685,155 @@ function hexToRgb(hex) {
   return `${parseInt(h.substring(0,2),16)},${parseInt(h.substring(2,4),16)},${parseInt(h.substring(4,6),16)}`;
 }
 
+// ── Dynamic occasion hero illustration ──────────────────────────────────────
+// Tendr has 18+ occasions and no photo library, so instead of one bespoke
+// illustration per occasion (unmaintainable) or a generic banner for all of
+// them (flat), occasions are grouped into a handful of visual "families" that
+// share a small SVG prop set (balloon, confetti, gift box, etc.), tinted with
+// that occasion's own `color` from data/occasions.js. Anything uncategorized
+// falls back to a generic sparkle + the occasion's own emoji icon.
+function heroFamily(slug) {
+  if (["birthday-party","first-birthday"].includes(slug)) return "birthday";
+  if (["baby-shower","newborn-welcome","naming-ceremony","gender-reveal"].includes(slug)) return "baby";
+  if (["anniversary"].includes(slug)) return "anniversary";
+  if (["housewarming","get-together","kitty-party","office-party","bachelorette"].includes(slug)) return "party";
+  if (["farewell","retirement","graduation"].includes(slug)) return "milestone";
+  if (["diwali-party","holi-party","navratri-garba"].includes(slug)) return "festival";
+  return "generic";
+}
+
+const HeroBalloon = ({ x, y, size=22, fill, rotate=0 }) => (
+  <g transform={`translate(${x},${y}) rotate(${rotate})`}>
+    <ellipse cx="0" cy="0" rx={size*0.42} ry={size*0.5} fill={fill} />
+    <path d={`M0 ${size*0.48} Q${size*0.12} ${size*0.66} 0 ${size*0.84}`} stroke={fill} strokeWidth="1" fill="none" opacity="0.6" />
+    <path d={`M${-size*0.07} ${size*0.46} L0 ${size*0.54} L${size*0.07} ${size*0.46}Z`} fill={fill} />
+  </g>
+);
+const HeroConfetti = ({ x, y, size=6, fill, shape="rect", rotate=0 }) => (
+  shape==="circle"
+    ? <circle cx={x} cy={y} r={size/2} fill={fill} opacity="0.85" />
+    : <rect x={x-size/2} y={y-size/2} width={size} height={size} fill={fill} opacity="0.85" rx="1.2" transform={`rotate(${rotate} ${x} ${y})`} />
+);
+const HeroStar = ({ x, y, size=10, fill }) => (
+  <path fill={fill} opacity="0.9" d={`M${x} ${y-size/2} L${x+size*0.12} ${y-size*0.12} L${x+size/2} ${y-size*0.1} L${x+size*0.18} ${y+size*0.08} L${x+size*0.28} ${y+size/2} L${x} ${y+size*0.26} L${x-size*0.28} ${y+size/2} L${x-size*0.18} ${y+size*0.08} L${x-size/2} ${y-size*0.1} L${x-size*0.12} ${y-size*0.12} Z`} />
+);
+const HeroHeart = ({ x, y, size=14, fill }) => (
+  <g transform={`translate(${x},${y})`} fill={fill}>
+    <circle cx={-size*0.22} cy={-size*0.12} r={size*0.3} />
+    <circle cx={size*0.22} cy={-size*0.12} r={size*0.3} />
+    <path d={`M${-size*0.5} ${-size*0.1} Q0 ${size*0.55} ${size*0.5} ${-size*0.1} Q${size*0.3} ${size*0.1} 0 ${size*0.38} Q${-size*0.3} ${size*0.1} ${-size*0.5} ${-size*0.1}Z`} />
+  </g>
+);
+const HeroGiftBox = ({ x, y, size=24, fill, ribbon="#fff" }) => (
+  <g transform={`translate(${x-size/2},${y-size/2})`}>
+    <rect x="0" y={size*0.32} width={size} height={size*0.68} fill={fill} rx="2" />
+    <rect x="0" y={size*0.42} width={size} height={size*0.14} fill={ribbon} opacity="0.9" />
+    <rect x={size*0.43} y={size*0.32} width={size*0.14} height={size*0.68} fill={ribbon} opacity="0.9" />
+    <circle cx={size*0.38} cy={size*0.2} r={size*0.13} fill="none" stroke={ribbon} strokeWidth="2" />
+    <circle cx={size*0.62} cy={size*0.2} r={size*0.13} fill="none" stroke={ribbon} strokeWidth="2" />
+  </g>
+);
+const HeroFlower = ({ x, y, size=16, fill, center="#FFD36E" }) => (
+  <g transform={`translate(${x},${y})`}>
+    {[0,72,144,216,288].map(a => (
+      <ellipse key={a} cx="0" cy={-size*0.3} rx={size*0.16} ry={size*0.3} fill={fill} opacity="0.9" transform={`rotate(${a})`} />
+    ))}
+    <circle r={size*0.14} fill={center} />
+  </g>
+);
+const HeroCake = ({ x, y, size=30, fill, accent="#fff" }) => (
+  <g transform={`translate(${x-size/2},${y-size/2})`}>
+    <rect x="0" y={size*0.5} width={size} height={size*0.42} fill={fill} rx="2" />
+    <rect x={size*0.08} y={size*0.3} width={size*0.84} height={size*0.24} fill={accent} opacity="0.9" rx="2" />
+    <line x1={size*0.5} y1={size*0.05} x2={size*0.5} y2={size*0.3} stroke={accent} strokeWidth="2" />
+    <ellipse cx={size*0.5} cy="0" rx="2.5" ry="4" fill="#FFD36E" />
+  </g>
+);
+const HeroMusicNote = ({ x, y, size=16, fill }) => (
+  <g transform={`translate(${x},${y})`} fill={fill}>
+    <ellipse cx="0" cy={size*0.4} rx={size*0.22} ry={size*0.16} />
+    <rect x={size*0.18} y={-size*0.5} width="2" height={size*0.92} />
+    <path d={`M${size*0.2} ${-size*0.5} Q${size*0.52} ${-size*0.4} ${size*0.2} ${-size*0.08}`} stroke={fill} strokeWidth="2" fill="none" />
+  </g>
+);
+const HeroDiya = ({ x, y, size=22, fill, flame="#FFB347" }) => (
+  <g transform={`translate(${x-size/2},${y-size/2})`}>
+    <path d={`M0 ${size*0.48} Q${size*0.5} ${size*0.86} ${size} ${size*0.48} Q${size*0.5} ${size*0.3} 0 ${size*0.48}Z`} fill={fill} />
+    <ellipse cx={size*0.5} cy={size*0.16} rx={size*0.08} ry={size*0.22} fill={flame} />
+  </g>
+);
+
+// Composes the right-biased prop scatter for a given family — left side stays clear
+// for the occasion name/tagline overlay.
+function renderHeroScene(family, c1, c2) {
+  const gold3 = "#FFD36E";
+  switch (family) {
+    case "birthday": return <>
+      <HeroCake x={300} y={72} size={34} fill="#fff" accent={c1} />
+      <HeroBalloon x={250} y={38} size={22} fill={c1} rotate={-8} />
+      <HeroBalloon x={340} y={30} size={20} fill={gold3} rotate={10} />
+      <HeroStar x={365} y={70} size={11} fill="#fff" />
+      <HeroGiftBox x={225} y={90} size={22} fill={c2} ribbon="#fff" />
+      <HeroConfetti x={280} y={20} fill={gold3} />
+      <HeroConfetti x={310} y={100} shape="circle" fill="#fff" />
+      <HeroConfetti x={200} y={50} shape="circle" fill={gold3} size={5} />
+    </>;
+    case "baby": return <>
+      <HeroFlower x={240} y={40} size={18} fill={c1} />
+      <HeroFlower x={360} y={35} size={15} fill={c2} />
+      <HeroBalloon x={290} y={34} size={24} fill={c1} rotate={-6} />
+      <HeroBalloon x={330} y={70} size={18} fill={gold3} rotate={8} />
+      <g transform="translate(205,78)"><rect width="20" height="20" rx="4" fill={c2} /><circle cx="10" cy="10" r="3" fill="#fff" opacity="0.8" /></g>
+      <g transform="translate(232,92)"><rect width="18" height="18" rx="4" fill={gold3} /><circle cx="9" cy="9" r="2.6" fill="#fff" opacity="0.8" /></g>
+      <HeroStar x={375} y={75} size={9} fill="#fff" />
+    </>;
+    case "anniversary": return <>
+      <HeroHeart x={290} y={50} size={26} fill={c1} />
+      <HeroHeart x={340} y={75} size={16} fill={gold3} />
+      <HeroHeart x={245} y={80} size={14} fill={c2} />
+      <HeroFlower x={360} y={35} size={14} fill={c2} />
+      <g transform="translate(210,30)"><rect x="0" y="10" width="4" height="18" fill={gold3} rx="1.5" /><ellipse cx="2" cy="8" rx="2.2" ry="3.4" fill="#FFB347" /></g>
+      <HeroStar x={222} y={60} size={8} fill="#fff" />
+    </>;
+    case "party": return <>
+      <HeroMusicNote x={255} y={42} size={18} fill={c1} />
+      <HeroMusicNote x={310} y={70} size={15} fill={gold3} />
+      <HeroMusicNote x={360} y={40} size={16} fill={c2} />
+      <HeroBalloon x={220} y={78} size={18} fill={c1} rotate={-10} />
+      <HeroConfetti x={290} y={20} fill={gold3} rotate={20} />
+      <HeroConfetti x={340} y={95} shape="circle" fill="#fff" />
+      <HeroConfetti x={235} y={35} shape="circle" fill={c2} size={5} />
+      <HeroConfetti x={380} y={65} fill="#fff" size={5} />
+    </>;
+    case "milestone": return <>
+      <HeroGiftBox x={260} y={60} size={26} fill={c1} ribbon={gold3} />
+      <HeroGiftBox x={330} y={85} size={18} fill={c2} ribbon="#fff" />
+      <HeroStar x={300} y={30} size={12} fill={gold3} />
+      <HeroStar x={360} y={55} size={9} fill="#fff" />
+      <HeroStar x={225} y={40} size={8} fill="#fff" />
+      <HeroBalloon x={385} y={30} size={16} fill={c1} rotate={8} />
+    </>;
+    case "festival": return <>
+      <HeroDiya x={260} y={80} size={24} fill={c1} />
+      <HeroDiya x={310} y={88} size={20} fill={c2} />
+      <HeroDiya x={355} y={78} size={18} fill={gold3} />
+      <HeroStar x={240} y={35} size={10} fill={gold3} />
+      <HeroStar x={290} y={25} size={8} fill="#fff" />
+      <HeroStar x={340} y={32} size={9} fill={c1} />
+      <HeroConfetti x={370} y={50} shape="circle" fill={c2} size={5} />
+      <HeroConfetti x={225} y={55} shape="circle" fill={gold3} size={5} />
+    </>;
+    default: return <>
+      <HeroStar x={300} y={40} size={13} fill={gold3} />
+      <HeroStar x={350} y={70} size={10} fill="#fff" />
+      <HeroStar x={255} y={70} size={9} fill={c1} />
+      <HeroConfetti x={320} y={95} fill={c2} rotate={15} />
+      <HeroConfetti x={270} y={30} shape="circle" fill="#fff" size={5} />
+      <HeroConfetti x={375} y={45} shape="circle" fill={gold3} size={5} />
+    </>;
+  }
+}
+
 function themeColor(tags=[]) {
   const t=tags.join(" ").toLowerCase();
   if(t.includes("pastel")||t.includes("floral")||t.includes("pink")||t.includes("blush")||t.includes("instagram")) return "#FFB6C1";
@@ -4752,18 +4901,30 @@ export default function OccasionDetail(){
 
             const overviewSlide=(
             <React.Fragment key="plan-overview">
-            {/* plan overview card */}
+            {/* plan overview card — hero illustration adapts per occasion (family of SVG
+                props tinted with this occasion's own color), not a photo and not one
+                bespoke design per occasion; see heroFamily()/renderHeroScene() above. */}
             <div ref={cardRef} style={{background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",border:`1.5px solid rgba(196,122,46,0.2)`,borderRadius:20,overflow:"hidden",marginBottom:12}}>
-              <div style={{background:`linear-gradient(135deg,${gold},${goldLt})`,padding:"18px 20px 16px",position:"relative",overflow:"hidden"}}>
-                <div aria-hidden style={{position:"absolute",top:-24,right:-24,width:90,height:90,borderRadius:"50%",border:"1.5px solid rgba(255,255,255,0.14)"}}/>
-                <div style={{display:"flex",alignItems:"center",gap:10,position:"relative"}}>
-                  <span style={{fontSize:30}}>{occasion.icon}</span>
-                  <div>
-                    <div style={{fontFamily:serif,fontSize:18,fontWeight:400,color:"#fff",lineHeight:1.1}}>{celebrantName?`${celebrantName}'s ${occasion.name}`:occasion.name}</div>
-                    <div style={{fontSize:10,color:"rgba(255,255,255,0.7)",fontWeight:600,marginTop:2,fontFamily:font}}>Celebration Plan · Tendr</div>
+              {(()=>{
+                const heroC1 = occasion.color || gold;
+                const heroC2 = lightenHex(heroC1, 0.35);
+                const family = heroFamily(slug);
+                return (
+                  <div style={{position:"relative",height:132,overflow:"hidden",background:`linear-gradient(135deg,${heroC1},${lightenHex(heroC1,0.15)} 55%,${heroC2})`}}>
+                    <svg viewBox="0 0 400 130" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%"}}>
+                      {renderHeroScene(family, "#ffffff", "rgba(255,255,255,0.65)")}
+                    </svg>
+                    <div aria-hidden style={{position:"absolute",inset:0,background:"linear-gradient(100deg, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.12) 42%, transparent 62%)"}}/>
+                    <div style={{position:"absolute",left:18,bottom:14,right:110}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+                        <span style={{fontSize:22,filter:"drop-shadow(0 1px 3px rgba(0,0,0,0.3))"}}>{occasion.icon}</span>
+                        <span style={{fontFamily:serif,fontSize:19,fontWeight:500,color:"#fff",lineHeight:1.1,textShadow:"0 1px 6px rgba(0,0,0,0.35)"}}>{celebrantName?`${celebrantName}'s ${occasion.name}`:occasion.name}</span>
+                      </div>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,0.85)",lineHeight:1.4,textShadow:"0 1px 4px rgba(0,0,0,0.3)"}}>{occasion.tagline||"Celebration Plan · Tendr"}</div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                );
+              })()}
               <div style={{padding:"16px 18px"}}>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
                   {[
