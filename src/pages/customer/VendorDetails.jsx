@@ -319,6 +319,21 @@ const VendorDetailsPage = () => {
       .catch(() => {});
   }, [vendor?._id, vendor?.serviceType]);
 
+  // Resume whatever action (chat, book, etc.) was waiting on login, the moment `token` goes
+  // from falsy to truthy — covers login via AuthModal here and via any other flow on this page.
+  // Must stay above the loading/error/!vendor early returns below: a hook declared after a
+  // conditional return runs on some renders and not others (the data-loaded render calls it,
+  // the still-loading first render never reaches it), which is exactly React error #310
+  // ("rendered more hooks than during the previous render") — it was crashing every profile
+  // visit once the vendor fetch resolved, not anything specific to one vendor's data.
+  useEffect(() => {
+    if (token && pendingActionRef.current) {
+      const fn = pendingActionRef.current;
+      pendingActionRef.current = null;
+      fn();
+    }
+  }, [token]);
+
   const primaryCity = vendor?.address?.city || vendor?.location || vendor?.locations?.[0] || "Location";
   const stateName = vendor?.address?.state || "";
   const serviceType = vendor?.serviceType || "Service";
@@ -497,16 +512,6 @@ const VendorDetailsPage = () => {
     if (!token) { openGigHeroChat(); return; }
     openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
   };
-
-  // Resume whatever action (chat, book, etc.) was waiting on login, the moment `token` goes
-  // from falsy to truthy — covers login via AuthModal here and via any other flow on this page.
-  useEffect(() => {
-    if (token && pendingActionRef.current) {
-      const fn = pendingActionRef.current;
-      pendingActionRef.current = null;
-      fn();
-    }
-  }, [token]);
 
   if (isGigPro) {
     return (
