@@ -411,6 +411,41 @@ export function getRecommendations({ eventType, guests, categoryBudgets }) {
   return { services, themes, tip, totalBudget, guestTier: tier };
 }
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+let conversionRatesCache = null; // { services: {name: pct}, themes: {name: pct} } | null while unfetched
+
+// Real booking-conversion rates per service/theme name, fetched once per page load
+// and cached — used to float proven-converting suggestions above the static
+// template order below, never to replace it. Resolves to {} on any failure so
+// reorderByConversion() is always safe to call with its result.
+export async function fetchConversionRates() {
+  if (conversionRatesCache) return conversionRatesCache;
+  try {
+    const res = await fetch(`${BASE_URL}/recommendations/conversion-rates`);
+    conversionRatesCache = res.ok ? await res.json() : { services: {}, themes: {} };
+  } catch {
+    conversionRatesCache = { services: {}, themes: {} };
+  }
+  return conversionRatesCache;
+}
+
+// Stable-sorts `names` so entries with a recorded conversion rate float to the
+// top (highest first), while names with no data keep their original relative
+// order — so with no rates loaded yet (or none recorded for any of these names)
+// this returns the input order completely unchanged.
+export function reorderByConversion(names, rates) {
+  if (!rates || !Object.keys(rates).length) return names;
+  return [...names]
+    .map((name, i) => ({ name, i, rate: rates[name] }))
+    .sort((a, b) => {
+      if (a.rate == null && b.rate == null) return a.i - b.i;
+      if (a.rate == null) return 1;
+      if (b.rate == null) return -1;
+      return b.rate - a.rate || a.i - b.i;
+    })
+    .map((x) => x.name);
+}
+
 // Display label per service ID — matches vendor card titles in EventPlanning
 export const SERVICE_LABELS = {
   Caterer:      "Catering",

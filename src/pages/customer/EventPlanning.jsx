@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Helmet } from "react-helmet-async";
-import { getRecommendations, SERVICE_LABELS } from "../../utils/recommendationEngine";
+import { getRecommendations, SERVICE_LABELS, fetchConversionRates, reorderByConversion } from "../../utils/recommendationEngine";
 import { useRecommendationTracking } from "../../hooks/useRecommendationTracking";
 import { EventIdeasPanel } from "../../utils/eventIdeas";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -252,6 +252,8 @@ const EventPlanning = () => {
   const funActivitiesItems = useSelector(selectFunCartItems);
   const giftHamperItems    = useSelector(selectGhCartItems);
   const { startSession, trackClick, trackSelect, trackDeselect, trackIgnored } = useRecommendationTracking();
+  const [conversionRates, setConversionRates] = useState({ services: {}, themes: {} });
+  useEffect(() => { fetchConversionRates().then(setConversionRates); }, []);
 
   // Fire-and-forget: create an EventPlan in admin Bookings the moment the customer submits a plan
   const createEarlyEventPlan = (bType, services = []) => {
@@ -1837,6 +1839,8 @@ const EventPlanning = () => {
               guests: formData.guests,
               categoryBudgets: savedCategoryBudgets,
             });
+            recs.services = reorderByConversion(recs.services, conversionRates.services);
+            recs.themes   = reorderByConversion(recs.themes, conversionRates.themes);
             const guests = parseInt(formData.guests, 10);
             const hasGuests = guests > 0;
             const hasBudget = recs.totalBudget > 0;
@@ -1892,6 +1896,7 @@ const EventPlanning = () => {
             const recs = formData.eventType
               ? getRecommendations({ eventType: formData.eventType, guests: formData.guests, categoryBudgets: savedCategoryBudgets })
               : { services: [] };
+            recs.services = reorderByConversion(recs.services, conversionRates.services);
 
             // Recommended cards first, then the rest
             const sortedVendors = [

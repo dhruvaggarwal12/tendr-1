@@ -18,6 +18,7 @@ import {
   isPerGuest,
   buildPackageTiers,
   formatINR,
+  fetchPriceBenchmark,
 } from "../../utils/priceEstimator";
 
 // Screenshots the given DOM node and saves it as a PDF — same technique already
@@ -96,6 +97,7 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
   const [selectedPackageKey, setSelectedPackageKey] = useState(null);
   const [decorAnalyserOpen, setDecorAnalyserOpen] = useState(false);
   const [venueAnalysis, setVenueAnalysis] = useState(null);
+  const [priceBenchmark, setPriceBenchmark] = useState(null); // real avg price customers paid, once loaded
   const didMountRef = useRef(false);
   const planRef = useRef(null);
 
@@ -226,6 +228,17 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
   const selectedPackage = packages.find((p) => p.key === selectedPackageKey) || null;
 
   const isFinal = step === totalSteps;
+
+  // Real average price Tendr customers paid for a similar completed event — fetched
+  // only once the estimate is reached, shown as a supplementary data point alongside
+  // the static catalog range above (never used to alter that range itself).
+  useEffect(() => {
+    if (!isFinal || !occasion) { setPriceBenchmark(null); return; }
+    let cancelled = false;
+    fetchPriceBenchmark(occasion, city).then((data) => { if (!cancelled) setPriceBenchmark(data); });
+    return () => { cancelled = true; };
+  }, [isFinal, occasion, city]);
+
   const stepLabel = isFinal ? "Your estimate" :
     step === 0 ? "Your event" : step === 1 ? "Venue" : step === 2 ? "What you need" : currentCategoryDef?.label;
 
@@ -373,6 +386,11 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
               <div style={{ fontSize: 12, color: "#8a6a4a", marginTop: 6 }}>
                 {guestBucket?.label}{occasion ? ` · ${occasion}` : ""}{city ? ` · ${city}` : ""}
               </div>
+              {priceBenchmark && (
+                <div style={{ fontSize: 12, color: "#15803d", marginTop: 10, fontWeight: 600 }}>
+                  Tendr customers who booked a similar {occasion} paid around {formatINR(priceBenchmark.avgPrice)} on average
+                </div>
+              )}
             </div>
 
             {onFinalise && (

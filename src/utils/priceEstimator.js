@@ -2,6 +2,26 @@ import pricingData from "../data/pricingData.json";
 
 export const PRICING_DISCLAIMER = pricingData.disclaimer;
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+// Real average price Tendr customers actually paid for a similar completed event —
+// a live data point shown alongside the static catalog estimate below, never used
+// to silently rewrite it. Resolves to null when there isn't enough real data yet
+// for this eventType/city, so callers fall back to showing only the static range.
+export async function fetchPriceBenchmark(eventType, city) {
+  if (!eventType) return null;
+  try {
+    const params = new URLSearchParams({ eventType });
+    if (city) params.set("city", city);
+    const res = await fetch(`${BASE_URL}/event-plans/price-benchmark?${params.toString()}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.available ? data : null;
+  } catch {
+    return null;
+  }
+}
+
 export function getOccasionNames() {
   return Object.keys(pricingData.occasions);
 }
