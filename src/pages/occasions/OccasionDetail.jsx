@@ -2617,6 +2617,68 @@ export default function OccasionDetail(){
     );
   };
 
+  // Creates the backend EventPlan (and syncs wizard selections to it) exactly once per
+  // session — shared by the manual step 6→7 transition AND the quick-plan path below, so
+  // a plan built either way actually gets a real, saved record instead of only living in
+  // frontend state. Accepts overrides for the fields quick-plan just set, since reading
+  // them straight off component state here would race React's async state updates and
+  // save stale (pre-auto-fill) values.
+  const ensureEventPlanCreated=(overrides={})=>{
+    if(!(token && occasion && date && guests && city)) return;
+    const svcList=overrides.vendors??vendors;
+    const giftList=overrides.gifts??gifts;
+    const giftQty=overrides.giftQuantities??giftQuantities;
+    const actList=overrides.selectedActivities??selectedActivities;
+    const entryList=overrides.selectedEntryExperiences??selectedEntryExperiences;
+    const patchWizardSelections=(planId)=>{
+      fetch(`${BASE_URL}/event-plans/${planId}/wizard-selections`,{
+        method:'PATCH',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        credentials:'include',
+        body:JSON.stringify({
+          selectedTheme: theme?.name||'',
+          giftSelections: giftList.map(name=>({name,qty:giftQty[name]||1})),
+          selectedActivities: actList,
+          customActivities,
+          selectedEntryExperiences: entryList,
+        }),
+      }).catch(()=>{});
+    };
+    try{
+      if(createdPlanId){
+        // Already created earlier this session (e.g. user went back to step 6 and forward again) — just sync selections.
+        patchWizardSelections(createdPlanId);
+      } else if(!sessionStorage.getItem('tendr_early_plan_created')){
+        sessionStorage.setItem('tendr_early_plan_created','1');
+        fetch(`${BASE_URL}/event-plans`,{
+          method:'POST',
+          headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+          credentials:'include',
+          body:JSON.stringify({
+            bookingType:'you-do-it',
+            eventName: occasion.name,
+            eventType: occasion.name,
+            guests: String(guests),
+            location: city,
+            date,
+            budget: budget ? String(budget) : '',
+            additionalInfo: '',
+            selectedServices: svcList.map(toBackendServiceType),
+            finalisedVendors: {},
+          }),
+        }).then(res=>{
+          if(!res.ok){ console.warn('[event-plan] create failed', res.status); return null; }
+          return res.json();
+        }).then(data=>{
+          if(data?.eventPlan?._id){
+            setCreatedPlanId(data.eventPlan._id);
+            patchWizardSelections(data.eventPlan._id);
+          }
+        }).catch(()=>{ try{sessionStorage.removeItem('tendr_early_plan_created');}catch{} });
+      }
+    }catch{}
+  };
+
   /* navigation */
   const next=()=>{
     // Theme (when wanted) is resolved upfront by the carousel overlay below, before step 1
@@ -2630,55 +2692,7 @@ export default function OccasionDetail(){
       setStep(5);
       return;
     }
-    if(step===6 && token && occasion && date && guests && city){
-      const patchWizardSelections=(planId)=>{
-        fetch(`${BASE_URL}/event-plans/${planId}/wizard-selections`,{
-          method:'PATCH',
-          headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
-          credentials:'include',
-          body:JSON.stringify({
-            selectedTheme: theme?.name||'',
-            giftSelections: gifts.map(name=>({name,qty:giftQuantities[name]||1})),
-            selectedActivities,
-            customActivities,
-            selectedEntryExperiences,
-          }),
-        }).catch(()=>{});
-      };
-      try{
-        if(createdPlanId){
-          // Already created earlier this session (e.g. user went back to step 6 and forward again) — just sync selections.
-          patchWizardSelections(createdPlanId);
-        } else if(!sessionStorage.getItem('tendr_early_plan_created')){
-          sessionStorage.setItem('tendr_early_plan_created','1');
-          fetch(`${BASE_URL}/event-plans`,{
-            method:'POST',
-            headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
-            credentials:'include',
-            body:JSON.stringify({
-              bookingType:'you-do-it',
-              eventName: occasion.name,
-              eventType: occasion.name,
-              guests: String(guests),
-              location: city,
-              date,
-              budget: budget ? String(budget) : '',
-              additionalInfo: '',
-              selectedServices: vendors.map(toBackendServiceType),
-              finalisedVendors: {},
-            }),
-          }).then(res=>{
-            if(!res.ok){ console.warn('[event-plan] create failed', res.status); return null; }
-            return res.json();
-          }).then(data=>{
-            if(data?.eventPlan?._id){
-              setCreatedPlanId(data.eventPlan._id);
-              patchWizardSelections(data.eventPlan._id);
-            }
-          }).catch(()=>{ try{sessionStorage.removeItem('tendr_early_plan_created');}catch{} });
-        }
-      }catch{}
-    }
+    if(step===6){ ensureEventPlanCreated(); }
     setStep(s=>Math.min(s+1,8));
   };
   const back=()=>{
@@ -2754,7 +2768,8 @@ export default function OccasionDetail(){
     if(svc.length) setVendors(svc);
 
     const entrySugg=getEntryExperienceSuggestions(occasion,{ageGroups,guests,venueType,budget:Number(budget)||0});
-    if(entrySugg.length){ setSelectedEntryExperiences([entrySugg[0].id]); setEntryExperiencesSkipped(false); }
+    const entryList=entrySugg.length?[entrySugg[0].id]:[];
+    if(entryList.length){ setSelectedEntryExperiences(entryList); setEntryExperiencesSkipped(false); }
     else setEntryExperiencesSkipped(true);
 
     const actSugg=getActivitySuggestions(occasion,{ageGroups,theme});
@@ -2763,10 +2778,23 @@ export default function OccasionDetail(){
 
     const curatedGifts=sortedGifts.filter(g=>g.score>=4);
     const topGifts=(curatedGifts.length?curatedGifts:sortedGifts).slice(0,2).map(g=>g.name);
+    const topGiftQuantities=topGifts.reduce((o,n)=>({...o,[n]:1}),{});
     if(topGifts.length){
       setGifts(topGifts);
-      setGiftQuantities(topGifts.reduce((o,n)=>({...o,[n]:1}),{}));
+      setGiftQuantities(topGiftQuantities);
     }
+
+    // Save a real backend EventPlan from these freshly-computed picks — not from
+    // `vendors`/`gifts`/etc. component state, which won't reflect the setState calls
+    // above until the next render (state updates here would otherwise race this and
+    // the plan would save as empty/stale).
+    ensureEventPlanCreated({
+      vendors:svc,
+      gifts:topGifts,
+      giftQuantities:topGiftQuantities,
+      selectedActivities:topActivities,
+      selectedEntryExperiences:entryList,
+    });
 
     setQuickPlanBuilding(true);
   };
