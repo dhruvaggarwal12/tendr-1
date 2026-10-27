@@ -851,13 +851,19 @@ export default function VendorRegistration() {
   const [performerArtForm, setPerformerArtForm] = useState(""); // only for "Performer" (hasArtForm)
   const [genres, setGenres] = useState([]);
   const [languages, setLanguages] = useState([]);
+  const [secondaryCategories, setSecondaryCategories] = useState([]);
   const [artistForm, setArtistForm] = useState({
     name: "", phoneNumber: "", whatsappNumber: "", email: "", city: "",
     password: "", confirmPassword: "",
     bio: "", contentRating: "",
-    packages: [{ name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [] }],
+    packages: [{ name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [] }],
     duration: "", sampleLink: "", instagram: "",
     performanceItems: [{ title: "", note: "" }],
+    highlights: [],
+    milestones: [],
+    notableClients: [],
+    awards: [],
+    lineup: [],
   });
   // Photos — first one is the hero/cover photo (same convention as portfolioPhotos[0]
   // everywhere else: VendorDetails.jsx, ArtistListingsPage.jsx, etc.)
@@ -1142,8 +1148,19 @@ export default function VendorRegistration() {
     const genreOptions = ARTIST_GENRES[performerType]?.length ? ARTIST_GENRES[performerType] : (GIG_STYLE_OPTIONS[performerType] || []);
     const toggleGenre = (g) => setGenres(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g]);
     const toggleLanguage = (l) => setLanguages(prev => prev.includes(l) ? prev.filter(x => x !== l) : [...prev, l]);
+    const toggleSecondaryCategory = (c) => setSecondaryCategories(prev => prev.includes(c) ? prev.filter(x => x !== c) : (prev.length >= 2 ? prev : [...prev, c]));
     const showLanguages = GIG_LANGUAGE_CATEGORIES.includes(performerType);
     const showContentRating = performerType === "Stand-up Comedian";
+
+    // Generic helpers for the repeatable-row sections below (highlights,
+    // milestones, lineup) — same object-per-row pattern as performanceItems,
+    // so what the vendor types always lands in the right structured shape.
+    const setArtRow = (field, i, key, val) => setArtistForm(p => ({ ...p, [field]: p[field].map((row, j) => j === i ? { ...row, [key]: val } : row) }));
+    const addArtRow = (field, blank, max) => setArtistForm(p => p[field].length >= max ? p : ({ ...p, [field]: [...p[field], blank] }));
+    const removeArtRow = (field, i) => setArtistForm(p => ({ ...p, [field]: p[field].filter((_, j) => j !== i) }));
+    const setArtStr = (field, i, val) => setArtistForm(p => ({ ...p, [field]: p[field].map((s, j) => j === i ? val : s) }));
+    const addArtStr = (field, max) => setArtistForm(p => p[field].length >= max ? p : ({ ...p, [field]: [...p[field], ""] }));
+    const removeArtStr = (field, i) => setArtistForm(p => ({ ...p, [field]: p[field].filter((_, j) => j !== i) }));
 
     const perfLabel = performanceLabel(performerType);
     const perfHints = performanceFieldHints(performerType);
@@ -1174,6 +1191,7 @@ export default function VendorRegistration() {
         genres,
         languages: showLanguages ? languages : [],
         contentRating: showContentRating ? artistForm.contentRating : "",
+        secondaryCategories,
         bio: artistForm.bio,
         packages: artistForm.packages
           .filter(p => p.name.trim() || p.price.trim())
@@ -1181,6 +1199,9 @@ export default function VendorRegistration() {
             name: p.name.trim(), price: p.price.trim(), unit: p.unit || "per event",
             duration: p.duration || "", bestFor: p.bestFor || "",
             items: (p.items || []).map(s => s.trim()).filter(Boolean),
+            performerCount: p.performerCount || undefined,
+            travelCharge: p.travelCharge || "", overtimeCharge: p.overtimeCharge || "",
+            addOns: (p.addOns || []).map(s => s.trim()).filter(Boolean),
           })),
         duration: artistForm.duration,
         sampleLink: artistForm.sampleLink,
@@ -1188,6 +1209,17 @@ export default function VendorRegistration() {
         performanceItems: artistForm.performanceItems
           .filter(it => it.title.trim())
           .map(it => ({ title: it.title.trim(), note: it.note.trim() })),
+        highlights: artistForm.highlights
+          .filter(h => h.label.trim())
+          .map(h => ({ label: h.label.trim(), desc: (h.desc || "").trim() })),
+        milestones: artistForm.milestones
+          .filter(m => m.year.trim() && m.text.trim())
+          .map(m => ({ year: m.year.trim(), text: m.text.trim() })),
+        notableClients: artistForm.notableClients.map(s => s.trim()).filter(Boolean),
+        awards: artistForm.awards.map(s => s.trim()).filter(Boolean),
+        lineup: performerType === "Band"
+          ? artistForm.lineup.filter(m => m.name.trim()).map(m => ({ name: m.name.trim(), role: (m.role || "").trim() }))
+          : [],
         photos: artistPhotos,
       });
       if (ok) { setSuccessName(artistForm.name); setSubmitted(true); }
@@ -1261,7 +1293,27 @@ export default function VendorRegistration() {
             </div>
 
             {/* Profile */}
-            <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "4px 0 0" }}>Your Profile (Shown to customers)</p>
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "4px 0 4px" }}>Your Profile (Shown to customers)</p>
+              <p style={{ fontSize: 12, color: muted, margin: 0 }}>Fill in what you can now — everything below is optional, and you can add or edit any of it later by signing into your dashboard.</p>
+            </div>
+
+            {/* Also Perform As — secondary categories */}
+            <div>
+              <Label optional>Also Perform As <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(up to 2 — e.g. a Singer who's also a Musician gets both sections on their profile)</span></Label>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
+                {PERFORMER_CATEGORIES.filter(c => c.value !== performerType).map(c => {
+                  const on = secondaryCategories.includes(c.value);
+                  return (
+                    <button key={c.value} type="button" onClick={() => toggleSecondaryCategory(c.value)}
+                      disabled={!on && secondaryCategories.length >= 2}
+                      style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s", opacity: (!on && secondaryCategories.length >= 2) ? 0.4 : 1 }}>
+                      {c.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
             {/* Photos — first one is the hero/cover photo shown on your listing card */}
             <div>
@@ -1421,10 +1473,23 @@ export default function VendorRegistration() {
                         </button>
                       )}
                     </div>
+                    {/* Price-relevant terms — kept as real fields instead of more
+                        freeform text in "What's included" */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+                      <input value={pkg.performerCount} type="number" min="1"
+                        onChange={e => setArtRow("packages", i, "performerCount", e.target.value)}
+                        placeholder="# performers" style={inputStyle(focused, {}, "", gold, ink)} />
+                      <input value={pkg.travelCharge}
+                        onChange={e => setArtRow("packages", i, "travelCharge", e.target.value)}
+                        placeholder="Travel charge" style={inputStyle(focused, {}, "", gold, ink)} />
+                      <input value={pkg.overtimeCharge}
+                        onChange={e => setArtRow("packages", i, "overtimeCharge", e.target.value)}
+                        placeholder="Overtime charge" style={inputStyle(focused, {}, "", gold, ink)} />
+                    </div>
                   </div>
                 ))}
                 {artistForm.packages.length < 3 && (
-                  <button type="button" onClick={() => setArtistForm(p => ({ ...p, packages: [...p.packages, { name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [] }] }))}
+                  <button type="button" onClick={() => setArtistForm(p => ({ ...p, packages: [...p.packages, { name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [] }] }))}
                     style={{ padding: "9px", borderRadius: 8, border: `1.5px dashed rgba(196,122,46,0.45)`, background: "transparent", color: gold, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
                     + Add Package
                   </button>
@@ -1432,12 +1497,123 @@ export default function VendorRegistration() {
               </div>
             </div>
 
+            {performerType === "Band" && (
+              <div>
+                <Label optional>Meet the Band <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(shown on your profile's About tab)</span></Label>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {artistForm.lineup.map((m, i) => (
+                    <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8 }}>
+                      <input value={m.name} onChange={e => setArtRow("lineup", i, "name", e.target.value)}
+                        placeholder="Member name" style={inputStyle(focused, {}, "", gold, ink)} />
+                      <input value={m.role} onChange={e => setArtRow("lineup", i, "role", e.target.value)}
+                        placeholder="Role — e.g. Lead Vocalist" style={inputStyle(focused, {}, "", gold, ink)} />
+                      <button type="button" onClick={() => removeArtRow("lineup", i)}
+                        style={{ height: 42, width: 36, background: "none", border: "1.5px solid #fca5a5", borderRadius: 8, color: "#dc2626", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
+                    </div>
+                  ))}
+                  {artistForm.lineup.length < 12 && (
+                    <button type="button" onClick={() => addArtRow("lineup", { name: "", role: "" }, 12)}
+                      style={{ padding: "9px", borderRadius: 8, border: `1.5px dashed rgba(196,122,46,0.45)`, background: "transparent", color: gold, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                      + Add member
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div>
               <Label optional>About You <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(shown on your profile)</span></Label>
               <textarea value={artistForm.bio} onChange={e => setArtistForm(p => ({...p, bio: e.target.value}))} rows={3} maxLength={300}
                 placeholder={`Tell clients about your ${typeInfo.label?.toLowerCase()} style, experience, and what makes your performances special...`}
                 style={{ ...inputStyle(focused, errors, "bio", gold, ink), resize: "vertical" }} />
               <p style={{ fontSize: 11, color: muted, marginTop: 4, textAlign: "right" }}>{artistForm.bio.length}/300</p>
+            </div>
+
+            {/* Why People Book You — up to 4, optional */}
+            <div>
+              <Label optional>Why People Book You <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(up to 4 — skip now and add later from your dashboard if you'd rather)</span></Label>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {artistForm.highlights.map((h, i) => (
+                  <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8 }}>
+                    <input value={h.label} onChange={e => setArtRow("highlights", i, "label", e.target.value)}
+                      placeholder="e.g. Reads the room instantly" style={inputStyle(focused, {}, "", gold, ink)} />
+                    <input value={h.desc} onChange={e => setArtRow("highlights", i, "desc", e.target.value)}
+                      placeholder="One line explaining why (optional)" style={inputStyle(focused, {}, "", gold, ink)} />
+                    <button type="button" onClick={() => removeArtRow("highlights", i)}
+                      style={{ height: 42, width: 36, background: "none", border: "1.5px solid #fca5a5", borderRadius: 8, color: "#dc2626", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
+                  </div>
+                ))}
+                {artistForm.highlights.length < 4 && (
+                  <button type="button" onClick={() => addArtRow("highlights", { label: "", desc: "" }, 4)}
+                    style={{ padding: "9px", borderRadius: 8, border: `1.5px dashed rgba(196,122,46,0.45)`, background: "transparent", color: gold, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                    + Add a reason
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Experience & Milestones — optional, same as the dashboard version */}
+            <div>
+              <Label optional>Performance Journey <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(up to 6 — optional, add anytime from your dashboard)</span></Label>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {artistForm.milestones.map((m, i) => (
+                  <div key={i} style={{ display: "grid", gridTemplateColumns: "90px 1fr auto", gap: 8 }}>
+                    <input value={m.year} onChange={e => setArtRow("milestones", i, "year", e.target.value)}
+                      placeholder="2024" style={inputStyle(focused, {}, "", gold, ink)} />
+                    <input value={m.text} onChange={e => setArtRow("milestones", i, "text", e.target.value)}
+                      placeholder="e.g. Performed at 30+ private celebrations" style={inputStyle(focused, {}, "", gold, ink)} />
+                    <button type="button" onClick={() => removeArtRow("milestones", i)}
+                      style={{ height: 42, width: 36, background: "none", border: "1.5px solid #fca5a5", borderRadius: 8, color: "#dc2626", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
+                  </div>
+                ))}
+                {artistForm.milestones.length < 6 && (
+                  <button type="button" onClick={() => addArtRow("milestones", { year: "", text: "" }, 6)}
+                    style={{ padding: "9px", borderRadius: 8, border: `1.5px dashed rgba(196,122,46,0.45)`, background: "transparent", color: gold, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                    + Add a milestone
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <div>
+                <Label optional>Notable Clients / Venues <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(up to 8)</span></Label>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {artistForm.notableClients.map((c, i) => (
+                    <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
+                      <input value={c} onChange={e => setArtStr("notableClients", i, e.target.value)}
+                        placeholder="e.g. Taj Palace, New Delhi" style={inputStyle(focused, {}, "", gold, ink)} />
+                      <button type="button" onClick={() => removeArtStr("notableClients", i)}
+                        style={{ height: 42, width: 36, background: "none", border: "1.5px solid #fca5a5", borderRadius: 8, color: "#dc2626", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
+                    </div>
+                  ))}
+                  {artistForm.notableClients.length < 8 && (
+                    <button type="button" onClick={() => addArtStr("notableClients", 8)}
+                      style={{ padding: "9px", borderRadius: 8, border: `1.5px dashed rgba(196,122,46,0.45)`, background: "transparent", color: gold, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                      + Add
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div>
+                <Label optional>Awards / Recognition <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(up to 5)</span></Label>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {artistForm.awards.map((a, i) => (
+                    <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
+                      <input value={a} onChange={e => setArtStr("awards", i, e.target.value)}
+                        placeholder="e.g. Best Wedding Singer 2024" style={inputStyle(focused, {}, "", gold, ink)} />
+                      <button type="button" onClick={() => removeArtStr("awards", i)}
+                        style={{ height: 42, width: 36, background: "none", border: "1.5px solid #fca5a5", borderRadius: 8, color: "#dc2626", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
+                    </div>
+                  ))}
+                  {artistForm.awards.length < 5 && (
+                    <button type="button" onClick={() => addArtStr("awards", 5)}
+                      style={{ padding: "9px", borderRadius: 8, border: `1.5px dashed rgba(196,122,46,0.45)`, background: "transparent", color: gold, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                      + Add
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
 
             {aInput("sampleLink", "Sample Video / YouTube Link", false, { placeholder: "https://youtube.com/..." })}
