@@ -19,7 +19,7 @@ import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 import PerformerSuggestions from "../../components/PerformerSuggestions";
 import DecorAnalyzer from "../../components/DecorAnalyzer";
-import EntryExperiences from "../../components/EntryExperiences";
+import EntryExperiences, { getEntryExperienceSuggestions } from "../../components/EntryExperiences";
 
 /* ── tokens ── */
 const font  = "'Outfit', sans-serif";
@@ -1891,6 +1891,11 @@ function timeAgo(iso) {
 const css=`
   @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
   @keyframes chipPop{0%{transform:scale(1)}40%{transform:scale(1.12)}70%{transform:scale(0.96)}100%{transform:scale(1)}}
+  @keyframes qpSpin{to{transform:rotate(360deg)}}
+  @keyframes qpOverlayIn{from{opacity:0}to{opacity:1}}
+  .qp-spinner{animation:qpSpin 0.9s linear infinite;}
+  .qp-overlay{animation:qpOverlayIn 0.2s ease both;}
+  @media(prefers-reduced-motion:reduce){.qp-spinner{animation:none;}.qp-overlay{animation:none;}}
   .os{animation:fadeUp 0.24s cubic-bezier(0.22,1,0.36,1);}
   .chip{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:10px;border:1.5px solid var(--plan-border,rgba(196,122,46,0.22));background:var(--plan-wash,rgba(196,122,46,0.03));color:${ink};font-size:14px;font-weight:500;cursor:pointer;transition:all 0.14s;font-family:${font};white-space:nowrap;position:relative;}
   .chip:hover{border-color:var(--plan-border-hover,rgba(196,122,46,0.45));background:var(--plan-wash-hover,rgba(196,122,46,0.06));}
@@ -1912,6 +1917,48 @@ const css=`
      fixed bottom nav. Real browsers that support dvh get the more accurate dynamic height. */
   @supports (height:100dvh){.od-page-wrap{height:100dvh!important;}}
 `;
+
+/* ── Quick Plan building overlay — shown while startQuickPlan() auto-fills Services/
+   Entry Experience/Entertainment/Gifts from the same real per-occasion data the manual
+   steps use, then jumps to the step 7 reveal. Purely presentational: the texts cycle on
+   a timer and call onDone once the last one has had its moment on screen. ── */
+function QuickPlanOverlay({accent,occasionName,onDone}){
+  const texts=[
+    `Picking the best services for your ${occasionName}…`,
+    "Choosing a grand entrance…",
+    "Adding entertainment & activities…",
+    "Wrapping up the gifts…",
+    "Finishing touches…",
+  ];
+  const [idx,setIdx]=useState(0);
+  useEffect(()=>{
+    if(idx>=texts.length-1){
+      const t=setTimeout(onDone,850);
+      return ()=>clearTimeout(t);
+    }
+    const t=setTimeout(()=>setIdx(i=>i+1),650);
+    return ()=>clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[idx]);
+  return(
+    <div className="qp-overlay" style={{position:"fixed",inset:0,zIndex:300,background:"rgba(255,251,245,0.97)",backdropFilter:"blur(6px)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:24,padding:24}}>
+      <div className="qp-spinner" style={{width:60,height:60,borderRadius:"50%",border:"3px solid rgba(28,9,0,0.08)",borderTopColor:accent}}/>
+      <AnimatePresence mode="wait">
+        <motion.div key={idx}
+          initial={{opacity:0,y:14}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-14}}
+          transition={{duration:0.28,ease:"easeOut"}}
+          style={{fontFamily:"'Cormorant Garamond', Georgia, serif",fontSize:"clamp(1.15rem,3.6vw,1.45rem)",color:"#1C0900",textAlign:"center",maxWidth:320,lineHeight:1.4}}>
+          {texts[idx]}
+        </motion.div>
+      </AnimatePresence>
+      <div style={{display:"flex",gap:6}}>
+        {texts.map((_,i)=>(
+          <div key={i} style={{width:i===idx?18:6,height:6,borderRadius:100,background:i<=idx?accent:"rgba(28,9,0,0.12)",transition:"all 0.3s"}}/>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /* ── Tab bar ── */
 function TabBar({step,withTheme,occAccent,onTab}){
@@ -1971,6 +2018,7 @@ export default function OccasionDetail(){
     return m==="with"?"with":"without";
   });
   const [step,setStep]=useState(1);
+  const [quickPlanBuilding,setQuickPlanBuilding]=useState(false); // true while the "Get My Full Plan Ready" overlay is animating
   const [guests,setGuests]=useState(20);
   const [date,setDate]=useState("");
   // Approximate start time — required so the itinerary below can show real times instead
@@ -2697,6 +2745,32 @@ export default function OccasionDetail(){
     ...g,...scoreGift(g,{theme,ageGroups,budget,guests})
   })).sort((a,b)=>b.score-a.score);
 
+  // "Get My Full Plan Ready" — auto-fills Services/Entry Experience/Entertainment/Gifts
+  // from the exact same scored suggestion logic the manual steps use (never invents
+  // picks), then shows the building overlay before jumping to the step 7 reveal. The
+  // customer can still Back into any step afterward and change what was auto-picked.
+  const startQuickPlan=()=>{
+    const svc=occasion.vendorCategories||[];
+    if(svc.length) setVendors(svc);
+
+    const entrySugg=getEntryExperienceSuggestions(occasion,{ageGroups,guests,venueType,budget:Number(budget)||0});
+    if(entrySugg.length){ setSelectedEntryExperiences([entrySugg[0].id]); setEntryExperiencesSkipped(false); }
+    else setEntryExperiencesSkipped(true);
+
+    const actSugg=getActivitySuggestions(occasion,{ageGroups,theme});
+    const topActivities=Object.values(actSugg).flat().sort((a,b)=>b.score-a.score).slice(0,2).map(a=>a.id);
+    if(topActivities.length) setSelectedActivities(topActivities);
+
+    const curatedGifts=sortedGifts.filter(g=>g.score>=4);
+    const topGifts=(curatedGifts.length?curatedGifts:sortedGifts).slice(0,2).map(g=>g.name);
+    if(topGifts.length){
+      setGifts(topGifts);
+      setGiftQuantities(topGifts.reduce((o,n)=>({...o,[n]:1}),{}));
+    }
+
+    setQuickPlanBuilding(true);
+  };
+
   const pageBg = step>0
     ? (themed
         ? `radial-gradient(ellipse 90% 50% at 10% 0%, ${gold}4a 0%, transparent 58%), radial-gradient(ellipse 80% 45% at 100% 100%, ${gold}3c 0%, transparent 62%), ${lightenHex(gold,0.88)}`
@@ -2715,6 +2789,10 @@ export default function OccasionDetail(){
     <div className="od-page-wrap" style={{height:"100vh",background:pageBg,fontFamily:font,display:"flex",flexDirection:"column",overflow:"hidden",position:"relative",...planCssVars}}>
       <style>{css}</style>
       <SEO title={`Plan your ${occasion.name} — Tendr`} description={`Guided ${occasion.name} planner`} path={`/occasions/${slug}`}/>
+
+      {quickPlanBuilding&&(
+        <QuickPlanOverlay accent={occAccent} occasionName={occasion.name} onDone={()=>{setQuickPlanBuilding(false);setStep(7);}}/>
+      )}
 
       {/* Ambient theme props — a handful of soft, oversized motifs matching the chosen theme,
           anchored to the viewport so they stay put behind the scrolling content on every step. */}
@@ -5309,7 +5387,15 @@ export default function OccasionDetail(){
         <div className="od-step-footer" style={{flexShrink:0,background:"#fff",borderTop:"1px solid rgba(0,0,0,0.07)",padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
           <div style={{maxWidth:680,margin:"0 auto",display:"flex",gap:10}}>
             {step>0&&<button onClick={back} style={btnGhost}>← Back</button>}
-            {step<7&&(
+            {step===1&&canNext()?(
+              <div style={{display:"flex",flexDirection:"column",gap:8,flex:1}}>
+                <button onClick={startQuickPlan} disabled={quickPlanBuilding}
+                  style={{padding:"13px 18px",borderRadius:10,border:"none",background:`linear-gradient(135deg,${occAccent},${lightenHex(occAccent,0.25)})`,color:"#fff",fontSize:14,fontWeight:800,cursor:quickPlanBuilding?"not-allowed":"pointer",fontFamily:font,boxShadow:`0 4px 14px ${occAccent}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:6,letterSpacing:"0.01em"}}>
+                  ✨ Get My Full Plan Ready
+                </button>
+                <button onClick={next} disabled={quickPlanBuilding} style={{...btnGhost,width:"100%"}}>Build Step by Step →</button>
+              </div>
+            ):step<7&&(
               <button onClick={next} disabled={!canNext()} style={btnPrimary}>
                 {step===1&&step1Hint()}
                 {step===2&&(theme?`Use "${theme.name}" →`:"Skip — no theme →")}

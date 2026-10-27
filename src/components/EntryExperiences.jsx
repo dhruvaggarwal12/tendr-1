@@ -12,7 +12,7 @@ const BUDGET_RANK = { budget: 1, mid: 2, premium: 3 };
 
 // Score → filter → sort, mirroring OccasionDetail.jsx's getActivitySuggestions shape —
 // occasion + age-group + guest-count + venue + budget fit, most relevant first, no cap.
-function getEntryExperienceSuggestions(occasion, { ageGroups = [], guests = 20, venueType = "", budget = 0 } = {}) {
+export function getEntryExperienceSuggestions(occasion, { ageGroups = [], guests = 20, venueType = "", budget = 0 } = {}) {
   const occId = occasion?.id || "";
   const venue = (venueType || "").toLowerCase();
   const b = Number(budget) || 0;
