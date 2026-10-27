@@ -109,3 +109,62 @@ export const QUICK_PERFORMANCE_ITEMS = {
   Magician:            ['Close-Up Card Magic', 'Stage Illusion Act', 'Mentalism / Mind Reading', "Children's Show Set", 'Corporate Branded Finale'],
   Performer:           ['Stage Act', 'Walk-Around Meet & Greet', 'Flash Mob Surprise', 'Stunt / Fire Act', 'Comedy Sketch'],
 };
+
+// What one row in "Setlist & Performance" is actually counted as, per category —
+// used to show "12+ songs in repertoire" etc. without a separate count field
+// (the count is just performanceItems.length).
+export function performanceItemNoun(svc) {
+  if (['Singer', 'Band', 'Musician'].includes(svc)) return 'songs';
+  if (['Emcee/Host', 'Anchor'].includes(svc)) return 'segments';
+  if (['Magician', 'Performer'].includes(svc)) return 'acts';
+  if (svc === 'DJ') return 'sets';
+  if (svc === 'Choreographer') return 'routines';
+  if (svc === 'Stand-up Comedian') return 'material entries';
+  return 'items';
+}
+
+// Extra "Suitable For" options layered on top of the universal list, per category —
+// an Anchor/Emcee serves occasion types (conferences, launch events) the generic
+// Wedding/Birthday/Corporate list doesn't name.
+export const EVENT_TYPE_BASE_OPTIONS = ['Wedding', 'Birthday', 'Corporate', 'Festival', 'College Event', 'Private Party', 'Sangeet', 'Anniversary', 'Award Night'];
+export const EVENT_TYPE_EXTRA_OPTIONS = {
+  Anchor:       ['Conferences', 'Launch Events', 'Cultural Programs'],
+  'Emcee/Host': ['Conferences', 'Launch Events', 'Brand Activations'],
+};
+export function eventTypeOptions(svc) {
+  return [...EVENT_TYPE_BASE_OPTIONS, ...(EVENT_TYPE_EXTRA_OPTIONS[svc] || [])];
+}
+
+// Emcee/Anchor — standard responsibilities, as a real checklist.
+export const HOSTING_RESPONSIBILITY_OPTIONS = ['Welcoming Guests', 'Opening the Event', 'Introducing Speakers/Performers', 'Announcing Activities', 'Conducting Games', 'Award Announcements', 'Coordinating with Organiser', 'Closing the Event'];
+
+// Emcee/Anchor — actual experience by crowd size.
+export const AUDIENCE_SIZE_OPTIONS = ['Small Gatherings (under 50)', 'Medium Celebrations (50–150)', 'Large Audiences (150–500)', 'Formal Stage Events (500+)'];
+
+// Anchor — individually-declared presentation capabilities.
+export const CAPABILITY_BADGE_OPTIONS = ['Teleprompter Experience', 'Script Reading', 'Bilingual Presentation', 'Formal Introductions', 'Protocol-Based Hosting', 'Live Announcements', 'Panel Moderation'];
+
+// Magician — how guests participate, and who the act suits.
+export const AUDIENCE_PARTICIPATION_OPTIONS = ['Individual Guests', 'Group Participation', 'Audience Volunteers', 'Table-to-Table', 'Stage Volunteers'];
+export const AGE_SUITABILITY_OPTIONS = ['Young Children', 'Families', 'Teenagers', 'Adults', 'Mixed-Age Audiences'];
+
+// DJ — equipment actually brought, and the energy range they can deliver.
+export const EQUIPMENT_PROVIDED_OPTIONS = ['Controller/Decks', 'Speakers', 'Subwoofers', 'Lighting', 'Wireless Mics', 'Dance-floor Effects'];
+export const PARTY_ENERGY_OPTIONS = ['Lounge/Background', 'Relaxed Social', 'Dance-floor Build-up', 'High-Energy Party'];
+
+// Anchor/Emcee preparation.
+export const SCRIPT_SOURCE_OPTIONS = ['I write my own script', 'Need script from organiser', 'Either works'];
+
+// Which categories see which of the new requirements-checklist fields, purely for
+// deciding what to show in the dashboard form — the schema field itself is shared.
+export const REQUIREMENT_FIELD_CATEGORIES = {
+  scriptSource:        ['Anchor', 'Emcee/Host'],
+  rehearsalAvailable:  ['Anchor', 'Emcee/Host', 'Choreographer'],
+  outfitArrangement:   ['Anchor', 'Emcee/Host'],
+  micCount:            ['Band', 'Magician', 'DJ', 'Musician'],
+  lightingRequirement: ['Band', 'Magician', 'DJ'],
+  floorRequirement:    ['Choreographer'],
+  costumeArrangement:  ['Choreographer'],
+};
+
+export const SONG_REQUEST_CATEGORIES = ['Singer', 'Band', 'Musician'];

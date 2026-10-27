@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { MapPin, Clock, CalendarCheck, Share2, CheckCircle2 } from "lucide-react";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
+import { performanceItemNoun } from "../constants/performerCategories";
 
 // ── Tokens ────────────────────────────────────────────────────────────────────
 const BG      = "#2E1F12";   // warm sienna — lighter, less AI-brown
@@ -170,7 +171,17 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
   const requirements = vendor.requirements || {};
   const hasRequirements = !!(requirements.travel || requirements.setupTimeMinutes || requirements.soundSystemProvided
     || requirements.stageRequired || requirements.powerRequirement || requirements.spaceRequirement
-    || requirements.advanceBookingDays || requirements.customRequestsNote);
+    || requirements.advanceBookingDays || requirements.customRequestsNote || requirements.scriptSource
+    || requirements.rehearsalAvailable || requirements.outfitArrangement || requirements.micCount
+    || requirements.lightingRequirement || requirements.floorRequirement || requirements.costumeArrangement);
+  const hostingResponsibilities = vendor.hostingResponsibilities || [];
+  const audienceSizeExperience  = vendor.audienceSizeExperience  || [];
+  const capabilityBadges        = vendor.capabilityBadges        || [];
+  const audienceParticipation   = vendor.audienceParticipation   || [];
+  const ageSuitability          = vendor.ageSuitability          || [];
+  const equipmentProvided       = vendor.equipmentProvided       || [];
+  const partyEnergyLevels       = vendor.partyEnergyLevels       || [];
+  const songRequestPolicy       = vendor.songRequestPolicy || {};
   const pkgs = (vendor.packages || []).map(p => ({
     ...p,
     items: Array.isArray(p.items) ? p.items : (p.items||"").split("\n").filter(Boolean),
@@ -701,6 +712,23 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
                       </div>
                     </div>
                   )}
+                  <ChipGroup label="Hosting Responsibilities" items={hostingResponsibilities} />
+                  <ChipGroup label="Audience Size Experience" items={audienceSizeExperience} />
+                  <ChipGroup label="Capabilities" items={capabilityBadges} />
+                  <ChipGroup label="Audience Participation" items={audienceParticipation} />
+                  <ChipGroup label="Age Suitability" items={ageSuitability} />
+                  <ChipGroup label="Equipment Provided" items={equipmentProvided} />
+                  <ChipGroup label="Party Energy" items={partyEnergyLevels} />
+                  {songRequestPolicy.accepted && (
+                    <div style={sectionStyle}>
+                      <div style={labelStyle}>Song Requests</div>
+                      <div style={{ fontSize:14, color:CMUTED, lineHeight:1.6 }}>
+                        Accepts song requests
+                        {songRequestPolicy.noticeDays ? ` — ${songRequestPolicy.noticeDays} day${Number(songRequestPolicy.noticeDays) > 1 ? 's' : ''} notice` : ''}
+                        {songRequestPolicy.extraCharge ? ` (${songRequestPolicy.extraCharge})` : ''}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })()}
@@ -734,9 +762,14 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         {tab === PERFORMANCE_TAB_LABEL && (
           <div>
             <div style={{ fontFamily:serif, fontSize:"1.5rem", fontWeight:700, color:CINK, marginBottom:8 }}>The Experience</div>
-            <p style={{ fontSize:15, color:CMUTED, lineHeight:1.75, marginBottom:44, fontWeight:400, maxWidth:460 }}>
+            <p style={{ fontSize:15, color:CMUTED, lineHeight:1.75, marginBottom:performanceItems.length > 0 ? 8 : 44, fontWeight:400, maxWidth:460 }}>
               Here's how the performance unfolds — from setting the tone to leaving the room energised.
             </p>
+            {performanceItems.length > 0 && (
+              <p style={{ fontSize:12.5, color:CDIM, marginBottom:36, fontWeight:600 }}>
+                {performanceItems.length}+ {performanceItemNoun(vendor.serviceType)} in repertoire
+              </p>
+            )}
 
             {performanceItems.length > 0 ? (
               <div>
@@ -795,7 +828,12 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
                   paddingLeft: featured ? 28 : 0,
                 }}>
                   <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:6, flexWrap:"wrap", gap:8 }}>
-                    <div style={{ fontFamily:serif, fontSize:"1.65rem", fontWeight:700, color:CINK }}>{pkg.name}</div>
+                    <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" }}>
+                      <div style={{ fontFamily:serif, fontSize:"1.65rem", fontWeight:700, color:CINK }}>{pkg.name}</div>
+                      {pkg.configuration && (
+                        <span style={{ fontSize:11, color:GOLD, border:`1px solid ${CGOLD_D}`, borderRadius:100, padding:"2px 10px", fontWeight:600 }}>{pkg.configuration}</span>
+                      )}
+                    </div>
                     {(pkg.badge || featured) && (
                       <span style={{ fontSize:11.5, color:GOLD, fontWeight:600, letterSpacing:"0.08em", paddingTop:8 }}>
                         {pkg.badge || "Recommended"}
@@ -1034,6 +1072,27 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               )}
               {!!requirements.advanceBookingDays && (
                 <div className="gp-sb-row">Book at least {requirements.advanceBookingDays} days ahead</div>
+              )}
+              {requirements.scriptSource && (
+                <div className="gp-sb-row">Script: {requirements.scriptSource}</div>
+              )}
+              {requirements.rehearsalAvailable && (
+                <div className="gp-sb-row">✓ Rehearsal availability</div>
+              )}
+              {requirements.outfitArrangement && (
+                <div className="gp-sb-row">Outfit: {requirements.outfitArrangement}</div>
+              )}
+              {!!requirements.micCount && (
+                <div className="gp-sb-row">Microphones needed: {requirements.micCount}</div>
+              )}
+              {requirements.lightingRequirement && (
+                <div className="gp-sb-row">Lighting: {requirements.lightingRequirement}</div>
+              )}
+              {requirements.floorRequirement && (
+                <div className="gp-sb-row">Floor: {requirements.floorRequirement}</div>
+              )}
+              {requirements.costumeArrangement && (
+                <div className="gp-sb-row">Costumes: {requirements.costumeArrangement}</div>
               )}
               {requirements.customRequestsNote && (
                 <div style={{ fontSize:12.5, color:CMUTED, marginTop:8, lineHeight:1.6 }}>{requirements.customRequestsNote}</div>

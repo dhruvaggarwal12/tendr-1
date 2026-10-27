@@ -5,7 +5,10 @@ import logo from "../../assets/logos/tendr-logo-secondary.png";
 import {
   GIG_PRO_TYPES, GIG_GENRE_OPTIONS, GIG_LANG_OPTIONS, GIG_LANGUAGE_CATEGORIES,
   GIG_STYLE_OPTIONS, CONTENT_RATING_OPTIONS, performanceLabel, performanceFieldHints,
-  QUICK_PERFORMANCE_ITEMS, PERFORMER_CATEGORIES,
+  QUICK_PERFORMANCE_ITEMS, PERFORMER_CATEGORIES, performanceItemNoun, eventTypeOptions,
+  HOSTING_RESPONSIBILITY_OPTIONS, AUDIENCE_SIZE_OPTIONS, CAPABILITY_BADGE_OPTIONS,
+  AUDIENCE_PARTICIPATION_OPTIONS, AGE_SUITABILITY_OPTIONS, EQUIPMENT_PROVIDED_OPTIONS,
+  PARTY_ENERGY_OPTIONS, SCRIPT_SOURCE_OPTIONS, REQUIREMENT_FIELD_CATEGORIES, SONG_REQUEST_CATEGORIES,
 } from "../../constants/performerCategories";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -55,16 +58,21 @@ export default function VendorProfile() {
     highlights: [{ label: "", desc: "" }],
     performanceItems: [{ title: "", note: "" }],
     lineup: [{ name: "", role: "" }],
-    packages: [{ name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [""], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [""] }],
+    packages: [{ name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [""], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [""], configuration: "" }],
     requirements: {
       travel: "", setupTimeMinutes: "", soundSystemProvided: false, stageRequired: false,
       powerRequirement: "", spaceRequirement: "", advanceBookingDays: "", customRequestsNote: "",
+      scriptSource: "", rehearsalAvailable: false, outfitArrangement: "",
+      micCount: "", lightingRequirement: "", floorRequirement: "", costumeArrangement: "",
     },
     mainPhotoIndex: -1,
     milestones: [{ year: "", text: "" }],
     notableClients: [""],
     awards: [""],
     secondaryCategories: [],
+    hostingResponsibilities: [], audienceSizeExperience: [], capabilityBadges: [],
+    audienceParticipation: [], ageSuitability: [], equipmentProvided: [], partyEnergyLevels: [],
+    songRequestPolicy: { accepted: false, noticeDays: "", extraCharge: "" },
   });
   const [svcForm, setSvcForm] = useState({
     // Photographer
@@ -154,7 +162,8 @@ export default function VendorProfile() {
                               travelCharge: p.travelCharge || "",
                               overtimeCharge: p.overtimeCharge || "",
                               addOns: p.addOns?.length ? p.addOns : [""],
-                            })) : [{ name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [""], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [""] }],
+                              configuration: p.configuration || "",
+                            })) : [{ name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [""], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [""], configuration: "" }],
           requirements: {
             travel: v.requirements?.travel || "",
             setupTimeMinutes: v.requirements?.setupTimeMinutes ?? "",
@@ -164,8 +173,27 @@ export default function VendorProfile() {
             spaceRequirement: v.requirements?.spaceRequirement || "",
             advanceBookingDays: v.requirements?.advanceBookingDays ?? "",
             customRequestsNote: v.requirements?.customRequestsNote || "",
+            scriptSource: v.requirements?.scriptSource || "",
+            rehearsalAvailable: !!v.requirements?.rehearsalAvailable,
+            outfitArrangement: v.requirements?.outfitArrangement || "",
+            micCount: v.requirements?.micCount ?? "",
+            lightingRequirement: v.requirements?.lightingRequirement || "",
+            floorRequirement: v.requirements?.floorRequirement || "",
+            costumeArrangement: v.requirements?.costumeArrangement || "",
           },
           mainPhotoIndex: Number.isInteger(v.mainPhotoIndex) ? v.mainPhotoIndex : -1,
+          hostingResponsibilities: v.hostingResponsibilities || [],
+          audienceSizeExperience:  v.audienceSizeExperience  || [],
+          capabilityBadges:        v.capabilityBadges        || [],
+          audienceParticipation:   v.audienceParticipation   || [],
+          ageSuitability:          v.ageSuitability          || [],
+          equipmentProvided:       v.equipmentProvided       || [],
+          partyEnergyLevels:       v.partyEnergyLevels       || [],
+          songRequestPolicy: {
+            accepted: !!v.songRequestPolicy?.accepted,
+            noticeDays: v.songRequestPolicy?.noticeDays ?? "",
+            extraCharge: v.songRequestPolicy?.extraCharge || "",
+          },
           milestones:      v.milestones?.length ? v.milestones : [{ year: "", text: "" }],
           notableClients:  v.notableClients?.length ? v.notableClients : [""],
           awards:          v.awards?.length ? v.awards : [""],
@@ -304,6 +332,14 @@ export default function VendorProfile() {
           notableClients: gigForm.notableClients.filter(Boolean),
           awards:         gigForm.awards.filter(Boolean),
           secondaryCategories: gigForm.secondaryCategories,
+          hostingResponsibilities: gigForm.hostingResponsibilities,
+          audienceSizeExperience:  gigForm.audienceSizeExperience,
+          capabilityBadges:        gigForm.capabilityBadges,
+          audienceParticipation:   gigForm.audienceParticipation,
+          ageSuitability:          gigForm.ageSuitability,
+          equipmentProvided:       gigForm.equipmentProvided,
+          partyEnergyLevels:       gigForm.partyEnergyLevels,
+          songRequestPolicy:       gigForm.songRequestPolicy,
         };
         const rGig = await fetch(`${BASE_URL}/vendors/${vendorId}/gigpro`, {
           method: "PATCH",
@@ -628,10 +664,25 @@ export default function VendorProfile() {
 
                   {['Emcee/Host', 'Anchor', 'Singer', 'Stand-up Comedian'].some(c => activeCats.includes(c)) && <ChipPicker label="Languages" field="languages" options={GIG_LANG_OPTIONS} />}
 
-                  <ChipPicker label="Suitable For" field="eventTypes"
-                    options={['Wedding', 'Birthday', 'Corporate', 'Festival', 'College Event', 'Private Party', 'Sangeet', 'Anniversary', 'Award Night']} />
+                  <ChipPicker label="Suitable For" field="eventTypes" options={eventTypeOptions(svc)} />
+
+                  {['Emcee/Host', 'Anchor'].includes(svc) && (<>
+                    <ChipPicker label="Hosting Responsibilities" field="hostingResponsibilities" options={HOSTING_RESPONSIBILITY_OPTIONS} />
+                    <ChipPicker label="Audience Size Experience" field="audienceSizeExperience" options={AUDIENCE_SIZE_OPTIONS} />
+                  </>)}
+
+                  {svc === 'Anchor' && (
+                    <ChipPicker label="Capabilities" field="capabilityBadges" options={CAPABILITY_BADGE_OPTIONS} />
+                  )}
+
+                  {svc === 'Magician' && (<>
+                    <ChipPicker label="Audience Participation" field="audienceParticipation" options={AUDIENCE_PARTICIPATION_OPTIONS} />
+                    <ChipPicker label="Age Suitability" field="ageSuitability" options={AGE_SUITABILITY_OPTIONS} />
+                  </>)}
 
                   {svc === 'DJ' && (<>
+                    <ChipPicker label="Equipment Provided" field="equipmentProvided" options={EQUIPMENT_PROVIDED_OPTIONS} />
+                    <ChipPicker label="Party Energy Levels" field="partyEnergyLevels" options={PARTY_ENERGY_OPTIONS} />
                     <div className="mb-5">
                       <label className="block text-sm font-semibold text-gray-600 mb-2">Setup Type</label>
                       <div className="flex gap-2 flex-wrap">
@@ -655,6 +706,38 @@ export default function VendorProfile() {
                       </div>
                     </div>
                   </>)}
+
+                  {SONG_REQUEST_CATEGORIES.some(c => activeCats.includes(c)) && (
+                    <div className="mb-5">
+                      <label className="block text-sm font-semibold text-gray-600 mb-2">Song Requests</label>
+                      <div className="flex gap-2 mb-2">
+                        {['Yes', 'No'].map(opt => {
+                          const val = opt === 'Yes';
+                          const active = gigForm.songRequestPolicy.accepted === val;
+                          return (
+                            <button key={opt} type="button" onClick={() => setGigForm(f => ({ ...f, songRequestPolicy: { ...f.songRequestPolicy, accepted: val } }))}
+                              className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${active ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
+                              {opt === 'Yes' ? 'I take requests' : "I don't take requests"}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {gigForm.songRequestPolicy.accepted && (
+                        <div className="grid grid-cols-2 gap-3">
+                          <input type="number" min="0" value={gigForm.songRequestPolicy.noticeDays}
+                            onChange={e => setGigForm(f => ({ ...f, songRequestPolicy: { ...f.songRequestPolicy, noticeDays: e.target.value } }))}
+                            placeholder="Notice period (days)" className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                          <input value={gigForm.songRequestPolicy.extraCharge}
+                            onChange={e => setGigForm(f => ({ ...f, songRequestPolicy: { ...f.songRequestPolicy, extraCharge: e.target.value } }))}
+                            placeholder="Extra charge, if any" className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {svc === 'Choreographer' && (
+                    <p className="text-xs text-gray-400 mb-5">Tip: tag some of your uploaded photos as "Costumes" (from the Portfolio section) so customers can see your costume options in the gallery.</p>
+                  )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2">
                     <div>
@@ -810,7 +893,7 @@ export default function VendorProfile() {
                         placeholder="e.g. 7" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
                     </div>
                   </div>
-                  <div className="flex gap-6 mb-5">
+                  <div className="flex gap-6 mb-5 flex-wrap">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
                       <input type="checkbox" checked={gigForm.requirements.soundSystemProvided} onChange={e => setReq("soundSystemProvided", e.target.checked)} className="w-4 h-4" />
                       I provide my own sound system
@@ -819,7 +902,74 @@ export default function VendorProfile() {
                       <input type="checkbox" checked={gigForm.requirements.stageRequired} onChange={e => setReq("stageRequired", e.target.checked)} className="w-4 h-4" />
                       I need a stage / performance area
                     </label>
+                    {REQUIREMENT_FIELD_CATEGORIES.rehearsalAvailable.some(c => activeCats.includes(c)) && (
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+                        <input type="checkbox" checked={gigForm.requirements.rehearsalAvailable} onChange={e => setReq("rehearsalAvailable", e.target.checked)} className="w-4 h-4" />
+                        Rehearsal availability
+                      </label>
+                    )}
                   </div>
+
+                  {/* Category-specific requirement fields — same shared `requirements`
+                      object, just shown only where relevant */}
+                  {(REQUIREMENT_FIELD_CATEGORIES.scriptSource.some(c => activeCats.includes(c))
+                    || REQUIREMENT_FIELD_CATEGORIES.outfitArrangement.some(c => activeCats.includes(c))
+                    || REQUIREMENT_FIELD_CATEGORIES.micCount.some(c => activeCats.includes(c))
+                    || REQUIREMENT_FIELD_CATEGORIES.lightingRequirement.some(c => activeCats.includes(c))
+                    || REQUIREMENT_FIELD_CATEGORIES.floorRequirement.some(c => activeCats.includes(c))
+                    || REQUIREMENT_FIELD_CATEGORIES.costumeArrangement.some(c => activeCats.includes(c))) && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                      {REQUIREMENT_FIELD_CATEGORIES.scriptSource.some(c => activeCats.includes(c)) && (
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-600 mb-2">Script Source</label>
+                          <div className="flex gap-2 flex-wrap">
+                            {SCRIPT_SOURCE_OPTIONS.map(opt => (
+                              <button key={opt} type="button" onClick={() => setReq("scriptSource", gigForm.requirements.scriptSource === opt ? "" : opt)}
+                                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${gigForm.requirements.scriptSource === opt ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {REQUIREMENT_FIELD_CATEGORIES.outfitArrangement.some(c => activeCats.includes(c)) && (
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-600 mb-1.5">Outfit / Dress Code Arrangement</label>
+                          <input value={gigForm.requirements.outfitArrangement} onChange={e => setReq("outfitArrangement", e.target.value)}
+                            placeholder="e.g. I bring my own formal wear" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                        </div>
+                      )}
+                      {REQUIREMENT_FIELD_CATEGORIES.micCount.some(c => activeCats.includes(c)) && (
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-600 mb-1.5">Microphones Needed</label>
+                          <input type="number" min="0" value={gigForm.requirements.micCount} onChange={e => setReq("micCount", e.target.value)}
+                            placeholder="e.g. 3" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                        </div>
+                      )}
+                      {REQUIREMENT_FIELD_CATEGORIES.lightingRequirement.some(c => activeCats.includes(c)) && (
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-600 mb-1.5">Lighting Requirement</label>
+                          <input value={gigForm.requirements.lightingRequirement} onChange={e => setReq("lightingRequirement", e.target.value)}
+                            placeholder="e.g. Need at least basic stage lighting" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                        </div>
+                      )}
+                      {REQUIREMENT_FIELD_CATEGORIES.floorRequirement.some(c => activeCats.includes(c)) && (
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-600 mb-1.5">Floor Requirement</label>
+                          <input value={gigForm.requirements.floorRequirement} onChange={e => setReq("floorRequirement", e.target.value)}
+                            placeholder="e.g. Flat, non-slip surface" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                        </div>
+                      )}
+                      {REQUIREMENT_FIELD_CATEGORIES.costumeArrangement.some(c => activeCats.includes(c)) && (
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-600 mb-1.5">Costume Arrangement</label>
+                          <input value={gigForm.requirements.costumeArrangement} onChange={e => setReq("costumeArrangement", e.target.value)}
+                            placeholder="e.g. Costumes included in package" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="mb-5">
                     <label className="block text-sm font-semibold text-gray-600 mb-1.5">Custom Requests Note <span className="text-gray-400 font-normal">(optional)</span></label>
                     <textarea value={gigForm.requirements.customRequestsNote} onChange={e => setReq("customRequestsNote", e.target.value)} rows={2}
@@ -1022,11 +1172,16 @@ export default function VendorProfile() {
                   {gigForm.packages.length > 1 && (
                     <button type="button" onClick={() => removeRow("packages", pi)} className="absolute top-3 right-3 text-gray-400 hover:text-red-500">×</button>
                   )}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
                     <div>
                       <label className="block text-xs font-semibold text-gray-500 mb-1">Package Name</label>
                       <input value={pkg.name} onChange={e => setRow("packages", pi, "name", e.target.value)}
                         placeholder="e.g. Celebration Set" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Configuration <span className="text-gray-400 font-normal">(optional)</span></label>
+                      <input value={pkg.configuration} onChange={e => setRow("packages", pi, "configuration", e.target.value)}
+                        placeholder="e.g. Solo, Full Band, Stage Show" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
@@ -1112,7 +1267,7 @@ export default function VendorProfile() {
             </div>
 
             {gigForm.packages.length < 4 && (
-              <button type="button" onClick={() => addRow("packages", { name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [""], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [""] }, 4)}
+              <button type="button" onClick={() => addRow("packages", { name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [""], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [""], configuration: "" }, 4)}
                 className="mt-5 px-5 py-2.5 border-2 border-dashed border-yellow-300 text-yellow-700 rounded-xl text-sm font-semibold hover:bg-yellow-50">
                 + Add Package
               </button>
