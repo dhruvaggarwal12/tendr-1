@@ -167,4 +167,15 @@ export const REQUIREMENT_FIELD_CATEGORIES = {
   costumeArrangement:  ['Choreographer'],
 };
 
-export const SONG_REQUEST_CATEGORIES = ['Singer', 'Band', 'Musician'];
+// DJ's "custom playlists and requests" ask is really booking-time data the
+// customer submits, not an artist profile field — so it's folded into the same
+// accepted/noticeDays/extraCharge policy declaration Singer/Band/Musician use,
+// instead of a separate structure.
+export const SONG_REQUEST_CATEGORIES = ['Singer', 'Band', 'Musician', 'DJ'];
+
+// Musician/Instrumentalist — background vs. feature performance.
+export const PERFORMANCE_ATMOSPHERE_OPTIONS = ['Soft Background Music', 'Intimate Acoustic Performance', 'Feature Stage Performance', 'Interactive Music Sessions'];
+
+// Stand-up Comedian/Emcee — whether they prepare customised material, same
+// "declare the policy, not the live request" reasoning as SONG_REQUEST_CATEGORIES.
+export const CUSTOM_MATERIAL_CATEGORIES = ['Stand-up Comedian', 'Emcee/Host'];

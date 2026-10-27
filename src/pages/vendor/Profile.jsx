@@ -9,6 +9,7 @@ import {
   HOSTING_RESPONSIBILITY_OPTIONS, AUDIENCE_SIZE_OPTIONS, CAPABILITY_BADGE_OPTIONS,
   AUDIENCE_PARTICIPATION_OPTIONS, AGE_SUITABILITY_OPTIONS, EQUIPMENT_PROVIDED_OPTIONS,
   PARTY_ENERGY_OPTIONS, SCRIPT_SOURCE_OPTIONS, REQUIREMENT_FIELD_CATEGORIES, SONG_REQUEST_CATEGORIES,
+  PERFORMANCE_ATMOSPHERE_OPTIONS, CUSTOM_MATERIAL_CATEGORIES,
 } from "../../constants/performerCategories";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -73,6 +74,8 @@ export default function VendorProfile() {
     hostingResponsibilities: [], audienceSizeExperience: [], capabilityBadges: [],
     audienceParticipation: [], ageSuitability: [], equipmentProvided: [], partyEnergyLevels: [],
     songRequestPolicy: { accepted: false, noticeDays: "", extraCharge: "" },
+    performanceAtmosphere: [],
+    customMaterialPolicy: { offered: false, infoNeeded: "", prepDays: "" },
   });
   const [svcForm, setSvcForm] = useState({
     // Photographer
@@ -193,6 +196,12 @@ export default function VendorProfile() {
             accepted: !!v.songRequestPolicy?.accepted,
             noticeDays: v.songRequestPolicy?.noticeDays ?? "",
             extraCharge: v.songRequestPolicy?.extraCharge || "",
+          },
+          performanceAtmosphere: v.performanceAtmosphere || [],
+          customMaterialPolicy: {
+            offered: !!v.customMaterialPolicy?.offered,
+            infoNeeded: v.customMaterialPolicy?.infoNeeded || "",
+            prepDays: v.customMaterialPolicy?.prepDays ?? "",
           },
           milestones:      v.milestones?.length ? v.milestones : [{ year: "", text: "" }],
           notableClients:  v.notableClients?.length ? v.notableClients : [""],
@@ -340,6 +349,8 @@ export default function VendorProfile() {
           equipmentProvided:       gigForm.equipmentProvided,
           partyEnergyLevels:       gigForm.partyEnergyLevels,
           songRequestPolicy:       gigForm.songRequestPolicy,
+          performanceAtmosphere:   gigForm.performanceAtmosphere,
+          customMaterialPolicy:    gigForm.customMaterialPolicy,
         };
         const rGig = await fetch(`${BASE_URL}/vendors/${vendorId}/gigpro`, {
           method: "PATCH",
@@ -625,6 +636,10 @@ export default function VendorProfile() {
                     </div>
                   )}
 
+                  {svc === 'Musician' && (
+                    <ChipPicker label="Performance Atmosphere" field="performanceAtmosphere" options={PERFORMANCE_ATMOSPHERE_OPTIONS} />
+                  )}
+
                   {svc === 'Band' && (<>
                     <div className="mb-5">
                       <label className="block text-sm font-semibold text-gray-600 mb-1.5">Number of Members</label>
@@ -730,6 +745,34 @@ export default function VendorProfile() {
                           <input value={gigForm.songRequestPolicy.extraCharge}
                             onChange={e => setGigForm(f => ({ ...f, songRequestPolicy: { ...f.songRequestPolicy, extraCharge: e.target.value } }))}
                             placeholder="Extra charge, if any" className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {CUSTOM_MATERIAL_CATEGORIES.some(c => activeCats.includes(c)) && (
+                    <div className="mb-5">
+                      <label className="block text-sm font-semibold text-gray-600 mb-2">Custom Material <span className="text-gray-400 font-normal">(personalised jokes, custom openings, brand-specific bits)</span></label>
+                      <div className="flex gap-2 mb-2">
+                        {['Yes', 'No'].map(opt => {
+                          const val = opt === 'Yes';
+                          const active = gigForm.customMaterialPolicy.offered === val;
+                          return (
+                            <button key={opt} type="button" onClick={() => setGigForm(f => ({ ...f, customMaterialPolicy: { ...f.customMaterialPolicy, offered: val } }))}
+                              className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${active ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
+                              {opt === 'Yes' ? 'I offer custom material' : "I don't offer custom material"}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {gigForm.customMaterialPolicy.offered && (
+                        <div className="grid grid-cols-2 gap-3">
+                          <input value={gigForm.customMaterialPolicy.infoNeeded}
+                            onChange={e => setGigForm(f => ({ ...f, customMaterialPolicy: { ...f.customMaterialPolicy, infoNeeded: e.target.value } }))}
+                            placeholder="Info needed — e.g. name, event details" className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                          <input type="number" min="0" value={gigForm.customMaterialPolicy.prepDays}
+                            onChange={e => setGigForm(f => ({ ...f, customMaterialPolicy: { ...f.customMaterialPolicy, prepDays: e.target.value } }))}
+                            placeholder="Prep time needed (days)" className="px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
                         </div>
                       )}
                     </div>

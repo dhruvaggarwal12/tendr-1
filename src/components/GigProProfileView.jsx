@@ -182,6 +182,8 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
   const equipmentProvided       = vendor.equipmentProvided       || [];
   const partyEnergyLevels       = vendor.partyEnergyLevels       || [];
   const songRequestPolicy       = vendor.songRequestPolicy || {};
+  const performanceAtmosphere   = vendor.performanceAtmosphere || [];
+  const customMaterialPolicy    = vendor.customMaterialPolicy || {};
   const pkgs = (vendor.packages || []).map(p => ({
     ...p,
     items: Array.isArray(p.items) ? p.items : (p.items||"").split("\n").filter(Boolean),
@@ -719,6 +721,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
                   <ChipGroup label="Age Suitability" items={ageSuitability} />
                   <ChipGroup label="Equipment Provided" items={equipmentProvided} />
                   <ChipGroup label="Party Energy" items={partyEnergyLevels} />
+                  <ChipGroup label="Performance Atmosphere" items={performanceAtmosphere} />
                   {songRequestPolicy.accepted && (
                     <div style={sectionStyle}>
                       <div style={labelStyle}>Song Requests</div>
@@ -726,6 +729,16 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
                         Accepts song requests
                         {songRequestPolicy.noticeDays ? ` — ${songRequestPolicy.noticeDays} day${Number(songRequestPolicy.noticeDays) > 1 ? 's' : ''} notice` : ''}
                         {songRequestPolicy.extraCharge ? ` (${songRequestPolicy.extraCharge})` : ''}
+                      </div>
+                    </div>
+                  )}
+                  {customMaterialPolicy.offered && (
+                    <div style={sectionStyle}>
+                      <div style={labelStyle}>Custom Material</div>
+                      <div style={{ fontSize:14, color:CMUTED, lineHeight:1.6 }}>
+                        Offers personalised/custom material
+                        {customMaterialPolicy.infoNeeded ? ` — needs: ${customMaterialPolicy.infoNeeded}` : ''}
+                        {customMaterialPolicy.prepDays ? ` (${customMaterialPolicy.prepDays} day${Number(customMaterialPolicy.prepDays) > 1 ? 's' : ''} notice)` : ''}
                       </div>
                     </div>
                   )}
