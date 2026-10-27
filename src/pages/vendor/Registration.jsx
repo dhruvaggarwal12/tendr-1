@@ -5,6 +5,10 @@ import {
   PERFORMER_CATEGORIES, PERFORMER_ART_FORMS, GIG_STYLE_OPTIONS,
   GIG_LANG_OPTIONS, GIG_LANGUAGE_CATEGORIES, CONTENT_RATING_OPTIONS,
   performanceLabel, performanceFieldHints, QUICK_PERFORMANCE_ITEMS,
+  HOSTING_RESPONSIBILITY_OPTIONS, AUDIENCE_SIZE_OPTIONS, CAPABILITY_BADGE_OPTIONS,
+  AUDIENCE_PARTICIPATION_OPTIONS, AGE_SUITABILITY_OPTIONS, EQUIPMENT_PROVIDED_OPTIONS,
+  PARTY_ENERGY_OPTIONS, SCRIPT_SOURCE_OPTIONS, REQUIREMENT_FIELD_CATEGORIES,
+  SONG_REQUEST_CATEGORIES, PERFORMANCE_ATMOSPHERE_OPTIONS, CUSTOM_MATERIAL_CATEGORIES,
 } from "../../constants/performerCategories";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -856,7 +860,7 @@ export default function VendorRegistration() {
     name: "", phoneNumber: "", whatsappNumber: "", email: "", city: "",
     password: "", confirmPassword: "",
     bio: "", contentRating: "",
-    packages: [{ name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [] }],
+    packages: [{ name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [], configuration: "" }],
     duration: "", sampleLink: "", instagram: "",
     performanceItems: [{ title: "", note: "" }],
     highlights: [],
@@ -864,6 +868,17 @@ export default function VendorRegistration() {
     notableClients: [],
     awards: [],
     lineup: [],
+    hostingResponsibilities: [], audienceSizeExperience: [], capabilityBadges: [],
+    audienceParticipation: [], ageSuitability: [], equipmentProvided: [], partyEnergyLevels: [],
+    performanceAtmosphere: [],
+    songRequestPolicy: { accepted: false, noticeDays: "", extraCharge: "" },
+    customMaterialPolicy: { offered: false, infoNeeded: "", prepDays: "" },
+    requirements: {
+      travel: "", setupTimeMinutes: "", soundSystemProvided: false, stageRequired: false,
+      powerRequirement: "", spaceRequirement: "", advanceBookingDays: "", customRequestsNote: "",
+      scriptSource: "", rehearsalAvailable: false, outfitArrangement: "",
+      micCount: "", lightingRequirement: "", floorRequirement: "", costumeArrangement: "",
+    },
   });
   // Photos — first one is the hero/cover photo (same convention as portfolioPhotos[0]
   // everywhere else: VendorDetails.jsx, ArtistListingsPage.jsx, etc.)
@@ -1140,12 +1155,15 @@ export default function VendorRegistration() {
   // Step a_profile — Artist profile form
   if (step === "a_profile") {
     const typeInfo = PERFORMER_CATEGORIES.find(t => t.value === performerType) || {};
-    // Singer/Band/Musician get a musical-genre list; every other category (DJ,
-    // Anchor, Emcee/Host, Choreographer, Performer, Stand-up Comedian, Magician)
-    // falls back to its GIG_STYLE_OPTIONS "performing style" list instead — one
-    // chip section either way, submitted as `genres` (the dashboard's richer
-    // genres/performingStyle split can be filled in later from the full profile editor).
-    const genreOptions = ARTIST_GENRES[performerType]?.length ? ARTIST_GENRES[performerType] : (GIG_STYLE_OPTIONS[performerType] || []);
+    // Singer/Band/Musician get a real musical-genre list and submit as `genres`;
+    // every other category (DJ, Anchor, Emcee/Host, Choreographer, Performer,
+    // Stand-up Comedian, Magician) uses its GIG_STYLE_OPTIONS "performing style"
+    // list instead and submits as `performingStyle` — these used to both get
+    // submitted as `genres` regardless, which showed a Magician's "Close-up
+    // Magic" chips mislabelled "Music Genres" on the public profile.
+    const hasGenreList = (ARTIST_GENRES[performerType]?.length || 0) > 0;
+    const genreOptions = hasGenreList ? ARTIST_GENRES[performerType] : (GIG_STYLE_OPTIONS[performerType] || []);
+    const genreFieldLabel = hasGenreList ? "Genres / Specializations" : "Performing Style";
     const toggleGenre = (g) => setGenres(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g]);
     const toggleLanguage = (l) => setLanguages(prev => prev.includes(l) ? prev.filter(x => x !== l) : [...prev, l]);
     const toggleSecondaryCategory = (c) => setSecondaryCategories(prev => prev.includes(c) ? prev.filter(x => x !== c) : (prev.length >= 2 ? prev : [...prev, c]));
@@ -1161,6 +1179,11 @@ export default function VendorRegistration() {
     const setArtStr = (field, i, val) => setArtistForm(p => ({ ...p, [field]: p[field].map((s, j) => j === i ? val : s) }));
     const addArtStr = (field, max) => setArtistForm(p => p[field].length >= max ? p : ({ ...p, [field]: [...p[field], ""] }));
     const removeArtStr = (field, i) => setArtistForm(p => ({ ...p, [field]: p[field].filter((_, j) => j !== i) }));
+    // Generic chip toggle for plain [String] fields on artistForm (hostingResponsibilities,
+    // audienceSizeExperience, capabilityBadges, audienceParticipation, ageSuitability,
+    // equipmentProvided, partyEnergyLevels, performanceAtmosphere).
+    const toggleArtChip = (field, val) => setArtistForm(p => ({ ...p, [field]: p[field].includes(val) ? p[field].filter(x => x !== val) : [...p[field], val] }));
+    const setArtReq = (key, val) => setArtistForm(p => ({ ...p, requirements: { ...p.requirements, [key]: val } }));
 
     const perfLabel = performanceLabel(performerType);
     const perfHints = performanceFieldHints(performerType);
@@ -1188,7 +1211,8 @@ export default function VendorRegistration() {
         serviceType: performerType,
         performerArtForm: performerArtForm || "",
         isArtist: true,
-        genres,
+        genres: hasGenreList ? genres : [],
+        performingStyle: hasGenreList ? [] : genres,
         languages: showLanguages ? languages : [],
         contentRating: showContentRating ? artistForm.contentRating : "",
         secondaryCategories,
@@ -1202,7 +1226,19 @@ export default function VendorRegistration() {
             performerCount: p.performerCount || undefined,
             travelCharge: p.travelCharge || "", overtimeCharge: p.overtimeCharge || "",
             addOns: (p.addOns || []).map(s => s.trim()).filter(Boolean),
+            configuration: p.configuration || "",
           })),
+        hostingResponsibilities: artistForm.hostingResponsibilities,
+        audienceSizeExperience: artistForm.audienceSizeExperience,
+        capabilityBadges: artistForm.capabilityBadges,
+        audienceParticipation: artistForm.audienceParticipation,
+        ageSuitability: artistForm.ageSuitability,
+        equipmentProvided: artistForm.equipmentProvided,
+        partyEnergyLevels: artistForm.partyEnergyLevels,
+        performanceAtmosphere: artistForm.performanceAtmosphere,
+        songRequestPolicy: artistForm.songRequestPolicy,
+        customMaterialPolicy: artistForm.customMaterialPolicy,
+        requirements: artistForm.requirements,
         duration: artistForm.duration,
         sampleLink: artistForm.sampleLink,
         instagram: artistForm.instagram,
@@ -1348,7 +1384,7 @@ export default function VendorRegistration() {
 
             {genreOptions.length > 0 && (
               <div>
-                <Label optional>Genres / Specializations</Label>
+                <Label optional>{genreFieldLabel}</Label>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
                   {genreOptions.map(g => {
                     const on = genres.includes(g);
@@ -1486,10 +1522,33 @@ export default function VendorRegistration() {
                         onChange={e => setArtRow("packages", i, "overtimeCharge", e.target.value)}
                         placeholder="Overtime charge" style={inputStyle(focused, {}, "", gold, ink)} />
                     </div>
+                    <input value={pkg.configuration}
+                      onChange={e => setArtRow("packages", i, "configuration", e.target.value)}
+                      placeholder="Configuration — e.g. Solo, Full Band, Stage Show (optional)"
+                      style={{ ...inputStyle(focused, {}, "", gold, ink), marginTop: 8 }} />
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
+                      <Label optional>Optional add-ons <span style={{ fontSize: 10, fontWeight: 400, color: muted }}>(not included by default)</span></Label>
+                      {(pkg.addOns || []).map((a, k) => (
+                        <div key={k} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
+                          <input value={a} maxLength={60}
+                            onChange={e => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, addOns: x.addOns.map((it, m) => m === k ? e.target.value : it) } : x) }))}
+                            placeholder="e.g. Extra hour of performance — ₹3,000"
+                            style={inputStyle(focused, {}, "", gold, ink)} />
+                          <button type="button" onClick={() => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, addOns: x.addOns.filter((_, m) => m !== k) } : x) }))}
+                            style={{ height: 42, width: 36, background: "none", border: "1.5px solid #fca5a5", borderRadius: 8, color: "#dc2626", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
+                        </div>
+                      ))}
+                      {(pkg.addOns || []).length < 6 && (
+                        <button type="button" onClick={() => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, addOns: [...(x.addOns || []), ""] } : x) }))}
+                          style={{ padding: "7px", borderRadius: 8, border: `1.5px dashed rgba(196,122,46,0.45)`, background: "transparent", color: gold, fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                          + Add add-on
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
                 {artistForm.packages.length < 3 && (
-                  <button type="button" onClick={() => setArtistForm(p => ({ ...p, packages: [...p.packages, { name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [] }] }))}
+                  <button type="button" onClick={() => setArtistForm(p => ({ ...p, packages: [...p.packages, { name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [], configuration: "" }] }))}
                     style={{ padding: "9px", borderRadius: 8, border: `1.5px dashed rgba(196,122,46,0.45)`, background: "transparent", color: gold, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
                     + Add Package
                   </button>
@@ -1520,6 +1579,175 @@ export default function VendorRegistration() {
                 </div>
               </div>
             )}
+
+            {/* Category-specific chip sections — everything here is optional; skip
+                any of it now and fill it in later from your dashboard. */}
+            {(() => {
+              const chipRow = (label, field, options) => (
+                <div key={field}>
+                  <Label optional>{label}</Label>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
+                    {options.map(opt => {
+                      const on = artistForm[field].includes(opt);
+                      return (
+                        <button key={opt} type="button" onClick={() => toggleArtChip(field, opt)}
+                          style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+              return (
+                <>
+                  {['Emcee/Host', 'Anchor'].includes(performerType) && (<>
+                    {chipRow("Hosting Responsibilities", "hostingResponsibilities", HOSTING_RESPONSIBILITY_OPTIONS)}
+                    {chipRow("Audience Size Experience", "audienceSizeExperience", AUDIENCE_SIZE_OPTIONS)}
+                  </>)}
+                  {performerType === 'Anchor' && chipRow("Capabilities", "capabilityBadges", CAPABILITY_BADGE_OPTIONS)}
+                  {performerType === 'Magician' && (<>
+                    {chipRow("Audience Participation", "audienceParticipation", AUDIENCE_PARTICIPATION_OPTIONS)}
+                    {chipRow("Age Suitability", "ageSuitability", AGE_SUITABILITY_OPTIONS)}
+                  </>)}
+                  {performerType === 'DJ' && (<>
+                    {chipRow("Equipment Provided", "equipmentProvided", EQUIPMENT_PROVIDED_OPTIONS)}
+                    {chipRow("Party Energy Levels", "partyEnergyLevels", PARTY_ENERGY_OPTIONS)}
+                  </>)}
+                  {performerType === 'Musician' && chipRow("Performance Atmosphere", "performanceAtmosphere", PERFORMANCE_ATMOSPHERE_OPTIONS)}
+                </>
+              );
+            })()}
+
+            {SONG_REQUEST_CATEGORIES.includes(performerType) && (
+              <div>
+                <Label optional>Song Requests</Label>
+                <div style={{ display: "flex", gap: 8, marginTop: 4, marginBottom: 8 }}>
+                  {['Yes', 'No'].map(opt => {
+                    const val = opt === 'Yes';
+                    const on = artistForm.songRequestPolicy.accepted === val;
+                    return (
+                      <button key={opt} type="button" onClick={() => setArtistForm(p => ({ ...p, songRequestPolicy: { ...p.songRequestPolicy, accepted: val } }))}
+                        style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted }}>
+                        {opt === 'Yes' ? 'I take requests' : "I don't take requests"}
+                      </button>
+                    );
+                  })}
+                </div>
+                {artistForm.songRequestPolicy.accepted && (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    <input type="number" min="0" value={artistForm.songRequestPolicy.noticeDays}
+                      onChange={e => setArtistForm(p => ({ ...p, songRequestPolicy: { ...p.songRequestPolicy, noticeDays: e.target.value } }))}
+                      placeholder="Notice period (days)" style={inputStyle(focused, {}, "", gold, ink)} />
+                    <input value={artistForm.songRequestPolicy.extraCharge}
+                      onChange={e => setArtistForm(p => ({ ...p, songRequestPolicy: { ...p.songRequestPolicy, extraCharge: e.target.value } }))}
+                      placeholder="Extra charge, if any" style={inputStyle(focused, {}, "", gold, ink)} />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {CUSTOM_MATERIAL_CATEGORIES.includes(performerType) && (
+              <div>
+                <Label optional>Custom Material <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(personalised jokes, custom openings, brand-specific bits)</span></Label>
+                <div style={{ display: "flex", gap: 8, marginTop: 4, marginBottom: 8 }}>
+                  {['Yes', 'No'].map(opt => {
+                    const val = opt === 'Yes';
+                    const on = artistForm.customMaterialPolicy.offered === val;
+                    return (
+                      <button key={opt} type="button" onClick={() => setArtistForm(p => ({ ...p, customMaterialPolicy: { ...p.customMaterialPolicy, offered: val } }))}
+                        style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted }}>
+                        {opt === 'Yes' ? 'I offer custom material' : "I don't offer custom material"}
+                      </button>
+                    );
+                  })}
+                </div>
+                {artistForm.customMaterialPolicy.offered && (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    <input value={artistForm.customMaterialPolicy.infoNeeded}
+                      onChange={e => setArtistForm(p => ({ ...p, customMaterialPolicy: { ...p.customMaterialPolicy, infoNeeded: e.target.value } }))}
+                      placeholder="Info needed — e.g. name, event details" style={inputStyle(focused, {}, "", gold, ink)} />
+                    <input type="number" min="0" value={artistForm.customMaterialPolicy.prepDays}
+                      onChange={e => setArtistForm(p => ({ ...p, customMaterialPolicy: { ...p.customMaterialPolicy, prepDays: e.target.value } }))}
+                      placeholder="Prep time needed (days)" style={inputStyle(focused, {}, "", gold, ink)} />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Booking Requirements — compact checklist, shown in your profile's
+                sidebar. Entirely optional, same as everything else here. */}
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "4px 0 4px" }}>Booking Requirements</p>
+              <p style={{ fontSize: 12, color: muted, margin: "0 0 10px" }}>What you need from the venue/customer — optional, you can add or edit this later from your dashboard too.</p>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <input value={artistForm.requirements.travel} onChange={e => setArtReq("travel", e.target.value)}
+                placeholder="Travel — e.g. Delhi NCR; outstation by arrangement" style={inputStyle(focused, {}, "", gold, ink)} />
+              <input type="number" min="0" value={artistForm.requirements.setupTimeMinutes} onChange={e => setArtReq("setupTimeMinutes", e.target.value)}
+                placeholder="Setup time needed (minutes)" style={inputStyle(focused, {}, "", gold, ink)} />
+              <input value={artistForm.requirements.powerRequirement} onChange={e => setArtReq("powerRequirement", e.target.value)}
+                placeholder="Power requirement" style={inputStyle(focused, {}, "", gold, ink)} />
+              <input value={artistForm.requirements.spaceRequirement} onChange={e => setArtReq("spaceRequirement", e.target.value)}
+                placeholder="Space needed" style={inputStyle(focused, {}, "", gold, ink)} />
+              <input type="number" min="0" value={artistForm.requirements.advanceBookingDays} onChange={e => setArtReq("advanceBookingDays", e.target.value)}
+                placeholder="Advance booking notice (days)" style={inputStyle(focused, {}, "", gold, ink)} />
+              {REQUIREMENT_FIELD_CATEGORIES.micCount.includes(performerType) && (
+                <input type="number" min="0" value={artistForm.requirements.micCount} onChange={e => setArtReq("micCount", e.target.value)}
+                  placeholder="Microphones needed" style={inputStyle(focused, {}, "", gold, ink)} />
+              )}
+              {REQUIREMENT_FIELD_CATEGORIES.lightingRequirement.includes(performerType) && (
+                <input value={artistForm.requirements.lightingRequirement} onChange={e => setArtReq("lightingRequirement", e.target.value)}
+                  placeholder="Lighting requirement" style={inputStyle(focused, {}, "", gold, ink)} />
+              )}
+              {REQUIREMENT_FIELD_CATEGORIES.floorRequirement.includes(performerType) && (
+                <input value={artistForm.requirements.floorRequirement} onChange={e => setArtReq("floorRequirement", e.target.value)}
+                  placeholder="Floor requirement" style={inputStyle(focused, {}, "", gold, ink)} />
+              )}
+              {REQUIREMENT_FIELD_CATEGORIES.costumeArrangement.includes(performerType) && (
+                <input value={artistForm.requirements.costumeArrangement} onChange={e => setArtReq("costumeArrangement", e.target.value)}
+                  placeholder="Costume arrangement" style={inputStyle(focused, {}, "", gold, ink)} />
+              )}
+              {REQUIREMENT_FIELD_CATEGORIES.outfitArrangement.includes(performerType) && (
+                <input value={artistForm.requirements.outfitArrangement} onChange={e => setArtReq("outfitArrangement", e.target.value)}
+                  placeholder="Outfit / dress-code arrangement" style={inputStyle(focused, {}, "", gold, ink)} />
+              )}
+            </div>
+            {REQUIREMENT_FIELD_CATEGORIES.scriptSource.includes(performerType) && (
+              <div>
+                <Label optional>Script Source</Label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
+                  {SCRIPT_SOURCE_OPTIONS.map(opt => (
+                    <button key={opt} type="button" onClick={() => setArtReq("scriptSource", artistForm.requirements.scriptSource === opt ? "" : opt)}
+                      style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: artistForm.requirements.scriptSource === opt ? "none" : "1.5px solid #E5D5C0", background: artistForm.requirements.scriptSource === opt ? gold : "#F9F6F1", color: artistForm.requirements.scriptSource === opt ? "#fff" : muted }}>
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: muted, fontWeight: 500 }}>
+                <input type="checkbox" checked={artistForm.requirements.soundSystemProvided} onChange={e => setArtReq("soundSystemProvided", e.target.checked)} style={{ width: 16, height: 16 }} />
+                I provide my own sound system
+              </label>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: muted, fontWeight: 500 }}>
+                <input type="checkbox" checked={artistForm.requirements.stageRequired} onChange={e => setArtReq("stageRequired", e.target.checked)} style={{ width: 16, height: 16 }} />
+                I need a stage / performance area
+              </label>
+              {REQUIREMENT_FIELD_CATEGORIES.rehearsalAvailable.includes(performerType) && (
+                <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: muted, fontWeight: 500 }}>
+                  <input type="checkbox" checked={artistForm.requirements.rehearsalAvailable} onChange={e => setArtReq("rehearsalAvailable", e.target.checked)} style={{ width: 16, height: 16 }} />
+                  Rehearsal availability
+                </label>
+              )}
+            </div>
+            <div>
+              <Label optional>Custom Requests Note</Label>
+              <textarea value={artistForm.requirements.customRequestsNote} onChange={e => setArtReq("customRequestsNote", e.target.value)} rows={2}
+                placeholder="e.g. Happy to learn a custom song with 2 weeks' notice"
+                style={{ ...inputStyle(focused, {}, "", gold, ink), resize: "vertical" }} />
+            </div>
 
             <div>
               <Label optional>About You <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(shown on your profile)</span></Label>
