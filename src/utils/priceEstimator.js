@@ -22,6 +22,34 @@ export async function fetchPriceBenchmark(eventType, city) {
   }
 }
 
+// Nudges the static catalog estimate toward the real average once there's a
+// benchmark to trust (price-benchmark already requires 3+ real samples before
+// it's returned at all), instead of leaving that real data as a disconnected
+// footnote. Deliberately conservative: capped at a ±25% shift so a handful of
+// samples can never swing the number wildly, and the pull toward real data
+// grows with sample size (more completed events = more confidence), capped at
+// 60% so the catalog's own research always keeps some say. Returns the original
+// range unadjusted whenever there's no benchmark yet, or it's already close
+// enough to the catalog not to bother.
+const MAX_BENCHMARK_SHIFT = 0.25;
+const MAX_BENCHMARK_WEIGHT = 0.6;
+export function blendWithBenchmark(total, benchmark) {
+  if (!benchmark?.avgPrice || !total?.min || !total?.max) return { ...total, adjusted: false };
+  const mid = (total.min + total.max) / 2;
+  if (!mid) return { ...total, adjusted: false };
+  const rawRatio = benchmark.avgPrice / mid;
+  const clampedRatio = Math.min(1 + MAX_BENCHMARK_SHIFT, Math.max(1 - MAX_BENCHMARK_SHIFT, rawRatio));
+  if (Math.abs(clampedRatio - 1) < 0.1) return { ...total, adjusted: false }; // close enough already
+  const weight = Math.min(MAX_BENCHMARK_WEIGHT, benchmark.sampleSize / 10);
+  const factor = 1 + (clampedRatio - 1) * weight;
+  return {
+    min: Math.round(total.min * factor),
+    max: Math.round(total.max * factor),
+    adjusted: true,
+    sampleSize: benchmark.sampleSize,
+  };
+}
+
 export function getOccasionNames() {
   return Object.keys(pricingData.occasions);
 }

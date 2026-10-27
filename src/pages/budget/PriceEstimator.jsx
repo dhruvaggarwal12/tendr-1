@@ -19,6 +19,7 @@ import {
   buildPackageTiers,
   formatINR,
   fetchPriceBenchmark,
+  blendWithBenchmark,
 } from "../../utils/priceEstimator";
 
 // Screenshots the given DOM node and saves it as a PDF — same technique already
@@ -218,6 +219,11 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
     return { rows, total, venue };
   }, [chosenCategories, categoryChoice, selectedItems, occasion, allServices, guestBucket, guestBucketKey, simpleCategories, venueType, venueAlreadyBooked]);
 
+  // The headline range, nudged toward real prices once there's a benchmark to trust
+  // (see blendWithBenchmark) — only the single total shown to the customer, never the
+  // per-category rows/packages below, which stay purely catalog-driven.
+  const displayTotal = useMemo(() => blendWithBenchmark(priced.total, priceBenchmark), [priced.total, priceBenchmark]);
+
   // 3 ready-made alternatives spanning the categories already chosen — only computed
   // once the customer asks for them, from buildPackageTiers() (see utils for why it
   // reuses tierBuckets instead of summing every item at a priority level).
@@ -381,14 +387,16 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
             <div style={{ background: "#fff", border: `2px solid ${GOLD}`, borderRadius: 16, padding: "20px", textAlign: "center", marginBottom: 16 }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#8a6a4a", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Your event cost estimate</div>
               <div style={{ fontSize: "clamp(26px,6vw,34px)", fontWeight: 900, color: "#2C1A0E" }}>
-                {formatINR(priced.total.min)} – {formatINR(priced.total.max)}
+                {formatINR(displayTotal.min)} – {formatINR(displayTotal.max)}
               </div>
               <div style={{ fontSize: 12, color: "#8a6a4a", marginTop: 6 }}>
                 {guestBucket?.label}{occasion ? ` · ${occasion}` : ""}{city ? ` · ${city}` : ""}
               </div>
               {priceBenchmark && (
                 <div style={{ fontSize: 12, color: "#15803d", marginTop: 10, fontWeight: 600 }}>
-                  Tendr customers who booked a similar {occasion} paid around {formatINR(priceBenchmark.avgPrice)} on average
+                  {displayTotal.adjusted
+                    ? `Adjusted using real pricing from ${displayTotal.sampleSize} similar Tendr ${displayTotal.sampleSize === 1 ? "event" : "events"} — customers paid around ${formatINR(priceBenchmark.avgPrice)} on average`
+                    : `Tendr customers who booked a similar ${occasion} paid around ${formatINR(priceBenchmark.avgPrice)} on average`}
                 </div>
               )}
             </div>
@@ -397,16 +405,16 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
               <div style={{ background: finaliseChoice === "applied" ? "rgba(34,197,94,0.08)" : "#fff", border: `1.5px solid ${finaliseChoice === "applied" ? "rgba(34,197,94,0.35)" : "rgba(196,122,46,0.25)"}`, borderRadius: 14, padding: "16px 18px", marginBottom: 14 }}>
                 {finaliseChoice === "applied" ? (
                   <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, fontWeight: 700, color: "#15803d" }}>
-                    <span>✓</span> Applied {formatINR(Math.round((priced.total.min + priced.total.max) / 2))} to your budget
+                    <span>✓</span> Applied {formatINR(Math.round((displayTotal.min + displayTotal.max) / 2))} to your budget
                   </div>
                 ) : (
                   <>
                     <div style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E", marginBottom: 2 }}>Finalise this estimate?</div>
                     <div style={{ fontSize: 12, color: "#8a6a4a", marginBottom: 12, lineHeight: 1.5 }}>
-                      We'll set your budget to {formatINR(Math.round((priced.total.min + priced.total.max) / 2))} — the middle of this range.
+                      We'll set your budget to {formatINR(Math.round((displayTotal.min + displayTotal.max) / 2))} — the middle of this range.
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
-                      <button onClick={() => { setFinaliseChoice("applied"); onFinalise(Math.round((priced.total.min + priced.total.max) / 2), priced); }}
+                      <button onClick={() => { setFinaliseChoice("applied"); onFinalise(Math.round((displayTotal.min + displayTotal.max) / 2), priced); }}
                         style={{ flex: 1, padding: "10px 14px", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer" }}>
                         Yes, use this
                       </button>
