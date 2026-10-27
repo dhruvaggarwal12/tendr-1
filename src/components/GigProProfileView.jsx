@@ -32,6 +32,33 @@ const FALLBACK = {
 
 function fmt(n) { return n ? "₹" + Number(n).toLocaleString("en-IN") : "Price on request"; }
 
+// Reads the real per-day availability calendar (keyed "YYYY-MM-DD", each day
+// {slot1/slot2: 'available'|'booked'|'held', slot1HoldUntil/slot2HoldUntil}) instead
+// of always showing a hardcoded "Available for Bookings" badge. No entry for a date
+// means both slots are open, by the same convention the booking calendar itself uses.
+function getAvailabilityStatus(availability) {
+  const cal = availability || {};
+  const dayIsOpen = (key) => {
+    const day = cal[key];
+    if (!day) return true;
+    const now = Date.now();
+    const slotOpen = (slot, holdUntil) => slot !== "booked" && !(slot === "held" && holdUntil && new Date(holdUntil).getTime() > now);
+    return slotOpen(day.slot1, day.slot1HoldUntil) || slotOpen(day.slot2, day.slot2HoldUntil);
+  };
+  const toKey = (d) => d.toISOString().slice(0, 10);
+  const today = new Date();
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() + i);
+    if (dayIsOpen(toKey(d))) {
+      return i === 0
+        ? { available: true, label: "Available for Bookings" }
+        : { available: false, label: `Next available: ${d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}` };
+    }
+  }
+  return { available: false, label: "Fully booked — message to check" };
+}
+
 function Stars({ r = 0, sz = 13 }) {
   return (
     <span style={{ display:"inline-flex", gap:1.5 }}>
@@ -153,6 +180,11 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
   // textarea rendered as one row). One row per song/segment/trick/act now.
   const performanceItems = Array.isArray(vendor.performanceItems) ? vendor.performanceItems : [];
   const videoItems = (vendor.mediaLinks || []).map(m => ({ ...m, kind: "video" }));
+  const milestones = vendor.milestones || [];
+  const notableClients = vendor.notableClients || [];
+  const awards = vendor.awards || [];
+  const secondaryCategories = vendor.secondaryCategories || [];
+  const availabilityStatus = getAvailabilityStatus(vendor.availability);
 
   const PERFORMANCE_TAB_LABEL = "Setlist & Performance";
   const tabs = ["Portfolio","About",PERFORMANCE_TAB_LABEL,"Packages","Reviews"];
@@ -320,7 +352,10 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           {/* Opening bracket — editorial accent */}
           <span style={{ display:"block", fontFamily:serif, fontSize:"2.8rem", fontWeight:400, color:GOLD, opacity:0.5, lineHeight:0.7, marginBottom:10 }}>[</span>
 
-          <div className="gp-eyebrow">Professional {vendor.serviceType || "Performer"}</div>
+          <div className="gp-eyebrow">
+            Professional {vendor.serviceType || "Performer"}
+            {secondaryCategories.length > 0 && ` · also ${secondaryCategories.join(" · ")}`}
+          </div>
 
           <h1 className="gp-name">
             {vendor.name}
@@ -386,8 +421,8 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           <div className="gp-photo-blur-bot"/>
           <div className="gp-photo-cursive">Turning Moments<br/>Into Memories</div>
           <div className="gp-avail-badge">
-            <div className="gp-green-dot"/>
-            Available for Bookings
+            <div className="gp-green-dot" style={!availabilityStatus.available ? { background: "#D4A940" } : undefined}/>
+            {availabilityStatus.label}
           </div>
         </div>
 
@@ -583,6 +618,39 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               </div>
             )}
 
+            {milestones.length > 0 && (
+              <div style={{ marginBottom:52 }}>
+                <div style={{ fontFamily:serif, fontSize:"1.25rem", fontWeight:700, color:CINK, marginBottom:28 }}>Performance Journey</div>
+                {milestones.map((m, i) => (
+                  <div key={i} style={{ display:"grid", gridTemplateColumns:"70px 1fr", gap:16, marginBottom:20, paddingBottom:20, borderBottom: i < milestones.length - 1 ? `1px solid ${CGOLD_D}` : "none" }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:GOLD, fontFamily:serif }}>{m.year}</div>
+                    <div style={{ fontSize:15, color:CMUTED, lineHeight:1.6 }}>{m.text}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {(notableClients.length > 0 || awards.length > 0) && (
+              <div style={{ marginBottom:52, display:"flex", flexWrap:"wrap", gap:40 }}>
+                {notableClients.length > 0 && (
+                  <div style={{ flex:"1 1 220px" }}>
+                    <div style={{ fontSize:12, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:CDIM, marginBottom:12 }}>Notable Clients / Venues</div>
+                    <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                      {notableClients.map((c, i) => <div key={i} style={{ fontSize:14.5, color:CMUTED }}>{c}</div>)}
+                    </div>
+                  </div>
+                )}
+                {awards.length > 0 && (
+                  <div style={{ flex:"1 1 220px" }}>
+                    <div style={{ fontSize:12, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:CDIM, marginBottom:12 }}>Awards & Recognition</div>
+                    <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                      {awards.map((a, i) => <div key={i} style={{ fontSize:14.5, color:CMUTED }}>🏆 {a}</div>)}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {(() => {
               const svc = vendor.serviceType;
               const chipStyle = { padding:"7px 18px", borderRadius:20, background:"rgba(196,155,48,0.08)", border:`1px solid rgba(196,155,48,0.22)`, fontSize:14, color:CMUTED, fontWeight:500 };
@@ -742,13 +810,28 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
                   {pkg.bestFor && (
                     <div style={{ fontSize:14, color:CDIM, marginBottom:20, fontStyle:"italic" }}>Ideal for {pkg.bestFor}</div>
                   )}
-                  <div style={{ marginBottom:22 }}>
+                  <div style={{ marginBottom:14 }}>
                     {pkg.items.map((item, j) => (
                       <div key={j} style={{ fontSize:15, color:CMUTED, lineHeight:1.7, paddingBlock:4, fontWeight:400 }}>
                         — {item}
                       </div>
                     ))}
                   </div>
+                  {(pkg.performerCount || pkg.travelCharge || pkg.overtimeCharge) && (
+                    <div style={{ display:"flex", flexWrap:"wrap", gap:16, marginBottom:14, fontSize:13, color:CDIM }}>
+                      {pkg.performerCount && <span>👤 {pkg.performerCount} performer{Number(pkg.performerCount) > 1 ? "s" : ""}</span>}
+                      {pkg.travelCharge && <span>🚗 {pkg.travelCharge}</span>}
+                      {pkg.overtimeCharge && <span>⏱ Overtime: {pkg.overtimeCharge}</span>}
+                    </div>
+                  )}
+                  {pkg.addOns?.length > 0 && (
+                    <div style={{ marginBottom:22 }}>
+                      <div style={{ fontSize:11.5, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.06em", color:CDIM, marginBottom:6 }}>Optional Add-ons</div>
+                      {pkg.addOns.map((a, j) => (
+                        <div key={j} style={{ fontSize:14, color:CMUTED, lineHeight:1.6 }}>+ {a}</div>
+                      ))}
+                    </div>
+                  )}
                   <button onClick={onBook} style={{ padding:"10px 22px", borderRadius:100, background: featured ? `linear-gradient(135deg,${GOLD},#9A7010)` : "transparent", border: featured ? "none" : `1px solid ${CGOLD_D}`, color: featured ? "#1A1000" : CMUTED, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:font }}>
                     {featured ? "Book this package" : "Enquire"}
                   </button>
@@ -899,8 +982,8 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               </div>
             )}
             <div className="gp-sb-row">
-              <span className="gp-sb-icon"><div style={{ width:7, height:7, borderRadius:"50%", background:"#28A85A", boxShadow:"0 0 6px rgba(40,168,90,0.5)" }}/></span>
-              Available for bookings
+              <span className="gp-sb-icon"><div style={{ width:7, height:7, borderRadius:"50%", background: availabilityStatus.available ? "#28A85A" : "#D4A940", boxShadow: availabilityStatus.available ? "0 0 6px rgba(40,168,90,0.5)" : "0 0 6px rgba(212,169,64,0.5)" }}/></span>
+              {availabilityStatus.label}
             </div>
             <div className="gp-sb-row">
               <span className="gp-sb-icon"><Clock size={13} color={GOLD} strokeWidth={1.8}/></span>
