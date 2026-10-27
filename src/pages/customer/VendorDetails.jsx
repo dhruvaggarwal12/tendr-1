@@ -50,6 +50,7 @@ import ServiceAreaMap from "../../components/ServiceAreaMap";
 import Footer from "../../components/Footer";
 import AuthModal from "../../components/AuthModal";
 import PerformerSuggestions from "../../components/PerformerSuggestions";
+import { GIG_PRO_TYPES, PERFORMER_SERVICE_TYPES } from "../../constants/performerCategories";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const chatSaveKey = (id) => `tendr:chat_req:${id}`;
@@ -433,10 +434,15 @@ const VendorDetailsPage = () => {
 
   const font = "'Outfit', sans-serif";
 
-  const GIG_PRO_TYPES = ['DJ', 'Emcee', 'Anchor', 'Band', 'Choreographer', 'Performer', 'LiveBand', 'Musician', 'Singer', 'Comedian', 'Magician'];
-  const isGigPro = GIG_PRO_TYPES.some(t => serviceType?.toLowerCase() === t.toLowerCase() || serviceType?.toLowerCase().includes(t.toLowerCase()));
+  // GIG_PRO_TYPES / PERFORMER_SERVICE_TYPES used to be hardcoded here with stale
+  // values ("Emcee", "Comedian") that don't match what Registration.jsx actually
+  // submits ("Emcee/Host", "Stand-up Comedian") — the fuzzy substring match below
+  // happened to still catch those by accident, but exact-matching against the one
+  // shared category list (also used by Registration.jsx/Profile.jsx) is what's
+  // actually correct and won't silently break if a category gets renamed.
+  const isGigPro = GIG_PRO_TYPES.includes(serviceType);
 
-  const PERFORMER_SERVICE_TYPES = ['Singer', 'Band', 'Anchor', 'Choreographer', 'Musician', 'Emcee'];
+  // Controls the direct-booking T&C modal vs the normal chat flow.
   const isPerformer = vendor && PERFORMER_SERVICE_TYPES.includes(vendor.serviceType);
 
   // Login is mandatory before chat/booking, for every vendor type alike — but instead of just

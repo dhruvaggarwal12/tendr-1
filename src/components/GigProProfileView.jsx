@@ -124,7 +124,12 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
   const photoCats  = ["All", ...Array.from(new Set(allPhotos.map(p => p.category).filter(c => c && c !== "All")))];
   const visible    = catFilter === "All" ? allPhotos : allPhotos.filter(p => p.category === catFilter);
 
-  const portrait   = vendor.mainPhotoUrl || allPhotos[0]?.url || FALLBACK[vendor.serviceType] || FALLBACK.Anchor;
+  // mainPhotoIndex lets the vendor pick their hero shot from their own uploaded
+  // photos (set from the dashboard) — falls back to the first photo, same as before,
+  // when unset (-1) or out of range. Replaces the old `mainPhotoUrl`, which had no
+  // input anywhere a vendor could actually set it.
+  const mainIdx    = Number.isInteger(vendor.mainPhotoIndex) ? vendor.mainPhotoIndex : -1;
+  const portrait   = (mainIdx >= 0 && allPhotos[mainIdx]?.url) || allPhotos[0]?.url || FALLBACK[vendor.serviceType] || FALLBACK.Anchor;
   const city       = vendor.city || vendor.location || vendor.address?.city || vendor.locations?.[0] || "";
   const rating     = Number(vendor.avgReviewScore) || 0;
   const events     = vendor.totalEventsCompleted || 0;
@@ -133,17 +138,24 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
   const instr      = vendor.instruments || [];
   const social     = vendor.social || {};
   const highlights = vendor.highlights || [];
+  const languages  = vendor.languages || [];
+  const lineup     = vendor.lineup || [];
+  const requirements = vendor.requirements || {};
+  const hasRequirements = !!(requirements.travel || requirements.setupTimeMinutes || requirements.soundSystemProvided
+    || requirements.stageRequired || requirements.powerRequirement || requirements.spaceRequirement
+    || requirements.advanceBookingDays || requirements.customRequestsNote);
   const pkgs = (vendor.packages || []).map(p => ({
     ...p,
     items: Array.isArray(p.items) ? p.items : (p.items||"").split("\n").filter(Boolean),
   }));
-  const setlistArr = Array.isArray(vendor.setlist)
-    ? vendor.setlist
-    : typeof vendor.setlist === "string"
-    ? vendor.setlist.split("\n").filter(Boolean)
-    : [];
+  // performanceItems replaces the old free-text `setlist` ([String] of whole bullet-
+  // point blobs that Mongoose cast into a single array element, so the entire
+  // textarea rendered as one row). One row per song/segment/trick/act now.
+  const performanceItems = Array.isArray(vendor.performanceItems) ? vendor.performanceItems : [];
+  const videoItems = (vendor.mediaLinks || []).map(m => ({ ...m, kind: "video" }));
 
-  const tabs = ["Portfolio","About","Setlist","Packages","Reviews"];
+  const PERFORMANCE_TAB_LABEL = "Setlist & Performance";
+  const tabs = ["Portfolio","About",PERFORMANCE_TAB_LABEL,"Packages","Reviews"];
 
   const stats = [
     events > 0 && { type:"events",     val:`${events}+`,  label:"Events Done" },
@@ -332,6 +344,14 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
                 {reviews.length > 0 && <span style={{ fontSize:13, color:MUTED }}>({reviews.length})</span>}
               </span>
             )}
+            {/* Content rating — prominent here rather than buried in About's chip list,
+                since it affects whether a customer should book at all (mainly Stand-up
+                Comedian, but shown for anyone who has set it). */}
+            {vendor.contentRating && (
+              <span style={{ fontSize:11.5, fontWeight:700, color:GOLD, border:`1px solid ${GOLD_D}`, borderRadius:100, padding:"4px 12px", letterSpacing:"0.02em" }}>
+                {vendor.contentRating}
+              </span>
+            )}
           </div>
 
           {vendor.bio && (
@@ -432,8 +452,48 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
         {/* PORTFOLIO — full width, no sidebar */}
         {tab === "Portfolio" && (
-          allPhotos.length > 0 ? (
+          allPhotos.length > 0 || videoItems.length > 0 ? (
             <div>
+              {videoItems.length > 0 && (
+                <div style={{ marginBottom: allPhotos.length > 0 ? 40 : 0 }}>
+                  <div style={{ fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", color:MUTED, marginBottom:16 }}>Watch</div>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:16 }}>
+                    {videoItems.map((v, i) => {
+                      const ytId = (v.url.match(/(?:youtu\.be\/|v=|\/embed\/)([A-Za-z0-9_-]{6,})/) || [])[1];
+                      const platform = v.url.includes("instagram") ? "Instagram" : v.url.includes("soundcloud") ? "SoundCloud" : ytId ? "YouTube" : "Watch";
+                      return (
+                        <div key={v.id || i} style={{ borderRadius:12, overflow:"hidden", background:"#0E0A06", border:`1px solid ${GOLD_D}` }}>
+                          {ytId ? (
+                            <div style={{ position:"relative", aspectRatio:"16/9" }}>
+                              <iframe
+                                src={`https://www.youtube.com/embed/${ytId}`}
+                                title={v.title || `${vendor.name} video ${i+1}`}
+                                style={{ width:"100%", height:"100%", border:"none", display:"block" }}
+                                allow="accelerometer; encrypted-media; picture-in-picture"
+                                allowFullScreen
+                              />
+                            </div>
+                          ) : (
+                            <a href={v.url} target="_blank" rel="noopener noreferrer"
+                              style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:10, aspectRatio:"16/9", textDecoration:"none", color:MUTED }}>
+                              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="1.6"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                              <span style={{ fontSize:12.5 }}>{platform} ↗</span>
+                            </a>
+                          )}
+                          {(v.title || v.category) && (
+                            <div style={{ padding:"10px 12px" }}>
+                              {v.title && <div style={{ fontSize:12.5, color:INK, fontWeight:600 }}>{v.title}</div>}
+                              {v.category && <div style={{ fontSize:10.5, color:DIM, textTransform:"uppercase", letterSpacing:"0.08em", marginTop:2 }}>{v.category}</div>}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {allPhotos.length > 0 && (<>
               {photoCats.length > 1 && (
                 <div className="gp-cat-pills">
                   {photoCats.map(c => (
@@ -464,12 +524,13 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
                   );
                 })}
               </div>
+              </>)}
             </div>
           ) : (
             <div style={{ textAlign:"center", padding:"100px 20px" }}>
               <div style={{ fontFamily:serif, fontSize:"1.4rem", fontStyle:"italic", color:MUTED, marginBottom:10 }}>No portfolio yet</div>
               <p style={{ fontSize:13.5, color:DIM, maxWidth:240, margin:"0 auto", lineHeight:1.7 }}>
-                Upload photos from your dashboard to showcase past events.
+                Upload photos or add a video link from your dashboard to showcase past events.
               </p>
             </div>
           )
@@ -500,6 +561,25 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
                     {h.desc && <div style={{ fontSize:15, color:CMUTED, lineHeight:1.75, fontWeight:400 }}>{h.desc}</div>}
                   </div>
                 ))}
+              </div>
+            )}
+
+            {lineup.filter(m => m.name).length > 0 && (
+              <div style={{ marginBottom:52 }}>
+                <div style={{ fontFamily:serif, fontSize:"1.25rem", fontWeight:700, color:CINK, marginBottom:24 }}>Meet the Band</div>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:20 }}>
+                  {lineup.filter(m => m.name).map((m, i) => (
+                    <div key={i} style={{ display:"flex", alignItems:"center", gap:12, minWidth:160 }}>
+                      <div style={{ width:48, height:48, borderRadius:"50%", overflow:"hidden", flexShrink:0, background:"rgba(196,155,48,0.12)", border:`1px solid ${CGOLD_D}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        {m.photoUrl ? <img src={m.photoUrl} alt={m.name} style={{ width:"100%", height:"100%", objectFit:"cover" }}/> : <span style={{ fontSize:14, fontWeight:700, color:GOLD }}>{m.name[0]}</span>}
+                      </div>
+                      <div>
+                        <div style={{ fontSize:14.5, fontWeight:700, color:CINK }}>{m.name}</div>
+                        {m.role && <div style={{ fontSize:12.5, color:CDIM }}>{m.role}</div>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -582,20 +662,23 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           </div>
         )}
 
-        {/* ── SETLIST ── */}
-        {tab === "Setlist" && (
+        {/* ── SETLIST & PERFORMANCE ── */}
+        {tab === PERFORMANCE_TAB_LABEL && (
           <div>
             <div style={{ fontFamily:serif, fontSize:"1.5rem", fontWeight:700, color:CINK, marginBottom:8 }}>The Experience</div>
             <p style={{ fontSize:15, color:CMUTED, lineHeight:1.75, marginBottom:44, fontWeight:400, maxWidth:460 }}>
               Here's how the performance unfolds — from setting the tone to leaving the room energised.
             </p>
 
-            {setlistArr.length > 0 ? (
+            {performanceItems.length > 0 ? (
               <div>
-                {setlistArr.map((line, i) => (
+                {performanceItems.map((item, i) => (
                   <div key={i} style={{ display:"grid", gridTemplateColumns:"32px 1fr", gap:"0 20px", marginBottom:32 }}>
                     <div style={{ fontSize:12, color:CDIM, fontVariantNumeric:"tabular-nums", paddingTop:4, fontWeight:500 }}>{String(i+1).padStart(2,"0")}</div>
-                    <div style={{ fontSize:17.5, color:CINK, fontWeight:600, lineHeight:1.45 }}>{line}</div>
+                    <div>
+                      <div style={{ fontSize:17.5, color:CINK, fontWeight:600, lineHeight:1.45 }}>{item.title}</div>
+                      {item.note && <div style={{ fontSize:13.5, color:CDIM, marginTop:4 }}>{item.note}</div>}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -606,9 +689,9 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               </div>
             )}
 
-            {isDirectLink && (social.showreel || vendor.showreel) && (
+            {isDirectLink && social.showreel && (
               <div style={{ marginTop:52 }}>
-                <a href={social.showreel || vendor.showreel} target="_blank" rel="noopener noreferrer"
+                <a href={social.showreel} target="_blank" rel="noopener noreferrer"
                   style={{ display:"inline-flex", alignItems:"center", gap:12, padding:"14px 32px", borderRadius:100, background:`linear-gradient(135deg,${GOLD},#9A7010)`, color:"#1A1000", textDecoration:"none", fontSize:14.5, fontWeight:700 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                   Watch Full Showreel
@@ -654,6 +737,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
                   <div style={{ display:"flex", alignItems:"baseline", gap:10, marginBottom:pkg.bestFor ? 8 : 20 }}>
                     <span style={{ fontFamily:serif, fontSize:"2.3rem", fontWeight:800, fontStyle:"italic", color:GOLD }}>{fmt(pkg.price)}</span>
                     {pkg.unit && <span style={{ fontSize:14, color:CDIM }}>{pkg.unit}</span>}
+                    {pkg.duration && <span style={{ fontSize:12.5, color:CDIM, border:`1px solid ${CGOLD_D}`, borderRadius:100, padding:"3px 10px" }}>{pkg.duration}</span>}
                   </div>
                   {pkg.bestFor && (
                     <div style={{ fontSize:14, color:CDIM, marginBottom:20, fontStyle:"italic" }}>Ideal for {pkg.bestFor}</div>
@@ -842,6 +926,37 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               <span style={{ color:GOLD, opacity:0.7 }}>Tendr</span> verified performer
             </div>
           </div>
+
+          {/* What to arrange before booking — compact checklist, not read as an essay */}
+          {hasRequirements && (
+            <div className="gp-sb-card">
+              <div style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:CMUTED, marginBottom:14 }}>Good to Know</div>
+              {requirements.travel && (
+                <div className="gp-sb-row"><span className="gp-sb-icon"><MapPin size={12} color={GOLD} strokeWidth={1.8}/></span>Travel: {requirements.travel}</div>
+              )}
+              {!!requirements.setupTimeMinutes && (
+                <div className="gp-sb-row"><span className="gp-sb-icon"><Clock size={13} color={GOLD} strokeWidth={1.8}/></span>Setup time: {requirements.setupTimeMinutes} min</div>
+              )}
+              {requirements.soundSystemProvided && (
+                <div className="gp-sb-row">✓ Sound system provided</div>
+              )}
+              {requirements.stageRequired && (
+                <div className="gp-sb-row">⚠ Needs a stage/performance area</div>
+              )}
+              {requirements.powerRequirement && (
+                <div className="gp-sb-row">Power: {requirements.powerRequirement}</div>
+              )}
+              {requirements.spaceRequirement && (
+                <div className="gp-sb-row">Space needed: {requirements.spaceRequirement}</div>
+              )}
+              {!!requirements.advanceBookingDays && (
+                <div className="gp-sb-row">Book at least {requirements.advanceBookingDays} days ahead</div>
+              )}
+              {requirements.customRequestsNote && (
+                <div style={{ fontSize:12.5, color:CMUTED, marginTop:8, lineHeight:1.6 }}>{requirements.customRequestsNote}</div>
+              )}
+            </div>
+          )}
 
           {/* Quick share */}
           <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10 }}>

@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
+import {
+  PERFORMER_CATEGORIES, PERFORMER_ART_FORMS, GIG_STYLE_OPTIONS,
+  GIG_LANG_OPTIONS, GIG_LANGUAGE_CATEGORIES, CONTENT_RATING_OPTIONS,
+  performanceLabel, performanceFieldHints, QUICK_PERFORMANCE_ITEMS,
+} from "../../constants/performerCategories";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font  = "'Outfit', sans-serif";
@@ -9,52 +14,6 @@ const ink   = "#1C0E04";
 const muted = "#7A5535";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
-
-const _s = (d) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{d}</svg>;
-const ARTIST_TYPES = [
-  { value: "DJ",               label: "DJ",               sub: "Open format, commercial, wedding",                        icon: _s(<><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></>) },
-  { value: "Anchor",           label: "Anchor / Emcee",   sub: "Weddings, corporate, award nights",                       icon: _s(<><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></>) },
-  { value: "Emcee/Host",       label: "Emcee / Host",     sub: "Stage hosting & live shows",                              icon: _s(<><line x1="5" y1="3" x2="5" y2="21"/><line x1="19" y1="3" x2="19" y2="21"/><line x1="2" y1="5" x2="22" y2="5"/><line x1="2" y1="19" x2="22" y2="19"/></>) },
-  { value: "Band",             label: "Band",             sub: "Live music — Bollywood, jazz, rock",                      icon: _s(<><path d="M2 18a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v2z"/><path d="M2 18C2 13 7 8 12 8s10 5 10 10"/><line x1="9" y1="5" x2="12" y2="8"/><line x1="15" y1="5" x2="12" y2="8"/></>) },
-  { value: "Singer",           label: "Singer",           sub: "Solo vocalist, all genres",                               icon: _s(<><circle cx="12" cy="7" r="4"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></>) },
-  { value: "Musician",         label: "Musician",         sub: "Instrumentalist — piano, tabla, violin",                  icon: _s(<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>) },
-  { value: "Performer",        label: "Solo Performer",   sub: "Dancer, acrobat, circus & specialty act", hasArtForm: true, icon: _s(<><circle cx="12" cy="4" r="2"/><path d="M7 22l5-8 5 8"/><path d="M9 14l-2 4"/><path d="M15 14l2 4"/><path d="M9 10l3-4 3 4"/></>) },
-  { value: "Stand-up Comedian",label: "Stand-up Comedian",sub: "Corporate & private shows",                               icon: _s(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>) },
-  { value: "Magician",         label: "Magician",         sub: "Close-up & stage magic",                                  icon: _s(<><path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/><path d="M17.8 11.8L19 13"/><path d="M15 9h.01"/><path d="M17.8 6.2L19 5"/><path d="M3 21l9-9"/><path d="M12.2 6.2L11 5"/></>) },
-  { value: "AV Setup",         label: "AV Setup",         sub: "Projector, LED wall, live streaming",                     icon: _s(<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>) },
-  { value: "Choreographer",   label: "Choreographer",    sub: "Sangeet, wedding & group choreography",                   icon: _s(<><path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"/><path d="M7 22l3-8-2-3 4-4 4 4-2 3 3 8"/></>) },
-  { value: "Makeup Artist",   label: "Makeup Artist",    sub: "Bridal, party, editorial looks",                          icon: _s(<><path d="M2 22l10-10"/><path d="M17 17l4-4a3 3 0 0 0-4-4L7 15a5 5 0 0 0 7 7z"/></>) },
-  { value: "Mehendi Artist",  label: "Mehendi Artist",   sub: "Bridal, bridesmaid & guest mehendi",                      icon: _s(<><path d="M12 22s-6-3-6-9V6l6-3 6 3v7c0 6-6 9-6 9z"/></>) },
-  { value: "Hair Stylist",    label: "Hair Stylist",     sub: "Bridal updo, extensions, styling",                        icon: _s(<><circle cx="6" cy="6" r="3"/><path d="M8.12 8.12L12 12"/><path d="M20 4l-8.12 8.12"/><circle cx="20" cy="4" r="2"/><path d="M14.8 14.8L20 20"/></>) },
-  { value: "Cake Artist",     label: "Cake Artist",      sub: "Custom cakes, wedding & fondant",                         icon: _s(<><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 1.5-2 3-2 2.5 2 4 2 2-1 2-1"/><path d="M2 21h20"/><path d="M7 8v3"/><path d="M12 8v3"/><path d="M17 8v3"/><path d="M7 4h.01"/><path d="M12 4h.01"/><path d="M17 4h.01"/></>) },
-  { value: "Bartender",       label: "Bartender",        sub: "Cocktails, mocktails, bar setup",                         icon: _s(<><path d="M8 22h8"/><path d="M12 11v11"/><path d="m19 3-7 8-7-8z"/></>) },
-];
-
-const VENDOR_TYPES = [
-  { value: "Decorator",        label: "Decorator",        sub: "Floral, balloon, draping, lighting",  icon: _s(<><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></>) },
-  { value: "Caterer",          label: "Caterer",          sub: "Food service, live counters, buffet", icon: _s(<><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></>) },
-  { value: "Photographer",     label: "Photographer",     sub: "Candid, traditional, pre-wedding",   icon: _s(<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></>) },
-  { value: "Videographer",     label: "Videographer",     sub: "Cinematic, reels, drone coverage",   icon: _s(<><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></>) },
-  { value: "Food Truck",       label: "Food Truck",       sub: "Live counters, chaat, dosa, pizza",  icon: _s(<><path d="M14 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3"/><path d="M18 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M10 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M14 5h4l3 4.5V17h-7V5z"/></>) },
-  { value: "Wedding Planner",  label: "Wedding Planner",  sub: "Full planning, day coordination",    icon: _s(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></>) },
-  { value: "Live Streaming",   label: "Live Streaming",   sub: "YouTube, Zoom, multi-camera events", icon: _s(<><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></>) },
-  { value: "Photo Booth",      label: "Photo Booth",      sub: "360, open-air, prints & GIF booths", icon: _s(<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><line x1="12" y1="9" x2="12.01" y2="9"/><circle cx="12" cy="15" r="3"/></>) },
-  { value: "Gift & Favours",   label: "Gift & Favours",   sub: "Return gifts, hampers, packaging",   icon: _s(<><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></>) },
-  { value: "Transportation",   label: "Transportation",   sub: "Wedding cars, buses, logistics",     icon: _s(<><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></>) },
-  { value: "Security",         label: "Security",         sub: "Event security & crowd management",  icon: _s(<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>) },
-  { value: "Other",            label: "Other",            sub: "Describe your service below",        icon: _s(<><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></>) },
-];
-
-const PERFORMER_ART_FORMS = [
-  { value: "Classical Dance",      label: "Classical Dance",      sub: "Bharatnatyam · Kathak · Odissi · Kuchipudi", emoji: "🪷" },
-  { value: "Contemporary Dance",   label: "Contemporary Dance",   sub: "Hip-hop · Breaking · Freestyle · Jazz", emoji: "💃" },
-  { value: "Folk & Cultural Dance",label: "Folk & Cultural Dance",sub: "Bhangra · Garba · Lavani · Bihu · Ghoomar", emoji: "🎊" },
-  { value: "Aerial & Acrobatics",  label: "Aerial & Acrobatics",  sub: "Silk aerials · Hoop · Contortion · Tumbling", emoji: "🎪" },
-  { value: "Fire & Circus Arts",   label: "Fire & Circus Arts",   sub: "Fire poi · Juggling · Clowning · Stilt walk", emoji: "🔥" },
-  { value: "Belly Dance / Sufi",   label: "Belly Dance / Sufi",   sub: "Sufi whirling · Belly dance · Tribal fusion", emoji: "✨" },
-  { value: "Mime & Physical Theater",label: "Mime & Physical Theater",sub: "Street mime · Physical comedy · Living statue", emoji: "🎭" },
-  { value: "Other Art Form",       label: "Other / Mixed",        sub: "Combination or a style not listed here", emoji: "🎨" },
-];
 
 const COORDINATOR_SPECIALIZATIONS = [
   "Wedding Planning", "Corporate Events", "Birthday & Private Parties",
@@ -112,22 +71,14 @@ const CITY_OPTIONS = [
   "Mumbai", "Pune", "Bengaluru", "Hyderabad", "Chennai", "Kolkata", "Jaipur", "Chandigarh",
 ];
 
-const ARTIST_PERFORMER_TYPES = [
-  { value: "Singer",        label: "Singer",        emoji: "🎤", sub: "Solo vocalist — Bollywood, classical, western & more" },
-  { value: "Band",          label: "Live Band",      emoji: "🎸", sub: "Bollywood, jazz, rock or fusion band" },
-  { value: "Anchor",        label: "Anchor",         emoji: "🎙️", sub: "Professional host for weddings & events" },
-  { value: "Choreographer", label: "Choreographer",  emoji: "💃", sub: "Dance performances & group choreography" },
-  { value: "Musician",      label: "Musician",       emoji: "🎹", sub: "Instrumentalist — piano, guitar, tabla & more" },
-  { value: "Emcee",         label: "Emcee",          emoji: "🎭", sub: "Master of ceremonies for any occasion" },
-];
-
+// Per-category genre/specialization chip options shown on the artist profile
+// step. DJ/Magician/Stand-up Comedian/Performer reuse GIG_STYLE_OPTIONS (imported
+// below) instead of a separate genre list — those categories are about
+// performance style, not musical genre.
 const ARTIST_GENRES = {
   Singer:        ["Bollywood", "Classical", "Western/Pop", "Ghazal/Sufi", "Folk", "Jazz", "Devotional"],
   Band:          ["Bollywood", "Rock/Jazz", "Fusion", "Devotional", "Retro", "EDM"],
-  Anchor:        ["Hindi", "English", "Bilingual", "Corporate", "Wedding", "Comedy"],
-  Choreographer: ["Bollywood", "Classical", "Contemporary", "Hip-Hop", "Sangeet/Wedding", "Folk"],
   Musician:      ["Piano", "Guitar", "Tabla", "Violin", "Flute", "Saxophone", "Sitar", "Multiple"],
-  Emcee:         ["Hindi", "English", "Bilingual", "Corporate", "Wedding", "Stand-up/Comedy"],
 };
 
 const DURATION_OPTIONS = ["30–45 min", "1 hour", "2 hours", "3 hours", "Full event (4+ hrs)", "Flexible"];
@@ -897,11 +848,16 @@ export default function VendorRegistration() {
 
   // Artist flow
   const [performerType, setPerformerType] = useState("");
+  const [performerArtForm, setPerformerArtForm] = useState(""); // only for "Performer" (hasArtForm)
   const [genres, setGenres] = useState([]);
+  const [languages, setLanguages] = useState([]);
   const [artistForm, setArtistForm] = useState({
     name: "", phoneNumber: "", whatsappNumber: "", email: "", city: "",
     password: "", confirmPassword: "",
-    bio: "", packages: [{ name: "", price: "" }], duration: "", sampleLink: "", instagram: "", setlist: [""],
+    bio: "", contentRating: "",
+    packages: [{ name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [] }],
+    duration: "", sampleLink: "", instagram: "",
+    performanceItems: [{ title: "", note: "" }],
   });
   // Photos — first one is the hero/cover photo (same convention as portfolioPhotos[0]
   // everywhere else: VendorDetails.jsx, ArtistListingsPage.jsx, etc.)
@@ -1020,9 +976,12 @@ export default function VendorRegistration() {
           <p style={{ fontSize: 14, color: muted, margin: 0 }}>Your profile will be tailored to match your style.</p>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
-          {ARTIST_PERFORMER_TYPES.map(t => (
+          {PERFORMER_CATEGORIES.map(t => (
             <button key={t.value} type="button"
-              onClick={() => { setPerformerType(t.value); setGenres([]); setStep("a_plan"); }}
+              onClick={() => {
+                setPerformerType(t.value); setGenres([]); setLanguages([]); setPerformerArtForm("");
+                setStep(t.hasArtForm ? "a_artform" : "a_plan");
+              }}
               style={{ padding: "20px 16px", borderRadius: 14, border: "1.5px solid rgba(28,14,4,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)", display: "flex", flexDirection: "column", gap: 8 }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(196,122,46,0.14)"; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.1)"; e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; }}
@@ -1040,11 +999,41 @@ export default function VendorRegistration() {
     );
   }
 
+  // Step a_artform — Performer's specialty art form (only shown for "Performer")
+  if (step === "a_artform") {
+    return (
+      <Shell step={1} steps={["Type", "Plan", "Profile"]}>
+        <button type="button" onClick={() => setStep("a_type")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
+          ← Back
+        </button>
+        <div style={{ marginBottom: 28 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold, marginBottom: 8 }}>Solo Performer</p>
+          <h1 style={{ fontSize: "clamp(1.5rem,3.5vw,2rem)", fontWeight: 800, color: ink, margin: "0 0 8px", lineHeight: 1.2 }}>What's your specialty?</h1>
+          <p style={{ fontSize: 14, color: muted, margin: 0 }}>This decides what we ask you about next.</p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
+          {PERFORMER_ART_FORMS.map(t => (
+            <button key={t.value} type="button"
+              onClick={() => { setPerformerArtForm(t.value); setStep("a_plan"); }}
+              style={{ padding: "20px 16px", borderRadius: 14, border: "1.5px solid rgba(28,14,4,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: font, transition: "all 0.18s", boxShadow: "0 1px 4px rgba(28,14,4,0.04)", display: "flex", flexDirection: "column", gap: 8 }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = gold; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(196,122,46,0.14)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(28,14,4,0.1)"; e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; }}
+            >
+              <span style={{ fontSize: 28 }}>{t.emoji}</span>
+              <div style={{ fontSize: 14, fontWeight: 700, color: ink }}>{t.label}</div>
+              <div style={{ fontSize: 11, color: muted, lineHeight: 1.5 }}>{t.sub}</div>
+            </button>
+          ))}
+        </div>
+      </Shell>
+    );
+  }
+
   // Step a_plan — Artist free / paid choice
   if (step === "a_plan") {
     return (
       <Shell step={2} steps={["Type", "Plan", "Profile"]} sideTiers>
-        <button type="button" onClick={() => setStep("a_type")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
+        <button type="button" onClick={() => setStep(performerType === "Performer" ? "a_artform" : "a_type")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 24, padding: 0 }}>
           ← Back
         </button>
         <div style={{ marginBottom: 28 }}>
@@ -1144,27 +1133,21 @@ export default function VendorRegistration() {
 
   // Step a_profile — Artist profile form
   if (step === "a_profile") {
-    const typeInfo = ARTIST_PERFORMER_TYPES.find(t => t.value === performerType) || {};
-    const genreOptions = ARTIST_GENRES[performerType] || [];
+    const typeInfo = PERFORMER_CATEGORIES.find(t => t.value === performerType) || {};
+    // Singer/Band/Musician get a musical-genre list; every other category (DJ,
+    // Anchor, Emcee/Host, Choreographer, Performer, Stand-up Comedian, Magician)
+    // falls back to its GIG_STYLE_OPTIONS "performing style" list instead — one
+    // chip section either way, submitted as `genres` (the dashboard's richer
+    // genres/performingStyle split can be filled in later from the full profile editor).
+    const genreOptions = ARTIST_GENRES[performerType]?.length ? ARTIST_GENRES[performerType] : (GIG_STYLE_OPTIONS[performerType] || []);
     const toggleGenre = (g) => setGenres(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g]);
+    const toggleLanguage = (l) => setLanguages(prev => prev.includes(l) ? prev.filter(x => x !== l) : [...prev, l]);
+    const showLanguages = GIG_LANGUAGE_CATEGORIES.includes(performerType);
+    const showContentRating = performerType === "Stand-up Comedian";
 
-    const setlistLabel = ["Anchor","Emcee"].includes(performerType) ? "Typical Segments / Script Outline"
-      : performerType === "Choreographer" ? "Routines / Acts You Offer"
-      : performerType === "Musician" ? "Repertoire / Sets"
-      : "Setlist / Repertoire";
-    const setlistItemLabel = ["Anchor","Emcee"].includes(performerType) ? "segment"
-      : performerType === "Choreographer" ? "routine"
-      : "song / set";
-    // One example per row (cycled if there are more rows than examples) — a proper
-    // repeatable list instead of one free-text block, so artists just fill each
-    // line in and the profile is done; matches Vendor.setlist's [String] shape.
-    const setlistExamples = ["Anchor","Emcee"].includes(performerType)
-      ? ["Welcome address & intro", "Couple Q&A / fun games", "Audience interaction rounds", "Award or milestone moments", "Closing & vote of thanks"]
-      : performerType === "Singer"
-      ? ["Bollywood romantic set — Tum Hi Ho, Kesariya", "Ghazal set — Jagjit Singh classics", "Crowd requests — open to suggestions"]
-      : performerType === "Choreographer"
-      ? ["Couple first dance — choreographed routine", "Bride's sisters group performance", "Flash mob coordination"]
-      : ["Key song, act or signature segment"];
+    const perfLabel = performanceLabel(performerType);
+    const perfHints = performanceFieldHints(performerType);
+    const quickItems = QUICK_PERFORMANCE_ITEMS[performerType] || [];
 
     const handleArtistSubmit = async (e) => {
       e.preventDefault();
@@ -1186,14 +1169,25 @@ export default function VendorRegistration() {
         address: artistForm.city,
         password: artistForm.password,
         serviceType: performerType,
+        performerArtForm: performerArtForm || "",
         isArtist: true,
         genres,
+        languages: showLanguages ? languages : [],
+        contentRating: showContentRating ? artistForm.contentRating : "",
         bio: artistForm.bio,
-        packages: artistForm.packages.filter(p => p.name.trim() || p.price.trim()),
+        packages: artistForm.packages
+          .filter(p => p.name.trim() || p.price.trim())
+          .map(p => ({
+            name: p.name.trim(), price: p.price.trim(), unit: p.unit || "per event",
+            duration: p.duration || "", bestFor: p.bestFor || "",
+            items: (p.items || []).map(s => s.trim()).filter(Boolean),
+          })),
         duration: artistForm.duration,
         sampleLink: artistForm.sampleLink,
         instagram: artistForm.instagram,
-        setlist: artistForm.setlist.map(s => s.trim()).filter(Boolean),
+        performanceItems: artistForm.performanceItems
+          .filter(it => it.title.trim())
+          .map(it => ({ title: it.title.trim(), note: it.note.trim() })),
         photos: artistPhotos,
       });
       if (ok) { setSuccessName(artistForm.name); setSubmitted(true); }
@@ -1317,6 +1311,40 @@ export default function VendorRegistration() {
               </div>
             )}
 
+            {showLanguages && (
+              <div>
+                <Label optional>Languages</Label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
+                  {GIG_LANG_OPTIONS.map(l => {
+                    const on = languages.includes(l);
+                    return (
+                      <button key={l} type="button" onClick={() => toggleLanguage(l)}
+                        style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
+                        {l}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {showContentRating && (
+              <div>
+                <Label optional>Content Rating <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(shown prominently so customers know what to expect)</span></Label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
+                  {CONTENT_RATING_OPTIONS.map(r => {
+                    const on = artistForm.contentRating === r;
+                    return (
+                      <button key={r} type="button" onClick={() => setArtistForm(p => ({ ...p, contentRating: on ? "" : r }))}
+                        style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
+                        {r}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div>
               <Label optional>Performance Duration</Label>
               <select value={artistForm.duration} onChange={e => setArtistForm(p => ({...p, duration: e.target.value}))}
@@ -1326,32 +1354,77 @@ export default function VendorRegistration() {
               </select>
             </div>
 
-            {/* Packages */}
+            {/* Packages — structured fields, not a free-text description, so the public
+                profile's Packages tab (price + duration + what's included) renders correctly
+                without the vendor having to format anything themselves. */}
             <div>
-              <Label optional>Packages <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(name + price — up to 3)</span></Label>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <Label optional>Packages <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(up to 3 — add more later from your dashboard)</span></Label>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {artistForm.packages.map((pkg, i) => (
-                  <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8, alignItems: "center" }}>
-                    <input
-                      value={pkg.name}
-                      onChange={e => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, name: e.target.value } : x) }))}
-                      placeholder={["Basic", "Standard", "Premium"][i] || "Package name"}
-                      style={inputStyle(focused, {}, "", gold, ink)}
-                    />
-                    <input
-                      value={pkg.price}
-                      onChange={e => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, price: e.target.value } : x) }))}
-                      placeholder="e.g. ₹15,000"
-                      style={inputStyle(focused, {}, "", gold, ink)}
-                    />
-                    {i > 0 ? (
-                      <button type="button" onClick={() => setArtistForm(p => ({ ...p, packages: p.packages.filter((_, j) => j !== i) }))}
-                        style={{ height: 42, width: 36, background: "none", border: "1.5px solid #fca5a5", borderRadius: 8, color: "#dc2626", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
-                    ) : <div style={{ width: 36 }} />}
+                  <div key={i} style={{ border: "1.5px solid #E5D5C0", borderRadius: 10, padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8, alignItems: "center" }}>
+                      <input
+                        value={pkg.name}
+                        onChange={e => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, name: e.target.value } : x) }))}
+                        placeholder={["Basic", "Standard", "Premium"][i] || "Package name"}
+                        style={inputStyle(focused, {}, "", gold, ink)}
+                      />
+                      <input
+                        value={pkg.price}
+                        onChange={e => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, price: e.target.value } : x) }))}
+                        placeholder="e.g. 15000"
+                        style={inputStyle(focused, {}, "", gold, ink)}
+                      />
+                      {i > 0 ? (
+                        <button type="button" onClick={() => setArtistForm(p => ({ ...p, packages: p.packages.filter((_, j) => j !== i) }))}
+                          style={{ height: 42, width: 36, background: "none", border: "1.5px solid #fca5a5", borderRadius: 8, color: "#dc2626", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
+                      ) : <div style={{ width: 36 }} />}
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+                      <select value={pkg.unit} onChange={e => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, unit: e.target.value } : x) }))}
+                        style={{ ...inputStyle(focused, {}, "", gold, ink), cursor: "pointer" }}>
+                        <option value="per event">per event</option>
+                        <option value="per hour">per hour</option>
+                        <option value="per day">per day</option>
+                      </select>
+                      <input
+                        value={pkg.duration}
+                        onChange={e => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, duration: e.target.value } : x) }))}
+                        placeholder="e.g. 60 minutes"
+                        style={inputStyle(focused, {}, "", gold, ink)}
+                      />
+                      <input
+                        value={pkg.bestFor}
+                        onChange={e => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, bestFor: e.target.value } : x) }))}
+                        placeholder="Best for… e.g. birthdays"
+                        style={inputStyle(focused, {}, "", gold, ink)}
+                      />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <Label optional>What's included</Label>
+                      {(pkg.items || []).map((item, k) => (
+                        <div key={k} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
+                          <input
+                            value={item} maxLength={60}
+                            onChange={e => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, items: x.items.map((it, m) => m === k ? e.target.value : it) } : x) }))}
+                            placeholder="e.g. 1 hour live performance"
+                            style={inputStyle(focused, {}, "", gold, ink)}
+                          />
+                          <button type="button" onClick={() => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, items: x.items.filter((_, m) => m !== k) } : x) }))}
+                            style={{ height: 42, width: 36, background: "none", border: "1.5px solid #fca5a5", borderRadius: 8, color: "#dc2626", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
+                        </div>
+                      ))}
+                      {(pkg.items || []).length < 6 && (
+                        <button type="button" onClick={() => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, items: [...(x.items || []), ""] } : x) }))}
+                          style={{ padding: "7px", borderRadius: 8, border: `1.5px dashed rgba(196,122,46,0.45)`, background: "transparent", color: gold, fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                          + Add item
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
                 {artistForm.packages.length < 3 && (
-                  <button type="button" onClick={() => setArtistForm(p => ({ ...p, packages: [...p.packages, { name: "", price: "" }] }))}
+                  <button type="button" onClick={() => setArtistForm(p => ({ ...p, packages: [...p.packages, { name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [] }] }))}
                     style={{ padding: "9px", borderRadius: 8, border: `1.5px dashed rgba(196,122,46,0.45)`, background: "transparent", color: gold, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
                     + Add Package
                   </button>
@@ -1370,27 +1443,48 @@ export default function VendorRegistration() {
             {aInput("sampleLink", "Sample Video / YouTube Link", false, { placeholder: "https://youtube.com/..." })}
             {aInput("instagram", "Instagram Handle", false, { placeholder: "@yourhandle" })}
 
+            {/* Setlist & Performance — two structured fields per row (what + a short
+                detail), not a single freeform line the vendor has to format themselves. */}
             <div>
-              <Label optional>{setlistLabel} <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(one per line — up to 8, shown on your profile)</span></Label>
+              <Label optional>{perfLabel} <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(up to 8, shown on your profile)</span></Label>
+              {quickItems.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+                  {quickItems.map((label, qi) => (
+                    <button key={qi} type="button"
+                      onClick={() => setArtistForm(p => p.performanceItems.some(it => it.title === label)
+                        ? p
+                        : { ...p, performanceItems: [...p.performanceItems.filter(it => it.title.trim()), { title: label, note: "" }] })}
+                      style={{ padding: "5px 12px", borderRadius: 100, fontSize: 11.5, fontWeight: 600, fontFamily: font, border: "1.5px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.06)", color: gold, cursor: "pointer" }}>
+                      + {label}
+                    </button>
+                  ))}
+                </div>
+              )}
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {artistForm.setlist.map((item, i) => (
-                  <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8, alignItems: "center" }}>
+                {artistForm.performanceItems.map((item, i) => (
+                  <div key={i} style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr auto", gap: 8, alignItems: "center" }}>
                     <input
-                      value={item} maxLength={80}
-                      onChange={e => setArtistForm(p => ({ ...p, setlist: p.setlist.map((x, j) => j === i ? e.target.value : x) }))}
-                      placeholder={setlistExamples[i % setlistExamples.length]}
+                      value={item.title} maxLength={80}
+                      onChange={e => setArtistForm(p => ({ ...p, performanceItems: p.performanceItems.map((x, j) => j === i ? { ...x, title: e.target.value } : x) }))}
+                      placeholder={perfHints.title}
                       style={inputStyle(focused, {}, "", gold, ink)}
                     />
-                    {artistForm.setlist.length > 1 ? (
-                      <button type="button" onClick={() => setArtistForm(p => ({ ...p, setlist: p.setlist.filter((_, j) => j !== i) }))}
+                    <input
+                      value={item.note} maxLength={60}
+                      onChange={e => setArtistForm(p => ({ ...p, performanceItems: p.performanceItems.map((x, j) => j === i ? { ...x, note: e.target.value } : x) }))}
+                      placeholder={perfHints.note}
+                      style={inputStyle(focused, {}, "", gold, ink)}
+                    />
+                    {artistForm.performanceItems.length > 1 ? (
+                      <button type="button" onClick={() => setArtistForm(p => ({ ...p, performanceItems: p.performanceItems.filter((_, j) => j !== i) }))}
                         style={{ height: 42, width: 36, background: "none", border: "1.5px solid #fca5a5", borderRadius: 8, color: "#dc2626", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
                     ) : <div style={{ width: 36 }} />}
                   </div>
                 ))}
-                {artistForm.setlist.length < 8 && (
-                  <button type="button" onClick={() => setArtistForm(p => ({ ...p, setlist: [...p.setlist, ""] }))}
+                {artistForm.performanceItems.length < 8 && (
+                  <button type="button" onClick={() => setArtistForm(p => ({ ...p, performanceItems: [...p.performanceItems, { title: "", note: "" }] }))}
                     style={{ padding: "9px", borderRadius: 8, border: `1.5px dashed rgba(196,122,46,0.45)`, background: "transparent", color: gold, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-                    + Add {setlistItemLabel}
+                    + Add row
                   </button>
                 )}
               </div>

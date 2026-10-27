@@ -2,6 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import logo from "../../assets/logos/tendr-logo-secondary.png";
+import {
+  GIG_PRO_TYPES, GIG_GENRE_OPTIONS, GIG_LANG_OPTIONS, GIG_LANGUAGE_CATEGORIES,
+  GIG_STYLE_OPTIONS, CONTENT_RATING_OPTIONS, performanceLabel, performanceFieldHints,
+  QUICK_PERFORMANCE_ITEMS,
+} from "../../constants/performerCategories";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -26,24 +31,6 @@ const ALL_VENDOR_TYPES = [
   'Gift & Favours', 'Transportation', 'Security',
 ];
 
-const GIG_PRO_TYPES = ['DJ', 'Emcee/Host', 'Anchor', 'Band', 'Choreographer', 'Performer', 'Musician', 'Singer', 'Stand-up Comedian', 'Magician', 'AV Setup'];
-
-const GIG_GENRE_OPTIONS = ['Bollywood', 'EDM', 'Classical', 'Hip-Hop', 'Sufi', 'Punjabi', 'Jazz', 'Rock', 'Pop', 'Folk', 'Ghazal', 'Devotional'];
-const GIG_LANG_OPTIONS = ['Hindi', 'English', 'Punjabi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam', 'Bengali', 'Gujarati', 'Marathi'];
-const GIG_STYLE_OPTIONS = {
-  DJ:                  ['Indoor', 'Outdoor', 'Wedding', 'Corporate', 'Club', 'Festival'],
-  'Emcee/Host':        ['Formal', 'Casual', 'Bilingual', 'Interactive', 'High-energy'],
-  Anchor:              ['Formal', 'Casual', 'Bilingual', 'Scripted', 'Improvised'],
-  Band:                ['Live Band', 'Cover Songs', 'Original Compositions', 'Jazz Set', 'Bollywood Night', 'Sufi Night'],
-  Choreographer:       ['Bollywood', 'Contemporary', 'Hip-Hop', 'Classical', 'Wedding Sangeet', 'Couple Dance', 'Group Choreography'],
-  Performer:           ['Stage Act', 'Walk Act', 'Flash Mob', 'Stunt', 'Dance', 'Comedy', 'Circus'],
-  Musician:            ['Solo', 'Duo', 'Ensemble', 'Classical', 'Fusion', 'Acoustic'],
-  Singer:              ['Solo Vocals', 'Duet', 'Background Vocals', 'Live Looping', 'Classical', 'Ghazal'],
-  'Stand-up Comedian': ['Stand-Up', 'Roast', 'Mimicry', 'Improv', 'Corporate Safe', 'Open Mic'],
-  Magician:            ['Close-up Magic', 'Stage Illusions', 'Mentalism', "Children's Show", 'Corporate Magic', 'Escape Act'],
-  'AV Setup':          ['Basic', 'Standard', 'Premium', 'Full Production'],
-};
-
 export default function VendorProfile() {
   const navigate   = useNavigate();
   const [searchParams] = useSearchParams();
@@ -62,8 +49,18 @@ export default function VendorProfile() {
   const [gigForm, setGigForm] = useState({
     performingStyle: [], genres: [], languages: [],
     instruments: [], danceStyles: [], eventTypes: [],
-    bandSize: "", bio: "", socialLink: "", showreel: "",
-    setupType: "", lightsIncluded: "", setlist: "",
+    bandSize: "", bandType: "", bio: "", socialLink: "", showreel: "",
+    setupType: "", lightsIncluded: "",
+    contentRating: "",
+    highlights: [{ label: "", desc: "" }],
+    performanceItems: [{ title: "", note: "" }],
+    lineup: [{ name: "", role: "" }],
+    packages: [{ name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [""] }],
+    requirements: {
+      travel: "", setupTimeMinutes: "", soundSystemProvided: false, stageRequired: false,
+      powerRequirement: "", spaceRequirement: "", advanceBookingDays: "", customRequestsNote: "",
+    },
+    mainPhotoIndex: -1,
   });
   const [svcForm, setSvcForm] = useState({
     // Photographer
@@ -133,12 +130,31 @@ export default function VendorProfile() {
           danceStyles:     v.danceStyles || [],
           eventTypes:      v.eventTypes || [],
           bandSize:        v.bandSize || "",
+          bandType:        v.bandType || "",
           bio:             v.bio || "",
-          socialLink:      v.socialLink || "",
-          showreel:        v.showreel || "",
+          // Instagram/showreel live under `social` on the schema — reading the old
+          // flat `socialLink`/`showreel` keys here meant a vendor's saved links
+          // never even showed back up after a page reload.
+          socialLink:      v.social?.instagram || "",
+          showreel:        v.social?.showreel || "",
           setupType:       v.setupType || "",
           lightsIncluded:  v.lightsIncluded || "",
-          setlist:         v.setlist || "",
+          contentRating:   v.contentRating || "",
+          highlights:      v.highlights?.length ? v.highlights : [{ label: "", desc: "" }],
+          performanceItems: v.performanceItems?.length ? v.performanceItems : [{ title: "", note: "" }],
+          lineup:          v.lineup?.length ? v.lineup : [{ name: "", role: "" }],
+          packages:        v.packages?.length ? v.packages.map(p => ({ ...p, items: p.items?.length ? p.items : [""] })) : [{ name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [""] }],
+          requirements: {
+            travel: v.requirements?.travel || "",
+            setupTimeMinutes: v.requirements?.setupTimeMinutes ?? "",
+            soundSystemProvided: !!v.requirements?.soundSystemProvided,
+            stageRequired: !!v.requirements?.stageRequired,
+            powerRequirement: v.requirements?.powerRequirement || "",
+            spaceRequirement: v.requirements?.spaceRequirement || "",
+            advanceBookingDays: v.requirements?.advanceBookingDays ?? "",
+            customRequestsNote: v.requirements?.customRequestsNote || "",
+          },
+          mainPhotoIndex: Number.isInteger(v.mainPhotoIndex) ? v.mainPhotoIndex : -1,
         });
         setSvcForm({
           photoServices:        v.photoServices || "",
@@ -257,10 +273,18 @@ export default function VendorProfile() {
           languages:      gigForm.languages,
           danceStyles:    gigForm.danceStyles,
           bandSize:       gigForm.bandSize,
-          showreel:       gigForm.showreel,
-          socialLink:     gigForm.socialLink,
+          bandType:       gigForm.bandType,
+          // Nested to match the schema (`social.instagram`/`social.showreel`) —
+          // sending these flat used to silently drop them on every save.
+          social:         { instagram: gigForm.socialLink, showreel: gigForm.showreel },
           eventTypes:     gigForm.eventTypes,
-          setlist:        gigForm.setlist,
+          contentRating:  gigForm.contentRating,
+          highlights:     gigForm.highlights.filter(h => h.label.trim()),
+          performanceItems: gigForm.performanceItems.filter(it => it.title.trim()),
+          lineup:         gigForm.lineup.filter(m => m.name.trim()),
+          packages:       gigForm.packages.filter(p => p.name.trim()).map(p => ({ ...p, items: p.items.filter(Boolean) })),
+          requirements:   gigForm.requirements,
+          mainPhotoIndex: gigForm.mainPhotoIndex,
         };
         const rGig = await fetch(`${BASE_URL}/vendors/${vendorId}/gigpro`, {
           method: "PATCH",
@@ -288,6 +312,25 @@ export default function VendorProfile() {
 
   const setGig = (k, v) => setGigForm(f => ({ ...f, [k]: v }));
   const toggleGig = (k, val) => setGigForm(f => ({ ...f, [k]: f[k].includes(val) ? f[k].filter(x => x !== val) : [...f[k], val] }));
+  const setReq = (k, v) => setGigForm(f => ({ ...f, requirements: { ...f.requirements, [k]: v } }));
+
+  // Generic helpers for the repeatable-row sections (highlights, performanceItems,
+  // lineup, packages) — every row is a plain object the vendor fills field-by-field,
+  // so what they type always lands in the right structured shape on the profile
+  // instead of a freeform block of text they have to format themselves.
+  const setRow = (field, i, key, val) => setGigForm(f => ({ ...f, [field]: f[field].map((row, j) => j === i ? { ...row, [key]: val } : row) }));
+  const addRow = (field, blank, max) => setGigForm(f => f[field].length >= max ? f : ({ ...f, [field]: [...f[field], blank] }));
+  const removeRow = (field, i) => setGigForm(f => ({ ...f, [field]: f[field].filter((_, j) => j !== i) }));
+
+  const addQuickPerformanceItem = (title) => setGigForm(f => {
+    if (f.performanceItems.some(it => it.title.trim().toLowerCase() === title.toLowerCase())) return f;
+    const items = f.performanceItems[0]?.title.trim() ? [...f.performanceItems] : [];
+    return { ...f, performanceItems: [...items, { title, note: "" }] };
+  });
+
+  const setPkgItem = (pi, ii, val) => setGigForm(f => ({ ...f, packages: f.packages.map((p, j) => j === pi ? { ...p, items: p.items.map((it, k) => k === ii ? val : it) } : p) }));
+  const addPkgItem = (pi) => setGigForm(f => ({ ...f, packages: f.packages.map((p, j) => j === pi && p.items.length < 10 ? { ...p, items: [...p.items, ""] } : p) }));
+  const removePkgItem = (pi, ii) => setGigForm(f => ({ ...f, packages: f.packages.map((p, j) => j === pi ? { ...p, items: p.items.filter((_, k) => k !== ii) } : p) }));
   const setSvc = (k, v) => setSvcForm(f => ({ ...f, [k]: v }));
   const toggleSvc = (k, val) => setSvcForm(f => ({ ...f, [k]: f[k].includes(val) ? f[k].filter(x => x !== val) : [...f[k], val] }));
 
@@ -380,7 +423,7 @@ export default function VendorProfile() {
         <div className="flex gap-2 mb-8 border-b border-gray-200 overflow-x-auto">
           {[
             ["info", "About Me"],
-            ...(GIG_PRO_TYPES.includes(profile?.serviceType) ? [["setlist", "Setlist"]] : []),
+            ...(GIG_PRO_TYPES.includes(profile?.serviceType) ? [["setlist", "Setlist & Performance"], ["packages", "Packages & Pricing"]] : []),
             ["bank", "Bank & Payments"],
           ].map(([id, label]) => (
             <button key={id} onClick={() => setTab(id)} className={`px-5 py-2.5 text-sm font-semibold rounded-t-lg transition-colors whitespace-nowrap ${tab === id ? "bg-yellow-500 text-white" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"}`}>
@@ -465,6 +508,20 @@ export default function VendorProfile() {
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm resize-none" />
                   </div>
 
+                  {svc === 'Stand-up Comedian' && (
+                    <div className="mb-5">
+                      <label className="block text-sm font-semibold text-gray-600 mb-2">Content Rating <span className="text-gray-400 font-normal">(shown as a badge near your name — helps the right customers book you)</span></label>
+                      <div className="flex gap-2 flex-wrap">
+                        {CONTENT_RATING_OPTIONS.map(opt => (
+                          <button key={opt} type="button" onClick={() => setGig("contentRating", gigForm.contentRating === opt ? "" : opt)}
+                            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${gigForm.contentRating === opt ? "bg-yellow-500 text-white border-yellow-500" : "bg-white text-gray-600 border-gray-200 hover:border-yellow-400"}`}>
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {styleOpts.length > 0 && <ChipPicker label="Performing Style" field="performingStyle" options={styleOpts} />}
                   {['DJ', 'Band', 'Musician', 'Singer'].includes(svc) && <ChipPicker label="Music Genres" field="genres" options={GIG_GENRE_OPTIONS} />}
 
@@ -476,13 +533,38 @@ export default function VendorProfile() {
                     </div>
                   )}
 
-                  {svc === 'Band' && (
+                  {svc === 'Band' && (<>
                     <div className="mb-5">
                       <label className="block text-sm font-semibold text-gray-600 mb-1.5">Number of Members</label>
                       <input type="number" min="1" value={gigForm.bandSize} onChange={e => setGig("bandSize", e.target.value)}
                         placeholder="e.g. 5" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
                     </div>
-                  )}
+                    <div className="mb-5">
+                      <label className="block text-sm font-semibold text-gray-600 mb-1.5">Band Type <span className="text-gray-400 font-normal">(optional)</span></label>
+                      <input value={gigForm.bandType} onChange={e => setGig("bandType", e.target.value)}
+                        placeholder="e.g. Bollywood Band, Fusion, Classical" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                    </div>
+                    <div className="mb-5">
+                      <label className="block text-sm font-semibold text-gray-600 mb-2">Meet the Band <span className="text-gray-400 font-normal">(shown on your profile's About tab)</span></label>
+                      <div className="flex flex-col gap-2">
+                        {gigForm.lineup.map((m, i) => (
+                          <div key={i} className="flex gap-2">
+                            <input value={m.name} onChange={e => setRow("lineup", i, "name", e.target.value)}
+                              placeholder="Member name" className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                            <input value={m.role} onChange={e => setRow("lineup", i, "role", e.target.value)}
+                              placeholder="Role — e.g. Lead Vocalist" className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                            {gigForm.lineup.length > 1 && (
+                              <button type="button" onClick={() => removeRow("lineup", i)} className="px-3 text-gray-400 hover:text-red-500">×</button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      {gigForm.lineup.length < 12 && (
+                        <button type="button" onClick={() => addRow("lineup", { name: "", role: "" }, 12)}
+                          className="mt-2 text-xs font-semibold text-yellow-700 hover:text-yellow-900">+ Add member</button>
+                      )}
+                    </div>
+                  </>)}
 
                   {svc === 'Choreographer' && (
                     <ChipPicker label="Dance Styles" field="danceStyles" options={['Bollywood', 'Classical', 'Contemporary', 'Hip-Hop', 'Salsa', 'Couple Dance', 'Group']} />
@@ -529,6 +611,99 @@ export default function VendorProfile() {
                       <input value={gigForm.showreel} onChange={e => setGig("showreel", e.target.value)}
                         placeholder="https://youtube.com/watch?v=..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
                     </div>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Want more videos on your profile's Portfolio tab? Add YouTube/Instagram/SoundCloud links from your Dashboard's "Videos & Showcases" section.
+                  </p>
+
+                  {/* Cover photo picker — which already-uploaded photo opens the profile */}
+                  {(profile?.portfolioPhotos || []).length > 0 && (
+                    <div className="mt-6 mb-5">
+                      <label className="block text-sm font-semibold text-gray-600 mb-2">Cover Photo <span className="text-gray-400 font-normal">(shown at the top of your profile)</span></label>
+                      <div className="flex flex-wrap gap-3">
+                        {profile.portfolioPhotos.map((url, i) => {
+                          const selected = (gigForm.mainPhotoIndex === -1 ? 0 : gigForm.mainPhotoIndex) === i;
+                          return (
+                            <button key={i} type="button" onClick={() => setGig("mainPhotoIndex", i)}
+                              className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 ${selected ? "border-yellow-500" : "border-transparent"}`}>
+                              <img src={url} alt="" className="w-full h-full object-cover" />
+                              {selected && <span className="absolute bottom-0 inset-x-0 bg-yellow-500 text-white text-[10px] font-bold text-center py-0.5">COVER</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Why people book you — up to 4, shown on the public About tab */}
+                  <div className="mt-6 mb-5">
+                    <label className="block text-sm font-semibold text-gray-600 mb-2">Why People Book You <span className="text-gray-400 font-normal">(up to 4 — shown on your profile's About tab)</span></label>
+                    <div className="flex flex-col gap-3">
+                      {gigForm.highlights.map((h, i) => (
+                        <div key={i} className="flex gap-2 items-start">
+                          <div className="flex-1 flex flex-col gap-1.5">
+                            <input value={h.label} onChange={e => setRow("highlights", i, "label", e.target.value)}
+                              placeholder="e.g. Reads the room instantly" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm font-semibold" />
+                            <input value={h.desc} onChange={e => setRow("highlights", i, "desc", e.target.value)}
+                              placeholder="One line explaining why (optional)" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                          </div>
+                          {gigForm.highlights.length > 1 && (
+                            <button type="button" onClick={() => removeRow("highlights", i)} className="px-2 pt-2 text-gray-400 hover:text-red-500">×</button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {gigForm.highlights.length < 4 && (
+                      <button type="button" onClick={() => addRow("highlights", { label: "", desc: "" }, 4)}
+                        className="mt-2 text-xs font-semibold text-yellow-700 hover:text-yellow-900">+ Add a reason</button>
+                    )}
+                  </div>
+
+                  {/* Booking requirements — compact checklist shown in the public profile's sidebar */}
+                  <hr className="my-8 border-gray-100" />
+                  <h3 className="text-lg font-bold text-gray-800 mb-1">Booking Requirements</h3>
+                  <p className="text-sm text-gray-500 mb-6">What you need from the venue/customer — helps avoid mismatches after booking.</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-600 mb-1.5">Travel</label>
+                      <input value={gigForm.requirements.travel} onChange={e => setReq("travel", e.target.value)}
+                        placeholder="e.g. Delhi NCR; outstation by arrangement" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-600 mb-1.5">Setup Time Needed (minutes)</label>
+                      <input type="number" min="0" value={gigForm.requirements.setupTimeMinutes} onChange={e => setReq("setupTimeMinutes", e.target.value)}
+                        placeholder="e.g. 45" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-600 mb-1.5">Power Requirement</label>
+                      <input value={gigForm.requirements.powerRequirement} onChange={e => setReq("powerRequirement", e.target.value)}
+                        placeholder="e.g. Standard 15A socket" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-600 mb-1.5">Space Needed</label>
+                      <input value={gigForm.requirements.spaceRequirement} onChange={e => setReq("spaceRequirement", e.target.value)}
+                        placeholder="e.g. Minimum 10×10 ft performance area" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-600 mb-1.5">Advance Booking Notice (days)</label>
+                      <input type="number" min="0" value={gigForm.requirements.advanceBookingDays} onChange={e => setReq("advanceBookingDays", e.target.value)}
+                        placeholder="e.g. 7" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                    </div>
+                  </div>
+                  <div className="flex gap-6 mb-5">
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+                      <input type="checkbox" checked={gigForm.requirements.soundSystemProvided} onChange={e => setReq("soundSystemProvided", e.target.checked)} className="w-4 h-4" />
+                      I provide my own sound system
+                    </label>
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+                      <input type="checkbox" checked={gigForm.requirements.stageRequired} onChange={e => setReq("stageRequired", e.target.checked)} className="w-4 h-4" />
+                      I need a stage / performance area
+                    </label>
+                  </div>
+                  <div className="mb-5">
+                    <label className="block text-sm font-semibold text-gray-600 mb-1.5">Custom Requests Note <span className="text-gray-400 font-normal">(optional)</span></label>
+                    <textarea value={gigForm.requirements.customRequestsNote} onChange={e => setReq("customRequestsNote", e.target.value)} rows={2}
+                      placeholder="e.g. Happy to learn a custom song with 2 weeks' notice" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm resize-none" />
                   </div>
                 </>
               );
@@ -664,53 +839,21 @@ export default function VendorProfile() {
         {/* ── Setlist Tab (gig pros only) ── */}
         {tab === "setlist" && GIG_PRO_TYPES.includes(profile?.serviceType) && (() => {
           const svc = profile?.serviceType;
-          const setlistLabel = svc === 'DJ' ? 'Typical Set / Playlist Theme'
-            : ['Emcee/Host','Anchor'].includes(svc) ? 'Script Outline / Typical Segments'
-            : svc === 'Stand-up Comedian' ? 'Set Material / Topics'
-            : svc === 'Choreographer' ? 'Routine Description'
-            : svc === 'Magician' ? 'Show Description / Acts'
-            : 'Setlist / Repertoire';
-          const setlistPlaceholder = ['Emcee/Host','Anchor'].includes(svc)
-            ? 'e.g.\n• Welcome address & intro\n• Couple Q&A / fun games\n• Award or milestone rounds\n• Dance floor / entertainment segments\n• Closing & vote of thanks'
-            : svc === 'DJ'
-            ? 'e.g.\n• Ceremony: Soft Hindi classics (Arijit, Jubin)\n• Cocktail hour: Lounge / EDM mix\n• Reception: Bollywood party anthems\n• Late night: Punjabi & Hip-Hop'
-            : svc === 'Choreographer'
-            ? 'e.g.\n• Couple first dance — 1 min choreographed routine\n• Bride\'s sisters group performance — 3 songs\n• Sangeet flash mob — 12 participants, 6 sessions'
-            : svc === 'Singer'
-            ? 'e.g.\n• Ghazals: Jagjit Singh classics\n• Bollywood romantic: Tum Hi Ho, Kesariya\n• Sufi set: Kun Faya Kun, Arziyan\n• Crowd requests: open to suggestions'
-            : 'List your acts, songs, sets, or signature segments — helps event planners understand exactly what you deliver';
-          const QUICK_ITEMS = {
-            DJ:               ['Bollywood Party Mix (2 hrs)','EDM Drop Set','Sufi Night Set','Retro Classics','Cocktail Hour Lounge','Punjabi Wedding Bangers','Late Night High Energy'],
-            Singer:           ['Ghazal Set (30 min)','Bollywood Romantic Set','Sufi / Devotional Set','Live Unplugged Session','Custom Song Requests','Title Song Medley'],
-            Musician:         ['Classical Raag Performance','Fusion Set','Instrumental Background Music','Solo Recital','Jugalbandi / Duet'],
-            Band:             ['Bollywood Live Set (90 min)','Retro Classics Set','Sufi Night','Jazz Lounge Set','Rock / Fusion Set'],
-            Choreographer:    ['Couple First Dance','Group Sangeet Performance','Flash Mob Coordination','Kids Dance Act','Bridal Entry Choreography'],
-            Anchor:           ['Welcome & Introductions','Couple Q&A Game','Audience Fun Games','Award / Felicitation Rounds','Closing Ceremony'],
-            'Emcee/Host':     ['High-Energy Opening','Brand Activation Segment','Audience Interaction Games','Product Launch Script','Closing & Thank You'],
-            'Stand-up Comedian': ['Clean Corporate Set','Wedding Roast (family-friendly)','Open Mic Material','Crowd Work Segment','Mimicry & Impressions'],
-            Magician:         ['Close-Up Card Magic','Stage Illusion Act','Mentalism / Mind Reading','Children\'s Show Set','Corporate Branded Finale'],
-            Performer:        ['Stage Act (20 min)','Walk-Around Meet & Greet','Flash Mob Surprise','Stunt / Fire Act','Comedy Sketch'],
-          };
-          const quickItems = QUICK_ITEMS[svc] || [];
+          const label = performanceLabel(svc);
+          const hints = performanceFieldHints(svc);
+          const quickItems = QUICK_PERFORMANCE_ITEMS[svc] || [];
           return (
             <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h2 className="text-xl font-bold text-gray-800 mb-1">{setlistLabel}</h2>
-              <p className="text-sm text-gray-500 mb-6">This appears on your public profile's Setlist tab — give event planners a clear picture of what you perform.</p>
+              <h2 className="text-xl font-bold text-gray-800 mb-1">{label}</h2>
+              <p className="text-sm text-gray-500 mb-6">This appears on your public profile's "{label}" tab — one row per song, segment, trick or act.</p>
 
-              {/* Quick-add chips */}
+              {/* Quick-add chips — each one drops in a real structured row, not a line of text */}
               {quickItems.length > 0 && (
                 <div className="mb-6">
-                  <div className="text-xs font-bold text-yellow-600 uppercase tracking-wider mb-3">⚡ Quick Add — {svc} Segments</div>
+                  <div className="text-xs font-bold text-yellow-600 uppercase tracking-wider mb-3">⚡ Quick Add</div>
                   <div className="flex flex-wrap gap-2">
                     {quickItems.map((item, i) => (
-                      <button key={i} type="button"
-                        onClick={() => {
-                          const current = gigForm.setlist || '';
-                          const line = `• ${item}`;
-                          if (!current.includes(line)) {
-                            setGigForm(f => ({ ...f, setlist: current ? current + '\n' + line : line }));
-                          }
-                        }}
+                      <button key={i} type="button" onClick={() => addQuickPerformanceItem(item)}
                         className="px-3 py-1.5 rounded-full text-xs font-semibold bg-yellow-50 border border-yellow-200 text-yellow-700 hover:bg-yellow-100 transition-colors">
                         + {item}
                       </button>
@@ -719,27 +862,115 @@ export default function VendorProfile() {
                 </div>
               )}
 
-              <div className="mb-6">
-                <label className="block text-sm font-semibold text-gray-600 mb-2">Your {setlistLabel}</label>
-                <textarea
-                  value={gigForm.setlist}
-                  onChange={e => setGigForm(f => ({ ...f, setlist: e.target.value }))}
-                  rows={10}
-                  placeholder={setlistPlaceholder}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm resize-y font-mono"
-                />
-                <p className="text-xs text-gray-400 mt-1.5">Use bullet points (•) or numbered lines for best display on your public profile.</p>
+              <div className="mb-6 flex flex-col gap-2">
+                {gigForm.performanceItems.map((item, i) => (
+                  <div key={i} className="flex gap-2">
+                    <input value={item.title} onChange={e => setRow("performanceItems", i, "title", e.target.value)}
+                      placeholder={hints.title} className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                    <input value={item.note} onChange={e => setRow("performanceItems", i, "note", e.target.value)}
+                      placeholder={hints.note} className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                    {gigForm.performanceItems.length > 1 && (
+                      <button type="button" onClick={() => removeRow("performanceItems", i)} className="px-3 text-gray-400 hover:text-red-500">×</button>
+                    )}
+                  </div>
+                ))}
+                {gigForm.performanceItems.length < 12 && (
+                  <button type="button" onClick={() => addRow("performanceItems", { title: "", note: "" }, 12)}
+                    className="self-start mt-1 text-xs font-semibold text-yellow-700 hover:text-yellow-900">+ Add a row</button>
+                )}
               </div>
 
               <div className="flex justify-end">
                 <button onClick={saveInfo} disabled={saving}
                   className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-bold text-sm transition-colors disabled:opacity-60">
-                  {saving ? "Saving…" : "Save Setlist"}
+                  {saving ? "Saving…" : "Save"}
                 </button>
               </div>
             </div>
           );
         })()}
+
+        {/* ── Packages & Pricing Tab (gig pros only) ── */}
+        {tab === "packages" && GIG_PRO_TYPES.includes(profile?.serviceType) && (
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-xl font-bold text-gray-800 mb-1">Packages & Pricing</h2>
+            <p className="text-sm text-gray-500 mb-6">Up to 4 packages — shown as comparison cards on your public profile so customers know exactly what they're booking.</p>
+
+            <div className="flex flex-col gap-6">
+              {gigForm.packages.map((pkg, pi) => (
+                <div key={pi} className="border border-gray-200 rounded-2xl p-5 relative">
+                  {gigForm.packages.length > 1 && (
+                    <button type="button" onClick={() => removeRow("packages", pi)} className="absolute top-3 right-3 text-gray-400 hover:text-red-500">×</button>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Package Name</label>
+                      <input value={pkg.name} onChange={e => setRow("packages", pi, "name", e.target.value)}
+                        placeholder="e.g. Celebration Set" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 mb-1">Price (₹)</label>
+                        <input type="number" min="0" value={pkg.price} onChange={e => setRow("packages", pi, "price", e.target.value)}
+                          placeholder="12000" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 mb-1">Unit</label>
+                        <select value={pkg.unit} onChange={e => setRow("packages", pi, "unit", e.target.value)}
+                          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm bg-white">
+                          <option value="per event">per event</option>
+                          <option value="per hour">per hour</option>
+                          <option value="per day">per day</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Duration</label>
+                      <input value={pkg.duration} onChange={e => setRow("packages", pi, "duration", e.target.value)}
+                        placeholder="e.g. 60 minutes" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Best For</label>
+                      <input value={pkg.bestFor} onChange={e => setRow("packages", pi, "bestFor", e.target.value)}
+                        placeholder="e.g. Birthday parties up to 50 guests" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                    </div>
+                  </div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">What's Included</label>
+                  <div className="flex flex-col gap-1.5 mb-1">
+                    {pkg.items.map((it, ii) => (
+                      <div key={ii} className="flex gap-2">
+                        <input value={it} onChange={e => setPkgItem(pi, ii, e.target.value)}
+                          placeholder="e.g. Sound system included" className="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                        {pkg.items.length > 1 && (
+                          <button type="button" onClick={() => removePkgItem(pi, ii)} className="px-2 text-gray-400 hover:text-red-500">×</button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {pkg.items.length < 10 && (
+                    <button type="button" onClick={() => addPkgItem(pi)} className="text-xs font-semibold text-yellow-700 hover:text-yellow-900">+ Add item</button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {gigForm.packages.length < 4 && (
+              <button type="button" onClick={() => addRow("packages", { name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [""] }, 4)}
+                className="mt-5 px-5 py-2.5 border-2 border-dashed border-yellow-300 text-yellow-700 rounded-xl text-sm font-semibold hover:bg-yellow-50">
+                + Add Package
+              </button>
+            )}
+
+            <div className="mt-8 flex justify-end">
+              <button onClick={saveInfo} disabled={saving}
+                className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-bold text-sm transition-colors disabled:opacity-60">
+                {saving ? "Saving…" : "Save Packages"}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ── Bank & Payments Tab ── */}
         {tab === "bank" && (
