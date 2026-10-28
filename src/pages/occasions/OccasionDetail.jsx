@@ -1629,16 +1629,36 @@ function buildEventSummary(occasion, {celebrantName="", guests=20, date="", city
   const locationStr=[city,venueType].filter(Boolean).join(", ");
   const opener=`You're planning ${who} ${occasion.name.toLowerCase()} for ${guestStr}${dateStr?` on ${dateStr}`:""}${locationStr?` in ${locationStr}`:""}.`;
 
-  // What they'll actually see — only from what's genuinely selected so far.
-  const seeParts=[];
+  // Decor is the single most visual part of the plan, so it gets a real, specific
+  // description (and a photo — see `decorPhoto` below) instead of a generic line,
+  // even when the customer hasn't explicitly picked a theme or decor items yet
+  // (the quick-plan path never asks). Priority: customDecor items > chosen theme >
+  // decor focus areas > occasion's own curated decorThemes[0] as a concrete default
+  // — never the old flat "pretty decorations and a warm, festive setup" fallback.
+  let decorPhoto=null;
+  let decorSentence=null;
   if(vendors.includes("Decorator")){
     const items=Object.values(customDecor||{}).flat().filter(Boolean);
     const areaNames=decorFocusAreas.map(id=>DECOR_FOCUS_AREAS[id]?.name).filter(Boolean);
-    if(items.length) seeParts.push(`a beautiful setup with ${items.slice(0,2).join(" and ").toLowerCase()}`);
-    else if(theme) seeParts.push(`a lovely ${theme.name} look`);
-    else if(areaNames.length) seeParts.push(`${areaNames[0].toLowerCase()} styled just for the day`);
-    else seeParts.push(`pretty decorations and a warm, festive setup`);
+    const defaultTheme=(occasion.decorThemes||[])[0]||null;
+    if(items.length){
+      decorSentence=`a beautiful setup with ${items.slice(0,2).join(" and ").toLowerCase()}`;
+    } else if(theme){
+      decorSentence=`a ${theme.name} look${theme.desc?` — ${theme.desc.charAt(0).toLowerCase()}${theme.desc.slice(1).replace(/\.$/,"")}`:""}`;
+      decorPhoto=theme.photo||null;
+    } else if(areaNames.length){
+      decorSentence=`${areaNames[0].toLowerCase()} styled just for the day`;
+    } else if(defaultTheme){
+      decorSentence=`a ${defaultTheme.name} look — ${defaultTheme.desc.charAt(0).toLowerCase()}${defaultTheme.desc.slice(1).replace(/\.$/,"")}`;
+      decorPhoto=defaultTheme.photo||null;
+    } else {
+      decorSentence=`pretty decorations and a warm, festive setup`;
+    }
   }
+
+  // What they'll actually see — only from what's genuinely selected so far.
+  const seeParts=[];
+  if(decorSentence) seeParts.push(decorSentence);
   if(vendors.includes("Caterer")) seeParts.push(`tasty food for everyone to enjoy`);
   if(vendors.includes("Photographer")||vendors.includes("Videographer")) seeParts.push(`someone capturing all the special moments`);
   const entertain=vendors.filter(v=>["DJ","Live Band","Entertainer","Emcee / Host"].includes(v));
@@ -1654,7 +1674,7 @@ function buildEventSummary(occasion, {celebrantName="", guests=20, date="", city
     : `Even the simple things, done with care, can make a celebration feel truly special.`;
 
   const summary=`${opener} ${seeSentence} ${whyGood} It will be a lovely day to spend with your loved ones and create beautiful memories!`;
-  return { summary };
+  return { summary, decorPhoto };
 }
 
 /* ── build plain-text plan for in-app chat ── */
@@ -2144,6 +2164,9 @@ export default function OccasionDetail(){
   const setGiftQty=(name,qty)=>setGiftQuantities(q=>({...q,[name]:Math.max(1,qty)}));
   const [checked,setChecked]=useState({});
   const [vendorPackages,setVendorPackages]=useState({});
+  // Which service (vendor type string, e.g. "Decorator") is open in the quick
+  // package-edit popup on the Plan page — null when closed.
+  const [editingService,setEditingService]=useState(null);
   const [downloading,setDownloading]=useState(false);
   const [savedPlan,setSavedPlan]=useState(null);
   const dateInputRef=useRef(null);
@@ -2516,7 +2539,7 @@ export default function OccasionDetail(){
       const hasPkg=pkgIdx==="custom"||(typeof pkgIdx==="number"&&pkgs);
       const pkgLabel=pkgIdx==="custom"?"Custom":typeof pkgIdx==="number"&&pkgs?pkgs[pkgIdx]?.label:null;
       const pkgPrice=pkgIdx==="custom"?null:typeof pkgIdx==="number"&&pkgs?pkgs[pkgIdx]?.price:null;
-      return{key:`v-${v}`,icon:"🛠️",title:v,sub:pkgLabel,status:hasPkg?"Selected":"Quote required",price:pkgPrice,onEdit:()=>setStep(3)};
+      return{key:`v-${v}`,icon:"🛠️",title:v,sub:pkgLabel,status:hasPkg?"Selected":"Quote required",price:pkgPrice,onEdit:()=>(ALL_VENDORS.includes(v)?setEditingService(v):setStep(3))};
     });
     if(theme) serviceRows.push({key:"theme",icon:"🎨",title:theme.name,sub:"Decor style",status:"Selected",price:null,onEdit:()=>setStep(3)});
     if(decorFocusAreas.length) serviceRows.push({key:"decor-areas",icon:"📍",title:decorFocusAreas.map(id=>DECOR_FOCUS_AREAS[id]?.name).filter(Boolean).join(", "),sub:"Decor focus areas",status:"Selected",price:null,onEdit:()=>setStep(3)});
@@ -2564,7 +2587,12 @@ export default function OccasionDetail(){
         </div>
         {groups.map(g=>(
           <div key={g.label} style={{marginBottom:16,padding:"13px 14px",borderRadius:14,background:"#fff",border:`1px solid ${border}`}}>
-            <div style={{fontSize:9.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>{g.label}</div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+              <div style={{fontSize:9.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em"}}>{g.label}</div>
+              {g.label==="Services"&&(
+                <button onClick={()=>setStep(3)} style={{fontSize:10,fontWeight:700,color:gold,background:"none",border:"none",cursor:"pointer",padding:0,fontFamily:font}}>Edit All Services →</button>
+              )}
+            </div>
             <div style={{fontSize:12.5,color:ink,lineHeight:1.6,marginBottom:10}}>{g.paragraph}</div>
             {g.rows.map(r=>{
               const s=STATUS_STYLE[r.status]||STATUS_STYLE["Selected"];
@@ -2767,6 +2795,19 @@ export default function OccasionDetail(){
     const svc=occasion.vendorCategories||[];
     if(svc.length) setVendors(svc);
 
+    // Pick a real package for each quick-plan service too — the "Standard"/most-
+    // popular tier where one exists — so the plan shows an actual selection
+    // instead of "Quote required" on every single service.
+    const svcPackages={};
+    svc.forEach(v=>{
+      if(!ALL_VENDORS.includes(v)) return;
+      const pkgs=getVendorPackages(v,{guests,venueType,theme,ageGroups});
+      if(!pkgs?.length) return;
+      const popularIdx=pkgs.findIndex(p=>p.popular);
+      svcPackages[v]=popularIdx>=0?popularIdx:Math.min(1,pkgs.length-1);
+    });
+    if(Object.keys(svcPackages).length) setVendorPackages(svcPackages);
+
     const entrySugg=getEntryExperienceSuggestions(occasion,{ageGroups,guests,venueType,budget:Number(budget)||0});
     const entryList=entrySugg.length?[entrySugg[0].id]:[];
     if(entryList.length){ setSelectedEntryExperiences(entryList); setEntryExperiencesSkipped(false); }
@@ -2821,6 +2862,68 @@ export default function OccasionDetail(){
       {quickPlanBuilding&&(
         <QuickPlanOverlay accent={occAccent} occasionName={occasion.name} onDone={()=>{setQuickPlanBuilding(false);setStep(7);}}/>
       )}
+
+      {/* Quick per-service package editor — opens as a popup from a service row's
+          "Edit" link on the Plan page, instead of forcing a full trip back to the
+          services step just to swap a package tier. */}
+      {editingService&&(()=>{
+        const v=editingService;
+        const pkgs=getVendorPackages(v,{guests,venueType,theme,ageGroups});
+        const currentIdx=vendorPackages[v];
+        const canCustomize=v==="Decorator"||v==="Caterer";
+        return(
+          <div onClick={()=>setEditingService(null)} style={{position:"fixed",inset:0,zIndex:9000,background:"rgba(20,8,0,0.55)",backdropFilter:"blur(4px)",display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+            <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:520,maxHeight:"88dvh",overflowY:"auto",background:"#fff",borderRadius:"22px 22px 0 0",padding:"20px 18px 24px",boxShadow:"0 -10px 40px rgba(0,0,0,0.2)"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontSize:20}}>🛠️</span>
+                  <span style={{fontFamily:serif,fontSize:19,color:ink}}>{v}</span>
+                </div>
+                <button onClick={()=>setEditingService(null)} aria-label="Close" style={{width:30,height:30,borderRadius:"50%",border:"none",background:"rgba(28,9,0,0.06)",color:ink,fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+              </div>
+              <p style={{fontSize:12,color:muted,margin:"2px 0 16px"}}>Pick a package — what's included updates below each one.</p>
+
+              <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:canCustomize?16:4}}>
+                {pkgs.map((pkg,pi)=>{
+                  const selected=currentIdx===pi;
+                  return(
+                    <button key={pkg.label} onClick={()=>setVendorPackages(vp=>({...vp,[v]:pi}))}
+                      style={{textAlign:"left",padding:"14px 14px",borderRadius:14,border:selected?`2px solid ${gold}`:`1.5px solid ${border}`,background:selected?`${gold}08`:"#fff",cursor:"pointer",fontFamily:font}}>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+                        <span style={{display:"flex",alignItems:"center",gap:6}}>
+                          <span style={{fontSize:13.5,fontWeight:800,color:ink}}>{pkg.label}</span>
+                          {pkg.popular&&<span style={{fontSize:9,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"2px 7px"}}>Popular</span>}
+                        </span>
+                        <span style={{fontSize:13,fontWeight:800,color:gold}}>{pkg.price}</span>
+                      </div>
+                      {pkg.note&&<div style={{fontSize:11,color:muted,marginBottom:selected?8:0}}>{pkg.note}</div>}
+                      {selected&&(
+                        <ul style={{margin:"8px 0 0",paddingLeft:18,display:"flex",flexDirection:"column",gap:3}}>
+                          {pkg.items.map((it,ii)=>(
+                            <li key={ii} style={{fontSize:11.5,color:ink,lineHeight:1.5}}>{it}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {canCustomize&&(
+                <button onClick={()=>{setStep(3);setExpandedVendor(v);if(v==="Decorator")setShowDecorBuilder(true);if(v==="Caterer")setShowCateringBuilder(true);setEditingService(null);}}
+                  style={{width:"100%",padding:"12px",borderRadius:12,border:`1.5px dashed ${gold}50`,background:"transparent",color:gold,fontFamily:font,fontWeight:700,fontSize:12.5,cursor:"pointer",marginBottom:4}}>
+                  Customize item-by-item instead →
+                </button>
+              )}
+
+              <button onClick={()=>{toggleVendor(v);setVendorPackages(vp=>{const n={...vp};delete n[v];return n;});setEditingService(null);}}
+                style={{width:"100%",padding:"10px",borderRadius:12,border:"none",background:"transparent",color:"rgba(190,40,20,0.75)",fontFamily:font,fontWeight:600,fontSize:12,cursor:"pointer",marginTop:4}}>
+                Remove this service
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Ambient theme props — a handful of soft, oversized motifs matching the chosen theme,
           anchored to the viewport so they stay put behind the scrolling content on every step. */}
@@ -4849,10 +4952,17 @@ export default function OccasionDetail(){
             </div>
 
             {(()=>{
-              const {summary}=buildEventSummary(occasion,{celebrantName,guests,date,city,venueType,theme,vendors,decorFocusAreas,customDecor,selectedActivities,customActivities,gifts});
+              const {summary,decorPhoto}=buildEventSummary(occasion,{celebrantName,guests,date,city,venueType,theme,vendors,decorFocusAreas,customDecor,selectedActivities,customActivities,gifts});
               return(
-                <div style={{position:"relative",background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",border:`1.5px solid ${gold}30`,borderRadius:22,padding:"24px 22px",marginBottom:20,boxShadow:"0 10px 32px rgba(0,0,0,0.06)"}}>
-                  <p style={{fontSize:15,color:ink,lineHeight:1.8,margin:0}}>{summary}</p>
+                <div style={{position:"relative",background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",border:`1.5px solid ${gold}30`,borderRadius:22,overflow:"hidden",marginBottom:20,boxShadow:"0 10px 32px rgba(0,0,0,0.06)"}}>
+                  {decorPhoto&&(
+                    <div style={{position:"relative",height:150}}>
+                      <img src={decorPhoto} alt="How your décor could look" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
+                      <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(28,9,0,0.45),transparent 55%)"}}/>
+                      <span style={{position:"absolute",bottom:8,left:12,fontSize:10.5,fontWeight:800,color:"#fff",textTransform:"uppercase",letterSpacing:"0.08em"}}>A preview of your décor</span>
+                    </div>
+                  )}
+                  <p style={{fontSize:15,color:ink,lineHeight:1.8,margin:0,padding:"24px 22px"}}>{summary}</p>
                 </div>
               );
             })()}
@@ -4947,6 +5057,21 @@ export default function OccasionDetail(){
                 are still assembled into one planSections array for the PDF/share-to-chat
                 capture further below, so that output stays exactly as complete as before. */}
             {(()=>{
+            // Shared card-row renderer for both journey sections below — a horizontally
+            // swipeable row of compact cards (icon, short bold title, clamped 1–2 line
+            // text) instead of one long vertical column of paragraphs. Reads as a set of
+            // steps on a planning app, not a document with prose under each heading.
+            const renderBeatCards=(beats)=>(
+              <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:4,marginInline:-2,paddingInline:2,scrollSnapType:"x proximity"}}>
+                {beats.map((beat,i)=>(
+                  <div key={i} style={{scrollSnapAlign:"start",flex:"0 0 auto",width:168,padding:"14px 13px",borderRadius:16,background:"#fff",border:`1px solid ${border}`}}>
+                    <div style={{width:32,height:32,borderRadius:"50%",background:`${gold}10`,border:`1.5px solid ${gold}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,marginBottom:9}}>{beat.icon}</div>
+                    <div style={{fontSize:9.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:5}}>{beat.title}</div>
+                    <div style={{fontSize:12,color:ink,lineHeight:1.5,display:"-webkit-box",WebkitLineClamp:4,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{beat.text}</div>
+                  </div>
+                ))}
+              </div>
+            );
             const journeySlide=(
             <React.Fragment key="plan-journey">
             {/* "Your event, start to end" — narrative walkthrough, built from real selections */}
@@ -4958,17 +5083,8 @@ export default function OccasionDetail(){
                     <span style={{fontSize:16}}>✦</span>
                     <span style={{fontFamily:serif,fontSize:17,color:ink,fontWeight:400}}>Your {occasion.name.toLowerCase()}, start to end</span>
                   </div>
-                  <div style={{fontSize:11.5,color:muted,marginBottom:14,lineHeight:1.5}}>Here's a picture of how the day will actually feel, based on everything you've chosen so far.</div>
-                  <div style={{position:"relative",paddingLeft:30}}>
-                    <div aria-hidden style={{position:"absolute",left:13,top:6,bottom:6,width:1.5,background:`linear-gradient(180deg,${gold},rgba(196,122,46,0.1))`}}/>
-                    {journey.map((beat,i)=>(
-                      <div key={i} style={{position:"relative",marginBottom:i<journey.length-1?18:0}}>
-                        <div aria-hidden style={{position:"absolute",left:-30,top:0,width:26,height:26,borderRadius:"50%",background:"#fff",border:`1.5px solid ${gold}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>{beat.icon}</div>
-                        <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:3}}>{beat.title}</div>
-                        <div style={{fontSize:13,color:ink,lineHeight:1.6}}>{beat.text}</div>
-                      </div>
-                    ))}
-                  </div>
+                  <div style={{fontSize:11.5,color:muted,marginBottom:12,lineHeight:1.5}}>How the day will actually feel, swipe through →</div>
+                  {renderBeatCards(journey)}
                 </div>
               );
             })()}
@@ -4988,17 +5104,8 @@ export default function OccasionDetail(){
                     <span style={{fontSize:16}}>✦</span>
                     <span style={{fontFamily:serif,fontSize:17,color:ink,fontWeight:400}}>How your preparation will go</span>
                   </div>
-                  <div style={{fontSize:11.5,color:muted,marginBottom:14,lineHeight:1.5}}>And here's the lead-up to it — what's still open, what we take off your plate, and what's left for you.</div>
-                  <div style={{position:"relative",paddingLeft:30}}>
-                    <div aria-hidden style={{position:"absolute",left:13,top:6,bottom:6,width:1.5,background:`linear-gradient(180deg,${gold},rgba(196,122,46,0.1))`}}/>
-                    {prep.map((beat,i)=>(
-                      <div key={i} style={{position:"relative",marginBottom:i<prep.length-1?18:0}}>
-                        <div aria-hidden style={{position:"absolute",left:-30,top:0,width:26,height:26,borderRadius:"50%",background:"#fff",border:`1.5px solid ${gold}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>{beat.icon}</div>
-                        <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:3}}>{beat.title}</div>
-                        <div style={{fontSize:13,color:ink,lineHeight:1.6}}>{beat.text}</div>
-                      </div>
-                    ))}
-                  </div>
+                  <div style={{fontSize:11.5,color:muted,marginBottom:12,lineHeight:1.5}}>What's open, what we handle, what's on you — swipe through →</div>
+                  {renderBeatCards(prep)}
                 </div>
               );
             })()}
