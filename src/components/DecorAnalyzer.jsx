@@ -139,12 +139,22 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
         }),
       });
       const data = await res.json();
-      if (!res.ok || !data.analysis) throw new Error(data.error || "Analysis failed");
+      if (!res.ok || !data.analysis) {
+        // The backend's own error text (e.g. a raw Anthropic API error) is useful for
+        // debugging but not something to show a customer — log it, show a friendly
+        // message instead.
+        if (data.error) console.error("[DecorAnalyzer]", data.error);
+        throw new Error("friendly");
+      }
       setAnalysis(data.analysis);
       setPhase("done");
       if (onAnalysisComplete) onAnalysisComplete(data.analysis, preview);
     } catch (e) {
-      setErrMsg(e.message || "Something went wrong. Please try again.");
+      setErrMsg(
+        e.message === "friendly"
+          ? "Our AI stylist is having a moment — this usually sorts itself out in a minute."
+          : "Couldn't reach the server. Check your connection and try again."
+      );
       setPhase("error");
     }
   };
@@ -365,11 +375,26 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
 
   // ── Error ─────────────────────────────────────────────────────────────────
   if (phase === "error") return (
-    <div style={{ fontFamily: F, display: "flex", flexDirection: "column", alignItems: "center", gap: 16, padding: "24px 16px", textAlign: "center" }}>
-      <div style={{ fontSize: 36 }}>⚠️</div>
-      <div style={{ fontSize: 15, fontWeight: 700, color: INK }}>Couldn't analyse the photo</div>
-      <div style={{ fontSize: 13, color: MUTED, lineHeight: 1.6 }}>{errMsg}</div>
-      <button onClick={() => setPhase("idle")} style={{ padding: "11px 28px", borderRadius: 10, border: "none", background: GOLD, color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: F }}>Try Again</button>
+    <div style={{ fontFamily: F, display: "flex", flexDirection: "column", alignItems: "center", gap: 18, padding: "36px 20px", textAlign: "center", maxWidth: 380, margin: "0 auto" }}>
+      <div style={{ position: "relative", width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(145deg,#FFF3E0,#FFE8CC)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke={GOLD} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="4" width="18" height="15" rx="2.5" opacity="0.4"/>
+          <circle cx="8.5" cy="9.5" r="1.6" opacity="0.4"/>
+          <path d="M3 16l5-4.5c.8-.7 1.9-.7 2.6 0L15 15" opacity="0.4"/>
+          <path d="M12 9v4M12 16.5h.01" strokeWidth="2.2"/>
+        </svg>
+      </div>
+      <div>
+        <div style={{ fontSize: 17, fontWeight: 800, color: INK, marginBottom: 6 }}>Couldn't style this one</div>
+        <div style={{ fontSize: 13, color: MUTED, lineHeight: 1.6 }}>{errMsg}</div>
+      </div>
+      {preview && (
+        <img src={preview} alt="" style={{ width: 64, height: 48, borderRadius: 8, objectFit: "cover", opacity: 0.5 }} />
+      )}
+      <div style={{ display: "flex", gap: 10, width: "100%" }}>
+        <button onClick={reset} style={{ flex: 1, padding: "12px", borderRadius: 11, border: "1.5px solid rgba(28,9,0,0.14)", background: "#fff", color: INK, fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: F }}>Upload different photo</button>
+        <button onClick={() => { setPhase("idle"); analyse(); }} style={{ flex: 1, padding: "12px", borderRadius: 11, border: "none", background: `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: F, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>Try Again</button>
+      </div>
     </div>
   );
 
