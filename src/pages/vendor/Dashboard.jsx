@@ -5788,6 +5788,10 @@ const [tab, setTab] = useState('home');
               const share = Math.round((topCount/totalGigs)*100);
               if (share >= 60) tips.push({ icon:'🎯', tone:'info', text:`${share}% of your business is ${topType} events — consider either doubling down on that niche or diversifying.` });
             }
+            if (pricingInsights?.categoryConversion && totalGigs >= 5) {
+              const catPct = Math.round(pricingInsights.categoryConversion.conversionRate*100);
+              if (convRate < catPct - 15) tips.push({ icon:'📊', tone:'warn', text:`Your conversion (${convRate}%) is well below the ${catPct}% of ${serviceType} chats that end up paid site-wide — worth checking your pricing or response time against the rest of this tab.` });
+            }
 
             const statCard = (label, value, sub, color='#C47A2E') => (
               <div style={{ background:'#fff', borderRadius:16, padding:'16px 18px', border:'1px solid rgba(196,122,46,0.12)', flex:1, minWidth:0 }}>
@@ -5886,6 +5890,13 @@ const [tab, setTab] = useState('home');
                         <div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>What customers actually paid</div>
                         <div style={{ fontSize:18, fontWeight:800, color:ink, fontVariantNumeric:'tabular-nums' }}>₹{pricingInsights.actual.min.toLocaleString('en-IN')}–₹{pricingInsights.actual.max.toLocaleString('en-IN')}</div>
                         <div style={{ fontSize:11, color:'#9B7450', marginTop:3 }}>avg ₹{pricingInsights.actual.avg.toLocaleString('en-IN')} · {pricingInsights.actual.count} closed deals (Tendr + outside)</div>
+                      </div>
+                    )}
+                    {pricingInsights.categoryConversion && (
+                      <div style={{ borderTop:'1px solid rgba(196,122,46,0.1)', paddingTop:12, marginTop: pricingInsights.actual ? 12 : 0 }}>
+                        <div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>Category Lead Conversion</div>
+                        <div style={{ fontSize:18, fontWeight:800, color:ink, fontVariantNumeric:'tabular-nums' }}>{Math.round(pricingInsights.categoryConversion.conversionRate*100)}%</div>
+                        <div style={{ fontSize:11, color:'#9B7450', marginTop:3 }}>of chats with {serviceType} vendors site-wide end up paid · {pricingInsights.categoryConversion.totalLeads} chats tracked</div>
                       </div>
                     )}
                   </div>
