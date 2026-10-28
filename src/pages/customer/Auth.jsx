@@ -209,8 +209,11 @@ const Auth = () => {
   const [localLoading, setLocalLoading] = useState(false);
   const [localError, setLocalError] = useState("");
   const [formData, setFormData] = useState({ name: "", email: "", password: "", phoneNumber: "", location: "", companyName: "", gstNumber: "", businessName: "", serviceType: "" });
-  const [accountType, setAccountType] = useState("personal");
-  const [signupStep, setSignupStep] = useState("role"); // "role" | "form"
+  // Signup is one plain form for everyone now — no "Who are you?" role picker.
+  // Vendors/coordinators/corporate accounts have their own dedicated, self-
+  // contained signup pages (reached directly, e.g. "List Your Service") rather
+  // than branching from here, so accountType is always "personal" on this page.
+  const accountType = "personal";
   const [loginType, setLoginType] = useState("customer"); // "customer" | "vendor" | "coordinator"
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -227,7 +230,6 @@ const Auth = () => {
     navigate(isSignup ? "/login" : "/signup");
     setPasswordError("");
     setShowPassword(false);
-    setSignupStep("role");
     setLocalError("");
     setLoginType("customer");
   };
@@ -524,10 +526,10 @@ const Auth = () => {
           {/* Title */}
           <div style={{ textAlign: "center", marginBottom: 28 }}>
             <h2 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px", letterSpacing: "-0.01em" }}>
-              {isSignup && signupStep === "role" ? "Who are you?" : isSignup ? "Create your account" : "Welcome back"}
+              {isSignup ? "Create your account" : "Welcome back"}
             </h2>
             <p style={{ fontSize: 13.5, color: "#9B7450", margin: 0 }}>
-              {isSignup && signupStep === "role" ? "Tell us how you'll use Tendr so we can set up the right experience" : isSignup ? "Join Tendr and start planning your event" : "Sign in to continue planning your event"}
+              {isSignup ? "Join Tendr and start planning your event" : "Sign in to continue planning your event"}
             </p>
           </div>
 
@@ -564,181 +566,8 @@ const Auth = () => {
             );
           })()}
 
-          {isSignup && signupStep === "role" ? (
-            /* ── Step 1: Role selection ── */
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 4px", textAlign: "center", fontFamily: font }}>
-                Select how you'll be using Tendr
-              </p>
-              {[
-                {
-                  value: "personal",
-                  icon: (
-                    <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                    </svg>
-                  ),
-                  label: "Personal",
-                  sub: "Planning a wedding, birthday, or private party",
-                },
-                {
-                  value: "company",
-                  icon: (
-                    <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-                    </svg>
-                  ),
-                  label: "Professional / Corporate",
-                  sub: "Booking events for your company or organisation",
-                },
-                {
-                  value: "professional",
-                  icon: (
-                    <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                  ),
-                  label: "Event Professional",
-                  sub: "Artist, performer, caterer, decorator, photographer, DJ, or any event service",
-                },
-                {
-                  value: "coordinator",
-                  icon: (
-                    <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
-                    </svg>
-                  ),
-                  label: "Event Coordinator",
-                  sub: "Manage client bookings, leads, and events as a professional coordinator",
-                },
-              ].map(({ value, icon, label, sub }) => {
-                const active = accountType === value;
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setAccountType(value)}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 14, textAlign: "left",
-                      padding: "14px 16px", borderRadius: 14, width: "100%", cursor: "pointer",
-                      border: active ? "2px solid #C47A2E" : "1.5px solid rgba(139,69,19,0.18)",
-                      background: active ? "rgba(196,122,46,0.06)" : "#fff",
-                      transition: "all 0.15s", fontFamily: font,
-                    }}
-                  >
-                    <div style={{
-                      width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-                      background: active ? "rgba(196,122,46,0.12)" : "rgba(139,69,19,0.05)",
-                      border: active ? "1.5px solid rgba(196,122,46,0.3)" : "1px solid rgba(139,69,19,0.1)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      color: active ? "#C47A2E" : "#9B7450",
-                    }}>
-                      {icon}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: active ? "#C47A2E" : "#2C1A0E", marginBottom: 2 }}>{label}</div>
-                      <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.4 }}>{sub}</div>
-                    </div>
-                    <div style={{
-                      width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
-                      border: active ? "none" : "1.5px solid rgba(139,69,19,0.22)",
-                      background: active ? "#C47A2E" : "transparent",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                      {active && <svg width={10} height={10} viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                    </div>
-                  </button>
-                );
-              })}
-              <button
-                type="button"
-                onClick={() => {
-                  if (accountType === "coordinator") { navigate("/coordinator/register"); return; }
-                  if (accountType === "professional") { navigate("/vendor/registration"); return; }
-                  if (accountType === "company") { navigate("/corporate-signup"); return; }
-                  setSignupStep("form");
-                }}
-                style={{
-                  marginTop: 4, width: "100%", padding: "13px",
-                  background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",
-                  color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: font,
-                  border: "none", borderRadius: 12, cursor: "pointer",
-                  boxShadow: "0 4px 14px rgba(196,122,46,0.35)", transition: "all 0.2s",
-                }}
-              >
-                Continue as {accountType === "coordinator" ? "Coordinator" : accountType === "professional" ? "Event Professional" : accountType === "company" ? "Corporate" : "Personal"} →
-              </button>
-            </div>
-          ) : isSignup ? (
+          {isSignup ? (
             <form onSubmit={handleSignupSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-
-              {/* Role pill + back */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 12px", background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 10 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E" }}>
-                  {accountType === "coordinator" ? "🗓 Event Coordinator" : accountType === "professional" ? "⭐ Event Professional" : accountType === "company" ? "🏢 Professional / Corporate" : "👤 Personal account"}
-                </span>
-                <button type="button" onClick={() => setSignupStep("role")} style={{ background: "none", border: "none", fontSize: 12, color: "#9B7450", cursor: "pointer", fontFamily: font, fontWeight: 600, padding: 0 }}>
-                  Change
-                </button>
-              </div>
-
-              {/* Company fields */}
-              {accountType === "company" && (<>
-                <div>
-                  <label style={labelStyle}>Company / Organisation Name <span style={{ color: "#C0392B" }}>*</span></label>
-                  <input
-                    type="text" name="companyName" value={formData.companyName} onChange={handleChange}
-                    onFocus={() => setFocused("companyName")} onBlur={() => setFocused("")}
-                    style={{ ...inputStyle, borderColor: focused === "companyName" ? "#C47A2E" : "rgba(139,69,19,0.22)" }}
-                    placeholder="Enter your company name" disabled={isBusy} required
-                  />
-                </div>
-                <div>
-                  <label style={labelStyle}>GST Number <span style={{ color: "#9B7450", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional)</span></label>
-                  <input
-                    type="text" name="gstNumber" value={formData.gstNumber} onChange={handleChange}
-                    onFocus={() => setFocused("gstNumber")} onBlur={() => setFocused("")}
-                    style={{ ...inputStyle, borderColor: focused === "gstNumber" ? "#C47A2E" : "rgba(139,69,19,0.22)", textTransform: "uppercase" }}
-                    placeholder="e.g. 07AABCU9603R1ZP" disabled={isBusy} maxLength={15}
-                  />
-                </div>
-              </>)}
-
-              {/* Vendor fields */}
-              {accountType === "vendor" && (
-                <div style={{ background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 14, padding: "14px 14px", display: "flex", flexDirection: "column", gap: 12 }}>
-                  <div style={{ fontSize: 12, color: "#9B7450" }}>After signup you'll complete your full listing profile.</div>
-                  <div>
-                    <label style={labelStyle}>Business / Brand Name <span style={{ color: "#C0392B" }}>*</span></label>
-                    <input
-                      type="text" name="businessName" value={formData.businessName} onChange={handleChange}
-                      onFocus={() => setFocused("businessName")} onBlur={() => setFocused("")}
-                      style={{ ...inputStyle, borderColor: focused === "businessName" ? "#C47A2E" : "rgba(139,69,19,0.22)" }}
-                      placeholder="Your business or brand name" disabled={isBusy}
-                    />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Service Category <span style={{ color: "#C0392B" }}>*</span></label>
-                    <select name="serviceType" value={formData.serviceType} onChange={handleChange}
-                      onFocus={() => setFocused("serviceType")} onBlur={() => setFocused("")}
-                      style={{ ...inputStyle, borderColor: focused === "serviceType" ? "#C47A2E" : "rgba(139,69,19,0.22)", cursor: "pointer" }}
-                      disabled={isBusy}>
-                      <option value="">Select your service type</option>
-                      <option value="Decorator">Decorator / Event Stylist</option>
-                      <option value="Caterer">Caterer / Food Service</option>
-                      <option value="Photographer">Photographer / Videographer</option>
-                      <option value="DJ">DJ / Music &amp; Entertainment</option>
-                      <option value="Florist">Florist</option>
-                      <option value="Emcee / Host">Emcee / Host</option>
-                      <option value="AV Setup">AV &amp; Tech Setup</option>
-                      <option value="Venue">Venue / Banquet Hall</option>
-                      <option value="Baker">Baker / Cake Studio</option>
-                      <option value="Transportation">Transportation</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                </div>
-              )}
 
               <div>
                 <label style={labelStyle}>Full Name</label>
@@ -903,7 +732,7 @@ const Auth = () => {
           )}
 
           {/* Google Sign-In — customer only; hidden for vendor/coordinator login and non-personal signup */}
-          {!(isSignup && signupStep === "form" && accountType !== "personal") && !(!isSignup && loginType !== "customer") && HAS_GOOGLE && (
+          {!(!isSignup && loginType !== "customer") && HAS_GOOGLE && (
             <GoogleAuthBtn isBusy={isBusy} />
           )}
 

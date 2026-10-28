@@ -11,8 +11,8 @@ const BENEFITS = [
     icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
   },
   {
-    stat: "15%", title: "Transparent fee",
-    desc: "Just 15% on confirmed bookings only — no monthly fees, no listing charges, no hidden costs.",
+    stat: "10%", title: "Transparent fee",
+    desc: "Just 10% on confirmed bookings only — no monthly fees, no listing charges, no hidden costs.",
     icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>,
   },
   {
@@ -131,7 +131,7 @@ const DASHBOARD_SECTIONS = [
         <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 12, padding: "16px 18px" }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(204,171,74,0.7)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>Total earned this month</div>
           <div style={{ fontSize: 28, fontWeight: 900, color: "#CCAB4A", fontVariantNumeric: "tabular-nums" }}>₹48,500</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>3 bookings · 15% platform fee</div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>3 bookings · 10% platform fee</div>
         </div>
         {[
           { name: "Priya Sharma — Birthday", amt: "₹18,000", date: "Aug 15" },
@@ -379,7 +379,7 @@ export default function ForVendors() {
         <div style={{ maxWidth: 700, margin: "0 auto", position: "relative", zIndex: 1 }}>
           <div style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 20 }}>By the numbers</div>
           <div style={{ display: "flex", justifyContent: "center", gap: 40, flexWrap: "wrap", marginBottom: 32 }}>
-            {[{ n: "100+", l: "Verified vendors" }, { n: "15%", l: "Platform fee" }, { n: "24h", l: "Approval" }].map(s => (
+            {[{ n: "100+", l: "Verified vendors" }, { n: "10%", l: "Platform fee" }, { n: "24h", l: "Approval" }].map(s => (
               <div key={s.l} style={{ textAlign: "center" }}>
                 <div style={{ fontFamily: serif, fontSize: "2rem", fontWeight: 600, color: "#C47A2E", lineHeight: 1 }}>{s.n}</div>
                 <div style={{ fontSize: 11.5, fontWeight: 600, color: "#9B7450", marginTop: 6, letterSpacing: "0.02em" }}>{s.l}</div>

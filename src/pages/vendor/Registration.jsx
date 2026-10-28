@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
 import {
   PERFORMER_CATEGORIES, PERFORMER_ART_FORMS, GIG_STYLE_OPTIONS,
   GIG_LANG_OPTIONS, GIG_LANGUAGE_CATEGORIES, CONTENT_RATING_OPTIONS,
@@ -156,7 +155,7 @@ const CATEGORY_QUESTIONS = {
 };
 
 const TRUST = [
-  { n: "15%", label: "Commission",  sub: "15% platform fee on confirmed bookings only" },
+  { n: "10%", label: "Commission",  sub: "10% platform fee on confirmed bookings only" },
   { n: "Free",  label: "To list",    sub: "No monthly fees, no hidden charges" },
   { n: "24 hrs",label: "Review time",sub: "Our team reviews every application fast" },
 ];
@@ -200,10 +199,11 @@ function StepBar({ step, steps = ["Category", "Specialty", "Details"] }) {
 
 // ─── Shell layout ─────────────────────────────────────────────────────────────
 
-const FREE_FEATS = ["Profile & portfolio", "Discovered by clients", "Receive leads", "15% only on Tendr bookings", "Always free to list"];
+const FREE_FEATS = ["Profile & portfolio", "Discovered by clients", "Receive leads", "10% only on Tendr bookings", "Always free to list"];
 const PAID_FEATS = ["Bookings & availability calendar", "Client CRM & reviews", "Quotes, invoices & contracts", "Payments & profit tracking", "Smart reminders & alerts", "Business insights & analytics", "Flyer builder & link hub", "Hindi & English support", "0% commission on outside bookings"];
 
-function Shell({ children, step, steps, narrow = true, sideTitle, sideSub, sideTiers, hideTrustStrip }) {
+function Shell({ children, step, steps, narrow = true, maxWidth, sideTitle, sideSub, sideTiers, hideTrustStrip }) {
+  const [showAllPaidFeats, setShowAllPaidFeats] = useState(false);
   return (
     <div style={{ minHeight: "100vh", background: "#F9F6F1", fontFamily: font }}>
       <style>{`
@@ -224,7 +224,7 @@ function Shell({ children, step, steps, narrow = true, sideTitle, sideSub, sideT
               {sideTitle || "Get discovered by thousands of event planners in Delhi NCR."}
             </h2>
             <p style={{ fontSize: 14, color: "rgba(245,236,216,0.55)", lineHeight: 1.7, margin: "0 0 28px" }}>
-              {sideSub || "Join Tendr's verified network — real clients, real bookings, 15% platform fee."}
+              {sideSub || "Join Tendr's verified network — real clients, real bookings, 10% platform fee."}
             </p>
           </div>
 
@@ -248,12 +248,17 @@ function Shell({ children, step, steps, narrow = true, sideTitle, sideSub, sideT
                 </div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: "#F5ECD8" }}>₹399 <span style={{ fontSize: 11, fontWeight: 400, color: "rgba(245,236,216,0.45)" }}>+ GST / month</span></div>
                 <div style={{ fontSize: 10.5, color: "rgba(245,236,216,0.38)", marginBottom: 10 }}>after free trial · no card needed</div>
-                {PAID_FEATS.slice(0, 5).map(f => (
+                {PAID_FEATS.slice(0, showAllPaidFeats ? PAID_FEATS.length : 5).map(f => (
                   <div key={f} style={{ fontSize: 11.5, color: "rgba(245,236,216,0.48)", display: "flex", gap: 7, alignItems: "flex-start", marginBottom: 5 }}>
                     <span style={{ color: gold, flexShrink: 0, lineHeight: 1.5 }}>✓</span>{f}
                   </div>
                 ))}
-                <div style={{ fontSize: 11, color: "rgba(196,122,46,0.6)", marginTop: 6 }}>+{PAID_FEATS.length - 5} more features</div>
+                {PAID_FEATS.length > 5 && (
+                  <button type="button" onClick={() => setShowAllPaidFeats(s => !s)}
+                    style={{ fontSize: 11, fontWeight: 700, color: gold, background: "none", border: "none", cursor: "pointer", padding: 0, marginTop: 6, fontFamily: font, textDecoration: "underline" }}>
+                    {showAllPaidFeats ? "Show less" : `+${PAID_FEATS.length - 5} more features`}
+                  </button>
+                )}
               </div>
             </div>
           ) : hideTrustStrip ? null : (
@@ -272,7 +277,7 @@ function Shell({ children, step, steps, narrow = true, sideTitle, sideSub, sideT
         </div>
 
         {/* Right content */}
-        <div className="reg-main" style={{ padding: "36px 20px 60px", maxWidth: narrow ? 540 : "100%", margin: narrow ? "0 auto" : 0 }}>
+        <div className="reg-main" style={{ padding: "36px 20px 60px", maxWidth: maxWidth ?? (narrow ? 540 : "100%"), margin: narrow ? "0 auto" : 0 }}>
           {step && <StepBar step={step} steps={steps} />}
           {children}
         </div>
@@ -838,15 +843,15 @@ export default function VendorRegistration() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const flow = searchParams.get("flow"); // "artist" | "vendor" | null
-  const token = useSelector(s => s.auth?.token);
 
-  // Listing a service requires a Tendr account first. Bounce straight to login/
-  // signup and bring them right back here once they're done — Auth.jsx already
-  // honors location.state.returnTo generically — landing on this form's default
-  // first step ("what type of service") since no flow= param is added here.
-  useEffect(() => {
-    if (!token) navigate("/login", { replace: true, state: { returnTo: `${location.pathname}${location.search}` } });
-  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+  // This form creates its own account (name/phone/password → VendorApplication,
+  // approved into a real Vendor login) — it's a self-contained signup, not an
+  // action an existing customer account performs. It used to require being
+  // logged in as a customer first (bouncing to /login, then back here) before a
+  // brand-new vendor could even see this form — which made "List Your Service"
+  // effectively broken for anyone without a Tendr customer account already, and
+  // meant filling in ANOTHER password here right after creating one at /login
+  // made no sense. No auth gate needed here anymore.
 
   // ── Shared state ──────────────────────────────────────────────────────────
 
@@ -969,8 +974,6 @@ export default function VendorRegistration() {
   };
 
   // ── SUCCESS ────────────────────────────────────────────────────────────────
-  if (!token) return null; // redirecting to /login, see effect above
-
   if (submitted) return <SuccessScreen name={successName} isCoordinator={isCoordinator} navigate={navigate} />;
 
   // ── COORDINATOR FLOW (legacy) ──────────────────────────────────────────────
@@ -1074,7 +1077,7 @@ export default function VendorRegistration() {
               </div>
             </div>
             {FREE_FEATS.map(f => <div key={f} style={{ fontSize: 12.5, color: muted, display: "flex", gap: 8, marginBottom: 4 }}><span style={{ color: gold, flexShrink: 0 }}>✓</span>{f}</div>)}
-            <div style={{ marginTop: 12, padding: "8px 14px", borderRadius: 8, background: "rgba(196,122,46,0.07)", fontSize: 12, color: "#7a4d1b", fontWeight: 600 }}>15% commission only on Tendr bookings</div>
+            <div style={{ marginTop: 12, padding: "8px 14px", borderRadius: 8, background: "rgba(196,122,46,0.07)", fontSize: 12, color: "#7a4d1b", fontWeight: 600 }}>10% commission only on Tendr bookings</div>
           </button>
 
           <button type="button" onClick={() => { setPlan("paid"); setStep("a_features"); }}
@@ -1274,7 +1277,7 @@ export default function VendorRegistration() {
     );
 
     return (
-      <Shell step={3} steps={["Type", "Plan", "Profile"]}>
+      <Shell step={3} steps={["Type", "Plan", "Profile"]} maxWidth={760}>
         <button type="button" onClick={() => setStep("a_plan")} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 20, padding: 0 }}>
           ← Back
         </button>
@@ -1975,7 +1978,7 @@ export default function VendorRegistration() {
               </div>
             </div>
             {FREE_FEATS.map(f => <div key={f} style={{ fontSize: 12.5, color: muted, display: "flex", gap: 8, marginBottom: 4 }}><span style={{ color: gold, flexShrink: 0 }}>✓</span>{f}</div>)}
-            <div style={{ marginTop: 12, padding: "8px 14px", borderRadius: 8, background: "rgba(196,122,46,0.07)", fontSize: 12, color: "#7a4d1b", fontWeight: 600 }}>15% commission only on Tendr bookings</div>
+            <div style={{ marginTop: 12, padding: "8px 14px", borderRadius: 8, background: "rgba(196,122,46,0.07)", fontSize: 12, color: "#7a4d1b", fontWeight: 600 }}>10% commission only on Tendr bookings</div>
           </button>
 
           <button type="button" onClick={() => { setPlan("paid"); setStep("v_features"); }}
