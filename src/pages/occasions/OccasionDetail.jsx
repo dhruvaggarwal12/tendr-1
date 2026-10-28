@@ -2159,6 +2159,39 @@ export default function OccasionDetail(){
   const [customVendor,setCustomVendor]=useState("");
   const [expandedTip,setExpandedTip]=useState(null);
   const [createdPlanId,setCreatedPlanId]=useState(null); // set once the one-shot POST /event-plans succeeds this session
+
+  // "Get My Full Plan Ready" — its own separate tracking loop (not the vendor-category
+  // recommender's RecommendationSession/RecommendationItem). planInsights is read back
+  // from past runs (keep-rate + real price of plans that kept each pick) and used to
+  // bias this run's picks; quickPlanSessionIdRef + quickPlanSnapshotRef remember what
+  // THIS run auto-picked so the later kept-vs-changed comparison has something to diff
+  // against (refs, not state — nothing here needs to trigger a re-render).
+  const [planInsights,setPlanInsights]=useState({});
+  const quickPlanSessionIdRef=useRef(null);
+  const quickPlanSnapshotRef=useRef(null); // null | { activities:string[], entryExperiences:string[], gifts:string[] }
+
+  useEffect(()=>{
+    if(!occasion?.name) return;
+    let cancelled=false;
+    fetch(`${BASE_URL}/quick-plan/insights?occasion=${encodeURIComponent(occasion.name)}`)
+      .then(r=>r.ok?r.json():null)
+      .then(d=>{ if(!cancelled && d?.insights) setPlanInsights(d.insights); })
+      .catch(()=>{});
+    return ()=>{ cancelled=true; };
+  },[occasion?.name]);
+
+  // Nudges a fixed-formula score using this occasion's own quick-plan history —
+  // conservative on purpose (same shape as the Price Estimator's benchmark
+  // blending): only kicks in once a pick has enough checked samples, capped so a
+  // handful of outcomes can never swing a score wildly, and a frequently-changed
+  // pick gets pulled down just as a frequently-kept one gets pulled up.
+  const PLAN_INSIGHT_BOOST_CAP=0.3;
+  const applyPlanInsightsBoost=(pickType,name,score)=>{
+    const info=planInsights[`${pickType}::${name}`];
+    if(!info) return score;
+    const boost=Math.max(-PLAN_INSIGHT_BOOST_CAP,Math.min(PLAN_INSIGHT_BOOST_CAP,(info.keepRate-0.5)*2*PLAN_INSIGHT_BOOST_CAP));
+    return score*(1+boost);
+  };
   const [gifts,setGifts]=useState([]);
   const [giftQuantities,setGiftQuantities]=useState({}); // {giftName: qty} — only meaningful for names present in `gifts`
   const setGiftQty=(name,qty)=>setGiftQuantities(q=>({...q,[name]:Math.max(1,qty)}));
@@ -2651,7 +2684,7 @@ export default function OccasionDetail(){
   // frontend state. Accepts overrides for the fields quick-plan just set, since reading
   // them straight off component state here would race React's async state updates and
   // save stale (pre-auto-fill) values.
-  const ensureEventPlanCreated=(overrides={})=>{
+  const ensureEventPlanCreated=(overrides={},onCreated)=>{
     if(!(token && occasion && date && guests && city)) return;
     const svcList=overrides.vendors??vendors;
     const giftList=overrides.gifts??gifts;
@@ -2676,6 +2709,7 @@ export default function OccasionDetail(){
       if(createdPlanId){
         // Already created earlier this session (e.g. user went back to step 6 and forward again) — just sync selections.
         patchWizardSelections(createdPlanId);
+        if(onCreated) onCreated(createdPlanId);
       } else if(!sessionStorage.getItem('tendr_early_plan_created')){
         sessionStorage.setItem('tendr_early_plan_created','1');
         fetch(`${BASE_URL}/event-plans`,{
@@ -2701,6 +2735,7 @@ export default function OccasionDetail(){
           if(data?.eventPlan?._id){
             setCreatedPlanId(data.eventPlan._id);
             patchWizardSelections(data.eventPlan._id);
+            if(onCreated) onCreated(data.eventPlan._id);
           }
         }).catch(()=>{ try{sessionStorage.removeItem('tendr_early_plan_created');}catch{} });
       }
@@ -2720,7 +2755,28 @@ export default function OccasionDetail(){
       setStep(5);
       return;
     }
-    if(step===6){ ensureEventPlanCreated(); }
+    if(step===6){
+      ensureEventPlanCreated();
+      // If "Get My Full Plan Ready" ran this session, this is the first point after
+      // it where the customer has had a chance to change any of its picks — compare
+      // live state back against the snapshot taken at pick time and report kept vs
+      // changed, so GET /quick-plan/insights has something real to read for next time.
+      const sessionId=quickPlanSessionIdRef.current;
+      const snapshot=quickPlanSnapshotRef.current;
+      if(sessionId && snapshot){
+        const keptPicks=[
+          ...snapshot.activities.map(name=>({pickType:'activity',name,kept:selectedActivities.includes(name)})),
+          ...snapshot.entryExperiences.map(name=>({pickType:'entryExperience',name,kept:selectedEntryExperiences.includes(name)})),
+          ...snapshot.gifts.map(name=>({pickType:'gift',name,kept:gifts.includes(name)})),
+        ];
+        fetch(`${BASE_URL}/quick-plan/session/${sessionId}/kept`,{
+          method:'PATCH',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({picks:keptPicks}),
+        }).catch(()=>{});
+        quickPlanSnapshotRef.current=null; // only report once per run
+      }
+    }
     setStep(s=>Math.min(s+1,8));
   };
   const back=()=>{
@@ -2808,22 +2864,53 @@ export default function OccasionDetail(){
     });
     if(Object.keys(svcPackages).length) setVendorPackages(svcPackages);
 
-    const entrySugg=getEntryExperienceSuggestions(occasion,{ageGroups,guests,venueType,budget:Number(budget)||0});
+    // Each list below is re-ranked with this occasion's own quick-plan history
+    // (applyPlanInsightsBoost) before picking the top ones — a nudge on top of
+    // the fixed formula, not a replacement for it, and scoped to quick-plan's own
+    // picks only (the manual steps elsewhere still use the plain scores).
+    const entrySugg=getEntryExperienceSuggestions(occasion,{ageGroups,guests,venueType,budget:Number(budget)||0})
+      .map(e=>({...e,score:applyPlanInsightsBoost('entryExperience',e.id,e.score)}))
+      .sort((a,b)=>b.score-a.score);
     const entryList=entrySugg.length?[entrySugg[0].id]:[];
     if(entryList.length){ setSelectedEntryExperiences(entryList); setEntryExperiencesSkipped(false); }
     else setEntryExperiencesSkipped(true);
 
-    const actSugg=getActivitySuggestions(occasion,{ageGroups,theme});
-    const topActivities=Object.values(actSugg).flat().sort((a,b)=>b.score-a.score).slice(0,2).map(a=>a.id);
+    const actSugg=Object.values(getActivitySuggestions(occasion,{ageGroups,theme})).flat()
+      .map(a=>({...a,score:applyPlanInsightsBoost('activity',a.id,a.score)}))
+      .sort((a,b)=>b.score-a.score);
+    const topActivities=actSugg.slice(0,2).map(a=>a.id);
     if(topActivities.length) setSelectedActivities(topActivities);
 
-    const curatedGifts=sortedGifts.filter(g=>g.score>=4);
-    const topGifts=(curatedGifts.length?curatedGifts:sortedGifts).slice(0,2).map(g=>g.name);
+    const boostedGifts=sortedGifts
+      .map(g=>({...g,score:applyPlanInsightsBoost('gift',g.name,g.score)}))
+      .sort((a,b)=>b.score-a.score);
+    const curatedGifts=boostedGifts.filter(g=>g.score>=4);
+    const topGifts=(curatedGifts.length?curatedGifts:boostedGifts).slice(0,2).map(g=>g.name);
     const topGiftQuantities=topGifts.reduce((o,n)=>({...o,[n]:1}),{});
     if(topGifts.length){
       setGifts(topGifts);
       setGiftQuantities(topGiftQuantities);
     }
+
+    // Log this run for "Get My Full Plan Ready"'s own tracking loop (separate from
+    // the vendor-category recommender) — vendor/package picks deliberately excluded,
+    // this tracks the actual plan content (activities/entry experience/gifts) the
+    // feature is meant to improve. Fired from ensureEventPlanCreated's onCreated so
+    // the session is linked to a real planId even on this run's very first save,
+    // instead of racing the async POST /event-plans above.
+    quickPlanSnapshotRef.current={activities:topActivities,entryExperiences:entryList,gifts:topGifts};
+    const picks=[
+      ...topActivities.map(name=>({pickType:'activity',name,score:actSugg.find(a=>a.id===name)?.score||0})),
+      ...entryList.map(name=>({pickType:'entryExperience',name,score:entrySugg.find(e=>e.id===name)?.score||0})),
+      ...topGifts.map(name=>({pickType:'gift',name,score:boostedGifts.find(g=>g.name===name)?.score||0})),
+    ];
+    const logQuickPlanSession=(planId)=>{
+      fetch(`${BASE_URL}/quick-plan/session`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({eventPlanId:planId||null,occasion:occasion.name,inputs:{theme:theme?.name||'',budget:Number(budget)||0,guests:Number(guests)||0,ageGroups,venueType},picks}),
+      }).then(r=>r.ok?r.json():null).then(d=>{ if(d?.sessionId) quickPlanSessionIdRef.current=d.sessionId; }).catch(()=>{});
+    };
 
     // Save a real backend EventPlan from these freshly-computed picks — not from
     // `vendors`/`gifts`/etc. component state, which won't reflect the setState calls
@@ -2835,7 +2922,7 @@ export default function OccasionDetail(){
       giftQuantities:topGiftQuantities,
       selectedActivities:topActivities,
       selectedEntryExperiences:entryList,
-    });
+    },logQuickPlanSession);
 
     setQuickPlanBuilding(true);
   };
