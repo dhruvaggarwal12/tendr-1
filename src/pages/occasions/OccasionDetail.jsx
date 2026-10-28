@@ -2189,7 +2189,14 @@ export default function OccasionDetail(){
   const applyPlanInsightsBoost=(pickType,name,score)=>{
     const info=planInsights[`${pickType}::${name}`];
     if(!info) return score;
-    const boost=Math.max(-PLAN_INSIGHT_BOOST_CAP,Math.min(PLAN_INSIGHT_BOOST_CAP,(info.keepRate-0.5)*2*PLAN_INSIGHT_BOOST_CAP));
+    // pickRate — how often real PAID customers across the whole site ended up
+    // with this pick in their final plan for this occasion — is the primary
+    // signal; keepRate — quick-plan's own narrower "did this auto-pick survive
+    // unchanged" — is a smaller secondary nudge on top when both exist.
+    let signal=info.pickRate;
+    if(info.keepRate!=null) signal = signal==null ? info.keepRate : (signal*0.7 + info.keepRate*0.3);
+    if(signal==null) return score;
+    const boost=Math.max(-PLAN_INSIGHT_BOOST_CAP,Math.min(PLAN_INSIGHT_BOOST_CAP,(signal-0.5)*2*PLAN_INSIGHT_BOOST_CAP));
     return score*(1+boost);
   };
   const [gifts,setGifts]=useState([]);
