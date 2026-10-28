@@ -11,13 +11,16 @@ const MAX_IMAGE_BYTES = 10_000_000; // matches the backend's Cloudinary upload l
 
 const TIER_LABEL = { none: "Not started", starter: "Starter", achiever: "Achiever", pro: "Pro", champion: "Champion" };
 const TIER_COLOR = { none: "#9CA3AF", starter: "#C47A2E", achiever: "#0EA5E9", pro: "#7C3AED", champion: "#D4AF37" };
-const LADDER = [100, 200, 300, 400, 500];
-const LADDER_TIER = ["none", "starter", "achiever", "pro", "champion"];
+// Matches the backend's referralReward.js LADDER/TIER_CEILING_INDEX — each rung is a ceiling
+// for that referral ("up to ₹X"), not a guaranteed amount; the actual payout also depends on
+// the referred friend's booking size (see uncappedRewardForBooking on the backend).
+const LADDER = [200, 300, 400, 500, 600, 700, 800, 900, 1000];
+const TIER_CEILING_INDEX = { none: 0, starter: 2, achiever: 4, pro: 6, champion: 8 };
 
-// Horizontal ₹100→₹500 ladder, highlighting which rung the current tier has unlocked.
+// Horizontal ₹200→₹1,000 ladder, highlighting which rung the current tier has unlocked.
 // No score anywhere here — just "which step are you on".
 function BonusLadder({ tier }) {
-  const idx = Math.max(0, LADDER_TIER.indexOf(tier));
+  const idx = TIER_CEILING_INDEX[tier] ?? 0;
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
       {LADDER.map((amt, i) => (
@@ -304,7 +307,7 @@ export default function EventChallenge() {
           </div>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 100, background: `${TIER_COLOR[tier]}18`, border: `1.5px solid ${TIER_COLOR[tier]}55`, marginBottom: 20 }}>
             <span style={{ fontSize: 14, fontWeight: 800, color: TIER_COLOR[tier] }}>
-              {TIER_LABEL[tier]} · ₹{r?.currentBonus ?? LADDER[0]} per referral
+              {TIER_LABEL[tier]} · up to ₹{r?.currentBonus ?? LADDER[0]} per referral
             </span>
           </div>
 
@@ -322,7 +325,7 @@ export default function EventChallenge() {
               {r.suggestions.map(s => (
                 <div key={s.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", borderRadius: 12, background: "#fff", border: "1px solid rgba(196,122,46,0.15)", marginBottom: 8 }}>
                   <span style={{ fontSize: 13, color: INK, fontWeight: 600 }}>{s.label}</span>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: GOLD, flexShrink: 0, marginLeft: 10 }}>→ ₹{s.unlocksAmount}</span>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: GOLD, flexShrink: 0, marginLeft: 10 }}>→ Up to ₹{s.unlocksAmount}</span>
                 </div>
               ))}
               {r.suggestions.some(s => s.key !== "referral") && (
@@ -333,7 +336,7 @@ export default function EventChallenge() {
             </div>
           ) : (
             <div style={{ fontSize: 13, color: "#15803d", marginBottom: 24, fontWeight: 700 }}>
-              You've unlocked the maximum — ₹{LADDER[LADDER.length - 1]} per successful referral. 🎉
+              You've unlocked the maximum — up to ₹{LADDER[LADDER.length - 1]} per successful referral. 🎉
             </div>
           )}
 

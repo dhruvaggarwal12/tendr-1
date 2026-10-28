@@ -1019,8 +1019,8 @@ export default function CustomerDashboard() {
                     <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: 0, lineHeight: 1.5 }}>
                       Friends get {DISCOUNT_PERCENT}% off with your code.{" "}
                       {referralWallet?.balance > 0 ? <>You've earned <strong style={{ color: "#CCAB4A" }}>₹{referralWallet.balance.toLocaleString("en-IN")}</strong> so far. </> : null}
-                      Your next successful referral this month earns{" "}
-                      <strong style={{ color: "#CCAB4A" }}>₹{referralWallet?.nextReferralReward ?? 100}</strong> — resets each new month.
+                      Your next successful referral this month earns up to{" "}
+                      <strong style={{ color: "#CCAB4A" }}>₹{referralWallet?.nextReferralReward ?? 200}</strong>, depending on your friend's booking amount — resets each new month.
                     </p>
                   </div>
                 </div>
@@ -1156,7 +1156,7 @@ export default function CustomerDashboard() {
                     Your tier: <strong style={{ color: GOLD, textTransform: "capitalize", fontWeight: 800 }}>{referralWallet?.tier || "none"}</strong>
                   </span>
                   <span style={{ width: 3, height: 3, borderRadius: "50%", background: MUTED, flexShrink: 0 }} />
-                  <span style={{ fontSize: 11.5, color: MUTED }}>₹{referralWallet?.progress?.currentBonus ?? 100} per referral</span>
+                  <span style={{ fontSize: 11.5, color: MUTED }}>up to ₹{referralWallet?.progress?.currentBonus ?? 200} per referral</span>
                 </div>
 
                 {/* Primary CTA */}
