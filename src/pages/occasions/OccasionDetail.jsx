@@ -2189,11 +2189,14 @@ export default function OccasionDetail(){
   const applyPlanInsightsBoost=(pickType,name,score)=>{
     const info=planInsights[`${pickType}::${name}`];
     if(!info) return score;
-    // pickRate — how often real PAID customers across the whole site ended up
-    // with this pick in their final plan for this occasion — is the primary
-    // signal; keepRate — quick-plan's own narrower "did this auto-pick survive
-    // unchanged" — is a smaller secondary nudge on top when both exist.
-    let signal=info.pickRate;
+    // conversionRate — of everyone (paid or abandoned) who ended up with this
+    // pick, what share actually paid — is the primary signal now: it's the one
+    // that actually learns from people who started planning and never booked,
+    // not just from who finished. pickRate (popularity among paid plans alone)
+    // steps in when there isn't enough combined sample for that yet; keepRate
+    // (quick-plan's own narrower "did this auto-pick survive unchanged") is
+    // always just a smaller nudge on top.
+    let signal = info.conversionRate!=null ? info.conversionRate : info.pickRate;
     if(info.keepRate!=null) signal = signal==null ? info.keepRate : (signal*0.7 + info.keepRate*0.3);
     if(signal==null) return score;
     const boost=Math.max(-PLAN_INSIGHT_BOOST_CAP,Math.min(PLAN_INSIGHT_BOOST_CAP,(signal-0.5)*2*PLAN_INSIGHT_BOOST_CAP));
