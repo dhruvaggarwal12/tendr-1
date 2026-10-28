@@ -1969,6 +1969,17 @@ const EventPlanning = () => {
                           <h3 style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>{vendor.title}</h3>
                         </div>
                         <p style={{ fontSize: 12, color: "#7A5535", fontWeight: 400, margin: "0 0 6px", lineHeight: 1.45 }}>{vendor.description}</p>
+                        {isRecommended && aiRecs?.vendorMatches?.[vendor.id]?.length > 0 && (
+                          <div style={{ fontSize: 11, color: "#C47A2E", fontWeight: 600, marginBottom: 6, lineHeight: 1.4 }}>
+                            e.g. {aiRecs.vendorMatches[vendor.id][0].name}
+                            {aiRecs.vendorMatches[vendor.id][0].price > 0 ? ` — ₹${aiRecs.vendorMatches[vendor.id][0].price.toLocaleString("en-IN")}` : ""}
+                          </div>
+                        )}
+                        {isRecommended && !aiRecs?.vendorMatches?.[vendor.id]?.length && aiRecs?.categoryPricing?.[vendor.id]?.headline && (
+                          <div style={{ fontSize: 11, color: "#C47A2E", fontWeight: 600, marginBottom: 6 }}>
+                            Typically ₹{aiRecs.categoryPricing[vendor.id].headline.min.toLocaleString("en-IN")}–₹{aiRecs.categoryPricing[vendor.id].headline.max.toLocaleString("en-IN")}
+                          </div>
+                        )}
                         {isYouDoIt && (
                           <span style={{ display: "inline-block", fontSize: 11.5, fontWeight: 600, color: count !== undefined && count > 0 ? "#16a34a" : "#C47A2E", background: count !== undefined && count > 0 ? "rgba(22,163,74,0.08)" : "rgba(196,122,46,0.1)", padding: "3px 9px", borderRadius: 100, animation: (count === undefined && formData.date) ? "tendr-pulse 1.2s ease-in-out infinite" : "none" }}>
                             {count !== undefined && count > 0

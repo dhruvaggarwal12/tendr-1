@@ -2358,6 +2358,7 @@ const [tab, setTab] = useState('home');
   const [insightsLoaded, setInsightsLoaded] = useState(false);
   const [profileViews, setProfileViews] = useState(null);
   const [pricingInsights, setPricingInsights] = useState(null);
+  const [responseTime, setResponseTime] = useState(null);
   const [quickPriceInput, setQuickPriceInput] = useState('');
   const [savingQuickPrice, setSavingQuickPrice] = useState(false);
   const loadPricingInsights = () => {
@@ -2471,6 +2472,10 @@ const [tab, setTab] = useState('home');
       .then(d => { if (d) setProfileViews(d.views ?? d.profileViews ?? null); })
       .catch(() => {});
     loadPricingInsights();
+    fetch(`${BASE}/vendors/me/response-time`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setResponseTime(d); })
+      .catch(() => {});
   }, [tab, vendorId, insightsLoaded]); // eslint-disable-line
 
   // Load Tendr bookings
@@ -5761,6 +5766,29 @@ const [tab, setTab] = useState('home');
             const maxRev = Math.max(...months6.map(m=>m.rev), 1);
             const maxCnt = Math.max(...months6.map(m=>m.count), 1);
 
+            // Rule-based weekly tips — plain thresholds on numbers already computed above
+            // (or fetched into pricingInsights/responseTime), not an AI call. Cheap and
+            // deterministic beats a nicer-sounding tip that might be wrong; AI phrasing
+            // can be layered on top of these later once the underlying numbers are trusted.
+            const tips = [];
+            if (responseTime?.available && responseTime.platformAvgResponseMinutes != null) {
+              const mine = responseTime.avgResponseMinutes, plat = responseTime.platformAvgResponseMinutes;
+              const fmt = (m) => m < 60 ? `${m}m` : `${(m/60).toFixed(1)}h`;
+              if (mine > plat * 1.3) tips.push({ icon:'⏱️', tone:'warn', text:`Your response time (${fmt(mine)}) is slower than the platform average (${fmt(plat)}) — faster replies correlate with more bookings.` });
+              else if (mine < plat * 0.7) tips.push({ icon:'⚡', tone:'good', text:`You respond faster than most vendors (${fmt(mine)} vs ${fmt(plat)} average) — keep it up.` });
+            }
+            if (totalGigs >= 5 && convRate < 30) tips.push({ icon:'📉', tone:'warn', text:`Your conversion rate (${convRate}%) is on the lower side — review your pricing, response time, or portfolio.` });
+            if (totalRevenue - totalCollected > 0 && collectionRate < 50) tips.push({ icon:'💸', tone:'warn', text:`₹${(totalRevenue-totalCollected).toLocaleString('en-IN')} is still outstanding from past gigs — worth following up on pending payments.` });
+            if (pricingInsights?.available && pricingInsights.yourPercentile != null) {
+              if (pricingInsights.yourPercentile < 20) tips.push({ icon:'🔻', tone:'warn', text:`Your price is in the bottom 20% for your category — you may be underpricing compared to the market.` });
+              else if (pricingInsights.yourPercentile > 80) tips.push({ icon:'🔺', tone:'info', text:`Your price is in the top 20% for your category — make sure your portfolio and reviews back up the premium.` });
+            }
+            if (topTypes.length && totalGigs >= 5) {
+              const [topType, topCount] = topTypes[0];
+              const share = Math.round((topCount/totalGigs)*100);
+              if (share >= 60) tips.push({ icon:'🎯', tone:'info', text:`${share}% of your business is ${topType} events — consider either doubling down on that niche or diversifying.` });
+            }
+
             const statCard = (label, value, sub, color='#C47A2E') => (
               <div style={{ background:'#fff', borderRadius:16, padding:'16px 18px', border:'1px solid rgba(196,122,46,0.12)', flex:1, minWidth:0 }}>
                 <div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:4 }}>{label}</div>
@@ -5772,6 +5800,22 @@ const [tab, setTab] = useState('home');
             return (
               <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
                 <div style={{ fontSize:15, fontWeight:800, color:ink }}>Business Insights</div>
+
+                {/* This week's tips — rule-based, from the numbers already on this page */}
+                {tips.length > 0 && (
+                  <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                    {tips.map((t, i) => (
+                      <div key={i} style={{
+                        display:'flex', alignItems:'flex-start', gap:10, padding:'12px 14px', borderRadius:14,
+                        background: t.tone==='warn' ? 'rgba(220,38,38,0.06)' : t.tone==='good' ? 'rgba(22,163,74,0.06)' : 'rgba(196,122,46,0.06)',
+                        border: `1.5px solid ${t.tone==='warn' ? 'rgba(220,38,38,0.18)' : t.tone==='good' ? 'rgba(22,163,74,0.18)' : 'rgba(196,122,46,0.18)'}`,
+                      }}>
+                        <span style={{ fontSize:16, flexShrink:0 }}>{t.icon}</span>
+                        <span style={{ fontSize:12.5, color:ink, lineHeight:1.5, fontWeight:600 }}>{t.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* KPI tiles */}
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
@@ -5844,6 +5888,26 @@ const [tab, setTab] = useState('home');
                         <div style={{ fontSize:11, color:'#9B7450', marginTop:3 }}>avg ₹{pricingInsights.actual.avg.toLocaleString('en-IN')} · {pricingInsights.actual.count} closed deals (Tendr + outside)</div>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* Response time — how fast leads get answered, vs the platform average */}
+                {responseTime?.available && (
+                  <div style={{ background:'#fff', borderRadius:16, padding:'16px 18px', border:'1px solid rgba(196,122,46,0.12)', display:'flex', alignItems:'center', gap:14 }}>
+                    <div style={{ width:44, height:44, borderRadius:13, background:'rgba(196,122,46,0.1)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div>
+                      <div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.1em' }}>Avg Response Time</div>
+                      <div style={{ fontSize:24, fontWeight:800, color:ink, fontVariantNumeric:'tabular-nums' }}>
+                        {responseTime.avgResponseMinutes < 60 ? `${responseTime.avgResponseMinutes}m` : `${(responseTime.avgResponseMinutes/60).toFixed(1)}h`}
+                      </div>
+                      {responseTime.platformAvgResponseMinutes != null && (
+                        <div style={{ fontSize:11, color:'#9B7450', marginTop:2 }}>
+                          platform avg: {responseTime.platformAvgResponseMinutes < 60 ? `${responseTime.platformAvgResponseMinutes}m` : `${(responseTime.platformAvgResponseMinutes/60).toFixed(1)}h`}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 
