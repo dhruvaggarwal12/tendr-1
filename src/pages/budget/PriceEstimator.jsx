@@ -20,6 +20,7 @@ import {
   formatINR,
   fetchPriceBenchmark,
   blendWithBenchmark,
+  fetchCategoryPricing,
 } from "../../utils/priceEstimator";
 
 // Screenshots the given DOM node and saves it as a PDF — same technique already
@@ -99,6 +100,7 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
   const [decorAnalyserOpen, setDecorAnalyserOpen] = useState(false);
   const [venueAnalysis, setVenueAnalysis] = useState(null);
   const [priceBenchmark, setPriceBenchmark] = useState(null); // real avg price customers paid, once loaded
+  const [categoryPricing, setCategoryPricing] = useState({}); // simpleKey -> real category pricing, once loaded
   const didMountRef = useRef(false);
   const planRef = useRef(null);
 
@@ -244,6 +246,17 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
     fetchPriceBenchmark(occasion, city).then((data) => { if (!cancelled) setPriceBenchmark(data); });
     return () => { cancelled = true; };
   }, [isFinal, occasion, city]);
+
+  // Real listed + actually-paid prices per selected category (decor, catering, photo,
+  // dj, cake, gifting) — same supplementary-only treatment as priceBenchmark above,
+  // shown under each itemised row rather than altering it.
+  useEffect(() => {
+    if (!isFinal || !chosenCategories.length) { setCategoryPricing({}); return; }
+    let cancelled = false;
+    Promise.all(chosenCategories.map((key) => fetchCategoryPricing(key, city).then((data) => [key, data])))
+      .then((pairs) => { if (!cancelled) setCategoryPricing(Object.fromEntries(pairs.filter(([, d]) => d))); });
+    return () => { cancelled = true; };
+  }, [isFinal, chosenCategories, city]);
 
   const stepLabel = isFinal ? "Your estimate" :
     step === 0 ? "Your event" : step === 1 ? "Venue" : step === 2 ? "What you need" : currentCategoryDef?.label;
@@ -431,15 +444,26 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
             {priced.rows.length > 0 && (
               <StepCard title="Itemised breakdown">
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {priced.rows.map((r) => (
-                    <div key={r.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
-                      <div>
-                        <div style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E" }}>{r.label}</div>
-                        <div style={{ fontSize: 11.5, color: "#8a6a4a", marginTop: 1 }}>{r.sub}</div>
+                  {priced.rows.map((r) => {
+                    const simpleKey = r.key.split("::")[0];
+                    const real = categoryPricing[simpleKey];
+                    return (
+                      <div key={r.key} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+                          <div>
+                            <div style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E" }}>{r.label}</div>
+                            <div style={{ fontSize: 11.5, color: "#8a6a4a", marginTop: 1 }}>{r.sub}</div>
+                          </div>
+                          <span style={{ color: GOLD, fontWeight: 700, fontSize: 13.5, whiteSpace: "nowrap" }}>{formatINR(r.min)}–{formatINR(r.max)}</span>
+                        </div>
+                        {real && (
+                          <div style={{ fontSize: 11, color: "#15803d", fontWeight: 600 }}>
+                            Real vendor pricing: {formatINR(real.headline.min)}–{formatINR(real.headline.max)} ({real.headline.count} {real.actual ? "closed deals" : "vendors"})
+                          </div>
+                        )}
                       </div>
-                      <span style={{ color: GOLD, fontWeight: 700, fontSize: 13.5, whiteSpace: "nowrap" }}>{formatINR(r.min)}–{formatINR(r.max)}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </StepCard>
             )}

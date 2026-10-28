@@ -2357,6 +2357,32 @@ const [tab, setTab] = useState('home');
   // Insights tab
   const [insightsLoaded, setInsightsLoaded] = useState(false);
   const [profileViews, setProfileViews] = useState(null);
+  const [pricingInsights, setPricingInsights] = useState(null);
+  const [quickPriceInput, setQuickPriceInput] = useState('');
+  const [savingQuickPrice, setSavingQuickPrice] = useState(false);
+  const loadPricingInsights = () => {
+    fetch(`${BASE}/vendors/me/pricing-insights`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setPricingInsights(d); })
+      .catch(() => {});
+  };
+  // Lets a vendor contribute their starting price straight from this card — saved as a
+  // package via the existing /vendors/me/packages endpoint, which both feeds this same
+  // Market Pricing insight for everyone and shows on their public profile.
+  const saveQuickPrice = () => {
+    const price = Number(quickPriceInput);
+    if (!price || price <= 0) return;
+    setSavingQuickPrice(true);
+    fetch(`${BASE}/vendors/me/packages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify({ name: 'Starting Price', price, unit: 'per event' }),
+    })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(() => { setQuickPriceInput(''); loadPricingInsights(); })
+      .catch(() => {})
+      .finally(() => setSavingQuickPrice(false));
+  };
 
   // Portfolio photos for gig-profile media gallery
   const [portfolioPhotos, setPortfolioPhotos] = useState([]);
@@ -2444,6 +2470,7 @@ const [tab, setTab] = useState('home');
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d) setProfileViews(d.views ?? d.profileViews ?? null); })
       .catch(() => {});
+    loadPricingInsights();
   }, [tab, vendorId, insightsLoaded]); // eslint-disable-line
 
   // Load Tendr bookings
@@ -5764,6 +5791,59 @@ const [tab, setTab] = useState('home');
                       <div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.1em' }}>Profile Views (30 days)</div>
                       <div style={{ fontSize:24, fontWeight:800, color:ink, fontVariantNumeric:'tabular-nums' }}>{profileViews.toLocaleString('en-IN')}</div>
                     </div>
+                  </div>
+                )}
+
+                {/* Market pricing — how your price compares to real listed + actually-paid
+                    prices for your category, pooled across every vendor (see
+                    services/pricingIntelligence.js on the backend). Gets more accurate as
+                    more vendors list pricing and more orders get logged, by anyone. */}
+                {pricingInsights && !pricingInsights.available && !pricingInsights.hasOwnPricing && (
+                  <div style={{ background:'rgba(196,122,46,0.06)', borderRadius:18, padding:'18px 20px', border:'1.5px dashed rgba(196,122,46,0.3)' }}>
+                    <div style={{ fontSize:14, fontWeight:800, color:ink, marginBottom:6 }}>💰 Add your pricing</div>
+                    <div style={{ fontSize:12.5, color:'#9B7450', marginBottom:12, lineHeight:1.5 }}>Tell us what you typically charge to see how it compares to the market — and help other vendors see real numbers too. This also shows as a package on your public profile.</div>
+                    <div style={{ display:'flex', gap:8 }}>
+                      <input type="number" min="0" value={quickPriceInput} onChange={e => setQuickPriceInput(e.target.value)}
+                        placeholder="e.g. 25000" style={{ flex:1, padding:'9px 12px', borderRadius:10, border:'1.5px solid rgba(196,122,46,0.25)', fontFamily:font, fontSize:13, color:ink, outline:'none' }} />
+                      <button onClick={saveQuickPrice} disabled={savingQuickPrice || !quickPriceInput} style={{ padding:'9px 16px', borderRadius:10, border:'none', background:gold, color:'#fff', fontFamily:font, fontWeight:700, fontSize:12.5, cursor: savingQuickPrice || !quickPriceInput ? 'default' : 'pointer', opacity: savingQuickPrice || !quickPriceInput ? 0.6 : 1, whiteSpace:'nowrap' }}>
+                        {savingQuickPrice ? 'Saving…' : 'Save'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {pricingInsights?.available && (
+                  <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.12)' }}>
+                    <div style={{ fontSize:14, fontWeight:800, color:ink, marginBottom:4 }}>Market Pricing</div>
+                    <div style={{ fontSize:11, color:'#9B7450', marginBottom:14 }}>
+                      {pricingInsights.scope === 'city' ? 'Your city' : 'All cities'} · {(pricingInsights.listed?.count||0) + (pricingInsights.actual?.count||0)} data points
+                    </div>
+                    <div style={{ display:'grid', gridTemplateColumns: pricingInsights.hasOwnPricing ? '1fr 1fr' : '1fr', gap:10, marginBottom: pricingInsights.actual ? 14 : 0 }}>
+                      {pricingInsights.hasOwnPricing && (
+                        <div>
+                          <div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>Your price</div>
+                          <div style={{ fontSize:20, fontWeight:800, color:ink, fontVariantNumeric:'tabular-nums' }}>₹{pricingInsights.yourPrice.toLocaleString('en-IN')}</div>
+                          {pricingInsights.yourPercentile != null && (
+                            <div style={{ fontSize:11, marginTop:3, fontWeight:700, color: pricingInsights.yourPercentile < 33 ? '#DC2626' : pricingInsights.yourPercentile > 66 ? '#16A34A' : gold }}>
+                              {pricingInsights.yourPercentile < 33 ? 'Below market' : pricingInsights.yourPercentile > 66 ? 'Above market' : 'At market'} · {pricingInsights.yourPercentile}th percentile
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {pricingInsights.listed && (
+                        <div>
+                          <div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>Vendors in your category list</div>
+                          <div style={{ fontSize:20, fontWeight:800, color:ink, fontVariantNumeric:'tabular-nums' }}>₹{pricingInsights.listed.min.toLocaleString('en-IN')}–{pricingInsights.listed.max.toLocaleString('en-IN')}</div>
+                          <div style={{ fontSize:11, color:'#9B7450', marginTop:3 }}>avg ₹{pricingInsights.listed.avg.toLocaleString('en-IN')} · {pricingInsights.listed.count} vendors</div>
+                        </div>
+                      )}
+                    </div>
+                    {pricingInsights.actual && (
+                      <div style={{ borderTop:'1px solid rgba(196,122,46,0.1)', paddingTop:12 }}>
+                        <div style={{ fontSize:10, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>What customers actually paid</div>
+                        <div style={{ fontSize:18, fontWeight:800, color:ink, fontVariantNumeric:'tabular-nums' }}>₹{pricingInsights.actual.min.toLocaleString('en-IN')}–₹{pricingInsights.actual.max.toLocaleString('en-IN')}</div>
+                        <div style={{ fontSize:11, color:'#9B7450', marginTop:3 }}>avg ₹{pricingInsights.actual.avg.toLocaleString('en-IN')} · {pricingInsights.actual.count} closed deals (Tendr + outside)</div>
+                      </div>
+                    )}
                   </div>
                 )}
 

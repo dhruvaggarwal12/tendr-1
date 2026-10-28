@@ -128,6 +128,44 @@ export function mapServiceTypeToSimpleCategory(serviceType) {
   return SERVICE_TYPE_TO_SIMPLE_KEY[serviceType] || null;
 }
 
+// Simple-category -> vendor serviceType, the other direction of the map above,
+// extended with the two categories that have a direct vendor category but no
+// line-item overlap with SERVICE_TYPE_TO_SIMPLE_KEY's booking-flow use case.
+// "activities" has no single matching vendor serviceType (it's the Fun
+// Activities product catalog, not a vendor category), so it's left out —
+// callers get `null` and skip the real-pricing lookup for it.
+const SIMPLE_KEY_TO_SERVICE_TYPE = {
+  catering: "Caterer",
+  decor: "Decorator",
+  photo: "Photographer",
+  dj: "DJ",
+  cake: "Cake",
+  gifting: "GiftHamper",
+};
+export function mapSimpleCategoryToServiceType(simpleKey) {
+  return SIMPLE_KEY_TO_SERVICE_TYPE[simpleKey] || null;
+}
+
+// Real listed + actually-paid prices for one vendor category — the same live
+// data pool the vendor dashboard's "Market Pricing" insight reads from (see
+// the backend's services/pricingIntelligence.js). Shown next to the static
+// catalog estimate for that category, never used to rewrite it. Resolves to
+// null when there isn't a matching vendor category or enough real data yet.
+export async function fetchCategoryPricing(simpleKey, city) {
+  const serviceType = mapSimpleCategoryToServiceType(simpleKey);
+  if (!serviceType) return null;
+  try {
+    const params = new URLSearchParams({ serviceType });
+    if (city) params.set("city", city);
+    const res = await fetch(`${BASE_URL}/event-plans/category-pricing?${params.toString()}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.available ? data : null;
+  } catch {
+    return null;
+  }
+}
+
 export const GUEST_BUCKETS = [
   { key: "10-20",   label: "10–20 guests",   guests: 15 },
   { key: "21-50",   label: "21–50 guests",   guests: 35 },
