@@ -6,9 +6,19 @@ const load = () => {
 };
 const save = (items) => localStorage.setItem('gh_cart', JSON.stringify(items));
 
+// Inspiration-photo shortlist (sample gallery photos shortlisted for "Talk to Team") —
+// kept separate from `items` above (real purchasable products with price/qty) since a
+// shortlisted photo has neither. Persisted the same way so it survives page navigation
+// instead of living in page-local useState, and surfaces in the shared shortlist icon.
+const loadPhotos = () => {
+  try { return JSON.parse(localStorage.getItem('gh_photo_shortlist') || '[]'); }
+  catch { return []; }
+};
+const savePhotos = (photos) => localStorage.setItem('gh_photo_shortlist', JSON.stringify(photos));
+
 const giftHamperCartSlice = createSlice({
   name: 'giftHamperCart',
-  initialState: { items: load(), confirmed: false, deliveryForm: null },
+  initialState: { items: load(), confirmed: false, deliveryForm: null, photos: loadPhotos() },
   reducers: {
     addToCart(state, action) {
       const { product, quantity } = action.payload;
@@ -58,13 +68,30 @@ const giftHamperCartSlice = createSlice({
       state.deliveryForm = action.payload;
       state.confirmed = true;
     },
+    addPhoto(state, action) {
+      const photo = action.payload;
+      if (!state.photos.some(p => p._id === photo._id)) {
+        state.photos.push(photo);
+        savePhotos(state.photos);
+      }
+    },
+    removePhoto(state, action) {
+      state.photos = state.photos.filter(p => p._id !== action.payload);
+      savePhotos(state.photos);
+    },
+    clearPhotos(state) {
+      state.photos = [];
+      savePhotos([]);
+    },
   },
 });
 
-export const { addToCart, removeFromCart, updateQuantity, clearCart, setGhConfirmed, setGhDelivery } = giftHamperCartSlice.actions;
+export const { addToCart, removeFromCart, updateQuantity, clearCart, setGhConfirmed, setGhDelivery, addPhoto, removePhoto, clearPhotos } = giftHamperCartSlice.actions;
 export const selectCartItems      = s => s.giftHamperCart.items;
 export const selectCartTotal      = s => s.giftHamperCart.items.reduce((sum, i) => sum + i.subtotal, 0);
 export const selectCartCount      = s => s.giftHamperCart.items.reduce((sum, i) => sum + i.quantity, 0);
 export const selectGhConfirmed    = s => s.giftHamperCart.confirmed;
 export const selectGhDeliveryForm = s => s.giftHamperCart.deliveryForm;
+export const selectGhPhotoItems   = s => s.giftHamperCart.photos;
+export const selectGhPhotoCount   = s => s.giftHamperCart.photos.length;
 export default giftHamperCartSlice.reducer;

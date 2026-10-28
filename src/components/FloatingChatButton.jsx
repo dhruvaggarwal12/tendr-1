@@ -13,7 +13,7 @@ import { useChatOverlay } from "../context/ChatContext";
 import { useStationeryCart } from "../context/StationeryCartContext";
 import { loadPlan } from "./PlanSummaryModal";
 import GlobalStationeryCartDrawer from "./GlobalStationeryCartDrawer";
-import { selectCartCount as selectGhCartCount, selectCartItems as selectGhCartItems, selectGhConfirmed, setGhConfirmed, clearCart as clearGhCart, selectGhDeliveryForm } from "../redux/giftHamperCartSlice";
+import { selectCartCount as selectGhCartCount, selectCartItems as selectGhCartItems, selectGhConfirmed, setGhConfirmed, clearCart as clearGhCart, selectGhDeliveryForm, selectGhPhotoCount } from "../redux/giftHamperCartSlice";
 import { selectStConfirmed, selectStForm, selectStCartSnapshot, selectStCustomizations, clearStBooking } from "../redux/stationeryBookingSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -35,6 +35,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const activeServiceType    = useSelector((s) => s.listingFilters.serviceType);
   const funCartCount         = useSelector(selectFunCartCount);
   const ghCartCount          = useSelector(selectGhCartCount);
+  const ghPhotoCount         = useSelector(selectGhPhotoCount);
   const ghCartItems          = useSelector(selectGhCartItems);
   const ghDeliveryForm       = useSelector(selectGhDeliveryForm);
   const funConfirmed         = useSelector(selectFunConfirmed);
@@ -77,9 +78,10 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const [rejectedQv, setRejectedQv] = useState(null); // vendor for quick-view side panel
   const [savedVendors, setSavedVendors] = useState(() => getSavedVendors());
   const [newlyAdded, setNewlyAdded] = useState(null); // 'compare' | 'fun' | 'st' — drives fly-in animation
-  const prevCompareLen = useRef(compareSelected.length);
-  const prevFunCount   = useRef(funCartCount);
-  const prevStCount    = useRef(stCartCount);
+  const prevCompareLen  = useRef(compareSelected.length);
+  const prevFunCount    = useRef(funCartCount);
+  const prevStCount     = useRef(stCartCount);
+  const prevGhPhotoCount = useRef(ghPhotoCount);
   // Persist seen conversation IDs so badge stays gone after viewing
   const [seenIds, setSeenIds] = useState(() => {
     try { return new Set(JSON.parse(localStorage.getItem("chatBadgeSeenIds") || "[]")); }
@@ -261,6 +263,17 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
       return () => clearTimeout(t);
     }
   }, [stCartCount]);
+
+  useEffect(() => {
+    const prev = prevGhPhotoCount.current;
+    prevGhPhotoCount.current = ghPhotoCount;
+    if (prev === 0 && ghPhotoCount > 0) {
+      setLauncherOpen(true);
+      setNewlyAdded('gh');
+      const t = setTimeout(() => setNewlyAdded(null), 600);
+      return () => clearTimeout(t);
+    }
+  }, [ghPhotoCount]);
 
   if (new URLSearchParams(search).get("standalone") === "1") return null;
   if (hideOnRoutes.some((r) => path === r || path.startsWith(r + "/"))) return null;
@@ -868,14 +881,14 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
               {/* Fun Activities + Gift Hampers + Stationery — unified into one shortlist icon
                   (was 3 separate pop-out buttons here); opens the shared review page at
                   /my-extras instead of 3 different per-category drawers. */}
-              {((funCartCount > 0 && !funConfirmed) || (ghCartCount > 0 && !ghConfirmed) || (stCartCount > 0 && !stConfirmed)) && (
-                <div className={(newlyAdded === 'fun' || newlyAdded === 'st') ? 'lstack-new-item' : ''} style={{ position: "relative" }}>
+              {((funCartCount > 0 && !funConfirmed) || (ghCartCount > 0 && !ghConfirmed) || (stCartCount > 0 && !stConfirmed) || ghPhotoCount > 0) && (
+                <div className={(newlyAdded === 'fun' || newlyAdded === 'st' || newlyAdded === 'gh') ? 'lstack-new-item' : ''} style={{ position: "relative" }}>
                   <button className="lstack-btn" onClick={() => { setLauncherOpen(false); router.navigate('/my-extras'); }}
                     title="Fun Activities · Gift Hampers · Stationery"
                     style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#0C2A3A,#164E63)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#7DD3FC", boxShadow: "0 4px 14px rgba(12,42,58,0.45)", flexShrink: 0 }}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7DD3FC" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                     <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#0EA5E9", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>
-                      {(funConfirmed?0:funCartCount) + (ghConfirmed?0:ghCartCount) + (stConfirmed?0:stCartCount)}
+                      {(funConfirmed?0:funCartCount) + (ghConfirmed?0:ghCartCount) + (stConfirmed?0:stCartCount) + ghPhotoCount}
                     </span>
                   </button>
                 </div>
@@ -887,10 +900,10 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
 
       {/* ── Launcher FAB — saved/compare/cart cluster, shown on both mobile and desktop ── */}
       {(() => {
-        const hasCartItems = (funCartCount > 0 && !funConfirmed) || (ghCartCount > 0 && !ghConfirmed) || (stCartCount > 0 && !stConfirmed);
+        const hasCartItems = (funCartCount > 0 && !funConfirmed) || (ghCartCount > 0 && !ghConfirmed) || (stCartCount > 0 && !stConfirmed) || ghPhotoCount > 0;
         const hasOtherItems = savedVendors.length > 0 || compareSelected.length > 0;
         if (!hasCartItems && !hasOtherItems) return null;
-        const count = [savedVendors.length > 0, compareSelected.length > 0, funCartCount > 0 && !funConfirmed, ghCartCount > 0 && !ghConfirmed, stCartCount > 0 && !stConfirmed].filter(Boolean).length;
+        const count = [savedVendors.length > 0, compareSelected.length > 0, funCartCount > 0 && !funConfirmed, ghCartCount > 0 && !ghConfirmed, stCartCount > 0 && !stConfirmed, ghPhotoCount > 0].filter(Boolean).length;
         const hasSaved = savedVendors.length > 0;
         const hasCompare = compareSelected.length > 0;
         const handleLauncherClick = () => {

@@ -8,7 +8,7 @@ import Footer from "../../components/Footer";
 import { useChatOverlay } from "../../context/ChatContext";
 import GiftQuiz from "../../components/GiftQuiz";
 import AuthModal from "../../components/AuthModal";
-import { addToCart as addToGhCart, removeFromCart as removeFromGhCart, clearCart as clearGhCart, updateQuantity as updateGhQuantity, selectCartItems as selectGhCartItems } from "../../redux/giftHamperCartSlice";
+import { addToCart as addToGhCart, removeFromCart as removeFromGhCart, clearCart as clearGhCart, updateQuantity as updateGhQuantity, selectCartItems as selectGhCartItems, addPhoto as addGhPhoto, removePhoto as removeGhPhoto, selectGhPhotoItems } from "../../redux/giftHamperCartSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -73,7 +73,10 @@ const GiftHampersCakes = () => {
   }, [token]);
   const [previewIdx, setPreviewIdx] = useState(null);
   const [downloading, setDownloading] = useState(false);
-  const [selectedPhotos, setSelectedPhotos] = useState([]);
+  // Persisted via Redux + localStorage (giftHamperCartSlice) instead of page-local
+  // useState — so the shortlist survives navigating to another page and surfaces in
+  // the shared shortlist icon, same as Fun Activities/Wedding Stationery.
+  const selectedPhotos = useSelector(selectGhPhotoItems);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [occasionFilter, setOccasionFilter] = useState([]);
   const [showEventTypeFilter, setShowEventTypeFilter] = useState(false);
@@ -189,14 +192,15 @@ const GiftHampersCakes = () => {
   };
 
   const toggleSelect = (sample) => {
-    setSelectedPhotos(prev =>
-      prev.some(p => p._id === sample._id)
-        ? prev.filter(p => p._id !== sample._id)
-        : [...prev, sample]
-    );
+    if (selectedPhotos.some(p => p._id === sample._id)) dispatch(removeGhPhoto(sample._id));
+    else dispatch(addGhPhoto(sample));
   };
 
   const goToChat = async () => {
+    // Shortlisted photos now go through the shared shortlist review flow (/my-extras)
+    // instead of sending straight to chat — this is where delivery/contact info gets
+    // collected before anything is actually sent.
+    if (selectedPhotos.length > 0) { navigate("/my-extras"); return; }
     const photos = selectedPhotos.map(({ url, name, priceRange, vendorName }) => ({ url, name, priceRange, vendorName }));
     const msg = photos.length > 0
       ? `Hi! I'm interested in ordering a gift hamper from Tendr. I've shortlisted ${photos.length === 1 ? "this option" : "these options"}:\n\n${photos.map((p, i) => `${i + 1}. ${p.name || "Gift Hamper"}${p.priceRange ? ` (${p.priceRange})` : ""}`).join("\n")}\n\nCan you help me with customisation, availability and delivery across Delhi NCR?`
@@ -540,7 +544,7 @@ const GiftHampersCakes = () => {
       )}
 
       {/* ── GALLERY ── */}
-      <section id="gh-grid" style={{ background:"#FAF7F2", padding:"clamp(48px,6vw,80px) clamp(20px,5vw,56px)", paddingBottom: selectedPhotos.length > 0 ? "clamp(140px,18vw,160px)" : undefined, transition:"padding-bottom 0.3s" }}>
+      <section id="gh-grid" style={{ background:"#FAF7F2", padding:"clamp(48px,6vw,80px) clamp(20px,5vw,56px)" }}>
         <div style={{ maxWidth:1160, margin:"0 auto" }}>
           {/* Header: left text + right category scroll */}
           <div style={{ display:"flex", gap:"clamp(24px,4vw,56px)", alignItems:"flex-start", marginBottom:36, flexWrap:"wrap" }}>
@@ -728,30 +732,6 @@ const GiftHampersCakes = () => {
           >Browse Gallery</button>
         </div>
       </section>
-
-      {/* ── Floating Island (Dynamic Action — ln-dev7 pattern) ── */}
-      {selectedPhotos.length > 0 && (
-        <div
-          className="gh-island"
-          style={{ position: "fixed", bottom: "calc(28px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", zIndex: 1000, minWidth: 320, maxWidth: "calc(100vw - 32px)", background: "linear-gradient(135deg,rgba(28,10,4,0.96),rgba(44,26,14,0.94))", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(196,122,46,0.22)", borderRadius: 100, padding: "10px 10px 10px 20px", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(196,122,46,0.08), inset 0 1px 0 rgba(255,248,236,0.06)", animation: "ghIslandIn 0.32s cubic-bezier(0.34,1.56,0.64,1) forwards" }}
-        >
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#FFF8EC", fontFamily: font, whiteSpace: "nowrap" }}>
-              {selectedPhotos.length} photo{selectedPhotos.length > 1 ? "s" : ""} selected
-            </div>
-            <button onClick={() => setSelectedPhotos([])} style={{ background: "none", border: "none", color: "rgba(255,248,236,0.4)", fontSize: 11, cursor: "pointer", fontFamily: font, padding: 0, marginTop: 1, letterSpacing: "0.02em" }}>
-              Clear
-            </button>
-          </div>
-          <button
-            onClick={goToChat}
-            style={{ display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, padding: "11px 18px", borderRadius: 100, border: "none", cursor: "pointer", fontFamily: font, boxShadow: "0 4px 18px rgba(196,122,46,0.48)", whiteSpace: "nowrap", flexShrink: 0, letterSpacing: "0.02em" }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            Talk to Team
-          </button>
-        </div>
-      )}
 
       {/* ── Lightbox ── */}
       {preview && (
@@ -951,7 +931,7 @@ const GiftHampersCakes = () => {
           cartItems={{}}
           setQty={null}
           onSelect={(sample) => {
-            setSelectedPhotos(prev => prev.some(p => p._id === sample._id) ? prev : [...prev, sample]);
+            if (!selectedPhotos.some(p => p._id === sample._id)) dispatch(addGhPhoto(sample));
             document.getElementById('gh-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }}
           onClose={() => { setQuizOpen(false); if (Object.keys(cartItems).length > 0) setCheckoutOpen(true); }}

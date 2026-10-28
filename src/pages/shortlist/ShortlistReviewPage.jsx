@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { selectFunCartItems, removeActivity, setFunConfirmed, clearFunCart } from "../../redux/funActivitiesCartSlice";
-import { selectCartItems as selectGhCartItems, removeFromCart as removeFromGhCart, setGhConfirmed, clearCart as clearGhCart } from "../../redux/giftHamperCartSlice";
+import { selectCartItems as selectGhCartItems, removeFromCart as removeFromGhCart, setGhConfirmed, clearCart as clearGhCart, selectGhPhotoItems, removePhoto as removeGhPhoto, clearPhotos as clearGhPhotos } from "../../redux/giftHamperCartSlice";
 import { useStationeryCart } from "../../context/StationeryCartContext";
 import { setStBooking } from "../../redux/stationeryBookingSlice";
 import { useChatOverlay } from "../../context/ChatContext";
@@ -15,7 +15,7 @@ const GOLD = "#0EA5E9";
 const INK = "#0C2A3A";
 
 // Fixed category order — matches the fixed hierarchy the icon itself uses.
-const CATEGORY_ORDER = ["fun-activity", "gift-hamper", "stationery"];
+const CATEGORY_ORDER = ["fun-activity", "gift-hamper", "gift-inspiration", "stationery"];
 
 export default function ShortlistReviewPage() {
   const navigate = useNavigate();
@@ -25,12 +25,14 @@ export default function ShortlistReviewPage() {
 
   const funItems = useSelector(selectFunCartItems);
   const ghItems = useSelector(selectGhCartItems);
+  const ghPhotoItems = useSelector(selectGhPhotoItems);
   const { cart: stCart, clearCart: clearStCart, removeFromCart: removeFromStCart } = useStationeryCart();
 
   const itemsByCategory = {
-    "fun-activity": funItems,
-    "gift-hamper":  ghItems,
-    "stationery":   stCart,
+    "fun-activity":     funItems,
+    "gift-hamper":      ghItems,
+    "gift-inspiration": ghPhotoItems,
+    "stationery":       stCart,
   };
   const steps = CATEGORY_ORDER.filter(cat => itemsByCategory[cat].length > 0);
 
@@ -68,24 +70,26 @@ export default function ShortlistReviewPage() {
   };
 
   const itemLabel = (category, item) => {
-    if (category === "fun-activity") return `${item.emoji || "🎉"} ${item.name}`;
-    if (category === "gift-hamper")  return `🎁 ${item.name}${item.quantity > 1 ? ` ×${item.quantity}` : ""}`;
+    if (category === "fun-activity")     return `${item.emoji || "🎉"} ${item.name}`;
+    if (category === "gift-hamper")      return `🎁 ${item.name}${item.quantity > 1 ? ` ×${item.quantity}` : ""}`;
+    if (category === "gift-inspiration") return `🖼️ ${item.name || "Gift Hamper Idea"}`;
     return `💌 ${item.item?.name || "Item"}${item.quantity > 1 ? ` ×${item.quantity}` : ""}`;
   };
   const itemPrice = (category, item) => {
     if (category === "fun-activity") return item.totalPrice || item.price || 0;
     if (category === "gift-hamper")  return item.subtotal || 0;
-    return null; // stationery pricing varies too much per item to total simply here
+    return null; // stationery pricing varies too much per item to total simply here; inspiration photos have no price
   };
   const removeItem = (category, item) => {
     if (category === "fun-activity") dispatch(removeActivity(item.id));
     else if (category === "gift-hamper") dispatch(removeFromGhCart(item.productId));
+    else if (category === "gift-inspiration") dispatch(removeGhPhoto(item._id));
     else removeFromStCart(item.item);
   };
 
   const buildItems = (c, its) => its.map(it => ({
-    name: c === "stationery" ? (it.item?.name || "Item") : it.name,
-    qty: c === "gift-hamper" ? (it.quantity || 1) : (c === "stationery" ? (it.quantity || 1) : 1),
+    name: c === "stationery" ? (it.item?.name || "Item") : (c === "gift-inspiration" ? (it.name || "Gift Hamper Idea") : it.name),
+    qty: c === "gift-hamper" || c === "stationery" ? (it.quantity || 1) : 1,
     price: itemPrice(c, it) || 0,
   }));
 
@@ -100,9 +104,10 @@ export default function ShortlistReviewPage() {
       const its = itemsByCategory[c];
       const message = `${CAT_META[c].emoji} ${CAT_META[c].label}: ${its.map(it => itemLabel(c, it)).join(", ")}`;
       try {
+        const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
         const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers,
           credentials: "include",
           body: JSON.stringify({
             message,
@@ -111,7 +116,21 @@ export default function ShortlistReviewPage() {
             items: buildItems(c, its),
           }),
         });
-        if (res.ok) succeeded.push(c); else failed.push(c);
+        if (res.ok) {
+          succeeded.push(c);
+          // Gift inspiration photos have no price/qty to carry in `items` above — send
+          // each shortlisted photo as its own image message in the same conversation,
+          // same as the old direct-from-page "Talk to Team" flow used to.
+          if (c === "gift-inspiration") {
+            const data = await res.json().catch(() => ({}));
+            const cid = data.conversationId;
+            if (cid) {
+              for (const photo of its) {
+                try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: "POST", headers, body: JSON.stringify({ sender: "user", content: `[img:${photo.url}]` }) }); } catch {}
+              }
+            }
+          }
+        } else failed.push(c);
       } catch (e) {
         console.error(`Send to chat failed for ${c}:`, e);
         failed.push(c);
@@ -123,6 +142,7 @@ export default function ShortlistReviewPage() {
     // as a stale duplicate of something that already succeeded.
     if (succeeded.includes("fun-activity")) { dispatch(setFunConfirmed(true)); dispatch(clearFunCart()); }
     if (succeeded.includes("gift-hamper")) { dispatch(setGhConfirmed(true)); dispatch(clearGhCart()); }
+    if (succeeded.includes("gift-inspiration")) dispatch(clearGhPhotos());
     if (succeeded.includes("stationery")) {
       dispatch(setStBooking({ form: { ...(forms.stationery || {}) }, cartSnapshot: stCart }));
       clearStCart();
