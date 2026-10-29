@@ -2170,16 +2170,6 @@ export default function OccasionDetail(){
   const quickPlanSessionIdRef=useRef(null);
   const quickPlanSnapshotRef=useRef(null); // null | { activities:string[], entryExperiences:string[], gifts:string[] }
 
-  useEffect(()=>{
-    if(!occasion?.name) return;
-    let cancelled=false;
-    fetch(`${BASE_URL}/quick-plan/insights?occasion=${encodeURIComponent(occasion.name)}`)
-      .then(r=>r.ok?r.json():null)
-      .then(d=>{ if(!cancelled && d?.insights) setPlanInsights(d.insights); })
-      .catch(()=>{});
-    return ()=>{ cancelled=true; };
-  },[occasion?.name]);
-
   // Nudges a fixed-formula score using this occasion's own quick-plan history —
   // conservative on purpose (same shape as the Price Estimator's benchmark
   // blending): only kicks in once a pick has enough checked samples, capped so a
@@ -2333,6 +2323,18 @@ export default function OccasionDetail(){
     giftIdeas:[],decorThemes:[],activities:[],
     budgetMin:5000,budgetMax:500000,typicalGuests:"10–500",
   } : rawOccasion;
+
+  // Fetches this occasion's quick-plan history (real paid-vs-abandoned data) for
+  // applyPlanInsightsBoost below — must stay after `occasion` is declared above.
+  useEffect(()=>{
+    if(!occasion?.name) return;
+    let cancelled=false;
+    fetch(`${BASE_URL}/quick-plan/insights?occasion=${encodeURIComponent(occasion.name)}`)
+      .then(r=>r.ok?r.json():null)
+      .then(d=>{ if(!cancelled && d?.insights) setPlanInsights(d.insights); })
+      .catch(()=>{});
+    return ()=>{ cancelled=true; };
+  },[occasion?.name]);
 
   /* Step renumbering migration (Entry Experiences inserted as new step 4 — everything
      from old step 4 onward shifted up by one). A draft saved before this change would
