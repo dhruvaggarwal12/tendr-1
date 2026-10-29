@@ -2090,6 +2090,18 @@ export default function OccasionDetail(){
   // once the prompt is dismissed, so the same `notes` state feeds both flows.
   const [notesPromptOpen,setNotesPromptOpen]=useState(false);
   const [notesPromptAction,setNotesPromptAction]=useState(null); // "quickplan" | "stepbystep"
+
+  // Guest List cross-sell (opened via the "Guest List" cross-sell chip, in its own
+  // tab) writes its live guest count to this key on every change. Listening for the
+  // "storage" event picks that up without needing the two pages to share a route, so
+  // the headcount here can be nudged toward whatever the customer actually built on
+  // the Guest List page.
+  const [guestListCount,setGuestListCount]=useState(()=>Number(localStorage.getItem("tendr_guestlist_total_count"))||0);
+  useEffect(()=>{
+    const onStorage=(e)=>{ if(e.key==="tendr_guestlist_total_count") setGuestListCount(Number(e.newValue)||0); };
+    window.addEventListener("storage",onStorage);
+    return ()=>window.removeEventListener("storage",onStorage);
+  },[]);
   const [city,setCity]=useState("");
   const [cityDropdownOpen,setCityDropdownOpen]=useState(false);
   const [venueType,setVenueType]=useState("");
@@ -3443,6 +3455,12 @@ export default function OccasionDetail(){
                   ))}
                 </div>
               </div>
+              {guestListCount>0&&guestListCount!==guests&&(
+                <div style={{margin:"0 18px 14px",padding:"9px 12px",borderRadius:9,background:`${occAccent}08`,border:`1px solid ${occAccent}25`,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                  <span style={{fontSize:11,color:muted,flex:1,minWidth:0}}>Your <strong style={{color:ink}}>Guest List</strong> has <strong style={{color:occAccent}}>{guestListCount}</strong> {guestListCount===1?"guest":"guests"} added.</span>
+                  <button onClick={()=>setGuests(guestListCount)} style={{fontSize:11,fontWeight:700,color:"#fff",background:occAccent,border:"none",borderRadius:7,padding:"5px 11px",cursor:"pointer",fontFamily:font,whiteSpace:"nowrap",flexShrink:0}}>Use {guestListCount} →</button>
+                </div>
+              )}
             </div>
 
             {/* Date card */}
@@ -5631,6 +5649,7 @@ export default function OccasionDetail(){
               if(selectedActivities.length===0&&customActivities.length===0) crossSell.push({label:"Fun Activities",icon:"🎮",href:"/fun-activities"});
               if(!budget||Number(budget)<=0) crossSell.push({label:"Price Estimator",icon:"💰",onClick:()=>openPriceEstimator({occasion:occasion.name,onFinalise:(avg)=>setBudget(String(avg))})});
               crossSell.push({label:"Event Timeline",icon:"🗓️",href:"/timeline-picker"});
+              crossSell.push({label:"Guest List",icon:"👥",href:`/guest-list?planned=${guests}`});
 
               return(
                 <div style={{marginBottom:16,display:"flex",flexDirection:"column",gap:12}}>

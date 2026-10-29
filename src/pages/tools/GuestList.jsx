@@ -138,6 +138,15 @@ export default function GuestList() {
 
   useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(guests)); }, [guests]);
 
+  // Broadcasts the live guest count so an occasion plan open in another tab (which
+  // links here with a "planned" headcount) can offer to adopt the real number —
+  // see the "Guest List" cross-sell + guestListCount sync in OccasionDetail.jsx.
+  useEffect(() => { localStorage.setItem("tendr_guestlist_total_count", String(guests.length)); }, [guests.length]);
+
+  // "planned" — the headcount the customer already entered while planning, passed
+  // via the cross-sell link so this page can show how it compares to the real list.
+  const plannedGuests = Number(new URLSearchParams(window.location.search).get("planned")) || 0;
+
   if (!seen) return <IntroScreen onStart={() => { localStorage.setItem("gl_intro_seen", "1"); setSeen(true); }} />;
 
   // ── Guest helpers ────────────────────────────────────────────────────────
@@ -275,6 +284,20 @@ export default function GuestList() {
             </button>
           </div>
         </div>
+
+        {/* Planned-vs-added — only shown when arriving from an occasion plan's
+            "Guest List" cross-sell link, which passes its headcount as ?planned= */}
+        {plannedGuests > 0 && (
+          <div style={{ background: "#FFFCF7", borderRadius: 12, padding: "14px 18px", marginBottom: 20, border: "1.5px solid rgba(196,122,46,0.14)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8, flexWrap: "wrap", gap: 6 }}>
+              <span style={{ fontSize: 12.5, color: ink }}>Planned for <strong>{plannedGuests}</strong> guests — <strong style={{ color: gold }}>{guests.length}</strong> added so far</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#9B7450" }}>{Math.min(100, Math.round((guests.length / plannedGuests) * 100))}%</span>
+            </div>
+            <div style={{ height: 6, borderRadius: 100, background: "rgba(196,122,46,0.12)", overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${Math.min(100, (guests.length / plannedGuests) * 100)}%`, background: `linear-gradient(135deg,${gold},${goldLt})`, borderRadius: 100, transition: "width 0.3s" }} />
+            </div>
+          </div>
+        )}
 
         {/* Stats */}
         {guests.length > 0 && (() => {
