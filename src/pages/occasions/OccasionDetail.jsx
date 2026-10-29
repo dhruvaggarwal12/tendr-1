@@ -1630,29 +1630,34 @@ function buildEventSummary(occasion, {celebrantName="", guests=20, date="", city
   const opener=`You're planning ${who} ${occasion.name.toLowerCase()} for ${guestStr}${dateStr?` on ${dateStr}`:""}${locationStr?` in ${locationStr}`:""}.`;
 
   // Decor is the single most visual part of the plan, so it gets a real, specific
-  // description (and a photo — see `decorPhoto` below) instead of a generic line,
-  // even when the customer hasn't explicitly picked a theme or decor items yet
+  // description — a standalone elaborated paragraph (`decorDetail`), not a stock
+  // theme photo — instead of a generic line, even when the customer hasn't
+  // explicitly picked a theme or decor items yet
   // (the quick-plan path never asks). Priority: customDecor items > chosen theme >
   // decor focus areas > occasion's own curated decorThemes[0] as a concrete default
   // — never the old flat "pretty decorations and a warm, festive setup" fallback.
-  let decorPhoto=null;
   let decorSentence=null;
+  let decorDetail=null; // a fuller, standalone paragraph about the décor specifically — shown in
+                         // its own section on the reveal page instead of a stock photo
   if(vendors.includes("Decorator")){
     const items=Object.values(customDecor||{}).flat().filter(Boolean);
     const areaNames=decorFocusAreas.map(id=>DECOR_FOCUS_AREAS[id]?.name).filter(Boolean);
     const defaultTheme=(occasion.decorThemes||[])[0]||null;
     if(items.length){
       decorSentence=`a beautiful setup with ${items.slice(0,2).join(" and ").toLowerCase()}`;
+      decorDetail=`Your decorator will bring together ${items.slice(0,5).join(", ").toLowerCase()}${items.length>5?", and more":""} for a cohesive, festive look built around what you picked.`;
     } else if(theme){
       decorSentence=`a ${theme.name} look${theme.desc?` — ${theme.desc.charAt(0).toLowerCase()}${theme.desc.slice(1).replace(/\.$/,"")}`:""}`;
-      decorPhoto=theme.photo||null;
+      decorDetail=`We're leaning toward a ${theme.name} look for ${who} ${occasion.name.toLowerCase()}.${theme.desc?` ${theme.desc}`:""}${theme.tags?.length?` Expect ${theme.tags.slice(0,3).join(", ").toLowerCase()} tones carried through the backdrop, table styling and little details around the space.`:""}`;
     } else if(areaNames.length){
       decorSentence=`${areaNames[0].toLowerCase()} styled just for the day`;
+      decorDetail=`We'll style ${areaNames.join(" and ").toLowerCase()} specifically for ${who} ${occasion.name.toLowerCase()} — a palette, props and lighting chosen to fit the occasion, so the space feels intentional the moment guests walk in.`;
     } else if(defaultTheme){
       decorSentence=`a ${defaultTheme.name} look — ${defaultTheme.desc.charAt(0).toLowerCase()}${defaultTheme.desc.slice(1).replace(/\.$/,"")}`;
-      decorPhoto=defaultTheme.photo||null;
+      decorDetail=`Our suggested starting point is a ${defaultTheme.name} look. ${defaultTheme.desc} You can change this to any other theme before you finalise your plan.`;
     } else {
       decorSentence=`pretty decorations and a warm, festive setup`;
+      decorDetail=`Expect a warm, festive setup — balloons, a themed backdrop, table styling and thoughtful little touches carried through the space, tailored once you pick a theme or specific decor items.`;
     }
   }
 
@@ -1674,7 +1679,7 @@ function buildEventSummary(occasion, {celebrantName="", guests=20, date="", city
     : `Even the simple things, done with care, can make a celebration feel truly special.`;
 
   const summary=`${opener} ${seeSentence} ${whyGood} It will be a lovely day to spend with your loved ones and create beautiful memories!`;
-  return { summary, decorPhoto };
+  return { summary, decorDetail };
 }
 
 /* ── build plain-text plan for in-app chat ── */
@@ -2845,7 +2850,7 @@ export default function OccasionDetail(){
 
   /* styles */
   const canProceed=canNext();
-  const btnPrimary={flex:1,padding:"13px 20px",borderRadius:10,border:"none",background:canProceed?occAccent:"rgba(28,9,0,0.06)",color:canProceed?"#fff":"rgba(28,9,0,0.30)",fontSize:14,fontWeight:700,cursor:canProceed?"pointer":"not-allowed",fontFamily:font,transition:"all 0.2s",letterSpacing:"0.01em"};
+  const btnPrimary={minWidth:180,padding:"13px 26px",borderRadius:10,border:"none",background:canProceed?occAccent:"rgba(28,9,0,0.06)",color:canProceed?"#fff":"rgba(28,9,0,0.30)",fontSize:14,fontWeight:700,cursor:canProceed?"pointer":"not-allowed",fontFamily:font,transition:"all 0.2s",letterSpacing:"0.01em",boxShadow:canProceed?"0 6px 20px rgba(28,9,0,0.18)":"none"};
   const btnGhost={padding:"12px 18px",borderRadius:10,border:`1px solid rgba(28,9,0,0.15)`,background:"transparent",color:"rgba(28,9,0,0.50)",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s",whiteSpace:"nowrap"};
   const sLabel={fontSize:12,fontWeight:600,color:"rgba(28,9,0,0.45)",textTransform:"uppercase",letterSpacing:"0.10em",marginBottom:14,fontFamily:font};
   const fieldCard={background:"#fff",borderRadius:12,padding:"22px 22px",border:`1px solid rgba(196,122,46,0.18)`,marginBottom:14,transition:"border-color 0.2s"};
@@ -5051,17 +5056,19 @@ export default function OccasionDetail(){
             </div>
 
             {(()=>{
-              const {summary,decorPhoto}=buildEventSummary(occasion,{celebrantName,guests,date,city,venueType,theme,vendors,decorFocusAreas,customDecor,selectedActivities,customActivities,gifts});
+              const {summary,decorDetail}=buildEventSummary(occasion,{celebrantName,guests,date,city,venueType,theme,vendors,decorFocusAreas,customDecor,selectedActivities,customActivities,gifts});
               return(
                 <div style={{position:"relative",background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",border:`1.5px solid ${gold}30`,borderRadius:22,overflow:"hidden",marginBottom:20,boxShadow:"0 10px 32px rgba(0,0,0,0.06)"}}>
-                  {decorPhoto&&(
-                    <div style={{position:"relative",height:150}}>
-                      <img src={decorPhoto} alt="How your décor could look" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>
-                      <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(28,9,0,0.45),transparent 55%)"}}/>
-                      <span style={{position:"absolute",bottom:8,left:12,fontSize:10.5,fontWeight:800,color:"#fff",textTransform:"uppercase",letterSpacing:"0.08em"}}>A preview of your décor</span>
+                  <p style={{fontSize:15,color:ink,lineHeight:1.8,margin:0,padding:"24px 22px",paddingBottom:decorDetail?14:24}}>{summary}</p>
+                  {decorDetail&&(
+                    <div style={{margin:"0 22px 22px",padding:"16px 18px",borderRadius:16,background:"#fff",border:`1px solid ${gold}22`}}>
+                      <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:8}}>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l1.8 5.6L19.5 9l-5.7 1.4L12 16l-1.8-5.6L4.5 9l5.7-1.4z"/></svg>
+                        <span style={{fontSize:10.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em"}}>Your décor</span>
+                      </div>
+                      <p style={{fontSize:13.5,color:ink,lineHeight:1.75,margin:0}}>{decorDetail}</p>
                     </div>
                   )}
-                  <p style={{fontSize:15,color:ink,lineHeight:1.8,margin:0,padding:"24px 22px"}}>{summary}</p>
                 </div>
               );
             })()}
@@ -5619,8 +5626,8 @@ export default function OccasionDetail(){
           reveal page), which has its own embedded Back/See Plan buttons */}
       {step>0&&step!==7&&(
         <div className="od-step-footer" style={{flexShrink:0,background:"transparent",padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
-          <div style={{maxWidth:680,margin:"0 auto",display:"flex",gap:10}}>
-            {step>0&&<button onClick={back} style={btnGhost}>← Back</button>}
+          <div style={{maxWidth:680,margin:"0 auto",display:"flex",gap:10,justifyContent:"space-between",alignItems:"center"}}>
+            {step>0&&<button onClick={back} style={{...btnGhost,background:"#fff",boxShadow:"0 4px 14px rgba(28,9,0,0.08)"}}>← Back</button>}
             {step===1&&canNext()?(
               <div style={{display:"flex",flexDirection:"column",gap:8,flex:1}}>
                 <button onClick={startQuickPlan} disabled={quickPlanBuilding}
