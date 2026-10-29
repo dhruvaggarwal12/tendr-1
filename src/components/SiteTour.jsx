@@ -6,18 +6,6 @@ const GOLD = "#C47A2E";
 const GOLD_LIGHT = "#E8A84A";
 const font = "'Outfit', sans-serif";
 
-const FEATURES = [
-  { emoji: "💌", label: "Wedding Stationeries" },
-  { emoji: "🎁", label: "Gift Hampers" },
-  { emoji: "🎊", label: "Fun Activities" },
-  { emoji: "🏛️", label: "Party Places" },
-  { emoji: "✨", label: "Occasions" },
-  { emoji: "📸", label: "Community Wall" },
-  { emoji: "🎞️", label: "Memories" },
-  { emoji: "📄", label: "Event Documents" },
-  { emoji: "🏠", label: "Your Dashboard" },
-];
-
 // Only what's visible on the landing page — other pages have their own tours.
 // Desktop and mobile get different target selectors because the desktop nav
 // (search bar + Browse/Booking/Tools dropdowns) is `display:none` under the
@@ -44,14 +32,6 @@ const HERO_CTAS_STEP = {
   content: '"Book Vendors" lets you browse and filter the full directory. "Plan an Occasion" walks you through a step-by-step flow — pick your occasion, date, budget and we do the rest.',
 };
 
-const FEATURES_STEP = {
-  target: "body",
-  placement: "center",
-  disableBeacon: true,
-  title: "And there's a lot more…",
-  content: "__FEATURES__",
-};
-
 const STEPS_DESKTOP = [
   WELCOME_STEP,
   HERO_CTAS_STEP,
@@ -70,20 +50,12 @@ const STEPS_DESKTOP = [
     content: "Decorators, Caterers, Photographers, DJs — filter by location, budget, guest count and ratings. Top Rated shows only our highest-reviewed vendors.",
   },
   {
-    target: '[data-tour="nav-booking"]',
-    placement: "bottom",
-    disableBeacon: true,
-    title: "Plan Your Event",
-    content: "Pick vendors one by one, or let Smart Plan pick the best combo within your total budget automatically.",
-  },
-  {
     target: '[data-tour="nav-tools"]',
     placement: "bottom",
     disableBeacon: true,
     title: "Event Tools",
     content: "Budget Allocator, Timeline Builder, Guest List, Seating Chart and more — free tools that make event planning manageable.",
   },
-  FEATURES_STEP,
 ];
 
 const STEPS_MOBILE = [
@@ -104,20 +76,12 @@ const STEPS_MOBILE = [
     content: "Decorators, Caterers, Photographers, DJs — filter by location, budget, guest count and ratings. Tap here any time to open the full directory.",
   },
   {
-    target: '[data-tour="mob-nav-plan an occasion"]',
-    placement: "top",
-    disableBeacon: true,
-    title: "Plan Your Event",
-    content: "Pick vendors one by one, or let Smart Plan pick the best combo within your total budget automatically.",
-  },
-  {
     target: '[data-tour="mob-nav-tools"]',
     placement: "top",
     disableBeacon: true,
     title: "Event Tools",
     content: "Budget Allocator, Timeline Builder, Guest List, Seating Chart and more — free tools that make event planning manageable.",
   },
-  FEATURES_STEP,
 ];
 
 function TourTooltip({ index, step, backProps, skipProps, primaryProps, tooltipProps, size, onFinish }) {
@@ -134,15 +98,14 @@ function TourTooltip({ index, step, backProps, skipProps, primaryProps, tooltipP
     skipProps.onClick(e);
     onFinish?.();
   };
-  const isFeaturesStep = step.content === "__FEATURES__";
   return (
     <div
       {...tooltipProps}
       style={{
         background: "#FFFCF5",
         borderRadius: 18,
-        maxWidth: isFeaturesStep ? "min(440px, calc(100vw - 32px))" : "min(360px, calc(100vw - 32px))",
-        width: isFeaturesStep ? "min(420px, calc(100vw - 32px))" : "min(340px, calc(100vw - 32px))",
+        maxWidth: "min(360px, calc(100vw - 32px))",
+        width: "min(340px, calc(100vw - 32px))",
         boxShadow: "0 20px 60px rgba(28,9,0,0.14), 0 0 0 1.5px rgba(196,122,46,0.18)",
         fontFamily: font,
         overflow: "hidden",
@@ -180,32 +143,14 @@ function TourTooltip({ index, step, backProps, skipProps, primaryProps, tooltipP
         </div>
 
         {step.title && (
-          <div style={{ fontSize: 18, fontWeight: 800, color: "#1C0900", marginBottom: isFeaturesStep ? 14 : 8, lineHeight: 1.25, letterSpacing: "-0.01em" }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "#1C0900", marginBottom: 8, lineHeight: 1.25, letterSpacing: "-0.01em" }}>
             {step.title}
           </div>
         )}
 
-        {isFeaturesStep ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
-            {FEATURES.map(({ emoji, label }) => (
-              <div key={label} style={{
-                background: "#fff",
-                border: "1.5px solid rgba(196,122,46,0.14)",
-                borderRadius: 12,
-                padding: "10px 8px",
-                textAlign: "center",
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
-              }}>
-                <span style={{ fontSize: 22 }}>{emoji}</span>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: "#3A1E0A", lineHeight: 1.3 }}>{label}</span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div style={{ fontSize: 13.5, lineHeight: 1.7, color: "#5A3520" }}>
-            {step.content}
-          </div>
-        )}
+        <div style={{ fontSize: 13.5, lineHeight: 1.7, color: "#5A3520" }}>
+          {step.content}
+        </div>
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 18, gap: 10 }}>
           <button

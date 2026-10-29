@@ -5618,7 +5618,7 @@ export default function OccasionDetail(){
       {/* bottom CTA — flex footer, always visible except step 7 (the "Tendr wishes you"
           reveal page), which has its own embedded Back/See Plan buttons */}
       {step>0&&step!==7&&(
-        <div className="od-step-footer" style={{flexShrink:0,background:"#fff",borderTop:"1px solid rgba(0,0,0,0.07)",padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
+        <div className="od-step-footer" style={{flexShrink:0,background:"transparent",padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
           <div style={{maxWidth:680,margin:"0 auto",display:"flex",gap:10}}>
             {step>0&&<button onClick={back} style={btnGhost}>← Back</button>}
             {step===1&&canNext()?(
