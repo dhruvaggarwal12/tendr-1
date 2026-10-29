@@ -2607,9 +2607,10 @@ export default function OccasionDetail(){
       const pkgIdx=vendorPackages[v];
       const pkgs=ALL_VENDORS.includes(v)?getVendorPackages(v,{guests,venueType,theme,ageGroups}):null;
       const hasPkg=pkgIdx==="custom"||(typeof pkgIdx==="number"&&pkgs);
-      const pkgLabel=pkgIdx==="custom"?"Custom":typeof pkgIdx==="number"&&pkgs?pkgs[pkgIdx]?.label:null;
-      const pkgPrice=pkgIdx==="custom"?null:typeof pkgIdx==="number"&&pkgs?pkgs[pkgIdx]?.price:null;
-      return{key:`v-${v}`,icon:"🛠️",title:v,sub:pkgLabel,status:hasPkg?"Selected":"Quote required",price:pkgPrice,onEdit:()=>(ALL_VENDORS.includes(v)?setEditingService(v):setStep(3))};
+      const pkg=typeof pkgIdx==="number"?pkgs?.[pkgIdx]:null;
+      const pkgLabel=pkgIdx==="custom"?"Custom":pkg?.label||null;
+      const pkgPrice=pkgIdx==="custom"?null:pkg?.price||null;
+      return{key:`v-${v}`,icon:"🛠️",title:v,sub:pkgLabel,status:hasPkg?"Selected":"Quote required",price:pkgPrice,items:pkg?.items||null,note:pkg?.note||null,onEdit:()=>(ALL_VENDORS.includes(v)?setEditingService(v):setStep(3))};
     });
     if(theme) serviceRows.push({key:"theme",icon:"🎨",title:theme.name,sub:"Decor style",status:"Selected",price:null,onEdit:()=>setStep(3)});
     if(decorFocusAreas.length) serviceRows.push({key:"decor-areas",icon:"📍",title:decorFocusAreas.map(id=>DECOR_FOCUS_AREAS[id]?.name).filter(Boolean).join(", "),sub:"Decor focus areas",status:"Selected",price:null,onEdit:()=>setStep(3)});
@@ -2617,7 +2618,7 @@ export default function OccasionDetail(){
     const entryRows=selectedEntryExperiences.map(id=>{
       const e=getEntryExperienceById(id);
       if(!e) return null;
-      return{key:`ee-${id}`,icon:entryEmoji(e),title:e.title,sub:"Entry Experience",status:"Estimate available",price:e.priceDisplay,onEdit:()=>setStep(4)};
+      return{key:`ee-${id}`,icon:entryEmoji(e),title:e.title,sub:"Entry Experience",status:"Estimate available",price:e.priceDisplay,items:e.inclusions?.slice(0,4)||null,note:e.shortDesc||null,onEdit:()=>setStep(4)};
     }).filter(Boolean);
 
     const activityRows=[
@@ -2625,7 +2626,7 @@ export default function OccasionDetail(){
         const a=ALL_ACTIVITY_ITEMS.find(x=>x.id===id);
         if(!a) return null;
         const typeEntry=ACTIVITY_TYPES.find(t=>ALL_ACTIVITIES[t.key]?.some(x=>x.id===id));
-        return{key:`act-${id}`,icon:a.icon,title:a.name,sub:typeEntry?.singular||"Activity",status:"Estimate available",price:a.price,onEdit:()=>setStep(5)};
+        return{key:`act-${id}`,icon:a.icon,title:a.name,sub:typeEntry?.singular||"Activity",status:"Estimate available",price:a.price,note:a.desc||null,onEdit:()=>setStep(5)};
       }).filter(Boolean),
       ...customActivities.map((act,i)=>({key:`cact-${i}`,icon:"✦",title:act,sub:"Custom · Added by you",status:"Selected",price:null,onEdit:()=>setStep(5)})),
     ];
@@ -2634,7 +2635,7 @@ export default function OccasionDetail(){
       const g=(occasion.giftIdeas||[]).find(g=>g.name===name);
       if(!g) return null;
       const qty=giftQuantities[name]||1;
-      return{key:`gift-${name}`,icon:giftEmoji(g.name,g.desc),title:qty>1?`${g.name} ×${qty}`:g.name,sub:"Gift",status:"Estimate available",price:g.price,onEdit:()=>setStep(6)};
+      return{key:`gift-${name}`,icon:giftEmoji(g.name,g.desc),title:qty>1?`${g.name} ×${qty}`:g.name,sub:"Gift",status:"Estimate available",price:g.price,note:g.desc||null,onEdit:()=>setStep(6)};
     }).filter(Boolean);
 
     const groups=[
@@ -2667,18 +2668,31 @@ export default function OccasionDetail(){
             {g.rows.map(r=>{
               const s=STATUS_STYLE[r.status]||STATUS_STYLE["Selected"];
               return(
-                <div key={r.key} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 9px",borderRadius:10,background:"#FAFAF8",marginBottom:6}}>
-                  <span style={{fontSize:14,flexShrink:0,width:34,height:34,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(196,122,46,0.08)",borderRadius:8}}>{r.icon}</span>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",marginBottom:r.sub?2:0}}>
-                      <span style={{fontSize:12,fontWeight:700,color:ink}}>{r.title}</span>
-                      <span style={{fontSize:9,fontWeight:700,color:s.color,background:s.bg,borderRadius:100,padding:"2px 7px",flexShrink:0}}>{r.status}</span>
+                <div key={r.key} style={{padding:"8px 9px",borderRadius:10,background:"#FAFAF8",marginBottom:6}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    <span style={{fontSize:14,flexShrink:0,width:34,height:34,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(196,122,46,0.08)",borderRadius:8}}>{r.icon}</span>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",marginBottom:r.sub?2:0}}>
+                        <span style={{fontSize:12,fontWeight:700,color:ink}}>{r.title}</span>
+                        <span style={{fontSize:9,fontWeight:700,color:s.color,background:s.bg,borderRadius:100,padding:"2px 7px",flexShrink:0}}>{r.status}</span>
+                      </div>
+                      {r.sub&&<div style={{fontSize:10,color:muted}}>{r.sub}{r.price?` · ${r.price}`:""}</div>}
                     </div>
-                    {r.sub&&<div style={{fontSize:10,color:muted}}>{r.sub}</div>}
+                    <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:3,flexShrink:0}}>
+                      <button onClick={r.onEdit} style={{fontSize:10,fontWeight:700,color:gold,background:"none",border:"none",cursor:"pointer",padding:0,fontFamily:font}}>Edit</button>
+                    </div>
                   </div>
-                  <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:3,flexShrink:0}}>
-                    <button onClick={r.onEdit} style={{fontSize:10,fontWeight:700,color:gold,background:"none",border:"none",cursor:"pointer",padding:0,fontFamily:font}}>Edit</button>
-                  </div>
+                  {r.items?.length>0?(
+                    <ul style={{margin:"7px 0 1px 44px",padding:0,listStyle:"none",display:"flex",flexDirection:"column",gap:3}}>
+                      {r.items.map((it,i)=>(
+                        <li key={i} style={{fontSize:10.5,color:muted,lineHeight:1.4,display:"flex",alignItems:"flex-start",gap:5}}>
+                          <span style={{color:gold,flexShrink:0}}>•</span>{it}
+                        </li>
+                      ))}
+                    </ul>
+                  ):r.note?(
+                    <div style={{margin:"5px 0 1px 44px",fontSize:10.5,color:muted,lineHeight:1.4}}>{r.note}</div>
+                  ):null}
                 </div>
               );
             })}
