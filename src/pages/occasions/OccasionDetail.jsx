@@ -80,6 +80,20 @@ const ALL_VENDORS = [
   "AV Setup",
 ];
 
+// Pre-written quick-pick options shown in the notes prompt before either planning
+// flow starts — tapping one appends its text to the free-text box rather than
+// replacing it, so a customer can combine several plus their own typed detail.
+const NOTES_CHIPS = [
+  "It's a surprise party",
+  "Guests are mostly family",
+  "Vegetarian food only",
+  "Kid-friendly setup",
+  "Keep it budget-friendly",
+  "Outdoor / open-air venue",
+  "Minimal noise after 10pm",
+  "Wheelchair-accessible venue",
+];
+
 // A few ALL_VENDORS display labels don't match the backend's SERVICE_TYPES enum exactly
 // (the backend already has an equivalent under a different string). Translate only at
 // the POST/PATCH boundary — never rename ALL_VENDORS itself, since these exact strings
@@ -2070,6 +2084,12 @@ export default function OccasionDetail(){
     if(n.includes("anchor")||n.includes("emcee")||n.includes("host")) hits.push("Emcee / Host");
     return [...new Set(hits)].filter(v=>ALL_VENDORS.includes(v));
   },[notes]);
+  // Notes now get collected via a prompt shown right before either "Get My Full Plan
+  // Ready" or "Build Step by Step" fires (see NOTES_CHIPS below), instead of a field on
+  // the Details step — notesPromptAction remembers which of the two to actually run
+  // once the prompt is dismissed, so the same `notes` state feeds both flows.
+  const [notesPromptOpen,setNotesPromptOpen]=useState(false);
+  const [notesPromptAction,setNotesPromptAction]=useState(null); // "quickplan" | "stepbystep"
   const [city,setCity]=useState("");
   const [cityDropdownOpen,setCityDropdownOpen]=useState(false);
   const [venueType,setVenueType]=useState("");
@@ -2865,7 +2885,7 @@ export default function OccasionDetail(){
   // picks), then shows the building overlay before jumping to the step 7 reveal. The
   // customer can still Back into any step afterward and change what was auto-picked.
   const startQuickPlan=()=>{
-    const svc=occasion.vendorCategories||[];
+    const svc=[...new Set([...(occasion.vendorCategories||[]),...notesKeywords])];
     if(svc.length) setVendors(svc);
 
     // Pick a real package for each quick-plan service too — the "Standard"/most-
@@ -3581,6 +3601,63 @@ export default function OccasionDetail(){
               </div>
             )}
 
+            {/* Notes prompt — triggered by "Get My Full Plan Ready" / "Build Step by Step"
+                in the footer below, not by a field on this step. Shared `notes`/
+                `notesKeywords` state feeds both the quick-plan vendor picks (startQuickPlan)
+                and the manual Services-step "From your notes" suggestion hint. */}
+            {notesPromptOpen&&(
+              <div onClick={()=>setNotesPromptOpen(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}>
+                <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:20,padding:"22px 20px 24px",width:"100%",maxWidth:480,maxHeight:"80vh",overflowY:"auto",boxSizing:"border-box"}}>
+                  <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:14}}>
+                    <div>
+                      <div style={{fontSize:15,fontWeight:800,color:ink}}>Anything we should know?</div>
+                      <div style={{fontSize:11.5,color:muted,marginTop:3,lineHeight:1.4}}>Themes, dietary needs, surprises — optional, but it'll shape what we suggest next.</div>
+                    </div>
+                    <button onClick={()=>setNotesPromptOpen(false)} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:muted,padding:"0 0 0 12px",lineHeight:1}}>×</button>
+                  </div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:14}}>
+                    {NOTES_CHIPS.map(c=>{
+                      const sel=notes.includes(c);
+                      return(
+                        <button key={c} onClick={()=>setNotes(n=>{
+                            const txt=n.trim();
+                            if(txt.includes(c)) return txt.split(c).map(s=>s.trim()).filter(Boolean).join(", ");
+                            return txt?`${txt}, ${c}`:c;
+                          })}
+                          style={{fontSize:12,fontWeight:sel?700:500,color:sel?"#fff":ink,background:sel?occAccent:"rgba(28,9,0,0.04)",border:`1.5px solid ${sel?occAccent:"rgba(28,9,0,0.1)"}`,borderRadius:100,padding:"7px 13px",cursor:"pointer",fontFamily:font,transition:"all 0.15s",display:"inline-flex",alignItems:"center",gap:6}}>
+                          {sel&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                          {c}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <textarea value={notes} onChange={e=>setNotes(e.target.value)}
+                    placeholder="e.g. it's a surprise party, guests are mostly family, prefer vegetarian food…"
+                    rows={3}
+                    style={{width:"100%",padding:"10px 12px",borderRadius:10,border:`1px solid ${notes?occAccent:`rgba(28,9,0,0.12)`}`,background:notes?`${occAccent}05`:"rgba(28,9,0,0.02)",fontSize:13,fontFamily:font,color:ink,outline:"none",resize:"none",lineHeight:1.55,boxSizing:"border-box"}}/>
+                  {notesKeywords.length>0&&(
+                    <div style={{display:"flex",alignItems:"flex-start",gap:7,marginTop:10,padding:"8px 10px",borderRadius:8,background:"rgba(196,122,46,0.05)",border:"1px solid rgba(196,122,46,0.15)"}}>
+                      <svg style={{flexShrink:0,marginTop:1}} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                      <div style={{flex:1,minWidth:0}}>
+                        <span style={{fontSize:10.5,color:muted}}>We noticed </span>
+                        {notesKeywords.map((v,i)=><span key={v} style={{fontSize:10.5,fontWeight:700,color:gold}}>{i>0?", ":""}{v}</span>)}
+                        <span style={{fontSize:10.5,color:muted}}> — we'll fold {notesKeywords.length===1?"this":"these"} into your plan.</span>
+                      </div>
+                    </div>
+                  )}
+                  <button onClick={()=>{
+                      const action=notesPromptAction;
+                      setNotesPromptOpen(false);
+                      if(action==="quickplan") startQuickPlan();
+                      else next();
+                    }}
+                    style={{marginTop:16,width:"100%",padding:"13px",borderRadius:12,background:occAccent,color:"#fff",fontSize:14,fontWeight:700,border:"none",cursor:"pointer",fontFamily:font}}>
+                    Continue →
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* City card */}
             <div style={{borderRadius:12,background:"#fff",border:`1px solid rgba(28,9,0,0.08)`,marginBottom:8,boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
               <div style={{display:"flex",alignItems:"flex-start",gap:14,padding:"16px 18px"}}>
@@ -3703,34 +3780,6 @@ export default function OccasionDetail(){
               </div>
             </div>
 
-            {/* Notes card */}
-            <div style={{borderRadius:12,background:"#fff",border:`1px solid rgba(28,9,0,0.08)`,marginBottom:10,boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
-              <div style={{display:"flex",alignItems:"flex-start",gap:14,padding:"16px 18px"}}>
-                <div style={{width:44,height:44,borderRadius:"50%",background:`${occAccent}15`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1,fontSize:20}}>📝</div>
-                <div style={{flex:1,minWidth:0,paddingTop:2}}>
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:2}}>
-                    <div style={{fontSize:13,fontWeight:700,color:ink}}>Any special notes?</div>
-                    <span style={{fontSize:9.5,color:muted,fontWeight:500}}>optional</span>
-                  </div>
-                  <div style={{fontSize:11.5,color:muted,lineHeight:1.4,marginBottom:9}}>Tell us about themes, dietary needs, surprises…</div>
-                  <textarea value={notes} onChange={e=>setNotes(e.target.value)}
-                    placeholder="e.g. it's a surprise party, guests are mostly family, prefer vegetarian food…"
-                    rows={3}
-                    style={{width:"100%",padding:"9px 12px",borderRadius:8,border:`1px solid ${notes?occAccent:`rgba(28,9,0,0.12)`}`,background:notes?`${occAccent}05`:"rgba(28,9,0,0.02)",fontSize:13,fontFamily:font,color:ink,outline:"none",resize:"none",lineHeight:1.55,boxSizing:"border-box"}}/>
-                  {notesKeywords.length>0&&(
-                    <div style={{display:"flex",alignItems:"flex-start",gap:7,marginTop:8,padding:"8px 10px",borderRadius:8,background:"rgba(196,122,46,0.05)",border:"1px solid rgba(196,122,46,0.15)"}}>
-                      <svg style={{flexShrink:0,marginTop:1}} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-                      <div style={{flex:1,minWidth:0}}>
-                        <span style={{fontSize:10.5,color:muted}}>We noticed </span>
-                        {notesKeywords.map((v,i)=><span key={v} style={{fontSize:10.5,fontWeight:700,color:gold}}>{i>0?", ":""}{v}</span>)}
-                        <span style={{fontSize:10.5,color:muted}}> — we'll suggest {notesKeywords.length===1?"this":"these"} in the </span>
-                        <span style={{fontSize:10.5,fontWeight:700,color:gold}}>Services tab →</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
             </div>{/* end progressive wrapper */}
 
           </div>
@@ -5630,11 +5679,11 @@ export default function OccasionDetail(){
             {step>0&&<button onClick={back} style={{...btnGhost,background:"#fff",boxShadow:"0 4px 14px rgba(28,9,0,0.08)"}}>← Back</button>}
             {step===1&&canNext()?(
               <div style={{display:"flex",flexDirection:"column",gap:8,flex:1}}>
-                <button onClick={startQuickPlan} disabled={quickPlanBuilding}
+                <button onClick={()=>{setNotesPromptAction("quickplan");setNotesPromptOpen(true);}} disabled={quickPlanBuilding}
                   style={{padding:"13px 18px",borderRadius:10,border:"none",background:`linear-gradient(135deg,${occAccent},${lightenHex(occAccent,0.25)})`,color:"#fff",fontSize:14,fontWeight:800,cursor:quickPlanBuilding?"not-allowed":"pointer",fontFamily:font,boxShadow:`0 4px 14px ${occAccent}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:6,letterSpacing:"0.01em"}}>
                   ✨ Get My Full Plan Ready
                 </button>
-                <button onClick={next} disabled={quickPlanBuilding} style={{...btnGhost,width:"100%"}}>Build Step by Step →</button>
+                <button onClick={()=>{setNotesPromptAction("stepbystep");setNotesPromptOpen(true);}} disabled={quickPlanBuilding} style={{...btnGhost,width:"100%"}}>Build Step by Step →</button>
               </div>
             ):step<7&&(
               <button onClick={next} disabled={!canNext()} style={btnPrimary}>
