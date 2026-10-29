@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import SEO from "../../components/SEO";
-import ToolNav from "../../components/ToolNav";
-import ToolIntroWrapper from "../../components/ToolIntroWrapper";
+import ToolPageShell, { ToolWindow } from "../../components/ToolPageShell";
 
 const font = "'Outfit', sans-serif";
+const BLUE = "#3B82F6";
 
 const EVENT_TYPES = [
   { id: "birthday",    label: "Birthday Party",       icon: "🎂" },
@@ -133,8 +133,20 @@ export default function TimelinePicker() {
     );
   }
 
-  const content = (
-    <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
+  return (
+    <ToolPageShell
+      accent={BLUE}
+      eyebrow="Planning Tool"
+      title="Event Timeline"
+      subtitle="Answer 4 quick questions and get a day-by-day action plan tailored to your event type, date, and services."
+      maxWidth={680}
+      icon={
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <polyline points="12 7 12 12 15.5 14" />
+        </svg>
+      }
+    >
       <SEO
         title="Event Timeline — Personalized Planning Schedule"
         description="Get a personalized event timeline based on your event type, date, and services. Free event planning countdown for birthdays, weddings, anniversaries and corporate events in Delhi NCR."
@@ -168,14 +180,13 @@ export default function TimelinePicker() {
           ]
         }}
       />
-      <ToolNav title="Event Timeline" />
 
       {/* Progress bar */}
-      <div style={{ height: 4, background: "rgba(196,122,46,0.1)" }}>
-        <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", transition: "width 0.35s ease" }} />
+      <div style={{ height: 4, background: `${BLUE}1a`, borderRadius: 100, marginBottom: 28, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${progress}%`, background: `linear-gradient(90deg,${BLUE},#60A5FA)`, transition: "width 0.35s ease" }} />
       </div>
 
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "clamp(20px,5vw,44px) clamp(14px,3vw,24px) calc(80px + env(safe-area-inset-bottom, 0px))" }}>
+      <ToolWindow accent={BLUE} style={{ padding: "clamp(20px,4vw,32px) clamp(16px,3vw,28px)" }}>
 
         {/* Step indicators */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 32, justifyContent: "center" }}>
@@ -290,9 +301,10 @@ export default function TimelinePicker() {
             </button>
           )}
         </div>
+      </ToolWindow>
 
         {/* Sample timeline preview */}
-        <div style={{ marginTop: 56, background: "#FFFCF5", borderRadius: 20, padding: "28px 24px", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 4px 20px rgba(139,69,19,0.07)" }}>
+        <ToolWindow accent={BLUE} style={{ marginTop: 24 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#C47A2E", margin: "0 0 4px" }}>Sample Output</p>
@@ -325,47 +337,29 @@ export default function TimelinePicker() {
             ))}
           </div>
           <p style={{ fontSize: 12, color: "#9B7450", margin: "14px 0 0" }}>Fill in the 4 steps above and get your personalised version →</p>
-        </div>
+        </ToolWindow>
 
         {/* Static content for SEO */}
-        <div style={{ marginTop: 32, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }} className="timeline-seo-grid">
-          <div style={{ background: "#FFFCF5", borderRadius: 16, padding: "22px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
+        <div style={{ marginTop: 24, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }} className="timeline-seo-grid">
+          <ToolWindow accent={BLUE} style={{ padding: "22px 20px" }}>
             <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>90-day, 30-day or 7-day plan?</h2>
             <p style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>The planning window is set by your event date. If you have 90+ days, the tool builds a full milestone plan. 30–60 days gets a condensed critical-path plan. Under 30 days focuses only on must-do tasks. The timeline adjusts automatically based on what's still possible given your timeline.</p>
-          </div>
-          <div style={{ background: "#FFFCF5", borderRadius: 16, padding: "22px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
+          </ToolWindow>
+          <ToolWindow accent={BLUE} style={{ padding: "22px 20px" }}>
             <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>Why do services matter for the timeline?</h2>
             <p style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>Different services have different lead times. Photography requires sharing a shot list 1–2 weeks before. Mehendi needs a separate appointment. DJ needs a music brief and sound-check slot. If you don't select a service, its tasks won't appear — keeping your timeline focused and relevant.</p>
-          </div>
-          <div style={{ background: "#FFFCF5", borderRadius: 16, padding: "22px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
+          </ToolWindow>
+          <ToolWindow accent={BLUE} style={{ padding: "22px 20px" }}>
             <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>When should you book vendors in Delhi?</h2>
             <p style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>Venues and photographers in Delhi NCR typically get booked 4–8 weeks in advance for weekends. November to February (wedding season) requires 3–6 months lead time. If your event is on a weekday, you often have more flexibility — but popular decorators and caterers still fill up 3–4 weeks ahead.</p>
-          </div>
-          <div style={{ background: "#FFFCF5", borderRadius: 16, padding: "22px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
+          </ToolWindow>
+          <ToolWindow accent={BLUE} style={{ padding: "22px 20px" }}>
             <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>What happens on the event day itself?</h2>
             <p style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>The event day phase in the timeline includes: sending vendor arrival reminders in the morning, a venue-open checklist, coordinating vendor setup order so decoration doesn't clash with catering setup, and a final payments + tips list. The day-of section is often the most overlooked part of event planning.</p>
-          </div>
+          </ToolWindow>
         </div>
-        <style>{`.timeline-seo-grid { } @media(max-width:600px){.timeline-seo-grid{grid-template-columns:1fr !important;}}`}</style>
-      </div>
-    </div>
-  );
-  return (
-    <ToolIntroWrapper
-      toolId="timeline-picker"
-      icon="📅"
-      title="Event Timeline"
-      tagline="Your personalised countdown to event day"
-      description="Answer 4 quick questions and get a day-by-day action plan tailored to your event type, date, and services."
-      steps={[
-        { title: "Pick your event type", desc: "Birthday, wedding, corporate, and more." },
-        { title: "Set your event date", desc: "We calculate your planning window." },
-        { title: "Choose your services", desc: "Only relevant tasks will appear." },
-        { title: "Mark what's booked", desc: "Pre-check completed items." },
-      ]}
-    >
-      {content}
-    </ToolIntroWrapper>
+        <style>{`@media(max-width:600px){.timeline-seo-grid{grid-template-columns:1fr !important;}}`}</style>
+    </ToolPageShell>
   );
 }
 
