@@ -336,6 +336,7 @@ export default function EquipmentGenerator() {
   return (
     <ToolPageShell
       accent={SLATE}
+      accentDark="#334155"
       eyebrow="Planning Tool"
       title="Equipment Generator"
       subtitle="Tell us about your event — we'll generate a complete equipment checklist with quantities."

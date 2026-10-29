@@ -136,6 +136,7 @@ export default function TimelinePicker() {
   return (
     <ToolPageShell
       accent={BLUE}
+      accentDark="#1E40AF"
       eyebrow="Planning Tool"
       title="Event Timeline"
       subtitle="Answer 4 quick questions and get a day-by-day action plan tailored to your event type, date, and services."

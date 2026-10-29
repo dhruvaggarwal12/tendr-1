@@ -7,6 +7,7 @@ export default function DecorAnalyzerPage() {
   return (
     <ToolPageShell
       accent={GOLD}
+      accentDark="#8A4A1E"
       eyebrow="AI Tool"
       title="Decor Analyser"
       subtitle="Upload a photo of your own venue for decoration ideas tailored to your space — or upload a look you like alongside your venue, and we'll show exactly how it translates to your actual space."
