@@ -410,15 +410,17 @@ const Auth = () => {
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", fontFamily: font, position: "relative" }}>
-      {/* Back arrow — mobile only */}
+      {/* Back arrow — only way off this page otherwise, so it needs to be visible on every
+          screen size, not just mobile. navigate('/') rather than (-1): this page can be
+          reached via a redirect with no real history to go back to. */}
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate("/")}
+        aria-label="Back to home"
         className="auth-back-btn"
-        style={{ display: "none", position: "fixed", top: 14, left: 14, zIndex: 100, width: 36, height: 36, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "rgba(255,252,245,0.95)", cursor: "pointer", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#6B3A1F", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
+        style={{ display: "flex", position: "fixed", top: 14, left: 14, zIndex: 100, width: 36, height: 36, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "rgba(255,252,245,0.95)", cursor: "pointer", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#6B3A1F", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
       >
         ←
       </button>
-      <style>{`@media(max-width:767px){ .auth-back-btn { display: flex !important; } }`}</style>
 
       {/* ── Left panel: photo + branding ── */}
       <div
@@ -439,7 +441,7 @@ const Auth = () => {
 
         <div style={{ position: "relative", zIndex: 2, display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%", padding: "48px 52px" }}>
           <div>
-            <img src={logo} alt="Tendr" style={{ width: 160, height: "auto" }} />
+            <img src={logo} alt="Tendr" onClick={() => navigate("/")} style={{ width: 160, height: "auto", cursor: "pointer" }} />
           </div>
 
           <div>
@@ -520,7 +522,7 @@ const Auth = () => {
         >
           {/* Logo */}
           <div style={{ textAlign: "center", marginBottom: 24 }}>
-            <img src={logo} alt="Tendr" style={{ width: 160, height: "auto", display: "inline-block" }} />
+            <img src={logo} alt="Tendr" onClick={() => navigate("/")} style={{ width: 160, height: "auto", display: "inline-block", cursor: "pointer" }} />
           </div>
 
           {/* Title */}
