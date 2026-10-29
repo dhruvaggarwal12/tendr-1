@@ -12,10 +12,10 @@ export default function PriceEstimatorModal() {
 
   return (
     <div
-      style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(20,10,4,0.65)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
+      style={{ position: "fixed", inset: 0, zIndex: 10000, background: "radial-gradient(ellipse 70% 60% at 50% 20%, rgba(196,122,46,0.18) 0%, rgba(20,10,4,0.72) 55%, rgba(20,10,4,0.82) 100%)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
       onClick={(e) => { if (e.target === e.currentTarget) closePriceEstimator(); }}
     >
-      <div style={{ width: "100%", maxWidth: 560, maxHeight: "92dvh", overflow: "hidden auto", borderRadius: 20, boxShadow: "0 32px 80px rgba(28,9,0,0.4)", position: "relative" }}>
+      <div style={{ width: "100%", maxWidth: 560, maxHeight: "92dvh", overflow: "hidden auto", borderRadius: 20, boxShadow: "0 32px 80px rgba(28,9,0,0.45), 0 0 0 1.5px rgba(196,122,46,0.25)", position: "relative" }}>
         <button
           onClick={closePriceEstimator}
           aria-label="Close"

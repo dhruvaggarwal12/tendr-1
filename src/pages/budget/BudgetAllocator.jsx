@@ -520,7 +520,12 @@ export default function BudgetAllocator() {
 
   return (
     <>
-    <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font, paddingBottom: "calc(60px + env(safe-area-inset-bottom, 0px))" }}>
+    <div style={{ minHeight: "100vh", background: "#F3F7F0", fontFamily: font, paddingBottom: "calc(60px + env(safe-area-inset-bottom, 0px))", position: "relative" }}>
+      <div aria-hidden style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 60% 38% at 90% -4%, rgba(22,163,74,0.14) 0%, transparent 60%), radial-gradient(ellipse 55% 40% at -4% 100%, rgba(22,163,74,0.1) 0%, transparent 62%)" }} />
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(22,163,74,0.14) 1px, transparent 1px)", backgroundSize: "26px 26px", opacity: 0.5 }} />
+      </div>
+      <div style={{ position: "relative", zIndex: 1 }}>
       <SEO
         title="Event Budget Allocator — Smart Spending Split for Your Event"
         description="See the ideal budget split for your birthday, anniversary, corporate event or party across decoration, catering, photography and entertainment. Free budget planning tool by Tendr for Delhi NCR celebrations."
@@ -791,6 +796,7 @@ export default function BudgetAllocator() {
             <p style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>In Delhi NCR, venue costs include space rental, basic furniture, parking, and in many cases security. Banquet halls in South Delhi and Gurugram typically charge ₹25,000–₹80,000+ for a 4–6 hour slot. Home events reduce venue cost to near zero, freeing up budget for decor and entertainment.</p>
           </div>
         </div>
+      </div>
       </div>
     </div>
 
