@@ -275,16 +275,6 @@ function Mascot({ mood = 'idle', size = 110 }) {
   );
 }
 
-// Matches the 4 cards on the Intent Picker one step later — calendar (plan), people
-// (vendors), confetti (organise), heart (fun) — so the promise made here is the same
-// language the picker delivers on right after.
-const ASK_FEATURES = [
-  { icon: '📅', label: 'Plan your occasion' },
-  { icon: '🧑‍🤝‍🧑', label: 'Explore verified vendors' },
-  { icon: '🎉', label: 'Organise with ease' },
-  { icon: '❤️', label: 'Have fun doing it' },
-];
-
 // ── Phase: Ask tour ────────────────────────────────────────────────────────
 function AskTour({ onYes, onNo }) {
   return (
@@ -349,22 +339,6 @@ function AskTour({ onYes, onNo }) {
           <div style={{ fontSize: 11.5, color: 'rgba(245,230,204,0.48)', marginTop: 5 }}>
             Want a quick tour before you dive in?
           </div>
-        </div>
-
-        {/* Feature chips — the promise made now, delivered on at the picker right after */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 9, width: '100%', marginBottom: 22 }}>
-          {ASK_FEATURES.map(f => (
-            <div key={f.label} style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
-              padding: '11px 8px', borderRadius: 14,
-              background: 'rgba(245,230,204,0.05)',
-              border: '1px solid rgba(245,230,204,0.12)',
-              textAlign: 'center',
-            }}>
-              <span style={{ fontSize: 18 }}>{f.icon}</span>
-              <span style={{ fontSize: 10.5, fontWeight: 600, color: 'rgba(245,230,204,0.82)', lineHeight: 1.3 }}>{f.label}</span>
-            </div>
-          ))}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>

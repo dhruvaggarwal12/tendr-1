@@ -13,14 +13,6 @@ import { addToCart as addToGhCart, removeFromCart as removeFromGhCart, clearCart
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
-const GH_HERO_FALLBACK = [
-  { url: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=900&q=80", name: "Gift Box" },
-  { url: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=900&q=80", name: "Hamper" },
-  { url: "https://images.unsplash.com/photo-1512909006721-3d6018887383?w=900&q=80", name: "Corporate Gift" },
-  { url: "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=900&q=80", name: "Premium Hamper" },
-  { url: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=900&q=80", name: "Sweet Box" },
-];
-
 const GiftHampersCakes = () => {
   usePlanningResume();
   const navigate = useNavigate();
@@ -83,7 +75,6 @@ const GiftHampersCakes = () => {
   const [showGiftTypeFilter, setShowGiftTypeFilter] = useState(false);
   const [similarTo, setSimilarTo] = useState(null);
   const [similarSheetOpen, setSimilarSheetOpen] = useState(false);
-  const [heroIdx, setHeroIdx] = useState(0);
   const [quizOpen, setQuizOpen] = useState(false);
   // Auto-open quiz when navigated with ?quiz=true
   useEffect(() => {
@@ -147,14 +138,6 @@ const GiftHampersCakes = () => {
       .then(d => setProducts(d.products || []))
       .catch(() => {});
   }, []);
-
-  const heroPhotos = samples.length > 0 ? samples : GH_HERO_FALLBACK;
-
-  useEffect(() => {
-    if (heroPhotos.length <= 1) return;
-    const t = setInterval(() => setHeroIdx(i => (i + 1) % heroPhotos.length), 4000);
-    return () => clearInterval(t);
-  }, [heroPhotos.length]);
 
   const preview = previewIdx !== null ? filteredSamples[previewIdx] : null;
   const closePreview = useCallback(() => setPreviewIdx(null), []);
@@ -311,7 +294,6 @@ const GiftHampersCakes = () => {
         @keyframes ghCardIn { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
         @keyframes ghIslandIn { from{opacity:0;transform:translateX(-50%) translateY(20px) scale(0.92)} to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)} }
         @keyframes ghIslandInMobile { from{opacity:0;transform:translateY(20px) scale(0.9)} to{opacity:1;transform:translateY(0) scale(1)} }
-        @keyframes ghFade { from{opacity:0} to{opacity:1} }
         .gh-card { opacity:0; animation:ghCardIn 0.36s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
         .gh-card:hover .gh-overlay { opacity:1 !important; }
         .gh-card:hover img { transform:scale(1.05) !important; }
@@ -321,18 +303,19 @@ const GiftHampersCakes = () => {
         .gh-chip.active { background:#1C0A04 !important; border-color:#1C0A04 !important; color:#CCAB4A !important; }
         .gh-btn-gold:hover { box-shadow:0 10px 36px rgba(196,122,46,0.55) !important; transform:translateY(-1px); }
         .gh-btn-gold:active { transform:scale(0.97) !important; }
-        .gh-hero-3col { display:grid; grid-template-columns:2fr 1fr 1.4fr; background:#1C0A04; min-height:520px; position:relative; }
-        .gh-hero-bg { position:absolute; inset:0; z-index:0; }
-        .gh-hero-bg img { width:100%; height:100%; object-fit:cover; display:block; opacity:0.28; }
-        .gh-hero-bg::after { content:''; position:absolute; inset:0; background:linear-gradient(110deg, rgba(20,8,2,0.97) 0%, rgba(20,8,2,0.88) 38%, rgba(20,8,2,0.65) 68%, rgba(20,8,2,0.45) 100%); }
+        .gh-hero-2col { display:grid; grid-template-columns:1.3fr 1fr; background:#1C0A04; min-height:480px; position:relative; overflow:hidden; }
+        .gh-hero-bg { position:absolute; inset:0; z-index:0; pointer-events:none; }
+        .gh-hero-bg::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 65% 60% at 90% 10%, rgba(196,122,46,0.28) 0%, transparent 60%), radial-gradient(ellipse 50% 55% at 100% 100%, rgba(204,171,74,0.16) 0%, transparent 62%), radial-gradient(ellipse 45% 40% at 0% 100%, rgba(196,122,46,0.1) 0%, transparent 60%); }
+        .gh-hero-bg::after { content:''; position:absolute; inset:0; background-image:radial-gradient(rgba(255,248,236,0.05) 1px, transparent 1px); background-size:24px 24px; opacity:0.6; }
         .gh-hero-left { padding:clamp(36px,5vw,64px) clamp(20px,3.5vw,52px); display:flex; flex-direction:column; justify-content:center; position:relative; z-index:1; overflow:hidden; }
         .gh-hero-left::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 60% at -10% 50%, rgba(196,122,46,0.1) 0%, transparent 65%); pointer-events:none; }
-        .gh-hero-center { overflow:hidden; position:relative; z-index:1; }
-        .gh-hero-center img { width:100%; height:100%; object-fit:cover; display:block; animation:ghFade 0.8s ease forwards; }
-        .gh-hero-right { display:flex; flex-direction:column; gap:0; padding:clamp(28px,4vw,52px) clamp(16px,2.5vw,28px) clamp(28px,4vw,52px) 0; justify-content:center; position:relative; z-index:1; }
-        .gh-hero-step { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; background:rgba(255,248,236,0.06); border:1px solid rgba(196,122,46,0.22); border-radius:14px; backdrop-filter:blur(6px); cursor:pointer; transition:background 0.18s,border-color 0.18s; margin-bottom:10px; }
-        .gh-hero-step:hover { background:rgba(196,122,46,0.12) !important; border-color:rgba(196,122,46,0.4) !important; }
-        .gh-hero-step:last-child { margin-bottom:0; }
+        .gh-hero-visual { display:flex; flex-direction:column; justify-content:center; padding:clamp(28px,4vw,48px) clamp(24px,3.5vw,52px) clamp(28px,4vw,48px) clamp(20px,2.5vw,28px); position:relative; z-index:1; border-left:1px solid rgba(196,122,46,0.14); }
+        .gh-hero-medallion { position:relative; width:84px; height:84px; margin:0 auto 24px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .gh-hero-step-v2 { display:flex; align-items:flex-start; gap:14px; position:relative; padding-bottom:20px; cursor:pointer; }
+        .gh-hero-step-v2:last-child { padding-bottom:0; }
+        .gh-hero-step-v2-line { position:absolute; left:17px; top:36px; bottom:2px; width:1.5px; background:linear-gradient(180deg, rgba(204,171,74,0.4), rgba(204,171,74,0.06)); }
+        .gh-hero-step-v2-num { transition:background 0.18s,border-color 0.18s; }
+        .gh-hero-step-v2:hover .gh-hero-step-v2-num { border-color:rgba(204,171,74,0.6) !important; background:rgba(196,122,46,0.26) !important; }
         .gh-value-strip { background:#F0E8DC; border-top:1px solid rgba(196,122,46,0.12); border-bottom:1px solid rgba(196,122,46,0.12); padding:14px clamp(16px,4vw,52px); display:flex; overflow-x:auto; gap:0; scrollbar-width:none; }
         .gh-value-strip::-webkit-scrollbar { display:none; }
         .gh-value-item { flex:1; min-width:148px; display:flex; align-items:center; gap:11px; padding:5px 18px 5px 0; }
@@ -354,9 +337,8 @@ const GiftHampersCakes = () => {
         .gh-process { display:grid; grid-template-columns:repeat(3,1fr); position:relative; gap:0; }
         .gh-process::before { content:''; position:absolute; top:21px; left:calc(100%/6); right:calc(100%/6); height:1px; background:rgba(196,122,46,0.18); z-index:0; }
         @media(max-width:960px) {
-          .gh-hero-3col { grid-template-columns:1fr; min-height:unset; }
-          .gh-hero-center { height:240px; }
-          .gh-hero-right { padding:0 20px 28px; }
+          .gh-hero-2col { grid-template-columns:1fr; min-height:unset; }
+          .gh-hero-visual { border-left:none; border-top:1px solid rgba(196,122,46,0.14); padding:28px 20px; }
           .gh-quiz-inner { flex-direction:column; }
           .gh-process { grid-template-columns:1fr; gap:28px; }
           .gh-process::before { display:none; }
@@ -364,9 +346,7 @@ const GiftHampersCakes = () => {
           .gh-process-num { margin:0 !important; flex-shrink:0; }
         }
         @media(max-width:560px) {
-          .gh-hero-center { height:200px; }
-          .gh-hero-right { padding:0 16px 24px; }
-          .gh-hero-step { padding:12px 14px; }
+          .gh-hero-visual { padding:24px 16px; }
           .gh-masonry { columns:3 105px; column-gap:7px; }
           .gh-masonry-card { margin-bottom:7px; }
           .gh-island { left:16px !important; right:16px !important; transform:none !important; border-radius:20px !important; animation-name:ghIslandInMobile !important; bottom:calc(61px + env(safe-area-inset-bottom,0px)) !important; }
@@ -385,12 +365,10 @@ const GiftHampersCakes = () => {
         <div style={{ flex:1, height:1, background:"rgba(28,10,4,0.12)" }} />
       </div>
 
-      {/* ── HERO (text | photo | step cards) ── */}
-      <section className="gh-hero-3col">
-        {/* Background photo */}
-        <div className="gh-hero-bg">
-          {heroPhotos[1]?.url && <img src={heroPhotos[1].url} alt="" aria-hidden />}
-        </div>
+      {/* ── HERO (text | decorative icon panel) ── */}
+      <section className="gh-hero-2col">
+        {/* Decorative background — gradient glows + dot texture, no photography */}
+        <div className="gh-hero-bg" />
         {/* Left: text panel */}
         <div className="gh-hero-left">
           {/* Live badge */}
@@ -447,32 +425,51 @@ const GiftHampersCakes = () => {
           </div>
         </div>
 
-        {/* Center: main photo */}
-        <div className="gh-hero-center">
-          <img src={heroPhotos[0]?.url} alt={heroPhotos[0]?.name || "Gift hamper"} />
-        </div>
+        {/* Right: decorative icon medallion + redesigned step flow */}
+        <div className="gh-hero-visual">
+          {/* Icon medallion — replaces the old hero photo with a soft glowing badge
+              built from the site's own icon set, not stock photography */}
+          <div className="gh-hero-medallion">
+            <div aria-hidden style={{ position:"absolute", inset:-14, borderRadius:"50%", background:"radial-gradient(circle, rgba(196,122,46,0.35) 0%, transparent 70%)", filter:"blur(2px)" }} />
+            <div style={{ position:"relative", width:84, height:84, borderRadius:"50%", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 10px 32px rgba(196,122,46,0.45)" }}>
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#1C0A04" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+            </div>
+            <div aria-hidden style={{ position:"absolute", top:-6, right:-4, width:28, height:28, borderRadius:"50%", background:"#1C0A04", border:"1.5px solid rgba(204,171,74,0.5)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="#CCAB4A" stroke="#CCAB4A"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            <div aria-hidden style={{ position:"absolute", bottom:-4, left:-8, width:24, height:24, borderRadius:"50%", background:"#1C0A04", border:"1.5px solid rgba(204,171,74,0.5)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+          </div>
 
-        {/* Right: 3 step cards */}
-        <div className="gh-hero-right">
-          <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", textTransform:"uppercase", color:"#CCAB4A", marginBottom:14, fontFamily:font }}>Gift Finder — 3 Steps</div>
-          {[
-            { n:"1", icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>, label:"Choose a base", sub:"Tokri, Gift Box, Wooden Tray…" },
-            { n:"2", icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>, label:"What goes inside?", sub:"Chocolates, Dry Fruits, Drinkware…" },
-            { n:"3", icon:<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, label:"Finishing touches", sub:"Ribbons, Wax Seal, Gift Card…" },
-          ].map(s => (
-            <div key={s.n} className="gh-hero-step" onClick={() => setQuizOpen(true)}>
-              <div style={{ display:"flex", alignItems:"center", gap:12, minWidth:0 }}>
-                <div style={{ width:34, height:34, borderRadius:"50%", background:"rgba(196,122,46,0.2)", border:"1px solid rgba(204,171,74,0.3)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                  {s.icon}
+          <div style={{ textAlign:"center", marginBottom:26 }}>
+            <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", textTransform:"uppercase", color:"#CCAB4A", marginBottom:6, fontFamily:font }}>Gift Finder</div>
+            <div style={{ fontSize:15, fontWeight:600, color:"#FFF8EC", fontFamily:font }}>Three steps to the right hamper</div>
+          </div>
+
+          <div className="gh-hero-steps">
+            {[
+              { label:"Pick a base", sub:"Tokri, gift box or a wooden tray" },
+              { label:"Fill it up", sub:"Chocolates, dry fruits, drinkware & more" },
+              { label:"Add the finishing touch", sub:"Ribbons, a wax seal, a handwritten card" },
+            ].map((s, i) => (
+              <div key={s.label} className="gh-hero-step-v2" onClick={() => setQuizOpen(true)}>
+                {i < 2 && <div className="gh-hero-step-v2-line" aria-hidden />}
+                <div className="gh-hero-step-v2-num" style={{ width:34, height:34, borderRadius:"50%", background:"rgba(196,122,46,0.16)", border:"1.5px solid rgba(204,171,74,0.4)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:13, fontWeight:800, color:"#CCAB4A", fontFamily:font }}>
+                  {i + 1}
                 </div>
-                <div style={{ minWidth:0 }}>
-                  <div style={{ fontSize:13, fontWeight:600, color:"#FFF8EC", fontFamily:font }}>{s.label}</div>
-                  <div style={{ fontSize:11, color:"rgba(196,164,130,0.6)", marginTop:2, fontFamily:font, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.sub}</div>
+                <div style={{ minWidth:0, paddingTop:4 }}>
+                  <div style={{ fontSize:13.5, fontWeight:700, color:"#FFF8EC", fontFamily:font }}>{s.label}</div>
+                  <div style={{ fontSize:11.5, color:"rgba(196,164,130,0.65)", marginTop:3, fontFamily:font, lineHeight:1.5 }}>{s.sub}</div>
                 </div>
               </div>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(196,164,130,0.45)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink:0 }}><path d="M9 18l6-6-6-6"/></svg>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          <button onClick={() => setQuizOpen(true)} style={{ marginTop:24, display:"inline-flex", alignItems:"center", justifyContent:"center", gap:7, background:"rgba(255,248,236,0.07)", color:"#CCAB4A", fontSize:12.5, fontWeight:700, padding:"11px 20px", borderRadius:100, border:"1px solid rgba(204,171,74,0.3)", cursor:"pointer", fontFamily:font, transition:"background 0.15s" }}>
+            Takes under a minute
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
         </div>
       </section>
 
