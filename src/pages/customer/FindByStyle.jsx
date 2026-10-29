@@ -119,7 +119,11 @@ export default function FindByStyle() {
   const displayedItems = results?.items?.slice(0, 2) ?? [];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FFFCF5', fontFamily: font }}>
+    <div style={{ minHeight: '100vh', background: '#FBF6EC', fontFamily: font, position: 'relative' }}>
+      <div aria-hidden style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 40% at -6% 102%, rgba(196,122,46,0.14) 0%, transparent 62%)' }} />
+      </div>
+      <div style={{ position: 'relative', zIndex: 1 }}>
       <Helmet><meta name="robots" content="noindex, nofollow" /></Helmet>
       <HamburgerNav />
 
@@ -450,6 +454,7 @@ export default function FindByStyle() {
         .fbs-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
         @media (max-width:480px) { .fbs-grid { grid-template-columns:1fr; } }
       `}</style>
+      </div>
     </div>
   );
 }

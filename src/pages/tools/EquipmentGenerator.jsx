@@ -1,12 +1,13 @@
 import React, { useState, useCallback } from "react";
 import { useNavigate, useNavigationType } from "react-router-dom";
-import HamburgerNav from "../../components/HamburgerNav";
+import ToolPageShell, { ToolWindow } from "../../components/ToolPageShell";
 
 const font = "'Outfit', sans-serif";
 const gold = "#C47A2E";
 const goldLt = "#CCAB4A";
 const ink = "#2C1A0E";
 const cream = "#FFFCF5";
+const SLATE = "#64748B";
 
 const STORAGE_KEY = "tendr_equipment_v1";
 
@@ -333,21 +334,19 @@ export default function EquipmentGenerator() {
   });
 
   return (
-    <div style={{ minHeight: "100vh", background: "#FAF7F2", fontFamily: font }}>
-      <HamburgerNav />
-
-      <div style={{ maxWidth: 600, margin: "0 auto", padding: "24px 16px 80px" }}>
-
-        {/* Header */}
-        <div style={{ marginBottom: 28 }}>
-          <div style={{ fontSize: 24, fontWeight: 900, color: ink, lineHeight: 1.2 }}>
-            🔧 Equipment Generator
-          </div>
-          <div style={{ fontSize: 14, color: "#9B7450", marginTop: 6 }}>
-            Tell us about your event — we'll generate a complete equipment checklist with quantities.
-          </div>
-        </div>
-
+    <ToolPageShell
+      accent={SLATE}
+      eyebrow="Planning Tool"
+      title="Equipment Generator"
+      subtitle="Tell us about your event — we'll generate a complete equipment checklist with quantities."
+      maxWidth={600}
+      icon={
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+        </svg>
+      }
+    >
+      <ToolWindow accent={SLATE}>
         {/* Step indicator */}
         <div style={{ display: "flex", gap: 8, marginBottom: 28, alignItems: "center" }}>
           {[1, 2, 3, 4].map(s => (
@@ -538,7 +537,7 @@ export default function EquipmentGenerator() {
             </button>
           </div>
         )}
-      </div>
-    </div>
+      </ToolWindow>
+    </ToolPageShell>
   );
 }
