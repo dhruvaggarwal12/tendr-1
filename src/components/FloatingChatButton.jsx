@@ -77,10 +77,11 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const [rejectedPanelLoading, setRejectedPanelLoading] = useState(false);
   const [rejectedQv, setRejectedQv] = useState(null); // vendor for quick-view side panel
   const [savedVendors, setSavedVendors] = useState(() => getSavedVendors());
-  const [newlyAdded, setNewlyAdded] = useState(null); // 'compare' | 'fun' | 'st' — drives fly-in animation
+  const [newlyAdded, setNewlyAdded] = useState(null); // 'compare' | 'fun' | 'st' | 'gh' — drives fly-in animation
   const prevCompareLen  = useRef(compareSelected.length);
   const prevFunCount    = useRef(funCartCount);
   const prevStCount     = useRef(stCartCount);
+  const prevGhCartCount = useRef(ghCartCount);
   const prevGhPhotoCount = useRef(ghPhotoCount);
   // Persist seen conversation IDs so badge stays gone after viewing
   const [seenIds, setSeenIds] = useState(() => {
@@ -263,6 +264,21 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
       return () => clearTimeout(t);
     }
   }, [stCartCount]);
+
+  // Gift Hamper cart previously only auto-opened the launcher for ghPhotoCount (decor
+  // analysis photos), not for actually adding a hamper product to cart — so the heart
+  // icon never flew in on the Gift Hampers page the way it does for Fun Activities and
+  // Stationery, even though it already counts gift hampers in its badge.
+  useEffect(() => {
+    const prev = prevGhCartCount.current;
+    prevGhCartCount.current = ghCartCount;
+    if (prev === 0 && ghCartCount > 0) {
+      setLauncherOpen(true);
+      setNewlyAdded('gh');
+      const t = setTimeout(() => setNewlyAdded(null), 600);
+      return () => clearTimeout(t);
+    }
+  }, [ghCartCount]);
 
   useEffect(() => {
     const prev = prevGhPhotoCount.current;
