@@ -79,7 +79,7 @@ const EventPlanning = () => {
   const navigate = useNavigate();
   const { openPriceEstimator } = usePriceEstimator();
   const location = useLocation();
-  const { openConciergeChat, openVendorChat } = useChatOverlay();
+  const { openConciergeChat, openVendorChat, openAllBookingsChat } = useChatOverlay();
   const openBaatKaroChat = useOpenBaatKaroChat();
   const { canInstall, triggerInstall } = useInstallPrompt();
   const TRANSITION_MS = 350;
@@ -1163,7 +1163,7 @@ const EventPlanning = () => {
               style={{ flex: "1 1 140px", padding: "12px 0", borderRadius: 12, border: `1.5px solid rgba(196,122,46,0.3)`, background: "#fff", color: BROWN, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
               📋 Manage My Event
             </button>
-            <button onClick={() => createdConversationId ? openConciergeChat(createdConversationId, false) : navigate("/chats")}
+            <button onClick={() => createdConversationId ? openAllBookingsChat() : navigate("/chats")}
               style={{ flex: "1 1 120px", padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
               View Chat →
             </button>
