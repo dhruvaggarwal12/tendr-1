@@ -245,8 +245,10 @@ const VendorList = () => {
   // nothing newer has started in the meantime.
   const vendorFetchSeqRef = useRef(0);
 
-  // fetch on filter changes
-  useEffect(() => {
+  // Shared by the filter-change effect below AND PullToRefresh's onRefresh — returns
+  // the promise chain so PullToRefresh's spinner stays up until the fetch actually
+  // resolves.
+  const fetchVendors = React.useCallback(() => {
     setIsLoading(true);
     const seq = ++vendorFetchSeqRef.current;
     const payload = {
@@ -257,7 +259,7 @@ const VendorList = () => {
       ...((corporateOnly || formEventType === "Corporate Event") && { hasCorporateExperience: true }),
       sortBy, sortOrder, page: 1, limit: 20, serviceFilters: secondaryFilters,
     };
-    getVendors(payload)
+    return getVendors(payload)
       .then((data) => {
         if (seq !== vendorFetchSeqRef.current) return; // a newer request has since started
         setVendorList(sortByPhoto(data.vendors || []));
@@ -267,7 +269,12 @@ const VendorList = () => {
       .catch((err) => console.error("Error fetching vendors:", err))
       .finally(() => { if (seq === vendorFetchSeqRef.current) setIsLoading(false); });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortBy, sortOrder, locationType, serviceType, currentCatBudget]); // secondaryFilters excluded to prevent loop
+  }, [sortBy, sortOrder, locationType, serviceType, currentCatBudget]); // secondaryFilters/date/corporateOnly intentionally excluded — same set the old effect tracked
+
+  // fetch on filter changes
+  useEffect(() => {
+    fetchVendors();
+  }, [fetchVendors]);
 
   const fetchPage = (pageNum) => {
     setIsLoading(true);
@@ -331,7 +338,7 @@ const VendorList = () => {
 
 
   return (
-    <PullToRefresh onRefresh={doFetch}>
+    <PullToRefresh onRefresh={fetchVendors}>
     <div style={{ minHeight: "100vh", background: "#F8F4EF", paddingBottom: "calc(60px + env(safe-area-inset-bottom, 0px))" }}>
       <SEO
         title={vendorListTitle(serviceType, locationType)}
