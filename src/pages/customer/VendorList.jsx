@@ -365,7 +365,14 @@ const VendorList = () => {
           {/* Page header */}
           <div style={{ marginBottom: 4 }}>
 
-            {/* Per-category budget range adjuster — compact slider (or fixed label from Budget Allocator) */}
+            <div style={{ marginBottom: 10 }} className="vendor-heading-wrap">
+              <style>{`@media(max-width:639px){.vendor-heading-wrap h1{display:none!important}}`}</style>
+              <h1 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 26, color: "#1a1a1a", margin: 0, lineHeight: 1.2, textDecoration: "underline", textDecorationColor: "rgba(196,122,46,0.5)", textUnderlineOffset: 5 }}>
+                {serviceType || "All"} Vendors
+              </h1>
+            </div>
+
+            {/* Per-category budget range adjuster — compact slider (or fixed label from Budget Allocator) — Price Estimator sits to its right on the same line */}
             {serviceType && (() => {
               const CAT_RANGES = {
                 Caterer:      { min: 5000,  max: 500000, step: 5000  },
@@ -376,73 +383,37 @@ const VendorList = () => {
               const range = CAT_RANGES[serviceType] || { min: 2000, max: 300000, step: 2000 };
               const val = currentCatBudget || range.max;
               return (
-                <div className="vendor-budget-strip" style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10, padding: "8px 16px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", fontFamily: "'Outfit',sans-serif", maxWidth: "100%", boxSizing: "border-box" }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "#5a3a1a", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                    {serviceType}
-                  </span>
-                  {fromBudgetAllocator ? (
-                    <span style={{ fontSize: 14, fontWeight: 900, color: "#C47A2E" }}>{fmtBudget(val)}</span>
-                  ) : (
-                    <>
-                      <span style={{ fontSize: 11, color: "#9B7450", flexShrink: 0 }}>{fmtBudget(range.min)}</span>
-                      <div style={{ flex: 1, minWidth: 80 }}>
-                        <style>{`.budget-sl::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#C47A2E;cursor:pointer;box-shadow:0 1px 4px rgba(196,122,46,0.4)}.budget-sl::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#C47A2E;cursor:pointer;border:none}.budget-sl{-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;outline:none;border:none}`}</style>
-                        <input type="range" min={range.min} max={range.max} step={range.step} value={val}
-                          className="budget-sl"
-                          onChange={e => dispatch(setCategoryBudgets({ ...categoryBudgets, [serviceType]: Number(e.target.value) }))}
-                          style={{ width: "100%", cursor: "pointer", background: `linear-gradient(to right, #C47A2E ${((val - range.min) / (range.max - range.min)) * 100}%, rgba(196,122,46,0.2) 0)` }} />
-                      </div>
-                      <span style={{ fontSize: 13, fontWeight: 900, color: "#C47A2E", flexShrink: 0 }}>{fmtBudget(val)}</span>
-                    </>
-                  )}
+                <div className="vendor-budget-strip" style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                  <div style={{ flex: "1 1 260px", display: "flex", alignItems: "center", gap: 10, padding: "8px 16px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", fontFamily: "'Outfit',sans-serif", maxWidth: "100%", boxSizing: "border-box" }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#5a3a1a", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                      {serviceType}
+                    </span>
+                    {fromBudgetAllocator ? (
+                      <span style={{ fontSize: 14, fontWeight: 900, color: "#C47A2E" }}>{fmtBudget(val)}</span>
+                    ) : (
+                      <>
+                        <span style={{ fontSize: 11, color: "#9B7450", flexShrink: 0 }}>{fmtBudget(range.min)}</span>
+                        <div style={{ flex: 1, minWidth: 80 }}>
+                          <style>{`.budget-sl::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#C47A2E;cursor:pointer;box-shadow:0 1px 4px rgba(196,122,46,0.4)}.budget-sl::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#C47A2E;cursor:pointer;border:none}.budget-sl{-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;outline:none;border:none}`}</style>
+                          <input type="range" min={range.min} max={range.max} step={range.step} value={val}
+                            className="budget-sl"
+                            onChange={e => dispatch(setCategoryBudgets({ ...categoryBudgets, [serviceType]: Number(e.target.value) }))}
+                            style={{ width: "100%", cursor: "pointer", background: `linear-gradient(to right, #C47A2E ${((val - range.min) / (range.max - range.min)) * 100}%, rgba(196,122,46,0.2) 0)` }} />
+                        </div>
+                        <span style={{ fontSize: 13, fontWeight: 900, color: "#C47A2E", flexShrink: 0 }}>{fmtBudget(val)}</span>
+                      </>
+                    )}
+                  </div>
+                  <button onClick={() => openPriceEstimator()}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", flexShrink: 0 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="11" y2="15"/></svg>
+                    Price Estimator
+                  </button>
                 </div>
               );
             })()}
-            {serviceType === "Decorator" && window.innerWidth >= 768 && (
-              <div style={{ display: "inline-flex", gap: 8, marginBottom: 12, marginLeft: 8, verticalAlign: "top" }}>
-                <button
-                  onClick={async () => {
-                    setGalleryOpen(true);
-                    if (galleryPhotos.length > 0) return;
-                    setGalleryLoading(true);
-                    try {
-                      const res = await fetch(`${BASE_URL}/gallery`);
-                      const data = await res.json();
-                      setGalleryPhotos((data.grouped?.["Decoration"] || []).map(p => p.imageUrl || p.url || p).filter(Boolean));
-                    } catch {} finally { setGalleryLoading(false); }
-                  }}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap" }}
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                  See Gallery
-                </button>
-                {/* <button onClick={() => window.open("/decor-finder", "_blank")} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap" }}>🎨 Decor Finder ↗</button> */}
-              </div>
-            )}
 
-            {/* Category switcher — always visible so Browse always starts on a real
-                category instead of a blank "All Vendors" view, and switching is one tap */}
-            <div className="vendor-cat-switcher" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "#9B7450", flexShrink: 0 }}>Category:</span>
-              <select value={serviceType || ""}
-                onChange={e => dispatch(setFilters({ serviceType: e.target.value }))}
-                style={{ flex: "1 1 180px", minWidth: 150, padding: "7px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#2C1A0E", fontSize: 14, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer", outline: "none" }}>
-                {[
-                  { id: "Photographer", label: "📸 Photography" },
-                  { id: "Caterer",      label: "🍽 Catering" },
-                  { id: "Decorator",    label: "🎀 Decoration" },
-                  { id: "DJ",           label: "🎵 DJ" },
-                ].map(({ id, label }) => (
-                  <option key={id} value={id}>{label}</option>
-                ))}
-              </select>
-              <button onClick={() => openPriceEstimator()}
-                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", flexShrink: 0 }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="11" y2="15"/></svg>
-                Price Estimator
-              </button>
-            </div>
             <style>{`
               @media (max-width: 639px) {
                 .vendor-filter-chips { flex-wrap: nowrap !important; overflow-x: auto !important; scrollbar-width: none !important; padding-bottom: 4px !important; }
@@ -453,13 +424,6 @@ const VendorList = () => {
                 .vendor-sort-label { display: none !important; }
               }
             `}</style>
-
-            <div style={{ marginBottom: 10 }} className="vendor-heading-wrap">
-              <style>{`@media(max-width:639px){.vendor-heading-wrap h1{display:none!important}}`}</style>
-              <h1 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 26, color: "#1a1a1a", margin: 0, lineHeight: 1.2, textDecoration: "underline", textDecorationColor: "rgba(196,122,46,0.5)", textUnderlineOffset: 5 }}>
-                {serviceType || "All"} Vendors
-              </h1>
-            </div>
 
             <div className="vendor-filter-chips" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {[
@@ -658,37 +622,42 @@ const VendorList = () => {
             </div>
           )}
 
-          {/* Decor Analyser banner — Decorator listing only */}
+          {/* AI tools row — Decorator listing only. Three small boxes side by side
+              instead of two full-width banners + a separate Gallery button. */}
           {serviceType === "Decorator" && (
-            <div
-              onClick={() => window.open("/decor-analyser", "_blank")}
-              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, padding: "14px 18px", marginBottom: 10, borderRadius: 14, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.22)", cursor: "pointer", fontFamily: font }}
-            >
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>AI Tool · Decor Analyser</div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E", lineHeight: 1.4 }}>Upload a photo of your venue</div>
-                <div style={{ fontSize: 11.5, color: "#9B7450", marginTop: 3, lineHeight: 1.5 }}>We'll suggest decor zones, colours and a budget for your actual space — then match you to decorators who can do it.</div>
-              </div>
-              <div style={{ flexShrink: 0, padding: "9px 16px", borderRadius: 10, background: "#C47A2E", color: "#fff", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>
-                Analyse →
-              </div>
-            </div>
-          )}
-
-          {/* Find by Style banner — Decorator listing only */}
-          {serviceType === "Decorator" && (
-            <div
-              onClick={() => navigate("/find-by-style")}
-              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, padding: "14px 18px", marginBottom: 14, borderRadius: 14, background: "linear-gradient(135deg,#1A0E06 0%,#2C1A0E 100%)", border: "1px solid rgba(204,171,74,0.2)", cursor: "pointer", fontFamily: font }}
-            >
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Find by Style</div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#FFF8EC", lineHeight: 1.4 }}>Not sure what style you want?</div>
-                <div style={{ fontSize: 11.5, color: "rgba(255,248,236,0.6)", marginTop: 3, lineHeight: 1.5 }}>Upload a photo — we'll match you with decorators who can create that look.</div>
-              </div>
-              <div style={{ flexShrink: 0, padding: "9px 16px", borderRadius: 10, background: "rgba(204,171,74,0.15)", border: "1px solid rgba(204,171,74,0.3)", color: "#CCAB4A", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>
-                Try it →
-              </div>
+            <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+              {[
+                {
+                  key: "analyser", label: "AI Tool", title: "Decor Analyser", icon: "✨",
+                  onClick: () => window.open("/decor-analyser", "_blank"),
+                  bg: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.22)", labelColor: "#C47A2E", titleColor: "#2C1A0E",
+                },
+                {
+                  key: "style", label: "Find by Style", title: "Match my look", icon: "🎨",
+                  onClick: () => navigate("/find-by-style"),
+                  bg: "linear-gradient(135deg,#1A0E06 0%,#2C1A0E 100%)", border: "1px solid rgba(204,171,74,0.2)", labelColor: "#CCAB4A", titleColor: "#FFF8EC",
+                },
+                {
+                  key: "gallery", label: "Browse", title: "See Gallery", icon: "🖼️",
+                  onClick: async () => {
+                    setGalleryOpen(true);
+                    if (galleryPhotos.length > 0) return;
+                    setGalleryLoading(true);
+                    try {
+                      const res = await fetch(`${BASE_URL}/gallery`);
+                      const data = await res.json();
+                      setGalleryPhotos((data.grouped?.["Decoration"] || []).map(p => p.imageUrl || p.url || p).filter(Boolean));
+                    } catch {} finally { setGalleryLoading(false); }
+                  },
+                  bg: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.22)", labelColor: "#C47A2E", titleColor: "#2C1A0E",
+                },
+              ].map(t => (
+                <button key={t.key} onClick={t.onClick}
+                  style={{ flex: "1 1 160px", minWidth: 140, textAlign: "left", padding: "12px 14px", borderRadius: 12, background: t.bg, border: t.border, cursor: "pointer", fontFamily: font }}>
+                  <div style={{ fontSize: 9.5, fontWeight: 700, color: t.labelColor, textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 4 }}>{t.icon} {t.label}</div>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: t.titleColor, lineHeight: 1.3 }}>{t.title}</div>
+                </button>
+              ))}
             </div>
           )}
 

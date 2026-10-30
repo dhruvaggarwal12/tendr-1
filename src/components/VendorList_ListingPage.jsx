@@ -521,10 +521,13 @@ const VendorList_ListingPage = ({
                             <div style={{ width: 48, height: 48, borderRadius: "50%", flexShrink: 0, background: "rgba(196,122,46,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🏷️</div>
                           )}
                           <div style={{ minWidth: 0 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                               <div style={{ fontSize: 14.5, fontWeight: 800, color: "#2C1A0E", lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vendor.name}</div>
                               {vendor.isVerified && (
                                 <span title="Verified" style={{ fontSize: 9.5, fontWeight: 800, color: "#fff", background: "#C47A2E", borderRadius: 100, padding: "1.5px 6px", flexShrink: 0 }}>✓</span>
+                              )}
+                              {vendor.isTopRated && (
+                                <span style={{ fontSize: 9.5, fontWeight: 800, color: "#b45309", background: "rgba(245,158,11,0.12)", borderRadius: 100, padding: "1.5px 7px", flexShrink: 0 }}>⭐ Top Rated</span>
                               )}
                             </div>
                             <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em" }}>{vendor.serviceType}</div>
@@ -541,14 +544,36 @@ const VendorList_ListingPage = ({
                           </div>
                         )}
 
-                        <div style={{ fontSize: 13, fontWeight: 700, color: "#5a3a1a", marginBottom: 4 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "#5a3a1a", marginBottom: 8 }}>
                           {(vendor.price > 0 || vendor.startingPrice > 0)
                             ? `Starting at ₹${Number(vendor.price || vendor.startingPrice).toLocaleString("en-IN")} / event`
                             : "Price on request"}
                         </div>
-                        {(vendor.locations?.[0] || vendor.city) && (
-                          <div style={{ fontSize: 11.5, color: "#9B7450", marginBottom: 8 }}>📍 {vendor.locations?.length > 1 ? vendor.locations.slice(0,3).join(" · ") : (vendor.locations?.[0] || vendor.city)}</div>
-                        )}
+
+                        {/* Stats — what used to live in the old side-panel quick view
+                            (events done, experience, team size, cities served) */}
+                        {(() => {
+                          const eventsCompleted = vendor.totalEventsCompleted ?? vendor.eventsCompleted ?? null;
+                          const stats = [
+                            eventsCompleted > 0 && { label: "Events Done", value: `${eventsCompleted}+` },
+                            vendor.yearsOfExperience > 0 && { label: "Experience", value: `${vendor.yearsOfExperience}y` },
+                            vendor.teamSize > 0 && { label: "Team Size", value: `${vendor.teamSize}` },
+                            (vendor.locations?.length > 0 || vendor.city) && { label: "Serves", value: vendor.locations?.length > 0 ? vendor.locations.slice(0, 2).join(", ") : vendor.city },
+                          ].filter(Boolean);
+                          if (!stats.length) return (vendor.locations?.[0] || vendor.city) ? (
+                            <div style={{ fontSize: 11.5, color: "#9B7450", marginBottom: 8 }}>📍 {vendor.locations?.length > 1 ? vendor.locations.slice(0,3).join(" · ") : (vendor.locations?.[0] || vendor.city)}</div>
+                          ) : null;
+                          return (
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 10 }}>
+                              {stats.map(({ label, value }) => (
+                                <div key={label} style={{ background: "rgba(196,122,46,0.05)", borderRadius: 8, padding: "6px 9px", border: "1px solid rgba(196,122,46,0.1)" }}>
+                                  <div style={{ fontSize: 8.5, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>{label}</div>
+                                  <div style={{ fontSize: 12.5, fontWeight: 800, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</div>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
 
                         {vendor.description && (
                           <p style={{ fontSize: 11.5, color: "#6b4a28", lineHeight: 1.55, margin: "4px 0 10px" }}>
