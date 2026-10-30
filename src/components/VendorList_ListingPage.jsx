@@ -469,9 +469,6 @@ const VendorList_ListingPage = ({
                               ? `Starting at ₹${Number(vendor.price || vendor.startingPrice).toLocaleString("en-IN")} / event`
                               : "Price on request"}
                           </span>
-                          {vendor.isTopRated && (
-                            <span style={{ fontSize: 10, fontWeight: 700, color: "#15803d", background: "rgba(21,128,61,0.09)", padding: "2px 8px", borderRadius: 20, border: "1px solid rgba(21,128,61,0.16)", flexShrink: 0 }}>Available</span>
-                          )}
                         </div>
                       </div>
 
