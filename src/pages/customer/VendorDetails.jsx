@@ -106,32 +106,24 @@ const VendorDetailsPage = () => {
     }
   };
 
-  const handleEnquirySubmit = async () => {
+  // Feeds straight into the chat overlay (openVendorChat) instead of the old
+  // direct-to-vendor enquiry channel — these details seed the event context the
+  // same way the listing-flow/event-context paths already do before opening chat.
+  const handleEnquirySubmit = () => {
     if (!enquiryForm.name.trim() || !enquiryForm.phone.trim()) {
       setEnquiryError('Name and phone are required');
       return;
     }
-    setEnquiryLoading(true);
     setEnquiryError('');
-    try {
-      const res = await fetch(`${BASE_URL}/vendors/${vendor._id}/direct-enquiry`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          clientName: enquiryForm.name.trim(),
-          clientPhone: enquiryForm.phone.trim(),
-          eventType: enquiryForm.eventType || undefined,
-          eventDate: enquiryForm.eventDate || undefined,
-          message: enquiryForm.message || undefined,
-        }),
-      });
-      if (!res.ok) throw new Error('Failed');
-      setEnquiryDone(true);
-    } catch {
-      setEnquiryError('Something went wrong. Please try again.');
-    } finally {
-      setEnquiryLoading(false);
-    }
+    dispatch(setMultipleFormData({
+      eventType: enquiryForm.eventType,
+      date: enquiryForm.eventDate,
+      additionalInfo: enquiryForm.message,
+      token,
+    }));
+    dispatch(setBookingType("you-do-it"));
+    setEnquiryOpen(false);
+    openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
   };
 
   const navigate = useNavigate();
@@ -464,28 +456,6 @@ const VendorDetailsPage = () => {
     navigate('/booking/review');
   };
 
-  // A "cold" visit (no isFromListingFlow/hasEventContext) is how a vendor's own shared link
-  // looks — that's the Profile Share lane: vendor-direct chat, no admin mediation, no
-  // commission. Login is required either way now; this just decides which conversation type
-  // gets created once the visitor is authenticated.
-  const isColdProfileVisit = !isFromListingFlow && !hasEventContext;
-
-  const startDirectChatAuthed = async () => {
-    try {
-      const res = await fetch(`${BASE_URL}/conversations/direct`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        credentials: 'include',
-        body: JSON.stringify({ vendorId: vendor._id, serviceType: vendor.serviceType }),
-      });
-      if (!res.ok) throw new Error('Failed to start chat');
-      const { conversationId } = await res.json();
-      navigate(`/chat/direct/${conversationId}`);
-    } catch (err) {
-      console.error('Direct chat error:', err);
-    }
-  };
-
   const openGigHeroChat = () => {
     // Direct link visitor → go straight to WhatsApp/call, not Tendr platform chat
     if (isDirectLink) {
@@ -494,17 +464,17 @@ const VendorDetailsPage = () => {
       }
       return;
     }
-    if (isColdProfileVisit) {
-      if (!token) { requireAuth(startDirectChatAuthed); return; }
-      startDirectChatAuthed();
-      return;
-    }
     if (!token) { requireAuth(openGigHeroChat); return; }
     if (hasActiveChatSave) { openExistingChatForVendor(vendor._id, vendor, token, openExistingChat, openVendorChat); return; }
     if (isFromListingFlow) { openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType }); return; }
     if (hasEventContext) { dispatch(setBookingType("you-do-it")); openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType }); return; }
-    setChatEventForm({ eventType: "", guests: "", date: "", location: "" });
-    setChatFormOpen(true);
+    // Cold profile visit (reached straight from Browse Vendors, no event context yet) —
+    // ask a few quick details first instead of starting an empty-context chat or
+    // navigating away to a separate /chat/direct page.
+    setEnquiryOpen(true);
+    setEnquiryDone(false);
+    setEnquiryError('');
+    setEnquiryForm({ name: '', phone: '', eventType: '', eventDate: '', message: '' });
   };
 
   const onGigProBook = () => {
@@ -1071,17 +1041,10 @@ const VendorDetailsPage = () => {
                     style={{ flex: 1, padding: "12px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(196,122,46,0.4)", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}
                   >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
+                    {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat to Book"}
                   </button>
                 )}
               </div>
-              {!isFromPlanFlow && !isPerformer && (
-                <button onClick={() => { setEnquiryOpen(true); setEnquiryDone(false); setEnquiryError(''); setEnquiryForm({ name: '', phone: '', eventType: '', eventDate: '', message: '' }); }}
-                  style={{ width: '100%', padding: '11px', borderRadius: 10, border: 'none', background: '#2C1A0E', color: '#CCAB4A', fontSize: 13, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  Book Now
-                </button>
-              )}
               {!isDirectLink && <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "0 0 10px", lineHeight: 1.5 }}>Our team reviews and connects you within a few hours</p>}
               {/* Contact directly — only on direct link visits */}
               {isDirectLink && vendor?.phoneNumber && (
@@ -1418,17 +1381,10 @@ const VendorDetailsPage = () => {
                       style={{ flex: 1, padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                      {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
+                      {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat to Book"}
                     </button>
                   )}
                 </div>
-                {!isFromPlanFlow && (
-                  <button onClick={() => { setEnquiryOpen(true); setEnquiryDone(false); setEnquiryError(''); setEnquiryForm({ name: '', phone: '', eventType: '', eventDate: '', message: '' }); }}
-                    style={{ width: '100%', padding: '11px', borderRadius: 11, border: 'none', background: '#2C1A0E', color: '#CCAB4A', fontSize: 13, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    Book Now
-                  </button>
-                )}
                 {!isDirectLink && <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "0 0 10px", lineHeight: 1.5 }}>Our team reviews and connects you within a few hours</p>}
 
                 {/* Contact directly — only on direct link visits */}
@@ -1966,30 +1922,21 @@ const VendorDetailsPage = () => {
           </div>
         </div>
       )}
-      {/* Direct Enquiry Modal */}
+      {/* Pre-chat enquiry modal — centered (not a bottom sheet), opened by "Chat to Book"
+          when there's no event context yet; submitting feeds straight into the chat
+          overlay (openVendorChat) instead of a separate direct-to-vendor channel. */}
       {enquiryOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
           onClick={e => { if (e.target === e.currentTarget) setEnquiryOpen(false); }}>
-          <div style={{ background: '#FFFCF5', borderRadius: '20px 20px 0 0', padding: '24px 22px 32px', width: '100%', maxWidth: 480, maxHeight: '90vh', overflowY: 'auto', fontFamily: "'Outfit', sans-serif" }}>
+          <div style={{ background: '#FFFCF5', borderRadius: 20, padding: '24px 22px 28px', width: '100%', maxWidth: 480, maxHeight: '90vh', overflowY: 'auto', fontFamily: "'Outfit', sans-serif" }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <div>
                 <div style={{ fontSize: 17, fontWeight: 800, color: '#2C1A0E' }}>Send Enquiry</div>
-                <div style={{ fontSize: 12, color: '#9B7450', marginTop: 2 }}>{vendor?.name} will contact you directly</div>
+                <div style={{ fontSize: 12, color: '#9B7450', marginTop: 2 }}>Tell us a bit about your event before you chat with {vendor?.name}</div>
               </div>
               <button onClick={() => setEnquiryOpen(false)} style={{ width: 32, height: 32, borderRadius: 8, border: '1.5px solid rgba(196,122,46,0.2)', background: 'transparent', color: '#9B7450', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
             </div>
-            {enquiryDone ? (
-              <div style={{ textAlign: 'center', padding: '28px 0 8px' }}>
-                <div style={{ fontSize: 44, marginBottom: 14 }}>✅</div>
-                <div style={{ fontSize: 18, fontWeight: 800, color: '#2C1A0E', marginBottom: 8 }}>Enquiry Sent!</div>
-                <div style={{ fontSize: 13, color: '#9B7450', marginBottom: 28, lineHeight: 1.6 }}>{vendor?.name} has received your enquiry and will reach out to you directly.</div>
-                <button onClick={() => setEnquiryOpen(false)}
-                  style={{ padding: '12px 32px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg,#C47A2E,#CCAB4A)', color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>
-                  Done
-                </button>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div>
                   <label style={{ fontSize: 12, fontWeight: 700, color: '#9B7450', display: 'block', marginBottom: 5 }}>Your Name *</label>
                   <input value={enquiryForm.name} onChange={e => setEnquiryForm(f => ({ ...f, name: e.target.value }))}
@@ -2025,14 +1972,13 @@ const VendorDetailsPage = () => {
                 </div>
                 {enquiryError && <div style={{ fontSize: 12, color: '#dc2626', fontWeight: 600 }}>{enquiryError}</div>}
                 <button onClick={handleEnquirySubmit} disabled={enquiryLoading}
-                  style={{ padding: '13px', borderRadius: 12, border: 'none', background: enquiryLoading ? 'rgba(196,122,46,0.5)' : 'linear-gradient(135deg,#C47A2E,#CCAB4A)', color: '#fff', fontSize: 14, fontWeight: 800, cursor: enquiryLoading ? 'default' : 'pointer', fontFamily: "'Outfit',sans-serif", boxShadow: '0 4px 16px rgba(196,122,46,0.3)' }}>
-                  {enquiryLoading ? 'Sending…' : 'Send Enquiry'}
+                  style={{ padding: '13px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg,#C47A2E,#CCAB4A)', color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", boxShadow: '0 4px 16px rgba(196,122,46,0.3)' }}>
+                  Start Chat →
                 </button>
                 <p style={{ fontSize: 11, color: '#9B7450', textAlign: 'center', margin: 0, lineHeight: 1.5 }}>
-                  Your details go directly to {vendor?.name}. Tendr is not involved in this booking.
+                  This opens a chat with {vendor?.name} on Tendr.
                 </p>
-              </div>
-            )}
+            </div>
           </div>
         </div>
       )}
