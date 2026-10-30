@@ -327,7 +327,7 @@ const GiftHampersCakes = () => {
         .gh-quiz-inner { position:relative; z-index:1; width:100%; display:flex; gap:clamp(24px,5vw,72px); align-items:center; flex-wrap:wrap; padding:clamp(44px,6vw,72px) clamp(24px,5vw,56px); }
         .gh-quiz-step { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; background:rgba(255,248,236,0.06); border:1px solid rgba(196,122,46,0.22); border-radius:14px; backdrop-filter:blur(6px); cursor:pointer; transition:background 0.18s,border-color 0.18s; }
         .gh-quiz-step:hover { background:rgba(196,122,46,0.12) !important; border-color:rgba(196,122,46,0.4) !important; }
-        .gh-masonry { columns:3 200px; column-gap:12px; }
+        .gh-masonry { columns:5 170px; column-gap:12px; }
         .gh-masonry-card { break-inside:avoid; margin-bottom:12px; }
         .gh-cat-scroll { display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; padding-bottom:4px; }
         .gh-cat-scroll::-webkit-scrollbar { display:none; }
@@ -349,6 +349,10 @@ const GiftHampersCakes = () => {
           .gh-process::before { display:none; }
           .gh-process-step { display:flex; align-items:flex-start; gap:16px; text-align:left; }
           .gh-process-num { margin:0 !important; flex-shrink:0; }
+          .gh-masonry { columns:4 150px; }
+        }
+        @media(max-width:768px) {
+          .gh-masonry { columns:3 140px; }
         }
         @media(max-width:560px) {
           .gh-hero-visual { padding:24px 16px; }

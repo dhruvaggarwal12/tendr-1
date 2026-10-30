@@ -376,23 +376,33 @@ const VendorList = () => {
 
             <div style={{ marginBottom: 10 }} className="vendor-heading-wrap">
               <style>{`.vendor-heading-select{appearance:none;-webkit-appearance:none;-moz-appearance:none;}@media(max-width:639px){.vendor-heading-select{font-size:20px!important;}}`}</style>
-              <h1 style={{ margin: 0, display: "inline-block", position: "relative" }}>
-                <select
-                  className="vendor-heading-select"
-                  value={serviceType || ""}
-                  onChange={(e) => dispatch(setFilters({ serviceType: e.target.value }))}
-                  aria-label="Change vendor category"
-                  style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 26, color: "#1a1a1a", lineHeight: 1.2, textDecoration: "underline", textDecorationColor: "rgba(196,122,46,0.5)", textUnderlineOffset: 5, background: "transparent", border: "none", cursor: "pointer", padding: "0 26px 0 0", margin: 0, outline: "none" }}>
-                  {!serviceType && <option value="">All Vendors</option>}
-                  {["Photographer", "Caterer", "Decorator", "DJ"].map((id) => (
-                    <option key={id} value={id}>{id} Vendors</option>
-                  ))}
-                </select>
-                <svg aria-hidden width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                  style={{ position: "absolute", right: 2, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-              </h1>
+              {isFromPlanFlow ? (
+                // Inside the You Do It / Let Us Do It plan flow, each category is browsed
+                // one at a time via the sidebar's "My Services" Browse links — switching
+                // category here would silently detour out of the plan, so the heading is
+                // a fixed label, not a dropdown (dropdown stays on the plain Browse Vendors flow).
+                <h1 style={{ margin: 0, fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 26, color: "#1a1a1a", lineHeight: 1.2 }}>
+                  {serviceType ? `${serviceType} Vendors` : "All Vendors"}
+                </h1>
+              ) : (
+                <h1 style={{ margin: 0, display: "inline-block", position: "relative" }}>
+                  <select
+                    className="vendor-heading-select"
+                    value={serviceType || ""}
+                    onChange={(e) => dispatch(setFilters({ serviceType: e.target.value }))}
+                    aria-label="Change vendor category"
+                    style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 26, color: "#1a1a1a", lineHeight: 1.2, textDecoration: "underline", textDecorationColor: "rgba(196,122,46,0.5)", textUnderlineOffset: 5, background: "transparent", border: "none", cursor: "pointer", padding: "0 26px 0 0", margin: 0, outline: "none" }}>
+                    {!serviceType && <option value="">All Vendors</option>}
+                    {["Photographer", "Caterer", "Decorator", "DJ"].map((id) => (
+                      <option key={id} value={id}>{id} Vendors</option>
+                    ))}
+                  </select>
+                  <svg aria-hidden width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                    style={{ position: "absolute", right: 2, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </h1>
+              )}
             </div>
 
             {/* Per-category budget range adjuster — compact slider (or fixed label from Budget Allocator) — Price Estimator sits to its right on the same line */}

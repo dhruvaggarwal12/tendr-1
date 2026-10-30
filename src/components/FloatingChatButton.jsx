@@ -243,11 +243,17 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
     }
   }, [compareSelected.length]);
 
+  // When nothing but cart items exist (no saved/compare), the launcher-fab itself
+  // already renders as the single shared heart icon (see cartOnly below) — opening
+  // the stack too would pop a second, identical heart next to it. So the stack only
+  // auto-opens when there's something else (saved/compare) to show alongside the cart.
+  const isCartOnlyNow = () => savedVendors.length === 0 && compareSelected.length === 0;
+
   useEffect(() => {
     const prev = prevFunCount.current;
     prevFunCount.current = funCartCount;
     if (prev === 0 && funCartCount > 0) {
-      setLauncherOpen(true);
+      if (!isCartOnlyNow()) setLauncherOpen(true);
       setNewlyAdded('fun');
       const t = setTimeout(() => setNewlyAdded(null), 600);
       return () => clearTimeout(t);
@@ -258,7 +264,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
     const prev = prevStCount.current;
     prevStCount.current = stCartCount;
     if (prev === 0 && stCartCount > 0) {
-      setLauncherOpen(true);
+      if (!isCartOnlyNow()) setLauncherOpen(true);
       setNewlyAdded('st');
       const t = setTimeout(() => setNewlyAdded(null), 600);
       return () => clearTimeout(t);
@@ -273,7 +279,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
     const prev = prevGhCartCount.current;
     prevGhCartCount.current = ghCartCount;
     if (prev === 0 && ghCartCount > 0) {
-      setLauncherOpen(true);
+      if (!isCartOnlyNow()) setLauncherOpen(true);
       setNewlyAdded('gh');
       const t = setTimeout(() => setNewlyAdded(null), 600);
       return () => clearTimeout(t);
@@ -284,7 +290,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
     const prev = prevGhPhotoCount.current;
     prevGhPhotoCount.current = ghPhotoCount;
     if (prev === 0 && ghPhotoCount > 0) {
-      setLauncherOpen(true);
+      if (!isCartOnlyNow()) setLauncherOpen(true);
       setNewlyAdded('gh');
       const t = setTimeout(() => setNewlyAdded(null), 600);
       return () => clearTimeout(t);
@@ -943,7 +949,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         };
         return (
           <button
-            className="launcher-fab"
+            className={`launcher-fab${cartOnly && (newlyAdded === 'fun' || newlyAdded === 'st' || newlyAdded === 'gh') ? ' lstack-new-item' : ''}`}
             onClick={handleLauncherClick}
             aria-label={cartOnly ? "Review your shortlist" : "Open activity tray"}
             title={cartOnly ? "Review your shortlist" : "Your activity"}

@@ -788,7 +788,9 @@ const EventPlanning = () => {
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {[{ label: "Food Preference", field: "foodPreference", opts: ["Veg only", "Non-veg", "Both"], multi: false },
               { label: "Meal Type", field: "mealType", opts: ["Buffet", "Plated", "Live counters", "High Tea"], multi: false },
-              { label: "Cuisine (multi-select)", field: "cuisine", opts: ["North Indian", "South Indian", "Chinese", "Continental", "Mixed"], multi: true }
+              { label: "Cuisine (multi-select)", field: "cuisine", opts: ["North Indian", "South Indian", "Chinese", "Continental", "Mixed"], multi: true },
+              { label: "Beverage Service", field: "beverages", opts: ["Soft drinks only", "Mocktails included", "Alcohol permitted (BYO)", "Not needed"], multi: false },
+              { label: "Service Staff", field: "serviceStaff", opts: ["Vendor provides staff", "We'll arrange our own"], multi: false }
             ].map(({ label, field, opts, multi }) => (
               <div key={field}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>{label}</div>
@@ -862,8 +864,10 @@ const EventPlanning = () => {
       }
       if (id === 'decorator') return (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {[{ label: "Venue Type", field: "venueType", opts: ["Indoor hall", "Outdoor", "Home", "Farmhouse"], multi: false }]
-          .map(({ label, field, opts, multi }) => (
+          {[{ label: "Venue Type", field: "venueType", opts: ["Indoor hall", "Outdoor", "Home", "Farmhouse"], multi: false },
+            { label: "Theme / Color Palette", field: "theme", opts: ["Pastel", "Gold & White", "Vibrant & Colorful", "Monochrome", "Floral/Garden", "No preference"], multi: false },
+            { label: "Must-haves (multi-select)", field: "mustHave", opts: ["Balloon decor", "Floral arrangements", "Fairy lights", "Backdrop/Photo wall", "Stage decor", "Table centerpieces"], multi: true }
+          ].map(({ label, field, opts, multi }) => (
             <div key={field}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>{label}</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
@@ -937,7 +941,9 @@ const EventPlanning = () => {
           {[{ label: "What do you need?", field: "coverage", opts: ["Photos only", "Video only", "Both"], multi: false },
             { label: "Style", field: "style", opts: ["Candid", "Traditional", "Cinematic"], multi: false },
             { label: "Duration", field: "duration", opts: ["Half day (4 hrs)", "Full day (8 hrs)"], multi: false },
-            { label: "Deliverables (multi-select)", field: "deliverables", opts: ["Edited photos", "Printed album", "Highlights reel", "Full video"], multi: true }
+            { label: "Deliverables (multi-select)", field: "deliverables", opts: ["Edited photos", "Printed album", "Highlights reel", "Full video"], multi: true },
+            { label: "Team Size", field: "teamSize", opts: ["1 photographer", "2 photographers", "Photographer + videographer"], multi: false },
+            { label: "Drone Coverage", field: "drone", opts: ["Yes", "No"], multi: false }
           ].map(({ label, field, opts, multi }) => (
             <div key={field}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>{label}</div>
@@ -967,7 +973,9 @@ const EventPlanning = () => {
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {[{ label: "Music Genre", field: "genre", opts: ["Bollywood", "English", "Both", "Regional"], multi: false },
             { label: "Duration", field: "duration", opts: ["2 hrs", "4 hrs", "Full event"], multi: false },
-            { label: "MC / Anchor Needed?", field: "mcNeeded", opts: ["Yes", "No"], multi: false }
+            { label: "MC / Anchor Needed?", field: "mcNeeded", opts: ["Yes", "No"], multi: false },
+            { label: "Sound Setup", field: "soundSetup", opts: ["Basic PA system", "Premium sound + lighting", "Not sure — vendor to advise"], multi: false },
+            { label: "Extras (multi-select)", field: "extras", opts: ["Dance floor lighting", "Fog/smoke effect", "LED screen", "Not needed"], multi: true }
           ].map(({ label, field, opts, multi }) => (
             <div key={field}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>{label}</div>
@@ -1028,10 +1036,10 @@ const EventPlanning = () => {
 
       // Build chat messages from wizard answers
       const WIZARD_LABELS = {
-        catering: { foodPreference: 'Food Preference', mealType: 'Meal Type', cuisine: 'Cuisine', dietaryRestrictions: 'Dietary Notes' },
+        catering: { foodPreference: 'Food Preference', mealType: 'Meal Type', cuisine: 'Cuisine', dietaryRestrictions: 'Dietary Notes', beverages: 'Beverage Service', serviceStaff: 'Service Staff' },
         decoration: { venueType: 'Venue Type', theme: 'Theme', mustHave: 'Must-haves' },
-        photography: { coverage: 'Coverage', style: 'Style', duration: 'Duration', deliverables: 'Deliverables' },
-        dj: { genre: 'Music Genre', duration: 'Duration', mcNeeded: 'MC / Anchor' },
+        photography: { coverage: 'Coverage', style: 'Style', duration: 'Duration', deliverables: 'Deliverables', teamSize: 'Team Size', drone: 'Drone Coverage' },
+        dj: { genre: 'Music Genre', duration: 'Duration', mcNeeded: 'MC / Anchor', soundSetup: 'Sound Setup', extras: 'Extras' },
       };
       const wizChatBubbles = [];
       Object.entries(wizardAnswers).forEach(([sec, answers]) => {
