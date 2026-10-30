@@ -51,6 +51,35 @@ function BonusLadder({ tier }) {
   );
 }
 
+// Real breakpoints from the backend's BOOKING_REWARD_BREAKPOINTS — a handful of
+// representative rows, not all 13, so the "depends on booking size" idea reads at
+// a glance instead of as a dense table.
+const BOOKING_EXAMPLES = [
+  { amt: "₹2,000",  earn: 25 },
+  { amt: "₹10,000", earn: 100 },
+  { amt: "₹25,000", earn: 400 },
+  { amt: "₹50,000+", earn: 1000 },
+];
+
+// Counts up to a target number on mount — used for the hero ₹ figure so the intro
+// has one real moment of motion instead of sitting static like a plain info card.
+function useCountUp(target, durationMs = 900) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    let raf;
+    const start = performance.now();
+    const tick = (now) => {
+      const p = Math.min(1, (now - start) / durationMs);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setValue(Math.round(eased * target));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, durationMs]);
+  return value;
+}
+
 export default function EventChallenge() {
   const navigate = useNavigate();
   const { token } = useSelector(s => s.auth || {});
@@ -68,6 +97,7 @@ export default function EventChallenge() {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const saveTimer = useRef(null);
+  const heroCount = useCountUp(1000); // drives the intro screen's animated ₹ headline
 
   // On mount: check whether this consumer already has a submitted attempt. If so, skip the
   // marketing intro and go straight to their current progress; otherwise show the intro.
@@ -247,35 +277,97 @@ export default function EventChallenge() {
   // ── Intro: "see what you can earn" before anything else ──
   if (view === "intro") {
     return (
-      <div style={page}>
+      <div style={{ ...page, background: "#FFFCF5" }}>
+        <style>{`
+          @keyframes ec-rise { from { opacity:0; transform: translateY(14px); } to { opacity:1; transform: translateY(0); } }
+          @keyframes ec-float { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-6px) rotate(4deg); } }
+          @keyframes ec-bar-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+          .ec-rise { opacity: 0; animation: ec-rise 0.55s cubic-bezier(0.22,1,0.36,1) forwards; }
+        `}</style>
         <HamburgerNav active="" />
-        <div style={{ ...card, paddingTop: 36 }}>
-          <div style={{ textAlign: "center", marginBottom: 26 }}>
-            <div style={{ fontSize: 48, marginBottom: 10 }}>🎁</div>
-            <div style={{ fontSize: 21, fontWeight: 900, color: INK, marginBottom: 8 }}>Earn up to ₹500 per referral</div>
-            <p style={{ fontSize: 13.5, color: "#9B7450", lineHeight: 1.6, margin: "0 auto", maxWidth: 420 }}>
-              Every friend who books using your code gets 5% off. What <em>you</em> earn for it — ₹100 up to ₹500 — depends on how much of this you complete. No test, no right or wrong answers — we're just getting to know you.
+
+        {/* Hero — radial glow + dot texture instead of a flat card, gift icon floats */}
+        <div style={{ position: "relative", overflow: "hidden", background: "linear-gradient(165deg,#2C1A0E,#4A2810)", padding: "40px 20px 54px", textAlign: "center" }}>
+          <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
+          <div aria-hidden style={{ position: "absolute", width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.35) 0%, transparent 70%)", top: -120, left: "50%", transform: "translateX(-50%)" }} />
+          <div style={{ position: "relative" }}>
+            <div style={{ fontSize: 40, marginBottom: 6, display: "inline-block", animation: "ec-float 3.2s ease-in-out infinite" }}>🎁</div>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: "rgba(255,243,224,0.55)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>Refer & Earn</div>
+            <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.2rem,9vw,2.8rem)", fontWeight: 700, color: "#FFF3E0", lineHeight: 1 }}>
+              Earn up to ₹{heroCount.toLocaleString("en-IN")}
+            </div>
+            <div style={{ fontSize: 13, color: "rgba(255,243,224,0.6)", marginTop: 4 }}>every time a friend books with your code</div>
+          </div>
+        </div>
+
+        <div style={{ ...card, paddingTop: 26, marginTop: -24, position: "relative" }}>
+
+          {/* How it actually works — the two things that decide the real payout */}
+          <div className="ec-rise" style={{ background: "#fff", borderRadius: 18, border: "1px solid rgba(196,122,46,0.15)", padding: "20px 18px", marginBottom: 16, boxShadow: "0 10px 30px rgba(44,26,14,0.08)" }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: GOLD, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>How much you'll actually earn — sharing just once</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+              <div style={{ flex: 1, textAlign: "center" }}>
+                <div style={{ fontSize: 10.5, color: "#9B7450", fontWeight: 700, marginBottom: 4 }}>Your tier sets a ceiling</div>
+                <div style={{ fontSize: 15, fontWeight: 900, color: INK }}>₹200 → ₹1,000</div>
+              </div>
+              <div style={{ fontSize: 16, color: "#D9B47E", fontWeight: 800, flexShrink: 0 }}>+</div>
+              <div style={{ flex: 1, textAlign: "center" }}>
+                <div style={{ fontSize: 10.5, color: "#9B7450", fontWeight: 700, marginBottom: 4 }}>Their booking size</div>
+                <div style={{ fontSize: 15, fontWeight: 900, color: INK }}>bigger = more</div>
+              </div>
+              <div style={{ fontSize: 16, color: "#D9B47E", fontWeight: 800, flexShrink: 0 }}>=</div>
+              <div style={{ flex: 1, textAlign: "center" }}>
+                <div style={{ fontSize: 10.5, color: "#9B7450", fontWeight: 700, marginBottom: 4 }}>You get</div>
+                <div style={{ fontSize: 15, fontWeight: 900, color: GOLD }}>the smaller one</div>
+              </div>
+            </div>
+
+            {/* Booking-size strip — real breakpoints, animated bars */}
+            <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 64, marginBottom: 6, padding: "0 2px" }}>
+              {BOOKING_EXAMPLES.map(({ amt, earn }, i) => (
+                <div key={amt} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, height: "100%", justifyContent: "flex-end" }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: GOLD }}>₹{earn}</span>
+                  <div style={{
+                    width: "100%", maxWidth: 34, borderRadius: "5px 5px 0 0",
+                    background: `linear-gradient(180deg,${earn >= 1000 ? "#FFCC66" : "#C47A2E"},${earn >= 1000 ? "#C47A2E" : "#8A4A1E"})`,
+                    height: `${8 + (earn / 1000) * 44}px`,
+                    transformOrigin: "bottom", animation: `ec-bar-grow 0.5s ease ${i * 0.08}s both`,
+                  }} />
+                  <span style={{ fontSize: 9, color: "#9B7450", fontWeight: 600 }}>{amt}</span>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.55, margin: 0, paddingTop: 6, borderTop: "1px dashed rgba(196,122,46,0.18)" }}>
+              Example: at <strong style={{ color: INK }}>Starter</strong> (₹400 ceiling), a friend's ₹25,000 booking earns you the <strong style={{ color: GOLD }}>full ₹400</strong> — but a ₹2,000 booking only earns ₹25, even at Champion tier. The booking has to be real and paid for; your tier just raises the roof.
             </p>
           </div>
 
-          <div style={{ background: "#fff", borderRadius: 16, border: "1px solid rgba(196,122,46,0.15)", padding: "20px 18px", marginBottom: 22, display: "flex", justifyContent: "center" }}>
+          {/* Tier walk */}
+          <div className="ec-rise" style={{ animationDelay: "0.08s", background: "#fff", borderRadius: 16, border: "1px solid rgba(196,122,46,0.15)", padding: "20px 18px", marginBottom: 16, display: "flex", justifyContent: "center" }}>
             <div style={{ width: "100%", maxWidth: 420 }}>
               <BonusLadder tier="none" />
             </div>
           </div>
 
+          <div className="ec-rise" style={{ animationDelay: "0.12s", fontSize: 11, fontWeight: 800, color: GOLD, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px 2px" }}>
+            How to raise your ceiling
+          </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 26 }}>
             {[
-              ["📝", "A few multiple-choice questions", "About how you plan and celebrate — unlocks ₹200"],
-              ["💬", "Two short opinion questions", "In your own words, Hindi or English — unlocks ₹300"],
-              ["📷", "One photo task", "A real photo, sketch, or mock-up — unlocks ₹400"],
-              ["🤝", "Get a friend to use your code", "The last step — unlocks the full ₹500"],
-            ].map(([emoji, title, desc]) => (
-              <div key={title} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 14px", background: "#fff", borderRadius: 12, border: "1px solid rgba(196,122,46,0.12)" }}>
+              ["📝", "A few multiple-choice questions", "About how you plan and celebrate", "₹400", "Starter"],
+              ["💬", "Two short opinion questions", "In your own words, Hindi or English", "₹600", "Achiever"],
+              ["📷", "One photo task", "A real photo, sketch, or mock-up", "₹800", "Pro"],
+              ["🤝", "Get a friend to use your code", "The last step — really referring someone", "₹1,000", "Champion"],
+            ].map(([emoji, title, desc, amt, tier], i) => (
+              <div key={title} className="ec-rise" style={{ animationDelay: `${0.16 + i * 0.06}s`, display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "#fff", borderRadius: 12, border: "1px solid rgba(196,122,46,0.12)" }}>
                 <span style={{ fontSize: 20, flexShrink: 0 }}>{emoji}</span>
-                <div>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13.5, fontWeight: 700, color: INK }}>{title}</div>
                   <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>{desc}</div>
+                </div>
+                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 900, color: GOLD }}>{amt}</div>
+                  <div style={{ fontSize: 9.5, color: "#B08968", fontWeight: 700 }}>{tier}</div>
                 </div>
               </div>
             ))}

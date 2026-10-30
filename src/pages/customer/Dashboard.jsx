@@ -1095,8 +1095,8 @@ export default function CustomerDashboard() {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M3 18h18l1-9-5 3-5-6-5 6-5-3 1 9zm0 2h18v2H3v-2z"/></svg>
           );
           // Highlights specific figures/phrases in gold within the reward copy, keeping the rest warm-white.
-          const rewardText = `Friends get 5% off their first booking.\n\nEach month, your referrals pay ₹100, then ₹200, ₹300… up to ₹500 — completing the Event Intelligence Challenge raises how far you can climb, and it resets to ₹100 every new month.`;
-          const highlights = ["5% off", "₹100", "₹200", "₹300", "₹500"];
+          const rewardText = `Friends get 5% off their first booking.\n\nEach month, your referrals pay ₹200, then ₹300, ₹400… up to ₹1,000 — completing the Event Intelligence Challenge raises how far you can climb, and it resets to ₹200 every new month.`;
+          const highlights = ["5% off", "₹200", "₹300", "₹400", "₹1,000"];
           const rewardParts = rewardText.split(new RegExp(`(${highlights.map(h => h.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`, "g"));
 
           return (
