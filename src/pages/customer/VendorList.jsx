@@ -14,7 +14,7 @@ import ListingsNav from "../../components/ListingsNav";
 import PrimaryFilters_ListingPage from "../../components/PrimaryFilters_ListingPage";
 import SecondaryFilters_ListingPage, { applySecondaryFilters } from "../../components/SecondaryFilters_ListingPage";
 import VendorList_ListingPage from "../../components/VendorList_ListingPage";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { getVendors } from "../../apis/vendorApi";
 import CompareModal from "../../components/CompareModal";
@@ -237,25 +237,18 @@ const VendorList = () => {
     }
   }, [isLoading, vendorList.length, pendingScroll]);
 
-  const doFetch = React.useCallback(() => {
-    setIsLoading(true);
-    const payload = {
-      ...(locationType && { location: locationType }),
-      ...(serviceType && { serviceTypes: [serviceType] }),
-      ...(currentCatBudget && { maxPrice: currentCatBudget }),
-      ...(date && { date }),
-      ...((corporateOnly || formEventType === "Corporate Event") && { hasCorporateExperience: true }),
-      sortBy, sortOrder, page: 1, limit: 20, serviceFilters: secondaryFilters,
-    };
-    return getVendors(payload)
-      .then((data) => { setVendorList(sortByPhoto(data.vendors || [])); setPaginationInfo(data.pagination || {}); setCurrentPage(1); })
-      .catch((err) => console.error("Error fetching vendors:", err))
-      .finally(() => setIsLoading(false));
-  }, [sortBy, sortOrder, secondaryFilters, locationType, serviceType, currentCatBudget]);
+  // Guards against out-of-order responses: switching category/filters quickly fires a
+  // new fetch before the previous one resolves, and without this an older (e.g.
+  // unfiltered or wrong-category) response could land after the newer one and silently
+  // overwrite it — the exact "heading says Caterer, grid shows DJ/Decorator too" bug.
+  // Every fetch call site bumps this ref first and only applies its own result if
+  // nothing newer has started in the meantime.
+  const vendorFetchSeqRef = useRef(0);
 
   // fetch on filter changes
   useEffect(() => {
     setIsLoading(true);
+    const seq = ++vendorFetchSeqRef.current;
     const payload = {
       ...(locationType && { location: locationType }),
       ...(serviceType && { serviceTypes: [serviceType] }),
@@ -265,14 +258,20 @@ const VendorList = () => {
       sortBy, sortOrder, page: 1, limit: 20, serviceFilters: secondaryFilters,
     };
     getVendors(payload)
-      .then((data) => { setVendorList(sortByPhoto(data.vendors || [])); setPaginationInfo(data.pagination || {}); setCurrentPage(1); })
+      .then((data) => {
+        if (seq !== vendorFetchSeqRef.current) return; // a newer request has since started
+        setVendorList(sortByPhoto(data.vendors || []));
+        setPaginationInfo(data.pagination || {});
+        setCurrentPage(1);
+      })
       .catch((err) => console.error("Error fetching vendors:", err))
-      .finally(() => setIsLoading(false));
+      .finally(() => { if (seq === vendorFetchSeqRef.current) setIsLoading(false); });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortBy, sortOrder, locationType, serviceType, currentCatBudget]); // secondaryFilters excluded to prevent loop
 
   const fetchPage = (pageNum) => {
     setIsLoading(true);
+    const seq = ++vendorFetchSeqRef.current;
     const payload = {
       ...(locationType && { location: locationType }),
       ...(serviceType && { serviceTypes: [serviceType] }),
@@ -286,6 +285,7 @@ const VendorList = () => {
     };
     getVendors(payload)
       .then((data) => {
+        if (seq !== vendorFetchSeqRef.current) return; // a newer request has since started
         if (pageNum === 1) {
           setVendorList(sortByPhoto(data.vendors || []));
         } else {
@@ -295,7 +295,7 @@ const VendorList = () => {
         setCurrentPage(pageNum);
       })
       .catch((err) => console.error("Error fetching vendors:", err))
-      .finally(() => setIsLoading(false));
+      .finally(() => { if (seq === vendorFetchSeqRef.current) setIsLoading(false); });
   };
 
   const handleShowMore = () => fetchPage(currentPage + 1);
@@ -304,6 +304,7 @@ const VendorList = () => {
     if (!locationType || !serviceType) return;
 
     setIsLoading(true);
+    const seq = ++vendorFetchSeqRef.current;
     const payload = {
       location: locationType,
       serviceTypes: [serviceType],
@@ -317,12 +318,13 @@ const VendorList = () => {
 
     getVendors(payload)
       .then((data) => {
+        if (seq !== vendorFetchSeqRef.current) return; // a newer request has since started
         setVendorList(sortByPhoto(data.vendors || []));
         setPaginationInfo(data.pagination || {});
         setCurrentPage(1);
       })
       .catch((err) => console.error("Error fetching vendors:", err))
-      .finally(() => setIsLoading(false));
+      .finally(() => { if (seq === vendorFetchSeqRef.current) setIsLoading(false); });
   };
 
 
@@ -366,9 +368,23 @@ const VendorList = () => {
           <div style={{ marginBottom: 4 }}>
 
             <div style={{ marginBottom: 10 }} className="vendor-heading-wrap">
-              <style>{`@media(max-width:639px){.vendor-heading-wrap h1{display:none!important}}`}</style>
-              <h1 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 26, color: "#1a1a1a", margin: 0, lineHeight: 1.2, textDecoration: "underline", textDecorationColor: "rgba(196,122,46,0.5)", textUnderlineOffset: 5 }}>
-                {serviceType || "All"} Vendors
+              <style>{`.vendor-heading-select{appearance:none;-webkit-appearance:none;-moz-appearance:none;}@media(max-width:639px){.vendor-heading-select{font-size:20px!important;}}`}</style>
+              <h1 style={{ margin: 0, display: "inline-block", position: "relative" }}>
+                <select
+                  className="vendor-heading-select"
+                  value={serviceType || ""}
+                  onChange={(e) => dispatch(setFilters({ serviceType: e.target.value }))}
+                  aria-label="Change vendor category"
+                  style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 26, color: "#1a1a1a", lineHeight: 1.2, textDecoration: "underline", textDecorationColor: "rgba(196,122,46,0.5)", textUnderlineOffset: 5, background: "transparent", border: "none", cursor: "pointer", padding: "0 26px 0 0", margin: 0, outline: "none" }}>
+                  {!serviceType && <option value="">All Vendors</option>}
+                  {["Photographer", "Caterer", "Decorator", "DJ"].map((id) => (
+                    <option key={id} value={id}>{id} Vendors</option>
+                  ))}
+                </select>
+                <svg aria-hidden width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                  style={{ position: "absolute", right: 2, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
               </h1>
             </div>
 
