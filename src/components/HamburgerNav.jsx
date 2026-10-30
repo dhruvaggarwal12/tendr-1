@@ -322,22 +322,31 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         <aside style={{
           position: "fixed", left: 0, top: 0, zIndex: 200,
           width: SIDEBAR_W, height: "100vh",
-          background: "linear-gradient(180deg,#5C3418 0%,#3D2210 100%)",
+          background: "radial-gradient(ellipse 140% 60% at 0% 0%, #6B3D1C 0%, transparent 55%), radial-gradient(ellipse 120% 50% at 100% 100%, #4A270F 0%, transparent 60%), linear-gradient(170deg,#55300F 0%,#331D0B 100%)",
           display: "flex", flexDirection: "column",
           boxShadow: "4px 0 24px rgba(0,0,0,0.15)",
           overflowY: "auto", overflowX: "hidden",
           fontFamily: font,
         }}>
+          {/* Faint dot texture — the same quiet motif used on the tool-page heroes,
+              so the sidebar reads as part of one design system instead of a flat
+              brand-colour fill */}
+          <div aria-hidden style={{ position: "fixed", left: 0, top: 0, width: SIDEBAR_W, height: "100vh", backgroundImage: "radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)", backgroundSize: "18px 18px", pointerEvents: "none", zIndex: 0 }} />
+          <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", minHeight: "100%" }}>
+
           {/* Logo + collapse arrow */}
-          <div style={{ padding: "20px 18px 16px", borderBottom: "1px solid rgba(196,122,46,0.12)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div>
-              <div onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
-                <img src={tendrLogo} alt="Tendr" style={{ height: 28, display: "block", filter: "brightness(1.1)" }} />
-                <p style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", margin: "5px 0 0", letterSpacing: "0.04em" }}>We Curate, You Celebrate</p>
+          <div style={{ padding: "22px 18px 18px", borderBottom: "1px solid rgba(255,255,255,0.08)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div onClick={() => navigate("/")} style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0, background: "linear-gradient(145deg,#E3A857,#C47A2E)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(196,122,46,0.45), inset 0 1px 0 rgba(255,255,255,0.25)" }}>
+                <img src={tendrLogo} alt="" style={{ height: 18, display: "block" }} />
+              </div>
+              <div>
+                <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 19, fontWeight: 600, color: "#FFF3E0", lineHeight: 1 }}>tendr</div>
+                <p style={{ fontSize: 9, color: "rgba(255,243,224,0.42)", margin: "3px 0 0", letterSpacing: "0.05em" }}>We Curate, You Celebrate</p>
               </div>
             </div>
             <button onClick={() => setSidebarOpen(false)}
-              style={{ width: 26, height: 26, borderRadius: "50%", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.5)", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+              style={{ width: 24, height: 24, borderRadius: "50%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.45)", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
               title="Close navigation"
             >‹</button>
           </div>
@@ -355,10 +364,10 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           )}
 
           {/* Search bar + suggestions */}
-          <div style={{ padding: "8px clamp(10px,3vw,14px) 0", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
-            <style>{`.sb-search::placeholder{color:rgba(255,255,255,0.35);}`}</style>
-            <div style={{ display: "flex", alignItems: "center", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: showSuggest && (searchQuery.length > 0 || true) ? "8px 8px 0 0" : 8 }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0, marginLeft: 9 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <div style={{ padding: "10px clamp(10px,3vw,14px) 0", borderBottom: "1px solid rgba(255,255,255,0.08)", flexShrink: 0 }}>
+            <style>{`.sb-search::placeholder{color:rgba(255,243,224,0.3);}`}</style>
+            <div style={{ display: "flex", alignItems: "center", background: "rgba(0,0,0,0.18)", border: "1px solid rgba(255,255,255,0.09)", boxShadow: "inset 0 1px 3px rgba(0,0,0,0.25)", borderRadius: showSuggest && (searchQuery.length > 0 || true) ? "100px 100px 0 0" : 100 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,243,224,0.38)" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0, marginLeft: 11 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input
                 className="sb-search"
                 type="text"
@@ -368,10 +377,10 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 onBlur={() => setTimeout(() => setShowSuggest(false), 150)}
                 onKeyDown={e => { if (e.key === "Enter") { handleNavSearch(); setShowSuggest(false); } }}
                 placeholder="Search vendors, tools..."
-                style={{ flex: 1, background: "transparent", border: "none", outline: "none", padding: "8px 8px 8px 7px", fontSize: 12, color: "#fff", fontFamily: font }}
+                style={{ flex: 1, background: "transparent", border: "none", outline: "none", padding: "9px 8px 9px 8px", fontSize: 12, color: "#FFF3E0", fontFamily: font }}
               />
               <button onClick={() => { handleNavSearch(); setShowSuggest(false); }}
-                style={{ padding: "8px 10px", background: "transparent", border: "none", cursor: "pointer", color: "#CCAB4A", fontSize: 13, lineHeight: 1, flexShrink: 0 }}>›</button>
+                style={{ width: 26, height: 26, margin: "0 3px 0 0", borderRadius: "50%", background: "rgba(196,122,46,0.25)", border: "none", cursor: "pointer", color: "#FFCC66", fontSize: 13, lineHeight: 1, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>›</button>
             </div>
             {/* Suggestions dropdown */}
             {showSuggest && (
@@ -394,8 +403,12 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
           {/* Journey progress — shown when active prop is passed */}
           {active && (
-            <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
-              <p style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.7)", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>Your Journey</p>
+            <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
+                <span style={{ width: 4, height: 4, borderRadius: "50%", background: "#FFCC66", flexShrink: 0 }} />
+                <p style={{ fontSize: 9, fontWeight: 800, color: "rgba(255,204,102,0.8)", textTransform: "uppercase", letterSpacing: "0.16em", margin: 0 }}>Your Journey</p>
+              </div>
+              <style>{`@keyframes journey-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,204,102,0.45)}50%{box-shadow:0 0 0 5px rgba(255,204,102,0)}}`}</style>
               <div style={{ display: "flex", alignItems: "center" }}>
                 {STEPS.map((step, i) => {
                   const activeIdx = STEPS.indexOf(active);
@@ -403,13 +416,22 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   const isActive = i === activeIdx;
                   return (
                     <React.Fragment key={step}>
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flexShrink: 0 }}>
-                        <div style={{ width: 22, height: 22, borderRadius: "50%", background: isDone ? "#C47A2E" : isActive ? "rgba(196,122,46,0.2)" : "rgba(255,255,255,0.08)", border: isActive ? "2px solid #C47A2E" : isDone ? "2px solid #C47A2E" : "2px solid rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: isDone ? "#fff" : isActive ? "#C47A2E" : "rgba(255,255,255,0.3)" }}>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, flexShrink: 0 }}>
+                        <div style={{
+                          width: isActive ? 25 : 22, height: isActive ? 25 : 22, borderRadius: "50%",
+                          background: isDone ? "linear-gradient(145deg,#E3A857,#C47A2E)" : isActive ? "linear-gradient(145deg,#C47A2E,#8A4A1E)" : "rgba(255,255,255,0.06)",
+                          border: isActive ? "2px solid #FFCC66" : isDone ? "2px solid rgba(227,168,87,0.5)" : "1.5px solid rgba(255,255,255,0.14)",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: isActive ? 10 : 9, fontWeight: 800, color: isDone ? "#3A2008" : isActive ? "#FFF3E0" : "rgba(255,255,255,0.3)",
+                          fontFamily: "'Cormorant Garamond', Georgia, serif",
+                          animation: isActive ? "journey-pulse 2s ease-in-out infinite" : "none",
+                          transition: "all 0.2s",
+                        }}>
                           {isDone ? "✓" : i + 1}
                         </div>
-                        <span style={{ fontSize: 9, fontWeight: isActive ? 700 : 400, color: isActive ? "#FFCC66" : isDone ? "#CCAB4A" : "rgba(255,255,255,0.3)", whiteSpace: "nowrap" }}>{step}</span>
+                        <span style={{ fontSize: 9, fontWeight: isActive ? 700 : 400, color: isActive ? "#FFCC66" : isDone ? "#D9B47E" : "rgba(255,255,255,0.3)", whiteSpace: "nowrap" }}>{step}</span>
                       </div>
-                      {i < STEPS.length - 1 && <div style={{ flex: 1, height: 1.5, background: isDone ? "#C47A2E" : "rgba(255,255,255,0.1)", margin: "0 4px 14px", borderRadius: 2 }} />}
+                      {i < STEPS.length - 1 && <div style={{ flex: 1, height: 2, background: isDone ? "linear-gradient(90deg,#C47A2E,#E3A857)" : "rgba(255,255,255,0.08)", margin: "0 3px 15px", borderRadius: 2 }} />}
                     </React.Fragment>
                   );
                 })}
@@ -419,9 +441,9 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
           {/* Sign In — for logged-out users, shown prominently near top */}
           {!token && (
-            <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)", display: "flex", flexDirection: "column", gap: 7 }}>
+            <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", flexDirection: "column", gap: 7 }}>
               <button onClick={() => navigate("/login", { state: { returnTo: window.location.pathname + window.location.search } })}
-                style={{ width: "100%", padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}>
+                style={{ width: "100%", padding: "11px", borderRadius: 11, border: "1px solid rgba(255,255,255,0.3)", background: "linear-gradient(135deg,#E3A857,#C47A2E)", color: "#FFF3E0", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.4), inset 0 1px 0 rgba(255,255,255,0.3)" }}>
                 Sign In / Sign Up →
               </button>
               {compareSelected.length > 0 && (
@@ -495,10 +517,13 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           )}
 
           {/* Nav sections */}
-          <div style={{ padding: "8px 0" }}>
+          <div style={{ padding: "10px 0" }}>
             {NAV_SECTIONS.map((sec, si) => (
               <div key={sec.label} style={{ marginBottom: 2 }}>
-                <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.95)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 16px 4px", textAlign: "left" }}>{sec.label}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 16px 6px" }}>
+                  <span style={{ width: 3, height: 3, borderRadius: "50%", background: "rgba(255,204,102,0.7)", flexShrink: 0 }} />
+                  <span style={{ fontSize: 9, fontWeight: 800, color: "rgba(255,204,102,0.85)", textTransform: "uppercase", letterSpacing: "0.16em", textAlign: "left" }}>{sec.label}</span>
+                </div>
                 {sec.items.map(item => {
                   const isSoon     = !!item.comingSoon;
                   const isDisabled = !!item.disabled;
@@ -552,7 +577,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   );
                 })}
                 {si < NAV_SECTIONS.length - 1 && (
-                  <div style={{ height: 1, background: "rgba(196,122,46,0.08)", margin: "4px 18px" }} />
+                  <div style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)", margin: "6px 18px" }} />
                 )}
               </div>
             ))}
@@ -567,6 +592,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               </button>
             </div>
           )}
+          </div>
         </aside>
         )}
 
