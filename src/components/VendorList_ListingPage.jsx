@@ -47,34 +47,6 @@ export const extendDiscoverySessionTTL = () => {
   } catch {}
 };
 
-const chatSaveKey = (id) => `tendr:chat_req:${id}`;
-const getChatSave = (id) => {
-  if (!id) return null;
-  try {
-    const s = JSON.parse(localStorage.getItem(chatSaveKey(id)) || "null");
-    if (!s) return null;
-    if (s.date) {
-      // Keep until the day after the event date (gives the user the full event day)
-      const expiry = new Date(s.date);
-      expiry.setDate(expiry.getDate() + 1);
-      if (Date.now() > expiry.getTime()) {
-        localStorage.removeItem(chatSaveKey(id));
-        return null;
-      }
-    } else {
-      // No event date set — fallback: keep for 7 days
-      if (Date.now() - (s.submittedAt || 0) > 7 * 24 * 60 * 60 * 1000) {
-        localStorage.removeItem(chatSaveKey(id));
-        return null;
-      }
-    }
-    return s;
-  } catch { return null; }
-};
-const setChatSave = (id, data) => {
-  if (!id) return;
-  try { localStorage.setItem(chatSaveKey(id), JSON.stringify({ ...data, submittedAt: Date.now() })); } catch {}
-};
 
 
 const font = "'Outfit', sans-serif";
@@ -297,11 +269,6 @@ const VendorList_ListingPage = ({
                     setAuthModalOpen(true);
                     return;
                   }
-                  if (getChatSave(vendor._id)) {
-                    document.dispatchEvent(new CustomEvent("tendr:open-active-chats"));
-                    setQuickViewVendor(null);
-                    return;
-                  }
                   setQuickViewVendor(null);
                   if (requireFormBeforeChat) {
                     const discoveryData = getDiscoverySession();
@@ -309,25 +276,10 @@ const VendorList_ListingPage = ({
                     setChatEventForm({ eventType: "", guests: "", date: "", location: "", eventTime: "", ...(discoveryData || {}), budget: "" });
                     return;
                   }
-                  const saved = getChatSave(vendor._id);
-                  if (saved) {
-                    try {
-                      const res = await fetch(`${BASE_URL}/conversations`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" });
-                      if (res.ok) {
-                        const data = await res.json();
-                        const convo = (data.conversations || []).find(c => {
-                          const cvid = typeof c.vendorId === "object" ? c.vendorId?._id : c.vendorId;
-                          return String(cvid) === String(vendor._id);
-                        });
-                        if (convo) {
-                          openExistingChat(convo._id, { _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, approved: convo.chatApproved, addToCompare: true });
-                          return;
-                        }
-                      }
-                    } catch {}
-                    openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, addToCompare: true });
-                    return;
-                  }
+                  // Every vendor enquiry goes into the one "My Order" thread — this used to
+                  // search for and resume a vendor-specific conversation (vendorId actually
+                  // set to this vendor) first, which fragmented things into a separate thread
+                  // per vendor instead of the single unified one.
                   openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, addToCompare: true });
                 };
 
@@ -610,7 +562,7 @@ const VendorList_ListingPage = ({
                             onClick={bookNow}
                             style={{ width: "100%", padding: "11px", borderRadius: 11, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer" }}
                           >
-                            {!token ? "Sign In to Book" : getChatSave(vendor._id) ? "View Active Chat" : "Book Now"}
+                            {!token ? "Sign In to Book" : "Book Now"}
                           </button>
                         )}
                       </div>

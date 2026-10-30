@@ -101,33 +101,19 @@ export const useChatOverlay = () => useContext(ChatContext) || {
   closeChat: () => {},
 };
 
-// Finds or navigates to the shared Baat Karo chat.
-// All "Talk to our team" entry points (Budget, Listings, Search, EventPlanning) use this.
-// If an existing Baat Karo chat is found → opens it in the modal.
-// If none → navigates to /baat-karo so the customer can start one.
+// Opens the one unified "My Order" chat.
+// All "Talk to our team"/"Can't find the right vendor?" entry points (Budget, Listings,
+// Search, EventPlanning) use this. Used to find-or-create its own separate "Baat Karo"
+// conversation — now just opens My Order like every other entry point, so a "can't find
+// the right vendor" enquiry lands in the same place as everything else instead of its
+// own thread.
 export function useOpenBaatKaroChat() {
   const { token } = useSelector((s) => s.auth);
-  const { openExistingChat } = useChatOverlay();
+  const { openAllBookingsChat } = useChatOverlay();
   const navigate = useNavigate();
 
-  return useCallback(async () => {
+  return useCallback(() => {
     if (!token) { navigate("/baat-karo"); return; }
-    try {
-      const res = await fetch(`${BASE_URL}/conversations`, {
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: "include",
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const existing = (data.conversations || []).find(
-          (c) => c.chatType === "vendor" && !c.vendorId && c.serviceType === "Baat Karo"
-        );
-        if (existing) {
-          openExistingChat(existing._id, { _id: null, name: "Tendr Team", serviceType: "Baat Karo" });
-          return;
-        }
-      }
-    } catch {}
-    navigate("/baat-karo");
-  }, [token, openExistingChat, navigate]);
+    openAllBookingsChat();
+  }, [token, openAllBookingsChat, navigate]);
 }

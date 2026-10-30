@@ -24,28 +24,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { addVendorToCompare, removeVendorFromCompare, clearVendorCompare, setFinalisedVendor } from "../../redux/listingFiltersSlice";
 import { setMultipleFormData, setBookingType, addSelectedVendor } from "../../redux/eventPlanningSlice";
 import { useChatOverlay } from "../../context/ChatContext";
-const openExistingChatForVendor = async (vendorId, vendorData, token, openExistingChat, openVendorChat) => {
-  const save = (() => { try { return JSON.parse(localStorage.getItem(`tendr:chat_req:${vendorId}`) || "null"); } catch { return null; } })();
-  if (save?.conversationId) {
-    openExistingChat(save.conversationId, { _id: vendorData._id, name: vendorData.name, serviceType: vendorData.serviceType });
-    return;
-  }
-  // Fallback: fetch conversations to find the right one
-  try {
-    const res = await fetch(`${import.meta.env.VITE_BASE_URL}/conversations`, {
-      headers: { Authorization: `Bearer ${token}` }, credentials: "include",
-    });
-    if (res.ok) {
-      const data = await res.json();
-      const convo = (data.conversations || []).find(c => {
-        const cvid = typeof c.vendorId === "object" ? c.vendorId?._id : c.vendorId;
-        return String(cvid) === String(vendorId);
-      });
-      if (convo) { openExistingChat(convo._id, { _id: vendorData._id, name: vendorData.name, serviceType: vendorData.serviceType, approved: convo.chatApproved }); return; }
-    }
-  } catch {}
-  openVendorChat({ _id: vendorData._id, name: vendorData.name, serviceType: vendorData.serviceType });
-};
 import ServiceAreaMap from "../../components/ServiceAreaMap";
 import Footer from "../../components/Footer";
 import AuthModal from "../../components/AuthModal";
@@ -53,20 +31,6 @@ import PerformerSuggestions from "../../components/PerformerSuggestions";
 import { GIG_PRO_TYPES, PERFORMER_SERVICE_TYPES } from "../../constants/performerCategories";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
-const chatSaveKey = (id) => `tendr:chat_req:${id}`;
-const getVendorChatSave = (id) => {
-  try {
-    const s = JSON.parse(localStorage.getItem(chatSaveKey(id)) || "null");
-    if (!s) return null;
-    if (s.date) {
-      const exp = new Date(s.date + "T00:00:00"); exp.setDate(exp.getDate() + 1);
-      if (Date.now() > exp.getTime()) { localStorage.removeItem(chatSaveKey(id)); return null; }
-    } else if (Date.now() - (s.submittedAt || 0) > 24 * 60 * 60 * 1000) {
-      localStorage.removeItem(chatSaveKey(id)); return null;
-    }
-    return s;
-  } catch { return null; }
-};
 
 const VendorDetailsPage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -78,7 +42,6 @@ const VendorDetailsPage = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", location: "", eventTime: "" });
   const [invitePersonName, setInvitePersonName] = useState(() => { try { return localStorage.getItem('tendr_person_name') || ''; } catch { return ''; } });
-  const [hasActiveChatSave, setHasActiveChatSave] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const [similarVendors, setSimilarVendors] = useState([]);
   const [checkingAvail, setCheckingAvail] = useState(false);
@@ -226,7 +189,6 @@ const VendorDetailsPage = () => {
         }
 
         setVendor(vendorData);
-        setHasActiveChatSave(!!getVendorChatSave(vendorData._id));
       } catch (err) {
         console.error("Error fetching vendor data:", err);
         setError(err.message || "Failed to load vendor details");
@@ -465,7 +427,6 @@ const VendorDetailsPage = () => {
       return;
     }
     if (!token) { requireAuth(openGigHeroChat); return; }
-    if (hasActiveChatSave) { openExistingChatForVendor(vendor._id, vendor, token, openExistingChat, openVendorChat); return; }
     if (isFromListingFlow) { openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType }); return; }
     if (hasEventContext) { dispatch(setBookingType("you-do-it")); openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType }); return; }
     // Cold profile visit (reached straight from Browse Vendors, no event context yet) —
@@ -1041,7 +1002,7 @@ const VendorDetailsPage = () => {
                     style={{ flex: 1, padding: "12px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(196,122,46,0.4)", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}
                   >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat to Book"}
+                    {!token ? "Sign In to Chat" : "Chat to Book"}
                   </button>
                 )}
               </div>
@@ -1381,7 +1342,7 @@ const VendorDetailsPage = () => {
                       style={{ flex: 1, padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                      {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat to Book"}
+                      {!token ? "Sign In to Chat" : "Chat to Book"}
                     </button>
                   )}
                 </div>
