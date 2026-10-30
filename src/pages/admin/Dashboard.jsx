@@ -3659,7 +3659,7 @@ const AdminDashboard = () => {
                       loadConversation(c._id);
                     }}
                     className={`flex items-center justify-between gap-2 p-3 sm:p-4 cursor-pointer hover:bg-[#FFF4D4] transition flex-col sm:flex-row text-center sm:text-left ${
-                      selectedChat?.customerId.name === c.customerId.name
+                      selectedChat?._id === c._id
                         ? "bg-[#FFF4D4]"
                         : ""
                     }`}
@@ -3668,10 +3668,10 @@ const AdminDashboard = () => {
                       {/* User */}
                       <div className="flex items-center gap-1">
                         <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-[#FFF4D4] border border-[#CCAB4A] flex items-center justify-center font-semibold text-xs sm:text-sm text-[#CCAB4A]">
-                          {getInitials(c.customerId.name)}
+                          {getInitials(c.customerId?.name || c.customerName || "Customer")}
                         </div>
                         <span className="font-semibold text-xs sm:text-base hidden sm:inline">
-                          {c.customerId.name}
+                          {c.customerId?.name || c.customerName || "Customer"}
                         </span>
                       </div>
 
@@ -3733,10 +3733,10 @@ const AdminDashboard = () => {
                         {/* User */}
                         <div className="flex items-center gap-2">
                           <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-[#FFF4D4] border border-[#CCAB4A] flex items-center justify-center font-semibold text-xs sm:text-sm text-[#CCAB4A]">
-                            {getInitials(selectedChat.customerId.name)}
+                            {getInitials(selectedChat.customerId?.name || selectedChat.customerName || "Customer")}
                           </div>
                           <span className="font-semibold text-sm sm:text-lg">
-                            {selectedChat.customerId.name}
+                            {selectedChat.customerId?.name || selectedChat.customerName || "Customer"}
                           </span>
                         </div>
 
@@ -4210,19 +4210,19 @@ const AdminDashboard = () => {
                       loadConversation(c._id);
                     }}
                     className={`flex items-center justify-between p-3 sm:p-4 cursor-pointer hover:bg-[#FFF4D4] transition flex-col sm:flex-row text-center sm:text-left ${
-                      selectedChat?.customerId.name === c.customerId.name
+                      selectedChat?._id === c._id
                         ? "bg-[#FFF4D4]"
                         : ""
                     }`}
                   >
                     <div className="flex items-center justify-center sm:justify-start gap-2 w-full">
                       <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-[#FFF4D4] border border-[#CCAB4A] flex items-center justify-center font-semibold text-xs sm:text-sm text-[#CCAB4A]">
-                        {getInitials(c.customerId.name)}
+                        {getInitials(c.customerId?.name || c.customerName || "Customer")}
                       </div>
 
                       <div className="flex flex-col">
                         <span className="font-semibold text-xs sm:text-base">
-                          {c.customerId.name}
+                          {c.customerId?.name || c.customerName || "Customer"}
                         </span>
                       </div>
                     </div>
@@ -4254,11 +4254,11 @@ const AdminDashboard = () => {
                     <div className="p-3 sm:p-4 border-b border-[#F1E1A8] flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
                         <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-[#FFF4D4] border border-[#CCAB4A] flex items-center justify-center font-semibold text-xs sm:text-sm text-[#CCAB4A]">
-                          {getInitials(selectedChat.customerId.name)}
+                          {getInitials(selectedChat.customerId?.name || selectedChat.customerName || "Customer")}
                         </div>
 
                         <span className="font-semibold text-sm sm:text-lg">
-                          {selectedChat.customerId.name}
+                          {selectedChat.customerId?.name || selectedChat.customerName || "Customer"}
                         </span>
                       </div>
 
