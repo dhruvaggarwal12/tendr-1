@@ -336,7 +336,12 @@ const GiftHampersCakes = () => {
         .gh-cat-card:hover img { transform:scale(1.07); }
         .gh-process { display:grid; grid-template-columns:repeat(3,1fr); position:relative; gap:0; }
         .gh-process::before { content:''; position:absolute; top:21px; left:calc(100%/6); right:calc(100%/6); height:1px; background:rgba(196,122,46,0.18); z-index:0; }
-        @media(max-width:960px) {
+        /* Raised from 960px — the hero's padding uses vw-based clamp()s, which track
+           full viewport width, not this grid's actual column width. With the sidebar
+           nav open, the content area is narrower than the viewport by its width, so
+           the 2-column hero was staying cramped well past 960px instead of collapsing
+           to the single-column layout it needs once room is actually tight. */
+        @media(max-width:1280px) {
           .gh-hero-2col { grid-template-columns:1fr; min-height:unset; }
           .gh-hero-visual { border-left:none; border-top:1px solid rgba(196,122,46,0.14); padding:28px 20px; }
           .gh-quiz-inner { flex-direction:column; }
