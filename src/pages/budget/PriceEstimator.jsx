@@ -1,7 +1,9 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import HamburgerNav from "../../components/HamburgerNav";
 import DecorAnalyzer from "../../components/DecorAnalyzer";
+import AuthModal from "../../components/AuthModal";
 import { useChatOverlay } from "../../context/ChatContext";
 import { usePriceEstimator } from "../../context/PriceEstimatorContext";
 import {
@@ -86,8 +88,10 @@ const OTHER_EQUIPMENT_PRESETS = [
 // keys) seed the wizard when the caller already knows them — e.g. a screen where the
 // customer already filled in guests and which services they need.
 export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initialCategories, embedded = false, onFinalise }) {
+  const { token } = useSelector((s) => s.auth);
   const { openAllBookingsChat } = useChatOverlay();
   const { closePriceEstimator } = usePriceEstimator();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [step, setStep] = useState(0); // 0 about, 1 venue, 2 categories, 3..3+n-1 per-category level, n+3 other equipment, final
   const [occasion, setOccasion] = useState(
     OCCASIONS.includes(initialOccasion) ? initialOccasion : OCCASIONS[0]
@@ -325,8 +329,11 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
   };
 
   const bookingFormValid = bookingForm.name.trim() && bookingForm.place.trim() && bookingForm.date;
-  const submitBookingForm = () => {
-    if (!bookingFormValid) return;
+  // Matches the rest of the site's auth boundary — browsing/building the estimate stays
+  // open, but sending it to a human (the chat) is gated, same as "Sign In to Book" on a
+  // vendor card. An in-page AuthModal (not a navigate-away) so the filled-in form and
+  // estimate aren't lost — submitBookingForm just re-runs once sign-in succeeds.
+  const sendEstimateToChat = () => {
     const message = buildEstimateMessage();
     openAllBookingsChat(message, "price-estimate", {
       name: bookingForm.name.trim(), phone: bookingForm.phone.trim(),
@@ -334,6 +341,11 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
     });
     setBookingFormOpen(false);
     if (embedded) setTimeout(() => closePriceEstimator(), 400);
+  };
+  const submitBookingForm = () => {
+    if (!bookingFormValid) return;
+    if (!token) { setAuthModalOpen(true); return; }
+    sendEstimateToChat();
   };
 
   return (
@@ -805,11 +817,17 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
             </Field>
             <button onClick={submitBookingForm} disabled={!bookingFormValid}
               style={{ ...primaryBtnStyle, width: "100%", marginTop: 6, opacity: bookingFormValid ? 1 : 0.45, cursor: bookingFormValid ? "pointer" : "not-allowed" }}>
-              Send to Tendr Team →
+              {token ? "Send to Tendr Team →" : "Sign In to Send →"}
             </button>
           </div>
         </div>
       )}
+
+      <AuthModal
+        open={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onSuccess={() => { setAuthModalOpen(false); sendEstimateToChat(); }}
+      />
 
       <div style={{ position: embedded ? "sticky" : "fixed", left: 0, right: 0, bottom: 0, zIndex: 500, background: "#fff", borderTop: "1.5px solid rgba(196,122,46,0.18)", boxShadow: "0 -6px 24px rgba(28,9,0,0.08)", padding: "14px 16px calc(14px + env(safe-area-inset-bottom, 0px))" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
