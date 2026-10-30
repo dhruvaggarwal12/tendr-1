@@ -274,13 +274,13 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Fun Activities",        href: "/fun-activities" },
     ]},
     { label: "Tools", items: [
-      { label: "Plan My Event",  href: "/plan", activePaths: ["/plan","/checklist-picker","/prebuilt-checklist"], onClickOverride: () => { close(); navigate("/plan"); } },
       { label: "Decor Analyser", href: "/decor-analyser", activePaths: ["/decor-analyser"] },
       { label: "Timeline",         href: "/timeline-picker", activePaths: ["/timeline-picker","/timeline","/prebuilt-timeline"],
         onClickOverride: () => { try { const d = localStorage.getItem("tendr_timeline_v2"); const s = d ? JSON.parse(d) : null; if (s?.phases?.length > 0) { setTimelinePopupOpen(true); } else { window.open("/timeline-picker", "_blank"); } } catch { window.open("/timeline-picker", "_blank"); } } },
       { label: "Budget Allocator", href: "/budget-picker", activePaths: ["/budget-picker","/budget-allocator"],
         onClickOverride: () => { try { const d = localStorage.getItem("tendr_budget_v2"); const s = d ? JSON.parse(d) : null; if (s?.totalBudget) { setBudgetPopupOpen(true); } else { window.open("/budget-picker", "_blank"); } } catch { window.open("/budget-picker", "_blank"); } } },
       { label: "Price Estimator",  href: "/price-estimator", activePaths: ["/price-estimator"], onClickOverride: () => { close(); openPriceEstimator(); } },
+      { label: "Find by Style",   href: "/find-by-style", activePaths: ["/find-by-style"] },
       { label: "Equipment Generator", href: "/equipment-generator", activePaths: ["/equipment-generator"], onClickOverride: () => { close(); window.open("/equipment-generator", "_blank"); } },
     ]},
     { label: "Community", items: [
@@ -537,13 +537,13 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                         padding: "9px 16px", border: "none",
                         background: isActive ? "rgba(196,122,46,0.18)" : "transparent",
                         fontSize: 13, fontWeight: isActive ? 700 : 500,
-                        color: isActive ? "#FFCC66" : "rgba(255,255,255,0.85)",
+                        color: isActive ? "#FFCC66" : "#E8D9C5",
                         cursor: "pointer",
                         fontFamily: font, transition: "all 0.15s", borderRadius: 0,
                         borderLeft: isActive ? "3px solid #C9A84C" : "3px solid transparent",
                       }}
                       onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.color = "#fff"; } }}
-                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
+                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#E8D9C5"; } }}
                     >
                       <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "left", flex: 1 }}>{item.label}</span>
                       {item.tag && <span style={{ fontSize: 8, fontWeight: 800, color: "#CCAB4A", background: "rgba(196,122,46,0.15)", border: "1px solid rgba(196,122,46,0.3)", borderRadius: 100, padding: "1px 5px", flexShrink: 0, letterSpacing: "0.05em" }}>{item.tag.toUpperCase()}</span>}

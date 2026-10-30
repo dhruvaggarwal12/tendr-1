@@ -77,16 +77,16 @@ const CSS = `
   .fte-intent-card:focus-visible { outline: 2.5px solid #F47735; outline-offset: 2px; }
   .fte-skip-link:focus-visible { outline: 2.5px solid #F47735; outline-offset: 3px; border-radius: 4px; }
   @media (max-height: 740px), (max-width: 380px) {
-    .fte-mascot-wrap { transform: scale(0.68); margin-bottom: -18px; }
+    .fte-mascot-wrap { transform: scale(0.8); margin-bottom: -14px; }
     .fte-intent-heading { margin-top: 0 !important; margin-bottom: 12px !important; }
-    .fte-intent-heading .fte-title { font-size: 1.25rem !important; margin-bottom: 4px !important; }
-    .fte-intent-heading .fte-sub { font-size: 12px !important; }
-    .fte-intent-grid { gap: 8px !important; }
-    .fte-intent-card { padding: 12px 10px !important; border-radius: 12px !important; gap: 7px !important; }
-    .fte-intent-card .fte-icon-chip { width: 28px !important; height: 28px !important; border-radius: 9px !important; }
-    .fte-intent-card .fte-icon-chip svg { width: 15px !important; height: 15px !important; }
-    .fte-intent-card .fte-label { font-size: 12px !important; margin-bottom: 2px !important; }
-    .fte-intent-card .fte-desc { font-size: 9.5px !important; line-height: 1.3 !important; }
+    .fte-intent-heading .fte-title { font-size: 1.35rem !important; margin-bottom: 4px !important; }
+    .fte-intent-heading .fte-sub { font-size: 12.5px !important; }
+    .fte-intent-grid { gap: 9px !important; }
+    .fte-intent-card { padding: 14px 12px !important; border-radius: 14px !important; gap: 8px !important; }
+    .fte-intent-card .fte-icon-chip { width: 34px !important; height: 34px !important; border-radius: 10px !important; }
+    .fte-intent-card .fte-icon-chip svg { width: 17px !important; height: 17px !important; }
+    .fte-intent-card .fte-label { font-size: 13.5px !important; margin-bottom: 2px !important; }
+    .fte-intent-card .fte-desc { font-size: 10.5px !important; line-height: 1.3 !important; }
     .fte-corner-photo { display: none !important; }
   }
   .fte-intent-card:active { transform: scale(0.97) !important; }
@@ -423,10 +423,10 @@ function IntentPicker({ onSelect }) {
         </div>
       ))}
 
-      <div className="fte-fadein" style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 480, width: '100%' }}>
+      <div className="fte-fadein" style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 540, width: '100%' }}>
         <img src={tendrLogo} alt="Tendr" style={{ height: 30, objectFit: 'contain', marginBottom: 6 }} />
         <div className="fte-mascot-wrap">
-          <Mascot mood="celebrate" size={96} />
+          <Mascot mood="celebrate" size={128} />
         </div>
         <div className="fte-intent-heading" style={{ marginTop: 10, marginBottom: 26, textAlign: 'center' }}>
           <div className="fte-title" style={{
@@ -448,7 +448,7 @@ function IntentPicker({ onSelect }) {
             Choose a starting point — we'll help with the rest.
           </div>
         </div>
-        <div className="fte-intent-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14, width: '100%' }}>
+        <div className="fte-intent-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, width: '100%' }}>
           {INTENTS.map((intent, i) => {
             const Icon = INTENT_ICONS[i];
             const pal = INTENT_PALETTE[i];
@@ -460,7 +460,7 @@ function IntentPicker({ onSelect }) {
                 style={{
                   background: pal.bg,
                   border: '1px solid rgba(42,22,6,0.06)',
-                  borderRadius: 24, padding: '20px 18px',
+                  borderRadius: 26, padding: '24px 20px',
                   cursor: 'pointer', textAlign: 'left',
                   color: '#2A1606', fontFamily: SANS,
                   display: 'flex', flexDirection: 'column', gap: 10,
@@ -473,14 +473,14 @@ function IntentPicker({ onSelect }) {
 
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', position: 'relative' }}>
                   <div className="fte-icon-chip" style={{
-                    width: 40, height: 40, borderRadius: 13, flexShrink: 0,
+                    width: 50, height: 50, borderRadius: 15, flexShrink: 0,
                     background: pal.chip,
                     display: 'flex', alignItems: 'center', justifyContent: 'center', color: pal.ink,
                   }}>
                     <Icon accent={pal.ink} />
                   </div>
                   <div className="fte-card-arrow" aria-hidden style={{
-                    width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
+                    width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
                     border: `1.5px solid ${pal.ink}`, color: pal.ink,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     transition: 'transform 0.2s',
@@ -489,10 +489,10 @@ function IntentPicker({ onSelect }) {
                   </div>
                 </div>
                 <div style={{ position: 'relative' }}>
-                  <div className="fte-label" style={{ fontSize: 14.5, fontWeight: 700, color: '#2A1606', marginBottom: 4, lineHeight: 1.2 }}>
+                  <div className="fte-label" style={{ fontSize: 16.5, fontWeight: 700, color: '#2A1606', marginBottom: 5, lineHeight: 1.2 }}>
                     {intent.label}
                   </div>
-                  <div className="fte-desc" style={{ fontSize: 12, color: 'rgba(42,22,6,0.6)', lineHeight: 1.45 }}>
+                  <div className="fte-desc" style={{ fontSize: 13.5, color: 'rgba(42,22,6,0.6)', lineHeight: 1.45 }}>
                     {intent.desc}
                   </div>
                 </div>

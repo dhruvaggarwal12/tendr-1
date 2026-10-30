@@ -712,7 +712,15 @@ function InfoRow({ icon, label, value }) {
 export function MyEventFloatDesktop() {
   const [plan, setPlan] = useState(null);
   const [modal, setModal] = useState(false);  // null | 'mini' | 'full'
-  const [minimized, setMinimized] = useState(false);
+  // Persisted (not just component state) so the × actually stays dismissed for the
+  // rest of this browser session instead of reappearing on the next route change.
+  const [minimized, setMinimized] = useState(() => {
+    try { return sessionStorage.getItem('tendr_my_event_float_dismissed') === '1'; } catch { return false; }
+  });
+  const dismiss = () => {
+    try { sessionStorage.setItem('tendr_my_event_float_dismissed', '1'); } catch {}
+    setMinimized(true);
+  };
   const reduxFormData = useSelector(s => s.eventPlanning?.formData);
 
   const HIDE = ['/login', '/signup', '/otp', '/vendor/register', '/booking/payment'];
@@ -752,55 +760,64 @@ export function MyEventFloatDesktop() {
         @media (min-width: 768px) { .my-event-float { display: flex !important; } }
       `}</style>
 
-      <button
+      <div
         className="my-event-float"
-        onClick={handleClick}
         style={{
           position: 'fixed', bottom: 88, right: 24, zIndex: 8900,
-          alignItems: 'center', gap: 10,
-          padding: '10px 18px 10px 14px',
+          alignItems: 'center',
           borderRadius: 100,
-          border: 'none',
           background: isDraft
             ? 'linear-gradient(135deg,#B45309,#C47A2E)'
             : 'linear-gradient(135deg,#2C1A0E,#4A2810)',
-          color: '#fff',
-          fontSize: 13, fontWeight: 700,
-          fontFamily: F,
-          cursor: 'pointer',
           boxShadow: isDraft
             ? '0 6px 22px rgba(196,122,46,0.45)'
             : '0 6px 22px rgba(44,26,14,0.45)',
-          transition: 'transform 0.18s, box-shadow 0.18s',
-          whiteSpace: 'nowrap',
         }}
-        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
       >
-        {/* Icon */}
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
-          <line x1="9" y1="12" x2="15" y2="12"/>
-          <line x1="9" y1="16" x2="12" y2="16"/>
-        </svg>
-        <span>{isDraft ? 'In Planning…' : eventType}</span>
-        {/* Pulse dot */}
-        <span style={{
-          width: 8, height: 8, borderRadius: '50%',
-          background: isDraft ? '#FCD34D' : '#4ade80',
-          boxShadow: isDraft ? '0 0 0 3px rgba(252,211,77,0.3)' : '0 0 0 3px rgba(74,222,128,0.3)',
-          animation: 'myevent-pulse 2s infinite',
-          flexShrink: 0,
-        }} />
-        {/* Dismiss × */}
-        <span
-          onClick={e => { e.stopPropagation(); setMinimized(true); }}
-          style={{ marginLeft: 2, paddingLeft: 8, borderLeft: '1px solid rgba(255,255,255,0.22)', fontSize: 17, lineHeight: 1, opacity: 0.7, cursor: 'pointer', flexShrink: 0 }}
+        <button
+          onClick={handleClick}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '10px 10px 10px 14px',
+            border: 'none', background: 'transparent',
+            color: '#fff',
+            fontSize: 13, fontWeight: 700,
+            fontFamily: F,
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {/* Icon */}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            <line x1="9" y1="12" x2="15" y2="12"/>
+            <line x1="9" y1="16" x2="12" y2="16"/>
+          </svg>
+          <span>{isDraft ? 'In Planning…' : eventType}</span>
+          {/* Pulse dot */}
+          <span style={{
+            width: 8, height: 8, borderRadius: '50%',
+            background: isDraft ? '#FCD34D' : '#4ade80',
+            boxShadow: isDraft ? '0 0 0 3px rgba(252,211,77,0.3)' : '0 0 0 3px rgba(74,222,128,0.3)',
+            animation: 'myevent-pulse 2s infinite',
+            flexShrink: 0,
+          }} />
+        </button>
+        {/* Dismiss — its own real button, not a span nested inside the pill's
+            button, so the click never depends on stopPropagation reaching it first. */}
+        <button
+          onClick={dismiss}
           title="Hide"
-        >×</span>
+          style={{
+            width: 30, height: 30, marginRight: 6, flexShrink: 0,
+            border: 'none', background: 'transparent', borderLeft: '1px solid rgba(255,255,255,0.22)',
+            color: '#fff', fontSize: 17, lineHeight: 1, opacity: 0.75, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >×</button>
         <style>{`@keyframes myevent-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.25)} }`}</style>
-      </button>
+      </div>
 
       {/* Mini popup — draft only: just a "Continue Planning" call-to-action */}
       {modal === 'mini' && (
