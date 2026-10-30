@@ -2,7 +2,8 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import HamburgerNav from "../../components/HamburgerNav";
 import DecorAnalyzer from "../../components/DecorAnalyzer";
-import { useBookVendors } from "../../context/BookVendorsContext";
+import { useChatOverlay } from "../../context/ChatContext";
+import { usePriceEstimator } from "../../context/PriceEstimatorContext";
 import {
   getOccasionNames,
   getServicesForOccasion,
@@ -66,6 +67,14 @@ function itemKeyOf(simpleKey, rawCat, idx) {
   return `${simpleKey}::${rawCat}::${idx}`;
 }
 
+// Shown once, after every chosen category's questions — things we don't carry
+// catalog pricing for, captured as notes for the Tendr team rather than priced.
+const OTHER_EQUIPMENT_PRESETS = [
+  "Extra chairs & tables", "Generator / power backup", "Tent / shamiana",
+  "Cooling (coolers/AC)", "Heaters", "Security staff", "Parking arrangement",
+  "Extra waitstaff", "Cleaning crew", "Signage / direction boards",
+];
+
 // The actual wizard. Reused by both the standalone /price-estimator page and
 // PriceEstimatorModal (the centered popup opened from everywhere else in the app).
 // Flow: tell us about the event -> venue -> what you need -> a quick level per thing
@@ -77,8 +86,9 @@ function itemKeyOf(simpleKey, rawCat, idx) {
 // keys) seed the wizard when the caller already knows them — e.g. a screen where the
 // customer already filled in guests and which services they need.
 export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initialCategories, embedded = false, onFinalise }) {
-  const { openBookVendors } = useBookVendors();
-  const [step, setStep] = useState(0); // 0 about, 1 venue, 2 categories, 3..3+n-1 per-category level, final
+  const { openAllBookingsChat } = useChatOverlay();
+  const { closePriceEstimator } = usePriceEstimator();
+  const [step, setStep] = useState(0); // 0 about, 1 venue, 2 categories, 3..3+n-1 per-category level, n+3 other equipment, final
   const [occasion, setOccasion] = useState(
     OCCASIONS.includes(initialOccasion) ? initialOccasion : OCCASIONS[0]
   );
@@ -93,6 +103,12 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
   });
   const [categoryChoice, setCategoryChoice] = useState({}); // catering only -> { mealType, isVeg }
   const [selectedItems, setSelectedItems] = useState({}); // "simpleKey::rawCat::idx" -> { qty }
+  const [otherEquipment, setOtherEquipment] = useState([]); // preset labels ticked on the "anything else" step
+  const [otherEquipmentCustom, setOtherEquipmentCustom] = useState(""); // free-text "something else"
+  const [generating, setGenerating] = useState(false); // brief "making your estimate" animation before the reveal
+  const [editingCategory, setEditingCategory] = useState(null); // category key being edited inline on the results screen
+  const [bookingFormOpen, setBookingFormOpen] = useState(false);
+  const [bookingForm, setBookingForm] = useState({ name: "", phone: "", place: "", date: "" });
   const [finaliseChoice, setFinaliseChoice] = useState(null); // null | "applied" | "declined"
   // Post-estimate flow: results -> packages -> optional venue photo -> downloadable plan
   const [postStage, setPostStage] = useState("idle"); // idle | packages | photo | done
@@ -121,6 +137,10 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
     setChosenCategories([]);
     setCategoryChoice({});
     setSelectedItems({});
+    setOtherEquipment([]);
+    setOtherEquipmentCustom("");
+    setGenerating(false);
+    setEditingCategory(null);
     setFinaliseChoice(null);
     setPostStage("idle");
     setSelectedPackageKey(null);
@@ -128,8 +148,11 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
     setStep(0);
   }, [occasion]);
 
-  const totalSteps = 3 + chosenCategories.length;
-  const currentCategory = step >= 3 && step < totalSteps ? chosenCategories[step - 3] : null;
+  // Step map: 0 about, 1 venue, 2 categories, [3 .. 3+n-1] one step per chosen
+  // category, OTHER_STEP "anything else", then totalSteps = the final reveal.
+  const OTHER_STEP = 3 + chosenCategories.length;
+  const totalSteps = OTHER_STEP + 1;
+  const currentCategory = step >= 3 && step < OTHER_STEP ? chosenCategories[step - 3] : null;
   const currentCategoryDef = currentCategory ? simpleCategories.find((c) => c.key === currentCategory) : null;
 
   const toggleCategory = (key) => {
@@ -259,10 +282,18 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
   }, [isFinal, chosenCategories, city]);
 
   const stepLabel = isFinal ? "Your estimate" :
-    step === 0 ? "Your event" : step === 1 ? "Venue" : step === 2 ? "What you need" : currentCategoryDef?.label;
+    step === 0 ? "Your event" : step === 1 ? "Venue" : step === 2 ? "What you need" :
+    step === OTHER_STEP ? "Anything else?" : currentCategoryDef?.label;
 
   const goNext = () => setStep((s) => Math.min(s + 1, totalSteps));
   const goBack = () => setStep((s) => Math.max(s - 1, 0));
+  // Last input step (OTHER_STEP) — jump to the final slot but hold the reveal behind
+  // a brief "making your estimate" animation instead of snapping straight to numbers.
+  const finishWizard = () => {
+    setStep(totalSteps);
+    setGenerating(true);
+    setTimeout(() => setGenerating(false), 1300);
+  };
 
   const canProceed =
     step === 0 ? !!guestBucketKey :
@@ -271,6 +302,39 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
     currentCategory === "catering" ? !!(categoryChoice.catering?.mealType) :
     currentCategory ? (currentCategoryDef?.raw || []).some((rawCat) => (allServices[rawCat] || []).some((_, idx) => selectedItems[itemKeyOf(currentCategory, rawCat, idx)])) :
     true;
+
+  // Builds the message sent into the existing "My Order" chat flow when the customer
+  // submits the booking-details form — same bucket every other booking surface in the
+  // app feeds into (openAllBookingsChat), so this lands in the one chat thread they
+  // already use instead of opening a new, separate channel.
+  const buildEstimateMessage = () => {
+    const lines = [`📊 *Price Estimate — ${occasion}*`, ""];
+    lines.push(`👥 Guests: ${guestBucket?.label || "—"}`);
+    if (city) lines.push(`📍 City: ${city}`);
+    if (venueType) lines.push(`🏛 Venue: ${venueType.label}${priced.venue ? " — not yet booked" : ""}`);
+    lines.push("", `*Estimated total: ${formatINR(displayTotal.min)} – ${formatINR(displayTotal.max)}*`);
+    if (priced.rows.length) {
+      lines.push("", "*What I'm looking for:*");
+      priced.rows.forEach((r) => lines.push(`• ${r.label}: ${r.sub}`));
+    }
+    if (priced.venue) lines.push(`• Venue: ${formatINR(priced.venue.min)}–${formatINR(priced.venue.max)}`);
+    const extras = [...otherEquipment.filter((o) => o !== "__other__"), ...(otherEquipmentCustom.trim() ? [otherEquipmentCustom.trim()] : [])];
+    if (extras.length) lines.push("", "*Other equipment / requirements:*", ...extras.map((e) => `• ${e}`));
+    lines.push("", "Can you help me plan this and connect me with the right vendors?");
+    return lines.join("\n");
+  };
+
+  const bookingFormValid = bookingForm.name.trim() && bookingForm.place.trim() && bookingForm.date;
+  const submitBookingForm = () => {
+    if (!bookingFormValid) return;
+    const message = buildEstimateMessage();
+    openAllBookingsChat(message, "price-estimate", {
+      name: bookingForm.name.trim(), phone: bookingForm.phone.trim(),
+      place: bookingForm.place.trim(), date: bookingForm.date, serviceType: "Price Estimate",
+    });
+    setBookingFormOpen(false);
+    if (embedded) setTimeout(() => closePriceEstimator(), 400);
+  };
 
   return (
     <div style={{ minHeight: embedded ? "auto" : "100vh", background: BG, fontFamily: font, paddingBottom: embedded ? 0 : "calc(140px + env(safe-area-inset-bottom, 0px))" }}>
@@ -377,13 +441,14 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
                 guestCount={guestBucket?.guests || 1}
                 onToggle={(rawCat, idx) => toggleSelectedItem("catering", rawCat, idx, 1)}
                 onSetQty={(rawCat, idx, qty) => setItemQty("catering", rawCat, idx, qty)}
+                showPrices={false}
               />
             </div>
           </StepCard>
         )}
 
         {currentCategory && currentCategory !== "catering" && (
-          <StepCard title={currentCategoryDef?.label} subtitle="Tick what you want — this is what gets priced.">
+          <StepCard title={currentCategoryDef?.label} subtitle="Tick what you want.">
             <ItemChecklist
               rows={(currentCategoryDef?.raw || []).flatMap((rawCat) => (allServices[rawCat] || []).map((item, idx) => ({ rawCat, idx, item })))}
               simpleKey={currentCategory}
@@ -391,11 +456,45 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
               guestCount={guestBucket?.guests || 1}
               onToggle={(rawCat, idx) => toggleSelectedItem(currentCategory, rawCat, idx, currentCategory === "gifting" ? (guestBucket?.guests || 1) : 1)}
               onSetQty={(rawCat, idx, qty) => setItemQty(currentCategory, rawCat, idx, qty)}
+              showPrices={false}
             />
           </StepCard>
         )}
 
-        {isFinal && (
+        {step === OTHER_STEP && (
+          <StepCard title="Anything else you'll need?" subtitle="Equipment and extras we don't have catalog pricing for — tell us and we'll quote it directly.">
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {OTHER_EQUIPMENT_PRESETS.map((opt) => (
+                <Checkbox key={opt} checked={otherEquipment.includes(opt)}
+                  onClick={() => setOtherEquipment((p) => p.includes(opt) ? p.filter((x) => x !== opt) : [...p, opt])}
+                  label={opt} />
+              ))}
+              <Checkbox checked={otherEquipment.includes("__other__")}
+                onClick={() => setOtherEquipment((p) => p.includes("__other__") ? p.filter((x) => x !== "__other__") : [...p, "__other__"])}
+                label="Something else" />
+            </div>
+            {otherEquipment.includes("__other__") && (
+              <div style={{ marginTop: 14 }}>
+                <Field label="Tell us what you need">
+                  <textarea value={otherEquipmentCustom} onChange={(e) => setOtherEquipmentCustom(e.target.value)}
+                    rows={3} placeholder="e.g. a stage with backdrop, a specific lighting setup…"
+                    style={{ ...selectStyle, resize: "vertical", fontWeight: 500, fontSize: 13.5 }} />
+                </Field>
+              </div>
+            )}
+          </StepCard>
+        )}
+
+        {isFinal && generating && (
+          <div style={{ background: "#fff", borderRadius: 16, padding: "48px 24px", textAlign: "center", border: "1.5px solid rgba(196,122,46,0.12)" }}>
+            <div style={{ width: 48, height: 48, margin: "0 auto 18px", borderRadius: "50%", border: "3px solid rgba(196,122,46,0.15)", borderTopColor: GOLD, animation: "pe-spin 0.8s linear infinite" }} />
+            <style>{`@keyframes pe-spin{to{transform:rotate(360deg)}}`}</style>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E" }}>Making your price estimate…</div>
+            <div style={{ fontSize: 12.5, color: "#8a6a4a", marginTop: 6 }}>Crunching real Delhi NCR pricing for what you picked.</div>
+          </div>
+        )}
+
+        {isFinal && !generating && (
           <>
             <div style={{ background: "#fff", border: `2px solid ${GOLD}`, borderRadius: 16, padding: "20px", textAlign: "center", marginBottom: 16 }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: "#8a6a4a", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Your event cost estimate</div>
@@ -441,30 +540,91 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
               </div>
             )}
 
-            {priced.rows.length > 0 && (
-              <StepCard title="Itemised breakdown">
+            {chosenCategories.length > 0 && (
+              <StepCard title="Itemised breakdown" subtitle="Tap Edit on any category to add, remove or adjust what's priced — the total updates as you go.">
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {priced.rows.map((r) => {
-                    const simpleKey = r.key.split("::")[0];
+                  {chosenCategories.map((simpleKey) => {
+                    const def = simpleCategories.find((c) => c.key === simpleKey);
+                    const r = priced.rows.find((row) => row.key === simpleKey) ||
+                      { label: def?.label || simpleKey, sub: "Nothing picked yet", min: 0, max: 0 };
                     const real = categoryPricing[simpleKey];
+                    const isEditing = editingCategory === simpleKey;
                     return (
-                      <div key={r.key} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                      <div key={simpleKey} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
                           <div>
                             <div style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E" }}>{r.label}</div>
                             <div style={{ fontSize: 11.5, color: "#8a6a4a", marginTop: 1 }}>{r.sub}</div>
                           </div>
-                          <span style={{ color: GOLD, fontWeight: 700, fontSize: 13.5, whiteSpace: "nowrap" }}>{formatINR(r.min)}–{formatINR(r.max)}</span>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                            {(r.min > 0 || r.max > 0) && <span style={{ color: GOLD, fontWeight: 700, fontSize: 13.5, whiteSpace: "nowrap" }}>{formatINR(r.min)}–{formatINR(r.max)}</span>}
+                            <button onClick={() => setEditingCategory(isEditing ? null : simpleKey)}
+                              style={{ fontSize: 11, fontWeight: 700, color: GOLD, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                              {isEditing ? "Done" : "Edit"}
+                            </button>
+                          </div>
                         </div>
                         {real && (
                           <div style={{ fontSize: 11, color: "#15803d", fontWeight: 600 }}>
                             Real vendor pricing: {formatINR(real.headline.min)}–{formatINR(real.headline.max)} ({real.headline.count} {real.actual ? "closed deals" : "vendors"})
                           </div>
                         )}
+                        {isEditing && simpleKey === "catering" && (
+                          <div style={{ marginTop: 10, paddingTop: 12, borderTop: "1px dashed rgba(196,122,46,0.2)" }}>
+                            <Field label="Veg or non-veg?">
+                              <div style={{ display: "flex", gap: 8 }}>
+                                <Chip checked={categoryChoice.catering?.isVeg !== false} onClick={() => setCateringChoice({ isVeg: true })} label="Veg" />
+                                <Chip checked={categoryChoice.catering?.isVeg === false} onClick={() => setCateringChoice({ isVeg: false })} label="Non-veg" />
+                              </div>
+                            </Field>
+                            <Field label="Meal type">
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                                {CATERING_MEAL_TYPES.map((m) => (
+                                  <Chip key={m.key} checked={(categoryChoice.catering?.mealType || "buffet") === m.key} onClick={() => setCateringChoice({ mealType: m.key })} label={m.label} />
+                                ))}
+                              </div>
+                            </Field>
+                            <ItemChecklist
+                              rows={(allServices.Catering || [])
+                                .map((item, idx) => ({ rawCat: "Catering", idx, item }))
+                                .filter((row) => !CATERING_PRIMARY_NAMES.has(row.item.service))}
+                              simpleKey="catering"
+                              selected={selectedItems}
+                              guestCount={guestBucket?.guests || 1}
+                              onToggle={(rawCat, idx) => toggleSelectedItem("catering", rawCat, idx, 1)}
+                              onSetQty={(rawCat, idx, qty) => setItemQty("catering", rawCat, idx, qty)}
+                            />
+                          </div>
+                        )}
+                        {isEditing && simpleKey !== "catering" && (
+                          <div style={{ marginTop: 10, paddingTop: 12, borderTop: "1px dashed rgba(196,122,46,0.2)" }}>
+                            <ItemChecklist
+                              rows={(def?.raw || []).flatMap((rawCat) => (allServices[rawCat] || []).map((item, idx) => ({ rawCat, idx, item })))}
+                              simpleKey={simpleKey}
+                              selected={selectedItems}
+                              guestCount={guestBucket?.guests || 1}
+                              onToggle={(rawCat, idx) => toggleSelectedItem(simpleKey, rawCat, idx, simpleKey === "gifting" ? (guestBucket?.guests || 1) : 1)}
+                              onSetQty={(rawCat, idx, qty) => setItemQty(simpleKey, rawCat, idx, qty)}
+                            />
+                          </div>
+                        )}
                       </div>
                     );
                   })}
                 </div>
+                {simpleCategories.some((c) => !chosenCategories.includes(c.key)) && (
+                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(196,122,46,0.1)" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Add another category</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      {simpleCategories.filter((c) => !chosenCategories.includes(c.key)).map((c) => (
+                        <button key={c.key} onClick={() => { toggleCategory(c.key); setEditingCategory(c.key); }}
+                          style={{ padding: "8px 14px", borderRadius: 100, border: "1.5px dashed rgba(196,122,46,0.35)", background: "#fff", color: GOLD, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                          + {c.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </StepCard>
             )}
 
@@ -619,21 +779,55 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
         </div>
       )}
 
+      {bookingFormOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 10060, background: "rgba(28,9,0,0.65)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setBookingFormOpen(false); }}>
+          <div style={{ width: "100%", maxWidth: 480, background: "#FFFCF5", borderRadius: "20px 20px 0 0", padding: "20px 18px 28px", maxHeight: "90dvh", overflowY: "auto", fontFamily: font }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: "#1C0900" }}>A few details to get started</div>
+                <div style={{ fontSize: 12, color: "#8a6a4a", marginTop: 2 }}>We'll send your estimate to the Tendr team to find the right vendors.</div>
+              </div>
+              <button onClick={() => setBookingFormOpen(false)}
+                style={{ width: 32, height: 32, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", cursor: "pointer", fontSize: 16, color: "#9B7450", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font, flexShrink: 0, marginLeft: 10 }}>×</button>
+            </div>
+            <Field label="Your name">
+              <input value={bookingForm.name} onChange={(e) => setBookingForm((f) => ({ ...f, name: e.target.value }))} placeholder="e.g. Priya Sharma" style={selectStyle} />
+            </Field>
+            <Field label="Phone number">
+              <input value={bookingForm.phone} onChange={(e) => setBookingForm((f) => ({ ...f, phone: e.target.value }))} placeholder="10-digit mobile" type="tel" style={selectStyle} />
+            </Field>
+            <Field label="Event location">
+              <input value={bookingForm.place} onChange={(e) => setBookingForm((f) => ({ ...f, place: e.target.value }))} placeholder="Area / city" style={selectStyle} />
+            </Field>
+            <Field label="Event date">
+              <input value={bookingForm.date} onChange={(e) => setBookingForm((f) => ({ ...f, date: e.target.value }))} type="date" style={selectStyle} />
+            </Field>
+            <button onClick={submitBookingForm} disabled={!bookingFormValid}
+              style={{ ...primaryBtnStyle, width: "100%", marginTop: 6, opacity: bookingFormValid ? 1 : 0.45, cursor: bookingFormValid ? "pointer" : "not-allowed" }}>
+              Send to Tendr Team →
+            </button>
+          </div>
+        </div>
+      )}
+
       <div style={{ position: embedded ? "sticky" : "fixed", left: 0, right: 0, bottom: 0, zIndex: 500, background: "#fff", borderTop: "1.5px solid rgba(196,122,46,0.18)", boxShadow: "0 -6px 24px rgba(28,9,0,0.08)", padding: "14px 16px calc(14px + env(safe-area-inset-bottom, 0px))" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           {!isFinal ? (
             <>
               <button onClick={goBack} disabled={step === 0} style={{ ...navBtnStyle, visibility: step === 0 ? "hidden" : "visible" }}>← Back</button>
-              <button onClick={goNext} disabled={!canProceed} style={{ ...primaryBtnStyle, opacity: canProceed ? 1 : 0.45, cursor: canProceed ? "pointer" : "not-allowed" }}>
+              <button onClick={step === totalSteps - 1 ? finishWizard : goNext} disabled={!canProceed} style={{ ...primaryBtnStyle, opacity: canProceed ? 1 : 0.45, cursor: canProceed ? "pointer" : "not-allowed" }}>
                 {step === totalSteps - 1 ? "See my estimate →" : "Next →"}
               </button>
             </>
+          ) : generating ? (
+            <div style={{ height: 1 }} />
           ) : (
             <>
               <button onClick={() => { setPostStage("idle"); setSelectedPackageKey(null); setStep(2); }} style={navBtnStyle}>← Edit requirements</button>
-              <a href="/booking" onClick={embedded ? (e) => { e.preventDefault(); openBookVendors(); } : undefined} style={{ ...primaryBtnStyle, textDecoration: "none", display: "inline-block" }}>
+              <button onClick={() => { setBookingForm((f) => ({ ...f, place: f.place || city || "" })); setBookingFormOpen(true); }} style={primaryBtnStyle}>
                 Book vendors for this →
-              </a>
+              </button>
             </>
           )}
         </div>
@@ -689,7 +883,7 @@ function Chip({ checked, onClick, label }) {
 
 // The actual "what do you want in this category" question: every real catalog row
 // for the category, as a plain tick list — no tiers, no pre-ticked picks.
-function ItemChecklist({ rows, simpleKey, selected, guestCount, onToggle, onSetQty }) {
+function ItemChecklist({ rows, simpleKey, selected, guestCount, onToggle, onSetQty, showPrices = true }) {
   if (!rows.length) return <div style={{ fontSize: 13, color: "#8a6a4a" }}>No pricing data for this category yet.</div>;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -712,9 +906,9 @@ function ItemChecklist({ rows, simpleKey, selected, guestCount, onToggle, onSetQ
               </div>
               {item.includes && <div style={{ fontSize: 12, color: "#8a6a4a", marginTop: 3, lineHeight: 1.4 }}>Includes: {item.includes}</div>}
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 13.5, fontWeight: 800, color: GOLD }}>{formatINR(item.min)}–{formatINR(item.max)}</span>
-                {perGuest && <span style={{ fontSize: 11, color: "#aaa" }}>per guest</span>}
-                {checked && perGuest && (
+                {showPrices && <span style={{ fontSize: 13.5, fontWeight: 800, color: GOLD }}>{formatINR(item.min)}–{formatINR(item.max)}</span>}
+                {showPrices && perGuest && <span style={{ fontSize: 11, color: "#aaa" }}>per guest</span>}
+                {checked && perGuest && showPrices && (
                   <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E" }}>× {guestCount} guests = {formatINR(t.min)}–{formatINR(t.max)}</span>
                 )}
                 {checked && !perGuest && (
@@ -723,7 +917,7 @@ function ItemChecklist({ rows, simpleKey, selected, guestCount, onToggle, onSetQ
                     <button onClick={() => onSetQty(rawCat, idx, (sel.qty ?? 1) - 1)} style={qtyBtnStyle}>−</button>
                     <span style={{ fontSize: 12.5, fontWeight: 700, minWidth: 18, textAlign: "center" }}>{sel.qty ?? 1}</span>
                     <button onClick={() => onSetQty(rawCat, idx, (sel.qty ?? 1) + 1)} style={qtyBtnStyle}>+</button>
-                    <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E" }}>= {formatINR(t.min)}–{formatINR(t.max)}</span>
+                    {showPrices && <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E" }}>= {formatINR(t.min)}–{formatINR(t.max)}</span>}
                   </div>
                 )}
               </div>
