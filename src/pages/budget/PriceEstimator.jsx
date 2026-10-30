@@ -28,7 +28,7 @@ import {
 
 // Screenshots the given DOM node and saves it as a PDF — same technique already
 // used for the occasion planner's "Download Plan" button.
-async function downloadPlanPdf(el, name) {
+async function downloadPlanPdf(el, name, suffix = "plan") {
   try {
     const h2c = (await import("html2canvas")).default;
     const { jsPDF } = await import("jspdf");
@@ -45,7 +45,7 @@ async function downloadPlanPdf(el, name) {
       pdf.addImage(imgData, "PNG", 0, -yOff, pW, totalH);
       yOff += pH;
     }
-    pdf.save(`${name.replace(/\s+/g, "-").toLowerCase()}-plan.pdf`);
+    pdf.save(`${name.replace(/\s+/g, "-").toLowerCase()}-${suffix}.pdf`);
   } catch { window.print(); }
 }
 
@@ -113,6 +113,7 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
   const [editingCategory, setEditingCategory] = useState(null); // category key being edited inline on the results screen
   const [bookingFormOpen, setBookingFormOpen] = useState(false);
   const [bookingForm, setBookingForm] = useState({ name: "", phone: "", place: "", date: "" });
+  const [downloadingSlip, setDownloadingSlip] = useState(false);
   const [finaliseChoice, setFinaliseChoice] = useState(null); // null | "applied" | "declined"
   // Post-estimate flow: results -> packages -> optional venue photo -> downloadable plan
   const [postStage, setPostStage] = useState("idle"); // idle | packages | photo | done
@@ -123,6 +124,7 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
   const [categoryPricing, setCategoryPricing] = useState({}); // simpleKey -> real category pricing, once loaded
   const didMountRef = useRef(false);
   const planRef = useRef(null);
+  const slipRef = useRef(null); // off-screen clean summary captured for "Download as Slip"
 
   const simpleCategories = useMemo(() => getSimpleCategories(occasion), [occasion]);
   const allServices = useMemo(() => getServicesForOccasion(occasion), [occasion]);
@@ -253,6 +255,10 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
   // per-category rows/packages below, which stay purely catalog-driven.
   const displayTotal = useMemo(() => blendWithBenchmark(priced.total, priceBenchmark), [priced.total, priceBenchmark]);
 
+  // "Anything else" step's picks, flattened to plain strings — reused by both the
+  // chat handoff message and the downloadable slip.
+  const otherEquipmentList = [...otherEquipment.filter((o) => o !== "__other__"), ...(otherEquipmentCustom.trim() ? [otherEquipmentCustom.trim()] : [])];
+
   // 3 ready-made alternatives spanning the categories already chosen — only computed
   // once the customer asks for them, from buildPackageTiers() (see utils for why it
   // reuses tierBuckets instead of summing every item at a priority level).
@@ -322,8 +328,7 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
       priced.rows.forEach((r) => lines.push(`• ${r.label}: ${r.sub}`));
     }
     if (priced.venue) lines.push(`• Venue: ${formatINR(priced.venue.min)}–${formatINR(priced.venue.max)}`);
-    const extras = [...otherEquipment.filter((o) => o !== "__other__"), ...(otherEquipmentCustom.trim() ? [otherEquipmentCustom.trim()] : [])];
-    if (extras.length) lines.push("", "*Other equipment / requirements:*", ...extras.map((e) => `• ${e}`));
+    if (otherEquipmentList.length) lines.push("", "*Other equipment / requirements:*", ...otherEquipmentList.map((e) => `• ${e}`));
     lines.push("", "Can you help me plan this and connect me with the right vendors?");
     return lines.join("\n");
   };
@@ -523,6 +528,52 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
                     : `Tendr customers who booked a similar ${occasion} paid around ${formatINR(priceBenchmark.avgPrice)} on average`}
                 </div>
               )}
+            </div>
+
+            <button onClick={async () => { setDownloadingSlip(true); await downloadPlanPdf(slipRef.current, occasion, "estimate-slip"); setDownloadingSlip(false); }}
+              disabled={downloadingSlip}
+              style={{ width: "100%", padding: "11px", borderRadius: 10, border: `1.5px solid rgba(196,122,46,0.3)`, background: "#fff", color: GOLD, fontSize: 13, fontWeight: 700, cursor: downloadingSlip ? "wait" : "pointer", fontFamily: font, marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+              {downloadingSlip ? "Generating…" : "⬇ Download as Slip (PDF)"}
+            </button>
+
+            {/* Off-screen clean summary — captured for the slip download above, never
+                shown to the customer directly (keeps the interactive Edit controls etc.
+                out of the PDF). */}
+            <div ref={slipRef} style={{ position: "fixed", left: -9999, top: 0, width: 580, background: "#fff", padding: 28, fontFamily: font }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: GOLD, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>Tendr · Price Estimate Slip</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: "#2C1A0E", marginBottom: 2 }}>{occasion}</div>
+              <div style={{ fontSize: 12, color: "#8a6a4a", marginBottom: 18 }}>
+                {guestBucket?.label}{city ? ` · ${city}` : ""}{venueType ? ` · ${venueType.label}` : ""}
+              </div>
+              <div style={{ fontSize: 26, fontWeight: 900, color: GOLD, marginBottom: 2 }}>{formatINR(displayTotal.min)} – {formatINR(displayTotal.max)}</div>
+              <div style={{ fontSize: 11, color: "#8a6a4a", marginBottom: 20 }}>Estimated total</div>
+              {priced.rows.map((r) => (
+                <div key={r.key} style={{ display: "flex", justifyContent: "space-between", gap: 14, borderBottom: "1px solid #eee", padding: "9px 0" }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{r.label}</div>
+                    <div style={{ fontSize: 11, color: "#8a6a4a", marginTop: 1 }}>{r.sub}</div>
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: GOLD, whiteSpace: "nowrap" }}>{formatINR(r.min)}–{formatINR(r.max)}</div>
+                </div>
+              ))}
+              {priced.venue && (
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "9px 0" }}>
+                  <span style={{ fontSize: 13, color: "#2C1A0E" }}>Venue (optional, not booked)</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: GOLD }}>{formatINR(priced.venue.min)}–{formatINR(priced.venue.max)}</span>
+                </div>
+              )}
+              {otherEquipmentList.length > 0 && (
+                <div style={{ marginTop: 18 }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Other requirements</div>
+                  {otherEquipmentList.map((e) => (
+                    <div key={e} style={{ fontSize: 12, color: "#5A3520", padding: "2px 0" }}>• {e}</div>
+                  ))}
+                </div>
+              )}
+              <div style={{ marginTop: 26, fontSize: 10, color: "#aaa", lineHeight: 1.5 }}>
+                This is an estimate, not a final vendor quote — actual cost varies by vendor and season.<br />
+                Generated by Tendr · tendr.co.in
+              </div>
             </div>
 
             {onFinalise && (
