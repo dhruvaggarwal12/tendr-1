@@ -922,6 +922,11 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         const count = [savedVendors.length > 0, compareSelected.length > 0, funCartCount > 0 && !funConfirmed, ghCartCount > 0 && !ghConfirmed, stCartCount > 0 && !stConfirmed, ghPhotoCount > 0].filter(Boolean).length;
         const hasSaved = savedVendors.length > 0;
         const hasCompare = compareSelected.length > 0;
+        // Cart-only (fun activities / gift hampers / stationery) is the common case and
+        // previously hid behind a generic Tendr-logo button — you had to tap it and then
+        // tap again inside the stack to even see the heart icon. Skip straight to the
+        // review page, same as the compare-only/saved-only shortcuts below.
+        const cartOnly = hasCartItems && !hasSaved && !hasCompare;
         const handleLauncherClick = () => {
           // If only one item type exists, skip the stack and open that popup directly
           if (hasCompare && !hasSaved && !hasCartItems) {
@@ -933,16 +938,25 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
             setSavedOpen(v => !v); setCompareOpen(false); setLauncherOpen(false);
             return;
           }
+          if (cartOnly) { router.navigate("/my-extras"); return; }
           setLauncherOpen(v => !v);
         };
         return (
           <button
             className="launcher-fab"
             onClick={handleLauncherClick}
-            aria-label="Open activity tray"
-            title="Your activity"
+            aria-label={cartOnly ? "Review your shortlist" : "Open activity tray"}
+            title={cartOnly ? "Review your shortlist" : "Your activity"}
           >
-            <img src={tendrLogo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%", display: "block" }} />
+            {cartOnly ? (
+              <div style={{ width: "100%", height: "100%", borderRadius: "50%", background: "linear-gradient(135deg,#0C2A3A,#164E63)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="60%" height="60%" viewBox="0 0 24 24" fill="#7DD3FC" stroke="#7DD3FC" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+              </div>
+            ) : (
+              <img src={tendrLogo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%", display: "block" }} />
+            )}
             <span className="launcher-badge">{count}</span>
           </button>
         );

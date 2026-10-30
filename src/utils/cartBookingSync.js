@@ -1,8 +1,11 @@
-// Silently ensures a "Stationery & Activities" conversation exists in the backend
+// Silently ensures the one unified "My Order" conversation exists in the backend
 // whenever the user has fun-activity or stationery cart items, and creates a booking
 // record if bookingCategory is supplied ('fun-activities' or 'stationery').
 // Called on login/signup and on add-to-cart (if already logged in).
 // Fire-and-forget — never throws.
+// Used to tag these "Stationery & Activities" — a separate conversation from the
+// "My Order" bucket everything else funnels into, left over from before that
+// unification. Fixed to match so this doesn't keep spawning its own thread.
 export function syncCartToBackend(token, bookingCategory = null) {
   if (!token) return;
   try {
@@ -13,7 +16,7 @@ export function syncCartToBackend(token, bookingCategory = null) {
     return;
   }
   const BASE_URL = (import.meta.env.VITE_BASE_URL || '').replace(/\/+$/, '');
-  const body = { serviceType: 'Stationery & Activities' };
+  const body = { serviceType: 'My Order' };
   if (bookingCategory) body.bookingCategory = bookingCategory;
   fetch(`${BASE_URL}/conversations/baat-karo`, {
     method: 'POST',

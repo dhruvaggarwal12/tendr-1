@@ -900,7 +900,7 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
     try {
       const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
         method: 'POST', headers: hdrs, credentials: 'include',
-        body: JSON.stringify({ message: parts, serviceType: 'Occasions' }),
+        body: JSON.stringify({ message: parts, serviceType: 'My Order' }),
       });
       const data = await res.json();
       if (res.ok && data.conversationId) {
@@ -913,7 +913,7 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
         for (const url of selections.photos) {
           try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: 'POST', headers: hdrs, body: JSON.stringify({ sender: 'user', content: `[img:${url}]` }) }); } catch {}
         }
-        openExistingChat(cid, { _id: null, name: 'Tendr Team', serviceType: 'Occasions', approved: false });
+        openExistingChat(cid, { _id: null, name: 'Tendr Team', serviceType: 'My Order', approved: false });
       }
     } catch (e) { console.error('OccasionPlanner chat failed:', e); }
   };
@@ -1222,7 +1222,10 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
     fetch(`${BASE_URL}/conversations`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" })
       .then(r => r.ok ? r.json() : { conversations: [] })
       .then(data => {
-        const found = (data.conversations || []).find(c => c.serviceType === 'Occasions' && !c.vendorId);
+        // Matches the current 'My Order' tag and the legacy 'Occasions' tag this used to
+        // create before unifying into the one conversation everything else uses — so a
+        // returning customer's old thread still resumes instead of spawning a new one.
+        const found = (data.conversations || []).find(c => (c.serviceType === 'My Order' || c.serviceType === 'Occasions') && !c.vendorId);
         if (found) setExistingChat(found);
       }).catch(() => {});
   }, [token]);
@@ -1300,7 +1303,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
           {existingChat && (
             <div style={{ width: '100%', maxWidth: 860, marginBottom: 10 }}>
               <button
-                onClick={() => { openExistingChat(existingChat._id, { _id: null, name: 'Tendr Team', serviceType: 'Occasions', approved: true }); onClose(); }}
+                onClick={() => { openExistingChat(existingChat._id, { _id: null, name: 'Tendr Team', serviceType: 'My Order', approved: true }); onClose(); }}
                 style={{ width: '100%', background: 'rgba(196,122,46,0.2)', border: '1.5px solid rgba(196,122,46,0.5)', borderRadius: 12, padding: '10px 16px', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', textAlign: 'left', fontFamily: "'Outfit',sans-serif" }}
               >
                 You have an active Occasions chat &nbsp;→ Resume Chat

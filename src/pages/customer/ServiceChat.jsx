@@ -39,8 +39,11 @@ const CONFIG = {
 
 export default function ServiceChat({ serviceType }) {
   const cfg = CONFIG[serviceType] || CONFIG["Occasions"];
-  // All Gift Hampers + Occasions chats merge into the same "Baat Karo" conversation
-  const storedServiceType = (serviceType === "Gift Hampers" || serviceType === "Occasions") ? "Baat Karo" : serviceType;
+  // Gift Hampers + Occasions both fold into the single "My Order" conversation
+  // everything else (vendor enquiries, fun activities, stationery, shortlist review)
+  // already funnels into — these used to tag themselves "Baat Karo" instead, which
+  // split them off into their own separate thread.
+  const storedServiceType = (serviceType === "Gift Hampers" || serviceType === "Occasions") ? "My Order" : serviceType;
   const { token } = useSelector((s) => s.auth);
   const { openExistingChat } = useChatOverlay();
 

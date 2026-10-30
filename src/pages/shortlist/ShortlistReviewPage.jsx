@@ -8,6 +8,7 @@ import { setStBooking } from "../../redux/stationeryBookingSlice";
 import { useChatOverlay } from "../../context/ChatContext";
 import { CAT_META } from "./categoryMeta";
 import AuthModal from "../../components/AuthModal";
+import { SERVICED_CITIES } from "../../data/indianCities";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const F = "'Outfit', sans-serif";
@@ -16,6 +17,14 @@ const INK = "#0C2A3A";
 
 // Fixed category order — matches the fixed hierarchy the icon itself uses.
 const CATEGORY_ORDER = ["fun-activity", "gift-hamper", "gift-inspiration", "stationery"];
+
+// The backend's SERVICE_BOOKING_TYPES list (routes/conversation.js) expects
+// 'fun-activities'/'gift-hampers' (plural) — sending the singular local keys above
+// meant its `SERVICE_BOOKING_TYPES.includes(bookingCategory)` check silently failed
+// and no EventPlan tracking record ever got created for these two categories.
+// "gift-inspiration" intentionally has no mapping — those go in as image messages,
+// not a priced EventPlan.
+const BOOKING_CATEGORY_MAP = { "fun-activity": "fun-activities", "gift-hamper": "gift-hampers", stationery: "stationery" };
 
 export default function ShortlistReviewPage() {
   const navigate = useNavigate();
@@ -111,7 +120,8 @@ export default function ShortlistReviewPage() {
           credentials: "include",
           body: JSON.stringify({
             message,
-            bookingCategory: c,
+            serviceType: "My Order",
+            bookingCategory: BOOKING_CATEGORY_MAP[c],
             eventDetails: { date: f.date || "", city: f.location || "", notes: f.notes || "" },
             items: buildItems(c, its),
           }),
@@ -228,11 +238,14 @@ export default function ShortlistReviewPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <div>
             <label style={lbl}>Event date</label>
-            <input type="date" style={inp} value={form.date} onChange={e => setField("date", e.target.value)} />
+            <input type="date" style={inp} value={form.date} min={new Date().toISOString().slice(0, 10)} onChange={e => setField("date", e.target.value)} />
           </div>
           <div>
             <label style={lbl}>City / Delivery location</label>
-            <input style={inp} value={form.location} onChange={e => setField("location", e.target.value)} placeholder="e.g. Delhi NCR" />
+            <select style={{ ...inp, color: form.location ? INK : "#64748B", cursor: "pointer" }} value={form.location} onChange={e => setField("location", e.target.value)}>
+              <option value="">Select a city</option>
+              {SERVICED_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
           </div>
           <div>
             <label style={lbl}>Notes (optional)</label>
