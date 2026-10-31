@@ -20,7 +20,7 @@ const LOCATION_OPTIONS = [
 ];
 
 const SERVICE_TYPE_LABELS = {
-  DJ: "DJ", Decorator: "Decorator", Photographer: "Photographer",
+  DJ: "DJ", "DJ Setup": "DJ Setup", Decorator: "Decorator", Photographer: "Photographer",
   Caterer: "Caterer", GiftHamper: "Gift Hamper", Cake: "Cake",
   Emcee: "Emcee", Anchor: "Anchor", Band: "Band", Choreographer: "Choreographer",
   Performer: "Performer", Musician: "Musician", Singer: "Singer", Comedian: "Comedian",
@@ -29,7 +29,7 @@ const SERVICE_TYPE_LABELS = {
 const ALL_VENDOR_TYPES = [
   'DJ', 'Anchor', 'Emcee/Host', 'Band', 'Singer', 'Musician', 'Performer', 'Choreographer',
   'Stand-up Comedian', 'Magician', 'AV Setup',
-  'Photographer', 'Videographer', 'Decorator', 'Caterer', 'Makeup Artist',
+  'DJ Setup', 'Photographer', 'Videographer', 'Decorator', 'Caterer', 'Makeup Artist',
   'Mehendi Artist', 'Hair Stylist', 'Cake Artist', 'Bartender',
   'Wedding Planner', 'Food Truck', 'Photo Booth', 'Live Streaming',
   'Gift & Favours', 'Transportation', 'Security',

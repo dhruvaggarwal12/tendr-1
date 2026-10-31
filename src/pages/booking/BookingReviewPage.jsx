@@ -21,7 +21,7 @@ const PRICE_RANGES = {
   Caterer:      [50000,  300000],
   Decorator:    [30000,  200000],
   Photographer: [20000,  150000],
-  DJ:           [15000,   80000],
+  "DJ Setup":   [15000,   80000],
   Venue:       [100000, 1000000],
   Makeup:       [10000,   75000],
   Mehndi:        [8000,   50000],
@@ -100,7 +100,7 @@ const TC_CONTENT = {
       "Extra time beyond the agreed service window will be billed separately.",
     ],
   },
-  DJ: {
+  "DJ Setup": {
     title: "DJ",
     icon: "🎧",
     points: [
@@ -126,7 +126,7 @@ const TC_CONTENT = {
 const TC_KEY_MAP = {
   Decorator:    "Decorator",
   Caterer:      "Caterer",
-  DJ:           "DJ",
+  "DJ Setup":   "DJ Setup",
   Photographer: "Photographer",
   Videographer: "Photographer",
 };
@@ -986,7 +986,7 @@ const BookingReviewPage = () => {
               const isOpen = !!openKeys[serviceType];
               const multipleVendors = candidateArr.length > 1;
 
-              const SERVICE_ICONS = { DJ: "🎵", Caterer: "🍽️", Decorator: "🎨", Photographer: "📸", GiftHamper: "🎁", Cake: "🎂", Makeup: "💄", Venue: "🏛️", Mehndi: "🖐️", Band: "🎶", Planner: "📋" };
+              const SERVICE_ICONS = { "DJ Setup": "🎵", Caterer: "🍽️", Decorator: "🎨", Photographer: "📸", GiftHamper: "🎁", Cake: "🎂", Makeup: "💄", Venue: "🏛️", Mehndi: "🖐️", Band: "🎶", Planner: "📋" };
               return (
                 <div key={serviceType} style={{ marginBottom: 20 }}>
 

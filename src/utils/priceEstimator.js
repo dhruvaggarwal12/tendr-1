@@ -122,7 +122,7 @@ const SERVICE_TYPE_TO_SIMPLE_KEY = {
   Decorator: "decor",
   Photographer: "photo",
   Videographer: "photo",
-  DJ: "dj",
+  "DJ Setup": "dj",
 };
 export function mapServiceTypeToSimpleCategory(serviceType) {
   return SERVICE_TYPE_TO_SIMPLE_KEY[serviceType] || null;
@@ -138,7 +138,7 @@ const SIMPLE_KEY_TO_SERVICE_TYPE = {
   catering: "Caterer",
   decor: "Decorator",
   photo: "Photographer",
-  dj: "DJ",
+  dj: "DJ Setup",
   cake: "Cake",
   gifting: "GiftHamper",
 };

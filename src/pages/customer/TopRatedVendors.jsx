@@ -16,7 +16,7 @@ const font = "'Outfit', sans-serif";
 const CATEGORY_MAP = {
   Photographer: { label: "Photography Vendors", color: "#C47A2E" },
   Caterer: { label: "Catering Vendors", color: "#C47A2E" },
-  DJ: { label: "DJ & Music Vendors", color: "#C47A2E" },
+  "DJ Setup": { label: "DJ & Music Vendors", color: "#C47A2E" },
   Decorator: { label: "Decoration Vendors", color: "#C47A2E" },
 };
 

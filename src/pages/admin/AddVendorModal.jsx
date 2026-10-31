@@ -27,7 +27,8 @@ const CATEGORIES = [
   { id: "Photo Booth",       label: "Photo Booth",        icon: "🎞️", color: "#6d28d9", desc: "360 booth, GIF & print booths" },
   { id: "Live Streaming",    label: "Live Streaming",     icon: "📡", color: "#b45309", desc: "YouTube, Zoom, Facebook live" },
   // Music & Entertainment
-  { id: "DJ",                label: "DJ",                 icon: "🎧", color: "#7c3aed", desc: "Music, sound, lights" },
+  { id: "DJ Setup",          label: "DJ Setup",           icon: "🎧", color: "#7c3aed", desc: "Music, sound, lights (equipment)" },
+  { id: "DJ",                label: "DJ",                 icon: "🎚️", color: "#5b21b6", desc: "Performing artist — open format, commercial, wedding" },
   { id: "Band",              label: "Band",               icon: "🎸", color: "#b91c1c", desc: "Live band performance" },
   { id: "Singer",            label: "Singer",             icon: "🎤", color: "#be185d", desc: "Live vocals, ghazals, Bollywood" },
   { id: "Musician",          label: "Musician",           icon: "🎻", color: "#92400e", desc: "Instrumentalist" },
@@ -190,7 +191,7 @@ export default function AddVendorModal({ onClose, onAdded }) {
         ...f,
         locations: f.locations,
         portfolioPhotos: photos,
-        // DJ
+        // DJ Setup
         setup: djSetup, lightsIncluded: djLights, eventTypes: djEvents,
         // Decorator
         typesOfDecoration: decTypes, venueCoverage: decCoverage, themes: decThemes,
@@ -351,9 +352,9 @@ export default function AddVendorModal({ onClose, onAdded }) {
           </div>
 
           {/* ── CATEGORY SPECIFIC ── */}
-          {category === "DJ" && (
+          {category === "DJ Setup" && (
             <>
-              <SectionTitle>DJ Details</SectionTitle>
+              <SectionTitle>DJ Setup Details</SectionTitle>
               <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 12, marginBottom: 20 }}>
                 <Field label="Setup Type"><MultiCheck options={DJ_SETUP} value={djSetup} onChange={setDjSetup} columns={2} /></Field>
                 <Field label="Event Types"><MultiCheck options={DJ_EVENTS} value={djEvents} onChange={setDjEvents} columns={3} /></Field>

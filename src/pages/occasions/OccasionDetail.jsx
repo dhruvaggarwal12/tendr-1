@@ -99,7 +99,7 @@ const NOTES_CHIPS = [
 // the POST/PATCH boundary — never rename ALL_VENDORS itself, since these exact strings
 // are used as lookup keys in ~30 places across this file (getVendorTips, getVendorPackages,
 // getRecommended, buildItinerary, notesKeywords, etc.).
-const SERVICE_TYPE_BACKEND_MAP = { "Live Band":"Band", "Emcee / Host":"Emcee/Host", "Cake Artist":"Cake" };
+const SERVICE_TYPE_BACKEND_MAP = { "Live Band":"Band", "Emcee / Host":"Emcee/Host", "Cake Artist":"Cake", "DJ":"DJ Setup" };
 const toBackendServiceType = v => SERVICE_TYPE_BACKEND_MAP[v] || v;
 
 // Presentational copy + images for the Services step's card picker (spec section 4).

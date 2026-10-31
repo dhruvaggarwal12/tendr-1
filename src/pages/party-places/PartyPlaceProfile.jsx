@@ -18,7 +18,7 @@ const SVC_CONFIG = {
   Decoration:  { icon: "🎀", color: "#D946A0", bg: "rgba(217,70,160,0.07)", desc: "Balloons, flowers, draping — themed & set up" },
   Catering:    { icon: "🍽️", color: "#D97706", bg: "rgba(217,119,6,0.07)",   desc: "Fresh food prepared on-site by verified chefs" },
   Photography: { icon: "📸", color: "#2563EB", bg: "rgba(37,99,235,0.07)",   desc: "Pro coverage — edited photos in 48 hrs" },
-  DJ:          { icon: "🎵", color: "#7C3AED", bg: "rgba(124,58,237,0.07)",  desc: "DJ + sound system, setup & takedown included" },
+  "DJ Setup":  { icon: "🎵", color: "#7C3AED", bg: "rgba(124,58,237,0.07)",  desc: "DJ + sound system, setup & takedown included" },
 };
 
 const DEFAULT_REVIEWS = [

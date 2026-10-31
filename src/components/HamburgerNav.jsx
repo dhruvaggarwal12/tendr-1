@@ -32,7 +32,7 @@ const BASE_SPLITS = {
   Caterer:      { pct: 40, emoji: "🍽️", label: "Catering" },
   Decorator:    { pct: 25, emoji: "🎨", label: "Decoration" },
   Photographer: { pct: 20, emoji: "📸", label: "Photography" },
-  DJ:           { pct: 15, emoji: "🎵", label: "DJ & Music" },
+  "DJ Setup":   { pct: 15, emoji: "🎵", label: "DJ & Music" },
   Anchor:       { pct: 10, emoji: "🎤", label: "Anchor" },
   Transport:    { pct: 8,  emoji: "🚗", label: "Transport" },
   Mehendi:      { pct: 8,  emoji: "🌿", label: "Mehendi" },
@@ -102,11 +102,11 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const SEARCH_SUGGESTIONS = [
     { text: "Photographers in Delhi", cat: "Photographer", loc: "Delhi" },
     { text: "Caterers in Noida", cat: "Caterer", loc: "Noida" },
-    { text: "DJ for birthday party", cat: "DJ" },
+    { text: "DJ for birthday party", cat: "DJ Setup" },
     { text: "Wedding decorators", cat: "Decorator" },
     { text: "Photographers in Ghaziabad", cat: "Photographer", loc: "Ghaziabad" },
   ];
-  const SVC_KW2 = { caterer: "Caterer", catering: "Caterer", food: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", dj: "DJ", music: "DJ" };
+  const SVC_KW2 = { caterer: "Caterer", catering: "Caterer", food: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", dj: "DJ Setup", music: "DJ Setup" };
   const LOC_KW2 = { delhi: "Delhi", noida: "Noida", gurgaon: "Gurgaon", gurugram: "Gurgaon", ghaziabad: "Ghaziabad", "greater noida": "Greater Noida" };
   const PAGE_KW2 = { budget: "/budget-picker", "gift hamper": "/gifting", "gift hampers": "/gifting", hampers: "/gifting", cakes: "/gift-hampers-cakes", gifting: "/gifting", timeline: "/timeline-picker", invitation: "/stationery", flyer: "/stationery", stationery: "/stationery", aftermovie: "/stationery", "decor analyser": "/decor-analyser", "decor analyzer": "/decor-analyser", "venue photo": "/decor-analyser", guides: "/guides", community: "/community" };
 
@@ -719,7 +719,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   { emoji: "🎨", label: "Decorator",          href: "/search?categories=Decorator" },
                   { emoji: "🍽️", label: "Caterer",            href: "/search?categories=Caterer" },
                   { emoji: "📸", label: "Photographer",       href: "/search?categories=Photographer" },
-                  { emoji: "🎵", label: "DJ",                 href: "/search?categories=DJ" },
+                  { emoji: "🎵", label: "DJ Setup",           href: "/search?categories=DJ%20Setup" },
                   { emoji: "🎤", label: "Live Performances",  href: "/artists" },
                   { emoji: "🎁", label: "Gift Hampers",       href: "/gifting" },
                   { emoji: "🎭", label: "Fun Activities",     href: "/fun-activities" },
@@ -1019,7 +1019,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 { emoji: "🎨", label: "Decorator",          href: "/search?categories=Decorator" },
                 { emoji: "🍽️", label: "Caterer",            href: "/search?categories=Caterer" },
                 { emoji: "📸", label: "Photographer",       href: "/search?categories=Photographer" },
-                { emoji: "🎵", label: "DJ",                 href: "/search?categories=DJ" },
+                { emoji: "🎵", label: "DJ Setup",           href: "/search?categories=DJ%20Setup" },
                 { emoji: "🎤", label: "Live Performances",  href: "/artists" },
                 { emoji: "🎁", label: "Gift Hampers",       href: "/gifting" },
                 { emoji: "🎭", label: "Fun Activities",     href: "/fun-activities" },

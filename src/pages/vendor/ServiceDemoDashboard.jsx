@@ -15,7 +15,7 @@ const PROFILES = {
   Caterer:{name:"Royal Feast Caterers",type:"Caterer",city:"Mumbai",phone:"+91 98001 22333",email:"orders@royalfeast.in",bio:"Mumbai's most trusted full-service catering company with 14 years of experience. 600+ events catered — from intimate 30-pax family lunches to 2,000-guest wedding buffets. Specialists in North Indian, Punjabi, South Indian, and live counter setups.",rating:4.8,reviewCount:112,events:620,responseTime:"< 2 hrs",teamSize:28,years:14,instagram:"@royalfeastcaterers",youtube:"",website:"royalfeast.in",specialties:["Wedding Buffet","Live Counters","Corporate Luncheons","Cocktail Snacks","Multi-Cuisine"],menuType:["Veg","Non-Veg","Jain"],serviceStyle:["Buffet","Live Stations","Plated Service","Food Trucks"]},
   Decorator:{name:"Blooms & Beyond Decor Studio",type:"Decorator",city:"Delhi",phone:"+91 98001 11222",email:"hello@bloomsandbeyond.in",bio:"Full-service decoration studio from South Delhi with 8 years transforming 380+ venues. Specialists in luxury floral arrangements, LED backdrops, fabric draping, and balloon art. Every setup is custom-designed — no two events look alike.",rating:4.9,reviewCount:142,events:380,responseTime:"< 2 hrs",teamSize:14,years:8,instagram:"@bloomsandbeyond",youtube:"",website:"bloomsandbeyond.in",specialties:["Floral Arch & Mandap","Balloon Canopy","LED Backdrop","Fabric Draping","Table Centrepieces","Fairy Light Ceiling"],typesOfDecoration:["Floral","Balloon","Lighting","Fabric Draping","Backdrop","Prop-Based","Minimalist"],themes:["Floral Focused","Balloon Dominant","Lighting Emphasis","Fabric Draping","Mixed Media","Minimalist Touch"]},
   Photographer:{name:"Frames by Kabir",type:"Photographer",city:"Noida",phone:"+91 98001 44555",email:"kabir@framesbyKabir.in",bio:"Candid wedding and portrait photographer based in Noida. 6 years, 220+ events. We specialise in natural-light storytelling — capturing real laughs, tears, and stolen glances. Shooting on Sony mirrorless + drone. Delivery: 400 edited photos in 21 days.",rating:4.8,reviewCount:97,events:220,responseTime:"< 4 hrs",teamSize:4,years:6,instagram:"@framesbyKabir",youtube:"Frames by Kabir",website:"",specialties:["Candid Wedding","Pre-Wedding Shoot","Drone Coverage","Corporate Headshots","Same-Day Edit Reel"],photographyType:["Candid","Drone","Traditional","Cinematic"],hoursIncluded:["4","8","Full Day"],editingDays:["7","14","21"]},
-  DJ:{name:"DJ Arjun Mehta — Event Services",type:"DJ",city:"Mumbai",phone:"+91 98000 11234",email:"arjun@arjunmehta.dj",bio:"Mumbai-based professional DJ and sound setup provider. 8 years, 312+ events. Full setup packages include Pioneer CDJ-3000 decks, professional PA systems, and lighting. Available for weddings, corporates, and club nights.",rating:4.9,reviewCount:67,events:312,responseTime:"< 1 hr",teamSize:2,years:8,instagram:"@arjunmehta.dj",youtube:"",website:"",specialties:["Full DJ Setup","Bollywood Mixes","Corporate Events","Club Nights","Wedding Reception"],setup:["Basic Setup","Full Production"],eventTypes:["House Party","Corporate","Wedding","Club Night"]},
+  "DJ Setup":{name:"DJ Arjun Mehta — Event Services",type:"DJ Setup",city:"Mumbai",phone:"+91 98000 11234",email:"arjun@arjunmehta.dj",bio:"Mumbai-based professional DJ and sound setup provider. 8 years, 312+ events. Full setup packages include Pioneer CDJ-3000 decks, professional PA systems, and lighting. Available for weddings, corporates, and club nights.",rating:4.9,reviewCount:67,events:312,responseTime:"< 1 hr",teamSize:2,years:8,instagram:"@arjunmehta.dj",youtube:"",website:"",specialties:["Full DJ Setup","Bollywood Mixes","Corporate Events","Club Nights","Wedding Reception"],setup:["Basic Setup","Full Production"],eventTypes:["House Party","Corporate","Wedding","Club Night"]},
 };
 
 // ── Packages per type ─────────────────────────────────────────────────────────
@@ -35,7 +35,7 @@ const INIT_PACKAGES = {
     {id:2,name:"Full Day",price:48000,unit:"full day",icon:"🎞",badge:"Most Popular",items:"2 photographers + assistant\nFull day (10 hrs)\n400 edited photos\n1 highlight reel (3 min)\nDrone session (30 min)\nPrivate gallery link\nDelivery in 21 days"},
     {id:3,name:"Wedding Package",price:110000,unit:"2-day coverage",icon:"💍",badge:"",items:"2-day full coverage\n3 photographers + drone pilot\n2000+ edited photos\n10-min cinematic film\nPre-wedding session\nPriority delivery in 14 days"},
   ],
-  DJ:[
+  "DJ Setup":[
     {id:1,name:"2-Hour Mix",price:15000,unit:"2 hours",icon:"🎵",badge:"",items:"2 hrs live DJing\nBasic PA + subwoofer\nBollywood + commercial set"},
     {id:2,name:"4-Hour Party",price:28000,unit:"4 hours",icon:"🎶",badge:"Most Popular",items:"4 hrs live DJing\nProfessional PA system\nCustom playlist consultation\nWireless mic\nSmoke machine"},
     {id:3,name:"Full Night Production",price:55000,unit:"6-8 hours",icon:"🔊",badge:"",items:"6–8 hrs DJing\nLine-array PA\nFull LED lighting rig\nLaser show\nCustom event mix prep"},
@@ -65,7 +65,7 @@ const INIT_BOOKINGS = {
     {id:"B004",client:"Sneha Gupta",event:"Maternity Shoot",date:"2026-10-20",venue:"Bandstand, Bandra",amount:18000,status:"Pending",note:"Outdoor maternity session. Golden hour. Props provided."},
     {id:"B005",client:"Patel Family",event:"50th Anniversary",date:"2026-11-10",venue:"Home, Juhu",amount:22000,status:"Declined",note:"Half-day anniversary family photography. 30 family members."},
   ],
-  DJ:[
+  "DJ Setup":[
     {id:"B001",client:"Sharma Wedding",event:"Wedding Reception",date:"2026-09-20",venue:"Leela Palace, Delhi",amount:28000,status:"Confirmed",note:"4-hr set. Mix of Bollywood and EDM. 300 guests."},
     {id:"B002",client:"StartupFest",event:"Corporate After-Party",date:"2026-09-27",venue:"The Clubhouse, BKC",amount:55000,status:"Confirmed",note:"Full night production. 150 attendees."},
     {id:"B003",client:"Riya Kapoor",event:"25th Birthday Pool Party",date:"2026-10-05",venue:"Juhu Beach Club",amount:22000,status:"Pending",note:"4-hr set. EDM and hip-hop. 60 friends."},
@@ -94,7 +94,7 @@ const INIT_REVIEWS = {
     {id:3,name:"Priya & Karan Pre-Wedding",event:"Pre-Wedding, Feb 2025",rating:5,text:"The Lonavala shoot was unreal. Kabir found angles and light we didn't even know existed. Our families cried looking at the photos. Best investment of our wedding budget.",response:null},
     {id:4,name:"Meghna Patel",event:"Maternity Shoot, Dec 2024",rating:5,text:"So comfortable and calm throughout. Made me feel beautiful at every angle. The golden hour shots at Bandstand are my most treasured photos ever.",response:"Meghna, maternity shoots are so special — capturing this season of life is an honour. Congratulations on your little one!"},
   ],
-  DJ:[
+  "DJ Setup":[
     {id:1,name:"Sharma Family Wedding",event:"Wedding Reception, Sep 2025",rating:5,text:"Arjun read the crowd perfectly — started with Bollywood classics for the family, transitioned to EDM for the younger crowd seamlessly. The dance floor was packed all night.",response:"Thank you! The Sharma wedding had such a great energy — 300 guests all on the floor at once is what we live for!"},
     {id:2,name:"StartupFest 2025",event:"After-Party, Aug 2025",rating:5,text:"Exactly the vibe a startup after-party needs. High energy, great production quality, professional setup. Our attendees are asking if we'll book Arjun for next year's fest.",response:"StartupFest crowd was electric! Tech + music = perfect combo. See you next year!"},
     {id:3,name:"Riya Kapoor",event:"Birthday Party, Jul 2025",rating:5,text:"The pool party set was immaculate. Perfect for a 25th birthday — fun, energetic, and he even took song requests which everyone loved.",response:null},
@@ -137,7 +137,7 @@ const TYPE_CONFIG = {
   Caterer:{tabLabel:"Menu",tabIcon:"M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"},
   Decorator:{tabLabel:"Decor",tabIcon:"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"},
   Photographer:{tabLabel:"Services",tabIcon:"M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"},
-  DJ:{tabLabel:"Setup",tabIcon:"M9 18V5l12-2v13M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"},
+  "DJ Setup":{tabLabel:"Setup",tabIcon:"M9 18V5l12-2v13M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"},
 };
 
 // ════════════════════════════════════════════════════════════════════════════════
@@ -505,7 +505,7 @@ export default function ServiceDemoDashboard() {
         <div><div style={{fontSize:13,fontWeight:600,color:ink,marginBottom:8}}>Editing Turnaround</div><div style={{display:"flex",flexWrap:"wrap",gap:8}}>{(profile.editingDays||[]).map(t=><span key={t} style={{padding:"5px 12px",borderRadius:100,background:"rgba(196,122,46,0.1)",color:gold,fontSize:12,fontWeight:600}}>{t} days</span>)}</div></div>
       </Card>
     );
-    if(sType==="DJ") return(
+    if(sType==="DJ Setup") return(
       <Card>
         <SL>DJ Setup Options</SL>
         <div style={{marginBottom:16}}><div style={{fontSize:13,fontWeight:600,color:ink,marginBottom:8}}>Setup Types</div><div style={{display:"flex",flexWrap:"wrap",gap:8}}>{(profile.setup||[]).map(t=><span key={t} style={{padding:"5px 12px",borderRadius:100,background:"rgba(196,122,46,0.1)",color:gold,fontSize:12,fontWeight:600}}>{t}</span>)}</div></div>

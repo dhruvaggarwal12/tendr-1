@@ -14,7 +14,7 @@ const STATUS_COLORS = {
 };
 
 const BLANK = { id: "", vendorName: "", serviceType: "", totalAmount: "", paidAmount: "", dueDate: "", notes: "", status: "pending" };
-const TYPES = ["Photographer", "Decorator", "DJ", "Caterer", "Venue", "Other"];
+const TYPES = ["Photographer", "Decorator", "DJ Setup", "Caterer", "Venue", "Other"];
 
 function computeStatus(total, paid) {
   const t = Number(total) || 0;
@@ -40,7 +40,7 @@ function ProgressBar({ paid, total }) {
 
 const EXAMPLE_ENTRIES = [
   { id: "ex1", vendorName: "Shutter Story Photography", serviceType: "Photographer", totalAmount: "45000", paidAmount: "15000", dueDate: "2025-12-01", notes: "Remaining due 3 days before event", status: "partial" },
-  { id: "ex2", vendorName: "DJ Arjun Events",           serviceType: "DJ",           totalAmount: "22000", paidAmount: "22000", dueDate: "",            notes: "Fully paid via UPI",             status: "paid"    },
+  { id: "ex2", vendorName: "DJ Arjun Events",           serviceType: "DJ Setup",     totalAmount: "22000", paidAmount: "22000", dueDate: "",            notes: "Fully paid via UPI",             status: "paid"    },
   { id: "ex3", vendorName: "Floral Dreams Decor",       serviceType: "Decorator",    totalAmount: "60000", paidAmount: "0",     dueDate: "2025-12-05", notes: "Advance pending",                status: "pending" },
 ];
 

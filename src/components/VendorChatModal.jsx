@@ -502,7 +502,7 @@ export default function VendorChatModal() {
   const summarySentRef = useRef(false);
   const [wizardPrefilled, setWizardPrefilled] = useState(false);
   // Package step — shown after last bot question, before chat opens (vendor chats only)
-  const PACKAGE_SERVICES = ['Caterer', 'Photographer', 'Decorator', 'DJ'];
+  const PACKAGE_SERVICES = ['Caterer', 'Photographer', 'Decorator', 'DJ Setup'];
   const shouldShowPkgStep = !isConcierge && PACKAGE_SERVICES.includes(vendor?.serviceType) && !isExistingChat;
   const [showPkgStep, setShowPkgStep] = useState(false);
   const [pkgExpanded, setPkgExpanded] = useState({});
@@ -2126,7 +2126,7 @@ export default function VendorChatModal() {
               Photographer: ["What is your style — candid or traditional?","How many hours are included?","Do you have backup equipment?","How long for edited photos?","Can we see a full gallery?"],
               Decorator:    ["Can you visit the venue first?","Do you handle setup and cleanup?","Can you work with our colour theme?","What is your cancellation policy?","Do you provide fresh or artificial flowers?"],
               Caterer:      ["Is your quote per plate or flat fee?","Can we do a tasting?","Do you handle serving staff?","What is included — crockery, chafing dishes?","What is your minimum guest count?"],
-              DJ:           ["Do you do a playlist session before the event?","Can you take guest requests?","What if equipment fails?","Do you provide sound and lighting both?","How early do you arrive to set up?"],
+              "DJ Setup":   ["Do you do a playlist session before the event?","Can you take guest requests?","What if equipment fails?","Do you provide sound and lighting both?","How early do you arrive to set up?"],
               SmartPlan:    ["Which vendors have you shortlisted for me?","Can I change my event date?","What is the total estimated budget?","How long until everything is confirmed?","Can I add more vendor categories?"],
               Concierge:    ["Which vendors have you shortlisted for me?","Can I change my event date?","What is the total estimated budget?","How long until everything is confirmed?","Can I add more vendor categories?"],
               "Baat Karo":       ["Aap kis date ke liye plan kar rahe hain?","Budget kitna rakha hai?","Konsi services chahiye — caterer, decorator, DJ?","Kitne guests honge?","Kab tak reply mil jayega?"],

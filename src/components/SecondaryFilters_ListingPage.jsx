@@ -7,7 +7,7 @@ const font = "'Outfit', sans-serif";
  * so they work with both client-side filtering and the API serviceFilters param.
  */
 const CATEGORY_FILTERS = {
-  DJ: [
+  "DJ Setup": [
     {
       key: "setup",
       title: "Setup Type",

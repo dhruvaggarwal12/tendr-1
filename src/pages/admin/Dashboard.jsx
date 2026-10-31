@@ -883,8 +883,8 @@ function EbooksAdminTab() {
 
 function QuotationBuilderTab() {
   const font = "'Outfit', sans-serif";
-  const SERVICE_OPTS = ["DJ", "Decorator", "Photographer", "Caterer", "Anchor", "Band", "Choreographer", "Cake", "Gift Hampers", "Venue", "Make-up", "Mehendi", "Other"];
-  const [qLines, setQLines] = React.useState([{ service: "DJ", vendor: "", amount: "" }]);
+  const SERVICE_OPTS = ["DJ Setup", "Decorator", "Photographer", "Caterer", "Anchor", "Band", "Choreographer", "Cake", "Gift Hampers", "Venue", "Make-up", "Mehendi", "Other"];
+  const [qLines, setQLines] = React.useState([{ service: "DJ Setup", vendor: "", amount: "" }]);
   const [qCustomer, setQCustomer] = React.useState("");
   const [qPhone, setQPhone] = React.useState("");
   const [qEvent, setQEvent] = React.useState("");
@@ -3053,7 +3053,7 @@ const AdminDashboard = () => {
                   {/* Service type */}
                   <select value={vendorFilterType} onChange={e => setVendorFilterType(e.target.value)} style={selStyle}>
                     <option value="all">All Types</option>
-                    {["Caterer","Decorator","Photographer","DJ","GiftHamper"].map(t => <option key={t} value={t}>{t}</option>)}
+                    {["Caterer","Decorator","Photographer","DJ Setup","GiftHamper"].map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                   {/* City */}
                   <select value={vendorFilterCity} onChange={e => setVendorFilterCity(e.target.value)} style={selStyle}>
@@ -3455,7 +3455,7 @@ const AdminDashboard = () => {
               const thSt = { padding: "10px 14px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "2px solid rgba(196,122,46,0.15)", background: "rgba(196,122,46,0.04)", whiteSpace: "nowrap" };
               const tdSt = { padding: "10px 14px", fontSize: 13, color: "#2C1A0E", borderBottom: "1px solid rgba(196,122,46,0.08)" };
               const cardSt = { background: "#fff", border: "2px solid #CCAB4A", borderRadius: 16, overflow: "hidden" };
-              const svcIcon = { Caterer: "🍽️", Decorator: "🎀", Photographer: "📸", DJ: "🎵" };
+              const svcIcon = { Caterer: "🍽️", Decorator: "🎀", Photographer: "📸", "DJ Setup": "🎵" };
 
               // ── aggregates ──
               const totalReqs  = vendorStats.reduce((s, v) => s + (v.requestCount || 0), 0);
@@ -3470,7 +3470,7 @@ const AdminDashboard = () => {
               const corpCount      = vendorStats.filter(v => v.hasCorporateExperience).length;
 
               // ── by service type ──
-              const svcTypes = ["Caterer", "Decorator", "Photographer", "DJ"];
+              const svcTypes = ["Caterer", "Decorator", "Photographer", "DJ Setup"];
               const byType = svcTypes.map(t => {
                 const vs = vendorStats.filter(v => v.serviceType === t);
                 if (!vs.length) return null;
@@ -4305,7 +4305,7 @@ const AdminDashboard = () => {
                           { tier: "Standard", guests: "40–80", items: ["Themed Backdrop", "Balloon & Floral", "Table & Entrance Decor", "Custom Signage", "Lighting Setup"] },
                           { tier: "Premium",  guests: "80+",   items: ["Premium Theme Decor", "Floral & Balloon Design", "Stage Setup", "Custom Installations", "Full Venue Styling"] },
                         ],
-                        DJ: [
+                        "DJ Setup": [
                           { tier: "Basic",    guests: "20–40", items: ["3 Hrs Set", "1 DJ", "Basic Sound System", "Standard Lighting"] },
                           { tier: "Standard", guests: "40–80", items: ["5 Hrs Set", "1 DJ", "Professional Sound", "LED Lighting", "Wireless Mic"] },
                           { tier: "Premium",  guests: "80+",   items: ["Full Event Coverage", "1 DJ + Assistant", "Premium Sound System", "Dance Floor Lighting", "Wireless Mics", "Fog Machine"] },

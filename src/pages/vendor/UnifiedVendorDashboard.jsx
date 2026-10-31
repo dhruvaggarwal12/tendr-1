@@ -20,7 +20,7 @@ const parseJwt = (t) => { try { return JSON.parse(atob(t.split(".")[1])); } catc
 
 // ── Type-specific spec options ─────────────────────────────────────────────────
 const SPEC_OPTS = {
-  DJ:              { "Setup Type": ["Basic","Full Production","LED Wall","Full Production + LED"], "Event Types": ["House Party","Corporate","Venue","Wedding","College"] },
+  "DJ Setup":      { "Setup Type": ["Basic","Full Production","LED Wall","Full Production + LED"], "Event Types": ["House Party","Corporate","Venue","Wedding","College"] },
   Anchor:          { Speciality: ["Corporate Events","Wedding","Birthday","Comedy","Bilingual"] },
   "Emcee/Host":    { Speciality: ["Corporate","Social","Award Show","Product Launch"] },
   Band:            { Genre: ["Bollywood","Rock","Jazz","Sufi","Classical","Fusion"], "Band Size": ["Duo","Trio","4-piece","6-piece","10+"] },

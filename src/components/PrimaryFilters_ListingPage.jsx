@@ -2,7 +2,7 @@ import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setFilters } from "../redux/listingFiltersSlice";
 
-const ALL_SERVICE_TYPES = ["Caterer", "Photographer", "DJ", "Decorator"];
+const ALL_SERVICE_TYPES = ["Caterer", "Photographer", "DJ Setup", "Decorator"];
 
 const PrimaryFilters_ListingPage = ({ onSearch = () => {}, allowedServiceTypes = [], hideButton = false }) => {
   const dispatch = useDispatch();

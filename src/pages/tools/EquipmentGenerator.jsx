@@ -60,7 +60,7 @@ const VENUE_TYPES = [
 ];
 
 const SERVICES = [
-  { id: "DJ",          label: "DJ & Music",      icon: "🎵" },
+  { id: "DJ Setup",    label: "DJ & Music",      icon: "🎵" },
   { id: "Catering",    label: "Catering",        icon: "🍽️" },
   { id: "Decoration",  label: "Decoration",      icon: "🎨" },
   { id: "Photography", label: "Photo & Video",   icon: "📸" },
@@ -73,7 +73,7 @@ const SERVICES = [
 // ── Equipment generation logic ────────────────────────────────────────────────
 function generateEquipment(guests, venueId, services) {
   const n = Number(guests) || 50;
-  const hasDJ     = services.includes("DJ");
+  const hasDJ     = services.includes("DJ Setup");
   const hasCat    = services.includes("Catering");
   const hasDec    = services.includes("Decoration");
   const hasPhoto  = services.includes("Photography");

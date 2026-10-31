@@ -13,7 +13,7 @@ const SECTIONS = [
       { id: "Photographer", icon: "📸", label: "Photography",  color: "#15803d", route: "/listings" },
       { id: "Decorator",    icon: "🎨", label: "Decoration",   color: "#b45309", route: "/listings" },
       { id: "Caterer",      icon: "🍽️", label: "Catering",     color: "#0369a1", route: "/listings" },
-      { id: "DJ",           icon: "🎧", label: "DJ & Music",   color: "#7c3aed", route: "/listings" },
+      { id: "DJ Setup",     icon: "🎧", label: "DJ & Music",   color: "#7c3aed", route: "/listings" },
     ],
   },
   {
@@ -32,7 +32,7 @@ const SECTIONS = [
 ];
 
 export const ALL_ITEMS = SECTIONS.flatMap(s => s.items);
-const VENDOR_IDS = ["Photographer", "Decorator", "Caterer", "DJ"];
+const VENDOR_IDS = ["Photographer", "Decorator", "Caterer", "DJ Setup"];
 
 // ── Check if event planning form is filled ────────────────────────────────────
 function hasFormFilled() {

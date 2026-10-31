@@ -8,7 +8,7 @@ const MAX_RECENT = 5;
 const CATEGORIES = [
   { label: "Photographers",          emoji: "📸", id: "Photographer" },
   { label: "Catering",               emoji: "🍽",  id: "Caterer" },
-  { label: "DJs",                    emoji: "🎵",  id: "DJ" },
+  { label: "DJs",                    emoji: "🎵",  id: "DJ Setup" },
   { label: "Decoration",             emoji: "🎀",  id: "Decorator" },
   { label: "Fun Activities",         emoji: "🎭", id: null, href: "/fun-activities" },
   { label: "Wedding Stationeries",   emoji: "💒", id: null, href: "/stationery" },
@@ -49,7 +49,7 @@ const ALL_PAGES = [
   { text: "Register as Vendor",     href: "/vendor/register",    icon: "🤝" },
 ];
 
-const SVC_KW = { caterer:"Caterer", catering:"Caterer", food:"Caterer", decorator:"Decorator", decoration:"Decorator", decor:"Decorator", photographer:"Photographer", photography:"Photographer", photo:"Photographer", dj:"DJ", music:"DJ", entertainment:"DJ" };
+const SVC_KW = { caterer:"Caterer", catering:"Caterer", food:"Caterer", decorator:"Decorator", decoration:"Decorator", decor:"Decorator", photographer:"Photographer", photography:"Photographer", photo:"Photographer", dj:"DJ Setup", music:"DJ Setup", entertainment:"DJ Setup" };
 const LOC_KW = { delhi:"Delhi", noida:"Noida", gurgaon:"Gurgaon", gurugram:"Gurgaon", ghaziabad:"Ghaziabad", "greater noida":"Greater Noida" };
 const PAGE_KW = {
   budget: "/budget-picker",

@@ -126,7 +126,7 @@ const EventPlanning = () => {
   const [customSplit, setCustomSplit] = useState(null);
   const [draftSplit, setDraftSplit] = useState(null);
   const [smartPlanMode, setSmartPlanMode] = useState('perCategory'); // 'perCategory' | 'total'
-  const [splitPct, setSplitPct] = useState({ Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15 });
+  const [splitPct, setSplitPct] = useState({ Caterer: 40, Decorator: 25, Photographer: 20, "DJ Setup": 15 });
   const [totalPlanBudget, setTotalPlanBudget] = useState(50000);
   const [selectedTier, setSelectedTier] = useState('balanced');
   const [aiRecs, setAiRecs] = useState(null);
@@ -157,9 +157,9 @@ const EventPlanning = () => {
   };
 
   const TIER_SPLITS = {
-    essential: { Caterer: 45, Decorator: 20, Photographer: 20, DJ: 15 },
-    balanced:  { Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15 },
-    premium:   { Caterer: 35, Decorator: 30, Photographer: 25, DJ: 10 },
+    essential: { Caterer: 45, Decorator: 20, Photographer: 20, "DJ Setup": 15 },
+    balanced:  { Caterer: 40, Decorator: 25, Photographer: 20, "DJ Setup": 15 },
+    premium:   { Caterer: 35, Decorator: 30, Photographer: 25, "DJ Setup": 10 },
   };
   const TIER_META = {
     essential: { label: "Essential",  desc: "Smart basics, great value",    color: "#6b7280" },
@@ -298,13 +298,13 @@ const EventPlanning = () => {
   const [budgetModalCallback, setBudgetModalCallback] = useState(null);
   const [totalDraftBudget, setTotalDraftBudget] = useState(50000);
   const [budgetTab, setBudgetTab] = useState("per-service");
-  const SPLIT_PCT = { Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15 };
+  const SPLIT_PCT = { Caterer: 40, Decorator: 25, Photographer: 20, "DJ Setup": 15 };
 
   const CAT_BUDGET_RANGES = {
     Caterer:      { min: 0, max: 5000,   step: 50,    default: 500,   emoji: "🍽️", perPerson: true },
     Decorator:    { min: 0, max: 1000000, step: 5000,  default: 15000, emoji: "🎨" },
     Photographer: { min: 0, max: 1000000, step: 5000,  default: 15000, emoji: "📸" },
-    DJ:           { min: 0, max: 1000000, step: 5000,  default: 10000, emoji: "🎵" },
+    "DJ Setup":   { min: 0, max: 1000000, step: 5000,  default: 10000, emoji: "🎵" },
   };
 
   const fmtBudget = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
@@ -434,7 +434,7 @@ const EventPlanning = () => {
       photo: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=600&h=340&q=80",
     },
     {
-      id: "DJ",
+      id: "DJ Setup",
       title: "DJ & Music",
       icon: <Music className="w-6 h-6" />,
       description: "High-energy beats to keep the party alive",
@@ -590,8 +590,8 @@ const EventPlanning = () => {
   useEffect(() => { try { sessionStorage.setItem("tendr_wiz_packages", JSON.stringify(selectedPackages)); } catch {} }, [selectedPackages]);
 
   // ── You-Do-It package helpers ──────────────────────────────────────────────
-  const YDI_ICON = { Caterer: "🍽", Photographer: "📸", Decorator: "🎀", DJ: "🎵" };
-  const YDI_LABEL = { Caterer: "Catering", Photographer: "Photography", Decorator: "Decoration", DJ: "DJ & Music" };
+  const YDI_ICON = { Caterer: "🍽", Photographer: "📸", Decorator: "🎀", "DJ Setup": "🎵" };
+  const YDI_LABEL = { Caterer: "Catering", Photographer: "Photography", Decorator: "Decoration", "DJ Setup": "DJ & Music" };
 
   const openBrowseModal = async (cat) => {
     setBrowseModalCat(cat);
@@ -662,7 +662,7 @@ const EventPlanning = () => {
       const r = Math.round(n * 2) / 2;
       return "★".repeat(Math.floor(r)) + (r % 1 ? "½" : "") + "☆".repeat(5 - Math.ceil(r));
     };
-    const CAT_EMOJI_MAP = { Caterer: "🍽", Decorator: "🎀", Photographer: "📸", DJ: "🎵" };
+    const CAT_EMOJI_MAP = { Caterer: "🍽", Decorator: "🎀", Photographer: "📸", "DJ Setup": "🎵" };
 
     const currentVendors = smartPlan.lineup.map(({ category, vendors: vs, estimatedCost: lineupCost }) => {
       const pool = vs.slice(0, 3); // max 3 suggestions per category
@@ -672,7 +672,7 @@ const EventPlanning = () => {
       return { category, estimatedCost, vendor, totalVendors: pool.length };
     });
 
-    const wizardCatOrder = ['Caterer', 'Decorator', 'Photographer', 'DJ'];
+    const wizardCatOrder = ['Caterer', 'Decorator', 'Photographer', 'DJ Setup'];
     // Any other selected category (e.g. a specific vendor added via Browse/Listings,
     // which can be any backend service type — Florist, Makeup Artist, Band, etc.) still
     // gets a short question step, via the generic fallback in renderWizardStep() below —
@@ -681,7 +681,9 @@ const EventPlanning = () => {
     const wizardSteps = [
       { id: 'confirm', label: 'Confirm Details' },
       ...wizardCatOrder.filter(c => selectedVendors.includes(c)).map(c => ({
-        id: c.toLowerCase(),
+        // "DJ Setup" can't lowercase into the internal step id 'dj' the renderWizardStep()
+        // switch below keys off, so it's mapped explicitly instead of via .toLowerCase().
+        id: c === 'DJ Setup' ? 'dj' : c.toLowerCase(),
         label: c === 'Caterer' ? 'Food & Catering' : c === 'Decorator' ? 'Decoration' : c === 'Photographer' ? 'Photography' : 'DJ & Music',
       })),
       ...otherCats.map(c => ({ id: `other:${c}`, label: c })),
@@ -987,9 +989,9 @@ const EventPlanning = () => {
           <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 14 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Choose a Package</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {CHAT_PACKAGES.DJ.map(p => { const sel = selectedPackages.DJ === p.tier; const key = `DJ-${p.tier}`; const open = !!pkgExpanded[key]; return (
+              {CHAT_PACKAGES["DJ Setup"].map(p => { const sel = selectedPackages["DJ Setup"] === p.tier; const key = `DJ-${p.tier}`; const open = !!pkgExpanded[key]; return (
                 <div key={p.tier} style={{ borderRadius: 12, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.05)" : "#FFFCF5", overflow: "hidden" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 14px", cursor: "pointer" }} onClick={() => setSelectedPackages(s => ({ ...s, DJ: p.tier }))}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 14px", cursor: "pointer" }} onClick={() => setSelectedPackages(s => ({ ...s, "DJ Setup": p.tier }))}>
                     <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: sel ? "#C47A2E" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{sel && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#fff" }} />}</div>
                     <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{p.tier}</div>{p.guests && <div style={{ fontSize: 11, color: "#9B7450", marginTop: 1 }}>For {p.guests} guests</div>}</div>
                     <button onClick={e => { e.stopPropagation(); setPkgExpanded(x => ({ ...x, [key]: !open })); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 16, padding: "2px 4px", transform: open ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}>⌄</button>
@@ -1029,7 +1031,7 @@ const EventPlanning = () => {
     // ── Waiting for approval — chat-style Tendr Concierge screen ─────────────
     if (planSubmitted) {
       const slots = confirmedPlan?.vendorSlots || currentVendors.map(cv => ({ category: cv.category, vendorName: cv.vendor?.name || cv.category, estimatedCost: cv.estimatedCost }));
-      const CAT_EMOJI = { Caterer: '🍽', Decorator: '🎀', Photographer: '📸', DJ: '🎵' };
+      const CAT_EMOJI = { Caterer: '🍽', Decorator: '🎀', Photographer: '📸', "DJ Setup": '🎵' };
       const F = "'Outfit', sans-serif";
       const GOLD = "#C47A2E";
       const BROWN = "#2C1A0E";
@@ -2330,7 +2332,7 @@ const EventPlanning = () => {
                         onClick={() => {
                           setSmartPlanMode('total');
                           setTotalPlanBudget(totalDraftBudget);
-                          setSplitPct({ Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15 });
+                          setSplitPct({ Caterer: 40, Decorator: 25, Photographer: 20, "DJ Setup": 15 });
                           const tw = selectedVendors.reduce((s, c) => s + (SPLIT_PCT[c] || 25), 0) || 1;
                           const sa = Object.fromEntries(selectedVendors.map(c => [c, Math.round(totalDraftBudget * (SPLIT_PCT[c] || 25) / tw)]));
                           if (budgetModalCallback) {

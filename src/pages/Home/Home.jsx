@@ -1668,7 +1668,7 @@ const Home = () => {
               { label: "Caterer",        type: "Caterer",      href: null,          photoMob: "/occasions/mobile/Caterer.png",              photoDesk: "/occasions/desktop/Caterer.png" },
               { label: "Decorator",      type: "Decorator",    href: null,          photoMob: "/occasions/mobile/Decorator.png",            photoDesk: "/occasions/desktop/Decorator.png" },
               { label: "Photographer",   type: "Photographer", href: null,          photoMob: "/occasions/mobile/Photographer.png",         photoDesk: "/occasions/desktop/Photographer.png" },
-              { label: "DJ",             type: "DJ",           href: null,          photoMob: "/occasions/mobile/DJ.png",                   photoDesk: "/occasions/desktop/DJ.png" },
+              { label: "DJ Setup",       type: "DJ Setup",     href: null,          photoMob: "/occasions/mobile/DJ.png",                   photoDesk: "/occasions/desktop/DJ.png" },
               { label: "Gift Hampers",   type: null,           href: "/gift-hampers-cakes", photoMob: "/occasions/mobile/Gift%20hampers.png", photoDesk: "/occasions/desktop/Gift_hampers.png" },
               { label: "Stationery",     type: null,           href: "/stationery", photoMob: "/occasions/mobile/Event_stationaries.png",   photoDesk: "/occasions/desktop/Event_stationaries.png" },
               { label: "Fun Activities", type: null,           href: "/fun-activities", photoMob: "/occasions/mobile/Fun_activities.png",   photoDesk: "/occasions/desktop/Fun_activities.png" },

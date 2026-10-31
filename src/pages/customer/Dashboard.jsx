@@ -162,7 +162,7 @@ export default function CustomerDashboard() {
     "Caterer":      ["Finalise menu with caterer", "Confirm headcount with caterer 2 days before"],
     "Photographer": ["Share shot list with photographer", "Confirm photographer arrival time"],
     "Decorator":    ["Confirm setup time with decorator", "Share theme references with decorator"],
-    "DJ":           ["Share music playlist with DJ", "Confirm DJ setup time"],
+    "DJ Setup":     ["Share music playlist with DJ", "Confirm DJ setup time"],
   };
   const getChecklist = (plan) => {
     const base = EVENT_CHECKLISTS[plan.eventType] || ["Confirm guest count", "Send invites", "Prepare vendor payments", "Plan your outfit", "Charge phone for photos"];
@@ -1406,7 +1406,7 @@ export default function CustomerDashboard() {
                     const sp = JSON.parse(localStorage.getItem("tendr_smart_plan") || "null");
                     if (!sp) return null;
                     const slots = sp.vendorSlots || [];
-                    const CAT_EMOJI = { Caterer: '🍽', Decorator: '🎀', Photographer: '📸', DJ: '🎵' };
+                    const CAT_EMOJI = { Caterer: '🍽', Decorator: '🎀', Photographer: '📸', "DJ Setup": '🎵' };
                     const statusColor = s => s === 'Confirmed' ? '#16a34a' : s === 'Chatting' ? '#d97706' : s === 'Declined' ? '#dc2626' : '#9B7450';
                     return (
                       <div style={{ background: "linear-gradient(135deg,#FFFCF5,#fff9f0)", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.3)", boxShadow: "0 2px 12px rgba(196,122,46,0.1)", padding: "18px 22px", marginBottom: 12 }}>

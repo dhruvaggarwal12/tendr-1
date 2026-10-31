@@ -15,7 +15,7 @@ const SERVICE_KEYWORDS = {
   Photographer: ["photographer", "photography", "videograph", "video", "photo", "reel", "candid"],
   Caterer:      ["caterer", "catering", "food", "menu", "buffet", "cuisine"],
   Decorator:    ["decorator", "decoration", "decor", "floral", "balloon", "theme"],
-  DJ:           ["dj", "music", "sound", "entertainment", "lights", "console"],
+  "DJ Setup":   ["dj", "music", "sound", "entertainment", "lights", "console"],
 };
 
 function detectService(title = "") {
@@ -30,7 +30,7 @@ function detectService(title = "") {
 function VendorHint({ serviceType, navigate, token }) {
   const [vendors, setVendors] = useState(null);
   useEffect(() => {
-    fetch(`${BASE_URL}/vendors?serviceTypes[]=${serviceType}&limit=3`)
+    fetch(`${BASE_URL}/vendors?serviceTypes[]=${encodeURIComponent(serviceType)}&limit=3`)
       .then(r => r.ok ? r.json() : { vendors: [] })
       .then(d => setVendors((d.vendors || []).slice(0, 3)))
       .catch(() => setVendors([]));

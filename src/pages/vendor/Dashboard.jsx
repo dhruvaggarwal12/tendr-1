@@ -273,6 +273,19 @@ const TYPE_CONFIG = {
     quickTips:['Your portfolio is your business — keep it updated with recent work','Candid vs traditional is the #1 client question — state it clearly','Add your turnaround time for edited photos in your profile'],
     emptyGigMsg:'No shoots logged yet — start tracking your photography bookings.',
   },
+  'DJ Setup': {
+    isArtist:false, emoji:'🎚️', term:'Order', terms:'Orders', invLabel:'Equipment', invEmoji:'🎛️',
+    invCats:['DJ Console','Mixer','Speaker','Subwoofer','Amplifier','Microphone','Lighting','Effect Lights','Cables','Stand','Generator','Other'],
+    invPlaceholder:'e.g. Pioneer CDJ-3000',
+    profileTools:[
+      { label:'Setup Photos',          sub:'Rigs, lighting & past events',    icon:<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></> },
+      { label:'Setup Type',            sub:'Basic Setup or Full Production',  icon:<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></> },
+      { label:'Event Types',           sub:'House Party, Corporate, Venue',   icon:<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></> },
+      { label:'Social Links',          sub:'Instagram, YouTube, website',     icon:<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></> },
+    ],
+    quickTips:['State clearly whether lights are included — it\'s the most-asked question','Mention if you offer Basic Setup or Full Production so clients self-filter','Add past event photos — a clean rig builds trust fast'],
+    emptyGigMsg:'No orders yet — log your first setup to start tracking.',
+  },
   'Videographer': {
     isArtist:false, emoji:'🎬', term:'Shoot', terms:'Shoots', invLabel:'Gear', invEmoji:'🎬',
     invCats:['Camera Body','Cinema Lens','Gimbal / Stabilizer','Drone','Tripod','LED Light Panel','Hard Drive','Editing PC','Microphone','Other'],

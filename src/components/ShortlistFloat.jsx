@@ -49,7 +49,7 @@ export const isInShortlist = (serviceType, vendorId) => {
 };
 
 const CAT_EMOJI = {
-  Caterer: "🍽️", DJ: "🎵", Decorator: "🎨", Photographer: "📸",
+  Caterer: "🍽️", "DJ Setup": "🎵", Decorator: "🎨", Photographer: "📸",
   Anchor: "🎤", Transport: "🚗", Mehendi: "🌿", Makeup: "💄",
 };
 
@@ -67,7 +67,7 @@ const SERVICE_QUESTIONS = {
       { id: "reel", label: "Reels / Highlights video?", type: "chips", options: ["Yes, include", "No, photos only"] },
     ],
   },
-  DJ: {
+  "DJ Setup": {
     questions: [
       { id: "hours", label: "Performance hours", type: "chips", options: ["2–4 hrs", "4–6 hrs", "6+ hrs", "Full day"] },
       { id: "setup", label: "Setup type", type: "chips", options: ["Indoor", "Outdoor", "Both"] },

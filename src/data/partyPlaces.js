@@ -44,7 +44,7 @@ export const PARTY_PLACES = [
       "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&q=80",
     ],
     parking: { available: true, spots: 40 },
-    allowedServices: ["Decoration", "Catering", "Photography", "DJ"],
+    allowedServices: ["Decoration", "Catering", "Photography", "DJ Setup"],
     bhk: "5 BHK",
     checkIn: "9:00 AM",
     checkOut: "11:00 PM",
@@ -78,7 +78,7 @@ export const PARTY_PLACES = [
         { id: "photo-5hr", name: "5-Hour Full Event", price: 12000, includes: ["1 photographer + assistant", "400+ edited photos", "Same-day highlights reel (30 photos)", "Premium editing", "USB delivery"] },
         { id: "photo-fullday", name: "Full Day + Videography", price: 22000, includes: ["2 photographers", "1 videographer", "600+ edited photos", "3-minute highlight video", "Cinematic edit", "Premium album (50 pages)"] },
       ],
-      DJ: [
+      "DJ Setup": [
         { id: "dj-3hr", name: "DJ + Basic Sound (3 hrs)", price: 8000, includes: ["Professional DJ", "2 speakers (JBL)", "Basic lighting", "Playlist coordination", "Mic for announcements"] },
         { id: "dj-5hr", name: "DJ + Premium Setup (5 hrs)", price: 15000, includes: ["Professional DJ", "4 speakers + subwoofer", "LED dance floor lights", "Fog machine", "Wireless mic", "Custom playlist", "LED par lights (8 pcs)"] },
         { id: "dj-full", name: "Full Party Package (8 hrs)", price: 25000, includes: ["Professional DJ", "Full speaker array (1000W)", "Laser + LED lighting", "Smoke + bubble machine", "Wireless mics (2)", "Live requests", "LED strip backdrop", "Strobe lights"] },
@@ -106,7 +106,7 @@ export const PARTY_PLACES = [
       "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&q=80",
     ],
     parking: { available: true, spots: 20 },
-    allowedServices: ["Decoration", "Catering", "Photography", "DJ"],
+    allowedServices: ["Decoration", "Catering", "Photography", "DJ Setup"],
     bhk: "3 BHK",
     checkIn: "11:00 AM",
     checkOut: "10:30 PM",
@@ -135,7 +135,7 @@ export const PARTY_PLACES = [
         { id: "photo-2hr", name: "2-Hour Coverage", price: 5500, includes: ["1 photographer", "120+ edited photos", "Online delivery"] },
         { id: "photo-4hr", name: "4-Hour Event", price: 10000, includes: ["1 photographer", "300+ edited photos", "Highlights album", "Premium editing"] },
       ],
-      DJ: [
+      "DJ Setup": [
         { id: "dj-2hr", name: "DJ Starter (2 hrs)", price: 6000, includes: ["DJ", "2 JBL speakers", "Basic lights", "Mic"] },
         { id: "dj-4hr", name: "Pool Party Set (4 hrs)", price: 11000, includes: ["DJ", "4 speakers", "LED party lights", "Wireless mic", "Smoke machine"] },
       ],
@@ -190,7 +190,7 @@ export const PARTY_PLACES = [
         { id: "photo-half", name: "Half Day (5 hrs)", price: 18000, includes: ["2 photographers", "500+ edited photos", "Cinematic highlight video (2 min)", "Online gallery"] },
         { id: "photo-full", name: "Full Day Package", price: 32000, includes: ["2 photographers + 1 videographer", "800+ edited photos", "5-min cinematic video", "Candid + portrait shots", "Premium album (80 pages)", "Same-day preview"] },
       ],
-      DJ: [
+      "DJ Setup": [
         { id: "dj-event", name: "Event DJ (6 hrs)", price: 20000, includes: ["Professional DJ", "Line array speakers", "Laser lighting", "Fog machine", "Wireless mics (2)", "LED backdrop", "Subwoofer"] },
         { id: "dj-fullnight", name: "Full Night Party (10 hrs)", price: 38000, includes: ["2 DJs (rotation)", "Professional sound system (3000W)", "Full lighting rig", "Confetti machine", "Strobe + UV lights", "Custom playlist", "Live song requests"] },
       ],
@@ -218,7 +218,7 @@ export const PARTY_PLACES = [
       "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=800&q=80",
     ],
     parking: { available: true, spots: 5 },
-    allowedServices: ["Decoration", "Catering", "Photography", "DJ"],
+    allowedServices: ["Decoration", "Catering", "Photography", "DJ Setup"],
     bhk: "2 BHK",
     bhkType: "Penthouse",
     floorNumber: 18,
@@ -249,7 +249,7 @@ export const PARTY_PLACES = [
       Photography: [
         { id: "photo-2hr", name: "2-Hour Coverage", price: 4500, includes: ["1 photographer", "100+ edited photos", "Same-day delivery", "Basic editing"] },
       ],
-      DJ: [
+      "DJ Setup": [
         { id: "dj-house", name: "House Party Set (3 hrs)", price: 5000, includes: ["DJ + Bluetooth speaker system", "Party lights", "Custom playlist", "No heavy subwoofer (building rules)"] },
       ],
     },
@@ -303,7 +303,7 @@ export const PARTY_PLACES = [
         { id: "photo-hall", name: "Event Coverage (6 hrs)", price: 15000, includes: ["2 photographers", "500+ edited photos", "2-min highlight video", "Online gallery", "Printed album (40 pages)"] },
         { id: "photo-hall-full", name: "Full Package", price: 28000, includes: ["2 photographers + 1 videographer", "800+ edited photos", "5-min cinematic video", "Drone shots (if outdoor)", "Premium album", "Same-day previews"] },
       ],
-      DJ: [
+      "DJ Setup": [
         { id: "dj-hall-5hr", name: "Banquet DJ (5 hrs)", price: 18000, includes: ["Professional DJ", "Line array speakers (built-in supported)", "Laser + LED lighting", "Wireless mics (3)", "Custom playlist", "MC services"] },
         { id: "dj-hall-full", name: "Full Night (8 hrs)", price: 30000, includes: ["Premium DJ", "Full sound system", "LED dance floor", "Confetti cannon", "Fog + laser", "Strobe + UV", "Live requests"] },
       ],
@@ -356,7 +356,7 @@ export const PARTY_PLACES = [
         { id: "photo-golden", name: "Golden Hour (3 hrs)", price: 8000, includes: ["1 photographer", "200+ edited photos", "Sunset portrait session", "Online delivery"] },
         { id: "photo-night", name: "Evening + Night (5 hrs)", price: 14000, includes: ["1 photographer + assistant", "400+ edited photos", "City light backdrop shots", "Highlight reel", "Online gallery"] },
       ],
-      DJ: [
+      "DJ Setup": [
         { id: "dj-terrace", name: "Open Air DJ (4 hrs)", price: 12000, includes: ["Professional DJ", "Line array outdoor speakers", "LED lighting", "Wireless mic", "Custom playlist"] },
       ],
     },

@@ -7,7 +7,7 @@ const CATEGORY_KEYS = {
   Photography: "Photographer",
   Decor: "Decorator",
   Catering: "Caterer",
-  Entertainment: "DJ",
+  Entertainment: "DJ Setup",
 };
 
 const steps = [

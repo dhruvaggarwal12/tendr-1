@@ -17,7 +17,7 @@ const CATEGORY_TO_SERVICE = {
   "food & catering": "Caterer", "catering": "Caterer", "food": "Caterer",
   "decoration": "Decorator", "decor": "Decorator",
   "photography": "Photographer", "photo": "Photographer", "videography": "Photographer",
-  "dj & music": "DJ", "entertainment": "DJ", "dj": "DJ", "music": "DJ",
+  "dj & music": "DJ Setup", "entertainment": "DJ Setup", "dj": "DJ Setup", "music": "DJ Setup",
 };
 
 function getServiceType(catName = "") {
@@ -260,7 +260,7 @@ const VENDOR_TO_BUDGET = {
   Caterer:      "Food & Catering",
   Decorator:    "Decoration",
   Photographer: "Photography",
-  DJ:           "DJ & Music",
+  "DJ Setup":   "DJ & Music",
 };
 
 export default function BudgetAllocator() {
@@ -378,15 +378,15 @@ export default function BudgetAllocator() {
   // Map BudgetSplitModal service keys → BudgetAllocator category colours
   const SERVICE_COLOR = {
     Caterer: "#10B981", Decorator: "#8B5CF6", Photographer: "#3B82F6",
-    DJ: "#F59E0B", Anchor: "#EC4899", Transport: "#6B7280",
+    "DJ Setup": "#F59E0B", Anchor: "#EC4899", Transport: "#6B7280",
     Mehendi: "#22d3ee", Makeup: "#f472b6",
   };
   const SERVICE_LABEL = {
     Caterer: "Food & Catering", Decorator: "Decoration", Photographer: "Photography",
-    DJ: "DJ & Music", Anchor: "Anchor / Emcee", Transport: "Transport",
+    "DJ Setup": "DJ & Music", Anchor: "Anchor / Emcee", Transport: "Transport",
     Mehendi: "Mehendi Artist", Makeup: "Makeup Artist",
   };
-  const SERVICE_PCT = { Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15, Anchor: 10, Transport: 8, Mehendi: 8, Makeup: 12 };
+  const SERVICE_PCT = { Caterer: 40, Decorator: 25, Photographer: 20, "DJ Setup": 15, Anchor: 10, Transport: 8, Mehendi: 8, Makeup: 12 };
 
   useEffect(() => {
     const guests = parseInt(planFormData.guests) || 0;

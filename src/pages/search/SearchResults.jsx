@@ -14,9 +14,9 @@ import { useChatOverlay, useOpenBaatKaroChat } from "../../context/ChatContext";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
-const PLATFORM_CATEGORIES = ["Caterer", "Decorator", "Photographer", "DJ"];
+const PLATFORM_CATEGORIES = ["Caterer", "Decorator", "Photographer", "DJ Setup"];
 const PLATFORM_LOCATIONS  = ["Delhi", "Noida", "Gurgaon", "Ghaziabad", "Greater Noida"];
-const CAT_EMOJI = { Caterer: "🍽️", Decorator: "🎨", Photographer: "📸", DJ: "🎵", "Fun Activities": "🎭" };
+const CAT_EMOJI = { Caterer: "🍽️", Decorator: "🎨", Photographer: "📸", "DJ Setup": "🎵", "Fun Activities": "🎭" };
 
 export default function SearchResults() {
   usePlanningResume();

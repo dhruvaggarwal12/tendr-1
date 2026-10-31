@@ -185,7 +185,7 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
     if (res.ok) setPhotos(prev => prev.filter(p => p !== url));
   };
 
-  // DJ
+  // DJ Setup
   const [djSetup, setDjSetup]   = useState(vendor.setup || []);
   const [djLights, setDjLights] = useState(!!vendor.lightsIncluded);
   const [djEvents, setDjEvents] = useState(vendor.eventTypes || []);
@@ -234,7 +234,7 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
         ...(f.avgReviewScore !== null && f.avgReviewScore !== undefined && f.avgReviewScore !== "" && { avgReviewScore: Number(f.avgReviewScore) }),
         ...(f.newPassword.length >= 8 && { password: f.newPassword }),
         // Category-specific
-        ...(st === "DJ" && { setup: djSetup, lightsIncluded: djLights, eventTypes: djEvents }),
+        ...(st === "DJ Setup" && { setup: djSetup, lightsIncluded: djLights, eventTypes: djEvents }),
         ...(st === "Decorator" && { typesOfDecoration: decTypes, venueCoverage: decCoverage, themes: decThemes }),
         ...(st === "Caterer" && { cuisine: catCuisine, serviceStyle: catStyle, menuType: catMenu, beveragesIncluded: catBev }),
         ...(st === "Photographer" && { services: photoSvc ? [photoSvc] : [], photographyType: photoTypes, hoursIncluded: photoHours, editingTimeDays: photoEditing, photographersCount: Number(photoCount), videographersCount: Number(videoCount), socialMedia: photoSocial, album: photoAlbum }),
@@ -391,9 +391,9 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
           </div>
 
           {/* ── Category-specific ── */}
-          {st === "DJ" && (
+          {st === "DJ Setup" && (
             <>
-              <SectionTitle>DJ Details</SectionTitle>
+              <SectionTitle>DJ Setup Details</SectionTitle>
               <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 10, marginBottom: 16 }}>
                 <Field label="Setup Type"><MultiCheck options={DJ_SETUP} value={djSetup} onChange={setDjSetup} columns={2} /></Field>
                 <Field label="Event Types"><MultiCheck options={DJ_EVENTS} value={djEvents} onChange={setDjEvents} columns={3} /></Field>

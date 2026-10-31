@@ -22,7 +22,7 @@ const TR={
 
 // ── Category options ──────────────────────────────────────────────────────────
 const OPT={
-  DJ:{setup:["Basic Setup","Full Production"],eventTypes:["House Party","Corporate","Venue"]},
+  "DJ Setup":{setup:["Basic Setup","Full Production"],eventTypes:["House Party","Corporate","Venue"]},
   Caterer:{cuisine:["North Indian","South Indian","Snacks","Chinese Starters","Punjabi","Desserts","Italian","Other"],serviceStyle:["Buffet","Food Stations","Live Counters","Family Style"],menuType:["Veg","Non Veg","Jain"]},
   Decorator:{typesOfDecoration:["Floral","Balloon","Lighting","Fabric Draping","Backdrop","Prop-Based","Minimalist"],venueCoverage:["Interior","Exterior","Full","Backdrop Stage Setup","Extreme Focus"],themes:["Floral Focused","Balloon Dominant","Lighting Emphasis","Fabric Draping","Mixed Media","Prop Centered","Minimalist Touch"]},
   Photographer:{services:["Photographer","Videographer","Both"],photographyType:["Candid","Drone","Traditional","Cinematic"],hoursIncluded:["2","4","8","Full day"],editingTimeDays:["2","5","7","10+"]},
@@ -36,7 +36,7 @@ const OPT={
 };
 
 const TYPE_TAB={
-  DJ:{key:"setup",icon:"M9 18V5l12-2v13M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"},
+  "DJ Setup":{key:"setup",icon:"M9 18V5l12-2v13M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"},
   Caterer:{key:"menu",icon:"M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"},
   Decorator:{key:"decor",icon:"M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"},
   Photographer:{key:"services",icon:"M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"},
@@ -743,11 +743,11 @@ export default function VendorDashboardNew(){
     :<div style={{display:"flex",gap:8}}><button onClick={saveSpec} disabled={specSaving} style={bPrimary}>{specSaving?t("saving"):t("save")}</button><button onClick={()=>setSpecEdit(false)} style={bSecondary}>{t("cancel")}</button></div>;
 
   const typeSpecTab=(()=>{
-    if(sType==="DJ")return(
+    if(sType==="DJ Setup")return(
       <div>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}><h2 style={{fontFamily:serif,fontSize:"1.7rem",fontWeight:400,color:ink}}>{t("setup")}</h2>{editBtns}</div>
-        <Card style={{marginBottom:14}}><SL>Setup Type</SL><Chips options={OPT.DJ.setup} selected={specDraft.setup} onChange={v=>setSpecDraft(p=>({...p,setup:v}))} disabled={!specEdit}/></Card>
-        <Card style={{marginBottom:14}}><SL>Event Types</SL><Chips options={OPT.DJ.eventTypes} selected={specDraft.eventTypes} onChange={v=>setSpecDraft(p=>({...p,eventTypes:v}))} disabled={!specEdit}/></Card>
+        <Card style={{marginBottom:14}}><SL>Setup Type</SL><Chips options={OPT["DJ Setup"].setup} selected={specDraft.setup} onChange={v=>setSpecDraft(p=>({...p,setup:v}))} disabled={!specEdit}/></Card>
+        <Card style={{marginBottom:14}}><SL>Event Types</SL><Chips options={OPT["DJ Setup"].eventTypes} selected={specDraft.eventTypes} onChange={v=>setSpecDraft(p=>({...p,eventTypes:v}))} disabled={!specEdit}/></Card>
         <Card><SL>Lights Included</SL><button onClick={()=>specEdit&&setSpecDraft(p=>({...p,lightsIncluded:!p.lightsIncluded}))} style={{padding:"8px 20px",borderRadius:100,fontSize:13,fontWeight:600,cursor:specEdit?"pointer":"default",fontFamily:font,background:specDraft.lightsIncluded?"rgba(196,122,46,0.1)":cream,border:specDraft.lightsIncluded?`1.5px solid ${gold}`:"1px solid rgba(196,122,46,0.2)",color:specDraft.lightsIncluded?gold:muted}}>{specDraft.lightsIncluded?"Yes — Lights included":"No lights"}</button></Card>
       </div>
     );

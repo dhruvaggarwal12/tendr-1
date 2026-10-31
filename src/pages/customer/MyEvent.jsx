@@ -51,7 +51,7 @@ const HUB_ROUTES = {
 };
 
 const CAT_ICON = {
-  Caterer: '🍽', Photographer: '📸', Decorator: '🎀', DJ: '🎵',
+  Caterer: '🍽', Photographer: '📸', Decorator: '🎀', "DJ Setup": '🎵',
   Venue: '🏛', AV: '🎤', Entertainment: '🎭', Transport: '🚌', Gifts: '🎁',
 };
 

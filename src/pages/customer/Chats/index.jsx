@@ -8,7 +8,7 @@ import MiniChatWidget from "../../../components/MiniChatWidget";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
-const CAT_EMOJI = { Photographer: "📸", Caterer: "🍽", Decorator: "🎀", DJ: "🎵", Concierge: "🤝", support: "🛟" };
+const CAT_EMOJI = { Photographer: "📸", Caterer: "🍽", Decorator: "🎀", "DJ Setup": "🎵", Concierge: "🤝", support: "🛟" };
 
 export default function CustomerChatList() {
   const navigate = useNavigate();

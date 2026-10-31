@@ -14,8 +14,8 @@ const TEMPLATES = {
     services: {
       intimate: ["Decorator", "Photographer"],
       small:    ["Decorator", "Photographer", "Caterer"],
-      medium:   ["Decorator", "Photographer", "Caterer", "DJ"],
-      large:    ["Decorator", "Caterer", "DJ", "Photographer"],
+      medium:   ["Decorator", "Photographer", "Caterer", "DJ Setup"],
+      large:    ["Decorator", "Caterer", "DJ Setup", "Photographer"],
     },
     themes: {
       intimate: ["🎈 Pastel Birthday", "🌸 Floral Brunch", "🕯️ Candlelit Dinner"],
@@ -99,7 +99,7 @@ const TEMPLATES = {
       intimate: ["Decorator", "Photographer"],
       small:    ["Decorator", "Photographer"],
       medium:   ["Decorator", "Photographer", "Caterer"],
-      large:    ["Decorator", "Caterer", "Photographer", "DJ"],
+      large:    ["Decorator", "Caterer", "Photographer", "DJ Setup"],
     },
     themes: {
       intimate: ["🕯️ Romantic Candlelight", "🌹 Rose Garden", "✨ Fairy Lights"],
@@ -119,8 +119,8 @@ const TEMPLATES = {
     services: {
       intimate: ["Caterer"],
       small:    ["Caterer", "Decorator"],
-      medium:   ["Caterer", "DJ", "Decorator"],
-      large:    ["Caterer", "DJ", "Decorator", "Photographer"],
+      medium:   ["Caterer", "DJ Setup", "Decorator"],
+      large:    ["Caterer", "DJ Setup", "Decorator", "Photographer"],
     },
     themes: {
       intimate: ["🍔 Barbecue & Bonfire", "🌿 Garden Brunch", "☕ Cozy Gathering"],
@@ -141,7 +141,7 @@ const TEMPLATES = {
       intimate: ["Caterer"],
       small:    ["Caterer", "Decorator"],
       medium:   ["Caterer", "Decorator", "Photographer"],
-      large:    ["Caterer", "Decorator", "Photographer", "DJ"],
+      large:    ["Caterer", "Decorator", "Photographer", "DJ Setup"],
     },
     themes: {
       intimate: ["🏢 Corporate Brunch", "🎯 Team Lunch"],
@@ -162,7 +162,7 @@ const TEMPLATES = {
       intimate: ["Caterer"],
       small:    ["Caterer", "Decorator"],
       medium:   ["Caterer", "Decorator", "Photographer"],
-      large:    ["Caterer", "Decorator", "Photographer", "DJ"],
+      large:    ["Caterer", "Decorator", "Photographer", "DJ Setup"],
     },
     themes: {
       intimate: ["🏢 Corporate Lunch", "🎯 Team Building"],
@@ -203,8 +203,8 @@ const TEMPLATES = {
     services: {
       intimate: ["Decorator", "Photographer"],
       small:    ["Decorator", "Photographer", "Caterer"],
-      medium:   ["Decorator", "Photographer", "Caterer", "DJ"],
-      large:    ["Decorator", "Caterer", "DJ", "Photographer"],
+      medium:   ["Decorator", "Photographer", "Caterer", "DJ Setup"],
+      large:    ["Decorator", "Caterer", "DJ Setup", "Photographer"],
     },
     themes: {
       intimate: ["🎓 Academic Gold", "✈️ Travel & Adventure", "🌟 Future Forward"],
@@ -224,8 +224,8 @@ const TEMPLATES = {
     services: {
       intimate: ["Decorator"],
       small:    ["Decorator", "Caterer"],
-      medium:   ["Decorator", "Caterer", "DJ"],
-      large:    ["Decorator", "Caterer", "DJ", "Photographer"],
+      medium:   ["Decorator", "Caterer", "DJ Setup"],
+      large:    ["Decorator", "Caterer", "DJ Setup", "Photographer"],
     },
     themes: {
       intimate: ["🪔 Diwali Glow", "🌸 Navratri Colours", "🎨 Holi Rangoli"],
@@ -245,8 +245,8 @@ const TEMPLATES = {
     services: {
       intimate: ["Decorator", "Photographer"],
       small:    ["Decorator", "Photographer", "Caterer"],
-      medium:   ["Decorator", "Caterer", "Photographer", "DJ"],
-      large:    ["Decorator", "Caterer", "DJ", "Photographer"],
+      medium:   ["Decorator", "Caterer", "Photographer", "DJ Setup"],
+      large:    ["Decorator", "Caterer", "DJ Setup", "Photographer"],
     },
     themes: {
       intimate: ["💍 Intimate Garden", "🕯️ Candlelit Ceremony", "🌹 Classic Romance"],
@@ -266,8 +266,8 @@ const TEMPLATES = {
     services: {
       intimate: ["Decorator", "Photographer"],
       small:    ["Decorator", "Photographer"],
-      medium:   ["Decorator", "Photographer", "DJ"],
-      large:    ["Decorator", "Photographer", "DJ", "Caterer"],
+      medium:   ["Decorator", "Photographer", "DJ Setup"],
+      large:    ["Decorator", "Photographer", "DJ Setup", "Caterer"],
     },
     themes: {
       intimate: ["💅 Glam Spa Night", "🥂 Champagne Brunch", "🌸 Garden Party"],
@@ -288,7 +288,7 @@ const TEMPLATES = {
       intimate: ["Decorator", "Photographer"],
       small:    ["Decorator", "Photographer", "Caterer"],
       medium:   ["Decorator", "Caterer", "Photographer"],
-      large:    ["Decorator", "Caterer", "Photographer", "DJ"],
+      large:    ["Decorator", "Caterer", "Photographer", "DJ Setup"],
     },
     themes: {
       intimate: ["✈️ Bon Voyage", "🌍 World Explorer", "💌 Memory Lane"],
@@ -309,7 +309,7 @@ const TEMPLATES = {
       intimate: ["Decorator", "Caterer"],
       small:    ["Decorator", "Caterer", "Photographer"],
       medium:   ["Decorator", "Caterer", "Photographer"],
-      large:    ["Decorator", "Caterer", "Photographer", "DJ"],
+      large:    ["Decorator", "Caterer", "Photographer", "DJ Setup"],
     },
     themes: {
       intimate: ["🌅 Golden Years", "🌿 Garden Celebration", "🎂 Milestone Dinner"],
@@ -371,8 +371,8 @@ const TEMPLATES = {
     services: {
       intimate: ["Decorator", "Photographer"],
       small:    ["Decorator", "Photographer", "Caterer"],
-      medium:   ["Decorator", "Caterer", "Photographer", "DJ"],
-      large:    ["Caterer", "Decorator", "DJ", "Photographer"],
+      medium:   ["Decorator", "Caterer", "Photographer", "DJ Setup"],
+      large:    ["Caterer", "Decorator", "DJ Setup", "Photographer"],
     },
     themes: {
       intimate: ["✨ Elegant Setup", "🌸 Floral Theme", "🕯️ Romantic Evening"],
@@ -450,6 +450,6 @@ export function reorderByConversion(names, rates) {
 export const SERVICE_LABELS = {
   Caterer:      "Catering",
   Photographer: "Photography",
-  DJ:           "DJ & Music",
+  "DJ Setup":   "DJ & Music",
   Decorator:    "Decoration",
 };

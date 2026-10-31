@@ -140,14 +140,15 @@ export function generateDayOfSchedule(confirmedVendors = [], eventTiming = "", e
       case "Decorator":    arrivalTime = subMins(startTime, 180); break; // -3 hrs
       case "Caterer":      arrivalTime = subMins(startTime, 120); break; // -2 hrs
       case "Photographer": arrivalTime = subMins(startTime, 90);  break; // -1.5 hrs
-      case "DJ":           arrivalTime = subMins(startTime, 60);  break; // -1 hr
-      default:             arrivalTime = subMins(startTime, 60);  break;
+      case "DJ Setup":
+      case "DJ":            arrivalTime = subMins(startTime, 60);  break; // -1 hr
+      default:              arrivalTime = subMins(startTime, 60);  break;
     }
     if (arrivalTime) {
       slots.push({
         id: String(id++),
         time: toStr(arrivalTime.h, arrivalTime.min),
-        title: `${v.name || v.serviceType} arrives${v.serviceType === "Decorator" ? " for setup" : v.serviceType === "Caterer" ? " for preparation" : v.serviceType === "DJ" ? " for soundcheck" : " for venue shots"}`,
+        title: `${v.name || v.serviceType} arrives${v.serviceType === "Decorator" ? " for setup" : v.serviceType === "Caterer" ? " for preparation" : (v.serviceType === "DJ Setup" || v.serviceType === "DJ") ? " for soundcheck" : " for venue shots"}`,
         who: v.name || "",
         done: false,
       });

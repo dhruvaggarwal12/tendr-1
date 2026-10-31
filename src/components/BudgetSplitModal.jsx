@@ -6,7 +6,7 @@ const BASE_SPLITS = {
   Caterer:      { pct: 40, emoji: "🍽️", label: "Catering" },
   Decorator:    { pct: 25, emoji: "🎨", label: "Decoration" },
   Photographer: { pct: 20, emoji: "📸", label: "Photography" },
-  DJ:           { pct: 15, emoji: "🎵", label: "DJ & Music" },
+  "DJ Setup":   { pct: 15, emoji: "🎵", label: "DJ & Music" },
   Anchor:       { pct: 10, emoji: "🎤", label: "Anchor / Emcee" },
   Transport:    { pct: 8,  emoji: "🚗", label: "Transport" },
   Mehendi:      { pct: 8,  emoji: "🌿", label: "Mehendi Artist" },

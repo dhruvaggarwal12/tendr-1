@@ -92,7 +92,7 @@ export const BOT_FLOWS = {
     ADDRESS_STEP,
   ],
 
-  DJ: [
+  "DJ Setup": [
     {
       key:      "musicVibe",
       question: "What music vibe are you looking for?",
@@ -265,7 +265,7 @@ export const CHAT_PACKAGES = {
       items: ["Premium Theme Decor", "Floral & Balloon Design", "Stage Setup", "Custom Installations", "Full Venue Styling"],
     },
   ],
-  DJ: [
+  "DJ Setup": [
     {
       tier: "Basic", guests: "20–40",
       desc: "3 Hrs Set · 1 DJ · Basic Sound System · Standard Lighting",

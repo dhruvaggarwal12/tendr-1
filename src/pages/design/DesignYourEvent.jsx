@@ -53,12 +53,12 @@ const VENDORS_BY_LOOK = {
     { label: "Decorator",    emoji: "✨", q: "Decorator" },
     { label: "Photographer", emoji: "📸", q: "Photographer" },
     { label: "Caterer",      emoji: "🍽", q: "Caterer" },
-    { label: "DJ & Music",   emoji: "🎵", q: "DJ" },
+    { label: "DJ & Music",   emoji: "🎵", q: "DJ Setup" },
   ],
   fun:    [
     { label: "Decorator",      emoji: "🎈", q: "Decorator" },
     { label: "Photographer",   emoji: "📸", q: "Photographer" },
-    { label: "DJ & Music",     emoji: "🎵", q: "DJ" },
+    { label: "DJ & Music",     emoji: "🎵", q: "DJ Setup" },
     { label: "Fun Activities", emoji: "🎭", q: "Entertainment" },
   ],
   simple: [
@@ -70,13 +70,13 @@ const VENDORS_BY_LOOK = {
     { label: "Decorator",    emoji: "👑", q: "Decorator" },
     { label: "Photographer", emoji: "📸", q: "Photographer" },
     { label: "Caterer",      emoji: "🍽", q: "Caterer" },
-    { label: "DJ & Music",   emoji: "🎵", q: "DJ" },
+    { label: "DJ & Music",   emoji: "🎵", q: "DJ Setup" },
     { label: "Entertainment",emoji: "🎤", q: "Entertainment" },
   ],
   unique: [
     { label: "Decorator",      emoji: "🎨", q: "Decorator" },
     { label: "Photographer",   emoji: "📸", q: "Photographer" },
-    { label: "DJ & Music",     emoji: "🎵", q: "DJ" },
+    { label: "DJ & Music",     emoji: "🎵", q: "DJ Setup" },
     { label: "Fun Activities", emoji: "🎭", q: "Entertainment" },
   ],
 };
@@ -271,7 +271,7 @@ export default function DesignYourEvent() {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {vendors.map((v, i) => (
             <button key={i}
-              onClick={() => navigate(`/search?categories=${v.q}`)}
+              onClick={() => navigate(`/search?categories=${encodeURIComponent(v.q)}`)}
               style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 100, border: `1.5px solid rgba(196,122,46,0.25)`, background: "rgba(196,122,46,0.05)", cursor: "pointer", fontFamily: font, transition: "all 0.18s" }}
               onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.12)"; e.currentTarget.style.borderColor = gold; }}
               onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.05)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.25)"; }}
@@ -294,7 +294,7 @@ export default function DesignYourEvent() {
       {/* CTAs */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         <button
-          onClick={() => navigate(`/search?categories=${allVendorCategories}`)}
+          onClick={() => navigate(`/search?categories=${encodeURIComponent(allVendorCategories)}`)}
           style={{ width: "100%", padding: "14px 20px", borderRadius: 14, border: "none", background: `linear-gradient(135deg, ${gold}, #D4A848)`, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 20px rgba(196,122,46,0.4)", transition: "all 0.2s" }}
           onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.5)"; }}
           onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(196,122,46,0.4)"; }}

@@ -11,8 +11,12 @@ const font   = "'Outfit', sans-serif";
 const serif  = "'Cormorant Garamond', Georgia, serif";
 const dance  = "'Dancing Script', cursive";
 
-const GIG_PROS = ["Anchor", "Band", "Coordinator", "Choreographer"];
-const SERVICE_VENDORS = ["Caterer", "Decorator", "Photographer", "DJ"];
+// "DJ" (performing artist) belongs in GIG_PROS, same as Anchor/Band — it was
+// previously missing here, which silently routed the rich "DJ Anmol Singh"
+// GigPro demo profile through the generic equipment-vendor layout instead.
+// "DJ Setup" (sound/lighting equipment vendor) is the SERVICE_VENDORS entry.
+const GIG_PROS = ["Anchor", "Band", "Coordinator", "Choreographer", "DJ"];
+const SERVICE_VENDORS = ["Caterer", "Decorator", "Photographer", "DJ Setup"];
 
 const CATEGORY_SECTIONS = {
   Caterer: [
@@ -31,7 +35,7 @@ const CATEGORY_SECTIONS = {
     { key: "hoursIncluded",     title: "Hours Included", single: true },
     { key: "editingTimeDays",   title: "Editing Time (days)", single: true },
   ],
-  DJ: [
+  "DJ Setup": [
     { key: "setup",             title: "Setup Type" },
     { key: "lightsIncluded",    title: "Lights Included", bool: true },
     { key: "eventTypes",        title: "Event Types" },
@@ -116,6 +120,39 @@ const DEMOS = {
       { name: "Simran & Aarav Joshi", event: "Wedding, Mar 2025", rating: 5, text: "Kabir captured emotions we didn't even notice in the moment. The photos made us cry all over again. The drone shots of the venue were spectacular. Delivery was right on time." },
       { name: "Riya Sharma", event: "Maternity Shoot, Jan 2025", rating: 5, text: "So patient, so professional. The photos are ethereal. He set up a little natural-light studio on location and the results are truly stunning." },
       { name: "Nexus Corp Events", event: "Annual Day, Dec 2024", rating: 4, text: "Good coverage of our 500-pax annual day. Delivered all headshots within 10 days as promised. Would prefer more variety in group shots next time." },
+    ],
+  },
+
+  "DJ Setup": {
+    name: "Beatbox Sound & Lights",
+    tagline: "Pro-grade sound, lighting & stage setup, delivered on time",
+    serviceType: "DJ Setup",
+    city: "Noida",
+    locations: ["Noida","Delhi","Greater Noida","Ghaziabad"],
+    rating: 4.6, reviews: 64, events: 240, responseTime: "< 3 hrs", years: 7, teamSize: 6,
+    verified: true,
+    bio: "Beatbox Sound & Lights supplies and operates DJ consoles, line-array speakers and stage lighting for weddings, house parties and corporate events across Delhi NCR. We handle setup, sound-check and takedown — you bring the guest list, we bring the gear and crew.",
+    specialties: ["Full Production Rigs","Wedding Sound Systems","House Party Setups","Corporate AV","Dance-Floor Lighting"],
+    eventTypes: ["House Party","Corporate","Venue"],
+    setup: ["Basic Setup","Full Production"],
+    lightsIncluded: true,
+    genres: [], instruments: [], performingStyle: [],
+    social: { instagram: "@beatboxsoundlights", youtube: "", website: "" },
+    showreel: "",
+    packages: [
+      { name: "Basic Setup", price: "₹10,000", unit: "per event", color: "#F0E8DC", accent: gold, items: ["DJ console + 2 speakers (1500W)","Standard light bar","Operator included","Setup & takedown"], bestFor: "House parties & small gatherings" },
+      { name: "Full Production", price: "₹28,000", unit: "per event", color: ink, accent: goldLt, badge: "Most Popular", items: ["Full console + 4 speakers (3000W)","Moving-head lights + laser","Fog machine","2 technicians on-site","Sound check & tech rider support"], bestFor: "Weddings, Sangeet & corporate parties" },
+      { name: "Venue Package", price: "₹55,000+", unit: "full day", color: "#2C1208", accent: goldLt, items: ["Touring-grade line-array rig","Full stage lighting truss","Backup console & generator","Dedicated crew of 4","On-site standby for full event"], bestFor: "Large venues & multi-event weddings" },
+    ],
+    portfolio: [
+      { label: "Wedding Stage Rig", tags: ["Wedding","Full Production"] },
+      { label: "House Party Setup", tags: ["House Party","Basic Setup"] },
+      { label: "Corporate AV", tags: ["Corporate","Sound"] },
+      { label: "Sangeet Lighting", tags: ["Wedding","Lighting"] },
+    ],
+    testimonials: [
+      { name: "Aditya Rao", event: "House Party, Feb 2025", rating: 5, text: "Showed up early, set up fast, and the sound quality was great for the price. Would book again." },
+      { name: "Meher Events", event: "Corporate Offsite, Jan 2025", rating: 4, text: "Reliable AV setup for our 150-person offsite. Minor delay in sound check but everything ran smoothly after." },
     ],
   },
 

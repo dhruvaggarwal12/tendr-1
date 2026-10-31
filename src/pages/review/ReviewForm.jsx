@@ -161,7 +161,7 @@ export default function ReviewForm() {
     );
   }
 
-  const SVC_EMOJI = { Caterer: "🍽️", Decorator: "🎀", Photographer: "📸", DJ: "🎵" };
+  const SVC_EMOJI = { Caterer: "🍽️", Decorator: "🎀", Photographer: "📸", "DJ Setup": "🎵" };
 
   // ── Form ────────────────────────────────────────────────────────────────────
   return (

@@ -65,8 +65,8 @@ const SERVICE_WORDS = {
   "catering":     "Caterer",
   "photographer": "Photographer",
   "photography":  "Photographer",
-  "dj":           "DJ",
-  "music":        "DJ",
+  "dj":           "DJ Setup",
+  "music":        "DJ Setup",
 };
 
 // Services that aren't on the listings page at all — always a fixed redirect to

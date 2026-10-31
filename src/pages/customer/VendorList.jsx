@@ -361,7 +361,7 @@ const VendorList = () => {
               { "@type": "ListItem", "position": 1, "name": "Birthday Decorators in Delhi NCR", "url": "https://tendr.co.in/top-rated/Decorator" },
               { "@type": "ListItem", "position": 2, "name": "Event Caterers in Delhi NCR",      "url": "https://tendr.co.in/top-rated/Caterer" },
               { "@type": "ListItem", "position": 3, "name": "Event Photographers in Delhi NCR", "url": "https://tendr.co.in/top-rated/Photographer" },
-              { "@type": "ListItem", "position": 4, "name": "DJs & Entertainment in Delhi NCR", "url": "https://tendr.co.in/top-rated/DJ" },
+              { "@type": "ListItem", "position": 4, "name": "DJs & Entertainment in Delhi NCR", "url": "https://tendr.co.in/top-rated/DJ%20Setup" },
             ],
           },
         }}
@@ -393,7 +393,7 @@ const VendorList = () => {
                     aria-label="Change vendor category"
                     style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 26, color: "#1a1a1a", lineHeight: 1.2, textDecoration: "underline", textDecorationColor: "rgba(196,122,46,0.5)", textUnderlineOffset: 5, background: "transparent", border: "none", cursor: "pointer", padding: "0 26px 0 0", margin: 0, outline: "none" }}>
                     {!serviceType && <option value="">All Vendors</option>}
-                    {["Photographer", "Caterer", "Decorator", "DJ"].map((id) => (
+                    {["Photographer", "Caterer", "Decorator", "DJ Setup"].map((id) => (
                       <option key={id} value={id}>{id} Vendors</option>
                     ))}
                   </select>
@@ -411,7 +411,7 @@ const VendorList = () => {
                 Caterer:      { min: 5000,  max: 500000, step: 5000  },
                 Decorator:    { min: 3000,  max: 300000, step: 3000  },
                 Photographer: { min: 3000,  max: 200000, step: 3000  },
-                DJ:           { min: 2000,  max: 100000, step: 2000  },
+                "DJ Setup":   { min: 2000,  max: 100000, step: 2000  },
               };
               const range = CAT_RANGES[serviceType] || { min: 2000, max: 300000, step: 2000 };
               const val = currentCatBudget || range.max;
@@ -465,7 +465,7 @@ const VendorList = () => {
                 locationType ? { label: "Location", value: locationType, showLabel: false } : null,
                 date ? { label: "Date", value: (() => { try { const d = new Date(date + "T00:00:00"); return `${d.getDate()} ${d.toLocaleString("en-IN", { month: "short" })}`; } catch { return date; } })(), showLabel: false } : null,
                 guestCount ? { label: "Guests", value: guestCount, showLabel: false } : null,
-                currentCatBudget ? { label: "Budget", value: (() => { const mins = {Caterer:5000,Decorator:3000,Photographer:3000,DJ:2000}; return `${fmtBudget(mins[serviceType]||0)} – ${fmtBudget(currentCatBudget)}`; })(), showLabel: false } : null,
+                currentCatBudget ? { label: "Budget", value: (() => { const mins = {Caterer:5000,Decorator:3000,Photographer:3000,"DJ Setup":2000}; return `${fmtBudget(mins[serviceType]||0)} – ${fmtBudget(currentCatBudget)}`; })(), showLabel: false } : null,
                 additionalInfo ? { label: "Note", value: additionalInfo, showLabel: false } : null,
                 ...(extraRequirements?.length ? extraRequirements.map(r => ({ label: r, value: r, showLabel: false, isExtra: true })) : []),
               ]

@@ -18,7 +18,7 @@ export const CITIES = ["Delhi", "Noida", "Gurgaon", "Ghaziabad", "Greater Noida"
 export const SERVICE_LABELS = {
   Caterer:      "Caterers & Catering Services",
   Photographer: "Photographers & Videographers",
-  DJ:           "DJs & Entertainment",
+  "DJ Setup":   "DJs & Entertainment",
   Decorator:    "Decorators & Event Stylists",
 };
 
@@ -61,7 +61,7 @@ export function categoryTitle(category, city) {
   const labels = {
     Photographer: "Top Rated Photographers",
     Caterer:      "Top Rated Caterers",
-    DJ:           "Top Rated DJs & Entertainment",
+    "DJ Setup":   "Top Rated DJs & Entertainment",
     Decorator:    "Top Rated Decorators",
   };
   const label = labels[category] || `Top Rated ${category}s`;
@@ -74,7 +74,7 @@ export function categoryDescription(category, city) {
   const map  = {
     Photographer: `Find the best event photographers in ${loc} for birthdays, weddings, corporate events and celebrations. View portfolios, compare packages and book verified photographers through Tendr.`,
     Caterer:      `Discover trusted caterers in ${loc} for birthdays, house parties, corporate lunches and celebratory events. Compare menus, pricing and book catering services on Tendr.`,
-    DJ:           `Book top DJs and entertainment in ${loc} for birthdays, anniversaries, house parties and corporate events. Browse profiles and book through Tendr.`,
+    "DJ Setup":   `Book top DJs and entertainment in ${loc} for birthdays, anniversaries, house parties and corporate events. Browse profiles and book through Tendr.`,
     Decorator:    `Find expert decorators and event stylists in ${loc} for balloon setups, birthday themes, romantic room setups and corporate events. Compare and book on Tendr.`,
   };
   return map[category] || `Discover top-rated ${category} vendors in ${loc} for celebrations and events. Compare, shortlist and book through Tendr.`;
