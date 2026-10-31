@@ -51,7 +51,6 @@ import { setFilters } from "../../redux/listingFiltersSlice";
 import { selectFunCartItems } from "../../redux/funActivitiesCartSlice.js";
 import { selectCartItems as selectGhCartItems } from "../../redux/giftHamperCartSlice.js";
 
-import MakeAGroup_Nav from "../../components/MakeAGroup_Nav.jsx";
 import EventFormSummary from "../../components/EventFormSummary.jsx";
 import { getVendors, getSmartPlan, confirmSmartPlan } from "../../apis/vendorApi.js";
 import { CHAT_PACKAGES } from "../../utils/chatbot.js";
