@@ -260,9 +260,11 @@ const VendorDetailsPage = () => {
   }, [chatFormOpen]);
 
   useEffect(() => {
-    const GIG_PRO_TYPES_LOCAL = ['DJ', 'Emcee', 'Anchor', 'Band', 'Choreographer', 'Performer', 'LiveBand', 'Musician', 'Singer', 'Comedian', 'Magician'];
-    const isGigProType = GIG_PRO_TYPES_LOCAL.some(t => vendor?.serviceType?.toLowerCase() === t.toLowerCase() || vendor?.serviceType?.toLowerCase().includes(t.toLowerCase()));
-    if (!vendor?._id || !isGigProType) return;
+    // Exact match against the one shared category list (same as `isGigPro` below) —
+    // the fuzzy substring match this used to do (`serviceType.includes(t)`) would
+    // wrongly match "DJ Setup" against "DJ", fetching GigPro reviews for an
+    // equipment vendor that never renders the GigPro profile.
+    if (!vendor?._id || !GIG_PRO_TYPES.includes(vendor?.serviceType)) return;
     // Demo vendors carry their reviews in the state object — skip the API call
     if (String(vendor._id).startsWith("demo_") && Array.isArray(vendor.reviews)) {
       setGigProReviews(vendor.reviews);
