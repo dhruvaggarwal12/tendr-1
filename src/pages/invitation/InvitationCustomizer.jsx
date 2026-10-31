@@ -286,7 +286,7 @@ function PhotoFlyer({ template, data, onChange }) {
 export default function InvitationCustomizer() {
   const navigate = useNavigate();
   const { eventType, id } = useParams();
-  const { user } = useSelector(s => s.auth || {});
+  const { user, token } = useSelector(s => s.auth || {});
   const selectedTemplate = eventType && id ? getTemplate(eventType, id) : null;
 
   const _ik = "tendr_invitation_draft";
@@ -329,6 +329,30 @@ export default function InvitationCustomizer() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Could not create invite");
       setCreatedInvite({ inviteId: json.inviteId, link: `${window.location.origin}/house-party/invite/${json.inviteId}` });
+
+      // Attach this invite to the logged-in host's account so it shows up on their
+      // Dashboard's "Guest List" tab — fire-and-forget, the flyer/RSVP link above
+      // already works standalone even if this fails (e.g. logged-out host).
+      if (token) {
+        (async () => {
+          try {
+            const partyRes = await fetch(`${BASE_URL}/parties`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              credentials: "include",
+              body: JSON.stringify({ eventName: data.eventTitle || "My Event", eventDate: data.date, venue: data.venue }),
+            });
+            const partyJson = await partyRes.json();
+            if (!partyRes.ok || !partyJson.party?._id) return;
+            await fetch(`${BASE_URL}/parties/${partyJson.party._id}/link`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              credentials: "include",
+              body: JSON.stringify({ type: "invite", id: json.inviteId }),
+            });
+          } catch {}
+        })();
+      }
     } catch (e) {
       setCreateError(e.message || "Something went wrong — please try again");
     } finally {

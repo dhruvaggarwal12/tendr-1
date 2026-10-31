@@ -20,7 +20,7 @@ import DashboardAssistant, { CUSTOMER_TOUR_STEPS } from "../../components/Dashbo
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
-const TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled", "Chats", "Gift Hampers", "Party Hub"];
+const TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled", "Chats", "Gift Hampers", "Party Hub", "Guest List"];
 
 const statusMap = {
   Upcoming:  ["in_progress"],
@@ -215,6 +215,23 @@ export default function CustomerDashboard() {
       .then(d => { if (d) setMyParties(d.parties || []); })
       .catch(() => {});
   }, [token, user?._id, myParties]);
+
+  // Guest List tab — resolves each party's linked invite (full RSVPs, incl. phone —
+  // this call is authed and gated server-side by hostId === req.consumer._id, see
+  // GET /parties/:id in routes/party.js) once the party list above has loaded.
+  const [myInvites, setMyInvites] = useState(null); // null = not loaded yet, [] = loaded, none
+  useEffect(() => {
+    if (!token || !myParties || myInvites !== null) return;
+    const withInvites = myParties.filter(p => p.inviteId);
+    if (withInvites.length === 0) { setMyInvites([]); return; }
+    Promise.all(withInvites.map(p =>
+      fetch(`${BASE_URL}/parties/${p._id}`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" })
+        .then(r => r.ok ? r.json() : null)
+        .catch(() => null)
+    )).then(results => {
+      setMyInvites(results.filter(r => r?.invite).map(r => r.invite));
+    });
+  }, [token, myParties, myInvites]);
 
   // Coming back from a login redirect (e.g. "Refer & Earn" when logged out) —
   // scroll to the referral section once its data-dependent card has mounted.
@@ -580,6 +597,7 @@ export default function CustomerDashboard() {
     Chats:     visibleChats.length,
     "Gift Hampers": ghOrders.length,
     "Party Hub": myParties?.length || 0,
+    "Guest List": myInvites?.length || 0,
   };
 
   return (
@@ -1299,6 +1317,78 @@ export default function CustomerDashboard() {
                       )}
                       <button onClick={() => navigate(`/house-party/recap/${p._id}`)} style={{ padding: "7px 13px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>🎁 Memories</button>
                     </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+
+        {/* Guest List tab — full RSVP + gift detail for every invite this host has
+            created (via Tools → "Guest List & Invites" or Party Hub), host-only view.
+            Pulled from GET /parties/:id, which already resolves the linked
+            PartyInvite's full rsvps (incl. phone) gated by hostId === req.consumer._id —
+            see routes/party.js. The public RSVP link itself never exposes phone. */}
+        {activeTab === "Guest List" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {myInvites === null ? (
+              <div style={{ textAlign: "center", padding: "40px", color: "#9B7450" }}>Loading…</div>
+            ) : myInvites.length === 0 ? (
+              <EmptyState
+                icon="📋"
+                title="No invitations created yet"
+                description="Build an invitation flyer, share the link, and every RSVP — who's coming, how many people, and what they're bringing — lands here automatically."
+                action={{ label: "Create an Invitation →", onClick: () => window.open("/invitation", "_blank") }}
+              />
+            ) : (
+              myInvites.map(invite => {
+                const yes = invite.rsvps.filter(r => r.status === "yes");
+                const totalHeadcount = yes.reduce((sum, r) => sum + (r.guestCount || 1), 0);
+                return (
+                  <div key={invite._id} style={{ background: "#fff", borderRadius: 16, border: "1px solid rgba(196,122,46,0.15)", overflow: "hidden" }}>
+                    <div style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+                      <div style={{ fontSize: 28, flexShrink: 0 }}>📋</div>
+                      <div style={{ flex: 1, minWidth: 160 }}>
+                        <div style={{ fontSize: 14.5, fontWeight: 700, color: "#2C1A0E", marginBottom: 2 }}>{invite.partyName}</div>
+                        <div style={{ fontSize: 12, color: "#9B7450" }}>
+                          {yes.length} attending · {totalHeadcount} {totalHeadcount === 1 ? "person" : "people"} total
+                        </div>
+                      </div>
+                      <button onClick={() => navigate(`/house-party/invite/${invite.inviteId}`)} style={{ padding: "7px 13px", borderRadius: 9, border: "1px solid rgba(196,122,46,0.25)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
+                        Share link →
+                      </button>
+                    </div>
+                    {invite.rsvps.length === 0 ? (
+                      <div style={{ padding: "18px", textAlign: "center", color: "#9B7450", fontSize: 13 }}>No RSVPs yet — share the link to get started.</div>
+                    ) : (
+                      <div style={{ overflowX: "auto" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: font, fontSize: 13 }}>
+                          <thead>
+                            <tr style={{ background: "rgba(196,122,46,0.04)" }}>
+                              {["Name", "Phone", "Status", "Guests", "Bringing"].map(h => (
+                                <th key={h} style={{ textAlign: "left", padding: "9px 14px", fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", whiteSpace: "nowrap" }}>{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {invite.rsvps.map((r, i) => {
+                              const statusColor = { yes: "#059669", maybe: "#D97706", no: "#DC2626" }[r.status] || "#9B7450";
+                              return (
+                                <tr key={r._id || i} style={{ borderTop: "1px solid rgba(196,122,46,0.07)" }}>
+                                  <td style={{ padding: "9px 14px", fontWeight: 700, color: "#2C1A0E" }}>{r.name}</td>
+                                  <td style={{ padding: "9px 14px", color: "#9B7450" }}>{r.phone || "—"}</td>
+                                  <td style={{ padding: "9px 14px" }}>
+                                    <span style={{ fontSize: 11, fontWeight: 700, color: statusColor, background: `${statusColor}18`, border: `1px solid ${statusColor}44`, borderRadius: 100, padding: "2px 9px", textTransform: "capitalize" }}>{r.status}</span>
+                                  </td>
+                                  <td style={{ padding: "9px 14px", color: "#9B7450" }}>{r.status === "yes" ? (r.guestCount || 1) : "—"}</td>
+                                  <td style={{ padding: "9px 14px", color: "#9B7450" }}>{r.gift || "—"}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </div>
                 );
               })

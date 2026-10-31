@@ -282,6 +282,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Price Estimator",  href: "/price-estimator", activePaths: ["/price-estimator"], onClickOverride: () => { close(); openPriceEstimator(); } },
       { label: "Find by Style",   href: "/find-by-style", activePaths: ["/find-by-style"] },
       { label: "Equipment Generator", href: "/equipment-generator", activePaths: ["/equipment-generator"], onClickOverride: () => { close(); window.open("/equipment-generator", "_blank"); } },
+      { label: "Guest List & Invites", href: "/invitation", activePaths: ["/invitation"], onClickOverride: () => { close(); window.open("/invitation", "_blank"); } },
     ]},
     { label: "Community", items: [
       { label: "Guide Store",     href: "/guides",     activePaths: ["/guides"] },
