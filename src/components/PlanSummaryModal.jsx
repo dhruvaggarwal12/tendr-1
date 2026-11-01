@@ -742,7 +742,7 @@ export function MyEventFloatDesktop() {
     window.dispatchEvent(new CustomEvent('tendr:fab-in-planning', { detail: { visible: !!(plan && !hidden && !minimized) } }));
   }, [plan, hidden, minimized]);
 
-  if (!plan || hidden || minimized) return null;
+  if (!plan || hidden) return null;
 
   const isDraft = plan._draft === true;
   const hasChat = !!(plan.conversationId);
@@ -751,6 +751,14 @@ export function MyEventFloatDesktop() {
   const daysLeft = eventDate ? Math.ceil((new Date(eventDate) - Date.now()) / 86400000) : null;
 
   const handleClick = () => setModal(isDraft ? 'mini' : 'full');
+  const clipboardIcon = (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+      <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+      <line x1="9" y1="12" x2="15" y2="12"/>
+      <line x1="9" y1="16" x2="12" y2="16"/>
+    </svg>
+  );
 
   return (
     <>
@@ -765,7 +773,12 @@ export function MyEventFloatDesktop() {
         style={{
           position: 'fixed', bottom: 88, right: 24, zIndex: 8900,
           alignItems: 'center',
-          borderRadius: 100,
+          justifyContent: minimized ? 'center' : 'flex-start',
+          borderRadius: minimized ? '50%' : 100,
+          width: minimized ? 44 : 230,
+          height: minimized ? 44 : 44,
+          overflow: 'hidden',
+          transition: 'width 0.32s cubic-bezier(0.22,1,0.36,1), border-radius 0.32s ease',
           background: isDraft
             ? 'linear-gradient(135deg,#B45309,#C47A2E)'
             : 'linear-gradient(135deg,#2C1A0E,#4A2810)',
@@ -774,48 +787,61 @@ export function MyEventFloatDesktop() {
             : '0 6px 22px rgba(44,26,14,0.45)',
         }}
       >
-        <button
-          onClick={handleClick}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            padding: '10px 10px 10px 14px',
-            border: 'none', background: 'transparent',
-            color: '#fff',
-            fontSize: 13, fontWeight: 700,
-            fontFamily: F,
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {/* Icon */}
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
-            <line x1="9" y1="12" x2="15" y2="12"/>
-            <line x1="9" y1="16" x2="12" y2="16"/>
-          </svg>
-          <span>{isDraft ? 'In Planning…' : eventType}</span>
-          {/* Pulse dot */}
-          <span style={{
-            width: 8, height: 8, borderRadius: '50%',
-            background: isDraft ? '#FCD34D' : '#4ade80',
-            boxShadow: isDraft ? '0 0 0 3px rgba(252,211,77,0.3)' : '0 0 0 3px rgba(74,222,128,0.3)',
-            animation: 'myevent-pulse 2s infinite',
-            flexShrink: 0,
-          }} />
-        </button>
-        {/* Dismiss — its own real button, not a span nested inside the pill's
-            button, so the click never depends on stopPropagation reaching it first. */}
-        <button
-          onClick={dismiss}
-          title="Hide"
-          style={{
-            width: 30, height: 30, marginRight: 6, flexShrink: 0,
-            border: 'none', background: 'transparent', borderLeft: '1px solid rgba(255,255,255,0.22)',
-            color: '#fff', fontSize: 17, lineHeight: 1, opacity: 0.75, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >×</button>
+        {minimized ? (
+          // Collapsed — the × shrinks this down to a small box instead of dismissing
+          // it outright, so the in-progress plan is still one tap away.
+          <button
+            onClick={() => { try { sessionStorage.removeItem('tendr_my_event_float_dismissed'); } catch {} setMinimized(false); }}
+            title="Show My Event"
+            style={{
+              width: 44, height: 44, flexShrink: 0,
+              border: 'none', background: 'transparent', color: '#fff', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            {clipboardIcon}
+          </button>
+        ) : (
+          <>
+            <button
+              onClick={handleClick}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 10px 10px 14px',
+                border: 'none', background: 'transparent',
+                color: '#fff',
+                fontSize: 13, fontWeight: 700,
+                fontFamily: F,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                flex: 1, minWidth: 0,
+              }}
+            >
+              {clipboardIcon}
+              <span>{isDraft ? 'In Planning…' : eventType}</span>
+              {/* Pulse dot */}
+              <span style={{
+                width: 8, height: 8, borderRadius: '50%',
+                background: isDraft ? '#FCD34D' : '#4ade80',
+                boxShadow: isDraft ? '0 0 0 3px rgba(252,211,77,0.3)' : '0 0 0 3px rgba(74,222,128,0.3)',
+                animation: 'myevent-pulse 2s infinite',
+                flexShrink: 0,
+              }} />
+            </button>
+            {/* Minimize — its own real button, not a span nested inside the pill's
+                button, so the click never depends on stopPropagation reaching it first. */}
+            <button
+              onClick={dismiss}
+              title="Minimize"
+              style={{
+                width: 30, height: 30, marginRight: 6, flexShrink: 0,
+                border: 'none', background: 'transparent', borderLeft: '1px solid rgba(255,255,255,0.22)',
+                color: '#fff', fontSize: 17, lineHeight: 1, opacity: 0.75, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >×</button>
+          </>
+        )}
         <style>{`@keyframes myevent-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.25)} }`}</style>
       </div>
 

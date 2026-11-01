@@ -203,7 +203,7 @@ const initialState = {
   showVendorScreen: savedSession?.showVendorScreen || false,
   selectedVendors: savedSession?.selectedVendors || [],
   bookingType: savedSession?.bookingType || "",
-  vendorTimings: savedSession?.vendorTimings || {}, // { [serviceType]: { eventTiming, djHours, coverage } }
+  vendorTimings: savedSession?.vendorTimings || {}, // { [serviceType]: { eventTiming, duration } }
   selectedPerformer: savedSession?.selectedPerformer || null, // { type, label, emoji } or null
   submitting: false,
   submitError: null,
@@ -275,13 +275,12 @@ const eventPlanningSlice = createSlice({
       saveSession(state);
     },
     saveVendorTiming: (state, action) => {
-      const { serviceType, eventTiming, djHours, coverage } = action.payload;
+      const { serviceType, eventTiming, duration } = action.payload;
       if (!serviceType) return;
       if (!state.vendorTimings) state.vendorTimings = {};
       state.vendorTimings[serviceType] = {
         eventTiming: eventTiming || "",
-        djHours:     djHours     || "",
-        coverage:    coverage    || "",
+        duration:    duration    || "",
       };
       saveSession(state);
     },

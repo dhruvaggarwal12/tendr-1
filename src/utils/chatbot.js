@@ -13,6 +13,7 @@
  *   question — bot message text
  *   options  — MCQ options (omit for text input)
  *   type     — "mcq" (default) | "text"
+ *   multi    — true for a multi-select step (answer saved as a ", "-joined string)
  */
 
 export const TIME_STEP = {
@@ -34,14 +35,20 @@ export const BOT_FLOWS = {
 
   Decorator: [
     {
-      key:      "decorationType",
-      question: "What type of decoration are you looking for?",
-      options:  ["Balloon Setup", "Floral & Fairy Lights", "Theme Decoration", "Full Venue Styling", OTHER_OPTION],
-    },
-    {
       key:      "venueType",
       question: "What is the venue type?",
-      options:  ["Hall / Banquet", "Terrace", "Garden / Outdoor", "Home Setup"],
+      options:  ["Indoor hall", "Outdoor", "Home", "Farmhouse"],
+    },
+    {
+      key:      "theme",
+      question: "What theme or color palette do you have in mind?",
+      options:  ["Pastel", "Gold & White", "Vibrant & Colorful", "Monochrome", "Floral/Garden", "No preference"],
+    },
+    {
+      key:      "mustHave",
+      question: "Any must-haves for the decor?",
+      options:  ["Balloon decor", "Floral arrangements", "Fairy lights", "Backdrop/Photo wall", "Stage decor", "Table centerpieces"],
+      multi:    true,
     },
     {
       key:      "timeline",
@@ -52,16 +59,29 @@ export const BOT_FLOWS = {
     ADDRESS_STEP,
   ],
 
+  // Cuisine + dish selection are handled by the dedicated post-package wizard
+  // step for Caterer (see showCuisineStep/showDishStep in VendorChatModal) —
+  // deliberately not duplicated here.
   Caterer: [
-    {
-      key:      "cateringType",
-      question: "What type of catering do you need?",
-      options:  ["Buffet Setup", "Live Counters", "Plated Meals", "Snacks & Drinks Only", OTHER_OPTION],
-    },
     {
       key:      "foodPreference",
       question: "What's your food preference?",
-      options:  ["Veg Only", "Non-Veg", "Both Veg & Non-Veg"],
+      options:  ["Veg only", "Non-veg", "Both"],
+    },
+    {
+      key:      "mealType",
+      question: "What meal type are you looking for?",
+      options:  ["Buffet", "Plated", "Live counters", "High Tea"],
+    },
+    {
+      key:      "beverages",
+      question: "What beverage service do you need?",
+      options:  ["Soft drinks only", "Mocktails included", "Alcohol permitted (BYO)", "Not needed"],
+    },
+    {
+      key:      "serviceStaff",
+      question: "Do you need the vendor to provide service staff?",
+      options:  ["Vendor provides staff", "We'll arrange our own"],
     },
     {
       key:      "timeline",
@@ -74,19 +94,40 @@ export const BOT_FLOWS = {
 
   Photographer: [
     {
-      key:      "photographyType",
-      question: "What coverage do you need?",
-      options:  ["Photography Only", "Videography Only", "Both Photo + Video", "Candid + Traditional"],
+      key:      "coverageType",
+      question: "What do you need?",
+      options:  ["Photos only", "Video only", "Both"],
     },
     {
-      key:      "albumRequired",
-      question: "Is a printed album required?",
-      options:  ["Yes, album required", "No, digital delivery only", "Discuss with photographer"],
+      key:      "style",
+      question: "What style are you going for?",
+      options:  ["Candid", "Traditional", "Cinematic"],
     },
     {
-      key:      "coverage",
-      question: "How many hours of coverage do you need?",
-      options:  ["2–3 hours", "Half day (4–5 hrs)", "Full day", "Not sure yet"],
+      key:      "duration",
+      question: "How long do you need coverage for?",
+      options:  ["Half day (4 hrs)", "Full day (8 hrs)"],
+    },
+    {
+      key:      "deliverables",
+      question: "What deliverables do you need?",
+      options:  ["Edited photos", "Printed album", "Highlights reel", "Full video"],
+      multi:    true,
+    },
+    {
+      key:      "teamSize",
+      question: "What team size do you need?",
+      options:  ["1 photographer", "2 photographers", "Photographer + videographer"],
+    },
+    {
+      key:      "drone",
+      question: "Do you need drone coverage?",
+      options:  ["Yes", "No"],
+    },
+    {
+      key:      "timeline",
+      question: "When is your event?",
+      options:  ["This week", "This month", "1–3 months away", "Just exploring"],
     },
     TIME_STEP,
     ADDRESS_STEP,
@@ -94,19 +135,35 @@ export const BOT_FLOWS = {
 
   "DJ Setup": [
     {
-      key:      "musicVibe",
-      question: "What music vibe are you looking for?",
-      options:  ["Bollywood", "EDM & Electronic", "Mix of Both", "Open to DJ's choice", OTHER_OPTION],
+      key:      "genre",
+      question: "What music genre are you looking for?",
+      options:  ["Bollywood", "English", "Both", "Regional"],
     },
     {
-      key:      "djHours",
-      question: "How many hours do you need the DJ?",
-      options:  ["2–3 hours", "4–5 hours", "Full night", "Not sure yet"],
+      key:      "duration",
+      question: "How long do you need the DJ for?",
+      options:  ["2 hrs", "4 hrs", "Full event"],
+    },
+    {
+      key:      "mcNeeded",
+      question: "Do you need an MC / anchor?",
+      options:  ["Yes", "No"],
     },
     {
       key:      "soundSetup",
-      question: "Do you need a sound system & lighting setup too?",
-      options:  ["Yes, full setup needed", "I have my own setup", "Just the DJ, no setup"],
+      question: "What sound setup do you need?",
+      options:  ["Basic PA system", "Premium sound + lighting", "Not sure — vendor to advise"],
+    },
+    {
+      key:      "extras",
+      question: "Any extras you'd like?",
+      options:  ["Dance floor lighting", "Fog/smoke effect", "LED screen", "Not needed"],
+      multi:    true,
+    },
+    {
+      key:      "timeline",
+      question: "When is your event?",
+      options:  ["This week", "This month", "1–3 months away", "Just exploring"],
     },
     TIME_STEP,
     ADDRESS_STEP,
@@ -189,18 +246,25 @@ export function buildSummaryMessage(formAnswers, botAnswers, vendorName, service
     formAnswers.extraRequirements?.length ? `  🔧 Extra needs: ${formAnswers.extraRequirements.join(", ")}` : null,
     ``,
     `Additional details:`,
-    botAnswers.decorationType     ? `  🎀 Decoration: ${botAnswers.decorationType}` : null,
     botAnswers.venueType          ? `  🏛 Venue type: ${botAnswers.venueType}` : null,
-    botAnswers.cateringType       ? `  🍽 Catering: ${botAnswers.cateringType}` : null,
+    botAnswers.theme              ? `  🎨 Theme: ${botAnswers.theme}` : null,
+    botAnswers.mustHave           ? `  ✨ Must-haves: ${botAnswers.mustHave}` : null,
     botAnswers.foodPreference     ? `  🥗 Food: ${botAnswers.foodPreference}` : null,
+    botAnswers.mealType           ? `  🍽 Meal type: ${botAnswers.mealType}` : null,
+    botAnswers.beverages          ? `  🥤 Beverages: ${botAnswers.beverages}` : null,
+    botAnswers.serviceStaff       ? `  🧑‍🍳 Service staff: ${botAnswers.serviceStaff}` : null,
     botAnswers.cuisinePreference  ? `  🍛 Cuisine: ${botAnswers.cuisinePreference}` : null,
     botAnswers.dishSelection      ? `  📋 Dishes:\n${botAnswers.dishSelection}` : null,
-    botAnswers.photographyType    ? `  📷 Coverage: ${botAnswers.photographyType}` : null,
-    botAnswers.albumRequired      ? `  📕 Album: ${botAnswers.albumRequired}` : null,
-    botAnswers.coverage           ? `  ⏱ Hours: ${botAnswers.coverage}` : null,
-    botAnswers.musicVibe          ? `  🎵 Music: ${botAnswers.musicVibe}` : null,
-    botAnswers.djHours            ? `  ⏰ DJ hours: ${botAnswers.djHours}` : null,
+    botAnswers.coverageType       ? `  📷 Coverage: ${botAnswers.coverageType}` : null,
+    botAnswers.style              ? `  🎞 Style: ${botAnswers.style}` : null,
+    botAnswers.duration           ? `  ⏱ Duration: ${botAnswers.duration}` : null,
+    botAnswers.deliverables       ? `  📦 Deliverables: ${botAnswers.deliverables}` : null,
+    botAnswers.teamSize           ? `  👥 Team size: ${botAnswers.teamSize}` : null,
+    botAnswers.drone              ? `  🚁 Drone: ${botAnswers.drone}` : null,
+    botAnswers.genre              ? `  🎵 Music genre: ${botAnswers.genre}` : null,
+    botAnswers.mcNeeded           ? `  🎤 MC/Anchor: ${botAnswers.mcNeeded}` : null,
     botAnswers.soundSetup         ? `  🔊 Sound setup: ${botAnswers.soundSetup}` : null,
+    botAnswers.extras             ? `  ➕ Extras: ${botAnswers.extras}` : null,
     botAnswers.servicesNeeded     ? `  🔧 Services: ${botAnswers.servicesNeeded}` : null,
     botAnswers.budget             ? `  💰 Budget: ${botAnswers.budget}` : null,
     botAnswers.timeline           ? `  🗓 Timeline: ${botAnswers.timeline}` : null,

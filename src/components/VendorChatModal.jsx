@@ -560,6 +560,7 @@ export default function VendorChatModal() {
   const [text, setText] = useState("");
   const [decorCamOpen, setDecorCamOpen] = useState(false);
   const [botOtherMode, setBotOtherMode] = useState(false); // "Other..." selected — show text input
+  const [multiSelected, setMultiSelected] = useState([]); // toggled choices for the current multi-select bot step
   const [conversationId, setConversationId] = useState(null);
   useEffect(() => {
     if (!isAllBookings || !authToken) return;
@@ -915,8 +916,7 @@ export default function VendorChatModal() {
         dispatch(saveVendorTiming({
           serviceType:  vendor?.serviceType,
           eventTiming:  botAnswersRef.current.eventTiming || "",
-          djHours:      botAnswersRef.current.djHours     || "",
-          coverage:     botAnswersRef.current.coverage    || "",
+          duration:     botAnswersRef.current.duration    || "",
         }));
         setTimeout(() => {
           socket.emit("send_message", { conversationId: _id, sender: "user", content: fullMsg });
@@ -1026,6 +1026,7 @@ export default function VendorChatModal() {
       return;
     }
     setBotOtherMode(false);
+    setMultiSelected([]);
     const step = botFlow[botStep];
     const newAnswers = { ...botAnswers, [step.key]: answer };
     setBotAnswers(newAnswers);
@@ -1733,6 +1734,26 @@ export default function VendorChatModal() {
                           placeholder={botOtherMode ? "Describe what you need…" : "Type your answer…"}
                           defaultValue={wizardPrefilled && !botOtherMode ? (botAnswers[cur.key] || "") : ""}
                         />
+                      : cur.multi
+                      ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                            {cur.options.map(opt => {
+                              const checked = multiSelected.includes(opt);
+                              return (
+                                <button key={opt}
+                                  onClick={() => setMultiSelected(prev => prev.includes(opt) ? prev.filter(o => o !== opt) : [...prev, opt])}
+                                  style={{ padding: "8px 16px", borderRadius: 100, border: `1.5px solid ${checked ? "#C47A2E" : "rgba(196,122,46,0.4)"}`, background: checked ? "rgba(196,122,46,0.14)" : "#fff", color: checked ? "#7A4010" : "#C47A2E", fontSize: 13, fontWeight: checked ? 700 : 600, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
+                                >{checked ? `✓ ${opt}` : opt}</button>
+                              );
+                            })}
+                          </div>
+                          <button onClick={() => multiSelected.length > 0 && handleBotAnswer(multiSelected.join(", "))}
+                            disabled={multiSelected.length === 0}
+                            style={{ alignSelf: "flex-start", padding: "8px 20px", borderRadius: 100, border: "none", background: multiSelected.length > 0 ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "rgba(196,122,46,0.25)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: multiSelected.length > 0 ? "pointer" : "not-allowed", fontFamily: font }}
+                          >Continue{multiSelected.length > 0 ? ` (${multiSelected.length})` : ""}</button>
+                        </div>
+                      )
                       : (
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                           {cur.options.map(opt => {

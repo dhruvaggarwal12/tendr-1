@@ -216,6 +216,7 @@ const Navbar = ({
   }, []);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [activeSubItem, setActiveSubItem] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -293,10 +294,15 @@ const Navbar = ({
     {
       label: "Booking",
       items: [
-        { label: "You Do It",           href: "/booking" },
-        { label: "Smart Planner",       href: "/booking" },
-        { label: "Baat Karo",           href: "/baat-karo" },
-        { label: "Plan by Occasion", onClick: () => { navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 120); } },
+        {
+          label: "Book Vendors",
+          subItems: [
+            { label: "You Do It",     href: "/booking" },
+            { label: "Smart Planner", href: "/booking" },
+            { label: "Baat Karo",     href: "/baat-karo" },
+          ],
+        },
+        { label: "Plan an Occasion", href: "/occasions" },
       ],
     },
     {
@@ -464,7 +470,7 @@ const Navbar = ({
                 data-tour={group.label === "Browse" ? "nav-browse" : group.label === "Booking" ? "nav-booking" : group.label === "Tools" ? "nav-tools" : undefined}
                 style={{ position: "relative" }}
                 onMouseEnter={() => setActiveDropdown(group.label)}
-                onMouseLeave={() => setActiveDropdown(null)}
+                onMouseLeave={() => { setActiveDropdown(null); setActiveSubItem(null); }}
               >
                 <button
                   style={{
@@ -551,7 +557,45 @@ const Navbar = ({
                     </div>
                   ) : (
                     group.items.map((item) =>
-                      item.comingSoon ? (
+                      item.subItems ? (
+                        <div
+                          key={item.label}
+                          style={{ position: "relative" }}
+                          onMouseEnter={() => setActiveSubItem(item.label)}
+                        >
+                          <div
+                            style={{ ...dropdownItemStyle, justifyContent: "space-between", cursor: "default" }}
+                            onMouseEnter={hoverOn} onMouseLeave={hoverOff}
+                          >
+                            <span>{item.label}</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4, flexShrink: 0 }}><polyline points="9 18 15 12 9 6"/></svg>
+                          </div>
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: 0,
+                              left: "100%",
+                              marginLeft: 6,
+                              background: "#FFFEF9",
+                              borderRadius: 14,
+                              boxShadow: "0 16px 48px rgba(139,69,19,0.15), 0 2px 10px rgba(0,0,0,0.06)",
+                              border: "1px solid rgba(196,122,46,0.18)",
+                              minWidth: 180,
+                              padding: 8,
+                              opacity: activeSubItem === item.label ? 1 : 0,
+                              visibility: activeSubItem === item.label ? "visible" : "hidden",
+                              transform: activeSubItem === item.label ? "translateX(0)" : "translateX(-6px)",
+                              transition: "opacity 0.16s ease, transform 0.16s ease, visibility 0.16s",
+                            }}
+                          >
+                            {item.subItems.map((sub) => (
+                              <a key={sub.label} href={sub.href} style={dropdownItemStyle} onMouseEnter={hoverOn} onMouseLeave={hoverOff}>
+                                {sub.label}
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      ) : item.comingSoon ? (
                         <div key={item.label} style={{ ...dropdownItemStyle, cursor: "default", opacity: 0.5, pointerEvents: "none", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           <span>{item.label}</span>
                           <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", background: "rgba(196,122,46,0.1)", color: "#C47A2E", padding: "2px 7px", borderRadius: 20, marginLeft: 8, whiteSpace: "nowrap" }}>Soon</span>
@@ -851,7 +895,28 @@ const Navbar = ({
                 }}
               >
                 {group.items.map((item) =>
-                  item.comingSoon ? (
+                  item.subItems ? (
+                    <div key={item.label} style={{ padding: "6px 0" }}>
+                      <div style={{ padding: "8px 14px 4px", color: "#9B7450", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: font }}>
+                        {item.label}
+                      </div>
+                      {item.subItems.map((sub) => (
+                        <a
+                          key={sub.label}
+                          href={sub.href}
+                          onClick={() => setMenuOpen(false)}
+                          style={{
+                            display: "flex", alignItems: "center", gap: 10,
+                            padding: "11px 14px 11px 24px", color: "#5C3317",
+                            textDecoration: "none", fontSize: 14.5,
+                            fontWeight: 500, letterSpacing: "0.01em", fontFamily: font,
+                          }}
+                        >
+                          {sub.label}
+                        </a>
+                      ))}
+                    </div>
+                  ) : item.comingSoon ? (
                     <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", color: "#9B7450", fontSize: 14.5, opacity: 0.55, fontFamily: font }}>
                       <span>{item.label}</span>
                       <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.1)", color: "#C47A2E", padding: "2px 7px", borderRadius: 20 }}>Coming Soon</span>

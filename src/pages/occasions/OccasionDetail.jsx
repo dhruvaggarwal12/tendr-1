@@ -5244,17 +5244,30 @@ export default function OccasionDetail(){
                 are still assembled into one planSections array for the PDF/share-to-chat
                 capture further below, so that output stays exactly as complete as before. */}
             {(()=>{
-            // Shared card-row renderer for both journey sections below — a horizontally
-            // swipeable row of compact cards (icon, short bold title, clamped 1–2 line
-            // text) instead of one long vertical column of paragraphs. Reads as a set of
-            // steps on a planning app, not a document with prose under each heading.
-            const renderBeatCards=(beats)=>(
-              <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:4,marginInline:-2,paddingInline:2,scrollSnapType:"x proximity"}}>
+            // ── Journey cards — screen 2 of the story. Large, illustrated, numbered stage
+            // cards in one row on desktop (no horizontal scroll), a swipeable carousel on
+            // mobile. A thin connector line threads through the numbered badges to read as
+            // a sequence, not four unrelated boxes.
+            const renderJourneyCards=(beats)=>(
+              <div className="od-journey-row" style={{position:"relative"}}>
+                <style>{`
+                  .od-journey-row{display:flex;gap:12px;overflow-x:auto;padding:6px 4px 10px;scroll-snap-type:x proximity;}
+                  .od-journey-card{scroll-snap-align:start;flex:0 0 auto;width:210px;}
+                  .od-journey-connector{display:none;}
+                  @media (min-width:760px){
+                    .od-journey-row{display:grid;grid-template-columns:repeat(${beats.length},1fr);gap:18px;overflow-x:visible;padding:6px 2px 10px;}
+                    .od-journey-card{width:auto;}
+                    .od-journey-connector{display:block;position:absolute;left:8%;right:8%;top:28px;height:2px;background:linear-gradient(90deg,${gold}55,${gold}22);z-index:0;}
+                  }
+                `}</style>
+                <div className="od-journey-connector"/>
                 {beats.map((beat,i)=>(
-                  <div key={i} style={{scrollSnapAlign:"start",flex:"0 0 auto",width:168,padding:"14px 13px",borderRadius:16,background:"#fff",border:`1px solid ${border}`}}>
-                    <div style={{width:32,height:32,borderRadius:"50%",background:`${gold}10`,border:`1.5px solid ${gold}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,marginBottom:9}}>{beat.icon}</div>
-                    <div style={{fontSize:9.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:5}}>{beat.title}</div>
-                    <div style={{fontSize:12,color:ink,lineHeight:1.5,display:"-webkit-box",WebkitLineClamp:4,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{beat.text}</div>
+                  <div key={i} className="od-journey-card" style={{position:"relative",zIndex:1,borderRadius:18,background:"#fff",border:`1px solid ${border}`,overflow:"hidden"}}>
+                    <div style={{padding:"18px 16px 14px",display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center",background:`linear-gradient(180deg,${gold}0D,transparent)`}}>
+                      <div style={{width:56,height:56,borderRadius:"50%",background:`linear-gradient(135deg,${gold},${lightenHex(gold,0.3)})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,boxShadow:`0 6px 16px ${gold}40`,marginBottom:10}}>{beat.icon}</div>
+                      <div style={{fontSize:9.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.09em"}}>0{i+1} · {beat.title}</div>
+                    </div>
+                    <div style={{padding:"4px 16px 18px",fontSize:12.5,color:ink,lineHeight:1.6,textAlign:"center"}}>{beat.text}</div>
                   </div>
                 ))}
               </div>
@@ -5267,11 +5280,11 @@ export default function OccasionDetail(){
               return(
                 <div style={{marginBottom:16}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
-                    <span style={{fontSize:16}}>✦</span>
-                    <span style={{fontFamily:serif,fontSize:17,color:ink,fontWeight:400}}>Your {occasion.name.toLowerCase()}, start to end</span>
+                    <span style={{fontSize:18}}>✦</span>
+                    <span style={{fontFamily:serif,fontSize:21,color:ink,fontWeight:400}}>Your {occasion.name.toLowerCase()}, start to end</span>
                   </div>
-                  <div style={{fontSize:11.5,color:muted,marginBottom:12,lineHeight:1.5}}>How the day will actually feel, swipe through →</div>
-                  {renderBeatCards(journey)}
+                  <div style={{fontSize:12.5,color:muted,marginBottom:18,lineHeight:1.5}}>How the day will actually feel — swipe or scroll through →</div>
+                  {renderJourneyCards(journey)}
                 </div>
               );
             })()}
@@ -5282,17 +5295,74 @@ export default function OccasionDetail(){
             <React.Fragment key="plan-prep">
             {/* "How your preparation will go" — the lead-up walkthrough companion to the
                 day-of journey above: what's open, what we do, what's on the customer, and
-                how the final week actually unfolds. */}
+                how the final week actually unfolds. Deliberately a different shape from the
+                journey slide above (a connected timeline, not illustrated cards) since this
+                one is about responsibility and sequence, not the celebration experience. */}
             {(()=>{
               const prep=buildPreparationJourney(occasion,{timeline,vendors,date,budget,city,selectedEntryExperiences,entryExperiencesSkipped,selectedActivities,customActivities,gifts});
+              // Same real-data logic buildPreparationJourney already uses for its own "what's
+              // on you" beat (not invented copy) — reused here to split the two panels below.
+              const onYouParts=[];
+              if(vendors.includes("Caterer")) onYouParts.push("Final menu & headcount");
+              if(vendors.includes("Decorator")) onYouParts.push("Décor colour & style sign-off");
+              if(gifts.length>0) onYouParts.push("Gift quantities");
+              onYouParts.push("Final approvals");
+              const tendrParts=["Vendor coordination & availability","Written confirmations from every vendor","A backup if anyone falls through","Event-day setup oversight"];
               return(
                 <div style={{marginBottom:16}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
-                    <span style={{fontSize:16}}>✦</span>
-                    <span style={{fontFamily:serif,fontSize:17,color:ink,fontWeight:400}}>How your preparation will go</span>
+                    <span style={{fontSize:18}}>✦</span>
+                    <span style={{fontFamily:serif,fontSize:21,color:ink,fontWeight:400}}>How your preparation will go</span>
                   </div>
-                  <div style={{fontSize:11.5,color:muted,marginBottom:12,lineHeight:1.5}}>What's open, what we handle, what's on you — swipe through →</div>
-                  {renderBeatCards(prep)}
+                  <div style={{fontSize:12.5,color:muted,marginBottom:20,lineHeight:1.5}}>What happens next, what Tendr handles, and what you decide</div>
+
+                  <style>{`
+                    .od-prep-timeline{display:flex;flex-direction:column;}
+                    .od-prep-step{display:flex;gap:14px;}
+                    .od-prep-dotcol{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+                    .od-prep-connector{width:2px;flex:1;min-height:14px;background:rgba(196,122,46,0.18);}
+                    .od-prep-body{flex:1;padding-bottom:22px;}
+                    @media (min-width:860px){
+                      .od-prep-timeline{flex-direction:row;align-items:flex-start;}
+                      .od-prep-step{flex-direction:column;align-items:center;text-align:center;flex:1;gap:10px;}
+                      .od-prep-connector{width:100%;height:2px;min-height:0;}
+                      .od-prep-body{padding-bottom:0;padding:0 8px;}
+                    }
+                  `}</style>
+                  <div className="od-prep-timeline">
+                    {prep.map((beat,i)=>(
+                      <div key={i} className="od-prep-step">
+                        <div className="od-prep-dotcol">
+                          <div style={{width:34,height:34,borderRadius:"50%",background:`linear-gradient(135deg,${gold},${lightenHex(gold,0.3)})`,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:800,flexShrink:0}}>{beat.icon}</div>
+                          {i<prep.length-1&&<div className="od-prep-connector"/>}
+                        </div>
+                        <div className="od-prep-body">
+                          <div style={{fontSize:9.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.09em",marginBottom:4}}>{beat.title}</div>
+                          <div style={{fontSize:12.5,color:ink,lineHeight:1.6}}>{beat.text}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Who does what — makes the division of responsibility immediately clear */}
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginTop:8}}>
+                    <div style={{borderRadius:16,border:`1.5px solid rgba(196,122,46,0.2)`,background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",padding:"16px 16px 14px"}}>
+                      <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.09em",marginBottom:10,display:"flex",alignItems:"center",gap:6}}><span>🤝</span>Tendr handles</div>
+                      {tendrParts.map((p,i)=>(
+                        <div key={i} style={{display:"flex",gap:8,alignItems:"flex-start",fontSize:12.5,color:ink,lineHeight:1.5,marginBottom:i<tendrParts.length-1?7:0}}>
+                          <span style={{color:gold,flexShrink:0}}>✓</span>{p}
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{borderRadius:16,border:`1.5px solid ${border}`,background:"#fff",padding:"16px 16px 14px"}}>
+                      <div style={{fontSize:10,fontWeight:800,color:ink,textTransform:"uppercase",letterSpacing:"0.09em",marginBottom:10,display:"flex",alignItems:"center",gap:6}}><span>✅</span>You decide</div>
+                      {onYouParts.map((p,i)=>(
+                        <div key={i} style={{display:"flex",gap:8,alignItems:"flex-start",fontSize:12.5,color:ink,lineHeight:1.5,marginBottom:i<onYouParts.length-1?7:0}}>
+                          <span style={{color:muted,flexShrink:0}}>•</span>{p}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               );
             })()}
@@ -5301,6 +5371,10 @@ export default function OccasionDetail(){
 
             const overviewSlide=(
             <React.Fragment key="plan-overview">
+            {/* Kept at its own, narrower width — the hero banner below is a fixed 132px
+                tall strip and reads as stretched/thin if it's allowed to span the full
+                1050px story width now used by the journey/prep slides. */}
+            <div style={{maxWidth:680,margin:"0 auto"}}>
             {/* plan overview card — hero illustration adapts per occasion (family of SVG
                 props tinted with this occasion's own color), not a photo and not one
                 bespoke design per occasion; see heroFamily()/renderHeroScene() above. */}
@@ -5326,17 +5400,17 @@ export default function OccasionDetail(){
                 );
               })()}
               <div style={{padding:"16px 18px"}}>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(130px, 1fr))",gap:8,marginBottom:12}}>
                   {[
                     celebrantName?{icon:"🎀",label:"For",val:celebrantName}:null,
                     {icon:"👥",label:"Guests",val:`${guests} people`},
-                    {icon:"💰",label:"Budget",val:budget?fmtNum(Number(budget)):`${fmtNum(occasion.budgetMin)}–${fmtNum(occasion.budgetMax)}`},
+                    {icon:"💰",label:"Budget",val:budget?fmtNum(Number(budget)):`${fmtNum(occasion.budgetMin)} – ${fmtNum(occasion.budgetMax)}`},
                     {icon:"📅",label:"Date",val:date?new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}):"TBD"},
                     {icon:"📍",label:"Location",val:city?(venueType?`${city} · ${venueType}`:city):(venueType||"TBD")},
                   ].filter(Boolean).map(({icon,label,val})=>(
                     <div key={label} style={{background:"#fff",borderRadius:10,padding:"10px 12px",border:`1px solid rgba(196,122,46,0.1)`}}>
-                      <div style={{fontSize:9,fontWeight:700,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:2}}>{icon} {label}</div>
-                      <div style={{fontSize:12.5,fontWeight:700,color:val==="TBD"?"rgba(30,15,0,0.25)":ink}}>{val}</div>
+                      <div style={{fontSize:9,fontWeight:700,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:2,whiteSpace:"nowrap"}}>{icon} {label}</div>
+                      <div style={{fontSize:12.5,fontWeight:700,color:val==="TBD"?"rgba(30,15,0,0.25)":ink,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{val}</div>
                     </div>
                   ))}
                 </div>
@@ -5350,6 +5424,7 @@ export default function OccasionDetail(){
             </div>
             {/* What you've planned — shown together with the overview on the same, first slide */}
             {renderSelectedItemsSection()}
+            </div>
             </React.Fragment>
             );
 
@@ -5571,7 +5646,7 @@ export default function OccasionDetail(){
             {/* ── Full-screen plan story — no header/tabs/bottom-nav, shown first on arrival ── */}
             {planStoryOpen&&createPortal(
               <div style={{position:"fixed",inset:0,zIndex:999999,background:"#FDFAF5",display:"flex",flexDirection:"column",alignItems:"center"}}>
-                <div style={{flexShrink:0,width:"100%",maxWidth:680,padding:"calc(14px + env(safe-area-inset-top,0px)) 20px 10px",display:"flex",flexDirection:"column",gap:10,boxSizing:"border-box"}}>
+                <div style={{flexShrink:0,width:"100%",maxWidth:1050,padding:"calc(14px + env(safe-area-inset-top,0px)) 24px 10px",display:"flex",flexDirection:"column",gap:10,boxSizing:"border-box"}}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                     <span style={{fontSize:11,fontWeight:700,color:muted}}>{storyLabels[storyIdx]}</span>
                     <button onClick={()=>setPlanStoryOpen(false)} style={{width:30,height:30,borderRadius:"50%",border:"1.5px solid rgba(196,122,46,0.2)",background:"#fff",color:muted,fontSize:15,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}} aria-label="Skip to full plan">×</button>
@@ -5582,7 +5657,7 @@ export default function OccasionDetail(){
                     ))}
                   </div>
                 </div>
-                <div style={{flex:1,minHeight:0,overflowY:"auto",width:"100%",maxWidth:680,padding:"4px 20px",boxSizing:"border-box"}}>
+                <div style={{flex:1,minHeight:0,overflowY:"auto",width:"100%",maxWidth:1050,padding:"4px 24px",boxSizing:"border-box"}}>
                   <AnimatePresence mode="wait" initial={false} custom={storyDirection}>
                     <motion.div key={storyIdx}
                       initial={{opacity:0,x:storyDirection>0?44:-44}}
@@ -5593,7 +5668,7 @@ export default function OccasionDetail(){
                     </motion.div>
                   </AnimatePresence>
                 </div>
-                <div style={{flexShrink:0,width:"100%",maxWidth:680,padding:"12px 20px calc(14px + env(safe-area-inset-bottom,0px))",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,borderTop:"1px solid rgba(196,122,46,0.12)",background:"#FDFAF5",boxSizing:"border-box"}}>
+                <div style={{flexShrink:0,width:"100%",maxWidth:1050,padding:"12px 24px calc(14px + env(safe-area-inset-bottom,0px))",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,borderTop:"1px solid rgba(196,122,46,0.12)",background:"#FDFAF5",boxSizing:"border-box"}}>
                   <button onClick={()=>storyIdx>0&&goToStory(storyIdx-1)} disabled={storyIdx===0}
                     style={{padding:"11px 18px",borderRadius:100,border:`1.5px solid ${storyIdx===0?"rgba(28,9,0,0.08)":"rgba(196,122,46,0.3)"}`,background:"#fff",color:storyIdx===0?"rgba(28,9,0,0.2)":gold,fontSize:13,fontWeight:700,cursor:storyIdx===0?"default":"pointer",fontFamily:font}}>
                     ← Back
