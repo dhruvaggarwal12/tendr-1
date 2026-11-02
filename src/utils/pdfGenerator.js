@@ -510,16 +510,12 @@ export async function generateTimelinePDF({ slots = [], eventSummary = {}, userN
   doc.rect(0, 30, W, 1.2, "F");
 
   if (_logoLight) {
-    doc.addImage(_logoLight, "PNG", CX - 18, 5, 36, 13);
+    doc.addImage(_logoLight, "PNG", 4, 4, 28, 10);
   } else {
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
+    doc.setFontSize(13);
     doc.setTextColor(204, 171, 74);
-    doc.text("tendr", CX, 15, { align: "center" });
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(6);
-    doc.setTextColor(155, 116, 80);
-    doc.text("WE CURATE YOU CELEBRATE", CX, 21, { align: "center", charSpace: 0.8 });
+    doc.text("tendr", 5, 13);
   }
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
@@ -674,6 +670,11 @@ export async function generateInvitationPDF({ eventSummary = {}, confirmedVendor
   // Ivory body background
   doc.setFillColor(250, 246, 239);
   doc.rect(0, heroH + 1.5, W, H - heroH - 1.5, "F");
+
+  // Brand mark — top left
+  if (_logoLight) {
+    doc.addImage(_logoLight, "PNG", 10, 8, 34, 12);
+  }
 
   // Hero top diamond divider
   drawOrnamentDivider(doc, CX, 16);

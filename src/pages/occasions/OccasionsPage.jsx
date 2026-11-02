@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { OCCASIONS } from "../../data/occasions";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
+import tendrLogoImg from "../../assets/logos/tendr-logo-secondary.png";
 
 const font = "'Outfit', sans-serif";
 
@@ -38,6 +39,9 @@ export default function OccasionsPage() {
         <button onClick={() => navigate(-1)} style={{ position:"absolute", top:"max(14px, env(safe-area-inset-top))", left:16, zIndex:2, width:34, height:34, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.2)", background:"rgba(255,255,255,0.85)", color:"#9B7450", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
+
+        {/* Brand mark */}
+        <img src={tendrLogoImg} alt="tendr" style={{ position:"absolute", top:"max(18px, calc(env(safe-area-inset-top) + 4px))", left:60, zIndex:2, height:26, width:"auto" }} />
 
         <div style={{ position:"relative" }}>
           <div style={{ fontSize: 42, letterSpacing: 6, marginBottom: 14, lineHeight: 1 }}>🎂 💍 🍼 🎓</div>

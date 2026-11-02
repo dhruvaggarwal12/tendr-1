@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 import { getTemplate } from "../../data/invitationTemplates";
+import tendrLogoImg from "../../assets/logos/tendr-logo-secondary.png";
 
 const font = "'Outfit', sans-serif";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -124,6 +125,9 @@ function BotanicalFlyer({ data, onChange }) {
       <LeafBottomLeft />
       <LeafBottomRight />
 
+      {/* Brand mark */}
+      <img src={tendrLogoImg} alt="tendr" style={{ position: "absolute", top: 18, left: 18, width: 72, height: "auto", zIndex: 6, pointerEvents: "none" }} />
+
       {/* ── Content ── */}
       <div style={{ position: "relative", zIndex: 5, textAlign: "center", fontFamily: "Georgia, 'Times New Roman', serif" }}>
 
@@ -239,6 +243,9 @@ function PhotoFlyer({ template, data, onChange }) {
     }}>
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,6,2,0.92) 0%, rgba(10,6,2,0.55) 42%, rgba(10,6,2,0.1) 68%, transparent 85%)" }} />
 
+      {/* Brand mark */}
+      <img src={tendrLogoImg} alt="tendr" style={{ position: "absolute", top: 18, left: 18, width: 72, height: "auto", zIndex: 6, pointerEvents: "none", filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.5))" }} />
+
       <div style={{ position: "relative", zIndex: 5, padding: "40px 36px 34px", textAlign: "center", fontFamily: "Georgia, 'Times New Roman', serif", color: "#fff" }}>
         <p style={{ fontSize: 10.5, letterSpacing: "0.26em", textTransform: "uppercase", color: "rgba(255,255,255,0.75)", margin: "0 0 8px", fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 500 }}>
           You're cordially invited to
@@ -328,7 +335,11 @@ export default function InvitationCustomizer() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Could not create invite");
-      setCreatedInvite({ inviteId: json.inviteId, link: `${window.location.origin}/house-party/invite/${json.inviteId}` });
+      // The shared link points at the backend's /share preview page — WhatsApp/
+      // Instagram etc. unfurl that page's server-rendered OG tags (flyer image,
+      // event name) into a rich card, then redirect the real visitor straight
+      // through to the actual RSVP page below.
+      setCreatedInvite({ inviteId: json.inviteId, link: `${BASE_URL}/house-party/invite/${json.inviteId}/share` });
 
       // Attach this invite to the logged-in host's account so it shows up on their
       // Dashboard's "Guest List" tab — fire-and-forget, the flyer/RSVP link above

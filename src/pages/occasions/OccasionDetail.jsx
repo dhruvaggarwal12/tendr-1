@@ -17,6 +17,7 @@ import { ALL_INDIAN_CITIES, SERVICED_CITIES } from "../../data/indianCities";
 import { saveResumeUrl } from "../../utils/planningResume";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
+import tendrLogoImg from "../../assets/logos/tendr-logo-secondary.png";
 import PerformerSuggestions from "../../components/PerformerSuggestions";
 import DecorAnalyzer from "../../components/DecorAnalyzer";
 import EntryExperiences, { getEntryExperienceSuggestions } from "../../components/EntryExperiences";
@@ -5709,7 +5710,10 @@ export default function OccasionDetail(){
             {/* Off-screen, mounted only while generating a PDF / share-to-chat token so
                 html2canvas captures the complete plan — never shown to the user otherwise. */}
             {planExportMode&&(
-              <div ref={planRef} style={{background:"#FDFAF5",borderRadius:14,padding:"4px 2px"}}>{planSections}</div>
+              <div ref={planRef} style={{background:"#FDFAF5",borderRadius:14,padding:"4px 2px"}}>
+                <img src={tendrLogoImg} alt="tendr" style={{height:30,width:"auto",display:"block",marginBottom:12}} />
+                {planSections}
+              </div>
             )}
             </>); })()}
 

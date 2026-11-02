@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import tendrLogoImg from "../../assets/logos/tendr-logo-secondary.png";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', 'Inter', sans-serif";
@@ -106,6 +107,7 @@ export default function InviteRSVP() {
           <div style={{ position: "relative", borderRadius: "0 0 20px 20px", overflow: "hidden", marginBottom: 24 }}>
             <img src={invite.templateImage} alt="" style={{ width: "100%", height: 280, objectFit: "cover", display: "block" }} />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,6,2,0.95) 0%, rgba(10,6,2,0.55) 45%, rgba(10,6,2,0.1) 75%, transparent 100%)" }} />
+            <img src={tendrLogoImg} alt="tendr" style={{ position: "absolute", top: 16, left: 16, width: 68, height: "auto", filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.5))" }} />
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 22px 22px", textAlign: "center" }}>
               <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", margin: "0 0 6px" }}>{invite.partyName}</h1>
               <p style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", margin: 0 }}>Hosted by {invite.hostName}</p>
@@ -119,7 +121,8 @@ export default function InviteRSVP() {
             </div>
           </div>
         ) : (
-          <div style={{ background: "transparent", borderRadius: 20, padding: "28px 22px", marginBottom: 24, textAlign: "center", border: "1.5px solid rgba(255,255,255,0.1)" }}>
+          <div style={{ position: "relative", background: "transparent", borderRadius: 20, padding: "28px 22px", marginBottom: 24, textAlign: "center", border: "1.5px solid rgba(255,255,255,0.1)" }}>
+            <img src={tendrLogoImg} alt="tendr" style={{ position: "absolute", top: 14, left: 14, width: 60, height: "auto" }} />
             <div style={{ fontSize: 46 }}>🎉</div>
             <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", margin: "10px 0 6px" }}>{invite.partyName}</h1>
             <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", margin: 0 }}>Hosted by {invite.hostName}</p>
