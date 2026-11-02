@@ -5728,7 +5728,7 @@ export default function OccasionDetail(){
               if(selectedActivities.length===0&&customActivities.length===0) crossSell.push({label:"Fun Activities",icon:"🎮",href:"/fun-activities"});
               if(!budget||Number(budget)<=0) crossSell.push({label:"Price Estimator",icon:"💰",onClick:()=>openPriceEstimator({occasion:occasion.name,onFinalise:(avg)=>setBudget(String(avg))})});
               crossSell.push({label:"Event Timeline",icon:"🗓️",href:"/timeline-picker"});
-              crossSell.push({label:"Guest List",icon:"👥",href:`/guest-list?planned=${guests}`});
+              crossSell.push({label:"Guest List",icon:"👥",href:"/invitation"});
 
               return(
                 <div style={{marginBottom:16,display:"flex",flexDirection:"column",gap:12}}>

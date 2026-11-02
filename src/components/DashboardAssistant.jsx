@@ -89,8 +89,9 @@ const FAQ = [
     action: { label: "Show Upcoming", tab: "Upcoming" },
   },
   {
-    q: ["invitation", "invite pdf", "event invitation", "e-invite"],
-    a: "Tap the **Invitation** button on your event card to generate a shareable PDF invite you can send to guests.",
+    q: ["invitation", "invite pdf", "event invitation", "e-invite", "rsvp", "guest list"],
+    a: "For a live RSVP link guests can respond to directly, create one under **Tools → Guest List & Invites**. Prefer a printable keepsake? Tap the **Invitation** button on your event card for a PDF instead.",
+    action: { label: "Create an Invite", tab: "Guest List" },
   },
   {
     q: ["help", "support", "contact tendr", "talk to team", "need help"],

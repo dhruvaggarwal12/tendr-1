@@ -25,7 +25,7 @@ const SEARCH_SUGGESTIONS = [
 // ── Smart search parser ───────────────────────────────────────────────────────
 const SVC_KW = { caterer: "Caterer", catering: "Caterer", food: "Caterer", cook: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", photo: "Photographer", dj: "DJ Setup", music: "DJ Setup", entertainment: "DJ Setup", disc: "DJ Setup" };
 const LOC_KW = { delhi: "Delhi", "new delhi": "Delhi", noida: "Noida", gurgaon: "Gurgaon", gurugram: "Gurgaon", ghaziabad: "Ghaziabad", "greater noida": "Greater Noida" };
-const PAGE_KW = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes", hampers: "/gift-hampers-cakes", cakes: "/gift-hampers-cakes", /* "decor finder": "/decor-finder", */timeline: "/timeline-picker", invitation: "/stationery", flyer: "/stationery", invite: "/stationery", stationery: "/stationery", "wedding card": "/stationery", aftermovie: "/stationery" };
+const PAGE_KW = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes", hampers: "/gift-hampers-cakes", cakes: "/gift-hampers-cakes", /* "decor finder": "/decor-finder", */timeline: "/timeline-picker", invitation: "/invitation", flyer: "/invitation", invite: "/invitation", rsvp: "/invitation", "guest list": "/invitation", stationery: "/stationery", "wedding card": "/stationery", aftermovie: "/stationery" };
 const BUDGET_PATTERNS = [
   // "under/below 1 lakh", "1.5 lakh"
   /(?:under|below|within|upto|up to|less than|around|approx\.?|~)?\s*₹?\s*(\d+(?:\.\d+)?)\s*lakh/i,

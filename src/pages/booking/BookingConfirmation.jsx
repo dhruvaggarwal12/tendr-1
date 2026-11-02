@@ -164,6 +164,14 @@ const BookingConfirmationPage = () => {
             </div>
           </div>
 
+          {/* Invite guests */}
+          <button
+            className="w-full bg-[#FFF8EE] border border-[#C47A2E]/30 text-[#2e1b0f] py-3 px-6 rounded-xl font-semibold hover:bg-[#FFF0D6] active:scale-95 transition mb-3"
+            onClick={() => window.open("/invitation", "_blank")}
+          >
+            📨 Create a Shareable Invite — guests RSVP instantly
+          </button>
+
           {/* Dashboard */}
           <button
             className="w-full bg-[#2e1b0f] text-white py-3 px-6 rounded-xl font-semibold hover:bg-[#2e1b0f]/80 transition"

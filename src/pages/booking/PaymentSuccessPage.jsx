@@ -441,6 +441,12 @@ const PaymentSuccessPage = () => {
           )}
         </div>
 
+        {/* ── Invite guests ── */}
+        <button onClick={() => window.open("/invitation", "_blank")}
+          style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "14px 16px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.25)", background: "#FFFCF7", color: "#C47A2E", fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: font, marginBottom: 20 }}>
+          📨 Create a Shareable Invite — guests RSVP instantly
+        </button>
+
         {/* ── Install App CTA ── */}
         <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 18, padding: "20px 22px", marginBottom: 20, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
           <div style={{ fontSize: 36, flexShrink: 0 }}>📲</div>

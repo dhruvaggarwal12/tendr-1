@@ -108,7 +108,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   ];
   const SVC_KW2 = { caterer: "Caterer", catering: "Caterer", food: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", dj: "DJ Setup", music: "DJ Setup" };
   const LOC_KW2 = { delhi: "Delhi", noida: "Noida", gurgaon: "Gurgaon", gurugram: "Gurgaon", ghaziabad: "Ghaziabad", "greater noida": "Greater Noida" };
-  const PAGE_KW2 = { budget: "/budget-picker", "gift hamper": "/gifting", "gift hampers": "/gifting", hampers: "/gifting", cakes: "/gift-hampers-cakes", gifting: "/gifting", timeline: "/timeline-picker", invitation: "/stationery", flyer: "/stationery", stationery: "/stationery", aftermovie: "/stationery", "decor analyser": "/decor-analyser", "decor analyzer": "/decor-analyser", "venue photo": "/decor-analyser", guides: "/guides", community: "/community" };
+  const PAGE_KW2 = { budget: "/budget-picker", "gift hamper": "/gifting", "gift hampers": "/gifting", hampers: "/gifting", cakes: "/gift-hampers-cakes", gifting: "/gifting", timeline: "/timeline-picker", invitation: "/invitation", flyer: "/invitation", invite: "/invitation", rsvp: "/invitation", "guest list": "/invitation", stationery: "/stationery", aftermovie: "/stationery", "decor analyser": "/decor-analyser", "decor analyzer": "/decor-analyser", "venue photo": "/decor-analyser", guides: "/guides", community: "/community" };
 
   const handleNavSearch = (q) => {
     const query = q || searchQuery;

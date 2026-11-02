@@ -11444,6 +11444,16 @@ export default function OccasionHub({ occasion }) {
     if (prevOpenRef.current && !open) setSummaryTick(t => t + 1);
     prevOpenRef.current = open;
   }, [open]);
+  // Invite/RSVP and Guest List both route to the real flyer+RSVP system
+  // (/invitation) instead of the bare-form/manual-list/localStorage-only
+  // tools below — catches every path that can set `open` to these ids
+  // (main grid, tool intro, search, game queue), not just the primary click.
+  useEffect(() => {
+    if (open === "invite" || open === "guestlist") {
+      window.open("/invitation", "_blank");
+      setOpen(null);
+    }
+  }, [open]);
   const celebrationSummary = useMemo(() => computeCelebrationSummary(occasion), [occasion, summaryTick]);
   const [forceSoloOpen, setForceSoloOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("plan");

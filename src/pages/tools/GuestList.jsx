@@ -56,6 +56,12 @@ function IntroScreen({ onStart }) {
           <button onClick={onStart} style={{ padding: "14px 36px", borderRadius: 12, border: "none", background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 18px rgba(196,122,46,0.35)" }}>
             Start Guest List →
           </button>
+          <p style={{ fontSize: 12.5, color: "#9B7450", marginTop: 14 }}>
+            Prefer guests RSVP themselves instead of you typing everyone in?{" "}
+            <a href="/invitation" target="_blank" rel="noopener noreferrer" style={{ color: gold, fontWeight: 700, textDecoration: "underline" }}>
+              Create a shareable invite →
+            </a>
+          </p>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16, marginBottom: 44 }} className="gl-intro-grid">

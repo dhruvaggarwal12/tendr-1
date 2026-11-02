@@ -5615,6 +5615,9 @@ export default function HousePartyHub() {
 
   // When a live tool is opened in a room, push/sync the right state to the room
   const openTool = (id) => {
+    // Invite/RSVP and Guest List both route to the real flyer+RSVP system
+    // (/invitation) instead of the old bare-form/manual-list modals below.
+    if (id === "invite" || id === "guestlist") { window.open("/invitation", "_blank"); return; }
     const tool = TOOLS.find(t => t.id === id);
     if (tool?.live && room) {
       const backendGame = SYNCED_GAME_ID[id];
