@@ -1508,64 +1508,45 @@ function buildEventJourney(occasion, {celebrantName="", guests=20, venueType="",
   const hasPhotographer = vendors.includes("Photographer") || vendors.includes("Videographer");
   const beats = [];
 
-  // 1. Arrival — names the actual entry experience and its feel, not just its category
+  // 1. Arrival — names the actual entry experience, kept to one short sentence
   const entry = selectedEntryExperiences[0] ? getEntryExperienceById(selectedEntryExperiences[0]) : null;
-  const photoClause = hasPhotographer ? ` Your ${vendors.includes("Photographer")&&vendors.includes("Videographer")?"photographer and videographer are":"photographer is"} already there, catching these first reactions.` : "";
+  const photoClause = hasPhotographer ? " Your photographer catches it all." : "";
   beats.push({
-    icon: "🚪", title: "Guests arrive",
+    icon: "door", title: "Guests Arrive",
     text: entry
-      ? `As guests step in${venueClause}, they're welcomed with ${entry.title.toLowerCase()} — ${(entry.howItFeels || entry.shortDesc || "").replace(/\.$/,"")}.${photoClause}`
-      : `Guests arrive${venueClause}${city?` in ${city}`:""}, stepping straight into the mood of ${who?`${who}'s`:"your"} ${occasion.name.toLowerCase()}.${photoClause}`,
+      ? `A warm welcome with ${entry.title.toLowerCase()}, setting the mood the moment guests step in.${photoClause}`
+      : `Guests arrive${venueClause}, stepping right into ${who?`${who}'s`:"the"} celebration mood.${photoClause}`,
   });
 
-  // 2. The setting — names the actual decor items chosen, not just the focus-area category
+  // 2. The setting — names the actual decor items chosen, in one short line
   const areaNames = decorFocusAreas.map(id=>DECOR_FOCUS_AREAS[id]?.name).filter(Boolean);
   const decorItems = Object.values(customDecor||{}).flat().filter(Boolean);
   let settingText;
   if (decorItems.length) {
-    const itemsStr = decorItems.slice(0,3).join(", ").toLowerCase() + (decorItems.length>3 ? `, and ${decorItems.length-3} more touch${decorItems.length-3===1?"":"es"}` : "");
-    settingText = theme
-      ? `The space carries a ${theme.name} look — ${itemsStr}, styled across ${areaNames.slice(0,2).join(" and ").toLowerCase()||"the venue"}.`
-      : `${areaNames.slice(0,2).join(" and ")||"The venue"} come alive with ${itemsStr}.`;
-  } else if (theme && areaNames.length) settingText = `The space carries a ${theme.name} look, with ${areaNames.slice(0,2).join(" and ").toLowerCase()} styled to match.`;
-  else if (theme) settingText = `A ${theme.name} theme runs through the décor, setting the tone the moment guests look around.`;
-  else if (areaNames.length) settingText = `${areaNames.slice(0,2).join(" and ")} are styled for the occasion, giving the space its character.`;
-  else settingText = `The venue is dressed to suit a ${occasion.name.toLowerCase()} — simple, warm, and ready for guests.`;
-  beats.push({ icon: "🎨", title: "The setting", text: settingText });
+    const itemsStr = decorItems.slice(0,2).join(" and ").toLowerCase();
+    settingText = theme ? `A ${theme.name} look comes alive with ${itemsStr}.` : `${areaNames[0]||"The venue"} comes alive with ${itemsStr}.`;
+  } else if (theme) settingText = `A ${theme.name} theme runs through the décor, setting the tone.`;
+  else if (areaNames.length) settingText = `${areaNames[0]} is styled for the occasion, giving the space its character.`;
+  else settingText = `The venue gets a beautiful ${occasion.name.toLowerCase()} makeover with décor and lighting.`;
+  beats.push({ icon: "palette", title: "The Setting", text: settingText });
 
-  // 3. Food — names the actual catering style, cuisine and dishes, not just "a spread"
+  // 3. Food + entertainment — combined into one short "what happens" beat
   const hasCaterer = vendors.includes("Caterer");
-  let foodText = null;
-  if (hasCaterer) {
-    const dishList = Object.values(customCatering?.dishes || {}).flat().filter(Boolean);
-    if (cateringType && dishList.length) {
-      foodText = `${cateringType}${customCatering.cuisine ? ` — ${customCatering.cuisine} flavours` : ""} is served, with ${dishList.slice(0,3).join(", ").toLowerCase()}${dishList.length>3?" among the highlights":""}.`;
-    } else if (cateringType) {
-      foodText = `${cateringType}${customCatering.cuisine ? ` in a ${customCatering.cuisine} spread` : ""} keeps everyone fed through the celebration.`;
-    } else {
-      foodText = `Guests settle in for a spread crafted for ${who?`${who}'s`:"your"} ${occasion.name.toLowerCase()}.`;
-    }
-    if (cakeType) foodText += ` ${cakeType} rounds things off.`;
-  }
-
-  // 4. Entertainment — names the actual activities, not just a count
   const entertainers = vendors.filter(v => ["DJ","Live Band","Band","Entertainer","Emcee / Host","Anchor"].includes(v));
   const allActivities = [...selectedActivities, ...customActivities].filter(Boolean);
-  let funText = null;
-  if (entertainers.length || allActivities.length) {
-    const parts = [];
-    if (entertainers.length) parts.push(`${entertainers.join(" and ")} keeping the energy up`);
-    if (allActivities.length) parts.push(`${allActivities.slice(0,3).join(", ")}${allActivities.length>3?` and ${allActivities.length-3} more`:""} woven through the evening`);
-    funText = parts.join(", with ") + ".";
-  }
+  const hasFun = entertainers.length>0 || allActivities.length>0;
+  let celebrationText;
+  if (hasCaterer && hasFun) celebrationText = `Guests enjoy${cateringType?` ${cateringType.toLowerCase()}`:" delicious food"}, music and fun activities.`;
+  else if (hasCaterer) celebrationText = `Guests settle in for${cateringType?` ${cateringType.toLowerCase()}`:" a spread"} crafted for the day.${cakeType?` ${cakeType} rounds it off.`:""}`;
+  else if (hasFun) celebrationText = `${entertainers[0]||"Entertainment"} and fun activities keep the energy up all evening.`;
+  else celebrationText = `The celebration settles into its own easy, happy rhythm.`;
+  beats.push({ icon: "music", title: "The Celebration", text: celebrationText });
 
-  beats.push({ icon: "🎉", title: "The celebration", text: [foodText, funText].filter(Boolean).join(" ") || "The celebration settles into its own easy rhythm." });
-
-  // 5. Send-off — names the actual gifts, not just a count
+  // 4. Send-off — names the actual gifts, in one short line
   const giftText = gifts.length
-    ? `Before heading home, guests leave with ${gifts.length>1?`${gifts.slice(0,2).join(" and ").toLowerCase()}${gifts.length>2?`, among ${gifts.length} favours chosen`:""}`:String(gifts[0]).toLowerCase()} to remember the day by.`
-    : `As the evening winds down, guests head home with the day's memories — nothing more needed.`;
-  beats.push({ icon: "🎁", title: "The send-off", text: giftText });
+    ? `Guests leave with ${gifts.length>1?"thoughtful gifts":String(gifts[0]).toLowerCase()} and wonderful memories.`
+    : `Guests head home with the day's memories — nothing more needed.`;
+  beats.push({ icon: "gift", title: "The Send-Off", text: giftText });
 
   return beats;
 }
@@ -1578,55 +1559,53 @@ function buildEventJourney(occasion, {celebrantName="", guests=20, venueType="",
 function buildPreparationJourney(occasion, {timeline=null, vendors=[], date="", budget=null, city="", selectedEntryExperiences=[], entryExperiencesSkipped=false, selectedActivities=[], customActivities=[], gifts=[]}={}) {
   const beats = [];
 
-  // 1. What's still open — same gap conditions as the Recommendations tips, as prose
+  // 1. What's still open — same gap conditions as the Recommendations tips, kept to one short line
   const gaps = [];
   if (!date) gaps.push("a date");
   if (!budget || Number(budget)<=0) gaps.push("a budget");
   if (!city.trim()) gaps.push("your city");
-  if (vendors.length < 2) gaps.push("your core vendors — decor & catering");
+  if (vendors.length < 2) gaps.push("core vendors");
   if (selectedEntryExperiences.length===0 && !entryExperiencesSkipped) gaps.push("an entry experience");
   if (selectedActivities.length===0 && customActivities.length===0) gaps.push("entertainment");
   if (gifts.length===0) gaps.push("return gifts");
   beats.push({
-    icon: "📝", title: "Right now",
+    num: 1, title: "Right Now",
     text: gaps.length
-      ? `A few things are still open — ${gaps.slice(0,3).join(", ")}${gaps.length>3?`, and ${gaps.length-3} more`:""}. Nothing is locked in until you confirm it, so there's no rush, but the earlier these are set, the more choice you'll have.`
-      : `Everything that matters is already set — date, budget, vendors, and the extras. From here it's just confirmations and the countdown.`,
+      ? `${gaps.length} thing${gaps.length>1?"s":""} still open — ${gaps.slice(0,2).join(", ")}${gaps.length>2?" & more":""}. No rush, but earlier is better.`
+      : `Everything that matters is already set. From here it's just confirmations and the countdown.`,
   });
 
   // 2. What Tendr handles — reassurance, grounded in the vendors actually chosen
   beats.push({
-    icon: "🤝", title: "What we handle",
+    num: 2, title: "Tendr Coordinates",
     text: vendors.length>0
-      ? `Once you move ahead, your Tendr coordinator confirms availability with ${vendors.slice(0,3).join(", ")}${vendors.length>3?` and ${vendors.length-3} more`:""}, chases every confirmation in writing, and steps in with an alternative if anyone falls through — you're never left chasing a vendor yourself.`
-      : `Once vendors are picked, your Tendr coordinator takes over confirming availability, chasing written confirmations, and swapping in an alternative if anyone falls through.`,
+      ? `Your coordinator confirms availability with ${vendors.slice(0,2).join(", ")}${vendors.length>2?" & more":""}, in writing.`
+      : `Your coordinator confirms vendor availability and gets every confirmation in writing.`,
   });
 
   // 3. What's still on the customer — the genuinely personal calls, by category
   const onYouParts = [];
   if (vendors.includes("Caterer")) onYouParts.push("final menu & headcount");
-  if (vendors.includes("Decorator")) onYouParts.push("décor colour/style sign-off");
+  if (vendors.includes("Decorator")) onYouParts.push("décor sign-off");
   if (gifts.length>0) onYouParts.push("gift quantities");
-  if (!onYouParts.length) onYouParts.push("final headcount and any last preferences");
+  if (!onYouParts.length) onYouParts.push("final headcount & preferences");
   beats.push({
-    icon: "✅", title: "What's on you",
-    text: `The big decisions are the fun part — ${onYouParts.join(", ")}. Everything else — scheduling, follow-ups, paperwork — is ours to manage.`,
+    num: 3, title: "Your Approval",
+    text: `You approve ${onYouParts.slice(0,2).join(" & ").toLowerCase()}${onYouParts.length>2?" & more":""} — the fun part.`,
   });
 
-  // 4. The final stretch — the same buildTimeline() phases, written as a walkthrough instead of bullets
+  // 4. The final stretch — the same buildTimeline() phases, compressed to one line
   if (timeline?.phases?.length) {
     const weekOut = timeline.phases.find(p => p.when === "1 week out");
     const dayBefore = timeline.phases.find(p => p.when === "Day before");
-    const parts = [];
-    if (weekOut) parts.push(`by ${weekOut.date}, ${weekOut.tasks.map(t=>t.toLowerCase()).join(", ")}`);
-    if (dayBefore) parts.push(`the day before (${dayBefore.date}), it's ${dayBefore.tasks.map(t=>t.toLowerCase()).join(", ")}`);
-    if (parts.length) beats.push({ icon: "⏳", title: "The final stretch", text: parts.join("; then ") + "." });
+    const soonest = weekOut || dayBefore;
+    beats.push({ num: 4, title: "Final Prep", text: soonest ? `By ${soonest.date}, vendors get final instructions and everything's prepped.` : "Vendors get final instructions and everything is prepped ahead of time." });
   } else {
-    beats.push({ icon: "⏳", title: "The final stretch", text: "Once a date is set, this fills in with an exact week-by-week countdown — right now there's nothing to schedule against yet." });
+    beats.push({ num: 4, title: "Final Prep", text: "Once a date is set, this fills in with your exact countdown." });
   }
 
-  // 5. Bridge to the day itself — self-contained, doesn't assume page position
-  beats.push({ icon: "🎊", title: "Then, the day itself", text: "Every open item above gets closed out well before this — so on the day, nothing's being figured out live, it's simply happening." });
+  // 5. Bridge to the day itself
+  beats.push({ num: 5, title: "Celebration Day", text: "Everything comes together. Enjoy your celebration!" });
 
   return beats;
 }
@@ -5178,7 +5157,7 @@ export default function OccasionDetail(){
             })()}
 
             <div style={{position:"relative",display:"flex",gap:10}}>
-              <button onClick={back} style={{flex:1,padding:"14px",borderRadius:14,border:`1.5px solid ${gold}30`,background:"#fff",color:gold,fontFamily:font,fontWeight:700,fontSize:13.5,cursor:"pointer"}}>
+              <button onClick={back} style={{flex:1,padding:"14px",borderRadius:14,border:`1.5px solid ${gold}30`,background:"transparent",color:gold,fontFamily:font,fontWeight:700,fontSize:13.5,cursor:"pointer"}}>
                 ← Back
               </button>
               <button onClick={next} style={{flex:2,padding:"14px",borderRadius:14,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontFamily:font,fontWeight:800,fontSize:13.5,cursor:"pointer",boxShadow:`0 6px 20px rgba(196,122,46,0.35)`}}>
@@ -5245,30 +5224,38 @@ export default function OccasionDetail(){
                 are still assembled into one planSections array for the PDF/share-to-chat
                 capture further below, so that output stays exactly as complete as before. */}
             {(()=>{
-            // ── Journey cards — screen 2 of the story. Large, illustrated, numbered stage
-            // cards in one row on desktop (no horizontal scroll), a swipeable carousel on
-            // mobile. A thin connector line threads through the numbered badges to read as
-            // a sequence, not four unrelated boxes.
+            // Simple line-icon set for the journey cards (replaces emoji) — one stroke
+            // icon per beat key, rendered white on the gold circle badge.
+            const JOURNEY_ICON_PATHS={
+              door:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M11 16l4-4-4-4"/><path d="M15 12H3"/><path d="M11 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5"/></svg>,
+              palette:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 0 0 20c1.4 0 2-0.9 2-1.8 0-.5-.2-.9-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1 .9-1.9 2-1.9h2.1C19.3 15.7 21 14 21 11.5 21 6.3 17 2 12 2z"/><circle cx="7.5" cy="10.5" r="1" fill="#fff" stroke="none"/><circle cx="12" cy="7" r="1" fill="#fff" stroke="none"/><circle cx="16" cy="10" r="1" fill="#fff" stroke="none"/></svg>,
+              music:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
+              gift:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C9 3 12 8 12 8z"/><path d="M16.5 8a2.5 2.5 0 0 0 0-5C15 3 12 8 12 8z"/></svg>,
+            };
+            // ── Journey cards — screen 2 of the story. Compact, equal-height stage cards
+            // in one row on desktop (no horizontal scroll), a swipeable carousel on
+            // mobile. A thin connector line threads behind the numbered badges to read as
+            // a sequence, not four unrelated boxes. Short, uniform copy keeps every card
+            // the same size instead of the first looking crowded and the rest empty.
             const renderJourneyCards=(beats)=>(
               <div className="od-journey-row" style={{position:"relative"}}>
                 <style>{`
                   .od-journey-row{display:flex;gap:12px;overflow-x:auto;padding:6px 4px 10px;scroll-snap-type:x proximity;}
-                  .od-journey-card{scroll-snap-align:start;flex:0 0 auto;width:210px;}
+                  .od-journey-card{scroll-snap-align:start;flex:0 0 auto;width:200px;}
                   .od-journey-connector{display:none;}
                   @media (min-width:760px){
-                    .od-journey-row{display:grid;grid-template-columns:repeat(${beats.length},1fr);gap:18px;overflow-x:visible;padding:6px 2px 10px;}
+                    .od-journey-row{display:grid;grid-template-columns:repeat(${beats.length},1fr);gap:16px;overflow-x:visible;padding:6px 2px 10px;}
                     .od-journey-card{width:auto;}
-                    .od-journey-connector{display:block;position:absolute;left:8%;right:8%;top:28px;height:2px;background:linear-gradient(90deg,${gold}55,${gold}22);z-index:0;}
+                    .od-journey-connector{display:block;position:absolute;left:9%;right:9%;top:38px;height:2px;background:linear-gradient(90deg,${gold}55,${gold}22);z-index:0;}
                   }
                 `}</style>
                 <div className="od-journey-connector"/>
                 {beats.map((beat,i)=>(
-                  <div key={i} className="od-journey-card" style={{position:"relative",zIndex:1,borderRadius:18,background:"#fff",border:`1px solid ${border}`,overflow:"hidden"}}>
-                    <div style={{padding:"18px 16px 14px",display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center",background:`linear-gradient(180deg,${gold}0D,transparent)`}}>
-                      <div style={{width:56,height:56,borderRadius:"50%",background:`linear-gradient(135deg,${gold},${lightenHex(gold,0.3)})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,boxShadow:`0 6px 16px ${gold}40`,marginBottom:10}}>{beat.icon}</div>
-                      <div style={{fontSize:9.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.09em"}}>0{i+1} · {beat.title}</div>
-                    </div>
-                    <div style={{padding:"4px 16px 18px",fontSize:12.5,color:ink,lineHeight:1.6,textAlign:"center"}}>{beat.text}</div>
+                  <div key={i} className="od-journey-card" style={{position:"relative",zIndex:1,borderRadius:16,background:"#fff",border:`1px solid ${border}`,padding:"18px 14px 16px",display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center"}}>
+                    <div style={{width:52,height:52,borderRadius:"50%",background:`linear-gradient(135deg,${gold},${lightenHex(gold,0.3)})`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 6px 14px ${gold}40`,marginBottom:10,flexShrink:0}}>{JOURNEY_ICON_PATHS[beat.icon]}</div>
+                    <div style={{fontSize:10,fontWeight:800,color:gold,letterSpacing:"0.12em",marginBottom:3}}>0{i+1}</div>
+                    <div style={{fontSize:13,fontWeight:700,color:ink,marginBottom:6,fontFamily:font}}>{beat.title}</div>
+                    <div style={{fontSize:12,color:muted,lineHeight:1.55}}>{beat.text}</div>
                   </div>
                 ))}
               </div>
@@ -5321,45 +5308,57 @@ export default function OccasionDetail(){
                     .od-prep-timeline{display:flex;flex-direction:column;}
                     .od-prep-step{display:flex;gap:14px;}
                     .od-prep-dotcol{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
-                    .od-prep-connector{width:2px;flex:1;min-height:14px;background:rgba(196,122,46,0.18);}
-                    .od-prep-body{flex:1;padding-bottom:22px;}
+                    .od-prep-connector{width:2px;flex:1;min-height:14px;background:rgba(196,122,46,0.22);}
+                    .od-prep-body{flex:1;padding-bottom:18px;}
                     @media (min-width:860px){
                       .od-prep-timeline{flex-direction:row;align-items:flex-start;}
                       .od-prep-step{flex-direction:column;align-items:center;text-align:center;flex:1;gap:10px;}
                       .od-prep-connector{width:100%;height:2px;min-height:0;}
-                      .od-prep-body{padding-bottom:0;padding:0 8px;}
+                      .od-prep-body{padding-bottom:0;padding:0 10px;}
                     }
                   `}</style>
-                  <div className="od-prep-timeline">
-                    {prep.map((beat,i)=>(
-                      <div key={i} className="od-prep-step">
-                        <div className="od-prep-dotcol">
-                          <div style={{width:34,height:34,borderRadius:"50%",background:`linear-gradient(135deg,${gold},${lightenHex(gold,0.3)})`,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,fontWeight:800,flexShrink:0}}>{beat.icon}</div>
-                          {i<prep.length-1&&<div className="od-prep-connector"/>}
-                        </div>
-                        <div className="od-prep-body">
-                          <div style={{fontSize:9.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.09em",marginBottom:4}}>{beat.title}</div>
-                          <div style={{fontSize:12.5,color:ink,lineHeight:1.6}}>{beat.text}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Who does what — makes the division of responsibility immediately clear */}
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginTop:8}}>
-                    <div style={{borderRadius:16,border:`1.5px solid rgba(196,122,46,0.2)`,background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",padding:"16px 16px 14px"}}>
-                      <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.09em",marginBottom:10,display:"flex",alignItems:"center",gap:6}}><span>🤝</span>Tendr handles</div>
-                      {tendrParts.map((p,i)=>(
-                        <div key={i} style={{display:"flex",gap:8,alignItems:"flex-start",fontSize:12.5,color:ink,lineHeight:1.5,marginBottom:i<tendrParts.length-1?7:0}}>
-                          <span style={{color:gold,flexShrink:0}}>✓</span>{p}
+                  {/* Light panel behind the timeline — visually separates the "how it goes"
+                      sequence from the responsibility cards below it. */}
+                  <div style={{borderRadius:18,background:"linear-gradient(180deg,#FFF8EE,#FFFDF7)",border:`1px solid rgba(196,122,46,0.14)`,padding:"20px 18px 6px"}}>
+                    <div className="od-prep-timeline">
+                      {prep.map((beat,i)=>(
+                        <div key={i} className="od-prep-step">
+                          <div className="od-prep-dotcol">
+                            <div style={{width:30,height:30,borderRadius:"50%",background:`linear-gradient(135deg,${gold},${lightenHex(gold,0.3)})`,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800,flexShrink:0,boxShadow:`0 4px 10px ${gold}40`}}>{beat.num}</div>
+                            {i<prep.length-1&&<div className="od-prep-connector"/>}
+                          </div>
+                          <div className="od-prep-body">
+                            <div style={{fontSize:9.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.09em",marginBottom:4}}>{beat.title}</div>
+                            <div style={{fontSize:12,color:ink,lineHeight:1.5}}>{beat.text}</div>
+                          </div>
                         </div>
                       ))}
                     </div>
-                    <div style={{borderRadius:16,border:`1.5px solid ${border}`,background:"#fff",padding:"16px 16px 14px"}}>
-                      <div style={{fontSize:10,fontWeight:800,color:ink,textTransform:"uppercase",letterSpacing:"0.09em",marginBottom:10,display:"flex",alignItems:"center",gap:6}}><span>✅</span>You decide</div>
+                  </div>
+
+                  {/* Who does what — strong color contrast makes the split immediately clear:
+                      Tendr's side is a solid gold-filled card, the customer's side stays light
+                      with a dark outline, instead of two near-identical pale cards. */}
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginTop:14}}>
+                    <div style={{borderRadius:16,background:`linear-gradient(135deg,${gold},${lightenHex(gold,0.12)})`,padding:"16px 16px 14px",boxShadow:`0 6px 16px ${gold}35`}}>
+                      <div style={{fontSize:10,fontWeight:800,color:"#fff",textTransform:"uppercase",letterSpacing:"0.09em",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        Tendr handles
+                      </div>
+                      {tendrParts.map((p,i)=>(
+                        <div key={i} style={{display:"flex",gap:8,alignItems:"flex-start",fontSize:12,color:"#fff",lineHeight:1.5,marginBottom:i<tendrParts.length-1?7:0}}>
+                          <span style={{flexShrink:0}}>✓</span>{p}
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{borderRadius:16,border:`1.5px solid ${ink}`,background:"#fff",padding:"16px 16px 14px"}}>
+                      <div style={{fontSize:10,fontWeight:800,color:ink,textTransform:"uppercase",letterSpacing:"0.09em",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={ink} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                        You decide
+                      </div>
                       {onYouParts.map((p,i)=>(
-                        <div key={i} style={{display:"flex",gap:8,alignItems:"flex-start",fontSize:12.5,color:ink,lineHeight:1.5,marginBottom:i<onYouParts.length-1?7:0}}>
-                          <span style={{color:muted,flexShrink:0}}>•</span>{p}
+                        <div key={i} style={{display:"flex",gap:8,alignItems:"flex-start",fontSize:12,color:ink,lineHeight:1.5,marginBottom:i<onYouParts.length-1?7:0}}>
+                          <span style={{color:gold,fontWeight:800,flexShrink:0}}>{i+1}.</span>{p}
                         </div>
                       ))}
                     </div>
@@ -5669,7 +5668,7 @@ export default function OccasionDetail(){
                     </motion.div>
                   </AnimatePresence>
                 </div>
-                <div style={{flexShrink:0,width:"100%",maxWidth:1050,padding:"12px 24px calc(14px + env(safe-area-inset-bottom,0px))",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,borderTop:"1px solid rgba(196,122,46,0.12)",background:"#FDFAF5",boxSizing:"border-box"}}>
+                <div style={{flexShrink:0,width:"100%",maxWidth:1050,padding:"12px 24px calc(14px + env(safe-area-inset-bottom,0px))",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,background:"transparent",boxSizing:"border-box"}}>
                   <button onClick={()=>storyIdx>0&&goToStory(storyIdx-1)} disabled={storyIdx===0}
                     style={{padding:"11px 18px",borderRadius:100,border:`1.5px solid ${storyIdx===0?"rgba(28,9,0,0.08)":"rgba(196,122,46,0.3)"}`,background:"#fff",color:storyIdx===0?"rgba(28,9,0,0.2)":gold,fontSize:13,fontWeight:700,cursor:storyIdx===0?"default":"pointer",fontFamily:font}}>
                     ← Back
@@ -5788,7 +5787,7 @@ export default function OccasionDetail(){
       {step>0&&step!==7&&(
         <div className="od-step-footer" style={{flexShrink:0,background:"transparent",padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
           <div style={{maxWidth:680,margin:"0 auto",display:"flex",gap:10,justifyContent:"space-between",alignItems:"center"}}>
-            {step>0&&<button onClick={back} style={{...btnGhost,background:"#fff",boxShadow:"0 4px 14px rgba(28,9,0,0.08)"}}>← Back</button>}
+            {step>0&&<button onClick={back} style={btnGhost}>← Back</button>}
             {step===1&&canNext()?(
               <div style={{display:"flex",flexDirection:"column",gap:8,flex:1}}>
                 <button onClick={()=>{setNotesPromptAction("quickplan");setNotesPromptOpen(true);}} disabled={quickPlanBuilding}
