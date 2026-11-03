@@ -1680,6 +1680,19 @@ function buildEventSummary(occasion, {celebrantName="", guests=20, date="", city
 function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors, vendorPackages, budget, ageGroups=[], selectedActivities=[], customActivities=[], customCatering={}, customDecor={}, celebrantName="", gifts=[], giftQuantities={}, selectedEntryExperiences=[]}) {
   const vLines = vendors.filter(v => ALL_VENDORS.includes(v)).map(v => {
     const pi = vendorPackages[v];
+    // Decorator shows a location -> items breakdown (Entrance, Stage &
+    // Backdrop, etc.) whenever focus areas are set — whether the package is
+    // "Custom" or a real package index (e.g. auto-filled by Quick Plan) —
+    // instead of only when the customer went through the custom-setup flow.
+    if (v === "Decorator") {
+      const areaEntries = Object.entries(customDecor).filter(([,arr])=>arr?.length);
+      if (areaEntries.length) {
+        const items = areaEntries.map(([cat,arr])=>`    ${DECOR_FOCUS_AREAS[cat]?.name||cat}: ${arr.join(", ")}`).join("\n");
+        const pkg = typeof pi === "number" ? getVendorPackages(v, {guests, venueType, theme, ageGroups})[pi] : null;
+        const header = pkg ? `• Decorator — ${pkg.label} (${pkg.price})` : "• Decorator — Custom setup";
+        return `${header}\n${items}`;
+      }
+    }
     if (pi === undefined) return `• ${v} — no package selected`;
     if (pi === "custom") {
       if (v === "Caterer") {
@@ -1687,10 +1700,7 @@ function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors,
         const dishes = Object.entries(customCatering.dishes||{}).filter(([,arr])=>arr.length).map(([cat,arr])=>`    ${cat}: ${arr.join(", ")}`).join("\n");
         return `• Caterer — Custom menu${cui?` (${cui})`:""}${dishes?"\n"+dishes:""}`;
       }
-      if (v === "Decorator") {
-        const items = Object.entries(customDecor).filter(([,arr])=>arr.length).map(([cat,arr])=>`    ${cat}: ${arr.join(", ")}`).join("\n");
-        return `• Decorator — Custom setup${items?"\n"+items:""}`;
-      }
+      if (v === "Decorator") return "• Decorator — Custom setup";
       return `• ${v} — Custom`;
     }
     const pkg = getVendorPackages(v, {guests, venueType, theme, ageGroups})[pi];
@@ -2602,10 +2612,17 @@ export default function OccasionDetail(){
       const pkg=typeof pkgIdx==="number"?pkgs?.[pkgIdx]:null;
       const pkgLabel=pkgIdx==="custom"?"Custom":pkg?.label||null;
       const pkgPrice=pkgIdx==="custom"?null:pkg?.price||null;
-      return{key:`v-${v}`,icon:"🛠️",title:v,sub:pkgLabel,status:hasPkg?"Selected":"Quote required",price:pkgPrice,items:pkg?.items||null,note:pkg?.note||null,onEdit:()=>(ALL_VENDORS.includes(v)?setEditingService(v):setStep(3))};
+      // Decorator gets a location-by-location breakdown (Entrance, Stage &
+      // Backdrop, etc.) instead of — or alongside — the flat package item
+      // list, so the customer sees WHERE each piece of decor goes, not just
+      // a pile of items. Falls back to the plain package items when no
+      // focus areas are set yet (e.g. a "Quote required" row).
+      const locationGroups=(v==="Decorator"&&decorFocusAreas.length)
+        ?decorFocusAreas.map(id=>({location:DECOR_FOCUS_AREAS[id]?.name,items:(customDecor[id]?.length?customDecor[id]:DECOR_FOCUS_AREAS[id]?.items)||[]})).filter(g=>g.location&&g.items.length)
+        :null;
+      return{key:`v-${v}`,icon:"🛠️",title:v,sub:pkgLabel,status:hasPkg?"Selected":"Quote required",price:pkgPrice,items:locationGroups?null:(pkg?.items||null),locationGroups,note:pkg?.note||null,onEdit:()=>(ALL_VENDORS.includes(v)?setEditingService(v):setStep(3))};
     });
     if(theme) serviceRows.push({key:"theme",icon:"🎨",title:theme.name,sub:"Decor style",status:"Selected",price:null,onEdit:()=>setStep(3)});
-    if(decorFocusAreas.length) serviceRows.push({key:"decor-areas",icon:"📍",title:decorFocusAreas.map(id=>DECOR_FOCUS_AREAS[id]?.name).filter(Boolean).join(", "),sub:"Decor focus areas",status:"Selected",price:null,onEdit:()=>setStep(3)});
 
     const entryRows=selectedEntryExperiences.map(id=>{
       const e=getEntryExperienceById(id);
@@ -2674,7 +2691,22 @@ export default function OccasionDetail(){
                       <button onClick={r.onEdit} style={{fontSize:10,fontWeight:700,color:gold,background:"none",border:"none",cursor:"pointer",padding:0,fontFamily:font}}>Edit</button>
                     </div>
                   </div>
-                  {r.items?.length>0?(
+                  {r.locationGroups?.length>0?(
+                    <div style={{margin:"7px 0 1px 44px",display:"flex",flexDirection:"column",gap:8}}>
+                      {r.locationGroups.map((grp,gi)=>(
+                        <div key={gi}>
+                          <div style={{fontSize:10,fontWeight:800,color:gold,marginBottom:3}}>📍 {grp.location}</div>
+                          <ul style={{margin:0,padding:0,listStyle:"none",display:"flex",flexDirection:"column",gap:3}}>
+                            {grp.items.map((it,i)=>(
+                              <li key={i} style={{fontSize:10.5,color:muted,lineHeight:1.4,display:"flex",alignItems:"flex-start",gap:5}}>
+                                <span style={{color:gold,flexShrink:0}}>•</span>{it}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  ):r.items?.length>0?(
                     <ul style={{margin:"7px 0 1px 44px",padding:0,listStyle:"none",display:"flex",flexDirection:"column",gap:3}}>
                       {r.items.map((it,i)=>(
                         <li key={i} style={{fontSize:10.5,color:muted,lineHeight:1.4,display:"flex",alignItems:"flex-start",gap:5}}>
@@ -2906,6 +2938,19 @@ export default function OccasionDetail(){
       svcPackages[v]=popularIdx>=0?popularIdx:Math.min(1,pkgs.length-1);
     });
     if(Object.keys(svcPackages).length) setVendorPackages(svcPackages);
+
+    // When Decorator is one of the auto-picked services, also auto-pick where
+    // the decor actually goes — Entrance and Stage & Backdrop are the two
+    // locations that matter for almost any occasion — so the plan summary
+    // can show a real "location → items" breakdown instead of just a package
+    // name with no sense of where anything is placed.
+    if(svc.includes("Decorator")){
+      const quickDecorAreas=["entrance","stage-backdrop"].filter(id=>DECOR_FOCUS_AREAS[id]);
+      if(quickDecorAreas.length){
+        setDecorFocusAreas(quickDecorAreas);
+        setCustomDecor(Object.fromEntries(quickDecorAreas.map(id=>[id,DECOR_FOCUS_AREAS[id].items])));
+      }
+    }
 
     // Each list below is re-ranked with this occasion's own quick-plan history
     // (applyPlanInsightsBoost) before picking the top ones — a nudge on top of
