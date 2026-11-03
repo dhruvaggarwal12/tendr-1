@@ -208,7 +208,7 @@ function PeopleAlsoGet({ faItems, dispatch, navigate, addActivity }) {
   const activityCards = FUN_ACTIVITIES.slice(0, 5);
 
   return (
-    <div style={{ marginTop: 24, marginBottom: 8 }}>
+    <div style={{ marginTop: 24, marginBottom: 8, background: "#F5EEE5", border: "1px solid rgba(196,122,46,0.12)", borderRadius: 16, padding: "18px 18px 20px" }}>
       <style>{`
         .pag-scroll::-webkit-scrollbar { display: none; }
         .pag-scroll { -ms-overflow-style: none; scrollbar-width: none; }
@@ -220,10 +220,10 @@ function PeopleAlsoGet({ faItems, dispatch, navigate, addActivity }) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, paddingRight: 4 }}>
         <div>
           <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 3px" }}>Often added together</p>
-          <h3 style={{ fontFamily: serif, fontSize: "1.1rem", fontWeight: 400, color: "#1C0A04", margin: 0, lineHeight: 1.2 }}>People Also Get</h3>
+          <h3 style={{ fontFamily: serif, fontSize: "1.1rem", fontWeight: 400, color: "#1C0A04", margin: 0, lineHeight: 1.2 }}>Complete your celebration</h3>
         </div>
         <button onClick={() => navigate("/fun-activities")} style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", background: "none", border: "none", cursor: "pointer", fontFamily: font, padding: 0, textDecoration: "underline", textUnderlineOffset: 2 }}>
-          See all →
+          View all →
         </button>
       </div>
 
@@ -234,31 +234,21 @@ function PeopleAlsoGet({ faItems, dispatch, navigate, addActivity }) {
           const alreadyAdded = faItems.some(i => i.id === act.id);
           return (
             <div key={act.id} className="pag-card" onClick={() => setPaxModal({ type: "activity", item: act })}
-              style={{ flexShrink: 0, width: 150, borderRadius: 14, overflow: "hidden", background: "#FFFCF7", border: "1.5px solid rgba(196,122,46,0.14)", boxShadow: "0 2px 10px rgba(44,26,14,0.07)", cursor: "pointer" }}>
-              <div style={{ height: 110, overflow: "hidden", position: "relative" }}>
+              style={{ flexShrink: 0, width: 140, borderRadius: 14, overflow: "hidden", background: "#fff", border: "1px solid rgba(196,122,46,0.14)", boxShadow: "0 2px 10px rgba(44,26,14,0.06)", cursor: "pointer" }}>
+              <div style={{ height: 115, overflow: "hidden" }}>
                 <img src={act.image} alt={act.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,4,0.55) 0%, transparent 55%)" }} />
-                <span style={{ position: "absolute", bottom: 7, left: 8, fontSize: 10, fontWeight: 800, color: "#FFF8EC", letterSpacing: "0.05em", lineHeight: 1 }}>₹{act.price.toLocaleString("en-IN")}</span>
               </div>
-              <div style={{ padding: "10px 10px 10px" }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "#1C0A04", marginBottom: 4, lineHeight: 1.3 }}>{act.name}</div>
-                <div style={{ fontSize: 10, color: "#9B7450", marginBottom: 8, lineHeight: 1.4 }}>{act.duration} · {act.guests}</div>
+              <div style={{ padding: "9px 10px 10px" }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#1C0A04", marginBottom: 2, lineHeight: 1.3 }}>{act.name}</div>
+                <div style={{ fontSize: 11.5, fontWeight: 800, color: "#C47A2E", marginBottom: 6 }}>₹{act.price.toLocaleString("en-IN")}</div>
                 <button onClick={e => { e.stopPropagation(); if (!alreadyAdded) dispatch(addActivity(act)); }}
                   style={{ width: "100%", padding: "6px 0", borderRadius: 8, border: "none", background: alreadyAdded ? "rgba(196,122,46,0.12)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: alreadyAdded ? "#C47A2E" : "#fff", fontSize: 11, fontWeight: 700, cursor: alreadyAdded ? "default" : "pointer", fontFamily: font, touchAction: "manipulation" }}>
-                  {alreadyAdded ? "✓ Added" : "Quick Add +"}
+                  {alreadyAdded ? "✓ Added" : "Add +"}
                 </button>
               </div>
             </div>
           );
         })}
-        {/* View all card */}
-        <div className="pag-card" onClick={() => navigate("/fun-activities")}
-          style={{ flexShrink: 0, width: 130, borderRadius: 14, border: "1.5px dashed rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.04)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, minHeight: 170 }}>
-          <div style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(196,122,46,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          </div>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textAlign: "center", lineHeight: 1.4, padding: "0 8px" }}>See All Activities</span>
-        </div>
       </div>
 
       {/* Gift Hampers & Cakes row */}
@@ -266,17 +256,13 @@ function PeopleAlsoGet({ faItems, dispatch, navigate, addActivity }) {
       <div className="pag-scroll" style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4 }}>
         {GIFT_HAMPER_CARDS.map(g => (
           <div key={g.id} className="pag-card" onClick={() => setPaxModal({ type: "hamper", item: g })}
-            style={{ flexShrink: 0, width: 150, borderRadius: 14, overflow: "hidden", background: "#FFFCF7", border: "1.5px solid rgba(196,122,46,0.14)", boxShadow: "0 2px 10px rgba(44,26,14,0.07)", cursor: "pointer" }}>
-            <div style={{ height: 110, overflow: "hidden", position: "relative" }}>
+            style={{ flexShrink: 0, width: 140, borderRadius: 14, overflow: "hidden", background: "#fff", border: "1px solid rgba(196,122,46,0.14)", boxShadow: "0 2px 10px rgba(44,26,14,0.06)", cursor: "pointer" }}>
+            <div style={{ height: 115, overflow: "hidden" }}>
               <img src={g.image} alt={g.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,4,0.55) 0%, transparent 55%)" }} />
-              <span style={{ position: "absolute", bottom: 7, left: 8, fontSize: 10, fontWeight: 800, color: "#FFF8EC", letterSpacing: "0.05em", lineHeight: 1 }}>{g.price}</span>
             </div>
-            <div style={{ padding: "10px 10px 10px" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#1C0A04", marginBottom: 4, lineHeight: 1.3 }}>{g.name}</div>
-              <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 8 }}>
-                {g.tags.map(t => <span key={t} style={{ fontSize: 9, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.09)", borderRadius: 100, padding: "2px 7px" }}>{t}</span>)}
-              </div>
+            <div style={{ padding: "9px 10px 10px" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#1C0A04", marginBottom: 2, lineHeight: 1.3 }}>{g.name}</div>
+              <div style={{ fontSize: 11.5, fontWeight: 800, color: "#C47A2E", marginBottom: 6 }}>{g.price}</div>
               <button onClick={e => { e.stopPropagation(); navigate("/gift-hampers-cakes"); }}
                 style={{ width: "100%", padding: "6px 0", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, touchAction: "manipulation" }}>
                 Browse →
@@ -284,14 +270,6 @@ function PeopleAlsoGet({ faItems, dispatch, navigate, addActivity }) {
             </div>
           </div>
         ))}
-        {/* View all hampers card */}
-        <div className="pag-card" onClick={() => navigate("/gift-hampers-cakes")}
-          style={{ flexShrink: 0, width: 130, borderRadius: 14, border: "1.5px dashed rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.04)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, minHeight: 170 }}>
-          <div style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(196,122,46,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          </div>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textAlign: "center", lineHeight: 1.4, padding: "0 8px" }}>See All Hampers</span>
-        </div>
       </div>
 
       {/* Product Quick-View Modal */}
@@ -401,6 +379,7 @@ const BookingReviewPage = () => {
   const [referralInput, setReferralInput] = useState(() => sessionStorage.getItem("wr_referralInput") || "");
   const [referralState, setReferralState] = useState(null);
   const [appliedCode, setAppliedCode] = useState(() => sessionStorage.getItem("wr_appliedCode") || null);
+  const [referralExpanded, setReferralExpanded] = useState(false);
 
   const validateReferral = () => {
     const raw = parseCode(referralInput);
@@ -783,6 +762,12 @@ const BookingReviewPage = () => {
   }
 
   const hasEventDetails = Object.entries(LABEL_MAP).some(([k]) => formData[k]);
+  // Drives whether the 300px sidebar column is reserved at all — a booking with
+  // no event-planning form filled in and no fun activities (e.g. a pure gift
+  // hamper / My Order review) has nothing to put there, and reserving the
+  // column anyway left a huge dead strip of empty space to the left of the
+  // vendor cards.
+  const hasSidebarContent = hasEventDetails || faItems.length > 0;
 
   return (
     <div style={{ minHeight: "100vh", background: "#f8f4ef", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column" }}>
@@ -807,7 +792,9 @@ const BookingReviewPage = () => {
       <BasicSpeedDial />
       <HamburgerNav title="Review & Pay" active="Pay" />
 
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "clamp(16px,4vw,32px) clamp(14px,3vw,24px) 40px", width: "100%", boxSizing: "border-box" }}>
+      {/* Extra bottom clearance (vs. a flat 40px) keeps the final checkout button clear
+          of the globally fixed floating chat button (bottom:22px, ~56px tall). */}
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "clamp(16px,4vw,32px) clamp(14px,3vw,24px) 96px", width: "100%", boxSizing: "border-box" }}>
 
         {/* Page title */}
         <div style={{ marginBottom: 20, display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
@@ -846,20 +833,24 @@ const BookingReviewPage = () => {
           )}
         </div>
 
-        {/* Price pending banner */}
+        {/* Price pending banner — narrower and less dominant than a full-width alert */}
         {anyPriceUnset && (
-          <div style={{ background: "#fffbeb", border: "1.5px solid #fde68a", borderRadius: 14, padding: "14px 20px", marginBottom: 24, display: "flex", gap: 12, alignItems: "flex-start" }}>
-            <span style={{ fontSize: 20, flexShrink: 0 }}>⏳</span>
+          <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 12, padding: "10px 16px", marginBottom: 24, display: "flex", gap: 10, alignItems: "flex-start", maxWidth: 560 }}>
+            <span style={{ fontSize: 16, flexShrink: 0, lineHeight: 1.3 }}>⏳</span>
             <div>
-              <p style={{ fontSize: 14, fontWeight: 700, color: "#C47A2E", margin: "0 0 3px" }}>Pricing in progress — sit tight!</p>
-              <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>Our team is confirming prices with your vendors. You'll be notified once all quotes are ready. You can review vendor details in the meantime.</p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E", margin: "0 0 2px" }}>Pricing in progress — sit tight!</p>
+              <p style={{ fontSize: 12, color: "#9B7450", margin: 0, lineHeight: 1.45 }}>We're confirming prices with your vendors and will notify you once ready.</p>
             </div>
           </div>
         )}
 
-        <div className="booking-review-grid booking-review-main" style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 24, alignItems: "start" }}>
+        <div className="booking-review-grid booking-review-main" style={hasSidebarContent
+          ? { display: "grid", gridTemplateColumns: "300px 1fr", gap: 24, alignItems: "start" }
+          : { display: "grid", gridTemplateColumns: "1fr", gap: 0, alignItems: "start", maxWidth: 760, margin: "0 auto" }
+        }>
 
-          {/* ── LEFT: Sidebar (sticky wrapper) ── */}
+          {/* ── LEFT: Sidebar (sticky wrapper) — only reserved when it has something to show ── */}
+          {hasSidebarContent && (
           <div className="booking-review-sidebar" style={{ position: "sticky", top: 80, display: "flex", flexDirection: "column", gap: 16 }}>
 
             {/* Event Details card — shows whenever event planning form is filled */}
@@ -934,14 +925,8 @@ const BookingReviewPage = () => {
               </div>
             )}
 
-            {/* Fallback if sidebar is completely empty */}
-            {vendorEntries.length === 0 && faItems.length === 0 && (
-              <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", padding: 24 }}>
-                <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>No order details yet.</p>
-              </div>
-            )}
-
           </div>
+          )}
 
           {/* ── RIGHT: Vendor cards grouped by service category ── */}
           <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
@@ -1122,10 +1107,7 @@ const BookingReviewPage = () => {
                           <div style={{ fontSize: 17, fontWeight: 800, color: "#15803d" }}>{formatINR(price)}</div>
                         </>
                       ) : (
-                        <>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "#C47A2E" }}>⏳ Awaiting Quote</div>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: "#9B7450", fontStyle: "italic" }}>Yet to be updated</div>
-                        </>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 100, padding: "3px 10px" }}>⏳ Awaiting Quote</div>
                       )}
                     </div>
                     <ChevronIcon open={isOpen} />
@@ -1340,22 +1322,25 @@ const BookingReviewPage = () => {
             {/* ── People Also Get — horizontal scroll with product cards ── */}
             <PeopleAlsoGet faItems={faItems} dispatch={dispatch} navigate={navigate} addActivity={addActivity} />
 
-            {/* ── Total + Proceed ── inline below People Also Get ── */}
+            {/* ── Total + Proceed ── the checkout: a stronger border than the review cards
+                above signals this is a different, final section of the page ── */}
             <div className="booking-sidebar-proceed"
               style={{
                 background: "#fff",
                 borderRadius: 16,
-                border: "1.5px solid rgba(139,69,19,0.1)",
-                boxShadow: "0 3px 14px rgba(139,69,19,0.06)",
+                border: "1.5px solid rgba(196,122,46,0.22)",
+                boxShadow: "0 4px 20px rgba(139,69,19,0.09)",
                 padding: "20px 22px",
+                marginTop: 20,
               }}
             >
+              <h3 style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 16px" }}>Final Details</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 16 }}>
                 {vendorEntries.map(([serviceType, vendor]) => (
                   <div key={serviceType} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14, color: "#5a3a1a" }}>
                     <span style={{ fontWeight: 500 }}>{isLetUsDoIt ? "Tendr" : (vendor.name || serviceType)}</span>
                     <span style={{ fontWeight: 600, color: prices[serviceType] !== null ? "#2C1A0E" : "#bbb", fontStyle: prices[serviceType] === null ? "italic" : "normal" }}>
-                      {prices[serviceType] !== null ? formatINR(prices[serviceType]) : "Yet to be updated"}
+                      {prices[serviceType] !== null ? formatINR(prices[serviceType]) : "Pending"}
                     </span>
                   </div>
                 ))}
@@ -1368,7 +1353,7 @@ const BookingReviewPage = () => {
                     <div key={plan._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14, color: "#5a3a1a" }}>
                       <span style={{ fontWeight: 500 }}>{planLabel}</span>
                       <span style={{ fontWeight: 600, color: plan.priceFinalized ? "#2C1A0E" : "#bbb", fontStyle: plan.priceFinalized ? "normal" : "italic" }}>
-                        {plan.priceFinalized ? formatINR(plan.quotedPrice) : "Yet to be updated"}
+                        {plan.priceFinalized ? formatINR(plan.quotedPrice) : "Pending"}
                       </span>
                     </div>
                   );
@@ -1502,10 +1487,7 @@ const BookingReviewPage = () => {
                 )}
               </div>
 
-              {/* People Also Get — compact strip in sidebar (desktop) */}
-              <div style={{ margin: "0 0 0" }} />
-
-              {/* Referral code input */}
+              {/* Referral code — a compact expandable row instead of an always-open form */}
               <div style={{ marginBottom: 16 }}>
                 {appliedCode ? (
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: 10, padding: "10px 14px" }}>
@@ -1515,11 +1497,17 @@ const BookingReviewPage = () => {
                     </div>
                     <button onClick={removeReferral} style={{ border: "none", background: "none", color: "#9B7450", fontSize: 13, cursor: "pointer", padding: "4px 8px" }}>✕ Remove</button>
                   </div>
+                ) : !referralExpanded ? (
+                  <button onClick={() => setReferralExpanded(true)}
+                    style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "none", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 10, padding: "9px 14px", cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                    <span style={{ fontSize: 12.5, fontWeight: 600, color: "#9B7450" }}>Have a referral code?</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E" }}>Enter code ›</span>
+                  </button>
                 ) : (
                   <div>
-                    <p style={{ fontSize: 12, fontWeight: 600, color: "#9B7450", margin: "0 0 6px" }}>Have a referral code?</p>
                     <div style={{ display: "flex", gap: 8 }}>
                       <input
+                        autoFocus
                         value={referralInput}
                         onChange={e => { setReferralInput(e.target.value.toUpperCase()); setReferralState(null); }}
                         placeholder="TNDR-XXXXXX"
@@ -1538,7 +1526,7 @@ const BookingReviewPage = () => {
                 )}
               </div>
 
-              {/* Trust badges */}
+              {/* Trust badges — single row */}
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14, justifyContent: "center" }}>
                 {[
                   { icon: "🔒", text: "Secure Payment" },
@@ -1552,19 +1540,20 @@ const BookingReviewPage = () => {
                 ))}
               </div>
 
-              {/* T&C checkbox */}
-              <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 14, padding: "12px 14px", background: "rgba(196,122,46,0.05)", borderRadius: 10, border: `1.5px solid ${tcAgreed ? "rgba(196,122,46,0.35)" : "rgba(196,122,46,0.15)"}` }}>
+              {/* T&C checkbox — larger, easier to click */}
+              <div onClick={() => setTcAgreed(a => !a)} style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 14, padding: "14px", background: "rgba(196,122,46,0.05)", borderRadius: 10, border: `1.5px solid ${tcAgreed ? "rgba(196,122,46,0.35)" : "rgba(196,122,46,0.15)"}`, cursor: "pointer" }}>
                 <input
                   type="checkbox"
                   id="tc-agree"
                   checked={tcAgreed}
                   onChange={e => setTcAgreed(e.target.checked)}
-                  style={{ marginTop: 2, width: 16, height: 16, accentColor: "#C47A2E", flexShrink: 0, cursor: "pointer" }}
+                  onClick={e => e.stopPropagation()}
+                  style={{ marginTop: 1, width: 20, height: 20, accentColor: "#C47A2E", flexShrink: 0, cursor: "pointer" }}
                 />
-                <label htmlFor="tc-agree" style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.5, cursor: "pointer" }}>
+                <label htmlFor="tc-agree" onClick={e => e.stopPropagation()} style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.5, cursor: "pointer" }}>
                   I have read and agree to the{" "}
                   <span
-                    onClick={e => { e.preventDefault(); setShowTcModal(true); }}
+                    onClick={e => { e.preventDefault(); e.stopPropagation(); setShowTcModal(true); }}
                     style={{ color: "#C47A2E", fontWeight: 700, textDecoration: "underline", cursor: "pointer" }}
                   >
                     Terms & Conditions

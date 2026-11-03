@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import HamburgerNav from "../../components/HamburgerNav";
 import DecorAnalyzer from "../../components/DecorAnalyzer";
 import AuthModal from "../../components/AuthModal";
+import tendrLogoImg from "../../assets/logos/tendr-logo-secondary.png";
 import { useChatOverlay } from "../../context/ChatContext";
 import { usePriceEstimator } from "../../context/PriceEstimatorContext";
 import {
@@ -208,7 +209,11 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
         (allServices.Catering || []).forEach((it, idx) => {
           const sel = selectedItems[itemKeyOf("catering", "Catering", idx)];
           if (!sel) return;
-          const t = lineTotal(it, { guestCount: guestBucket.guests, qty: sel.qty });
+          // Narrow this item's own basic-to-premium catalog span to its middle
+          // slice — same technique as the main meal above — so summing several
+          // wide catalog ranges doesn't compound into an unrealistically wide total.
+          const nr = narrowRange(it.min, it.max, 0.5);
+          const t = lineTotal({ ...it, min: nr.min, max: nr.max }, { guestCount: guestBucket.guests, qty: sel.qty });
           min += t.min; max += t.max; extraCount++;
         });
         if (extraCount) parts.push(`+${extraCount} extra${extraCount === 1 ? "" : "s"}`);
@@ -222,7 +227,11 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
         (allServices[rawCat] || []).forEach((item, idx) => {
           const sel = selectedItems[itemKeyOf(key, rawCat, idx)];
           if (!sel) return;
-          const t = lineTotal(item, { guestCount: guestBucket.guests, qty: sel.qty });
+          // Same middle-slice narrowing as catering above — keeps the headline
+          // total grounded in a realistic band instead of the full tier-to-tier
+          // (basic-to-premium) spread of each catalog row.
+          const nr = narrowRange(item.min, item.max, 0.5);
+          const t = lineTotal({ ...item, min: nr.min, max: nr.max }, { guestCount: guestBucket.guests, qty: sel.qty });
           min += t.min; max += t.max;
           pickedNames.push(item.service);
         });
@@ -458,7 +467,6 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
                 guestCount={guestBucket?.guests || 1}
                 onToggle={(rawCat, idx) => toggleSelectedItem("catering", rawCat, idx, 1)}
                 onSetQty={(rawCat, idx, qty) => setItemQty("catering", rawCat, idx, qty)}
-                showPrices={false}
               />
             </div>
           </StepCard>
@@ -540,6 +548,7 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
                 shown to the customer directly (keeps the interactive Edit controls etc.
                 out of the PDF). */}
             <div ref={slipRef} style={{ position: "fixed", left: -9999, top: 0, width: 580, background: "#fff", padding: 28, fontFamily: font }}>
+              <img src={tendrLogoImg} alt="Tendr" style={{ height: 24, marginBottom: 14, display: "block" }} />
               <div style={{ fontSize: 11, fontWeight: 800, color: GOLD, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>Tendr · Price Estimate Slip</div>
               <div style={{ fontSize: 22, fontWeight: 900, color: "#2C1A0E", marginBottom: 2 }}>{occasion}</div>
               <div style={{ fontSize: 12, color: "#8a6a4a", marginBottom: 18 }}>
@@ -894,9 +903,14 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
           ) : (
             <>
               <button onClick={() => { setPostStage("idle"); setSelectedPackageKey(null); setStep(2); }} style={navBtnStyle}>← Edit requirements</button>
-              <button onClick={() => { setBookingForm((f) => ({ ...f, place: f.place || city || "" })); setBookingFormOpen(true); }} style={primaryBtnStyle}>
-                Book vendors for this →
-              </button>
+              {/* Opened inline to finalise a budget number (onFinalise set) — "Yes, use
+                  this" above already does the job this button would do, and actual
+                  vendor booking happens later in that flow, not from this popup. */}
+              {!onFinalise && (
+                <button onClick={() => { setBookingForm((f) => ({ ...f, place: f.place || city || "" })); setBookingFormOpen(true); }} style={primaryBtnStyle}>
+                  Book vendors for this →
+                </button>
+              )}
             </>
           )}
         </div>
@@ -950,6 +964,31 @@ function Chip({ checked, onClick, label }) {
   );
 }
 
+// Most ticked items are a one-off (a backdrop, a counter, an entrance setup) — showing
+// a +/- stepper on every single one by default reads as "why is it asking me this?".
+// So it starts as a plain "Need more than 1?" link and only becomes a stepper once
+// the customer actually says yes (or already has qty > 1 from a previous edit).
+function QtyControl({ qty, onDec, onInc, totalLabel }) {
+  const [open, setOpen] = useState(qty > 1);
+  if (!open) {
+    return (
+      <button onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+        style={{ fontSize: 11, fontWeight: 600, color: GOLD, background: "none", border: "none", cursor: "pointer", padding: 0, textDecoration: "underline", fontFamily: font }}>
+        Need more than 1?
+      </button>
+    );
+  }
+  return (
+    <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <span style={{ fontSize: 11, color: "#aaa" }}>qty</span>
+      <button onClick={onDec} style={qtyBtnStyle}>−</button>
+      <span style={{ fontSize: 12.5, fontWeight: 700, minWidth: 18, textAlign: "center" }}>{qty}</span>
+      <button onClick={onInc} style={qtyBtnStyle}>+</button>
+      {totalLabel}
+    </div>
+  );
+}
+
 // The actual "what do you want in this category" question: every real catalog row
 // for the category, as a plain tick list — no tiers, no pre-ticked picks.
 function ItemChecklist({ rows, simpleKey, selected, guestCount, onToggle, onSetQty, showPrices = true }) {
@@ -981,13 +1020,12 @@ function ItemChecklist({ rows, simpleKey, selected, guestCount, onToggle, onSetQ
                   <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E" }}>× {guestCount} guests = {formatINR(t.min)}–{formatINR(t.max)}</span>
                 )}
                 {checked && !perGuest && (
-                  <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontSize: 11, color: "#aaa" }}>qty</span>
-                    <button onClick={() => onSetQty(rawCat, idx, (sel.qty ?? 1) - 1)} style={qtyBtnStyle}>−</button>
-                    <span style={{ fontSize: 12.5, fontWeight: 700, minWidth: 18, textAlign: "center" }}>{sel.qty ?? 1}</span>
-                    <button onClick={() => onSetQty(rawCat, idx, (sel.qty ?? 1) + 1)} style={qtyBtnStyle}>+</button>
-                    {showPrices && <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E" }}>= {formatINR(t.min)}–{formatINR(t.max)}</span>}
-                  </div>
+                  <QtyControl
+                    qty={sel.qty ?? 1}
+                    onDec={() => onSetQty(rawCat, idx, (sel.qty ?? 1) - 1)}
+                    onInc={() => onSetQty(rawCat, idx, (sel.qty ?? 1) + 1)}
+                    totalLabel={showPrices ? <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E" }}>= {formatINR(t.min)}–{formatINR(t.max)}</span> : null}
+                  />
                 )}
               </div>
             </div>
