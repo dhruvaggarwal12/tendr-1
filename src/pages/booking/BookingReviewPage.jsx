@@ -45,6 +45,7 @@ const vendorPrice = (vendor) => {
 };
 
 const formatINR = (n) => "Rs." + Number(n).toLocaleString("en-IN");
+const SERIF = "'Cormorant Garamond', Georgia, serif";
 
 const LABEL_MAP = {
   eventName:      "Event Name",
@@ -143,15 +144,15 @@ function TnCModal({ onClose, vendorTypes }) {
         zIndex: 10201, width: "min(92vw, 560px)", maxHeight: "80vh",
         background: "#FFFCF5", borderRadius: 20, display: "flex", flexDirection: "column",
         boxShadow: "0 32px 80px rgba(44,26,14,0.25)", fontFamily: font,
-        border: "1px solid rgba(196,122,46,0.2)",
+        border: "1px solid rgba(201,135,58,0.2)",
       }}>
         {/* Header */}
-        <div style={{ padding: "18px 22px 14px", borderBottom: "1px solid rgba(196,122,46,0.12)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
+        <div style={{ padding: "18px 22px 14px", borderBottom: "1px solid rgba(201,135,58,0.12)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
           <div>
             <div style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E" }}>Terms & Conditions</div>
             <div style={{ fontSize: 11, color: "#9B7450", marginTop: 2 }}>Please read before confirming your booking</div>
           </div>
-          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: "50%", border: "1px solid rgba(196,122,46,0.2)", background: "transparent", color: "#9B7450", fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: "50%", border: "1px solid rgba(201,135,58,0.2)", background: "transparent", color: "#9B7450", fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
         </div>
 
         {/* Scrollable content */}
@@ -168,20 +169,20 @@ function TnCModal({ onClose, vendorTypes }) {
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {section.points.map((pt, i) => (
                     <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                      <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#C47A2E", flexShrink: 0, marginTop: 7 }} />
+                      <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#C9873A", flexShrink: 0, marginTop: 7 }} />
                       <span style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.6 }}>{pt}</span>
                     </div>
                   ))}
                 </div>
-                {idx < relevantKeys.length - 1 && <div style={{ height: 1, background: "rgba(196,122,46,0.1)", marginTop: 20 }} />}
+                {idx < relevantKeys.length - 1 && <div style={{ height: 1, background: "rgba(201,135,58,0.1)", marginTop: 20 }} />}
               </div>
             );
           })}
         </div>
 
         {/* Footer */}
-        <div style={{ padding: "14px 22px", borderTop: "1px solid rgba(196,122,46,0.12)", flexShrink: 0 }}>
-          <button onClick={onClose} style={{ width: "100%", padding: "11px", borderRadius: 11, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+        <div style={{ padding: "14px 22px", borderTop: "1px solid rgba(201,135,58,0.12)", flexShrink: 0 }}>
+          <button onClick={onClose} style={{ width: "100%", padding: "11px", borderRadius: 11, border: "none", background: "linear-gradient(135deg,#C9873A,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
             Got it
           </button>
         </div>
@@ -208,7 +209,7 @@ function PeopleAlsoGet({ faItems, dispatch, navigate, addActivity }) {
   const activityCards = FUN_ACTIVITIES.slice(0, 5);
 
   return (
-    <div style={{ marginTop: 24, marginBottom: 8, background: "#F5EEE5", border: "1px solid rgba(196,122,46,0.12)", borderRadius: 16, padding: "18px 18px 20px" }}>
+    <div style={{ marginTop: 40, marginBottom: 8, background: "#F5EEE5", border: "1px solid rgba(201,135,58,0.12)", borderRadius: 16, padding: "20px 18px 22px" }}>
       <style>{`
         .pag-scroll::-webkit-scrollbar { display: none; }
         .pag-scroll { -ms-overflow-style: none; scrollbar-width: none; }
@@ -216,13 +217,14 @@ function PeopleAlsoGet({ faItems, dispatch, navigate, addActivity }) {
         .pag-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(44,26,14,0.13) !important; }
       `}</style>
 
-      {/* Section header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, paddingRight: 4 }}>
+      {/* Section header — zone 2 of the page */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16, paddingRight: 4, gap: 12 }}>
         <div>
-          <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 3px" }}>Often added together</p>
-          <h3 style={{ fontFamily: serif, fontSize: "1.1rem", fontWeight: 400, color: "#1C0A04", margin: 0, lineHeight: 1.2 }}>Complete your celebration</h3>
+          <p style={{ fontSize: 10.5, fontWeight: 700, color: "#C9873A", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 4px" }}>02 — Optional Additions</p>
+          <h3 style={{ fontFamily: serif, fontSize: 24, fontWeight: 600, color: "#1C0A04", margin: "0 0 4px", lineHeight: 1.2 }}>Make your celebration extra special</h3>
+          <p style={{ fontSize: 12.5, color: "#8a6a4a", margin: 0 }}>Discover a few more things to make the day memorable.</p>
         </div>
-        <button onClick={() => navigate("/fun-activities")} style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", background: "none", border: "none", cursor: "pointer", fontFamily: font, padding: 0, textDecoration: "underline", textUnderlineOffset: 2 }}>
+        <button onClick={() => navigate("/fun-activities")} style={{ fontSize: 11, fontWeight: 700, color: "#C9873A", background: "none", border: "none", cursor: "pointer", fontFamily: font, padding: 0, textDecoration: "underline", textUnderlineOffset: 2, flexShrink: 0, whiteSpace: "nowrap", marginTop: 2 }}>
           View all →
         </button>
       </div>
@@ -234,15 +236,15 @@ function PeopleAlsoGet({ faItems, dispatch, navigate, addActivity }) {
           const alreadyAdded = faItems.some(i => i.id === act.id);
           return (
             <div key={act.id} className="pag-card" onClick={() => setPaxModal({ type: "activity", item: act })}
-              style={{ flexShrink: 0, width: 140, borderRadius: 14, overflow: "hidden", background: "#fff", border: "1px solid rgba(196,122,46,0.14)", boxShadow: "0 2px 10px rgba(44,26,14,0.06)", cursor: "pointer" }}>
+              style={{ flexShrink: 0, width: 140, borderRadius: 14, overflow: "hidden", background: "#fff", border: "1px solid rgba(201,135,58,0.14)", boxShadow: "0 2px 10px rgba(44,26,14,0.06)", cursor: "pointer" }}>
               <div style={{ height: 115, overflow: "hidden" }}>
                 <img src={act.image} alt={act.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
               </div>
               <div style={{ padding: "9px 10px 10px" }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: "#1C0A04", marginBottom: 2, lineHeight: 1.3 }}>{act.name}</div>
-                <div style={{ fontSize: 11.5, fontWeight: 800, color: "#C47A2E", marginBottom: 6 }}>₹{act.price.toLocaleString("en-IN")}</div>
+                <div style={{ fontSize: 11.5, fontWeight: 800, color: "#C9873A", marginBottom: 6 }}>₹{act.price.toLocaleString("en-IN")}</div>
                 <button onClick={e => { e.stopPropagation(); if (!alreadyAdded) dispatch(addActivity(act)); }}
-                  style={{ width: "100%", padding: "6px 0", borderRadius: 8, border: "none", background: alreadyAdded ? "rgba(196,122,46,0.12)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: alreadyAdded ? "#C47A2E" : "#fff", fontSize: 11, fontWeight: 700, cursor: alreadyAdded ? "default" : "pointer", fontFamily: font, touchAction: "manipulation" }}>
+                  style={{ width: "100%", padding: "6px 0", borderRadius: 8, border: "none", background: alreadyAdded ? "rgba(201,135,58,0.12)" : "linear-gradient(135deg,#C9873A,#CCAB4A)", color: alreadyAdded ? "#C9873A" : "#fff", fontSize: 11, fontWeight: 700, cursor: alreadyAdded ? "default" : "pointer", fontFamily: font, touchAction: "manipulation" }}>
                   {alreadyAdded ? "✓ Added" : "Add +"}
                 </button>
               </div>
@@ -256,15 +258,15 @@ function PeopleAlsoGet({ faItems, dispatch, navigate, addActivity }) {
       <div className="pag-scroll" style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4 }}>
         {GIFT_HAMPER_CARDS.map(g => (
           <div key={g.id} className="pag-card" onClick={() => setPaxModal({ type: "hamper", item: g })}
-            style={{ flexShrink: 0, width: 140, borderRadius: 14, overflow: "hidden", background: "#fff", border: "1px solid rgba(196,122,46,0.14)", boxShadow: "0 2px 10px rgba(44,26,14,0.06)", cursor: "pointer" }}>
+            style={{ flexShrink: 0, width: 140, borderRadius: 14, overflow: "hidden", background: "#fff", border: "1px solid rgba(201,135,58,0.14)", boxShadow: "0 2px 10px rgba(44,26,14,0.06)", cursor: "pointer" }}>
             <div style={{ height: 115, overflow: "hidden" }}>
               <img src={g.image} alt={g.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
             </div>
             <div style={{ padding: "9px 10px 10px" }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: "#1C0A04", marginBottom: 2, lineHeight: 1.3 }}>{g.name}</div>
-              <div style={{ fontSize: 11.5, fontWeight: 800, color: "#C47A2E", marginBottom: 6 }}>{g.price}</div>
+              <div style={{ fontSize: 11.5, fontWeight: 800, color: "#C9873A", marginBottom: 6 }}>{g.price}</div>
               <button onClick={e => { e.stopPropagation(); navigate("/gift-hampers-cakes"); }}
-                style={{ width: "100%", padding: "6px 0", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, touchAction: "manipulation" }}>
+                style={{ width: "100%", padding: "6px 0", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C9873A,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, touchAction: "manipulation" }}>
                 Browse →
               </button>
             </div>
@@ -298,7 +300,7 @@ function PeopleAlsoGet({ faItems, dispatch, navigate, addActivity }) {
                 <>
                   <div style={{ display: "flex", gap: 12, marginBottom: 14 }}>
                     {[{ label: "Duration", val: paxModal.item.duration }, { label: "Guests", val: paxModal.item.guests }].map(({ label, val }) => (
-                      <div key={label} style={{ flex: 1, background: "rgba(196,122,46,0.07)", borderRadius: 10, padding: "8px 10px" }}>
+                      <div key={label} style={{ flex: 1, background: "rgba(201,135,58,0.07)", borderRadius: 10, padding: "8px 10px" }}>
                         <div style={{ fontSize: 9, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>{label}</div>
                         <div style={{ fontSize: 12, fontWeight: 700, color: "#1C0A04" }}>{val}</div>
                       </div>
@@ -307,11 +309,11 @@ function PeopleAlsoGet({ faItems, dispatch, navigate, addActivity }) {
                   <p style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.65, margin: "0 0 14px" }}>{paxModal.item.desc}</p>
                   {paxModal.item.includes?.length > 0 && (
                     <div style={{ marginBottom: 14 }}>
-                      <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 8px" }}>What's included</p>
+                      <p style={{ fontSize: 10, fontWeight: 700, color: "#C9873A", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 8px" }}>What's included</p>
                       <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                         {paxModal.item.includes.map((inc, i) => (
                           <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12, color: "#4A2C0E" }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><polyline points="20 6 9 17 4 12"/></svg>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9873A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><polyline points="20 6 9 17 4 12"/></svg>
                             {inc}
                           </div>
                         ))}
@@ -323,7 +325,7 @@ function PeopleAlsoGet({ faItems, dispatch, navigate, addActivity }) {
               {paxModal.type === "hamper" && (
                 <>
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
-                    {paxModal.item.tags.map(t => <span key={t} style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 100, padding: "3px 10px", border: "1px solid rgba(196,122,46,0.2)" }}>{t}</span>)}
+                    {paxModal.item.tags.map(t => <span key={t} style={{ fontSize: 10, fontWeight: 700, color: "#C9873A", background: "rgba(201,135,58,0.1)", borderRadius: 100, padding: "3px 10px", border: "1px solid rgba(201,135,58,0.2)" }}>{t}</span>)}
                   </div>
                   <p style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.65, margin: "0 0 8px" }}>{paxModal.item.desc}</p>
                   <p style={{ fontSize: 12, color: "#9B7450", margin: 0 }}>Customisation available. Delivery across Delhi NCR.</p>
@@ -331,24 +333,24 @@ function PeopleAlsoGet({ faItems, dispatch, navigate, addActivity }) {
               )}
             </div>
             {/* Footer CTA */}
-            <div style={{ padding: "12px 20px", paddingBottom: "max(16px, env(safe-area-inset-bottom))", borderTop: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
+            <div style={{ padding: "12px 20px", paddingBottom: "max(16px, env(safe-area-inset-bottom))", borderTop: "1px solid rgba(201,135,58,0.1)", flexShrink: 0 }}>
               {paxModal.type === "activity" ? (() => {
                 const alreadyAdded = false; // simplified — full form handled on activities page
                 return (
                   <div style={{ display: "flex", gap: 8 }}>
                     <button onClick={() => { dispatch(addActivity(paxModal.item)); setPaxModal(null); }}
-                      style={{ flex: 1, padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, touchAction: "manipulation" }}>
+                      style={{ flex: 1, padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C9873A,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, touchAction: "manipulation" }}>
                       Add to Event
                     </button>
                     <button onClick={() => navigate("/fun-activities")}
-                      style={{ padding: "12px 16px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                      style={{ padding: "12px 16px", borderRadius: 12, border: "1.5px solid rgba(201,135,58,0.3)", background: "#fff", color: "#C9873A", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
                       See All
                     </button>
                   </div>
                 );
               })() : (
                 <button onClick={() => { setPaxModal(null); navigate("/gift-hampers-cakes"); }}
-                  style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, touchAction: "manipulation" }}>
+                  style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C9873A,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, touchAction: "manipulation" }}>
                   Browse Gift Hampers →
                 </button>
               )}
@@ -743,7 +745,7 @@ const BookingReviewPage = () => {
 
   if (vendorEntries.length === 0 && faItems.length === 0) {
     return (
-      <div style={{ minHeight: "100vh", background: "#f8f4ef", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column" }}>
+      <div style={{ minHeight: "100vh", background: "#F9F6F1", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column" }}>
         <BasicSpeedDial />
         <HamburgerNav title="Review & Pay" active="Pay" />
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, color: "#9B7450" }}>
@@ -752,7 +754,7 @@ const BookingReviewPage = () => {
           <p style={{ fontSize: 15, margin: 0 }}>Finalise a vendor, add gift hampers or fun activities to your cart.</p>
           <button
             onClick={() => navigate(-1)}
-            style={{ marginTop: 8, padding: "10px 28px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+            style={{ marginTop: 8, padding: "10px 28px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #C9873A, #CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
           >
             Go Back
           </button>
@@ -770,7 +772,7 @@ const BookingReviewPage = () => {
   const hasSidebarContent = hasEventDetails || faItems.length > 0;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f8f4ef", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", background: "#F9F6F1", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`
         @media (max-width: 768px) {
           .booking-review-grid {
@@ -805,7 +807,7 @@ const BookingReviewPage = () => {
             >
               ← Back
             </button>
-            <h1 style={{ fontSize: 26, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px" }}>Review & Book</h1>
+            <h1 style={{ fontFamily: SERIF, fontSize: 28, fontWeight: 600, color: "#2C1A0E", margin: "0 0 4px" }}>Review & Book</h1>
             <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>Review your event details and finalised vendors before confirming.</p>
           </div>
           {vendorEntries.length > 0 && (
@@ -815,15 +817,15 @@ const BookingReviewPage = () => {
               style={{
                 display: "flex", alignItems: "center", gap: 7,
                 padding: "9px 18px", borderRadius: 12,
-                border: "1.5px solid rgba(196,122,46,0.35)",
-                background: "#fff", color: "#C47A2E",
+                border: "1.5px solid rgba(201,135,58,0.35)",
+                background: "#fff", color: "#C9873A",
                 fontSize: 13, fontWeight: 700, cursor: pdfLoading ? "wait" : "pointer",
                 fontFamily: "'Outfit', sans-serif",
-                boxShadow: "0 2px 8px rgba(196,122,46,0.1)",
+                boxShadow: "0 2px 8px rgba(201,135,58,0.1)",
                 transition: "all 0.18s", flexShrink: 0, opacity: pdfLoading ? 0.7 : 1,
               }}
-              onMouseEnter={e => { if (!pdfLoading) { e.currentTarget.style.background = "linear-gradient(135deg,#C47A2E,#CCAB4A)"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.border = "1.5px solid transparent"; }}}
-              onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; e.currentTarget.style.border = "1.5px solid rgba(196,122,46,0.35)"; }}
+              onMouseEnter={e => { if (!pdfLoading) { e.currentTarget.style.background = "linear-gradient(135deg,#C9873A,#CCAB4A)"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.border = "1.5px solid transparent"; }}}
+              onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C9873A"; e.currentTarget.style.border = "1.5px solid rgba(201,135,58,0.35)"; }}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
@@ -832,17 +834,6 @@ const BookingReviewPage = () => {
             </button>
           )}
         </div>
-
-        {/* Price pending banner — narrower and less dominant than a full-width alert */}
-        {anyPriceUnset && (
-          <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 12, padding: "10px 16px", marginBottom: 24, display: "flex", gap: 10, alignItems: "flex-start", maxWidth: 560 }}>
-            <span style={{ fontSize: 16, flexShrink: 0, lineHeight: 1.3 }}>⏳</span>
-            <div>
-              <p style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E", margin: "0 0 2px" }}>Pricing in progress — sit tight!</p>
-              <p style={{ fontSize: 12, color: "#9B7450", margin: 0, lineHeight: 1.45 }}>We're confirming prices with your vendors and will notify you once ready.</p>
-            </div>
-          </div>
-        )}
 
         <div className="booking-review-grid booking-review-main" style={hasSidebarContent
           ? { display: "grid", gridTemplateColumns: "300px 1fr", gap: 24, alignItems: "start" }
@@ -857,7 +848,7 @@ const BookingReviewPage = () => {
             {hasEventDetails && (
               <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", padding: 24 }}>
                 <h2 style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", borderRadius: 8, width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>📝</span>
+                  <span style={{ background: "linear-gradient(135deg, #C9873A, #CCAB4A)", borderRadius: 8, width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>📝</span>
                   Event Details
                 </h2>
                 <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
@@ -878,7 +869,7 @@ const BookingReviewPage = () => {
                         {Object.entries(categoryBudgets).map(([cat, amt]) => (
                           <div key={cat} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#2C1A0E" }}>
                             <span style={{ fontWeight: 500 }}>{cat}</span>
-                            <span style={{ fontWeight: 700, color: "#C47A2E" }}>{fmtBudget(amt)}</span>
+                            <span style={{ fontWeight: 700, color: "#C9873A" }}>{fmtBudget(amt)}</span>
                           </div>
                         ))}
                       </div>
@@ -892,17 +883,17 @@ const BookingReviewPage = () => {
             {faItems.length > 0 && (
               <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", padding: 20 }}>
                 <h2 style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", margin: "0 0 14px", display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", borderRadius: 8, width: 24, height: 24, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>🎭</span>
+                  <span style={{ background: "linear-gradient(135deg, #C9873A, #CCAB4A)", borderRadius: 8, width: 24, height: 24, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>🎭</span>
                   Fun Activities
                 </h2>
                 {faItems.map((item, idx) => (
-                  <div key={item.id} style={{ marginBottom: idx < faItems.length - 1 ? 14 : 0, paddingBottom: idx < faItems.length - 1 ? 14 : 0, borderBottom: idx < faItems.length - 1 ? "1px solid rgba(196,122,46,0.1)" : "none" }}>
+                  <div key={item.id} style={{ marginBottom: idx < faItems.length - 1 ? 14 : 0, paddingBottom: idx < faItems.length - 1 ? 14 : 0, borderBottom: idx < faItems.length - 1 ? "1px solid rgba(201,135,58,0.1)" : "none" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{item.emoji} {item.name}</span>
-                      {item.totalPrice > 0 && <span style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E", flexShrink: 0, marginLeft: 6 }}>₹{Number(item.totalPrice).toLocaleString("en-IN")}</span>}
+                      {item.totalPrice > 0 && <span style={{ fontSize: 13, fontWeight: 800, color: "#C9873A", flexShrink: 0, marginLeft: 6 }}>₹{Number(item.totalPrice).toLocaleString("en-IN")}</span>}
                     </div>
                     {item.form ? (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 3, fontSize: 12, color: "#9B7450", background: "#f8f4ef", borderRadius: 8, padding: "8px 10px", lineHeight: 1.55 }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 3, fontSize: 12, color: "#9B7450", background: "#F9F6F1", borderRadius: 8, padding: "8px 10px", lineHeight: 1.55 }}>
                         {item.form.eventType && <span>🎉 {item.form.eventType}</span>}
                         {item.form.date && <span>📅 {item.form.date}</span>}
                         {item.form.time && <span>⏰ {item.form.time}</span>}
@@ -917,7 +908,7 @@ const BookingReviewPage = () => {
                   </div>
                 ))}
                 {faTotal > 0 && faItems.length > 1 && (
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 800, color: "#C47A2E", borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 8, marginTop: 10 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 800, color: "#C9873A", borderTop: "1px solid rgba(201,135,58,0.15)", paddingTop: 8, marginTop: 10 }}>
                     <span>Activities Total</span>
                     <span>₹{faTotal.toLocaleString("en-IN")}</span>
                   </div>
@@ -931,6 +922,22 @@ const BookingReviewPage = () => {
           {/* ── RIGHT: Vendor cards grouped by service category ── */}
           <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
 
+            {/* Zone 1 — the booking review itself */}
+            <div style={{ marginBottom: 18 }}>
+              <p style={{ fontSize: 10.5, fontWeight: 700, color: "#C9873A", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 4px" }}>01 — Your Booking</p>
+              <h2 style={{ fontFamily: SERIF, fontSize: 24, fontWeight: 600, color: "#2C1A0E", margin: "0 0 14px" }}>Review your selected services</h2>
+              {/* Price pending banner — narrower and less dominant than a full-width alert */}
+              {anyPriceUnset && (
+                <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 12, padding: "10px 16px", display: "flex", gap: 10, alignItems: "flex-start", maxWidth: 560 }}>
+                  <span style={{ fontSize: 16, flexShrink: 0, lineHeight: 1.3 }}>⏳</span>
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "#C9873A", margin: "0 0 2px" }}>Pricing in progress — sit tight!</p>
+                    <p style={{ fontSize: 12, color: "#9B7450", margin: 0, lineHeight: 1.45 }}>We're confirming prices with your vendors and will notify you once ready.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* ── Smart Plan breakdown — replaces per-vendor cards ── */}
             {isSmartPlan && (
               <div style={{ marginBottom: 20 }}>
@@ -940,12 +947,12 @@ const BookingReviewPage = () => {
                 </div>
                 <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 3px 14px rgba(139,69,19,0.06)", overflow: "hidden" }}>
                   {smartPlanSlots.length > 0 ? smartPlanSlots.map((slot, i) => (
-                    <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: i < smartPlanSlots.length - 1 ? "1px solid rgba(196,122,46,0.08)" : "none" }}>
+                    <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: i < smartPlanSlots.length - 1 ? "1px solid rgba(201,135,58,0.08)" : "none" }}>
                       <div>
                         <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{slot.category}</div>
                         {slot.vendorName && <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>{slot.vendorName}</div>}
                       </div>
-                      <div style={{ fontSize: 15, fontWeight: 800, color: "#C47A2E" }}>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: "#C9873A" }}>
                         {slot.estimatedCost ? `₹${Number(slot.estimatedCost).toLocaleString("en-IN")}` : "TBC"}
                       </div>
                     </div>
@@ -955,7 +962,7 @@ const BookingReviewPage = () => {
                     </div>
                   )}
                   {/* Pricing note */}
-                  <div style={{ background: "rgba(196,122,46,0.04)", padding: "10px 18px", borderTop: "1px solid rgba(196,122,46,0.08)" }}>
+                  <div style={{ background: "rgba(201,135,58,0.04)", padding: "10px 18px", borderTop: "1px solid rgba(201,135,58,0.08)" }}>
                     <p style={{ fontSize: 11, color: "#9B7450", margin: 0, lineHeight: 1.5 }}>
                       💡 These are estimated costs. Final prices will be confirmed by the Tendr team before payment.
                     </p>
@@ -977,7 +984,7 @@ const BookingReviewPage = () => {
 
                   {/* Category partition + heading */}
                   {catIdx > 0 && (
-                    <div style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(196,122,46,0.3),transparent)", margin: "0 0 18px" }} />
+                    <div style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(201,135,58,0.3),transparent)", margin: "0 0 18px" }} />
                   )}
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                     <span style={{ fontSize: 20 }}>{SERVICE_ICONS[serviceType] || "🛎️"}</span>
@@ -999,9 +1006,9 @@ const BookingReviewPage = () => {
                 >
                   {/* Multi-vendor selector — shown when category has more than 1 vendor */}
                   {multipleVendors && (
-                    <div style={{ background: "rgba(196,122,46,0.04)", borderBottom: "1px solid rgba(196,122,46,0.1)", padding: "10px 18px" }}>
+                    <div style={{ background: "rgba(201,135,58,0.04)", borderBottom: "1px solid rgba(201,135,58,0.1)", padding: "10px 18px" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#C9873A", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                           Select 1 {serviceType}
                         </span>
                         <span style={{ fontSize: 11, fontWeight: 600, color: "#9B7450" }}>
@@ -1018,11 +1025,11 @@ const BookingReviewPage = () => {
                             <div
                               key={vid}
                               onClick={() => selectVendorForCat(serviceType, vid)}
-                              style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(196,122,46,0.15)"}`, background: isSelected ? "rgba(196,122,46,0.06)" : "#fff", cursor: "pointer", transition: "all 0.15s" }}
+                              style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${isSelected ? "#C9873A" : "rgba(201,135,58,0.15)"}`, background: isSelected ? "rgba(201,135,58,0.06)" : "#fff", cursor: "pointer", transition: "all 0.15s" }}
                             >
                               {/* Radio button */}
-                              <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${isSelected ? "#C47A2E" : "#ddd"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-                                {isSelected && <div style={{ width: 9, height: 9, borderRadius: "50%", background: "#C47A2E" }} />}
+                              <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${isSelected ? "#C9873A" : "#ddd"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+                                {isSelected && <div style={{ width: 9, height: 9, borderRadius: "50%", background: "#C9873A" }} />}
                               </div>
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -1069,7 +1076,7 @@ const BookingReviewPage = () => {
                     }}
                   >
                     {isLetUsDoIt ? (
-                      <div style={{ width: 52, height: 52, borderRadius: 12, background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 22 }}>
+                      <div style={{ width: 52, height: 52, borderRadius: 12, background: "linear-gradient(135deg, #C9873A, #CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 22 }}>
                         ✨
                       </div>
                     ) : (
@@ -1084,7 +1091,7 @@ const BookingReviewPage = () => {
                         {isLetUsDoIt ? "Tendr" : (vendor.name || vendor.businessName || "Vendor")}
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: (pinnedMap[priceKey(vendor)] || []).length ? 6 : 0 }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 100, padding: "3px 10px" }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "#C9873A", background: "rgba(201,135,58,0.1)", borderRadius: 100, padding: "3px 10px" }}>
                           {isLetUsDoIt ? "Concierge Planning" : serviceType}
                         </span>
                         {!isLetUsDoIt && vendor.city && <span style={{ fontSize: 12, color: "#9B7450" }}>{vendor.city}</span>}
@@ -1093,7 +1100,7 @@ const BookingReviewPage = () => {
                       {(pinnedMap[priceKey(vendor)] || []).length > 0 && (
                         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                           {(pinnedMap[priceKey(vendor)] || []).map((msg, i) => (
-                            <div key={i} style={{ fontSize: 12, color: "#5a3a1a", background: "#fffaf3", border: "1.5px solid rgba(196,122,46,0.22)", borderRadius: 8, padding: "6px 10px", whiteSpace: "pre-wrap", wordBreak: "break-word", lineHeight: 1.5, display: "flex", gap: 5, alignItems: "flex-start" }}>
+                            <div key={i} style={{ fontSize: 12, color: "#5a3a1a", background: "#fffaf3", border: "1.5px solid rgba(201,135,58,0.22)", borderRadius: 8, padding: "6px 10px", whiteSpace: "pre-wrap", wordBreak: "break-word", lineHeight: 1.5, display: "flex", gap: 5, alignItems: "flex-start" }}>
                               <span style={{ flexShrink: 0 }}>📌</span><span>{msg}</span>
                             </div>
                           ))}
@@ -1103,11 +1110,11 @@ const BookingReviewPage = () => {
                     <div style={{ textAlign: "right", marginRight: 8, flexShrink: 0 }}>
                       {price !== null ? (
                         <>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "#15803d" }}>✓ Price Confirmed</div>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: "#15803d", background: "rgba(21,128,61,0.1)", borderRadius: 100, padding: "3px 10px", marginBottom: 4, display: "inline-block" }}>✓ Confirmed</div>
                           <div style={{ fontSize: 17, fontWeight: 800, color: "#15803d" }}>{formatINR(price)}</div>
                         </>
                       ) : (
-                        <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 100, padding: "3px 10px" }}>⏳ Awaiting Quote</div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "#C9873A", background: "rgba(201,135,58,0.1)", borderRadius: 100, padding: "3px 10px" }}>⏳ Awaiting Quote</div>
                       )}
                     </div>
                     <ChevronIcon open={isOpen} />
@@ -1115,20 +1122,11 @@ const BookingReviewPage = () => {
                     {isCorporate && (
                       <button
                         onClick={(e) => { e.stopPropagation(); setGstReceived(p => ({ ...p, [serviceType]: !p[serviceType] })); }}
-                        style={{ flexShrink: 0, padding: "4px 10px", borderRadius: 8, border: `1.5px solid ${gstReceived[serviceType] ? "rgba(21,128,61,0.4)" : "rgba(196,122,46,0.25)"}`, background: gstReceived[serviceType] ? "rgba(21,128,61,0.08)" : "transparent", color: gstReceived[serviceType] ? "#15803d" : "#9B7450", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}
+                        style={{ flexShrink: 0, padding: "4px 10px", borderRadius: 8, border: `1.5px solid ${gstReceived[serviceType] ? "rgba(21,128,61,0.4)" : "rgba(201,135,58,0.25)"}`, background: gstReceived[serviceType] ? "rgba(21,128,61,0.08)" : "transparent", color: gstReceived[serviceType] ? "#15803d" : "#9B7450", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}
                         title="Toggle GST Invoice received">
                         {gstReceived[serviceType] ? "✓ GST" : "GST?"}
                       </button>
                     )}
-                    {/* Remove vendor button */}
-                    <button
-                      onClick={(e) => { e.stopPropagation(); if (window.confirm(`Remove ${vendor.name || serviceType} from your booking?`)) handleRemove(serviceType); }}
-                      style={{ flexShrink: 0, width: 28, height: 28, borderRadius: "50%", border: "1.5px solid rgba(192,57,43,0.25)", background: "rgba(192,57,43,0.06)", color: "#c0392b", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", marginLeft: 4, fontFamily: "'Outfit',sans-serif", transition: "all 0.15s" }}
-                      onMouseEnter={e => { e.currentTarget.style.background = "#c0392b"; e.currentTarget.style.color = "#fff"; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = "rgba(192,57,43,0.06)"; e.currentTarget.style.color = "#c0392b"; }}
-                      title="Remove this vendor">
-                      ✕
-                    </button>
                   </button>
 
                   {/* Accordion body — collapses */}
@@ -1161,7 +1159,7 @@ const BookingReviewPage = () => {
                           <div style={{ fontSize: 12, fontWeight: 600, color: "#9B7450", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
                             <span>📋</span> Your Event Details
                           </div>
-                          <div style={{ background: "#f8f4ef", border: "1.5px solid rgba(196,122,46,0.15)", borderRadius: 10, padding: "10px 14px", display: "flex", flexDirection: "column", gap: 5 }}>
+                          <div style={{ background: "#F9F6F1", border: "1.5px solid rgba(201,135,58,0.15)", borderRadius: 10, padding: "10px 14px", display: "flex", flexDirection: "column", gap: 5 }}>
                             {Object.entries(LABEL_MAP).map(([key, label]) => {
                               const val = formData[key];
                               if (!val && val !== 0) return null;
@@ -1185,7 +1183,7 @@ const BookingReviewPage = () => {
                           value={notes[serviceType] || ""}
                           onChange={(e) => setNotes((p) => ({ ...p, [serviceType]: e.target.value }))}
                           rows={2}
-                          style={{ width: "100%", border: "1.5px solid rgba(139,69,19,0.15)", borderRadius: 10, padding: "9px 12px", fontSize: 13, fontFamily: "'Outfit', sans-serif", color: "#2C1A0E", background: "#fffcf7", resize: "vertical", outline: "none", boxSizing: "border-box" }}
+                          style={{ width: "100%", minHeight: 76, border: "1.5px solid rgba(139,69,19,0.15)", borderRadius: 10, padding: "9px 12px", fontSize: 13, fontFamily: "'Outfit', sans-serif", color: "#2C1A0E", background: "#fffcf7", resize: "vertical", outline: "none", boxSizing: "border-box" }}
                         />
                       </div>
 
@@ -1217,7 +1215,7 @@ const BookingReviewPage = () => {
                 }}
               >
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 8, display: "flex", alignItems: "center", gap: 7 }}>
-                  <span style={{ background: "rgba(196,122,46,0.1)", borderRadius: 8, width: 26, height: 26, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>📌</span>
+                  <span style={{ background: "rgba(201,135,58,0.1)", borderRadius: 8, width: 26, height: 26, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>📌</span>
                   Additional Requirements
                 </div>
                 <p style={{ fontSize: 14, color: "#5a3a1a", margin: 0, lineHeight: 1.6 }}>{formData.additionalInfo}</p>
@@ -1226,13 +1224,13 @@ const BookingReviewPage = () => {
 
             {/* Fun Activities — standalone card, visible on mobile too */}
             {faItems.length > 0 && (
-              <div style={{ marginBottom: 20, background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.12)", boxShadow: "0 3px 14px rgba(139,69,19,0.06)", padding: "18px 20px" }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", borderRadius: 8, width: 26, height: 26, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>🎭</span>
+              <div style={{ marginBottom: 20, background: "#fff", borderRadius: 16, border: "1.5px solid rgba(201,135,58,0.12)", boxShadow: "0 3px 14px rgba(139,69,19,0.06)", padding: "18px 20px" }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#C9873A", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ background: "linear-gradient(135deg, #C9873A, #CCAB4A)", borderRadius: 8, width: 26, height: 26, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>🎭</span>
                   Fun Activities
                 </div>
                 {faItems.map((item, idx) => (
-                  <div key={item.id} style={{ marginBottom: idx < faItems.length - 1 ? 14 : 0, paddingBottom: idx < faItems.length - 1 ? 14 : 0, borderBottom: idx < faItems.length - 1 ? "1px solid rgba(196,122,46,0.1)" : "none" }}>
+                  <div key={item.id} style={{ marginBottom: idx < faItems.length - 1 ? 14 : 0, paddingBottom: idx < faItems.length - 1 ? 14 : 0, borderBottom: idx < faItems.length - 1 ? "1px solid rgba(201,135,58,0.1)" : "none" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
                       <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{item.emoji} {item.name}</span>
                       <span style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", flexShrink: 0, marginLeft: 8 }}>
@@ -1240,7 +1238,7 @@ const BookingReviewPage = () => {
                       </span>
                     </div>
                     {item.form ? (
-                      <div style={{ background: "#f8f4ef", borderRadius: 10, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 4, fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.5 }}>
+                      <div style={{ background: "#F9F6F1", borderRadius: 10, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 4, fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.5 }}>
                         {item.form.eventType && <div><span style={{ fontWeight: 600, color: "#9B7450", display: "inline-block", minWidth: 62 }}>Event:</span>{item.form.eventType}</div>}
                         {item.form.date && <div><span style={{ fontWeight: 600, color: "#9B7450", display: "inline-block", minWidth: 62 }}>Date:</span>{item.form.date}</div>}
                         {item.form.time && <div><span style={{ fontWeight: 600, color: "#9B7450", display: "inline-block", minWidth: 62 }}>Time:</span>{item.form.time}</div>}
@@ -1255,7 +1253,7 @@ const BookingReviewPage = () => {
                   </div>
                 ))}
                 {faTotal > 0 && faItems.length > 1 && (
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 800, color: "#C47A2E", borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 10, marginTop: 10 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 800, color: "#C9873A", borderTop: "1px solid rgba(201,135,58,0.15)", paddingTop: 10, marginTop: 10 }}>
                     <span>Activities Total</span>
                     <span>₹{faTotal.toLocaleString("en-IN")}</span>
                   </div>
@@ -1265,15 +1263,15 @@ const BookingReviewPage = () => {
 
             {/* ── My Order section — per-category prices + pinned messages ── */}
             {myOrderConversationId && myOrderPlans.length > 0 && (
-              <div style={{ marginBottom: 20, background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.12)", boxShadow: "0 3px 14px rgba(139,69,19,0.06)", padding: "18px 20px" }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", borderRadius: 8, width: 26, height: 26, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>📦</span>
+              <div style={{ marginBottom: 20, background: "#fff", borderRadius: 16, border: "1.5px solid rgba(201,135,58,0.12)", boxShadow: "0 3px 14px rgba(139,69,19,0.06)", padding: "18px 20px" }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#C9873A", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ background: "linear-gradient(135deg, #C9873A, #CCAB4A)", borderRadius: 8, width: 26, height: 26, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>📦</span>
                   My Order
                 </div>
                 {(() => {
                   const BOOKING_LABELS = { 'occasions': 'Occasions', 'fun-activities': 'Fun Activities', 'stationery': 'Wedding Stationery', 'gift-hampers': 'Gift Hampers', 'you-do-it': 'You Do It', 'let-us-do-it': 'Let Us Do It', 'vendor-enquiry': 'Vendor' };
                   return myOrderPlans.map((plan, idx) => (
-                    <div key={plan._id} style={{ marginBottom: idx < myOrderPlans.length - 1 ? 14 : 0, paddingBottom: idx < myOrderPlans.length - 1 ? 14 : 0, borderBottom: idx < myOrderPlans.length - 1 ? "1px solid rgba(196,122,46,0.1)" : "none" }}>
+                    <div key={plan._id} style={{ marginBottom: idx < myOrderPlans.length - 1 ? 14 : 0, paddingBottom: idx < myOrderPlans.length - 1 ? 14 : 0, borderBottom: idx < myOrderPlans.length - 1 ? "1px solid rgba(201,135,58,0.1)" : "none" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>
                           {plan.bookingType === 'vendor-enquiry' && plan.vendorName
@@ -1298,7 +1296,7 @@ const BookingReviewPage = () => {
                   ));
                 })()}
                 {(pinnedMap["__svc__My Order"] || []).length > 0 && (
-                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(196,122,46,0.1)" }}>
+                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(201,135,58,0.1)" }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Pinned Messages</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                       {(pinnedMap["__svc__My Order"] || []).map((msg, mi) => (
@@ -1311,7 +1309,7 @@ const BookingReviewPage = () => {
                   </div>
                 )}
                 {myOrderFinalizedPlans.length > 0 && (
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 800, color: "#C47A2E", borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 10, marginTop: 10 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 800, color: "#C9873A", borderTop: "1px solid rgba(201,135,58,0.15)", paddingTop: 10, marginTop: 10 }}>
                     <span>My Order Total</span>
                     <span>₹{myOrderFinalizedTotal.toLocaleString("en-IN")}</span>
                   </div>
@@ -1328,13 +1326,14 @@ const BookingReviewPage = () => {
               style={{
                 background: "#fff",
                 borderRadius: 16,
-                border: "1.5px solid rgba(196,122,46,0.22)",
+                border: "1.5px solid rgba(201,135,58,0.22)",
                 boxShadow: "0 4px 20px rgba(139,69,19,0.09)",
-                padding: "20px 22px",
-                marginTop: 20,
+                padding: "22px 22px 24px",
+                marginTop: 40,
               }}
             >
-              <h3 style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 16px" }}>Final Details</h3>
+              <p style={{ fontSize: 10.5, fontWeight: 700, color: "#C9873A", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 4px" }}>03 — Final Details</p>
+              <h3 style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 600, color: "#2C1A0E", margin: "0 0 18px" }}>Almost ready!</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 16 }}>
                 {vendorEntries.map(([serviceType, vendor]) => (
                   <div key={serviceType} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14, color: "#5a3a1a" }}>
@@ -1426,7 +1425,7 @@ const BookingReviewPage = () => {
                       {/* Grand Total */}
                       <div style={{ borderTop: "1.5px solid rgba(139,69,19,0.1)", paddingTop: 10, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 18, fontWeight: 800, color: "#2C1A0E" }}>
                         <span>{anyPriceUnset ? "Confirmed So Far" : "Grand Total"}</span>
-                        <span style={{ color: allConfirmed ? "#15803d" : "#C47A2E" }}>
+                        <span style={{ color: allConfirmed ? "#15803d" : "#C9873A" }}>
                           {formatINR(grandTotal)}
                         </span>
                       </div>
@@ -1499,9 +1498,9 @@ const BookingReviewPage = () => {
                   </div>
                 ) : !referralExpanded ? (
                   <button onClick={() => setReferralExpanded(true)}
-                    style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "none", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 10, padding: "9px 14px", cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                    style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", background: "none", border: "1px solid rgba(201,135,58,0.18)", borderRadius: 10, padding: "9px 14px", cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
                     <span style={{ fontSize: 12.5, fontWeight: 600, color: "#9B7450" }}>Have a referral code?</span>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E" }}>Enter code ›</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#C9873A" }}>Enter code ›</span>
                   </button>
                 ) : (
                   <div>
@@ -1511,12 +1510,12 @@ const BookingReviewPage = () => {
                         value={referralInput}
                         onChange={e => { setReferralInput(e.target.value.toUpperCase()); setReferralState(null); }}
                         placeholder="TNDR-XXXXXX"
-                        style={{ flex: 1, padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${referralState === "invalid" || referralState === "own" ? "#fca5a5" : "rgba(196,122,46,0.25)"}`, fontSize: 14, fontFamily: "'Courier New', monospace", outline: "none", color: "#2C1A0E", textTransform: "uppercase" }}
-                        onFocus={e => (e.currentTarget.style.borderColor = "#C47A2E")}
-                        onBlur={e => (e.currentTarget.style.borderColor = referralState === "invalid" || referralState === "own" ? "#fca5a5" : "rgba(196,122,46,0.25)")}
+                        style={{ flex: 1, padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${referralState === "invalid" || referralState === "own" ? "#fca5a5" : "rgba(201,135,58,0.25)"}`, fontSize: 14, fontFamily: "'Courier New', monospace", outline: "none", color: "#2C1A0E", textTransform: "uppercase" }}
+                        onFocus={e => (e.currentTarget.style.borderColor = "#C9873A")}
+                        onBlur={e => (e.currentTarget.style.borderColor = referralState === "invalid" || referralState === "own" ? "#fca5a5" : "rgba(201,135,58,0.25)")}
                       />
                       <button onClick={validateReferral}
-                        style={{ padding: "9px 18px", borderRadius: 9, border: "none", background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}>
+                        style={{ padding: "9px 18px", borderRadius: 9, border: "none", background: "rgba(201,135,58,0.1)", color: "#C9873A", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}>
                         Apply
                       </button>
                     </div>
@@ -1534,27 +1533,27 @@ const BookingReviewPage = () => {
                   { icon: "🔄", text: "Easy Cancellation" },
                   { icon: "📞", text: "Support Available" },
                 ].map(({ icon, text }) => (
-                  <div key={text} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: "#9B7450", background: "rgba(196,122,46,0.07)", borderRadius: 100, padding: "5px 12px", border: "1px solid rgba(196,122,46,0.15)" }}>
+                  <div key={text} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: "#9B7450", background: "rgba(201,135,58,0.07)", borderRadius: 100, padding: "5px 12px", border: "1px solid rgba(201,135,58,0.15)" }}>
                     <span style={{ fontSize: 13 }}>{icon}</span> {text}
                   </div>
                 ))}
               </div>
 
               {/* T&C checkbox — larger, easier to click */}
-              <div onClick={() => setTcAgreed(a => !a)} style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 14, padding: "14px", background: "rgba(196,122,46,0.05)", borderRadius: 10, border: `1.5px solid ${tcAgreed ? "rgba(196,122,46,0.35)" : "rgba(196,122,46,0.15)"}`, cursor: "pointer" }}>
+              <div onClick={() => setTcAgreed(a => !a)} style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 14, padding: "14px", background: "rgba(201,135,58,0.05)", borderRadius: 10, border: `1.5px solid ${tcAgreed ? "rgba(201,135,58,0.35)" : "rgba(201,135,58,0.15)"}`, cursor: "pointer" }}>
                 <input
                   type="checkbox"
                   id="tc-agree"
                   checked={tcAgreed}
                   onChange={e => setTcAgreed(e.target.checked)}
                   onClick={e => e.stopPropagation()}
-                  style={{ marginTop: 1, width: 20, height: 20, accentColor: "#C47A2E", flexShrink: 0, cursor: "pointer" }}
+                  style={{ marginTop: 1, width: 20, height: 20, accentColor: "#C9873A", flexShrink: 0, cursor: "pointer" }}
                 />
                 <label htmlFor="tc-agree" onClick={e => e.stopPropagation()} style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.5, cursor: "pointer" }}>
                   I have read and agree to the{" "}
                   <span
                     onClick={e => { e.preventDefault(); e.stopPropagation(); setShowTcModal(true); }}
-                    style={{ color: "#C47A2E", fontWeight: 700, textDecoration: "underline", cursor: "pointer" }}
+                    style={{ color: "#C9873A", fontWeight: 700, textDecoration: "underline", cursor: "pointer" }}
                   >
                     Terms & Conditions
                   </span>
@@ -1569,7 +1568,7 @@ const BookingReviewPage = () => {
                 <button
                   disabled={saving || !tcAgreed}
                   onClick={() => setShowConfirmPopup(true)}
-                  style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: !tcAgreed ? "#e5e7eb" : "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: !tcAgreed ? "#9ca3af" : "#fff", fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: !tcAgreed ? "not-allowed" : "pointer", boxShadow: !tcAgreed ? "none" : "0 4px 14px rgba(196,122,46,0.35)", transition: "all 0.2s" }}
+                  style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: !tcAgreed ? "#e5e7eb" : "linear-gradient(135deg, #C9873A, #CCAB4A)", color: !tcAgreed ? "#9ca3af" : "#fff", fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: !tcAgreed ? "not-allowed" : "pointer", boxShadow: !tcAgreed ? "none" : "0 4px 14px rgba(201,135,58,0.35)", transition: "all 0.2s" }}
                 >
                   Proceed to WhatsApp →
                 </button>
@@ -1586,7 +1585,7 @@ const BookingReviewPage = () => {
       {/* Selected performer banner */}
       {selectedPerformer && (
         <div style={{ padding: "0 24px 16px", maxWidth: 860, margin: "0 auto" }}>
-          <div style={{ borderRadius: 14, border: "1.5px solid #C47A2E", background: "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.05))", padding: "16px 20px", fontFamily: "'Outfit', sans-serif", display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ borderRadius: 14, border: "1.5px solid #C9873A", background: "linear-gradient(135deg,rgba(201,135,58,0.08),rgba(204,171,74,0.05))", padding: "16px 20px", fontFamily: "'Outfit', sans-serif", display: "flex", alignItems: "center", gap: 14 }}>
             <span style={{ fontSize: 30, flexShrink: 0 }}>{selectedPerformer.emoji}</span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>
@@ -1596,7 +1595,7 @@ const BookingReviewPage = () => {
                 We'll recommend the best {selectedPerformer.label.toLowerCase()} for your event and include it in your booking request.
               </div>
             </div>
-            <a href={`/listings?serviceType=${encodeURIComponent(selectedPerformer.type)}`} style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 10, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
+            <a href={`/listings?serviceType=${encodeURIComponent(selectedPerformer.type)}`} style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 10, background: "linear-gradient(135deg,#C9873A,#CCAB4A)", color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
               Browse →
             </a>
           </div>
@@ -1608,7 +1607,7 @@ const BookingReviewPage = () => {
         <PerformerSuggestions
           title="People also book for their events"
           excludeType={selectedPerformer?.type}
-          wrapStyle={{ background: "#FFFCF5", borderRadius: 14, padding: "16px 18px", border: "1.5px solid rgba(196,122,46,0.15)" }}
+          wrapStyle={{ background: "#FFFCF5", borderRadius: 14, padding: "16px 18px", border: "1.5px solid rgba(201,135,58,0.15)" }}
         />
       </div>
 
@@ -1621,7 +1620,7 @@ const BookingReviewPage = () => {
           const gst = Math.round(disc * 0.18);
           const total = disc + gst + effectivePlatformFee;
           return (
-            <div style={{ width: "100%", padding: "10px 16px 8px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+            <div style={{ width: "100%", padding: "10px 16px 8px", borderBottom: "1px solid rgba(201,135,58,0.1)" }}>
               {/* Line items row */}
               <div style={{ display: "flex", gap: 0, marginBottom: 6, overflowX: "auto", scrollbarWidth: "none" }}>
                 <style>{`.mob-price-row::-webkit-scrollbar{display:none}`}</style>
@@ -1633,7 +1632,7 @@ const BookingReviewPage = () => {
                   { label: appliedCode ? "Platform" : "Platform", val: appliedCode ? "FREE" : `+₹${platformFee}` },
                 ].map(({ label, val }, i, arr) => (
                   <div key={label} style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
-                    <div style={{ textAlign: "center", paddingRight: 8, paddingLeft: i === 0 ? 0 : 8, borderLeft: i === 0 ? "none" : "1px solid rgba(196,122,46,0.15)" }}>
+                    <div style={{ textAlign: "center", paddingRight: 8, paddingLeft: i === 0 ? 0 : 8, borderLeft: i === 0 ? "none" : "1px solid rgba(201,135,58,0.15)" }}>
                       <div style={{ fontSize: 10, fontWeight: 600, color: "#9B7450", whiteSpace: "nowrap", marginBottom: 1 }}>{label}</div>
                       <div style={{ fontSize: 12, fontWeight: 700, color: val.startsWith("+") ? "#5a3a1a" : "#2C1A0E", whiteSpace: "nowrap" }}>{val}</div>
                     </div>
@@ -1643,7 +1642,7 @@ const BookingReviewPage = () => {
               {/* Grand total row */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", letterSpacing: "0.04em", textTransform: "uppercase" }}>Grand Total</span>
-                <span style={{ fontSize: 18, fontWeight: 900, color: allConfirmed ? "#15803d" : "#C47A2E", fontVariantNumeric: "tabular-nums" }}>{formatINR(total)}</span>
+                <span style={{ fontSize: 18, fontWeight: 900, color: allConfirmed ? "#15803d" : "#C9873A", fontVariantNumeric: "tabular-nums" }}>{formatINR(total)}</span>
               </div>
             </div>
           );
@@ -1653,10 +1652,10 @@ const BookingReviewPage = () => {
         <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "10px 16px", paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <input type="checkbox" id="tc-agree-mob" checked={tcAgreed} onChange={e => setTcAgreed(e.target.checked)}
-              style={{ width: 15, height: 15, accentColor: "#C47A2E", flexShrink: 0, cursor: "pointer" }} />
+              style={{ width: 15, height: 15, accentColor: "#C9873A", flexShrink: 0, cursor: "pointer" }} />
             <label htmlFor="tc-agree-mob" style={{ fontSize: 12, color: "#5a3a1a", lineHeight: 1.4, cursor: "pointer" }}>
               I agree to the{" "}
-              <span onClick={() => setShowTcModal(true)} style={{ color: "#C47A2E", fontWeight: 700, textDecoration: "underline", cursor: "pointer" }}>
+              <span onClick={() => setShowTcModal(true)} style={{ color: "#C9873A", fontWeight: 700, textDecoration: "underline", cursor: "pointer" }}>
                 Terms & Conditions
               </span>
             </label>
@@ -1667,7 +1666,7 @@ const BookingReviewPage = () => {
             </div>
           ) : (
             <button disabled={saving || !tcAgreed} onClick={() => setShowConfirmPopup(true)}
-              style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: !tcAgreed ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: !tcAgreed ? "#9ca3af" : "#fff", fontSize: 15, fontWeight: 700, cursor: !tcAgreed || saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: !tcAgreed ? "none" : "0 3px 14px rgba(196,122,46,0.35)", transition: "all 0.2s", touchAction: "manipulation" }}>
+              style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: !tcAgreed ? "#e5e7eb" : "linear-gradient(135deg,#C9873A,#CCAB4A)", color: !tcAgreed ? "#9ca3af" : "#fff", fontSize: 15, fontWeight: 700, cursor: !tcAgreed || saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: !tcAgreed ? "none" : "0 3px 14px rgba(201,135,58,0.35)", transition: "all 0.2s", touchAction: "manipulation" }}>
               Proceed to WhatsApp →
             </button>
           )}
@@ -1680,7 +1679,7 @@ const BookingReviewPage = () => {
           <div onClick={() => setShowConfirmPopup(false)} style={{ position: "fixed", inset: 0, background: "rgba(10,4,0,0.6)", zIndex: 10100, backdropFilter: "blur(6px)" }} />
           <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 10101, background: "#FFFCF5", borderRadius: 22, padding: "28px 24px", width: "90%", maxWidth: 400, boxShadow: "0 24px 64px rgba(28,10,4,0.3)", fontFamily: "'Outfit', sans-serif", textAlign: "center" }}>
             {/* Icon */}
-            <div style={{ width: 52, height: 52, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+            <div style={{ width: 52, height: 52, borderRadius: "50%", background: "linear-gradient(135deg,#C9873A,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </div>
             <h2 style={{ fontSize: 19, fontWeight: 800, color: "#1C0A04", margin: "0 0 8px" }}>Ready to confirm?</h2>
@@ -1779,11 +1778,11 @@ const BookingReviewPage = () => {
                 setShowConfirmPopup(false);
                 navigate("/dashboard", { replace: true });
               }}
-                style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.35)", touchAction: "manipulation" }}>
+                style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C9873A,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(201,135,58,0.35)", touchAction: "manipulation" }}>
                 {saving ? "Saving…" : isPureMyOrderCheckout ? "Proceed to Payment →" : "Confirm & Send to Tendr →"}
               </button>
               <button onClick={() => { setShowConfirmPopup(false); navigate("/listings"); }}
-                style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(201,135,58,0.3)", background: "#fff", color: "#C9873A", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
                 Add More Vendors
               </button>
               <button onClick={() => { setShowConfirmPopup(false); navigate("/"); }}
