@@ -26,6 +26,11 @@ import heroBirthday from "../../assets/ui/hero-birthday.png";
 import heroFestive from "../../assets/ui/hero-festive.png";
 import CorporateLogin from "../../components/corporateEventPlanning.jsx";
 import JourneyFlow from "../../components/JourneyFlow";
+import useIsMobileOrTablet from "../../hooks/useIsMobileOrTablet";
+import HomeTourFlow from "../../components/HomeTourFlow";
+import introCelebration from "../../assets/intro/tendr-intro-01-celebration.png";
+import introPlatform from "../../assets/intro/tendr-intro-02-platform.png";
+import introExperience from "../../assets/intro/tendr-intro-03-experience.png";
 
 // WhatsApp icon
 import { FaWhatsapp } from "react-icons/fa";
@@ -544,34 +549,72 @@ const GALLERY_FALLBACKS = {
   "Corporate Events":  "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&h=400&q=80",
 };
 
-// ── Website intro overlay (mobile-only, light theme) ─────────────────────────
-const INTRO_CAT = [
-  { emoji: "📸", label: "Photography" },
-  { emoji: "🌸", label: "Decor" },
-  { emoji: "🍽️", label: "Catering" },
-  { emoji: "🎵", label: "DJ & Music" },
-  { emoji: "🎁", label: "Gift Hampers" },
-  { emoji: "🎪", label: "Activities" },
-];
-const INTRO_OCC = ["🎂 Birthday","💕 Anniversary","🏢 Corporate","🏠 Housewarming","🎓 Graduation","🎉 Get-Together"];
-const INTRO_TOTAL = 4;
-const IB  = "#FFFDF9";
-const IT  = "#1A0D03";
-const IM  = "rgba(26,13,3,0.42)";
+// ── Website intro overlay (mobile/tablet-only first visit, homepage only) ───
+const INTRO_TOTAL = 3;
+const IB  = "#FFFCF5";
+const IT  = "#2C1A0E";
+const IM  = "#9B7450";
 const IG  = "#C47A2E";
 const IGL = "#CCAB4A";
-const IC  = "rgba(196,122,46,0.06)";
-const IB2 = "rgba(196,122,46,0.14)";
-const IDF = "'DM Serif Display', Georgia, serif";
+const IB2 = "rgba(196,122,46,0.16)";
+const ISERIF = "'Cormorant Garamond', Georgia, serif";
 
+const INTRO_SLIDES_DATA = [
+  { image: introCelebration, headline: "Your celebrations deserve better planning.", desc: "From birthdays to house parties, bring everything you need for a memorable celebration together in one place." },
+  { image: introPlatform, headline: "Everything for your celebration. All in one place.", desc: "Discover event services, create invitations, manage guest lists, collect RSVPs and organise gifts without the hassle." },
+  { image: introExperience, headline: "You plan the celebration. We'll help bring it to life.", desc: "Spend less time coordinating and more time enjoying the moments that matter." },
+];
+
+// Mobile/tablet-only, homepage-only first-visit intro — 3 screens using the
+// brand's real illustrated assets. Swipe, arrow-key and dot navigation all
+// drive the same slide index; `onDone(showedAround)` tells the caller whether
+// to follow up with the welcome popup + tour (true, "Show me around") or stop
+// here entirely (false, any Skip action).
 function WebsiteIntro({ onDone }) {
   const [slide, setSlide] = React.useState(0);
   const [dir, setDir] = React.useState(1);
+  const [isLandscapeTablet, setIsLandscapeTablet] = React.useState(false);
 
-  const dismiss = () => onDone();
+  React.useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mql = window.matchMedia("(min-width: 768px) and (orientation: landscape)");
+    const onChange = () => setIsLandscapeTablet(mql.matches);
+    onChange();
+    mql.addEventListener ? mql.addEventListener("change", onChange) : mql.addListener(onChange);
+    return () => { mql.removeEventListener ? mql.removeEventListener("change", onChange) : mql.removeListener(onChange); };
+  }, []);
+
+  // Hide the global mobile bottom nav while this full-screen overlay is up —
+  // same window.__tendrDrawers registry MobileBottomNav/FirstTimeExperience
+  // already use, so it doesn't paint on top of (or intercept clicks meant for)
+  // this intro's own full-width buttons.
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!window.__tendrDrawers) window.__tendrDrawers = new Set();
+    window.__tendrDrawers.add("intro");
+    window.dispatchEvent(new Event("tendr:drawer"));
+    return () => {
+      window.__tendrDrawers?.delete("intro");
+      window.dispatchEvent(new Event("tendr:drawer"));
+    };
+  }, []);
+
+  const skip = () => onDone(false);
+  const showMeAround = () => onDone(true);
   const goNext = () => { if (slide < INTRO_TOTAL - 1) { setDir(1); setSlide(s => s + 1); } };
   const goPrev = () => { if (slide > 0) { setDir(-1); setSlide(s => s - 1); } };
   const goTo   = (i) => { setDir(i > slide ? 1 : -1); setSlide(i); };
+
+  // Keyboard nav — external keyboard on iPad.
+  React.useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "ArrowRight") goNext();
+      else if (e.key === "ArrowLeft") goPrev();
+      else if (e.key === "Escape") skip();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [slide]); // eslint-disable-line
 
   const sv = {
     enter: (d) => ({ x: d > 0 ? "100%" : "-60%", opacity: 0 }),
@@ -579,202 +622,118 @@ function WebsiteIntro({ onDone }) {
     exit:  (d) => ({ x: d > 0 ? "-20%" : "100%", opacity: 0, transition: { duration: 0.22, ease: [0.4, 0, 0.2, 1] } }),
   };
 
-  const slides = [
-    /* ── 0: Photo backdrop — real image, clean text at bottom ── */
-    <div key="s0" style={{ position:"relative", display:"flex", flexDirection:"column", justifyContent:"flex-end", height:"100%" }}>
-      <img src={heroBirthday} alt="" aria-hidden
-        style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", objectPosition:"center top" }}/>
-      <div style={{ position:"absolute", inset:0,
-        background:"linear-gradient(to top, rgba(4,1,0,0.86) 0%, rgba(4,1,0,0.42) 50%, rgba(4,1,0,0.15) 100%)" }}/>
-      <motion.div initial={{ y:20, opacity:0 }} animate={{ y:0, opacity:1 }}
-        transition={{ duration:0.44, ease:[0.25,0.46,0.45,0.94] }}
-        style={{ position:"relative", zIndex:1, padding:"0 24px 28px" }}>
-        <div style={{ fontSize:9, fontWeight:400, textTransform:"uppercase", letterSpacing:"0.26em",
-          color:"rgba(196,122,46,0.75)", marginBottom:14 }}>
-          Delhi NCR's Event Platform
-        </div>
-        <h2 style={{ fontFamily:IDF, fontSize:"2.3rem", fontWeight:400,
-          color:"#FFF8EC", lineHeight:1.06, margin:"0 0 16px", letterSpacing:"-0.01em" }}>
-          Your occasion,<br/>our obsession.
-        </h2>
-        <p style={{ fontSize:11.5, fontWeight:400, color:"rgba(255,248,236,0.45)",
-          margin:0, letterSpacing:"0.05em" }}>
-          100+ vendors &nbsp;·&nbsp; 5,000+ events &nbsp;·&nbsp; &lt;2hr response
-        </p>
-      </motion.div>
-    </div>,
+  const data = INTRO_SLIDES_DATA[slide];
+  const isLast = slide === INTRO_TOTAL - 1;
 
-    /* ── 1: Vendors — editorial list ── */
-    <div key="s1" style={{ display:"flex", flexDirection:"column", padding:"28px 24px 0" }}>
-      <motion.div initial={{ y:14, opacity:0 }} animate={{ y:0, opacity:1 }} transition={{ duration:0.34 }}>
-        <div style={{ fontFamily:IDF, fontSize:"2.8rem", fontWeight:400, color:IT,
-          lineHeight:1, letterSpacing:"-0.02em", margin:"0 0 6px" }}>100+ vendors</div>
-        <div style={{ fontSize:12.5, color:IM, margin:"0 0 24px", fontWeight:400, letterSpacing:"0.01em" }}>
-          Verified &amp; reviewed across Delhi NCR
-        </div>
-      </motion.div>
-      <div style={{ borderTop:`1px solid ${IB2}` }}>
-        {INTRO_CAT.map(({emoji,label},i)=>(
-          <motion.div key={label}
-            initial={{ opacity:0, x:-8 }} animate={{ opacity:1, x:0 }}
-            transition={{ delay:0.06 + i*0.07, duration:0.28 }}
-            style={{ display:"flex", alignItems:"center", gap:14, padding:"13px 0",
-              borderBottom:`1px solid ${IB2}` }}>
-            <span style={{ fontSize:17, lineHeight:1, opacity:0.85 }}>{emoji}</span>
-            <span style={{ fontSize:14, fontWeight:400, color:IT, letterSpacing:"0.01em" }}>{label}</span>
-            <svg style={{ marginLeft:"auto", opacity:0.22 }} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={IT} strokeWidth="1.8" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-          </motion.div>
-        ))}
-      </div>
-    </div>,
-
-    /* ── 2: Occasions ── */
-    <div key="s2" style={{ display:"flex", flexDirection:"column", padding:"28px 24px 0" }}>
-      <motion.div initial={{ y:14, opacity:0 }} animate={{ y:0, opacity:1 }} transition={{ duration:0.34 }}>
-        <h2 style={{ fontFamily:IDF, fontSize:"2.4rem", fontWeight:400, color:IT,
-          lineHeight:1.06, margin:"0 0 8px", letterSpacing:"-0.01em" }}>Every celebration,<br/>covered.</h2>
-        <p style={{ fontSize:12.5, color:IM, margin:"0 0 22px", fontWeight:400, letterSpacing:"0.01em" }}>Birthdays to corporate events — all in one place.</p>
-      </motion.div>
-      <div style={{ display:"flex", flexDirection:"column", gap:0, borderTop:`1px solid ${IB2}` }}>
-        {INTRO_OCC.map((occ,i)=>(
-          <motion.div key={occ}
-            initial={{ opacity:0, x:-8 }} animate={{ opacity:1, x:0 }}
-            transition={{ delay:0.06+i*0.06, duration:0.26 }}
-            style={{ fontSize:14, fontWeight:400, color:IT, letterSpacing:"0.01em",
-              padding:"11px 0", borderBottom:`1px solid ${IB2}` }}>
-            {occ}
-          </motion.div>
-        ))}
-      </div>
-      <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.5 }}
-        style={{ paddingTop:16, display:"flex", flexWrap:"wrap", gap:7 }}>
-        {["Budget Tools","Timeline","Stationery","Gift Hampers"].map(t=>(
-          <span key={t} style={{ fontSize:10.5, fontWeight:400, color:IG,
-            background:"rgba(196,122,46,0.06)", border:`1px solid rgba(196,122,46,0.14)`,
-            borderRadius:6, padding:"4px 10px", letterSpacing:"0.03em" }}>{t}</span>
-        ))}
-      </motion.div>
-    </div>,
-
-    /* ── 3: CTA ── */
-    <div key="s3" style={{ display:"flex", flexDirection:"column", alignItems:"center",
-      justifyContent:"center", textAlign:"center", padding:"24px 24px", paddingBottom:"calc(env(safe-area-inset-bottom, 12px) + 24px)", height:"100%" }}>
-      <motion.div initial={{ scale:0.7, opacity:0 }} animate={{ scale:1, opacity:1 }}
-        transition={{ duration:0.48, ease:[0.34,1.56,0.64,1] }}
-        style={{ fontSize:44, marginBottom:16, lineHeight:1 }}>🎉</motion.div>
-      <motion.h2 initial={{ y:14, opacity:0 }} animate={{ y:0, opacity:1 }}
-        transition={{ delay:0.12, duration:0.36 }}
-        style={{ fontFamily:IDF, fontSize:"2.2rem", fontWeight:400,
-          color:IT, lineHeight:1.1, margin:"0 0 20px" }}>
-        Ready to celebrate?
-      </motion.h2>
-      <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.22 }}
-        style={{ display:"flex", flexDirection:"column", gap:9, marginBottom:24, alignSelf:"flex-start", paddingLeft:4 }}>
-        {["100+ verified vendors","Free to browse","Secure payments"].map(t=>(
-          <div key={t} style={{ display:"flex", alignItems:"center", gap:8, fontSize:13.5, color:IT, fontWeight:400 }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={IG} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            {t}
-          </div>
-        ))}
-      </motion.div>
-      <motion.button initial={{ y:14, opacity:0 }} animate={{ y:0, opacity:1 }}
-        transition={{ delay:0.3, duration:0.36 }}
-        whileTap={{ scale:0.975 }} onClick={dismiss}
-        style={{ width:"100%", height:54, background:`linear-gradient(135deg,${IG},${IGL})`,
-          border:"none", borderRadius:16, color:"#0A0500", fontWeight:700, fontSize:16,
-          fontFamily:"inherit", cursor:"pointer" }}>
-        Let's Plan
-      </motion.button>
-      <button onClick={goPrev}
-        style={{ marginTop:14, background:"none", border:"none", cursor:"pointer",
-          fontSize:12, color:IM, fontFamily:"inherit", display:"flex", alignItems:"center", gap:5 }}>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-        Back
+  const header = (
+    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
+      padding:"calc(14px + env(safe-area-inset-top,0px)) 20px 0", flexShrink:0 }}>
+      <button onClick={() => goTo(0)} style={{ background:"none", border:"none", cursor:"pointer", padding:0, display:"flex", alignItems:"center" }} aria-label="Tendr home">
+        <img src={tendrLogo} alt="Tendr" style={{ height:24, display:"block" }} />
       </button>
-    </div>,
-  ];
+      <button onClick={skip} style={{ background:"none", border:"none", cursor:"pointer", padding:"8px 4px", fontSize:13.5, fontWeight:600, color:IM, fontFamily:"'Outfit',sans-serif", minHeight:44 }}>
+        Skip
+      </button>
+    </div>
+  );
+
+  const imageEl = (
+    <div className="tin-image-wrap">
+      <img src={data.image} alt="" aria-hidden style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center", display:"block" }} />
+    </div>
+  );
+
+  const body = (
+    <motion.div
+      drag="x" dragConstraints={{ left:0, right:0 }} dragElastic={0.12}
+      onDragEnd={(e, info) => {
+        if (info.offset.x < -60 && slide < INTRO_TOTAL - 1) goNext();
+        else if (info.offset.x > 60 && slide > 0) goPrev();
+      }}
+      style={{ flex:1, minHeight:0, display:"flex", flexDirection:"column", touchAction:"pan-y" }}
+    >
+      <div style={{ flex:1, minHeight:0, overflowY:"auto", padding:"22px 24px 4px", display:"flex", flexDirection:"column", justifyContent: isLandscapeTablet ? "center" : "flex-start" }}>
+        <AnimatePresence initial={false} custom={dir} mode="wait">
+          <motion.div key={slide} custom={dir} variants={sv} initial="enter" animate="center" exit="exit">
+            <h2 style={{ fontFamily:ISERIF, fontSize:"clamp(1.56rem,4.6vw,1.8rem)", fontWeight:600, color:IT, lineHeight:1.18, margin:"0 0 10px", letterSpacing:"-0.01em" }}>
+              {data.headline}
+            </h2>
+            <p style={{ fontSize:14.5, fontWeight:400, color:IM, lineHeight:1.55, margin:0 }}>
+              {data.desc}
+            </p>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Progress dots */}
+      <div style={{ display:"flex", justifyContent:"center", gap:6, alignItems:"center", padding:"14px 0 4px" }}>
+        {Array.from({ length: INTRO_TOTAL }).map((_,i) => (
+          <motion.button key={i} aria-label={`Go to screen ${i+1}`} onClick={() => goTo(i)}
+            animate={{ width: i === slide ? 22 : 7, background: i === slide ? IG : IB2 }}
+            transition={{ duration:0.2 }}
+            style={{ height:7, borderRadius:100, cursor:"pointer", border:"none", padding:0 }}
+          />
+        ))}
+      </div>
+
+      {/* Nav buttons — screen-dependent per spec */}
+      <div style={{ padding:"12px 0 calc(env(safe-area-inset-bottom,12px) + 18px)", display:"flex", flexDirection:"column", gap:10 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          {slide > 0 ? (
+            <button onClick={goPrev} style={{ minWidth:44, minHeight:44, padding:"0 18px", borderRadius:11, background:"rgba(44,26,14,0.05)", border:"1px solid rgba(44,26,14,0.12)", cursor:"pointer", fontSize:13.5, fontWeight:700, color:IT, fontFamily:"'Outfit',sans-serif" }}>
+              ← Back
+            </button>
+          ) : null}
+          <button onClick={isLast ? showMeAround : goNext}
+            style={{ flex:1, minHeight:48, padding:"0 22px", background:`linear-gradient(135deg,${IG},${IGL})`,
+              border:"none", borderRadius:12, color:"#fff", fontWeight:700, fontSize:15,
+              fontFamily:"'Outfit',sans-serif", cursor:"pointer", boxShadow:`0 4px 16px ${IG}55` }}>
+            {isLast ? "Show me around →" : "Next →"}
+          </button>
+        </div>
+        {isLast && (
+          <button onClick={skip} style={{ background:"none", border:"none", cursor:"pointer", fontSize:12.5, fontWeight:600, color:IM, fontFamily:"'Outfit',sans-serif", textAlign:"center", padding:"6px 0" }}>
+            Skip the tour and explore on my own
+          </button>
+        )}
+      </div>
+    </motion.div>
+  );
 
   return (
     <motion.div
       initial={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.38 } }}
+      className="tin-root"
       style={{ position:"fixed", inset:0, zIndex:9999, background:IB,
-        display:"flex", flexDirection:"column", overflow:"hidden", fontFamily:"'Outfit',sans-serif" }}
+        display:"flex", flexDirection: isLandscapeTablet ? "row" : "column",
+        overflow:"hidden", fontFamily:"'Outfit',sans-serif" }}
     >
-      {/* Gold progress bar */}
-      <div style={{ height:3, background:"rgba(196,122,46,0.1)", flexShrink:0 }}>
-        <motion.div
-          animate={{ width:`${((slide + 1) / INTRO_TOTAL) * 100}%` }}
-          transition={{ duration:0.36, ease:[0.4,0,0.2,1] }}
-          style={{ height:"100%", background:IG, borderRadius:"0 2px 2px 0" }}
-        />
-      </div>
-
-      {/* Header */}
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
-        padding:"12px 18px 0", flexShrink:0 }}>
-        <div style={{ fontFamily:IDF, fontSize:16, color:IT, letterSpacing:"0.07em" }}>TENDR</div>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <span style={{ fontSize:11, fontWeight:600, color:"rgba(26,13,3,0.28)", letterSpacing:"0.08em" }}>
-            {slide + 1} / {INTRO_TOTAL}
-          </span>
-          <motion.button whileTap={{ scale:0.92 }} onClick={dismiss}
-            style={{ width:34, height:34, minWidth:44, minHeight:44, borderRadius:"50%",
-              background:"rgba(26,13,3,0.06)", border:"1px solid rgba(26,13,3,0.1)",
-              display:"flex", alignItems:"center", justifyContent:"center",
-              cursor:"pointer", fontSize:17, color:"rgba(26,13,3,0.35)", fontFamily:"inherit" }}>
-            ×
-          </motion.button>
-        </div>
-      </div>
-
-      {/* Slides */}
-      <div style={{ flex:1, position:"relative", overflow:"hidden" }}>
-        <AnimatePresence initial={false} custom={dir}>
-          <motion.div key={slide} custom={dir} variants={sv}
-            initial="enter" animate="center" exit="exit"
-            style={{ position:"absolute", inset:0, overflowY:"auto" }}>
-            {slides[slide]}
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      {/* Bottom nav — slides 0–2 */}
-      {slide < INTRO_TOTAL - 1 && (
-        <div style={{ padding:"10px 20px", paddingBottom:"calc(env(safe-area-inset-bottom, 12px) + 18px)", display:"flex", alignItems:"center",
-          gap:12, flexShrink:0, borderTop:`1px solid rgba(196,122,46,0.1)` }}>
-          {slide > 0 ? (
-            <motion.button whileTap={{ scale:0.93 }} onClick={goPrev}
-              style={{ width:42, height:42, borderRadius:"50%",
-                background:"rgba(26,13,3,0.05)", border:"1px solid rgba(26,13,3,0.1)",
-                display:"flex", alignItems:"center", justifyContent:"center",
-                cursor:"pointer", flexShrink:0 }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(26,13,3,0.4)" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-            </motion.button>
-          ) : <div style={{ width:42 }}/>}
-
-          <div style={{ flex:1, display:"flex", justifyContent:"center", gap:6, alignItems:"center" }}>
-            {Array.from({ length: INTRO_TOTAL }).map((_,i) => (
-              <motion.div key={i}
-                animate={{ width: i === slide ? 22 : 6, background: i === slide ? IG : "rgba(26,13,3,0.13)" }}
-                transition={{ duration:0.2 }}
-                style={{ height:6, borderRadius:100, cursor:"pointer" }}
-                onClick={() => goTo(i)}
-              />
-            ))}
+      <style>{`
+        .tin-image-wrap{position:relative;width:100%;height:44vh;flex-shrink:0;overflow:hidden;background:${IB};}
+        @media (min-width:600px) and (max-width:1023px) and (orientation:portrait){
+          .tin-image-wrap{height:52vh;}
+        }
+        @media (prefers-reduced-motion: reduce){
+          .tin-root *{animation:none!important;transition:none!important;}
+        }
+      `}</style>
+      {isLandscapeTablet ? (
+        <>
+          <div style={{ width:"50%", height:"100%", flexShrink:0, overflow:"hidden" }}>
+            <img src={data.image} alt="" aria-hidden style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center", display:"block" }} />
           </div>
-
-          <motion.button whileTap={{ scale:0.975 }} onClick={goNext}
-            style={{ height:42, padding:"0 22px",
-              background:`linear-gradient(135deg,${IG},${IGL})`,
-              border:"none", borderRadius:11, color:"#0A0500",
-              fontWeight:700, fontSize:13.5, fontFamily:"inherit",
-              cursor:"pointer", flexShrink:0 }}>
-            Continue
-          </motion.button>
-        </div>
+          <div style={{ width:"50%", display:"flex", flexDirection:"column", minHeight:0 }}>
+            {header}
+            {body}
+          </div>
+        </>
+      ) : (
+        <>
+          {header}
+          {imageEl}
+          {body}
+        </>
       )}
     </motion.div>
   );
@@ -876,9 +835,16 @@ const Home = () => {
   const [roomCodeInput, setRoomCodeInput] = useState("");
   const [hoveredOcc, setHoveredOcc] = useState(null);
   const [occModal, setOccModal] = useState(null);
-  // Mobile first-visit intro carousel retired — FirstTimeExperience (mascot + "want a
-  // tour?" prompt) now runs on mobile the same way it already did on desktop.
-  const [showIntro, setShowIntro] = useState(false);
+  // Mobile/tablet-only first-visit intro (3 screens) + the optional welcome-
+  // popup/tour that can follow it. Separate from, and in addition to, the
+  // existing global FirstTimeExperience mascot prompt (unchanged, still runs
+  // on every route/device as before) — see HomeTourFlow.jsx for how the two
+  // avoid double-prompting the same mobile/tablet visitor.
+  const isMobileOrTablet = useIsMobileOrTablet();
+  const [showIntro, setShowIntro] = useState(() => {
+    try { return !localStorage.getItem("tendr_intro_seen"); } catch { return true; }
+  });
+  const [homeTourActive, setHomeTourActive] = useState(false);
   const [searchParams] = useSearchParams();
   useEffect(() => {
     const occ = searchParams.get("occasion");
@@ -1205,101 +1171,37 @@ const Home = () => {
     },
   ];
 
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const isSignedIn = !!user;
-
-  const HOME_TOUR_STEPS = isMobile ? [
-    {
-      target: "body",
-      placement: "center",
-      image: "/occasions/birthday-mobile.png",
-      title: "Welcome to Tendr",
-      content: "Book verified vendors and plan every detail of your event in Delhi NCR — from one place.",
-    },
-    {
-      target: "body",
-      placement: "center",
-      image: "/occasions/house-party-mobile.png",
-      title: "Start here",
-      content: "Use 'Book Vendors' to browse the vendor directory, or hit 'Plan an Occasion' for a step-by-step flow — pick your occasion, date and budget.",
-    },
-    {
-      target: "body",
-      placement: "center",
-      image: "/hero-mobile-bg.png",
-      title: isSignedIn ? "Your bookings" : "Sign in to save",
-      content: isSignedIn ? "View confirmed bookings and event documents from your account." : "Sign in to save vendors, confirm bookings and access your documents anytime.",
-    },
-  ] : [
-    {
-      target: "body",
-      placement: "center",
-      title: "Welcome to Tendr",
-      content: "Book verified vendors and plan every detail of your celebration in Delhi NCR — from one place.",
-    },
-    {
-      target: "body",
-      placement: "center",
-      title: "Start here",
-      content: "Use 'Book Vendors' to browse the vendor directory, or hit 'Plan an Occasion' for a step-by-step flow — pick your occasion, date and budget.",
-    },
-    {
-      target: '[data-tour="nav-browse"]',
-      placement: "bottom",
-      title: "Browse vendors",
-      content: "Decorators, caterers, photographers, DJs, bands and emcees — all in one place. Sort by ratings or location.",
-    },
-    {
-      target: '[data-tour="nav-products"]',
-      placement: "bottom",
-      title: "Our products",
-      content: "Gift hampers, stationery, fun activities and party essentials — order directly through Tendr.",
-    },
-    {
-      target: '[data-tour="nav-tools"]',
-      placement: "bottom",
-      title: "Planning tools",
-      content: "Event timeline, budget allocator, style finder and more — free tools to organise every detail of your celebration.",
-    },
-    {
-      target: '[data-tour="nav-booking"]',
-      placement: "bottom",
-      title: "Plan your event",
-      content: "Use our guided planner, smart occasion planner, or chat with our team on Baat Karo. You can also explore occasions by type.",
-    },
-    isSignedIn ? {
-      target: '[data-tour="profile-btn"]',
-      placement: "bottom",
-      title: "Your account",
-      content: "Confirmed bookings, vendor contacts and downloadable documents — all here.",
-    } : {
-      target: '[data-tour="signin-btn"]',
-      placement: "bottom",
-      title: "Sign in",
-      content: "Sign in to confirm bookings and access your event documents anytime.",
-    },
-  ];
 
   return (
     <div className="App">
-      {/* Website intro — shown on first visit, stored in localStorage */}
+      {/* Website intro — mobile/tablet + homepage only, shown once per device */}
       <AnimatePresence>
-        {showIntro && (
+        {showIntro && isMobileOrTablet && (
           <WebsiteIntro
             key="intro"
-            onDone={() => {
+            onDone={(showedAround) => {
               try { localStorage.setItem("tendr_intro_seen", "1"); } catch {}
+              if (!showedAround) {
+                // Skipped — no welcome popup, also suppress the old global
+                // mascot prompt so this device isn't asked twice.
+                try { localStorage.setItem("tendr-ftv-done", "1"); } catch {}
+              }
               setShowIntro(false);
               setTimeout(() => {
                 try { window.scrollTo({ top: 0, behavior: "instant" }); } catch {
                   document.documentElement.scrollTop = 0;
                   document.body.scrollTop = 0;
                 }
-              }, 0);
+                if (showedAround) setHomeTourActive(true);
+              }, showedAround ? 500 : 0);
             }}
           />
         )}
       </AnimatePresence>
+
+      {/* Welcome popup + 4-pointer tour — only right after "Show me around" */}
+      <HomeTourFlow active={homeTourActive && isMobileOrTablet} onClose={() => setHomeTourActive(false)} />
 
       <SEO title="Tendr — Celebration & Event Planning Platform in Delhi NCR" description="Plan birthdays, anniversaries, balloon decorations, surprise parties, baby showers, house parties and corporate events across Delhi, Noida, Gurgaon, Ghaziabad and Greater Noida. Compare 100+ verified vendors and book instantly." path="/" />
       {/* Speed dial (floating) */}

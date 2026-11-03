@@ -529,6 +529,17 @@ export default function FirstTimeExperience() {
   const [phase, setPhase] = useState(() => {
     try {
       if (localStorage.getItem(LS_KEY)) return 'done';
+      // Mobile/tablet visitors landing on the homepage for the first time get
+      // a separate, dedicated 3-screen intro + its own welcome-popup/tour
+      // instead (see WebsiteIntro/HomeTourFlow in Home.jsx) — defer entirely
+      // so the two first-time overlays don't mount on top of each other.
+      // That flow sets LS_KEY itself on every exit path, so this component
+      // won't hit this branch again afterward on the same device. Desktop
+      // and every other route are unaffected (the condition is always false
+      // there), so this doesn't change any existing behavior elsewhere.
+      const isHomepage = window.location.pathname === '/';
+      const isMobileOrTablet = window.matchMedia('(hover: none) and (pointer: coarse) and (max-width: 1366px)').matches;
+      if (isHomepage && isMobileOrTablet && !localStorage.getItem('tendr_intro_seen')) return 'done';
       return 'ask';
     } catch { return 'done'; }
   });

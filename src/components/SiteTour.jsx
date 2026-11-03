@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { Joyride, STATUS } from "react-joyride";
 import { useTour } from "../context/TourContext";
 
@@ -200,10 +200,46 @@ function TourTooltip({ index, step, backProps, skipProps, primaryProps, tooltipP
   );
 }
 
-export default function SiteTour({ onDone } = {}) {
+// `steps` (optional): { desktop: [...], mobile: [...] } to run a different tour
+// than the homepage default (e.g. HomeTourFlow's mobile/tablet-only tour) while
+// reusing all of this component's Joyride wiring and tooltip styling. Omitted
+// entirely by the existing global caller (FirstTimeExperience), which keeps
+// getting the original STEPS_DESKTOP/STEPS_MOBILE — zero behavior change there.
+export default function SiteTour({ onDone, steps: stepsOverride } = {}) {
   const { tourActive, endTour } = useTour();
   const [isMobile] = useState(() => typeof window !== "undefined" && window.innerWidth < 768);
-  const steps = isMobile ? STEPS_MOBILE : STEPS_DESKTOP;
+  const steps = stepsOverride
+    ? (isMobile ? stepsOverride.mobile : stepsOverride.desktop)
+    : (isMobile ? STEPS_MOBILE : STEPS_DESKTOP);
+
+  // react-joyride only honors a step's disableBeacon on a genuine false->true
+  // transition of `run` — mounting already-run=true (which happens here since
+  // tourActive flips true in the same commit that mounts this component)
+  // makes it show the beacon on step 1 regardless of disableBeacon. Mount
+  // paused, then flip true a tick later so the transition is real.
+  const [run, setRun] = useState(false);
+  useEffect(() => {
+    if (!tourActive) { setRun(false); return; }
+    const t = setTimeout(() => setRun(true), 0);
+    return () => clearTimeout(t);
+  }, [tourActive]);
+
+  // Belt-and-suspenders for a known react-joyride quirk: even with the above
+  // fix, the very first step can still render its click-to-open beacon
+  // instead of the tooltip directly (a long-standing library issue — clicking
+  // the beacon itself always correctly reveals the tooltip, confirming
+  // disableBeacon is otherwise honored). Auto-click it the moment it appears
+  // so the product behavior matches disableBeacon's intent on every step.
+  useEffect(() => {
+    if (!run) return;
+    let tries = 0;
+    const id = setInterval(() => {
+      const beacon = document.querySelector(".react-joyride__beacon");
+      if (beacon) { beacon.click(); clearInterval(id); }
+      else if (++tries > 20) clearInterval(id); // ~2s, give up quietly
+    }, 100);
+    return () => clearInterval(id);
+  }, [run]);
 
   const finishTour = useCallback(() => {
     endTour();
@@ -229,7 +265,7 @@ export default function SiteTour({ onDone } = {}) {
   return (
     <Joyride
       steps={steps}
-      run={tourActive}
+      run={run}
       onEvent={handleCallback}
       tooltipComponent={tooltipComponent}
       continuous
