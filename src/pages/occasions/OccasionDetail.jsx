@@ -5157,7 +5157,7 @@ export default function OccasionDetail(){
             })()}
 
             <div style={{position:"relative",display:"flex",gap:10}}>
-              <button onClick={back} style={{flex:1,padding:"14px",borderRadius:14,border:`1.5px solid ${gold}30`,background:"transparent",color:gold,fontFamily:font,fontWeight:700,fontSize:13.5,cursor:"pointer"}}>
+              <button onClick={back} style={{flex:1,padding:"14px",borderRadius:14,border:`1.5px solid ${gold}30`,background:"#fff",color:gold,fontFamily:font,fontWeight:700,fontSize:13.5,cursor:"pointer"}}>
                 ← Back
               </button>
               <button onClick={next} style={{flex:2,padding:"14px",borderRadius:14,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontFamily:font,fontWeight:800,fontSize:13.5,cursor:"pointer",boxShadow:`0 6px 20px rgba(196,122,46,0.35)`}}>
@@ -5794,14 +5794,14 @@ export default function OccasionDetail(){
       {step>0&&step!==7&&(
         <div className="od-step-footer" style={{position:"absolute",left:0,right:0,bottom:0,background:"rgba(253,250,245,0.72)",backdropFilter:"blur(20px) saturate(180%)",WebkitBackdropFilter:"blur(20px) saturate(180%)",borderTop:"0.5px solid rgba(28,9,0,0.08)",padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
           <div style={{maxWidth:680,margin:"0 auto",display:"flex",gap:10,justifyContent:"space-between",alignItems:"center"}}>
-            {step>0&&<button onClick={back} style={btnGhost}>← Back</button>}
+            {step>0&&<button onClick={back} style={{...btnGhost,background:"#fff",boxShadow:"0 2px 8px rgba(28,9,0,0.06)"}}>← Back</button>}
             {step===1&&canNext()?(
               <div style={{display:"flex",flexDirection:"column",gap:8,flex:1}}>
                 <button onClick={()=>{setNotesPromptAction("quickplan");setNotesPromptOpen(true);}} disabled={quickPlanBuilding}
                   style={{padding:"13px 18px",borderRadius:10,border:"none",background:`linear-gradient(135deg,${occAccent},${lightenHex(occAccent,0.25)})`,color:"#fff",fontSize:14,fontWeight:800,cursor:quickPlanBuilding?"not-allowed":"pointer",fontFamily:font,boxShadow:`0 4px 14px ${occAccent}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:6,letterSpacing:"0.01em"}}>
                   ✨ Get My Full Plan Ready
                 </button>
-                <button onClick={()=>{setNotesPromptAction("stepbystep");setNotesPromptOpen(true);}} disabled={quickPlanBuilding} style={{...btnGhost,width:"100%"}}>Build Step by Step →</button>
+                <button onClick={()=>{setNotesPromptAction("stepbystep");setNotesPromptOpen(true);}} disabled={quickPlanBuilding} style={{...btnGhost,width:"100%",background:"#fff",boxShadow:"0 2px 8px rgba(28,9,0,0.06)"}}>Build Step by Step →</button>
               </div>
             ):step<7&&(
               <button onClick={next} disabled={!canNext()} style={btnPrimary}>
