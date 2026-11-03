@@ -637,6 +637,13 @@ function WebsiteIntro({ onDone }) {
   const imageEl = (
     <div className="tin-image-wrap">
       <img src={data.image} alt="" aria-hidden style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center", display:"block" }} />
+      {/* Logo overlaid directly on the photo's top-left corner — no separate
+          header strip above it, so the image runs edge-to-edge from the very
+          top of the screen. */}
+      <button onClick={() => goTo(0)} aria-label="Tendr home"
+        style={{ position:"absolute", top:"calc(14px + env(safe-area-inset-top,0px))", left:16, background:"none", border:"none", cursor:"pointer", padding:0, display:"flex", alignItems:"center", filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.35))" }}>
+        <img src={tendrLogo} alt="Tendr" style={{ height:24, display:"block" }} />
+      </button>
     </div>
   );
 
@@ -674,15 +681,11 @@ function WebsiteIntro({ onDone }) {
       </div>
 
       {/* Nav buttons — screen-dependent. Last screen drops Back entirely and
-          offers two peer actions (Skip Tour / Show me around) instead of a
-          Back+primary pairing, since at that point the intro is finished and
-          there's nothing left to go "back" into. */}
+          is just the single full-width primary action, since at that point
+          the intro is finished and there's nothing left to go "back" into
+          (and no skip option — Show me around is the only way forward). */}
       <div style={{ padding:"12px 0 calc(env(safe-area-inset-bottom,12px) + 18px)", display:"flex", alignItems:"center", gap:10 }}>
-        {isLast ? (
-          <button onClick={skip} style={{ minHeight:48, padding:"0 20px", borderRadius:12, background:"rgba(44,26,14,0.05)", border:"1px solid rgba(44,26,14,0.12)", cursor:"pointer", fontSize:14, fontWeight:700, color:IT, fontFamily:"'Outfit',sans-serif" }}>
-            Skip Tour
-          </button>
-        ) : slide > 0 ? (
+        {!isLast && slide > 0 ? (
           <button onClick={goPrev} style={{ minWidth:44, minHeight:44, padding:"0 18px", borderRadius:11, background:"rgba(44,26,14,0.05)", border:"1px solid rgba(44,26,14,0.12)", cursor:"pointer", fontSize:13.5, fontWeight:700, color:IT, fontFamily:"'Outfit',sans-serif" }}>
             ← Back
           </button>
@@ -727,7 +730,6 @@ function WebsiteIntro({ onDone }) {
         </>
       ) : (
         <>
-          {header}
           {imageEl}
           {body}
         </>
@@ -1245,11 +1247,14 @@ const Home = () => {
           aria-hidden
           style={{ display: "none", position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top", zIndex: 0 }}
         />
-        {/* Dark overlay so cream text stays readable over the bright photo */}
+        {/* Dark overlay so cream text stays readable over the bright photo — a
+            warm brown tint (matching the brand ink, not flat black) plus a
+            slightly stronger band through the middle where the headline sits,
+            for a more cinematic, premium read without flattening the photo. */}
         <div
           className="hero-mobile-photo-overlay"
           aria-hidden
-          style={{ display: "none", position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.68) 38%, rgba(0,0,0,0.60) 100%)", zIndex: 1 }}
+          style={{ display: "none", position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(20,10,3,0.42) 0%, rgba(20,10,3,0.7) 42%, rgba(20,10,3,0.52) 75%, rgba(20,10,3,0.62) 100%)", zIndex: 1 }}
         />
         <div
           style={{
@@ -1335,9 +1340,9 @@ const Home = () => {
               <button
                 onClick={() => { setOccasionFlow("grid"); setOccasionSearch(""); }}
                 className="home-hero-cta"
-                style={{ background: "transparent", color: "rgba(255,247,235,0.88)", fontSize: 14.5, fontWeight: 600, letterSpacing: "0.02em", padding: "10px 22px", borderRadius: 11, border: "1.5px solid rgba(196,122,46,0.5)", cursor: "pointer", transition: "all 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.85)"; e.currentTarget.style.background = "rgba(196,122,46,0.1)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.5)"; e.currentTarget.style.background = "transparent"; }}
+                style={{ background: "rgba(196,122,46,0.12)", color: "#FFF8EC", fontSize: 14.5, fontWeight: 600, letterSpacing: "0.02em", padding: "10px 22px", borderRadius: 11, border: "1.5px solid rgba(204,171,74,0.55)", cursor: "pointer", transition: "all 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", boxShadow: "0 2px 12px rgba(0,0,0,0.18)" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.85)"; e.currentTarget.style.background = "rgba(196,122,46,0.2)"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(204,171,74,0.55)"; e.currentTarget.style.background = "rgba(196,122,46,0.12)"; }}
               >
                 Plan an Occasion ✦
               </button>
@@ -1352,9 +1357,9 @@ const Home = () => {
               transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.34 }}
               style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 22, position: "relative", zIndex: 1, flexWrap: "wrap" }}
             >
-              <span style={{ fontSize: 11, color: "rgba(255,247,235,0.72)", fontFamily: "'Outfit',sans-serif", letterSpacing: "0.04em", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>100+ verified vendors</span>
-              <div style={{ width: 1, height: 14, background: "rgba(204,171,74,0.35)", flexShrink: 0 }} />
-              <span style={{ fontSize: 11, color: "rgba(255,247,235,0.72)", fontFamily: "'Outfit',sans-serif", letterSpacing: "0.04em", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>Delhi · Noida · NCR</span>
+              <span style={{ fontSize: 11, color: "rgba(255,247,235,0.85)", fontFamily: "'Outfit',sans-serif", letterSpacing: "0.04em", textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>100+ verified vendors</span>
+              <div style={{ width: 1, height: 14, background: "rgba(204,171,74,0.45)", flexShrink: 0 }} />
+              <span style={{ fontSize: 11, color: "rgba(255,247,235,0.85)", fontFamily: "'Outfit',sans-serif", letterSpacing: "0.04em", textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>Delhi · Noida · NCR</span>
             </motion.div>
 
           </div>
@@ -1688,8 +1693,8 @@ const Home = () => {
             flex-direction: column !important;
             justify-content: center !important;
           }
-          .home-hero-h1 { font-size: clamp(2.1rem, 7.5vw, 2.8rem) !important; }
-          .home-hero-para { font-size: 14px !important; }
+          .home-hero-h1 { font-size: clamp(2.25rem, 8vw, 3rem) !important; line-height: 1.1 !important; margin-bottom: 18px !important; }
+          .home-hero-para { font-size: 14.5px !important; max-width: 420px !important; }
           .hero-split > div:last-child { display: none !important; }
           .hero-mobile-cats {
             display: flex !important;
@@ -1703,6 +1708,12 @@ const Home = () => {
           .home-hero-cta-wrap { flex-wrap: nowrap !important; gap: 8px !important; }
           .home-hero-cta { flex: 1 !important; padding: 11px 6px !important; font-size: 13px !important; text-align: center !important; justify-content: center !important; white-space: normal !important; }
           .occ-strip-label { font-size: 13px !important; }
+        }
+        /* Narrow phones (360-380px) — both CTAs must still sit side by side,
+           so tighten padding/font further here rather than ever stacking them. */
+        @media (max-width: 380px) {
+          .home-hero-cta-wrap { gap: 6px !important; }
+          .home-hero-cta { padding: 10px 4px !important; font-size: 12px !important; }
         }
         .occ-strip-label { font-size: 16px; }
       `}</style>
