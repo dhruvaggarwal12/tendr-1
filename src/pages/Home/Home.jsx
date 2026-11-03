@@ -28,9 +28,9 @@ import CorporateLogin from "../../components/corporateEventPlanning.jsx";
 import JourneyFlow from "../../components/JourneyFlow";
 import useIsMobileOrTablet from "../../hooks/useIsMobileOrTablet";
 import HomeTourFlow from "../../components/HomeTourFlow";
-import introCelebration from "../../assets/intro/tendr-intro-01-celebration.png";
-import introPlatform from "../../assets/intro/tendr-intro-02-platform.png";
-import introExperience from "../../assets/intro/tendr-intro-03-experience.png";
+import introCelebration from "../../assets/intro/tendr-intro-01-celebration.jpg";
+import introPlatform from "../../assets/intro/tendr-intro-02-platform.jpg";
+import introExperience from "../../assets/intro/tendr-intro-03-experience.jpg";
 
 // WhatsApp icon
 import { FaWhatsapp } from "react-icons/fa";
@@ -626,13 +626,10 @@ function WebsiteIntro({ onDone }) {
   const isLast = slide === INTRO_TOTAL - 1;
 
   const header = (
-    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
+    <div style={{ display:"flex", alignItems:"center",
       padding:"calc(14px + env(safe-area-inset-top,0px)) 20px 0", flexShrink:0 }}>
       <button onClick={() => goTo(0)} style={{ background:"none", border:"none", cursor:"pointer", padding:0, display:"flex", alignItems:"center" }} aria-label="Tendr home">
         <img src={tendrLogo} alt="Tendr" style={{ height:24, display:"block" }} />
-      </button>
-      <button onClick={skip} style={{ background:"none", border:"none", cursor:"pointer", padding:"8px 4px", fontSize:13.5, fontWeight:600, color:IM, fontFamily:"'Outfit',sans-serif", minHeight:44 }}>
-        Skip
       </button>
     </div>
   );
@@ -676,26 +673,26 @@ function WebsiteIntro({ onDone }) {
         ))}
       </div>
 
-      {/* Nav buttons — screen-dependent per spec */}
-      <div style={{ padding:"12px 0 calc(env(safe-area-inset-bottom,12px) + 18px)", display:"flex", flexDirection:"column", gap:10 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          {slide > 0 ? (
-            <button onClick={goPrev} style={{ minWidth:44, minHeight:44, padding:"0 18px", borderRadius:11, background:"rgba(44,26,14,0.05)", border:"1px solid rgba(44,26,14,0.12)", cursor:"pointer", fontSize:13.5, fontWeight:700, color:IT, fontFamily:"'Outfit',sans-serif" }}>
-              ← Back
-            </button>
-          ) : null}
-          <button onClick={isLast ? showMeAround : goNext}
-            style={{ flex:1, minHeight:48, padding:"0 22px", background:`linear-gradient(135deg,${IG},${IGL})`,
-              border:"none", borderRadius:12, color:"#fff", fontWeight:700, fontSize:15,
-              fontFamily:"'Outfit',sans-serif", cursor:"pointer", boxShadow:`0 4px 16px ${IG}55` }}>
-            {isLast ? "Show me around →" : "Next →"}
+      {/* Nav buttons — screen-dependent. Last screen drops Back entirely and
+          offers two peer actions (Skip Tour / Show me around) instead of a
+          Back+primary pairing, since at that point the intro is finished and
+          there's nothing left to go "back" into. */}
+      <div style={{ padding:"12px 0 calc(env(safe-area-inset-bottom,12px) + 18px)", display:"flex", alignItems:"center", gap:10 }}>
+        {isLast ? (
+          <button onClick={skip} style={{ minHeight:48, padding:"0 20px", borderRadius:12, background:"rgba(44,26,14,0.05)", border:"1px solid rgba(44,26,14,0.12)", cursor:"pointer", fontSize:14, fontWeight:700, color:IT, fontFamily:"'Outfit',sans-serif" }}>
+            Skip Tour
           </button>
-        </div>
-        {isLast && (
-          <button onClick={skip} style={{ background:"none", border:"none", cursor:"pointer", fontSize:12.5, fontWeight:600, color:IM, fontFamily:"'Outfit',sans-serif", textAlign:"center", padding:"6px 0" }}>
-            Skip the tour and explore on my own
+        ) : slide > 0 ? (
+          <button onClick={goPrev} style={{ minWidth:44, minHeight:44, padding:"0 18px", borderRadius:11, background:"rgba(44,26,14,0.05)", border:"1px solid rgba(44,26,14,0.12)", cursor:"pointer", fontSize:13.5, fontWeight:700, color:IT, fontFamily:"'Outfit',sans-serif" }}>
+            ← Back
           </button>
-        )}
+        ) : null}
+        <button onClick={isLast ? showMeAround : goNext}
+          style={{ flex:1, minHeight:48, padding:"0 22px", background:`linear-gradient(135deg,${IG},${IGL})`,
+            border:"none", borderRadius:12, color:"#fff", fontWeight:700, fontSize:15,
+            fontFamily:"'Outfit',sans-serif", cursor:"pointer", boxShadow:`0 4px 16px ${IG}55` }}>
+          {isLast ? "Show me around →" : "Next →"}
+        </button>
       </div>
     </motion.div>
   );
