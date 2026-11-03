@@ -3249,7 +3249,7 @@ export default function OccasionDetail(){
       )}
 
       {/* content */}
-      <div ref={contentRef} style={{flex:1,overflowY:"auto",padding:"28px 20px 32px",maxWidth:680,margin:"0 auto",width:"100%",boxSizing:"border-box",scrollBehavior:"smooth",position:"relative",zIndex:2}}>
+      <div ref={contentRef} style={{flex:1,overflowY:"auto",padding:`28px 20px ${step>0&&step!==7?150:32}px`,maxWidth:680,margin:"0 auto",width:"100%",boxSizing:"border-box",scrollBehavior:"smooth",position:"relative",zIndex:2}}>
 
         {/* ══ STEP 0: CUSTOM OCCASION — name & describe ══ */}
         {step===0&&isCustomOccasion&&(
@@ -5657,7 +5657,7 @@ export default function OccasionDetail(){
                     ))}
                   </div>
                 </div>
-                <div style={{flex:1,minHeight:0,overflowY:"auto",width:"100%",maxWidth:1050,padding:"4px 24px",boxSizing:"border-box"}}>
+                <div style={{flex:1,minHeight:0,overflowY:"auto",width:"100%",maxWidth:1050,padding:"4px 24px 90px",boxSizing:"border-box"}}>
                   <AnimatePresence mode="wait" initial={false} custom={storyDirection}>
                     <motion.div key={storyIdx}
                       initial={{opacity:0,x:storyDirection>0?44:-44}}
@@ -5668,23 +5668,27 @@ export default function OccasionDetail(){
                     </motion.div>
                   </AnimatePresence>
                 </div>
-                <div style={{flexShrink:0,width:"100%",maxWidth:1050,padding:"12px 24px calc(14px + env(safe-area-inset-bottom,0px))",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,background:"transparent",boxSizing:"border-box"}}>
-                  <button onClick={()=>storyIdx>0&&goToStory(storyIdx-1)} disabled={storyIdx===0}
-                    style={{padding:"11px 18px",borderRadius:100,border:`1.5px solid ${storyIdx===0?"rgba(28,9,0,0.08)":"rgba(196,122,46,0.3)"}`,background:"#fff",color:storyIdx===0?"rgba(28,9,0,0.2)":gold,fontSize:13,fontWeight:700,cursor:storyIdx===0?"default":"pointer",fontFamily:font}}>
-                    ← Back
-                  </button>
-                  <span style={{fontSize:11,color:muted,fontWeight:600}}>{storyIdx+1} / {storySlides.length}</span>
-                  {storyIdx<storySlides.length-1 ? (
-                    <button onClick={()=>goToStory(storyIdx+1)}
-                      style={{padding:"11px 20px",borderRadius:100,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font}}>
-                      Next →
+                {/* Floats over the scrollable slide content as a frosted glass bar — same
+                    translucent-blur treatment as an iOS tab bar — instead of a flat strip. */}
+                <div style={{position:"absolute",left:0,right:0,bottom:0,display:"flex",justifyContent:"center",background:"rgba(253,250,245,0.72)",backdropFilter:"blur(20px) saturate(180%)",WebkitBackdropFilter:"blur(20px) saturate(180%)",borderTop:"0.5px solid rgba(28,9,0,0.08)",boxSizing:"border-box"}}>
+                  <div style={{width:"100%",maxWidth:1050,padding:"12px 24px calc(14px + env(safe-area-inset-bottom,0px))",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,boxSizing:"border-box"}}>
+                    <button onClick={()=>storyIdx>0&&goToStory(storyIdx-1)} disabled={storyIdx===0}
+                      style={{padding:"11px 18px",borderRadius:100,border:`1.5px solid ${storyIdx===0?"rgba(28,9,0,0.08)":"rgba(196,122,46,0.3)"}`,background:"#fff",color:storyIdx===0?"rgba(28,9,0,0.2)":gold,fontSize:13,fontWeight:700,cursor:storyIdx===0?"default":"pointer",fontFamily:font}}>
+                      ← Back
                     </button>
-                  ) : (
-                    <button onClick={()=>setPlanStoryOpen(false)}
-                      style={{padding:"11px 20px",borderRadius:100,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font}}>
-                      See full plan →
-                    </button>
-                  )}
+                    <span style={{fontSize:11,color:muted,fontWeight:600}}>{storyIdx+1} / {storySlides.length}</span>
+                    {storyIdx<storySlides.length-1 ? (
+                      <button onClick={()=>goToStory(storyIdx+1)}
+                        style={{padding:"11px 20px",borderRadius:100,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font}}>
+                        Next →
+                      </button>
+                    ) : (
+                      <button onClick={()=>setPlanStoryOpen(false)}
+                        style={{padding:"11px 20px",borderRadius:100,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font}}>
+                        See full plan →
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>,
               document.body
@@ -5782,10 +5786,13 @@ export default function OccasionDetail(){
         )}
       </div>
 
-      {/* bottom CTA — flex footer, always visible except step 7 (the "Tendr wishes you"
-          reveal page), which has its own embedded Back/See Plan buttons */}
+      {/* bottom CTA — floats over the scrollable content as a frosted glass bar (like an
+          iOS tab bar: translucent + blurred, content visible scrolling underneath) rather
+          than a flat opaque strip. Always visible except step 7 (the "Tendr wishes you"
+          reveal page), which has its own embedded Back/See Plan buttons. contentRef below
+          carries matching extra bottom padding so its last content never sits under this. */}
       {step>0&&step!==7&&(
-        <div className="od-step-footer" style={{flexShrink:0,background:"transparent",padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
+        <div className="od-step-footer" style={{position:"absolute",left:0,right:0,bottom:0,background:"rgba(253,250,245,0.72)",backdropFilter:"blur(20px) saturate(180%)",WebkitBackdropFilter:"blur(20px) saturate(180%)",borderTop:"0.5px solid rgba(28,9,0,0.08)",padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
           <div style={{maxWidth:680,margin:"0 auto",display:"flex",gap:10,justifyContent:"space-between",alignItems:"center"}}>
             {step>0&&<button onClick={back} style={btnGhost}>← Back</button>}
             {step===1&&canNext()?(
