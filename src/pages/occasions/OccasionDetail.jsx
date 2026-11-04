@@ -15,6 +15,7 @@ import { getEntryExperienceById, entryEmoji } from "../../data/entryExperiences"
 import { DECOR_FOCUS_AREAS, DECOR_FOCUS_AREA_IDS } from "../../data/decorFocusAreas";
 import { ALL_INDIAN_CITIES, SERVICED_CITIES } from "../../data/indianCities";
 import { saveResumeUrl } from "../../utils/planningResume";
+import { fetchPriceBenchmark, blendWithBenchmark } from "../../utils/priceEstimator";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 import tendrLogoImg from "../../assets/logos/tendr-logo-secondary.png";
@@ -39,9 +40,14 @@ const HUB_ROUTES = {
   "birthday-party":"\/birthday-hub","first-birthday":"\/birthday-hub",
   "anniversary":"\/anniversary-hub","baby-shower":"\/baby-shower-hub",
   "office-party":"\/office-party-hub",
-  "gender-reveal":"\/baby-shower-hub","newborn-welcome":"\/baby-shower-hub",
+  "gender-reveal":"\/gender-reveal-hub","newborn-welcome":"\/newborn-welcome-hub",
   "housewarming":"\/housewarming-hub","get-together":"\/get-together-hub",
   "naming-ceremony":"\/naming-ceremony-hub",
+  "kitty-party":"\/kitty-party-hub","graduation":"\/graduation-hub",
+  "wedding":"\/wedding-hub","bachelorette":"\/bachelorette-hub",
+  "farewell":"\/farewell-hub","retirement":"\/retirement-hub",
+  "diwali-party":"\/diwali-party-hub","holi-party":"\/holi-party-hub",
+  "navratri-garba":"\/navratri-garba-hub",
 };
 
 const OCC_ACCENT = {
@@ -1264,8 +1270,18 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
   const outdoor=venue.includes("garden")||venue.includes("outdoor")||venue.includes("farmhouse")||venue.includes("rooftop")||venue.includes("terrace");
   const large=g>60;
   const hasKids=ages.includes("Kids")||ages.includes("Toddlers");
+  // Guest-count scaling — applied only to categories whose real-world cost tracks
+  // venue/material size (more backdrop area, more centrepieces, bigger cake, bigger
+  // sound coverage): Decorator, Florist, Cake Artist, AV Setup. Deliberately NOT
+  // applied to DJ/Photographer/Videographer/Entertainer/Emcee/Photo Booth — those
+  // are priced by hours/crew in reality, not headcount, so scaling them would make
+  // the estimate less honest, not more.
+  const sizeFactor = g>150 ? 1.6 : g>50 ? 1.25 : 1;
+  const scalePriceStr = (str) => (!str || sizeFactor===1) ? str :
+    str.replace(/(\d+(?:\.\d+)?)K/g, (_m,n)=>`${Math.round(parseFloat(n)*sizeFactor)}K`);
+  const scaleTiers = (tiers) => sizeFactor===1 ? tiers : tiers.map(t=>({...t,price:scalePriceStr(t.price)}));
 
-  if(type==="Decorator") return [
+  if(type==="Decorator") return scaleTiers([
     {label:"Essential",price:outdoor?"₹8K–15K":"₹5K–10K",
       items:["Balloon clusters at entry","Simple backdrop wall","Basic table centrepieces"],
       note:"Clean, minimal setup — ideal for intimate gatherings"},
@@ -1275,7 +1291,7 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
     {label:"Premium",price:outdoor?"₹50K+":"₹35K+",
       items:["Full venue transformation",tags.includes("neon")?"Custom neon signs":"Custom floral installations",large?"Stage & focal-point décor":"Immersive themed corners","Day-of coordination included"],
       note:"Showstopper — every detail custom-matched"},
-  ];
+  ]);
 
   if(type==="Caterer") return [
     {label:"Essential",price:"₹350–450/head",
@@ -1325,7 +1341,7 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
       note:"Film-quality production"},
   ];
 
-  if(type==="Florist") return [
+  if(type==="Florist") return scaleTiers([
     {label:"Essential",price:"₹4K–8K",
       items:["Entry arrangement","2–3 table centrepieces","Seasonal flowers"],
       note:"Fresh, simple floral touches"},
@@ -1335,7 +1351,7 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
     {label:"Premium",price:"₹30K+",
       items:["Custom floral installation","Ceiling / hanging arrangements","Imported blooms on request","Florist on-site for setup"],
       note:"Garden-in-a-room effect"},
-  ];
+  ]);
 
   if(type==="Entertainer") return [
     {label:"Essential",price:"₹5K–9K",
@@ -1436,7 +1452,7 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
       note:"Statement organic balloon setup"},
   ];
 
-  if(type==="Cake Artist") return [
+  if(type==="Cake Artist") return scaleTiers([
     {label:"Essential",price:"₹2K–4K",
       items:[`${Math.max(1,Math.ceil(g/30))} kg themed cake`,"Fondant or buttercream","Custom message on top"],
       note:"Classic cake — done right"},
@@ -1446,9 +1462,9 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
     {label:"Premium",price:"₹12K–25K",
       items:["Luxury custom cake","Hand-painted or sugar flowers","Multi-flavour tiers","Cake cutting service"],
       note:"Bespoke luxury cake piece"},
-  ];
+  ]);
 
-  if(type==="AV Setup") return [
+  if(type==="AV Setup") return scaleTiers([
     {label:"Essential",price:"₹8K–14K",
       items:["Projector + 8ft screen","2 wireless mics","Basic sound system","HDMI cables"],
       note:"Clear audio and visuals for speeches"},
@@ -1458,7 +1474,7 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
     {label:"Premium",price:"₹35K+",
       items:["Dual LED screens","6+ mics + in-ear monitors","Live streaming to remote guests","Custom presentation loading + rehearsal","Dedicated AV engineer full event"],
       note:"Broadcast-quality setup — nothing goes wrong"},
-  ];
+  ]);
 
   return [
     {label:"Essential",price:"Budget-friendly",items:["Basic service package","Standard setup"],note:"Gets the job done"},
@@ -1833,14 +1849,21 @@ function scoreGift(g, {theme, ageGroups=[], budget=null, guests=20}) {
   return {score:sc,reason};
 }
 
-/* ── approximate cost parser for budget matching ── */
-function approxCost(priceStr, guests) {
+/* ── price-range parser — parses "₹5K–10K" / "₹350–450/head" / "₹35K+" style
+   strings into a real {min,max}, guest-scaling "/head" items automatically.
+   approxCost (budget matching) just needs the midpoint; the Quick Plan budget
+   summary (computeSelectedVendorsBudget) needs the full range. ── */
+function priceRangeOf(priceStr, guests) {
   if(!priceStr) return null;
   const isPerHead=/head/i.test(priceStr);
   const nums=priceStr.replace(/[₹+, ]/g,"").replace(/K/g,"000").match(/\d+/g)?.map(Number)||[];
   if(!nums.length) return null;
-  const mid=(nums[0]+(nums[nums.length-1]||nums[0]))/2;
-  return isPerHead?mid*guests:mid;
+  const min=nums[0], max=nums[nums.length-1]||nums[0];
+  return isPerHead?{min:min*guests,max:max*guests}:{min,max};
+}
+function approxCost(priceStr, guests) {
+  const r=priceRangeOf(priceStr, guests);
+  return r?(r.min+r.max)/2:null;
 }
 
 /* ── estimated gift spend — shared by the step-6 tracker and the step-7 budget summary,
@@ -1860,6 +1883,27 @@ function computeEntryExperienceSpend(selectedEntryExperiences) {
     const e=getEntryExperienceById(id);
     return sum+(e?(approxCost(e.priceDisplay,1)||0):0);
   },0);
+}
+
+/* ── real budget estimate for THIS plan — sums priceRangeOf() over every vendor
+   actually selected (vendors/vendorPackages), guest-scaled via getVendorPackages'
+   own sizeFactor + Caterer's per-head pricing. A "custom" package (no fixed tier
+   chosen) is estimated at that vendor's Standard tier, the best single guess for
+   what a custom setup costs. Returns null when nothing's selected yet, so callers
+   can fall back to the static occasion range. ── */
+function computeSelectedVendorsBudget(vendors, vendorPackages, {guests, venueType, theme, ageGroups}) {
+  let min=0, max=0, count=0;
+  vendors.filter(v=>ALL_VENDORS.includes(v)).forEach(v=>{
+    const pi=vendorPackages[v];
+    if(pi===undefined) return;
+    const pkgs=getVendorPackages(v,{guests,venueType,theme,ageGroups});
+    const pkg=typeof pi==="number" ? pkgs[pi] : (pkgs.find(p=>p.popular)||pkgs[1]);
+    if(!pkg) return;
+    const r=priceRangeOf(pkg.price,guests);
+    if(!r) return;
+    min+=r.min; max+=r.max; count++;
+  });
+  return count ? {min,max,count} : null;
 }
 
 /* ── plan card PDF generation — shared by the Download-PDF button and the
@@ -2362,6 +2406,26 @@ export default function OccasionDetail(){
       .catch(()=>{});
     return ()=>{ cancelled=true; };
   },[occasion?.name]);
+
+  // Real, guest-aware budget for THIS plan — sums the actually-selected vendors'
+  // (guest-scaled) packages, then blends toward the real average of what paid
+  // customers spent on a similar occasion (same backend/engine the standalone
+  // Price Estimator uses — see src/utils/priceEstimator.js). null until at least
+  // one vendor is selected, so the UI falls back to the static per-occasion range
+  // before that (e.g. before Quick Plan has run).
+  const [computedBudget,setComputedBudget]=useState(null);
+  useEffect(()=>{
+    const sum=computeSelectedVendorsBudget(vendors,vendorPackages,{guests,venueType,theme,ageGroups});
+    if(!sum){ setComputedBudget(null); return; }
+    let cancelled=false;
+    fetchPriceBenchmark(occasion.name, city).then(benchmark=>{
+      if(cancelled) return;
+      const blended=benchmark?{...blendWithBenchmark(sum,benchmark),count:sum.count}:{...sum,adjusted:false};
+      setComputedBudget(blended);
+      if(!budget) setBudget(String(Math.round((blended.min+blended.max)/2)));
+    });
+    return ()=>{ cancelled=true; };
+  },[vendors,vendorPackages,guests,venueType,city,customDecor,occasion.name]);
 
   /* Step renumbering migration (Entry Experiences inserted as new step 4 — everything
      from old step 4 onward shifted up by one). A draft saved before this change would
@@ -5449,7 +5513,7 @@ export default function OccasionDetail(){
                   {[
                     celebrantName?{icon:"🎀",label:"For",val:celebrantName}:null,
                     {icon:"👥",label:"Guests",val:`${guests} people`},
-                    {icon:"💰",label:"Budget",val:budget?fmtNum(Number(budget)):`${fmtNum(occasion.budgetMin)} – ${fmtNum(occasion.budgetMax)}`},
+                    {icon:"💰",label:"Budget",val:computedBudget?`${fmtNum(computedBudget.min)} – ${fmtNum(computedBudget.max)}`:budget?fmtNum(Number(budget)):`${fmtNum(occasion.budgetMin)} – ${fmtNum(occasion.budgetMax)}`},
                     {icon:"📅",label:"Date",val:date?new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}):"TBD"},
                     {icon:"📍",label:"Location",val:city?(venueType?`${city} · ${venueType}`:city):(venueType||"TBD")},
                   ].filter(Boolean).map(({icon,label,val})=>(
@@ -5459,6 +5523,10 @@ export default function OccasionDetail(){
                     </div>
                   ))}
                 </div>
+                {computedBudget&&<div style={{marginBottom:8,fontSize:10.5,color:muted}}>
+                  💡 Based on your {computedBudget.count} selected vendor{computedBudget.count===1?"":"s"} for {guests} guests
+                  {computedBudget.adjusted&&` · adjusted using real pricing from ${computedBudget.sampleSize} similar Tendr event${computedBudget.sampleSize===1?"":"s"}`}
+                </div>}
                 {theme&&<div style={{marginBottom:8,fontSize:11.5,fontWeight:700,color:gold}}>🎨 {theme.name} theme</div>}
                 {cateringType&&<div style={{marginBottom:8,fontSize:11.5,color:muted}}>🍽️ {cateringType}{cakeType&&` · ${cakeType}`}{inviteType&&` · ${inviteType}`}</div>}
                 <div style={{borderTop:`1px solid rgba(196,122,46,0.1)`,paddingTop:10,marginTop:2,display:"flex",justifyContent:"space-between",alignItems:"center"}}>

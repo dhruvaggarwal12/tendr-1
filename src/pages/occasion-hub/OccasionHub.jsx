@@ -6514,6 +6514,7 @@ const OCCASIONS = {
     themes: ["All Pink", "Bollywood Glam", "Saree Night", "Floral Fiesta", "Retro Kitty", "Peacock Blue", "Black & Gold", "Garden Party"],
     sections: [
       { id: "manage", label: "💰 Manage", subtitle: "Keep the kitty running", tools: [
+        { id: "invite", emoji: "📨", title: "Digital Invite & RSVP", desc: "One link · the girls RSVP instantly", color: "#2563EB" },
         { id: "luckydraw", emoji: "🎀", title: "Lucky Draw", desc: "Pick this month's winner", color: "#E879F9" },
         { id: "kittyfund", emoji: "💰", title: "Kitty Fund Tracker", desc: "Track who's paid this month", color: "#F59E0B" },
         { id: "bills", emoji: "💸", title: "Bill Splitter", desc: "Split the party expenses", color: "#DC2626" },

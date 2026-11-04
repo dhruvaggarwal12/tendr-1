@@ -5,6 +5,22 @@ import BasicSpeedDial from "../../components/BasicSpeedDial";
 import ToolIntroWrapper from "../../components/ToolIntroWrapper";
 import ToolNav from "../../components/ToolNav";
 import { EVENT_TYPES } from "../../data/invitationTemplates";
+import { FLYER_TEMPLATES } from "../../data/flyerTemplates";
+
+const SAMPLE_DATA = { eventTitle: "Join us for a Special Celebration", date: "Saturday, 15th June", time: "7:00 PM Onwards", venue: "Venue name & address", rsvp: "+91 9XXXXXXXXX" };
+
+/* Fixed-size frame showing a scaled-down, non-interactive render of the
+   real template component — no separate preview image asset needed. */
+function TemplateThumb({ Component }) {
+  const scale = 150 / 460;
+  return (
+    <div style={{ width: 150, height: Math.round(660 * scale), overflow: "hidden", borderRadius: 10, position: "relative", flexShrink: 0 }}>
+      <div style={{ width: 460, height: 660, transform: `scale(${scale})`, transformOrigin: "top left", pointerEvents: "none" }}>
+        <Component data={SAMPLE_DATA} editable={false} onChange={() => {}} />
+      </div>
+    </div>
+  );
+}
 
 const font = "'Outfit', sans-serif";
 
@@ -57,7 +73,21 @@ const InvitationFlyerPicker = () => {
           ))}
         </div>
 
-        <div style={{ textAlign: "center", marginTop: 36 }}>
+        <div style={{ marginTop: 52, textAlign: "center" }}>
+          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 6 }}>Or start from a Tendr design</p>
+          <p style={{ fontSize: 13.5, color: "#9B7450", marginBottom: 22 }}>5 signature templates, fully editable, ready to share.</p>
+          <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
+            {FLYER_TEMPLATES.map(t => (
+              <button key={t.id} onClick={() => navigate(`/invitation/customize?template=${t.id}`)}
+                style={{ background: "#FFFCF5", borderRadius: 14, padding: 10, border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 3px 14px rgba(139,69,19,0.07)", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                <TemplateThumb Component={t.Component} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{t.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ textAlign: "center", marginTop: 30 }}>
           <button onClick={() => navigate("/invitation/customize")}
             style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 13, fontWeight: 600, fontFamily: font, textDecoration: "underline", textUnderlineOffset: 3 }}>
             Skip — start with a blank design

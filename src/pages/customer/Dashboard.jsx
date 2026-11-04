@@ -2196,6 +2196,23 @@ export default function CustomerDashboard() {
                     );
                   })()}
 
+                  {/* Auto-created invite + RSVP flyer, set by admin's "Mark Payment Done" —
+                      see PATCH /admin/event-plans/:id/mark-payment. Also appears, for free,
+                      in the Party Hub / Guest List tabs above (both driven by GET /parties). */}
+                  {plan.status === "in_progress" && plan.partyInviteId && (
+                    <div style={{ marginTop: 14, borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 14, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                      <div style={{ fontSize: 24, flexShrink: 0 }}>🎉</div>
+                      <div style={{ flex: 1, minWidth: 160 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>Your Invitation & RSVP is ready</div>
+                        <div style={{ fontSize: 11.5, color: "#9B7450" }}>Share the link — guests RSVP instantly.</div>
+                      </div>
+                      <button onClick={() => navigate(`/house-party/invite/${plan.partyInviteId}`)}
+                        style={{ padding: "8px 14px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
+                        View & Share →
+                      </button>
+                    </div>
+                  )}
+
                   {/* Change request — only for Upcoming (in_progress) plans */}
                   {plan.status === "in_progress" && (() => {
                     const cr = plan.changeRequest;
