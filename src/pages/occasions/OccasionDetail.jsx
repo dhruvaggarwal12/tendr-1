@@ -5395,10 +5395,10 @@ export default function OccasionDetail(){
             // Simple line-icon set for the journey cards (replaces emoji) — one stroke
             // icon per beat key, rendered white on the gold circle badge.
             const JOURNEY_ICON_PATHS={
-              door:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M11 16l4-4-4-4"/><path d="M15 12H3"/><path d="M11 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5"/></svg>,
-              palette:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 0 0 20c1.4 0 2-0.9 2-1.8 0-.5-.2-.9-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1 .9-1.9 2-1.9h2.1C19.3 15.7 21 14 21 11.5 21 6.3 17 2 12 2z"/><circle cx="7.5" cy="10.5" r="1" fill="#fff" stroke="none"/><circle cx="12" cy="7" r="1" fill="#fff" stroke="none"/><circle cx="16" cy="10" r="1" fill="#fff" stroke="none"/></svg>,
-              music:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
-              gift:<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C9 3 12 8 12 8z"/><path d="M16.5 8a2.5 2.5 0 0 0 0-5C15 3 12 8 12 8z"/></svg>,
+              door:<svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M11 16l4-4-4-4"/><path d="M15 12H3"/><path d="M11 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5"/></svg>,
+              palette:<svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 0 0 20c1.4 0 2-0.9 2-1.8 0-.5-.2-.9-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1 .9-1.9 2-1.9h2.1C19.3 15.7 21 14 21 11.5 21 6.3 17 2 12 2z"/><circle cx="7.5" cy="10.5" r="1" fill="#fff" stroke="none"/><circle cx="12" cy="7" r="1" fill="#fff" stroke="none"/><circle cx="16" cy="10" r="1" fill="#fff" stroke="none"/></svg>,
+              music:<svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
+              gift:<svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C9 3 12 8 12 8z"/><path d="M16.5 8a2.5 2.5 0 0 0 0-5C15 3 12 8 12 8z"/></svg>,
             };
             // ── Journey cards — screen 2 of the story. Compact, equal-height stage cards
             // in one row on desktop (no horizontal scroll), a swipeable carousel on
@@ -5408,22 +5408,25 @@ export default function OccasionDetail(){
             const renderJourneyCards=(beats)=>(
               <div className="od-journey-row" style={{position:"relative"}}>
                 <style>{`
-                  .od-journey-row{display:flex;gap:12px;overflow-x:auto;padding:6px 4px 10px;scroll-snap-type:x proximity;}
-                  .od-journey-card{scroll-snap-align:start;flex:0 0 auto;width:200px;}
+                  .od-journey-row{display:flex;flex-direction:column;gap:14px;padding:6px 2px 10px;}
+                  .od-journey-card{width:100%;}
                   .od-journey-connector{display:none;}
+                  @media (min-width:480px){
+                    .od-journey-row{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+                  }
                   @media (min-width:760px){
-                    .od-journey-row{display:grid;grid-template-columns:repeat(${beats.length},1fr);gap:16px;overflow-x:visible;padding:6px 2px 10px;}
-                    .od-journey-card{width:auto;}
-                    .od-journey-connector{display:block;position:absolute;left:9%;right:9%;top:38px;height:2px;background:linear-gradient(90deg,${gold}55,${gold}22);z-index:0;}
+                    .od-journey-row{display:grid;grid-template-columns:repeat(${beats.length},1fr);gap:18px;}
+                    .od-journey-card{min-height:260px;}
+                    .od-journey-connector{display:block;position:absolute;left:9%;right:9%;top:57px;height:2px;background:linear-gradient(90deg,${gold}55,${gold}22);z-index:0;}
                   }
                 `}</style>
                 <div className="od-journey-connector"/>
                 {beats.map((beat,i)=>(
-                  <div key={i} className="od-journey-card" style={{position:"relative",zIndex:1,borderRadius:16,background:"#fff",border:`1px solid ${border}`,padding:"18px 14px 16px",display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center"}}>
-                    <div style={{width:52,height:52,borderRadius:"50%",background:`linear-gradient(135deg,${gold},${lightenHex(gold,0.3)})`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 6px 14px ${gold}40`,marginBottom:10,flexShrink:0}}>{JOURNEY_ICON_PATHS[beat.icon]}</div>
-                    <div style={{fontSize:10,fontWeight:800,color:gold,letterSpacing:"0.12em",marginBottom:3}}>0{i+1}</div>
-                    <div style={{fontSize:13,fontWeight:700,color:ink,marginBottom:6,fontFamily:font}}>{beat.title}</div>
-                    <div style={{fontSize:12,color:muted,lineHeight:1.55}}>{beat.text}</div>
+                  <div key={i} className="od-journey-card" style={{position:"relative",zIndex:1,borderRadius:18,background:"#fff",border:`1px solid ${border}`,boxShadow:"0 4px 18px rgba(28,9,0,0.05)",padding:"28px 20px 24px",display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center"}}>
+                    <div style={{width:58,height:58,borderRadius:"50%",background:`linear-gradient(135deg,${gold},${lightenHex(gold,0.3)})`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 6px 14px ${gold}40`,marginBottom:13,flexShrink:0}}>{JOURNEY_ICON_PATHS[beat.icon]}</div>
+                    <div style={{fontSize:10.5,fontWeight:800,color:gold,letterSpacing:"0.14em",marginBottom:5}}>0{i+1}</div>
+                    <div style={{fontSize:14.5,fontWeight:700,color:ink,marginBottom:8,fontFamily:font}}>{beat.title}</div>
+                    <div style={{fontSize:12.5,color:muted,lineHeight:1.6}}>{beat.text}</div>
                   </div>
                 ))}
               </div>
@@ -5434,13 +5437,22 @@ export default function OccasionDetail(){
             {(()=>{
               const journey=buildEventJourney(occasion,{celebrantName,guests,venueType,city,theme,decorFocusAreas,customDecor,selectedEntryExperiences,vendors,cateringType,cakeType,customCatering,selectedActivities,customActivities,gifts});
               return(
-                <div style={{marginBottom:16}}>
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
-                    <span style={{fontSize:18}}>✦</span>
-                    <span style={{fontFamily:serif,fontSize:21,color:ink,fontWeight:400}}>Your {occasion.name.toLowerCase()}, start to end</span>
+                // Centers the whole heading+cards group within the available slide
+                // height instead of letting it sit pinned to the top with empty
+                // space below. 190px approximates the fixed top progress chrome +
+                // bottom glass bar + their padding (same values the story shell
+                // itself uses) — an approximation, not an exact measurement, which
+                // is enough to read as "balanced" without needing a ResizeObserver,
+                // and still scrolls normally if a long journey ever overflows it.
+                <div style={{minHeight:"calc(100dvh - 190px)",display:"flex",flexDirection:"column",justifyContent:"center"}}>
+                <div>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4,justifyContent:"center"}}>
+                    <span style={{fontSize:19}}>✦</span>
+                    <span style={{fontFamily:serif,fontSize:24,color:ink,fontWeight:500}}>Here's how your celebration unfolds</span>
                   </div>
-                  <div style={{fontSize:12.5,color:muted,marginBottom:18,lineHeight:1.5}}>How the day will actually feel — swipe or scroll through →</div>
+                  <div style={{fontSize:13,color:muted,marginBottom:22,lineHeight:1.5,textAlign:"center"}}>Four moments that make your day special.</div>
                   {renderJourneyCards(journey)}
+                </div>
                 </div>
               );
             })()}
