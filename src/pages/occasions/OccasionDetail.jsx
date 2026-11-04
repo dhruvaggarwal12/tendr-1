@@ -5905,7 +5905,7 @@ export default function OccasionDetail(){
           reveal page), which has its own embedded Back/See Plan buttons. contentRef below
           carries matching extra bottom padding so its last content never sits under this. */}
       {step>0&&step!==7&&(
-        <div className="od-step-footer" style={{position:"absolute",left:0,right:0,bottom:0,background:"rgba(253,250,245,0.72)",backdropFilter:"blur(20px) saturate(180%)",WebkitBackdropFilter:"blur(20px) saturate(180%)",borderTop:"0.5px solid rgba(28,9,0,0.08)",padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
+        <div className="od-step-footer" style={{position:"absolute",left:0,right:0,bottom:0,background:"rgba(253,250,245,0.72)",backdropFilter:"blur(20px) saturate(180%)",WebkitBackdropFilter:"blur(20px) saturate(180%)",borderTop:"1px solid rgba(28,9,0,0.12)",boxShadow:"0 -10px 28px rgba(28,9,0,0.10)",padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
           <div style={{maxWidth:680,margin:"0 auto",display:"flex",gap:10,justifyContent:"space-between",alignItems:"center"}}>
             {step>0&&<button onClick={back} style={{...btnGhost,background:"#fff",boxShadow:"0 2px 8px rgba(28,9,0,0.06)"}}>← Back</button>}
             {step===1&&canNext()?(
