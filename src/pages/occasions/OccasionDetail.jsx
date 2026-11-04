@@ -422,6 +422,17 @@ function buildItinerary(occasion, {guests=20, vendors=[], selectedActivities=[],
   return visible;
 }
 
+// True when any slot falls between midnight and 5 AM — not a bug (a late
+// chosen start time correctly shifts the whole evening forward), but worth
+// a gentle heads-up since it's easy to pick a late start time in step 1
+// without realising how far it pushes the farewell.
+function itineraryRunsLate(slots) {
+  return (slots||[]).some(s=>{
+    const mins=parseClockTime(s.time);
+    return mins!=null && mins<300; // before 5:00 AM
+  });
+}
+
 // Old DECOR_CATEGORIES names → closest new focus-area id, so an in-progress
 // localStorage draft saved before this redesign doesn't lose its decor picks.
 const LEGACY_DECOR_CATEGORY_MAP = {
@@ -1938,30 +1949,74 @@ function estimateDecorQty(item, guests) {
   if(rule==="perLargeVenue") return {qty:Math.max(2,Math.ceil(guests/30)), tier:"Estimated"};
   return {qty:null, tier:"To be decided"};
 }
-/* ── plan card PDF generation — shared by the Download-PDF button and the
-   Send-to-Chat flow, which also attaches the same PDF as a [pdf:...] message. ── */
-async function generatePlanPdf(el){
-  const h2c=(await import("html2canvas")).default;
-  const {jsPDF}=await import("jspdf");
-  const canvas=await h2c(el,{scale:2,useCORS:true,backgroundColor:"#FDFAF5"});
-  const imgData=canvas.toDataURL("image/png");
-  const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
-  const pW=pdf.internal.pageSize.getWidth();
-  const pH=pdf.internal.pageSize.getHeight();
-  const ratio=pW/canvas.width;
-  const totalH=canvas.height*ratio;
-  let yOff=0;
-  while(yOff<totalH){
-    if(yOff>0)pdf.addPage();
-    pdf.addImage(imgData,"PNG",0,-yOff,pW,totalH);
-    yOff+=pH;
-  }
-  return pdf;
+/* ── Services/Entrance/Fun/Gifts breakdown — pure data, no JSX and no onEdit
+   handlers (those are UI-only, added back by renderSelectedItemsSection()).
+   Returns the exact same `groups` shape the interactive page has always
+   rendered, so it can also be handed straight to the PDF generator with zero
+   risk of the two ever showing different numbers. Decorator's locationGroups
+   items are pre-resolved to {name,qty,tier} via estimateDecorQty so neither
+   caller needs to re-derive quantities itself. ── */
+function buildPlanGroups(occasion, {catVendors=[], vendorPackages={}, guests=20, venueType="", theme=null, ageGroups=[], decorFocusAreas=[], customDecor={}, selectedEntryExperiences=[], selectedActivities=[], customActivities=[], gifts=[], giftQuantities={}}={}) {
+  const joinNames=(arr)=>arr.length>1?`${arr.slice(0,-1).join(", ")} and ${arr[arr.length-1]}`:(arr[0]||"");
+
+  const serviceRows=catVendors.map(v=>{
+    const pkgIdx=vendorPackages[v];
+    const pkgs=ALL_VENDORS.includes(v)?getVendorPackages(v,{guests,venueType,theme,ageGroups}):null;
+    const hasPkg=pkgIdx==="custom"||(typeof pkgIdx==="number"&&pkgs);
+    const pkg=typeof pkgIdx==="number"?pkgs?.[pkgIdx]:null;
+    const pkgLabel=pkgIdx==="custom"?"Custom":pkg?.label||null;
+    const pkgPrice=pkgIdx==="custom"?null:pkg?.price||null;
+    const locationGroups=(v==="Decorator"&&decorFocusAreas.length)
+      ?decorFocusAreas.map(id=>({
+          location:DECOR_FOCUS_AREAS[id]?.name,
+          items:(customDecor[id]?.length?customDecor[id]:DECOR_FOCUS_AREAS[id]?.items)||[]
+        })).filter(g=>g.location&&g.items.length)
+        .map(g=>({...g, items:g.items.map(name=>({name, ...estimateDecorQty(name,guests)}))}))
+      :null;
+    const meta=v==="Caterer"?`Serves ${guests} guests`:null;
+    return{key:`v-${v}`,icon:"🛠️",title:v,sub:pkgLabel,status:hasPkg?"Selected":"Quote required",price:pkgPrice,meta,items:locationGroups?null:(pkg?.items||null),locationGroups,note:pkg?.note||null};
+  });
+  if(theme) serviceRows.push({key:"theme",icon:"🎨",title:theme.name,sub:"Decor style",status:"Selected",price:null});
+
+  const entryRows=selectedEntryExperiences.map(id=>{
+    const e=getEntryExperienceById(id);
+    if(!e) return null;
+    return{key:`ee-${id}`,icon:entryEmoji(e),title:e.title,sub:"Entry Experience",status:"Estimate available",price:e.priceDisplay,items:e.inclusions?.slice(0,4)||null,note:e.shortDesc||null};
+  }).filter(Boolean);
+
+  const activityRows=[
+    ...selectedActivities.map(id=>{
+      const a=ALL_ACTIVITY_ITEMS.find(x=>x.id===id);
+      if(!a) return null;
+      const typeEntry=ACTIVITY_TYPES.find(t=>ALL_ACTIVITIES[t.key]?.some(x=>x.id===id));
+      return{key:`act-${id}`,icon:a.icon,title:a.name,sub:typeEntry?.singular||"Activity",status:"Estimate available",price:a.price,note:a.desc||null};
+    }).filter(Boolean),
+    ...customActivities.map((act,i)=>({key:`cact-${i}`,icon:"✦",title:act,sub:"Custom · Added by you",status:"Selected",price:null})),
+  ];
+
+  const giftRows=gifts.map(name=>{
+    const g=(occasion.giftIdeas||[]).find(g=>g.name===name);
+    if(!g) return null;
+    const qty=giftQuantities[name]||1;
+    return{key:`gift-${name}`,icon:giftEmoji(g.name,g.desc),title:qty>1?`${g.name} ×${qty}`:g.name,sub:"Gift",status:"Estimate available",price:g.price,note:g.desc||null};
+  }).filter(Boolean);
+
+  return [
+    {label:"Services", rows:serviceRows, paragraph: serviceRows.length?`You've booked ${serviceRows.length} service${serviceRows.length!==1?"s":""} for ${occasion.name.toLowerCase()} — ${joinNames(serviceRows.map(r=>r.title))}.`:null},
+    {label:"Entrance experience", rows:entryRows, paragraph: entryRows.length?`Guests will be welcomed with ${entryRows.length>1?"these entry experiences":"this entry experience"}: ${joinNames(entryRows.map(r=>r.title))}.`:null},
+    {label:"Fun & activities", rows:activityRows, paragraph: activityRows.length?`You've added ${activityRows.length} activit${activityRows.length!==1?"ies":"y"} to keep guests engaged: ${joinNames(activityRows.map(r=>r.title))}.`:null},
+    {label:"Gifts", rows:giftRows, paragraph: giftRows.length?`You've picked ${giftRows.length} gift${giftRows.length!==1?"s":""} for your guests: ${joinNames(giftRows.map(r=>r.title))}.`:null},
+  ].filter(g=>g.rows.length>0);
 }
 
-async function downloadPlanCard(el,name){
+/* ── plan PDF generation — shared by the Download-PDF button and the
+   Send-to-Chat flow, which also attaches the same PDF as a [pdf:...] message.
+   Builds a real, non-screenshot document from plan data (see
+   buildPlanDataForPdf below) via src/utils/eventPlanPdfGenerator.js. ── */
+async function downloadPlanCard(planData,name){
   try{
-    const pdf=await generatePlanPdf(el);
+    const {generateEventPlanPDF}=await import("../../utils/eventPlanPdfGenerator");
+    const pdf=await generateEventPlanPDF(planData);
     pdf.save(`${name.replace(/\s+/g,"-").toLowerCase()}-plan.pdf`);
   }catch{window.print();}
 }
@@ -1970,9 +2025,10 @@ async function downloadPlanCard(el,name){
    reusing the same base64-embed convention already used for [img:...] photos
    in chat (no backend/schema change needed). Returns "" if generation fails —
    caller still sends the text summary even if the PDF attach silently fails. */
-async function buildPlanPdfChatToken(el,name){
+async function buildPlanPdfChatToken(planData,name){
   try{
-    const pdf=await generatePlanPdf(el);
+    const {generateEventPlanPDF}=await import("../../utils/eventPlanPdfGenerator");
+    const pdf=await generateEventPlanPDF(planData);
     const fileName=`${name.replace(/\s+/g,"-").toLowerCase()}-plan.pdf`;
     const dataUri=pdf.output("datauristring");
     return `[pdf:${fileName}|${dataUri}]`;
@@ -2104,7 +2160,6 @@ export default function OccasionDetail(){
   const { openPriceEstimator } = usePriceEstimator();
   const [searchParams]=useSearchParams();
   const cardRef=useRef(null);
-  const planRef=useRef(null);
 
   // Landing here from the occasion picker (a tall page, often scrolled down when
   // tapped) could otherwise leave the window scrolled from wherever the previous
@@ -2197,14 +2252,6 @@ export default function OccasionDetail(){
   const [storyDirection,setStoryDirection]=useState(1);
   const goToStory=(n)=>{setStoryDirection(n>storyIdx?1:-1);setStoryIdx(n);};
   useEffect(()=>{ if(step===8){ setStoryIdx(0); setPlanStoryOpen(true); } },[step]);
-  const [planExportMode,setPlanExportMode]=useState(false); // true only while generating a PDF — briefly shows all 3 plan pages stacked so the capture is complete
-  // Expands the flip-pager to all 3 pages (normal document flow, so html2canvas captures
-  // it correctly), waits for layout, runs fn, then restores the paginated view.
-  const withPlanExportMode=async(fn)=>{
-    setPlanExportMode(true);
-    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-    try{ return await fn(); } finally { setPlanExportMode(false); }
-  };
 
   /* Map analysis → DECOR_FOCUS_AREAS suggestions */
   const matchDecorFromAnalysis = useCallback((analysis)=>{
@@ -2708,59 +2755,21 @@ export default function OccasionDetail(){
       "Estimated":{bg:"rgba(196,122,46,0.1)",color:gold},
       "To be decided":{bg:"rgba(28,9,0,0.06)",color:muted},
     };
-    const joinNames=(arr)=>arr.length>1?`${arr.slice(0,-1).join(", ")} and ${arr[arr.length-1]}`:(arr[0]||"");
-
-    const serviceRows=catVendors.map(v=>{
-      const pkgIdx=vendorPackages[v];
-      const pkgs=ALL_VENDORS.includes(v)?getVendorPackages(v,{guests,venueType,theme,ageGroups}):null;
-      const hasPkg=pkgIdx==="custom"||(typeof pkgIdx==="number"&&pkgs);
-      const pkg=typeof pkgIdx==="number"?pkgs?.[pkgIdx]:null;
-      const pkgLabel=pkgIdx==="custom"?"Custom":pkg?.label||null;
-      const pkgPrice=pkgIdx==="custom"?null:pkg?.price||null;
-      // Decorator gets a location-by-location breakdown (Entrance, Stage &
-      // Backdrop, etc.) instead of — or alongside — the flat package item
-      // list, so the customer sees WHERE each piece of decor goes, not just
-      // a pile of items. Falls back to the plain package items when no
-      // focus areas are set yet (e.g. a "Quote required" row).
-      const locationGroups=(v==="Decorator"&&decorFocusAreas.length)
-        ?decorFocusAreas.map(id=>({location:DECOR_FOCUS_AREAS[id]?.name,items:(customDecor[id]?.length?customDecor[id]:DECOR_FOCUS_AREAS[id]?.items)||[]})).filter(g=>g.location&&g.items.length)
-        :null;
-      // Real, already-known facts surfaced inline rather than left implicit —
-      // Caterer's price is per-head, so "serves N guests" is exact, not a guess.
-      const meta=v==="Caterer"?`Serves ${guests} guests`:null;
-      return{key:`v-${v}`,icon:"🛠️",title:v,sub:pkgLabel,status:hasPkg?"Selected":"Quote required",price:pkgPrice,meta,items:locationGroups?null:(pkg?.items||null),locationGroups,note:pkg?.note||null,onEdit:()=>(ALL_VENDORS.includes(v)?setEditingService(v):setStep(3))};
-    });
-    if(theme) serviceRows.push({key:"theme",icon:"🎨",title:theme.name,sub:"Decor style",status:"Selected",price:null,onEdit:()=>setStep(3)});
-
-    const entryRows=selectedEntryExperiences.map(id=>{
-      const e=getEntryExperienceById(id);
-      if(!e) return null;
-      return{key:`ee-${id}`,icon:entryEmoji(e),title:e.title,sub:"Entry Experience",status:"Estimate available",price:e.priceDisplay,items:e.inclusions?.slice(0,4)||null,note:e.shortDesc||null,onEdit:()=>setStep(4)};
-    }).filter(Boolean);
-
-    const activityRows=[
-      ...selectedActivities.map(id=>{
-        const a=ALL_ACTIVITY_ITEMS.find(x=>x.id===id);
-        if(!a) return null;
-        const typeEntry=ACTIVITY_TYPES.find(t=>ALL_ACTIVITIES[t.key]?.some(x=>x.id===id));
-        return{key:`act-${id}`,icon:a.icon,title:a.name,sub:typeEntry?.singular||"Activity",status:"Estimate available",price:a.price,note:a.desc||null,onEdit:()=>setStep(5)};
-      }).filter(Boolean),
-      ...customActivities.map((act,i)=>({key:`cact-${i}`,icon:"✦",title:act,sub:"Custom · Added by you",status:"Selected",price:null,onEdit:()=>setStep(5)})),
-    ];
-
-    const giftRows=gifts.map(name=>{
-      const g=(occasion.giftIdeas||[]).find(g=>g.name===name);
-      if(!g) return null;
-      const qty=giftQuantities[name]||1;
-      return{key:`gift-${name}`,icon:giftEmoji(g.name,g.desc),title:qty>1?`${g.name} ×${qty}`:g.name,sub:"Gift",status:"Estimate available",price:g.price,note:g.desc||null,onEdit:()=>setStep(6)};
-    }).filter(Boolean);
-
-    const groups=[
-      {label:"Services", rows:serviceRows, paragraph: serviceRows.length?`You've booked ${serviceRows.length} service${serviceRows.length!==1?"s":""} for ${occasion.name.toLowerCase()} — ${joinNames(serviceRows.map(r=>r.title))}.`:null},
-      {label:"Entrance experience", rows:entryRows, paragraph: entryRows.length?`Guests will be welcomed with ${entryRows.length>1?"these entry experiences":"this entry experience"}: ${joinNames(entryRows.map(r=>r.title))}.`:null},
-      {label:"Fun & activities", rows:activityRows, paragraph: activityRows.length?`You've added ${activityRows.length} activit${activityRows.length!==1?"ies":"y"} to keep guests engaged: ${joinNames(activityRows.map(r=>r.title))}.`:null},
-      {label:"Gifts", rows:giftRows, paragraph: giftRows.length?`You've picked ${giftRows.length} gift${giftRows.length!==1?"s":""} for your guests: ${joinNames(giftRows.map(r=>r.title))}.`:null},
-    ].filter(g=>g.rows.length>0);
+    // Pure data (same shape the PDF generator consumes) — onEdit is UI-only,
+    // added back here per row since buildPlanGroups can't know about the
+    // component's step/editing-service setters.
+    const groups=buildPlanGroups(occasion,{catVendors,vendorPackages,guests,venueType,theme,ageGroups,decorFocusAreas,customDecor,selectedEntryExperiences,selectedActivities,customActivities,gifts,giftQuantities}).map(g=>({
+      ...g,
+      rows:g.rows.map(r=>{
+        let onEdit;
+        if(r.key==="theme") onEdit=()=>setStep(3);
+        else if(r.key.startsWith("v-")){ const v=r.key.slice(2); onEdit=()=>(ALL_VENDORS.includes(v)?setEditingService(v):setStep(3)); }
+        else if(r.key.startsWith("ee-")) onEdit=()=>setStep(4);
+        else if(r.key.startsWith("act-")||r.key.startsWith("cact-")) onEdit=()=>setStep(5);
+        else if(r.key.startsWith("gift-")) onEdit=()=>setStep(6);
+        return {...r, onEdit};
+      }),
+    }));
 
     if(!groups.length) return null;
 
@@ -2813,14 +2822,13 @@ export default function OccasionDetail(){
                           <div style={{fontSize:13,fontWeight:800,color:gold,marginBottom:6}}>📍 {grp.location}</div>
                           <div style={{display:"flex",flexDirection:"column",gap:1}}>
                             {grp.items.map((it,i)=>{
-                              const {qty,tier}=estimateDecorQty(it,guests);
-                              const ts=QTY_TIER_STYLE[tier];
+                              const ts=QTY_TIER_STYLE[it.tier];
                               return(
                                 <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,padding:"6px 0",borderTop:i>0?"1px solid rgba(28,9,0,0.05)":"none"}}>
-                                  <span style={{fontSize:13,color:ink,lineHeight:1.4}}>{it}</span>
+                                  <span style={{fontSize:13,color:ink,lineHeight:1.4}}>{it.name}</span>
                                   <span style={{display:"inline-flex",alignItems:"center",gap:6,flexShrink:0}}>
-                                    {qty!=null&&<span style={{fontSize:12.5,fontWeight:700,color:ink}}>×{qty}</span>}
-                                    <span style={{fontSize:9,fontWeight:700,color:ts.color,background:ts.bg,borderRadius:100,padding:"2px 7px",whiteSpace:"nowrap"}}>{tier}</span>
+                                    {it.qty!=null&&<span style={{fontSize:12.5,fontWeight:700,color:ink}}>×{it.qty}</span>}
+                                    <span style={{fontSize:9,fontWeight:700,color:ts.color,background:ts.bg,borderRadius:100,padding:"2px 7px",whiteSpace:"nowrap"}}>{it.tier}</span>
                                   </span>
                                 </div>
                               );
@@ -2847,6 +2855,24 @@ export default function OccasionDetail(){
         ))}
       </div>
     );
+  };
+
+  // Assembles the real plan data the PDF generator draws from (see
+  // src/utils/eventPlanPdfGenerator.js) — calls the same pure builder
+  // functions the interactive story slides already use, so the PDF can never
+  // show different numbers than the page the customer is looking at.
+  const buildPlanDataForPdf=()=>{
+    const groups=buildPlanGroups(occasion,{catVendors,vendorPackages,guests,venueType,theme,ageGroups,decorFocusAreas,customDecor,selectedEntryExperiences,selectedActivities,customActivities,gifts,giftQuantities});
+    const journey=buildEventJourney(occasion,{celebrantName,guests,venueType,city,theme,decorFocusAreas,customDecor,selectedEntryExperiences,vendors,cateringType,cakeType,customCatering,selectedActivities,customActivities,gifts});
+    const itinerary=buildItinerary(occasion,{guests,vendors,selectedActivities,venueType,ageGroups,startTime:eventStartTime});
+    const prep=buildPreparationJourney(occasion,{timeline,vendors,date,budget,city,selectedEntryExperiences,entryExperiencesSkipped,selectedActivities,customActivities,gifts});
+    const budgetText=computedBudget?`${fmtNum(computedBudget.min)} – ${fmtNum(computedBudget.max)}`:budget?fmtNum(Number(budget)):`${fmtNum(occasion.budgetMin)} – ${fmtNum(occasion.budgetMax)}`;
+    return {
+      occasionName:occasion.name, celebrantName, guests, budgetText,
+      date:date?new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}):"",
+      city, venueType, groups, journey, itinerary, itineraryLate:itineraryRunsLate(itinerary),
+      prep, timeline, equipment, checklist:occasion.checklist||[], budgetSplit,
+    };
   };
 
   const smartVendors=getSmartVendors(occasion,theme,ageGroups,venueType,budget);
@@ -5388,9 +5414,9 @@ export default function OccasionDetail(){
                 Itinerary) is five short full-screen slides shown first in an overlay with
                 no header/tabs/bottom-nav — see planStoryOpen below. Timeline/Checklist/
                 Equipment are ongoing tools, not "the plan" itself, so they render normally
-                on the page underneath instead of being part of the story. All eight pieces
-                are still assembled into one planSections array for the PDF/share-to-chat
-                capture further below, so that output stays exactly as complete as before. */}
+                on the page underneath instead of being part of the story. The downloaded/
+                chat-attached PDF is built separately from real plan data (see
+                buildPlanDataForPdf + src/utils/eventPlanPdfGenerator.js), not from this DOM. */}
             {(()=>{
             // Simple line-icon set for the journey cards (replaces emoji) — one stroke
             // icon per beat key, rendered white on the gold circle badge.
@@ -5722,6 +5748,11 @@ export default function OccasionDetail(){
                     <div style={{fontSize:10,fontWeight:700,color:gold,marginBottom:3}}>How is this itinerary built?</div>
                     <div style={{fontSize:11,color:muted,lineHeight:1.55}}>Based on: your <strong style={{color:ink}}>services selected</strong> (Decorator, Caterer, DJ, etc.), any <strong style={{color:ink}}>entertainment & activities</strong> you've added, your <strong style={{color:ink}}>venue type</strong>, and standard timings for a {occasion.name.toLowerCase()}. Timings are estimates — adjust to fit your actual event flow.</div>
                   </div>
+                  {itineraryRunsLate(itinerary)&&(
+                    <div style={{marginTop:8,padding:"9px 12px",borderRadius:8,background:"rgba(220,38,38,0.05)",border:"1px solid rgba(220,38,38,0.15)",fontSize:11,color:"#991B1B",lineHeight:1.5}}>
+                      ⏰ This schedule runs past midnight — consider an earlier start time in step 1 if that's not intentional.
+                    </div>
+                  )}
                   </>}
                 </div>
               );
@@ -5830,9 +5861,6 @@ export default function OccasionDetail(){
             </React.Fragment>
             );
 
-            // Full ordered content for the PDF / share-to-chat capture — unchanged from before,
-            // just assembled from the now-separate pieces instead of 3 bundled fragments.
-            const planSections=[...storySlides,timelineSection,checklistSection,equipmentSection];
             const storyLabels=storyItems.map(s=>s.label);
 
             return (<>
@@ -5903,14 +5931,6 @@ export default function OccasionDetail(){
             {checklistSection}
             {equipmentSection}
 
-            {/* Off-screen, mounted only while generating a PDF / share-to-chat token so
-                html2canvas captures the complete plan — never shown to the user otherwise. */}
-            {planExportMode&&(
-              <div ref={planRef} style={{background:"#FDFAF5",borderRadius:14,padding:"4px 2px"}}>
-                <img src={tendrLogoImg} alt="tendr" style={{height:30,width:"auto",display:"block",marginBottom:12}} />
-                {planSections}
-              </div>
-            )}
             </>); })()}
 
             {/* F. Recommendations — cross-sell only. The summary/conclusion paragraphs and
@@ -5946,7 +5966,7 @@ export default function OccasionDetail(){
 
             {/* G. Share actions */}
             <div style={{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap"}}>
-              <button onClick={async()=>{setDownloading(true);await withPlanExportMode(()=>downloadPlanCard(planRef.current,occasion.name));setDownloading(false);}} disabled={downloading}
+              <button onClick={async()=>{setDownloading(true);await downloadPlanCard(buildPlanDataForPdf(),occasion.name);setDownloading(false);}} disabled={downloading}
                 style={{flex:1,minWidth:120,padding:"12px 14px",borderRadius:12,border:`1px solid rgba(196,122,46,0.25)`,background:"#fff",color:gold,fontSize:12.5,fontWeight:700,cursor:downloading?"wait":"pointer",fontFamily:font,transition:"all 0.2s",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
                 {downloading?<><div style={{width:13,height:13,borderRadius:"50%",border:`2px solid rgba(196,122,46,0.2)`,borderTopColor:gold,animation:"spin 0.7s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>Generating…</>:<><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download PDF</>}
               </button>
@@ -6010,7 +6030,7 @@ export default function OccasionDetail(){
               <button onClick={async()=>{
                 if(token){
                   const planText = buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,celebrantName,gifts,giftQuantities,selectedEntryExperiences});
-                  const pdfToken=planRef.current?await withPlanExportMode(()=>buildPlanPdfChatToken(planRef.current,occasion.name)):"";
+                  const pdfToken=await buildPlanPdfChatToken(buildPlanDataForPdf(),occasion.name);
                   openOccasionsChat(pdfToken?`${planText}\n\n${pdfToken}`:planText);
                   try{
                     const sp={eventDetails:{eventType:occasion.name,date,location:city,guests,budget},vendorSlots:vendors.map(cat=>({category:cat,vendorName:"",estimatedCost:0,status:"Pending"})),selectedPackages:vendorPackages,chatSent:true,slug};

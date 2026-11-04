@@ -32,9 +32,12 @@ const _assetsReady = Promise.all([
     .catch(() => {}),
 ]);
 _assetsReady.catch(() => {});
+// Exported so other PDF generators (e.g. eventPlanPdfGenerator.js) can await the
+// same preloaded logo/QR assets instead of re-fetching them.
+export const pdfAssetsReady = _assetsReady;
 
 // Replace Rs symbol with "Rs." — Helvetica (Latin-1) cannot render the Rupee symbol
-function sanitize(val) {
+export function sanitize(val) {
   return String(val ?? "—").replace(/₹/g, "Rs. ");
 }
 
@@ -58,7 +61,7 @@ function drawCenterDot(doc, cx, y) {
   doc.circle(cx, y, 1.5, "F");
 }
 
-function addHeader(doc, title) {
+export function addHeader(doc, title) {
   doc.setFillColor(44, 26, 14);
   doc.rect(0, 0, 210, 28, "F");
   doc.setFillColor(204, 171, 74);
@@ -79,7 +82,7 @@ function addHeader(doc, title) {
   doc.text(title, 196, 20, { align: "right" });
 }
 
-function addFooter(doc, pageNum, totalPages) {
+export function addFooter(doc, pageNum, totalPages) {
   const y = 285;
   doc.setDrawColor(196, 122, 46);
   doc.setLineWidth(0.3);
@@ -95,7 +98,7 @@ function addFooter(doc, pageNum, totalPages) {
   }
 }
 
-function sectionTitle(doc, label, y) {
+export function sectionTitle(doc, label, y) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(196, 122, 46);
@@ -106,7 +109,7 @@ function sectionTitle(doc, label, y) {
   return y + 7;
 }
 
-function row(doc, label, value, y, labelX = 14, valueX = 70) {
+export function row(doc, label, value, y, labelX = 14, valueX = 70) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(92, 58, 26);
