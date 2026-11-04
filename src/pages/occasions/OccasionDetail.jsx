@@ -1906,6 +1906,38 @@ function computeSelectedVendorsBudget(vendors, vendorPackages, {guests, venueTyp
   return count ? {min,max,count} : null;
 }
 
+/* ── decor item quantities — Tendr's own recommendation, never a vendor
+   commitment. Covers the full known DECOR_FOCUS_AREAS item vocabulary
+   (src/data/decorFocusAreas.js) in three honest buckets:
+   - "fixed": a standard single-setup count that doesn't realistically change
+     with guest count (shown as "Suggested").
+   - "perTable"/"perGuest": derived from the real guest count using a stated
+     banquet-standard ratio — ~8 guests per table is the convention used
+     throughout (shown as "Estimated", since it's a derived number).
+   - items left out of the table entirely are priced/sized by venue coverage
+     (draping, lighting, streamers…), which this plan has no dimensions for —
+     those get no number at all ("To be decided"), never a guessed one. ── */
+const DECOR_QTY_RULES = {
+  "Welcome board":1, "Balloon arch":1, "Entrance pillars":2, "Floral arch":1,
+  "Decorated pathway":1, "Main backdrop":1, "Name signage":1, "Cake table setup":1,
+  "Milestone-number display":1, "Selfie wall":1, "Dedicated photo corner":1,
+  "Custom name board":1, "Welcome sign":1, "Age / milestone numbers":1, "Neon signs":1,
+  "Stage props":4, "Character cutouts":2, "Themed props":4, "Standees":2,
+  "Table centrepieces":"perTable", "Table runners":"perTable",
+  "Floral table arrangements":"perTable", "Decorative table settings":"perTable",
+  "Chair covers":"perGuest",
+  "Balloon garlands":"perLargeVenue", "Balloon pillars":"perLargeVenue",
+  "Decorative columns":"perLargeVenue", "Wall decorations":"perLargeVenue",
+};
+function estimateDecorQty(item, guests) {
+  const rule = DECOR_QTY_RULES[item];
+  if(rule===undefined) return {qty:null, tier:"To be decided"};
+  if(typeof rule==="number") return {qty:rule, tier:"Suggested"};
+  if(rule==="perTable") return {qty:Math.max(1,Math.ceil(guests/8)), tier:"Estimated"};
+  if(rule==="perGuest") return {qty:Math.max(1,guests), tier:"Estimated"};
+  if(rule==="perLargeVenue") return {qty:Math.max(2,Math.ceil(guests/30)), tier:"Estimated"};
+  return {qty:null, tier:"To be decided"};
+}
 /* ── plan card PDF generation — shared by the Download-PDF button and the
    Send-to-Chat flow, which also attaches the same PDF as a [pdf:...] message. ── */
 async function generatePlanPdf(el){
@@ -2667,6 +2699,15 @@ export default function OccasionDetail(){
       "Estimate available":{bg:"rgba(196,122,46,0.1)",color:gold},
       "Quote required":{bg:"rgba(28,9,0,0.06)",color:muted},
     };
+    // Quantity-confidence badges — deliberately never say "Confirmed": nothing is
+    // vendor-booked at this planning stage (that only happens later, at Review &
+    // Pay). Suggested/Estimated are Tendr's own recommendation; To be decided means
+    // there's no reasonable basis for a number yet (see estimateDecorQty above).
+    const QTY_TIER_STYLE={
+      "Suggested":{bg:"rgba(196,122,46,0.1)",color:gold},
+      "Estimated":{bg:"rgba(196,122,46,0.1)",color:gold},
+      "To be decided":{bg:"rgba(28,9,0,0.06)",color:muted},
+    };
     const joinNames=(arr)=>arr.length>1?`${arr.slice(0,-1).join(", ")} and ${arr[arr.length-1]}`:(arr[0]||"");
 
     const serviceRows=catVendors.map(v=>{
@@ -2684,7 +2725,10 @@ export default function OccasionDetail(){
       const locationGroups=(v==="Decorator"&&decorFocusAreas.length)
         ?decorFocusAreas.map(id=>({location:DECOR_FOCUS_AREAS[id]?.name,items:(customDecor[id]?.length?customDecor[id]:DECOR_FOCUS_AREAS[id]?.items)||[]})).filter(g=>g.location&&g.items.length)
         :null;
-      return{key:`v-${v}`,icon:"🛠️",title:v,sub:pkgLabel,status:hasPkg?"Selected":"Quote required",price:pkgPrice,items:locationGroups?null:(pkg?.items||null),locationGroups,note:pkg?.note||null,onEdit:()=>(ALL_VENDORS.includes(v)?setEditingService(v):setStep(3))};
+      // Real, already-known facts surfaced inline rather than left implicit —
+      // Caterer's price is per-head, so "serves N guests" is exact, not a guess.
+      const meta=v==="Caterer"?`Serves ${guests} guests`:null;
+      return{key:`v-${v}`,icon:"🛠️",title:v,sub:pkgLabel,status:hasPkg?"Selected":"Quote required",price:pkgPrice,meta,items:locationGroups?null:(pkg?.items||null),locationGroups,note:pkg?.note||null,onEdit:()=>(ALL_VENDORS.includes(v)?setEditingService(v):setStep(3))};
     });
     if(theme) serviceRows.push({key:"theme",icon:"🎨",title:theme.name,sub:"Decor style",status:"Selected",price:null,onEdit:()=>setStep(3)});
 
@@ -2722,64 +2766,79 @@ export default function OccasionDetail(){
 
     return(
       <div style={{marginBottom:20}}>
-        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-          <div style={{width:26,height:26,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+          <div style={{width:28,height:28,borderRadius:8,background:`rgba(196,122,46,0.1)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.2" strokeLinecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
           </div>
-          <span style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>Selected services & experiences</span>
+          <span style={{fontSize:16,fontWeight:800,color:ink,fontFamily:serif}}>Selected services & experiences</span>
           <div style={{flex:1,height:1,background:`rgba(196,122,46,0.12)`}}/>
         </div>
+        {/* Required alongside every quantity on this plan — Tendr's own planning
+            recommendation, never a vendor commitment (nothing is booked yet). */}
+        <div style={{display:"flex",alignItems:"flex-start",gap:7,marginBottom:14,padding:"9px 11px",borderRadius:10,background:"rgba(196,122,46,0.05)",border:`1px solid rgba(196,122,46,0.15)`}}>
+          <span style={{fontSize:12,flexShrink:0,marginTop:0.5}}>ℹ️</span>
+          <span style={{fontSize:11.5,color:muted,lineHeight:1.5}}>
+            All quantities are initial recommendations based on your event requirements. Final quantities, deliverables and pricing will be discussed and confirmed with vendors during the booking process.
+          </span>
+        </div>
         {groups.map(g=>(
-          <div key={g.label} style={{marginBottom:16,padding:"13px 14px",borderRadius:14,background:"#fff",border:`1px solid ${border}`}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
-              <div style={{fontSize:9.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em"}}>{g.label}</div>
+          <div key={g.label} style={{marginBottom:16,padding:"16px 16px 14px",borderRadius:14,background:"#fff",border:`1px solid ${border}`}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
+              <div style={{fontSize:14,fontWeight:800,color:ink,fontFamily:serif}}>{g.label}</div>
               {g.label==="Services"&&(
-                <button onClick={()=>setStep(3)} style={{fontSize:10,fontWeight:700,color:gold,background:"none",border:"none",cursor:"pointer",padding:0,fontFamily:font}}>Edit All Services →</button>
+                <button onClick={()=>setStep(3)} style={{fontSize:11.5,fontWeight:700,color:gold,background:"none",border:"none",cursor:"pointer",padding:0,fontFamily:font}}>Edit All Services →</button>
               )}
             </div>
-            <div style={{fontSize:12.5,color:ink,lineHeight:1.6,marginBottom:10}}>{g.paragraph}</div>
-            {g.rows.map(r=>{
+            <div style={{fontSize:13,color:ink,lineHeight:1.6,marginBottom:12}}>{g.paragraph}</div>
+            {g.rows.map((r,ri)=>{
               const s=STATUS_STYLE[r.status]||STATUS_STYLE["Selected"];
               return(
-                <div key={r.key} style={{padding:"8px 9px",borderRadius:10,background:"#FAFAF8",marginBottom:6}}>
-                  <div style={{display:"flex",alignItems:"center",gap:10}}>
-                    <span style={{fontSize:14,flexShrink:0,width:34,height:34,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(196,122,46,0.08)",borderRadius:8}}>{r.icon}</span>
+                <div key={r.key} style={{padding:"12px 0",borderTop:ri>0?`1px solid rgba(28,9,0,0.07)`:"none"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:11}}>
+                    <span style={{fontSize:15,flexShrink:0,width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(196,122,46,0.08)",borderRadius:9}}>{r.icon}</span>
                     <div style={{flex:1,minWidth:0}}>
-                      <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",marginBottom:r.sub?2:0}}>
-                        <span style={{fontSize:12,fontWeight:700,color:ink}}>{r.title}</span>
-                        <span style={{fontSize:9,fontWeight:700,color:s.color,background:s.bg,borderRadius:100,padding:"2px 7px",flexShrink:0}}>{r.status}</span>
+                      <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap",marginBottom:(r.sub||r.meta)?2:0}}>
+                        <span style={{fontSize:14.5,fontWeight:700,color:ink}}>{r.title}</span>
+                        <span style={{fontSize:9.5,fontWeight:700,color:s.color,background:s.bg,borderRadius:100,padding:"2.5px 8px",flexShrink:0}}>{r.status}</span>
                       </div>
-                      {r.sub&&<div style={{fontSize:10,color:muted}}>{r.sub}{r.price?` · ${r.price}`:""}</div>}
+                      {r.sub&&<div style={{fontSize:12,color:muted}}>{r.sub}{r.price?` · ${r.price}`:""}</div>}
+                      {r.meta&&<div style={{fontSize:12,color:muted}}>{r.meta}</div>}
                     </div>
-                    <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:3,flexShrink:0}}>
-                      <button onClick={r.onEdit} style={{fontSize:10,fontWeight:700,color:gold,background:"none",border:"none",cursor:"pointer",padding:0,fontFamily:font}}>Edit</button>
-                    </div>
+                    <button onClick={r.onEdit} style={{fontSize:11,fontWeight:700,color:gold,background:"none",border:"none",cursor:"pointer",padding:0,flexShrink:0,fontFamily:font}}>Edit</button>
                   </div>
                   {r.locationGroups?.length>0?(
-                    <div style={{margin:"7px 0 1px 44px",display:"flex",flexDirection:"column",gap:8}}>
+                    <div style={{margin:"10px 0 0 47px",display:"flex",flexDirection:"column",gap:12}}>
                       {r.locationGroups.map((grp,gi)=>(
                         <div key={gi}>
-                          <div style={{fontSize:10,fontWeight:800,color:gold,marginBottom:3}}>📍 {grp.location}</div>
-                          <ul style={{margin:0,padding:0,listStyle:"none",display:"flex",flexDirection:"column",gap:3}}>
-                            {grp.items.map((it,i)=>(
-                              <li key={i} style={{fontSize:10.5,color:muted,lineHeight:1.4,display:"flex",alignItems:"flex-start",gap:5}}>
-                                <span style={{color:gold,flexShrink:0}}>•</span>{it}
-                              </li>
-                            ))}
-                          </ul>
+                          <div style={{fontSize:13,fontWeight:800,color:gold,marginBottom:6}}>📍 {grp.location}</div>
+                          <div style={{display:"flex",flexDirection:"column",gap:1}}>
+                            {grp.items.map((it,i)=>{
+                              const {qty,tier}=estimateDecorQty(it,guests);
+                              const ts=QTY_TIER_STYLE[tier];
+                              return(
+                                <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,padding:"6px 0",borderTop:i>0?"1px solid rgba(28,9,0,0.05)":"none"}}>
+                                  <span style={{fontSize:13,color:ink,lineHeight:1.4}}>{it}</span>
+                                  <span style={{display:"inline-flex",alignItems:"center",gap:6,flexShrink:0}}>
+                                    {qty!=null&&<span style={{fontSize:12.5,fontWeight:700,color:ink}}>×{qty}</span>}
+                                    <span style={{fontSize:9,fontWeight:700,color:ts.color,background:ts.bg,borderRadius:100,padding:"2px 7px",whiteSpace:"nowrap"}}>{tier}</span>
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       ))}
                     </div>
                   ):r.items?.length>0?(
-                    <ul style={{margin:"7px 0 1px 44px",padding:0,listStyle:"none",display:"flex",flexDirection:"column",gap:3}}>
+                    <ul style={{margin:"10px 0 0 47px",padding:0,listStyle:"none",display:"flex",flexDirection:"column",gap:4}}>
                       {r.items.map((it,i)=>(
-                        <li key={i} style={{fontSize:10.5,color:muted,lineHeight:1.4,display:"flex",alignItems:"flex-start",gap:5}}>
+                        <li key={i} style={{fontSize:13,color:muted,lineHeight:1.45,display:"flex",alignItems:"flex-start",gap:6}}>
                           <span style={{color:gold,flexShrink:0}}>•</span>{it}
                         </li>
                       ))}
                     </ul>
                   ):r.note?(
-                    <div style={{margin:"5px 0 1px 44px",fontSize:10.5,color:muted,lineHeight:1.4}}>{r.note}</div>
+                    <div style={{margin:"6px 0 0 47px",fontSize:13,color:muted,lineHeight:1.45}}>{r.note}</div>
                   ):null}
                 </div>
               );
@@ -5489,21 +5548,30 @@ export default function OccasionDetail(){
                 bespoke design per occasion; see heroFamily()/renderHeroScene() above. */}
             <div ref={cardRef} style={{background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",border:`1.5px solid rgba(196,122,46,0.2)`,borderRadius:20,overflow:"hidden",marginBottom:12}}>
               {(()=>{
-                const heroC1 = occasion.color || gold;
-                const heroC2 = lightenHex(heroC1, 0.35);
+                // Softened champagne-gold treatment — pulls whatever the occasion's own
+                // accent color is (including fully-saturated ones like birthday's yellow)
+                // toward a warm muted gold rather than bleaching it toward white, so the
+                // white hero-illustration/text on top still has plenty of contrast.
+                const champagne = "#C9A567";
+                const mixHex=(h1,h2,t)=>{
+                  const a=hexToRgb(h1).split(",").map(Number), b=hexToRgb(h2).split(",").map(Number);
+                  return `#${a.map((c,i)=>Math.round(c+(b[i]-c)*t).toString(16).padStart(2,"0")).join("")}`;
+                };
+                const heroC1 = mixHex(occasion.color || gold, champagne, 0.5);
+                const heroC2 = lightenHex(heroC1, 0.3);
                 const family = heroFamily(slug);
                 return (
-                  <div style={{position:"relative",height:132,overflow:"hidden",background:`linear-gradient(135deg,${heroC1},${lightenHex(heroC1,0.15)} 55%,${heroC2})`}}>
+                  <div style={{position:"relative",height:132,overflow:"hidden",background:`linear-gradient(135deg,${heroC1},${lightenHex(heroC1,0.12)} 55%,${heroC2})`}}>
                     <svg viewBox="0 0 400 130" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%"}}>
                       {renderHeroScene(family, "#ffffff", "rgba(255,255,255,0.65)")}
                     </svg>
-                    <div aria-hidden style={{position:"absolute",inset:0,background:"linear-gradient(100deg, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.12) 42%, transparent 62%)"}}/>
+                    <div aria-hidden style={{position:"absolute",inset:0,background:"linear-gradient(100deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 42%, transparent 62%)"}}/>
                     <div style={{position:"absolute",left:18,bottom:14,right:110}}>
                       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
                         <span style={{fontSize:22,filter:"drop-shadow(0 1px 3px rgba(0,0,0,0.3))"}}>{occasion.icon}</span>
-                        <span style={{fontFamily:serif,fontSize:19,fontWeight:500,color:"#fff",lineHeight:1.1,textShadow:"0 1px 6px rgba(0,0,0,0.35)"}}>{celebrantName?`${celebrantName}'s ${occasion.name}`:occasion.name}</span>
+                        <span style={{fontFamily:serif,fontSize:23,fontWeight:600,color:"#fff",lineHeight:1.1,textShadow:"0 1px 6px rgba(0,0,0,0.35)"}}>{celebrantName?`${celebrantName}'s ${occasion.name}`:occasion.name}</span>
                       </div>
-                      <div style={{fontSize:11,color:"rgba(255,255,255,0.85)",lineHeight:1.4,textShadow:"0 1px 4px rgba(0,0,0,0.3)"}}>{occasion.tagline||"Celebration Plan · Tendr"}</div>
+                      <div style={{fontSize:12,color:"rgba(255,255,255,0.88)",lineHeight:1.4,textShadow:"0 1px 4px rgba(0,0,0,0.3)"}}>{occasion.tagline||"Celebration Plan · Tendr"}</div>
                     </div>
                   </div>
                 );
