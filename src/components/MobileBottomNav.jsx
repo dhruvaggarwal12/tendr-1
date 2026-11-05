@@ -206,6 +206,7 @@ function BottomNavInner() {
     { icon: ic(<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></>), label: "Find by Style",    href: "/find-by-style" },
     { icon: ic(<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/><path d="M19 3l.6 1.6L21 5l-1.4.6L19 7l-.6-1.4L17 5l1.4-.4z"/></>), label: "Decor Analyser", href: "/decor-analyser" },
     { icon: ic(<><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.1-3.1a4 4 0 0 1-5.1 5.1L7.6 19.4a1.5 1.5 0 0 1-2.1-2.1l8.1-8.1a4 4 0 0 1 5.1-5.1z"/></>), label: "Equipment Generator", path: "/equipment-generator", newTab: true },
+    { icon: ic(<><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></>), label: "Guest List & Invites", href: "/invitation" },
     { icon: ic(<><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8"/><path d="M16.5 8a2.5 2.5 0 0 0 0-5C13 3 12 8 12 8"/></>), label: "Refer & Earn",    href: "/dashboard#refer-earn" },
   ];
 

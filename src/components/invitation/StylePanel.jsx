@@ -7,7 +7,7 @@ const font = "'Outfit', sans-serif";
    combinations vetted per kit, plus alignment where the layout allows it.
    Deliberately not a drag editor or an open color/font picker: see the
    Invitation Studio plan for why. */
-export default function StylePanel({ template, styleOverride, onChange }) {
+export default function StylePanel({ template, styleOverride, onChange, bare = false }) {
   const paletteOptions = KIT_PALETTE_OPTIONS[template.kitId] || [template.paletteId];
   const fontOptions = KIT_FONT_OPTIONS[template.kitId] || [template.fontPairId];
   const activePalette = styleOverride?.paletteId || template.paletteId;
@@ -18,11 +18,11 @@ export default function StylePanel({ template, styleOverride, onChange }) {
   const set = (patch) => onChange({ ...(styleOverride || {}), ...patch });
 
   return (
-    <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", padding: 20, fontFamily: font }}>
+    <div style={bare ? { fontFamily: font } : { background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", padding: 20, fontFamily: font }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <h3 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>Style</h3>
+        {!bare && <h3 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>Style</h3>}
         {!isDefault && (
-          <button onClick={() => onChange(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 11.5, fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 2, fontFamily: font }}>
+          <button onClick={() => onChange(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 11.5, fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 2, fontFamily: font, marginLeft: bare ? "auto" : 0 }}>
             Reset to default
           </button>
         )}

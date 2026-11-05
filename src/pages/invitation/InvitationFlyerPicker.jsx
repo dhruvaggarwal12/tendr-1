@@ -4,7 +4,6 @@ import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import ToolIntroWrapper from "../../components/ToolIntroWrapper";
 import ToolNav from "../../components/ToolNav";
-import { EVENT_TYPES } from "../../data/invitationTemplates";
 import { FLYER_TEMPLATES } from "../../data/flyerTemplates";
 
 const SAMPLE_DATA = { eventTitle: "Join us for a Special Celebration", date: "Saturday, 15th June", time: "7:00 PM Onwards", venue: "Venue name & address", rsvp: "+91 9XXXXXXXXX" };
@@ -27,13 +26,13 @@ const font = "'Outfit', sans-serif";
 const INTRO = {
   toolId: "invitation",
   icon: "💌",
-  title: "Invitation Flyers",
-  tagline: "Set the mood before the event",
-  description: "Create stunning digital invitations for your event in minutes. Pick your event type, choose a beautiful template, and share instantly via WhatsApp or email.",
+  title: "Tendr Invitation Studio",
+  tagline: "95 designs, 5 for every occasion",
+  description: "A dedicated design studio inside Tendr — 95 art-directed invitation flyers, 5 matched to each occasion from Birthday to Diwali to Wedding, every one Tendr-branded and ready to personalise.",
   steps: [
-    { title: "Pick your event type", desc: "Wedding, birthday, dinner — we have templates for all." },
-    { title: "Choose a template", desc: "Beautiful, pre-designed invitation styles." },
-    { title: "Customise and share", desc: "Add your details and send to all your guests." },
+    { title: "Pick your occasion", desc: "18 occasions plus a separate Wedding Studio — each with 5 distinct designs." },
+    { title: "Personalise it", desc: "Your event details, a curated font & colour palette, all in one editor." },
+    { title: "Share or print", desc: "Get a live RSVP link, or download for WhatsApp, Instagram Story or print." },
   ],
 };
 
@@ -43,43 +42,29 @@ const InvitationFlyerPicker = () => {
   const content = (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font, position: "relative" }}>
       <SEO
-        title="Digital Invitation Flyers — Create & Share Beautiful Event Invites | Tendr"
-        description="Create and customise beautiful digital invitations for birthdays, anniversaries, weddings and more."
+        title="Tendr Invitation Studio — 95 Occasion-Matched Invitation Designs | Tendr"
+        description="95 art-directed Tendr invitation flyers — 5 for every occasion, from Birthday to Diwali to Wedding. Personalise and share an instant RSVP link."
         path="/invitation"
-        breadcrumbs={[{ name: "Home", path: "/" }, { name: "Invitation Flyers", path: "/invitation" }]}
+        breadcrumbs={[{ name: "Home", path: "/" }, { name: "Invitation Studio", path: "/invitation" }]}
       />
       <BasicSpeedDial />
-      <ToolNav title="Invitation Flyers" />
+      <ToolNav title="Invitation Studio" />
 
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "52px 24px 80px" }}>
-        <div style={{ textAlign: "center", marginBottom: 44 }}>
-          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Planning Tool</p>
-          <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 12px" }}>What's the occasion?</h1>
-          <p style={{ fontSize: 15, color: "#9B7450" }}>Choose your event type and we'll show you the perfect invitation templates.</p>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Tendr Invitation Studio</p>
+          <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 12px" }}>A design studio, built into Tendr</h1>
+          <p style={{ fontSize: 15, color: "#9B7450", maxWidth: 560, margin: "0 auto" }}>95 art-directed invitation flyers — 5 for every occasion, from Birthday to Diwali to Wedding — each Tendr-branded, personalisable, and ready to share as a live RSVP link, a WhatsApp image, an Instagram Story or a print-ready PDF.</p>
           <div style={{ width: 48, height: 3, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "16px auto 0" }} />
         </div>
 
         <button onClick={() => navigate("/invitation/studio")}
-          style={{ display: "block", width: "100%", maxWidth: 520, margin: "0 auto 44px", padding: "18px 22px", borderRadius: 18, border: "none", cursor: "pointer", fontFamily: font, textAlign: "center", background: "linear-gradient(135deg,#2C1A0E,#4A2A14)", boxShadow: "0 8px 28px rgba(44,26,14,0.25)" }}>
-          <span style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#D4AF5E", marginBottom: 6 }}>New · Tendr Invitation Studio</span>
-          <span style={{ display: "block", fontSize: 18, fontWeight: 800, color: "#fff" }}>95 designs, 5 for every occasion →</span>
+          style={{ display: "block", width: "100%", maxWidth: 520, margin: "0 auto 52px", padding: "20px 22px", borderRadius: 18, border: "none", cursor: "pointer", fontFamily: font, textAlign: "center", background: "linear-gradient(135deg,#2C1A0E,#4A2A14)", boxShadow: "0 8px 28px rgba(44,26,14,0.25)" }}>
+          <span style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#D4AF5E", marginBottom: 6 }}>95 designs · 18 occasions + Wedding</span>
+          <span style={{ display: "block", fontSize: 19, fontWeight: 800, color: "#fff" }}>Browse the Studio →</span>
         </button>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }} className="invitation-grid">
-          {EVENT_TYPES.map(({ id, name, icon }) => (
-            <button key={id}
-              onClick={() => navigate(`/invitation/templates/${id}`)}
-              style={{ background: "#FFFCF5", borderRadius: 16, padding: "22px 14px", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 3px 14px rgba(139,69,19,0.07)", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, textAlign: "center", transition: "all 0.2s" }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.boxShadow = "0 6px 22px rgba(196,122,46,0.15)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.15)"; e.currentTarget.style.boxShadow = "0 3px 14px rgba(139,69,19,0.07)"; e.currentTarget.style.transform = "translateY(0)"; }}
-            >
-              <span style={{ fontSize: 30 }}>{icon}</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.3 }}>{name}</span>
-            </button>
-          ))}
-        </div>
-
-        <div style={{ marginTop: 52, textAlign: "center" }}>
+        <div style={{ textAlign: "center" }}>
           <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 6 }}>Or start from a Tendr design</p>
           <p style={{ fontSize: 13.5, color: "#9B7450", marginBottom: 22 }}>5 signature templates, fully editable, ready to share.</p>
           <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
@@ -100,7 +85,6 @@ const InvitationFlyerPicker = () => {
           </button>
         </div>
       </div>
-      <style>{`@media(max-width:640px){.invitation-grid{grid-template-columns:repeat(2,1fr) !important;}}`}</style>
     </div>
   );
 

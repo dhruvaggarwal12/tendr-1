@@ -9,6 +9,12 @@ import { exportAllFlyerImages, exportFlyerPdf } from "../utils/flyerExport";
 
 const font = "'Outfit', sans-serif";
 const DRAFT_KEY = "tendr_wedding_invite_draft";
+const TABS = [
+  { id: "details", label: "Couple & Family" },
+  { id: "functions", label: "Functions" },
+  { id: "style", label: "Style" },
+  { id: "download", label: "Download" },
+];
 
 function Thumb({ template }) {
   const scale = 140 / 460;
@@ -41,6 +47,7 @@ export default function WeddingInvitations() {
     try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || "null")?.styleOverride ?? null; } catch { return null; }
   });
   const [exporting, setExporting] = useState("");
+  const [tab, setTab] = useState("details");
 
   useEffect(() => { try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ templateId, data, functions, styleOverride })); } catch {} }, [templateId, data, functions, styleOverride]);
 
@@ -109,55 +116,71 @@ export default function WeddingInvitations() {
           <>
             <button onClick={() => setTemplateId(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#C47A2E", fontSize: 13, fontWeight: 700, marginBottom: 18, fontFamily: font, display: "block" }}>← Choose a different design</button>
             <div style={{ display: "flex", gap: 32, justifyContent: "center", alignItems: "flex-start", flexWrap: "wrap" }}>
-              <InvitationFlyerEngine template={template} data={data} fieldSchema={extraFunctionRows} editable onChange={change} styleOverride={styleOverride} />
+              <div style={{ position: "sticky", top: 24 }}>
+                <InvitationFlyerEngine template={template} data={data} fieldSchema={extraFunctionRows} editable onChange={change} styleOverride={styleOverride} />
+              </div>
 
-              <div style={{ width: 320, display: "flex", flexDirection: "column", gap: 14, flexShrink: 0 }}>
-                <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", padding: 20 }}>
-                  <h3 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 12px" }}>Couple & Family</h3>
-                  {WEDDING_FIELDS.map(f => (
-                    <div key={f.key} style={{ marginBottom: 11 }}>
-                      <label style={{ fontSize: 10.5, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 4 }}>{f.label}{f.required ? " *" : ""}</label>
-                      <input value={data[f.key] || ""} onChange={e => change(f.key, e.target.value)} placeholder={f.placeholder}
-                        style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.22)", fontSize: 13, fontFamily: font, outline: "none", boxSizing: "border-box" }} />
-                    </div>
+              <div style={{ width: 340, flexShrink: 0, background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", overflow: "hidden" }}>
+                <div style={{ display: "flex" }}>
+                  {TABS.map(t => (
+                    <button key={t.id} onClick={() => setTab(t.id)}
+                      style={{ flex: 1, padding: "13px 2px", border: "none", borderBottom: tab === t.id ? "2.5px solid #C47A2E" : "2.5px solid transparent", background: tab === t.id ? "rgba(196,122,46,0.08)" : "transparent", color: tab === t.id ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: font }}>
+                      {t.label}
+                    </button>
                   ))}
                 </div>
 
-                <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", padding: 20 }}>
-                  <h3 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px" }}>Functions</h3>
-                  <p style={{ fontSize: 11.5, color: "#9B7450", margin: "0 0 12px" }}>Each with its own date, time & venue.</p>
-                  {functions.map((f, i) => (
-                    <div key={i} style={{ border: "1px solid rgba(196,122,46,0.2)", borderRadius: 10, padding: 10, marginBottom: 8 }}>
-                      <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
-                        <select value={f.type} onChange={e => updateFn(i, "type", e.target.value)} style={{ flex: 1, padding: "6px 8px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.2)", fontSize: 12, fontFamily: font }}>
-                          {WEDDING_FUNCTION_TYPES.map(ft => <option key={ft} value={ft}>{ft}</option>)}
-                        </select>
-                        {functions.length > 1 && <button onClick={() => removeFn(i)} style={{ background: "none", border: "none", color: "#DC2626", cursor: "pointer", fontSize: 13 }}>✕</button>}
-                      </div>
-                      <div style={{ display: "flex", gap: 6 }}>
-                        <input placeholder="Date" value={f.date} onChange={e => updateFn(i, "date", e.target.value)} style={{ flex: 1, padding: "6px 8px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.2)", fontSize: 12, fontFamily: font }} />
-                        <input placeholder="Time" value={f.time} onChange={e => updateFn(i, "time", e.target.value)} style={{ flex: 1, padding: "6px 8px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.2)", fontSize: 12, fontFamily: font }} />
-                      </div>
-                      <input placeholder="Venue" value={f.venue} onChange={e => updateFn(i, "venue", e.target.value)} style={{ width: "100%", marginTop: 6, padding: "6px 8px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.2)", fontSize: 12, fontFamily: font, boxSizing: "border-box" }} />
+                <div style={{ padding: 20, maxHeight: "calc(100vh - 220px)", overflowY: "auto" }}>
+                  {tab === "details" && (
+                    <div>
+                      {WEDDING_FIELDS.map(f => (
+                        <div key={f.key} style={{ marginBottom: 11 }}>
+                          <label style={{ fontSize: 10.5, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 4 }}>{f.label}{f.required ? " *" : ""}</label>
+                          <input value={data[f.key] || ""} onChange={e => change(f.key, e.target.value)} placeholder={f.placeholder}
+                            style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.22)", fontSize: 13, fontFamily: font, outline: "none", boxSizing: "border-box" }} />
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                  <button onClick={addFn} style={{ width: "100%", padding: 8, borderRadius: 8, border: "1.5px dashed rgba(196,122,46,0.4)", background: "transparent", color: "#C47A2E", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: font }}>+ Add another function</button>
-                </div>
+                  )}
 
-                <StylePanel template={template} styleOverride={styleOverride} onChange={setStyleOverride} />
+                  {tab === "functions" && (
+                    <div>
+                      <p style={{ fontSize: 11.5, color: "#9B7450", margin: "0 0 12px" }}>Each with its own date, time & venue.</p>
+                      {functions.map((f, i) => (
+                        <div key={i} style={{ border: "1px solid rgba(196,122,46,0.2)", borderRadius: 10, padding: 10, marginBottom: 8 }}>
+                          <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+                            <select value={f.type} onChange={e => updateFn(i, "type", e.target.value)} style={{ flex: 1, padding: "6px 8px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.2)", fontSize: 12, fontFamily: font }}>
+                              {WEDDING_FUNCTION_TYPES.map(ft => <option key={ft} value={ft}>{ft}</option>)}
+                            </select>
+                            {functions.length > 1 && <button onClick={() => removeFn(i)} style={{ background: "none", border: "none", color: "#DC2626", cursor: "pointer", fontSize: 13 }}>✕</button>}
+                          </div>
+                          <div style={{ display: "flex", gap: 6 }}>
+                            <input placeholder="Date" value={f.date} onChange={e => updateFn(i, "date", e.target.value)} style={{ flex: 1, padding: "6px 8px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.2)", fontSize: 12, fontFamily: font }} />
+                            <input placeholder="Time" value={f.time} onChange={e => updateFn(i, "time", e.target.value)} style={{ flex: 1, padding: "6px 8px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.2)", fontSize: 12, fontFamily: font }} />
+                          </div>
+                          <input placeholder="Venue" value={f.venue} onChange={e => updateFn(i, "venue", e.target.value)} style={{ width: "100%", marginTop: 6, padding: "6px 8px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.2)", fontSize: 12, fontFamily: font, boxSizing: "border-box" }} />
+                        </div>
+                      ))}
+                      <button onClick={addFn} style={{ width: "100%", padding: 8, borderRadius: 8, border: "1.5px dashed rgba(196,122,46,0.4)", background: "transparent", color: "#C47A2E", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: font }}>+ Add another function</button>
+                    </div>
+                  )}
 
-                <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", padding: 20 }}>
-                  <h3 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 10px" }}>Download</h3>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    <button disabled={!!exporting} onClick={() => runExport(exportAllFlyerImages, "images")}
-                      style={{ padding: 9, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: exporting ? "default" : "pointer", fontFamily: font }}>
-                      {exporting === "images" ? "Preparing…" : "📲 Download for WhatsApp / Story / Square"}
-                    </button>
-                    <button disabled={!!exporting} onClick={() => runExport(exportFlyerPdf, "pdf")}
-                      style={{ padding: 9, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: exporting ? "default" : "pointer", fontFamily: font }}>
-                      {exporting === "pdf" ? "Preparing…" : "🖨️ Download Printable PDF"}
-                    </button>
-                  </div>
+                  {tab === "style" && (
+                    <StylePanel template={template} styleOverride={styleOverride} onChange={setStyleOverride} bare />
+                  )}
+
+                  {tab === "download" && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      <button disabled={!!exporting} onClick={() => runExport(exportAllFlyerImages, "images")}
+                        style={{ padding: 9, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: exporting ? "default" : "pointer", fontFamily: font }}>
+                        {exporting === "images" ? "Preparing…" : "📲 Download for WhatsApp / Story / Square"}
+                      </button>
+                      <button disabled={!!exporting} onClick={() => runExport(exportFlyerPdf, "pdf")}
+                        style={{ padding: 9, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: exporting ? "default" : "pointer", fontFamily: font }}>
+                        {exporting === "pdf" ? "Preparing…" : "🖨️ Download Printable PDF"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

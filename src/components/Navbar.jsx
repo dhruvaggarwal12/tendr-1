@@ -289,6 +289,7 @@ const Navbar = ({
         { label: "Price Estimator",     onClick: () => openPriceEstimator() },
         { label: "Find by Style",       href: "/find-by-style" },
         { label: "Equipment Generator", href: "/equipment-generator" },
+        { label: "Guest List & Invites", href: "/invitation" },
       ],
     },
     {

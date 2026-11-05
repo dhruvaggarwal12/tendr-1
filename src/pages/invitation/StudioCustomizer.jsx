@@ -13,6 +13,12 @@ import { exportAllFlyerImages, exportFlyerPdf } from "../../utils/flyerExport";
 
 const font = "'Outfit', sans-serif";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+const TABS = [
+  { id: "details", label: "Details" },
+  { id: "style", label: "Style" },
+  { id: "download", label: "Download" },
+  { id: "share", label: "Share" },
+];
 
 export default function StudioCustomizer() {
   const navigate = useNavigate();
@@ -38,6 +44,7 @@ export default function StudioCustomizer() {
   const [createError, setCreateError] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
   const [exporting, setExporting] = useState("");
+  const [tab, setTab] = useState("details");
 
   const change = (k, v) => { setData(p => ({ ...p, [k]: v })); setCreatedInvite(null); };
   const toggleShow = (k) => setData(p => ({ ...p, _show: { ...p._show, [k]: !p._show?.[k] } }));
@@ -130,85 +137,101 @@ export default function StudioCustomizer() {
         </div>
 
         <div style={{ display: "flex", gap: 32, justifyContent: "center", alignItems: "flex-start", flexWrap: "wrap" }}>
-          <InvitationFlyerEngine template={template} data={data} fieldSchema={occasionFields} editable onChange={change} styleOverride={styleOverride} />
+          <div style={{ position: "sticky", top: 24 }}>
+            <InvitationFlyerEngine template={template} data={data} fieldSchema={occasionFields} editable onChange={change} styleOverride={styleOverride} />
+          </div>
 
-          <div style={{ width: 300, display: "flex", flexDirection: "column", gap: 14, flexShrink: 0 }}>
-            <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", padding: 20 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 12px" }}>Event Details</h3>
-              {fields.map(f => (
-                <div key={f.key} style={{ marginBottom: 11 }}>
-                  <label style={{ fontSize: 10.5, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                    <span>{f.label}{f.required ? " *" : ""}</span>
-                    {f.optional && (
-                      <label style={{ display: "flex", alignItems: "center", gap: 4, fontWeight: 600, textTransform: "none", letterSpacing: 0, fontSize: 10, cursor: "pointer" }}>
-                        <input type="checkbox" checked={!!data._show?.[f.key]} onChange={() => toggleShow(f.key)} /> show
-                      </label>
-                    )}
-                  </label>
-                  <input value={data[f.key] || ""} onChange={e => change(f.key, e.target.value)} placeholder={f.placeholder}
-                    style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.22)", fontSize: 13, fontFamily: font, outline: "none", boxSizing: "border-box" }} />
-                </div>
+          <div style={{ width: 340, flexShrink: 0, background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", overflow: "hidden" }}>
+            <div style={{ display: "flex" }}>
+              {TABS.map(t => (
+                <button key={t.id} onClick={() => setTab(t.id)}
+                  style={{ flex: 1, padding: "13px 4px", border: "none", borderBottom: tab === t.id ? "2.5px solid #C47A2E" : "2.5px solid transparent", background: tab === t.id ? "rgba(196,122,46,0.08)" : "transparent", color: tab === t.id ? "#C47A2E" : "#9B7450", fontSize: 12.5, fontWeight: 800, cursor: "pointer", fontFamily: font }}>
+                  {t.label}
+                </button>
               ))}
             </div>
 
-            <StylePanel template={template} styleOverride={styleOverride} onChange={setStyleOverride} />
-
-            <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", padding: 20 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 10px" }}>Download</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <button disabled={!!exporting} onClick={() => runExport(exportAllFlyerImages, "images")}
-                  style={{ padding: "9px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: exporting ? "default" : "pointer", fontFamily: font }}>
-                  {exporting === "images" ? "Preparing…" : "📲 Download for WhatsApp / Story / Square"}
-                </button>
-                <button disabled={!!exporting} onClick={() => runExport(exportFlyerPdf, "pdf")}
-                  style={{ padding: "9px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: exporting ? "default" : "pointer", fontFamily: font }}>
-                  {exporting === "pdf" ? "Preparing…" : "🖨️ Download Printable PDF"}
-                </button>
-                <button onClick={() => { navigator.clipboard?.writeText(waText); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 1800); }}
-                  style={{ padding: "9px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "transparent", color: "#9B7450", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-                  {linkCopied ? "Copied!" : "Copy invitation message"}
-                </button>
-              </div>
-            </div>
-
-            <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", padding: 20 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px" }}>Invite & RSVP</h3>
-              <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 14px", lineHeight: 1.5 }}>Get a link guests can open to RSVP — no account needed, responses update live.</p>
-
-              {!allFilled && <p style={{ fontSize: 11, color: "#b45309", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "6px 10px", margin: "0 0 10px" }}>Fill your name, Date, Time & Venue to continue</p>}
-              {createError && <p style={{ fontSize: 11, color: "#991B1B", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: "6px 10px", margin: "0 0 10px" }}>{createError}</p>}
-
-              {createdInvite ? (
-                <div style={{ marginBottom: 10 }}>
-                  <div style={{ background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: 10, padding: 12, textAlign: "center", marginBottom: 10 }}>
-                    <div style={{ fontSize: 22, marginBottom: 4 }}>🎉</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#15803d" }}>Invite created!</div>
-                    <div style={{ fontSize: 11, color: "#9B7450", marginTop: 3 }}>Share this link — guests RSVP instantly.</div>
-                  </div>
-                  <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
-                    <input readOnly value={createdInvite.link} onFocus={e => e.target.select()}
-                      style={{ flex: 1, minWidth: 0, padding: "7px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.22)", fontSize: 11.5, fontFamily: font, color: "#6B3A1F", background: "#fff" }} />
-                    <button onClick={() => { navigator.clipboard?.writeText(createdInvite.link); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 1800); }}
-                      style={{ flexShrink: 0, padding: "7px 12px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: linkCopied ? "rgba(196,122,46,0.15)" : "#fff", color: "#C47A2E", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
-                      {linkCopied ? "Copied!" : "Copy"}
-                    </button>
-                  </div>
-                  <button onClick={() => navigate(`/house-party/invite/${createdInvite.inviteId}`)}
-                    style={{ width: "100%", padding: 9, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                    View Live RSVPs →
-                  </button>
+            <div style={{ padding: 20, maxHeight: "calc(100vh - 220px)", overflowY: "auto" }}>
+              {tab === "details" && (
+                <div>
+                  {fields.map(f => (
+                    <div key={f.key} style={{ marginBottom: 11 }}>
+                      <label style={{ fontSize: 10.5, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                        <span>{f.label}{f.required ? " *" : ""}</span>
+                        {f.optional && (
+                          <label style={{ display: "flex", alignItems: "center", gap: 4, fontWeight: 600, textTransform: "none", letterSpacing: 0, fontSize: 10, cursor: "pointer" }}>
+                            <input type="checkbox" checked={!!data._show?.[f.key]} onChange={() => toggleShow(f.key)} /> show
+                          </label>
+                        )}
+                      </label>
+                      <input value={data[f.key] || ""} onChange={e => change(f.key, e.target.value)} placeholder={f.placeholder}
+                        style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.22)", fontSize: 13, fontFamily: font, outline: "none", boxSizing: "border-box" }} />
+                    </div>
+                  ))}
                 </div>
-              ) : (
-                <button disabled={!allFilled || creating} onClick={createInvite}
-                  style={{ width: "100%", padding: 11, borderRadius: 10, border: "none", background: allFilled ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: allFilled ? "#fff" : "#9ca3af", fontSize: 14, fontWeight: 800, cursor: allFilled ? "pointer" : "not-allowed", fontFamily: font, boxShadow: allFilled ? "0 3px 12px rgba(196,122,46,0.35)" : "none", marginBottom: 8 }}>
-                  {creating ? "Creating…" : "Create Invite & Get RSVP Link →"}
-                </button>
               )}
 
-              <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(waText)}`)}
-                style={{ width: "100%", padding: 9, borderRadius: 10, border: "1.5px solid rgba(37,211,102,0.4)", background: "rgba(37,211,102,0.07)", color: "#15803d", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                📲 Share via WhatsApp
-              </button>
+              {tab === "style" && (
+                <StylePanel template={template} styleOverride={styleOverride} onChange={setStyleOverride} bare />
+              )}
+
+              {tab === "download" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <button disabled={!!exporting} onClick={() => runExport(exportAllFlyerImages, "images")}
+                    style={{ padding: "9px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: exporting ? "default" : "pointer", fontFamily: font }}>
+                    {exporting === "images" ? "Preparing…" : "📲 Download for WhatsApp / Story / Square"}
+                  </button>
+                  <button disabled={!!exporting} onClick={() => runExport(exportFlyerPdf, "pdf")}
+                    style={{ padding: "9px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: exporting ? "default" : "pointer", fontFamily: font }}>
+                    {exporting === "pdf" ? "Preparing…" : "🖨️ Download Printable PDF"}
+                  </button>
+                  <button onClick={() => { navigator.clipboard?.writeText(waText); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 1800); }}
+                    style={{ padding: "9px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "transparent", color: "#9B7450", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                    {linkCopied ? "Copied!" : "Copy invitation message"}
+                  </button>
+                </div>
+              )}
+
+              {tab === "share" && (
+                <div>
+                  <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 14px", lineHeight: 1.5 }}>Get a link guests can open to RSVP — no account needed, responses update live.</p>
+
+                  {!allFilled && <p style={{ fontSize: 11, color: "#b45309", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "6px 10px", margin: "0 0 10px" }}>Fill your name, Date, Time & Venue in the Details tab to continue</p>}
+                  {createError && <p style={{ fontSize: 11, color: "#991B1B", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: "6px 10px", margin: "0 0 10px" }}>{createError}</p>}
+
+                  {createdInvite ? (
+                    <div style={{ marginBottom: 10 }}>
+                      <div style={{ background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: 10, padding: 12, textAlign: "center", marginBottom: 10 }}>
+                        <div style={{ fontSize: 22, marginBottom: 4 }}>🎉</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "#15803d" }}>Invite created!</div>
+                        <div style={{ fontSize: 11, color: "#9B7450", marginTop: 3 }}>Share this link — guests RSVP instantly.</div>
+                      </div>
+                      <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+                        <input readOnly value={createdInvite.link} onFocus={e => e.target.select()}
+                          style={{ flex: 1, minWidth: 0, padding: "7px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.22)", fontSize: 11.5, fontFamily: font, color: "#6B3A1F", background: "#fff" }} />
+                        <button onClick={() => { navigator.clipboard?.writeText(createdInvite.link); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 1800); }}
+                          style={{ flexShrink: 0, padding: "7px 12px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: linkCopied ? "rgba(196,122,46,0.15)" : "#fff", color: "#C47A2E", fontSize: 11.5, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
+                          {linkCopied ? "Copied!" : "Copy"}
+                        </button>
+                      </div>
+                      <button onClick={() => navigate(`/house-party/invite/${createdInvite.inviteId}`)}
+                        style={{ width: "100%", padding: 9, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                        View Live RSVPs →
+                      </button>
+                    </div>
+                  ) : (
+                    <button disabled={!allFilled || creating} onClick={createInvite}
+                      style={{ width: "100%", padding: 11, borderRadius: 10, border: "none", background: allFilled ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: allFilled ? "#fff" : "#9ca3af", fontSize: 14, fontWeight: 800, cursor: allFilled ? "pointer" : "not-allowed", fontFamily: font, boxShadow: allFilled ? "0 3px 12px rgba(196,122,46,0.35)" : "none", marginBottom: 8 }}>
+                      {creating ? "Creating…" : "Create Invite & Get RSVP Link →"}
+                    </button>
+                  )}
+
+                  <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(waText)}`)}
+                    style={{ width: "100%", padding: 9, borderRadius: 10, border: "1.5px solid rgba(37,211,102,0.4)", background: "rgba(37,211,102,0.07)", color: "#15803d", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                    📲 Share via WhatsApp
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
