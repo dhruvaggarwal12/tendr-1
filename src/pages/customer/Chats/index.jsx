@@ -13,7 +13,7 @@ const CAT_EMOJI = { Photographer: "📸", Caterer: "🍽", Decorator: "🎀", "D
 export default function CustomerChatList() {
   const navigate = useNavigate();
   const { token } = useSelector((s) => s.auth);
-  const { openExistingChat, openConciergeChat } = useChatOverlay();
+  const { openExistingChat, openConciergeChat, unreadByConversation, markConversationRead } = useChatOverlay();
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showSupport, setShowSupport] = useState(false);
@@ -47,6 +47,7 @@ export default function CustomerChatList() {
   }, [fetchChats]);
 
   const openChat = (convo) => {
+    markConversationRead(convo._id);
     if (convo.chatType === "concierge" || convo.chatType === "support") {
       openConciergeChat(convo._id, !!convo.chatApproved);
       setTimeout(() => document.dispatchEvent(new CustomEvent("tendr:set-from-active-chats")), 50);
@@ -59,6 +60,11 @@ export default function CustomerChatList() {
       });
     }
   };
+
+  // Live count from the socket-backed context, falling back to what this
+  // page's own fetch got from the server before the context's own fetch
+  // (or a socket update) lands.
+  const unreadFor = (convo) => unreadByConversation[convo._id] ?? convo.unreadCount ?? 0;
 
   const vendorChats = chats.filter(c => c.chatType === "vendor");
   const conciergeChats = chats.filter(c => c.chatType === "concierge");
@@ -118,7 +124,7 @@ export default function CustomerChatList() {
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {conciergeChats.map(convo => {
                 const isPending = !convo.chatApproved;
-                const hasUnread = convo.unseenByCustomer > 0;
+                const unread = unreadFor(convo); const hasUnread = unread > 0;
                 return (
                   <button
                     key={convo._id}
@@ -141,7 +147,7 @@ export default function CustomerChatList() {
                       ✨
                       {hasUnread && (
                         <div style={{ position: "absolute", top: -4, right: -4, width: 18, height: 18, borderRadius: "50%", background: "#C47A2E", border: "2px solid #fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#fff" }}>
-                          {convo.unseenByCustomer > 9 ? "9+" : convo.unseenByCustomer}
+                          {unread > 9 ? "9+" : unread}
                         </div>
                       )}
                     </div>
@@ -205,7 +211,7 @@ export default function CustomerChatList() {
               {vendorChats.map(convo => {
                 const emoji = CAT_EMOJI[convo.serviceType] || "🏷";
                 const isPending = !convo.chatApproved;
-                const hasUnread = convo.unseenByCustomer > 0;
+                const unread = unreadFor(convo); const hasUnread = unread > 0;
 
                 return (
                   <button
@@ -238,7 +244,7 @@ export default function CustomerChatList() {
                           display: "flex", alignItems: "center", justifyContent: "center",
                           fontSize: 9, fontWeight: 800, color: "#fff",
                         }}>
-                          {convo.unseenByCustomer > 9 ? "9+" : convo.unseenByCustomer}
+                          {unread > 9 ? "9+" : unread}
                         </div>
                       )}
                     </div>

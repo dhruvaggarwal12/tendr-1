@@ -55,7 +55,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const [showPayPopup, setShowPayPopup] = useState(false);
   const [showPayHint, setShowPayHint] = useState(false);
   const dispatch = useDispatch();
-  const { chatState, expandChat, openExistingChat, openConciergeChat } = useChatOverlay();
+  const { chatState, expandChat, openExistingChat, openConciergeChat, totalUnread } = useChatOverlay();
   const { cartCount: stCartCount, openCart: openStCart } = useStationeryCart();
   const hasMinimizedChat = chatState?.minimized && chatState?.vendor;
   const [open, setOpen] = useState(false);
@@ -83,21 +83,6 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const prevStCount     = useRef(stCartCount);
   const prevGhCartCount = useRef(ghCartCount);
   const prevGhPhotoCount = useRef(ghPhotoCount);
-  // Persist seen conversation IDs so badge stays gone after viewing
-  const [seenIds, setSeenIds] = useState(() => {
-    try { return new Set(JSON.parse(localStorage.getItem("chatBadgeSeenIds") || "[]")); }
-    catch { return new Set(); }
-  });
-
-  const markAllSeen = (chats) => {
-    setSeenIds(prev => {
-      const next = new Set([...prev, ...chats.map(c => c._id)]);
-      localStorage.setItem("chatBadgeSeenIds", JSON.stringify([...next]));
-      return next;
-    });
-  };
-
-  const unseenCount = vendorChats.filter(c => !c.chatRejected && !seenIds.has(c._id)).length;
   const [path, setPath]     = useState(() => router.state.location.pathname);
   const [search, setSearch] = useState(() => router.state.location.search || "");
   const [decorDismissed, setDecorDismissed] = useState(() => {
@@ -320,8 +305,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
 
   const handleVendorChatClick = (convo) => {
     setOpen(false);
-    markAllSeen([convo]);
-    // Open via VendorChatModal (same experience as the main chat window)
+    // openExistingChat marks the conversation read itself (see ChatContext)
     openExistingChat(convo._id, {
       _id: typeof convo.vendorId === 'object' ? convo.vendorId?._id : convo.vendorId,
       name: convo.vendorName || "Vendor",
@@ -332,11 +316,12 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
 
 
   const handleOpen = () => {
-    // Always open the popup — user can resume minimized chat from inside
-    if (!open) {
-      fetchVendorChats();
-      markAllSeen(vendorChats);
-    }
+    // Always open the popup — user can resume minimized chat from inside.
+    // Unlike the old localStorage-based scheme, just opening this list no
+    // longer clears unread badges — only actually opening a conversation
+    // (handleVendorChatClick / openExistingChat) does, since that's the
+    // point where the messages are genuinely read.
+    if (!open) fetchVendorChats();
     setOpen(!open);
   };
 
@@ -1310,7 +1295,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
             💬
           </span>
         )}
-        {!hasMinimizedChat && unseenCount > 0 && (
+        {!hasMinimizedChat && totalUnread > 0 && (
           <span style={{
             position: "absolute",
             top: -6,
@@ -1329,7 +1314,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
             padding: "0 4px",
             animation: "unseen-pulse 1.2s ease-in-out infinite",
           }}>
-            {unseenCount}
+            {totalUnread > 9 ? "9+" : totalUnread}
           </span>
         )}
       </button>

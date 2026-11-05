@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import logo from "../../assets/logos/tendr-logo-secondary.png";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useChatOverlay } from '../../context/ChatContext';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -20,6 +21,7 @@ function TendrBookingsTab({ token }) {
   const [chats, setChats]     = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { unreadByConversation, markConversationRead } = useChatOverlay();
 
   useEffect(() => {
     if (!token) return;
@@ -38,27 +40,35 @@ function TendrBookingsTab({ token }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      {chats.map((chat) => (
-        <ChatRow
-          key={chat.id || chat._id}
-          name={chat.customerName || 'Customer'}
-          sub={chat.eventType || chat.serviceType || ''}
-          time={relativeTime(chat.updatedAt || chat.timestamp)}
-          badge={chat.status === 'active' ? '●' : null}
-          badgeColor="#4caf80"
-          onClick={() => navigate('/vendor/chat', {
-            state: {
-              chatId:        chat.id || chat._id,
-              customerName:  chat.customerName,
-              customerImage: chat.customerImage,
-              eventType:     chat.eventType,
-              eventDate:     chat.eventDate,
-              guestCount:    chat.guestCount,
-              customerPhone: chat.customerPhone,
-            }
-          })}
-        />
-      ))}
+      {chats.map((chat) => {
+        const id = chat.id || chat._id;
+        const unread = unreadByConversation[id] ?? chat.unreadCount ?? 0;
+        return (
+          <ChatRow
+            key={id}
+            name={chat.customerName || 'Customer'}
+            sub={chat.eventType || chat.serviceType || ''}
+            time={relativeTime(chat.updatedAt || chat.timestamp)}
+            badge={chat.status === 'active' ? '●' : null}
+            badgeColor="#4caf80"
+            unread={unread}
+            onClick={() => {
+              markConversationRead(id);
+              navigate('/vendor/chat', {
+                state: {
+                  chatId:        id,
+                  customerName:  chat.customerName,
+                  customerImage: chat.customerImage,
+                  eventType:     chat.eventType,
+                  eventDate:     chat.eventDate,
+                  guestCount:    chat.guestCount,
+                  customerPhone: chat.customerPhone,
+                }
+              });
+            }}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -68,6 +78,7 @@ function DirectMessagesTab({ token }) {
   const [chats, setChats]     = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { unreadByConversation, markConversationRead } = useChatOverlay();
 
   useEffect(() => {
     if (!token) return;
@@ -92,45 +103,55 @@ function DirectMessagesTab({ token }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-      {chats.map((convo) => (
-        <ChatRow
-          key={convo._id}
-          name={convo.visitorName || 'Guest'}
-          sub={convo.serviceType || 'Direct enquiry'}
-          time={relativeTime(convo.updatedAt)}
-          preview={convo.lastMessage?.content || ''}
-          badge={null}
-          pill="Direct"
-          onClick={() => navigate(`/vendor/direct-chat/${convo._id}`)}
-        />
-      ))}
+      {chats.map((convo) => {
+        const unread = unreadByConversation[convo._id] ?? convo.unreadCount ?? 0;
+        return (
+          <ChatRow
+            key={convo._id}
+            name={convo.visitorName || 'Guest'}
+            sub={convo.serviceType || 'Direct enquiry'}
+            time={relativeTime(convo.updatedAt)}
+            preview={convo.lastMessage?.content || ''}
+            badge={null}
+            pill="Direct"
+            unread={unread}
+            onClick={() => { markConversationRead(convo._id); navigate(`/vendor/direct-chat/${convo._id}`); }}
+          />
+        );
+      })}
     </div>
   );
 }
 
 // ── Shared presentational bits ────────────────────────────────────────────────
-function ChatRow({ name, sub, time, preview, badge, badgeColor, pill, onClick }) {
+function ChatRow({ name, sub, time, preview, badge, badgeColor, pill, unread = 0, onClick }) {
+  const hasUnread = unread > 0;
   return (
     <div
       onClick={onClick}
       style={{
         display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px',
-        background: '#fff', cursor: 'pointer', borderBottom: '1px solid #f0f0f0',
+        background: hasUnread ? '#fdf6ee' : '#fff', cursor: 'pointer', borderBottom: '1px solid #f0f0f0',
         transition: 'background 0.12s',
       }}
       onMouseEnter={e => e.currentTarget.style.background = '#fdf6ee'}
-      onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+      onMouseLeave={e => e.currentTarget.style.background = hasUnread ? '#fdf6ee' : '#fff'}
     >
       <div style={{
         width: 44, height: 44, borderRadius: '50%', background: '#fef3e2',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 18, fontWeight: 700, color: '#c49b30', flexShrink: 0,
+        fontSize: 18, fontWeight: 700, color: '#c49b30', flexShrink: 0, position: 'relative',
       }}>
         {name.charAt(0).toUpperCase()}
+        {hasUnread && (
+          <div style={{ position: 'absolute', top: -3, right: -3, width: 18, height: 18, borderRadius: '50%', background: '#c49b30', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: '#fff' }}>
+            {unread > 9 ? '9+' : unread}
+          </div>
+        )}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-          <span style={{ fontWeight: 700, fontSize: 14, color: '#1a1207', maxWidth: '60%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <span style={{ fontWeight: hasUnread ? 800 : 700, fontSize: 14, color: '#1a1207', maxWidth: '60%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {name}
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -142,7 +163,7 @@ function ChatRow({ name, sub, time, preview, badge, badgeColor, pill, onClick })
             <span style={{ fontSize: 11, color: '#999', whiteSpace: 'nowrap' }}>{time}</span>
           </div>
         </div>
-        <div style={{ fontSize: 12, color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div style={{ fontSize: 12, color: hasUnread ? '#5a4a2a' : '#888', fontWeight: hasUnread ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {badge && <span style={{ color: badgeColor, marginRight: 5, fontSize: 10 }}>{badge}</span>}
           {preview || sub}
         </div>
