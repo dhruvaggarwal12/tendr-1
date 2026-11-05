@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { io } from 'socket.io-client';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
@@ -9,63 +11,26 @@ import EventIcon from '@mui/icons-material/Event';
 import PeopleIcon from '@mui/icons-material/People';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 
-// -------------------- Backend helpers --------------------
 const API_BASE = import.meta.env.VITE_BASE_URL;
 
-const fetchChatMessages = async (chatId) => {
-  try {
-    const response = await fetch(`${API_BASE}/vendor/chats/${chatId}/messages`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-    });
-    if (!response.ok) throw new Error('Failed to fetch messages');
-    const result = await response.json();
-    return result?.data || result || [];
-  } catch (err) {
-    console.error('Error fetching chat messages:', err);
-    return [];
+// Shared [img:<data-uri>] convention the rest of the chat system already
+// uses (see src/pages/customer/Chat.jsx) — images travel as a marked
+// message string over the same send_message socket event as text, no
+// separate upload endpoint. Normalizes one real Message doc (from the
+// history fetch or a live new_message event) into the {type, text/imageUrl}
+// shape this screen renders.
+function normalizeMessage(raw) {
+  const isVendor = raw.sender === 'vendor';
+  const base = {
+    id: raw._id || raw.id,
+    sender: isVendor ? 'vendor' : 'customer',
+    timestamp: raw.createdAt || raw.timestamp || new Date().toISOString(),
+  };
+  if (typeof raw.content === 'string' && raw.content.startsWith('[img:')) {
+    return { ...base, type: 'image', imageUrl: raw.content.replace('[img:', '').replace(/\]$/, '') };
   }
-};
-
-// OPTIONAL: if your backend supports sending text messages via JSON.
-// You can keep using your simulated response too.
-const sendTextMessage = async (chatId, text) => {
-  try {
-    const res = await fetch(`${API_BASE}/vendor/chats/${chatId}/messages`, {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({ type: 'text', text }),
-      headers: { 'Content-Type': 'application/json' },
-    });
-    if (!res.ok) throw new Error('Failed to send');
-    return await res.json(); // expect {data: {id, ...}}
-  } catch (e) {
-    console.warn('sendTextMessage fallback to local only:', e);
-    return null;
-  }
-};
-
-// Upload a single image, return a URL from server.
-// Adjust endpoint/field names to match your backend.
-const uploadImageAndGetUrl = async (chatId, file) => {
-  const form = new FormData();
-  form.append('file', file);
-  form.append('type', 'image');
-
-  const res = await fetch(`${API_BASE}/vendor/chats/${chatId}/attachments`, {
-    method: 'POST',
-    credentials: 'include',
-    body: form,
-  });
-
-  if (!res.ok) throw new Error('Upload failed');
-  const result = await res.json();
-  // Expect something like {data: {url: 'https://...'}} — adjust if needed.
-  const url = result?.data?.url || result?.url;
-  if (!url) throw new Error('No URL returned from upload');
-  return url;
-};
+  return { ...base, type: 'text', text: raw.content ?? raw.text ?? '' };
+}
 
 const VendorChat = () => {
   const navigate = useNavigate();
@@ -73,6 +38,8 @@ const VendorChat = () => {
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const inputRef = useRef(null);
+  const socketRef = useRef(null);
+  const token = useSelector((s) => s.auth?.token);
 
   const {
     chatId,
@@ -85,81 +52,71 @@ const VendorChat = () => {
 
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
 
-  // Image sending states
-  const [imageFiles, setImageFiles] = useState([]); // File[]
   const [imagePreviews, setImagePreviews] = useState([]); // {id, url, file}
-  const [isUploadingImages, setIsUploadingImages] = useState(false);
 
+  // ── Real connection: join this conversation's room, load its real message
+  // history, and listen for live replies — same socket.io infra and events
+  // already used by the customer-facing chat (src/pages/customer/Chat.jsx)
+  // and the vendor's own direct-chat page.
   useEffect(() => {
-    const loadMessages = async () => {
-      try {
-        const messagesData = await fetchChatMessages(chatId);
-        setMessages(messagesData);
-      } catch (error) {
-        console.error('Error loading messages:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (chatId) loadMessages();
-  }, [chatId]);
+    if (!chatId || !token) return;
+    const socket = io(API_BASE, {
+      auth: { token },
+      transports: ['websocket'],
+      withCredentials: true,
+    });
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      socket.emit('join_conversation', { conversationId: chatId });
+      fetch(`${API_BASE}/messages/${chatId}/messages`, {
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
+      })
+        .then((r) => (r.ok ? r.json() : []))
+        .then((history) => {
+          setMessages(Array.isArray(history) ? history.map(normalizeMessage) : []);
+        })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    });
+
+    socket.on('new_message', (msg) => {
+      // Skip the echo of our own just-sent message — already shown optimistically.
+      if (msg.sender === 'vendor') return;
+      setMessages((prev) => [...prev, normalizeMessage(msg)]);
+    });
+
+    socket.on('connect_error', (err) => console.error('Vendor chat socket error:', err.message));
+
+    return () => socket.disconnect();
+  }, [chatId, token]);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isTyping]);
+  }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const sendContent = (content) => {
+    if (!socketRef.current || !chatId) return;
+    socketRef.current.emit('send_message', { conversationId: chatId, sender: 'vendor', content });
+  };
+
   // --------------- Handle text send ---------------
-  const handleSendMessage = async (e) => {
+  const handleSendMessage = (e) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+    const text = newMessage.trim();
+    if (!text) return;
 
-    const tempId = `temp-${Date.now()}`;
-    const message = {
-      id: tempId,
-      text: newMessage.trim(),
-      sender: 'vendor',
-      timestamp: new Date().toISOString(),
-      type: 'text',
-      _optimistic: true,
-    };
-
-    setMessages((prev) => [...prev, message]);
+    setMessages((prev) => [...prev, { id: `local-${Date.now()}`, type: 'text', text, sender: 'vendor', timestamp: new Date().toISOString() }]);
     setNewMessage('');
-    setIsTyping(true);
-
-    // Try backend send (optional; keep your simulation if desired)
-    try {
-      const sent = await sendTextMessage(chatId, message.text);
-      if (sent?.data?.id) {
-        setMessages((prev) =>
-          prev.map((m) => (m.id === tempId ? { ...m, id: sent.data.id, _optimistic: false } : m))
-        );
-      }
-    } catch {
-      /* ignore; we already added optimistically */
-    }
-
-    // Simulated customer response
-    setTimeout(() => {
-      const customerResponse = {
-        id: `cust-${Date.now() + 1}`,
-        text:
-          "Thank you for the information! I'll discuss this with my family and get back to you soon.",
-        sender: 'customer',
-        timestamp: new Date().toISOString(),
-        type: 'text',
-      };
-      setMessages((prev) => [...prev, customerResponse]);
-      setIsTyping(false);
-    }, 2000);
+    sendContent(text);
   };
 
   // --------------- Image selection / preview ---------------
@@ -168,41 +125,27 @@ const VendorChat = () => {
   const onFilesSelected = (filesList) => {
     const files = Array.from(filesList || []).filter((f) => f.type.startsWith('image/'));
     if (!files.length) return;
-
-    const previews = files.map((file) => {
-      const url = URL.createObjectURL(file);
-      return { id: `prev-${file.name}-${file.size}-${Date.now()}`, url, file };
-    });
-
-    setImageFiles((prev) => [...prev, ...files]);
+    const previews = files.map((file) => ({ id: `prev-${file.name}-${file.size}-${Date.now()}`, url: URL.createObjectURL(file), file }));
     setImagePreviews((prev) => [...prev, ...previews]);
   };
 
   const handleFileInputChange = (e) => {
     onFilesSelected(e.target.files);
-    // Reset input so selecting the same file again still triggers change
     e.target.value = '';
   };
 
   const removePreview = (id) => {
     setImagePreviews((prev) => prev.filter((p) => p.id !== id));
-    setImageFiles((prev) => prev.filter((f) => `prev-${f.name}-${f.size}-${/* not exact match */ ''}`));
-    // Simpler: rebuild files from previews list after removal
-    setImageFiles((_) => {
-      const keep = imagePreviews.filter((p) => p.id !== id).map((p) => p.file);
-      return keep;
-    });
   };
 
   // Paste image from clipboard
-  const handlePaste = useCallback((e) => {
+  const handlePaste = (e) => {
     if (!e.clipboardData) return;
     const items = e.clipboardData.items;
     const imageBlobs = [];
     for (let i = 0; i < items.length; i++) {
-      const it = items[i];
-      if (it.type.indexOf('image') !== -1) {
-        const blob = it.getAsFile();
+      if (items[i].type.indexOf('image') !== -1) {
+        const blob = items[i].getAsFile();
         if (blob) imageBlobs.push(blob);
       }
     }
@@ -210,122 +153,32 @@ const VendorChat = () => {
       onFilesSelected(imageBlobs);
       e.preventDefault();
     }
-  }, []);
+  };
 
   useEffect(() => {
     const el = inputRef.current;
     if (!el) return;
     el.addEventListener('paste', handlePaste);
     return () => el.removeEventListener('paste', handlePaste);
-  }, [handlePaste]);
+  }, []);
 
-  // --------------- Send images ---------------
-  const handleSendImages = async () => {
-    if (!imagePreviews.length || !chatId) return;
-
-    setIsUploadingImages(true);
-
-    // Add optimistic image messages with object URLs
-    const optimistic = imagePreviews.map((p) => ({
-      id: p.id,
-      type: 'image',
-      imageUrl: p.url, // local preview url
-      sender: 'vendor',
-      timestamp: new Date().toISOString(),
-      _optimistic: true,
-    }));
-
-    setMessages((prev) => [...prev, ...optimistic]);
+  // --------------- Send images — same [img:<data-uri>] convention as the
+  // customer-facing chat, over the same send_message socket event. ---------
+  const sendImages = () => {
+    if (!imagePreviews.length) return;
+    const batch = imagePreviews;
     setImagePreviews([]);
-    setImageFiles([]);
 
-    // Try uploading each and replacing the URL
-    for (const msg of optimistic) {
-      try {
-        // Find the corresponding preview (we stored file on it)
-        // We no longer have previews here, so stash the File on the optimistic msg by rebuilding:
-        // alternative: push files/ids together before clearing
-      } catch (e) {
-        // noop
-      }
-    }
-
-    // Better approach: keep a local copy of files before clearing
-    // so we can map 1:1 with optimistic messages
-    // (id === preview.id)
-    // Implement below:
-
-    // Recreate previews from optimistic ids — but we already cleared imagePreviews.
-    // Instead: we saved them before clearing:
+    batch.forEach(({ id, url, file }) => {
+      setMessages((prev) => [...prev, { id, type: 'image', imageUrl: url, sender: 'vendor', timestamp: new Date().toISOString() }]);
+      const reader = new FileReader();
+      reader.onload = (ev) => sendContent(`[img:${ev.target.result}]`);
+      reader.readAsDataURL(file);
+    });
   };
 
-  // Keep a shadow list while sending to map id -> file
-  const pendingToSendRef = useRef([]);
-  useEffect(() => {
-    // Whenever we are about to send, we capture current previews
-    if (isUploadingImages === false && imagePreviews.length) {
-      pendingToSendRef.current = imagePreviews.map((p) => ({ id: p.id, file: p.file }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [imagePreviews]);
-
-  const actuallySendImages = async () => {
-    const batch = pendingToSendRef.current;
-    if (!batch || !batch.length) return;
-
-    // optimistic add
-    const optimistic = batch.map(({ id, file }) => ({
-      id,
-      type: 'image',
-      imageUrl: URL.createObjectURL(file),
-      sender: 'vendor',
-      timestamp: new Date().toISOString(),
-      _optimistic: true,
-    }));
-    setMessages((prev) => [...prev, ...optimistic]);
-
-    // clear preview UI
-    setImagePreviews([]);
-    setImageFiles([]);
-    setIsUploadingImages(true);
-
-    // upload each and replace message URL
-    for (const { id, file } of batch) {
-      try {
-        const realUrl = await uploadImageAndGetUrl(chatId, file);
-        setMessages((prev) =>
-          prev.map((m) => (m.id === id ? { ...m, imageUrl: realUrl, _optimistic: false } : m))
-        );
-      } catch (err) {
-        console.error('Image upload failed:', err);
-        // Mark failed
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === id ? { ...m, _uploadError: true } : m
-          )
-        );
-      }
-    }
-
-    setIsUploadingImages(false);
-  };
-
-  // Wire the button
-  const onClickSendImages = () => {
-    // Save current previews to the ref, then send
-    pendingToSendRef.current = imagePreviews.map((p) => ({ id: p.id, file: p.file }));
-    actuallySendImages();
-  };
-
-  const formatTime = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const formatDate = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString();
-  };
+  const formatTime = (timestamp) => new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const formatDate = (timestamp) => new Date(timestamp).toLocaleDateString();
 
   if (loading) {
     return (
@@ -365,17 +218,19 @@ const VendorChat = () => {
             </button>
 
             <div className="flex items-center space-x-3">
-              <img
-                src={customerImage}
-                alt={customerName}
-                className="w-10 h-10 rounded-full object-cover"
-              />
+              {customerImage ? (
+                <img
+                  src={customerImage}
+                  alt={customerName}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-orange-100 text-orange-600 font-bold flex items-center justify-center">
+                  {customerName.charAt(0).toUpperCase()}
+                </div>
+              )}
               <div>
                 <h2 className="font-semibold text-gray-800">{customerName}</h2>
-                <div className="flex items-center space-x-2 text-xs text-gray-500">
-                  <span className="bg-green-500 w-2 h-2 rounded-full" />
-                  <span>Online</span>
-                </div>
               </div>
             </div>
           </div>
@@ -412,23 +267,32 @@ const VendorChat = () => {
         </div>
 
         {/* Event Details */}
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <div className="flex items-center space-x-4 text-sm text-gray-600">
-            <div className="flex items-center space-x-1">
-              <EventIcon className="text-orange-500" fontSize="small" />
-              <span>{eventType}</span>
+        {(eventType || guestCount || eventDate) && (
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <div className="flex items-center space-x-4 text-sm text-gray-600">
+              {eventType && (
+                <div className="flex items-center space-x-1">
+                  <EventIcon className="text-orange-500" fontSize="small" />
+                  <span>{eventType}</span>
+                </div>
+              )}
+              {guestCount && (
+                <div className="flex items-center space-x-1">
+                  <PeopleIcon className="text-orange-500" fontSize="small" />
+                  <span>{guestCount} guests</span>
+                </div>
+              )}
+              {eventDate && <span>{eventDate}</span>}
             </div>
-            <div className="flex items-center space-x-1">
-              <PeopleIcon className="text-orange-500" fontSize="small" />
-              <span>{guestCount} guests</span>
-            </div>
-            <span>{eventDate}</span>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 && (
+          <div className="text-center text-gray-400 text-sm mt-10">No messages yet — say hello!</div>
+        )}
         {messages.map((message, index) => {
           const isVendor = message.sender === 'vendor';
           const showDate =
@@ -452,24 +316,15 @@ const VendorChat = () => {
 
               <div className={`flex ${isVendor ? 'justify-end' : 'justify-start'}`}>
                 <div className={`${bubbleBase} ${isVendor ? vendorBubble : customerBubble}`}>
-                  {/* Text message */}
                   {message.type === 'text' && (
                     <>
                       <p className="text-sm whitespace-pre-line">{message.text}</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <p className={`text-[10px] sm:text-xs ${isVendor ? 'text-orange-100' : 'text-gray-500'}`}>
-                          {formatTime(message.timestamp)}
-                        </p>
-                        {message._optimistic && (
-                          <span className={`text-[10px] sm:text-xs ${isVendor ? 'text-orange-100' : 'text-gray-400'}`}>
-                            sending…
-                          </span>
-                        )}
-                      </div>
+                      <p className={`text-[10px] sm:text-xs mt-2 ${isVendor ? 'text-orange-100' : 'text-gray-500'}`}>
+                        {formatTime(message.timestamp)}
+                      </p>
                     </>
                   )}
 
-                  {/* Image message */}
                   {message.type === 'image' && (
                     <div className="flex flex-col">
                       <div className="overflow-hidden rounded-xl">
@@ -480,21 +335,9 @@ const VendorChat = () => {
                           onLoad={scrollToBottom}
                         />
                       </div>
-                      <div className="flex items-center gap-2 mt-2">
-                        <p className={`text-[10px] sm:text-xs ${isVendor ? 'text-orange-100' : 'text-gray-500'}`}>
-                          {formatTime(message.timestamp)}
-                        </p>
-                        {message._optimistic && (
-                          <span className={`text-[10px] sm:text-xs ${isVendor ? 'text-orange-100' : 'text-gray-400'}`}>
-                            uploading…
-                          </span>
-                        )}
-                        {message._uploadError && (
-                          <span className="text-[10px] sm:text-xs text-red-200">
-                            upload failed
-                          </span>
-                        )}
-                      </div>
+                      <p className={`text-[10px] sm:text-xs mt-2 ${isVendor ? 'text-orange-100' : 'text-gray-500'}`}>
+                        {formatTime(message.timestamp)}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -502,25 +345,6 @@ const VendorChat = () => {
             </div>
           );
         })}
-
-        {isTyping && (
-          <div className="flex justify-start">
-            <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3 shadow-sm">
-              <div className="flex items-center space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div
-                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                  style={{ animationDelay: '0.1s' }}
-                ></div>
-                <div
-                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                  style={{ animationDelay: '0.2s' }}
-                ></div>
-                <span className="text-xs text-gray-500 ml-2">Customer is typing...</span>
-              </div>
-            </div>
-          </div>
-        )}
 
         <div ref={messagesEndRef} />
       </div>
@@ -551,15 +375,10 @@ const VendorChat = () => {
               {imagePreviews.length} image{imagePreviews.length > 1 ? 's' : ''} selected
             </span>
             <button
-              onClick={onClickSendImages}
-              disabled={isUploadingImages}
-              className={`px-4 py-2 rounded-full text-sm transition-colors ${
-                isUploadingImages
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  : 'bg-orange-500 text-white hover:bg-orange-600'
-              }`}
+              onClick={sendImages}
+              className="px-4 py-2 rounded-full text-sm transition-colors bg-orange-500 text-white hover:bg-orange-600"
             >
-              {isUploadingImages ? 'Uploading…' : `Send ${imagePreviews.length} photo${imagePreviews.length > 1 ? 's' : ''}`}
+              {`Send ${imagePreviews.length} photo${imagePreviews.length > 1 ? 's' : ''}`}
             </button>
           </div>
         </div>
