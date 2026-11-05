@@ -5760,16 +5760,59 @@ export default function OccasionDetail(){
             </React.Fragment>
             );
 
+            // One recommended live-performer category per occasion — surfaced on the last
+            // story slide before the full plan, with a direct link into the Artists
+            // marketplace (a different, performer-specific booking surface from the
+            // vendor packages already selected above, see src/pages/artists/*). Values
+            // must match PERFORMER_TYPES in components/PerformerSuggestions.jsx exactly
+            // (that list — Singer/Band/Anchor/Choreographer/Musician/Emcee — is what the
+            // /artists/:serviceType route actually matches against; there's no "DJ" there,
+            // a route for an unmatched value silently falls back to its first category).
+            const OCCASION_PERFORMER_CATEGORY={
+              "birthday-party":"Musician","first-birthday":"Musician","anniversary":"Singer",
+              "baby-shower":"Musician","newborn-welcome":"Musician","gender-reveal":"Musician",
+              "naming-ceremony":"Musician","housewarming":"Musician","get-together":"Musician",
+              "kitty-party":"Singer","office-party":"Anchor","graduation":"Anchor",
+              "bachelorette":"Choreographer","farewell":"Anchor","retirement":"Anchor",
+              "diwali-party":"Singer","holi-party":"Musician","navratri-garba":"Band",
+            };
+            const recommendedPerformerCategory=OCCASION_PERFORMER_CATEGORY[occasion.id]||"Musician";
+            const goToLivePerformers=()=>{
+              setPlanStoryOpen(false);
+              navigate(`/artists/${encodeURIComponent(recommendedPerformerCategory)}`);
+            };
+            const performersSlide=(
+            <React.Fragment key="plan-performers">
+            <div style={{textAlign:"center",padding:"8px 0 4px"}}>
+              <div style={{width:52,height:52,borderRadius:16,background:"rgba(196,122,46,0.1)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 18px",fontSize:24}}>🎤</div>
+              <p style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font,margin:"0 0 8px"}}>One more thing</p>
+              <h3 style={{fontFamily:serif,fontSize:22,fontWeight:400,color:ink,margin:"0 0 10px",lineHeight:1.25}}>We also have live performers</h3>
+              <p style={{fontSize:13,color:muted,lineHeight:1.6,maxWidth:420,margin:"0 auto 24px"}}>
+                DJs, singers, bands, anchors and more — all verified, all bookable straight through Tendr.
+                For a {occasion.name||"celebration"} like yours, we'd recommend starting with a{" "}
+                <strong style={{color:ink}}>{recommendedPerformerCategory}</strong>.
+              </p>
+              <button onClick={goToLivePerformers}
+                style={{padding:"13px 26px",borderRadius:100,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:13.5,fontWeight:700,cursor:"pointer",fontFamily:font,boxShadow:"0 4px 16px rgba(196,122,46,0.3)"}}>
+                View Live Performers →
+              </button>
+            </div>
+            </React.Fragment>
+            );
+
             // Paired with their labels and filtered together so a slide with nothing to
             // show (no budget split yet, no itinerary yet) never appears as a blank page.
             // Overview is first — it's the facts of the event plus what's been booked,
             // read together before the narrative/prep/itinerary slides that follow.
+            // Live Performers is last — a cross-sell shown right before the full plan,
+            // not before (it shouldn't interrupt reading the actual plan contents).
             const storyItems=[
               {label:"Overview",content:overviewSlide,show:true},
               {label:"Your Event",content:journeySlide,show:true},
               {label:"Preparation",content:prepSlide,show:true},
               {label:"Budget",content:budgetSlide,show:!!budgetSplit},
               {label:"Itinerary",content:itinerarySlide,show:storyItinerary.length>0},
+              {label:"Live Performers",content:performersSlide,show:true},
             ].filter(s=>s.show);
             const storySlides=storyItems.map(s=>s.content);
 

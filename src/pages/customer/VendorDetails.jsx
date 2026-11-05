@@ -21,8 +21,8 @@ import VendorAvailabilityCalendar from "../../components/VendorAvailabilityCalen
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import VendorPhotoPlaceholder from "../../components/VendorPhotoPlaceholder";
 import { useSelector, useDispatch } from "react-redux";
-import { addVendorToCompare, removeVendorFromCompare, clearVendorCompare, setFinalisedVendor } from "../../redux/listingFiltersSlice";
-import { setMultipleFormData, setBookingType, addSelectedVendor } from "../../redux/eventPlanningSlice";
+import { addVendorToCompare, removeVendorFromCompare, clearVendorCompare } from "../../redux/listingFiltersSlice";
+import { setMultipleFormData, setBookingType } from "../../redux/eventPlanningSlice";
 import { useChatOverlay } from "../../context/ChatContext";
 import ServiceAreaMap from "../../components/ServiceAreaMap";
 import Footer from "../../components/Footer";
@@ -51,10 +51,6 @@ const VendorDetailsPage = () => {
   // resumes automatically the moment `token` becomes truthy — instead of just dropping the
   // visitor on their profile page after they sign in.
   const pendingActionRef = useRef(null);
-  // Artist booking modal state
-  const [showArtistModal, setShowArtistModal] = useState(false);
-  const [showArtistTC, setShowArtistTC] = useState(false);
-  const [artistTCChecked, setArtistTCChecked] = useState(false);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -406,20 +402,6 @@ const VendorDetailsPage = () => {
   // action they were trying to do (see the `token` effect below).
   const requireAuth = (action) => { pendingActionRef.current = action; setAuthModalOpen(true); };
 
-  const openArtistBookModal = () => {
-    if (!token) { requireAuth(openArtistBookModal); return; }
-    setArtistTCChecked(false);
-    setShowArtistModal(true);
-  };
-
-  const confirmDirectBooking = () => {
-    dispatch(setFinalisedVendor(vendor));
-    dispatch(addSelectedVendor(vendor.serviceType));
-    setShowArtistTC(false);
-    setShowArtistModal(false);
-    navigate('/booking/review');
-  };
-
   const openGigHeroChat = () => {
     // Direct link visitor → go straight to WhatsApp/call, not Tendr platform chat
     if (isDirectLink) {
@@ -440,18 +422,6 @@ const VendorDetailsPage = () => {
     setEnquiryForm({ name: '', phone: '', eventType: '', eventDate: '', message: '' });
   };
 
-  const onGigProBook = () => {
-    if (isDirectLink) {
-      if (vendor?.phoneNumber) {
-        window.open(`https://wa.me/91${vendor.phoneNumber.replace(/\D/g, "")}?text=${encodeURIComponent(`Hi ${vendor.name}, I'd like to book your services. Can we discuss the details?`)}`, '_blank');
-      }
-      return;
-    }
-    if (isPerformer) { openArtistBookModal(); return; }
-    if (!token) { openGigHeroChat(); return; }
-    openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
-  };
-
   if (isGigPro) {
     return (
       <>
@@ -464,7 +434,7 @@ const VendorDetailsPage = () => {
           vendor={vendor}
           reviews={gigProReviews}
           isDirectLink={isDirectLink}
-          onBook={onGigProBook}
+          onBook={openGigHeroChat}
           onChat={openGigHeroChat}
         />
         <AuthModal open={authModalOpen} onClose={() => { setAuthModalOpen(false); pendingActionRef.current = null; }} />
@@ -1635,109 +1605,6 @@ const VendorDetailsPage = () => {
       )}
 
       <Footer />
-
-      {/* ── Artist booking modal: Chat or Book Directly ── */}
-      {showArtistModal && vendor && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
-          onClick={() => setShowArtistModal(false)}>
-          <div style={{ background: "#fff", borderRadius: 24, padding: "30px 26px", maxWidth: 420, width: "100%", boxShadow: "0 24px 80px rgba(0,0,0,0.28)", fontFamily: "'Outfit', sans-serif" }}
-            onClick={e => e.stopPropagation()}>
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 22 }}>
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Book Artist</div>
-                <div style={{ fontSize: 19, fontWeight: 800, color: "#2C1A0E", lineHeight: 1.2 }}>{vendor.name}</div>
-                <div style={{ fontSize: 12.5, color: "#9B7450", marginTop: 3 }}>{vendor.serviceType} · How would you like to proceed?</div>
-              </div>
-              <button onClick={() => setShowArtistModal(false)} style={{ background: "rgba(196,122,46,0.08)", border: "none", cursor: "pointer", borderRadius: "50%", width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: "#9B7450", flexShrink: 0 }}>✕</button>
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {/* Chat option */}
-              <button
-                onClick={() => { setShowArtistModal(false); openGigHeroChat(); }}
-                style={{ padding: "18px 20px", borderRadius: 16, border: "2px solid rgba(196,122,46,0.2)", background: "#FDFAF5", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 14, transition: "all 0.15s" }}
-                onMouseEnter={e => { e.currentTarget.style.border = "2px solid #C47A2E"; e.currentTarget.style.background = "rgba(196,122,46,0.04)"; }}
-                onMouseLeave={e => { e.currentTarget.style.border = "2px solid rgba(196,122,46,0.2)"; e.currentTarget.style.background = "#FDFAF5"; }}>
-                <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(196,122,46,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>💬</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Chat with Artist</div>
-                  <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.4 }}>Discuss details, availability and pricing directly. Finalize and pay after approval.</div>
-                </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-              </button>
-
-              {/* Book directly option */}
-              <button
-                onClick={() => { setShowArtistModal(false); setArtistTCChecked(false); setShowArtistTC(true); }}
-                style={{ padding: "18px 20px", borderRadius: 16, border: "2px solid rgba(196,122,46,0.2)", background: "linear-gradient(135deg, rgba(196,122,46,0.06), rgba(204,171,74,0.04))", cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: 14, transition: "all 0.15s" }}
-                onMouseEnter={e => { e.currentTarget.style.border = "2px solid #C47A2E"; }}
-                onMouseLeave={e => { e.currentTarget.style.border = "2px solid rgba(196,122,46,0.2)"; }}>
-                <div style={{ width: 42, height: 42, borderRadius: 12, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>⚡</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Book Directly</div>
-                  <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.4 }}>Add to your booking and proceed to payment. Our team confirms pricing within hours.</div>
-                </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-              </button>
-            </div>
-
-            <p style={{ fontSize: 11.5, color: "#B8956A", textAlign: "center", margin: "18px 0 0", lineHeight: 1.4 }}>
-              Both options are handled by Tendr. Payment is collected securely after final confirmation.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* ── Artist T&C modal (Book Directly path) ── */}
-      {showArtistTC && vendor && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 2001, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
-          onClick={() => setShowArtistTC(false)}>
-          <div style={{ background: "#fff", borderRadius: 24, padding: "30px 26px", maxWidth: 440, width: "100%", boxShadow: "0 24px 80px rgba(0,0,0,0.28)", fontFamily: "'Outfit', sans-serif" }}
-            onClick={e => e.stopPropagation()}>
-            <div style={{ textAlign: "center", marginBottom: 22 }}>
-              <div style={{ fontSize: 36, marginBottom: 10 }}>📋</div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", marginBottom: 5 }}>Artist Booking Terms</div>
-              <div style={{ fontSize: 12.5, color: "#9B7450" }}>Please review before proceeding</div>
-            </div>
-
-            <div style={{ background: "#FDFAF5", borderRadius: 14, padding: "16px 18px", marginBottom: 18, fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.6 }}>
-              {[
-                "By booking, you are requesting this artist through Tendr's platform.",
-                "Final pricing and availability will be confirmed by our team within 2–4 hours.",
-                "Payment is due before the event date. You will be guided to complete payment via the Review & Pay page.",
-                "Cancellation must be made at least 48 hours before the event for a full refund.",
-                "Tendr acts as a facilitator — we ensure quality and timely communication between you and the artist.",
-              ].map((t, i) => (
-                <div key={i} style={{ display: "flex", gap: 10, marginBottom: i < 4 ? 10 : 0 }}>
-                  <span style={{ color: "#C47A2E", fontWeight: 700, flexShrink: 0 }}>·</span>
-                  <span>{t}</span>
-                </div>
-              ))}
-            </div>
-
-            <label style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 20, cursor: "pointer" }}>
-              <input type="checkbox" checked={artistTCChecked} onChange={e => setArtistTCChecked(e.target.checked)}
-                style={{ width: 17, height: 17, accentColor: "#C47A2E", marginTop: 2, flexShrink: 0, cursor: "pointer" }} />
-              <span style={{ fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.45 }}>
-                I have read and agree to the artist booking terms and conditions.
-              </span>
-            </label>
-
-            <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => setShowArtistTC(false)}
-                style={{ flex: 1, padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#9B7450", fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                Back
-              </button>
-              <button
-                disabled={!artistTCChecked}
-                onClick={confirmDirectBooking}
-                style={{ flex: 2, padding: "12px", borderRadius: 12, border: "none", background: artistTCChecked ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "rgba(196,122,46,0.2)", color: artistTCChecked ? "#fff" : "rgba(196,122,46,0.5)", fontSize: 13.5, fontWeight: 800, cursor: artistTCChecked ? "pointer" : "default", fontFamily: "'Outfit', sans-serif", boxShadow: artistTCChecked ? "0 4px 16px rgba(196,122,46,0.4)" : "none", transition: "all 0.2s" }}>
-                Confirm &amp; Proceed to Pay →
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Pre-chat event form — same as QuickView flow */}
       {chatFormOpen && vendor && (

@@ -347,7 +347,7 @@ export default function ArtistListingsPage() {
                     🎤 Book Artist
                   </button>
                   <button
-                    onClick={() => navigate(`/vendor/${vendor._id}`)}
+                    onClick={() => window.open(`/vendor/${vendor._id}`, '_blank', 'noopener')}
                     style={{ flexShrink: 0, padding: '13px 16px', borderRadius: 14, border: `1.5px solid rgba(196,122,46,0.25)`, background: '#fff', color: gold, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}
                   >
                     Profile →

@@ -251,8 +251,6 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         .gp-ctas{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
         .gp-btn-book{display:flex;align-items:center;gap:9px;padding:14px 28px;border-radius:100px;background:linear-gradient(135deg,#D4A940 0%,#B07E1A 100%);color:#1A1209;font-size:14.5px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 4px 20px rgba(196,155,48,.22);white-space:nowrap;transition:filter .15s}
         .gp-btn-book:hover{filter:brightness(1.07)}
-        .gp-btn-msg{display:flex;align-items:center;gap:9px;padding:13px 24px;border-radius:100px;background:transparent;border:1px solid rgba(196,155,48,.3);color:rgba(237,224,197,.68);font-size:14px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:background .15s,border-color .15s}
-        .gp-btn-msg:hover{background:rgba(196,155,48,.07);border-color:rgba(196,155,48,.45)}
         .gp-reply-line{display:flex;align-items:center;gap:7px;font-size:12.5px;color:${DIM}}
 
         .gp-v-divider{width:1px;align-self:stretch;background:linear-gradient(to bottom,transparent 5%,rgba(196,155,48,.22) 30%,rgba(196,155,48,.22) 70%,transparent 95%);flex-shrink:0;margin:24px 0}
@@ -276,8 +274,6 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         .gp-sb-card{background:${CSURF};border:1px solid ${CGOLD_D};border-radius:14px;padding:26px 24px}
         .gp-sb-btn-book{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:13px;border-radius:100px;background:linear-gradient(135deg,#D4A940,#B07E1A);color:#1A1209;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:10px;transition:filter .15s}
         .gp-sb-btn-book:hover{filter:brightness(1.07)}
-        .gp-sb-btn-msg{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:12px;border-radius:100px;background:transparent;border:1px solid ${CGOLD_D};color:${CMUTED};font-size:13.5px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
-        .gp-sb-btn-msg:hover{background:rgba(196,155,48,.08);border-color:rgba(196,155,48,.45)}
         .gp-sb-divider{border:none;border-top:1px solid ${CGOLD_D};margin:18px 0}
         .gp-sb-row{display:flex;align-items:center;gap:9px;margin-bottom:11px;font-size:13px;color:${CMUTED}}
         .gp-sb-row:last-child{margin-bottom:0}
@@ -409,15 +405,11 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           )}
 
           <div className="gp-ctas">
-            <button className="gp-btn-book" onClick={onBook}>
-              <CalendarCheck size={16} strokeWidth={2.2}/>
-              Book Now
-            </button>
-            <button className="gp-btn-msg" onClick={onChat}>
+            <button className="gp-btn-book" onClick={onChat}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
-              Message
+              Chat to Book
             </button>
           </div>
 
@@ -1012,15 +1004,11 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
                 </div>
               ) : null;
             })()}
-            <button className="gp-sb-btn-book" onClick={onBook}>
-              <CalendarCheck size={15} strokeWidth={2.2}/>
-              Book Now
-            </button>
-            <button className="gp-sb-btn-msg" onClick={onChat}>
+            <button className="gp-sb-btn-book" onClick={onChat}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
-              Message
+              Chat to Book
             </button>
 
             <hr className="gp-sb-divider"/>
@@ -1129,17 +1117,11 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
       {/* Mobile footer */}
       <div className="gp-mob-footer">
-        <button className="gp-btn-book" onClick={onBook} style={{ flex:1, justifyContent:"center" }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-          Book Now
-        </button>
-        <button className="gp-btn-msg" onClick={onChat} style={{ padding:"13px 20px" }}>
+        <button className="gp-btn-book" onClick={onChat} style={{ flex:1, justifyContent:"center" }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
-          Message
+          Chat to Book
         </button>
       </div>
     </div>
