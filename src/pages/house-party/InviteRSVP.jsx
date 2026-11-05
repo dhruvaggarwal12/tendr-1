@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import tendrLogoImg from "../../assets/logos/tendr-logo-secondary.png";
 import { getFlyerTemplate } from "../../data/flyerTemplates";
+import { getStudioTemplate } from "../../data/invitationStudioTemplates";
+import { getOccasionFields } from "../../data/invitationFieldSchemas";
+import InvitationFlyerEngine from "../../components/invitation/InvitationFlyerEngine";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', 'Inter', sans-serif";
@@ -102,11 +105,24 @@ export default function InviteRSVP() {
   }, {});
 
   const builtIn = getFlyerTemplate(invite.templateId);
+  const studioId = invite.templateId?.startsWith("studio/") ? invite.templateId.slice(7) : null;
+  const studioTemplate = studioId ? getStudioTemplate(studioId) : null;
 
   return (
     <Screen>
-      <div style={{ padding: builtIn || invite.templateImage ? "0 0 30px" : "30px 18px", maxWidth: 440, margin: "0 auto", width: "100%" }}>
-        {builtIn ? (
+      <div style={{ padding: builtIn || studioTemplate || invite.templateImage ? "0 0 30px" : "30px 18px", maxWidth: 440, margin: "0 auto", width: "100%" }}>
+        {studioTemplate ? (
+          <div style={{ marginBottom: 24, display: "flex", justifyContent: "center" }}>
+            <div style={{ transform: "scale(0.956)", transformOrigin: "top center" }}>
+              <InvitationFlyerEngine
+                template={studioTemplate}
+                editable={false}
+                fieldSchema={getOccasionFields(studioTemplate.occasionId)}
+                data={{ eventTitle: invite.partyName, hostName: invite.hostName, date: invite.date, time: invite.time, venue: invite.location, rsvp: invite.note }}
+              />
+            </div>
+          </div>
+        ) : builtIn ? (
           <div style={{ marginBottom: 24, display: "flex", justifyContent: "center" }}>
             <div style={{ transform: "scale(0.956)", transformOrigin: "top center" }}>
               <builtIn.Component
@@ -148,8 +164,8 @@ export default function InviteRSVP() {
             )}
           </div>
         )}
-        {invite.note && !builtIn && <div style={{ margin: invite.templateImage ? "0 18px 24px" : "0 0 24px", background: "rgba(124,58,237,0.15)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#C4B5FD", fontStyle: "italic" }}>{invite.note}</div>}
-        <div style={{ padding: builtIn || invite.templateImage ? "0 18px" : 0 }}>
+        {invite.note && !builtIn && !studioTemplate && <div style={{ margin: invite.templateImage ? "0 18px 24px" : "0 0 24px", background: "rgba(124,58,237,0.15)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#C4B5FD", fontStyle: "italic" }}>{invite.note}</div>}
+        <div style={{ padding: builtIn || studioTemplate || invite.templateImage ? "0 18px" : 0 }}>
 
         {!done && !giftStep && (
           <div style={{ background: "transparent", borderRadius: 16, padding: 20, marginBottom: 24 }}>

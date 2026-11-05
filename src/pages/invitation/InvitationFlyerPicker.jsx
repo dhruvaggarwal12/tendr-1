@@ -59,6 +59,12 @@ const InvitationFlyerPicker = () => {
           <div style={{ width: 48, height: 3, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "16px auto 0" }} />
         </div>
 
+        <button onClick={() => navigate("/invitation/studio")}
+          style={{ display: "block", width: "100%", maxWidth: 520, margin: "0 auto 44px", padding: "18px 22px", borderRadius: 18, border: "none", cursor: "pointer", fontFamily: font, textAlign: "center", background: "linear-gradient(135deg,#2C1A0E,#4A2A14)", boxShadow: "0 8px 28px rgba(44,26,14,0.25)" }}>
+          <span style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#D4AF5E", marginBottom: 6 }}>New · Tendr Invitation Studio</span>
+          <span style={{ display: "block", fontSize: 18, fontWeight: 800, color: "#fff" }}>95 designs, 5 for every occasion →</span>
+        </button>
+
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }} className="invitation-grid">
           {EVENT_TYPES.map(({ id, name, icon }) => (
             <button key={id}

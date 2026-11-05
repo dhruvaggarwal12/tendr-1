@@ -10,6 +10,9 @@
  *   /wedding/order     → OrderForm
  *   /wedding/confirmation → OrderConfirmation
  *   /wedding/admin     → AdminDashboard (orders table)
+ *   /wedding/invitations → WeddingInvitations (5 wedding invite flyer designs
+ *                          from the Tendr Invitation Studio engine — a separate
+ *                          free digital-invite flow, not the paid stationery order flow)
  *
  * To enable in the main app, uncomment the route in src/router.jsx:
  *   { path: "/wedding/*", element: <WeddingApp /> }
@@ -23,6 +26,7 @@ import TemplateDesigner    from "./components/TemplateDesigner";
 import OrderForm           from "./components/OrderForm";
 import OrderConfirmation   from "./components/OrderConfirmation";
 import AdminDashboard      from "./components/AdminDashboard";
+import WeddingInvitations  from "./WeddingInvitations";
 
 // Load Google Fonts globally for the stationery sub-app
 function FontLoader() {
@@ -48,6 +52,7 @@ export default function WeddingApp() {
         <Route path="order"            element={<OrderForm />} />
         <Route path="confirmation"     element={<OrderConfirmation />} />
         <Route path="admin"            element={<AdminDashboard />} />
+        <Route path="invitations"      element={<WeddingInvitations />} />
       </Routes>
     </>
   );

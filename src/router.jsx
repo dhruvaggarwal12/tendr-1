@@ -329,6 +329,8 @@ const InvitationFlyerPicker = lazy(() => import("./pages/invitation/InvitationFl
 const TemplateGallery      = lazy(() => import("./pages/invitation/TemplateGallery.jsx"));
 const InvitationCustomizer = lazy(() => import("./pages/invitation/InvitationCustomizer.jsx"));
 const CustomTemplateRequest = lazy(() => import("./pages/invitation/CustomTemplateRequest.jsx"));
+const InvitationStudio     = lazy(() => import("./pages/invitation/InvitationStudio.jsx"));
+const StudioCustomizer     = lazy(() => import("./pages/invitation/StudioCustomizer.jsx"));
 const OccasionHub         = lazy(() => import("./pages/occasion-hub/OccasionHub.jsx"));
 const JoinRoom            = lazy(() => import("./pages/JoinRoom.jsx"));
 const PujaKits            = lazy(() => import("./pages/puja-kits/PujaKits.jsx"));
@@ -788,6 +790,8 @@ const router = createBrowserRouter([
   { path: '/invitation/customize', element: <InvitationCustomizer />, errorElement: <ErrorPage /> },
   { path: '/invitation/customize/:eventType/:id', element: <InvitationCustomizer />, errorElement: <ErrorPage /> },
   { path: '/invitation/custom-request/:eventType', element: <CustomTemplateRequest />, errorElement: <ErrorPage /> },
+  { path: '/invitation/studio', element: <InvitationStudio />, errorElement: <ErrorPage /> },
+  { path: '/invitation/studio/customize', element: <StudioCustomizer />, errorElement: <ErrorPage /> },
 
   { path: '/birthday-hub', element: <OccasionHub occasion="birthday" />, errorElement: <ErrorPage /> },
   { path: '/first-birthday-hub', element: <OccasionHub occasion="first-birthday" />, errorElement: <ErrorPage /> },
