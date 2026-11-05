@@ -554,7 +554,7 @@ const GiftHampersCakes = () => {
         <div style={{ maxWidth:1160, margin:"0 auto" }}>
           {/* Header: left text + right category scroll */}
           <div style={{ display:"flex", gap:"clamp(24px,4vw,56px)", alignItems:"flex-start", marginBottom:36, flexWrap:"wrap" }}>
-            <div style={{ flex:"0 0 auto", maxWidth:360 }}>
+            <div style={{ flex:"0 0 auto", maxWidth:"min(360px, 100%)" }}>
               <p style={{ fontSize:10, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.24em", margin:"0 0 10px", fontFamily:font }}>Browse Samples</p>
               <h2 style={{ fontFamily:serif, fontSize:"clamp(1.3rem,4vw,1.8rem)", fontWeight:400, color:"#2C1A0E", margin:"0 0 6px", lineHeight:1.2 }}>
                 Real hampers, <em style={{ fontStyle:"italic", color:"#C47A2E" }}>real occasions.</em>
@@ -715,7 +715,7 @@ const GiftHampersCakes = () => {
 
       {/* ── BOTTOM CTA ── */}
       <section style={{ background:"#1C0A04", padding:"clamp(56px,8vw,96px) clamp(20px,5vw,56px)", textAlign:"center", position:"relative", overflow:"hidden" }}>
-        <div aria-hidden style={{ position:"absolute", top:"-40%", left:"50%", transform:"translateX(-50%)", width:600, height:400, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(196,122,46,0.12) 0%, transparent 70%)", pointerEvents:"none" }} />
+        <div aria-hidden style={{ position:"absolute", top:"-40%", left:"50%", transform:"translateX(-50%)", width:"min(600px, 95vw)", height:400, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(196,122,46,0.12) 0%, transparent 70%)", pointerEvents:"none" }} />
         <p style={{ fontSize:10, fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase", color:"#CCAB4A", margin:"0 0 16px", fontFamily:font }}>Ready to Order?</p>
         <h2 style={{ fontFamily:serif, fontSize:"clamp(2.2rem,5vw,3.4rem)", fontWeight:400, color:"#FFF8EC", lineHeight:1.2, margin:"0 0 14px" }}>
           Let's build something <em style={{ fontStyle:"italic", color:"#CCAB4A" }}>they'll remember.</em>

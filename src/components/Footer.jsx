@@ -60,8 +60,8 @@ export default function Footer() {
     <footer style={{ fontFamily: font, background: "#1C0E04", position: "relative", overflow: "hidden" }}>
 
       {/* Ambient glow blobs */}
-      <div aria-hidden style={{ position: "absolute", top: -100, left: -80, width: 420, height: 420, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.07) 0%, transparent 70%)", pointerEvents: "none" }} />
-      <div aria-hidden style={{ position: "absolute", bottom: 80, right: -60, width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(204,171,74,0.05) 0%, transparent 70%)", pointerEvents: "none" }} />
+      <div aria-hidden style={{ position: "absolute", top: -100, left: -80, width: "min(420px, 90vw)", height: "min(420px, 90vw)", borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.07) 0%, transparent 70%)", pointerEvents: "none" }} />
+      <div aria-hidden style={{ position: "absolute", bottom: 80, right: -60, width: "min(300px, 90vw)", height: "min(300px, 90vw)", borderRadius: "50%", background: "radial-gradient(circle, rgba(204,171,74,0.05) 0%, transparent 70%)", pointerEvents: "none" }} />
 
       {/* ── Top gold hairline ── */}
       <div style={{ height: 1, background: "linear-gradient(90deg, transparent, rgba(196,122,46,0.4) 25%, rgba(204,171,74,0.4) 75%, transparent)" }} />
