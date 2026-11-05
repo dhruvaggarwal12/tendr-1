@@ -4,6 +4,7 @@ import { WEDDING_STUDIO_TEMPLATES } from "../data/invitationStudioTemplates";
 import { WEDDING_FIELDS, WEDDING_FUNCTION_TYPES } from "../data/invitationFieldSchemas";
 import { STUDIO_GOOGLE_FONTS_HREF } from "../data/invitationDesignTokens";
 import InvitationFlyerEngine from "../components/invitation/InvitationFlyerEngine";
+import ResponsiveFlyerStage from "../components/invitation/ResponsiveFlyerStage";
 import StylePanel from "../components/invitation/StylePanel";
 import { exportAllFlyerImages, exportFlyerPdf } from "../utils/flyerExport";
 
@@ -116,8 +117,10 @@ export default function WeddingInvitations() {
           <>
             <button onClick={() => setTemplateId(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#C47A2E", fontSize: 13, fontWeight: 700, marginBottom: 18, fontFamily: font, display: "block" }}>← Choose a different design</button>
             <div style={{ display: "flex", gap: 32, justifyContent: "center", alignItems: "flex-start", flexWrap: "wrap" }}>
-              <div style={{ position: "sticky", top: 24 }}>
-                <InvitationFlyerEngine template={template} data={data} fieldSchema={extraFunctionRows} editable onChange={change} styleOverride={styleOverride} />
+              <div style={{ position: "sticky", top: 24, width: "100%", maxWidth: 460 }}>
+                <ResponsiveFlyerStage>
+                  <InvitationFlyerEngine template={template} data={data} fieldSchema={extraFunctionRows} editable onChange={change} styleOverride={styleOverride} />
+                </ResponsiveFlyerStage>
               </div>
 
               <div style={{ width: 340, flexShrink: 0, background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", overflow: "hidden" }}>

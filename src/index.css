@@ -212,12 +212,10 @@ button, a, input, select, textarea, [role="button"] {
     padding: 0 12px !important;
   }
 
-  /* ── FloatingChatButton ── */
-  .floating-chat-btn {
-    padding: 12px 16px !important;
-    bottom: 16px !important;
-    right: 14px !important;
-  }
+  /* FloatingChatButton's own mobile positioning (bottom-nav + wizard-footer
+     clearance) lives in its own component <style> (FloatingChatButton.jsx) —
+     a duplicate !important rule here used to race it for the cascade and
+     sometimes win, pinning the button back down over the bottom nav. */
 
   /* ── HamburgerNav progress bar — smaller on mobile ── */
   .htw-row {

@@ -8,6 +8,7 @@ import { getOccasionFields, COMMON_FIELDS } from "../../data/invitationFieldSche
 import { getOccasionById } from "../../data/occasions";
 import { STUDIO_GOOGLE_FONTS_HREF } from "../../data/invitationDesignTokens";
 import InvitationFlyerEngine from "../../components/invitation/InvitationFlyerEngine";
+import ResponsiveFlyerStage from "../../components/invitation/ResponsiveFlyerStage";
 import StylePanel from "../../components/invitation/StylePanel";
 import { exportAllFlyerImages, exportFlyerPdf } from "../../utils/flyerExport";
 
@@ -137,8 +138,10 @@ export default function StudioCustomizer() {
         </div>
 
         <div style={{ display: "flex", gap: 32, justifyContent: "center", alignItems: "flex-start", flexWrap: "wrap" }}>
-          <div style={{ position: "sticky", top: 24 }}>
-            <InvitationFlyerEngine template={template} data={data} fieldSchema={occasionFields} editable onChange={change} styleOverride={styleOverride} />
+          <div style={{ position: "sticky", top: 24, width: "100%", maxWidth: 460 }}>
+            <ResponsiveFlyerStage>
+              <InvitationFlyerEngine template={template} data={data} fieldSchema={occasionFields} editable onChange={change} styleOverride={styleOverride} />
+            </ResponsiveFlyerStage>
           </div>
 
           <div style={{ width: 340, flexShrink: 0, background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", overflow: "hidden" }}>

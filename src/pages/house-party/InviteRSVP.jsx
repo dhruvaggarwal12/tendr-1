@@ -5,6 +5,7 @@ import { getFlyerTemplate } from "../../data/flyerTemplates";
 import { getStudioTemplate } from "../../data/invitationStudioTemplates";
 import { getOccasionFields } from "../../data/invitationFieldSchemas";
 import InvitationFlyerEngine from "../../components/invitation/InvitationFlyerEngine";
+import ResponsiveFlyerStage from "../../components/invitation/ResponsiveFlyerStage";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', 'Inter', sans-serif";
@@ -112,25 +113,25 @@ export default function InviteRSVP() {
     <Screen>
       <div style={{ padding: builtIn || studioTemplate || invite.templateImage ? "0 0 30px" : "30px 18px", maxWidth: 440, margin: "0 auto", width: "100%" }}>
         {studioTemplate ? (
-          <div style={{ marginBottom: 24, display: "flex", justifyContent: "center" }}>
-            <div style={{ transform: "scale(0.956)", transformOrigin: "top center" }}>
+          <div style={{ marginBottom: 24, padding: "0 16px" }}>
+            <ResponsiveFlyerStage>
               <InvitationFlyerEngine
                 template={studioTemplate}
                 editable={false}
                 fieldSchema={getOccasionFields(studioTemplate.occasionId)}
                 data={{ eventTitle: invite.partyName, hostName: invite.hostName, date: invite.date, time: invite.time, venue: invite.location, rsvp: invite.note }}
               />
-            </div>
+            </ResponsiveFlyerStage>
           </div>
         ) : builtIn ? (
-          <div style={{ marginBottom: 24, display: "flex", justifyContent: "center" }}>
-            <div style={{ transform: "scale(0.956)", transformOrigin: "top center" }}>
+          <div style={{ marginBottom: 24, padding: "0 16px" }}>
+            <ResponsiveFlyerStage>
               <builtIn.Component
                 editable={false}
                 data={{ eventTitle: invite.partyName, hostName: invite.hostName, date: invite.date, time: invite.time, venue: invite.location, rsvp: invite.note }}
                 onChange={() => {}}
               />
-            </div>
+            </ResponsiveFlyerStage>
           </div>
         ) : invite.templateImage ? (
           <div style={{ position: "relative", borderRadius: "0 0 20px 20px", overflow: "hidden", marginBottom: 24 }}>
