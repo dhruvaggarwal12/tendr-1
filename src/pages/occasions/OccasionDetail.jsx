@@ -14,8 +14,12 @@ import { getOccasionById } from "../../data/occasions";
 import { getEntryExperienceById, entryEmoji } from "../../data/entryExperiences";
 import { DECOR_FOCUS_AREAS, DECOR_FOCUS_AREA_IDS } from "../../data/decorFocusAreas";
 import { ALL_INDIAN_CITIES, SERVICED_CITIES } from "../../data/indianCities";
+import { FUN_ACTIVITIES } from "../../data/funActivitiesData";
 import { saveResumeUrl } from "../../utils/planningResume";
 import { fetchPriceBenchmark, blendWithBenchmark } from "../../utils/priceEstimator";
+import { addActivity, removeActivity } from "../../redux/funActivitiesCartSlice";
+import { addToCart as addToGhCart, removeFromCart as removeFromGhCart, updateQuantity as updateGhQuantity, selectCartItems as selectGhCartItems } from "../../redux/giftHamperCartSlice";
+import { syncCartToBackend } from "../../utils/cartBookingSync";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 import tendrLogoImg from "../../assets/logos/tendr-logo-secondary.png";
@@ -168,50 +172,22 @@ const MENU_ITEMS = {
 };
 const MENU_CATEGORIES = ["Starters","Mains","Breads","Rice","Desserts","Beverages"];
 
-/* ── bookable entertainment master list (6 categories) ── */
+// Real, bookable fun-activity catalog (src/data/funActivitiesData.js) reformatted
+// to this picker's item shape — same products shown on the standalone Fun
+// Activities page, so selecting one here adds it to the real funActivitiesCart
+// (see toggleActivity below), not just a cosmetic plan-text line.
+function formatActivityPrice(a){
+  if(a.price===0) return "Free";
+  return `₹${a.price.toLocaleString("en-IN")}${a.perUnit?` ${a.unitLabel||"per unit"}`:""}`;
+}
+
+/* ── bookable entertainment master list ── */
 const ALL_ACTIVITIES = {
-  anchors: [
-    { id:"anchor-bilingual",  name:"Bilingual Anchor",         icon:"🎙️", desc:"Hindi + English MC who keeps the energy high all evening — introductions, transitions, crowd work",  price:"₹6K–15K",  tags:["adult","all"], occasions:["birthday-party","anniversary","get-together","office-party","naming-ceremony","housewarming","first-birthday"] },
-    { id:"anchor-corporate",  name:"Corporate Emcee",          icon:"🏆", desc:"Professional anchor for awards nights, annual parties, product launches — polished and on-brand",     price:"₹12K–28K", tags:["adult"],       occasions:["office-party"] },
-    { id:"anchor-kids",       name:"Kids' Party Host",         icon:"🎉", desc:"High-energy host who manages games, leads activities, and keeps little ones fully entertained",        price:"₹5K–12K",  tags:["kids"],        occasions:["birthday-party","first-birthday","baby-shower","gender-reveal"] },
-    { id:"anchor-celeb",      name:"Celebrity Anchor",         icon:"⭐", desc:"TV/YouTube personality as your event host — wow factor for milestone birthdays and big celebrations", price:"₹30K–80K", tags:["adult"],       occasions:["birthday-party","anniversary","office-party"] },
-  ],
-  bands: [
-    { id:"band-bollywood",    name:"Bollywood Live Band",      icon:"🎺", desc:"3–6 piece band playing Hindi film hits all evening — classic songs + latest chartbusters",           price:"₹15K–40K", tags:["adult","all"], occasions:["birthday-party","anniversary","get-together","housewarming","office-party"] },
-    { id:"band-sufi",         name:"Sufi / Ghazal Ensemble",  icon:"🪘", desc:"Soulful sufi qawwali or ghazal set — perfect for anniversaries and intimate celebrations",            price:"₹12K–30K", tags:["adult"],       occasions:["anniversary","housewarming","get-together","naming-ceremony"] },
-    { id:"band-jazz",         name:"Jazz / Lounge Band",       icon:"🎷", desc:"Smooth jazz or lounge music for sophisticated events — dinner background or full set",                price:"₹12K–28K", tags:["adult"],       occasions:["anniversary","office-party","get-together"] },
-    { id:"band-folk",         name:"Folk / Bhangra Troupe",   icon:"🥁", desc:"High-energy folk music and dance — bhangra, giddha, rajasthani folk — non-stop energy on the floor", price:"₹15K–35K", tags:["adult","all"], occasions:["birthday-party","housewarming","get-together","naming-ceremony"] },
-    { id:"band-rock",         name:"Rock / Pop Cover Band",   icon:"🎸", desc:"Covers of popular English and Hindi rock/pop hits — great for corporate parties and young crowds",    price:"₹18K–45K", tags:["adult"],       occasions:["birthday-party","office-party","get-together"] },
-    { id:"band-classical",    name:"Classical Instrumental",  icon:"🎻", desc:"Sitar, tabla, flute or violin ensemble — elegant background music for formal celebrations",            price:"₹10K–22K", tags:["adult"],       occasions:["anniversary","housewarming","naming-ceremony"] },
-  ],
-  stalls: [
-    { id:"chaat-stall",       name:"Chaat Stall",              icon:"🌮", desc:"Live pani puri, bhel & dahi puri counter — always the longest queue at any event",                   price:"₹4K–8K",   tags:["food","all"],  occasions:["birthday-party","get-together","housewarming","office-party","anniversary","naming-ceremony"] },
-    { id:"mocktail-bar",      name:"Mocktail Bar",             icon:"🍹", desc:"Live mixologist making fresh mocktails, lemonades and shakes",                                       price:"₹5K–10K",  tags:["food","adult"],occasions:["birthday-party","anniversary","get-together","office-party","housewarming"] },
-    { id:"ice-cream-cart",    name:"Ice Cream / Kulfi Cart",   icon:"🍦", desc:"Scoops, sundaes and kulfi on a vintage-styled cart — guests love it",                               price:"₹4K–8K",   tags:["food","kids"], occasions:["birthday-party","first-birthday","baby-shower","get-together","anniversary"] },
-    { id:"candy-floss",       name:"Candy Floss Cart",         icon:"🍭", desc:"Pink & blue spun sugar — kids go absolutely wild, parents love the photos",                          price:"₹3K–6K",   tags:["food","kids"], occasions:["birthday-party","first-birthday","gender-reveal","baby-shower"] },
-    { id:"chocolate-fountain",name:"Chocolate Fountain",       icon:"🍫", desc:"Flowing melted chocolate for dipping fruits, marshmallows and cookies",                             price:"₹4K–8K",   tags:["food","sweet"],occasions:["birthday-party","anniversary","baby-shower","get-together"] },
-    { id:"turkish-icecream",  name:"Turkish Ice Cream Stall",  icon:"🍦", desc:"The entertaining stretchy ice cream with the classic trolling tricks — total crowd pleaser",         price:"₹3.5K–7K", tags:["food","kids"], occasions:["birthday-party","first-birthday","get-together","office-party"] },
-    { id:"waffle-stall",      name:"Waffle & Crepe Stall",     icon:"🧇", desc:"Made-to-order waffles with sweet + savoury toppings — always a hit",                               price:"₹4K–7K",   tags:["food","sweet"],occasions:["birthday-party","anniversary","get-together"] },
-    { id:"mehendi-stall",     name:"Mehendi Artist",           icon:"✍️", desc:"Intricate henna designs — guests carry a beautiful piece of the event home",                        price:"₹3K–7K",   tags:["craft","adult"],occasions:["baby-shower","anniversary","birthday-party","housewarming","naming-ceremony"] },
-    { id:"face-painting",     name:"Face Painting Stall",      icon:"🎨", desc:"Fun designs for kids and brave adults — always a queue, always hilarious photos",                   price:"₹3K–6K",   tags:["craft","kids"],occasions:["birthday-party","first-birthday","get-together","baby-shower"] },
-    { id:"popcorn-cart",      name:"Popcorn Cart",             icon:"🍿", desc:"Flavoured popcorn in cute themed bags guests can munch through the event",                          price:"₹3K–5K",   tags:["food","kids"], occasions:["birthday-party","get-together","office-party","first-birthday"] },
-    { id:"pan-counter",       name:"Pan Counter",              icon:"🌿", desc:"Meetha pan, fire pan, gulkand — the perfect finish to every great Indian event",                    price:"₹2K–4K",   tags:["food","adult"],occasions:["birthday-party","anniversary","get-together","housewarming","naming-ceremony"] },
-    { id:"tattoo-stall",      name:"Temporary Tattoo Stall",   icon:"🖊️", desc:"Glitter & henna-style temporary tattoos — surprisingly popular with all ages",                     price:"₹2.5K–5K", tags:["craft","kids"],occasions:["birthday-party","get-together","office-party","first-birthday"] },
-  ],
-  performers: [
-    { id:"magician",          name:"Magician",                 icon:"🎩", desc:"Close-up card tricks + stage magic — genuinely stuns every age group",                              price:"₹5K–12K",  tags:["all"],         occasions:["birthday-party","first-birthday","get-together","housewarming","office-party"] },
-    { id:"caricature",        name:"Caricature Artist",        icon:"🖼️", desc:"Hilarious take-home portraits — guests queue up and the art is always spot-on",                    price:"₹4K–9K",   tags:["adult"],       occasions:["birthday-party","get-together","office-party","anniversary"] },
-    { id:"standup",           name:"Stand-Up Comedian",        icon:"🎤", desc:"Corporate-clean comedy set tailored to the crowd — gets the whole room going",                      price:"₹8K–20K",  tags:["adult"],       occasions:["birthday-party","office-party","get-together"] },
-    { id:"bollywood-dancer",  name:"Bollywood Dance Show",     icon:"💃", desc:"High-energy Bollywood group performance — 20-30 min set that energises the floor",                 price:"₹8K–18K",  tags:["adult"],       occasions:["birthday-party","get-together","anniversary","office-party"] },
-    { id:"classical-dancer",  name:"Classical Dance Performance",icon:"🕺",desc:"Kathak, Bharatanatyam or Odissi solo — elegant cultural performance for formal events",            price:"₹8K–20K",  tags:["adult"],       occasions:["anniversary","housewarming","naming-ceremony","get-together"] },
-    { id:"bhangra-troupe",    name:"Bhangra / Folk Troupe",   icon:"🥳", desc:"High-decibel bhangra or giddha group performance — gets everyone on their feet",                   price:"₹10K–25K", tags:["all"],         occasions:["birthday-party","get-together","housewarming","office-party"] },
-    { id:"mimicry",           name:"Mimicry Artist",           icon:"🎭", desc:"Spot-on celebrity voice impressions + comedy — unique and always gets massive laughs",               price:"₹5K–15K",  tags:["adult"],       occasions:["birthday-party","get-together","office-party"] },
-    { id:"fire-led",          name:"Fire / LED Light Show",    icon:"🔥", desc:"Fire juggling or LED poi light show — jaw-dropping 15-min performance for big events",              price:"₹8K–20K",  tags:["adult"],       occasions:["birthday-party","get-together","anniversary","office-party"] },
-    { id:"mentalist",         name:"Mentalist",                icon:"🧠", desc:"Mind-reading + psychological illusions — the most unique act you can book",                         price:"₹10K–22K", tags:["adult"],       occasions:["birthday-party","office-party","get-together"] },
-    { id:"puppet-show",       name:"Puppet Show",              icon:"🎪", desc:"Interactive storytelling puppet show for little ones — keeps toddlers & kids mesmerised",           price:"₹4K–8K",   tags:["kids"],        occasions:["first-birthday","birthday-party","baby-shower","gender-reveal"] },
-    { id:"balloon-artist",    name:"Balloon Twisting Artist",  icon:"🎈", desc:"Makes balloon animals, swords, hats, flowers on the spot — kids follow them everywhere",            price:"₹3K–6K",   tags:["kids"],        occasions:["birthday-party","first-birthday","baby-shower","get-together"] },
-    { id:"clown",             name:"Clown / Party Joker",      icon:"🤡", desc:"Classic slapstick — balloon animals, gags, physical comedy that kids lose their minds over",        price:"₹3K–7K",   tags:["kids"],        occasions:["birthday-party","first-birthday"] },
-  ],
+  games: FUN_ACTIVITIES.map(a=>({
+    id:a.id, name:a.name, icon:a.emoji, desc:a.desc,
+    price:formatActivityPrice(a), priceValue:a.price, perUnit:!!a.perUnit, unitLabel:a.unitLabel||"",
+    tags:a.tags||[], occasions:[], // no per-occasion curation yet — shown for every occasion
+  })),
   shows: [
     { id:"laser-show",        name:"Laser Light Show",         icon:"✨", desc:"Aerial laser beams choreographed to music — stunning visual spectacle for large events",             price:"₹20K–60K", tags:["adult"],       occasions:["birthday-party","anniversary","office-party","get-together"] },
     { id:"drone-show",        name:"Drone Light Show",         icon:"🚁", desc:"Drone swarm forming shapes, names, messages in the sky — the most talked-about event moment of 2025",price:"₹80K+",   tags:["adult"],       occasions:["birthday-party","anniversary","office-party"] },
@@ -220,35 +196,12 @@ const ALL_ACTIVITIES = {
     { id:"photo-booth-pro",   name:"Pro Photo Booth (360°)",   icon:"📸", desc:"360-degree video booth — slow-mo clips guests share instantly on social media",                     price:"₹8K–18K",  tags:["all"],         occasions:["birthday-party","anniversary","get-together","office-party","first-birthday"] },
     { id:"magic-show",        name:"Grand Magic Show",         icon:"🎩", desc:"45-min stage magic show with big illusions, levitation, disappearing acts — full audience show",    price:"₹15K–35K", tags:["all"],         occasions:["birthday-party","first-birthday","get-together","office-party"] },
   ],
-  games: [
-    { id:"tambola",           name:"Tambola / Housie",         icon:"🎱", desc:"Classic housie with prizes — works for every age, every occasion, every crowd",                    price:"₹500–2K",  tags:["all"],         occasions:["birthday-party","anniversary","get-together","housewarming","office-party","naming-ceremony"] },
-    { id:"karaoke",           name:"Karaoke Corner",           icon:"🎤", desc:"Wireless mic + lyrics screen — guaranteed chaos, laughs, and viral moments",                       price:"₹3K–6K",   tags:["adult"],       occasions:["birthday-party","get-together","office-party","anniversary"] },
-    { id:"antakshari",        name:"Antakshari",               icon:"🎵", desc:"Classic Hindi song game with teams — nostalgia, friendly competition, non-stop laughs",             price:"Free",     tags:["all"],         occasions:["anniversary","get-together","housewarming","birthday-party","naming-ceremony"] },
-    { id:"dumb-charades",     name:"Dumb Charades",            icon:"🙅", desc:"Bollywood movie acting game — teams, time pressure, maximum hilarity",                             price:"Free",     tags:["all"],         occasions:["birthday-party","get-together","anniversary","office-party"] },
-    { id:"quiz",              name:"Pub Quiz / Team Trivia",   icon:"❓", desc:"Custom questions about the guest of honour + general rounds — hosted or DIY",                      price:"₹2K–5K",   tags:["adult"],       occasions:["birthday-party","office-party","get-together"] },
-    { id:"treasure-hunt",     name:"Treasure Hunt",            icon:"🗺️", desc:"Clues hidden around the venue — teams race against time to find the prize",                       price:"Free",     tags:["all"],         occasions:["birthday-party","first-birthday","get-together","office-party"] },
-    { id:"couple-games",      name:"Couple Games",             icon:"💑", desc:"Newlywed game, shoe game, predictions — perfectly curated for anniversaries",                      price:"Free",     tags:["adult"],       occasions:["anniversary","baby-shower","gender-reveal"] },
-    { id:"baby-games",        name:"Baby Shower Game Pack",    icon:"👶", desc:"Bingo, price guessing, baby food tasting — 5-in-1 game kit for the whole group",                  price:"₹500–1.5K",tags:["adult"],       occasions:["baby-shower","newborn-welcome","gender-reveal"] },
-    { id:"craft-station",     name:"Craft / Activity Station", icon:"🎨", desc:"Onesie painting, canvas art, greeting card making — interactive and creative for guests",           price:"₹3K–6K",   tags:["adult","kids"],occasions:["baby-shower","first-birthday","birthday-party","gender-reveal"] },
-    { id:"diy-photo-booth",   name:"DIY Photo Booth",          icon:"📸", desc:"Props basket + backdrop — guests take their own fun shots with instant digital share",             price:"₹2K–5K",   tags:["all"],         occasions:["birthday-party","baby-shower","gender-reveal","get-together","office-party"] },
-  ],
 };
 
 const ACTIVITY_TYPES = [
-  { key:"stalls",     label:"Stalls",         icon:"🛒",  singular:"Stall" },
   { key:"shows",      label:"Special Shows",  icon:"✨",  singular:"Show" },
   { key:"games",      label:"Fun Activities", icon:"🎉",  singular:"Activity" },
 ];
-
-// Merge anchors, bands, performers into games so they show under Fun Activities
-(function mergeIntoGames() {
-  const extra = [
-    ...ALL_ACTIVITIES.anchors,
-    ...ALL_ACTIVITIES.bands,
-    ...ALL_ACTIVITIES.performers,
-  ];
-  ALL_ACTIVITIES.games = [...extra, ...ALL_ACTIVITIES.games];
-})();
 
 const ALL_ACTIVITY_ITEMS = Object.values(ALL_ACTIVITIES).flat();
 
@@ -263,7 +216,9 @@ function getActivitySuggestions(occasion, {ageGroups=[], theme=null}) {
   for(const {key} of ACTIVITY_TYPES) {
     const scored = (ALL_ACTIVITIES[key]||[]).map(a => {
       let score = 0;
-      if(a.occasions.includes(id)) score += 4;
+      // Items with no curated occasions list (the real Fun Activities catalog —
+      // not yet curated per-occasion) always clear the filter below.
+      if(a.occasions.length ? a.occasions.includes(id) : true) score += 4;
       if(hasKids && a.tags.includes("kids")) score += 2;
       if(!hasKids && a.tags.includes("kids") && !a.tags.some(t=>["all","food","adult","craft"].includes(t))) score -= 2;
       if(hasSeniors && a.tags.includes("adult")) score += 1;
@@ -276,8 +231,10 @@ function getActivitySuggestions(occasion, {ageGroups=[], theme=null}) {
       if(id==="office-party" && a.id==="anchor-corporate") score += 3;
       if((id==="baby-shower"||id==="first-birthday") && a.id==="anchor-kids") score += 3;
       return {...a, score};
-    }).filter(a=>a.score>0).sort((a,b)=>b.score-a.score).slice(0,4);
-    result[key] = scored;
+    }).filter(a=>a.score>0).sort((a,b)=>b.score-a.score);
+    // "games" is the real, fixed Fun Activities catalog (8 items) — show all of it
+    // rather than truncating like the still-curated/placeholder "shows" category.
+    result[key] = key==="games" ? scored : scored.slice(0,4);
   }
   return result;
 }
@@ -1704,7 +1661,7 @@ function buildEventSummary(occasion, {celebrantName="", guests=20, date="", city
 }
 
 /* ── build plain-text plan for in-app chat ── */
-function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors, vendorPackages, budget, ageGroups=[], selectedActivities=[], customActivities=[], customCatering={}, customDecor={}, celebrantName="", gifts=[], giftQuantities={}, selectedEntryExperiences=[]}) {
+function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors, vendorPackages, budget, ageGroups=[], selectedActivities=[], customActivities=[], customCatering={}, customDecor={}, celebrantName="", gifts=[], giftQuantities={}, selectedEntryExperiences=[], ghProducts=[]}) {
   const vLines = vendors.filter(v => ALL_VENDORS.includes(v)).map(v => {
     const pi = vendorPackages[v];
     // Decorator shows a location -> items breakdown (Entrance, Stage &
@@ -1746,7 +1703,7 @@ function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors,
     : null;
   const giftLines = gifts.length
     ? "\nGifts:\n"+gifts.map(name=>{
-        const g=(occasion.giftIdeas||[]).find(gi=>gi.name===name);
+        const g=findGiftDetails(name,ghProducts,occasion);
         const qty=giftQuantities[name]>1?` ×${giftQuantities[name]}`:"";
         return g?`• ${g.name}${qty} (${g.price})`:`• ${name}${qty}`;
       }).join("\n")
@@ -1877,6 +1834,15 @@ function approxCost(priceStr, guests) {
   return r?(r.min+r.max)/2:null;
 }
 
+/* ── resolves a gift name back to {name,desc,price} — checks the real gift-hamper
+   catalog first, falls back to the old occasion.giftIdeas list so a plan saved
+   before this catalog existed still renders instead of silently dropping the row ── */
+function findGiftDetails(name, ghProducts, occasion) {
+  const p=(ghProducts||[]).find(x=>x.name===name);
+  if(p) return {name:p.name, desc:p.category||"", price:`₹${Number(p.pricePerUnit||0).toLocaleString("en-IN")}`};
+  return (occasion?.giftIdeas||[]).find(g=>g.name===name)||null;
+}
+
 /* ── estimated gift spend — shared by the step-6 tracker and the step-7 budget summary,
      so the two never disagree on the same number ── */
 function computeGiftSpend(gifts, giftQuantities, sortedGifts, guests) {
@@ -1956,7 +1922,7 @@ function estimateDecorQty(item, guests) {
    risk of the two ever showing different numbers. Decorator's locationGroups
    items are pre-resolved to {name,qty,tier} via estimateDecorQty so neither
    caller needs to re-derive quantities itself. ── */
-function buildPlanGroups(occasion, {catVendors=[], vendorPackages={}, guests=20, venueType="", theme=null, ageGroups=[], decorFocusAreas=[], customDecor={}, selectedEntryExperiences=[], selectedActivities=[], customActivities=[], gifts=[], giftQuantities={}}={}) {
+function buildPlanGroups(occasion, {catVendors=[], vendorPackages={}, guests=20, venueType="", theme=null, ageGroups=[], decorFocusAreas=[], customDecor={}, selectedEntryExperiences=[], selectedActivities=[], customActivities=[], gifts=[], giftQuantities={}, ghProducts=[]}={}) {
   const joinNames=(arr)=>arr.length>1?`${arr.slice(0,-1).join(", ")} and ${arr[arr.length-1]}`:(arr[0]||"");
 
   const serviceRows=catVendors.map(v=>{
@@ -1995,7 +1961,7 @@ function buildPlanGroups(occasion, {catVendors=[], vendorPackages={}, guests=20,
   ];
 
   const giftRows=gifts.map(name=>{
-    const g=(occasion.giftIdeas||[]).find(g=>g.name===name);
+    const g=findGiftDetails(name,ghProducts,occasion);
     if(!g) return null;
     const qty=giftQuantities[name]||1;
     return{key:`gift-${name}`,icon:giftEmoji(g.name,g.desc),title:qty>1?`${g.name} ×${qty}`:g.name,sub:"Gift",status:"Estimate available",price:g.price,note:g.desc||null};
@@ -2344,7 +2310,19 @@ export default function OccasionDetail(){
   };
   const [gifts,setGifts]=useState([]);
   const [giftQuantities,setGiftQuantities]=useState({}); // {giftName: qty} — only meaningful for names present in `gifts`
-  const setGiftQty=(name,qty)=>setGiftQuantities(q=>({...q,[name]:Math.max(1,qty)}));
+  // Real, bookable gift hamper catalog — same products + prices as the standalone
+  // Gift Hampers page, fetched once so the Gifts step can sell the actual catalog
+  // instead of occasion-themed inspiration cards.
+  const [ghProducts,setGhProducts]=useState([]);
+  useEffect(()=>{
+    fetch(`${BASE_URL}/gift-hampers/products`).then(r=>r.json()).then(d=>setGhProducts(d.products||[])).catch(()=>{});
+  },[]);
+  const setGiftQty=(name,qty)=>{
+    const product=ghProducts.find(p=>p.name===name);
+    const q=Math.max(product?.minOrderQuantity||1,qty);
+    setGiftQuantities(prev=>({...prev,[name]:q}));
+    if(product) dispatch(updateGhQuantity({productId:product._id,quantity:q}));
+  };
   const [checked,setChecked]=useState({});
   const [vendorPackages,setVendorPackages]=useState({});
   // Which service (vendor type string, e.g. "Decorator") is open in the quick
@@ -2380,7 +2358,20 @@ export default function OccasionDetail(){
 
   /* fun activities */
   const [selectedActivities,setSelectedActivities]=useState([]); // array of activity ids
-  const toggleActivity=id=>setSelectedActivities(a=>a.includes(id)?a.filter(x=>x!==id):[...a,id]);
+  const toggleActivity=id=>{
+    const already=selectedActivities.includes(id);
+    setSelectedActivities(a=>already?a.filter(x=>x!==id):[...a,id]);
+    // Fun Activities items are the real, bookable catalog — selecting one here
+    // adds it to the same funActivitiesCart the standalone Fun Activities page
+    // uses, so it's genuinely in the customer's cart, not just plan-text.
+    const realItem=FUN_ACTIVITIES.find(a=>a.id===id);
+    if(!realItem) return;
+    if(already){ dispatch(removeActivity(id)); }
+    else {
+      dispatch(addActivity({id:realItem.id,name:realItem.name,emoji:realItem.emoji,price:realItem.price,perUnit:realItem.perUnit,unitLabel:realItem.unitLabel}));
+      syncCartToBackend(token,"fun-activities");
+    }
+  };
 
   /* entry experiences (optional step between Services and Fun) */
   const [selectedEntryExperiences,setSelectedEntryExperiences]=useState([]); // array of entry-experience ids
@@ -2758,7 +2749,7 @@ export default function OccasionDetail(){
     // Pure data (same shape the PDF generator consumes) — onEdit is UI-only,
     // added back here per row since buildPlanGroups can't know about the
     // component's step/editing-service setters.
-    const groups=buildPlanGroups(occasion,{catVendors,vendorPackages,guests,venueType,theme,ageGroups,decorFocusAreas,customDecor,selectedEntryExperiences,selectedActivities,customActivities,gifts,giftQuantities}).map(g=>({
+    const groups=buildPlanGroups(occasion,{catVendors,vendorPackages,guests,venueType,theme,ageGroups,decorFocusAreas,customDecor,selectedEntryExperiences,selectedActivities,customActivities,gifts,giftQuantities,ghProducts}).map(g=>({
       ...g,
       rows:g.rows.map(r=>{
         let onEdit;
@@ -2862,7 +2853,7 @@ export default function OccasionDetail(){
   // functions the interactive story slides already use, so the PDF can never
   // show different numbers than the page the customer is looking at.
   const buildPlanDataForPdf=()=>{
-    const groups=buildPlanGroups(occasion,{catVendors,vendorPackages,guests,venueType,theme,ageGroups,decorFocusAreas,customDecor,selectedEntryExperiences,selectedActivities,customActivities,gifts,giftQuantities});
+    const groups=buildPlanGroups(occasion,{catVendors,vendorPackages,guests,venueType,theme,ageGroups,decorFocusAreas,customDecor,selectedEntryExperiences,selectedActivities,customActivities,gifts,giftQuantities,ghProducts});
     const journey=buildEventJourney(occasion,{celebrantName,guests,venueType,city,theme,decorFocusAreas,customDecor,selectedEntryExperiences,vendors,cateringType,cakeType,customCatering,selectedActivities,customActivities,gifts});
     const itinerary=buildItinerary(occasion,{guests,vendors,selectedActivities,venueType,ageGroups,startTime:eventStartTime});
     const prep=buildPreparationJourney(occasion,{timeline,vendors,date,budget,city,selectedEntryExperiences,entryExperiencesSkipped,selectedActivities,customActivities,gifts});
@@ -3040,13 +3031,27 @@ export default function OccasionDetail(){
   };
 
   const toggleVendor=c=>setVendors(v=>v.includes(c)?v.filter(x=>x!==c):[...v,c]);
-  const toggleGift=n=>setGifts(g=>{
-    if(g.includes(n)){
-      setGiftQuantities(q=>{const nq={...q};delete nq[n];return nq;});
-      return g.filter(x=>x!==n);
-    }
-    return [...g,n];
-  });
+  const toggleGift=n=>{
+    const already=gifts.includes(n);
+    const product=ghProducts.find(p=>p.name===n);
+    // Some hampers have a minimum order quantity above 1 — start the local
+    // quantity there too, so the stepper shown in the wizard matches what the
+    // real cart (below) actually holds instead of silently diverging from it.
+    const startQty=product?.minOrderQuantity||1;
+    setGifts(g=>{
+      if(already){
+        setGiftQuantities(q=>{const nq={...q};delete nq[n];return nq;});
+        return g.filter(x=>x!==n);
+      }
+      return [...g,n];
+    });
+    if(!already) setGiftQuantities(q=>({...q,[n]:startQty}));
+    // Gifts are the real, purchasable gift-hamper catalog — selecting one here
+    // adds it to the same giftHamperCart the standalone Gift Hampers page uses.
+    if(!product) return;
+    if(already) dispatch(removeFromGhCart(product._id));
+    else dispatch(addToGhCart({product,quantity:startQty}));
+  };
   const toggleAge=id=>setAgeGroups(a=>a.includes(id)?a.filter(x=>x!==id):[...a,id]);
 
   const addCustomVendor=()=>{
@@ -3062,10 +3067,12 @@ export default function OccasionDetail(){
   const sLabel={fontSize:12,fontWeight:600,color:"rgba(28,9,0,0.45)",textTransform:"uppercase",letterSpacing:"0.10em",marginBottom:14,fontFamily:font};
   const fieldCard={background:"#fff",borderRadius:12,padding:"22px 22px",border:`1px solid rgba(196,122,46,0.18)`,marginBottom:14,transition:"border-color 0.2s"};
 
-  /* fully personalized gift sort — theme + age groups + budget */
-  const sortedGifts=(occasion.giftIdeas||[]).map(g=>({
-    ...g,...scoreGift(g,{theme,ageGroups,budget,guests})
-  })).sort((a,b)=>b.score-a.score);
+  /* fully personalized gift sort — real gift-hamper catalog, scored the same way
+     the old occasion-themed inspiration cards were (theme + age groups + budget) */
+  const sortedGifts=ghProducts.map(p=>{
+    const base={name:p.name, desc:p.category||"", price:`₹${Number(p.pricePerUnit||0).toLocaleString("en-IN")}`, image:p.images?.[0]||null, product:p};
+    return {...base,...scoreGift(base,{theme,ageGroups,budget,guests})};
+  }).sort((a,b)=>b.score-a.score);
 
   // "Get My Full Plan Ready" — auto-fills Services/Entry Experience/Entertainment/Gifts
   // from the exact same scored suggestion logic the manual steps use (never invents
@@ -3116,17 +3123,29 @@ export default function OccasionDetail(){
       .map(a=>({...a,score:applyPlanInsightsBoost('activity',a.id,a.score)}))
       .sort((a,b)=>b.score-a.score);
     const topActivities=actSugg.slice(0,2).map(a=>a.id);
-    if(topActivities.length) setSelectedActivities(topActivities);
+    if(topActivities.length){
+      setSelectedActivities(topActivities);
+      // Same real funActivitiesCart toggleActivity() writes to — quick-plan picks
+      // should land in the actual cart too, not just the plan text.
+      topActivities.forEach(id=>{
+        const realItem=FUN_ACTIVITIES.find(a=>a.id===id);
+        if(realItem) dispatch(addActivity({id:realItem.id,name:realItem.name,emoji:realItem.emoji,price:realItem.price,perUnit:realItem.perUnit,unitLabel:realItem.unitLabel}));
+      });
+      if(topActivities.some(id=>FUN_ACTIVITIES.some(a=>a.id===id))) syncCartToBackend(token,"fun-activities");
+    }
 
     const boostedGifts=sortedGifts
       .map(g=>({...g,score:applyPlanInsightsBoost('gift',g.name,g.score)}))
       .sort((a,b)=>b.score-a.score);
     const curatedGifts=boostedGifts.filter(g=>g.score>=4);
-    const topGifts=(curatedGifts.length?curatedGifts:boostedGifts).slice(0,2).map(g=>g.name);
+    const topGiftPicks=(curatedGifts.length?curatedGifts:boostedGifts).slice(0,2);
+    const topGifts=topGiftPicks.map(g=>g.name);
     const topGiftQuantities=topGifts.reduce((o,n)=>({...o,[n]:1}),{});
     if(topGifts.length){
       setGifts(topGifts);
       setGiftQuantities(topGiftQuantities);
+      // Same real giftHamperCart toggleGift() writes to.
+      topGiftPicks.forEach(g=>{ if(g.product) dispatch(addToGhCart({product:g.product,quantity:1})); });
     }
 
     // Log this run for "Get My Full Plan Ready"'s own tracking loop (separate from
@@ -5013,9 +5032,8 @@ export default function OccasionDetail(){
                   {/* Category cards — 2 per row */}
                   {(()=>{
                     const CAT_META={
-                      stalls:{tagline:"Food & craft counters guests love",color:"#E8A020"},
                       shows:{tagline:"Wow moments & grand finales",color:"#7B5EA7"},
-                      games:{tagline:"Activities & entertainment packages",color:"#2E8B7A"},
+                      games:{tagline:"Real, bookable entertainment add-ons",color:"#2E8B7A"},
                     };
                     const cards=ACTIVITY_TYPES.map(({key,label,icon:typeIcon})=>{
                       const items=actSuggestions[key]||[];
@@ -5223,6 +5241,9 @@ export default function OccasionDetail(){
               );
             })()}
             {/* Gift tiers */}
+            {ghProducts.length===0&&(
+              <div style={{padding:"18px 14px",textAlign:"center",fontSize:12,color:muted}}>Loading gift hampers…</div>
+            )}
             {(()=>{
               const curated=sortedGifts.filter(g=>g.score>=4);
               const good=sortedGifts.filter(g=>g.score>0&&g.score<4);
@@ -5237,10 +5258,14 @@ export default function OccasionDetail(){
                   <div key={i}
                     style={{padding:0,borderRadius:16,overflow:"hidden",border:`2px solid ${sel?gold:"rgba(196,122,46,0.13)"}`,background:"#fff",transition:"all 0.18s",boxShadow:sel?"0 4px 20px rgba(196,122,46,0.22)":"0 1px 5px rgba(0,0,0,0.06)"}}>
                     <button onClick={()=>toggleGift(g.name)} style={{display:"block",width:"100%",padding:0,border:"none",background:"none",cursor:"pointer",textAlign:"left",fontFamily:font}}>
-                      <div style={{position:"relative",height:140,overflow:"hidden",background:"linear-gradient(160deg,rgba(196,122,46,0.4),rgba(196,122,46,0.15))"}}>
-                        <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                          <span style={{fontSize:36}}>{giftEmoji(g.name,g.desc)}</span>
-                        </div>
+                      <div style={{position:"relative",height:140,overflow:"hidden",background:g.image?"#f2ece0":"linear-gradient(160deg,rgba(196,122,46,0.4),rgba(196,122,46,0.15))"}}>
+                        {g.image?(
+                          <img src={g.image} alt={g.name} style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                        ):(
+                          <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                            <span style={{fontSize:36}}>{giftEmoji(g.name,g.desc)}</span>
+                          </div>
+                        )}
                         <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 55%)"}}/>
                         <div style={{position:"absolute",bottom:9,left:10,right:32}}>
                           <span style={{fontSize:12,fontWeight:800,color:"#fff",lineHeight:1.25,textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{g.name}</span>
@@ -5261,8 +5286,14 @@ export default function OccasionDetail(){
                       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 11px 11px"}}>
                         <span style={{fontSize:10,fontWeight:700,color:muted,textTransform:"uppercase",letterSpacing:"0.08em"}}>Quantity</span>
                         <div style={{display:"flex",alignItems:"center",gap:8}}>
-                          <button onClick={()=>setGiftQty(g.name,qty-1)} disabled={qty<=1}
-                            style={{width:24,height:24,borderRadius:"50%",border:`1.5px solid ${border}`,background:"#fff",color:qty<=1?"rgba(28,9,0,0.2)":gold,fontSize:14,fontWeight:700,cursor:qty<=1?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:font}}>−</button>
+                          {(()=>{
+                            const minQty=g.product?.minOrderQuantity||1;
+                            const atMin=qty<=minQty;
+                            return(
+                              <button onClick={()=>setGiftQty(g.name,qty-1)} disabled={atMin}
+                                style={{width:24,height:24,borderRadius:"50%",border:`1.5px solid ${border}`,background:"#fff",color:atMin?"rgba(28,9,0,0.2)":gold,fontSize:14,fontWeight:700,cursor:atMin?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:font}}>−</button>
+                            );
+                          })()}
                           <span style={{fontSize:13,fontWeight:700,color:ink,minWidth:16,textAlign:"center"}}>{qty}</span>
                           <button onClick={()=>setGiftQty(g.name,qty+1)}
                             style={{width:24,height:24,borderRadius:"50%",border:"none",background:gold,color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:font}}>+</button>
@@ -5284,6 +5315,21 @@ export default function OccasionDetail(){
                 </div>
               );
             })()}
+
+            {/* Checkout for real gift-hamper cart items lives on the dedicated page
+                (delivery address, payment) — this just gets the customer there with
+                what they picked already in the real cart. */}
+            {gifts.length>0&&(
+              <button onClick={()=>navigate("/gift-hampers-cakes")}
+                style={{display:"flex",alignItems:"center",gap:12,width:"100%",padding:"14px 16px",marginTop:18,borderRadius:14,border:`1.5px solid ${gold}30`,background:"linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.04))",cursor:"pointer",fontFamily:font,textAlign:"left"}}>
+                <span style={{fontSize:20}}>🎁</span>
+                <span style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:12.5,fontWeight:800,color:ink}}>{gifts.length} gift{gifts.length!==1?"s":""} added to your cart</div>
+                  <div style={{fontSize:11,color:muted,marginTop:2}}>Review delivery details & checkout on Gift Hampers</div>
+                </span>
+                <span style={{fontSize:13,color:gold,fontWeight:700}}>→</span>
+              </button>
+            )}
           </div>
         )}
 
@@ -6015,7 +6061,7 @@ export default function OccasionDetail(){
               </button>
               <button
                 onClick={()=>{
-                  const msg=buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,customCatering,customDecor,celebrantName,gifts,giftQuantities,selectedEntryExperiences});
+                  const msg=buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,customCatering,customDecor,celebrantName,gifts,giftQuantities,selectedEntryExperiences,ghProducts});
                   const who=celebrantName?`${celebrantName}'s `:"";
                   const shareText=`🎉 ${who}${occasion.name} Plan\n\n${msg}\n\n— Made with Tendr`;
                   window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`,"_blank","noopener");
@@ -6072,7 +6118,7 @@ export default function OccasionDetail(){
             {step===8&&(
               <button onClick={async()=>{
                 if(token){
-                  const planText = buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,celebrantName,gifts,giftQuantities,selectedEntryExperiences});
+                  const planText = buildPlanText(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget,ageGroups,selectedActivities,customActivities,celebrantName,gifts,giftQuantities,selectedEntryExperiences,ghProducts});
                   const pdfToken=await buildPlanPdfChatToken(buildPlanDataForPdf(),occasion.name);
                   openOccasionsChat(pdfToken?`${planText}\n\n${pdfToken}`:planText);
                   try{
