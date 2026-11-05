@@ -834,6 +834,10 @@ const Home = () => {
   const [roomCodeInput, setRoomCodeInput] = useState("");
   const [hoveredOcc, setHoveredOcc] = useState(null);
   const [occModal, setOccModal] = useState(null);
+  // Whether the "you have a plan in progress" banner was dismissed for the
+  // current opening of the Plan-an-Occasion modal — reset every time it
+  // (re)opens, from whichever trigger (hero button, sidebar/bottom-nav link).
+  const [draftBannerDismissed, setDraftBannerDismissed] = useState(false);
   // Mobile/tablet-only first-visit intro (3 screens) + the optional welcome-
   // popup/tour that can follow it. Separate from, and in addition to, the
   // existing global FirstTimeExperience mascot prompt (unchanged, still runs
@@ -859,6 +863,7 @@ const Home = () => {
       setOccasionSearch("");
     }
   }, [searchParams]);
+  useEffect(() => { if (occasionFlow === "grid") setDraftBannerDismissed(false); }, [occasionFlow]);
   const scrollFaCarousel = (dir) => {
     const el = faCarouselRef.current;
     if (!el) return;
@@ -2969,6 +2974,25 @@ const Home = () => {
 
         const closeFlow = () => { setOccasionFlow(null); setOccasionSearch(""); };
 
+        // An in-progress OccasionDetail wizard leaves a `tendr-plan-<slug>`
+        // draft with `step > 0` — the same signal PlanSummaryModal's
+        // floating "In Planning…" button already uses to resume. Surface it
+        // here too so re-opening "Plan an Occasion" offers Continue/Start
+        // New instead of silently dropping back into a fresh picker.
+        let draftOcc = null;
+        try {
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.startsWith("tendr-plan-")) {
+              const d = JSON.parse(localStorage.getItem(k) || "null");
+              if (d && d.step > 0) {
+                const occ = OCCASIONS.find(o => o.id === k.replace("tendr-plan-", ""));
+                if (occ) { draftOcc = occ; break; }
+              }
+            }
+          }
+        } catch {}
+
         const pickOcc = (o) => {
           closeFlow();
           const hub = HUB_ROUTES[o.id];
@@ -3081,6 +3105,27 @@ const Home = () => {
                 >×</button>
                 <p className="occ-flow-eyebrow" style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.18em", margin: "0 0 6px", fontFamily: f }}>PLAN AN OCCASION</p>
                 <h2 className="occ-flow-title" style={{ fontFamily: ser, fontSize: "clamp(1.5rem,5vw,2.2rem)", fontWeight: 700, color: "#2C1A0E", margin: "0 0 16px", lineHeight: 1.1 }}>What are you planning?</h2>
+
+                {draftOcc && !draftBannerDismissed && (
+                  <div style={{ background: "rgba(196,122,46,0.08)", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 14, padding: "14px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 24, flexShrink: 0 }}>{draftOcc.icon || "📋"}</span>
+                    <div style={{ flex: 1, minWidth: 160 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 800, color: "#2C1A0E", fontFamily: f }}>You have a plan in progress</div>
+                      <div style={{ fontSize: 12, color: "#9B7450", fontFamily: f }}>{draftOcc.name} — pick up where you left off, or start something new below.</div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                      <button
+                        onClick={() => { closeFlow(); navigate(`/occasions/${draftOcc.id}`); }}
+                        style={{ padding: "9px 16px", borderRadius: 10, border: "none", background: "#C47A2E", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: f, whiteSpace: "nowrap" }}
+                      >Continue →</button>
+                      <button
+                        onClick={() => setDraftBannerDismissed(true)}
+                        style={{ padding: "9px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: f, whiteSpace: "nowrap" }}
+                      >Start New</button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Search */}
                 <div className="occ-flow-search-bar" style={{ display: "flex", alignItems: "center", gap: 10, background: "#F8F5F0", border: "1.5px solid rgba(0,0,0,0.1)", borderRadius: 100, padding: "0 20px" }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
