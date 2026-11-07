@@ -19,6 +19,22 @@ const IMPACT_STYLE = {
   Low:    { bg: "rgba(28,9,0,0.06)",     color: MUTED      },
 };
 
+// Quick-pick decor styles — folded into the AI prompt as a steer, not a hard filter
+// (the analysis still reads the actual photo first; this just biases which direction
+// it leans when more than one style could fit what's in the space).
+const DECOR_STYLE_CHIPS = [
+  { id: "boho",      label: "Boho & Rustic",     emoji: "🌾" },
+  { id: "royal",     label: "Royal Gold",        emoji: "👑" },
+  { id: "pastel",    label: "Pastel Dreamy",     emoji: "🎀" },
+  { id: "minimal",   label: "Minimalist Modern", emoji: "⬜" },
+  { id: "floral",    label: "Floral Garden",     emoji: "🌸" },
+  { id: "neon",      label: "Neon Glam",         emoji: "✨" },
+  { id: "vintage",   label: "Vintage Classic",   emoji: "🕰️" },
+  { id: "tropical",  label: "Tropical",          emoji: "🌴" },
+  { id: "elegant",   label: "Elegant White & Gold", emoji: "🤍" },
+  { id: "festive",   label: "Festive Traditional", emoji: "🪔" },
+];
+
 function resizeImage(file, maxPx = 1200) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -92,6 +108,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
   const [analysis, setAnalysis] = useState(null);
   const [eventType, setEventType] = useState(initialEventType);
   const [colorPref, setColorPref] = useState("");
+  const [themePref, setThemePref] = useState(""); // DECOR_STYLE_CHIPS id, or "" for none picked
   const [drag, setDrag]         = useState(false);
   const [refDrag, setRefDrag]   = useState(false);
   const [errMsg, setErrMsg]     = useState("");
@@ -134,7 +151,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
           image: isMatch ? refImageData.base64 : imageData.base64,
           mediaType: isMatch ? refImageData.mediaType : imageData.mediaType,
           ...(isMatch ? { image2: imageData.base64, mediaType2: imageData.mediaType } : {}),
-          context: { eventType, colorPreference: colorPref },
+          context: { eventType, colorPreference: colorPref, themePreference: DECOR_STYLE_CHIPS.find(c => c.id === themePref)?.label || "" },
           mode,
         }),
       });
@@ -279,6 +296,20 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
       {/* Context inputs */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         <div>
+          <label style={{ fontSize: 11.5, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 7 }}>Pick a style <span style={{ fontWeight: 400, textTransform: "none" }}>(optional — helps us steer the ideas)</span></label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+            {DECOR_STYLE_CHIPS.map(c => {
+              const sel = themePref === c.id;
+              return (
+                <button key={c.id} onClick={() => setThemePref(sel ? "" : c.id)}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: sel ? 700 : 500, color: sel ? "#fff" : INK, background: sel ? GOLD : "rgba(28,9,0,0.04)", border: `1.5px solid ${sel ? GOLD : "rgba(28,9,0,0.1)"}`, borderRadius: 100, padding: "7px 13px", cursor: "pointer", fontFamily: F, transition: "all 0.15s" }}>
+                  <span>{c.emoji}</span>{c.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div>
           <label style={{ fontSize: 11.5, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 5 }}>Event type <span style={{ fontWeight: 400, textTransform: "none" }}>(optional)</span></label>
           <input value={eventType} onChange={e => setEventType(e.target.value)}
             placeholder="e.g. Birthday party, Wedding, Farewell…"
@@ -319,6 +350,17 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
           style={{ position: "absolute", top: 8, right: 8, width: 30, height: 30, borderRadius: "50%", background: "rgba(0,0,0,0.55)", border: "none", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
       </div>
       )}
+      <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 2 }}>
+        {DECOR_STYLE_CHIPS.map(c => {
+          const sel = themePref === c.id;
+          return (
+            <button key={c.id} onClick={() => setThemePref(sel ? "" : c.id)}
+              style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: sel ? 700 : 500, color: sel ? "#fff" : INK, background: sel ? GOLD : "rgba(28,9,0,0.04)", border: `1.5px solid ${sel ? GOLD : "rgba(28,9,0,0.1)"}`, borderRadius: 100, padding: "6px 11px", cursor: "pointer", fontFamily: F, transition: "all 0.15s" }}>
+              <span>{c.emoji}</span>{c.label}
+            </button>
+          );
+        })}
+      </div>
       <div style={{ display: "flex", gap: 8 }}>
         <div style={{ flex: 1 }}>
           <input value={eventType} onChange={e => setEventType(e.target.value)}
