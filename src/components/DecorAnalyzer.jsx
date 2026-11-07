@@ -21,19 +21,51 @@ const IMPACT_STYLE = {
 
 // Quick-pick decor styles — folded into the AI prompt as a steer, not a hard filter
 // (the analysis still reads the actual photo first; this just biases which direction
-// it leans when more than one style could fit what's in the space).
+// it leans when more than one style could fit what's in the space). Labels + one-line
+// descriptions are written in plain, everyday words on purpose — not design-industry
+// terms a first-time customer may not recognise (e.g. "Simple & Clean" over
+// "Minimalist", "Traditional Indian" over a bare "Festive").
 const DECOR_STYLE_CHIPS = [
-  { id: "boho",      label: "Boho & Rustic",     emoji: "🌾" },
-  { id: "royal",     label: "Royal Gold",        emoji: "👑" },
-  { id: "pastel",    label: "Pastel Dreamy",     emoji: "🎀" },
-  { id: "minimal",   label: "Minimalist Modern", emoji: "⬜" },
-  { id: "floral",    label: "Floral Garden",     emoji: "🌸" },
-  { id: "neon",      label: "Neon Glam",         emoji: "✨" },
-  { id: "vintage",   label: "Vintage Classic",   emoji: "🕰️" },
-  { id: "tropical",  label: "Tropical",          emoji: "🌴" },
-  { id: "elegant",   label: "Elegant White & Gold", emoji: "🤍" },
-  { id: "festive",   label: "Festive Traditional", emoji: "🪔" },
+  { id: "boho",     label: "Boho & Rustic",     desc: "Natural materials, warm earthy tones", emoji: "🌾" },
+  { id: "royal",    label: "Royal & Gold",      desc: "Rich reds and gold, grand and regal",  emoji: "👑" },
+  { id: "pastel",   label: "Soft Pastels",      desc: "Light pinks, blues and creams",        emoji: "🎀" },
+  { id: "minimal",  label: "Simple & Clean",    desc: "Minimal colours, nothing cluttered",   emoji: "⬜" },
+  { id: "floral",   label: "Floral & Garden",   desc: "Lots of flowers, fresh and natural",   emoji: "🌸" },
+  { id: "neon",     label: "Neon & Glam",       desc: "Bright lights, bold party colours",    emoji: "✨" },
+  { id: "vintage",  label: "Vintage & Classic", desc: "Old-world, timeless and elegant",      emoji: "🕰️" },
+  { id: "tropical", label: "Tropical",          desc: "Palm leaves, beachy and fresh",        emoji: "🌴" },
+  { id: "elegant",  label: "White & Gold",      desc: "Clean, premium, elegant finish",       emoji: "🤍" },
+  { id: "festive",  label: "Traditional Indian",desc: "Diyas, marigolds, festive colours",    emoji: "🪔" },
 ];
+
+// Light keyword → style-id relevance map, used only to REORDER the chips above
+// (never to hide any) so the most likely fits for a stated event type surface
+// first instead of making the customer scan all 10 every time. Falls back to
+// the original order untouched when eventType doesn't match anything below.
+const DECOR_STYLE_RELEVANCE = [
+  { keywords: ["wedding", "shaadi", "sangeet", "reception"], ids: ["royal", "elegant", "floral", "vintage"] },
+  { keywords: ["anniversary"], ids: ["royal", "elegant", "vintage", "floral"] },
+  { keywords: ["birthday", "bday"], ids: ["neon", "pastel", "floral", "boho"] },
+  { keywords: ["first birthday", "baby shower", "baby", "gender reveal", "naming"], ids: ["pastel", "floral", "boho"] },
+  { keywords: ["office", "corporate", "farewell", "retirement"], ids: ["minimal", "elegant", "vintage"] },
+  { keywords: ["diwali", "navratri", "holi", "puja", "festival", "housewarming"], ids: ["festive", "royal", "floral"] },
+  { keywords: ["bachelorette"], ids: ["neon", "tropical", "boho"] },
+  { keywords: ["graduation"], ids: ["minimal", "elegant", "neon"] },
+];
+function reorderStylesFor(eventType) {
+  const needle = (eventType || "").toLowerCase();
+  if (!needle) return DECOR_STYLE_CHIPS;
+  const match = DECOR_STYLE_RELEVANCE.find(r => r.keywords.some(k => needle.includes(k)));
+  if (!match) return DECOR_STYLE_CHIPS;
+  const priority = match.ids;
+  return [...DECOR_STYLE_CHIPS].sort((a, b) => {
+    const ai = priority.indexOf(a.id), bi = priority.indexOf(b.id);
+    if (ai === -1 && bi === -1) return 0;
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+}
 
 function resizeImage(file, maxPx = 1200) {
   return new Promise((resolve) => {
@@ -106,6 +138,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
   const [refPreview, setRefPreview] = useState(null);
   const [refImageData, setRefImageData] = useState(null); // { base64, mediaType } — the reference photo, "match" mode only
   const [analysis, setAnalysis] = useState(null);
+  const [logId, setLogId] = useState(null); // DecorAnalysisLog _id for this result, for the sent-to-chat outcome signal
   const [eventType, setEventType] = useState(initialEventType);
   const [colorPref, setColorPref] = useState("");
   const [themePref, setThemePref] = useState(""); // DECOR_STYLE_CHIPS id, or "" for none picked
@@ -164,6 +197,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
         throw new Error("friendly");
       }
       setAnalysis(data.analysis);
+      setLogId(data.logId || null);
       setPhase("done");
       if (onAnalysisComplete) onAnalysisComplete(data.analysis, preview);
     } catch (e) {
@@ -194,13 +228,19 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
       isMatch ? "Can you help me recreate this look in my own space?" : "Can you help me decorate based on this analysis?",
     ].filter(l => l !== undefined);
     openOccasionsChat(lines.join("\n"));
+    // Cheap outcome signal for the saved analysis — acting on a result (vs.
+    // just viewing it) is the closest thing to "this was actually useful" we
+    // can observe without a full booking-outcome pipeline.
+    if (logId) {
+      fetch(`${BASE_URL}/decor-analyse/${logId}/sent-to-chat`, { method: "PATCH" }).catch(() => {});
+    }
     if (onClose) onClose();
   };
 
   const reset = () => {
     setPhase("idle"); setPreview(null); setImageData(null);
     setRefPreview(null); setRefImageData(null);
-    setAnalysis(null); setErrMsg("");
+    setAnalysis(null); setErrMsg(""); setLogId(null);
   };
 
   const toggleSection = (k) => setExpandSection(s => ({ ...s, [k]: !s[k] }));
@@ -296,14 +336,19 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
       {/* Context inputs */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         <div>
-          <label style={{ fontSize: 11.5, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 7 }}>Pick a style <span style={{ fontWeight: 400, textTransform: "none" }}>(optional — helps us steer the ideas)</span></label>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-            {DECOR_STYLE_CHIPS.map(c => {
+          <label style={{ fontSize: 11.5, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 2 }}>Pick a style <span style={{ fontWeight: 400, textTransform: "none" }}>(optional)</span></label>
+          <div style={{ fontSize: 11.5, color: MUTED, marginBottom: 8, lineHeight: 1.4 }}>Not sure what suits your space? Pick whichever feels closest — it just helps us steer the ideas.</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
+            {reorderStylesFor(eventType).map(c => {
               const sel = themePref === c.id;
               return (
                 <button key={c.id} onClick={() => setThemePref(sel ? "" : c.id)}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: sel ? 700 : 500, color: sel ? "#fff" : INK, background: sel ? GOLD : "rgba(28,9,0,0.04)", border: `1.5px solid ${sel ? GOLD : "rgba(28,9,0,0.1)"}`, borderRadius: 100, padding: "7px 13px", cursor: "pointer", fontFamily: F, transition: "all 0.15s" }}>
-                  <span>{c.emoji}</span>{c.label}
+                  style={{ display: "flex", alignItems: "flex-start", gap: 8, textAlign: "left", fontFamily: F, cursor: "pointer", borderRadius: 12, padding: "9px 10px", border: `1.5px solid ${sel ? GOLD : "rgba(28,9,0,0.1)"}`, background: sel ? "rgba(196,122,46,0.08)" : "#fff", transition: "all 0.15s" }}>
+                  <span style={{ fontSize: 16, flexShrink: 0, lineHeight: 1.3 }}>{c.emoji}</span>
+                  <span>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: sel ? GOLD : INK, lineHeight: 1.25 }}>{c.label}</div>
+                    <div style={{ fontSize: 10.5, color: MUTED, lineHeight: 1.3, marginTop: 1 }}>{c.desc}</div>
+                  </span>
                 </button>
               );
             })}
@@ -351,10 +396,10 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
       </div>
       )}
       <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 2 }}>
-        {DECOR_STYLE_CHIPS.map(c => {
+        {reorderStylesFor(eventType).map(c => {
           const sel = themePref === c.id;
           return (
-            <button key={c.id} onClick={() => setThemePref(sel ? "" : c.id)}
+            <button key={c.id} onClick={() => setThemePref(sel ? "" : c.id)} title={c.desc}
               style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: sel ? 700 : 500, color: sel ? "#fff" : INK, background: sel ? GOLD : "rgba(28,9,0,0.04)", border: `1.5px solid ${sel ? GOLD : "rgba(28,9,0,0.1)"}`, borderRadius: 100, padding: "6px 11px", cursor: "pointer", fontFamily: F, transition: "all 0.15s" }}>
               <span>{c.emoji}</span>{c.label}
             </button>
