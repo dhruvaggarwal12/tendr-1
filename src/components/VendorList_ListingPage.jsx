@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import AuthModal from "./AuthModal";
 import { useChatOverlay, useOpenBaatKaroChat } from "../context/ChatContext";
+import { useBookVendors } from "../context/BookVendorsContext";
 import TalkToTendrStrip from "./TalkToTendrStrip";
 import { setMultipleFormData, setBookingType } from "../redux/eventPlanningSlice";
 import { EventIdeasPanel } from "../utils/eventIdeas";
@@ -75,6 +76,7 @@ const VendorList_ListingPage = ({
   requireFormBeforeChat = false,
 }) => {
   const navigate = useNavigate();
+  const { openBookVendors } = useBookVendors();
   const location = useLocation();
   const dispatch = useDispatch();
   const { openVendorChat, openExistingChat } = useChatOverlay();
@@ -205,7 +207,7 @@ const VendorList_ListingPage = ({
               <p style={{ fontSize: 12, color: "#bbb", margin: "0 0 24px" }}>Start your event planning and browse all available vendors.</p>
               <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
                 <button
-                  onClick={() => navigate("/booking")}
+                  onClick={() => openBookVendors()}
                   style={{ padding: "10px 22px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
                   Plan Your Event →
                 </button>

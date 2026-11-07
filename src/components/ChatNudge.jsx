@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useBookVendors } from "../context/BookVendorsContext";
 
 const SESSION_KEY = "tendr_nudge_dismissed";
 
@@ -23,6 +24,7 @@ export default function ChatNudge() {
   const [visible, setVisible]   = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { openBookVendors } = useBookVendors();
 
   const handleHelpMePlan = () => {
     dismiss();
@@ -139,7 +141,7 @@ export default function ChatNudge() {
           <div style={{ padding: "10px 14px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
             {/* Row 1 — primary actions */}
             <div style={{ display: "flex", gap: 7 }}>
-              <button style={filled} onClick={() => go("/booking")}>Show me vendors</button>
+              <button style={filled} onClick={() => { dismiss(); openBookVendors(); }}>Show me vendors</button>
               <button style={filled} onClick={handleHelpMePlan}>Help me plan</button>
             </div>
             {/* Row 2 — secondary actions */}

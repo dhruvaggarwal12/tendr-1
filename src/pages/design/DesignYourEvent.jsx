@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileBottomNav from "../../components/MobileBottomNav";
+import { useBookVendors } from "../../context/BookVendorsContext";
 
 const font = "'Outfit', sans-serif";
 const gold = "#C47A2E";
@@ -94,6 +95,7 @@ const BUDGETS = {
 
 export default function DesignYourEvent() {
   const navigate = useNavigate();
+  const { openBookVendors } = useBookVendors();
   const [step, setStep]       = useState(0); // 0,1,2 = questions; 3 = results
   const [occasion, setOccasion] = useState(null);
   const [look, setLook]         = useState(null);
@@ -302,7 +304,7 @@ export default function DesignYourEvent() {
           Find these Vendors →
         </button>
         <button
-          onClick={() => navigate("/booking")}
+          onClick={() => openBookVendors()}
           style={{ width: "100%", padding: "13px 20px", borderRadius: 14, border: `1.5px solid ${gold}`, background: "transparent", color: gold, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: font, transition: "all 0.2s" }}
           onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; }}
           onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}

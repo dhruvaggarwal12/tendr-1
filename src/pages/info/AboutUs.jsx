@@ -4,6 +4,7 @@ import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
 import HamburgerNav from "../../components/HamburgerNav";
+import { useBookVendors } from "../../context/BookVendorsContext";
 
 const font = "'Outfit', sans-serif";
 
@@ -125,6 +126,7 @@ function StatCard({ value, label, started, noCount }) {
 
 export default function AboutUs() {
   const navigate = useNavigate();
+  const { openBookVendors } = useBookVendors();
   const statsRef = useRef(null);
   const [statsVisible, setStatsVisible] = useState(false);
 
@@ -552,7 +554,7 @@ export default function AboutUs() {
           </p>
           <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
             <button
-              onClick={() => navigate("/booking")}
+              onClick={() => openBookVendors()}
               style={{
                 background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",
                 color: "#fff",

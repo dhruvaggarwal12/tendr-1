@@ -13,6 +13,7 @@ import { resetEventPlanning, setMultipleFormData, setBookingType, setCategoryBud
 import { setFinalisedVendor } from "../../redux/listingFiltersSlice";
 import { generateReferralCode, formatCode, DISCOUNT_PERCENT } from "../../utils/referral";
 import { useChatOverlay } from "../../context/ChatContext";
+import { useBookVendors } from "../../context/BookVendorsContext";
 import { generateInvoicePDF, generateEventDetailsPDF, generateTimelinePDF, generateInvitationPDF } from "../../utils/pdfGenerator";
 import PageTour from "../../components/PageTour";
 import DashboardAssistant, { CUSTOMER_TOUR_STEPS } from "../../components/DashboardAssistant";
@@ -50,6 +51,7 @@ export default function CustomerDashboard() {
   const navigate  = useNavigate();
   const location  = useLocation();
   const dispatch  = useDispatch();
+  const { openBookVendors } = useBookVendors();
   const { user, token } = useSelector((s) => s.auth);
   const { openVendorChat, openExistingChat } = useChatOverlay();
   const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
@@ -127,7 +129,7 @@ export default function CustomerDashboard() {
       dispatch(setCategoryBudgets(plan.categoryBudgets));
     }
     dispatch(setBookingType(plan.bookingType || "you-do-it"));
-    navigate("/booking");
+    openBookVendors();
   };
 
   const [tourKey, setTourKey] = useState(0); // increment to force-restart the tour
@@ -672,7 +674,7 @@ export default function CustomerDashboard() {
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-end" }}>
-            <button data-tour="dash-new-event" onClick={() => navigate("/booking")}
+            <button data-tour="dash-new-event" onClick={() => openBookVendors()}
               style={{ fontSize: 13, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", borderRadius: 10, padding: "9px 20px", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}>
               + Plan New Event
             </button>
@@ -1614,7 +1616,7 @@ export default function CustomerDashboard() {
                         style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.3)" }}>
                         Browse Vendors →
                       </button>
-                      <button onClick={() => navigate("/booking")}
+                      <button onClick={() => openBookVendors()}
                         style={{ padding: "8px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
                         Edit Details
                       </button>
@@ -1793,7 +1795,7 @@ export default function CustomerDashboard() {
                 <div style={{ fontSize: 40, marginBottom: 14 }}>💬</div>
                 <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>No team chats yet</h4>
                 <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 16px" }}>When our team starts coordinating your event, conversations will appear here.</p>
-                <button onClick={() => navigate("/booking")} style={{ padding: "10px 24px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer" }}>Plan an Event →</button>
+                <button onClick={() => openBookVendors()} style={{ padding: "10px 24px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer" }}>Plan an Event →</button>
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -1951,7 +1953,7 @@ export default function CustomerDashboard() {
               </p>
               {activeTab === "All" && (
                 <>
-                <button onClick={() => navigate("/booking")}
+                <button onClick={() => openBookVendors()}
                   style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", border: "none", borderRadius: 10, padding: "11px 24px", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
                   Plan an Event →
                 </button>
@@ -2092,7 +2094,7 @@ export default function CustomerDashboard() {
                   {["submitted", "draft"].includes(plan.status) && !isPastUnbooked(plan) && (
                     <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(196,122,46,0.1)", display: "flex", gap: 10, flexWrap: "wrap" }}>
                       <button
-                        onClick={() => navigate("/booking")}
+                        onClick={() => openBookVendors()}
                         style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.25)" }}
                       >
                         Continue Planning →

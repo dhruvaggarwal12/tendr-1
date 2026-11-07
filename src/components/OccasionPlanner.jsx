@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useChatOverlay } from '../context/ChatContext';
+import { useBookVendors } from '../context/BookVendorsContext';
 
 import BIRTHDAY_THEMES from '../data/birthdayThemes';
 import ANNIVERSARY_THEMES from '../data/anniversaryThemes';
@@ -1215,6 +1216,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
   const navigate = useNavigate();
   const { token } = useSelector(s => s.auth);
   const { openExistingChat } = useChatOverlay();
+  const { openBookVendors } = useBookVendors();
   const [existingChat, setExistingChat] = useState(null);
 
   useEffect(() => {
@@ -1490,7 +1492,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                     </button>
 
                     {/* Secondary: Plan without Theme */}
-                    <button className="op-step-opt" onClick={() => { onClose(); navigate('/booking'); }}
+                    <button className="op-step-opt" onClick={() => { onClose(); openBookVendors(); }}
                       style={{
                         padding: '20px 18px', borderRadius: 14, textAlign: 'left', cursor: 'pointer',
                         border: '1px solid rgba(245,236,216,0.09)', background: 'rgba(245,236,216,0.03)',
@@ -1661,7 +1663,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                           In the meantime, browse our vendors and get quotes directly.
                         </p>
                         <button
-                          onClick={() => { onClose(); navigate('/booking'); }}
+                          onClick={() => { onClose(); openBookVendors(); }}
                           style={{
                             width: '100%', padding: '15px 20px', borderRadius: 14, border: 'none',
                             background: occColor, color: '#fff',

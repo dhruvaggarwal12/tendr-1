@@ -9,6 +9,7 @@ import HamburgerNav from "../../components/HamburgerNav";
 import SEO, { categoryTitle, categoryDescription } from "../../components/SEO";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import VendorList_ListingPage from "../../components/VendorList_ListingPage";
+import { useBookVendors } from "../../context/BookVendorsContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -146,6 +147,7 @@ function QuickEventForm({ vendor, onClose, onSubmit }) {
 // ── Main Page ────────────────────────────────────────────────────────────────
 export default function TopRatedVendors() {
   const navigate = useNavigate();
+  const { openBookVendors } = useBookVendors();
   const { category } = useParams();
   const token = useSelector((s) => s.auth.token);
   const dispatch = useDispatch();
@@ -373,7 +375,7 @@ export default function TopRatedVendors() {
               Want to plan your full event and compare all vendors?
             </p>
             <button
-              onClick={() => navigate("/booking")}
+              onClick={() => openBookVendors()}
               style={{ padding: "13px 32px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 16px rgba(196,122,46,0.35)" }}>
               Browse All Vendors — Start Planning →
             </button>

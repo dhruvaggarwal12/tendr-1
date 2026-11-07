@@ -36,8 +36,10 @@ import introExperience from "../../assets/intro/tendr-intro-03-experience.jpg";
 import { FaWhatsapp } from "react-icons/fa";
 import Navbar from "../../components/Navbar.jsx";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useBookVendors } from "../../context/BookVendorsContext";
+import { setBookingType } from "../../redux/eventPlanningSlice";
+import { clearVendorCompare } from "../../redux/listingFiltersSlice";
 import { usePriceEstimator } from "../../context/PriceEstimatorContext";
 import { FUN_ACTIVITIES } from "../../data/funActivitiesData";
 import { OCCASIONS } from "../../data/occasions";
@@ -740,6 +742,7 @@ function WebsiteIntro({ onDone }) {
 
 const Home = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { openBookVendors } = useBookVendors();
   const { openPriceEstimator } = usePriceEstimator();
   const bookingType = useSelector((s) => s.eventPlanning.bookingType);
@@ -1938,7 +1941,11 @@ const Home = () => {
               { n: "03", text: "Review, chat and confirm — we handle all the matching" },
             ],
             cta: "Start Planning",
-            action: () => navigate("/booking"),
+            action: () => {
+              dispatch(clearVendorCompare());
+              dispatch(setBookingType("let-us-do-it"));
+              navigate("/plan-event/form?bookingType=let-us-do-it");
+            },
           },
           {
             title: "By Occasion",
@@ -1951,6 +1958,18 @@ const Home = () => {
             ],
             cta: "Pick Occasion",
             action: () => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }),
+          },
+          {
+            title: "Baat Karo",
+            hook: "You'd rather just type it out",
+            tag: "Just chat",
+            steps: [
+              { n: "01", text: "Type your requirement in plain words — no forms, no categories" },
+              { n: "02", text: "The Tendr Team picks it up and replies right in the chat" },
+              { n: "03", text: "Share details and we match you with the right vendors" },
+            ],
+            cta: "Start Chatting",
+            action: () => navigate("/baat-karo?from=book-vendors"),
           },
         ];
         const ap = activePath !== null ? PATHS[activePath] : null;

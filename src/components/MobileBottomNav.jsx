@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { AnimatePresence, motion } from "framer-motion";
 import { loadPlan, PlanSummaryModal } from "./PlanSummaryModal";
 import { useBookVendors } from "../context/BookVendorsContext";
 import { usePriceEstimator } from "../context/PriceEstimatorContext";
+import { setBookingType } from "../redux/eventPlanningSlice";
+import { clearVendorCompare } from "../redux/listingFiltersSlice";
 
 const font = "'Outfit', sans-serif";
 
@@ -109,6 +111,8 @@ const NAV_ICONS = {
 function BottomNavInner() {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
+  const bookingType = useSelector((s) => s.eventPlanning.bookingType);
   const { openBookVendors } = useBookVendors();
   const { openPriceEstimator } = usePriceEstimator();
   const { token, user } = useSelector((s) => s.auth);
@@ -403,9 +407,9 @@ function BottomNavInner() {
             <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 14px" }}>How do you want to plan?</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {[
-                { icon: ic(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>), title: "You Do It", desc: "Browse vendors, compare & book yourself", path: "/booking", active: location.pathname === "/booking" || location.pathname.startsWith("/plan-event") },
-                { icon: ic(<><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></>), title: "Smart Planner", desc: "Tell us once, we build your full package", path: "/booking", active: false },
-                { icon: ic(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>), title: "Baat Karo", desc: "Likh do apni requirements — Tendr Team yahin reply karegi", path: "/baat-karo", active: location.pathname === "/baat-karo", green: true },
+                { icon: ic(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>), title: "Build a Package", desc: "Pick one vendor per category yourself", path: null, active: bookingType === "you-do-it" && location.pathname.startsWith("/plan-event"), action: () => { setPlanOpen(false); dispatch(clearVendorCompare()); dispatch(setBookingType("you-do-it")); navigate("/plan-event/form?bookingType=you-do-it"); } },
+                { icon: ic(<><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></>), title: "Get a Package", desc: "Tell us once, we build your full package", path: null, active: bookingType === "let-us-do-it" && location.pathname.startsWith("/plan-event"), action: () => { setPlanOpen(false); dispatch(clearVendorCompare()); dispatch(setBookingType("let-us-do-it")); navigate("/plan-event/form?bookingType=let-us-do-it"); } },
+                { icon: ic(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>), title: "Baat Karo", desc: "Likh do apni requirements — Tendr Team yahin reply karegi", path: "/baat-karo?from=book-vendors", active: location.pathname === "/baat-karo", green: true },
                 { icon: ic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>), title: "Plan by Occasion", desc: "Birthday, Anniversary, House Party & more", path: null, active: false, action: () => { setPlanOpen(false); navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 150); } },
               ].map(({ icon, title, desc, path, active, green, action }) => (
                 <button key={title}

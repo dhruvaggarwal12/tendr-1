@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useChatOverlay } from '../../context/ChatContext';
+import { useBookVendors } from '../../context/BookVendorsContext';
 import { getSmartPlanById } from '../../apis/vendorApi';
 
 // Reads the form session written by eventPlanningSlice every time a field changes
@@ -96,6 +97,7 @@ function ic(d) {
 
 export default function MyEvent() {
   const navigate = useNavigate();
+  const { openBookVendors } = useBookVendors();
   const { openConciergeChat } = useChatOverlay();
   const { token } = useSelector(s => s.auth);
 
@@ -193,7 +195,7 @@ export default function MyEvent() {
           <p style={{ fontSize: 14, color: '#9B7450', marginBottom: 28, lineHeight: 1.6 }}>
             Start filling the event form and your planning dashboard will appear here automatically.
           </p>
-          <button onClick={() => navigate('/booking')}
+          <button onClick={() => openBookVendors()}
             style={{ padding: '13px 32px', borderRadius: 12, border: 'none', background: `linear-gradient(135deg,${gold},${goldLt})`, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font, boxShadow: '0 4px 16px rgba(196,122,46,0.3)' }}>
             Start Planning →
           </button>
@@ -496,7 +498,7 @@ export default function MyEvent() {
 
         {/* ── CTAs ── */}
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={() => navigate('/booking')}
+          <button onClick={() => openBookVendors()}
             style={{ flex: 1, padding: '13px 0', borderRadius: 12, border: `1.5px solid rgba(196,122,46,0.25)`, background: '#fff', color: gold, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>
             + New Event
           </button>
