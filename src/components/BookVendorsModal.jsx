@@ -27,6 +27,11 @@ const IconSparkle = () => (
     <path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-6.26L4 10l5.91-1.74z"/>
   </svg>
 );
+const IconChat = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>
+);
 
 const CARDS = [
   {
@@ -69,6 +74,19 @@ const CARDS = [
     route: null,
     dark: true,
   },
+  {
+    type: "baat-karo",
+    Icon: IconChat,
+    title: "Baat Karo",
+    tag: "Just Chat",
+    subtitle: "Don't want forms? Type what you need in plain words, like you'd message a vendor directly.",
+    accent: "#0d9488",
+    cardBg: "#F0FBF9",
+    borderColor: "rgba(13,148,136,0.22)",
+    iconBg: "rgba(13,148,136,0.1)",
+    ctaBg: "linear-gradient(135deg,#0d9488,#14b8a6)",
+    route: "/baat-karo?from=book-vendors",
+  },
 ];
 
 export default function BookVendorsModal() {
@@ -93,7 +111,7 @@ export default function BookVendorsModal() {
       style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(20,10,4,0.65)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
       onClick={(e) => { if (e.target === e.currentTarget) closeBookVendors(); }}
     >
-      <div style={{ width: "100%", maxWidth: 820, background: "#F5F0E8", borderRadius: 24, padding: "28px 22px", maxHeight: "92dvh", overflowY: "auto", fontFamily: font, boxShadow: "0 32px 80px rgba(28,9,0,0.4)", position: "relative" }}>
+      <div style={{ width: "100%", maxWidth: 980, background: "#F5F0E8", borderRadius: 24, padding: "28px 22px", maxHeight: "92dvh", overflowY: "auto", fontFamily: font, boxShadow: "0 32px 80px rgba(28,9,0,0.4)", position: "relative" }}>
         <button
           onClick={closeBookVendors}
           aria-label="Close"
@@ -109,7 +127,7 @@ export default function BookVendorsModal() {
           </h2>
         </div>
 
-        <div className="bvm-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
+        <div className="bvm-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
           {CARDS.map((c) => {
             const { Icon } = c;
             const isDark = !!c.dark;
@@ -152,6 +170,9 @@ export default function BookVendorsModal() {
         </div>
 
         <style>{`
+          @media (max-width: 980px) and (min-width: 681px) {
+            .bvm-grid { grid-template-columns: repeat(2,1fr) !important; }
+          }
           @media (max-width: 680px) {
             .bvm-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
             .bvm-card { padding: 14px 14px !important; flex-direction: row !important; align-items: center !important; gap: 12px !important; }

@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import SEO from "../../components/SEO";
 import HamburgerNav from "../../components/HamburgerNav";
 import AuthModal from "../../components/AuthModal.jsx";
+import BaatKaroDetailsModal from "../../components/BaatKaroDetailsModal.jsx";
 import { useChatOverlay } from "../../context/ChatContext";
 
 const font = "'Outfit', sans-serif";
@@ -14,6 +15,7 @@ export default function BaatKaro() {
   const { openExistingChat } = useChatOverlay();
   const [searchParams] = useSearchParams();
   const serviceType = searchParams.get("context") || "Baat Karo";
+  const fromBookVendors = searchParams.get("from") === "book-vendors";
 
   const [text, setText] = useState(() => {
     try { return sessionStorage.getItem("baat_karo_draft") || ""; } catch { return ""; }
@@ -28,6 +30,7 @@ export default function BaatKaro() {
   });
   const [charCount, setCharCount] = useState(0);
   const [showAuth, setShowAuth] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
@@ -35,7 +38,7 @@ export default function BaatKaro() {
     try { sessionStorage.setItem("baat_karo_draft", text); } catch {}
   }, [text]);
 
-  const submitMessage = async () => {
+  const submitMessage = async (details) => {
     if (!text.trim() || sending) return;
     setSending(true);
     try {
@@ -43,7 +46,18 @@ export default function BaatKaro() {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         credentials: "include",
-        body: JSON.stringify({ message: text.trim(), serviceType }),
+        body: JSON.stringify({
+          message: text.trim(),
+          serviceType,
+          eventDetails: details ? {
+            ...(details.name ? { name: details.name } : {}),
+            ...(details.date ? { date: details.date } : {}),
+            ...(details.time ? { time: details.time } : {}),
+            ...(details.city ? { city: details.city } : {}),
+            ...(details.guests ? { guests: details.guests } : {}),
+          } : undefined,
+          ...(fromBookVendors ? { bookingCategory: "vendor-enquiry" } : {}),
+        }),
       });
       const data = await res.json();
       if (res.ok && data.conversationId) {
@@ -114,10 +128,14 @@ export default function BaatKaro() {
   const handleSend = () => {
     if (!text.trim()) return;
     if (!token) { setShowAuth(true); return; }
-    submitMessage();
+    setShowDetails(true);
   };
 
-  const suggestions = [
+  const suggestions = fromBookVendors ? [
+    { label: "Caterer needed", full: "Hi, mujhe ek caterer chahiye 200 logo ke liye, date 15 February hai Delhi mein, budget 1.5 lakh ke aas paas" },
+    { label: "Decorator + DJ", full: "Shaadi ke liye decorator aur DJ chahiye, 400 guests, venue finalize ho chuka hai, budget discuss karna hai" },
+    { label: "Photographer quote", full: "Photographer chahiye ek birthday event ke liye, Noida mein, half-day coverage, please quote bhej do" },
+  ] : [
     { label: "Birthday · 200 guests", full: "200 logo ka birthday party hai, caterer aur decorator chahiye, budget 1.5 lakh hai" },
     { label: "Shaadi · DJ + Photo", full: "Shaadi mein 400 guests, DJ aur photographer chahiye, date 15 February hai Delhi mein" },
     { label: "Corporate · 100 pax", full: "Corporate event 100 log, catering aur decoration, Noida mein, budget flexible" },
@@ -183,8 +201,11 @@ export default function BaatKaro() {
           </h1>
 
           <p className="bk-in-2" style={{ fontSize: 15, color: "#7A5535", margin: "0 auto", lineHeight: 1.65, maxWidth: 400 }}>
-            Koi form nahi, koi category nahi — bas apna event likh do.<br />
-            Hamari Tendr Team yahin reply karegi.
+            {fromBookVendors ? (
+              <>Koi form nahi, koi listing scroll nahi — seedha bata do kya chahiye.<br />Hum sahi vendor tak pahuncha denge.</>
+            ) : (
+              <>Koi form nahi, koi category nahi — bas apna event likh do.<br />Hamari Tendr Team yahin reply karegi.</>
+            )}
           </p>
         </div>
       </div>
@@ -201,10 +222,16 @@ export default function BaatKaro() {
             </div>
             <div style={{ background: "rgba(196,122,46,0.08)", borderRadius: "4px 14px 14px 14px", padding: "10px 14px", maxWidth: "85%" }}>
               <p style={{ fontSize: 13.5, color: "#2C1A0E", margin: 0, lineHeight: 1.6 }}>
-                Namaste! Welcome to Tendr.<br /><br />
-                Bas ek kaam karo — apna event batao. Likh do:<br />
-                <span style={{ color: "#C47A2E", fontWeight: 700 }}>Date · Location · Guests · Budget · Kya chahiye</span><br /><br />
-                Apni bhasha mein — Hinglish bilkul theek hai!
+                {fromBookVendors ? (
+                  <>Namaste! Vendor ko jaisa message karte ho, waise hi yahan likh do.<br /><br />
+                  <span style={{ color: "#C47A2E", fontWeight: 700 }}>Kaunsa vendor chahiye · Date · Location · Guests · Budget</span><br /><br />
+                  Apni bhasha mein — Hinglish bilkul theek hai!</>
+                ) : (
+                  <>Namaste! Welcome to Tendr.<br /><br />
+                  Bas ek kaam karo — apna event batao. Likh do:<br />
+                  <span style={{ color: "#C47A2E", fontWeight: 700 }}>Date · Location · Guests · Budget · Kya chahiye</span><br /><br />
+                  Apni bhasha mein — Hinglish bilkul theek hai!</>
+                )}
               </p>
             </div>
           </div>
@@ -279,7 +306,7 @@ export default function BaatKaro() {
         {/* Suggestion chips — horizontal scrollable */}
         <div style={{ marginBottom: 20 }}>
           <p style={{ fontSize: 10.5, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>
-            Try an example
+            {fromBookVendors ? "Message like you'd send a vendor" : "Try an example"}
           </p>
           <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 4 }}>
             {suggestions.map((s, i) => (
@@ -324,7 +351,15 @@ export default function BaatKaro() {
       <AuthModal
         open={showAuth}
         onClose={() => setShowAuth(false)}
-        onSuccess={() => { setShowAuth(false); submitMessage(); }}
+        onSuccess={() => { setShowAuth(false); setShowDetails(true); }}
+      />
+
+      <BaatKaroDetailsModal
+        open={showDetails}
+        onClose={() => setShowDetails(false)}
+        submitting={sending}
+        messagePreview={text}
+        onSubmit={(details) => { setShowDetails(false); submitMessage(details); }}
       />
     </div>
   );

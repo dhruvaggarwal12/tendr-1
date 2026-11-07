@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../redux/authSlice";
 import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFiltersSlice";
+import { setBookingType } from "../redux/eventPlanningSlice";
 import { useChatOverlay } from "../context/ChatContext";
 import { useTour } from "../context/TourContext";
 import { usePriceEstimator } from "../context/PriceEstimatorContext";
@@ -266,6 +267,14 @@ const Navbar = ({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // Mirrors BookVendorsModal's handleChoose — used by the "Build a Package" /
+  // "Get a Package" nav sub-items so they open the exact same flow as the modal.
+  const handleBookVendorsChoice = (type) => {
+    dispatch(clearVendorCompare());
+    dispatch(setBookingType(type));
+    navigate("/plan-event/form?bookingType=" + type);
+  };
+
   const filteredSuggestions = searchQuery.length > 0
     ? SEARCH_SUGGESTIONS.filter(s => s.text.toLowerCase().includes(searchQuery.toLowerCase()))
     : SEARCH_SUGGESTIONS.slice(0, 5);
@@ -298,9 +307,10 @@ const Navbar = ({
         {
           label: "Book Vendors",
           subItems: [
-            { label: "You Do It",     href: "/booking" },
-            { label: "Smart Planner", href: "/booking" },
-            { label: "Baat Karo",     href: "/baat-karo" },
+            { label: "Browse",          href: "/listings?serviceType=Caterer" },
+            { label: "Build a Package", onClick: () => handleBookVendorsChoice("you-do-it") },
+            { label: "Get a Package",   onClick: () => handleBookVendorsChoice("let-us-do-it") },
+            { label: "Baat Karo",       href: "/baat-karo?from=book-vendors" },
           ],
         },
         { label: "Plan an Occasion", href: "/occasions" },
@@ -590,9 +600,15 @@ const Navbar = ({
                             }}
                           >
                             {item.subItems.map((sub) => (
-                              <a key={sub.label} href={sub.href} style={dropdownItemStyle} onMouseEnter={hoverOn} onMouseLeave={hoverOff}>
-                                {sub.label}
-                              </a>
+                              sub.href ? (
+                                <a key={sub.label} href={sub.href} style={dropdownItemStyle} onMouseEnter={hoverOn} onMouseLeave={hoverOff}>
+                                  {sub.label}
+                                </a>
+                              ) : (
+                                <button key={sub.label} onClick={sub.onClick} style={{ ...dropdownItemStyle, width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", font: "inherit" }} onMouseEnter={hoverOn} onMouseLeave={hoverOff}>
+                                  {sub.label}
+                                </button>
+                              )
                             ))}
                           </div>
                         </div>
@@ -902,19 +918,34 @@ const Navbar = ({
                         {item.label}
                       </div>
                       {item.subItems.map((sub) => (
-                        <a
-                          key={sub.label}
-                          href={sub.href}
-                          onClick={() => setMenuOpen(false)}
-                          style={{
-                            display: "flex", alignItems: "center", gap: 10,
-                            padding: "11px 14px 11px 24px", color: "#5C3317",
-                            textDecoration: "none", fontSize: 14.5,
-                            fontWeight: 500, letterSpacing: "0.01em", fontFamily: font,
-                          }}
-                        >
-                          {sub.label}
-                        </a>
+                        sub.href ? (
+                          <a
+                            key={sub.label}
+                            href={sub.href}
+                            onClick={() => setMenuOpen(false)}
+                            style={{
+                              display: "flex", alignItems: "center", gap: 10,
+                              padding: "11px 14px 11px 24px", color: "#5C3317",
+                              textDecoration: "none", fontSize: 14.5,
+                              fontWeight: 500, letterSpacing: "0.01em", fontFamily: font,
+                            }}
+                          >
+                            {sub.label}
+                          </a>
+                        ) : (
+                          <button
+                            key={sub.label}
+                            onClick={() => { sub.onClick?.(); setMenuOpen(false); }}
+                            style={{
+                              display: "flex", alignItems: "center", gap: 10, width: "100%",
+                              padding: "11px 14px 11px 24px", color: "#5C3317", textAlign: "left",
+                              background: "none", border: "none", cursor: "pointer",
+                              fontSize: 14.5, fontWeight: 500, letterSpacing: "0.01em", fontFamily: font,
+                            }}
+                          >
+                            {sub.label}
+                          </button>
+                        )
                       ))}
                     </div>
                   ) : item.comingSoon ? (
