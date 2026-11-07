@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useChatOverlay } from "../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -42,29 +42,37 @@ const DECOR_STYLE_CHIPS = [
 // (never to hide any) so the most likely fits for a stated event type surface
 // first instead of making the customer scan all 10 every time. Falls back to
 // the original order untouched when eventType doesn't match anything below.
+// Order matters — more specific phrases must come before a broader word they
+// contain (e.g. "baby shower"/"first birthday" before the bare "birthday"
+// check, or "first birthday" would always match the wrong, generic group).
 const DECOR_STYLE_RELEVANCE = [
   { keywords: ["wedding", "shaadi", "sangeet", "reception"], ids: ["royal", "elegant", "floral", "vintage"] },
   { keywords: ["anniversary"], ids: ["royal", "elegant", "vintage", "floral"] },
-  { keywords: ["birthday", "bday"], ids: ["neon", "pastel", "floral", "boho"] },
   { keywords: ["first birthday", "baby shower", "baby", "gender reveal", "naming"], ids: ["pastel", "floral", "boho"] },
+  { keywords: ["birthday", "bday"], ids: ["neon", "pastel", "floral", "boho"] },
   { keywords: ["office", "corporate", "farewell", "retirement"], ids: ["minimal", "elegant", "vintage"] },
   { keywords: ["diwali", "navratri", "holi", "puja", "festival", "housewarming"], ids: ["festive", "royal", "floral"] },
   { keywords: ["bachelorette"], ids: ["neon", "tropical", "boho"] },
   { keywords: ["graduation"], ids: ["minimal", "elegant", "neon"] },
 ];
-function reorderStylesFor(eventType) {
+// Blends the fixed keyword priority above with real GET /decor-analyse/insights
+// data (per-style sentToChat rate for this event type, once there's enough
+// volume) — a nudge on top of the hand-written guesses, never a replacement:
+// `insights` is null until loaded, and individual styles stay absent from it
+// until they clear a minimum sample size server-side, so early on this
+// behaves exactly like the old keyword-only version.
+function reorderStylesFor(eventType, insights) {
   const needle = (eventType || "").toLowerCase();
-  if (!needle) return DECOR_STYLE_CHIPS;
-  const match = DECOR_STYLE_RELEVANCE.find(r => r.keywords.some(k => needle.includes(k)));
-  if (!match) return DECOR_STYLE_CHIPS;
-  const priority = match.ids;
-  return [...DECOR_STYLE_CHIPS].sort((a, b) => {
-    const ai = priority.indexOf(a.id), bi = priority.indexOf(b.id);
-    if (ai === -1 && bi === -1) return 0;
-    if (ai === -1) return 1;
-    if (bi === -1) return -1;
-    return ai - bi;
-  });
+  const match = needle && DECOR_STYLE_RELEVANCE.find(r => r.keywords.some(k => needle.includes(k)));
+  const priority = match ? match.ids : [];
+  if (!priority.length && !insights) return DECOR_STYLE_CHIPS;
+  return [...DECOR_STYLE_CHIPS]
+    .map(c => {
+      const keywordScore = priority.includes(c.id) ? priority.length - priority.indexOf(c.id) : 0;
+      const insightScore = (insights?.[c.id]?.rate || 0) * 2; // real customer behaviour, weighted to matter but not dominate
+      return { ...c, score: keywordScore + insightScore };
+    })
+    .sort((a, b) => b.score - a.score);
 }
 
 function resizeImage(file, maxPx = 1200) {
@@ -142,6 +150,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
   const [eventType, setEventType] = useState(initialEventType);
   const [colorPref, setColorPref] = useState("");
   const [themePref, setThemePref] = useState(""); // DECOR_STYLE_CHIPS id, or "" for none picked
+  const [insights, setInsights] = useState(null); // GET /decor-analyse/insights result for the current eventType, or null until loaded
   const [drag, setDrag]         = useState(false);
   const [refDrag, setRefDrag]   = useState(false);
   const [errMsg, setErrMsg]     = useState("");
@@ -153,6 +162,22 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
   const [mode, setMode] = useState("venue");
   const isMatch = mode === "match";
   const ready = isMatch ? !!(imageData && refImageData) : !!imageData;
+
+  // Debounced — re-fetches shortly after the customer stops typing an event
+  // type, rather than on every keystroke. Resets to null (not stale data) the
+  // moment eventType changes, so reorderStylesFor never blends in insights
+  // for a different event type than what's currently shown.
+  useEffect(() => {
+    setInsights(null);
+    if (!eventType.trim()) return;
+    const t = setTimeout(() => {
+      fetch(`${BASE_URL}/decor-analyse/insights?eventType=${encodeURIComponent(eventType)}`)
+        .then(r => r.json())
+        .then(d => setInsights(d.insights || {}))
+        .catch(() => {});
+    }, 500);
+    return () => clearTimeout(t);
+  }, [eventType]);
 
   const processFile = useCallback(async (file, target = "venue") => {
     if (!file || !file.type.startsWith("image/")) return;
@@ -184,7 +209,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
           image: isMatch ? refImageData.base64 : imageData.base64,
           mediaType: isMatch ? refImageData.mediaType : imageData.mediaType,
           ...(isMatch ? { image2: imageData.base64, mediaType2: imageData.mediaType } : {}),
-          context: { eventType, colorPreference: colorPref, themePreference: DECOR_STYLE_CHIPS.find(c => c.id === themePref)?.label || "" },
+          context: { eventType, colorPreference: colorPref, themePreference: DECOR_STYLE_CHIPS.find(c => c.id === themePref)?.label || "", themeId: themePref },
           mode,
         }),
       });
@@ -339,7 +364,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
           <label style={{ fontSize: 11.5, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 2 }}>Pick a style <span style={{ fontWeight: 400, textTransform: "none" }}>(optional)</span></label>
           <div style={{ fontSize: 11.5, color: MUTED, marginBottom: 8, lineHeight: 1.4 }}>Not sure what suits your space? Pick whichever feels closest — it just helps us steer the ideas.</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
-            {reorderStylesFor(eventType).map(c => {
+            {reorderStylesFor(eventType, insights).map(c => {
               const sel = themePref === c.id;
               return (
                 <button key={c.id} onClick={() => setThemePref(sel ? "" : c.id)}
@@ -396,7 +421,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
       </div>
       )}
       <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 2 }}>
-        {reorderStylesFor(eventType).map(c => {
+        {reorderStylesFor(eventType, insights).map(c => {
           const sel = themePref === c.id;
           return (
             <button key={c.id} onClick={() => setThemePref(sel ? "" : c.id)} title={c.desc}
