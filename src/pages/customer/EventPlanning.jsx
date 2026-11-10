@@ -1436,17 +1436,6 @@ const EventPlanning = () => {
             </button>
           </div>
 
-          {/* Decor Finder nudge */}
-          {selectedVendors.includes("Decorator") && (
-            <div style={{ width: "100%", maxWidth: 1100, marginBottom: 20, background: "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.1))", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 14, padding: "13px 18px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 26 }}>🎀</span>
-              <div style={{ flex: 1, minWidth: 150 }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 2 }}>Want decor inspiration?</div>
-                <div style={{ fontSize: 11.5, color: "#7A5535" }}>Browse real photos — Floral, Balloon, Minimalist &amp; more</div>
-              </div>
-              {/* <button onClick={() => navigate("/decor-finder")} style={{ padding: "8px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>Decor Finder →</button> */}
-            </div>
-          )}
 
           {/* Primary CTA */}
           <div style={{ width: "100%", maxWidth: 1100, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
