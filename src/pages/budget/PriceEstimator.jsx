@@ -4,9 +4,11 @@ import { useSelector } from "react-redux";
 import HamburgerNav from "../../components/HamburgerNav";
 import DecorAnalyzer from "../../components/DecorAnalyzer";
 import AuthModal from "../../components/AuthModal";
+import ToolHistoryPanel from "../../components/ToolHistoryPanel";
 import tendrLogoImg from "../../assets/logos/tendr-logo-secondary.png";
 import { useChatOverlay } from "../../context/ChatContext";
 import { usePriceEstimator } from "../../context/PriceEstimatorContext";
+import { useToolRunHistory } from "../../hooks/useToolRunHistory";
 import {
   getOccasionNames,
   getServicesForOccasion,
@@ -26,6 +28,8 @@ import {
   blendWithBenchmark,
   fetchCategoryPricing,
 } from "../../utils/priceEstimator";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // Screenshots the given DOM node and saves it as a PDF — same technique already
 // used for the occasion planner's "Download Plan" button.
@@ -127,6 +131,21 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
   const planRef = useRef(null);
   const slipRef = useRef(null); // off-screen clean summary captured for "Download as Slip"
 
+  // History + resume — standalone tool only, never inside the embedded/modal
+  // usage opened from other pages (those are one-off contextual estimates,
+  // not "my past runs" of the standalone tool). Passing a null token here
+  // skips the fetch entirely.
+  const { recentRuns, inProgressRun, refresh: refreshHistory } = useToolRunHistory(
+    embedded ? null : "price-estimator",
+    embedded ? null : token
+  );
+  const [toolRunId, setToolRunId] = useState(null);
+  // Set true for exactly one occasion-change effect run when a resume
+  // programmatically sets `occasion` along with everything else — without
+  // this, the reset-on-occasion-change effect just below would immediately
+  // wipe out the rest of the state the resume is restoring.
+  const skipResetRef = useRef(false);
+
   const simpleCategories = useMemo(() => getSimpleCategories(occasion), [occasion]);
   const allServices = useMemo(() => getServicesForOccasion(occasion), [occasion]);
   const guestBucket = GUEST_BUCKETS.find((g) => g.key === guestBucketKey) || null;
@@ -137,6 +156,7 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
   // occasions. Skipped on mount so the initial seed values above actually stick.
   useEffect(() => {
     if (!didMountRef.current) { didMountRef.current = true; return; }
+    if (skipResetRef.current) { skipResetRef.current = false; return; }
     setGuestBucketKey(null);
     setCity(null);
     setVenueTypeKey(null);
@@ -312,7 +332,64 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
     setStep(totalSteps);
     setGenerating(true);
     setTimeout(() => setGenerating(false), 1300);
+    if (!embedded && token && toolRunId) {
+      const label = `${occasion} · ${guestBucket?.label || ""}`;
+      fetch(`${BASE_URL}/tool-runs/${toolRunId}/complete`, {
+        method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ output: { totalMin: priced.total.min, totalMax: priced.total.max }, label }),
+      }).then(() => refreshHistory()).catch(() => {});
+    }
   };
+
+  // Restores every selection field from a saved run's `input` and jumps to
+  // that step — used for both "Continue where you left off" (an in-progress
+  // run) and reopening a completed one from "Recent" (lands straight on the
+  // reveal, since all steps were already filled in). The live `priced`/
+  // `displayTotal` computation re-derives the numbers fresh from these
+  // restored selections rather than replaying a frozen stored output, so
+  // prices stay current even if the catalog/benchmarks changed since.
+  const resumeRun = (run) => {
+    const i = run?.input || {};
+    skipResetRef.current = true;
+    setToolRunId(run._id);
+    setOccasion(OCCASIONS.includes(i.occasion) ? i.occasion : OCCASIONS[0]);
+    setGuestBucketKey(i.guestBucketKey ?? null);
+    setCity(i.city ?? null);
+    setVenueTypeKey(i.venueTypeKey ?? null);
+    setVenueAlreadyBooked(i.venueAlreadyBooked ?? null);
+    setChosenCategories(Array.isArray(i.chosenCategories) ? i.chosenCategories : []);
+    setCategoryChoice(i.categoryChoice || {});
+    setSelectedItems(i.selectedItems || {});
+    setOtherEquipment(Array.isArray(i.otherEquipment) ? i.otherEquipment : []);
+    setOtherEquipmentCustom(i.otherEquipmentCustom || "");
+    setStep(typeof i.step === "number" ? i.step : 0);
+  };
+
+  // Debounced save of the wizard's current selections — starts a ToolRun the
+  // first time the customer leaves step 0, then patches it on every later
+  // change, mirroring progressSync.js's 2s debounce. Standalone tool only.
+  useEffect(() => {
+    if (embedded || !token || step === 0) return;
+    const snapshot = { occasion, guestBucketKey, city, venueTypeKey, venueAlreadyBooked, chosenCategories, categoryChoice, selectedItems, otherEquipment, otherEquipmentCustom, step };
+    const label = `${occasion} · ${guestBucket?.label || ""}`;
+    const t = setTimeout(async () => {
+      try {
+        const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+        let id = toolRunId;
+        if (!id) {
+          const res = await fetch(`${BASE_URL}/tool-runs/price-estimator/start`, { method: "POST", headers, body: JSON.stringify({ input: snapshot, label }) });
+          const data = await res.json();
+          id = data?.run?._id || null;
+          if (id) setToolRunId(id);
+        }
+        if (id) {
+          await fetch(`${BASE_URL}/tool-runs/${id}`, { method: "PATCH", headers, body: JSON.stringify({ input: snapshot, label }) });
+        }
+      } catch {}
+    }, 2000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [embedded, token, occasion, guestBucketKey, city, venueTypeKey, venueAlreadyBooked, chosenCategories, categoryChoice, selectedItems, otherEquipment, otherEquipmentCustom, step]);
 
   const canProceed =
     step === 0 ? !!guestBucketKey :
@@ -383,6 +460,10 @@ export function PriceEstimatorWizard({ initialOccasion, initialGuestCount, initi
       </div>
 
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px 16px" }}>
+
+        {step === 0 && !embedded && (
+          <ToolHistoryPanel recentRuns={recentRuns} inProgressRun={inProgressRun} onResume={resumeRun} onSelectRun={resumeRun} />
+        )}
 
         {step === 0 && (
           <StepCard title="Tell us about your event" subtitle="We'll pull typical Delhi NCR prices for this.">

@@ -3,6 +3,8 @@ import { useSelector } from "react-redux";
 import { useChatOverlay } from "../context/ChatContext";
 import AuthModal from "./AuthModal.jsx";
 import EventDetailsModal from "./EventDetailsModal.jsx";
+import ToolHistoryPanel from "./ToolHistoryPanel.jsx";
+import { useToolRunHistory } from "../hooks/useToolRunHistory";
 import { getOccasionNames, getServicesForOccasion } from "../utils/priceEstimator";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -161,6 +163,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
   const { token } = useSelector((s) => s.auth);
   const [showAuth, setShowAuth] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const { recentRuns } = useToolRunHistory("decor-analyser", token);
   const fileRef = useRef(null);
   const refFileRef = useRef(null);
 
@@ -351,9 +354,28 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
 
   const toggleSection = (k) => setExpandSection(s => ({ ...s, [k]: !s[k] }));
 
+  // Reopening a past analysis from the history list is a cheap re-display —
+  // no new AI call, no new /decor-photo-match. logId stays the ORIGINAL
+  // DecorAnalysisLog row's id so "Send to Chat" still marks that same row's
+  // sentToChat outcome, not a nonexistent new one.
+  const reopenPastRun = (run) => {
+    setPreview(run.imageUrl || null);
+    setAnalysis(run.analysis || null);
+    setLogId(run._id || null);
+    setMode(run.mode === "match" ? "match" : "venue");
+    setEventType(run.eventType || "");
+    setRealCatalogItems([]);
+    setRealExamples([]);
+    setPhase("done");
+  };
+
   // ── Upload screen ─────────────────────────────────────────────────────────
   if (phase === "idle" && !ready) return (
     <div style={{ fontFamily: F, display: "flex", flexDirection: "column", gap: 20, padding: compact ? 0 : "4px 0" }}>
+      <ToolHistoryPanel
+        recentRuns={recentRuns.map(r => ({ ...r, label: r.eventType || (r.mode === "match" ? "Matched Look" : "Venue Analysis") }))}
+        onSelectRun={reopenPastRun}
+      />
       {/* Mode toggle — analyse my venue alone, or match a reference look to it */}
       <div style={{ display: "flex", gap: 8 }}>
         <button onClick={() => setMode("venue")}

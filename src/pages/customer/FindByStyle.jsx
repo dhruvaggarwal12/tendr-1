@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import HamburgerNav from '../../components/HamburgerNav';
 import AuthModal from '../../components/AuthModal';
+import ToolHistoryPanel from '../../components/ToolHistoryPanel';
+import { useToolRunHistory } from '../../hooks/useToolRunHistory';
 import { useChatOverlay } from '../../context/ChatContext';
 
 const BASE = import.meta.env.VITE_BASE_URL;
@@ -14,6 +16,7 @@ export default function FindByStyle() {
   const inputRef = useRef(null);
   const { token } = useSelector(s => s.auth);
   const { openVendorChat } = useChatOverlay();
+  const { recentRuns, refresh: refreshHistory } = useToolRunHistory('find-by-style', token);
 
   const [preview,  setPreview]  = useState(null);
   const [file,     setFile]     = useState(null);
@@ -80,7 +83,28 @@ export default function FindByStyle() {
       }
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Search failed');
-      setResults({ items: data.results || [], fallback: !!data.fallbackReason });
+      const output = { items: data.results || [], fallback: !!data.fallbackReason };
+      setResults(output);
+      // Best-effort history log — a signed-in customer's past searches show up
+      // under "Recent" next time they open this tool. Never blocks the result
+      // they're already looking at if it fails.
+      if (token) {
+        try {
+          const label = `Photo search · ${output.items.length} match${output.items.length === 1 ? '' : 'es'}`;
+          const startRes = await fetch(`${BASE}/tool-runs/find-by-style/start`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ label }),
+          });
+          const startData = await startRes.json();
+          if (startData?.run?._id) {
+            await fetch(`${BASE}/tool-runs/${startData.run._id}/complete`, {
+              method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ output, label }),
+            });
+            refreshHistory();
+          }
+        } catch {}
+      }
     } catch (e) {
       setError(e.message === 'coming-soon' ? 'coming-soon' : e.message);
     } finally {
@@ -114,6 +138,14 @@ export default function FindByStyle() {
     }
     setQuickViewVendor(null);
     openVendorChat({ _id: vendorData._id, name: vendorData.name, serviceType: vendorData.serviceType });
+  };
+
+  // Reopening a past search is a cheap re-display of its stored output — no
+  // new AI call. The original uploaded photo itself was never persisted
+  // anywhere retrievable, so only the matched-vendor results come back.
+  const reopenPastRun = (run) => {
+    setResults(run.output || null);
+    setError('');
   };
 
   const displayedItems = results?.items?.slice(0, 2) ?? [];
@@ -169,6 +201,10 @@ export default function FindByStyle() {
       </div>
 
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '36px 20px calc(80px + env(safe-area-inset-bottom, 0px))' }}>
+
+        {!preview && !results && (
+          <ToolHistoryPanel recentRuns={recentRuns} onSelectRun={reopenPastRun} />
+        )}
 
         {/* Upload area */}
         {!preview ? (

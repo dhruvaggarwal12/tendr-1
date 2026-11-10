@@ -1,6 +1,11 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate, useNavigationType } from "react-router-dom";
+import { useSelector } from "react-redux";
 import ToolPageShell, { ToolWindow } from "../../components/ToolPageShell";
+import ToolHistoryPanel from "../../components/ToolHistoryPanel";
+import { useToolRunHistory } from "../../hooks/useToolRunHistory";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // Screenshots the given DOM node and saves it as a PDF — same technique used by
 // the occasion planner's "Download Plan" and the Price Estimator's "Download Slip".
@@ -273,6 +278,7 @@ const STATUS_STYLE = {
 export default function EquipmentGenerator() {
   const navigate = useNavigate();
   const navType  = useNavigationType();
+  const { token } = useSelector(s => s.auth);
 
   const [step, setStep]           = useState(1);
   const [eventType, setEventType] = useState("");
@@ -285,6 +291,9 @@ export default function EquipmentGenerator() {
   const [downloadingSlip, setDownloadingSlip] = useState(false);
   const slipRef = useRef(null);
 
+  const { recentRuns, inProgressRun, refresh: refreshHistory } = useToolRunHistory("equipment-generator", token);
+  const [toolRunId, setToolRunId] = useState(null);
+
   const toggleService = (id) =>
     setServices(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
 
@@ -294,7 +303,62 @@ export default function EquipmentGenerator() {
     setItemStatus({});
     setCheckedItems({});
     setStep(4);
+    if (token && toolRunId) {
+      const label = `${EVENT_TYPES.find(e => e.id === eventType)?.label || "Event"} · ${guests || 50} guests`;
+      fetch(`${BASE_URL}/tool-runs/${toolRunId}/complete`, {
+        method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ output: { sectionCount: eq.length, itemCount: eq.reduce((n, s) => n + s.items.length, 0) }, label }),
+      }).then(() => refreshHistory()).catch(() => {});
+    }
   };
+
+  // Restores the 3 input fields from a saved run and regenerates the list the
+  // same way `generate()` would — deterministic from (guests, venueType,
+  // services), so there's no need to also store/restore the equipment array
+  // itself. Works for both "Continue" (in-progress, step may be 1-3) and
+  // reopening a completed entry from "Recent" (lands straight on the result).
+  const resumeRun = (run) => {
+    const i = run?.input || {};
+    setToolRunId(run._id);
+    setEventType(i.eventType || "");
+    setGuests(i.guests || "");
+    setVenueType(i.venueType || "");
+    setServices(Array.isArray(i.services) ? i.services : []);
+    if (typeof i.step === "number" && i.step === 4 && i.guests && i.venueType) {
+      setEquipment(generateEquipment(i.guests || 50, i.venueType, i.services || []));
+      setItemStatus({});
+      setCheckedItems({});
+      setStep(4);
+    } else {
+      setStep(typeof i.step === "number" ? i.step : 1);
+    }
+  };
+
+  // Debounced save of the input fields — starts a ToolRun the first time the
+  // customer leaves step 1, then patches it on every later change, mirroring
+  // progressSync.js's 2s debounce.
+  useEffect(() => {
+    if (!token || step === 1) return;
+    const snapshot = { eventType, guests, venueType, services, step };
+    const label = `${EVENT_TYPES.find(e => e.id === eventType)?.label || "Event"} · ${guests || "?"} guests`;
+    const t = setTimeout(async () => {
+      try {
+        const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+        let id = toolRunId;
+        if (!id) {
+          const res = await fetch(`${BASE_URL}/tool-runs/equipment-generator/start`, { method: "POST", headers, body: JSON.stringify({ input: snapshot, label }) });
+          const data = await res.json();
+          id = data?.run?._id || null;
+          if (id) setToolRunId(id);
+        }
+        if (id) {
+          await fetch(`${BASE_URL}/tool-runs/${id}`, { method: "PATCH", headers, body: JSON.stringify({ input: snapshot, label }) });
+        }
+      } catch {}
+    }, 2000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, eventType, guests, venueType, services, step]);
 
   const setStatus = (itemId, status) =>
     setItemStatus(prev => ({ ...prev, [itemId]: status }));
@@ -394,6 +458,7 @@ export default function EquipmentGenerator() {
         {/* ── Step 1: Event Type ── */}
         {step === 1 && (
           <div>
+            <ToolHistoryPanel recentRuns={recentRuns} inProgressRun={inProgressRun} onResume={resumeRun} onSelectRun={resumeRun} />
             <div style={{ fontSize: 16, fontWeight: 800, color: ink, marginBottom: 16 }}>What type of event?</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 28 }}>
               {EVENT_TYPES.map(e => (
