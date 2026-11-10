@@ -638,7 +638,10 @@ function WebsiteIntro({ onDone }) {
 
   const imageEl = (
     <div className="tin-image-wrap">
-      <img src={data.image} alt="" aria-hidden style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center", display:"block" }} />
+      {/* contain, not cover — these are tall 3:4 illustrations and the
+          container's own ratio is much wider, so cover was cropping real
+          content off the top and bottom instead of just trimming margin. */}
+      <img src={data.image} alt="" aria-hidden style={{ width:"100%", height:"100%", objectFit:"contain", objectPosition:"center", display:"block" }} />
       {/* Logo overlaid directly on the photo's top-left corner — no separate
           header strip above it, so the image runs edge-to-edge from the very
           top of the screen. */}
@@ -722,8 +725,8 @@ function WebsiteIntro({ onDone }) {
       `}</style>
       {isLandscapeTablet ? (
         <>
-          <div style={{ width:"50%", height:"100%", flexShrink:0, overflow:"hidden" }}>
-            <img src={data.image} alt="" aria-hidden style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center", display:"block" }} />
+          <div style={{ width:"50%", height:"100%", flexShrink:0, overflow:"hidden", background:IB }}>
+            <img src={data.image} alt="" aria-hidden style={{ width:"100%", height:"100%", objectFit:"contain", objectPosition:"center", display:"block" }} />
           </div>
           <div style={{ width:"50%", display:"flex", flexDirection:"column", minHeight:0 }}>
             {header}
