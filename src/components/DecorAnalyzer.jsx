@@ -1,5 +1,9 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { useChatOverlay } from "../context/ChatContext";
+import AuthModal from "./AuthModal.jsx";
+import EventDetailsModal from "./EventDetailsModal.jsx";
+import { getOccasionNames, getServicesForOccasion } from "../utils/priceEstimator";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const F = "'Outfit', sans-serif";
@@ -75,6 +79,23 @@ function reorderStylesFor(eventType, insights) {
     .sort((a, b) => b.score - a.score);
 }
 
+// Maps the customer's free-typed event type (e.g. "best friend's bday party")
+// onto one of the Price Estimator's 19 real occasion names, so the Decor line
+// items for that occasion (real researched price ranges, not AI guesses) can
+// be pulled for /decor-photo-match. Case-insensitive, either direction
+// (typed text contains the occasion name, or vice versa for short typed
+// words like "bday"). Returns null when nothing reasonably matches — callers
+// just skip real-catalog grounding in that case, same as having no insights.
+const OCCASION_NAMES = getOccasionNames();
+function matchOccasionName(eventType) {
+  const needle = (eventType || "").trim().toLowerCase();
+  if (!needle) return null;
+  return OCCASION_NAMES.find(name => {
+    const n = name.toLowerCase();
+    return needle.includes(n) || n.includes(needle);
+  }) || null;
+}
+
 function resizeImage(file, maxPx = 1200) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -137,6 +158,9 @@ function ZoneCard({ zone, index }) {
 
 export default function DecorAnalyzer({ onClose, initialEventType = "", compact = false, onAnalysisComplete = null }) {
   const { openOccasionsChat } = useChatOverlay();
+  const { token } = useSelector((s) => s.auth);
+  const [showAuth, setShowAuth] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const fileRef = useRef(null);
   const refFileRef = useRef(null);
 
@@ -147,6 +171,8 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
   const [refImageData, setRefImageData] = useState(null); // { base64, mediaType } — the reference photo, "match" mode only
   const [analysis, setAnalysis] = useState(null);
   const [logId, setLogId] = useState(null); // DecorAnalysisLog _id for this result, for the sent-to-chat outcome signal
+  const [realCatalogItems, setRealCatalogItems] = useState([]); // items /decor-photo-match found in the photo, priced from the real pricingData.json catalog
+  const [realExamples, setRealExamples] = useState([]); // real tagged gallery photos from Tendr decorators, matching the chosen style
   const [eventType, setEventType] = useState(initialEventType);
   const [colorPref, setColorPref] = useState("");
   const [themePref, setThemePref] = useState(""); // DECOR_STYLE_CHIPS id, or "" for none picked
@@ -197,11 +223,49 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
     processFile(e.dataTransfer.files?.[0], target);
   };
 
+  // Best-effort grounding step, run before the main analysis: identifies which
+  // real pricingData.json Decor line items (for the matched occasion) are
+  // visible in the photo, via the already-built /decor-photo-match endpoint,
+  // and resolves each match back to its real ₹ range from the local catalog.
+  // Never blocks or fails the main analysis — any error here just means the
+  // main call falls back to estimating costs itself, same as before.
+  const matchRealCatalog = async () => {
+    const occasion = matchOccasionName(eventType);
+    if (!occasion) return [];
+    const decorCatalog = getServicesForOccasion(occasion).Decor || [];
+    if (!decorCatalog.length) return [];
+    try {
+      const lookPhoto = isMatch ? refImageData : imageData;
+      const res = await fetch(`${BASE_URL}/decor-photo-match`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          image: lookPhoto.base64,
+          mediaType: lookPhoto.mediaType,
+          occasion,
+          catalog: decorCatalog.map(c => ({ service: c.service, spec: c.spec })),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !Array.isArray(data.matches)) return [];
+      return data.matches
+        .map(m => {
+          const cat = decorCatalog.find(c => c.service === m.service);
+          return cat ? { service: m.service, qty: m.qty || 1, why: m.why || "", min: cat.min, max: cat.max, basis: cat.basis } : null;
+        })
+        .filter(Boolean);
+    } catch {
+      return [];
+    }
+  };
+
   const analyse = async () => {
     if (!ready) return;
     setPhase("analyzing");
     setErrMsg("");
     try {
+      const catalogItems = await matchRealCatalog();
+      setRealCatalogItems(catalogItems);
       const res = await fetch(`${BASE_URL}/decor-analyse`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -209,7 +273,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
           image: isMatch ? refImageData.base64 : imageData.base64,
           mediaType: isMatch ? refImageData.mediaType : imageData.mediaType,
           ...(isMatch ? { image2: imageData.base64, mediaType2: imageData.mediaType } : {}),
-          context: { eventType, colorPreference: colorPref, themePreference: DECOR_STYLE_CHIPS.find(c => c.id === themePref)?.label || "", themeId: themePref },
+          context: { eventType, colorPreference: colorPref, themePreference: DECOR_STYLE_CHIPS.find(c => c.id === themePref)?.label || "", themeId: themePref, realCatalogItems: catalogItems },
           mode,
         }),
       });
@@ -223,6 +287,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
       }
       setAnalysis(data.analysis);
       setLogId(data.logId || null);
+      setRealExamples(Array.isArray(data.realExamples) ? data.realExamples : []);
       setPhase("done");
       if (onAnalysisComplete) onAnalysisComplete(data.analysis, preview);
     } catch (e) {
@@ -237,9 +302,18 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
 
   const sendToChat = () => {
     if (!analysis) return;
+    if (!token) { setShowAuth(true); return; }
+    setShowDetails(true);
+  };
+
+  const doSendToChat = (details) => {
     const a = analysis;
     const lines = [
       isMatch ? `🪄 *Look Matched To Your Venue*` : `🎨 *Venue Decor Analysis*`,
+      `Name: ${details.name}`,
+      `Event Date: ${details.date}${details.time ? " at " + details.time : ""}`,
+      details.city ? `Location: ${details.city}` : "",
+      details.guests ? `Guests: ${details.guests}` : "",
       eventType ? `Event: ${eventType}` : "",
       ``,
       `*Space*: ${a.spaceType || "Your venue"} — ${a.style || ""}`,
@@ -250,6 +324,11 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
       isMatch ? `*Where It Goes In Your Space:*` : `*Decoration Zones:*`,
       ...(a.decorZones || []).map(z => `• ${z.zone}: ${z.suggestion}`),
       ``,
+      ...(realCatalogItems.length ? [
+        `*Real Tendr Pricing:*`,
+        ...realCatalogItems.map(i => `• ${i.service}${i.qty > 1 ? ` ×${i.qty}` : ""}: ₹${i.min.toLocaleString("en-IN")}–₹${i.max.toLocaleString("en-IN")} (${i.basis})`),
+        ``,
+      ] : []),
       isMatch ? "Can you help me recreate this look in my own space?" : "Can you help me decorate based on this analysis?",
     ].filter(l => l !== undefined);
     openOccasionsChat(lines.join("\n"));
@@ -259,6 +338,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
     if (logId) {
       fetch(`${BASE_URL}/decor-analyse/${logId}/sent-to-chat`, { method: "PATCH" }).catch(() => {});
     }
+    setShowDetails(false);
     if (onClose) onClose();
   };
 
@@ -266,6 +346,7 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
     setPhase("idle"); setPreview(null); setImageData(null);
     setRefPreview(null); setRefImageData(null);
     setAnalysis(null); setErrMsg(""); setLogId(null);
+    setRealCatalogItems([]); setRealExamples([]);
   };
 
   const toggleSection = (k) => setExpandSection(s => ({ ...s, [k]: !s[k] }));
@@ -590,6 +671,42 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
         </div>
       )}
 
+      {/* Real catalog pricing — items /decor-photo-match actually found in this
+          photo, priced from the real pricingData.json catalog instead of a
+          number the AI invented. Only renders when at least one matched. */}
+      {realCatalogItems.length > 0 && (
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ fontSize: 10.5, fontWeight: 800, color: "#15803d", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10, display: "flex", alignItems: "center", gap: 5 }}>
+            ✓ Verified Tendr Pricing
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {realCatalogItems.map((it, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, background: "rgba(34,197,94,0.05)", border: "1.5px solid rgba(34,197,94,0.18)", borderRadius: 10, padding: "9px 12px" }}>
+                <span style={{ fontSize: 12.5, color: INK, fontWeight: 600 }}>{it.service}{it.qty > 1 ? ` ×${it.qty}` : ""}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#15803d", flexShrink: 0 }}>₹{it.min.toLocaleString("en-IN")}–₹{it.max.toLocaleString("en-IN")}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Real examples — admin-tagged gallery photos from real Tendr decorators
+          matching the chosen style, so "Boho & Rustic" shows actual work, not
+          just an AI description of it. */}
+      {realExamples.length > 0 && (
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ fontSize: 10.5, fontWeight: 800, color: GOLD, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>Real Tendr decorators, this style</div>
+          <div style={{ display: "flex", gap: 8, overflowX: "auto" }}>
+            {realExamples.map((ex, i) => (
+              <div key={i} style={{ flexShrink: 0, width: 120 }}>
+                <img src={ex.imageUrl} alt={ex.caption || ex.vendorName || "Real decor example"} style={{ width: 120, height: 90, objectFit: "cover", borderRadius: 10, display: "block", marginBottom: 4 }} />
+                {ex.vendorName && <div style={{ fontSize: 10.5, color: MUTED, lineHeight: 1.3 }}>{ex.vendorName}</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Decoration zones */}
       {a.decorZones?.length > 0 && (
         <div style={{ marginBottom: 18 }}>
@@ -656,6 +773,19 @@ export default function DecorAnalyzer({ onClose, initialEventType = "", compact 
           New Photo
         </button>
       </div>
+
+      <AuthModal
+        open={showAuth}
+        onClose={() => setShowAuth(false)}
+        onSuccess={() => { setShowAuth(false); setShowDetails(true); }}
+      />
+
+      <EventDetailsModal
+        open={showDetails}
+        onClose={() => setShowDetails(false)}
+        messagePreview={isMatch ? "Look matched to your venue" : "Venue decor analysis"}
+        onSubmit={doSendToChat}
+      />
     </div>
   );
 }
