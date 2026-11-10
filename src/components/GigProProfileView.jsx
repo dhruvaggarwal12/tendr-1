@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { MapPin, Clock, CalendarCheck, Share2, CheckCircle2 } from "lucide-react";
+import { MapPin, Clock, CalendarCheck, Share2, CheckCircle2, Phone, MessageCircle } from "lucide-react";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import { performanceItemNoun } from "../constants/performerCategories";
 
@@ -146,6 +146,18 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
   const [catFilter, setCatFilter] = useState("All");
   const [reviewIdx, setReviewIdx] = useState(0);
   const prefersReducedMotion = useReducedMotion();
+  const [shareCopied, setShareCopied] = useState(false);
+
+  const handleShare = async () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    const title = vendor?.name ? `${vendor.name} on Tendr` : "Check out this performer on Tendr";
+    const text = vendor?.serviceType ? `Book ${vendor.serviceType.toLowerCase()} services from ${vendor.name}` : title;
+    if (navigator.share) {
+      try { await navigator.share({ title, text, url }); } catch {}
+    } else {
+      try { await navigator.clipboard.writeText(url); setShareCopied(true); setTimeout(() => setShareCopied(false), 2000); } catch {}
+    }
+  };
 
   const rawPhotos  = vendor.portfolioPhotos || [];
   const allPhotos  = rawPhotos.map(p => typeof p === "string" ? { url:p, category:"All" } : p);
@@ -248,9 +260,12 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         .gp-name{font-family:'Playfair Display',Georgia,serif;font-size:clamp(3.2rem,4.5vw,5.2rem);font-weight:800;color:${INK};line-height:.88;margin-bottom:20px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;letter-spacing:-0.01em}
         .gp-meta-row{display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap}
         .gp-bio{font-size:16.5px;color:rgba(245,237,216,0.8);line-height:1.85;margin-bottom:28px;max-width:460px;font-weight:400}
-        .gp-ctas{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
-        .gp-btn-book{display:flex;align-items:center;gap:9px;padding:14px 28px;border-radius:100px;background:linear-gradient(135deg,#D4A940 0%,#B07E1A 100%);color:#1A1209;font-size:14.5px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 4px 20px rgba(196,155,48,.22);white-space:nowrap;transition:filter .15s}
+        .gp-ctas{display:flex;flex-direction:column;align-items:stretch;gap:10px;margin-bottom:16px;max-width:360px}
+        .gp-btn-book{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:14px 28px;border-radius:100px;background:linear-gradient(135deg,#D4A940 0%,#B07E1A 100%);color:#1A1209;font-size:14.5px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 4px 20px rgba(196,155,48,.22);white-space:nowrap;transition:filter .15s}
         .gp-btn-book:hover{filter:brightness(1.07)}
+        .gp-cta-row{display:flex;flex-direction:column;gap:8px}
+        .gp-btn-secondary{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px 20px;border-radius:100px;background:rgba(245,237,216,0.06);color:${INK};font-size:13.5px;font-weight:600;border:1px solid ${GOLD_D};cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;box-sizing:border-box;transition:background .15s}
+        .gp-btn-secondary:hover{background:rgba(196,155,48,0.1)}
         .gp-reply-line{display:flex;align-items:center;gap:7px;font-size:12.5px;color:${DIM}}
 
         .gp-v-divider{width:1px;align-self:stretch;background:linear-gradient(to bottom,transparent 5%,rgba(196,155,48,.22) 30%,rgba(196,155,48,.22) 70%,transparent 95%);flex-shrink:0;margin:24px 0}
@@ -361,6 +376,11 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           {/* Opening bracket — editorial accent */}
           <span style={{ display:"block", fontFamily:serif, fontSize:"2.8rem", fontWeight:400, color:GOLD, opacity:0.5, lineHeight:0.7, marginBottom:10 }}>[</span>
 
+          <div style={{ display:"inline-flex", alignItems:"center", gap:7, background: availabilityStatus.available ? "rgba(34,197,94,0.12)" : "rgba(212,169,64,0.14)", color: availabilityStatus.available ? "#16A34A" : "#B07E1A", borderRadius:100, padding:"5px 13px", fontSize:12, fontWeight:700, marginBottom:16, border: `1px solid ${availabilityStatus.available ? "rgba(34,197,94,0.2)" : "rgba(212,169,64,0.3)"}` }}>
+            <span style={{ width:7, height:7, borderRadius:"50%", background: availabilityStatus.available ? "#22C55E" : "#D4A940", display:"inline-block" }}/>
+            {availabilityStatus.label}
+          </div>
+
           <div className="gp-eyebrow">
             Professional {vendor.serviceType || "Performer"}
             {secondaryCategories.length > 0 && ` · also ${secondaryCategories.join(" · ")}`}
@@ -398,6 +418,12 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
             )}
           </div>
 
+          {vendor.tagline && (
+            <p style={{ fontFamily:serif, fontSize:"1.05rem", fontStyle:"italic", color:"#6B4B2A", lineHeight:1.6, marginBottom:20, maxWidth:460 }}>
+              "{vendor.tagline}"
+            </p>
+          )}
+
           {vendor.bio && (
             <p className="gp-bio">
               {vendor.bio.length > 200 ? vendor.bio.slice(0,200)+"…" : vendor.bio}
@@ -405,12 +431,26 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           )}
 
           <div className="gp-ctas">
-            <button className="gp-btn-book" onClick={onChat}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              </svg>
-              Chat to Book
+            <button className="gp-btn-book" onClick={onBook || onChat}>
+              <CalendarCheck size={15} strokeWidth={2}/>
+              Book Now
             </button>
+            <div className="gp-cta-row">
+              <button className="gp-btn-secondary" onClick={onChat}>
+                <MessageCircle size={14} strokeWidth={2}/>
+                Chat
+              </button>
+              {vendor.phoneNumber && (
+                <a className="gp-btn-secondary" href={`tel:${vendor.phoneNumber}`}>
+                  <Phone size={14} strokeWidth={2}/>
+                  Call
+                </a>
+              )}
+              <button className="gp-btn-secondary" onClick={handleShare}>
+                <Share2 size={14} strokeWidth={2}/>
+                {shareCopied ? "Link copied!" : "Share"}
+              </button>
+            </div>
           </div>
 
           <div className="gp-reply-line">
@@ -1115,13 +1155,12 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
       </div>
 
-      {/* Mobile footer */}
+      {/* Mobile footer — one quick action always on screen; the full Book Now
+          / Chat / Call / Share set lives in the hero above. */}
       <div className="gp-mob-footer">
-        <button className="gp-btn-book" onClick={onChat} style={{ flex:1, justifyContent:"center" }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
-          Chat to Book
+        <button className="gp-btn-book" onClick={onBook || onChat} style={{ flex:1, justifyContent:"center" }}>
+          <CalendarCheck size={14} strokeWidth={2}/>
+          Book Now
         </button>
       </div>
     </div>
