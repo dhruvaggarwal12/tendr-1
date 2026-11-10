@@ -252,7 +252,6 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         .gp-photo-gradient{position:absolute;inset:0;background:linear-gradient(to top,rgba(15,8,2,.96) 0%,rgba(15,8,2,.58) 22%,rgba(15,8,2,.22) 44%,rgba(15,8,2,.06) 64%,transparent 80%)}
         .gp-photo-blur-bot{position:absolute;bottom:0;left:0;right:0;height:40%;backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px)}
         .gp-photo-cursive{position:absolute;bottom:48px;right:14px;font-family:'Dancing Script',cursive;font-size:17px;font-weight:500;color:rgba(237,224,197,.72);line-height:1.5;text-align:right;pointer-events:none;transform:rotate(-2deg)}
-        .gp-avail-badge{position:absolute;bottom:14px;left:14px;display:flex;align-items:center;gap:6px;background:rgba(20,13,5,.82);backdrop-filter:blur(8px);border-radius:100px;padding:6px 12px;font-size:11.5px;font-weight:500;color:${INK};white-space:nowrap}
         .gp-green-dot{width:7px;height:7px;border-radius:50%;background:#3CCA6B;flex-shrink:0}
 
         .gp-info{flex:1 1 auto;min-width:320px;max-width:520px;display:flex;flex-direction:column;justify-content:center;padding-left:22px;border-left:2px solid rgba(196,155,48,0.28);position:relative;overflow:hidden}
@@ -314,9 +313,10 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
         @media(max-width:999px){
           .gp-nav{padding:0 24px}
-          .gp-hero{flex-direction:column;align-items:stretch;padding:20px 24px 56px;gap:20px;min-height:auto}
-          .gp-info{flex:1 1 auto;border-left:none;border-top:2px solid rgba(196,155,48,0.28);padding-left:0;padding-top:20px}
-          .gp-photo-card{width:100%;min-height:auto;height:62vw;max-height:420px;align-self:auto}
+          .gp-hero{flex-direction:column-reverse;align-items:stretch;padding:20px 24px 56px;gap:20px;min-height:auto}
+          .gp-info{flex:1 1 auto;border-left:none;border-top:none;padding-left:0;padding-top:4px}
+          .gp-photo-card{width:100%;min-height:auto;height:78vw;max-height:380px;align-self:auto;border-radius:18px}
+          .gp-photo-card img{object-position:center 22%}
           .gp-tabs{padding:12px 24px!important}
           .gp-v-divider,.gp-script-tagline{display:none}
           .gp-content{padding:28px 24px 80px}
@@ -324,6 +324,13 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           .gp-sidebar{position:static;display:none}
           .gp-port-grid{grid-template-columns:repeat(2,1fr)}
           .gp-mob-footer{display:flex!important}
+          /* These two are designed for the desktop side-column layout — a
+             giant disconnected stat number and a photo-corner suggestion
+             chip both read as clutter once stacked into a single mobile
+             column, so they're dropped here rather than reflowed.
+             !important because both set display inline (flex), which an
+             external rule without it can never override. */
+          .gp-stats-col,.gp-suggestion-slip{display:none!important}
         }
         @media(max-width:599px){
           .gp-port-grid{grid-template-columns:1fr}
@@ -459,23 +466,22 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           </div>
         </div>
 
-        {/* Photo card — CENTER */}
+        {/* Photo card — CENTER. The availability badge now lives in the info
+            block above/below (one badge, not two) — see gp-info. */}
         <div className="gp-photo-card" style={{ zIndex:1 }}>
           <img src={portrait} alt={vendor.name}/>
           <div className="gp-photo-gradient"/>
           <div className="gp-photo-blur-bot"/>
           <div className="gp-photo-cursive">Turning Moments<br/>Into Memories</div>
-          <div className="gp-avail-badge">
-            <div className="gp-green-dot" style={!availabilityStatus.available ? { background: "#D4A940" } : undefined}/>
-            {availabilityStatus.label}
-          </div>
         </div>
 
         {/* Vertical divider */}
         <div className="gp-v-divider" style={{ zIndex:1 }}/>
 
-        {/* Stats — RIGHT */}
-        <div style={{ display:"flex", flexDirection:"column", gap:36, flexShrink:0, zIndex:1, minWidth:160, justifyContent:"center", alignItems:"flex-start" }}>
+        {/* Stats — RIGHT (desktop only; reads as disconnected giant numbers once
+            stacked under the photo on mobile, so it's hidden there instead —
+            see .gp-stats-col in the mobile media query below) */}
+        <div className="gp-stats-col" style={{ display:"flex", flexDirection:"column", gap:36, flexShrink:0, zIndex:1, minWidth:160, justifyContent:"center", alignItems:"flex-start" }}>
           {stats.map(s => (
             <div key={s.label}>
               <div style={{ fontFamily:serif, fontSize:"3.8rem", fontWeight:800, color:INK, lineHeight:1, letterSpacing:"-0.02em" }}>{s.val}</div>
@@ -484,8 +490,11 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           ))}
         </div>
 
-        {/* Suggestion slip — discover more performers */}
-        <div style={{
+        {/* Suggestion slip — discover more performers (desktop only; it's
+            positioned for the photo's bottom-right corner, which doesn't
+            exist in the same way once the hero stacks vertically on mobile —
+            see .gp-suggestion-slip in the mobile media query below) */}
+        <div className="gp-suggestion-slip" style={{
           position:"absolute", bottom:18, right:56, zIndex:2,
           display:"flex", alignItems:"center", gap:10,
           background:"rgba(12,7,2,0.9)", backdropFilter:"blur(16px) saturate(1.2)",
