@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { scheduleSyncToServer } from '../utils/progressSync';
 
 const STORAGE_KEY = 'fa_cart';
 
@@ -6,7 +7,10 @@ const load = () => {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
   catch { return []; }
 };
-const save = (items) => localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+const save = (items) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  try { scheduleSyncToServer(localStorage.getItem('tendr_token')); } catch {}
+};
 
 const funActivitiesCartSlice = createSlice({
   name: 'funActivitiesCart',

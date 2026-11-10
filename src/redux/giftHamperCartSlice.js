@@ -1,10 +1,14 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { scheduleSyncToServer } from '../utils/progressSync';
 
 const load = () => {
   try { return JSON.parse(localStorage.getItem('gh_cart') || '[]'); }
   catch { return []; }
 };
-const save = (items) => localStorage.setItem('gh_cart', JSON.stringify(items));
+const save = (items) => {
+  localStorage.setItem('gh_cart', JSON.stringify(items));
+  try { scheduleSyncToServer(localStorage.getItem('tendr_token')); } catch {}
+};
 
 // Inspiration-photo shortlist (sample gallery photos shortlisted for "Talk to Team") —
 // kept separate from `items` above (real purchasable products with price/qty) since a
@@ -14,7 +18,10 @@ const loadPhotos = () => {
   try { return JSON.parse(localStorage.getItem('gh_photo_shortlist') || '[]'); }
   catch { return []; }
 };
-const savePhotos = (photos) => localStorage.setItem('gh_photo_shortlist', JSON.stringify(photos));
+const savePhotos = (photos) => {
+  localStorage.setItem('gh_photo_shortlist', JSON.stringify(photos));
+  try { scheduleSyncToServer(localStorage.getItem('tendr_token')); } catch {}
+};
 
 const giftHamperCartSlice = createSlice({
   name: 'giftHamperCart',

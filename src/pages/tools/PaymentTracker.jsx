@@ -165,6 +165,7 @@ export default function PaymentTracker() {
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    try { const t = localStorage.getItem("tendr_token") || localStorage.getItem("jwt"); if (t) import("../../utils/progressSync").then(m => m.scheduleSyncToServer(t)); } catch {}
   }, [entries]);
 
   const openAdd = () => {

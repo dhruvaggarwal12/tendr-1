@@ -433,6 +433,7 @@ export default function BudgetAllocator() {
       ? new Date(eventDate).getTime() + 24 * 60 * 60 * 1000
       : Date.now() + TTL_7D;
     localStorage.setItem("tendr_budget_v2", JSON.stringify({ eventKey, totalBudget, guestCount, categories, __expiresAt: expiresAt }));
+    try { const t = localStorage.getItem("tendr_token") || localStorage.getItem("jwt"); if (t) import("../../utils/progressSync").then(m => m.scheduleSyncToServer(t)); } catch {}
   }, [eventKey, totalBudget, guestCount, categories, loaded]);
 
   const applyEventType = (key) => {

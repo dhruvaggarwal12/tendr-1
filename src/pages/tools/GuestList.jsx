@@ -142,7 +142,10 @@ export default function GuestList() {
   const [inviteFilter, setInviteFilter]           = useState("all");  // "all"|"yes"|"pending"
   const photoInputRef = useRef(null);
 
-  useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(guests)); }, [guests]);
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(guests));
+    try { const t = localStorage.getItem("tendr_token") || localStorage.getItem("jwt"); if (t) import("../../utils/progressSync").then(m => m.scheduleSyncToServer(t)); } catch {}
+  }, [guests]);
 
   // Broadcasts the live guest count so an occasion plan open in another tab (which
   // links here with a "planned" headcount) can offer to adopt the real number —

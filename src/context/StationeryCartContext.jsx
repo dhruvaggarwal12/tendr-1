@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { syncCartToBackend } from "../utils/cartBookingSync";
+import { scheduleSyncToServer } from "../utils/progressSync";
 
 const CART_KEY = "tendr_stationery_cart";
 
@@ -11,6 +12,7 @@ function loadCart() {
 
 function saveCart(cart) {
   try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch {}
+  try { scheduleSyncToServer(localStorage.getItem('tendr_token')); } catch {}
   window.dispatchEvent(new CustomEvent("tendr:stationery-cart-changed"));
 }
 

@@ -16,6 +16,13 @@
  *   tendr_budget_v2        — 7 days or until event date
  *   tendr:chat_req:*       — 7 days or until event date
  *   tendr:session:discovery — 7 days or until event date
+ *   fa_cart                 — 7 days (Fun Activities cart)
+ *   gh_cart                 — 7 days (Gift Hamper cart)
+ *   gh_photo_shortlist      — 7 days (Gift Hamper photo shortlist)
+ *   tendr_stationery_cart   — 7 days (Stationery cart)
+ *   tendr_guest_list        — until event date
+ *   tendr_guestlist_total_count — until event date
+ *   tendr_payment_tracker   — until event date
  */
 
 import { saveUserProgress, loadUserProgress } from "../apis/userApi";
@@ -120,6 +127,22 @@ export const readProgressSnapshot = () => {
   const rawDiscovery = get("tendr:session:discovery") || {};
   const discoverySession = !isExpired(rawDiscovery) ? rawDiscovery : null;
 
+  // Carts — raw pass-through, same shape the slices/context already read/write.
+  // No per-item expiry stamped here; age is judged against this whole
+  // snapshot's own __savedAt below (see restoreProgressSnapshot's CART_TTL
+  // check) rather than wrapping each cart array individually.
+  const funCart = get("fa_cart") || [];
+  const giftHamperCart = get("gh_cart") || [];
+  const giftHamperPhotoShortlist = get("gh_photo_shortlist") || [];
+  const stationeryCart = get("tendr_stationery_cart") || [];
+
+  // Guest List / Payment Tracker — each is one ongoing project per event, not
+  // repeated runs, so it's carried as a raw pass-through like Timeline/
+  // Checklist above rather than getting a "history" treatment.
+  const guestList = get("tendr_guest_list") || null;
+  const guestListCount = get("tendr_guestlist_total_count") || null;
+  const paymentTracker = get("tendr_payment_tracker") || null;
+
   return {
     savedVendors,
     compareSelected,
@@ -133,6 +156,13 @@ export const readProgressSnapshot = () => {
     budgetProgress,
     chatRequests,
     discoverySession,
+    funCart,
+    giftHamperCart,
+    giftHamperPhotoShortlist,
+    stationeryCart,
+    guestList,
+    guestListCount,
+    paymentTracker,
     __savedAt: Date.now(),
   };
 };
@@ -146,6 +176,9 @@ export const restoreProgressSnapshot = (snapshot) => {
     savedVendors, compareSelected, finalisedVendors, chatDone,
     smartPlan, timelineProgress, timelineForm, checklistProgress, checklistForm,
     budgetProgress, chatRequests, discoverySession,
+    funCart, giftHamperCart, giftHamperPhotoShortlist, stationeryCart,
+    guestList, guestListCount, paymentTracker,
+    __savedAt,
   } = snapshot;
 
   // Saved vendors — restore with per-item __savedAt (use Date.now() if missing)
@@ -227,6 +260,24 @@ export const restoreProgressSnapshot = (snapshot) => {
   if (discoverySession && !isExpired(discoverySession)) {
     if (!get("tendr:session:discovery")) set("tendr:session:discovery", discoverySession);
   }
+
+  // Carts — a cart reappearing on a new device is only useful if it's recent;
+  // a 3-week-stale one showing up unannounced (prices/availability may have
+  // moved on) is more surprising than helpful, so gate on the whole
+  // snapshot's own age rather than carrying one indefinitely. Never clobber
+  // a cart the user is already building on this device.
+  const cartIsFresh = typeof __savedAt === "number" && Date.now() - __savedAt < SEVEN_DAYS;
+  if (cartIsFresh) {
+    if (Array.isArray(funCart) && funCart.length && !get("fa_cart")) set("fa_cart", funCart);
+    if (Array.isArray(giftHamperCart) && giftHamperCart.length && !get("gh_cart")) set("gh_cart", giftHamperCart);
+    if (Array.isArray(giftHamperPhotoShortlist) && giftHamperPhotoShortlist.length && !get("gh_photo_shortlist")) set("gh_photo_shortlist", giftHamperPhotoShortlist);
+    if (Array.isArray(stationeryCart) && stationeryCart.length && !get("tendr_stationery_cart")) set("tendr_stationery_cart", stationeryCart);
+  }
+
+  // Guest List / Payment Tracker
+  if (guestList && !get("tendr_guest_list")) set("tendr_guest_list", guestList);
+  if (guestListCount != null && !get("tendr_guestlist_total_count")) set("tendr_guestlist_total_count", guestListCount);
+  if (paymentTracker && !get("tendr_payment_tracker")) set("tendr_payment_tracker", paymentTracker);
 };
 
 // ─── debounced save to server ────────────────────────────────────────────────
