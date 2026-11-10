@@ -129,9 +129,9 @@ export default function ArtistListingsPage() {
 
         {/* Category tab strip */}
         <div style={{ background: '#fff', borderBottom: '1px solid rgba(196,122,46,0.12)', position: 'sticky', top: 0, zIndex: 50 }}>
-          <div style={{ display: 'flex', gap: 6, padding: '10px 16px', overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 8, padding: '12px 16px', overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', alignItems: 'center' }}>
             <style>{`._cat-scroll::-webkit-scrollbar{display:none}`}</style>
-            <div className="_cat-scroll" style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', flex: 1 }}>
+            <div className="_cat-scroll" style={{ display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none', flex: 1 }}>
               {visibleTabs.map(p => {
                 const isActive = p.type === activeType.type;
                 const pinf = PERFORMER_INFO[p.type] || { color: gold, bg: '#fff' };
@@ -141,17 +141,19 @@ export default function ArtistListingsPage() {
                     onClick={() => navigate(`/artists/${p.type}`)}
                     style={{
                       flexShrink: 0,
-                      display: 'inline-flex', alignItems: 'center', gap: 6,
-                      padding: '7px 14px', borderRadius: 100,
-                      border: `1.5px solid ${isActive ? pinf.color : 'rgba(196,122,46,0.18)'}`,
+                      display: 'inline-flex', alignItems: 'center', gap: 7,
+                      height: 38, padding: '0 16px', borderRadius: 100,
+                      border: `1.5px solid ${isActive ? pinf.color : 'rgba(196,122,46,0.16)'}`,
                       background: isActive ? pinf.bg : '#fff',
-                      color: isActive ? pinf.color : '#9B7450',
-                      fontSize: 12.5, fontWeight: isActive ? 800 : 600,
-                      cursor: 'pointer', fontFamily: font, transition: 'all 0.15s',
+                      color: isActive ? pinf.color : '#6B5440',
+                      fontSize: 13, fontWeight: isActive ? 800 : 600,
+                      letterSpacing: isActive ? '0.01em' : 'normal',
+                      cursor: 'pointer', fontFamily: font, transition: 'all 0.18s',
                       whiteSpace: 'nowrap',
+                      boxShadow: isActive ? `0 3px 10px ${pinf.color}33` : 'none',
                     }}
                   >
-                    <span style={{ fontSize: 14 }}>{p.emoji}</span>
+                    <span style={{ fontSize: 15, lineHeight: 1 }}>{p.emoji}</span>
                     {p.label}
                   </button>
                 );
