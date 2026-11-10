@@ -164,10 +164,6 @@ export default function ArtistListingsPage() {
 
         {/* Header */}
         <div style={{ textAlign: 'center', padding: '28px 24px 8px' }}>
-          <div style={{ fontSize: 28, marginBottom: 6 }}>{activeType.emoji}</div>
-          <h1 style={{ fontSize: 'clamp(1.4rem,4vw,2rem)', fontWeight: 300, fontFamily: serif, color: '#1C0900', margin: '0 0 6px', fontStyle: 'italic' }}>
-            {activeType.label}s for your event
-          </h1>
           {!loading && (
             <div style={{ fontSize: 12, color: '#9B7450', fontWeight: 600 }}>
               {vendors.length} artist{vendors.length !== 1 ? 's' : ''} available{cityFilter ? ` in ${cityFilter}` : ''}
@@ -270,16 +266,16 @@ export default function ArtistListingsPage() {
                 userSelect: 'none',
               }}
             >
-              {/* Photo */}
-              <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', overflow: 'hidden', background: '#1C0A04' }}>
+              {/* Photo — the hero; no text overlaid on top of it anymore, so
+                  the image itself gets the space and a taller, more
+                  portrait-friendly ratio instead of a thin 16:9 strip. */}
+              <div style={{ position: 'relative', width: '100%', aspectRatio: '4/5', overflow: 'hidden', background: '#1C0A04' }}>
                 <img
                   src={photo}
                   alt={vendor?.name || activeType.label}
                   style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
                   onError={e => { e.currentTarget.src = placeholderImg; }}
                 />
-                {/* Gradient overlay at bottom */}
-                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(to top, rgba(28,9,0,0.75), transparent)' }} />
                 {/* Service type badge */}
                 <div style={{ position: 'absolute', top: 14, left: 14, background: info.color, borderRadius: 100, padding: '4px 12px', fontSize: 11, fontWeight: 700, color: '#fff', letterSpacing: '0.05em' }}>
                   {activeType.emoji} {activeType.label}
@@ -293,25 +289,24 @@ export default function ArtistListingsPage() {
                     <span style={{ background: 'linear-gradient(135deg,#C47A2E,#CCAB4A)', borderRadius: 100, padding: '3px 9px', fontSize: 10, fontWeight: 700, color: '#fff' }}>⭐ Top Rated</span>
                   )}
                 </div>
-                {/* Name overlay */}
-                <div style={{ position: 'absolute', bottom: 14, left: 18, right: 18 }}>
-                  <div style={{ fontSize: 'clamp(1.2rem,4vw,1.6rem)', fontWeight: 300, fontFamily: serif, color: '#fff', fontStyle: 'italic', lineHeight: 1.2, textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
-                    {vendor?.name || 'Artist'}
-                  </div>
-                  {vendor?.location && (
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 5, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', borderRadius: 100, padding: '3px 10px 3px 7px', fontSize: 11.5, fontWeight: 700, color: '#fff' }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                      Based in {vendor.location}
-                    </div>
-                  )}
-                  {vendor?.tagline && (
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 4 }}>{vendor.tagline}</div>
-                  )}
-                </div>
               </div>
 
-              {/* Card body */}
-              <div style={{ padding: '20px 22px 22px' }}>
+              {/* Card body — name/location/tagline live here now, below the
+                  photo, instead of overlapping it. */}
+              <div style={{ padding: '18px 22px 22px' }}>
+                <div style={{ fontSize: 'clamp(1.2rem,4vw,1.6rem)', fontWeight: 300, fontFamily: serif, color: '#1C0900', fontStyle: 'italic', lineHeight: 1.2, marginBottom: 4 }}>
+                  {vendor?.name || 'Artist'}
+                </div>
+                {vendor?.location && (
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 6, fontSize: 12, fontWeight: 600, color: '#9B7450' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    Based in {vendor.location}
+                  </div>
+                )}
+                {vendor?.tagline && (
+                  <div style={{ fontSize: 13, color: '#5a3a1a', marginBottom: 14 }}>{vendor.tagline}</div>
+                )}
+
                 {/* Stats row */}
                 <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
                   {rating && (
@@ -340,17 +335,17 @@ export default function ArtistListingsPage() {
                   </p>
                 )}
 
-                {/* CTA buttons */}
-                <div style={{ display: 'flex', gap: 10 }}>
+                {/* CTA buttons — full width, stacked, not side by side */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <button
                     onClick={openBookModal}
-                    style={{ flex: 1, padding: '13px', borderRadius: 14, border: 'none', background: `linear-gradient(135deg,${info.color},${info.color}bb)`, color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: font, boxShadow: `0 4px 16px ${info.color}40`, letterSpacing: '0.01em' }}
+                    style={{ width: '100%', padding: '11px', borderRadius: 14, border: 'none', background: `linear-gradient(135deg,${info.color},${info.color}bb)`, color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: font, boxShadow: `0 4px 16px ${info.color}40`, letterSpacing: '0.01em' }}
                   >
                     🎤 Book Artist
                   </button>
                   <button
                     onClick={() => window.open(`/vendor/${vendor._id}`, '_blank', 'noopener')}
-                    style={{ flexShrink: 0, padding: '13px 16px', borderRadius: 14, border: `1.5px solid rgba(196,122,46,0.25)`, background: '#fff', color: gold, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}
+                    style={{ width: '100%', padding: '11px 16px', borderRadius: 14, border: `1.5px solid rgba(196,122,46,0.25)`, background: '#fff', color: gold, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}
                   >
                     Profile →
                   </button>
