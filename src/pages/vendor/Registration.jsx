@@ -360,7 +360,7 @@ function CoordChipGroup({ options, selected, multi, onToggle, error }) {
           const on = multi ? selected.includes(opt) : selected === opt;
           return (
             <button key={opt} type="button" onClick={() => onToggle(opt)}
-              style={{ padding: "8px 14px", borderRadius: 100, fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
+              style={{ padding: "11px 16px", borderRadius: 100, fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
               {opt}
             </button>
           );
@@ -601,7 +601,7 @@ function CoordinatorForm({ onBack, onSuccess }) {
               <FieldError msg={errors.name} />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14 }}>
               <div>
                 <Label required>Contact no.</Label>
                 <input value={form.phoneNumber} onChange={e => set("phoneNumber", e.target.value)}
@@ -626,7 +626,7 @@ function CoordinatorForm({ onBack, onSuccess }) {
               <FieldError msg={errors.address} />
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14 }}>
               <div>
                 <Label required>Age</Label>
                 <input value={form.age} onChange={e => set("age", e.target.value.replace(/\D/g, ""))}
@@ -806,7 +806,7 @@ function CategoryQuestions({ serviceType, answers, onChange }) {
                 const on = (answers[q.id] || []).includes(opt);
                 return (
                   <button key={opt} type="button" onClick={() => toggleChip(q.id, opt)}
-                    style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
+                    style={{ padding: "11px 16px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
                     {opt}
                   </button>
                 );
@@ -819,7 +819,7 @@ function CategoryQuestions({ serviceType, answers, onChange }) {
                 const on = answers[q.id] === opt;
                 return (
                   <button key={opt} type="button" onClick={() => onChange(q.id, opt)}
-                    style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
+                    style={{ padding: "11px 16px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
                     {opt}
                   </button>
                 );
@@ -1296,7 +1296,7 @@ export default function VendorRegistration() {
             <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>Contact Details</p>
 
             {aInput("name", "Artist / Band Name", true, { placeholder: "e.g. Aarav Vocals or The Harmony Band" })}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14 }}>
               <div>
                 <Label required>Phone</Label>
                 <input value={artistForm.phoneNumber} onChange={e => setArtistForm(p => ({...p, phoneNumber: e.target.value.replace(/\D/,"").slice(0,10)}))}
@@ -1312,12 +1312,12 @@ export default function VendorRegistration() {
                 <FieldError msg={errors.whatsappNumber} />
               </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14 }}>
               {aInput("password", "Password", true, { type: "password", placeholder: "At least 8 characters" })}
               {aInput("confirmPassword", "Confirm Password", true, { type: "password", placeholder: "Re-enter password" })}
             </div>
             <p style={{ fontSize: 11.5, color: muted, margin: "-10px 0 0" }}>You'll use this to sign in to your dashboard once approved.</p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14 }}>
               {aInput("email", "Email", false, { type: "email", placeholder: "you@email.com" })}
               <div>
                 <Label required>City</Label>
@@ -1346,7 +1346,7 @@ export default function VendorRegistration() {
                   return (
                     <button key={c.value} type="button" onClick={() => toggleSecondaryCategory(c.value)}
                       disabled={!on && secondaryCategories.length >= 2}
-                      style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s", opacity: (!on && secondaryCategories.length >= 2) ? 0.4 : 1 }}>
+                      style={{ padding: "11px 16px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s", opacity: (!on && secondaryCategories.length >= 2) ? 0.4 : 1 }}>
                       {c.label}
                     </button>
                   );
@@ -1393,7 +1393,7 @@ export default function VendorRegistration() {
                     const on = genres.includes(g);
                     return (
                       <button key={g} type="button" onClick={() => toggleGenre(g)}
-                        style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
+                        style={{ padding: "11px 16px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
                         {g}
                       </button>
                     );
@@ -1410,7 +1410,7 @@ export default function VendorRegistration() {
                     const on = languages.includes(l);
                     return (
                       <button key={l} type="button" onClick={() => toggleLanguage(l)}
-                        style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
+                        style={{ padding: "11px 16px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
                         {l}
                       </button>
                     );
@@ -1427,7 +1427,7 @@ export default function VendorRegistration() {
                     const on = artistForm.contentRating === r;
                     return (
                       <button key={r} type="button" onClick={() => setArtistForm(p => ({ ...p, contentRating: on ? "" : r }))}
-                        style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
+                        style={{ padding: "11px 16px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
                         {r}
                       </button>
                     );
@@ -1471,7 +1471,7 @@ export default function VendorRegistration() {
                           style={{ height: 42, width: 36, background: "none", border: "1.5px solid #fca5a5", borderRadius: 8, color: "#dc2626", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
                       ) : <div style={{ width: 36 }} />}
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 8 }}>
                       <select value={pkg.unit} onChange={e => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, unit: e.target.value } : x) }))}
                         style={{ ...inputStyle(focused, {}, "", gold, ink), cursor: "pointer" }}>
                         <option value="per event">per event</option>
@@ -1514,7 +1514,7 @@ export default function VendorRegistration() {
                     </div>
                     {/* Price-relevant terms — kept as real fields instead of more
                         freeform text in "What's included" */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 8 }}>
                       <input value={pkg.performerCount} type="number" min="1"
                         onChange={e => setArtRow("packages", i, "performerCount", e.target.value)}
                         placeholder="# performers" style={inputStyle(focused, {}, "", gold, ink)} />
@@ -1594,7 +1594,7 @@ export default function VendorRegistration() {
                       const on = artistForm[field].includes(opt);
                       return (
                         <button key={opt} type="button" onClick={() => toggleArtChip(field, opt)}
-                          style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
+                          style={{ padding: "11px 16px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted, transition: "all 0.15s" }}>
                           {opt}
                         </button>
                       );
@@ -1631,14 +1631,14 @@ export default function VendorRegistration() {
                     const on = artistForm.songRequestPolicy.accepted === val;
                     return (
                       <button key={opt} type="button" onClick={() => setArtistForm(p => ({ ...p, songRequestPolicy: { ...p.songRequestPolicy, accepted: val } }))}
-                        style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted }}>
+                        style={{ padding: "11px 16px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted }}>
                         {opt === 'Yes' ? 'I take requests' : "I don't take requests"}
                       </button>
                     );
                   })}
                 </div>
                 {artistForm.songRequestPolicy.accepted && (
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 8 }}>
                     <input type="number" min="0" value={artistForm.songRequestPolicy.noticeDays}
                       onChange={e => setArtistForm(p => ({ ...p, songRequestPolicy: { ...p.songRequestPolicy, noticeDays: e.target.value } }))}
                       placeholder="Notice period (days)" style={inputStyle(focused, {}, "", gold, ink)} />
@@ -1659,14 +1659,14 @@ export default function VendorRegistration() {
                     const on = artistForm.customMaterialPolicy.offered === val;
                     return (
                       <button key={opt} type="button" onClick={() => setArtistForm(p => ({ ...p, customMaterialPolicy: { ...p.customMaterialPolicy, offered: val } }))}
-                        style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted }}>
+                        style={{ padding: "11px 16px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted }}>
                         {opt === 'Yes' ? 'I offer custom material' : "I don't offer custom material"}
                       </button>
                     );
                   })}
                 </div>
                 {artistForm.customMaterialPolicy.offered && (
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 8 }}>
                     <input value={artistForm.customMaterialPolicy.infoNeeded}
                       onChange={e => setArtistForm(p => ({ ...p, customMaterialPolicy: { ...p.customMaterialPolicy, infoNeeded: e.target.value } }))}
                       placeholder="Info needed — e.g. name, event details" style={inputStyle(focused, {}, "", gold, ink)} />
@@ -1684,7 +1684,7 @@ export default function VendorRegistration() {
               <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "4px 0 4px" }}>Booking Requirements</p>
               <p style={{ fontSize: 12, color: muted, margin: "0 0 10px" }}>What you need from the venue/customer — optional, you can add or edit this later from your dashboard too.</p>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 10 }}>
               <input value={artistForm.requirements.travel} onChange={e => setArtReq("travel", e.target.value)}
                 placeholder="Travel — e.g. Delhi NCR; outstation by arrangement" style={inputStyle(focused, {}, "", gold, ink)} />
               <input type="number" min="0" value={artistForm.requirements.setupTimeMinutes} onChange={e => setArtReq("setupTimeMinutes", e.target.value)}
@@ -1722,7 +1722,7 @@ export default function VendorRegistration() {
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
                   {SCRIPT_SOURCE_OPTIONS.map(opt => (
                     <button key={opt} type="button" onClick={() => setArtReq("scriptSource", artistForm.requirements.scriptSource === opt ? "" : opt)}
-                      style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: artistForm.requirements.scriptSource === opt ? "none" : "1.5px solid #E5D5C0", background: artistForm.requirements.scriptSource === opt ? gold : "#F9F6F1", color: artistForm.requirements.scriptSource === opt ? "#fff" : muted }}>
+                      style={{ padding: "11px 16px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: artistForm.requirements.scriptSource === opt ? "none" : "1.5px solid #E5D5C0", background: artistForm.requirements.scriptSource === opt ? gold : "#F9F6F1", color: artistForm.requirements.scriptSource === opt ? "#fff" : muted }}>
                       {opt}
                     </button>
                   ))}
@@ -1806,7 +1806,7 @@ export default function VendorRegistration() {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
               <div>
                 <Label optional>Notable Clients / Venues <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(up to 8)</span></Label>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -2151,7 +2151,7 @@ export default function VendorRegistration() {
             <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "4px 0 0" }}>Contact Details</p>
 
             {vInput("name", "Your Full Name", true, { placeholder: "Contact person name" })}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14 }}>
               <div>
                 <Label required>Phone</Label>
                 <input name="phoneNumber" value={vendorForm.phoneNumber} onChange={e => { setVendorForm(p => ({...p, phoneNumber: e.target.value.replace(/\D/,"").slice(0,10)})); if (errors.phoneNumber) setErrors(p => ({...p, phoneNumber: ""})); }}
@@ -2171,7 +2171,7 @@ export default function VendorRegistration() {
             {vInput("address", "City / Area you serve", true, { placeholder: "e.g. South Delhi, Noida, Gurgaon" })}
 
             <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "4px 0 0" }}>Dashboard Login</p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14 }}>
               {vInput("password", "Password", true, { type: "password", placeholder: "At least 8 characters" })}
               {vInput("confirmPassword", "Confirm Password", true, { type: "password", placeholder: "Re-enter password" })}
             </div>
