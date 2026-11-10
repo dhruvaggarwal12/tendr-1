@@ -748,66 +748,46 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <>
-      {/* Compact sticky header — progress bar in center when active prop given.
-          Skipped entirely when hideTopBar is set (e.g. the Plan-an-Occasion wizard, which
-          has its own compact breadcrumb/back header and doesn't need the logo/search/hamburger
-          bar competing for space above it). */}
+      {/* Compact sticky header — logo/search/the full menu are Home-only now
+          (Navbar.jsx owns those there); every other page just gets a small
+          back + title bar, relying on the bottom nav for getting around.
+          Skipped entirely when hideTopBar is set (e.g. the Plan-an-Occasion
+          wizard, which has its own compact breadcrumb/back header). */}
       {!hideTopBar && (
       <div style={{
         position: "sticky", top: 0, zIndex: 50,
-        height: 54,
+        height: 44,
         background: "rgba(255,252,245,0.98)",
         backdropFilter: "blur(20px)",
         borderBottom: "1px solid rgba(196,122,46,0.12)",
         boxShadow: "0 2px 10px rgba(139,69,19,0.05)",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0 16px",
+        display: "flex", alignItems: "center", gap: 8,
+        padding: "0 14px",
         fontFamily: font,
       }}>
-        {/* Left: Back button or Logo */}
-        {showBack ? (
-          <button
-            onClick={() => navigate(-1)}
-            style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "4px 6px 4px 0", flexShrink: 0, color: "#2C1A0E" }}
-          >
-            <span style={{ fontSize: 18, lineHeight: 1, color: "#C47A2E" }}>←</span>
-            <span style={{ fontSize: 13, fontWeight: 700, fontFamily: font, color: "#2C1A0E" }}>Back</span>
-          </button>
-        ) : (
-          <div onClick={() => navigate("/")} style={{ cursor: "pointer", flexShrink: 0 }}>
-            <img src={tendrLogo} alt="Tendr" style={{ height: 28, maxWidth: 120, display: "block", objectFit: "contain" }} />
-          </div>
-        )}
-
-        {/* Center: Search bar — tapping opens full-screen overlay */}
         <button
-          onClick={() => setSearchOverlay(true)}
-          style={{ flex: 1, minWidth: 0, margin: "0 6px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "7px 12px", cursor: "pointer", lineHeight: 1 }}
+          onClick={() => navigate(-1)}
+          style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", padding: "4px 2px", flexShrink: 0, color: "#2C1A0E" }}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, display: "block" }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span style={{ fontSize: 12, fontFamily: font, color: "#9B7450", whiteSpace: "nowrap", lineHeight: 1 }}>Search vendors, tools...</span>
+          <span style={{ fontSize: 17, lineHeight: 1, color: "#C47A2E" }}>←</span>
+          <span style={{ fontSize: 13, fontWeight: 700, fontFamily: font, color: "#2C1A0E" }}>Back</span>
         </button>
 
-        {/* Right: Hamburger + optional actions */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-          {/* Hamburger — opens drawer */}
-          <button
-            onClick={() => setDrawerOpen(true)}
-            style={{ width: 34, height: 34, borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.2)", background: "rgba(196,122,46,0.06)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, flexShrink: 0 }}
-          >
-            {[0,1,2].map(i => <div key={i} style={{ width: 13, height: 1.8, borderRadius: 2, background: "#C47A2E" }} />)}
-          </button>
-          {/* Review & Pay button — shows when vendors finalised */}
-          {finalisedCount > 0 && (
-            <button
-              onClick={() => setReviewPopup(true)}
-              style={{ fontSize: 12, fontWeight: 700, padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
-            >
-              Review & Pay ({finalisedCount})
-            </button>
-          )}
+        {title && (
+          <span style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 700, color: "#2C1A0E", textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {title}
+          </span>
+        )}
 
-        </div>
+        {/* Review & Pay button — shows when vendors finalised */}
+        {finalisedCount > 0 && (
+          <button
+            onClick={() => setReviewPopup(true)}
+            style={{ fontSize: 11.5, fontWeight: 700, padding: "5px 10px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0 }}
+          >
+            Review & Pay ({finalisedCount})
+          </button>
+        )}
       </div>
       )}
 
