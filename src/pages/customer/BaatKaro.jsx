@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import SEO from "../../components/SEO";
 import HamburgerNav from "../../components/HamburgerNav";
 import AuthModal from "../../components/AuthModal.jsx";
-import BaatKaroDetailsModal from "../../components/BaatKaroDetailsModal.jsx";
+import EventDetailsModal from "../../components/EventDetailsModal.jsx";
 import { useChatOverlay } from "../../context/ChatContext";
 
 const font = "'Outfit', sans-serif";
@@ -354,7 +354,7 @@ export default function BaatKaro() {
         onSuccess={() => { setShowAuth(false); setShowDetails(true); }}
       />
 
-      <BaatKaroDetailsModal
+      <EventDetailsModal
         open={showDetails}
         onClose={() => setShowDetails(false)}
         submitting={sending}

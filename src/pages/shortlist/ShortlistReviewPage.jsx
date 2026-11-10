@@ -8,6 +8,7 @@ import { setStBooking } from "../../redux/stationeryBookingSlice";
 import { useChatOverlay } from "../../context/ChatContext";
 import { CAT_META } from "./categoryMeta";
 import AuthModal from "../../components/AuthModal";
+import EventDetailsModal from "../../components/EventDetailsModal";
 import { SERVICED_CITIES } from "../../data/indianCities";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -49,6 +50,7 @@ export default function ShortlistReviewPage() {
   const [forms, setForms] = useState({});
   const [sending, setSending] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const [done, setDone] = useState(false);
   const [sendError, setSendError] = useState("");
 
@@ -102,8 +104,13 @@ export default function ShortlistReviewPage() {
     price: itemPrice(c, it) || 0,
   }));
 
-  const sendToChat = async () => {
+  const sendToChat = () => {
     if (!token) { setAuthModalOpen(true); return; }
+    setShowDetails(true);
+  };
+
+  const doSendToChat = async (details) => {
+    setShowDetails(false);
     setSending(true);
     setSendError("");
     const succeeded = [];
@@ -122,7 +129,14 @@ export default function ShortlistReviewPage() {
             message,
             serviceType: "My Order",
             bookingCategory: BOOKING_CATEGORY_MAP[c],
-            eventDetails: { date: f.date || "", city: f.location || "", notes: f.notes || "" },
+            eventDetails: {
+              date: f.date || details.date || "",
+              city: f.location || details.city || "",
+              notes: f.notes || "",
+              name: details.name,
+              time: details.time,
+              guests: details.guests,
+            },
             items: buildItems(c, its),
           }),
         });
@@ -276,7 +290,15 @@ export default function ShortlistReviewPage() {
         </div>
       </div>
 
-      <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} onSuccess={() => { setAuthModalOpen(false); sendToChat(); }} defaultMode="login" />
+      <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} onSuccess={() => { setAuthModalOpen(false); setShowDetails(true); }} defaultMode="login" />
+
+      <EventDetailsModal
+        open={showDetails}
+        onClose={() => setShowDetails(false)}
+        submitting={sending}
+        messagePreview={steps.map(c => CAT_META[c].label).join(", ")}
+        onSubmit={doSendToChat}
+      />
     </div>
   );
 }

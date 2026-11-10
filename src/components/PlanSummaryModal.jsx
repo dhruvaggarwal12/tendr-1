@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { getResumeUrl } from '../utils/planningResume';
+import AuthModal from './AuthModal';
+import EventDetailsModal from './EventDetailsModal';
 
 const F = "'Outfit', sans-serif";
 const GOLD = '#C47A2E';
@@ -269,6 +271,12 @@ export function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, 
   const { token } = useSelector(s => s.auth);
   const [inviteOpen, setInviteOpen] = useState(false);
 
+  // Send to Chat — auth gate, then a centered "confirm your event details" form,
+  // before the existing decor-mockup question and the actual send.
+  const [showAuth, setShowAuth] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [eventInfo, setEventInfo] = useState(null);
+
   // Decor mockup popup state
   const [decorPopup, setDecorPopup] = useState(false);   // "want decor mockup?" question
   const [decorPhoto, setDecorPhoto] = useState(null);    // { file, preview }
@@ -296,12 +304,25 @@ export function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, 
   };
 
   const handleSendToChat = () => {
+    if (!token) { setShowAuth(true); return; }
+    setShowDetails(true);
+  };
+
+  const handleDetailsSubmit = (details) => {
+    setEventInfo(details);
+    setShowDetails(false);
     setDecorPopup(true);
   };
 
   const sendPlanToChat = (extraMsg = '', photoDataUrl = null) => {
     const base = buildPlanMessage(plan);
-    const full = extraMsg ? base + '\n\n' + extraMsg : base;
+    const detailsBlock = eventInfo ? [
+      `Name: ${eventInfo.name}`,
+      `Event Date: ${eventInfo.date}${eventInfo.time ? ' at ' + eventInfo.time : ''}`,
+      eventInfo.city ? `Location: ${eventInfo.city}` : '',
+      eventInfo.guests ? `Guests: ${eventInfo.guests}` : '',
+    ].filter(Boolean).join('\n') : '';
+    const full = [detailsBlock, base, extraMsg].filter(Boolean).join('\n\n');
     document.dispatchEvent(new CustomEvent('tendr:open-chat-with-plan', { detail: { message: full, photo: photoDataUrl } }));
     onClose();
   };
@@ -579,8 +600,16 @@ export function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, 
             )}
             {!hasChat && !plan.chatSent && (
               <button
-                onClick={() => { onClose(); navigate('/my-event'); }}
+                onClick={handleSendToChat}
                 style={{ flex: 1, minWidth: 120, padding: '11px 0', borderRadius: 12, background: GOLD, color: '#fff', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', boxShadow: '0 4px 14px rgba(196,122,46,0.3)' }}
+              >
+                💬 Send to Chat
+              </button>
+            )}
+            {!hasChat && !plan.chatSent && (
+              <button
+                onClick={() => { onClose(); navigate('/my-event'); }}
+                style={{ flex: 1, minWidth: 120, padding: '11px 0', borderRadius: 12, background: 'transparent', color: GOLD, fontSize: 13, fontWeight: 700, border: `1.5px solid ${GOLD}`, cursor: 'pointer' }}
               >
                 Full Event View →
               </button>
@@ -663,6 +692,20 @@ export function PlanSummaryModal({ plan, daysLeft, isDraft, onClose, onDismiss, 
           </div>
         </>
       )}
+
+      <AuthModal
+        open={showAuth}
+        onClose={() => setShowAuth(false)}
+        onSuccess={() => { setShowAuth(false); setShowDetails(true); }}
+      />
+
+      <EventDetailsModal
+        open={showDetails}
+        onClose={() => setShowDetails(false)}
+        messagePreview={eventType ? `${eventType} plan` : 'My Event plan'}
+        onSubmit={handleDetailsSubmit}
+        initial={{ date, city: location, guests }}
+      />
 
       {/* ── Invitation Flyer full-screen overlay ── */}
       {inviteOpen && (

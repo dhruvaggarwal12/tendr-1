@@ -16,17 +16,20 @@ const labelStyle = {
 };
 
 /**
- * Centered "a few quick details" form shown after Send on Baat Karo —
- * gathers name/date/time/city/guests before the message actually goes out.
- * Props: open, onClose, onSubmit({name,date,time,city,guests}), messagePreview, submitting
+ * Centered "a few quick details" form shown before any "Send to Chat" action
+ * actually fires — gathers name/date/time/city/guests first. Shared across
+ * Baat Karo, the Decor Analyser, Shortlist Review and the Plan Summary modal.
+ * Props: open, onClose, onSubmit({name,date,time,city,guests}), messagePreview, submitting,
+ *        initial ({name?,date?,time?,city?,guests?}) — prefills fields already known
+ *        from context (e.g. an existing event plan) instead of starting blank.
  */
-export default function BaatKaroDetailsModal({ open, onClose, onSubmit, messagePreview, submitting }) {
+export default function EventDetailsModal({ open, onClose, onSubmit, messagePreview, submitting, initial }) {
   const user = useSelector((s) => s.auth.user);
-  const [name, setName] = useState(user?.name || "");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [city, setCity] = useState(user?.location || "");
-  const [guests, setGuests] = useState("");
+  const [name, setName] = useState(initial?.name || user?.name || "");
+  const [date, setDate] = useState(initial?.date || "");
+  const [time, setTime] = useState(initial?.time || "");
+  const [city, setCity] = useState(initial?.city || user?.location || "");
+  const [guests, setGuests] = useState(initial?.guests || "");
   const [error, setError] = useState("");
 
   if (!open) return null;
