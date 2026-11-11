@@ -9,6 +9,7 @@ const F = "'Outfit', sans-serif";
 const GOLD = '#C47A2E';
 const INK = '#2C1A0E';
 const CREAM = '#FFFCF5';
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const STATUS_STYLE = {
   'Pending':       { bg: '#FEF9C3', color: '#92400E', dot: '#F59E0B' },
@@ -765,6 +766,34 @@ export function MyEventFloatDesktop() {
     setMinimized(true);
   };
   const reduxFormData = useSelector(s => s.eventPlanning?.formData);
+  const { token } = useSelector(s => s.auth);
+
+  // A customer who's started several planning flows at once — not just the
+  // one local draft — gets a small list to pick from instead of always
+  // jumping into whichever one happens to be in localStorage. Signed-in
+  // only (the backend is the only place that knows about every plan at
+  // once); a signed-out visitor keeps exactly today's single-plan behaviour.
+  const [allPlans, setAllPlans] = useState([]);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  useEffect(() => {
+    if (!token) { setAllPlans([]); return; }
+    let cancelled = false;
+    fetch(`${BASE_URL}/event-plans`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(data => {
+        if (cancelled) return;
+        const qualifying = (data.plans || []).filter(p => {
+          if (!p.date || !['draft', 'submitted', 'in_progress'].includes(p.status)) return false;
+          // Once the event date has passed it's no longer "in planning" — drop it
+          // instead of letting finished/forgotten flows pile up in this list forever.
+          const daysLeft = Math.ceil((new Date(p.date) - Date.now()) / 86400000);
+          return daysLeft >= 0;
+        });
+        setAllPlans(qualifying);
+      })
+      .catch(() => { if (!cancelled) setAllPlans([]); });
+    return () => { cancelled = true; };
+  }, [token]);
 
   const HIDE = ['/login', '/signup', '/otp', '/vendor/register', '/booking/payment'];
   const hidden = HIDE.some(p => window.location.pathname.startsWith(p));
@@ -793,7 +822,10 @@ export function MyEventFloatDesktop() {
   const eventDate = plan.eventDetails?.date || plan.date || '';
   const daysLeft = eventDate ? Math.ceil((new Date(eventDate) - Date.now()) / 86400000) : null;
 
-  const handleClick = () => setModal(isDraft ? 'mini' : 'full');
+  const handleClick = () => {
+    if (token && allPlans.length > 0) { setModal('list'); return; }
+    setModal(isDraft ? 'mini' : 'full');
+  };
   const clipboardIcon = (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
@@ -942,16 +974,68 @@ export function MyEventFloatDesktop() {
         </div>
       )}
 
+      {/* List popup — shown instead of the single mini/full flow when the
+          customer has more than one planning flow going with a date filled
+          in (signed in only — see the GET /event-plans fetch above). */}
+      {modal === 'list' && (
+        <div
+          onClick={() => setModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 9998 }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              position: 'fixed', bottom: 88, right: 24,
+              background: CREAM, borderRadius: 18, padding: '16px 16px 10px',
+              boxShadow: '0 16px 48px rgba(44,26,14,0.22)',
+              fontFamily: F, width: 280,
+              border: '1.5px solid rgba(196,122,46,0.2)',
+              animation: 'myevent-pop 0.22s cubic-bezier(0.34,1.56,0.64,1)',
+              maxHeight: '60vh', overflowY: 'auto',
+            }}
+          >
+            <div style={{ fontSize: 13, fontWeight: 700, color: INK, marginBottom: 10, padding: '0 4px' }}>
+              Your events in planning
+            </div>
+            {allPlans.map((p) => {
+              const pEventType = p.eventDetails?.eventType || p.eventType || 'My Event';
+              const pDaysLeft = p.date ? Math.ceil((new Date(p.date) - Date.now()) / 86400000) : null;
+              return (
+                <button
+                  key={p._id}
+                  onClick={() => { setSelectedPlan(p); setModal('full'); }}
+                  style={{
+                    width: '100%', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 2,
+                    padding: '10px 10px', borderRadius: 12, marginBottom: 6,
+                    background: 'rgba(196,122,46,0.06)', border: '1px solid rgba(196,122,46,0.14)',
+                    cursor: 'pointer', fontFamily: F,
+                  }}
+                >
+                  <span style={{ fontSize: 13, fontWeight: 700, color: INK }}>{pEventType}</span>
+                  <span style={{ fontSize: 11, color: '#9B7450' }}>
+                    {p.date ? new Date(p.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                    {pDaysLeft !== null && pDaysLeft >= 0 ? ` · ${pDaysLeft} day${pDaysLeft !== 1 ? 's' : ''} away` : ''}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Full modal — post-chat state */}
       {modal === 'full' && (
         <PlanSummaryModal
-          plan={plan}
-          daysLeft={daysLeft}
-          isDraft={isDraft}
-          onClose={() => setModal(false)}
+          plan={selectedPlan || plan}
+          daysLeft={selectedPlan ? (selectedPlan.date ? Math.ceil((new Date(selectedPlan.date) - Date.now()) / 86400000) : null) : daysLeft}
+          isDraft={selectedPlan ? false : isDraft}
+          onClose={() => { setModal(false); setSelectedPlan(null); }}
           onDismiss={() => {
-            try { localStorage.removeItem('tendr_smart_plan'); localStorage.removeItem('tendr_ep_session'); } catch {}
-            setPlan(null); setModal(false);
+            if (!selectedPlan) {
+              try { localStorage.removeItem('tendr_smart_plan'); localStorage.removeItem('tendr_ep_session'); } catch {}
+              setPlan(null);
+            }
+            setModal(false); setSelectedPlan(null);
           }}
           navigate={navigate}
         />
