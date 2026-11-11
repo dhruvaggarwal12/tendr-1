@@ -195,7 +195,11 @@ export default function GiftQuiz({ samples, onSelect, onClose }) {
       <div onClick={e => e.stopPropagation()} style={{
         background: cream, borderRadius:24, width:'100%',
         maxWidth: isResult ? 820 : 560,
-        maxHeight:'92vh', overflow:'hidden',
+        // Capped well short of the full viewport (and in dvh, not vh, so a
+        // mobile browser's collapsing address bar can't make it overshoot)
+        // so the card always reads as a centered popup, not a full screen.
+        maxHeight: isResult ? 'min(80dvh, 680px)' : 'min(74dvh, 600px)',
+        overflow:'hidden',
         display:'flex', flexDirection:'column',
         fontFamily:font,
         boxShadow:'0 32px 100px rgba(28,10,4,0.28)',
