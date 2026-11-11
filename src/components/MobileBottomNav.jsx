@@ -217,8 +217,8 @@ function BottomNavInner() {
   const items = [
     { label: "Home",     paths: ["/"],                                onTap: () => navigate("/") },
     { label: "Book Vendors", paths: ["/booking","/plan-event","/listings","/search","/baat-karo"], onTap: () => {
-        setBrowseOpen(false); setProductsOpen(false); setTipsOpen(false);
-        openBookVendors();
+        setProductsOpen(false); setTipsOpen(false);
+        setBrowseOpen(o => !o);
       }},
     { label: "Tools", paths: ["/checklist","/timeline","/budget","/decor"], onTap: () => { setBrowseOpen(false); setTipsOpen(false); setProductsOpen(o => !o); } },
     { label: "Plan an Occasion", paths: [], onTap: () => {
@@ -344,12 +344,35 @@ function BottomNavInner() {
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
               <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(196,122,46,0.25)" }} />
             </div>
-            <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 12px" }}>Browse Vendors</p>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 12px" }}>What would you like to book?</p>
 
-            {/* Register as Vendor — top of sheet for visibility */}
+            {/* Top-level category grid — picking "Vendors" opens the existing
+                browse/build-a-package/get-a-package/baat-karo chooser; the
+                other four go straight to their own flow. */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(104px, 1fr))", gap: 8, marginBottom: 10 }}>
+              {[
+                { icon: ic(<><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></>), label: "Artists", path: "/artists" },
+                { icon: NAV_ICONS["Book Vendors"](true, "#7A5535"), label: "Vendors", action: () => openBookVendors() },
+                { icon: CATEGORIES[4].icon, label: "Gift Hampers", path: "/gift-hampers-cakes" },
+                { icon: CATEGORIES[5].icon, label: "Wedding Stationeries", path: "/stationery" },
+                { icon: ic(<><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></>), label: "Fun Activities", path: "/fun-activities" },
+              ].map(({ icon, label, path, action }) => (
+                <button key={label}
+                  onClick={() => { setBrowseOpen(false); if (action) action(); else navigate(path); }}
+                  style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 6px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.08)", transition: "background 0.15s", position: "relative" }}
+                  onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
+                  onTouchEnd={e => e.currentTarget.style.background = "#fff"}
+                >
+                  <span style={{ color: "#7A5535", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transform: "scale(0.73)" }}>{icon}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.25 }}>{label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Register as Vendor */}
             <button
               onClick={() => { navigate("/vendor/register"); setBrowseOpen(false); }}
-              style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.06)", cursor: "pointer", fontFamily: font, marginBottom: 12, boxShadow: "0 2px 8px rgba(196,122,46,0.08)" }}
+              style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.06)", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.08)" }}
               onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.12)"}
               onTouchEnd={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
             >
@@ -359,33 +382,6 @@ function BottomNavInner() {
                 <div style={{ fontSize: 11, color: "#9B7450", marginTop: 1 }}>List your business on Tendr</div>
               </div>
               <span style={{ marginLeft: "auto", fontSize: 14, color: "#C47A2E" }}>→</span>
-            </button>
-
-            {/* Category grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10, marginBottom: 10 }}>
-              {[
-                ...CATEGORIES,
-                { icon: ic(<><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></>), label: "Live Performances", path: "/artists" },
-                { icon: ic(<><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></>), label: "Fun Activities", path: "/fun-activities" },
-              ].map(({ icon, label, path, soon }) => (
-                <button key={label}
-                  onClick={() => { navigate(path); setBrowseOpen(false); }}
-                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.08)", transition: "background 0.15s", position: "relative" }}
-                  onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
-                  onTouchEnd={e => e.currentTarget.style.background = "#fff"}
-                >
-                  {soon && <span style={{ position: "absolute", top: 6, right: 8, fontSize: 9, fontWeight: 800, color: "#C47A2E", background: "rgba(196,122,46,0.12)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "1px 5px", letterSpacing: "0.04em" }}>SOON</span>}
-                  <span style={{ color: "#7A5535", display: "flex", alignItems: "center", flexShrink: 0 }}>{icon}</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", textAlign: "left", lineHeight: 1.3 }}>{label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* All Vendors full-width button */}
-            <button
-              onClick={() => { navigate("/listings"); setBrowseOpen(false); }}
-              style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
-              Browse All Vendors →
             </button>
           </motion.div>
         </>
