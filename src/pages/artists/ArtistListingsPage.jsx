@@ -163,16 +163,10 @@ export default function ArtistListingsPage() {
         </div>
 
         {/* Header */}
-        <div style={{ textAlign: 'center', padding: '28px 24px 8px' }}>
-          {!loading && (
-            <div style={{ fontSize: 12, color: '#9B7450', fontWeight: 600 }}>
-              {vendors.length} artist{vendors.length !== 1 ? 's' : ''} available{cityFilter ? ` in ${cityFilter}` : ''}
-            </div>
-          )}
-
+        <div style={{ textAlign: 'center', padding: '14px 24px 6px' }}>
           {/* City filter — defaults to every city; without it, customers couldn't tell an
               artist actually serves their area until after booking. */}
-          <div style={{ position: 'relative', display: 'inline-block', marginTop: 12 }}>
+          <div style={{ position: 'relative', display: 'inline-block' }}>
             <button
               onClick={() => setCityDropdownOpen(o => !o)}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 100, border: `1.5px solid ${cityFilter ? info.color : 'rgba(196,122,46,0.25)'}`, background: cityFilter ? info.bg : '#fff', color: cityFilter ? info.color : '#7A5535', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: font }}
@@ -220,7 +214,7 @@ export default function ArtistListingsPage() {
             </button>
           </div>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 12px 0', gap: 12, position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 12px 0', gap: 12, position: 'relative' }}>
 
             {/* Left arrow */}
             <button
@@ -269,7 +263,7 @@ export default function ArtistListingsPage() {
               {/* Photo — the hero; no text overlaid on top of it anymore, so
                   the image itself gets the space and a taller, more
                   portrait-friendly ratio instead of a thin 16:9 strip. */}
-              <div style={{ position: 'relative', width: '100%', aspectRatio: '4/5', overflow: 'hidden', background: '#1C0A04' }}>
+              <div style={{ position: 'relative', width: '100%', aspectRatio: '4/5', maxHeight: '34vh', overflow: 'hidden', background: '#1C0A04' }}>
                 <img
                   src={photo}
                   alt={vendor?.name || activeType.label}
@@ -293,7 +287,7 @@ export default function ArtistListingsPage() {
 
               {/* Card body — name/location/tagline live here now, below the
                   photo, instead of overlapping it. */}
-              <div style={{ padding: '18px 22px 22px' }}>
+              <div style={{ padding: '14px 18px 18px' }}>
                 <div style={{ fontSize: 'clamp(1.2rem,4vw,1.6rem)', fontWeight: 300, fontFamily: serif, color: '#1C0900', fontStyle: 'italic', lineHeight: 1.2, marginBottom: 4 }}>
                   {vendor?.name || 'Artist'}
                 </div>
