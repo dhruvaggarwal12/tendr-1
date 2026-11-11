@@ -184,7 +184,11 @@ export default function ShortlistReviewPage() {
     setDone(true);
   };
 
-  const inp = { width: "100%", padding: "11px 13px", borderRadius: 10, border: "1.5px solid rgba(14,165,233,0.25)", fontFamily: F, fontSize: 14, color: INK, outline: "none", background: "#F0F9FF", boxSizing: "border-box" };
+  // minWidth: 0 matters here — these are flex items in a column flex (the
+  // "Details form" div below), and a native date/select control's own
+  // min-content width can otherwise force it wider than the column and
+  // push it past the screen edge regardless of the width:100% above it.
+  const inp = { width: "100%", minWidth: 0, padding: "11px 13px", borderRadius: 10, border: "1.5px solid rgba(14,165,233,0.25)", fontFamily: F, fontSize: 14, color: INK, outline: "none", background: "#F0F9FF", boxSizing: "border-box" };
   const lbl = { display: "block", fontSize: 12, fontWeight: 700, color: "#0369A1", marginBottom: 5 };
 
   if (done) {
