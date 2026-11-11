@@ -1,9 +1,15 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { scheduleSyncToServer } from '../utils/progressSync';
+import { scheduleSyncToServer, hasEventDatePassed } from '../utils/progressSync';
 
 const STORAGE_KEY = 'fa_cart';
 
+// No time limit while there's no event date yet; once one's set and has
+// passed, the cart clears itself on the next load instead of sticking around.
 const load = () => {
+  if (hasEventDatePassed()) {
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    return [];
+  }
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
   catch { return []; }
 };

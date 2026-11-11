@@ -16,10 +16,11 @@
  *   tendr_budget_v2        — 7 days or until event date
  *   tendr:chat_req:*       — 7 days or until event date
  *   tendr:session:discovery — 7 days or until event date
- *   fa_cart                 — 7 days (Fun Activities cart)
- *   gh_cart                 — 7 days (Gift Hamper cart)
- *   gh_photo_shortlist      — 7 days (Gift Hamper photo shortlist)
- *   tendr_stationery_cart   — 7 days (Stationery cart)
+ *   fa_cart                 — no expiry unless an event date is set, then until that date
+ *   gh_cart                 — no expiry unless an event date is set, then until that date
+ *   gh_photo_shortlist      — no expiry unless an event date is set, then until that date
+ *   tendr_stationery_cart   — no expiry unless an event date is set, then until that date
+ *   tendr_shortlist         — no expiry unless an event date is set, then until that date
  *   tendr_guest_list        — until event date
  *   tendr_guestlist_total_count — until event date
  *   tendr_payment_tracker   — until event date
@@ -48,6 +49,19 @@ const eventExpiry = (fallbackMs = SEVEN_DAYS) => {
   const date = getEventDate();
   if (date) return new Date(date).getTime() + 24 * 60 * 60 * 1000;
   return Date.now() + fallbackMs;
+};
+
+/**
+ * For shortlisting/carts specifically: no time limit at all while the
+ * customer hasn't picked an event date yet (losing a shortlisted vendor or
+ * cart item just because a few days passed would feel like the app threw
+ * away real intent to book) — only once a date is set does it make sense
+ * for that list to go away, a day after the event itself.
+ */
+export const hasEventDatePassed = () => {
+  const date = getEventDate();
+  if (!date) return false;
+  return Date.now() > new Date(date).getTime() + 24 * 60 * 60 * 1000;
 };
 
 const isExpired = (item) => {
@@ -127,14 +141,18 @@ export const readProgressSnapshot = () => {
   const rawDiscovery = get("tendr:session:discovery") || {};
   const discoverySession = !isExpired(rawDiscovery) ? rawDiscovery : null;
 
-  // Carts — raw pass-through, same shape the slices/context already read/write.
-  // No per-item expiry stamped here; age is judged against this whole
-  // snapshot's own __savedAt below (see restoreProgressSnapshot's CART_TTL
-  // check) rather than wrapping each cart array individually.
-  const funCart = get("fa_cart") || [];
-  const giftHamperCart = get("gh_cart") || [];
-  const giftHamperPhotoShortlist = get("gh_photo_shortlist") || [];
-  const stationeryCart = get("tendr_stationery_cart") || [];
+  // Carts + vendor shortlist — raw pass-through, same shape the slices/
+  // context/ShortlistFloat already read/write. No time limit while there's
+  // no event date; once a date is set and has passed, each of these also
+  // self-prunes to empty on its own next load (see hasEventDatePassed()) —
+  // gated here too so a snapshot taken right after the date passes, before
+  // that self-prune has run, never ships stale data to the server.
+  const pastEventDate = hasEventDatePassed();
+  const funCart = pastEventDate ? [] : (get("fa_cart") || []);
+  const giftHamperCart = pastEventDate ? [] : (get("gh_cart") || []);
+  const giftHamperPhotoShortlist = pastEventDate ? [] : (get("gh_photo_shortlist") || []);
+  const stationeryCart = pastEventDate ? [] : (get("tendr_stationery_cart") || []);
+  const vendorShortlist = pastEventDate ? {} : (get("tendr_shortlist") || {});
 
   // Guest List / Payment Tracker — each is one ongoing project per event, not
   // repeated runs, so it's carried as a raw pass-through like Timeline/
@@ -160,6 +178,7 @@ export const readProgressSnapshot = () => {
     giftHamperCart,
     giftHamperPhotoShortlist,
     stationeryCart,
+    vendorShortlist,
     guestList,
     guestListCount,
     paymentTracker,
@@ -176,9 +195,8 @@ export const restoreProgressSnapshot = (snapshot) => {
     savedVendors, compareSelected, finalisedVendors, chatDone,
     smartPlan, timelineProgress, timelineForm, checklistProgress, checklistForm,
     budgetProgress, chatRequests, discoverySession,
-    funCart, giftHamperCart, giftHamperPhotoShortlist, stationeryCart,
+    funCart, giftHamperCart, giftHamperPhotoShortlist, stationeryCart, vendorShortlist,
     guestList, guestListCount, paymentTracker,
-    __savedAt,
   } = snapshot;
 
   // Saved vendors — restore with per-item __savedAt (use Date.now() if missing)
@@ -261,17 +279,25 @@ export const restoreProgressSnapshot = (snapshot) => {
     if (!get("tendr:session:discovery")) set("tendr:session:discovery", discoverySession);
   }
 
-  // Carts — a cart reappearing on a new device is only useful if it's recent;
-  // a 3-week-stale one showing up unannounced (prices/availability may have
-  // moved on) is more surprising than helpful, so gate on the whole
-  // snapshot's own age rather than carrying one indefinitely. Never clobber
-  // a cart the user is already building on this device.
-  const cartIsFresh = typeof __savedAt === "number" && Date.now() - __savedAt < SEVEN_DAYS;
-  if (cartIsFresh) {
+  // Carts + vendor shortlist — no time limit while there's no event date;
+  // once one's set and has passed, don't bring a stale list onto a new
+  // device at all. Never clobber one the customer is already building here.
+  if (!hasEventDatePassed()) {
     if (Array.isArray(funCart) && funCart.length && !get("fa_cart")) set("fa_cart", funCart);
     if (Array.isArray(giftHamperCart) && giftHamperCart.length && !get("gh_cart")) set("gh_cart", giftHamperCart);
     if (Array.isArray(giftHamperPhotoShortlist) && giftHamperPhotoShortlist.length && !get("gh_photo_shortlist")) set("gh_photo_shortlist", giftHamperPhotoShortlist);
     if (Array.isArray(stationeryCart) && stationeryCart.length && !get("tendr_stationery_cart")) set("tendr_stationery_cart", stationeryCart);
+
+    if (vendorShortlist && typeof vendorShortlist === "object" && Object.keys(vendorShortlist).length) {
+      const existing = get("tendr_shortlist") || {};
+      const merged = { ...existing };
+      Object.entries(vendorShortlist).forEach(([serviceType, items]) => {
+        if (!Array.isArray(items)) return;
+        const existingIds = new Set((merged[serviceType] || []).map(v => v._id));
+        merged[serviceType] = [...(merged[serviceType] || []), ...items.filter(v => !existingIds.has(v._id))];
+      });
+      set("tendr_shortlist", merged);
+    }
   }
 
   // Guest List / Payment Tracker

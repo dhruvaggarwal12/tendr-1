@@ -1,7 +1,13 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { scheduleSyncToServer } from '../utils/progressSync';
+import { scheduleSyncToServer, hasEventDatePassed } from '../utils/progressSync';
 
+// No time limit while there's no event date yet; once one's set and has
+// passed, these clear themselves on the next load instead of sticking around.
 const load = () => {
+  if (hasEventDatePassed()) {
+    try { localStorage.removeItem('gh_cart'); } catch {}
+    return [];
+  }
   try { return JSON.parse(localStorage.getItem('gh_cart') || '[]'); }
   catch { return []; }
 };
@@ -15,6 +21,10 @@ const save = (items) => {
 // shortlisted photo has neither. Persisted the same way so it survives page navigation
 // instead of living in page-local useState, and surfaces in the shared shortlist icon.
 const loadPhotos = () => {
+  if (hasEventDatePassed()) {
+    try { localStorage.removeItem('gh_photo_shortlist'); } catch {}
+    return [];
+  }
   try { return JSON.parse(localStorage.getItem('gh_photo_shortlist') || '[]'); }
   catch { return []; }
 };

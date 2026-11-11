@@ -1,12 +1,18 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { syncCartToBackend } from "../utils/cartBookingSync";
-import { scheduleSyncToServer } from "../utils/progressSync";
+import { scheduleSyncToServer, hasEventDatePassed } from "../utils/progressSync";
 
 const CART_KEY = "tendr_stationery_cart";
 
 const StationeryCartContext = createContext(null);
 
+// No time limit while there's no event date yet; once one's set and has
+// passed, the cart clears itself on the next load instead of sticking around.
 function loadCart() {
+  if (hasEventDatePassed()) {
+    try { localStorage.removeItem(CART_KEY); } catch {}
+    return [];
+  }
   try { return JSON.parse(localStorage.getItem(CART_KEY) || "[]"); } catch { return []; }
 }
 

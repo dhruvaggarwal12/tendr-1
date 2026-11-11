@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { confirmSmartPlan } from "../apis/vendorApi";
 import { selectFunCartItems } from "../redux/funActivitiesCartSlice";
 import { selectCartItems as selectGhCartItems } from "../redux/giftHamperCartSlice";
+import { hasEventDatePassed, scheduleSyncToServer } from "../utils/progressSync";
 import AuthModal from "./AuthModal";
 
 const F = "'Outfit', sans-serif";
@@ -12,7 +13,14 @@ const CREAM = "#FFFCF5";
 const SHORTLIST_KEY = "tendr_shortlist";
 
 // ── Shortlist helpers (exported so VendorList_ListingPage can import) ─────────
+// No time limit while the customer hasn't picked an event date yet — once
+// they do, the shortlist stays until that date, then clears on the next
+// read (see hasEventDatePassed in utils/progressSync.js).
 export const getShortlist = () => {
+  if (hasEventDatePassed()) {
+    try { localStorage.removeItem(SHORTLIST_KEY); } catch {}
+    return {};
+  }
   try { return JSON.parse(localStorage.getItem(SHORTLIST_KEY) || "{}"); } catch { return {}; }
 };
 
@@ -31,6 +39,7 @@ export const addToShortlist = (serviceType, vendor) => {
   }
   localStorage.setItem(SHORTLIST_KEY, JSON.stringify(sl));
   window.dispatchEvent(new CustomEvent("tendr:shortlist-update"));
+  try { scheduleSyncToServer(localStorage.getItem("tendr_token")); } catch {}
 };
 
 export const removeFromShortlist = (serviceType, vendorId) => {
@@ -41,6 +50,7 @@ export const removeFromShortlist = (serviceType, vendorId) => {
   }
   localStorage.setItem(SHORTLIST_KEY, JSON.stringify(sl));
   window.dispatchEvent(new CustomEvent("tendr:shortlist-update"));
+  try { scheduleSyncToServer(localStorage.getItem("tendr_token")); } catch {}
 };
 
 export const isInShortlist = (serviceType, vendorId) => {
