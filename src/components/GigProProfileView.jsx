@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { MapPin, Clock, CalendarCheck, Share2, CheckCircle2, Phone, MessageCircle } from "lucide-react";
-import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import { performanceItemNoun } from "../constants/performerCategories";
 
 // ── Tokens ────────────────────────────────────────────────────────────────────
@@ -234,17 +233,6 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700;1,800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&family=Dancing+Script:wght@500;600;700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
 
-        .gp-nav{display:flex;align-items:center;padding:0 56px;height:64px;position:relative;z-index:10}
-        .gp-nav-logo{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:400;letter-spacing:.28em;color:${INK};margin-right:auto;text-decoration:none}
-        .gp-nav-links{display:flex;gap:36px;margin-right:40px}
-        .gp-nav-link{font-size:14px;color:${MUTED};text-decoration:none;font-weight:400;cursor:pointer;transition:color .15s}
-        .gp-nav-link:hover{color:${INK}}
-        .gp-nav-actions{display:flex;align-items:center;gap:18px}
-        .gp-search-btn{background:none;border:none;cursor:pointer;color:${MUTED};display:flex;padding:4px;transition:color .15s}
-        .gp-search-btn:hover{color:${INK}}
-        .gp-plan-btn{padding:10px 22px;border-radius:100px;border:1px solid rgba(196,155,48,.55);background:transparent;color:${GOLD};font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;transition:background .15s}
-        .gp-plan-btn:hover{background:rgba(196,155,48,.1)}
-
         .gp-hero{position:relative;display:flex;align-items:stretch;padding:40px 56px 72px;gap:32px;min-height:640px}
 
         .gp-photo-card{flex-shrink:0;width:420px;align-self:stretch;min-height:580px;border-radius:16px;overflow:hidden;position:relative;box-shadow:0 28px 70px rgba(0,0,0,.55),0 0 0 1px rgba(196,155,48,.1)}
@@ -309,21 +297,22 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         .gp-setlist-row{display:flex;align-items:flex-start;gap:20px;padding:17px 0;border-bottom:1px solid ${GOLD_D}}
         .gp-pkg-card{border-radius:6px;padding:30px 34px;margin-bottom:12px}
 
-        .gp-mob-footer{display:none;position:fixed;bottom:0;left:0;right:0;padding:12px 20px;background:${CSURF};backdrop-filter:blur(16px);border-top:1px solid ${CGOLD_D};gap:10px;z-index:200}
-
         @media(max-width:999px){
-          .gp-nav{padding:0 24px}
           .gp-hero{flex-direction:column-reverse;align-items:stretch;padding:20px 24px 56px;gap:20px;min-height:auto}
           .gp-info{flex:1 1 auto;border-left:none;border-top:none;padding-left:0;padding-top:4px}
           .gp-photo-card{width:100%;min-height:auto;height:78vw;max-height:380px;align-self:auto;border-radius:18px}
           .gp-photo-card img{object-position:center 22%}
           .gp-tabs{padding:12px 24px!important}
+          /* Desktop sizing (clamp up to 5.2rem, 16.5px bio, 1.05rem quote) reads
+             as oversized on a narrow phone column, so mobile gets its own scale. */
+          .gp-name{font-size:clamp(1.9rem,8vw,2.4rem)!important}
+          .gp-bio{font-size:14px!important}
+          .gp-tagline-quote{font-size:0.92rem!important}
           .gp-v-divider,.gp-script-tagline{display:none}
           .gp-content{padding:28px 24px 80px}
           .gp-content-grid{grid-template-columns:1fr;gap:28px}
           .gp-sidebar{position:static;display:none}
           .gp-port-grid{grid-template-columns:repeat(2,1fr)}
-          .gp-mob-footer{display:flex!important}
           /* These two are designed for the desktop side-column layout — a
              giant disconnected stat number and a photo-corner suggestion
              chip both read as clutter once stacked into a single mobile
@@ -337,14 +326,6 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           .gp-port-tile{grid-column:span 1!important}
         }
       `}</style>
-
-      {/* NAV */}
-      <nav className="gp-nav">
-        <img src={tendrLogo} alt="Tendr" style={{ height:32, objectFit:"contain", marginRight:"auto" }}/>
-        <div className="gp-nav-actions">
-          <button className="gp-plan-btn">Plan Your Event</button>
-        </div>
-      </nav>
 
       {/* HERO */}
       <section className="gp-hero">
@@ -426,7 +407,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           </div>
 
           {vendor.tagline && (
-            <p style={{ fontFamily:serif, fontSize:"1.05rem", fontStyle:"italic", color:"#6B4B2A", lineHeight:1.6, marginBottom:20, maxWidth:460 }}>
+            <p className="gp-tagline-quote" style={{ fontFamily:serif, fontSize:"1.05rem", fontStyle:"italic", color:"#6B4B2A", lineHeight:1.6, marginBottom:20, maxWidth:460 }}>
               "{vendor.tagline}"
             </p>
           )}
@@ -1162,15 +1143,6 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         </div>
         )}
 
-      </div>
-
-      {/* Mobile footer — one quick action always on screen; the full Book Now
-          / Chat / Call / Share set lives in the hero above. */}
-      <div className="gp-mob-footer">
-        <button className="gp-btn-book" onClick={onBook || onChat} style={{ flex:1, justifyContent:"center" }}>
-          <CalendarCheck size={14} strokeWidth={2}/>
-          Book Now
-        </button>
       </div>
     </div>
   );
