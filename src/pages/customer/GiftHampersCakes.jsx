@@ -310,7 +310,10 @@ const GiftHampersCakes = () => {
         .gh-hero-left { padding:clamp(36px,5vw,64px) clamp(20px,3.5vw,52px); display:flex; flex-direction:column; justify-content:center; position:relative; z-index:1; overflow:hidden; }
         .gh-hero-left::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 60% at -10% 50%, rgba(196,122,46,0.1) 0%, transparent 65%); pointer-events:none; }
         .gh-hero-visual { display:flex; flex-direction:column; justify-content:center; padding:clamp(28px,4vw,48px) clamp(24px,3.5vw,52px) clamp(28px,4vw,48px) clamp(20px,2.5vw,28px); position:relative; z-index:1; border-left:1px solid rgba(196,122,46,0.14); }
-        .gh-hero-medallion { position:relative; width:84px; height:84px; margin:0 auto 24px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .gh-hero-photo-stack { position:relative; height:132px; margin:0 auto 28px; width:150px; flex-shrink:0; }
+        .gh-hero-photo { position:absolute; width:104px; height:124px; border-radius:12px; object-fit:cover; box-shadow:0 14px 32px rgba(10,4,1,0.45); border:3px solid #FFF8EC; }
+        .gh-hero-photo-0 { left:0; top:4px; transform:rotate(-7deg); z-index:1; }
+        .gh-hero-photo-1 { right:0; top:0; transform:rotate(6deg); z-index:2; }
         .gh-hero-step-v2 { display:flex; align-items:flex-start; gap:14px; position:relative; padding-bottom:20px; cursor:pointer; }
         .gh-hero-step-v2:last-child { padding-bottom:0; }
         .gh-hero-step-v2-line { position:absolute; left:17px; top:36px; bottom:2px; width:1.5px; background:linear-gradient(180deg, rgba(204,171,74,0.4), rgba(204,171,74,0.06)); }
@@ -352,29 +355,24 @@ const GiftHampersCakes = () => {
           .gh-masonry { columns:4 150px; }
         }
         @media(max-width:768px) {
-          .gh-masonry { columns:3 140px; }
+          .gh-masonry { columns:2 160px; }
         }
         @media(max-width:560px) {
           .gh-hero-visual { padding:24px 16px; }
-          .gh-masonry { columns:3 105px; column-gap:7px; }
-          .gh-masonry-card { margin-bottom:7px; }
+          /* 2 columns, not 3 — at 3-up on a phone width each card is too narrow
+             for its category tags, which were getting clipped at the edge. */
+          .gh-masonry { columns:2 150px; column-gap:10px; }
+          .gh-masonry-card { margin-bottom:10px; }
           .gh-island { left:16px !important; right:16px !important; transform:none !important; border-radius:20px !important; animation-name:ghIslandInMobile !important; bottom:calc(61px + env(safe-area-inset-bottom,0px)) !important; }
           .gh-cat-card { flex:0 0 130px; height:165px; }
-          .gh-masonry-card .gh-card-info { padding:7px 8px 8px !important; }
-          .gh-masonry-card .gh-card-tag { font-size:8.5px !important; padding:2px 6px !important; }
-          .gh-masonry-card .gh-card-name { font-size:10.5px !important; }
-          .gh-masonry-card .gh-card-price { font-size:9.5px !important; }
+          .gh-masonry-card .gh-card-info { padding:8px 9px 9px !important; }
+          .gh-masonry-card .gh-card-tag { font-size:9px !important; padding:2px 7px !important; }
+          .gh-masonry-card .gh-card-name { font-size:11px !important; }
+          .gh-masonry-card .gh-card-price { font-size:10px !important; }
         }
       `}</style>
 
-      {/* ── GIFT HAMPERS HEADER BAR ── */}
-      <div style={{ background:"#F5F0E8", display:"flex", alignItems:"center", justifyContent:"center", gap:14, padding:"11px clamp(20px,5vw,48px)" }}>
-        <div style={{ flex:1, height:1, background:"rgba(28,10,4,0.12)" }} />
-        <span style={{ fontSize:10, fontWeight:700, letterSpacing:"0.22em", textTransform:"uppercase", color:"#2C1A0E", fontFamily:font, whiteSpace:"nowrap" }}>Gift Hampers</span>
-        <div style={{ flex:1, height:1, background:"rgba(28,10,4,0.12)" }} />
-      </div>
-
-      {/* ── HERO (text | decorative icon panel) ── */}
+      {/* ── HERO (text | real sample photos) ── */}
       <section className="gh-hero-2col">
         {/* Decorative background — gradient glows + dot texture, no photography */}
         <div className="gh-hero-bg" />
@@ -428,28 +426,22 @@ const GiftHampersCakes = () => {
               Custom orders welcome
             </span>
           </div>
-          {/* Script text */}
-          <div style={{ fontFamily:"'Dancing Script', cursive", fontSize:"clamp(1.1rem,2vw,1.5rem)", color:"rgba(196,164,130,0.38)", marginTop:"auto", paddingTop:28, position:"relative", zIndex:1, lineHeight:1.3 }}>
-            Thoughtful Gifts. Happier People.
-          </div>
         </div>
 
-        {/* Right: decorative icon medallion + redesigned step flow */}
+        {/* Right: real sample photos (not stock/decorative art) + step flow */}
         <div className="gh-hero-visual">
-          {/* Icon medallion — replaces the old hero photo with a soft glowing badge
-              built from the site's own icon set, not stock photography */}
-          <div className="gh-hero-medallion">
-            <div aria-hidden style={{ position:"absolute", inset:-14, borderRadius:"50%", background:"radial-gradient(circle, rgba(196,122,46,0.35) 0%, transparent 70%)", filter:"blur(2px)" }} />
-            <div style={{ position:"relative", width:84, height:84, borderRadius:"50%", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 10px 32px rgba(196,122,46,0.45)" }}>
-              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#1C0A04" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+          {samples.length > 0 ? (
+            <div className="gh-hero-photo-stack">
+              {samples.slice(0, 2).map((s, i) => (
+                <img key={s._id || i} src={s.url} alt={s.name || "Gift hamper"} className={`gh-hero-photo gh-hero-photo-${i}`} loading="lazy" />
+              ))}
             </div>
-            <div aria-hidden style={{ position:"absolute", top:-6, right:-4, width:28, height:28, borderRadius:"50%", background:"#1C0A04", border:"1.5px solid rgba(204,171,74,0.5)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="#CCAB4A" stroke="#CCAB4A"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          ) : (
+            <div className="gh-hero-photo-stack" aria-hidden>
+              <div className="gh-hero-photo gh-hero-photo-0" style={{ background:"linear-gradient(135deg,#3A2515,#2C1A0E)" }} />
+              <div className="gh-hero-photo gh-hero-photo-1" style={{ background:"linear-gradient(135deg,#C47A2E,#8A5A24)" }} />
             </div>
-            <div aria-hidden style={{ position:"absolute", bottom:-4, left:-8, width:24, height:24, borderRadius:"50%", background:"#1C0A04", border:"1.5px solid rgba(204,171,74,0.5)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            </div>
-          </div>
+          )}
 
           <div style={{ textAlign:"center", marginBottom:26 }}>
             <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.15em", textTransform:"uppercase", color:"#CCAB4A", marginBottom:6, fontFamily:font }}>Gift Finder</div>
