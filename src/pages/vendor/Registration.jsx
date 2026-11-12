@@ -212,6 +212,24 @@ function Shell({ children, step, steps, narrow = true, maxWidth, sideTitle, side
           .reg-side  { display: flex !important; }
           .reg-main  { padding: 64px 64px !important; }
         }
+        @media (max-width: 899px) {
+          /* Extra bottom clearance + the iPhone home-indicator safe area, so the
+             Submit button never ends up sitting right at — or under — the edge
+             of the screen/browser chrome. */
+          .reg-main { padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)) !important; }
+          /* The form used to live inside one giant white rounded card floating on
+             the page background, which read as a boxed-in modal rather than a
+             normal mobile page. Flattened onto the page itself on mobile; desktop
+             keeps the card since it sits beside the brand panel there. */
+          .areg-card { background: transparent !important; border: none !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; }
+        }
+        @media (max-width: 480px) {
+          /* These rows (package price/unit, setlist title+note, lineup name+role,
+             milestones, highlights...) use fixed multi-column grids sized for
+             desktop width, which left their placeholder text clipped on a phone
+             screen. Stack to one column instead. */
+          .areg-row { grid-template-columns: 1fr !important; }
+        }
       `}</style>
       <div className="reg-wrap" style={{ display: "block" }}>
 
@@ -586,7 +604,7 @@ function CoordinatorForm({ onBack, onSuccess }) {
           If you enjoy events, people, planning, coordination and taking ownership, apply below.
         </p>
 
-        <div style={{ background: "#fff", borderRadius: 16, padding: "24px 22px", border: "1px solid rgba(28,14,4,0.07)", boxShadow: "0 2px 12px rgba(28,14,4,0.05)" }}>
+        <div className="areg-card" style={{ background: "#fff", borderRadius: 16, padding: "24px 22px", border: "1px solid rgba(28,14,4,0.07)", boxShadow: "0 2px 12px rgba(28,14,4,0.05)" }}>
           {apiError && (
             <div style={{ background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 10, padding: "11px 16px", fontSize: 13, color: "#c0392b", marginBottom: 20 }}>{apiError}</div>
           )}
@@ -1288,7 +1306,7 @@ export default function VendorRegistration() {
           <p style={{ fontSize: 13.5, color: muted, margin: 0 }}>This is what customers see when they browse performers. Be specific — it helps you get booked.</p>
         </div>
 
-        <div style={{ background: "#fff", borderRadius: 16, padding: "24px 22px", border: "1px solid rgba(28,14,4,0.07)", boxShadow: "0 2px 12px rgba(28,14,4,0.05)" }}>
+        <div className="areg-card" style={{ background: "#fff", borderRadius: 16, padding: "24px 22px", border: "1px solid rgba(28,14,4,0.07)", boxShadow: "0 2px 12px rgba(28,14,4,0.05)" }}>
           {apiError && <div style={{ background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 10, padding: "11px 16px", fontSize: 13, color: "#c0392b", marginBottom: 20 }}>{apiError}</div>}
 
           <form onSubmit={handleArtistSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: 18 }}>
@@ -1453,7 +1471,7 @@ export default function VendorRegistration() {
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {artistForm.packages.map((pkg, i) => (
                   <div key={i} style={{ border: "1.5px solid #E5D5C0", borderRadius: 10, padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8, alignItems: "center" }}>
+                    <div className="areg-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8, alignItems: "center" }}>
                       <input
                         value={pkg.name}
                         onChange={e => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, name: e.target.value } : x) }))}
@@ -1471,7 +1489,7 @@ export default function VendorRegistration() {
                           style={{ height: 42, width: 36, background: "none", border: "1.5px solid #fca5a5", borderRadius: 8, color: "#dc2626", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
                       ) : <div style={{ width: 36 }} />}
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 8 }}>
+                    <div className="areg-row" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 8 }}>
                       <select value={pkg.unit} onChange={e => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, unit: e.target.value } : x) }))}
                         style={{ ...inputStyle(focused, {}, "", gold, ink), cursor: "pointer" }}>
                         <option value="per event">per event</option>
@@ -1514,7 +1532,7 @@ export default function VendorRegistration() {
                     </div>
                     {/* Price-relevant terms — kept as real fields instead of more
                         freeform text in "What's included" */}
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 8 }}>
+                    <div className="areg-row" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 8 }}>
                       <input value={pkg.performerCount} type="number" min="1"
                         onChange={e => setArtRow("packages", i, "performerCount", e.target.value)}
                         placeholder="# performers" style={inputStyle(focused, {}, "", gold, ink)} />
@@ -1527,7 +1545,7 @@ export default function VendorRegistration() {
                     </div>
                     <input value={pkg.configuration}
                       onChange={e => setArtRow("packages", i, "configuration", e.target.value)}
-                      placeholder="Configuration — e.g. Solo, Full Band, Stage Show (optional)"
+                      placeholder="Configuration — e.g. Solo, Full Band"
                       style={{ ...inputStyle(focused, {}, "", gold, ink), marginTop: 8 }} />
                     <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
                       <Label optional>Optional add-ons <span style={{ fontSize: 10, fontWeight: 400, color: muted }}>(not included by default)</span></Label>
@@ -1564,7 +1582,7 @@ export default function VendorRegistration() {
                 <Label optional>Meet the Band <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(shown on your profile's About tab)</span></Label>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {artistForm.lineup.map((m, i) => (
-                    <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8 }}>
+                    <div key={i} className="areg-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8 }}>
                       <input value={m.name} onChange={e => setArtRow("lineup", i, "name", e.target.value)}
                         placeholder="Member name" style={inputStyle(focused, {}, "", gold, ink)} />
                       <input value={m.role} onChange={e => setArtRow("lineup", i, "role", e.target.value)}
@@ -1684,9 +1702,9 @@ export default function VendorRegistration() {
               <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "4px 0 4px" }}>Booking Requirements</p>
               <p style={{ fontSize: 12, color: muted, margin: "0 0 10px" }}>What you need from the venue/customer — optional, you can add or edit this later from your dashboard too.</p>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 10 }}>
+            <div className="areg-row" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 10 }}>
               <input value={artistForm.requirements.travel} onChange={e => setArtReq("travel", e.target.value)}
-                placeholder="Travel — e.g. Delhi NCR; outstation by arrangement" style={inputStyle(focused, {}, "", gold, ink)} />
+                placeholder="Travel — e.g. Delhi NCR" style={inputStyle(focused, {}, "", gold, ink)} />
               <input type="number" min="0" value={artistForm.requirements.setupTimeMinutes} onChange={e => setArtReq("setupTimeMinutes", e.target.value)}
                 placeholder="Setup time needed (minutes)" style={inputStyle(focused, {}, "", gold, ink)} />
               <input value={artistForm.requirements.powerRequirement} onChange={e => setArtReq("powerRequirement", e.target.value)}
@@ -1765,7 +1783,7 @@ export default function VendorRegistration() {
               <Label optional>Why People Book You <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(up to 4 — skip now and add later from your dashboard if you'd rather)</span></Label>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {artistForm.highlights.map((h, i) => (
-                  <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8 }}>
+                  <div key={i} className="areg-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8 }}>
                     <input value={h.label} onChange={e => setArtRow("highlights", i, "label", e.target.value)}
                       placeholder="e.g. Reads the room instantly" style={inputStyle(focused, {}, "", gold, ink)} />
                     <input value={h.desc} onChange={e => setArtRow("highlights", i, "desc", e.target.value)}
@@ -1788,7 +1806,7 @@ export default function VendorRegistration() {
               <Label optional>Performance Journey <span style={{ fontSize: 11, fontWeight: 400, color: muted }}>(up to 6 — optional, add anytime from your dashboard)</span></Label>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {artistForm.milestones.map((m, i) => (
-                  <div key={i} style={{ display: "grid", gridTemplateColumns: "90px 1fr auto", gap: 8 }}>
+                  <div key={i} className="areg-row" style={{ display: "grid", gridTemplateColumns: "90px 1fr auto", gap: 8 }}>
                     <input value={m.year} onChange={e => setArtRow("milestones", i, "year", e.target.value)}
                       placeholder="2024" style={inputStyle(focused, {}, "", gold, ink)} />
                     <input value={m.text} onChange={e => setArtRow("milestones", i, "text", e.target.value)}
@@ -1869,7 +1887,7 @@ export default function VendorRegistration() {
               )}
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {artistForm.performanceItems.map((item, i) => (
-                  <div key={i} style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr auto", gap: 8, alignItems: "center" }}>
+                  <div key={i} className="areg-row" style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr auto", gap: 8, alignItems: "center" }}>
                     <input
                       value={item.title} maxLength={80}
                       onChange={e => setArtistForm(p => ({ ...p, performanceItems: p.performanceItems.map((x, j) => j === i ? { ...x, title: e.target.value } : x) }))}
@@ -2116,7 +2134,7 @@ export default function VendorRegistration() {
           <p style={{ fontSize: 13.5, color: muted, margin: 0 }}>We'll reach you on WhatsApp to complete your onboarding.</p>
         </div>
 
-        <div style={{ background: "#fff", borderRadius: 16, padding: "24px 22px", border: "1px solid rgba(28,14,4,0.07)", boxShadow: "0 2px 12px rgba(28,14,4,0.05)" }}>
+        <div className="areg-card" style={{ background: "#fff", borderRadius: 16, padding: "24px 22px", border: "1px solid rgba(28,14,4,0.07)", boxShadow: "0 2px 12px rgba(28,14,4,0.05)" }}>
           {apiError && <div style={{ background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 10, padding: "11px 16px", fontSize: 13, color: "#c0392b", marginBottom: 20 }}>{apiError}</div>}
 
           <form onSubmit={handleVendorSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: 18 }}>
