@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { MapPin, Clock, CalendarCheck, Share2, CheckCircle2, Phone, MessageCircle } from "lucide-react";
-import { performanceItemNoun } from "../constants/performerCategories";
+import { performanceItemNoun, performanceTabName } from "../constants/performerCategories";
 
 // ── Tokens ────────────────────────────────────────────────────────────────────
 const BG      = "#2E1F12";   // warm sienna — lighter, less AI-brown
@@ -210,7 +210,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
   const secondaryCategories = vendor.secondaryCategories || [];
   const availabilityStatus = getAvailabilityStatus(vendor.availability);
 
-  const PERFORMANCE_TAB_LABEL = "Setlist & Performance";
+  const PERFORMANCE_TAB_LABEL = performanceTabName(vendor.serviceType);
   const tabs = ["Portfolio","About",PERFORMANCE_TAB_LABEL,"Packages","Reviews"];
 
   const stats = [
@@ -227,7 +227,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
   ];
 
   return (
-    <div style={{ minHeight:"100vh", background:`linear-gradient(165deg, #3A2515 0%, ${BG} 38%, #261608 100%)`, fontFamily:font, color:INK, overflowX:"hidden" }}>
+    <div className="gp-page" style={{ minHeight:"100vh", background:`linear-gradient(165deg, #3A2515 0%, ${BG} 38%, #261608 100%)`, fontFamily:font, color:INK, overflowX:"hidden" }}>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700;1,800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&family=Dancing+Script:wght@500;600;700&display=swap');
@@ -254,6 +254,20 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         .gp-btn-secondary{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px 20px;border-radius:100px;background:rgba(245,237,216,0.06);color:${INK};font-size:13.5px;font-weight:600;border:1px solid ${GOLD_D};cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;box-sizing:border-box;transition:background .15s}
         .gp-btn-secondary:hover{background:rgba(196,155,48,0.1)}
         .gp-reply-line{display:flex;align-items:center;gap:7px;font-size:12.5px;color:${DIM}}
+
+        /* Mobile hero — hidden on desktop (shown instead of .gp-hero under the
+           999px breakpoint below). Full-bleed photo with a dark-to-transparent
+           scrim; the overlay is pulled up over the photo's bottom edge via a
+           negative margin rather than absolute positioning, so it still grows
+           to fit whatever amount of text a given vendor actually has. */
+        .gp-hero-mobile{display:none}
+        .gp-hero-mobile-photo{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden;background:#1C0A04}
+        .gp-hero-mobile-photo img{width:100%;height:100%;object-fit:cover;object-position:center 18%;display:block}
+        .gp-hero-mobile-scrim{position:absolute;inset:0;background:linear-gradient(to top,rgba(15,8,2,.97) 0%,rgba(15,8,2,.85) 30%,rgba(15,8,2,.5) 55%,rgba(15,8,2,.15) 75%,transparent 92%)}
+        .gp-hero-mobile-overlay{position:relative;margin-top:-180px;padding:0 20px;display:flex;flex-direction:column}
+        .gp-hero-mobile-ctas{display:none}
+        .gp-btn-secondary-light{display:flex;align-items:center;justify-content:center;gap:7px;padding:11px 12px;border-radius:100px;background:#fff;color:${GOLD};font-size:12.5px;font-weight:700;border:1.5px solid rgba(196,122,46,0.25);cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none}
+        .gp-reply-line-light{display:flex;align-items:center;gap:7px;font-size:12px;color:${CMUTED};margin-top:12px}
 
         .gp-v-divider{width:1px;align-self:stretch;background:linear-gradient(to bottom,transparent 5%,rgba(196,155,48,.22) 30%,rgba(196,155,48,.22) 70%,transparent 95%);flex-shrink:0;margin:24px 0}
 
@@ -298,15 +312,20 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
         .gp-pkg-card{border-radius:6px;padding:30px 34px;margin-bottom:12px}
 
         @media(max-width:999px){
-          .gp-hero{flex-direction:column-reverse;align-items:stretch;padding:20px 24px 56px;gap:20px;min-height:auto}
-          .gp-info{flex:1 1 auto;border-left:none;border-top:none;padding-left:0;padding-top:4px}
-          .gp-photo-card{width:100%;min-height:auto;height:78vw;max-height:380px;align-self:auto;border-radius:18px}
-          .gp-photo-card img{object-position:center 22%}
+          /* The old side-by-side dark "stage" hero is desktop-only now — a
+             dedicated mobile hero (full-bleed photo + name faded onto it)
+             renders instead; see .gp-hero-mobile below. */
+          .gp-page{background:${CBG}!important}
+          .gp-hero{display:none}
+          .gp-hero-mobile{display:block}
+          .gp-hero-mobile-ctas{display:block;background:${CBG};padding:14px 20px 20px}
           .gp-tabs{padding:12px 24px!important}
           /* Desktop sizing (clamp up to 5.2rem, 16.5px bio, 1.05rem quote) reads
-             as oversized on a narrow phone column, so mobile gets its own scale. */
-          .gp-name{font-size:clamp(1.9rem,8vw,2.4rem)!important}
-          .gp-bio{font-size:14px!important}
+             as oversized on a narrow phone column, so mobile gets its own scale.
+             .gp-bio's color flips too — on mobile it sits on the plain cream
+             section below the photo now, not the dark desktop info panel. */
+          .gp-name{font-size:clamp(1.9rem,8vw,2.4rem)!important;color:${INK}!important}
+          .gp-bio{font-size:14px!important;color:${CMUTED}!important}
           .gp-tagline-quote{font-size:0.92rem!important}
           .gp-v-divider,.gp-script-tagline{display:none}
           .gp-content{padding:28px 24px 80px}
@@ -497,6 +516,86 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           </button>
         </div>
       </section>
+
+      {/* MOBILE HERO — desktop-only hero above is hidden under 999px (see
+          .gp-hero{display:none} in that media query); this full-bleed-photo
+          version renders in its place, name/info fading onto the photo
+          itself instead of living in a separate panel beside/below it. */}
+      <section className="gp-hero-mobile">
+        <div className="gp-hero-mobile-photo">
+          <img src={portrait} alt={vendor.name}/>
+          <div className="gp-hero-mobile-scrim"/>
+        </div>
+        <div className="gp-hero-mobile-overlay">
+          <div style={{ display:"inline-flex", alignSelf:"flex-start", alignItems:"center", gap:7, background: availabilityStatus.available ? "rgba(34,197,94,0.16)" : "rgba(212,169,64,0.18)", color: availabilityStatus.available ? "#4ADE80" : "#F0C869", borderRadius:100, padding:"5px 13px", fontSize:11.5, fontWeight:700, marginBottom:10, border: `1px solid ${availabilityStatus.available ? "rgba(74,222,128,0.35)" : "rgba(240,200,105,0.35)"}` }}>
+            <span style={{ width:7, height:7, borderRadius:"50%", background: availabilityStatus.available ? "#4ADE80" : "#F0C869", display:"inline-block" }}/>
+            {availabilityStatus.label}
+          </div>
+
+          <h1 className="gp-name" style={{ marginBottom:6 }}>{vendor.name}</h1>
+
+          <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap", fontSize:12.5, color:"rgba(245,237,216,0.85)", marginBottom:8 }}>
+            {(vendor.phoneVerified || vendor.verified) && (
+              <span style={{ color:"#4ADE80", fontWeight:700 }}>✓ Verified</span>
+            )}
+            <span>Professional {vendor.serviceType || "Performer"}</span>
+            {city && (
+              <>
+                <span style={{ opacity:0.5 }}>|</span>
+                <span style={{ display:"inline-flex", alignItems:"center", gap:3 }}><MapPin size={11} strokeWidth={2.5}/>{city}</span>
+              </>
+            )}
+          </div>
+
+          {rating > 0 && (
+            <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:8 }}>
+              <Stars r={rating} sz={13}/>
+              <span style={{ fontSize:13.5, fontWeight:700, color:INK }}>{rating.toFixed(1)}</span>
+              {reviews.length > 0 && <span style={{ fontSize:12, color:"rgba(245,237,216,0.65)" }}>({reviews.length} reviews)</span>}
+            </div>
+          )}
+
+          {vendor.tagline && (
+            <p className="gp-tagline-quote" style={{ fontFamily:serif, fontStyle:"italic", color:"rgba(245,237,216,0.85)", margin:0 }}>
+              "{vendor.tagline}"
+            </p>
+          )}
+        </div>
+      </section>
+
+      <div className="gp-hero-mobile-ctas">
+        {vendor.bio && (
+          <p className="gp-bio" style={{ marginBottom:16 }}>
+            {vendor.bio.length > 200 ? vendor.bio.slice(0,200)+"…" : vendor.bio}
+          </p>
+        )}
+        <div className="gp-ctas" style={{ maxWidth:"none" }}>
+          <button className="gp-btn-book" onClick={onBook || onChat}>
+            <CalendarCheck size={15} strokeWidth={2}/>
+            Book Now
+          </button>
+          <div className="gp-cta-row">
+            <button className="gp-btn-secondary-light" onClick={onChat}>
+              <MessageCircle size={14} strokeWidth={2}/>
+              Chat
+            </button>
+            {vendor.phoneNumber && (
+              <a className="gp-btn-secondary-light" href={`tel:${vendor.phoneNumber}`}>
+                <Phone size={14} strokeWidth={2}/>
+                Call
+              </a>
+            )}
+            <button className="gp-btn-secondary-light" onClick={handleShare}>
+              <Share2 size={14} strokeWidth={2}/>
+              {shareCopied ? "Link copied!" : "Share"}
+            </button>
+          </div>
+        </div>
+        <div className="gp-reply-line-light">
+          <div className="gp-green-dot"/>
+          Typically replies in &lt; 2 hrs
+        </div>
+      </div>
 
       {/* TABS */}
       <div className="gp-tabs">
