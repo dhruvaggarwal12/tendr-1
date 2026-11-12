@@ -90,6 +90,25 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    // Personal/Professional account switching (src/utils/accountSwitch.js). The
+    // personal consumer session is always kept in tendr_personal_*, separate from
+    // whichever identity is currently "active" (tendr_token/tendr_user) — these two
+    // actions swap what's active without disturbing that saved personal session.
+    activateProfessionalAccount: (state, action) => {
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+      localStorage.setItem('tendr_token', action.payload.token);
+      localStorage.setItem('tendr_user', JSON.stringify(action.payload.user));
+    },
+    restorePersonalAccount: (state) => {
+      const token = localStorage.getItem('tendr_personal_token');
+      const userRaw = localStorage.getItem('tendr_personal_user');
+      if (!token || !userRaw) return;
+      state.token = token;
+      state.user = JSON.parse(userRaw);
+      localStorage.setItem('tendr_token', token);
+      localStorage.setItem('tendr_user', userRaw);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -119,6 +138,18 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         localStorage.setItem('tendr_token', action.payload.token);
         localStorage.setItem('tendr_user', JSON.stringify(action.payload.consumer));
+        // Vendor/coordinator logins are also funnelled through this same
+        // "auth/login/fulfilled" action type (Auth.jsx dispatches it directly, not via
+        // the login() thunk, for those two) — tagged with payload.consumer.role so this
+        // reducer can tell them apart. Only a genuine personal-account login gets
+        // mirrored into the separate tendr_personal_* slot, which is what lets the
+        // Personal/Professional switch (see accountSwitch.js) restore the right
+        // session when switching back from a vendor/coordinator dashboard, instead of
+        // that personal session being gone until a fresh re-login.
+        if (!action.payload.consumer?.role) {
+          localStorage.setItem('tendr_personal_token', action.payload.token);
+          localStorage.setItem('tendr_personal_user', JSON.stringify(action.payload.consumer));
+        }
         // Redirect back to wherever the user was before being gated
         const returnTo = sessionStorage.getItem('auth_return');
         if (returnTo) {
@@ -138,6 +169,8 @@ const authSlice = createSlice({
         state.profile = null;
         localStorage.removeItem('tendr_token');
         localStorage.removeItem('tendr_user');
+        localStorage.removeItem('tendr_personal_token');
+        localStorage.removeItem('tendr_personal_user');
         // Clear form/session data but keep vendor selections in localStorage
         // (they're user-scoped so they'll reload on next login)
         sessionStorage.removeItem('tendr_formData');
@@ -156,6 +189,8 @@ const authSlice = createSlice({
           state.user = action.payload.consumer;
           localStorage.setItem('tendr_token', action.payload.token);
           localStorage.setItem('tendr_user', JSON.stringify(action.payload.consumer));
+          localStorage.setItem('tendr_personal_token', action.payload.token);
+          localStorage.setItem('tendr_personal_user', JSON.stringify(action.payload.consumer));
         }
       })
       .addCase(verifyOtpAction.rejected, (state, action) => {
@@ -189,7 +224,7 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError } = authSlice.actions;
+export const { clearError, activateProfessionalAccount, restorePersonalAccount } = authSlice.actions;
 export default authSlice.reducer;
 
 // Call this from any component to handle 401 — clears session so user must sign up again

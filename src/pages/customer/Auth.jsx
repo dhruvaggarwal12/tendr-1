@@ -209,11 +209,16 @@ const Auth = () => {
   const [localLoading, setLocalLoading] = useState(false);
   const [localError, setLocalError] = useState("");
   const [formData, setFormData] = useState({ name: "", email: "", password: "", phoneNumber: "", location: "", companyName: "", gstNumber: "", businessName: "", serviceType: "" });
-  // Signup is one plain form for everyone now — no "Who are you?" role picker.
-  // Vendors/coordinators/corporate accounts have their own dedicated, self-
-  // contained signup pages (reached directly, e.g. "List Your Service") rather
-  // than branching from here, so accountType is always "personal" on this page.
+  // accountType (personal vs company billing) stays fixed — corporate accounts have
+  // their own dedicated sign-in at /corporate/login, not a picker on this page.
   const accountType = "personal";
+  // professionalType is the "For personal use / Register as vendor / Event coordinator"
+  // choice shown on signup only (not login). Everyone gets the same simple account either
+  // way — picking vendor/coordinator just marks the new account as having a Professional
+  // side still to complete, surfaced via the Profile menu's Personal/Professional split
+  // (see src/pages/customer/ProfessionalAccount.jsx) rather than asking for business/
+  // category details here.
+  const [professionalType, setProfessionalType] = useState(null); // null | "vendor" | "coordinator"
   const [loginType, setLoginType] = useState("customer"); // "customer" | "vendor" | "coordinator"
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -251,12 +256,6 @@ const Auth = () => {
     if (accountType === "company" && !formData.companyName.trim()) {
       setLocalError("Company name is required"); return;
     }
-    if (accountType === "vendor" && !formData.businessName.trim()) {
-      setLocalError("Business name is required"); return;
-    }
-    if (accountType === "vendor" && !formData.serviceType) {
-      setLocalError("Please select your service category"); return;
-    }
     setLocalLoading(true);
     setLocalError("");
     try {
@@ -273,8 +272,7 @@ const Auth = () => {
           accountType,
           companyName: accountType === "company" ? formData.companyName.trim() : "",
           gstNumber:   accountType === "company" ? formData.gstNumber.trim() : "",
-          businessName: accountType === "vendor" ? formData.businessName.trim() : "",
-          serviceType:  accountType === "vendor" ? formData.serviceType : "",
+          professionalType,
         }),
         credentials: "include",
       });
@@ -290,8 +288,11 @@ const Auth = () => {
       // Store token + user in Redux (same as login)
       dispatch({ type: "auth/login/fulfilled", payload: data });
       if (data.consumer?.isAdmin) { navigate("/AdminDashboard"); return; }
-      if (accountType === "vendor") { navigate("/vendor/registration?flow=vendor"); return; }
       if (accountType === "company") { navigate("/dashboard"); return; }
+      if (professionalType === "vendor" || professionalType === "coordinator") {
+        navigate("/account/professional");
+        return;
+      }
       syncCartToBackend(data.token);
       // Extend discovery session TTL to event date on signup
       try {
@@ -570,6 +571,38 @@ const Auth = () => {
 
           {isSignup ? (
             <form onSubmit={handleSignupSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+              <div>
+                <label style={labelStyle}>I'm signing up to...</label>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {[
+                    { type: null,            label: "Plan an event" },
+                    { type: "vendor",        label: "Register as vendor" },
+                    { type: "coordinator",   label: "Event coordinator" },
+                  ].map(({ type, label }) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => setProfessionalType(type)}
+                      disabled={isBusy}
+                      style={{
+                        flex: 1, padding: "9px 4px", borderRadius: 10, cursor: "pointer", fontFamily: font,
+                        fontSize: 12, fontWeight: 700, transition: "all 0.15s",
+                        border: professionalType === type ? "2px solid #C47A2E" : "1.5px solid rgba(139,69,19,0.18)",
+                        background: professionalType === type ? "rgba(196,122,46,0.07)" : "#fff",
+                        color: professionalType === type ? "#C47A2E" : "#9B7450",
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {professionalType && (
+                  <p style={{ fontSize: 11.5, color: "#9B7450", margin: "7px 0 0", fontFamily: font, lineHeight: 1.5 }}>
+                    You'll get a normal Tendr account now — finish your {professionalType === "vendor" ? "vendor" : "coordinator"} registration anytime from your profile.
+                  </p>
+                )}
+              </div>
 
               <div>
                 <label style={labelStyle}>Full Name</label>

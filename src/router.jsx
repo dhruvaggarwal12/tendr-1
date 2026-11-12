@@ -259,6 +259,7 @@ const CorporateSignup     = lazy(() => import("./pages/corporate/SignUp.jsx"));
 const CorporateBooking    = lazy(() => import("./pages/corporate/Booking"));
 const CorporateDashboard  = lazy(() => import('./pages/corporate/Dashboard.jsx'));
 const UserDashboard       = lazy(() => import("./pages/customer/Dashboard"));
+const ProfessionalAccount = lazy(() => import("./pages/customer/ProfessionalAccount"));
 // CustomerChatList = eagerly loaded above (not lazy — must not show blank Suspense fallback)
 const Chat                = lazy(() => import('./pages/customer/Chat'));
 const ChooseBooking       = lazy(() => import("./pages/customer/ChooseBooking"));
@@ -440,6 +441,11 @@ const router = createBrowserRouter([
   {
     path: '/dashboard',
     element: <UserDashboard />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: '/account/professional',
+    element: <ProfessionalAccount />,
     errorElement: <ErrorPage />,
   },
   {

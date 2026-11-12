@@ -36,6 +36,7 @@ import introExperience from "../../assets/intro/tendr-intro-03-experience.jpg";
 import { FaWhatsapp } from "react-icons/fa";
 import Navbar from "../../components/Navbar.jsx";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
+import ReferEarnPopup from "../../components/ReferEarnPopup";
 import { useSelector, useDispatch } from "react-redux";
 import { useBookVendors } from "../../context/BookVendorsContext";
 import { setBookingType } from "../../redux/eventPlanningSlice";
@@ -854,6 +855,7 @@ const Home = () => {
     try { return !localStorage.getItem("tendr_intro_seen"); } catch { return true; }
   });
   const [homeTourActive, setHomeTourActive] = useState(false);
+  const [earnPopupOpen, setEarnPopupOpen] = useState(false);
   const [searchParams] = useSearchParams();
   useEffect(() => {
     const occ = searchParams.get("occasion");
@@ -1225,6 +1227,25 @@ const Home = () => {
         <BasicSpeedDial />
       </div>
       <SelectedVendorsFloat />
+
+      {/* Refer & Earn — persistent floating entry point + popup (tour's last step targets this) */}
+      <button
+        onClick={() => setEarnPopupOpen(true)}
+        data-tour="earn"
+        aria-label="Refer and earn"
+        title="Refer & Earn"
+        style={{
+          position: "fixed", left: 14, bottom: "calc(var(--mobile-nav-clearance, 16px) + 10px)",
+          zIndex: 99989, width: 52, height: 52, borderRadius: "50%",
+          background: "linear-gradient(135deg,#C47A2E,#CCAB4A)",
+          border: "none", boxShadow: "0 6px 20px rgba(196,122,46,0.45)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 22, cursor: "pointer",
+        }}
+      >
+        🎁
+      </button>
+      {earnPopupOpen && <ReferEarnPopup onClose={() => setEarnPopupOpen(false)} />}
 
       {/* Header / Navbar */}
       <nav

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { FaBars, FaTimes, FaChevronDown, FaWhatsapp, FaSearch, FaInstagram, FaFacebookF } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../redux/authSlice";
+import { logout, restorePersonalAccount } from "../redux/authSlice";
 import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFiltersSlice";
 import { setBookingType } from "../redux/eventPlanningSlice";
 import { useChatOverlay } from "../context/ChatContext";
@@ -156,6 +156,12 @@ const Navbar = ({
   const { openPriceEstimator } = usePriceEstimator();
   const { resetAllTours } = useTour() || {};
   const { user, token } = useSelector((state) => state.auth);
+  // Dual-identity account (picked vendor/coordinator at signup, or currently
+  // viewing the professional side) — show Personal/Professional instead of a
+  // single Dashboard button.
+  const hasDualIdentity = !!user?.professional?.type || (() => {
+    try { return !!localStorage.getItem("tendr_personal_token"); } catch { return false; }
+  })();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef(null);
   const compareSelected = useSelector((s) => s.listingFilters.compareSelected || []);
@@ -755,11 +761,11 @@ const Navbar = ({
                                 onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.08)")}
                                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                               >Professional Dashboard</button>
-                              <button onClick={() => { navigate("/"); setShowProfileMenu(false); }}
+                              <button onClick={() => { dispatch(restorePersonalAccount()); navigate("/dashboard"); setShowProfileMenu(false); }}
                                 style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#3B2F2F", cursor: "pointer", fontFamily: font }}
                                 onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
                                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                              >Normal Dashboard</button>
+                              >Personal</button>
                             </>
                           ) : user?.serviceType || user?.role === "vendor" ? (
                             <>
@@ -771,11 +777,24 @@ const Navbar = ({
                                 onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.08)")}
                                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                               >Professional Dashboard</button>
-                              <button onClick={() => { navigate("/"); setShowProfileMenu(false); }}
+                              <button onClick={() => { dispatch(restorePersonalAccount()); navigate("/dashboard"); setShowProfileMenu(false); }}
                                 style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#3B2F2F", cursor: "pointer", fontFamily: font }}
                                 onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
                                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                              >Normal Dashboard</button>
+                              >Personal</button>
+                            </>
+                          ) : user?.professional?.type ? (
+                            <>
+                              <button onClick={() => { navigate("/dashboard"); setShowProfileMenu(false); }}
+                                style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#3B2F2F", cursor: "pointer", fontFamily: font }}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
+                                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                              >Personal</button>
+                              <button onClick={() => { navigate("/account/professional"); setShowProfileMenu(false); }}
+                                style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 600, color: "#C47A2E", cursor: "pointer", fontFamily: font }}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.08)")}
+                                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                              >Professional</button>
                             </>
                           ) : (
                             <button onClick={() => { navigate("/dashboard"); setShowProfileMenu(false); }}
@@ -1005,19 +1024,43 @@ const Navbar = ({
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{user.name}</div>
                   {user.email && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</div>}
                 </div>
-                <button onClick={() => {
-                  setMenuOpen(false);
-                  if (user?.isAdmin) { navigate("/AdminDashboard"); return; }
-                  if (user?.role === "coordinator") { navigate("/coordinator/dashboard"); return; }
-                  if (user?.serviceType || user?.role === "vendor") {
-                    navigate("/vendor/dashboard");
-                    return;
-                  }
-                  navigate("/dashboard");
-                }}
-                  style={{ flexShrink: 0, padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.12)", color: "#CCAB4A", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                  {user?.role === "coordinator" || user?.serviceType || user?.role === "vendor" ? "Pro Dashboard" : "Dashboard"}
-                </button>
+                {hasDualIdentity && !user?.isAdmin ? (
+                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                    <button onClick={() => {
+                      setMenuOpen(false);
+                      if (user?.role === "coordinator" || user?.serviceType || user?.role === "vendor") {
+                        dispatch(restorePersonalAccount());
+                      }
+                      navigate("/dashboard");
+                    }}
+                      style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.12)", color: "#CCAB4A", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                      Personal
+                    </button>
+                    <button onClick={() => {
+                      setMenuOpen(false);
+                      if (user?.role === "coordinator") { navigate("/coordinator/dashboard"); return; }
+                      if (user?.serviceType || user?.role === "vendor") { navigate("/vendor/dashboard"); return; }
+                      navigate("/account/professional");
+                    }}
+                      style={{ padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.12)", color: "#CCAB4A", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                      Professional
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={() => {
+                    setMenuOpen(false);
+                    if (user?.isAdmin) { navigate("/AdminDashboard"); return; }
+                    if (user?.role === "coordinator") { navigate("/coordinator/dashboard"); return; }
+                    if (user?.serviceType || user?.role === "vendor") {
+                      navigate("/vendor/dashboard");
+                      return;
+                    }
+                    navigate("/dashboard");
+                  }}
+                    style={{ flexShrink: 0, padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.12)", color: "#CCAB4A", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                    {user?.role === "coordinator" || user?.serviceType || user?.role === "vendor" ? "Pro Dashboard" : "Dashboard"}
+                  </button>
+                )}
               </div>
             ) : (
               <a href="/login" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "10px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none", textAlign: "center", fontFamily: font, marginBottom: 12 }}>

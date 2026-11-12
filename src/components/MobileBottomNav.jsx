@@ -8,6 +8,7 @@ import { useBookVendors } from "../context/BookVendorsContext";
 import { usePriceEstimator } from "../context/PriceEstimatorContext";
 import { setBookingType } from "../redux/eventPlanningSlice";
 import { clearVendorCompare } from "../redux/listingFiltersSlice";
+import { logout, restorePersonalAccount } from "../redux/authSlice";
 
 const font = "'Outfit', sans-serif";
 
@@ -142,6 +143,7 @@ function BottomNavInner() {
   const [productsOpen, setProductsOpen] = useState(false);
   const [planOpen, setPlanOpen] = useState(false);
   const [tipsOpen, setTipsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   // My Event popup state
   const [myEventModal, setMyEventModal] = useState(null); // null | 'mini' | 'full'
@@ -177,6 +179,7 @@ function BottomNavInner() {
     setProductsOpen(false);
     setPlanOpen(false);
     setTipsOpen(false);
+    setProfileOpen(false);
   }, [location.pathname]);
 
   // Listen for drawer open/close events (WS cart, quick view, etc.)
@@ -238,6 +241,17 @@ function BottomNavInner() {
           return;
         }
         if (user?.isAdmin) { navigate("/AdminDashboard"); return; }
+        // Dual-identity account (picked vendor/coordinator at signup, or
+        // currently viewing the professional side) — show Personal/Professional/
+        // Logout instead of jumping straight to one of them.
+        const hasDualIdentity = !!user?.professional?.type || (() => {
+          try { return !!localStorage.getItem("tendr_personal_token"); } catch { return false; }
+        })();
+        if (hasDualIdentity) {
+          setBrowseOpen(false); setProductsOpen(false); setTipsOpen(false);
+          setProfileOpen(o => !o);
+          return;
+        }
         // Vendor: Redux user has serviceType
         if (user?.serviceType) {
           navigate("/vendor/dashboard");
@@ -518,6 +532,59 @@ function BottomNavInner() {
                   <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>Community Wall</div>
                   <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>See real events shared by customers — photos, setups, ideas</div>
                 </div>
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
+      </AnimatePresence>
+
+      {/* Personal / Professional / Logout sheet — dual-identity accounts only */}
+      <AnimatePresence>
+      {profileOpen && (
+        <>
+          <motion.div key="profile-bd" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:0.18 }}
+            onClick={() => setProfileOpen(false)}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 99991, pointerEvents: "auto" }} />
+          <motion.div key="profile-sheet" initial={{ y:"100%" }} animate={{ y:0 }} exit={{ y:"100%" }} transition={{ type:"spring", stiffness:380, damping:30, mass:0.8 }}
+            style={{ position: "fixed", bottom: "calc(54px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, pointerEvents: "auto", background: "#FFFCF5", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(139,69,19,0.18)", padding: "10px 20px 20px", fontFamily: font }}>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(196,122,46,0.25)" }} />
+            </div>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 14px" }}>Your account</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <button
+                onClick={() => { setProfileOpen(false); dispatch(restorePersonalAccount()); navigate("/dashboard"); }}
+                style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.08)", textAlign: "left" }}
+                onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.08)"}
+                onTouchEnd={e => e.currentTarget.style.background = "#fff"}
+              >
+                <span style={{ color: "#7A5535", display: "flex", alignItems: "center", flexShrink: 0 }}>{ic(<><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></>)}</span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>Personal</div>
+                  <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>Your customer account</div>
+                </div>
+              </button>
+              <button
+                onClick={() => { setProfileOpen(false); navigate("/account/professional"); }}
+                style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.08)", textAlign: "left" }}
+                onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.08)"}
+                onTouchEnd={e => e.currentTarget.style.background = "#fff"}
+              >
+                <span style={{ color: "#7A5535", display: "flex", alignItems: "center", flexShrink: 0 }}>{ic(<><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></>)}</span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>Professional</div>
+                  <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>Your vendor / coordinator dashboard</div>
+                </div>
+              </button>
+              <button
+                onClick={() => { setProfileOpen(false); dispatch(logout()); navigate("/"); }}
+                style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 14, border: "1.5px solid rgba(220,38,38,0.18)", background: "rgba(220,38,38,0.04)", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.08)", textAlign: "left" }}
+                onTouchStart={e => e.currentTarget.style.background = "rgba(220,38,38,0.1)"}
+                onTouchEnd={e => e.currentTarget.style.background = "rgba(220,38,38,0.04)"}
+              >
+                <span style={{ color: "#DC2626", display: "flex", alignItems: "center", flexShrink: 0 }}>{ic(<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>)}</span>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#DC2626" }}>Logout</div>
               </button>
             </div>
           </motion.div>

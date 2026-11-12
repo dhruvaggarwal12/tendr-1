@@ -3,7 +3,7 @@ import { EventIdeasPanel } from "../utils/eventIdeas";
 import { DISCOUNT_PERCENT } from "../utils/referral";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../redux/authSlice";
+import { logout, restorePersonalAccount } from "../redux/authSlice";
 import { removeVendorFromCompare, clearVendorCompare, clearFinalisedVendor, setFilters } from "../redux/listingFiltersSlice";
 import { useChatOverlay } from "../context/ChatContext";
 import { useBookVendors } from "../context/BookVendorsContext";
@@ -138,6 +138,12 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
     : SEARCH_SUGGESTIONS.slice(0, 4);
 
   const { user, token } = useSelector((s) => s.auth);
+  // Dual-identity account (picked vendor/coordinator at signup, or currently
+  // viewing the professional side) — show Personal/Professional instead of a
+  // single Dashboard button.
+  const hasDualIdentity = !!user?.professional?.type || (() => {
+    try { return !!localStorage.getItem("tendr_personal_token"); } catch { return false; }
+  })();
   const compareSelected  = useSelector((s) => s.listingFilters.compareSelected || []);
   const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
   const finalisedCount   = Object.keys(finalisedVendors).length;
@@ -469,14 +475,23 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 </div>
               </div>
               <div style={{ display: "flex", gap: 7 }}>
-                <button onClick={() => {
-                  if (user?.isAdmin) { navigate("/AdminDashboard"); return; }
-                  if (user?.serviceType) {
-                    navigate("/vendor/dashboard");
-                    return;
-                  }
-                  navigate("/dashboard");
-                }} style={{ flex: 1, padding: "6px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.1)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Dashboard</button>
+                {hasDualIdentity ? (
+                  <>
+                    <button onClick={() => { dispatch(restorePersonalAccount()); navigate("/dashboard"); }}
+                      style={{ flex: 1, padding: "6px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.1)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Personal</button>
+                    <button onClick={() => navigate("/account/professional")}
+                      style={{ flex: 1, padding: "6px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.1)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Professional</button>
+                  </>
+                ) : (
+                  <button onClick={() => {
+                    if (user?.isAdmin) { navigate("/AdminDashboard"); return; }
+                    if (user?.serviceType) {
+                      navigate("/vendor/dashboard");
+                      return;
+                    }
+                    navigate("/dashboard");
+                  }} style={{ flex: 1, padding: "6px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.1)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Dashboard</button>
+                )}
               </div>
               {/* Review & Pay if vendors finalised */}
               {!isHomePage && finalisedCount > 0 && (
@@ -829,17 +844,30 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button onClick={() => {
-                      if (user?.isAdmin) { navigate("/AdminDashboard"); close(); return; }
-                      if (user?.serviceType) {
-                        navigate("/vendor/dashboard");
-                        close(); return;
-                      }
-                      navigate("/dashboard"); close();
-                    }}
-                      style={{ flex: 1, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.12)", color: "#CCAB4A", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-                      Dashboard
-                    </button>
+                    {hasDualIdentity ? (
+                      <>
+                        <button onClick={() => { dispatch(restorePersonalAccount()); navigate("/dashboard"); close(); }}
+                          style={{ flex: 1, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.12)", color: "#CCAB4A", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                          Personal
+                        </button>
+                        <button onClick={() => { navigate("/account/professional"); close(); }}
+                          style={{ flex: 1, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.12)", color: "#CCAB4A", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                          Professional
+                        </button>
+                      </>
+                    ) : (
+                      <button onClick={() => {
+                        if (user?.isAdmin) { navigate("/AdminDashboard"); close(); return; }
+                        if (user?.serviceType) {
+                          navigate("/vendor/dashboard");
+                          close(); return;
+                        }
+                        navigate("/dashboard"); close();
+                      }}
+                        style={{ flex: 1, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.12)", color: "#CCAB4A", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                        Dashboard
+                      </button>
+                    )}
                   </div>
                 </div>
               ) : (

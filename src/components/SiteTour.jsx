@@ -56,6 +56,13 @@ const STEPS_DESKTOP = [
     title: "Event Tools",
     content: "Budget Allocator, Timeline Builder, Guest List, Seating Chart and more — free tools that make event planning manageable.",
   },
+  {
+    target: '[data-tour="earn"]',
+    placement: "top",
+    disableBeacon: true,
+    title: "Refer & Earn 🎁",
+    content: "Share your code with friends — they get a discount, and you earn real money every time they book. Tap this any time.",
+  },
 ];
 
 const STEPS_MOBILE = [
@@ -81,6 +88,13 @@ const STEPS_MOBILE = [
     disableBeacon: true,
     title: "Event Tools",
     content: "Budget Allocator, Timeline Builder, Guest List, Seating Chart and more — free tools that make event planning manageable.",
+  },
+  {
+    target: '[data-tour="earn"]',
+    placement: "top",
+    disableBeacon: true,
+    title: "Refer & Earn 🎁",
+    content: "Share your code with friends — they get a discount, and you earn real money every time they book. Tap this any time.",
   },
 ];
 

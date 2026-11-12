@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import HamburgerNav from '../../components/HamburgerNav';
 import SEO from '../../components/SEO';
 
@@ -36,6 +37,13 @@ const labelStyle = {
 
 export default function CoordinatorRegister() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { user, token } = useSelector(s => s.auth || {});
+  // Reached either cold (Footer/Navbar "Event Coordinators" link, self-contained
+  // signup+application) or from an already-signed-in account's Professional tab
+  // (/account/professional) finishing the coordinator side of their account — see
+  // Registration.jsx's isProfessionalMode for the same pattern on the vendor side.
+  const isProfessionalMode = searchParams.get('mode') === 'professional' && !!token;
   const [form, setForm] = useState({
     name: '', phoneNumber: '', email: '', city: '',
     experience: '', eventsPerMonth: '', bio: '',
@@ -46,6 +54,11 @@ export default function CoordinatorRegister() {
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
 
+  useEffect(() => {
+    if (!isProfessionalMode || !user) return;
+    setForm(f => ({ ...f, name: user.name || '', phoneNumber: user.phoneNumber || '', email: user.email || '' }));
+  }, [isProfessionalMode, user]);
+
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const toggleSpec = (s) =>
@@ -54,14 +67,18 @@ export default function CoordinatorRegister() {
   const submit = async (e) => {
     e.preventDefault();
     setError('');
-    if (form.password !== form.confirmPassword) { setError('Passwords do not match.'); return; }
-    if (form.password.length < 8) { setError('Password must be at least 8 characters.'); return; }
-    if (!/^[0-9]{10}$/.test(form.phoneNumber)) { setError('Enter a valid 10-digit phone number.'); return; }
+    if (!isProfessionalMode) {
+      if (form.password !== form.confirmPassword) { setError('Passwords do not match.'); return; }
+      if (form.password.length < 8) { setError('Password must be at least 8 characters.'); return; }
+      if (!/^[0-9]{10}$/.test(form.phoneNumber)) { setError('Enter a valid 10-digit phone number.'); return; }
+    }
+    if (!form.city) { setError('Please select your city.'); return; }
     setSubmitting(true);
     try {
-      const res = await fetch(`${BASE_URL}/coordinators/register`, {
+      const url = isProfessionalMode ? `${BASE_URL}/consumers/me/coordinator-application` : `${BASE_URL}/coordinators/register`;
+      const res = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(isProfessionalMode ? { Authorization: `Bearer ${token}` } : {}) },
         credentials: 'include',
         body: JSON.stringify({
           name: form.name, phoneNumber: form.phoneNumber, email: form.email,
@@ -72,6 +89,7 @@ export default function CoordinatorRegister() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || 'Registration failed. Please try again.'); return; }
+      if (isProfessionalMode) { navigate('/account/professional'); return; }
       setDone(true);
     } catch {
       setError('Network error. Please check your connection and try again.');
@@ -133,19 +151,26 @@ export default function CoordinatorRegister() {
           {/* Personal Details */}
           <div style={{ background: '#fff', borderRadius: 16, border: '1.5px solid rgba(196,122,46,0.14)', padding: '22px 22px 18px', marginBottom: 16 }}>
             <p style={{ fontSize: 11, fontWeight: 800, color: GOLD, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 16px' }}>Personal Details</p>
+            {isProfessionalMode && (
+              <p style={{ fontSize: 12.5, color: MUTED, margin: '-8px 0 16px' }}>
+                Registering as <strong style={{ color: INK }}>{user?.name}</strong> · {user?.phoneNumber}
+              </p>
+            )}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-              <div style={{ gridColumn: '1/-1' }}>
-                <label style={labelStyle}>Full Name *</label>
-                <input style={inputStyle} value={form.name} onChange={e => set('name', e.target.value)} required placeholder="Your full name" />
-              </div>
-              <div>
-                <label style={labelStyle}>Phone Number *</label>
-                <input style={inputStyle} value={form.phoneNumber} onChange={e => set('phoneNumber', e.target.value.replace(/\D/g,'').slice(0,10))} required placeholder="10-digit number" inputMode="numeric" />
-              </div>
-              <div>
-                <label style={labelStyle}>Email Address *</label>
-                <input style={inputStyle} type="email" value={form.email} onChange={e => set('email', e.target.value)} required placeholder="you@email.com" />
-              </div>
+              {!isProfessionalMode && (<>
+                <div style={{ gridColumn: '1/-1' }}>
+                  <label style={labelStyle}>Full Name *</label>
+                  <input style={inputStyle} value={form.name} onChange={e => set('name', e.target.value)} required placeholder="Your full name" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Phone Number *</label>
+                  <input style={inputStyle} value={form.phoneNumber} onChange={e => set('phoneNumber', e.target.value.replace(/\D/g,'').slice(0,10))} required placeholder="10-digit number" inputMode="numeric" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Email Address *</label>
+                  <input style={inputStyle} type="email" value={form.email} onChange={e => set('email', e.target.value)} required placeholder="you@email.com" />
+                </div>
+              </>)}
               <div style={{ gridColumn: '1/-1' }}>
                 <label style={labelStyle}>City *</label>
                 <select style={inputStyle} value={form.city} onChange={e => set('city', e.target.value)} required>
@@ -214,20 +239,22 @@ export default function CoordinatorRegister() {
             </div>
           </div>
 
-          {/* Password */}
-          <div style={{ background: '#fff', borderRadius: 16, border: '1.5px solid rgba(196,122,46,0.14)', padding: '22px 22px 18px', marginBottom: 16 }}>
-            <p style={{ fontSize: 11, fontWeight: 800, color: GOLD, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 16px' }}>Set Password</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-              <div>
-                <label style={labelStyle}>Password *</label>
-                <input style={inputStyle} type="password" value={form.password} onChange={e => set('password', e.target.value)} required placeholder="Min 8 characters" autoComplete="new-password" />
-              </div>
-              <div>
-                <label style={labelStyle}>Confirm Password *</label>
-                <input style={inputStyle} type="password" value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)} required placeholder="Repeat password" autoComplete="new-password" />
+          {/* Password — not needed in professional mode, the account already has one */}
+          {!isProfessionalMode && (
+            <div style={{ background: '#fff', borderRadius: 16, border: '1.5px solid rgba(196,122,46,0.14)', padding: '22px 22px 18px', marginBottom: 16 }}>
+              <p style={{ fontSize: 11, fontWeight: 800, color: GOLD, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 16px' }}>Set Password</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div>
+                  <label style={labelStyle}>Password *</label>
+                  <input style={inputStyle} type="password" value={form.password} onChange={e => set('password', e.target.value)} required placeholder="Min 8 characters" autoComplete="new-password" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Confirm Password *</label>
+                  <input style={inputStyle} type="password" value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)} required placeholder="Repeat password" autoComplete="new-password" />
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {error && (
             <div style={{ background: '#FFF1F2', border: '1.5px solid #FCA5A5', borderRadius: 10, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#BE123C', fontWeight: 600 }}>

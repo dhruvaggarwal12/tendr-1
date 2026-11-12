@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import {
   PERFORMER_CATEGORIES, PERFORMER_ART_FORMS, GIG_STYLE_OPTIONS,
   GIG_LANG_OPTIONS, GIG_LANGUAGE_CATEGORIES, CONTENT_RATING_OPTIONS,
@@ -862,14 +863,16 @@ export default function VendorRegistration() {
   const [searchParams] = useSearchParams();
   const flow = searchParams.get("flow"); // "artist" | "vendor" | null
 
-  // This form creates its own account (name/phone/password → VendorApplication,
-  // approved into a real Vendor login) — it's a self-contained signup, not an
-  // action an existing customer account performs. It used to require being
-  // logged in as a customer first (bouncing to /login, then back here) before a
-  // brand-new vendor could even see this form — which made "List Your Service"
-  // effectively broken for anyone without a Tendr customer account already, and
-  // meant filling in ANOTHER password here right after creating one at /login
-  // made no sense. No auth gate needed here anymore.
+  // This form is normally a self-contained, logged-out signup (name/phone/password →
+  // VendorApplication, approved into a real Vendor login) for anyone landing here cold
+  // (Footer/Navbar "List Your Service" links, a direct URL). But it's also reused, in
+  // "professional mode", by an already-signed-in personal account finishing the
+  // Professional side of their account (reached from /account/professional) — see
+  // isProfessionalMode below. In that mode it skips asking for contact details/password
+  // (the account already has them) and submits to the authenticated
+  // POST /consumers/me/vendor-application instead of the public /vendor-applications.
+  const { user, token } = useSelector(s => s.auth || {});
+  const isProfessionalMode = searchParams.get("mode") === "professional" && !!token;
 
   // ── Shared state ──────────────────────────────────────────────────────────
 
@@ -927,6 +930,18 @@ export default function VendorRegistration() {
   // Scroll to top whenever step changes
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [step]);
 
+  // Professional mode: pre-fill from the already-logged-in account instead of asking
+  // for phone/password/email again — those fields are simply not rendered in this mode
+  // (see the "Registering as ..." line replacing them below). NOTE: artistForm.name is
+  // the performer's public stage/band name (e.g. "Aarav Vocals"), genuinely different
+  // from the account holder's own name, so it's left for them to fill in, not pre-filled —
+  // only vendorForm.name ("Your Full Name" — the contact person) is reused from the account.
+  useEffect(() => {
+    if (!isProfessionalMode || !user) return;
+    setArtistForm(p => ({ ...p, phoneNumber: user.phoneNumber || "", email: user.email || "", whatsappNumber: p.whatsappNumber || user.phoneNumber || "" }));
+    setVendorForm(p => ({ ...p, name: user.name || "", phoneNumber: user.phoneNumber || "", email: user.email || "", whatsappNumber: p.whatsappNumber || user.phoneNumber || "" }));
+  }, [isProfessionalMode, user]);
+
   // Shared
   const [loading, setLoading]       = useState(false);
   const [apiError, setApiError]     = useState("");
@@ -965,11 +980,16 @@ export default function VendorRegistration() {
   const makeHeroPhoto = (idx) => setArtistPhotos(p => idx === 0 ? p : [p[idx], ...p.filter((_, i) => i !== idx)]);
 
   // ── Generic submit helper ──────────────────────────────────────────────────
+  // In professional mode this posts to the authenticated /consumers/me/vendor-application
+  // instead of the public /vendor-applications — same payload shape, just linked to the
+  // logged-in account instead of creating a brand-new standalone application+login.
   const submitApplication = async (payload) => {
     setLoading(true); setApiError("");
     try {
-      const res = await fetch(`${BASE_URL}/vendor-applications`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+      const url = isProfessionalMode ? `${BASE_URL}/consumers/me/vendor-application` : `${BASE_URL}/vendor-applications`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(isProfessionalMode ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify(payload), credentials: "include",
       });
       const data = await res.json();
@@ -1213,13 +1233,18 @@ export default function VendorRegistration() {
     const handleArtistSubmit = async (e) => {
       e.preventDefault();
       const er = {};
-      if (!artistForm.name.trim())         er.name = "Name is required";
-      if (!/^[6-9]\d{9}$/.test(artistForm.phoneNumber))   er.phoneNumber = "Enter a valid 10-digit number";
+      // Name/phone/password/email come from the already-logged-in account in
+      // professional mode (not rendered as inputs at all), so only WhatsApp +
+      // city — genuinely new, listing-specific info — still need validating.
+      if (!isProfessionalMode) {
+        if (!artistForm.name.trim())         er.name = "Name is required";
+        if (!/^[6-9]\d{9}$/.test(artistForm.phoneNumber))   er.phoneNumber = "Enter a valid 10-digit number";
+        if (artistForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(artistForm.email)) er.email = "Enter a valid email";
+        if (artistForm.password.length < 8)  er.password = "Password must be at least 8 characters";
+        if (artistForm.confirmPassword !== artistForm.password) er.confirmPassword = "Passwords don't match";
+      }
       if (!/^[6-9]\d{9}$/.test(artistForm.whatsappNumber)) er.whatsappNumber = "Enter a valid 10-digit number";
       if (!artistForm.city)                er.city = "City is required";
-      if (artistForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(artistForm.email)) er.email = "Enter a valid email";
-      if (artistForm.password.length < 8)  er.password = "Password must be at least 8 characters";
-      if (artistForm.confirmPassword !== artistForm.password) er.confirmPassword = "Passwords don't match";
       if (Object.keys(er).length) { setErrors(er); return; }
 
       const ok = await submitApplication({
@@ -1279,7 +1304,10 @@ export default function VendorRegistration() {
           : [],
         photos: artistPhotos,
       });
-      if (ok) { setSuccessName(artistForm.name); setSubmitted(true); }
+      if (ok) {
+        if (isProfessionalMode) { navigate("/account/professional"); return; }
+        setSuccessName(artistForm.name); setSubmitted(true);
+      }
     };
 
     const aInput = (f, label, req, opts = {}) => (
@@ -1312,16 +1340,23 @@ export default function VendorRegistration() {
           <form onSubmit={handleArtistSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: 18 }}>
             {/* Contact */}
             <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>Contact Details</p>
+            {isProfessionalMode && (
+              <p style={{ fontSize: 12.5, color: muted, margin: "-10px 0 0" }}>
+                Registering as <strong style={{ color: ink }}>{user?.name}</strong> · {user?.phoneNumber}
+              </p>
+            )}
 
             {aInput("name", "Artist / Band Name", true, { placeholder: "e.g. Aarav Vocals or The Harmony Band" })}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14 }}>
-              <div>
-                <Label required>Phone</Label>
-                <input value={artistForm.phoneNumber} onChange={e => setArtistForm(p => ({...p, phoneNumber: e.target.value.replace(/\D/,"").slice(0,10)}))}
-                  onFocus={() => setFocused("phoneNumber")} onBlur={() => setFocused("")} inputMode="numeric" placeholder="10-digit number"
-                  style={inputStyle(focused, errors, "phoneNumber", gold, ink)} />
-                <FieldError msg={errors.phoneNumber} />
-              </div>
+              {!isProfessionalMode && (
+                <div>
+                  <Label required>Phone</Label>
+                  <input value={artistForm.phoneNumber} onChange={e => setArtistForm(p => ({...p, phoneNumber: e.target.value.replace(/\D/,"").slice(0,10)}))}
+                    onFocus={() => setFocused("phoneNumber")} onBlur={() => setFocused("")} inputMode="numeric" placeholder="10-digit number"
+                    style={inputStyle(focused, errors, "phoneNumber", gold, ink)} />
+                  <FieldError msg={errors.phoneNumber} />
+                </div>
+              )}
               <div>
                 <Label required>WhatsApp</Label>
                 <input value={artistForm.whatsappNumber} onChange={e => setArtistForm(p => ({...p, whatsappNumber: e.target.value.replace(/\D/,"").slice(0,10)}))}
@@ -1330,13 +1365,15 @@ export default function VendorRegistration() {
                 <FieldError msg={errors.whatsappNumber} />
               </div>
             </div>
+            {!isProfessionalMode && (<>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14 }}>
+                {aInput("password", "Password", true, { type: "password", placeholder: "At least 8 characters" })}
+                {aInput("confirmPassword", "Confirm Password", true, { type: "password", placeholder: "Re-enter password" })}
+              </div>
+              <p style={{ fontSize: 11.5, color: muted, margin: "-10px 0 0" }}>You'll use this to sign in to your dashboard once approved.</p>
+            </>)}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14 }}>
-              {aInput("password", "Password", true, { type: "password", placeholder: "At least 8 characters" })}
-              {aInput("confirmPassword", "Confirm Password", true, { type: "password", placeholder: "Re-enter password" })}
-            </div>
-            <p style={{ fontSize: 11.5, color: muted, margin: "-10px 0 0" }}>You'll use this to sign in to your dashboard once approved.</p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14 }}>
-              {aInput("email", "Email", false, { type: "email", placeholder: "you@email.com" })}
+              {!isProfessionalMode && aInput("email", "Email", false, { type: "email", placeholder: "you@email.com" })}
               <div>
                 <Label required>City</Label>
                 <select value={artistForm.city} onChange={e => { setArtistForm(p => ({...p, city: e.target.value})); if (errors.city) setErrors(p => ({...p, city: ""})); }}
@@ -1937,7 +1974,12 @@ export default function VendorRegistration() {
     const OPTIONS = [
       { key: "artist",  title: "Individual Artist / Performer", sub: "Singer · Band · Anchor · Choreographer · Musician · Emcee", icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> },
       { key: "vendor",  title: "Business / Vendor", sub: "Decorator · Caterer · Photographer · DJ Setup · Venue · and more", icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
-      { key: "coordinator", title: "Event Coordinator", sub: "Manage client chats, leads & events", icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg> },
+      // Professional-mode applicants already picked "Event coordinator" at signup and
+      // land on the dedicated /become-coordinator flow instead — this legacy embedded
+      // coordinator form is only for the cold, logged-out /vendor/register entry point.
+      ...(isProfessionalMode ? [] : [
+        { key: "coordinator", title: "Event Coordinator", sub: "Manage client chats, leads & events", icon: <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg> },
+      ]),
     ];
     return (
       <Shell step={1} steps={["Category", "Plan", "Details"]} sideTiers>
@@ -2086,15 +2128,17 @@ export default function VendorRegistration() {
     const handleVendorSubmit = async (e) => {
       e.preventDefault();
       const er = {};
-      if (!vendorForm.name.trim())          er.name = "Name is required";
+      if (!isProfessionalMode) {
+        if (!vendorForm.name.trim())          er.name = "Name is required";
+        if (!/^[6-9]\d{9}$/.test(vendorForm.phoneNumber))   er.phoneNumber = "Enter a valid 10-digit number";
+        if (vendorForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(vendorForm.email)) er.email = "Enter a valid email";
+        if (vendorForm.password.length < 8)   er.password = "Password must be at least 8 characters";
+        if (vendorForm.confirmPassword !== vendorForm.password) er.confirmPassword = "Passwords don't match";
+      }
       if (!vendorForm.businessName.trim())  er.businessName = "Business name is required";
-      if (!/^[6-9]\d{9}$/.test(vendorForm.phoneNumber))   er.phoneNumber = "Enter a valid 10-digit number";
       if (!/^[6-9]\d{9}$/.test(vendorForm.whatsappNumber)) er.whatsappNumber = "Enter a valid 10-digit number";
       if (!vendorForm.address.trim())       er.address = "City / area is required";
       if (!serviceType)                     er.serviceType = "Please select your service category";
-      if (vendorForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(vendorForm.email)) er.email = "Enter a valid email";
-      if (vendorForm.password.length < 8)   er.password = "Password must be at least 8 characters";
-      if (vendorForm.confirmPassword !== vendorForm.password) er.confirmPassword = "Passwords don't match";
       if (Object.keys(er).length) { setErrors(er); return; }
 
       const ok = await submitApplication({
@@ -2110,7 +2154,10 @@ export default function VendorRegistration() {
         plan,
         categoryAnswers,
       });
-      if (ok) { setSuccessName(vendorForm.name); setSubmitted(true); }
+      if (ok) {
+        if (isProfessionalMode) { navigate("/account/professional"); return; }
+        setSuccessName(vendorForm.name); setSubmitted(true);
+      }
     };
 
     const vInput = (f, label, req, opts = {}) => (
@@ -2167,16 +2214,23 @@ export default function VendorRegistration() {
             )}
 
             <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "4px 0 0" }}>Contact Details</p>
+            {isProfessionalMode && (
+              <p style={{ fontSize: 12.5, color: muted, margin: "-10px 0 0" }}>
+                Registering as <strong style={{ color: ink }}>{user?.name}</strong> · {user?.phoneNumber}
+              </p>
+            )}
 
-            {vInput("name", "Your Full Name", true, { placeholder: "Contact person name" })}
+            {!isProfessionalMode && vInput("name", "Your Full Name", true, { placeholder: "Contact person name" })}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14 }}>
-              <div>
-                <Label required>Phone</Label>
-                <input name="phoneNumber" value={vendorForm.phoneNumber} onChange={e => { setVendorForm(p => ({...p, phoneNumber: e.target.value.replace(/\D/,"").slice(0,10)})); if (errors.phoneNumber) setErrors(p => ({...p, phoneNumber: ""})); }}
-                  onFocus={() => setFocused("phoneNumber")} onBlur={() => setFocused("")} inputMode="numeric" placeholder="10-digit number"
-                  style={inputStyle(focused, errors, "phoneNumber", gold, ink)} />
-                <FieldError msg={errors.phoneNumber} />
-              </div>
+              {!isProfessionalMode && (
+                <div>
+                  <Label required>Phone</Label>
+                  <input name="phoneNumber" value={vendorForm.phoneNumber} onChange={e => { setVendorForm(p => ({...p, phoneNumber: e.target.value.replace(/\D/,"").slice(0,10)})); if (errors.phoneNumber) setErrors(p => ({...p, phoneNumber: ""})); }}
+                    onFocus={() => setFocused("phoneNumber")} onBlur={() => setFocused("")} inputMode="numeric" placeholder="10-digit number"
+                    style={inputStyle(focused, errors, "phoneNumber", gold, ink)} />
+                  <FieldError msg={errors.phoneNumber} />
+                </div>
+              )}
               <div>
                 <Label required>WhatsApp</Label>
                 <input name="whatsappNumber" value={vendorForm.whatsappNumber} onChange={e => { setVendorForm(p => ({...p, whatsappNumber: e.target.value.replace(/\D/,"").slice(0,10)})); if (errors.whatsappNumber) setErrors(p => ({...p, whatsappNumber: ""})); }}
@@ -2185,15 +2239,17 @@ export default function VendorRegistration() {
                 <FieldError msg={errors.whatsappNumber} />
               </div>
             </div>
-            {vInput("email", "Email Address", false, { type: "email", placeholder: "business@email.com" })}
+            {!isProfessionalMode && vInput("email", "Email Address", false, { type: "email", placeholder: "business@email.com" })}
             {vInput("address", "City / Area you serve", true, { placeholder: "e.g. South Delhi, Noida, Gurgaon" })}
 
-            <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "4px 0 0" }}>Dashboard Login</p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14 }}>
-              {vInput("password", "Password", true, { type: "password", placeholder: "At least 8 characters" })}
-              {vInput("confirmPassword", "Confirm Password", true, { type: "password", placeholder: "Re-enter password" })}
-            </div>
-            <p style={{ fontSize: 11.5, color: muted, margin: "-10px 0 0" }}>You'll use this to sign in to your vendor dashboard once approved.</p>
+            {!isProfessionalMode && (<>
+              <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "4px 0 0" }}>Dashboard Login</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 14 }}>
+                {vInput("password", "Password", true, { type: "password", placeholder: "At least 8 characters" })}
+                {vInput("confirmPassword", "Confirm Password", true, { type: "password", placeholder: "Re-enter password" })}
+              </div>
+              <p style={{ fontSize: 11.5, color: muted, margin: "-10px 0 0" }}>You'll use this to sign in to your vendor dashboard once approved.</p>
+            </>)}
 
             {/* Plan summary */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 10, background: plan === "paid" ? "rgba(196,122,46,0.06)" : "#F9F6F1", border: plan === "paid" ? `1px solid rgba(196,122,46,0.28)` : "1px solid rgba(28,14,4,0.09)" }}>
