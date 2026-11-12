@@ -69,8 +69,10 @@ export const GIG_STYLE_OPTIONS = {
 // a customer should book at all.
 export const CONTENT_RATING_OPTIONS = ['Family-Friendly', 'Clean', 'Adult-Oriented', 'Customised for Professional Audience'];
 
-// Per-category label for the "Setlist & Performance" tab/section — same
-// {title, note} structure underneath for every category, just worded differently.
+// Per-category label for the performance tab/section — same {title, note}
+// structure underneath for every category, just worded differently. "Performer"
+// (solo stunts/acrobatics/circus acts) used to fall through to the generic
+// "Setlist / Repertoire" default, which doesn't fit a non-musical act.
 export function performanceLabel(svc) {
   if (svc === 'DJ') return 'Typical Set / Playlist Theme';
   if (['Emcee/Host', 'Anchor'].includes(svc)) return 'Script Outline / Typical Segments';
@@ -78,7 +80,26 @@ export function performanceLabel(svc) {
   if (svc === 'Choreographer') return 'Routine Description';
   if (svc === 'Magician') return 'Show Description / Acts';
   if (svc === 'Musician') return 'Repertoire / Sets';
+  if (svc === 'Performer') return 'Signature Acts';
+  if (svc === 'AV Setup') return 'Notes & Specialities';
   return 'Setlist / Repertoire';
+}
+
+// Per-category name for the tab/section itself — shown on the customer-facing
+// profile's tab bar, the registration flow, and the dashboard's editor, so a
+// customer browsing an Anchor or a Magician doesn't see a tab called
+// "Setlist" (a word that only really fits a musical act).
+export function performanceTabName(svc) {
+  if (['Singer', 'Band'].includes(svc)) return 'Setlist';
+  if (svc === 'Musician') return 'Repertoire';
+  if (svc === 'DJ') return 'The Set';
+  if (['Anchor', 'Emcee/Host'].includes(svc)) return 'Hosting Style';
+  if (svc === 'Choreographer') return 'Routines';
+  if (svc === 'Stand-up Comedian') return 'Material';
+  if (svc === 'Magician') return 'Magic Acts';
+  if (svc === 'Performer') return 'Signature Acts';
+  if (svc === 'AV Setup') return 'Specialities';
+  return 'Setlist & Performance';
 }
 
 // What the two fields of one row mean, per category — shown as the input

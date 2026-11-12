@@ -6,6 +6,7 @@ import VendorAvailabilityCalendar from '../../components/VendorAvailabilityCalen
 import PageTour from '../../components/PageTour';
 import logo from '../../assets/logos/tendr-logo-secondary.png';
 import { DOC_THEMES, generateQuote, generateStandaloneInvoicePDF, generateContractPDF } from '../../utils/vendorDocs';
+import { performanceLabel } from '../../constants/performerCategories';
 const FlyerBuilderLazy    = lazy(() => import('./FlyerBuilder'));
 const LinktreeBuilderLazy = lazy(() => import('./LinktreeBuilder'));
 
@@ -4522,7 +4523,7 @@ const [tab, setTab] = useState('home');
                 {isArtist && (
                   <div style={{ background:'#fff', borderRadius:18, padding:'18px 20px', border:'1px solid rgba(196,122,46,0.12)', marginBottom:20 }}>
                     <div style={{ fontSize:14, fontWeight:800, color:ink, marginBottom:4 }}>
-                      {['DJ'].includes(serviceType) ? 'Typical Set / Playlist Theme' : ['Emcee/Host','Anchor'].includes(serviceType) ? 'Script Outline / Typical Segments' : serviceType === 'Stand-up Comedian' ? 'Set Material / Topics' : serviceType === 'Choreographer' ? 'Routine Description' : serviceType === 'Magician' ? 'Show Description' : 'Setlist / Repertoire'}
+                      {performanceLabel(serviceType)}
                     </div>
                     <div style={{ fontSize:12, color:'#9B7450', marginBottom:12 }}>Shown on your public profile — helps event planners understand your act</div>
                     <textarea value={setlistDraft} onChange={e => setSetlistDraft(e.target.value)} rows={5}
@@ -5560,7 +5561,7 @@ const [tab, setTab] = useState('home');
             );
             const row = (label, children) => <div>{lbl(label)}{children}</div>;
 
-            const setlistLabel = svc === 'DJ' ? 'Typical Set / Playlist Theme' : svc === 'Magician' ? 'Show Description' : svc === 'AV Setup' ? 'Notes & Specialities' : ['Emcee/Host','Anchor'].includes(svc) ? 'Script Outline / Typical Segments' : svc === 'Choreographer' ? 'Routine Description' : svc === 'Stand-up Comedian' ? 'Set Material / Topics' : 'Setlist / Repertoire';
+            const setlistLabel = performanceLabel(svc);
             const setlistPlaceholder = svc === 'Magician' ? 'Describe your show — acts included, duration, audience interaction...' : svc === 'AV Setup' ? 'Describe special capabilities, past big events, typical setup notes...' : ['Emcee/Host','Anchor'].includes(svc) ? 'e.g. Welcome address, Games, Couple Q&A, Award rounds, Closing...' : 'List songs, sets, or themes you perform — helps event planners book you faster';
 
             const savePerfDetails = async () => {

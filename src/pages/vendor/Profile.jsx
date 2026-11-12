@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import logo from "../../assets/logos/tendr-logo-secondary.png";
 import {
   GIG_PRO_TYPES, GIG_GENRE_OPTIONS, GIG_LANG_OPTIONS, GIG_LANGUAGE_CATEGORIES,
-  GIG_STYLE_OPTIONS, CONTENT_RATING_OPTIONS, performanceLabel, performanceFieldHints,
+  GIG_STYLE_OPTIONS, CONTENT_RATING_OPTIONS, performanceLabel, performanceTabName, performanceFieldHints,
   QUICK_PERFORMANCE_ITEMS, PERFORMER_CATEGORIES, performanceItemNoun, eventTypeOptions,
   HOSTING_RESPONSIBILITY_OPTIONS, AUDIENCE_SIZE_OPTIONS, CAPABILITY_BADGE_OPTIONS,
   AUDIENCE_PARTICIPATION_OPTIONS, AGE_SUITABILITY_OPTIONS, EQUIPMENT_PROVIDED_OPTIONS,
@@ -504,7 +504,7 @@ export default function VendorProfile() {
         <div className="flex gap-2 mb-8 border-b border-gray-200 overflow-x-auto">
           {[
             ["info", "About Me"],
-            ...(GIG_PRO_TYPES.includes(profile?.serviceType) ? [["setlist", "Setlist & Performance"], ["packages", "Packages & Pricing"]] : []),
+            ...(GIG_PRO_TYPES.includes(profile?.serviceType) ? [["setlist", performanceTabName(profile?.serviceType)], ["packages", "Packages & Pricing"]] : []),
             ["bank", "Bank & Payments"],
           ].map(([id, label]) => (
             <button key={id} onClick={() => setTab(id)} className={`px-5 py-2.5 text-sm font-semibold rounded-t-lg transition-colors whitespace-nowrap ${tab === id ? "bg-yellow-500 text-white" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"}`}>
