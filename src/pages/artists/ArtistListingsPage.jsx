@@ -129,9 +129,9 @@ export default function ArtistListingsPage() {
 
         {/* Category tab strip */}
         <div style={{ background: '#fff', borderBottom: '1px solid rgba(196,122,46,0.12)', position: 'sticky', top: 0, zIndex: 50 }}>
-          <div style={{ display: 'flex', gap: 8, padding: '12px 16px', overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 6, padding: '7px 16px', overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', alignItems: 'center' }}>
             <style>{`._cat-scroll::-webkit-scrollbar{display:none}`}</style>
-            <div className="_cat-scroll" style={{ display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none', flex: 1 }}>
+            <div className="_cat-scroll" style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', flex: 1 }}>
               {visibleTabs.map(p => {
                 const isActive = p.type === activeType.type;
                 const pinf = PERFORMER_INFO[p.type] || { color: gold, bg: '#fff' };
@@ -141,19 +141,19 @@ export default function ArtistListingsPage() {
                     onClick={() => navigate(`/artists/${p.type}`)}
                     style={{
                       flexShrink: 0,
-                      display: 'inline-flex', alignItems: 'center', gap: 7,
-                      height: 38, padding: '0 16px', borderRadius: 100,
+                      display: 'inline-flex', alignItems: 'center', gap: 5,
+                      height: 29, padding: '0 13px', borderRadius: 100,
                       border: `1.5px solid ${isActive ? pinf.color : 'rgba(196,122,46,0.16)'}`,
                       background: isActive ? pinf.bg : '#fff',
                       color: isActive ? pinf.color : '#6B5440',
-                      fontSize: 13, fontWeight: isActive ? 800 : 600,
+                      fontSize: 11.5, fontWeight: isActive ? 800 : 600,
                       letterSpacing: isActive ? '0.01em' : 'normal',
                       cursor: 'pointer', fontFamily: font, transition: 'all 0.18s',
                       whiteSpace: 'nowrap',
                       boxShadow: isActive ? `0 3px 10px ${pinf.color}33` : 'none',
                     }}
                   >
-                    <span style={{ fontSize: 15, lineHeight: 1 }}>{p.emoji}</span>
+                    <span style={{ fontSize: 12.5, lineHeight: 1 }}>{p.emoji}</span>
                     {p.label}
                   </button>
                 );
@@ -163,17 +163,17 @@ export default function ArtistListingsPage() {
         </div>
 
         {/* Header */}
-        <div style={{ textAlign: 'center', padding: '14px 24px 6px' }}>
+        <div style={{ textAlign: 'center', padding: '7px 24px 4px' }}>
           {/* City filter — defaults to every city; without it, customers couldn't tell an
               artist actually serves their area until after booking. */}
           <div style={{ position: 'relative', display: 'inline-block' }}>
             <button
               onClick={() => setCityDropdownOpen(o => !o)}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 100, border: `1.5px solid ${cityFilter ? info.color : 'rgba(196,122,46,0.25)'}`, background: cityFilter ? info.bg : '#fff', color: cityFilter ? info.color : '#7A5535', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: font }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 100, border: `1.5px solid ${cityFilter ? info.color : 'rgba(196,122,46,0.25)'}`, background: cityFilter ? info.bg : '#fff', color: cityFilter ? info.color : '#7A5535', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: font }}
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               {cityFilter || 'All cities'}
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ transform: cityDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}><polyline points="6 9 12 15 18 9"/></svg>
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ transform: cityDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}><polyline points="6 9 12 15 18 9"/></svg>
             </button>
             {cityDropdownOpen && (
               <>
@@ -214,7 +214,7 @@ export default function ArtistListingsPage() {
             </button>
           </div>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '10px 12px 0', gap: 12, position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 12px 0', gap: 12, position: 'relative' }}>
 
             {/* Left arrow */}
             <button
@@ -263,7 +263,7 @@ export default function ArtistListingsPage() {
               {/* Photo — the hero; no text overlaid on top of it anymore, so
                   the image itself gets the space and a taller, more
                   portrait-friendly ratio instead of a thin 16:9 strip. */}
-              <div style={{ position: 'relative', width: '100%', aspectRatio: '4/5', maxHeight: '34vh', overflow: 'hidden', background: '#1C0A04' }}>
+              <div style={{ position: 'relative', width: '100%', aspectRatio: '4/5', maxHeight: '28vh', overflow: 'hidden', background: '#1C0A04' }}>
                 <img
                   src={photo}
                   alt={vendor?.name || activeType.label}
@@ -287,22 +287,22 @@ export default function ArtistListingsPage() {
 
               {/* Card body — name/location/tagline live here now, below the
                   photo, instead of overlapping it. */}
-              <div style={{ padding: '14px 18px 18px' }}>
-                <div style={{ fontSize: 'clamp(1.2rem,4vw,1.6rem)', fontWeight: 300, fontFamily: serif, color: '#1C0900', fontStyle: 'italic', lineHeight: 1.2, marginBottom: 4 }}>
+              <div style={{ padding: '10px 16px 14px' }}>
+                <div style={{ fontSize: 'clamp(1.05rem,3.4vw,1.4rem)', fontWeight: 300, fontFamily: serif, color: '#1C0900', fontStyle: 'italic', lineHeight: 1.15, marginBottom: 2 }}>
                   {vendor?.name || 'Artist'}
                 </div>
                 {vendor?.location && (
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 6, fontSize: 12, fontWeight: 600, color: '#9B7450' }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 4, fontSize: 11.5, fontWeight: 600, color: '#9B7450' }}>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                     Based in {vendor.location}
                   </div>
                 )}
                 {vendor?.tagline && (
-                  <div style={{ fontSize: 13, color: '#5a3a1a', marginBottom: 14 }}>{vendor.tagline}</div>
+                  <div style={{ fontSize: 12, color: '#5a3a1a', marginBottom: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{vendor.tagline}</div>
                 )}
 
                 {/* Stats row */}
-                <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 14, marginBottom: 10, flexWrap: 'wrap' }}>
                   {rating && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                       <span style={{ color: '#F59E0B', fontSize: 14 }}>★</span>
@@ -322,24 +322,25 @@ export default function ArtistListingsPage() {
                   )}
                 </div>
 
-                {/* Description */}
-                {vendor?.description && (
-                  <p style={{ fontSize: 13, color: '#5a3a1a', lineHeight: 1.55, margin: '0 0 18px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                {/* Description — hidden once a tagline already summarises the
+                    act, to save the vertical space this card is tight on. */}
+                {vendor?.description && !vendor?.tagline && (
+                  <p style={{ fontSize: 12, color: '#5a3a1a', lineHeight: 1.45, margin: '0 0 10px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {vendor.description}
                   </p>
                 )}
 
                 {/* CTA buttons — full width, stacked, not side by side */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <button
                     onClick={openBookModal}
-                    style={{ width: '100%', padding: '11px', borderRadius: 14, border: 'none', background: `linear-gradient(135deg,${info.color},${info.color}bb)`, color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: font, boxShadow: `0 4px 16px ${info.color}40`, letterSpacing: '0.01em' }}
+                    style={{ width: '100%', padding: '9px', borderRadius: 13, border: 'none', background: `linear-gradient(135deg,${info.color},${info.color}bb)`, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: font, boxShadow: `0 4px 16px ${info.color}40`, letterSpacing: '0.01em' }}
                   >
                     🎤 Book Artist
                   </button>
                   <button
                     onClick={() => window.open(`/vendor/${vendor._id}`, '_blank', 'noopener')}
-                    style={{ width: '100%', padding: '11px 16px', borderRadius: 14, border: `1.5px solid rgba(196,122,46,0.25)`, background: '#fff', color: gold, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}
+                    style={{ width: '100%', padding: '9px 16px', borderRadius: 13, border: `1.5px solid rgba(196,122,46,0.25)`, background: '#fff', color: gold, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: font }}
                   >
                     Profile →
                   </button>
