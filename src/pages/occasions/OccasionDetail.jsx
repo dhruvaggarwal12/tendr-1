@@ -3062,8 +3062,8 @@ export default function OccasionDetail(){
 
   /* styles */
   const canProceed=canNext();
-  const btnPrimary={minWidth:180,padding:"13px 26px",borderRadius:10,border:"none",background:canProceed?occAccent:"rgba(28,9,0,0.06)",color:canProceed?"#fff":"rgba(28,9,0,0.30)",fontSize:14,fontWeight:700,cursor:canProceed?"pointer":"not-allowed",fontFamily:font,transition:"all 0.2s",letterSpacing:"0.01em",boxShadow:canProceed?"0 6px 20px rgba(28,9,0,0.18)":"none"};
-  const btnGhost={padding:"12px 18px",borderRadius:10,border:`1px solid rgba(28,9,0,0.15)`,background:"transparent",color:"rgba(28,9,0,0.50)",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s",whiteSpace:"nowrap"};
+  const btnPrimary={minWidth:90,padding:"7px 13px",borderRadius:9,border:"none",background:canProceed?occAccent:"rgba(28,9,0,0.06)",color:canProceed?"#fff":"rgba(28,9,0,0.30)",fontSize:12.5,fontWeight:700,cursor:canProceed?"pointer":"not-allowed",fontFamily:font,transition:"all 0.2s",letterSpacing:"0.01em",boxShadow:canProceed?"0 6px 20px rgba(28,9,0,0.18)":"none"};
+  const btnGhost={padding:"7px 11px",borderRadius:9,border:`1px solid rgba(28,9,0,0.15)`,background:"transparent",color:"rgba(28,9,0,0.50)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font,transition:"all 0.18s",whiteSpace:"nowrap"};
   const sLabel={fontSize:12,fontWeight:600,color:"rgba(28,9,0,0.45)",textTransform:"uppercase",letterSpacing:"0.10em",marginBottom:14,fontFamily:font};
   const fieldCard={background:"#fff",borderRadius:12,padding:"22px 22px",border:`1px solid rgba(196,122,46,0.18)`,marginBottom:14,transition:"border-color 0.2s"};
 
@@ -3876,7 +3876,7 @@ export default function OccasionDetail(){
                       if(action==="quickplan") startQuickPlan();
                       else next();
                     }}
-                    style={{marginTop:16,width:"100%",padding:"13px",borderRadius:12,background:occAccent,color:"#fff",fontSize:14,fontWeight:700,border:"none",cursor:"pointer",fontFamily:font}}>
+                    style={{marginTop:16,width:"auto",minWidth:140,padding:"7px 16px",borderRadius:9,background:occAccent,color:"#fff",fontSize:12.5,fontWeight:700,border:"none",cursor:"pointer",fontFamily:font}}>
                     Continue →
                   </button>
                 </div>
@@ -6093,14 +6093,19 @@ export default function OccasionDetail(){
           than a flat opaque strip. Always visible except step 7 (the "Tendr wishes you"
           reveal page), which has its own embedded Back/See Plan buttons. contentRef below
           carries matching extra bottom padding so its last content never sits under this. */}
-      {step>0&&step!==7&&(
-        <div className="od-step-footer" style={{position:"absolute",left:0,right:0,bottom:0,background:"rgba(253,250,245,0.72)",backdropFilter:"blur(20px) saturate(180%)",WebkitBackdropFilter:"blur(20px) saturate(180%)",borderTop:"1px solid rgba(28,9,0,0.12)",boxShadow:"0 -10px 28px rgba(28,9,0,0.10)",padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
-          <div style={{maxWidth:680,margin:"0 auto",display:"flex",gap:10,justifyContent:"space-between",alignItems:"center"}}>
+      {/* Hidden while the notes modal is open — it used to render on top of/behind this
+          same footer (the modal's z-index only wins inside the scrollable content area's
+          own stacking context, which the footer sits outside of as a sibling), so the
+          modal's own "Continue →" was getting fought over with these same two buttons
+          instead of being the one clear action on that step. */}
+      {step>0&&step!==7&&!notesPromptOpen&&(
+        <div className="od-step-footer" style={{position:"fixed",left:0,right:0,bottom:0,background:"rgba(253,250,245,0.72)",backdropFilter:"blur(20px) saturate(180%)",WebkitBackdropFilter:"blur(20px) saturate(180%)",borderTop:"1px solid rgba(28,9,0,0.12)",boxShadow:"0 -10px 28px rgba(28,9,0,0.10)",padding:"8px 20px calc(8px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
+          <div style={{maxWidth:680,margin:"0 auto",display:"flex",gap:8,justifyContent:"space-between",alignItems:"center"}}>
             {step>0&&<button onClick={back} style={{...btnGhost,background:"#fff",boxShadow:"0 2px 8px rgba(28,9,0,0.06)"}}>← Back</button>}
             {step===1&&canNext()?(
-              <div style={{display:"flex",flexDirection:"column",gap:8,flex:1}}>
+              <div style={{display:"flex",flexDirection:"column",gap:5,width:"auto",maxWidth:170,marginLeft:"auto"}}>
                 <button onClick={()=>{setNotesPromptAction("quickplan");setNotesPromptOpen(true);}} disabled={quickPlanBuilding}
-                  style={{padding:"13px 18px",borderRadius:10,border:"none",background:`linear-gradient(135deg,${occAccent},${lightenHex(occAccent,0.25)})`,color:"#fff",fontSize:14,fontWeight:800,cursor:quickPlanBuilding?"not-allowed":"pointer",fontFamily:font,boxShadow:`0 4px 14px ${occAccent}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:6,letterSpacing:"0.01em"}}>
+                  style={{padding:"7px 10px",borderRadius:9,border:"none",background:`linear-gradient(135deg,${occAccent},${lightenHex(occAccent,0.25)})`,color:"#fff",fontSize:12,fontWeight:800,cursor:quickPlanBuilding?"not-allowed":"pointer",fontFamily:font,boxShadow:`0 4px 14px ${occAccent}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:5,letterSpacing:"0.01em"}}>
                   ✨ Get My Full Plan Ready
                 </button>
                 <button onClick={()=>{setNotesPromptAction("stepbystep");setNotesPromptOpen(true);}} disabled={quickPlanBuilding} style={{...btnGhost,width:"100%",background:"#fff",boxShadow:"0 2px 8px rgba(28,9,0,0.06)"}}>Build Step by Step →</button>
