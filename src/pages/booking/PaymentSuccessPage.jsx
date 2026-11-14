@@ -9,10 +9,11 @@ import SEO from "../../components/SEO";
 import logo from "../../assets/logos/tendr-logo-secondary.png";
 import Footer from "../../components/Footer";
 import HamburgerNav from "../../components/HamburgerNav";
-import { generateReferralCode, formatCode, DISCOUNT_PERCENT } from "../../utils/referral";
+import { DISCOUNT_PERCENT } from "../../utils/referral";
 import { generateInvoicePDF, generateEventDetailsPDF, generateTimelinePDF, generateInvitationPDF } from "../../utils/pdfGenerator";
 import { writeDayOfToStorage } from "../../utils/eventGenerators";
 import { loadRecSession, clearRecSession } from "../../hooks/useRecommendationTracking";
+import { useMyReferralCode } from "../../hooks/useMyReferralCode";
 
 const font = "'Outfit', sans-serif";
 
@@ -24,7 +25,7 @@ const PaymentSuccessPage = () => {
   const [booking, setBooking] = useState(null);
   const user = useSelector((s) => s.auth.user);
   const pdfUserName = user?.accountType === 'company' && user?.companyName ? `${user.name} — ${user.companyName}` : user?.name;
-  const referralCode = user?._id ? formatCode(generateReferralCode(user._id)) : null;
+  const { formatted: referralCode } = useMyReferralCode();
   const [referralCopied, setReferralCopied] = useState(false);
   const [pinnedMessages, setPinnedMessages] = useState({}); // { vendorId: [msg, ...] }
   const [pdfGenerating, setPdfGenerating] = useState(false);

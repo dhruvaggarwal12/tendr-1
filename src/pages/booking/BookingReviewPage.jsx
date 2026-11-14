@@ -5,7 +5,7 @@ import { clearCart } from "../../redux/giftHamperCartSlice";
 import { selectFunCartItems, selectFunCartTotal, clearFunCart, addActivity } from "../../redux/funActivitiesCartSlice";
 import { FUN_ACTIVITIES } from "../../data/funActivitiesData";
 import SEO from "../../components/SEO";
-import { generateReferralCode, isValidFormat, parseCode, applyDiscount, DISCOUNT_PERCENT } from "../../utils/referral";
+import { isValidFormat, parseCode, applyDiscount, DISCOUNT_PERCENT } from "../../utils/referral";
 import { generateEventDetailsPDF } from "../../utils/pdfGenerator";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -386,9 +386,10 @@ const BookingReviewPage = () => {
   const validateReferral = () => {
     const raw = parseCode(referralInput);
     if (!isValidFormat(raw)) { setReferralState("invalid"); return; }
-    // Prevent using your own code
-    const ownCode = currentUser?._id ? parseCode(generateReferralCode(currentUser._id)) : null;
-    if (ownCode && raw === ownCode) { setReferralState("own"); return; }
+    // Own-code and existence checks happen server-side at /referrals/apply (customer codes
+    // now rotate monthly — see backend routes/referral.js — so there's no local value to
+    // compare against here anymore); this just accepts anything correctly formatted for the
+    // discount preview, same as before.
     setAppliedCode(raw);
     setReferralState("valid");
   };

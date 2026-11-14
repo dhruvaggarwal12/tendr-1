@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { generateReferralCode, formatCode, DISCOUNT_PERCENT } from "../utils/referral";
+import { DISCOUNT_PERCENT } from "../utils/referral";
+import { useMyReferralCode } from "../hooks/useMyReferralCode";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -26,6 +27,7 @@ export default function ReferEarnPopup({ onClose }) {
   const { token, user } = useSelector((s) => s.auth);
   const [wallet, setWallet] = useState(null);
   const [copied, setCopied] = useState(false);
+  const { formatted, validUntil, loading: codeLoading } = useMyReferralCode();
 
   useEffect(() => {
     if (!token || !user?._id) return;
@@ -54,8 +56,6 @@ export default function ReferEarnPopup({ onClose }) {
     );
   }
 
-  const code = generateReferralCode(user._id);
-  const formatted = formatCode(code);
   const tier = wallet?.tier || "none";
   const handleCopy = () => {
     navigator.clipboard.writeText(formatted).then(() => {
@@ -84,7 +84,10 @@ export default function ReferEarnPopup({ onClose }) {
 
         <div style={{ background: "rgba(217,160,95,0.08)", border: "1.5px dashed rgba(217,160,95,0.4)", borderRadius: 16, padding: "16px", marginBottom: 16 }}>
           <p style={{ fontSize: 10, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 6px" }}>Your code</p>
-          <p style={{ fontSize: 22, fontWeight: 900, color: GOLD, letterSpacing: "0.04em", margin: 0 }}>{formatted}</p>
+          <p style={{ fontSize: 22, fontWeight: 900, color: GOLD, letterSpacing: "0.04em", margin: 0 }}>{codeLoading ? "…" : formatted}</p>
+          {validUntil && (
+            <p style={{ fontSize: 10.5, color: MUTED, margin: "6px 0 0" }}>Valid until {new Date(validUntil).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} — then it rotates to a new one</p>
+          )}
         </div>
 
         {wallet?.balance > 0 && (

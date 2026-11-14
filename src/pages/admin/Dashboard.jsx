@@ -11,7 +11,6 @@ import CommunityModerationTab from "./CommunityModerationTab";
 import EditVendorModal from "./EditVendorModal";
 import CatererMenuEditor from "./CatererMenuEditor";
 import PeopleHubTab from "./PeopleHubTab";
-import EventChallengeTab from "./EventChallengeTab";
 import ReferralsTab from "./ReferralsTab";
 import { io } from "socket.io-client";
 import EastIcon from "@mui/icons-material/East";
@@ -308,7 +307,6 @@ const sidebar_arr = [
   { label: "Coordinators",         icon: <span style={{ fontSize: 16 }}>🎯</span>,  key: "Coordinators" },
   { label: "People Hub",           icon: <span style={{ fontSize: 16 }}>👥</span>,  key: "PeopleHub" },
   { label: "Quotation Builder",    icon: <span style={{ fontSize: 16 }}>📋</span>,  key: "QuotationBuilder" },
-  { label: "Event Challenge",      icon: <span style={{ fontSize: 16 }}>🧠</span>,  key: "EventChallenge" },
   { label: "Referrals",            icon: <span style={{ fontSize: 16 }}>🎁</span>,  key: "Referrals" },
 ];
 
@@ -2238,7 +2236,7 @@ const AdminDashboard = () => {
                     <thead>
                       <tr style={{ background: "#fffaf0", borderBottom: "1.5px solid #CCAB4A" }}>
                         {[
-                          "Customer", "Event", "Type", "Date", "Guests", "Budget", "Services", "Booking Type", "Quoted Price",
+                          "Customer", "Event", "Type", "Date", "Guests", "Budget", "Services", "Booking Type", "Quoted Price", "Referral",
                           ...(bookingTab === "Cancelled" ? ["Reason", "Actions"] : ["Actions"]),
                         ].map((h) => (
                           <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "#7A5535", whiteSpace: "nowrap" }}>{h}</th>
@@ -2282,6 +2280,19 @@ const AdminDashboard = () => {
                             {/* ── Quoted Price cell (read-only — set via chat panel) ── */}
                             <td style={{ padding: "10px 14px", whiteSpace: "nowrap", fontSize: 13, fontWeight: plan.quotedPrice > 0 ? 700 : 400, color: plan.quotedPrice > 0 ? "#C47A2E" : "#9B7450" }}>
                               {plan.quotedPrice > 0 ? `₹${plan.quotedPrice.toLocaleString('en-IN')}` : "—"}
+                            </td>
+                            {/* ── Referral cell — code used (if any) and what it earned once credited ── */}
+                            <td style={{ padding: "10px 14px", whiteSpace: "nowrap", fontSize: 12 }}>
+                              {plan.referralCodeUsed ? (
+                                <div>
+                                  <div style={{ fontWeight: 700, color: "#7C3AED", fontFamily: "'Courier New', monospace" }}>{plan.referralCodeUsed}</div>
+                                  <div style={{ color: plan.referralRewardCredited ? "#15803d" : "#9B7450", marginTop: 1 }}>
+                                    {plan.referralRewardCredited ? `₹${(plan.referralRewardAmount || 0).toLocaleString("en-IN")} earned` : "Not yet paid"}
+                                  </div>
+                                </div>
+                              ) : (
+                                <span style={{ color: "#9B7450" }}>No</span>
+                              )}
                             </td>
 
                             {bookingTab === "Cancelled" ? (
@@ -6338,12 +6349,7 @@ const AdminDashboard = () => {
           <CoordinatorsTab token={token} BASE_URL={BASE_URL} />
         )}
 
-        {/* ── EVENT CHALLENGE TAB ── */}
-        {activeDropdown === "eventchallenge" && (
-          <EventChallengeTab token={token} BASE_URL={BASE_URL} />
-        )}
-
-        {/* ── REFERRALS TAB ── */}
+        {/* ── REFERRALS TAB (also covers the Event Intelligence Challenge — stats, questions, attempts) ── */}
         {activeDropdown === "referrals" && (
           <ReferralsTab token={token} BASE_URL={BASE_URL} />
         )}

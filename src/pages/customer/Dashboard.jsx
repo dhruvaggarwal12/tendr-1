@@ -11,7 +11,8 @@ import Footer from "../../components/Footer";
 import { Button, Badge, EmptyState } from "../../components/ui";
 import { resetEventPlanning, setMultipleFormData, setBookingType, setCategoryBudgets } from "../../redux/eventPlanningSlice";
 import { setFinalisedVendor } from "../../redux/listingFiltersSlice";
-import { generateReferralCode, formatCode, DISCOUNT_PERCENT } from "../../utils/referral";
+import { DISCOUNT_PERCENT } from "../../utils/referral";
+import { useMyReferralCode } from "../../hooks/useMyReferralCode";
 import { useChatOverlay } from "../../context/ChatContext";
 import { useBookVendors } from "../../context/BookVendorsContext";
 import { generateInvoicePDF, generateEventDetailsPDF, generateTimelinePDF, generateInvitationPDF } from "../../utils/pdfGenerator";
@@ -181,6 +182,7 @@ export default function CustomerDashboard() {
   const [referralCopied, setReferralCopied] = useState(false);
   const [referralModalOpen, setReferralModalOpen] = useState(false);
   const [referralWallet, setReferralWallet] = useState(null); // { balance, tier, tierAnswered, earnings } — tier comes from the Event Intelligence Challenge
+  const myReferralCode = useMyReferralCode(); // { code, formatted, validUntil, usageCount, loading } — rotates every 30 days, see the hook
 
   // Referral wallet withdrawal
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
@@ -1015,8 +1017,7 @@ export default function CustomerDashboard() {
 
         {/* Referral Card — code is available to every signed-up customer, no booking required */}
         {user?._id && (() => {
-          const code = generateReferralCode(user._id);
-          const formatted = formatCode(code);
+          const formatted = myReferralCode.loading ? "…" : myReferralCode.formatted;
           const tier = referralWallet?.tier || "none";
           const tierLabel = { none: "Unrated", starter: "Starter", achiever: "Achiever", pro: "Pro", champion: "Champion" }[tier];
           const tierColor = { none: "#9B7450", starter: "#C47A2E", achiever: "#0EA5E9", pro: "#7C3AED", champion: "#D4AF37" }[tier];
@@ -1094,8 +1095,7 @@ export default function CustomerDashboard() {
 
         {/* Referral code modal — centred, dismissible ONLY via the × button (no backdrop/Escape close) */}
         {referralModalOpen && user?._id && (() => {
-          const code = generateReferralCode(user._id);
-          const formatted = formatCode(code);
+          const formatted = myReferralCode.loading ? "…" : myReferralCode.formatted;
           const GOLD = "#D9A05F";
           const WARM_WHITE = "#FFF7F0";
           const MUTED = "rgba(255,247,240,0.55)";
@@ -1144,6 +1144,11 @@ export default function CustomerDashboard() {
                     <CopyIcon />
                   </button>
                 </div>
+                {myReferralCode.validUntil && (
+                  <p style={{ fontSize: 11, color: MUTED, margin: "-12px 0 16px" }}>
+                    Valid until {new Date(myReferralCode.validUntil).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} — then it rotates to a new code
+                  </p>
+                )}
 
                 {/* Action buttons */}
                 <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>

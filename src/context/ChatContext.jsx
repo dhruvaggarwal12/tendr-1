@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import useSocket from "../hooks/useSocket";
 import ChatToast from "../components/ChatToast";
+import NotificationPermissionPrompt from "../components/NotificationPermissionPrompt";
 // ChatProvider wraps <RouterProvider> in App.jsx (it's a router ANCESTOR, not
 // a descendant), so the useNavigate() hook isn't available inside it — same
 // constraint FloatingChatButton.jsx already works around by importing the
@@ -29,6 +30,8 @@ export function ChatProvider({ children }) {
   // just a live local mirror of it. ──────────────────────────────────────
   const [unreadByConversation, setUnreadByConversation] = useState({});
   const [toast, setToast] = useState(null);
+  const [showNotifPrompt, setShowNotifPrompt] = useState(false);
+  const notifPromptConsideredRef = useRef(false);
   const role = token ? (parseJwt(token).vendorId ? "vendor" : "customer") : null;
   const chatStateRef = useRef(chatState);
   chatStateRef.current = chatState;
@@ -98,6 +101,31 @@ export function ChatProvider({ children }) {
     });
     return off;
   }, [on, role]);
+
+  // Ask for browser notification permission the first time someone actually opens a
+  // chat this session — not on page load, and never more than once per session even if
+  // they dismiss it — this is the one context where the ask is actually relevant (see
+  // NotificationPermissionPrompt.jsx for why this didn't work at all before: nothing in
+  // the chat flow ever called Notification.requestPermission()).
+  useEffect(() => {
+    if (!chatState || notifPromptConsideredRef.current) return;
+    notifPromptConsideredRef.current = true;
+    if (!("Notification" in window) || Notification.permission !== "default") return;
+    try {
+      if (localStorage.getItem("tendr_notif_prompt_dismissed") === "1") return;
+    } catch {}
+    const t = setTimeout(() => setShowNotifPrompt(true), 1200);
+    return () => clearTimeout(t);
+  }, [chatState]);
+
+  const dismissNotifPrompt = () => {
+    setShowNotifPrompt(false);
+    try { localStorage.setItem("tendr_notif_prompt_dismissed", "1"); } catch {}
+  };
+
+  const enableNotifications = () => {
+    Notification.requestPermission().finally(() => dismissNotifPrompt());
+  };
 
   const markConversationRead = useCallback((conversationId) => {
     if (!conversationId || !token || !role) return;
@@ -195,6 +223,7 @@ export function ChatProvider({ children }) {
     <ChatContext.Provider value={{ chatState, openVendorChat, openExistingChat, openConciergeChat, openTendrTeamChat, openOccasionsChat, openFunActivitiesChat, openAllBookingsChat, setConversationId, minimizeChat, expandChat, closeChat, totalUnread, unreadByConversation, markConversationRead }}>
       {children}
       <ChatToast toast={toast} onDismiss={() => setToast(null)} onView={viewToastConversation} />
+      <NotificationPermissionPrompt show={showNotifPrompt} onEnable={enableNotifications} onDismiss={dismissNotifPrompt} />
     </ChatContext.Provider>
   );
 }

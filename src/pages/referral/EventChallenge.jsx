@@ -143,10 +143,9 @@ export default function EventChallenge() {
           const oi = opinions.findIndex(q => (ot[q.id] || "").trim().length < 10);
           resumeIdx = oi === -1 ? mcqs.length + opinions.length : mcqs.length + oi;
         }
-        if (resumeIdx === mcqs.length + opinions.length && photoUrl && photoExpl.trim().length > 0) {
-          resumeIdx = mcqs.length + opinions.length + 1; // photo already done too -> review step
-        }
-        setStepIdx(Math.max(0, resumeIdx));
+        // Photo is the last real step now (no separate review step) — if everything,
+        // including photo, is already filled in, resume right there so Finish is one tap away.
+        setStepIdx(Math.max(0, Math.min(resumeIdx, mcqs.length + opinions.length)));
 
         setView("questionnaire");
       })
@@ -157,7 +156,6 @@ export default function EventChallenge() {
     ...attempt.mcqs.map(q => ({ type: "mcq", q })),
     ...attempt.opinionQuestions.map(q => ({ type: "opinion", q })),
     { type: "photo", q: attempt.photoTask },
-    { type: "review" },
   ] : [];
   const totalQuestions = attempt ? attempt.mcqs.length + attempt.opinionQuestions.length + 1 : 0;
   const mcqDone = attempt ? attempt.mcqs.filter(q => mcqAnswers[q.id] !== undefined).length : 0;
@@ -409,6 +407,18 @@ export default function EventChallenge() {
             </div>
           </div>
 
+          {/* Just a fresh submit's ceiling + how to raise it — never pass/fail or why
+              (results of individual sections are never shown to the customer). */}
+          {result?.reopenDeadline && new Date(result.reopenDeadline) > new Date() && (
+            <p style={{ fontSize: 11.5, color: "#9B7450", marginBottom: 16, lineHeight: 1.5 }}>
+              You can still add to this until{" "}
+              <strong style={{ color: INK }}>
+                {new Date(result.reopenDeadline).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })}
+              </strong>{" "}
+              to raise it further — after that, a fresh attempt starts from scratch.
+            </p>
+          )}
+
           {r?.suggestions?.length > 0 ? (
             <div style={{ textAlign: "left", marginBottom: 24 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: GOLD, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
@@ -531,39 +541,20 @@ export default function EventChallenge() {
           );
         })()}
 
-        {step.type === "review" && (
-          <div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: INK, marginBottom: 10 }}>Ready to submit?</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
-              {[
-                [`Multiple choice`, `${mcqDone}/${attempt.mcqs.length} answered`],
-                [`Opinion questions`, `${opinionDone}/${attempt.opinionQuestions.length} answered`],
-                [`Photo task`, photoDone ? "Complete" : "Incomplete"],
-              ].map(([label, val]) => (
-                <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", borderRadius: 10, background: "#fff", border: "1px solid rgba(196,122,46,0.15)", fontSize: 13 }}>
-                  <span style={{ color: "#5a3a1a" }}>{label}</span>
-                  <span style={{ fontWeight: 700, color: INK }}>{val}</span>
-                </div>
-              ))}
-            </div>
-            <p style={{ fontSize: 11.5, color: "#9B7450", marginBottom: 14, lineHeight: 1.5 }}>
-              Whatever you've completed counts — there's no pass or fail. Finishing more sections raises how much you earn per successful referral, up to ₹{LADDER[LADDER.length - 1]}.
-            </p>
-            {error && <div style={{ fontSize: 12.5, color: "#DC2626", marginBottom: 14 }}>{error}</div>}
-            <button disabled={submitting} onClick={submit}
-              style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: submitting ? "rgba(196,122,46,0.4)" : GOLD, color: "#fff", fontFamily: F, fontWeight: 800, fontSize: 15, cursor: submitting ? "default" : "pointer" }}>
-              {submitting ? "Saving…" : "Submit →"}
-            </button>
-          </div>
-        )}
+        {error && isLast && <div style={{ fontSize: 12.5, color: "#DC2626", marginTop: 16 }}>{error}</div>}
 
         <div style={{ display: "flex", gap: 10, marginTop: 28 }}>
           {stepIdx > 0 && (
             <button onClick={() => setStepIdx(s => s - 1)} style={{ padding: "13px 18px", borderRadius: 11, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#6B3A1F", fontFamily: F, fontWeight: 700, cursor: "pointer" }}>← Back</button>
           )}
-          {!isLast && (
+          {isLast ? (
+            <button disabled={submitting} onClick={submit}
+              style={{ flex: 1, padding: "14px", borderRadius: 11, border: "none", background: submitting ? "rgba(196,122,46,0.4)" : GOLD, color: "#fff", fontFamily: F, fontWeight: 800, fontSize: 14.5, cursor: submitting ? "default" : "pointer" }}>
+              {submitting ? "Finishing…" : "Finish →"}
+            </button>
+          ) : (
             <button onClick={() => setStepIdx(s => s + 1)} style={{ flex: 1, padding: "14px", borderRadius: 11, border: "none", background: GOLD, color: "#fff", fontFamily: F, fontWeight: 800, fontSize: 14.5, cursor: "pointer" }}>
-              {step.type === "photo" ? "Review & Submit →" : "Next →"}
+              Next →
             </button>
           )}
         </div>

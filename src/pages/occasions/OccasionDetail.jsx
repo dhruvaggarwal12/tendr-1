@@ -17,6 +17,7 @@ import { ALL_INDIAN_CITIES, SERVICED_CITIES } from "../../data/indianCities";
 import { FUN_ACTIVITIES } from "../../data/funActivitiesData";
 import { saveResumeUrl } from "../../utils/planningResume";
 import { fetchPriceBenchmark, blendWithBenchmark } from "../../utils/priceEstimator";
+import { getRealPricedRows, formatRealPrice } from "../../utils/occasionPricingLookup";
 import { addActivity, removeActivity } from "../../redux/funActivitiesCartSlice";
 import { addToCart as addToGhCart, removeFromCart as removeFromGhCart, updateQuantity as updateGhQuantity, selectCartItems as selectGhCartItems } from "../../redux/giftHamperCartSlice";
 import { syncCartToBackend } from "../../utils/cartBookingSync";
@@ -3252,6 +3253,25 @@ export default function OccasionDetail(){
                 })}
               </div>
 
+              {(()=>{
+                const realRows=getRealPricedRows(occasion.name,v,{guests}).slice(0,3);
+                if(!realRows.length) return null;
+                return(
+                  <div style={{marginBottom:canCustomize?16:4,padding:"10px 12px",borderRadius:10,background:"rgba(196,122,46,0.04)",border:"1px dashed rgba(196,122,46,0.25)"}}>
+                    <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Real prices we found nearby</div>
+                    {realRows.map((r,ri)=>(
+                      <div key={ri} style={{display:"flex",justifyContent:"space-between",gap:8,fontSize:12,color:muted,padding:"3px 0"}}>
+                        <span style={{flex:1,minWidth:0}}>
+                          {r.service}
+                          {r.confidence==="Quote-first"&&<span style={{marginLeft:6,fontSize:9,fontWeight:700,color:"#9B7450",background:"rgba(196,122,46,0.1)",borderRadius:100,padding:"1px 6px"}}>Quote-first</span>}
+                        </span>
+                        <span style={{fontWeight:700,color:ink,flexShrink:0}}>{formatRealPrice(r)}</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+
               {canCustomize&&(
                 <button onClick={()=>{setStep(3);setExpandedVendor(v);if(v==="Decorator")setShowDecorBuilder(true);if(v==="Caterer")setShowCateringBuilder(true);setEditingService(null);}}
                   style={{width:"100%",padding:"12px",borderRadius:12,border:`1.5px dashed ${gold}50`,background:"transparent",color:gold,fontFamily:font,fontWeight:700,fontSize:12.5,cursor:"pointer",marginBottom:4}}>
@@ -4927,6 +4947,29 @@ export default function OccasionDetail(){
                               );
                             })}
                           </div>
+                          {(()=>{
+                            // Real, sourced vendor prices found for this occasion+category
+                            // (see src/utils/occasionPricingLookup.js) — shown as a reference
+                            // alongside the package picker above, not instead of it: coverage
+                            // is real but partial, so this never replaces the existing tiers.
+                            const realRows=getRealPricedRows(occasion.name,v,{guests}).slice(0,3);
+                            if(!realRows.length) return null;
+                            return(
+                              <div style={{marginTop:10,padding:"10px 12px",borderRadius:10,background:"rgba(196,122,46,0.04)",border:"1px dashed rgba(196,122,46,0.25)"}}>
+                                <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Real prices we found nearby</div>
+                                {realRows.map((r,ri)=>(
+                                  <div key={ri} style={{display:"flex",justifyContent:"space-between",gap:8,fontSize:12,color:muted,padding:"3px 0"}}>
+                                    <span style={{flex:1,minWidth:0}}>
+                                      {r.service}
+                                      {r.confidence==="Quote-first"&&<span style={{marginLeft:6,fontSize:9,fontWeight:700,color:"#9B7450",background:"rgba(196,122,46,0.1)",borderRadius:100,padding:"1px 6px"}}>Quote-first</span>}
+                                    </span>
+                                    <span style={{fontWeight:700,color:ink,flexShrink:0}}>{formatRealPrice(r)}</span>
+                                  </div>
+                                ))}
+                                <div style={{fontSize:9.5,color:muted,marginTop:4}}>From real vendor listings — final price confirmed when you book.</div>
+                              </div>
+                            );
+                          })()}
                           {typeof chosen==="number"&&renderCrossSell(v)}
                         </div>
                       )}
