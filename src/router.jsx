@@ -2,7 +2,7 @@ import { createBrowserRouter, Outlet, ScrollRestoration, Navigate, useLocation, 
 import { lazy, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
-import PWAInstallPrompt from "./components/PWAInstallPrompt";
+import DashboardIntroPopup from "./components/DashboardIntroPopup";
 import MobileBottomNav from "./components/MobileBottomNav";
 import UpcomingEventNudge from "./components/UpcomingEventNudge";
 import FirstTimeExperience from "./components/FirstTimeExperience";
@@ -203,7 +203,7 @@ function RootLayout() {
     <>
       <AppInit />
       <ScrollRestoration />
-      <PWAInstallPrompt />
+      <DashboardIntroPopup />
       <MobileBottomNav />
       <PageTransition />
       <UpcomingEventNudge />

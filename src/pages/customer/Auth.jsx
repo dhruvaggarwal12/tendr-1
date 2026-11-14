@@ -41,14 +41,14 @@ function GoogleAuthBtn({ isBusy }) {
   // Shared post-login path for both a returning Google user (handled inline below) and a
   // brand-new one who just completed the phone step — same navigation/sync side effects
   // the password login path already triggers.
-  const finishLogin = (data) => {
+  const finishLogin = (data, { isNewSignup = false } = {}) => {
     dispatch({ type: "auth/login/fulfilled", payload: data });
     const loggedUser = data.consumer;
     if (loggedUser?.isAdmin) { navigate("/AdminDashboard"); return; }
     if (loggedUser?.accountType === "vendor") { navigate("/vendor/register"); return; }
     if (loggedUser?.accountType === "company") { navigate("/dashboard"); return; }
     syncCartToBackend(data.token);
-    window.dispatchEvent(new CustomEvent("tendr:show-pwa-prompt", { detail: { source: "signup" } }));
+    if (isNewSignup) window.dispatchEvent(new CustomEvent("tendr:show-dashboard-intro"));
     navigate(location.state?.returnTo || "/");
     setTimeout(() => window.scrollTo({ top: 0, behavior: "instant" }), 0);
   };
@@ -92,7 +92,7 @@ function GoogleAuthBtn({ isBusy }) {
       });
       const data = await res.json();
       if (!res.ok) { setGError(data.error || data.message || "Failed to complete sign-up."); return; }
-      finishLogin(data);
+      finishLogin(data, { isNewSignup: true });
     } catch {
       setGError("Failed to complete sign-up. Please try again.");
     } finally {
@@ -304,8 +304,9 @@ const Auth = () => {
       } catch {}
       const returnTo = location.state?.returnTo;
       if (returnTo) { navigate(returnTo); setTimeout(() => window.scrollTo({ top: 0, behavior: "instant" }), 0); return; }
-      // After signup: trigger global PWA prompt overlay, then navigate home
-      window.dispatchEvent(new CustomEvent("tendr:show-pwa-prompt", { detail: { source: "signup" } }));
+      // After a personal signup: show the Dashboard intro, then navigate home — the
+      // popup itself hands off to the PWA-install prompt once it's dismissed.
+      window.dispatchEvent(new CustomEvent("tendr:show-dashboard-intro"));
       navigate(location.state?.returnTo || "/");
       setTimeout(() => window.scrollTo({ top: 0, behavior: "instant" }), 0);
 

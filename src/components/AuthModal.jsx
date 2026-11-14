@@ -133,7 +133,6 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
       if (!res.ok) throw new Error(data.error || "Failed to complete sign-up");
       dispatch({ type: "auth/login/fulfilled", payload: data });
       if (data?.token) { dispatch(fetchEventData(data.token)); syncProgressOnLogin(data.token); }
-      window.dispatchEvent(new CustomEvent("tendr:show-pwa-prompt", { detail: { source: "signup" } }));
       onSuccess?.();
       onClose?.();
     } catch (err) {
@@ -217,7 +216,6 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
           localStorage.setItem("tendr:session:discovery", JSON.stringify({ ...raw, __expiresAt: exp.getTime() }));
         }
       } catch {}
-      window.dispatchEvent(new CustomEvent("tendr:show-pwa-prompt", { detail: { source: "signup" } }));
       onSuccess?.();
       onClose?.();
     } catch { setLocalError("Signup failed. Please try again."); }
