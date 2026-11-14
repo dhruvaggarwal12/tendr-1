@@ -87,25 +87,79 @@ const SECTION_SVGS = {
 
 // ── shared modal shell ────────────────────────────────────────────────────────
 function Modal({ onClose, title, emoji, children, wide }) {
+  // Minimized = a small YouTube-style bar docked at the bottom; children stay mounted
+  // the whole time (just the full panel is display:none'd), so a live game's socket/timer
+  // state keeps running while minimized instead of getting torn down and lost.
+  const [minimized, setMinimized] = useState(false);
+
   useEffect(() => {
     const handler = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
+  // Hide the global mobile bottom nav while a tool is expanded full-page — same
+  // window.__tendrDrawers mechanism other full-screen overlays already use (see
+  // HomeTourFlow.jsx) — not while minimized, since then the person's back to
+  // browsing normally with just the small floating bar on screen.
+  useEffect(() => {
+    if (typeof window === "undefined" || minimized) return;
+    if (!window.__tendrDrawers) window.__tendrDrawers = new Set();
+    window.__tendrDrawers.add("housepartytool");
+    window.dispatchEvent(new Event("tendr:drawer"));
+    return () => {
+      window.__tendrDrawers?.delete("housepartytool");
+      window.dispatchEvent(new Event("tendr:drawer"));
+    };
+  }, [minimized]);
+
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 1000, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: 0 }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: "#140e08", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: wide ? 700 : 480, maxHeight: "92dvh", overflowY: "auto", padding: "24px 20px calc(32px + env(safe-area-inset-bottom, 0px))", fontFamily: font, boxShadow: "0 -8px 40px rgba(0,0,0,0.5)" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 28 }}>{emoji}</span>
-            <span style={{ fontSize: 18, fontWeight: 800, color: "#fff" }}>{title}</span>
-          </div>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.1)", border: "none", color: "#fff", width: 32, height: 32, borderRadius: "50%", cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+    <>
+      <style>{`
+        .php-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; display:flex; align-items:flex-end; justify-content:center; padding:0; }
+        .php-modal-panel { background:#140e08; border-radius:20px 20px 0 0; width:100%; max-width:${wide ? 700 : 480}px; max-height:92dvh; overflow-y:auto; box-sizing:border-box; padding:24px 20px calc(32px + env(safe-area-inset-bottom, 0px)); font-family:${font}; box-shadow:0 -8px 40px rgba(0,0,0,0.5); }
+        .php-modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+        .php-modal-title-row { display:flex; align-items:center; gap:10px; }
+        .php-modal-emoji { font-size:28px; }
+        .php-modal-title { font-size:18px; font-weight:800; color:#fff; }
+        .php-modal-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+        .php-modal-btn { background:rgba(255,255,255,0.1); border:none; color:#fff; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        @media (max-width: 767px) {
+          .php-modal-overlay { align-items:stretch; }
+          .php-modal-panel { max-width:none; max-height:none; width:100%; height:100dvh; border-radius:0; display:flex; flex-direction:column; padding:calc(14px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
+          .php-modal-header { flex-direction:column; align-items:center; gap:2px; margin-bottom:18px; position:relative; }
+          .php-modal-title-row { flex-direction:column; gap:4px; }
+          .php-modal-emoji { font-size:42px; }
+          .php-modal-title { font-size:12px; font-weight:700; text-align:center; letter-spacing:0.02em; }
+          .php-modal-actions { position:absolute; top:0; right:0; }
+        }
+      `}</style>
+
+      {minimized && (
+        <div onClick={() => setMinimized(false)} style={{ position: "fixed", left: 12, right: 12, bottom: "calc(12px + env(safe-area-inset-bottom, 0px))", zIndex: 1000, maxWidth: 480, margin: "0 auto", background: "#140e08", borderRadius: 16, padding: "10px 14px", display: "flex", alignItems: "center", gap: 10, boxShadow: "0 8px 28px rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.12)", cursor: "pointer", fontFamily: font }}>
+          <span style={{ fontSize: 22, flexShrink: 0 }}>{emoji}</span>
+          <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</span>
+          <button onClick={(e) => { e.stopPropagation(); setMinimized(false); }} aria-label="Expand" style={{ background: "rgba(255,255,255,0.1)", border: "none", color: "#fff", width: 28, height: 28, borderRadius: "50%", cursor: "pointer", fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>⌃</button>
+          <button onClick={(e) => { e.stopPropagation(); onClose(); }} aria-label="Close" style={{ background: "rgba(255,255,255,0.1)", border: "none", color: "#fff", width: 28, height: 28, borderRadius: "50%", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
         </div>
-        {children}
+      )}
+
+      <div onClick={onClose} className="php-modal-overlay" style={{ display: minimized ? "none" : "flex" }}>
+        <div onClick={e => e.stopPropagation()} className="php-modal-panel">
+          <div className="php-modal-header">
+            <div className="php-modal-title-row">
+              <span className="php-modal-emoji">{emoji}</span>
+              <span className="php-modal-title">{title}</span>
+            </div>
+            <div className="php-modal-actions">
+              <button onClick={() => setMinimized(true)} aria-label="Minimize" className="php-modal-btn">⌄</button>
+              <button onClick={onClose} aria-label="Close" className="php-modal-btn">✕</button>
+            </div>
+          </div>
+          {children}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
