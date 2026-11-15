@@ -1,0 +1,14 @@
+{
+  "appId": "in.co.tendr.app",
+  "appName": "Tendr",
+  "webDir": "dist",
+  "backgroundColor": "#FFF8F2",
+  "server": {
+    "url": "https://tendr.co.in",
+    "androidScheme": "https",
+    "allowNavigation": ["tendr.co.in", "*.tendr.co.in"]
+  },
+  "android": {
+    "backgroundColor": "#FFF8F2"
+  }
+}

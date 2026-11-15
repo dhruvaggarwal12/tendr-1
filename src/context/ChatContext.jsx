@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import useSocket from "../hooks/useSocket";
 import ChatToast from "../components/ChatToast";
 import NotificationPermissionPrompt from "../components/NotificationPermissionPrompt";
+import { enablePushNotifications, disablePushNotifications } from "../utils/webPush";
 // ChatProvider wraps <RouterProvider> in App.jsx (it's a router ANCESTOR, not
 // a descendant), so the useNavigate() hook isn't available inside it — same
 // constraint FloatingChatButton.jsx already works around by importing the
@@ -124,8 +125,21 @@ export function ChatProvider({ children }) {
   };
 
   const enableNotifications = () => {
-    Notification.requestPermission().finally(() => dismissNotifPrompt());
+    enablePushNotifications(token, role).finally(() => dismissNotifPrompt());
   };
+
+  // Tracks the last known role so the logout cleanup below (where token has
+  // already gone null, taking role with it) still knows which endpoint to call.
+  const lastRoleRef = useRef(role);
+  if (role) lastRoleRef.current = role;
+
+  const prevTokenRef = useRef(token);
+  useEffect(() => {
+    if (prevTokenRef.current && !token) {
+      disablePushNotifications(prevTokenRef.current, lastRoleRef.current);
+    }
+    prevTokenRef.current = token;
+  }, [token]);
 
   const markConversationRead = useCallback((conversationId) => {
     if (!conversationId || !token || !role) return;

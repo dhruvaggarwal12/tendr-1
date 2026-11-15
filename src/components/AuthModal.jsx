@@ -5,8 +5,10 @@ import { fetchEventData } from "../redux/eventPlanningSlice";
 import { syncProgressOnLogin } from "../utils/progressSync";
 import logo from "../assets/logos/tendr-logo-secondary.png";
 import { useGoogleLogin } from "@react-oauth/google";
+import { appleSignIn } from "../utils/appleAuth";
 
 const HAS_GOOGLE = !!import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const HAS_APPLE = !!import.meta.env.VITE_APPLE_CLIENT_ID;
 
 function GoogleBtn({ onGoogleSuccess, disabled }) {
   const googleLogin = useGoogleLogin({
@@ -15,9 +17,30 @@ function GoogleBtn({ onGoogleSuccess, disabled }) {
   });
   return (
     <button type="button" onClick={() => googleLogin()} disabled={disabled}
-      style={{ width: "100%", padding: "11px 14px", marginBottom: 14, background: "#fff", border: "1.5px solid rgba(139,69,19,0.22)", borderRadius: 11, cursor: disabled ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 600, color: "#2C1A0E", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+      style={{ width: "100%", padding: "11px 14px", marginBottom: 10, background: "#fff", border: "1.5px solid rgba(139,69,19,0.22)", borderRadius: 11, cursor: disabled ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 600, color: "#2C1A0E", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
       <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
       Continue with Google
+    </button>
+  );
+}
+
+function AppleBtn({ onAppleSuccess, onAppleError, disabled }) {
+  const handleClick = async () => {
+    try {
+      const { idToken, name } = await appleSignIn();
+      onAppleSuccess(idToken, name);
+    } catch (e) {
+      if (e?.error !== "popup_closed_by_user") onAppleError();
+    }
+  };
+  return (
+    <button type="button" onClick={handleClick} disabled={disabled}
+      style={{ width: "100%", padding: "11px 14px", background: "#000", border: "none", borderRadius: 11, cursor: disabled ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 600, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 8c-2.6-2.1-6.2-1-6.2 3.4C5.8 16 9 20.5 12 20.5s6.2-4.5 6.2-9.1c0-4.4-3.6-5.5-6.2-3.4z" fill="#fff" stroke="none" />
+        <path d="M12 8V5.2c0-.95.75-1.7 1.9-2.2" />
+      </svg>
+      Continue with Apple
     </button>
   );
 }
@@ -72,8 +95,8 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
   const [localLoading, setLocalLoading]   = useState(false);
   const [localError, setLocalError]       = useState("");
   const [slowMsg, setSlowMsg]             = useState(false);
-  const [googlePhoneStep, setGooglePhoneStep] = useState(null); // { pendingToken }
-  const [googlePhone, setGooglePhone]         = useState("");
+  const [socialPhoneStep, setSocialPhoneStep] = useState(null); // { provider, pendingToken, name }
+  const [socialPhone, setSocialPhone]         = useState("");
 
   const isBusy = loading || localLoading;
 
@@ -84,8 +107,8 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
     setLocalError("");
     setPasswordError("");
     setShowPassword(false);
-    setGooglePhoneStep(null);
-    setGooglePhone("");
+    setSocialPhoneStep(null);
+    setSocialPhone("");
     dispatch(clearError());
   }, [open, defaultMode, dispatch]);
 
@@ -102,7 +125,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Google sign-in failed");
       if (data.needsPhone) {
-        setGooglePhoneStep({ pendingToken: data.pendingToken });
+        setSocialPhoneStep({ provider: "google", pendingToken: data.pendingToken });
         return;
       }
       dispatch({ type: "auth/login/fulfilled", payload: data });
@@ -116,17 +139,48 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
     }
   };
 
-  const handleGoogleComplete = async () => {
-    if (!googlePhone || !/^[6-9]\d{9}$/.test(googlePhone)) {
+  const handleAppleToken = async (idToken, name) => {
+    setLocalLoading(true);
+    setLocalError("");
+    try {
+      const res = await fetch(`${BASE_URL}/auth/apple`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken, name }),
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Apple sign-in failed");
+      if (data.needsPhone) {
+        setSocialPhoneStep({ provider: "apple", pendingToken: data.pendingToken, name });
+        return;
+      }
+      dispatch({ type: "auth/login/fulfilled", payload: data });
+      if (data?.token) { dispatch(fetchEventData(data.token)); syncProgressOnLogin(data.token); }
+      onSuccess?.();
+      onClose?.();
+    } catch (err) {
+      setLocalError(err.message || "Apple sign-in failed.");
+    } finally {
+      setLocalLoading(false);
+    }
+  };
+
+  const handleSocialComplete = async () => {
+    if (!socialPhone || !/^[6-9]\d{9}$/.test(socialPhone)) {
       setLocalError("Enter a valid 10-digit Indian mobile number"); return;
     }
     setLocalLoading(true);
     setLocalError("");
     try {
-      const res = await fetch(`${BASE_URL}/auth/google/complete`, {
+      const provider = socialPhoneStep.provider;
+      const res = await fetch(`${BASE_URL}/auth/${provider}/complete`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pendingToken: googlePhoneStep.pendingToken, phoneNumber: googlePhone }),
+        body: JSON.stringify({
+          pendingToken: socialPhoneStep.pendingToken, phoneNumber: socialPhone,
+          ...(provider === "apple" ? { name: socialPhoneStep.name } : {}),
+        }),
         credentials: "include",
       });
       const data = await res.json();
@@ -258,8 +312,8 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
             <img src={logo} alt="Tendr" style={{ height: 24, display: "inline-block" }} />
           </div>
 
-          {/* Tabs — hidden during Google phone step */}
-          <div style={{ display: googlePhoneStep ? "none" : "flex", background: "rgba(44,26,14,0.05)", borderRadius: 11, padding: 3, marginBottom: 16, gap: 3 }}>
+          {/* Tabs — hidden during a social phone step */}
+          <div style={{ display: socialPhoneStep ? "none" : "flex", background: "rgba(44,26,14,0.05)", borderRadius: 11, padding: 3, marginBottom: 16, gap: 3 }}>
             {["login", "signup"].map(mode => (
               <button
                 key={mode}
@@ -277,8 +331,8 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
             ))}
           </div>
 
-          {/* ── Google phone step ── */}
-          {googlePhoneStep && (
+          {/* ── Social (Google / Apple) phone step ── */}
+          {socialPhoneStep && (
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <p style={{ fontSize: 13.5, color: BROWN, textAlign: "center", lineHeight: 1.55, margin: 0 }}>
                 One last step — enter your mobile number to complete your account.
@@ -290,17 +344,17 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
               )}
               <div>
                 <label style={labelStyle}>Mobile Number</label>
-                <input type="tel" value={googlePhone}
-                  onChange={e => { setGooglePhone(e.target.value.replace(/\D/g, "").slice(0, 10)); setLocalError(""); }}
-                  onFocus={() => setFocused("googlePhone")} onBlur={() => setFocused("")}
-                  style={{ ...inputStyle, borderColor: focused === "googlePhone" ? GOLD : "rgba(139,69,19,0.22)" }}
+                <input type="tel" value={socialPhone}
+                  onChange={e => { setSocialPhone(e.target.value.replace(/\D/g, "").slice(0, 10)); setLocalError(""); }}
+                  onFocus={() => setFocused("socialPhone")} onBlur={() => setFocused("")}
+                  style={{ ...inputStyle, borderColor: focused === "socialPhone" ? GOLD : "rgba(139,69,19,0.22)" }}
                   placeholder="10-digit number" maxLength={10} disabled={isBusy} autoFocus />
               </div>
-              <button type="button" onClick={handleGoogleComplete} disabled={isBusy}
+              <button type="button" onClick={handleSocialComplete} disabled={isBusy}
                 style={{ width: "100%", padding: "12px", background: isBusy ? "#e5e7eb" : `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: isBusy ? "#9ca3af" : "#fff", fontSize: 14, fontWeight: 700, fontFamily: font, border: "none", borderRadius: 11, cursor: isBusy ? "not-allowed" : "pointer", boxShadow: !isBusy ? "0 4px 14px rgba(196,122,46,0.35)" : "none" }}>
                 {isBusy ? "Creating account…" : "Complete Sign Up"}
               </button>
-              <button type="button" onClick={() => { setGooglePhoneStep(null); setGooglePhone(""); setLocalError(""); }}
+              <button type="button" onClick={() => { setSocialPhoneStep(null); setSocialPhone(""); setLocalError(""); }}
                 style={{ background: "none", border: "none", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, textAlign: "center", padding: "4px 0" }}>
                 ← Back
               </button>
@@ -308,14 +362,14 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
           )}
 
           {/* Slow server */}
-          {!googlePhoneStep && isBusy && slowMsg && (
+          {!socialPhoneStep && isBusy && slowMsg && (
             <div style={{ background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 10, padding: "9px 12px", marginBottom: 16, fontSize: 12.5, color: "#92400e", textAlign: "center" }}>
               ⏳ Server is waking up — usually under 30 seconds…
             </div>
           )}
 
-          {/* Error + forms — hidden during google phone step */}
-          {!googlePhoneStep && (<>
+          {/* Error + forms — hidden during a social phone step */}
+          {!socialPhoneStep && (<>
             {errorMsg && (
               <div style={{ background: "rgba(192,57,43,0.07)", border: "1px solid rgba(192,57,43,0.18)", borderRadius: 10, padding: "10px 13px", marginBottom: 16, fontSize: 13, color: "#C0392B", textAlign: "center" }}>
                 {errorMsg}
@@ -334,6 +388,13 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
 
             {/* Google button — only when VITE_GOOGLE_CLIENT_ID is configured */}
             {HAS_GOOGLE && <GoogleBtn onGoogleSuccess={handleGoogleToken} disabled={isBusy} />}
+
+            {/* Apple button — only when VITE_APPLE_CLIENT_ID is configured */}
+            {HAS_APPLE && (
+              <div style={{ marginBottom: 14 }}>
+                <AppleBtn onAppleSuccess={handleAppleToken} onAppleError={() => setLocalError("Apple sign-in failed. Please try again.")} disabled={isBusy} />
+              </div>
+            )}
 
             {/* Divider */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
@@ -434,7 +495,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
           )}
           </>)}
 
-          {showSkip && !googlePhoneStep && (
+          {showSkip && !socialPhoneStep && (
             <button
               type="button"
               onClick={() => { if (!isBusy) onClose?.(); }}
@@ -443,7 +504,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
               Skip for now
             </button>
           )}
-          {!googlePhoneStep && (
+          {!socialPhoneStep && (
             <p style={{ marginTop: 12, fontSize: 12, color: "#9B7450", textAlign: "center" }}>
               Serving Delhi · Noida · Greater Noida · Ghaziabad
             </p>

@@ -9,6 +9,7 @@ import { fetchEventData } from "../../redux/eventPlanningSlice";
 import { syncProgressOnLogin } from "../../utils/progressSync";
 import { syncCartToBackend } from "../../utils/cartBookingSync";
 import { useGoogleLogin } from "@react-oauth/google";
+import { appleSignIn } from "../../utils/appleAuth";
 
 const font = "'Outfit', sans-serif";
 const FD   = "'Cormorant Garamond', Georgia, serif";
@@ -28,20 +29,16 @@ const EyeIcon = ({ open }) => (
 );
 
 const HAS_GOOGLE = !!import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const HAS_APPLE = !!import.meta.env.VITE_APPLE_CLIENT_ID;
 
-function GoogleAuthBtn({ isBusy }) {
+// Shared post-login path for both a returning social-login user and a brand-new one
+// who just completed the phone step — same navigation/sync side effects the password
+// login path already triggers. Used by both GoogleAuthBtn and AppleAuthBtn.
+function useFinishLogin() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const [loading, setLoading] = useState(false);
-  const [gError, setGError] = useState("");
-  const [phoneStep, setPhoneStep] = useState(null); // { pendingToken } once a new Google user needs a phone number
-  const [phone, setPhone] = useState("");
-
-  // Shared post-login path for both a returning Google user (handled inline below) and a
-  // brand-new one who just completed the phone step — same navigation/sync side effects
-  // the password login path already triggers.
-  const finishLogin = (data, { isNewSignup = false } = {}) => {
+  return (data, { isNewSignup = false } = {}) => {
     dispatch({ type: "auth/login/fulfilled", payload: data });
     const loggedUser = data.consumer;
     if (loggedUser?.isAdmin) { navigate("/AdminDashboard"); return; }
@@ -52,6 +49,43 @@ function GoogleAuthBtn({ isBusy }) {
     navigate(location.state?.returnTo || "/");
     setTimeout(() => window.scrollTo({ top: 0, behavior: "instant" }), 0);
   };
+}
+
+// The "enter your phone number" step shared by any social sign-in whose provider
+// doesn't give us one — currently Google and Apple.
+function PhoneCompletionStep({ phone, setPhone, error, setError, loading, onComplete, onBack }) {
+  return (
+    <div style={{ margin: "20px 0 4px" }}>
+      <p style={{ fontSize: 13, color: "#2C1A0E", textAlign: "center", lineHeight: 1.55, margin: "0 0 12px", fontFamily: font }}>
+        One last step — enter your mobile number to complete your account.
+      </p>
+      {error && (
+        <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.2)", borderRadius: 10, padding: "10px 14px", marginBottom: 10, fontSize: 13, color: "#C0392B", textAlign: "center", fontFamily: font }}>
+          {error}
+        </div>
+      )}
+      <input type="tel" value={phone}
+        onChange={e => { setPhone(e.target.value.replace(/\D/g, "").slice(0, 10)); setError(""); }}
+        style={{ ...inputStyle, marginBottom: 10 }}
+        placeholder="10-digit mobile number" maxLength={10} disabled={loading} autoFocus />
+      <button type="button" onClick={onComplete} disabled={loading}
+        style={{ width: "100%", padding: "12px", marginBottom: 8, background: loading ? "#e5e7eb" : "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: loading ? "#9ca3af" : "#fff", fontSize: 14, fontWeight: 700, fontFamily: font, border: "none", borderRadius: 12, cursor: loading ? "not-allowed" : "pointer", boxShadow: !loading ? "0 4px 14px rgba(196,122,46,0.35)" : "none" }}>
+        {loading ? "Creating account…" : "Complete Sign Up"}
+      </button>
+      <button type="button" onClick={onBack}
+        style={{ display: "block", width: "100%", background: "none", border: "none", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, textAlign: "center", padding: "4px 0" }}>
+        ← Back
+      </button>
+    </div>
+  );
+}
+
+function GoogleAuthBtn({ isBusy }) {
+  const finishLogin = useFinishLogin();
+  const [loading, setLoading] = useState(false);
+  const [gError, setGError] = useState("");
+  const [phoneStep, setPhoneStep] = useState(null); // { pendingToken } once a new Google user needs a phone number
+  const [phone, setPhone] = useState("");
 
   const handleAuth = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -102,38 +136,18 @@ function GoogleAuthBtn({ isBusy }) {
 
   if (phoneStep) {
     return (
-      <div style={{ margin: "20px 0 4px" }}>
-        <p style={{ fontSize: 13, color: "#2C1A0E", textAlign: "center", lineHeight: 1.55, margin: "0 0 12px", fontFamily: font }}>
-          One last step — enter your mobile number to complete your account.
-        </p>
-        {gError && (
-          <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.2)", borderRadius: 10, padding: "10px 14px", marginBottom: 10, fontSize: 13, color: "#C0392B", textAlign: "center", fontFamily: font }}>
-            {gError}
-          </div>
-        )}
-        <input type="tel" value={phone}
-          onChange={e => { setPhone(e.target.value.replace(/\D/g, "").slice(0, 10)); setGError(""); }}
-          style={{ ...inputStyle, marginBottom: 10 }}
-          placeholder="10-digit mobile number" maxLength={10} disabled={loading} autoFocus />
-        <button type="button" onClick={handleCompletePhone} disabled={loading}
-          style={{ width: "100%", padding: "12px", marginBottom: 8, background: loading ? "#e5e7eb" : "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: loading ? "#9ca3af" : "#fff", fontSize: 14, fontWeight: 700, fontFamily: font, border: "none", borderRadius: 12, cursor: loading ? "not-allowed" : "pointer", boxShadow: !loading ? "0 4px 14px rgba(196,122,46,0.35)" : "none" }}>
-          {loading ? "Creating account…" : "Complete Sign Up"}
-        </button>
-        <button type="button" onClick={() => { setPhoneStep(null); setPhone(""); setGError(""); }}
-          style={{ display: "block", width: "100%", background: "none", border: "none", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, textAlign: "center", padding: "4px 0" }}>
-          ← Back
-        </button>
-      </div>
+      <PhoneCompletionStep
+        phone={phone} setPhone={setPhone}
+        error={gError} setError={setGError}
+        loading={loading}
+        onComplete={handleCompletePhone}
+        onBack={() => { setPhoneStep(null); setPhone(""); setGError(""); }}
+      />
     );
   }
 
   return (
     <>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0 4px" }}>
-        <div style={{ flex: 1, height: 1, background: "rgba(139,69,19,0.15)" }} />
-        <span style={{ fontSize: 12, color: "#9B7450", fontFamily: font, fontWeight: 500, whiteSpace: "nowrap" }}>or continue with</span>
-        <div style={{ flex: 1, height: 1, background: "rgba(139,69,19,0.15)" }} />
-      </div>
       {gError && (
         <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.2)", borderRadius: 10, padding: "10px 14px", marginBottom: 10, fontSize: 13, color: "#C0392B", textAlign: "center", fontFamily: font }}>
           {gError}
@@ -168,6 +182,108 @@ function GoogleAuthBtn({ isBusy }) {
           </svg>
         )}
         {loading ? "Signing in…" : "Continue with Google"}
+      </button>
+    </>
+  );
+}
+
+function AppleAuthBtn({ isBusy }) {
+  const finishLogin = useFinishLogin();
+  const [loading, setLoading] = useState(false);
+  const [aError, setAError] = useState("");
+  const [phoneStep, setPhoneStep] = useState(null); // { pendingToken, name } once a new Apple user needs a phone number
+  const [phone, setPhone] = useState("");
+
+  const handleAuth = async () => {
+    setLoading(true);
+    setAError("");
+    try {
+      const { idToken, name } = await appleSignIn();
+      const BASE_URL = import.meta.env.VITE_BASE_URL;
+      const res = await fetch(`${BASE_URL}/auth/apple`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken, name }),
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) { setAError(data.error || data.message || "Apple sign-in failed. Please try again."); return; }
+      if (data.needsPhone) { setPhoneStep({ pendingToken: data.pendingToken, name }); return; }
+      finishLogin(data);
+    } catch (e) {
+      if (e?.error !== "popup_closed_by_user") setAError("Apple sign-in failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCompletePhone = async () => {
+    if (!phone || !/^[6-9]\d{9}$/.test(phone)) { setAError("Enter a valid 10-digit Indian mobile number"); return; }
+    setLoading(true);
+    setAError("");
+    try {
+      const BASE_URL = import.meta.env.VITE_BASE_URL;
+      const res = await fetch(`${BASE_URL}/auth/apple/complete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pendingToken: phoneStep.pendingToken, phoneNumber: phone, name: phoneStep.name }),
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) { setAError(data.error || data.message || "Failed to complete sign-up."); return; }
+      finishLogin(data, { isNewSignup: true });
+    } catch {
+      setAError("Failed to complete sign-up. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (phoneStep) {
+    return (
+      <PhoneCompletionStep
+        phone={phone} setPhone={setPhone}
+        error={aError} setError={setAError}
+        loading={loading}
+        onComplete={handleCompletePhone}
+        onBack={() => { setPhoneStep(null); setPhone(""); setAError(""); }}
+      />
+    );
+  }
+
+  return (
+    <>
+      {aError && (
+        <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.2)", borderRadius: 10, padding: "10px 14px", marginBottom: 10, fontSize: 13, color: "#C0392B", textAlign: "center", fontFamily: font }}>
+          {aError}
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={handleAuth}
+        disabled={loading || isBusy}
+        style={{
+          width: "100%", padding: "11px 16px", borderRadius: 12, marginTop: 10,
+          border: "none", background: "#000",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+          cursor: loading || isBusy ? "not-allowed" : "pointer",
+          fontFamily: font, fontSize: 14.5, fontWeight: 600, color: "#fff",
+          transition: "all 0.18s", opacity: loading || isBusy ? 0.6 : 1,
+        }}
+      >
+        {loading ? (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83">
+              <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite"/>
+            </path>
+          </svg>
+        ) : (
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 8c-2.6-2.1-6.2-1-6.2 3.4C5.8 16 9 20.5 12 20.5s6.2-4.5 6.2-9.1c0-4.4-3.6-5.5-6.2-3.4z" fill="#fff" stroke="none" />
+            <path d="M12 8V5.2c0-.95.75-1.7 1.9-2.2" />
+          </svg>
+        )}
+        {loading ? "Signing in…" : "Continue with Apple"}
       </button>
     </>
   );
@@ -767,9 +883,17 @@ const Auth = () => {
             </>
           )}
 
-          {/* Google Sign-In — customer only; hidden for vendor/coordinator login and non-personal signup */}
-          {!(!isSignup && loginType !== "customer") && HAS_GOOGLE && (
-            <GoogleAuthBtn isBusy={isBusy} />
+          {/* Social sign-in — customer only; hidden for vendor/coordinator login and non-personal signup */}
+          {!(!isSignup && loginType !== "customer") && (HAS_GOOGLE || HAS_APPLE) && (
+            <>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0 4px" }}>
+                <div style={{ flex: 1, height: 1, background: "rgba(139,69,19,0.15)" }} />
+                <span style={{ fontSize: 12, color: "#9B7450", fontFamily: font, fontWeight: 500, whiteSpace: "nowrap" }}>or continue with</span>
+                <div style={{ flex: 1, height: 1, background: "rgba(139,69,19,0.15)" }} />
+              </div>
+              {HAS_GOOGLE && <GoogleAuthBtn isBusy={isBusy} />}
+              {HAS_APPLE && <AppleAuthBtn isBusy={isBusy} />}
+            </>
           )}
 
           {/* Toggle */}

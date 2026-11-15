@@ -23,6 +23,7 @@ import ComingSoon from "./pages/ComingSoon";
 import CommunityWall from "./pages/community/CommunityWall";
 import tendrLogo from "./assets/logos/tendr-logo-secondary.png";
 import DecorAnalyzer from "./components/DecorAnalyzer";
+import OfflineBanner from "./components/OfflineBanner";
 
 const HIDE_DECOR_FLOAT_ROUTES = ["/login", "/signup", "/otp", "/vendor/", "/admin/", "/coordinator/", "/decor-analyser"];
 
@@ -139,6 +140,7 @@ function App() {
             <ChatProvider>
             <BookVendorsProvider>
             <PriceEstimatorProvider>
+              <OfflineBanner />
               <SignInPromptController />
               {!splashDone && <SplashScreen onDone={handleSplashDone} />}
               <Suspense fallback={
@@ -169,6 +171,7 @@ function App() {
     return (
       <HelmetProvider>
         <ErrorBoundary>
+          <OfflineBanner />
           {!splashDone && <SplashScreen onDone={handleSplashDone} />}
           <RouterProvider router={liveSiteRouter} />
         </ErrorBoundary>
@@ -184,6 +187,7 @@ function App() {
         <ChatProvider>
         <BookVendorsProvider>
         <PriceEstimatorProvider>
+          <OfflineBanner />
           <SignInPromptController />
           {!splashDone && <SplashScreen onDone={handleSplashDone} />}
           <Suspense fallback={
