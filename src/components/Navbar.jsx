@@ -9,6 +9,7 @@ import { useChatOverlay } from "../context/ChatContext";
 import { useTour } from "../context/TourContext";
 import { usePriceEstimator } from "../context/PriceEstimatorContext";
 import SearchOverlay from "./SearchOverlay";
+import ReferEarnPopup from "./ReferEarnPopup";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import tendrIcon from "../assets/logos/tendr.png";
 
@@ -163,6 +164,7 @@ const Navbar = ({
     try { return !!localStorage.getItem("tendr_personal_token"); } catch { return false; }
   })();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showReferPopup, setShowReferPopup] = useState(false);
   const profileMenuRef = useRef(null);
   const compareSelected = useSelector((s) => s.listingFilters.compareSelected || []);
   const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
@@ -663,6 +665,19 @@ const Navbar = ({
           {/* Right cluster: conditional buttons + profile — always together */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
 
+            {/* Refer & Earn — persistent entry point; popup itself checks signed-in state
+                and shows a "Sign In" prompt instead of the referral code when it isn't. */}
+            <button
+              onClick={() => setShowReferPopup(true)}
+              aria-label="Refer and earn"
+              title="Refer & Earn"
+              style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", background: "rgba(196,122,46,0.08)", border: "1.5px solid rgba(196,122,46,0.18)", cursor: "pointer", fontSize: 17, flexShrink: 0, transition: "background 0.2s" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.16)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.08)")}
+            >
+              🎁
+            </button>
+
             {/* Auth area */}
             {token && user ? (
               <div ref={profileMenuRef} style={{ position: "relative" }}>
@@ -1092,6 +1107,7 @@ const Navbar = ({
       </div>
 
       <SearchOverlay isOpen={searchOverlay} onClose={() => setSearchOverlay(false)} />
+      {showReferPopup && <ReferEarnPopup onClose={() => setShowReferPopup(false)} />}
       <style>{`
         @keyframes tendrMarquee {
           0%   { transform: translateX(0%); }
