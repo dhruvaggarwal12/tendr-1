@@ -89,13 +89,6 @@ const STEPS_MOBILE = [
     title: "Event Tools",
     content: "Budget Allocator, Timeline Builder, Guest List, Seating Chart and more — free tools that make event planning manageable.",
   },
-  {
-    target: '[data-tour="earn"]',
-    placement: "top",
-    disableBeacon: true,
-    title: "Refer & Earn 🎁",
-    content: "Share your code with friends — they get a discount, and you earn real money every time they book. Tap this any time.",
-  },
 ];
 
 function TourTooltip({ index, step, backProps, skipProps, primaryProps, tooltipProps, size, onFinish }) {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { FaBars, FaTimes, FaChevronDown, FaWhatsapp, FaSearch, FaInstagram, FaFacebookF } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +11,7 @@ import { useTour } from "../context/TourContext";
 import { usePriceEstimator } from "../context/PriceEstimatorContext";
 import SearchOverlay from "./SearchOverlay";
 import ReferEarnPopup from "./ReferEarnPopup";
+import DeleteAccountModal from "./DeleteAccountModal";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import tendrIcon from "../assets/logos/tendr.png";
 
@@ -165,6 +167,7 @@ const Navbar = ({
   })();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showReferPopup, setShowReferPopup] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const profileMenuRef = useRef(null);
   const compareSelected = useSelector((s) => s.listingFilters.compareSelected || []);
   const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
@@ -669,6 +672,7 @@ const Navbar = ({
                 and shows a "Sign In" prompt instead of the referral code when it isn't. */}
             <button
               onClick={() => setShowReferPopup(true)}
+              data-tour="earn"
               aria-label="Refer and earn"
               title="Refer & Earn"
               style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: "50%", background: "rgba(196,122,46,0.08)", border: "1.5px solid rgba(196,122,46,0.18)", cursor: "pointer", fontSize: 17, flexShrink: 0, transition: "background 0.2s" }}
@@ -827,6 +831,13 @@ const Navbar = ({
                           onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(192,57,43,0.07)")}
                           onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                         >Logout</button>
+                        {!user?.isAdmin && (
+                          <button onClick={() => { setShowDeleteAccount(true); setShowProfileMenu(false); }}
+                            style={{ display: "block", width: "100%", textAlign: "left", padding: "7px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 12, fontWeight: 500, color: "rgba(192,57,43,0.55)", cursor: "pointer", fontFamily: font, transition: "background 0.15s" }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(192,57,43,0.05)")}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                          >Delete Account</button>
+                        )}
                       </div>
                     </div>
                   </>
@@ -1101,13 +1112,20 @@ const Navbar = ({
                 Logout
               </button>
             )}
+            {token && !user?.isAdmin && (
+              <button onClick={() => { setShowDeleteAccount(true); setMenuOpen(false); }}
+                style={{ width: "100%", padding: "7px", marginTop: 6, borderRadius: 10, border: "none", background: "transparent", color: "rgba(252,165,165,0.45)", fontSize: 11.5, fontWeight: 500, cursor: "pointer", fontFamily: font }}>
+                Delete Account
+              </button>
+            )}
             <p style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", textAlign: "center", margin: "10px 0 0" }}>tendr.co.in · Delhi NCR</p>
           </div>
         </div>
       </div>
 
       <SearchOverlay isOpen={searchOverlay} onClose={() => setSearchOverlay(false)} />
-      {showReferPopup && <ReferEarnPopup onClose={() => setShowReferPopup(false)} />}
+      {showReferPopup && createPortal(<ReferEarnPopup onClose={() => setShowReferPopup(false)} />, document.body)}
+      {showDeleteAccount && createPortal(<DeleteAccountModal onClose={() => setShowDeleteAccount(false)} />, document.body)}
       <style>{`
         @keyframes tendrMarquee {
           0%   { transform: translateX(0%); }

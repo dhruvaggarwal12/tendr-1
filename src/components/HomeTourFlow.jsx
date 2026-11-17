@@ -86,13 +86,6 @@ const HOME_TOUR_STEPS = {
       title: "Ready to plan?",
       content: "Start creating your celebration with Tendr.",
     },
-    {
-      target: '[data-tour="earn"]',
-      placement: "top",
-      disableBeacon: true,
-      title: "Refer & Earn 🎁",
-      content: "Share your code with friends — they get a discount, and you earn real money every time they book. Tap this any time.",
-    },
   ],
 };
 
