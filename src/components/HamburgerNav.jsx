@@ -12,6 +12,7 @@ import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import { FaChevronDown, FaTimes, FaInstagram, FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import SearchOverlay from "./SearchOverlay";
 import CompareModal from "./CompareModal";
+import DeleteAccountModal from "./DeleteAccountModal";
 import TimelinePopup from "./TimelinePopup";
 import BudgetPopup from "./BudgetPopup";
 
@@ -138,6 +139,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
     : SEARCH_SUGGESTIONS.slice(0, 4);
 
   const { user, token } = useSelector((s) => s.auth);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   // Dual-identity account (picked vendor/coordinator at signup, or currently
   // viewing the professional side) — show Personal/Professional instead of a
   // single Dashboard button.
@@ -606,6 +608,12 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 style={{ width: "100%", padding: "8px", borderRadius: 8, border: "1px solid rgba(192,57,43,0.25)", background: "rgba(192,57,43,0.08)", color: "#e74c3c", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
                 Logout
               </button>
+              {!user?.isAdmin && (
+                <button onClick={() => setShowDeleteAccount(true)}
+                  style={{ width: "100%", padding: "6px", marginTop: 4, borderRadius: 8, border: "none", background: "transparent", color: "rgba(192,57,43,0.5)", fontSize: 10.5, fontWeight: 500, cursor: "pointer", fontFamily: font }}>
+                  Delete Account
+                </button>
+              )}
             </div>
           )}
           </div>
@@ -966,6 +974,12 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   Logout
                 </button>
               )}
+              {token && !user?.isAdmin && (
+                <button onClick={() => { setShowDeleteAccount(true); close(); }}
+                  style={{ width: "100%", padding: "7px", borderRadius: 10, border: "none", background: "transparent", color: "rgba(192,57,43,0.5)", fontSize: 11.5, fontWeight: 500, cursor: "pointer", fontFamily: font, marginBottom: 10 }}>
+                  Delete Account
+                </button>
+              )}
               <p style={{ fontSize: 11, color: "#bbb", textAlign: "center", margin: 0 }}>tendr.co.in · Delhi NCR</p>
             </div>
           </div>
@@ -1085,6 +1099,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
       {timelinePopupOpen && <TimelinePopup onClose={() => setTimelinePopupOpen(false)} />}
       {budgetPopupOpen   && <BudgetPopup   onClose={() => setBudgetPopupOpen(false)}   />}
+      {showDeleteAccount && <DeleteAccountModal onClose={() => setShowDeleteAccount(false)} />}
     </>
   );
 }

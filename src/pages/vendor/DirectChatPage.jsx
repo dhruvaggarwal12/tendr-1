@@ -6,6 +6,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
   DOC_THEMES, buildQuoteHTML, buildStandaloneInvoiceHTML, buildContractHTML, exportDocPdf,
 } from "../../utils/vendorDocs";
+import ChatSafetyMenu from "../../components/ChatSafetyMenu";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || BASE_URL;
@@ -247,7 +248,11 @@ export default function VendorDirectChatPage() {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
+  const myBlocked = !!convo?.blockedByVendor;
+  const frozen = !!(convo?.blockedByCustomer || convo?.blockedByVendor);
+
   const sendContent = useCallback(async (content) => {
+    if (frozen) return;
     if (socketRef.current && connected) {
       socketRef.current.emit("send_vendor_direct_message", { conversationId, content });
     } else {
@@ -256,11 +261,11 @@ export default function VendorDirectChatPage() {
         credentials: "include", body: JSON.stringify({ content }),
       }).then(r => r.json()).then(msg => setMessages(prev => [...prev, msg])).catch(() => {});
     }
-  }, [conversationId, connected, token]);
+  }, [conversationId, connected, token, frozen]);
 
   const sendMessage = () => {
     const content = input.trim();
-    if (!content) return;
+    if (!content || frozen) return;
     setInput("");
     sendContent(content);
     setMessages(prev => [...prev, { _id: `opt_${Date.now()}`, sender: "vendor", content, timestamp: new Date().toISOString() }]);
@@ -292,8 +297,16 @@ export default function VendorDirectChatPage() {
           <div style={{ fontWeight: 700, color: INK, fontSize: 14.5 }}>{visitorName}</div>
           <div style={{ fontSize: 11, color: connected ? "#16A34A" : "#9B7450" }}>{connected ? "● Connected" : "○ Connecting…"}</div>
         </div>
-        <div style={{ marginLeft: "auto", fontSize: 10.5, color: "#9B7450", textAlign: "right" }}>Direct Chat<br/>Profile Share</div>
+        <div style={{ fontSize: 10.5, color: "#9B7450", textAlign: "right" }}>Direct Chat<br/>Profile Share</div>
+        <ChatSafetyMenu conversationId={conversationId} token={token} otherPartyName={visitorName} blocked={myBlocked} accent={GOLD}
+          onBlockChange={(v) => setConvo((c) => (c ? { ...c, blockedByVendor: v } : c))} />
       </div>
+
+      {frozen && (
+        <div style={{ background: "rgba(220,38,38,0.08)", borderBottom: "1px solid rgba(220,38,38,0.15)", padding: "8px 16px", fontSize: 12, color: "#DC2626", textAlign: "center" }}>
+          {myBlocked ? `You've blocked ${visitorName}. Unblock from the menu above to chat again.` : "This conversation isn't available right now."}
+        </div>
+      )}
 
       <div style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 10 }}>
         {messages.length === 0 && <div style={{ textAlign: "center", color: "#9B7450", fontSize: 13, marginTop: 40 }}>No messages yet. Say hello, or send a quote to get started.</div>}
@@ -314,10 +327,10 @@ export default function VendorDirectChatPage() {
       </div>
 
       <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", padding: "10px 12px", background: "#fff", display: "flex", gap: 8, alignItems: "center" }}>
-        <button onClick={() => setComposerOpen(true)} title="Send a Quote / Invoice / Contract" style={{ width: 42, height: 42, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: GOLD, fontSize: 18, cursor: "pointer", flexShrink: 0 }}>📄</button>
-        <button onClick={() => setConfirmOrderOpen(true)} title="Confirm Order" style={{ width: 42, height: 42, borderRadius: 10, border: "1.5px solid rgba(34,197,94,0.35)", background: "rgba(34,197,94,0.08)", color: "#16A34A", fontSize: 18, cursor: "pointer", flexShrink: 0 }}>💰</button>
-        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && sendMessage()} placeholder="Type a message…" style={{ flex: 1, padding: "11px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.22)", fontFamily: font, fontSize: 14, outline: "none" }} />
-        <button onClick={sendMessage} disabled={!input.trim()} style={{ width: 42, height: 42, borderRadius: 10, border: "none", background: input.trim() ? GOLD : "rgba(196,122,46,0.2)", color: "#fff", fontSize: 16, cursor: input.trim() ? "pointer" : "default", flexShrink: 0 }}>↑</button>
+        <button onClick={() => setComposerOpen(true)} disabled={frozen} title="Send a Quote / Invoice / Contract" style={{ width: 42, height: 42, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: GOLD, fontSize: 18, cursor: frozen ? "not-allowed" : "pointer", flexShrink: 0, opacity: frozen ? 0.4 : 1 }}>📄</button>
+        <button onClick={() => setConfirmOrderOpen(true)} disabled={frozen} title="Confirm Order" style={{ width: 42, height: 42, borderRadius: 10, border: "1.5px solid rgba(34,197,94,0.35)", background: "rgba(34,197,94,0.08)", color: "#16A34A", fontSize: 18, cursor: frozen ? "not-allowed" : "pointer", flexShrink: 0, opacity: frozen ? 0.4 : 1 }}>💰</button>
+        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && sendMessage()} disabled={frozen} placeholder={frozen ? "This conversation is blocked" : "Type a message…"} style={{ flex: 1, padding: "11px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.22)", fontFamily: font, fontSize: 14, outline: "none", opacity: frozen ? 0.5 : 1 }} />
+        <button onClick={sendMessage} disabled={!input.trim() || frozen} style={{ width: 42, height: 42, borderRadius: 10, border: "none", background: input.trim() && !frozen ? GOLD : "rgba(196,122,46,0.2)", color: "#fff", fontSize: 16, cursor: input.trim() && !frozen ? "pointer" : "default", flexShrink: 0 }}>↑</button>
       </div>
 
       {confirmOrderOpen && (

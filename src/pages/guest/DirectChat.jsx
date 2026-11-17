@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { io as socketIO } from "socket.io-client";
 import AuthModal from "../../components/AuthModal";
+import ChatSafetyMenu from "../../components/ChatSafetyMenu";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || BASE_URL;
@@ -80,9 +81,12 @@ export default function DirectChat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const myBlocked = !!convo?.blockedByCustomer;
+  const frozen = !!(convo?.blockedByCustomer || convo?.blockedByVendor);
+
   const sendMessage = useCallback(async () => {
     const content = input.trim();
-    if (!content || sending) return;
+    if (!content || sending || frozen) return;
     setSending(true);
     setInput("");
     if (socketRef.current && connected) {
@@ -96,7 +100,7 @@ export default function DirectChat() {
     const optimistic = { _id: `opt_${Date.now()}`, sender: "user", content, timestamp: new Date().toISOString() };
     setMessages(prev => [...prev, optimistic]);
     setSending(false);
-  }, [input, sending, connected, conversationId, token]);
+  }, [input, sending, connected, conversationId, token, frozen]);
 
   const vendorName = convo?.vendorName || "Vendor";
 
@@ -147,15 +151,20 @@ export default function DirectChat() {
           Direct Chat<br />
           <span style={{ color: "rgba(196,155,48,0.5)" }}>Outside Tendr</span>
         </div>
+        <ChatSafetyMenu conversationId={conversationId} token={token} otherPartyName={vendorName} blocked={myBlocked} accent={GOLD} dark
+          onBlockChange={(v) => setConvo((c) => (c ? { ...c, blockedByCustomer: v } : c))} />
       </div>
 
       {/* Notice banner */}
       <div style={{
-        background: "rgba(196,155,48,0.08)", borderBottom: "1px solid rgba(196,155,48,0.1)",
-        padding: "8px 20px", fontSize: 12, color: "rgba(196,155,48,0.7)", lineHeight: 1.5,
+        background: frozen ? "rgba(220,38,38,0.1)" : "rgba(196,155,48,0.08)", borderBottom: `1px solid ${frozen ? "rgba(220,38,38,0.2)" : "rgba(196,155,48,0.1)"}`,
+        padding: "8px 20px", fontSize: 12, color: frozen ? "#f87171" : "rgba(196,155,48,0.7)", lineHeight: 1.5,
         textAlign: "center",
       }}>
-        This is a direct conversation between you and {vendorName}. Tendr is not involved — no booking protection applies.
+        {frozen
+          ? (myBlocked ? `You've blocked ${vendorName}. Unblock from the menu above to chat again.` : `This conversation isn't available right now.`)
+          : <>This is a direct conversation between you and {vendorName}. Tendr is not involved — no booking protection applies.</>
+        }
       </div>
 
       {/* Messages */}
@@ -212,8 +221,9 @@ export default function DirectChat() {
       }}>
         <textarea
           rows={1}
-          placeholder={`Message ${vendorName}…`}
+          placeholder={frozen ? "This conversation is blocked" : `Message ${vendorName}…`}
           value={input}
+          disabled={frozen}
           onChange={e => {
             setInput(e.target.value);
             e.target.style.height = "auto";
@@ -225,16 +235,17 @@ export default function DirectChat() {
             background: "rgba(255,255,255,0.06)", border: "1px solid rgba(196,155,48,0.2)",
             borderRadius: 10, padding: "10px 14px", color: "#f5f0e8", fontSize: 14,
             outline: "none", fontFamily: "inherit", lineHeight: 1.5, minHeight: 40,
+            opacity: frozen ? 0.5 : 1,
           }}
         />
         <button
           onClick={sendMessage}
-          disabled={!input.trim() || sending}
+          disabled={!input.trim() || sending || frozen}
           style={{
             width: 42, height: 42, borderRadius: 10, border: "none",
-            background: input.trim() ? GOLD : "rgba(196,155,48,0.2)",
-            color: input.trim() ? INK : "rgba(196,155,48,0.4)",
-            fontSize: 18, cursor: input.trim() ? "pointer" : "not-allowed",
+            background: input.trim() && !frozen ? GOLD : "rgba(196,155,48,0.2)",
+            color: input.trim() && !frozen ? INK : "rgba(196,155,48,0.4)",
+            fontSize: 18, cursor: input.trim() && !frozen ? "pointer" : "not-allowed",
             display: "flex", alignItems: "center", justifyContent: "center",
             flexShrink: 0, transition: "background 0.2s",
           }}
