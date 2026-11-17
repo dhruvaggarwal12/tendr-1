@@ -18,9 +18,6 @@ import { FUN_ACTIVITIES } from "../../data/funActivitiesData";
 import { saveResumeUrl } from "../../utils/planningResume";
 import { fetchPriceBenchmark, blendWithBenchmark } from "../../utils/priceEstimator";
 import { getRealPricedRows, formatRealPrice } from "../../utils/occasionPricingLookup";
-import { addActivity, removeActivity } from "../../redux/funActivitiesCartSlice";
-import { addToCart as addToGhCart, removeFromCart as removeFromGhCart, updateQuantity as updateGhQuantity, selectCartItems as selectGhCartItems } from "../../redux/giftHamperCartSlice";
-import { syncCartToBackend } from "../../utils/cartBookingSync";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 import tendrLogoImg from "../../assets/logos/tendr-logo-secondary.png";
@@ -2040,6 +2037,10 @@ const css=`
      state, so this footer follows the nav down when it's collapsed instead of always
      reserving room for the full-height bar (which left a dead gap when collapsed). */
   @media(max-width:767px){.od-step-footer{padding-bottom:var(--mobile-nav-clearance, calc(66px + env(safe-area-inset-bottom,0px)))!important;transition:padding-bottom 0.22s ease;}}
+  /* "Get My Full Plan Ready" / "Build Step by Step" — stacked (mobile, cramped
+     width) by default, side by side once there's room for both labels on one line. */
+  .od-quickplan-ctas{display:flex;flex-direction:column;gap:5px;width:auto;max-width:170px;margin-left:auto;}
+  @media(min-width:768px){.od-quickplan-ctas{flex-direction:row;max-width:none;gap:10px;}}
   /* 100vh is set inline as a safe fallback for WebViews (e.g. WhatsApp's in-app browser) that
      don't size dvh correctly, which otherwise left a gap between the step footer and the
      fixed bottom nav. Real browsers that support dvh get the more accurate dynamic height. */
@@ -2210,6 +2211,11 @@ export default function OccasionDetail(){
   const [venuePhotoGateSeen,setVenuePhotoGateSeen]=useState(false); // true once the pre-Plan upload gate has been shown+dismissed/skipped
   const [planSectionsOpen,setPlanSectionsOpen]=useState({itinerary:true,timeline:true,checklist:true,equipment:true}); // Final Plan accordions — default open
   const togglePlanSection=(key)=>setPlanSectionsOpen(s=>({...s,[key]:!s[key]}));
+  // Per-service item lists in "Selected services & experiences" (renderSelectedItemsSection
+  // below) — collapsed by default so the overview isn't one long wall of items across every
+  // booked service; the PDF export (buildPlanDataForPdf) is untouched and always shows everything.
+  const [openItemRows,setOpenItemRows]=useState({});
+  const toggleItemRow=(key)=>setOpenItemRows(s=>({...s,[key]:!s[key]}));
   // Full-screen "story" walkthrough of the plan — shown first whenever step 7 is reached,
   // no header/tabs/bottom-nav visible underneath (portaled above everything). Timeline/
   // Checklist/Equipment live in the normal page below instead of in the story, since
@@ -2322,7 +2328,6 @@ export default function OccasionDetail(){
     const product=ghProducts.find(p=>p.name===name);
     const q=Math.max(product?.minOrderQuantity||1,qty);
     setGiftQuantities(prev=>({...prev,[name]:q}));
-    if(product) dispatch(updateGhQuantity({productId:product._id,quantity:q}));
   };
   const [checked,setChecked]=useState({});
   const [vendorPackages,setVendorPackages]=useState({});
@@ -2362,16 +2367,6 @@ export default function OccasionDetail(){
   const toggleActivity=id=>{
     const already=selectedActivities.includes(id);
     setSelectedActivities(a=>already?a.filter(x=>x!==id):[...a,id]);
-    // Fun Activities items are the real, bookable catalog — selecting one here
-    // adds it to the same funActivitiesCart the standalone Fun Activities page
-    // uses, so it's genuinely in the customer's cart, not just plan-text.
-    const realItem=FUN_ACTIVITIES.find(a=>a.id===id);
-    if(!realItem) return;
-    if(already){ dispatch(removeActivity(id)); }
-    else {
-      dispatch(addActivity({id:realItem.id,name:realItem.name,emoji:realItem.emoji,price:realItem.price,perUnit:realItem.perUnit,unitLabel:realItem.unitLabel}));
-      syncCartToBackend(token,"fun-activities");
-    }
   };
 
   /* entry experiences (optional step between Services and Fun) */
@@ -2807,7 +2802,17 @@ export default function OccasionDetail(){
                     </div>
                     <button onClick={r.onEdit} style={{fontSize:11,fontWeight:700,color:gold,background:"none",border:"none",cursor:"pointer",padding:0,flexShrink:0,fontFamily:font}}>Edit</button>
                   </div>
-                  {r.locationGroups?.length>0?(
+                  {(()=>{
+                    const hasItems=(r.locationGroups?.length>0)||(r.items?.length>0);
+                    const rowOpen=!!openItemRows[r.key];
+                    return(<>
+                    {hasItems&&(
+                      <button onClick={()=>toggleItemRow(r.key)} style={{display:"flex",alignItems:"center",gap:6,margin:"8px 0 0 47px",padding:0,background:"none",border:"none",cursor:"pointer",fontSize:11.5,fontWeight:700,color:gold,fontFamily:font}}>
+                        {rowOpen?"Hide items":"Show items"}
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3" strokeLinecap="round" style={{transform:rowOpen?"rotate(180deg)":"none",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+                      </button>
+                    )}
+                    {rowOpen&&r.locationGroups?.length>0?(
                     <div style={{margin:"10px 0 0 47px",display:"flex",flexDirection:"column",gap:12}}>
                       {r.locationGroups.map((grp,gi)=>(
                         <div key={gi}>
@@ -2829,7 +2834,7 @@ export default function OccasionDetail(){
                         </div>
                       ))}
                     </div>
-                  ):r.items?.length>0?(
+                    ):rowOpen&&r.items?.length>0?(
                     <ul style={{margin:"10px 0 0 47px",padding:0,listStyle:"none",display:"flex",flexDirection:"column",gap:4}}>
                       {r.items.map((it,i)=>(
                         <li key={i} style={{fontSize:13,color:muted,lineHeight:1.45,display:"flex",alignItems:"flex-start",gap:6}}>
@@ -2837,9 +2842,11 @@ export default function OccasionDetail(){
                         </li>
                       ))}
                     </ul>
-                  ):r.note?(
+                    ):!hasItems&&r.note?(
                     <div style={{margin:"6px 0 0 47px",fontSize:13,color:muted,lineHeight:1.45}}>{r.note}</div>
-                  ):null}
+                    ):null}
+                    </>);
+                  })()}
                 </div>
               );
             })}
@@ -3047,11 +3054,6 @@ export default function OccasionDetail(){
       return [...g,n];
     });
     if(!already) setGiftQuantities(q=>({...q,[n]:startQty}));
-    // Gifts are the real, purchasable gift-hamper catalog — selecting one here
-    // adds it to the same giftHamperCart the standalone Gift Hampers page uses.
-    if(!product) return;
-    if(already) dispatch(removeFromGhCart(product._id));
-    else dispatch(addToGhCart({product,quantity:startQty}));
   };
   const toggleAge=id=>setAgeGroups(a=>a.includes(id)?a.filter(x=>x!==id):[...a,id]);
 
@@ -3126,13 +3128,6 @@ export default function OccasionDetail(){
     const topActivities=actSugg.slice(0,2).map(a=>a.id);
     if(topActivities.length){
       setSelectedActivities(topActivities);
-      // Same real funActivitiesCart toggleActivity() writes to — quick-plan picks
-      // should land in the actual cart too, not just the plan text.
-      topActivities.forEach(id=>{
-        const realItem=FUN_ACTIVITIES.find(a=>a.id===id);
-        if(realItem) dispatch(addActivity({id:realItem.id,name:realItem.name,emoji:realItem.emoji,price:realItem.price,perUnit:realItem.perUnit,unitLabel:realItem.unitLabel}));
-      });
-      if(topActivities.some(id=>FUN_ACTIVITIES.some(a=>a.id===id))) syncCartToBackend(token,"fun-activities");
     }
 
     const boostedGifts=sortedGifts
@@ -3145,8 +3140,6 @@ export default function OccasionDetail(){
     if(topGifts.length){
       setGifts(topGifts);
       setGiftQuantities(topGiftQuantities);
-      // Same real giftHamperCart toggleGift() writes to.
-      topGiftPicks.forEach(g=>{ if(g.product) dispatch(addToGhCart({product:g.product,quantity:1})); });
     }
 
     // Log this run for "Get My Full Plan Ready"'s own tracking loop (separate from
@@ -5866,13 +5859,15 @@ export default function OccasionDetail(){
               "diwali-party":"Singer","holi-party":"Musician","navratri-garba":"Band",
             };
             const recommendedPerformerCategory=OCCASION_PERFORMER_CATEGORY[occasion.id]||"Musician";
+            // Opens in a new tab — this is a separate, cross-sell booking (performers aren't
+            // part of this event plan), so it shouldn't navigate the customer away from the
+            // plan they were just looking at.
             const goToLivePerformers=()=>{
-              setPlanStoryOpen(false);
-              navigate(`/artists/${encodeURIComponent(recommendedPerformerCategory)}`);
+              window.open(`/artists/${encodeURIComponent(recommendedPerformerCategory)}`, "_blank", "noopener,noreferrer");
             };
             const performersSlide=(
             <React.Fragment key="plan-performers">
-            <div style={{textAlign:"center",padding:"8px 0 4px"}}>
+            <div style={{textAlign:"center",padding:"8px 0 4px",minHeight:"calc(100dvh - 260px)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
               <div style={{width:52,height:52,borderRadius:16,background:"rgba(196,122,46,0.1)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 18px",fontSize:24}}>🎤</div>
               <p style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font,margin:"0 0 8px"}}>One more thing</p>
               <h3 style={{fontFamily:serif,fontSize:22,fontWeight:400,color:ink,margin:"0 0 10px",lineHeight:1.25}}>We also have live performers</h3>
@@ -6146,7 +6141,7 @@ export default function OccasionDetail(){
           <div style={{maxWidth:680,margin:"0 auto",display:"flex",gap:8,justifyContent:"space-between",alignItems:"center"}}>
             {step>0&&<button onClick={back} style={{...btnGhost,background:"#fff",boxShadow:"0 2px 8px rgba(28,9,0,0.06)"}}>← Back</button>}
             {step===1&&canNext()?(
-              <div style={{display:"flex",flexDirection:"column",gap:5,width:"auto",maxWidth:170,marginLeft:"auto"}}>
+              <div className="od-quickplan-ctas">
                 <button onClick={()=>{setNotesPromptAction("quickplan");setNotesPromptOpen(true);}} disabled={quickPlanBuilding}
                   style={{padding:"7px 10px",borderRadius:9,border:"none",background:`linear-gradient(135deg,${occAccent},${lightenHex(occAccent,0.25)})`,color:"#fff",fontSize:12,fontWeight:800,cursor:quickPlanBuilding?"not-allowed":"pointer",fontFamily:font,boxShadow:`0 4px 14px ${occAccent}55`,display:"flex",alignItems:"center",justifyContent:"center",gap:5,letterSpacing:"0.01em"}}>
                   ✨ Get My Full Plan Ready
