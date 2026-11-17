@@ -8,10 +8,19 @@ import pricingRows from "../data/occasionVendorPricing.json";
 // three full tiers), so it's surfaced as a "here's what real vendors actually charge"
 // reference alongside the existing package picker, not swapped in as the picker itself.
 
-// Rough guest-count-band overlap check — bands are free text ("20-50", "Up to 30-40",
-// "100-200", "200+", "Minimum 20 guests"), not a fixed enum, so this only does a soft
-// substring/number match rather than parsing every phrasing precisely.
-function bandRoughlyMatches(band, guests) {
+// Rough guest-count-band overlap check. Newer research rows carry numeric `minGuests`/
+// `maxGuests` (from the "Min guests"/"Max guests" columns — see importOccasionPricing.mjs)
+// and those are matched directly, with the same generous slack as the text heuristic below.
+// Older rows only have the free-text `guestBand` ("20-50", "Up to 30-40", "100-200", "200+",
+// "Minimum 20 guests"), not a fixed enum, so those fall back to a soft substring/number match
+// rather than parsing every phrasing precisely.
+function bandRoughlyMatches(row, guests) {
+  const { minGuests, maxGuests, guestBand: band } = row;
+  if (minGuests != null || maxGuests != null) {
+    if (minGuests != null && guests < minGuests * 0.8) return false;
+    if (maxGuests != null && guests > maxGuests * 1.2) return false;
+    return true;
+  }
   if (!band) return true; // no band stated = applies generally
   const nums = (band.match(/\d+/g) || []).map(Number);
   if (!nums.length) return true;
@@ -28,8 +37,8 @@ export function getRealPricedRows(occasionName, vendorCategory, { guests } = {})
   );
   if (!guests) return rows;
   return [...rows].sort((a, b) => {
-    const am = bandRoughlyMatches(a.guestBand, guests) ? 0 : 1;
-    const bm = bandRoughlyMatches(b.guestBand, guests) ? 0 : 1;
+    const am = bandRoughlyMatches(a, guests) ? 0 : 1;
+    const bm = bandRoughlyMatches(b, guests) ? 0 : 1;
     return am - bm;
   });
 }

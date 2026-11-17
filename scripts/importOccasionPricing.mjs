@@ -5,8 +5,10 @@
  * used to seed this dataset — a "Vendor price data" sheet with columns: Occasion, Vendor
  * category, Service/item name, City, Guest count band, Price basis, Min price, Max price,
  * What's typically included, What's typically excluded, Source, Confidence, Last verified,
- * GST included?) into src/data/occasionVendorPricing.json, the canonical dataset
- * src/utils/occasionPricingLookup.js reads from.
+ * GST included?, Min guests, Max guests, Venue type) into src/data/occasionVendorPricing.json,
+ * the canonical dataset src/utils/occasionPricingLookup.js reads from. The last 3 columns are
+ * optional — a pass without them still imports fine, just without numeric guest bounds/venue
+ * suitability on its rows.
  *
  * This is the "when new data comes in, it merges and improves" system: every future
  * research pass (more vendors, more occasions, corrected prices) runs through this same
@@ -26,7 +28,7 @@ import { normalizeOccasionName, normalizeVendorCategory } from '../src/data/occa
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUTPUT_PATH = join(__dirname, '../src/data/occasionVendorPricing.json');
 const ALLOWED_CONFIDENCE = ['Reliable', 'Quote-first'];
-const ALLOWED_GST = ['Yes', 'No', 'Not stated'];
+const ALLOWED_GST = ['Yes', 'No', 'Not stated', 'Not disclosed by source', 'Not applicable'];
 
 const inputPath = process.argv[2];
 if (!inputPath) {
@@ -36,7 +38,17 @@ if (!inputPath) {
 
 function parseMoney(v) {
   if (v === '' || v == null) return null;
-  const n = Number(String(v).replace(/[^0-9.]/g, ''));
+  const digits = String(v).replace(/[^0-9.]/g, '');
+  if (!digits) return null; // e.g. "NOT FOUND" — no digits at all, not a real zero price
+  const n = Number(digits);
+  return Number.isFinite(n) ? n : null;
+}
+
+function parseGuestNumber(v) {
+  if (v === '' || v == null) return null;
+  const digits = String(v).replace(/[^0-9.]/g, '');
+  if (!digits) return null;
+  const n = Number(digits);
   return Number.isFinite(n) ? n : null;
 }
 
@@ -96,6 +108,9 @@ for (const raw of rawRows) {
     confidence,
     lastVerified: String(raw['Last verified'] || '').trim(),
     gstIncluded,
+    minGuests: parseGuestNumber(raw['Min guests']),
+    maxGuests: parseGuestNumber(raw['Max guests']),
+    venueType: String(raw['Venue type'] || '').trim() || 'Both',
   });
 }
 

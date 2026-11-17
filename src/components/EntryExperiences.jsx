@@ -30,7 +30,7 @@ export function getEntryExperienceSuggestions(occasion, { ageGroups = [], guests
       score += 1; // age-agnostic ideas stay broadly relevant
     }
     if (guests >= e.guestRange[0] && guests <= e.guestRange[1]) score += 2;
-    else if (guests > e.guestRange[1]) score -= 1;
+    else if (guests > e.guestRange[1] || guests < e.guestRange[0]) score -= 1;
     if (venue && e.venueRequirements.some((r) => r.toLowerCase().includes(venue.split(" ")[0]))) score += 1;
     if (b > 0) {
       const guess = b < 30000 ? 1 : b < 80000 ? 2 : 3;

@@ -179,25 +179,20 @@ function formatActivityPrice(a){
   return `₹${a.price.toLocaleString("en-IN")}${a.perUnit?` ${a.unitLabel||"per unit"}`:""}`;
 }
 
-/* ── bookable entertainment master list ── */
+/* ── bookable entertainment master list ──
+   The "shows" category (Laser/Drone/Fireworks/Projection Mapping/Pro Photo Booth/Magic
+   Show) was removed entirely — it only ever had Tendr's own placeholder pricing with no
+   real sourced data behind it, and no research pass is planned to fix that. Only the
+   real, catalog-backed Fun Activities list remains. */
 const ALL_ACTIVITIES = {
   games: FUN_ACTIVITIES.map(a=>({
     id:a.id, name:a.name, icon:a.emoji, desc:a.desc,
     price:formatActivityPrice(a), priceValue:a.price, perUnit:!!a.perUnit, unitLabel:a.unitLabel||"",
     tags:a.tags||[], occasions:[], // no per-occasion curation yet — shown for every occasion
   })),
-  shows: [
-    { id:"laser-show",        name:"Laser Light Show",         icon:"✨", desc:"Aerial laser beams choreographed to music — stunning visual spectacle for large events",             price:"₹20K–60K", tags:["adult"],       occasions:["birthday-party","anniversary","office-party","get-together"] },
-    { id:"drone-show",        name:"Drone Light Show",         icon:"🚁", desc:"Drone swarm forming shapes, names, messages in the sky — the most talked-about event moment of 2025",price:"₹80K+",   tags:["adult"],       occasions:["birthday-party","anniversary","office-party"] },
-    { id:"fireworks",         name:"Fireworks / Sparklers",    icon:"🎆", desc:"Indoor sparklers or outdoor fireworks burst — the classic grand finale",                            price:"₹8K–30K",  tags:["all"],         occasions:["birthday-party","anniversary","get-together","housewarming","naming-ceremony"] },
-    { id:"projection-mapping",name:"Projection Mapping Show",  icon:"🎬", desc:"Video art projected onto walls or objects — immersive visual storytelling",                         price:"₹25K–70K", tags:["adult"],       occasions:["birthday-party","anniversary","office-party"] },
-    { id:"photo-booth-pro",   name:"Pro Photo Booth (360°)",   icon:"📸", desc:"360-degree video booth — slow-mo clips guests share instantly on social media",                     price:"₹8K–18K",  tags:["all"],         occasions:["birthday-party","anniversary","get-together","office-party","first-birthday"] },
-    { id:"magic-show",        name:"Grand Magic Show",         icon:"🎩", desc:"45-min stage magic show with big illusions, levitation, disappearing acts — full audience show",    price:"₹15K–35K", tags:["all"],         occasions:["birthday-party","first-birthday","get-together","office-party"] },
-  ],
 };
 
 const ACTIVITY_TYPES = [
-  { key:"shows",      label:"Special Shows",  icon:"✨",  singular:"Show" },
   { key:"games",      label:"Fun Activities", icon:"🎉",  singular:"Activity" },
 ];
 
@@ -221,18 +216,18 @@ function getActivitySuggestions(occasion, {ageGroups=[], theme=null}) {
       if(!hasKids && a.tags.includes("kids") && !a.tags.some(t=>["all","food","adult","craft"].includes(t))) score -= 2;
       if(hasSeniors && a.tags.includes("adult")) score += 1;
       // Mixed age conflict: penalise loud acts, boost quiet/visual ones
-      if(mixedAge && (a.id==="DJ"||a.id.startsWith("band-")||a.id==="laser-show"||a.id==="fire-led")) score -= 3;
+      if(mixedAge && (a.id==="DJ"||a.id.startsWith("band-")||a.id==="fire-led")) score -= 3;
       if(mixedAge && (a.id==="diy-photo-booth"||a.id==="craft-station"||a.id==="balloon-artist"||a.id==="face-painting"||a.id==="tambola")) score += 2;
       if(tags.includes("bollywood") && (a.id==="bollywood-dancer"||a.id==="antakshari"||a.id==="band-bollywood")) score += 2;
-      if(tags.includes("neon") && (a.id==="laser-show"||a.id==="fire-led"||a.id==="projection-mapping")) score += 2;
+      if(tags.includes("neon") && a.id==="fire-led") score += 2;
       if(tags.includes("sufi")||tags.includes("ghazal")) { if(a.id==="band-sufi") score += 3; }
       if(id==="office-party" && a.id==="anchor-corporate") score += 3;
       if((id==="baby-shower"||id==="first-birthday") && a.id==="anchor-kids") score += 3;
       return {...a, score};
     }).filter(a=>a.score>0).sort((a,b)=>b.score-a.score);
-    // "games" is the real, fixed Fun Activities catalog (8 items) — show all of it
-    // rather than truncating like the still-curated/placeholder "shows" category.
-    result[key] = key==="games" ? scored : scored.slice(0,4);
+    // "games" is the only category now — the real, fixed Fun Activities catalog —
+    // so show all of it rather than truncating.
+    result[key] = scored;
   }
   return result;
 }
@@ -285,7 +280,7 @@ function buildItinerary(occasion, {guests=20, vendors=[], selectedActivities=[],
     else add("7:45 PM","Welcome by Leadership","Opening speech by management, team acknowledgements");
     if(hasCaterer) add("8:15 PM","Dinner Buffet Opens","Full buffet service begins — team seated or mingling");
     if(selectedActivities.some(a=>["quiz","dumb-charades","tambola","karaoke","treasure-hunt"].includes(a))) add("8:30 PM","Team Game / Activity Round",hasAnchor?"Anchor leads the team activity — trivia, dumb charades or team challenge":"Team activity begins — trivia, dumb charades or challenge","fun");
-    if(selectedActivities.some(a=>["standup","mimicry","mentalist","magic-show"].includes(a))) add("9:00 PM","Live Entertainment Set","Performer takes the stage — comedy, magic or live act","fun");
+    if(selectedActivities.some(a=>["standup","mimicry","mentalist"].includes(a))) add("9:00 PM","Live Entertainment Set","Performer takes the stage — comedy or live act","fun");
     add("9:30 PM","🏆 Awards & Recognition Ceremony","Category winners announced, trophies / mementos presented on stage","highlight");
     if(hasDJ||hasBand||selectedActivities.some(a=>a.startsWith("band-"))) add("10:15 PM","Dance Floor Opens","DJ / Band kicks in — high energy floor, everyone joins");
     add("11:00 PM","Desserts & Group Photo","Dessert station opens, all-team group photo, event wraps up");
@@ -303,7 +298,6 @@ function buildItinerary(occasion, {guests=20, vendors=[], selectedActivities=[],
     add("9:00 PM","🎂 Anniversary Cake Cutting","Cake cutting with family gathered — beautiful captured moment","highlight");
     if(hasDJ||hasBand) add("9:30 PM","Dance Floor Opens","Couple's first dance, then open floor for all guests","fun");
     else if(selectedActivities.some(a=>["antakshari","karaoke","tambola"].includes(a))) add("9:30 PM","Group Activity","Antakshari / tambola / karaoke — everyone joins in","fun");
-    if(selectedActivities.some(a=>["laser-show","fireworks","drone-show"].includes(a))) add("10:15 PM","Special Show","Grand finale performance — laser / fireworks / drone show","highlight");
     add("10:30 PM","Desserts & Group Photos","Dessert table opens, family group photo, guests depart");
   } else if(isBabyEvt&&id==="baby-shower") {
     add("11:00 AM","Venue Setup","Decorator finalizes pastel setup, caterer prepares high tea","setup");
@@ -354,11 +348,10 @@ function buildItinerary(occasion, {guests=20, vendors=[], selectedActivities=[],
     if(hasCaterer) add("7:00 PM","Starters Served","Starter round begins — waiters serve / live counter opens");
     if(hasAnchor) add("7:30 PM","Anchor Kicks Off","Anchor welcomes guests, sets the mood, introductions made");
     if(selectedActivities.some(a=>["tambola","quiz","dumb-charades","treasure-hunt","karaoke"].includes(a))) add("7:45 PM","Games & Group Activity","Main activity session — high energy, everyone participates","fun");
-    if(selectedActivities.some(a=>["magician","standup","bollywood-dancer","mimicry","fire-led","magic-show","laser-show","bhangra-troupe"].includes(a))) add("8:00 PM","Live Performance / Show","Performer / show takes centre stage — the wow moment of the evening","highlight");
+    if(selectedActivities.some(a=>["magician","standup","bollywood-dancer","mimicry","fire-led","bhangra-troupe"].includes(a))) add("8:00 PM","Live Performance / Show","Performer / show takes centre stage — the wow moment of the evening","highlight");
     if(hasCaterer) add("8:30 PM","Main Course Opens","Dinner buffet begins — full service");
     add("9:00 PM","🎂 Cake Cutting","Everyone gathers for the birthday moment — candles lit, song sung","highlight");
     if(hasDJ||hasBand||selectedActivities.some(a=>a.startsWith("band-"))) add("9:30 PM","Dance Floor Opens / Live Music","DJ set / band takes the stage — everyone on the floor","fun");
-    if(selectedActivities.some(a=>["fireworks","drone-show","laser-show","photo-booth-pro"].includes(a))) add("10:30 PM","Grand Finale Moment","Special show or 360° photo moment — perfect send-off","highlight");
     add("10:45 PM","Desserts & Group Photo","Dessert station opens, big group photo, event begins to wind down");
     add("11:00 PM","Farewell","Guests receive return gifts and head home — event concludes");
   }
@@ -1670,7 +1663,7 @@ function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors,
       const areaEntries = Object.entries(customDecor).filter(([,arr])=>arr?.length);
       if (areaEntries.length) {
         const items = areaEntries.map(([cat,arr])=>`    ${DECOR_FOCUS_AREAS[cat]?.name||cat}: ${arr.join(", ")}`).join("\n");
-        const pkg = typeof pi === "number" ? getVendorPackages(v, {guests, venueType, theme, ageGroups})[pi] : null;
+        const pkg = typeof pi === "number" ? getVendorPackagesWithReal(v, occasion.name, {guests, venueType, theme, ageGroups})[pi] : null;
         const header = pkg ? `• Decorator — ${pkg.label} (${pkg.price})` : "• Decorator — Custom setup";
         return `${header}\n${items}`;
       }
@@ -1685,7 +1678,7 @@ function buildPlanText(occasion, {guests, date, city, venueType, theme, vendors,
       if (v === "Decorator") return "• Decorator — Custom setup";
       return `• ${v} — Custom`;
     }
-    const pkg = getVendorPackages(v, {guests, venueType, theme, ageGroups})[pi];
+    const pkg = getVendorPackagesWithReal(v, occasion.name, {guests, venueType, theme, ageGroups})[pi];
     if (!pkg) return `• ${v}`;
     const itemsList = pkg.items.map(it => `    - ${it}`).join("\n");
     return `• ${v} — ${pkg.label} (${pkg.price})\n${itemsList}\n    "${pkg.note}"`;
@@ -1780,9 +1773,18 @@ function buildBudgetSplit(total, vendors=[]) {
 }
 
 /* ── gift personalization score ── */
-function scoreGift(g, {theme, ageGroups=[], budget=null, guests=20}) {
+function scoreGift(g, {theme, ageGroups=[], budget=null, guests=20, occasionId=null}) {
   let sc=0, reason=null;
   const text=[g.name,g.desc||""].join(" ").toLowerCase();
+
+  // Occasion-appropriateness — a gift can fit the budget/theme/age scoring below perfectly
+  // and still be the wrong kind of gift for the occasion (a "Corporate Gifts"-category
+  // hamper winning a baby shower just because nothing else scored higher). Checked against
+  // the real backend catalog category, not just this scorer's own keyword text.
+  const catText=(g.product?.category||g.desc||"").toLowerCase();
+  const KID_FOCUSED_OCCASIONS=["baby-shower","first-birthday","naming-ceremony","newborn-welcome","gender-reveal"];
+  if(occasionId && KID_FOCUSED_OCCASIONS.includes(occasionId) && catText.includes("corporate")) sc-=6;
+  if(occasionId==="office-party" && /baby|newborn|kid|child/i.test(catText)) sc-=4;
 
   // Budget fit — assume ~12% of total budget goes to gifts
   if(budget&&Number(budget)>0) {
@@ -1832,6 +1834,40 @@ function approxCost(priceStr, guests) {
   return r?(r.min+r.max)/2:null;
 }
 
+/* ── blends a real, Reliable-confidence sourced price (src/data/occasionVendorPricing.json,
+   via getRealPricedRows) into the synthetic tier it's numerically closest to — that tier's
+   displayed/selected/saved price becomes the real number instead of the hand-written
+   estimate, tagged `sourced:true` so the UI/PDF can label it. Quote-first rows are
+   deliberately never promoted this way (only shown in the existing reference box below the
+   tiers) since they're explicitly not a confirmed number yet. Returns the tiers unchanged
+   (just tagged `sourced:false`) when no Reliable row exists. ── */
+function attachRealPricing(packages, realRows, guests) {
+  const reliable=(realRows||[]).find(r=>r.confidence==="Reliable"&&r.minPrice!=null);
+  if(!reliable) return packages.map(p=>({...p,sourced:false}));
+  const realMid=reliable.maxPrice!=null?(reliable.minPrice+reliable.maxPrice)/2:reliable.minPrice;
+  let bestIdx=0, bestDist=Infinity;
+  packages.forEach((p,i)=>{
+    const r=priceRangeOf(p.price,guests);
+    if(!r) return;
+    const dist=Math.abs((r.min+r.max)/2-realMid);
+    if(dist<bestDist){bestDist=dist;bestIdx=i;}
+  });
+  return packages.map((p,i)=>i===bestIdx
+    ?{...p,price:formatRealPrice(reliable),sourced:true,sourceLabel:reliable.source}
+    :{...p,sourced:false});
+}
+
+// Drop-in replacement for getVendorPackages(type,{...}) that also blends in real sourced
+// pricing for this occasion+category when a confident match exists. `occasionName` is
+// `occasion.name` from src/data/occasions.js (the exact string occasionVendorPricing.json
+// rows are keyed on).
+function getVendorPackagesWithReal(type, occasionName, opts) {
+  const packages=getVendorPackages(type, opts);
+  if(!ALL_VENDORS.includes(type)) return packages;
+  const realRows=getRealPricedRows(occasionName, type, {guests:opts?.guests});
+  return attachRealPricing(packages, realRows, opts?.guests||20);
+}
+
 /* ── resolves a gift name back to {name,desc,price} — checks the real gift-hamper
    catalog first, falls back to the old occasion.giftIdeas list so a plan saved
    before this catalog existed still renders instead of silently dropping the row ── */
@@ -1866,12 +1902,12 @@ function computeEntryExperienceSpend(selectedEntryExperiences) {
    chosen) is estimated at that vendor's Standard tier, the best single guess for
    what a custom setup costs. Returns null when nothing's selected yet, so callers
    can fall back to the static occasion range. ── */
-function computeSelectedVendorsBudget(vendors, vendorPackages, {guests, venueType, theme, ageGroups}) {
+function computeSelectedVendorsBudget(vendors, vendorPackages, {guests, venueType, theme, ageGroups}, occasionName) {
   let min=0, max=0, count=0;
   vendors.filter(v=>ALL_VENDORS.includes(v)).forEach(v=>{
     const pi=vendorPackages[v];
     if(pi===undefined) return;
-    const pkgs=getVendorPackages(v,{guests,venueType,theme,ageGroups});
+    const pkgs=getVendorPackagesWithReal(v,occasionName,{guests,venueType,theme,ageGroups});
     const pkg=typeof pi==="number" ? pkgs[pi] : (pkgs.find(p=>p.popular)||pkgs[1]);
     if(!pkg) return;
     const r=priceRangeOf(pkg.price,guests);
@@ -1893,11 +1929,15 @@ function computeSelectedVendorsBudget(vendors, vendorPackages, {guests, venueTyp
      (draping, lighting, streamers…), which this plan has no dimensions for —
      those get no number at all ("To be decided"), never a guessed one. ── */
 const DECOR_QTY_RULES = {
-  "Welcome board":1, "Balloon arch":1, "Entrance pillars":2, "Floral arch":1,
+  "Welcome board":1, "Balloon arch":1, "Floral arch":1,
   "Decorated pathway":1, "Main backdrop":1, "Name signage":1, "Cake table setup":1,
   "Milestone-number display":1, "Selfie wall":1, "Dedicated photo corner":1,
   "Custom name board":1, "Welcome sign":1, "Age / milestone numbers":1, "Neon signs":1,
-  "Stage props":4, "Character cutouts":2, "Themed props":4, "Standees":2,
+  // These four genuinely need more copies at a bigger event (unlike the singular
+  // fixtures above, which stay flat regardless of size) — {base} keeps today's exact
+  // number at small/medium guest counts (no regression) and only scales up once the
+  // event is large enough that one wouldn't realistically cover the space.
+  "Entrance pillars":{base:2}, "Stage props":{base:4}, "Character cutouts":{base:2}, "Themed props":{base:4}, "Standees":{base:2},
   "Table centrepieces":"perTable", "Table runners":"perTable",
   "Floral table arrangements":"perTable", "Decorative table settings":"perTable",
   "Chair covers":"perGuest",
@@ -1908,10 +1948,32 @@ function estimateDecorQty(item, guests) {
   const rule = DECOR_QTY_RULES[item];
   if(rule===undefined) return {qty:null, tier:"To be decided"};
   if(typeof rule==="number") return {qty:rule, tier:"Suggested"};
+  if(rule&&typeof rule==="object") return {qty:Math.max(rule.base,Math.ceil(guests/40)), tier:"Estimated"};
   if(rule==="perTable") return {qty:Math.max(1,Math.ceil(guests/8)), tier:"Estimated"};
   if(rule==="perGuest") return {qty:Math.max(1,guests), tier:"Estimated"};
   if(rule==="perLargeVenue") return {qty:Math.max(2,Math.ceil(guests/30)), tier:"Estimated"};
   return {qty:null, tier:"To be decided"};
+}
+// Items that do the same visual/functional job — when a focus area's own default list
+// would include more than one of a group (e.g. "Entrance Decor" lists both "Balloon arch"
+// and "Floral arch"), only the first-listed one survives. Only applies to a focus area's
+// un-customized default list — once the customer has actually picked items themselves
+// (customDecor), that choice is respected even if it includes both.
+const REDUNDANT_DECOR_GROUPS = [["Balloon arch","Floral arch"]];
+function dedupeDecorItems(groups) {
+  const seen = new Set();
+  return groups.map(g => {
+    const items = g.items.filter(name => {
+      if (seen.has(name)) return false; // same item already shown under an earlier location
+      if (!g.wasCustomized) {
+        const pair = REDUNDANT_DECOR_GROUPS.find(grp => grp.includes(name));
+        if (pair && pair.some(other => other !== name && seen.has(other))) return false;
+      }
+      seen.add(name);
+      return true;
+    });
+    return { location: g.location, items };
+  });
 }
 /* ── Services/Entrance/Fun/Gifts breakdown — pure data, no JSX and no onEdit
    handlers (those are UI-only, added back by renderSelectedItemsSection()).
@@ -1925,20 +1987,23 @@ function buildPlanGroups(occasion, {catVendors=[], vendorPackages={}, guests=20,
 
   const serviceRows=catVendors.map(v=>{
     const pkgIdx=vendorPackages[v];
-    const pkgs=ALL_VENDORS.includes(v)?getVendorPackages(v,{guests,venueType,theme,ageGroups}):null;
+    const pkgs=ALL_VENDORS.includes(v)?getVendorPackagesWithReal(v,occasion.name,{guests,venueType,theme,ageGroups}):null;
     const hasPkg=pkgIdx==="custom"||(typeof pkgIdx==="number"&&pkgs);
     const pkg=typeof pkgIdx==="number"?pkgs?.[pkgIdx]:null;
     const pkgLabel=pkgIdx==="custom"?"Custom":pkg?.label||null;
     const pkgPrice=pkgIdx==="custom"?null:pkg?.price||null;
     const locationGroups=(v==="Decorator"&&decorFocusAreas.length)
-      ?decorFocusAreas.map(id=>({
+      ?dedupeDecorItems(decorFocusAreas.map(id=>({
           location:DECOR_FOCUS_AREAS[id]?.name,
+          wasCustomized:!!customDecor[id]?.length,
           items:(customDecor[id]?.length?customDecor[id]:DECOR_FOCUS_AREAS[id]?.items)||[]
-        })).filter(g=>g.location&&g.items.length)
+        })).filter(g=>g.location&&g.items.length))
+        .filter(g=>g.items.length)
         .map(g=>({...g, items:g.items.map(name=>({name, ...estimateDecorQty(name,guests)}))}))
       :null;
     const meta=v==="Caterer"?`Serves ${guests} guests`:null;
-    return{key:`v-${v}`,icon:"🛠️",title:v,sub:pkgLabel,status:hasPkg?"Selected":"Quote required",price:pkgPrice,meta,items:locationGroups?null:(pkg?.items||null),locationGroups,note:pkg?.note||null};
+    const status=!hasPkg?"Quote required":pkg?.sourced?"Sourced price":"Selected";
+    return{key:`v-${v}`,icon:"🛠️",title:v,sub:pkgLabel,status,price:pkgPrice,meta,items:locationGroups?null:(pkg?.items||null),locationGroups,note:pkg?.sourced?`${pkg.note||""}${pkg.note?" — ":""}Real price from ${pkg.sourceLabel}`.trim():(pkg?.note||null)};
   });
   if(theme) serviceRows.push({key:"theme",icon:"🎨",title:theme.name,sub:"Decor style",status:"Selected",price:null});
 
@@ -2481,7 +2546,7 @@ export default function OccasionDetail(){
   // before that (e.g. before Quick Plan has run).
   const [computedBudget,setComputedBudget]=useState(null);
   useEffect(()=>{
-    const sum=computeSelectedVendorsBudget(vendors,vendorPackages,{guests,venueType,theme,ageGroups});
+    const sum=computeSelectedVendorsBudget(vendors,vendorPackages,{guests,venueType,theme,ageGroups},occasion.name);
     if(!sum){ setComputedBudget(null); return; }
     let cancelled=false;
     fetchPriceBenchmark(occasion.name, city).then(benchmark=>{
@@ -2730,6 +2795,7 @@ export default function OccasionDetail(){
   const renderSelectedItemsSection=()=>{
     const STATUS_STYLE={
       "Selected":{bg:"rgba(34,197,94,0.1)",color:"#16a34a"},
+      "Sourced price":{bg:"rgba(22,163,74,0.16)",color:"#15803d"},
       "Estimate available":{bg:"rgba(196,122,46,0.1)",color:gold},
       "Quote required":{bg:"rgba(28,9,0,0.06)",color:muted},
     };
@@ -3074,7 +3140,7 @@ export default function OccasionDetail(){
      the old occasion-themed inspiration cards were (theme + age groups + budget) */
   const sortedGifts=ghProducts.map(p=>{
     const base={name:p.name, desc:p.category||"", price:`₹${Number(p.pricePerUnit||0).toLocaleString("en-IN")}`, image:p.images?.[0]||null, product:p};
-    return {...base,...scoreGift(base,{theme,ageGroups,budget,guests})};
+    return {...base,...scoreGift(base,{theme,ageGroups,budget,guests,occasionId:occasion.id})};
   }).sort((a,b)=>b.score-a.score);
 
   // "Get My Full Plan Ready" — auto-fills Services/Entry Experience/Entertainment/Gifts
@@ -3091,7 +3157,7 @@ export default function OccasionDetail(){
     const svcPackages={};
     svc.forEach(v=>{
       if(!ALL_VENDORS.includes(v)) return;
-      const pkgs=getVendorPackages(v,{guests,venueType,theme,ageGroups});
+      const pkgs=getVendorPackagesWithReal(v,occasion.name,{guests,venueType,theme,ageGroups});
       if(!pkgs?.length) return;
       const popularIdx=pkgs.findIndex(p=>p.popular);
       svcPackages[v]=popularIdx>=0?popularIdx:Math.min(1,pkgs.length-1);
@@ -3205,7 +3271,7 @@ export default function OccasionDetail(){
           services step just to swap a package tier. */}
       {editingService&&(()=>{
         const v=editingService;
-        const pkgs=getVendorPackages(v,{guests,venueType,theme,ageGroups});
+        const pkgs=getVendorPackagesWithReal(v,occasion.name,{guests,venueType,theme,ageGroups});
         const currentIdx=vendorPackages[v];
         const canCustomize=v==="Decorator"||v==="Caterer";
         return(
@@ -3230,10 +3296,12 @@ export default function OccasionDetail(){
                         <span style={{display:"flex",alignItems:"center",gap:6}}>
                           <span style={{fontSize:13.5,fontWeight:800,color:ink}}>{pkg.label}</span>
                           {pkg.popular&&<span style={{fontSize:9,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"2px 7px"}}>Popular</span>}
+                          {pkg.sourced&&<span style={{fontSize:9,fontWeight:800,color:"#fff",background:"#16a34a",borderRadius:100,padding:"2px 7px"}}>✓ Sourced price</span>}
                         </span>
                         <span style={{fontSize:13,fontWeight:800,color:gold}}>{pkg.price}</span>
                       </div>
                       {pkg.note&&<div style={{fontSize:11,color:muted,marginBottom:selected?8:0}}>{pkg.note}</div>}
+                      {!pkg.sourced&&<div style={{fontSize:10,color:"rgba(28,9,0,0.35)",marginBottom:selected?6:0}}>Estimated — confirm with vendor</div>}
                       {selected&&(
                         <ul style={{margin:"8px 0 0",paddingLeft:18,display:"flex",flexDirection:"column",gap:3}}>
                           {pkg.items.map((it,ii)=>(
@@ -3247,7 +3315,10 @@ export default function OccasionDetail(){
               </div>
 
               {(()=>{
-                const realRows=getRealPricedRows(occasion.name,v,{guests}).slice(0,3);
+                // Reliable rows get absorbed straight into the tier above (see
+                // getVendorPackagesWithReal) — this box only needs to show the
+                // Quote-first ones, so nothing appears twice.
+                const realRows=getRealPricedRows(occasion.name,v,{guests}).filter(r=>r.confidence!=="Reliable").slice(0,3);
                 if(!realRows.length) return null;
                 return(
                   <div style={{marginBottom:canCustomize?16:4,padding:"10px 12px",borderRadius:10,background:"rgba(196,122,46,0.04)",border:"1px dashed rgba(196,122,46,0.25)"}}>
@@ -4426,7 +4497,7 @@ export default function OccasionDetail(){
                 </div>
                 {vendors.map(v=>{
                   const isKnown=ALL_VENDORS.includes(v);
-                  const pkgs=isKnown?getVendorPackages(v,{guests,venueType,theme,ageGroups}):null;
+                  const pkgs=isKnown?getVendorPackagesWithReal(v,occasion.name,{guests,venueType,theme,ageGroups}):null;
                   const chosen=vendorPackages[v];
                   const tips=isKnown?getVendorTips(v,{theme,venueType,ageGroups,cateringType,budget,guests}):null;
 
@@ -4923,9 +4994,11 @@ export default function OccasionDetail(){
                                     <span style={{fontSize:13,fontWeight:700,color:sel?gold:muted}}>{pkg.price}</span>
                                     {budgetFit==="fits"&&!sel&&<span style={{fontSize:9,fontWeight:800,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>✓ Budget</span>}
                                     {pkg.popular&&!sel&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>Recommended</span>}
+                                    {pkg.sourced&&<span style={{fontSize:9,fontWeight:800,color:"#fff",background:"#16a34a",borderRadius:100,padding:"2px 7px",flexShrink:0}}>✓ Sourced price</span>}
                                     {sel&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.12)",borderRadius:100,padding:"2px 7px",flexShrink:0}}>✓ Selected</span>}
                                   </div>
                                   <div style={{fontSize:13.5,color:sel?"#4A2810":muted,lineHeight:1.65}}>{paragraph}</div>
+                                  {!pkg.sourced&&<div style={{fontSize:10,color:"rgba(28,9,0,0.35)",marginTop:-4}}>Estimated — confirm with vendor</div>}
                                   {sel&&(
                                     <div style={{marginTop:2,paddingTop:10,borderTop:"1px solid rgba(196,122,46,0.14)",display:"flex",flexDirection:"column",gap:5}}>
                                       <div style={{fontSize:10.5,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:3}}>What's included</div>
@@ -4942,10 +5015,11 @@ export default function OccasionDetail(){
                           </div>
                           {(()=>{
                             // Real, sourced vendor prices found for this occasion+category
-                            // (see src/utils/occasionPricingLookup.js) — shown as a reference
-                            // alongside the package picker above, not instead of it: coverage
-                            // is real but partial, so this never replaces the existing tiers.
-                            const realRows=getRealPricedRows(occasion.name,v,{guests}).slice(0,3);
+                            // (see src/utils/occasionPricingLookup.js). A Reliable-confidence
+                            // match already got absorbed straight into the tier above (see
+                            // getVendorPackagesWithReal), so this box only needs the
+                            // Quote-first ones — nothing shows up twice.
+                            const realRows=getRealPricedRows(occasion.name,v,{guests}).filter(r=>r.confidence!=="Reliable").slice(0,3);
                             if(!realRows.length) return null;
                             return(
                               <div style={{marginTop:10,padding:"10px 12px",borderRadius:10,background:"rgba(196,122,46,0.04)",border:"1px dashed rgba(196,122,46,0.25)"}}>
@@ -5068,7 +5142,6 @@ export default function OccasionDetail(){
                   {/* Category cards — 2 per row */}
                   {(()=>{
                     const CAT_META={
-                      shows:{tagline:"Wow moments & grand finales",color:"#7B5EA7"},
                       games:{tagline:"Real, bookable entertainment add-ons",color:"#2E8B7A"},
                     };
                     const cards=ACTIVITY_TYPES.map(({key,label,icon:typeIcon})=>{
@@ -5077,7 +5150,7 @@ export default function OccasionDetail(){
                       return {key,label,typeIcon,items};
                     }).filter(Boolean);
                     return(
-                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr",gap:10,marginBottom:16}}>
                         {cards.map(({key,label,typeIcon,items})=>{
                           const selCount=items.filter(a=>selectedActivities.includes(a.id)).length;
                           const isOpen=expandedActivityType===key;
