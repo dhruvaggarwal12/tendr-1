@@ -161,6 +161,25 @@ export function ChatProvider({ children }) {
       { vendorId: vendor._id, vendorName: vendor.name, serviceType: vendor.serviceType }
     );
 
+  // Browse Vendors — "chat with this vendor" CTAs on a vendor's own profile page.
+  // Creates a real Request for that specific vendor (POST /event-plans/vendor-request),
+  // so the vendor gets a genuine accept/decline gate the same way Build a Package already
+  // does — but the customer still lands in the one shared "My Order" thread, same as every
+  // other booking type, not a separate window per vendor. Throws on failure — caller
+  // decides how to surface that (vendor profile pages already handle their own error UI).
+  const openDirectVendorRequest = async (vendor, eventDetails = {}) => {
+    const res = await fetch(`${BASE_URL}/event-plans/vendor-request`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      credentials: "include",
+      body: JSON.stringify({ vendorId: vendor._id, ...eventDetails }),
+    });
+    if (!res.ok) throw new Error("Failed to start request with this vendor.");
+    const data = await res.json();
+    openExistingChat(data.conversationId, { _id: "all-bookings", name: "Tendr Team", serviceType: "My Order" });
+    return data;
+  };
+
   // Open an EXISTING approved chat (skip bot, load history)
   const openExistingChat = (conversationId, vendor) => {
     setChatState({ vendor, conversationId, minimized: false, isExisting: true });
@@ -234,7 +253,7 @@ export function ChatProvider({ children }) {
   };
 
   return (
-    <ChatContext.Provider value={{ chatState, openVendorChat, openExistingChat, openConciergeChat, openTendrTeamChat, openOccasionsChat, openFunActivitiesChat, openAllBookingsChat, setConversationId, minimizeChat, expandChat, closeChat, totalUnread, unreadByConversation, markConversationRead }}>
+    <ChatContext.Provider value={{ chatState, openVendorChat, openDirectVendorRequest, openExistingChat, openConciergeChat, openTendrTeamChat, openOccasionsChat, openFunActivitiesChat, openAllBookingsChat, setConversationId, minimizeChat, expandChat, closeChat, totalUnread, unreadByConversation, markConversationRead }}>
       {children}
       <ChatToast toast={toast} onDismiss={() => setToast(null)} onView={viewToastConversation} />
       <NotificationPermissionPrompt show={showNotifPrompt} onEnable={enableNotifications} onDismiss={dismissNotifPrompt} />
@@ -245,6 +264,7 @@ export function ChatProvider({ children }) {
 export const useChatOverlay = () => useContext(ChatContext) || {
   chatState: null,
   openVendorChat: () => {},
+  openDirectVendorRequest: async () => {},
   openExistingChat: () => {},
   openConciergeChat: () => {},
   openTendrTeamChat: () => {},

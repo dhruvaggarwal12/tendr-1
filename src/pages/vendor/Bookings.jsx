@@ -56,9 +56,9 @@ export default function VendorBookings() {
         headers: { "Content-Type": "application/json" },
       });
       if (!r.ok) throw new Error();
-      const newStatus = act === "accept" ? "Confirmed" : act === "complete" ? "Completed" : "Cancelled";
+      const newStatus = act === "accept" ? "Confirmed" : act === "complete" ? "Completed" : act === "decline" ? "Declined" : "Cancelled";
       setBookings(bs => bs.map(b => b.id === id ? { ...b, status: newStatus } : b));
-      showToast(act === "accept" ? "Booking confirmed!" : act === "complete" ? "Marked as completed!" : "Booking declined");
+      showToast(act === "accept" ? "Booking confirmed!" : act === "complete" ? "Marked as completed!" : act === "decline" ? "Booking declined" : "Booking cancelled");
     } catch {
       showToast("Action failed. Please try again.", false);
     } finally {
@@ -200,7 +200,7 @@ export default function VendorBookings() {
                           </button>
                         </>
                       )}
-                      {b.status === "Confirmed" && (
+                      {b.status === "Confirmed" && b._type === "booking" && (
                         <button
                           onClick={() => action(b.id, "complete")}
                           disabled={acting === b.id}
@@ -209,7 +209,10 @@ export default function VendorBookings() {
                           {acting === b.id ? "…" : "Mark Completed"}
                         </button>
                       )}
-                      {(b.status === "Completed" || b.status === "Cancelled") && (
+                      {b.status === "Confirmed" && b._type === "request" && (
+                        <span className="text-xs text-green-600 font-medium py-2">✓ Confirmed — awaiting booking</span>
+                      )}
+                      {(b.status === "Completed" || b.status === "Cancelled" || b.status === "Declined") && (
                         <span className="text-xs text-gray-400 font-medium py-2">No actions</span>
                       )}
                     </div>

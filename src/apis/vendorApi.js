@@ -238,26 +238,6 @@ export const getSmartPlanById = async (id) => {
   return response.json();
 };
 
-export const getAdminSmartPlans = async (token) => {
-  const response = await fetch(`${BASE_URL}/admin/smart-plans`, {
-    headers: { Authorization: `Bearer ${token}` },
-    credentials: 'include',
-  });
-  if (!response.ok) throw new Error('Failed to fetch smart plans');
-  return response.json();
-};
-
-export const updateSmartPlanVendorStatus = async (planId, category, status, token) => {
-  const response = await fetch(`${BASE_URL}/admin/smart-plans/${planId}/vendor-status`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    credentials: 'include',
-    body: JSON.stringify({ category, status }),
-  });
-  if (!response.ok) throw new Error('Failed to update status');
-  return response.json();
-};
-
 export const getVendorAvailability = async (vendorId, month, token) => {
   try {
     const res = await fetch(`${BASE_URL}/vendors/${vendorId}/availability?month=${month}`, {

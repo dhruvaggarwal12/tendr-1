@@ -750,7 +750,6 @@ const Navbar = ({
                               { label: "Chat Requests",   count: adminCounts?.chatRequests,  section: "chatrequests", color: "#b45309" },
                               { label: "Vendor Apps",     count: adminCounts?.vendorApps,    section: "vendors",      color: "#7c3aed" },
                               { label: "Support",         count: adminCounts?.supportChats,  section: "chatsupport",  color: "#0369a1" },
-                              { label: "Smart Plans",     count: adminCounts?.smartPlanChats,section: "smartplans",   color: "#16a34a" },
                               { label: "Chat",            count: adminCounts?.activeChats,   section: "chat",         color: "#0369a1" },
                               { label: "Change Requests", count: adminCounts?.changeRequests, section: "bookings",    color: "#c0392b" },
                             ].map(({ label, count, section, color }) => (

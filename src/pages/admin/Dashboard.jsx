@@ -1625,9 +1625,9 @@ const AdminDashboard = () => {
       setPricingAmount("");
       setPricingVendorName(selectedChat.vendorName || selectedChat.vendorId?.name || "");
     }
-    // Pre-fill per-category budgets for Smart Plan chats — from previously saved
+    // Pre-fill per-category budgets for "My Order" chats — from previously saved
     // categoryBudgets if set, else from the original vendorSlots estimate
-    if (selectedChat.serviceType === "SmartPlan") {
+    if (selectedChat.serviceType === "My Order") {
       let slots = [];
       try { slots = JSON.parse(selectedChat.eventDetails?.vendorSlots || "[]"); } catch {}
       const saved = selectedChat.eventDetails?.categoryBudgets;
@@ -2453,7 +2453,19 @@ const AdminDashboard = () => {
                                                 referredByCoordinator: !!coordData.referredByCoordinator,
                                                 coordinatorServices: coordData.services || [],
                                               }),
-                                            }).then(r => { if (r.ok) setEventPlans(prev => prev.map(p => p._id === plan._id ? { ...p, status: 'in_progress' } : p)); }).catch(() => {});
+                                            }).then(async r => {
+                                              if (r.ok) { setEventPlans(prev => prev.map(p => p._id === plan._id ? { ...p, status: 'in_progress' } : p)); return; }
+                                              // Blocked by the vendor-acceptance gate (Build a Package/Get a Package/
+                                              // Browse Vendors) — surface exactly which vendor(s) haven't confirmed
+                                              // instead of silently doing nothing.
+                                              const data = await r.json().catch(() => ({}));
+                                              if (data.pendingVendors?.length) {
+                                                const list = data.pendingVendors.map(v => `${v.serviceType}: ${v.status}`).join(', ');
+                                                window.alert(`Can't mark payment yet — vendor hasn't confirmed availability.\n\n${list}`);
+                                              } else {
+                                                window.alert(data.error || 'Failed to mark payment.');
+                                              }
+                                            }).catch(() => window.alert('Network error — payment not marked. Please check your connection.'));
                                           }}
                                           style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "none", background: "#0369a1", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
                                           💳 Mark Payment Done
@@ -3896,7 +3908,6 @@ const AdminDashboard = () => {
                 { key: "Gift Hampers",    label: "🎁 Gift Hampers" },
                 { key: "Occasions",       label: "🎉 Occasions" },
                 { key: "vendor",          label: "🏪 Vendors" },
-                { key: "SmartPlan",       label: "✨ Smart Plan" },
               ];
               return (
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
@@ -4572,8 +4583,8 @@ const AdminDashboard = () => {
                         );
                       })()}
 
-                      {/* Pricing input — single vendor chats only (not SmartPlan, not My Order) */}
-                      {selectedChat.serviceType !== "SmartPlan" && selectedChat.serviceType !== "My Order" && (
+                      {/* Pricing input — single vendor chats only (not My Order) */}
+                      {selectedChat.serviceType !== "My Order" && (
                       <div style={{ padding: "10px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 7 }}>💰 Agreed Price</div>
                         <input
@@ -4600,8 +4611,8 @@ const AdminDashboard = () => {
                       </div>
                       )}
 
-                      {/* Per-category budget — Smart Plan chats only */}
-                      {selectedChat.serviceType === "SmartPlan" && (
+                      {/* Per-category budget — "My Order" chats only (multi-category bookings) */}
+                      {selectedChat.serviceType === "My Order" && (
                         <div style={{ padding: "10px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
                           <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 7 }}>💰 Budget per Category</div>
                           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>

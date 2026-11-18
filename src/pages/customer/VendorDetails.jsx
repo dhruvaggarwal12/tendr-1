@@ -65,10 +65,11 @@ const VendorDetailsPage = () => {
     }
   };
 
-  // Feeds straight into the chat overlay (openVendorChat) instead of the old
-  // direct-to-vendor enquiry channel — these details seed the event context the
-  // same way the listing-flow/event-context paths already do before opening chat.
-  const handleEnquirySubmit = () => {
+  // Feeds straight into a real, vendor-attached request (openDirectVendorRequest)
+  // instead of the old generic admin-mediated enquiry channel — these details seed
+  // the event context the same way the listing-flow/event-context paths already do
+  // before opening chat.
+  const handleEnquirySubmit = async () => {
     if (!enquiryForm.name.trim() || !enquiryForm.phone.trim()) {
       setEnquiryError('Name and phone are required');
       return;
@@ -81,13 +82,20 @@ const VendorDetailsPage = () => {
       token,
     }));
     dispatch(setBookingType("you-do-it"));
-    setEnquiryOpen(false);
-    openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+    try {
+      await openDirectVendorRequest(
+        { _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType },
+        { eventType: enquiryForm.eventType, date: enquiryForm.eventDate, additionalInfo: enquiryForm.message }
+      );
+      setEnquiryOpen(false);
+    } catch {
+      setEnquiryError('Could not start the chat — please try again.');
+    }
   };
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { openVendorChat, openExistingChat, chatState } = useChatOverlay();
+  const { openDirectVendorRequest, openExistingChat, chatState } = useChatOverlay();
   const { id } = useParams();
   const location = useLocation();
 
@@ -411,8 +419,8 @@ const VendorDetailsPage = () => {
       return;
     }
     if (!token) { requireAuth(openGigHeroChat); return; }
-    if (isFromListingFlow) { openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType }); return; }
-    if (hasEventContext) { dispatch(setBookingType("you-do-it")); openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType }); return; }
+    if (isFromListingFlow) { openDirectVendorRequest({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType }).catch(console.error); return; }
+    if (hasEventContext) { dispatch(setBookingType("you-do-it")); openDirectVendorRequest({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType }).catch(console.error); return; }
     // Cold profile visit (reached straight from Browse Vendors, no event context yet) —
     // ask a few quick details first instead of starting an empty-context chat or
     // navigating away to a separate /chat/direct page.
@@ -1659,10 +1667,17 @@ const VendorDetailsPage = () => {
             <button
               disabled={checkingAvail}
               onClick={async () => {
+                const vendorRef = { _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType };
+                const formEventDetails = {
+                  eventType: chatEventForm.eventType,
+                  guests: chatEventForm.guests,
+                  date: chatEventForm.date,
+                  location: chatEventForm.location,
+                };
                 if (isFromListingFlow) {
                   if (!chatEventForm.date) {
                     setChatFormOpen(false);
-                    openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                    openDirectVendorRequest(vendorRef, formEventDetails).catch(console.error);
                     return;
                   }
                   setCheckingAvail(true);
@@ -1674,7 +1689,7 @@ const VendorDetailsPage = () => {
                     const hasSlot = !day || day.slot1 === "available" || day.slot2 === "available";
                     if (hasSlot) {
                       setChatFormOpen(false);
-                      openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                      openDirectVendorRequest(vendorRef, formEventDetails).catch(console.error);
                     } else {
                       const altRes = await fetch(`${BASE_URL}/vendors?serviceTypes=${vendor.serviceType}&location=${encodeURIComponent(chatEventForm.location || "")}&limit=6`, { credentials: "include" });
                       const altData = altRes.ok ? await altRes.json() : { vendors: [] };
@@ -1684,7 +1699,7 @@ const VendorDetailsPage = () => {
                     }
                   } catch {
                     setChatFormOpen(false);
-                    openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                    openDirectVendorRequest(vendorRef, formEventDetails).catch(console.error);
                   } finally {
                     setCheckingAvail(false);
                   }
@@ -1699,7 +1714,7 @@ const VendorDetailsPage = () => {
                   }));
                   dispatch(setBookingType("you-do-it"));
                   setChatFormOpen(false);
-                  openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                  openDirectVendorRequest(vendorRef, formEventDetails).catch(console.error);
                 }
               }}
               style={{ width: "100%", marginTop: 18, padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: checkingAvail ? "wait" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)", opacity: checkingAvail ? 0.7 : 1 }}>
@@ -1753,8 +1768,9 @@ const VendorDetailsPage = () => {
         </div>
       )}
       {/* Pre-chat enquiry modal — centered (not a bottom sheet), opened by "Chat to Book"
-          when there's no event context yet; submitting feeds straight into the chat
-          overlay (openVendorChat) instead of a separate direct-to-vendor channel. */}
+          when there's no event context yet; submitting feeds straight into a real,
+          vendor-attached request (openDirectVendorRequest) instead of a separate
+          direct-to-vendor channel. */}
       {enquiryOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
           onClick={e => { if (e.target === e.currentTarget) setEnquiryOpen(false); }}>
