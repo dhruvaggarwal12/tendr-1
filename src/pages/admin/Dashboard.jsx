@@ -1121,6 +1121,13 @@ const AdminDashboard = () => {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [bookingTab, setBookingTab] = useState("In Progress");
   const [highlightPlanId, setHighlightPlanId] = useState(null);
+  // "+ Add Manual Booking" modal (phone/offline bookings)
+  const [showManualBookingModal, setShowManualBookingModal] = useState(false);
+  const [manualBookingSaving, setManualBookingSaving] = useState(false);
+  const [manualBookingError, setManualBookingError] = useState("");
+  const [customerSearchQuery, setCustomerSearchQuery] = useState("");
+  const MANUAL_BOOKING_DEFAULTS = { customerId: "", bookingType: "you-do-it", eventName: "", eventType: "", guests: "", date: "", location: "", budget: "", additionalInfo: "", status: "submitted", amountPaid: "" };
+  const [manualBookingForm, setManualBookingForm] = useState(MANUAL_BOOKING_DEFAULTS);
   // Payments tab
   const [paymentsList, setPaymentsList] = useState([]);
   const [paymentStats, setPaymentStats] = useState(null);
@@ -2188,9 +2195,196 @@ const AdminDashboard = () => {
           }[s] || { bg: "#fffbeb", color: "#b45309", border: "#fde68a", label: s || "—" });
           return (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
-            <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl lg:text-5xl my-4 text-[#d08f4e]">
-              Bookings
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+              <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl lg:text-5xl my-4 text-[#d08f4e]">
+                Bookings
+              </div>
+              <button
+                onClick={() => {
+                  setManualBookingForm(MANUAL_BOOKING_DEFAULTS);
+                  setManualBookingError("");
+                  setCustomerSearchQuery("");
+                  setShowManualBookingModal(true);
+                  if (!userList.length) {
+                    setLoadingUsers(true);
+                    adminFetch(`${BASE_URL}/admin/users`).then(r => r.json()).then(d => setUserList(d.users || [])).catch(() => {}).finally(() => setLoadingUsers(false));
+                  }
+                }}
+                style={{ padding: "9px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 3px 10px rgba(196,122,46,0.3)", whiteSpace: "nowrap" }}>
+                + Add Manual Booking
+              </button>
             </div>
+
+            {showManualBookingModal && (() => {
+              const CITIES = ["Delhi", "Noida", "Greater Noida", "Ghaziabad"];
+              const setField = (key, val) => setManualBookingForm(prev => ({ ...prev, [key]: val }));
+              const selectedCustomer = userList.find(u => u._id === manualBookingForm.customerId);
+              const matchingCustomers = customerSearchQuery.trim().length < 2 ? [] : userList.filter(u =>
+                (u.name || "").toLowerCase().includes(customerSearchQuery.toLowerCase()) ||
+                (u.phoneNumber || "").includes(customerSearchQuery)
+              ).slice(0, 8);
+              const canSubmit = manualBookingForm.customerId && manualBookingForm.eventName.trim() && manualBookingForm.eventType.trim()
+                && manualBookingForm.guests && manualBookingForm.date && CITIES.includes(manualBookingForm.location);
+
+              const submit = () => {
+                setManualBookingError("");
+                setManualBookingSaving(true);
+                fetch(`${BASE_URL}/admin/event-plans`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                  credentials: "include",
+                  body: JSON.stringify({
+                    customerId: manualBookingForm.customerId,
+                    bookingType: manualBookingForm.bookingType,
+                    eventName: manualBookingForm.eventName.trim(),
+                    eventType: manualBookingForm.eventType.trim(),
+                    guests: manualBookingForm.guests,
+                    date: manualBookingForm.date,
+                    location: manualBookingForm.location,
+                    budget: manualBookingForm.budget,
+                    additionalInfo: manualBookingForm.additionalInfo,
+                    status: manualBookingForm.status,
+                    amountPaid: manualBookingForm.amountPaid,
+                  }),
+                }).then(async r => {
+                  const data = await r.json().catch(() => ({}));
+                  if (!r.ok) { setManualBookingError(data.error || "Failed to create booking."); return; }
+                  setEventPlans(prev => [data.eventPlan, ...prev]);
+                  setShowManualBookingModal(false);
+                }).catch(() => setManualBookingError("Network error — booking not created."))
+                  .finally(() => setManualBookingSaving(false));
+              };
+
+              return (
+                <div onClick={() => setShowManualBookingModal(false)} style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(20,8,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+                  <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 520, maxHeight: "90vh", overflowY: "auto", background: "#fff", borderRadius: 18, padding: "22px 24px", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                      <span style={{ fontSize: 19, fontWeight: 800, color: "#2C1A0E" }}>+ Add Manual Booking</span>
+                      <button onClick={() => setShowManualBookingModal(false)} style={{ width: 28, height: 28, borderRadius: "50%", border: "none", background: "rgba(28,9,0,0.06)", cursor: "pointer", fontSize: 15 }}>×</button>
+                    </div>
+                    <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 16px" }}>For bookings taken over phone or offline. The customer must already have a Tendr account — search by name or phone below.</p>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                      {/* Customer search */}
+                      <div>
+                        <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Customer *</label>
+                        {selectedCustomer ? (
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", borderRadius: 10, background: "rgba(34,197,94,0.08)", border: "1.5px solid rgba(34,197,94,0.3)" }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: "#15803d" }}>{selectedCustomer.name} <span style={{ color: "#9B7450", fontWeight: 500 }}>· {selectedCustomer.phoneNumber}</span></span>
+                            <button onClick={() => setField("customerId", "")} style={{ border: "none", background: "none", color: "#9B7450", cursor: "pointer", fontSize: 12 }}>Change</button>
+                          </div>
+                        ) : (
+                          <>
+                            <input value={customerSearchQuery} onChange={e => setCustomerSearchQuery(e.target.value)} placeholder={loadingUsers ? "Loading customers…" : "Search by name or phone"}
+                              style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit', sans-serif", boxSizing: "border-box" }} />
+                            {matchingCustomers.length > 0 && (
+                              <div style={{ marginTop: 6, border: "1px solid rgba(196,122,46,0.2)", borderRadius: 10, overflow: "hidden" }}>
+                                {matchingCustomers.map(u => (
+                                  <button key={u._id} onClick={() => { setField("customerId", u._id); setCustomerSearchQuery(""); }}
+                                    style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 12px", border: "none", borderBottom: "1px solid rgba(196,122,46,0.1)", background: "#fff", cursor: "pointer", fontSize: 12.5 }}>
+                                    <span style={{ fontWeight: 700, color: "#2C1A0E" }}>{u.name}</span> <span style={{ color: "#9B7450" }}>· {u.phoneNumber}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                        <div>
+                          <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Booking Type *</label>
+                          <select value={manualBookingForm.bookingType} onChange={e => setField("bookingType", e.target.value)}
+                            style={{ width: "100%", padding: "8px 10px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit', sans-serif", background: "#fff" }}>
+                            <option value="you-do-it">Build a Package (You Do It)</option>
+                            <option value="let-us-do-it">Get a Package (Let Us Do It)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Status *</label>
+                          <select value={manualBookingForm.status} onChange={e => setField("status", e.target.value)}
+                            style={{ width: "100%", padding: "8px 10px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit', sans-serif", background: "#fff" }}>
+                            <option value="submitted">In Progress — not paid yet</option>
+                            <option value="in_progress">Finalised — already paid</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Event Name *</label>
+                        <input value={manualBookingForm.eventName} onChange={e => setField("eventName", e.target.value)} placeholder="e.g. Priya's Birthday"
+                          style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit', sans-serif", boxSizing: "border-box" }} />
+                      </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                        <div>
+                          <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Event Type *</label>
+                          <input value={manualBookingForm.eventType} onChange={e => setField("eventType", e.target.value)} placeholder="e.g. Birthday Party"
+                            style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit', sans-serif", boxSizing: "border-box" }} />
+                        </div>
+                        <div>
+                          <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Guests *</label>
+                          <input value={manualBookingForm.guests} onChange={e => setField("guests", e.target.value)} placeholder="e.g. 40"
+                            style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit', sans-serif", boxSizing: "border-box" }} />
+                        </div>
+                      </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                        <div>
+                          <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Event Date *</label>
+                          <input type="date" value={manualBookingForm.date} onChange={e => setField("date", e.target.value)}
+                            style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit', sans-serif", boxSizing: "border-box" }} />
+                        </div>
+                        <div>
+                          <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>City *</label>
+                          <select value={manualBookingForm.location} onChange={e => setField("location", e.target.value)}
+                            style={{ width: "100%", padding: "8px 10px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit', sans-serif", background: "#fff" }}>
+                            <option value="">— Select —</option>
+                            {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div style={{ display: "grid", gridTemplateColumns: manualBookingForm.status === "in_progress" ? "1fr 1fr" : "1fr", gap: 10 }}>
+                        <div>
+                          <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Budget (optional)</label>
+                          <input value={manualBookingForm.budget} onChange={e => setField("budget", e.target.value)} placeholder="e.g. ₹50,000"
+                            style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit', sans-serif", boxSizing: "border-box" }} />
+                        </div>
+                        {manualBookingForm.status === "in_progress" && (
+                          <div>
+                            <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Amount Paid (₹)</label>
+                            <input type="number" value={manualBookingForm.amountPaid} onChange={e => setField("amountPaid", e.target.value)} placeholder="0"
+                              style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit', sans-serif", boxSizing: "border-box" }} />
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Notes (optional)</label>
+                        <textarea value={manualBookingForm.additionalInfo} onChange={e => setField("additionalInfo", e.target.value)} rows={2} placeholder="Anything else worth noting about this booking"
+                          style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit', sans-serif", boxSizing: "border-box", resize: "vertical" }} />
+                      </div>
+
+                      {manualBookingError && (
+                        <div style={{ padding: "8px 12px", borderRadius: 9, background: "rgba(190,40,20,0.08)", color: "#b91c1c", fontSize: 12.5, fontWeight: 600 }}>{manualBookingError}</div>
+                      )}
+
+                      <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+                        <button onClick={() => setShowManualBookingModal(false)}
+                          style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#6B3A1F", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                          Cancel
+                        </button>
+                        <button onClick={submit} disabled={!canSubmit || manualBookingSaving}
+                          style={{ flex: 2, padding: "10px 0", borderRadius: 10, border: "none", background: (!canSubmit || manualBookingSaving) ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: (!canSubmit || manualBookingSaving) ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 700, cursor: (!canSubmit || manualBookingSaving) ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                          {manualBookingSaving ? "Creating…" : "Create Booking"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Tabs */}
             <div className="adm-tab-row" style={{ display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap" }}>
