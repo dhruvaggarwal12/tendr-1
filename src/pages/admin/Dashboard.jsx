@@ -1119,7 +1119,7 @@ const AdminDashboard = () => {
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [userList, setUserList] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const [bookingTab, setBookingTab] = useState("All");
+  const [bookingTab, setBookingTab] = useState("In Progress");
   const [highlightPlanId, setHighlightPlanId] = useState(null);
   // Payments tab
   const [paymentsList, setPaymentsList] = useState([]);
@@ -2068,8 +2068,26 @@ const AdminDashboard = () => {
         )}
 
         {activeDropdown === "bookings" && (() => {
-          const BOOKING_TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled"];
-          const BOOKING_STATUS = { Upcoming: ["in_progress"], Ongoing: ["submitted", "draft"], Completed: ["completed"], Cancelled: ["cancelled"] };
+          // Four tabs, computed live from exactly two facts per booking — has payment been
+          // marked done (status), and has the event date passed — so a booking moves on its
+          // own the instant either changes, never a stored/manual state:
+          //   not paid + date not passed  -> In Progress
+          //   paid      + date not passed -> Finalised
+          //   paid      + date passed     -> Completed   (or explicit status "completed")
+          //   not paid  + date passed     -> Not Completed (or explicit status "cancelled")
+          const BOOKING_TABS = ["In Progress", "Finalised", "Completed", "Not Completed"];
+          const todayStr = new Date().toISOString().split("T")[0];
+          const isDatePassed = (p) => !!(p.date && p.date < todayStr);
+          const matchesBookingTab = (p, tab) => {
+            const notPaid = ["submitted", "draft"].includes(p.status);
+            const paid = p.status === "in_progress";
+            const passed = isDatePassed(p);
+            if (tab === "In Progress") return notPaid && !passed;
+            if (tab === "Finalised") return paid && !passed;
+            if (tab === "Completed") return p.status === "completed" || (paid && passed);
+            if (tab === "Not Completed") return p.status === "cancelled" || (notPaid && passed);
+            return false;
+          };
           const pendingChanges = eventPlans.filter(p => p.status === "in_progress" && p.changeRequest?.hasRequest && p.changeRequest?.status === "pending").length;
 
           const buildWhatsAppSummary = (plan) => {
@@ -2160,7 +2178,7 @@ const AdminDashboard = () => {
             }
           };
 
-          const filteredPlans = bookingTab === "All" ? eventPlans : eventPlans.filter((p) => (BOOKING_STATUS[bookingTab] || []).includes(p.status));
+          const filteredPlans = eventPlans.filter((p) => matchesBookingTab(p, bookingTab));
           const statusBadgeStyle = (s) => ({
             submitted:   { bg: "#fffbeb", color: "#b45309", border: "#fde68a",  label: "In Process" },
             draft:       { bg: "#fffbeb", color: "#b45309", border: "#fde68a",  label: "In Process" },
@@ -2177,7 +2195,7 @@ const AdminDashboard = () => {
             {/* Tabs */}
             <div className="adm-tab-row" style={{ display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap" }}>
               {BOOKING_TABS.map((tab) => {
-                const count = tab === "All" ? eventPlans.length : eventPlans.filter((p) => (BOOKING_STATUS[tab] || []).includes(p.status)).length;
+                const count = eventPlans.filter((p) => matchesBookingTab(p, tab)).length;
                 return (
                   <button key={tab} onClick={() => setBookingTab(tab)}
                     style={{ position: "relative", padding: "7px 16px", borderRadius: 100, fontSize: 13, fontWeight: 600, fontFamily: "'Outfit', sans-serif", cursor: "pointer", border: "1.5px solid", transition: "all 0.18s",
@@ -2186,7 +2204,7 @@ const AdminDashboard = () => {
                       color: bookingTab === tab ? "#fff" : "#6B3A1F",
                     }}>
                     {tab} <span style={{ marginLeft: 5, fontSize: 11, fontWeight: 700, background: bookingTab === tab ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)", color: bookingTab === tab ? "#fff" : "#C47A2E", borderRadius: 100, padding: "1px 7px" }}>{count}</span>
-                    {tab === "Upcoming" && pendingChanges > 0 && (
+                    {tab === "Finalised" && pendingChanges > 0 && (
                       <span style={{ position: "absolute", top: -4, right: -4, minWidth: 16, height: 16, background: "#ef4444", color: "#fff", borderRadius: 100, fontSize: 9, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{pendingChanges}</span>
                     )}
                   </button>
@@ -2209,25 +2227,25 @@ const AdminDashboard = () => {
               </div>
             ) : filteredPlans.length === 0 ? (
               <div style={{ textAlign: "center", padding: "48px", color: "#9B7450", background: "#fff", borderRadius: 16, border: "2px solid #CCAB4A" }}>
-                No {bookingTab !== "All" ? bookingTab.toLowerCase() : ""} event plans yet.
+                No {bookingTab.toLowerCase()} event plans yet.
               </div>
             ) : (
               <div className="mb-8">
-                {bookingTab === "Upcoming" && (
+                {bookingTab === "Finalised" && (
                   <div className="adm-section-header" style={{ marginBottom: 16 }}>
-                    <span className="adm-section-title">Upcoming Bookings</span>
+                    <span className="adm-section-title">Finalised Bookings</span>
                     <span className="adm-section-count">{filteredPlans.length}</span>
                   </div>
                 )}
-                {bookingTab === "Ongoing" && (
+                {bookingTab === "In Progress" && (
                   <div className="adm-section-header" style={{ marginBottom: 16 }}>
-                    <span className="adm-section-title">Ongoing Plans</span>
+                    <span className="adm-section-title">In Progress</span>
                     <span className="adm-section-count">{filteredPlans.length}</span>
                   </div>
                 )}
-                {bookingTab === "Cancelled" && (
+                {bookingTab === "Not Completed" && (
                   <div className="adm-section-header" style={{ marginBottom: 16 }}>
-                    <span className="adm-section-title">Cancelled Bookings</span>
+                    <span className="adm-section-title">Not Completed</span>
                     <span className="adm-section-count">{filteredPlans.length}</span>
                   </div>
                 )}
@@ -2237,7 +2255,8 @@ const AdminDashboard = () => {
                       <tr style={{ background: "#fffaf0", borderBottom: "1.5px solid #CCAB4A" }}>
                         {[
                           "Customer", "Event", "Type", "Date", "Guests", "Budget", "Services", "Booking Type", "Quoted Price", "Referral",
-                          ...(bookingTab === "Cancelled" ? ["Reason", "Actions"] : ["Actions"]),
+                          ...(bookingTab === "Not Completed" ? ["Reason", "Actions"] : ["Actions"]),
+                          "Delete",
                         ].map((h) => (
                           <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "#7A5535", whiteSpace: "nowrap" }}>{h}</th>
                         ))}
@@ -2295,10 +2314,10 @@ const AdminDashboard = () => {
                               )}
                             </td>
 
-                            {bookingTab === "Cancelled" ? (
+                            {bookingTab === "Not Completed" ? (
                               <>
                                 <td style={{ padding: "10px 14px", fontSize: 12, color: "#c0392b", fontStyle: "italic", maxWidth: 200 }}>
-                                  {plan.cancelledReason || "—"}
+                                  {plan.cancelledReason || (plan.status === "cancelled" ? "—" : "Event date passed, never finalised")}
                                 </td>
                                 <td style={{ padding: "10px 14px" }}>
                                   {(() => {
@@ -2629,6 +2648,21 @@ const AdminDashboard = () => {
                               </div>
                             </td>
                             )}
+                            <td style={{ padding: "10px 14px" }}>
+                              <button
+                                onClick={() => {
+                                  if (!window.confirm(`Permanently delete this booking (${plan.eventName || plan.eventType || "this event"})? This cannot be undone.`)) return;
+                                  fetch(`${BASE_URL}/admin/event-plans/${plan._id}`, {
+                                    method: 'DELETE', headers: { Authorization: `Bearer ${token}` }, credentials: 'include',
+                                  }).then(r => {
+                                    if (r.ok) setEventPlans(prev => prev.filter(p => p._id !== plan._id));
+                                    else window.alert('Failed to delete booking.');
+                                  }).catch(() => window.alert('Network error — booking not deleted.'));
+                                }}
+                                style={{ padding: "5px 10px", borderRadius: 8, border: "1.5px solid rgba(190,40,20,0.3)", background: "rgba(190,40,20,0.06)", color: "#b91c1c", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}>
+                                🗑️ Delete
+                              </button>
+                            </td>
                           </tr>
                         );
                       })}

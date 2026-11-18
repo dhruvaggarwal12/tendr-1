@@ -147,7 +147,7 @@ export const CUSTOMER_TOUR_STEPS = [
   {
     target:  '[data-tour="dash-tabs"]',
     title:   "Event Tabs",
-    content: "Filter your events: All, Upcoming (confirmed), Ongoing (in planning), Completed, Cancelled, Chats, and Gift Hampers.",
+    content: "Filter your events: All, In Progress (in planning), Finalised (confirmed), Completed, Not Completed, Chats, and Gift Hampers.",
   },
   {
     target:  '[data-tour="tab-All"]',
@@ -155,13 +155,13 @@ export const CUSTOMER_TOUR_STEPS = [
     content: "See every booking in one place — past, present and future.",
   },
   {
-    target:  '[data-tour="tab-Ongoing"]',
-    title:   "Ongoing — Events in Planning",
+    target:  '[data-tour="tab-In Progress"]',
+    title:   "In Progress — Events in Planning",
     content: "Events where you've chatted with vendors but haven't paid yet. The Tendr team is reviewing your plan.",
   },
   {
-    target:  '[data-tour="tab-Upcoming"]',
-    title:   "Upcoming — Confirmed Bookings",
+    target:  '[data-tour="tab-Finalised"]',
+    title:   "Finalised — Confirmed Bookings",
     content: "Fully paid and confirmed events. Your vendor slots are locked in.",
   },
   {

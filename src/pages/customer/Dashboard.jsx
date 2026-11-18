@@ -22,13 +22,19 @@ import DashboardAssistant, { CUSTOMER_TOUR_STEPS } from "../../components/Dashbo
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
-const TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled", "Chats", "Gift Hampers", "Party Hub", "Guest List"];
+const TABS = ["All", "In Progress", "Finalised", "Completed", "Not Completed", "Chats", "Gift Hampers", "Party Hub", "Guest List"];
 
+// Same 4-way split as the admin dashboard's Bookings tab — computed live from status +
+// whether the event date has passed, not a stored/manual state:
+//   not paid + date not passed  -> In Progress
+//   paid      + date not passed -> Finalised
+//   paid      + date passed     -> Completed
+//   not paid  + date passed     -> Not Completed
 const statusMap = {
-  Upcoming:  ["in_progress"],
-  Ongoing:   ["submitted", "draft"],
-  Completed: ["completed"],
-  Cancelled: ["cancelled"],
+  "In Progress":  ["submitted", "draft"],
+  Finalised:      ["in_progress"],
+  Completed:      ["completed"],
+  "Not Completed": ["cancelled"],
 };
 
 const statusBadge = (status) => {
@@ -519,24 +525,24 @@ export default function CustomerDashboard() {
   }, [token]);
 
   const todayStr = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
-  // Ongoing: unpaid (submitted/draft) plans whose event date hasn't passed yet
-  const isOngoing = (p) => statusMap.Ongoing.includes(p.status) && (!p.date || p.date >= todayStr);
+  // In Progress: unpaid (submitted/draft) plans whose event date hasn't passed yet
+  const isInProgress = (p) => statusMap["In Progress"].includes(p.status) && (!p.date || p.date >= todayStr);
 
-  // An in_progress plan whose event date has already passed moves to Completed view
+  // A paid (in_progress-status) plan whose event date has already passed moves to Completed
   const isDatePassed = (p) => !!(p.date && p.date < todayStr);
 
-  // submitted/draft plans whose date has passed — vendor was never booked, treat as cancelled
+  // submitted/draft plans whose date has passed — never got finalised before the event happened
   const isPastUnbooked = (p) => isDatePassed(p) && ["submitted", "draft"].includes(p.status);
 
   const filtered = activeTab === "All"
     ? plans
-    : activeTab === "Ongoing"
-      ? plans.filter(isOngoing)
-      : activeTab === "Upcoming"
+    : activeTab === "In Progress"
+      ? plans.filter(isInProgress)
+      : activeTab === "Finalised"
         ? plans.filter(p => p.status === "in_progress" && !isDatePassed(p))
         : activeTab === "Completed"
           ? plans.filter(p => p.status === "completed" || (p.status === "in_progress" && isDatePassed(p)))
-          : activeTab === "Cancelled"
+          : activeTab === "Not Completed"
             ? plans.filter(p => p.status === "cancelled" || isPastUnbooked(p))
             : plans.filter((p) => statusMap[activeTab]?.includes(p.status));
 
@@ -548,7 +554,7 @@ export default function CustomerDashboard() {
     return (Date.now() - new Date(ref).getTime()) < TWENTY_FOUR_HRS;
   };
 
-  // Vendor chats shown in Ongoing:
+  // Vendor chats shown in In Progress:
   // - Unapproved/pending: within 24hrs of last customer message
   // - Approved + no price agreed yet: always show (still in discussion)
   const pendingVendorChats = conversations.filter(c => {
@@ -593,11 +599,11 @@ export default function CustomerDashboard() {
   }).length;
 
   const counts = {
-    All:       plans.length,
-    Upcoming:  plans.filter(p => p.status === "in_progress" && !isDatePassed(p)).length,
-    Ongoing:   plans.filter(isOngoing).length + ongoingVendorChats.length + (showPlanningCard ? 1 : 0),
-    Completed: plans.filter(p => p.status === "completed" || (p.status === "in_progress" && isDatePassed(p))).length,
-    Cancelled: plans.filter(p => p.status === "cancelled" || isPastUnbooked(p)).length,
+    All:        plans.length,
+    Finalised:  plans.filter(p => p.status === "in_progress" && !isDatePassed(p)).length,
+    "In Progress": plans.filter(isInProgress).length + ongoingVendorChats.length + (showPlanningCard ? 1 : 0),
+    Completed:  plans.filter(p => p.status === "completed" || (p.status === "in_progress" && isDatePassed(p))).length,
+    "Not Completed": plans.filter(p => p.status === "cancelled" || isPastUnbooked(p)).length,
     Chats:     visibleChats.length,
     "Gift Hampers": ghOrders.length,
     "Party Hub": myParties?.length || 0,
@@ -683,7 +689,7 @@ export default function CustomerDashboard() {
             <div className="dashboard-stats-row" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             {[
               { label: "Total Events", val: counts.All },
-              { label: "Upcoming", val: counts.Upcoming },
+              { label: "Finalised", val: counts.Finalised },
               { label: "Completed", val: counts.Completed },
             ].map(({ label, val }) => (
               <div key={label} style={{ textAlign: "center", background: "rgba(196,122,46,0.07)", borderRadius: 12, padding: "10px 18px", border: "1px solid rgba(196,122,46,0.15)" }}>
@@ -1476,7 +1482,7 @@ export default function CustomerDashboard() {
           </div>
 
           {/* Ongoing tab — event plan cards + pending vendor chat cards in one unified block */}
-          {activeTab === "Ongoing" ? (
+          {(activeTab === "In Progress" || activeTab === "Not Completed") ? (
             (loading || loadingChats) ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
@@ -1488,17 +1494,22 @@ export default function CustomerDashboard() {
                   </div>
                 ))}
               </div>
-            ) : filtered.length === 0 && ongoingVendorChats.length === 0 && !showPlanningCard ? (
+            ) : filtered.length === 0 && (activeTab !== "In Progress" || (ongoingVendorChats.length === 0 && !showPlanningCard)) ? (
               <div style={{ textAlign: "center", padding: "56px 24px", background: "#FFFCF5", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
                 <div style={{ fontSize: 40, marginBottom: 14 }}>📋</div>
-                <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>No ongoing bookings</h4>
-                <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>Your submitted events will appear here.</p>
+                <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>
+                  {activeTab === "In Progress" ? "No bookings in progress" : "Nothing here"}
+                </h4>
+                <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>
+                  {activeTab === "In Progress" ? "Your submitted events will appear here." : "Bookings that never got finalised before their event date will appear here."}
+                </p>
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
-                {/* ── Smart Plan — Waiting for Approval card ── */}
-                {(() => {
+                {/* ── Smart Plan — Waiting for Approval card (In Progress only — not relevant
+                     once the event date has passed without ever being finalised) ── */}
+                {activeTab === "In Progress" && (() => {
                   try {
                     const sp = JSON.parse(localStorage.getItem("tendr_smart_plan") || "null");
                     if (!sp) return null;
@@ -1542,7 +1553,7 @@ export default function CustomerDashboard() {
                 })()}
 
                 {/* ── Planning in Progress card — shown as soon as form is filled ── */}
-                {showPlanningCard && (
+                {activeTab === "In Progress" && showPlanningCard && (
                   <div style={{ background: "linear-gradient(135deg,#FFFCF5,#fff9f0)", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.25)", boxShadow: "0 2px 12px rgba(196,122,46,0.08)", padding: "18px 22px" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -1701,7 +1712,7 @@ export default function CustomerDashboard() {
                 ))}
 
                 {/* Pending vendor chat cards (awaiting admin approval) */}
-                {ongoingVendorChats.length > 0 && (
+                {activeTab === "In Progress" && ongoingVendorChats.length > 0 && (
                   <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: filtered.length > 0 ? 8 : 0 }}>
                     {ongoingVendorChats.map(convo => (
                 <div key={convo._id} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)", padding: "18px 22px" }}>
@@ -1938,7 +1949,7 @@ export default function CustomerDashboard() {
           )}
 
           {/* Event cards — all tabs except Ongoing, Chats, Gift Hampers */}
-          {activeTab !== "Ongoing" && activeTab !== "Chats" && activeTab !== "Gift Hampers" && activeTab !== "Party Hub" && (loading ? (
+          {activeTab !== "In Progress" && activeTab !== "Not Completed" && activeTab !== "Chats" && activeTab !== "Gift Hampers" && activeTab !== "Party Hub" && (loading ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {[0,1,2].map(i => (
                 <div key={i} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(139,69,19,0.1)", padding: "20px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
