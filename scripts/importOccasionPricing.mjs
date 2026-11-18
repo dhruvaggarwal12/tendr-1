@@ -27,7 +27,11 @@ import { normalizeOccasionName, normalizeVendorCategory } from '../src/data/occa
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUTPUT_PATH = join(__dirname, '../src/data/occasionVendorPricing.json');
-const ALLOWED_CONFIDENCE = ['Reliable', 'Quote-first'];
+// 'Platform-verified' = a real, admin-confirmed price from a completed Tendr booking
+// (see tendr_backend_dhruv/scripts/exportPlatformVerifiedPricing.mjs) — ranked above even
+// 'Reliable' by attachRealPricing() in OccasionDetail.jsx, since it's an actual transaction
+// rather than a scraped listing.
+const ALLOWED_CONFIDENCE = ['Platform-verified', 'Reliable', 'Quote-first'];
 const ALLOWED_GST = ['Yes', 'No', 'Not stated', 'Not disclosed by source', 'Not applicable'];
 
 const inputPath = process.argv[2];

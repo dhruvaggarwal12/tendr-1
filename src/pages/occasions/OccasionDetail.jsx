@@ -1834,15 +1834,19 @@ function approxCost(priceStr, guests) {
   return r?(r.min+r.max)/2:null;
 }
 
-/* ── blends a real, Reliable-confidence sourced price (src/data/occasionVendorPricing.json,
-   via getRealPricedRows) into the synthetic tier it's numerically closest to — that tier's
-   displayed/selected/saved price becomes the real number instead of the hand-written
-   estimate, tagged `sourced:true` so the UI/PDF can label it. Quote-first rows are
-   deliberately never promoted this way (only shown in the existing reference box below the
-   tiers) since they're explicitly not a confirmed number yet. Returns the tiers unchanged
-   (just tagged `sourced:false`) when no Reliable row exists. ── */
+/* ── blends a real sourced price (src/data/occasionVendorPricing.json, via getRealPricedRows)
+   into the synthetic tier it's numerically closest to — that tier's displayed/selected/saved
+   price becomes the real number instead of the hand-written estimate, tagged `sourced:true` so
+   the UI/PDF can label it. Prefers a "Platform-verified" row (a real, admin-confirmed price
+   from an actual completed Tendr booking — see exportPlatformVerifiedPricing.mjs) over a
+   "Reliable" one (scraped from a public vendor listing) when both exist, since a real
+   transaction beats a published price. Quote-first rows are deliberately never promoted this
+   way (only shown in the existing reference box below the tiers) since they're explicitly not
+   a confirmed number yet. Returns the tiers unchanged (just tagged `sourced:false`) when
+   neither a Platform-verified nor a Reliable row exists. ── */
 function attachRealPricing(packages, realRows, guests) {
-  const reliable=(realRows||[]).find(r=>r.confidence==="Reliable"&&r.minPrice!=null);
+  const reliable=(realRows||[]).find(r=>r.confidence==="Platform-verified"&&r.minPrice!=null)
+    ||(realRows||[]).find(r=>r.confidence==="Reliable"&&r.minPrice!=null);
   if(!reliable) return packages.map(p=>({...p,sourced:false}));
   const realMid=reliable.maxPrice!=null?(reliable.minPrice+reliable.maxPrice)/2:reliable.minPrice;
   let bestIdx=0, bestDist=Infinity;
@@ -3318,7 +3322,7 @@ export default function OccasionDetail(){
                 // Reliable rows get absorbed straight into the tier above (see
                 // getVendorPackagesWithReal) — this box only needs to show the
                 // Quote-first ones, so nothing appears twice.
-                const realRows=getRealPricedRows(occasion.name,v,{guests}).filter(r=>r.confidence!=="Reliable").slice(0,3);
+                const realRows=getRealPricedRows(occasion.name,v,{guests}).filter(r=>r.confidence!=="Reliable"&&r.confidence!=="Platform-verified").slice(0,3);
                 if(!realRows.length) return null;
                 return(
                   <div style={{marginBottom:canCustomize?16:4,padding:"10px 12px",borderRadius:10,background:"rgba(196,122,46,0.04)",border:"1px dashed rgba(196,122,46,0.25)"}}>
@@ -5019,7 +5023,7 @@ export default function OccasionDetail(){
                             // match already got absorbed straight into the tier above (see
                             // getVendorPackagesWithReal), so this box only needs the
                             // Quote-first ones — nothing shows up twice.
-                            const realRows=getRealPricedRows(occasion.name,v,{guests}).filter(r=>r.confidence!=="Reliable").slice(0,3);
+                            const realRows=getRealPricedRows(occasion.name,v,{guests}).filter(r=>r.confidence!=="Reliable"&&r.confidence!=="Platform-verified").slice(0,3);
                             if(!realRows.length) return null;
                             return(
                               <div style={{marginTop:10,padding:"10px 12px",borderRadius:10,background:"rgba(196,122,46,0.04)",border:"1px dashed rgba(196,122,46,0.25)"}}>
