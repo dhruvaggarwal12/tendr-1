@@ -284,7 +284,7 @@ export default function VendorProfile() {
     try {
       const currentType = form.serviceType || profile?.serviceType;
       const isGig = GIG_PRO_TYPES.includes(currentType);
-      const SVC_TYPES = ['Photographer','Caterer','Decorator','Makeup Artist','Mehendi Artist','Hair Stylist','Cake Artist','Bartender','Videographer','Food Truck','Wedding Planner','Live Streaming','Photo Booth','Gift & Favours','Transportation','Security'];
+      const SVC_TYPES = ['Photographer','Caterer','Decorator','Makeup Artist','Mehendi Artist','Hair Stylist','Cake Artist','Bartender','Videographer','Food Truck','Wedding Planner','Live Streaming','Photo Booth','Gift & Favours','Security'];
       const isSvc = SVC_TYPES.includes(currentType);
       const body = {
         name: form.name,

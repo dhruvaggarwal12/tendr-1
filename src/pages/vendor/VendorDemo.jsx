@@ -55,7 +55,7 @@ const DEMOS = {
     specialties: ["Floral Arch & Mandap","Balloon Canopy","LED Backdrop","Draping & Valance","Table Centrepieces","Fairy Light Ceiling","Photobooth Setup","Stage Décor"],
     eventTypes: ["Wedding","Engagement","Birthday","Baby Shower","Corporate","Anniversary","Sangeet"],
     typesOfDecoration: ["Floral Arch","Balloon Canopy","LED Backdrop","Draping & Valance","Fairy Light Ceiling","Stage Décor"],
-    venueCoverage: ["Indoor","Outdoor","Farmhouse","Banquet Hall","Rooftop"],
+    venueCoverage: ["Indoor","Outdoor","Rooftop"],
     genres: [], instruments: [], performingStyle: [],
     social: { instagram: "@bloomsandbeyond", youtube: "", website: "bloomsandbeyond.in" },
     showreel: "",

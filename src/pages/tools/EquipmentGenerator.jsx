@@ -57,10 +57,8 @@ const EVENT_TYPES = [
 
 const VENUE_TYPES = [
   { id: "home",      label: "At Home",          icon: "🏠" },
-  { id: "banquet",   label: "Banquet Hall",      icon: "🏛️" },
   { id: "hotel",     label: "Hotel / Resort",   icon: "🏨" },
   { id: "outdoor",   label: "Outdoor / Garden", icon: "🌿" },
-  { id: "farmhouse", label: "Farmhouse",        icon: "🌾" },
   { id: "rooftop",   label: "Rooftop",          icon: "🌆" },
 ];
 
@@ -83,7 +81,7 @@ function generateEquipment(guests, venueId, services) {
   const hasDec    = services.includes("Decoration");
   const hasPhoto  = services.includes("Photography");
   const hasAnchor = services.includes("Anchor");
-  const isOutdoor = venueId === "outdoor" || venueId === "farmhouse" || venueId === "rooftop";
+  const isOutdoor = venueId === "outdoor" || venueId === "rooftop";
   const isHome    = venueId === "home";
 
   const tables = Math.ceil(n / 8);

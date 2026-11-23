@@ -2891,7 +2891,7 @@ const Home = () => {
           {/* Centre: scrolling ticker */}
           <div className="vend-ticker-wrap" style={{ flex: 1, overflow: "hidden", maskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)", WebkitMaskImage: "linear-gradient(to right,transparent,black 8%,black 92%,transparent)", minWidth: 0 }}>
             <div className="vd-ticker">
-              {[...["DJ", "Emcee", "Photographer", "Decorator", "Caterer", "Band", "Videographer", "AV Setup", "Florist", "Anchor", "Makeup Artist", "Event Planner", "Dhol Player"], ...["DJ", "Emcee", "Photographer", "Decorator", "Caterer", "Band", "Videographer", "AV Setup", "Florist", "Anchor", "Makeup Artist", "Event Planner", "Dhol Player"]].map((t, i) => (
+              {[...["DJ", "Emcee", "Photographer", "Decorator", "Caterer", "Band", "Videographer", "Florist", "Anchor", "Makeup Artist", "Event Planner", "Dhol Player"], ...["DJ", "Emcee", "Photographer", "Decorator", "Caterer", "Band", "Videographer", "Florist", "Anchor", "Makeup Artist", "Event Planner", "Dhol Player"]].map((t, i) => (
                 <span key={i} style={{ flexShrink: 0, fontSize: 12, fontWeight: 600, color: "#CCAB4A", background: "rgba(204,171,74,0.07)", border: "1px solid rgba(204,171,74,0.2)", borderRadius: 100, padding: "8px 18px", whiteSpace: "nowrap" }}>{t}</span>
               ))}
             </div>

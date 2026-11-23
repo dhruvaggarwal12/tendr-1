@@ -23,10 +23,8 @@ const EVENT_TYPES = [
 
 const VENUE_TYPES = [
   { id: "home",      label: "At Home",          icon: "🏠" },
-  { id: "banquet",   label: "Banquet Hall",      icon: "🏛️" },
   { id: "hotel",     label: "Hotel / Resort",   icon: "🏨" },
   { id: "outdoor",   label: "Outdoor / Garden", icon: "🌿" },
-  { id: "farmhouse", label: "Farmhouse",        icon: "🌾" },
   { id: "tbd",       label: "Not Decided Yet",  icon: "🤔" },
 ];
 

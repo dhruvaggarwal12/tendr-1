@@ -73,10 +73,8 @@ const AGE_GROUPS = [
 
 const VENUE_TYPES = [
   { id:"Home / Apartment",  icon:"🏠" },
-  { id:"Banquet Hall",      icon:"🏛️" },
   { id:"Garden / Lawn",     icon:"🌿" },
   { id:"Restaurant",        icon:"🍽️" },
-  { id:"Farmhouse",         icon:"🌾" },
   { id:"Rooftop / Terrace", icon:"🌆" },
   { id:"Community Centre",  icon:"🏢" },
   { id:"Outdoor / Open Air",icon:"☀️" },

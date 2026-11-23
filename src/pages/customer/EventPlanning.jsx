@@ -865,7 +865,7 @@ const EventPlanning = () => {
       }
       if (id === 'decorator') return (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {[{ label: "Venue Type", field: "venueType", opts: ["Indoor hall", "Outdoor", "Home", "Farmhouse"], multi: false },
+          {[{ label: "Venue Type", field: "venueType", opts: ["Indoor hall", "Outdoor", "Home"], multi: false },
             { label: "Theme / Color Palette", field: "theme", opts: ["Pastel", "Gold & White", "Vibrant & Colorful", "Monochrome", "Floral/Garden", "No preference"], multi: false },
             { label: "Must-haves (multi-select)", field: "mustHave", opts: ["Balloon decor", "Floral arrangements", "Fairy lights", "Backdrop/Photo wall", "Stage decor", "Table centerpieces"], multi: true }
           ].map(({ label, field, opts, multi }) => (

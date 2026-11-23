@@ -37,7 +37,7 @@ export const BOT_FLOWS = {
     {
       key:      "venueType",
       question: "What is the venue type?",
-      options:  ["Indoor hall", "Outdoor", "Home", "Farmhouse"],
+      options:  ["Indoor hall", "Outdoor", "Home"],
     },
     {
       key:      "theme",

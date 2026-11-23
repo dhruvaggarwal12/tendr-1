@@ -95,10 +95,7 @@ const VENDOR_SERVICE_TYPES = [
   { value: "Photographer",   label: "Photographer / Videographer", sub: "Candid, cinematic, drone" },
   { value: "DJ Setup",       label: "DJ Setup",                    sub: "Sound system, lighting & equipment" },
   { value: "Florist",        label: "Florist",                     sub: "Wedding & event florals" },
-  { value: "AV Setup",       label: "AV / Tech Setup",             sub: "Projector, LED wall, sound" },
-  { value: "Venue",          label: "Venue / Banquet Hall",        sub: "Indoor, outdoor, rooftop" },
   { value: "Baker",          label: "Baker / Cake Studio",         sub: "Wedding, birthday, custom cakes" },
-  { value: "Transportation", label: "Transportation",              sub: "Cars, buses, vintage vehicles" },
   { value: "Makeup Artist",  label: "Makeup Artist / Hair Stylist",sub: "Bridal, party, editorial" },
   { value: "Other",          label: "Other",                       sub: "Something not listed above" },
 ];
@@ -131,24 +128,10 @@ const CATEGORY_QUESTIONS = {
     { id: "specialization", label: "Specialization", type: "chips", options: ["Wedding", "Birthday/Events", "Corporate", "Gifting"] },
     { id: "delivery",       label: "Services",       type: "radio", options: ["Delivery + Setup", "Venue setup only", "Pickup only"] },
   ],
-  "AV Setup": [
-    { id: "equipment", label: "Equipment offered", type: "chips", options: ["Projector/Screen", "LED Wall", "Sound System", "Stage Lighting", "Complete AV"] },
-    { id: "techTeam",  label: "Tech team",         type: "radio", options: ["Own team", "Freelance", "Both"] },
-  ],
-  Venue: [
-    { id: "capacity",  label: "Guest capacity", type: "radio", options: ["Up to 50", "50–200", "200–500", "500–1000", "1000+"] },
-    { id: "type",      label: "Venue type",     type: "radio", options: ["Indoor", "Outdoor", "Both"] },
-    { id: "ac",        label: "Air conditioned",type: "radio", options: ["Yes", "No", "Partly"] },
-    { id: "catering",  label: "Catering policy",type: "radio", options: ["In-house only", "External allowed", "Both"] },
-  ],
   Baker: [
     { id: "specialization", label: "Specialization",   type: "chips", options: ["Wedding Cakes", "Birthday Cakes", "Cupcakes", "Custom/Fondant", "Dessert Tables"] },
     { id: "leadTime",       label: "Lead time needed", type: "radio", options: ["Same day", "2–3 days", "1 week", "2+ weeks"] },
     { id: "delivery",       label: "Delivery",         type: "radio", options: ["Delivery available", "Pickup only"] },
-  ],
-  Transportation: [
-    { id: "vehicles", label: "Vehicle types", type: "chips", options: ["Car/SUV", "Bus/Mini-bus", "Vintage Car", "Tempo Traveller", "Luxury Coach"] },
-    { id: "fleet",    label: "Fleet",         type: "radio", options: ["Own fleet", "Third-party tie-up", "Both"] },
   ],
   "Makeup Artist": [
     { id: "specialization", label: "Specialization", type: "chips", options: ["Bridal Makeup", "Party Makeup", "Hair Styling", "Mehendi", "Editorial"] },

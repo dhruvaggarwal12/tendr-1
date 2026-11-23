@@ -37,7 +37,6 @@ const CATEGORIES = [
   { id: "Magician",          label: "Magician",           icon: "🪄", color: "#4c1d95", desc: "Magic & illusion shows" },
   { id: "Choreographer",     label: "Choreographer",      icon: "💃", color: "#9d174d", desc: "Sangeet & group choreography" },
   { id: "Emcee/Host",        label: "Emcee / Host",       icon: "🎤", color: "#1d4ed8", desc: "Anchor & event hosting" },
-  { id: "AV Setup",          label: "AV Setup",           icon: "🔊", color: "#064e3b", desc: "Sound, lighting, LED screens" },
   // Beauty & Grooming
   { id: "Makeup Artist",     label: "Makeup Artist",      icon: "💄", color: "#db2777", desc: "Bridal, party & editorial makeup" },
   { id: "Mehendi Artist",    label: "Mehendi Artist",     icon: "🌿", color: "#16a34a", desc: "Bridal & guest mehendi" },

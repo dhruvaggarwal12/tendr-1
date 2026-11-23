@@ -108,7 +108,7 @@ const TENDR_BY_TYPE = {
     {id:"TND002",client:"Kapoor Wedding",event:"Wedding Ceremony + Reception",date:"2026-10-05",venue:"Leela Palace, Delhi",budget:"₹2,20,000",status:"Pending",message:"Full sound, lights, LED backdrop for 2-day wedding. 500 guests per function."},
     {id:"TND003",client:"FICCI",event:"Annual Conference",date:"2026-10-14",venue:"Vigyan Bhavan, Delhi",budget:"₹4,50,000",status:"Pending",message:"Conference-grade AV, 3 halls, live streaming, simultaneous translation booths. 1,200 delegates."},
     {id:"TND004",client:"Times Now",event:"Debate Night",date:"2026-10-22",venue:"Times Now Studio, Delhi",budget:"₹1,80,000",status:"Pending",message:"Broadcast-quality AV for live TV debate event. 200 audience + broadcast feed."},
-    {id:"TND005",client:"Gupta Birthday",event:"50th Birthday Party",date:"2026-11-01",venue:"Home Farmhouse, Delhi NCR",budget:"₹60,000",status:"Declined",message:"Basic sound + lights for farmhouse birthday. 150 guests."},
+    {id:"TND005",client:"Gupta Birthday",event:"50th Birthday Party",date:"2026-11-01",venue:"Outdoor Lawn, Delhi NCR",budget:"₹60,000",status:"Declined",message:"Basic sound + lights for outdoor birthday. 150 guests."},
   ],
   Choreographer:[
     {id:"TND001",client:"Sharma Wedding",event:"Sangeet Choreography",date:"2026-09-20",venue:"ITC Maurya, Delhi",budget:"₹40,000",status:"Confirmed",message:"Choreography for 3 groups + couple's first dance. 6 weeks of classes. 220 guests at event."},

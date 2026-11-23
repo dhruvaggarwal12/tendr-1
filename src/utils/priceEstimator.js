@@ -190,7 +190,7 @@ export const VENUE_TYPES = [
   { key: "home",    label: "At home / apartment",        needsVenue: false },
   { key: "booked",  label: "Already-booked banquet/hall", needsVenue: true },
   { key: "restro",  label: "Restaurant / rooftop",        needsVenue: true },
-  { key: "outdoor", label: "Farmhouse / outdoor space",   needsVenue: true },
+  { key: "outdoor", label: "Outdoor space",                needsVenue: true },
   { key: "office",  label: "Office",                      needsVenue: false },
   { key: "other",   label: "Other",                       needsVenue: true },
 ];

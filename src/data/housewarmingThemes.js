@@ -138,7 +138,7 @@ const HOUSEWARMING_THEMES = [
     oneLineDesc: "Warm bohemian housewarming with earthy décor.",
     bestFor: "Young Couples",
     recommendedGuests: "20–70",
-    bestVenue: ["Apartment", "Farmhouse"],
+    bestVenue: ["Apartment"],
     budget: "Premium",
     bestTime: ["Afternoon", "Evening"],
     overview: "A Boho Home housewarming combines earthy colours, handcrafted décor and cozy seating to create a relaxed celebration. Pampas grass, macramé accents and warm lighting make the new home feel inviting while offering plenty of beautiful spaces for conversations and photographs.",

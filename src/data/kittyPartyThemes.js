@@ -86,7 +86,7 @@ const KITTY_PARTY_THEMES = [
     oneLineDesc: "Relaxed bohemian kitty celebration.",
     bestFor: "Ladies Groups",
     recommendedGuests: "15–35",
-    bestVenue: ["Home", "Farmhouse"],
+    bestVenue: ["Home"],
     budget: "Premium",
     bestTime: ["Afternoon", "Evening"],
     overview: "A Boho Chic kitty party features earthy colours, cozy seating and handcrafted décor for a stylish afternoon with friends. The relaxed setting encourages conversations, games and beautiful photographs.",

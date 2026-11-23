@@ -32,15 +32,11 @@ export const PERFORMER_ART_FORMS = [
 ];
 
 // Categories that get the GigPro profile layout + dashboard "Performance Details"/
-// "Setlist & Performance"/"Packages" tabs. AV Setup is a technical service, not a
-// performer, but the dashboard has long treated it as GigPro-like (its own
-// Setup/Lights style options) — kept here so nothing regresses for existing AV
-// Setup vendors.
-export const GIG_PRO_TYPES = ["DJ", "Anchor", "Emcee/Host", "Band", "Choreographer", "Singer", "Musician", "Performer", "Stand-up Comedian", "Magician", "AV Setup"];
+// "Setlist & Performance"/"Packages" tabs.
+export const GIG_PRO_TYPES = ["DJ", "Anchor", "Emcee/Host", "Band", "Choreographer", "Singer", "Musician", "Performer", "Stand-up Comedian", "Magician"];
 
 // Categories that get the "Book Now" → Artist T&C → direct booking modal on the
-// customer-facing profile, instead of the generic chat flow. AV Setup is excluded —
-// it behaves like a regular equipment/service vendor for booking purposes.
+// customer-facing profile, instead of the generic chat flow.
 export const PERFORMER_SERVICE_TYPES = ["DJ", "Anchor", "Emcee/Host", "Band", "Choreographer", "Singer", "Musician", "Performer", "Stand-up Comedian", "Magician"];
 
 // Shared by Registration.jsx's "which areas do you travel to" picker and
@@ -68,7 +64,6 @@ export const GIG_STYLE_OPTIONS = {
   Singer:              ['Solo Vocals', 'Duet', 'Background Vocals', 'Live Looping', 'Classical', 'Ghazal'],
   'Stand-up Comedian': ['Stand-Up', 'Roast', 'Mimicry', 'Improv', 'Corporate Safe', 'Open Mic'],
   Magician:            ['Close-up Magic', 'Table Magic', 'Stage Illusions', 'Mentalism', 'Comedy Magic', "Children's Show", 'Interactive Magic', 'Corporate Magic'],
-  'AV Setup':          ['Basic', 'Standard', 'Premium', 'Full Production'],
 };
 
 // Only Stand-up Comedian gets this today — surfaced as a prominent badge near the
@@ -88,7 +83,6 @@ export function performanceLabel(svc) {
   if (svc === 'Magician') return 'Show Description / Acts';
   if (svc === 'Musician') return 'Repertoire / Sets';
   if (svc === 'Performer') return 'Signature Acts';
-  if (svc === 'AV Setup') return 'Notes & Specialities';
   return 'Setlist / Repertoire';
 }
 
@@ -105,7 +99,6 @@ export function performanceTabName(svc) {
   if (svc === 'Stand-up Comedian') return 'Material';
   if (svc === 'Magician') return 'Magic Acts';
   if (svc === 'Performer') return 'Signature Acts';
-  if (svc === 'AV Setup') return 'Specialities';
   return 'Setlist & Performance';
 }
 
