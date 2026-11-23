@@ -43,6 +43,13 @@ export const GIG_PRO_TYPES = ["DJ", "Anchor", "Emcee/Host", "Band", "Choreograph
 // it behaves like a regular equipment/service vendor for booking purposes.
 export const PERFORMER_SERVICE_TYPES = ["DJ", "Anchor", "Emcee/Host", "Band", "Choreographer", "Singer", "Musician", "Performer", "Stand-up Comedian", "Magician"];
 
+// Shared by Registration.jsx's "which areas do you travel to" picker and
+// Profile.jsx's "Service Areas" picker — same supported-cities list either way.
+export const LOCATION_OPTIONS = [
+  "Delhi", "Noida", "Gurgaon", "Ghaziabad",
+  "Greater Noida", "South Delhi", "North Delhi", "East Delhi", "West Delhi",
+];
+
 export const GIG_GENRE_OPTIONS = ['Bollywood', 'EDM', 'Classical', 'Hip-Hop', 'Sufi', 'Punjabi', 'Jazz', 'Rock', 'Pop', 'Folk', 'Ghazal', 'Devotional'];
 export const GIG_LANG_OPTIONS = ['Hindi', 'English', 'Punjabi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam', 'Bengali', 'Gujarati', 'Marathi'];
 

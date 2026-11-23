@@ -9,6 +9,7 @@ import {
   AUDIENCE_PARTICIPATION_OPTIONS, AGE_SUITABILITY_OPTIONS, EQUIPMENT_PROVIDED_OPTIONS,
   PARTY_ENERGY_OPTIONS, SCRIPT_SOURCE_OPTIONS, REQUIREMENT_FIELD_CATEGORIES,
   SONG_REQUEST_CATEGORIES, PERFORMANCE_ATMOSPHERE_OPTIONS, CUSTOM_MATERIAL_CATEGORIES,
+  LOCATION_OPTIONS,
 } from "../../constants/performerCategories";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -886,7 +887,8 @@ export default function VendorRegistration() {
     name: "", phoneNumber: "", whatsappNumber: "", email: "", city: "",
     password: "", confirmPassword: "",
     bio: "", contentRating: "",
-    packages: [{ name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [], configuration: "" }],
+    yearsOfExperience: "", totalEventsCompleted: "",
+    packages: [{ name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [], configuration: "", quoteOnly: false }],
     duration: "", sampleLink: "", instagram: "",
     performanceItems: [{ title: "", note: "" }],
     highlights: [],
@@ -900,7 +902,7 @@ export default function VendorRegistration() {
     songRequestPolicy: { accepted: false, noticeDays: "", extraCharge: "" },
     customMaterialPolicy: { offered: false, infoNeeded: "", prepDays: "" },
     requirements: {
-      travel: "", setupTimeMinutes: "", soundSystemProvided: false, stageRequired: false,
+      travel: "", travelAreas: [], setupTimeMinutes: "", soundSystemProvided: false, stageRequired: false,
       powerRequirement: "", spaceRequirement: "", advanceBookingDays: "", customRequestsNote: "",
       scriptSource: "", rehearsalAvailable: false, outfitArrangement: "",
       micCount: "", lightingRequirement: "", floorRequirement: "", costumeArrangement: "",
@@ -1225,6 +1227,10 @@ export default function VendorRegistration() {
     // equipmentProvided, partyEnergyLevels, performanceAtmosphere).
     const toggleArtChip = (field, val) => setArtistForm(p => ({ ...p, [field]: p[field].includes(val) ? p[field].filter(x => x !== val) : [...p[field], val] }));
     const setArtReq = (key, val) => setArtistForm(p => ({ ...p, requirements: { ...p.requirements, [key]: val } }));
+    const toggleArtTravelArea = (loc) => setArtReq("travelAreas",
+      artistForm.requirements.travelAreas.includes(loc)
+        ? artistForm.requirements.travelAreas.filter(x => x !== loc)
+        : [...artistForm.requirements.travelAreas, loc]);
 
     const perfLabel = performanceLabel(performerType);
     const perfHints = performanceFieldHints(performerType);
@@ -1256,6 +1262,8 @@ export default function VendorRegistration() {
         password: artistForm.password,
         serviceType: performerType,
         performerArtForm: performerArtForm || "",
+        yearsOfExperience: artistForm.yearsOfExperience || undefined,
+        totalEventsCompleted: artistForm.totalEventsCompleted || undefined,
         isArtist: true,
         genres: hasGenreList ? genres : [],
         performingStyle: hasGenreList ? [] : genres,
@@ -1273,6 +1281,7 @@ export default function VendorRegistration() {
             travelCharge: p.travelCharge || "", overtimeCharge: p.overtimeCharge || "",
             addOns: (p.addOns || []).map(s => s.trim()).filter(Boolean),
             configuration: p.configuration || "",
+            quoteOnly: !!p.quoteOnly,
           })),
         hostingResponsibilities: artistForm.hostingResponsibilities,
         audienceSizeExperience: artistForm.audienceSizeExperience,
@@ -1516,16 +1525,22 @@ export default function VendorRegistration() {
                         style={inputStyle(focused, {}, "", gold, ink)}
                       />
                       <input
-                        value={pkg.price}
+                        value={pkg.price} disabled={pkg.quoteOnly}
                         onChange={e => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, price: e.target.value } : x) }))}
-                        placeholder="e.g. 15000"
-                        style={inputStyle(focused, {}, "", gold, ink)}
+                        placeholder={pkg.quoteOnly ? "Quote only" : "e.g. 15000"}
+                        style={{ ...inputStyle(focused, {}, "", gold, ink), ...(pkg.quoteOnly ? { background: "#F3F0EA", color: muted } : {}) }}
                       />
                       {i > 0 ? (
                         <button type="button" onClick={() => setArtistForm(p => ({ ...p, packages: p.packages.filter((_, j) => j !== i) }))}
                           style={{ height: 42, width: 36, background: "none", border: "1.5px solid #fca5a5", borderRadius: 8, color: "#dc2626", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
                       ) : <div style={{ width: 36 }} />}
                     </div>
+                    <label style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 11.5, fontWeight: 600, color: muted }}>
+                      <input type="checkbox" checked={!!pkg.quoteOnly}
+                        onChange={e => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, quoteOnly: e.target.checked, price: e.target.checked ? "" : x.price } : x) }))}
+                        style={{ width: 14, height: 14 }} />
+                      Quote only — no fixed price
+                    </label>
                     <div className="areg-row" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 8 }}>
                       <select value={pkg.unit} onChange={e => setArtistForm(p => ({ ...p, packages: p.packages.map((x, j) => j === i ? { ...x, unit: e.target.value } : x) }))}
                         style={{ ...inputStyle(focused, {}, "", gold, ink), cursor: "pointer" }}>
@@ -1606,7 +1621,7 @@ export default function VendorRegistration() {
                   </div>
                 ))}
                 {artistForm.packages.length < 3 && (
-                  <button type="button" onClick={() => setArtistForm(p => ({ ...p, packages: [...p.packages, { name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [], configuration: "" }] }))}
+                  <button type="button" onClick={() => setArtistForm(p => ({ ...p, packages: [...p.packages, { name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [], configuration: "", quoteOnly: false }] }))}
                     style={{ padding: "9px", borderRadius: 8, border: `1.5px dashed rgba(196,122,46,0.45)`, background: "transparent", color: gold, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
                     + Add Package
                   </button>
@@ -1739,9 +1754,21 @@ export default function VendorRegistration() {
               <p style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", margin: "4px 0 4px" }}>Booking Requirements</p>
               <p style={{ fontSize: 12, color: muted, margin: "0 0 10px" }}>What you need from the venue/customer — optional, you can add or edit this later from your dashboard too.</p>
             </div>
+            <p style={{ fontSize: 12, color: muted, margin: "0 0 8px", fontWeight: 600 }}>Areas you travel to</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, margin: "0 0 10px" }}>
+              {LOCATION_OPTIONS.map(l => {
+                const on = artistForm.requirements.travelAreas.includes(l);
+                return (
+                  <button key={l} type="button" onClick={() => toggleArtTravelArea(l)}
+                    style={{ padding: "8px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, border: on ? "none" : "1.5px solid #E5D5C0", background: on ? gold : "#F9F6F1", color: on ? "#fff" : muted }}>
+                    {l}
+                  </button>
+                );
+              })}
+            </div>
             <div className="areg-row" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 10 }}>
               <input value={artistForm.requirements.travel} onChange={e => setArtReq("travel", e.target.value)}
-                placeholder="Travel — e.g. Delhi NCR" style={inputStyle(focused, {}, "", gold, ink)} />
+                placeholder="Travel notes — e.g. outstation by arrangement" style={inputStyle(focused, {}, "", gold, ink)} />
               <input type="number" min="0" value={artistForm.requirements.setupTimeMinutes} onChange={e => setArtReq("setupTimeMinutes", e.target.value)}
                 placeholder="Setup time needed (minutes)" style={inputStyle(focused, {}, "", gold, ink)} />
               <input value={artistForm.requirements.powerRequirement} onChange={e => setArtReq("powerRequirement", e.target.value)}
@@ -1900,6 +1927,11 @@ export default function VendorRegistration() {
                   )}
                 </div>
               </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              {aInput("yearsOfExperience", "Years of Experience", false, { type: "number", min: 0, placeholder: "e.g. 5" })}
+              {aInput("totalEventsCompleted", "Events Performed So Far", false, { type: "number", min: 0, placeholder: "Leave blank if you're just starting out" })}
             </div>
 
             {aInput("sampleLink", "Sample Video / YouTube Link", false, { placeholder: "https://youtube.com/..." })}

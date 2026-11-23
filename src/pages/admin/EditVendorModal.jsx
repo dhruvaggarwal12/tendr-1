@@ -121,6 +121,7 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
     newPassword:         "",
     status:              vendor.status || "approved",
     plan:                vendor.plan || "free",
+    profileVerified:     !!vendor.profileVerified,
   });
   const set = (k, v) => setF(p => ({ ...p, [k]: v }));
 
@@ -231,6 +232,7 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
         price: Number(f.price) || 0,
         status: f.status,
         plan: f.plan,
+        profileVerified: f.profileVerified,
         ...(f.avgReviewScore !== null && f.avgReviewScore !== undefined && f.avgReviewScore !== "" && { avgReviewScore: Number(f.avgReviewScore) }),
         ...(f.newPassword.length >= 8 && { password: f.newPassword }),
         // Category-specific
@@ -309,6 +311,11 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
             <Field label="Events Done"><TI value={f.totalEventsCompleted} onChange={v => set("totalEventsCompleted", v)} placeholder="50" type="number" /></Field>
             <Field label="Max Concurrent"><TI value={f.maxConcurrentEvents} onChange={v => set("maxConcurrentEvents", v)} placeholder="5" type="number" /></Field>
           </div>
+
+          <label style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, cursor: "pointer" }}>
+            <input type="checkbox" checked={f.profileVerified} onChange={e => set("profileVerified", e.target.checked)} style={{ width: 16, height: 16 }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E" }}>Tendr Verified Artist ✓ <span style={{ color: "#9B7450", fontWeight: 400 }}>— shows the public verified badge on their profile</span></span>
+          </label>
 
           <SectionTitle>Portfolio Photos</SectionTitle>
           <div style={{ marginTop: 10, marginBottom: 16 }}>

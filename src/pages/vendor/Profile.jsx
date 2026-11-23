@@ -9,15 +9,10 @@ import {
   HOSTING_RESPONSIBILITY_OPTIONS, AUDIENCE_SIZE_OPTIONS, CAPABILITY_BADGE_OPTIONS,
   AUDIENCE_PARTICIPATION_OPTIONS, AGE_SUITABILITY_OPTIONS, EQUIPMENT_PROVIDED_OPTIONS,
   PARTY_ENERGY_OPTIONS, SCRIPT_SOURCE_OPTIONS, REQUIREMENT_FIELD_CATEGORIES, SONG_REQUEST_CATEGORIES,
-  PERFORMANCE_ATMOSPHERE_OPTIONS, CUSTOM_MATERIAL_CATEGORIES,
+  PERFORMANCE_ATMOSPHERE_OPTIONS, CUSTOM_MATERIAL_CATEGORIES, LOCATION_OPTIONS,
 } from "../../constants/performerCategories";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
-
-const LOCATION_OPTIONS = [
-  "Delhi", "Noida", "Gurgaon", "Ghaziabad",
-  "Greater Noida", "South Delhi", "North Delhi", "East Delhi", "West Delhi",
-];
 
 const SERVICE_TYPE_LABELS = {
   DJ: "DJ", "DJ Setup": "DJ Setup", Decorator: "Decorator", Photographer: "Photographer",
@@ -47,7 +42,7 @@ export default function VendorProfile() {
   const [profile, setProfile]   = useState(null);
 
   const [form, setForm] = useState({
-    name: "", yearsOfExperience: "", teamSize: "",
+    name: "", yearsOfExperience: "", totalEventsCompleted: "", teamSize: "",
     upiId: "", city: "", state: "", serviceType: "",
   });
   const [gigForm, setGigForm] = useState({
@@ -59,13 +54,14 @@ export default function VendorProfile() {
     highlights: [{ label: "", desc: "" }],
     performanceItems: [{ title: "", note: "" }],
     lineup: [{ name: "", role: "" }],
-    packages: [{ name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [""], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [""], configuration: "" }],
+    packages: [{ name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [""], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [""], configuration: "", quoteOnly: false }],
     requirements: {
-      travel: "", setupTimeMinutes: "", soundSystemProvided: false, stageRequired: false,
+      travel: "", travelAreas: [], setupTimeMinutes: "", soundSystemProvided: false, stageRequired: false,
       powerRequirement: "", spaceRequirement: "", advanceBookingDays: "", customRequestsNote: "",
       scriptSource: "", rehearsalAvailable: false, outfitArrangement: "",
       micCount: "", lightingRequirement: "", floorRequirement: "", costumeArrangement: "",
     },
+    technicalRiderUrl: "",
     mainPhotoIndex: -1,
     milestones: [{ year: "", text: "" }],
     notableClients: [""],
@@ -113,6 +109,8 @@ export default function VendorProfile() {
   });
   const [locations, setLocations] = useState([]);
   const [locInput, setLocInput]   = useState("");
+  const [uploadingRider, setUploadingRider] = useState(false);
+  const [riderError, setRiderError] = useState("");
 
   const showToast = (msg, ok = true) => {
     setToast({ msg, ok });
@@ -131,6 +129,7 @@ export default function VendorProfile() {
         setForm({
           name: v.name || "",
           yearsOfExperience: v.yearsOfExperience ?? "",
+          totalEventsCompleted: v.totalEventsCompleted ?? "",
           teamSize: v.teamSize ?? "",
           upiId: v.upiId || "",
           city: v.address?.city || "",
@@ -166,9 +165,11 @@ export default function VendorProfile() {
                               overtimeCharge: p.overtimeCharge || "",
                               addOns: p.addOns?.length ? p.addOns : [""],
                               configuration: p.configuration || "",
-                            })) : [{ name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [""], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [""], configuration: "" }],
+                              quoteOnly: !!p.quoteOnly,
+                            })) : [{ name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [""], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [""], configuration: "", quoteOnly: false }],
           requirements: {
             travel: v.requirements?.travel || "",
+            travelAreas: v.requirements?.travelAreas || [],
             setupTimeMinutes: v.requirements?.setupTimeMinutes ?? "",
             soundSystemProvided: !!v.requirements?.soundSystemProvided,
             stageRequired: !!v.requirements?.stageRequired,
@@ -207,6 +208,7 @@ export default function VendorProfile() {
           notableClients:  v.notableClients?.length ? v.notableClients : [""],
           awards:          v.awards?.length ? v.awards : [""],
           secondaryCategories: v.secondaryCategories || [],
+          technicalRiderUrl: v.technicalRiderUrl || "",
         });
         setSvcForm({
           photoServices:        v.photoServices || "",
@@ -287,6 +289,7 @@ export default function VendorProfile() {
       const body = {
         name: form.name,
         yearsOfExperience: Number(form.yearsOfExperience) || 0,
+        totalEventsCompleted: Number(form.totalEventsCompleted) || 0,
         teamSize: Number(form.teamSize) || 0,
         upiId: form.upiId,
         locations,
@@ -379,6 +382,42 @@ export default function VendorProfile() {
   const setGig = (k, v) => setGigForm(f => ({ ...f, [k]: v }));
   const toggleGig = (k, val) => setGigForm(f => ({ ...f, [k]: f[k].includes(val) ? f[k].filter(x => x !== val) : [...f[k], val] }));
   const setReq = (k, v) => setGigForm(f => ({ ...f, requirements: { ...f.requirements, [k]: v } }));
+  const toggleTravelArea = (loc) => setReq("travelAreas",
+    gigForm.requirements.travelAreas.includes(loc)
+      ? gigForm.requirements.travelAreas.filter(x => x !== loc)
+      : [...gigForm.requirements.travelAreas, loc]);
+
+  const uploadTechnicalRider = async (file) => {
+    if (!file) return;
+    if (file.type !== "application/pdf") { setRiderError("Only PDF files are allowed."); return; }
+    setUploadingRider(true); setRiderError("");
+    try {
+      const fd = new FormData();
+      fd.append("rider", file);
+      const r = await fetch(`${BASE_URL}/vendors/${vendorId}/technical-rider`, {
+        method: "POST", headers: { "Authorization": `Bearer ${token}` }, credentials: "include", body: fd,
+      });
+      const data = await r.json();
+      if (!r.ok) { setRiderError(data.error || "Upload failed."); return; }
+      setGigForm(f => ({ ...f, technicalRiderUrl: data.technicalRiderUrl }));
+      showToast("Technical rider uploaded!");
+    } catch {
+      setRiderError("Upload failed — check your connection and try again.");
+    } finally {
+      setUploadingRider(false);
+    }
+  };
+  const removeTechnicalRider = async () => {
+    try {
+      const r = await fetch(`${BASE_URL}/vendors/${vendorId}/technical-rider`, {
+        method: "DELETE", headers: { "Authorization": `Bearer ${token}` }, credentials: "include",
+      });
+      if (!r.ok) throw new Error();
+      setGigForm(f => ({ ...f, technicalRiderUrl: "" }));
+    } catch {
+      showToast("Failed to remove technical rider", false);
+    }
+  };
 
   // Generic helpers for the repeatable-row sections (highlights, performanceItems,
   // lineup, packages) — every row is a plain object the vendor fills field-by-field,
@@ -532,6 +571,10 @@ export default function VendorProfile() {
               <div>
                 <label className="block text-sm font-semibold text-gray-600 mb-1.5">Years of Experience</label>
                 <input type="number" min="0" value={form.yearsOfExperience} onChange={e => set("yearsOfExperience", e.target.value)} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-600 mb-1.5">Events Completed</label>
+                <input type="number" min="0" value={form.totalEventsCompleted} onChange={e => set("totalEventsCompleted", e.target.value)} placeholder="e.g. 25" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-600 mb-1.5">Team Size</label>
@@ -909,11 +952,31 @@ export default function VendorProfile() {
                   <hr className="my-8 border-gray-100" />
                   <h3 className="text-lg font-bold text-gray-800 mb-1">Booking Requirements</h3>
                   <p className="text-sm text-gray-500 mb-6">What you need from the venue/customer — helps avoid mismatches after booking.</p>
+                  <div className="mb-5">
+                    <label className="block text-sm font-semibold text-gray-600 mb-2">Areas You Travel To</label>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {gigForm.requirements.travelAreas.map(loc => (
+                        <span key={loc} className="flex items-center gap-1.5 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                          {loc}
+                          <button onClick={() => toggleTravelArea(loc)} className="text-yellow-600 hover:text-yellow-900 leading-none">×</button>
+                        </span>
+                      ))}
+                      {gigForm.requirements.travelAreas.length === 0 && <span className="text-sm text-gray-400">No areas added yet</span>}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {LOCATION_OPTIONS.filter(l => !gigForm.requirements.travelAreas.includes(l)).map(l => (
+                        <button key={l} type="button" onClick={() => toggleTravelArea(l)}
+                          className="px-3 py-1.5 border border-gray-200 rounded-full text-xs font-semibold text-gray-600 hover:border-yellow-400 hover:text-yellow-700 transition-colors">
+                          + {l}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-600 mb-1.5">Travel</label>
+                      <label className="block text-sm font-semibold text-gray-600 mb-1.5">Travel Notes <span className="text-gray-400 font-normal">(optional)</span></label>
                       <input value={gigForm.requirements.travel} onChange={e => setReq("travel", e.target.value)}
-                        placeholder="e.g. Delhi NCR; outstation by arrangement" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                        placeholder="e.g. outstation by arrangement, ₹15/km beyond city limits" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-600 mb-1.5">Setup Time Needed (minutes)</label>
@@ -1017,6 +1080,26 @@ export default function VendorProfile() {
                     <label className="block text-sm font-semibold text-gray-600 mb-1.5">Custom Requests Note <span className="text-gray-400 font-normal">(optional)</span></label>
                     <textarea value={gigForm.requirements.customRequestsNote} onChange={e => setReq("customRequestsNote", e.target.value)} rows={2}
                       placeholder="e.g. Happy to learn a custom song with 2 weeks' notice" className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm resize-none" />
+                  </div>
+
+                  <div className="mb-5">
+                    <label className="block text-sm font-semibold text-gray-600 mb-1.5">Technical Rider <span className="text-gray-400 font-normal">(optional, PDF)</span></label>
+                    {gigForm.technicalRiderUrl ? (
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <a href={gigForm.technicalRiderUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-yellow-700 hover:text-yellow-900">📄 View current rider</a>
+                        <label className="text-xs font-semibold text-gray-600 hover:text-gray-800 cursor-pointer">
+                          Replace
+                          <input type="file" accept="application/pdf" className="hidden" onChange={e => uploadTechnicalRider(e.target.files?.[0])} />
+                        </label>
+                        <button type="button" onClick={removeTechnicalRider} className="text-xs font-semibold text-red-500 hover:text-red-700">Remove</button>
+                      </div>
+                    ) : (
+                      <label className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:border-yellow-400 cursor-pointer">
+                        {uploadingRider ? "Uploading…" : "📄 Upload technical rider (PDF)"}
+                        <input type="file" accept="application/pdf" className="hidden" disabled={uploadingRider} onChange={e => uploadTechnicalRider(e.target.files?.[0])} />
+                      </label>
+                    )}
+                    {riderError && <p className="text-xs text-red-500 mt-1.5">{riderError}</p>}
                   </div>
                 </>
               );
@@ -1229,19 +1312,25 @@ export default function VendorProfile() {
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <label className="block text-xs font-semibold text-gray-500 mb-1">Price (₹)</label>
-                        <input type="number" min="0" value={pkg.price} onChange={e => setRow("packages", pi, "price", e.target.value)}
-                          placeholder="12000" className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm" />
+                        <input type="number" min="0" disabled={pkg.quoteOnly} value={pkg.price} onChange={e => setRow("packages", pi, "price", e.target.value)}
+                          placeholder={pkg.quoteOnly ? "Quote only" : "12000"} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm disabled:bg-gray-50 disabled:text-gray-400" />
                       </div>
                       <div>
                         <label className="block text-xs font-semibold text-gray-500 mb-1">Unit</label>
-                        <select value={pkg.unit} onChange={e => setRow("packages", pi, "unit", e.target.value)}
-                          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm bg-white">
+                        <select value={pkg.unit} onChange={e => setRow("packages", pi, "unit", e.target.value)} disabled={pkg.quoteOnly}
+                          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-yellow-400 text-sm bg-white disabled:bg-gray-50 disabled:text-gray-400">
                           <option value="per event">per event</option>
                           <option value="per hour">per hour</option>
                           <option value="per day">per day</option>
                         </select>
                       </div>
                     </div>
+                    <label className="flex items-center gap-2 mt-2 text-xs font-semibold text-gray-600">
+                      <input type="checkbox" checked={!!pkg.quoteOnly}
+                        onChange={e => setGigForm(f => ({ ...f, packages: f.packages.map((p, j) => j === pi ? { ...p, quoteOnly: e.target.checked, price: e.target.checked ? "" : p.price } : p) }))}
+                        className="w-3.5 h-3.5" />
+                      Quote only — no fixed price (shown as "Price on request")
+                    </label>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                     <div>
@@ -1310,7 +1399,7 @@ export default function VendorProfile() {
             </div>
 
             {gigForm.packages.length < 4 && (
-              <button type="button" onClick={() => addRow("packages", { name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [""], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [""], configuration: "" }, 4)}
+              <button type="button" onClick={() => addRow("packages", { name: "", price: "", unit: "per event", duration: "", bestFor: "", items: [""], performerCount: "", travelCharge: "", overtimeCharge: "", addOns: [""], configuration: "", quoteOnly: false }, 4)}
                 className="mt-5 px-5 py-2.5 border-2 border-dashed border-yellow-300 text-yellow-700 rounded-xl text-sm font-semibold hover:bg-yellow-50">
                 + Add Package
               </button>

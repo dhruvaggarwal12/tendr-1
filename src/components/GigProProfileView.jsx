@@ -159,7 +159,9 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
   };
 
   const rawPhotos  = vendor.portfolioPhotos || [];
-  const allPhotos  = rawPhotos.map(p => typeof p === "string" ? { url:p, category:"All" } : p);
+  const allPhotos  = rawPhotos.map(p => typeof p === "string"
+    ? { url: p, category: vendor.photoCategories?.[p] || "All" }
+    : p);
   const photoCats  = ["All", ...Array.from(new Set(allPhotos.map(p => p.category).filter(c => c && c !== "All")))];
   const visible    = catFilter === "All" ? allPhotos : allPhotos.filter(p => p.category === catFilter);
 
@@ -180,11 +182,12 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
   const languages  = vendor.languages || [];
   const lineup     = vendor.lineup || [];
   const requirements = vendor.requirements || {};
-  const hasRequirements = !!(requirements.travel || requirements.setupTimeMinutes || requirements.soundSystemProvided
+  const hasRequirements = !!(requirements.travel || requirements.travelAreas?.length || requirements.setupTimeMinutes || requirements.soundSystemProvided
     || requirements.stageRequired || requirements.powerRequirement || requirements.spaceRequirement
     || requirements.advanceBookingDays || requirements.customRequestsNote || requirements.scriptSource
     || requirements.rehearsalAvailable || requirements.outfitArrangement || requirements.micCount
-    || requirements.lightingRequirement || requirements.floorRequirement || requirements.costumeArrangement);
+    || requirements.lightingRequirement || requirements.floorRequirement || requirements.costumeArrangement
+    || vendor.technicalRiderUrl);
   const hostingResponsibilities = vendor.hostingResponsibilities || [];
   const audienceSizeExperience  = vendor.audienceSizeExperience  || [];
   const capabilityBadges        = vendor.capabilityBadges        || [];
@@ -210,8 +213,10 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
   const secondaryCategories = vendor.secondaryCategories || [];
   const availabilityStatus = getAvailabilityStatus(vendor.availability);
 
+  // Kept as a section heading inside the About tab (not its own tab anymore —
+  // merged in so "who this performer is" lives in one place instead of two).
   const PERFORMANCE_TAB_LABEL = performanceTabName(vendor.serviceType);
-  const tabs = ["Portfolio","About",PERFORMANCE_TAB_LABEL,"Packages","Reviews"];
+  const tabs = ["Portfolio","About","Packages","Reviews"];
 
   const stats = [
     events > 0 && { type:"events",     val:`${events}+`,  label:"Events Done" },
@@ -395,7 +400,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
 
           <h1 className="gp-name">
             {vendor.name}
-            {(vendor.phoneVerified || vendor.verified) && <VerifiedBadge/>}
+            {vendor.profileVerified && <VerifiedBadge/>}
           </h1>
 
           {/* Gold accent rule */}
@@ -535,7 +540,7 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           <h1 className="gp-name" style={{ marginBottom:6 }}>{vendor.name}</h1>
 
           <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap", fontSize:12.5, color:"rgba(245,237,216,0.85)", marginBottom:8 }}>
-            {(vendor.phoneVerified || vendor.verified) && (
+            {vendor.profileVerified && (
               <span style={{ color:"#4ADE80", fontWeight:700 }}>✓ Verified</span>
             )}
             <span>Professional {vendor.serviceType || "Performer"}</span>
@@ -733,6 +738,51 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               </div>
             )}
 
+            {/* ── Performance / Setlist — merged in from its own former tab,
+                right after bio/highlights so a performer's distinctive content
+                stays near the top of the page. ── */}
+            <div style={{ marginBottom:52 }}>
+              <div style={{ fontSize:12, fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:CDIM, marginBottom:8 }}>{PERFORMANCE_TAB_LABEL}</div>
+              <div style={{ fontFamily:serif, fontSize:"1.5rem", fontWeight:700, color:CINK, marginBottom:8 }}>The Experience</div>
+              <p style={{ fontSize:15, color:CMUTED, lineHeight:1.75, marginBottom:performanceItems.length > 0 ? 8 : 44, fontWeight:400, maxWidth:460 }}>
+                Here's how the performance unfolds — from setting the tone to leaving the room energised.
+              </p>
+              {performanceItems.length > 0 && (
+                <p style={{ fontSize:12.5, color:CDIM, marginBottom:36, fontWeight:600 }}>
+                  {performanceItems.length}+ {performanceItemNoun(vendor.serviceType)} in repertoire
+                </p>
+              )}
+
+              {performanceItems.length > 0 ? (
+                <div>
+                  {performanceItems.map((item, i) => (
+                    <div key={i} style={{ display:"grid", gridTemplateColumns:"32px 1fr", gap:"0 20px", marginBottom:32 }}>
+                      <div style={{ fontSize:12, color:CDIM, fontVariantNumeric:"tabular-nums", paddingTop:4, fontWeight:500 }}>{String(i+1).padStart(2,"0")}</div>
+                      <div>
+                        <div style={{ fontSize:17.5, color:CINK, fontWeight:600, lineHeight:1.45 }}>{item.title}</div>
+                        {item.note && <div style={{ fontSize:13.5, color:CDIM, marginTop:4 }}>{item.note}</div>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ padding:"40px 0", textAlign:"center" }}>
+                  <div style={{ fontFamily:serif, fontSize:"1.1rem", fontStyle:"italic", color:CMUTED, marginBottom:8 }}>Setlist coming soon</div>
+                  <p style={{ fontSize:13.5, color:CDIM, lineHeight:1.7 }}>The performer's signature segments will appear here.</p>
+                </div>
+              )}
+
+              {isDirectLink && social.showreel && (
+                <div style={{ marginTop:28 }}>
+                  <a href={social.showreel} target="_blank" rel="noopener noreferrer"
+                    style={{ display:"inline-flex", alignItems:"center", gap:12, padding:"14px 32px", borderRadius:100, background:`linear-gradient(135deg,${GOLD},#9A7010)`, color:"#1A1000", textDecoration:"none", fontSize:14.5, fontWeight:700 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    Watch Full Showreel
+                  </a>
+                </div>
+              )}
+            </div>
+
             {lineup.filter(m => m.name).length > 0 && (
               <div style={{ marginBottom:52 }}>
                 <div style={{ fontFamily:serif, fontSize:"1.25rem", fontWeight:700, color:CINK, marginBottom:24 }}>Meet the Band</div>
@@ -887,50 +937,6 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
                     YouTube
                   </a>
                 )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── SETLIST & PERFORMANCE ── */}
-        {tab === PERFORMANCE_TAB_LABEL && (
-          <div>
-            <div style={{ fontFamily:serif, fontSize:"1.5rem", fontWeight:700, color:CINK, marginBottom:8 }}>The Experience</div>
-            <p style={{ fontSize:15, color:CMUTED, lineHeight:1.75, marginBottom:performanceItems.length > 0 ? 8 : 44, fontWeight:400, maxWidth:460 }}>
-              Here's how the performance unfolds — from setting the tone to leaving the room energised.
-            </p>
-            {performanceItems.length > 0 && (
-              <p style={{ fontSize:12.5, color:CDIM, marginBottom:36, fontWeight:600 }}>
-                {performanceItems.length}+ {performanceItemNoun(vendor.serviceType)} in repertoire
-              </p>
-            )}
-
-            {performanceItems.length > 0 ? (
-              <div>
-                {performanceItems.map((item, i) => (
-                  <div key={i} style={{ display:"grid", gridTemplateColumns:"32px 1fr", gap:"0 20px", marginBottom:32 }}>
-                    <div style={{ fontSize:12, color:CDIM, fontVariantNumeric:"tabular-nums", paddingTop:4, fontWeight:500 }}>{String(i+1).padStart(2,"0")}</div>
-                    <div>
-                      <div style={{ fontSize:17.5, color:CINK, fontWeight:600, lineHeight:1.45 }}>{item.title}</div>
-                      {item.note && <div style={{ fontSize:13.5, color:CDIM, marginTop:4 }}>{item.note}</div>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div style={{ padding:"60px 0", textAlign:"center" }}>
-                <div style={{ fontFamily:serif, fontSize:"1.2rem", fontStyle:"italic", color:CMUTED, marginBottom:10 }}>Setlist coming soon</div>
-                <p style={{ fontSize:13.5, color:CDIM, lineHeight:1.7 }}>The performer's signature segments will appear here.</p>
-              </div>
-            )}
-
-            {isDirectLink && social.showreel && (
-              <div style={{ marginTop:52 }}>
-                <a href={social.showreel} target="_blank" rel="noopener noreferrer"
-                  style={{ display:"inline-flex", alignItems:"center", gap:12, padding:"14px 32px", borderRadius:100, background:`linear-gradient(135deg,${GOLD},#9A7010)`, color:"#1A1000", textDecoration:"none", fontSize:14.5, fontWeight:700 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                  Watch Full Showreel
-                </a>
               </div>
             )}
           </div>
@@ -1173,8 +1179,10 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
             <hr className="gp-sb-divider"/>
 
             <div style={{ fontSize:11, color:CDIM, textAlign:"center", lineHeight:1.7 }}>
-              Secure booking &nbsp;·&nbsp; No hidden fees<br/>
-              <span style={{ color:GOLD, opacity:0.7 }}>Tendr</span> verified performer
+              Secure booking &nbsp;·&nbsp; No hidden fees
+              {vendor.profileVerified && (
+                <><br/><span style={{ color:GOLD, opacity:0.7 }}>Tendr</span> verified performer</>
+              )}
             </div>
           </div>
 
@@ -1182,8 +1190,13 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
           {hasRequirements && (
             <div className="gp-sb-card">
               <div style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:"0.1em", color:CMUTED, marginBottom:14 }}>Good to Know</div>
-              {requirements.travel && (
+              {requirements.travelAreas?.length > 0 ? (
+                <div className="gp-sb-row"><span className="gp-sb-icon"><MapPin size={12} color={GOLD} strokeWidth={1.8}/></span>Travels to: {requirements.travelAreas.join(", ")}</div>
+              ) : requirements.travel && (
                 <div className="gp-sb-row"><span className="gp-sb-icon"><MapPin size={12} color={GOLD} strokeWidth={1.8}/></span>Travel: {requirements.travel}</div>
+              )}
+              {requirements.travelAreas?.length > 0 && requirements.travel && (
+                <div className="gp-sb-row" style={{ paddingLeft:20, fontSize:12, color:CDIM }}>{requirements.travel}</div>
               )}
               {!!requirements.setupTimeMinutes && (
                 <div className="gp-sb-row"><span className="gp-sb-icon"><Clock size={13} color={GOLD} strokeWidth={1.8}/></span>Setup time: {requirements.setupTimeMinutes} min</div>
@@ -1226,6 +1239,11 @@ export default function GigProProfileView({ vendor, reviews = [], onBook, onChat
               )}
               {requirements.customRequestsNote && (
                 <div style={{ fontSize:12.5, color:CMUTED, marginTop:8, lineHeight:1.6 }}>{requirements.customRequestsNote}</div>
+              )}
+              {vendor.technicalRiderUrl && (
+                <div className="gp-sb-row">
+                  <a href={vendor.technicalRiderUrl} target="_blank" rel="noopener noreferrer" style={{ color:GOLD, textDecoration:"none" }}>📄 Download technical rider</a>
+                </div>
               )}
             </div>
           )}

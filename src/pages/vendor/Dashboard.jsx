@@ -2208,7 +2208,7 @@ const [tab, setTab] = useState('home');
   // Media links (video/demo links) — persisted in backend
   const [mediaLinks, setMediaLinks] = useState([]);
   const [mediaModal, setMediaModal] = useState(false);
-  const [mediaForm, setMediaForm]   = useState({ title:'', url:'' });
+  const [mediaForm, setMediaForm]   = useState({ title:'', url:'', category:'' });
   const [mediaLoading, setMediaLoading] = useState(false);
   const [photoCount, setPhotoCount] = useState(null); // null = not loaded yet
   const [photoUploading, setPhotoUploading] = useState(false);
@@ -2228,6 +2228,7 @@ const [tab, setTab] = useState('home');
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || 'Upload failed');
       setPhotoCount((data.portfolioPhotos||[]).length);
+      setPortfolioPhotos(data.portfolioPhotos || []);
       showToast(`${files.length} photo${files.length > 1 ? 's' : ''} uploaded!`);
     } catch (e) {
       showToast(e.message || 'Upload failed', false);
@@ -2239,7 +2240,7 @@ const [tab, setTab] = useState('home');
     if (!mediaForm.url.trim() || mediaLoading) return;
     setMediaLoading(true);
     try {
-      const newLink = { id: Date.now().toString(), title: mediaForm.title, url: mediaForm.url.trim() };
+      const newLink = { id: Date.now().toString(), title: mediaForm.title, url: mediaForm.url.trim(), category: mediaForm.category.trim() };
       const r = await fetch(`${BASE}/vendors/me/media-links`, {
         method: 'POST',
         credentials: 'include',
@@ -2247,7 +2248,7 @@ const [tab, setTab] = useState('home');
         body: JSON.stringify(newLink),
       });
       const data = await r.json();
-      if (r.ok) { setMediaLinks(data.mediaLinks); setMediaForm({ title:'', url:'' }); setMediaModal(false); }
+      if (r.ok) { setMediaLinks(data.mediaLinks); setMediaForm({ title:'', url:'', category:'' }); setMediaModal(false); }
     } catch {}
     setMediaLoading(false);
   };
@@ -2402,6 +2403,14 @@ const [tab, setTab] = useState('home');
   // Portfolio photos for gig-profile media gallery
   const [portfolioPhotos, setPortfolioPhotos] = useState([]);
   const [photosLoaded, setPhotosLoaded] = useState(false);
+  // Photo URL -> category label the vendor picked (e.g. "Wedding"), shown as
+  // filter pills on the public profile's Portfolio tab.
+  const [photoCategories, setPhotoCategories] = useState({});
+  const savePhotoCategory = (url, category) => {
+    const next = { ...photoCategories, [url]: category };
+    setPhotoCategories(next);
+    fetch(`${BASE}/vendors/${vendorId}/gigpro`, { method: 'PATCH', headers: authHeaders(token), body: JSON.stringify({ photoCategories: next }) }).catch(() => {});
+  };
 
   // Milestone tracking (localStorage)
   const MILESTONE_KEY = `tendr_milestone_${vendorId||'v'}`;
@@ -2452,7 +2461,7 @@ const [tab, setTab] = useState('home');
     if (tab !== 'gig-profile' && tab !== 'portfolio' || photosLoaded || !vendorId) return;
     fetch(`${BASE}/vendors/${vendorId}/portfolio-photos`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d) setPortfolioPhotos(d.portfolioPhotos || []); })
+      .then(d => { if (d) { setPortfolioPhotos(d.photos || []); setPhotoCategories(d.photoCategories || {}); } })
       .catch(() => {})
       .finally(() => setPhotosLoaded(true));
   }, [tab, vendorId, photosLoaded]); // eslint-disable-line
@@ -2933,6 +2942,12 @@ const [tab, setTab] = useState('home');
 
   return (
     <div style={{ display:'flex', minHeight:'100vh', background:'#FAF7F2', fontFamily:font }}>
+      {/* Shared suggestions for photo/video category inputs — always rendered so
+          both the photo grid and the "Add Video Link" modal can reference it
+          regardless of which tab is open or whether any photos exist yet. */}
+      <datalist id="photo-category-suggestions">
+        <option value="Wedding" /><option value="Corporate" /><option value="Birthday" /><option value="Behind the Scenes" />
+      </datalist>
 
       {/* ── Sidebar (desktop) ── */}
       {!isMobile && (() => {
@@ -4601,21 +4616,29 @@ const [tab, setTab] = useState('home');
                     </div>
                   ) : (
                     <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(120px,1fr))', gap:10 }}>
-                      {(portfolioPhotos||[]).map((p, i) => (
-                        <div key={p.public_id||p.url||i} style={{ position:'relative', aspectRatio:'1', borderRadius:12, overflow:'hidden', border:'1.5px solid rgba(196,122,46,0.13)' }}>
-                          {i === 0 && <span style={{ position:'absolute', top:6, left:6, fontSize:10, fontWeight:700, background:gold, color:'#fff', padding:'2px 7px', borderRadius:6, zIndex:1 }}>Cover</span>}
-                          <img src={p.url||p} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-                          <button onClick={async () => {
-                            try {
-                              const pubId = p.public_id || p;
-                              await fetch(`${BASE}/vendors/${vendorId}/portfolio-photos/${encodeURIComponent(pubId)}`, { method:'DELETE', headers:authHeaders(token) });
-                              setPortfolioPhotos(ps => ps.filter((_,idx) => idx !== i));
-                              setPhotoCount(c => Math.max(0,(c||1)-1));
-                              showToast('Photo removed');
-                            } catch { showToast('Failed to remove', false); }
-                          }} style={{ position:'absolute', top:4, right:4, width:24, height:24, borderRadius:'50%', border:'none', background:'rgba(0,0,0,0.55)', color:'#fff', cursor:'pointer', fontSize:14, display:'flex', alignItems:'center', justifyContent:'center', zIndex:2 }}>×</button>
+                      {(portfolioPhotos||[]).map((p, i) => {
+                        const url = p.url || p;
+                        return (
+                        <div key={p.public_id||url||i}>
+                          <div style={{ position:'relative', aspectRatio:'1', borderRadius:12, overflow:'hidden', border:'1.5px solid rgba(196,122,46,0.13)' }}>
+                            {i === 0 && <span style={{ position:'absolute', top:6, left:6, fontSize:10, fontWeight:700, background:gold, color:'#fff', padding:'2px 7px', borderRadius:6, zIndex:1 }}>Cover</span>}
+                            <img src={url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                            <button onClick={async () => {
+                              try {
+                                const pubId = p.public_id || p;
+                                await fetch(`${BASE}/vendors/${vendorId}/portfolio-photos/${encodeURIComponent(pubId)}`, { method:'DELETE', headers:authHeaders(token) });
+                                setPortfolioPhotos(ps => ps.filter((_,idx) => idx !== i));
+                                setPhotoCount(c => Math.max(0,(c||1)-1));
+                                showToast('Photo removed');
+                              } catch { showToast('Failed to remove', false); }
+                            }} style={{ position:'absolute', top:4, right:4, width:24, height:24, borderRadius:'50%', border:'none', background:'rgba(0,0,0,0.55)', color:'#fff', cursor:'pointer', fontSize:14, display:'flex', alignItems:'center', justifyContent:'center', zIndex:2 }}>×</button>
+                          </div>
+                          <input list="photo-category-suggestions" defaultValue={photoCategories[url] || ''}
+                            placeholder="Category (e.g. Wedding)"
+                            onBlur={e => { if (e.target.value.trim() !== (photoCategories[url]||'')) savePhotoCategory(url, e.target.value.trim()); }}
+                            style={{ marginTop:6, width:'100%', padding:'5px 7px', borderRadius:7, border:'1px solid rgba(196,122,46,0.2)', fontSize:11, fontFamily:font, boxSizing:'border-box' }} />
                         </div>
-                      ))}
+                      );})}
                       {(portfolioPhotos||[]).length < 10 && (
                         <button onClick={() => photoFileRef.current?.click()} disabled={photoUploading}
                           style={{ aspectRatio:'1', borderRadius:12, border:'2px dashed rgba(196,122,46,0.25)', background:'transparent', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:6, color:'#9B7450' }}>
@@ -4625,7 +4648,7 @@ const [tab, setTab] = useState('home');
                       )}
                     </div>
                   )}
-                  <div style={{ marginTop:12, fontSize:11.5, color:'#9B7450' }}>{(portfolioPhotos||[]).length}/10 photos uploaded. First photo is your cover image.</div>
+                  <div style={{ marginTop:12, fontSize:11.5, color:'#9B7450' }}>{(portfolioPhotos||[]).length}/10 photos uploaded. First photo is your cover image. Give each one a category so customers can filter your gallery.</div>
                 </div>
 
                 {/* Video/Demo Links */}
@@ -6134,6 +6157,16 @@ const [tab, setTab] = useState('home');
                   placeholder="https://youtube.com/... or https://instagram.com/..."
                   type="url"
                   autoFocus
+                />
+              </div>
+              <div>
+                <label style={{ display:'block', fontSize:11.5, fontWeight:700, color:'#6B3A1F', marginBottom:4 }}>Category (optional)</label>
+                <input
+                  list="photo-category-suggestions"
+                  style={{ width:'100%', padding:'9px 12px', borderRadius:9, border:'1.5px solid rgba(196,122,46,0.25)', fontFamily:font, fontSize:13.5, color:ink, outline:'none', background:'#FFFCF5', boxSizing:'border-box' }}
+                  value={mediaForm.category}
+                  onChange={e => setMediaForm(f => ({ ...f, category: e.target.value }))}
+                  placeholder="e.g. Wedding"
                 />
               </div>
               <button onClick={addMediaLink} disabled={!mediaForm.url.trim() || mediaLoading}
