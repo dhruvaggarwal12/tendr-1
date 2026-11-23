@@ -85,7 +85,7 @@ const VENUE_TYPES = [
 const ALL_VENDORS = [
   "Decorator","Caterer","DJ","Photographer","Videographer",
   "Florist","Entertainer","Photo Booth","Live Band","Emcee / Host",
-  "Lighting Setup","Sound System","Makeup Artist","Balloon Artist","Cake Artist",
+  "Lighting Setup","Sound System","Balloon Artist","Cake Artist",
   "AV Setup",
 ];
 
@@ -126,7 +126,6 @@ const SERVICE_CARD_INFO = {
   "Emcee / Host":   { emoji:"🎤", props:["🎙️","✨","🗣️"], description:"A confident host to keep the event flowing smoothly." },
   "Lighting Setup": { emoji:"💡", props:["✨","🕯️","🌟"], description:"Ambient and stage lighting that transforms any venue." },
   "Sound System":   { emoji:"🔊", props:["🎚️","🎵","📢"], description:"Clear, powerful audio for speeches, music and announcements." },
-  "Makeup Artist":  { emoji:"💄", props:["💅","✨","🪞"], description:"Professional makeup and styling for you and your guests." },
   "Balloon Artist": { emoji:"🎈", props:["🎊","🎀","✨"], description:"Balloon decor, arches and sculptures for a festive look." },
   "Cake Artist":    { emoji:"🎂", props:["🍰","🍫","✨"], description:"Custom cakes and desserts designed around your theme." },
   "AV Setup":       { emoji:"📽️", props:["🖥️","🔌","✨"], description:"Screens, projectors and AV support for presentations or visuals." },
@@ -916,7 +915,7 @@ function getRecommended(occasion, theme, ageGroups, venueType) {
     if(t.includes("floral")||t.includes("garden")||t.includes("nature")) recs.add("Florist");
     if(t.includes("neon")||t.includes("glow")||t.includes("teen")||t.includes("dance")||t.includes("fun")) recs.add("DJ");
     if(t.includes("bollywood")||t.includes("indian")||t.includes("colourful")) recs.add("Emcee / Host");
-    if(t.includes("gold")||t.includes("elegant")||t.includes("glam")) { recs.add("Lighting Setup"); recs.add("Makeup Artist"); }
+    if(t.includes("gold")||t.includes("elegant")||t.includes("glam")) { recs.add("Lighting Setup"); }
     if(t.includes("photo")||t.includes("memories")||t.includes("red-carpet")) recs.add("Photo Booth");
     if(t.includes("corporate")||t.includes("professional")||t.includes("modern")||t.includes("minimal")) {
       recs.add("AV Setup"); recs.add("Photo Booth");
@@ -935,7 +934,7 @@ function getRecommended(occasion, theme, ageGroups, venueType) {
       recs.add("Lighting Setup");
     }
     if(t.includes("royal")) {
-      recs.add("Makeup Artist"); recs.add("Lighting Setup");
+      recs.add("Lighting Setup");
     }
   }
   if(occasion.id==="office-party") { recs.add("AV Setup"); recs.add("Emcee / Host"); }
@@ -1385,18 +1384,6 @@ function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups
     {label:"Premium",price:"₹20K+",
       items:["Pro PA system","4+ wireless mics","In-ear monitors","Dedicated sound engineer"],
       note:"Studio-quality sound"},
-  ];
-
-  if(type==="Makeup Artist") return [
-    {label:"Essential",price:"₹3K–6K",
-      items:["Party makeup (1 person)","1–1.5 hours","Basic touch-up kit"],
-      note:"Looking great for the party"},
-    {label:"Standard",price:"₹8K–14K",popular:true,
-      items:["Airbrush or HD makeup","1 person + assistant","2 hours + touch-ups during event"],
-      note:"Camera-ready, long-lasting look"},
-    {label:"Premium",price:"₹18K–30K",
-      items:["Celebrity-style makeup","Full beauty team","Customised look design","Group rates for multiple guests"],
-      note:"Flawless for every shot"},
   ];
 
   if(type==="Balloon Artist") return [
@@ -2229,7 +2216,6 @@ export default function OccasionDetail(){
     const n=notes.toLowerCase();
     const hits=[];
     if(n.includes("dj")||n.includes(" music")||n.includes("dance")) hits.push("DJ");
-    if(n.includes("makeup")||n.includes("make up")) hits.push("Makeup Artist");
     if(n.includes("cake")) hits.push("Cake Artist");
     if(n.includes("photo")||n.includes("camera")||n.includes("photograph")) hits.push("Photographer");
     if(n.includes("video")) hits.push("Videographer");
@@ -4210,7 +4196,6 @@ export default function OccasionDetail(){
               const occ=occasion.id||"";
               const venue=(venueType||"").toLowerCase();
               if(occ==="baby-shower"||occ==="gender-reveal"||occ==="newborn-welcome"){
-                tips.push({icon:"💄",text:"Makeup Artist for the mom-to-be — a staple at every Godh Bharai."});
                 tips.push({icon:"🎂",text:"Cake Artist matching your décor theme makes the cutting moment iconic."});
                 tips.push({icon:"✍️",text:"Mehendi stall — guests love carrying a beautiful design home."});
               } else if(occ==="birthday-party"||occ==="first-birthday"){

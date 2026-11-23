@@ -546,22 +546,34 @@ export default function CustomerDashboard() {
             ? plans.filter(p => p.status === "cancelled" || isPastUnbooked(p))
             : plans.filter((p) => statusMap[activeTab]?.includes(p.status));
 
-  // Vendor chats expire 24hrs after the customer's last message
-  const TWENTY_FOUR_HRS = 24 * 60 * 60 * 1000;
-  const isWithin24Hrs = (convo) => {
+  // A pending (not-yet-approved) chat request shouldn't vanish from the customer's own
+  // view just because admin is slow to approve it — it previously used a flat 24hr timer
+  // off the customer's OWN last message, so a slow admin response made the customer's
+  // own request look like it had disappeared. Same two-tier rule as the admin dashboard's
+  // own isExpired() now: if a real event date is attached, keep it until the end of that
+  // day + 1 buffer day; otherwise a generous 5-day window (not 24hrs) since the last
+  // message, since nothing here depends on how fast the customer themselves replies.
+  const PENDING_CHAT_FALLBACK_MS = 5 * 24 * 60 * 60 * 1000;
+  const isPendingChatStillVisible = (convo) => {
+    const eventDate = convo.eventDetails?.date;
+    if (eventDate) {
+      const expiry = new Date(eventDate + "T23:59:59");
+      expiry.setDate(expiry.getDate() + 1);
+      return Date.now() <= expiry.getTime();
+    }
     const ref = convo.lastCustomerMessageAt || convo.createdAt;
     if (!ref) return true;
-    return (Date.now() - new Date(ref).getTime()) < TWENTY_FOUR_HRS;
+    return (Date.now() - new Date(ref).getTime()) < PENDING_CHAT_FALLBACK_MS;
   };
 
   // Vendor chats shown in In Progress:
-  // - Unapproved/pending: within 24hrs of last customer message
+  // - Unapproved/pending: visible per isPendingChatStillVisible() above
   // - Approved + no price agreed yet: always show (still in discussion)
   const pendingVendorChats = conversations.filter(c => {
     if (c.chatType !== "vendor") return false;
     const vid = typeof c.vendorId === 'object' ? c.vendorId?._id : c.vendorId;
     if (!vid) return false; // null-vendorId service chats only belong in Chats tab
-    if (!c.chatApproved) return isWithin24Hrs(c);   // pending → 24hr rule
+    if (!c.chatApproved) return isPendingChatStillVisible(c);
     return !(c.vendorPrice?.amount > 0);             // approved + no price = still negotiating
   });
 
@@ -584,8 +596,9 @@ export default function CustomerDashboard() {
   })();
 
   const visibleChats = conversations.filter(c => {
-    // Vendor chats: always show if approved (vendor accepted); unapproved ones vanish after 24hrs
-    if (c.chatType === "vendor") return c.chatApproved ? true : isWithin24Hrs(c);
+    // Vendor chats: always show if approved (vendor accepted); unapproved ones follow
+    // isPendingChatStillVisible() (event-date-aware, or a 5-day fallback)
+    if (c.chatType === "vendor") return c.chatApproved ? true : isPendingChatStillVisible(c);
     // Smart Plan event chats: always show once approved (admin started the chat)
     if (c.chatType === "event" && c.chatApproved) return true;
     // Support/concierge: only approved + explicitly opened
